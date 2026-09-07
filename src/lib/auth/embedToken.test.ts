@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { signEmbedToken, verifyEmbedToken } from "./embedToken";
+import { allowsData, signEmbedToken, verifyEmbedToken } from "./embedToken";
 import { signPayload } from "./signing";
 
 const SECRET = "an-embed-secret-long-enough-to-pass";
@@ -81,5 +81,40 @@ describe("embed tokens", () => {
     for (const token of ["", "a", "a.b", "...", undefined]) {
       expect(await verifyEmbedToken(token)).toBeNull();
     }
+  });
+
+  describe("scope", () => {
+    it("grants the board only, unless data was asked for", async () => {
+      env({ AUTH_SECRET: SECRET });
+      const board = await verifyEmbedToken((await signEmbedToken("board"))!);
+      expect(allowsData(board)).toBe(false);
+    });
+
+    it("grants data when it was", async () => {
+      env({ AUTH_SECRET: SECRET });
+      const data = await verifyEmbedToken(
+        (await signEmbedToken("data", 30, "data"))!,
+      );
+      expect(allowsData(data)).toBe(true);
+    });
+
+    /**
+     * Tokens minted before scope existed carry no scope field. They must not
+     * quietly acquire the wider grant by being read with newer code.
+     */
+    it("treats a token from before scope existed as board only", async () => {
+      env({ AUTH_SECRET: SECRET });
+      const legacy = await signPayload({
+        kind: "embed",
+        label: "old",
+        exp: Math.floor(Date.now() / 1000) + 3600,
+      });
+
+      expect(allowsData(await verifyEmbedToken(legacy!))).toBe(false);
+    });
+
+    it("grants nothing to no token at all", () => {
+      expect(allowsData(null)).toBe(false);
+    });
   });
 });

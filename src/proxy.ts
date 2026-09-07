@@ -45,7 +45,14 @@ function isOpenPath(pathname: string): boolean {
 }
 
 function isEmbed(pathname: string): boolean {
-  return pathname === "/embed" || pathname.startsWith("/embed/");
+  return (
+    pathname === "/embed" ||
+    pathname.startsWith("/embed/") ||
+    // The read-only endpoint an embedded board calls. It re-checks the token
+    // itself, and additionally requires the `data` scope, which the gate does
+    // not know about.
+    pathname.startsWith("/api/embed/")
+  );
 }
 
 export async function proxy(request: NextRequest) {

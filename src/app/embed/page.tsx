@@ -1,6 +1,7 @@
 import { EmbedGame } from "@/components/game/EmbedGame";
 import { readStoneSet, readTheme } from "@/components/game/embed";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { EmbedStats } from "@/components/embed/EmbedStats";
 import {
   BOARD_SIZES,
   DEFAULT_BOARD_SIZE,
@@ -46,8 +47,13 @@ export default async function EmbedPage({ searchParams }: PageProps<"/embed">) {
   const opening = one(params.opening);
   const obstacles = one(params.obstacles);
 
+  const token = one(params.token);
+  // Opt-in, so an embed that only wants a board stays a board.
+  const showStats = one(params.stats) === "1" && token !== undefined;
+
   return (
-    <EmbedGame
+    <div className="flex flex-col gap-2 p-3">
+      <EmbedGame
       options={{
         settings: {
           size: readSize(one(params.size)),
@@ -70,5 +76,9 @@ export default async function EmbedPage({ searchParams }: PageProps<"/embed">) {
         showCoordinates: one(params.coords) !== "0",
       }}
     />
+      {showStats ? (
+        <EmbedStats token={token} player={one(params.player) ?? null} />
+      ) : null}
+    </div>
   );
 }

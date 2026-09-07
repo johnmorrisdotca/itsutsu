@@ -21,6 +21,8 @@ const mintSchema = z.object({
   days: z.coerce.number().int().min(1).max(3650).default(DEFAULT_EMBED_TOKEN_DAYS),
   size: z.coerce.number().int().min(9).max(19).optional(),
   theme: z.string().max(40).optional(),
+  /** "data" additionally lets the embed read the summary endpoint. */
+  scope: z.enum(["board", "data"]).default("board"),
 });
 
 export async function POST(request: Request) {
@@ -30,7 +32,11 @@ export async function POST(request: Request) {
     const parsed = mintSchema.safeParse((await readJson(request)) ?? {});
     if (!parsed.success) return badRequest("Invalid embed token options.");
 
-    const token = await signEmbedToken(parsed.data.label, parsed.data.days);
+    const token = await signEmbedToken(
+      parsed.data.label,
+      parsed.data.days,
+      parsed.data.scope,
+    );
     if (token === null) {
       return serverError("This deployment cannot issue embed tokens.");
     }
@@ -44,12 +50,14 @@ export async function POST(request: Request) {
     if (parsed.data.theme !== undefined) {
       url.searchParams.set("theme", parsed.data.theme);
     }
+    if (parsed.data.scope === "data") url.searchParams.set("stats", "1");
 
     return NextResponse.json(
       {
         token,
         url: url.toString(),
         label: parsed.data.label,
+        scope: parsed.data.scope,
         expiresInDays: parsed.data.days,
         snippet:
           `<iframe src="${url.toString()}"\n` +

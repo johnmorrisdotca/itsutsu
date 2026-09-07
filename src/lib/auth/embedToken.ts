@@ -25,10 +25,25 @@ import {
  * token exposes a gomoku board and nothing else. That is what lets this be a
  * URL parameter with a clear conscience.
  */
+/**
+ * What an embed token is allowed to see.
+ *
+ * `board` is the original grant: the page, and nothing else. `data` adds
+ * read-only access to the summary endpoint, which reports games played and
+ * the names they were played under.
+ *
+ * They are separate because the widening is real. A `board` token that gets
+ * out exposes a gomoku board; a `data` token exposes who has been playing.
+ * A token issued before this existed has no scope field and is treated as
+ * `board`, so nothing gained a privilege by being upgraded past.
+ */
+export type EmbedScope = "board" | "data";
+
 export type EmbedToken = Signed & {
   kind: "embed";
   /** A note for whoever has to remember what this was issued for. */
   label: string;
+  scope?: EmbedScope;
 };
 
 export const EMBED_TOKEN_KIND = "embed";
@@ -41,13 +56,20 @@ export const DEFAULT_EMBED_TOKEN_DAYS = 365;
 export async function signEmbedToken(
   label: string,
   days = DEFAULT_EMBED_TOKEN_DAYS,
+  scope: EmbedScope = "board",
 ): Promise<string | null> {
   return signPayload({
     kind: EMBED_TOKEN_KIND,
     label: label.slice(0, 120),
+    scope,
     exp: expiryInDays(days),
     iat: nowInSeconds(),
   } satisfies EmbedToken);
+}
+
+/** Whether a token may read the summary endpoint. Absent scope means board only. */
+export function allowsData(token: EmbedToken | null): boolean {
+  return token?.scope === "data";
 }
 
 /**

@@ -12,6 +12,7 @@ type MintedEmbed = {
   token: string;
   url: string;
   label: string;
+  scope: "board" | "data";
   expiresInDays: number;
   snippet: string;
 };
@@ -34,6 +35,7 @@ const json = async <T,>(url: string): Promise<T> => {
 export function AdminEmbeds() {
   const { data: session } = useSWR<SessionInfo>("/api/session", json);
   const [label, setLabel] = useState("");
+  const [withData, setWithData] = useState(false);
   const [minted, setMinted] = useState<MintedEmbed | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -47,7 +49,10 @@ export function AdminEmbeds() {
       const response = await fetch("/api/embed-tokens", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: label.trim() }),
+        body: JSON.stringify({
+          label: label.trim(),
+          scope: withData ? "data" : "board",
+        }),
       });
       if (response.ok) {
         setMinted((await response.json()) as MintedEmbed);
@@ -77,6 +82,17 @@ export function AdminEmbeds() {
         board and nothing else.
       </p>
 
+      <label className="flex items-center gap-2 text-xs text-muted">
+        <input
+          type="checkbox"
+          checked={withData}
+          onChange={(event) => setWithData(event.target.checked)}
+          className="size-3.5 accent-zinc-900 dark:accent-zinc-100"
+          data-testid="embed-with-data"
+        />
+        Also let it read games played and player names
+      </label>
+
       <div className="flex gap-2">
         <input
           className={INPUT_CLASS}
@@ -97,7 +113,8 @@ export function AdminEmbeds() {
           data-testid="minted-embed"
         >
           <p className="text-xs font-semibold">
-            {minted.label} · expires in {minted.expiresInDays} days
+            {minted.label} · {minted.scope === "data" ? "board and data" : "board only"} ·
+            expires in {minted.expiresInDays} days
           </p>
           <pre className="overflow-x-auto rounded-lg bg-black/10 p-2 text-[0.65rem] leading-relaxed dark:bg-black/30">
             <code>{minted.snippet}</code>

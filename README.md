@@ -436,6 +436,36 @@ of the other.
 Retiring a token is by expiry, or `EMBED_TOKEN_EPOCH` to invalidate every token
 issued before a moment.
 
+### Connecting an embed to the live data
+
+The board stays local — a game played in an iframe is played in the browser and
+never leaves it — but the embed can show what is happening on the server beside
+it: how many games have been played, the most recent results, and one named
+player's record.
+
+```html
+<iframe src="https://your-host/embed?token=…&size=9&stats=1&player=Akira"></iframe>
+```
+
+That is a wider grant than showing a board, so it is a **separate scope** on the
+token rather than something every embed gets:
+
+| Scope | Unlocks |
+| --- | --- |
+| `board` (default) | `/embed`, and nothing else |
+| `data` | also `GET /api/embed/summary`, read-only |
+
+A `board` token asking for the summary gets 404 — the endpoint does not
+advertise itself to an embed that was never meant to reach it — and a token
+minted before scopes existed carries none, so nothing gained a privilege by
+being read with newer code. Neither scope opens `/`, `/history` or any other
+API route, which `e2e/embed-data.spec.ts` asserts rather than assumes.
+
+The summary is deliberately thin: finished games only, with no ids that grant
+anything and no games still in progress, since a live game's id is half of a
+seat link. Mint one with the checkbox on the game page, or
+`pnpm embed-token <label> <days> <site> data`.
+
 Framing is refused unless the host origin is listed in `EMBED_ALLOWED_ORIGINS`
 (space-separated) — the token says *who may load it*, the CSP says *who may
 frame it*, and a host needs both. Every route other than `/embed` refuses
