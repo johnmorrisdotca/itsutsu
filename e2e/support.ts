@@ -1,6 +1,8 @@
 /** Where the signed-in cookies from `auth.setup.ts` are kept. */
 export const ADMIN_STATE = ".auth/admin.json";
 export const PLAYER_STATE = ".auth/player.json";
+/** An embed token minted by the setup, for the embed specs to use. */
+export const EMBED_TOKEN_FILE = ".auth/embed.json";
 
 import type { Page } from "@playwright/test";
 

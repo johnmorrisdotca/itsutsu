@@ -1,3 +1,5 @@
+// Explicit .ts because scripts/mint-invite.ts imports this chain and Node
+// resolves it by stripping types, which needs the real filename.
 import { INVITE_WORDS } from "./words.ts";
 
 /** Three words is short enough to say aloud and long enough to resist guessing. */

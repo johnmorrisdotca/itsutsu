@@ -1,7 +1,7 @@
 import { expect, request as playwrightRequest, test as setup } from "@playwright/test";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 
-import { ADMIN_STATE, PLAYER_STATE } from "./support";
+import { ADMIN_STATE, EMBED_TOKEN_FILE, PLAYER_STATE } from "./support";
 
 /**
  * Signs in once and saves the cookies for every other spec.
@@ -52,4 +52,12 @@ setup("sign in as the operator, and mint a player invite", async ({ request, bas
   ).toBe(true);
   await player.storageState({ path: PLAYER_STATE });
   await player.dispose();
+
+  // An embed token for the embed specs, which run with no session at all.
+  const embed = await request.post("/api/embed-tokens", {
+    data: { label: "playwright", days: 1 },
+  });
+  expect(embed.status()).toBe(201);
+  const { token: embedToken } = (await embed.json()) as { token: string };
+  writeFileSync(EMBED_TOKEN_FILE, JSON.stringify({ token: embedToken }));
 });

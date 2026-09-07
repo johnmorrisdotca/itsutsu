@@ -29,7 +29,8 @@
     "security:check": "pnpm audit --prod --audit-level high",
     "db:drift:check": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code --script",
     "preflight:prod": "pnpm quality:check && pnpm security:check && pnpm build",
-    "invite": "node --env-file=.env scripts/mint-invite.ts"
+    "invite": "node --env-file=.env scripts/mint-invite.ts",
+    "embed-token": "node --env-file=.env scripts/mint-embed-token.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

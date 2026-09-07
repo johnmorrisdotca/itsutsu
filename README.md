@@ -378,8 +378,40 @@ window.addEventListener("message", (event) => {
 });
 ```
 
+### Embed tokens
+
+The site is closed, so `/embed` needs a token of its own. The operator mints
+one per host — from the game page, or `pnpm embed-token <label>` — and gets
+back the whole iframe snippet to paste.
+
+```html
+<iframe src="https://your-host/embed?token=eyJraW5kIjoiZW1iZWQi…&size=9"
+        style="border:0;width:100%;height:640px" title="Gomoku"></iframe>
+```
+
+Three facts shape that design:
+
+- a cross-site iframe **cannot rely on cookies**, since browsers block
+  third-party cookies, so the token travels in the URL and is checked on every
+  request rather than exchanged for a session;
+- `proxy.ts` verifies it on the Edge runtime, where Prisma cannot run, so the
+  token carries its own HMAC proof instead of being looked up in a table;
+- the embedded board **makes no API calls at all** — it is a local game — so a
+  leaked token exposes a board and nothing else.
+
+An embed token unlocks `/embed` and nothing else: `/`, `/history` and every API
+route still refuse it, which is asserted by `e2e/embed.spec.ts`. Session
+cookies and embed tokens are signed with the same key and separated only by a
+`kind` field, so each side checks it — there is a test for pasting one in place
+of the other.
+
+Retiring a token is by expiry, or `EMBED_TOKEN_EPOCH` to invalidate every token
+issued before a moment.
+
 Framing is refused unless the host origin is listed in `EMBED_ALLOWED_ORIGINS`
-(space-separated). Every route other than `/embed` refuses framing outright.
+(space-separated) — the token says *who may load it*, the CSP says *who may
+frame it*, and a host needs both. Every route other than `/embed` refuses
+framing outright.
 
 If you want deeper integration than an iframe, `src/lib/gomoku/` is a pure
 TypeScript module with no React or database dependency and can be imported

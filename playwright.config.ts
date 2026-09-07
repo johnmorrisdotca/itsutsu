@@ -31,13 +31,13 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"], storageState: ".auth/admin.json" },
       dependencies: ["setup"],
-      testIgnore: /gate\.spec\.ts/,
+      testIgnore: /(gate|embed)\.spec\.ts/,
     },
     {
       // The gate is only meaningful without a session, so this one has none.
       name: "gate",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: /gate\.spec\.ts/,
+      testMatch: /(gate|embed)\.spec\.ts/,
       dependencies: ["setup"],
     },
   ],

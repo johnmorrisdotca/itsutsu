@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminEmbeds } from "@/components/auth/AdminEmbeds";
 import { AdminInvites } from "@/components/auth/AdminInvites";
 import { StartSharedGame } from "@/components/live/StartSharedGame";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -67,6 +68,9 @@ export function GameOptions({
       </div>
       <div className={PANEL_CLASS}>
         <AdminInvites />
+      </div>
+      <div className={PANEL_CLASS}>
+        <AdminEmbeds />
       </div>
       <div className={PANEL_CLASS}>
         <GameReviewPanel session={props.session} streaks={streaks} />

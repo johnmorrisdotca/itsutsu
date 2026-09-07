@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import { EMBED_TOKEN_PARAM, verifyEmbedToken } from "@/lib/auth/embedToken";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
 
 /**
@@ -43,10 +44,27 @@ function isOpenPath(pathname: string): boolean {
   );
 }
 
+function isEmbed(pathname: string): boolean {
+  return pathname === "/embed" || pathname.startsWith("/embed/");
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (!gateIsConfigured() || isOpenPath(pathname)) return NextResponse.next();
+
+  /*
+   * An embed carries its own credential in the URL, because a cross-site
+   * iframe cannot rely on a cookie — browsers block third-party cookies. The
+   * board it unlocks makes no API calls, so this grants a game and nothing
+   * else; a signed-in visitor still reaches /embed the ordinary way below.
+   */
+  if (isEmbed(pathname)) {
+    const token = request.nextUrl.searchParams.get(EMBED_TOKEN_PARAM);
+    if (token !== null && (await verifyEmbedToken(token)) !== null) {
+      return NextResponse.next();
+    }
+  }
 
   const session = await verifySession(request.cookies.get(SESSION_COOKIE)?.value);
   if (session !== null) return NextResponse.next();
