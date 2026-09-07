@@ -116,6 +116,8 @@ export type GameSession = {
   reviewing: boolean;
   /** True when the board cannot be played on at all right now. */
   boardReadOnly: boolean;
+  /** The piece picked up to slide, in the games where pieces move. */
+  selected: Point | null;
   /**
    * A move waiting on confirmation because playing it would discard the moves
    * after the position being reviewed.
@@ -142,6 +144,8 @@ export type GameActions = {
   chooseColour: (stone: Stone) => void;
   /** Swap2 only: decline to choose and lay two more stones. */
   extendOpening: () => void;
+  /** Turns a quadrant to finish the move, in the twist games. */
+  twist: (quadrant: number, clockwise: boolean) => void;
   askHint: () => void;
   grantHint: () => void;
   requestHelp: () => void;

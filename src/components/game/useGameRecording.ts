@@ -81,6 +81,8 @@ export function useGameRecording(session: GameSession): WinStreaks {
         col: move.col,
         stone: move.stone,
         kind: move.kind,
+        from: move.from,
+        twist: move.twist,
       })),
     };
 

@@ -100,7 +100,12 @@ describe("simulated games", () => {
         const start = createGame({ ...final.settings, firstPlayer: final.opener });
         const timeline = replayMoves(
           start,
-          final.moves.map((move) => ({ row: move.row, col: move.col })),
+          final.moves.map((move) => ({
+            row: move.row,
+            col: move.col,
+            from: move.from,
+            twist: move.twist,
+          })),
           final.opening.choices,
         );
         const replayed = timeline[timeline.length - 1];

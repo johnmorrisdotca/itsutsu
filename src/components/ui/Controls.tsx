@@ -72,21 +72,25 @@ export function Toggle({
   checked,
   onChange,
   hint,
+  disabled = false,
 }: {
   label: string;
   checked: boolean;
   onChange: (next: boolean) => void;
   hint?: string;
+  /** Greyed and inert, but still shown, so a rule the game fixes stays visible. */
+  disabled?: boolean;
 }) {
   return (
-    <label className="flex flex-col gap-1">
+    <label className={`flex flex-col gap-1 ${disabled ? "opacity-55" : ""}`}>
       <span className="flex items-center justify-between gap-3 text-sm text-zinc-700 dark:text-zinc-200">
         {label}
         <input
           type="checkbox"
           checked={checked}
+          disabled={disabled}
           onChange={(event) => onChange(event.target.checked)}
-          className="size-4 accent-zinc-900 dark:accent-zinc-100"
+          className="size-4 accent-zinc-900 disabled:cursor-not-allowed dark:accent-zinc-100"
         />
       </span>
       {hint !== undefined ? (

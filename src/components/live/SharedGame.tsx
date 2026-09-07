@@ -5,7 +5,7 @@ import useSWR from "swr";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
-import { rulesFor } from "@/lib/gomoku/engine";
+import { cellAt, inMovePhase, pieceMoves, rulesFor } from "@/lib/gomoku/engine";
 import { GAME_STATUS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
@@ -66,28 +66,57 @@ export function SharedGame({
   const state = replayGame(detail);
   const yourTurn = seat !== null && state.toPlay === seat;
   const playable = yourTurn && state.status === GAME_STATUS.playing;
+  const [selected, setSelected] = useState<Point | null>(null);
 
-  async function play(point: Point) {
-    if (!playable || token === null) return;
+  /** Sends one move, of any of the three shapes, and takes the server's answer as the truth. */
+  async function send(body: Record<string, unknown>) {
+    if (token === null) return;
     setError(null);
-
-    // Draw the stone at once, then let the server's answer be the truth.
     const response = await fetch(`/api/games/${detail.id}/moves`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, row: point.row, col: point.col }),
+      body: JSON.stringify({ token, ...body }),
     });
 
     if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as
+      const payload = (await response.json().catch(() => null)) as
         | { error?: string }
         | null;
-      setError(body?.error ?? "That move could not be played.");
+      setError(payload?.error ?? "That move could not be played.");
       await mutate();
       return;
     }
-
     await mutate((await response.json()) as GameDetail, { revalidate: false });
+  }
+
+  async function play(point: Point) {
+    if (!playable) return;
+    // The sliding games: pick a piece up, then put it down.
+    if (inMovePhase(state)) {
+      const lands =
+        selected !== null &&
+        pieceMoves(state, selected).some((to) => to.row === point.row && to.col === point.col);
+      if (lands && selected !== null) {
+        const from = selected;
+        setSelected(null);
+        await send({ row: point.row, col: point.col, from });
+        return;
+      }
+      if (cellAt(state, point) === state.toPlay) {
+        setSelected(
+          selected !== null && selected.row === point.row && selected.col === point.col
+            ? null
+            : point,
+        );
+      }
+      return;
+    }
+    await send({ row: point.row, col: point.col });
+  }
+
+  async function twist(quadrant: number, clockwise: boolean) {
+    if (!playable) return;
+    await send({ twist: { quadrant, clockwise } });
   }
 
   /** Sends an emoji to the other player. Refusals are quiet: it is only a wave. */
@@ -139,6 +168,8 @@ export function SharedGame({
         appearance={DEFAULT_APPEARANCE}
         readOnly={!playable}
         onPlay={play}
+        onTwist={twist}
+        selected={selected}
       />
 
       {seat !== null && token !== null ? (

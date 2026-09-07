@@ -15,11 +15,17 @@ import {
 } from "./gameSettingsSchema";
 import type { GameDetail } from "./gameHistory.types";
 
+const coordinate = z.number().int().min(0).max(64);
+
 const moveSchema = z.object({
-  row: z.number().int().min(0).max(64),
-  col: z.number().int().min(0).max(64),
+  row: coordinate,
+  col: coordinate,
   stone: stoneSchema,
-  kind: z.enum([MOVE_KINDS.place, MOVE_KINDS.skip]).default(MOVE_KINDS.place),
+  kind: z.enum([MOVE_KINDS.place, MOVE_KINDS.skip, MOVE_KINDS.move]).default(MOVE_KINDS.place),
+  from: z.object({ row: coordinate, col: coordinate }).optional(),
+  twist: z
+    .object({ quadrant: z.number().int().min(0).max(15), clockwise: z.boolean() })
+    .optional(),
 });
 
 /**
@@ -56,8 +62,9 @@ export const gameRecordSchema = z
   )
   .refine(
     (game) => {
-      // A captured point is open again, so the capture variants may reuse one.
-      if (VARIANT_SPECS[game.variant].captures) return true;
+      // A captured point is open again, and so is one a piece slid out of, so those may reuse one.
+      const spec = VARIANT_SPECS[game.variant];
+      if (spec.captures || spec.pieces !== null) return true;
       const seen = new Set(game.moves.map((move) => `${move.row},${move.col}`));
       return seen.size === game.moves.length;
     },
@@ -93,6 +100,10 @@ export async function recordGame(input: GameRecordInput): Promise<GameDetail> {
           col: move.col,
           stone: move.stone,
           kind: move.kind,
+          fromRow: move.from?.row,
+          fromCol: move.from?.col,
+          twistQuadrant: move.twist?.quadrant,
+          twistClockwise: move.twist?.clockwise,
         })),
       },
     },

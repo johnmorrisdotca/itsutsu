@@ -3,6 +3,7 @@ import {
   GAME_STATUS,
   OBSTACLE_LAYOUTS,
 } from "../gomoku.constants";
+import { VARIANT_SPECS } from "../gomoku.constants";
 import type { Cell, GameState, Move, Point } from "../gomoku.types";
 import { emptyBoard } from "../obstacles";
 
@@ -45,6 +46,8 @@ export function growthOffset(from: number, to: number): number {
 }
 
 export function canGrowBoard(state: GameState): boolean {
+  // A game played on a board of its own size cannot grow out of it.
+  if (VARIANT_SPECS[state.settings.variant].boardSizes !== null) return false;
   return (
     state.settings.allowGrowth &&
     state.status === GAME_STATUS.playing &&

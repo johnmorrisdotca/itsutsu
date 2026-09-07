@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 import { Board } from "@/components/board/Board";
 import type { BoardTheme, StoneSet } from "@/components/board/board.types";
-import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { useGameSession } from "./useGameSession";
 
@@ -83,14 +83,16 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
         }}
         marks={session.marks}
         onPlay={actions.play}
+        onTwist={actions.twist}
+        selected={session.selected}
       />
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="text-muted">
           {state.status === GAME_STATUS.playing
-            ? `${state.toPlay} to play`
-            : state.status === GAME_STATUS.draw
+            ? `${STONE_DISPLAY[state.toPlay].label} to play`
+            : state.status === GAME_STATUS.draw || state.winner === null
               ? "Draw"
-              : `${state.winner} wins`}
+              : `${STONE_DISPLAY[state.winner].label} wins`}
         </span>
         <button
           type="button"

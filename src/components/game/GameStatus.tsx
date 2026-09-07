@@ -4,11 +4,13 @@ import {
   FATAL_MOVE_DISPLAY,
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
-import { rulesFor, stonesLeft } from "@/lib/gomoku/engine";
+import { inMovePhase, rulesFor, stonesLeft } from "@/lib/gomoku/engine";
 import {
   GAME_STATUS,
   HANDICAP_RULES,
+  PLACEMENTS,
   SEAT_DISPLAY,
+  STONES,
   STONE_DISPLAY,
   VARIANT_SPECS,
   WIN_REASONS,
@@ -31,7 +33,11 @@ function ToPlay({ session }: { session: GameSession }) {
   const stones = STONE_SETS[session.appearance.stoneSet];
 
   if (state.status === GAME_STATUS.draw) {
-    return <p className="text-lg font-semibold">Draw. The board is full.</p>;
+    return (
+      <p className="text-lg font-semibold" data-testid="to-play">
+        {state.board.includes(null) ? GAME_COPY.drawBothLines : "Draw. The board is full."}
+      </p>
+    );
   }
 
   const stone = state.status === GAME_STATUS.won ? state.winner : state.toPlay;
@@ -46,7 +52,15 @@ function ToPlay({ session }: { session: GameSession }) {
         ? `${who} wins on time`
         : state.winBy === WIN_REASONS.captures
           ? `${who} ${GAME_COPY.winsByCaptures(state.settings.capturesToWin)}`
-          : `${who} wins in ${state.moves.length} moves`
+          : state.winBy === WIN_REASONS.trap
+            ? GAME_COPY.winsByTrap(
+                who,
+                names[state.seats[state.winner === STONES.black ? STONES.white : STONES.black]].trim() ||
+                  SEAT_DISPLAY[state.seats[state.winner === STONES.black ? STONES.white : STONES.black]].label,
+              )
+            : state.winBy === WIN_REASONS.square
+              ? GAME_COPY.winsBySquare(who)
+              : `${who} wins in ${state.moves.length} moves`
       : `${who} to play`;
 
   return (
@@ -167,6 +181,13 @@ function VariantLine({ session }: { session: GameSession }) {
   const spec = VARIANT_SPECS[settings.variant];
   const rules = rulesFor(settings, state.toPlay);
   const lines: string[] = [];
+
+  if (state.status === GAME_STATUS.playing) {
+    if (state.pendingTwist) lines.push(GAME_COPY.twistPrompt);
+    else if (inMovePhase(state)) {
+      lines.push(session.selected === null ? GAME_COPY.pickPiece : GAME_COPY.placePiece);
+    } else if (spec.placement === PLACEMENTS.drop) lines.push(GAME_COPY.dropPrompt);
+  }
 
   if (spec.stonesPerTurn > 1 && state.status === GAME_STATUS.playing) {
     const left = stonesLeft(state);

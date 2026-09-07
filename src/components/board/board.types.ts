@@ -62,7 +62,9 @@ export type BoardMarkKind =
   | "hint"
   | "help"
   | "fatal"
-  | "forbidden";
+  | "forbidden"
+  | "selected"
+  | "target";
 
 export type BoardMark = Point & {
   kind: BoardMarkKind;
@@ -77,6 +79,10 @@ export type BoardProps = {
   /** A board being read rather than played: replays and embeds. */
   readOnly?: boolean;
   onPlay: (point: Point) => void;
+  /** Turns a quadrant, in the twist games; shown only while one is owed. */
+  onTwist?: (quadrant: number, clockwise: boolean) => void;
+  /** The piece picked up, in the sliding games, so its stone stays clickable. */
+  selected?: Point | null;
 };
 
 export type IntersectionProps = {
@@ -88,6 +94,8 @@ export type IntersectionProps = {
   isWinning: boolean;
   /** Colour previewed on hover while the intersection is playable, if any. */
   ghost: Stone | null;
+  /** Clickable even without a ghost: a column in a drop game, a piece to slide. */
+  clickable?: boolean;
   /** Printed on the stone when move numbers are on. */
   moveNumber: number | null;
   mark: BoardMark | null;

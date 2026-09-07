@@ -3,17 +3,30 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { createGame, isLegalMove, playMove, replayMoves } from "@/lib/gomoku/engine";
-import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
-import type { GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
+import {
+  canTwist,
+  createGame,
+  inMovePhase,
+  isLegalMove,
+  movePiece,
+  pieceMoves,
+  playMove,
+  replayMoves,
+  resolvePlacement,
+  twistBoard,
+} from "@/lib/gomoku/engine";
+import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
 import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
 import type {
   CreatedGame,
   LiveGameSettings,
   MoveOutcome,
+  MoveRequest,
   SettingsOutcome,
 } from "./liveGame.types";
+import { toGameMove } from "./gameHistory";
 
 /** Prisma's code for "a unique constraint was violated". */
 const UNIQUE_VIOLATION = "P2002";
@@ -30,7 +43,20 @@ const GAME_ROW = {
   handicap: true,
   blackToken: true,
   whiteToken: true,
-  moves: { orderBy: { number: "asc" }, select: { row: true, col: true } },
+  moves: {
+    orderBy: { number: "asc" },
+    select: {
+      number: true,
+      row: true,
+      col: true,
+      stone: true,
+      kind: true,
+      fromRow: true,
+      fromCol: true,
+      twistQuadrant: true,
+      twistClockwise: true,
+    },
+  },
 } satisfies Prisma.GameSelect;
 
 type GameRow = Prisma.GameGetPayload<{ select: typeof GAME_ROW }>;
@@ -56,7 +82,7 @@ function replay(row: GameRow): GameState {
     allowSwap: false,
   });
 
-  const timeline = replayMoves(start, row.moves);
+  const timeline = replayMoves(start, row.moves.map(toGameMove));
   return timeline[timeline.length - 1];
 }
 
@@ -128,7 +154,7 @@ function stoneForToken(row: GameRow, token: string): Stone | null {
 export async function appendMove(
   id: string,
   token: string,
-  point: Point,
+  request: MoveRequest,
 ): Promise<MoveOutcome> {
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
@@ -139,9 +165,56 @@ export async function appendMove(
 
   const state = replay(row);
   if (state.toPlay !== stone) return { ok: false, reason: "not-your-turn" };
-  if (!isLegalMove(state, point)) return { ok: false, reason: "illegal" };
 
-  const next = playMove(state, point);
+  /*
+   * Three shapes of move, each checked by the engine exactly as a local game
+   * checks it: a stone, a sliding piece, or the twist that finishes a stone.
+   * A twist updates the row of the stone it completes rather than adding one,
+   * so the record stays one row per stone and a replay stays in step.
+   */
+  let next: GameState;
+  let write: Prisma.PrismaPromise<unknown>;
+  if (request.kind === MOVE_KINDS.move) {
+    const allowed = pieceMoves(state, request.from).some(
+      (to) => to.row === request.row && to.col === request.col,
+    );
+    if (!inMovePhase(state) || !allowed) return { ok: false, reason: "illegal" };
+    next = movePiece(state, request.from, { row: request.row, col: request.col });
+    write = prisma.move.create({
+      data: {
+        gameId: id,
+        number: next.moves.length,
+        row: request.row,
+        col: request.col,
+        fromRow: request.from.row,
+        fromCol: request.from.col,
+        stone,
+        kind: MOVE_KINDS.move,
+      },
+    });
+  } else if (request.kind === "twist") {
+    if (!canTwist(state)) return { ok: false, reason: "illegal" };
+    next = twistBoard(state, request.quadrant, request.clockwise);
+    if (next === state) return { ok: false, reason: "illegal" };
+    write = prisma.move.update({
+      where: { gameId_number: { gameId: id, number: state.moves.length } },
+      data: { twistQuadrant: request.quadrant, twistClockwise: request.clockwise },
+    });
+  } else {
+    const point = resolvePlacement(state, { row: request.row, col: request.col });
+    if (!isLegalMove(state, point)) return { ok: false, reason: "illegal" };
+    next = playMove(state, point);
+    write = prisma.move.create({
+      data: {
+        gameId: id,
+        number: next.moves.length,
+        row: point.row,
+        col: point.col,
+        stone,
+        kind: MOVE_KINDS.place,
+      },
+    });
+  }
   const finished = next.status !== GAME_STATUS.playing;
 
   try {
@@ -151,16 +224,7 @@ export async function appendMove(
        * devices racing to play the same move number cannot both succeed, so
        * the loser is told to reload rather than silently overwriting.
        */
-      prisma.move.create({
-        data: {
-          gameId: id,
-          number: next.moves.length,
-          row: point.row,
-          col: point.col,
-          stone,
-          kind: "place",
-        },
-      }),
+      write,
       prisma.game.update({
         where: { id },
         data: {

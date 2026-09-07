@@ -1,6 +1,6 @@
 import { createGame, replayMoves } from "./engine";
 import { NO_HANDICAP } from "./gomoku.constants";
-import type { GameState, Handicap, Stone } from "./gomoku.types";
+import type { GameState, Handicap, MoveInput, Stone } from "./gomoku.types";
 
 /** The stored shape of a game, as both the API and the pages see it. */
 type StoredGame = {
@@ -11,7 +11,7 @@ type StoredGame = {
   opener: string;
   opening?: string;
   handicap?: Handicap | null;
-  moves: { row: number; col: number }[];
+  moves: MoveInput[];
 };
 
 /**

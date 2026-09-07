@@ -1,14 +1,20 @@
 "use client";
 
 import { Board } from "@/components/board/Board";
+import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import { GameOptions, GameSidebar } from "./GamePanel";
+import { IdleModal } from "./IdleModal";
+import { useIdleWatch } from "./useIdleWatch";
 import { BranchPrompt, ReviewBanner } from "./ReviewControls";
 import { useGameRecording } from "./useGameRecording";
 import { useGameSession } from "./useGameSession";
 
 export function GameView() {
-  const { session, actions } = useGameSession({}, { persist: true });
+  // Nothing moving for a couple of minutes pauses the clock behind a modal.
+  const { idle, confirm } = useIdleWatch();
+  const { session, actions } = useGameSession({}, { persist: true, paused: idle });
   const streaks = useGameRecording(session);
+  const showIdle = idle && session.state.status === GAME_STATUS.playing;
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -23,12 +29,15 @@ export function GameView() {
               marks={session.marks}
               readOnly={session.boardReadOnly}
               onPlay={actions.play}
+              onTwist={actions.twist}
+              selected={session.selected}
             />
           </div>
         </div>
         <GameSidebar session={session} actions={actions} />
       </div>
       <GameOptions session={session} actions={actions} streaks={streaks} />
+      <IdleModal open={showIdle} onConfirm={confirm} />
     </div>
   );
 }

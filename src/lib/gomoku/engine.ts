@@ -20,21 +20,30 @@ import {
 } from "./rules/board";
 import { capturesFrom, pairsIn, removeStones } from "./rules/captures";
 import { forbiddenAt } from "./rules/forbidden";
-import { hasHandicap, rulesFor } from "./rules/handicap";
-import { findWinningLine } from "./rules/lines";
+import { hasHandicap } from "./rules/handicap";
 import {
   applyOpeningChoice,
   initialOpening,
   openingAfterMove,
   openingAllows,
 } from "./rules/opening";
+import {
+  inMovePhase,
+  movePiece,
+  resolvePlacement,
+  settleStone,
+  twistBoard,
+  won,
+} from "./rules/mechanics";
 import { stonesLeftInTurn } from "./rules/turns";
+import { rotateQuadrant } from "./rules/twist";
 import type {
   Cell,
   ForbiddenPattern,
   GameSettings,
   GameState,
   Move,
+  MoveInput,
   OpeningChoice,
   OpeningRule,
   Point,
@@ -54,6 +63,16 @@ export { findWinningLine } from "./rules/lines";
 export { hasHandicap, rulesFor } from "./rules/handicap";
 export { forbiddenAt, forbiddenPoints } from "./rules/forbidden";
 export { canGrowBoard, growBoard, nextBoardSize } from "./rules/growth";
+export { dropTarget, landingPoints } from "./rules/drop";
+export { quadrantCount, quadrantOrigin } from "./rules/twist";
+export {
+  canTwist,
+  inMovePhase,
+  movePiece,
+  pieceMoves,
+  resolvePlacement,
+  twistBoard,
+} from "./rules/mechanics";
 export {
   canChooseColour,
   canExtendOpening,
@@ -87,8 +106,14 @@ export function availableOpenings(settings: GameSettings): OpeningRule[] {
  */
 export function normaliseSettings(settings: GameSettings): GameSettings {
   const spec = VARIANT_SPECS[settings.variant];
+  // A game with a board of its own is played on it; the rest take any size they are given.
+  const size =
+    spec.boardSizes !== null && !spec.boardSizes.includes(settings.size)
+      ? spec.boardSizes[0]
+      : settings.size;
   return {
     ...settings,
+    size,
     winLength: spec.winLength ?? settings.winLength,
     opening: availableOpenings(settings).includes(settings.opening)
       ? settings.opening
@@ -132,6 +157,7 @@ export function createGame(
     captures: { black: 0, white: 0 },
     opening: initialOpening(settings, opener, seats),
     toPlay: opener,
+    pendingTwist: false,
     status: GAME_STATUS.playing,
     winner: null,
     winBy: null,
@@ -158,13 +184,16 @@ export function seatToPlay(state: GameState): Seat {
 
 /**
  * Whether the colour to move may play `point`: on the board, empty, allowed by
- * the opening, and not a shape the variant forbids that colour.
+ * the opening, not a shape the variant forbids that colour, the landing cell
+ * of its column in a drop game, and not while a twist or a slide is owed.
  */
 export function isLegalMove(state: GameState, point: Point): boolean {
+  if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
+  if (!isOnBoard(state.settings.size, point) || cellAt(state, point) !== null) return false;
+  if (inMovePhase(state)) return false;
+  const landing = resolvePlacement(state, point);
+  if (landing.row !== point.row || landing.col !== point.col) return false;
   return (
-    state.status === GAME_STATUS.playing &&
-    isOnBoard(state.settings.size, point) &&
-    cellAt(state, point) === null &&
     openingAllows(state, point) &&
     forbiddenAt(state.board, state.settings, state.toPlay, point) === null
   );
@@ -201,12 +230,14 @@ export function stonesLeft(state: GameState): number {
  */
 export function playMove(
   state: GameState,
-  point: Point,
+  where: Point,
   kind: Move["kind"] = MOVE_KINDS.place,
 ): GameState {
+  const point = resolvePlacement(state, where);
   if (!isLegalMove(state, point)) return state;
 
   const { settings, toPlay } = state;
+  const spec = VARIANT_SPECS[settings.variant];
   const captured = capturesFrom(state.board, settings, toPlay, point);
   let board = state.board.slice();
   board[indexOf(settings.size, point)] = toPlay;
@@ -221,13 +252,12 @@ export function playMove(
   };
   const placed: GameState = { ...state, board, moves, captures };
 
-  const winningLine = findWinningLine(board, settings, point);
-  if (winningLine.length > 0) {
-    return won(placed, toPlay, WIN_REASONS.line, winningLine);
-  }
-  if (rulesFor(settings, toPlay).captures && captures[toPlay] >= settings.capturesToWin) {
-    return won(placed, toPlay, WIN_REASONS.captures, []);
-  }
+  const decided = settleStone(placed, point);
+  if (decided !== null) return decided;
+
+  // A twist game's move is not over until a quadrant has turned.
+  if (spec.quadrantSize !== null) return { ...placed, pendingTwist: true };
+
   if (!board.includes(null)) {
     return { ...placed, status: GAME_STATUS.draw };
   }
@@ -240,17 +270,9 @@ export function playMove(
   };
 }
 
-function won(
-  state: GameState,
-  winner: Stone,
-  winBy: GameState["winBy"],
-  winningLine: Point[],
-): GameState {
-  return { ...state, status: GAME_STATUS.won, winner, winBy, winningLine };
-}
-
 export function canSkip(state: GameState): boolean {
   if (!state.settings.allowSkip || state.status !== GAME_STATUS.playing) return false;
+  if (state.pendingTwist || inMovePhase(state)) return false;
   const target = skipTarget(state);
   return target !== null && isLegalMove(state, target);
 }
@@ -342,17 +364,23 @@ export function canUndo(state: GameState): boolean {
 }
 
 /**
- * Removes the last move, putting back anything it captured. Also reopens a
- * finished game. The opening is left as it stands: a colour choice is a
- * decision, not a stone, and is not undone by lifting one.
+ * Removes the last move, putting back anything it captured, a piece where it
+ * came from, and a twisted quadrant the way it was. Also reopens a finished
+ * game. The opening is left as it stands: a colour choice is a decision, not
+ * a stone, and is not undone by lifting one.
  */
 export function undoMove(state: GameState): GameState {
   if (!canUndo(state)) return state;
 
   const last = state.moves[state.moves.length - 1];
   const { size } = state.settings;
-  const board = state.board.slice();
+  const quadrantSize = VARIANT_SPECS[state.settings.variant].quadrantSize;
+  let board = state.board.slice();
+  if (last.twist !== undefined && quadrantSize !== null) {
+    board = rotateQuadrant(board, size, quadrantSize, last.twist.quadrant, !last.twist.clockwise);
+  }
   board[indexOf(size, last)] = null;
+  if (last.from !== undefined) board[indexOf(size, last.from)] = last.stone;
   for (const point of last.captured ?? []) {
     board[indexOf(size, point)] = otherStone(last.stone);
   }
@@ -360,6 +388,7 @@ export function undoMove(state: GameState): GameState {
   return {
     ...state,
     board,
+    pendingTwist: false,
     moves: state.moves.slice(0, -1),
     captures: {
       ...state.captures,
@@ -388,7 +417,7 @@ export function lastMove(state: GameState): Point | null {
  */
 export function replayMoves(
   start: GameState,
-  moves: readonly Point[],
+  moves: readonly MoveInput[],
   choices: readonly OpeningChoice[] = [],
 ): GameState[] {
   const timeline = [start];
@@ -403,9 +432,20 @@ export function replayMoves(
       if (current.opening.stage === OPENING_STAGES.choosing) break;
       timeline.push(current);
     }
-    const next = playMove(current, { row: move.row, col: move.col });
+    const point = { row: move.row, col: move.col };
+    let next =
+      move.from !== undefined
+        ? movePiece(current, { row: move.from.row, col: move.from.col }, point)
+        : playMove(current, point);
     if (next === current) break;
     timeline.push(next);
+    // A recorded twist is part of the same move, and lands in the same replay step.
+    if (move.twist !== undefined) {
+      const turned = twistBoard(next, move.twist.quadrant, move.twist.clockwise);
+      if (turned === next) break;
+      timeline.push(turned);
+      next = turned;
+    }
   }
   return timeline;
 }

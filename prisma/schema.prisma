@@ -85,8 +85,14 @@ model Move {
   row    Int
   col    Int
   stone  String
-  /// "place" for an ordinary stone, "skip" for a deliberately wasted turn.
+  /// "place" for an ordinary stone, "skip" for a deliberately wasted turn,
+  /// "move" for a piece stepping from (fromRow, fromCol) to (row, col).
   kind   String  @default("place")
+  fromRow Int?
+  fromCol Int?
+  /// The quarter turn that ended this move in a twist game: which quadrant, which way.
+  twistQuadrant  Int?
+  twistClockwise Boolean?
 
   @@unique([gameId, number])
   @@index([gameId, number])

@@ -2,7 +2,6 @@
 
 import {
   BOARD_SIZE_DISPLAY,
-  BOARD_SIZES,
   FIRST_PLAYER_DISPLAY,
   FIRST_PLAYERS,
   OBSTACLE_LAYOUT_DISPLAY,
@@ -11,6 +10,7 @@ import {
   RULE_VARIANT_LIST,
   VARIANT_SPECS,
   WIN_LENGTHS,
+  boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
 import {
   OPENING_DISPLAY,
@@ -31,6 +31,7 @@ import {
 import { Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { GameBrowserButton } from "./GameBrowser";
 import { HandicapPanel } from "./HandicapPanel";
+import { settingsLocks } from "./settingsLocks";
 import {
   AWARENESS_DISPLAY,
   AWARENESS_LEVELS,
@@ -45,6 +46,9 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
   const { variant, size, firstPlayer, obstacles, opening } = settings;
   const spec = VARIANT_SPECS[variant];
   const openings = availableOpenings(settings);
+  const locks = settingsLocks(settings);
+  // Lines the reading cannot help with are greyed rather than hidden, so the rule is visible.
+  const reading = locks.reading === null;
   const canChooseOpener =
     spec.allowFirstPlayerChoice && opening === OPENING_RULES.free;
 
@@ -57,13 +61,14 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         <GameBrowserButton session={session} actions={actions} />
       </div>
 
-      <Field label="Board">
+      <Field label="Board" hint={locks.size ?? undefined}>
         <Select
           value={size}
+          disabled={locks.size !== null}
           onChange={(event) => actions.reset({ size: Number(event.target.value) })}
           data-testid="board-size"
         >
-          {BOARD_SIZES.map((option) => (
+          {boardSizesFor(variant).map((option) => (
             <option key={option} value={option}>
               {option}×{option} · {BOARD_SIZE_DISPLAY[option].label}
             </option>
@@ -89,11 +94,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
 
       <Field
         label={GAME_COPY.opening.label}
-        hint={
-          openings.length > 1
-            ? OPENING_DISPLAY[opening].tagline
-            : `${RULE_VARIANT_DISPLAY[variant].label} has no opening protocol.`
-        }
+        hint={locks.opening ?? OPENING_DISPLAY[opening].tagline}
       >
         <Select
           value={opening}
@@ -111,23 +112,25 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
-      {spec.winLength === null ? (
-        <Field label={GAME_COPY.lineLength.label} hint={GAME_COPY.lineLengthHint}>
-          <Select
-            value={settings.winLength}
-            onChange={(event) =>
-              actions.reset({ winLength: Number(event.target.value) })
-            }
-            data-testid="win-length"
-          >
-            {WIN_LENGTHS.map((option) => (
-              <option key={option} value={option}>
-                {option} in a row
-              </option>
-            ))}
-          </Select>
-        </Field>
-      ) : null}
+      <Field label={GAME_COPY.lineLength.label} hint={locks.winLength ?? GAME_COPY.lineLengthHint}>
+        <Select
+          value={settings.winLength}
+          disabled={locks.winLength !== null}
+          onChange={(event) =>
+            actions.reset({ winLength: Number(event.target.value) })
+          }
+          data-testid="win-length"
+        >
+          {(locks.winLength !== null && !(WIN_LENGTHS as readonly number[]).includes(settings.winLength)
+            ? [settings.winLength]
+            : WIN_LENGTHS
+          ).map((option) => (
+            <option key={option} value={option}>
+              {option} in a row
+            </option>
+          ))}
+        </Select>
+      </Field>
 
       <Field
         label="First stone"
@@ -153,9 +156,10 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
-      <Field label="Obstacles" hint={OBSTACLE_LAYOUT_DISPLAY[obstacles].description}>
+      <Field label="Obstacles" hint={locks.obstacles ?? OBSTACLE_LAYOUT_DISPLAY[obstacles].description}>
         <Select
           value={obstacles}
+          disabled={locks.obstacles !== null}
           onChange={(event) =>
             actions.reset({ obstacles: event.target.value as ObstacleLayout })
           }
@@ -187,9 +191,10 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           />
           <Toggle
             label="Allow skipping a turn"
-            checked={settings.allowSkip}
+            checked={locks.allowSkip === null && settings.allowSkip}
+            disabled={locks.allowSkip !== null}
             onChange={(next) => actions.reset({ allowSkip: next })}
-            hint={GAME_COPY.skipHint}
+            hint={locks.allowSkip ?? GAME_COPY.skipHint}
           />
           <Toggle
             label="Allow swapping seats"
@@ -221,10 +226,11 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
 
           <Field
             label="Awareness"
-            hint={AWARENESS_DISPLAY[session.settings.awareness].description}
+            hint={locks.reading ?? AWARENESS_DISPLAY[session.settings.awareness].description}
           >
             <Select
               value={session.settings.awareness}
+              disabled={!reading}
               onChange={(event) =>
                 actions.setSessionSettings({
                   awareness: event.target.value as AwarenessLevel,
@@ -242,10 +248,11 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
 
           <Field
             label="Hints"
-            hint={HINT_POLICY_DISPLAY[session.settings.hintPolicy].description}
+            hint={locks.reading ?? HINT_POLICY_DISPLAY[session.settings.hintPolicy].description}
           >
             <Select
               value={session.settings.hintPolicy}
+              disabled={!reading}
               onChange={(event) =>
                 actions.setSessionSettings({
                   hintPolicy: event.target.value as HintPolicy,
@@ -262,16 +269,18 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
 
           <Toggle
             label="Warn before a three forms"
-            checked={session.settings.earlyWarning}
+            checked={reading && session.settings.earlyWarning}
+            disabled={!reading}
             onChange={(next) => actions.setSessionSettings({ earlyWarning: next })}
-            hint={GAME_COPY.earlyWarningHint}
+            hint={locks.reading ?? GAME_COPY.earlyWarningHint}
           />
 
           <Toggle
             label="Show chance of winning"
-            checked={session.settings.showWinChance}
+            checked={reading && session.settings.showWinChance}
+            disabled={!reading}
             onChange={(next) => actions.setSessionSettings({ showWinChance: next })}
-            hint={GAME_COPY.winChanceNote}
+            hint={locks.reading ?? GAME_COPY.winChanceNote}
           />
 
           {session.settings.hintPolicy === HINT_POLICIES.limited ? (

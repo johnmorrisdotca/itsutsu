@@ -3,18 +3,29 @@
 import { useMemo } from "react";
 
 import {
+  canTwist,
   forbiddenPoints,
+  inMovePhase,
   indexOf,
   lastMove,
   legalPoints,
+  pieceMoves,
   pointOf,
+  resolvePlacement,
 } from "@/lib/gomoku/engine";
-import { BLOCKED, GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import {
+  BLOCKED,
+  GAME_STATUS,
+  PLACEMENTS,
+  STONE_DISPLAY,
+  VARIANT_SPECS,
+} from "@/lib/gomoku/gomoku.constants";
 import { columnLetter, pointName, rowNumber } from "@/lib/gomoku/notation";
 import type { Cell, GameState } from "@/lib/gomoku/gomoku.types";
 import { BOARD_THEMES, LABEL_GUTTER, STONE_SETS } from "./Board.constants";
 import { BoardLines } from "./BoardLines";
 import { Intersection } from "./Intersection";
+import { TwistControls } from "./TwistControls";
 import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
 
 function cellDescription(cell: Cell, forbidden: boolean): string {
@@ -90,8 +101,11 @@ export function Board({
   marks = [],
   readOnly = false,
   onPlay,
+  onTwist,
+  selected = null,
 }: BoardProps) {
   const { size } = state.settings;
+  const spec = VARIANT_SPECS[state.settings.variant];
   const theme = BOARD_THEMES[appearance.boardTheme];
   const stones = STONE_SETS[appearance.stoneSet];
 
@@ -117,10 +131,26 @@ export function Board({
     () => (live ? new Set(forbiddenPoints(state).map((point) => indexOf(size, point))) : new Set<number>()),
     [live, size, state],
   );
+  /*
+   * The sliding games: once every piece is down, the mover's own stones are
+   * the things to click, and the picked-up piece shows where it may go.
+   */
+  const sliding = live && inMovePhase(state);
+  const destinations = useMemo(
+    () =>
+      sliding && selected !== null
+        ? new Set(pieceMoves(state, selected).map((point) => indexOf(size, point)))
+        : new Set<number>(),
+    [selected, size, sliding, state],
+  );
   const overlays = markByIndex(size, [
     ...Array.from(forbidden, (index) => ({ ...pointOf(size, index), kind: "forbidden" as const })),
+    ...Array.from(destinations, (index) => ({ ...pointOf(size, index), kind: "target" as const })),
+    ...(sliding && selected !== null ? [{ ...selected, kind: "selected" as const }] : []),
     ...marks,
   ]);
+  const twisting = live && onTwist !== undefined && canTwist(state) && spec.quadrantSize !== null;
+  const dropping = spec.placement === PLACEMENTS.drop;
 
   const gutter = appearance.showCoordinates ? LABEL_GUTTER : "0px";
 
@@ -150,14 +180,20 @@ export function Board({
           boxShadow: `0 0 0 0.4rem ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)`,
         }}
       >
-        <BoardLines size={size} theme={theme} />
+        <BoardLines size={size} theme={theme} quadrantSize={spec.quadrantSize} />
         <div
           className="absolute inset-0 grid"
           style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
         >
           {state.board.map((cell, index) => {
             const point = pointOf(size, index);
+            const landing = dropping && live ? resolvePlacement(state, point) : point;
+            const landingIndex = indexOf(size, landing);
             const playable = legal === null || legal.has(index);
+            // In a drop game any empty cell of a column with room plays that column.
+            const routed = dropping && cell === null && legal !== null && legal.has(landingIndex);
+            const ownPiece = sliding && cell === state.toPlay;
+            const target = destinations.has(index);
             return (
               <Intersection
                 key={index}
@@ -166,7 +202,8 @@ export function Board({
                 label={`${pointName(size, point)}, ${cellDescription(cell, forbidden.has(index))}`}
                 isLast={index === lastIndex}
                 isWinning={winningIndices.has(index)}
-                ghost={playable ? ghost : null}
+                ghost={playable || target ? ghost : null}
+                clickable={routed || ownPiece || target}
                 moveNumber={numbers.get(index) ?? null}
                 mark={overlays.get(index) ?? null}
                 stones={stones}
@@ -177,6 +214,9 @@ export function Board({
             );
           })}
         </div>
+        {twisting && spec.quadrantSize !== null ? (
+          <TwistControls size={size} quadrantSize={spec.quadrantSize} onTwist={onTwist} />
+        ) : null}
       </div>
     </div>
   );

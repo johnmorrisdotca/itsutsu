@@ -7,7 +7,7 @@ import {
   otherStone,
   seatToPlay,
 } from "./engine";
-import { DIRECTIONS, GAME_STATUS, STONES } from "./gomoku.constants";
+import { DIRECTIONS, GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { candidatePoints, emptyReport, scanThreats } from "./threats";
 import { tengen } from "./obstacles";
 import type {
@@ -45,6 +45,10 @@ export function assess(state: GameState): Assessment {
   }
   if (state.status === GAME_STATUS.draw) {
     return settled(mover, OUTLOOKS.even, OUTLOOKS.even, mover);
+  }
+  // Where stones turn or slide after placing, a line-by-line reading says nothing true.
+  if (!VARIANT_SPECS[state.settings.variant].analysis) {
+    return { ...settled(mover, OUTLOOKS.even, OUTLOOKS.even, mover), decided: false };
   }
 
   const mine = scanThreats(state, mover);
@@ -275,6 +279,7 @@ const REASON_CONFIDENCE: Record<SuggestionReason, number> = {
  */
 export function suggestMove(state: GameState): Suggestion | null {
   if (state.status !== GAME_STATUS.playing) return null;
+  if (!VARIANT_SPECS[state.settings.variant].analysis) return null;
 
   const mover = state.toPlay;
   const foe = otherStone(mover);

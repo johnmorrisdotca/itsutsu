@@ -21,14 +21,32 @@ export type Point = {
 /**
  * `place`: an ordinary stone.
  * `skip`: a deliberately wasted move, dropped on the emptiest corner.
+ * `move`: a piece stepping from `from` to the move's point, in the games
+ * where a fixed handful of pieces move once they are all down.
  */
-export type MoveKind = "place" | "skip";
+export type MoveKind = "place" | "skip" | "move";
+
+/** A quarter turn of one quadrant, which ends a move in the twist games. */
+export type Twist = {
+  quadrant: number;
+  clockwise: boolean;
+};
 
 export type Move = Point & {
   stone: Stone;
   kind: MoveKind;
   /** Opponent stones this move took off the board, in the capture variants. */
   captured?: Point[];
+  /** Where a moving piece came from. Only on `move` kinds. */
+  from?: Point;
+  /** The twist that finished this move, once it has been made. */
+  twist?: Twist;
+};
+
+/** The shape of a move as a record or a request carries it, without the colour. */
+export type MoveInput = Point & {
+  from?: Point;
+  twist?: Twist;
 };
 
 /**
@@ -50,7 +68,20 @@ export type RuleVariant =
   | "omok"
   | "caro"
   | "ninuki"
-  | "connect6";
+  | "connect6"
+  | "tictactoe"
+  | "trapThree"
+  | "dropFour"
+  | "twistFive"
+  | "twistFour"
+  | "squareFour";
+
+/**
+ * Where a stone goes when played. `free`: where it was put. `drop`: it slides
+ * to the lowest empty cell of its column, as if the board were upright and
+ * the stones were magnetic.
+ */
+export type Placement = "free" | "drop";
 
 /**
  * How the first stones go down. Everything after the opening is the variant's
@@ -79,8 +110,11 @@ export type LineRule = "atLeast" | "exact" | "exactOpen";
 /** Shapes a colour may be forbidden from making. See `rules/forbidden.ts`. */
 export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
 
-/** How a won game was won. Null while nobody has. */
-export type WinReason = "line" | "captures" | "time";
+/**
+ * How a won game was won. Null while nobody has. `trap` is the loser's doing:
+ * they made the line the rules forbid. `square` is four in a 2×2.
+ */
+export type WinReason = "line" | "captures" | "time" | "trap" | "square";
 
 /**
  * Where a swap-style opening stands. `placing` and `extending` are stretches
@@ -118,6 +152,19 @@ export type VariantSpec = {
   /** Whether the players may hand the first stone to white or draw lots. */
   allowFirstPlayerChoice: boolean;
   openings: readonly OpeningRule[];
+  placement: Placement;
+  /** Making exactly this many in a row loses, as in the trap game; null when nothing does. */
+  loseLength: number | null;
+  /** Side of the quadrants a move ends by rotating; null when moves do not twist. */
+  quadrantSize: number | null;
+  /** Pieces per player; once all are down, a turn moves one. Null for unlimited stones. */
+  pieces: number | null;
+  /** A 2×2 square of one colour also wins. */
+  squareWins: boolean;
+  /** Board sizes this game is played on, or null for the standard list. */
+  boardSizes: readonly number[] | null;
+  /** Whether the threat reading means anything; off where stones move after placing. */
+  analysis: boolean;
 };
 
 /**
@@ -227,6 +274,8 @@ export type GameState = {
   captures: Record<Stone, number>;
   opening: OpeningState;
   toPlay: Stone;
+  /** True between placing a stone and turning a quadrant, in the twist games. */
+  pendingTwist: boolean;
   status: GameStatus;
   winner: Stone | null;
   winBy: WinReason | null;

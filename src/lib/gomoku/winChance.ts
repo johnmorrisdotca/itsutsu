@@ -1,7 +1,7 @@
 import { OUTLOOKS } from "./analysis.constants";
 import { assess, shapeScore } from "./analysis";
 import { otherStone } from "./engine";
-import { GAME_STATUS, STONES } from "./gomoku.constants";
+import { GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { candidatePoints } from "./threats";
 import type { Assessment, ThreatReport, WinChance } from "./analysis.types";
 import type { GameState, Stone } from "./gomoku.types";
@@ -48,6 +48,9 @@ export function winChance(
   assessment: Assessment = assess(state),
 ): WinChance {
   if (state.status === GAME_STATUS.draw) return { black: 50, white: 50 };
+  if (!VARIANT_SPECS[state.settings.variant].analysis && state.status === GAME_STATUS.playing) {
+    return { black: 50, white: 50 };
+  }
 
   for (const stone of [STONES.black, STONES.white] as const) {
     if (assessment.outlook[stone] === OUTLOOKS.won) {

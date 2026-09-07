@@ -11,10 +11,17 @@ import type { BoardThemeTokens } from "./board.types";
 export function BoardLines({
   size,
   theme,
+  quadrantSize = null,
 }: {
   size: number;
   theme: BoardThemeTokens;
+  /** Draws heavier lines between quadrants of this side, for the twist games. */
+  quadrantSize?: number | null;
 }) {
+  const dividers =
+    quadrantSize !== null && quadrantSize > 0 && size % quadrantSize === 0
+      ? Array.from({ length: size / quadrantSize - 1 }, (_, i) => (i + 1) * quadrantSize)
+      : [];
   const indices = Array.from({ length: size }, (_, i) => i);
   const first = 0.5;
   const last = size - 0.5;
@@ -48,6 +55,12 @@ export function BoardLines({
           strokeWidth={widthFor(i)}
           stroke={theme.line}
         />
+      ))}
+      {dividers.map((at) => (
+        <g key={`q${at}`}>
+          <line x1={at} y1={first} x2={at} y2={last} strokeWidth={EDGE_LINE_WIDTH * 1.5} stroke={theme.frame} />
+          <line x1={first} y1={at} x2={last} y2={at} strokeWidth={EDGE_LINE_WIDTH * 1.5} stroke={theme.frame} />
+        </g>
       ))}
       {(STAR_POINTS[size] ?? []).map((point) => (
         <circle

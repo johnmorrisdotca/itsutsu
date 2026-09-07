@@ -113,6 +113,82 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "19×19 is the standard board. 15×15 gives a shorter game.",
   },
+  dropFour: {
+    label: "Drop Four",
+    kanji: "落とし四目",
+    tagline: "Stones fall to the bottom of their column. Four in a row wins.",
+    origin: "Our version of the upright four-in-a-row game, with a magnet under the board instead of a frame.",
+    rules: [
+      "Play anywhere in a column and the stone slides to the lowest empty point in it, as if the board were upright and the stones magnetic.",
+      "Four in a row, in any direction, wins.",
+      "A full board with no four is a draw.",
+      "Either colour may open.",
+    ],
+    board: "7×7 is the classic feel. 9×9 gives a longer game.",
+  },
+  twistFive: {
+    label: "Twist Five",
+    kanji: "回し五目",
+    tagline: "Place a stone, then turn one quarter of the board. Five wins.",
+    origin: "Our version of the quadrant-rotation game, on four 3×3 quadrants.",
+    rules: [
+      "A move is two parts: place a stone anywhere, then turn any one of the four 3×3 quadrants a quarter, either way.",
+      "Five in a row, anywhere on the board and for either colour, ends the game after the turn. Five made by placing alone wins at once.",
+      "If the turn makes five for both colours, the game is a draw.",
+      "A full board with no five, after its last turn, is a draw.",
+    ],
+    board: "6×6, divided into four quadrants.",
+  },
+  twistFour: {
+    label: "Twist Four",
+    kanji: "回し四目",
+    tagline: "The small twist game: four 2×2 quadrants, four in a row.",
+    origin: "Our own smaller board for the rotation mechanic.",
+    rules: [
+      "Place a stone, then turn any one of the four 2×2 quadrants a quarter.",
+      "Four in a row, anywhere and for either colour, wins after the turn.",
+      "Five for both at once is a draw, and so is a full board.",
+    ],
+    board: "4×4. Fast and surprisingly sharp.",
+  },
+  trapThree: {
+    label: "Trap Three",
+    kanji: "罠三",
+    tagline: "Four in a row wins. Three in a row loses.",
+    origin: "Our version of the four-wins-three-loses game on a square board.",
+    rules: [
+      "Players take turns placing one stone. Either colour may open.",
+      "Four in a row, in any direction, wins.",
+      "Making exactly three of your own in a row loses on the spot, unless the same stone makes four.",
+      "The board is small, so every stone narrows what you can safely play next.",
+    ],
+    board: "5×5.",
+  },
+  squareFour: {
+    label: "Square Four",
+    kanji: "四角四目",
+    tagline: "Four pieces each. Line them up, or make a square.",
+    origin: "Our version of the place-then-slide game with a square as a second way to win.",
+    rules: [
+      "Each player has four pieces. First they are placed, one a turn; then a turn moves one of your pieces one step to an adjacent empty point, in any direction.",
+      "Four in a row, in any direction, wins. So does four of your pieces in a 2×2 square.",
+      "Both ways to win count during the placing phase as well.",
+      "Pick a piece to move, then the point it goes to.",
+    ],
+    board: "5×5.",
+  },
+  tictactoe: {
+    label: "Tic-tac-toe",
+    kanji: "三目並べ",
+    tagline: "Three in a row on a 3×3 board.",
+    origin: "The one everybody knows.",
+    rules: [
+      "Players take turns placing one stone.",
+      "Three in a row, in any direction, wins.",
+      "With sound play it is always a draw, which is the whole lesson of the game.",
+    ],
+    board: "3×3.",
+  },
 };
 
 export type OpeningCopy = {

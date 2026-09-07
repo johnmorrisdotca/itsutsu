@@ -154,4 +154,6 @@ export const MARK_STYLE: Record<
   help: { colour: "#a855f7", shape: "ring" },
   fatal: { colour: "#dc2626", shape: "cross" },
   forbidden: { colour: "#b91c1c", shape: "cross" },
+  selected: { colour: "#0ea5e9", shape: "ring" },
+  target: { colour: "#0ea5e9", shape: "dot" },
 };

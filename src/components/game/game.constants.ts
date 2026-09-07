@@ -192,6 +192,18 @@ export const GAME_COPY = {
   reviewStreak: (who: string, streak: number) =>
     `${who}'s ${ordinal(streak)} win in a row.`,
   reviewFirstWin: (who: string) => `${who}'s first recorded win.`,
+  twistPrompt: "Turn a quadrant to finish your move.",
+  pickPiece: "Pick one of your pieces to slide.",
+  placePiece: "Choose the point it slides to, or pick a different piece.",
+  dropPrompt: "Play anywhere in a column. The stone falls to the bottom.",
+  winsByTrap: (who: string, loser: string) => `${who} wins. ${loser} made three in a row.`,
+  winsBySquare: (who: string) => `${who} wins with a square`,
+  drawBothLines: "Draw. Both made a line at once.",
+  fixedBy: (game: string) => `Fixed by ${game}.`,
+  noReading: "No reading in a game where stones move after they are placed.",
+  idle: { label: "Are you still there?", kanji: "居る？" },
+  idleDetail: "Nothing has moved for a couple of minutes, so the clock is paused.",
+  idleConfirm: "Still here",
 } as const;
 
 function ordinal(n: number): string {

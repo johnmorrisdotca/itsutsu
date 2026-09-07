@@ -59,6 +59,10 @@ export type GameMove = {
   col: number;
   stone: string;
   kind: string;
+  /** Where a sliding piece came from, on `move` kinds. */
+  from?: { row: number; col: number };
+  /** The quarter turn that finished the move, in the twist games. */
+  twist?: { quadrant: number; clockwise: boolean };
 };
 
 /** An emoji one player sent the other, as the shared game page shows it. */

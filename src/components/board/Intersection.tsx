@@ -53,6 +53,7 @@ export function Intersection({
   isLast,
   isWinning,
   ghost,
+  clickable = false,
   moveNumber,
   mark,
   stones,
@@ -60,7 +61,7 @@ export function Intersection({
   readOnly,
   onPlay,
 }: IntersectionProps) {
-  const playable = !readOnly && cell === null && ghost !== null;
+  const playable = !readOnly && ((cell === null && ghost !== null) || clickable);
 
   return (
     <button

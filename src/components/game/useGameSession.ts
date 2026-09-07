@@ -9,9 +9,14 @@ import {
   canSwapSeats,
   chooseColour as engineChooseColour,
   extendOpening as engineExtendOpening,
+  cellAt,
+  inMovePhase,
   isLegalMove,
+  movePiece,
+  pieceMoves,
   playMove,
   seatToPlay,
+  twistBoard,
   skipMove,
   swapSeats,
   winOnTime,
@@ -67,7 +72,7 @@ import type {
  */
 export function useGameSession(
   initial: Partial<GameSettings> = {},
-  { persist = false }: { persist?: boolean } = {},
+  { persist = false, paused = false }: { persist?: boolean; paused?: boolean } = {},
 ) {
   /*
    * Restored in the initialiser rather than an effect. The component that
@@ -124,8 +129,8 @@ export function useGameSession(
   const clock = useGameClock({
     control,
     seatToPlay: seatToPlay(state),
-    // A clock stops while the game is over or the record is being reviewed.
-    running: state.status === GAME_STATUS.playing && atLatest,
+    // A clock stops while the game is over, the record is being reviewed, or nobody is there.
+    running: state.status === GAME_STATUS.playing && atLatest && !paused,
     onFlag: handleFlag,
   });
 
@@ -139,11 +144,15 @@ export function useGameSession(
     saveSnapshot(toSnapshot(state, appearance, settings, names, hintsLeft, stats));
   }, [appearance, hintsLeft, names, persist, settings, state, stats]);
 
+  const [selected, setSelected] = useState<Point | null>(null);
+
   const commit = useCallback(
     (next: typeof state) => {
       if (next === state) return;
 
-      const played = next.moves[next.moves.length - 1];
+      // A twist finishes the move already recorded; only a new entry is a new stone.
+      const played =
+        next.moves.length > state.moves.length ? next.moves[next.moves.length - 1] : undefined;
       const seat = seatToPlay(state);
       const fatal = findFatalMove(assessment, assess(next), next);
 
@@ -190,9 +199,41 @@ export function useGameSession(
         setPendingBranch(point);
         return;
       }
+      /*
+       * The sliding games: once every piece is down, the first click picks a
+       * piece up and the second puts it down. Clicking another of your own
+       * pieces changes your mind; clicking the same one puts it back.
+       */
+      if (inMovePhase(state)) {
+        const lands =
+          selected !== null &&
+          pieceMoves(state, selected).some((to) => to.row === point.row && to.col === point.col);
+        if (lands && selected !== null) {
+          setSelected(null);
+          commit(movePiece(state, selected, point));
+          return;
+        }
+        if (cellAt(state, point) === state.toPlay) {
+          setSelected(
+            selected !== null && selected.row === point.row && selected.col === point.col
+              ? null
+              : point,
+          );
+        }
+        return;
+      }
       commit(playMove(state, point));
     },
-    [commit, helpRequest, reviewing, settings.historyMode, state],
+    [commit, helpRequest, reviewing, selected, settings.historyMode, state],
+  );
+
+  /** Finishes a move in the twist games by turning one quadrant. */
+  const twist = useCallback(
+    (quadrant: number, clockwise: boolean) => {
+      if (reviewing) return;
+      commit(twistBoard(state, quadrant, clockwise));
+    },
+    [commit, reviewing, state],
   );
 
   const confirmBranch = useCallback(() => {
@@ -232,6 +273,7 @@ export function useGameSession(
 
   const reset = useCallback((next: Partial<GameSettings> = {}) => {
     if (persist) clearSnapshot();
+    setSelected(null);
 
     const gameSettings = { ...timeline[0].settings, ...next };
     // A new variant brings its own line length unless one was asked for.
@@ -351,6 +393,7 @@ export function useGameSession(
     reviewing,
     boardReadOnly:
       reviewing && settings.historyMode !== HISTORY_MODES.branch,
+    selected,
     pendingBranch,
     branchDiscards: timeline.length - 1 - index,
   };
@@ -368,6 +411,7 @@ export function useGameSession(
     swap,
     chooseColour,
     extendOpening,
+    twist,
     askHint,
     grantHint,
     requestHelp,

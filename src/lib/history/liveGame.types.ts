@@ -1,4 +1,13 @@
-import type { Handicap } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, Point } from "@/lib/gomoku/gomoku.types";
+
+/**
+ * What a client may send as a move: a stone, a sliding piece, or the quarter
+ * turn that finishes a stone in the twist games.
+ */
+export type MoveRequest =
+  | { kind: "place"; row: number; col: number }
+  | { kind: "move"; row: number; col: number; from: Point }
+  | { kind: "twist"; quadrant: number; clockwise: boolean };
 import type { GameDetail } from "./gameHistory.types";
 
 /** The rules a shared game is created with, and may change before move one. */

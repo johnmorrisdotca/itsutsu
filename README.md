@@ -85,6 +85,34 @@ the stones are the same wherever the rules said they had to go. Shared games
 between two devices start with the free opening, because a seat token is a
 colour and a swap would move the colour between devices.
 
+### Five more games, and tic-tac-toe
+
+The same board and engine also play games that are not gomoku. Each is a row
+in `VARIANT_SPECS` like the others, with its own board size pinned, and the
+settings it fixes are shown greyed rather than hidden, so the rules stay
+visible.
+
+| Game | What it is | Rules it pins |
+| --- | --- | --- |
+| **Drop Four** 落とし四目 | Play anywhere in a column and the stone falls to the bottom, as if the board were upright and magnetic. Four wins. | 7×7 or 9×9, four in a row |
+| **Twist Five** 回し五目 | Place a stone, then turn one of four 3×3 quadrants a quarter. Five anywhere wins after the turn; five for both is a draw. | 6×6, five |
+| **Twist Four** 回し四目 | The small twist game on four 2×2 quadrants. | 4×4, four |
+| **Trap Three** 罠三 | Four in a row wins; making exactly three of your own loses on the spot. | 5×5, four |
+| **Square Four** 四角四目 | Four pieces each: place them, then slide one a step per turn. A line or a 2×2 square wins. | 5×5, four |
+| **Tic-tac-toe** 三目並べ | Three in a row. | 3×3, three |
+
+Twists and slides are part of the record: a twist is stored on the stone it
+finishes, a slide stores where the piece came from, and a replay reproduces
+both. The threat reading is switched off for the twist and sliding games,
+because a line-by-line reading of a board whose stones move says nothing true.
+
+### Are you still there?
+
+If nothing has moved for two minutes during a game with a clock, a modal dims
+the page and pauses the clock until someone taps it. Listening costs nothing:
+each pointer, key or touch event only writes the time into a ref, and a timer
+compares it with the clock once a minute.
+
 ### Handicaps
 
 A handicap gives one colour the rules of a harder game while the other plays

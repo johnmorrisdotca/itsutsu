@@ -11,6 +11,7 @@ import type {
   GameDetail,
   GameHistoryPage,
   GameHistoryQuery,
+  GameMove,
   GameMovesPage,
   GameResult,
   GameSummary,
@@ -39,6 +40,39 @@ const SUMMARY_SELECT = {
 } as const;
 
 type SummaryRow = Prisma.GameGetPayload<{ select: typeof SUMMARY_SELECT }>;
+
+/** A move row, with the columns a slide or a twist fills in. */
+const MOVE_SELECT = {
+  number: true,
+  row: true,
+  col: true,
+  stone: true,
+  kind: true,
+  fromRow: true,
+  fromCol: true,
+  twistQuadrant: true,
+  twistClockwise: true,
+} as const;
+
+type MoveRow = Prisma.MoveGetPayload<{ select: typeof MOVE_SELECT }>;
+
+/** Nullable columns become the optional fields the engine reads. */
+export function toGameMove(row: MoveRow): GameMove {
+  const move: GameMove = {
+    number: row.number,
+    row: row.row,
+    col: row.col,
+    stone: row.stone,
+    kind: row.kind,
+  };
+  if (row.fromRow !== null && row.fromCol !== null) {
+    move.from = { row: row.fromRow, col: row.fromCol };
+  }
+  if (row.twistQuadrant !== null && row.twistClockwise !== null) {
+    move.twist = { quadrant: row.twistQuadrant, clockwise: row.twistClockwise };
+  }
+  return move;
+}
 
 function toSummary(row: SummaryRow): GameSummary {
   return {
@@ -107,7 +141,7 @@ export async function fetchGameDetail(id: string): Promise<GameDetail | null> {
       ...SUMMARY_SELECT,
       moves: {
         orderBy: { number: "asc" },
-        select: { number: true, row: true, col: true, stone: true, kind: true },
+        select: MOVE_SELECT,
       },
       reactions: {
         orderBy: { createdAt: "desc" },
@@ -121,7 +155,7 @@ export async function fetchGameDetail(id: string): Promise<GameDetail | null> {
   const { moves, reactions, ...summary } = game;
   return {
     ...toSummary(summary),
-    moves,
+    moves: moves.map(toGameMove),
     reactions: reactions
       .map((reaction) => ({ ...reaction, createdAt: reaction.createdAt.toISOString() }))
       .reverse(),
@@ -138,15 +172,15 @@ export async function fetchGameMovesPage(
 
   const total = await prisma.move.count({ where: { gameId: id } });
   const pagination = paginate(total, { page, pageSize });
-  const items = await prisma.move.findMany({
+  const rows = await prisma.move.findMany({
     where: { gameId: id },
     orderBy: { number: "asc" },
     skip: (pagination.page - 1) * pagination.pageSize,
     take: pagination.pageSize,
-    select: { number: true, row: true, col: true, stone: true, kind: true },
+    select: MOVE_SELECT,
   });
 
-  return { pagination, items };
+  return { pagination, items: rows.map(toGameMove) };
 }
 
 /** True when a game existed and was removed; false when there was nothing there. */

@@ -13,7 +13,7 @@ export const BUTTON_STRONG =
   "border-transparent bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white";
 
 export const SELECT_CLASS =
-  "rounded-lg border border-zinc-300/80 bg-white/70 px-2 py-1 text-sm text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-100";
+  "rounded-lg border border-zinc-300/80 bg-white/70 px-2 py-1 text-sm text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:cursor-not-allowed disabled:opacity-55 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-100";
 
 export const INPUT_CLASS =
   "w-full rounded-lg border border-zinc-300/80 bg-white/70 px-2.5 py-1.5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-sky-400 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-100";

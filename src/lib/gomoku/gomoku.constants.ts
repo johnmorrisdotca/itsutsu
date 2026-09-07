@@ -11,6 +11,7 @@ import type {
   ObstacleLayout,
   OpeningRule,
   OpeningStage,
+  Placement,
   Point,
   RuleVariant,
   Seat,
@@ -39,6 +40,12 @@ export const RULE_VARIANTS = {
   caro: "caro",
   ninuki: "ninuki",
   connect6: "connect6",
+  tictactoe: "tictactoe",
+  trapThree: "trapThree",
+  dropFour: "dropFour",
+  twistFive: "twistFive",
+  twistFour: "twistFour",
+  squareFour: "squareFour",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 /** The variants in the order the browser and the filters list them. */
@@ -50,7 +57,18 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.caro,
   RULE_VARIANTS.ninuki,
   RULE_VARIANTS.connect6,
+  RULE_VARIANTS.dropFour,
+  RULE_VARIANTS.twistFive,
+  RULE_VARIANTS.twistFour,
+  RULE_VARIANTS.trapThree,
+  RULE_VARIANTS.squareFour,
+  RULE_VARIANTS.tictactoe,
 ] as const satisfies readonly RuleVariant[];
+
+export const PLACEMENTS = {
+  free: "free",
+  drop: "drop",
+} as const satisfies Record<Placement, Placement>;
 
 export const OPENING_RULES = {
   free: "free",
@@ -86,6 +104,8 @@ export const WIN_REASONS = {
   line: "line",
   captures: "captures",
   time: "time",
+  trap: "trap",
+  square: "square",
 } as const satisfies Record<WinReason, WinReason>;
 
 export const OPENING_STAGES = {
@@ -152,6 +172,8 @@ const GOMOKU_OPENINGS: readonly OpeningRule[] = [
   OPENING_RULES.swap2,
 ];
 
+const FREE_ONLY: readonly OpeningRule[] = [OPENING_RULES.free];
+
 function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return {
     lineRule: { black: LINE_RULES.atLeast, white: LINE_RULES.atLeast },
@@ -162,8 +184,20 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     winLength: WIN_LENGTH,
     allowFirstPlayerChoice: false,
     openings: GOMOKU_OPENINGS,
+    placement: PLACEMENTS.free,
+    loseLength: null,
+    quadrantSize: null,
+    pieces: null,
+    squareWins: false,
+    boardSizes: null,
+    analysis: true,
     ...overrides,
   };
+}
+
+/** The games that are not gomoku: a small board of their own and no opening protocol. */
+function small(overrides: Partial<VariantSpec> & { boardSizes: readonly number[] }): VariantSpec {
+  return plain({ allowFirstPlayerChoice: true, openings: FREE_ONLY, ...overrides });
 }
 
 /**
@@ -197,7 +231,24 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     allowFirstPlayerChoice: true,
     openings: [OPENING_RULES.free],
   }),
+  tictactoe: small({ winLength: 3, boardSizes: [3] }),
+  trapThree: small({ winLength: 4, loseLength: 3, boardSizes: [5] }),
+  dropFour: small({ winLength: 4, placement: PLACEMENTS.drop, boardSizes: [7, 9] }),
+  twistFive: small({ winLength: 5, quadrantSize: 3, boardSizes: [6], analysis: false }),
+  twistFour: small({ winLength: 4, quadrantSize: 2, boardSizes: [4], analysis: false }),
+  squareFour: small({
+    winLength: 4,
+    pieces: 4,
+    squareWins: true,
+    boardSizes: [5],
+    analysis: false,
+  }),
 };
+
+/** The board sizes a variant plays on. */
+export function boardSizesFor(variant: RuleVariant): readonly number[] {
+  return VARIANT_SPECS[variant].boardSizes ?? BOARD_SIZES;
+}
 
 export const GAME_STATUS = {
   playing: "playing",
@@ -208,6 +259,7 @@ export const GAME_STATUS = {
 export const MOVE_KINDS = {
   place: "place",
   skip: "skip",
+  move: "move",
 } as const satisfies Record<MoveKind, MoveKind>;
 
 export const SEATS = {
@@ -259,10 +311,18 @@ export const OBSTACLE_LAYOUT_DISPLAY: Record<
 /** Board is `size` × `size`. The mini boards make for much shorter games. */
 export const BOARD_SIZES = [9, 13, 15, 19] as const;
 
+/** Every size any game here is played on, for the schemas at the API edge. */
+export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 9, 13, 15, 19] as const;
+
 export const BOARD_SIZE_DISPLAY: Record<
   number,
   { label: string; kanji: string; note: string }
 > = {
+  3: { label: "Three", kanji: "三路", note: "Tic-tac-toe" },
+  4: { label: "Four", kanji: "四路", note: "Twist Four" },
+  5: { label: "Five", kanji: "五路", note: "Trap Three, Square Four" },
+  6: { label: "Six", kanji: "六路", note: "Twist Five" },
+  7: { label: "Seven", kanji: "七路", note: "Drop Four" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },
   13: { label: "Medium", kanji: "中盤", note: "Shorter game" },
   15: { label: "Standard", kanji: "正盤", note: "Tournament size" },

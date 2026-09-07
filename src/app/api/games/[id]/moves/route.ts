@@ -59,10 +59,17 @@ export async function GET(
   }
 }
 
+const coordinate = z.number().int().min(0).max(64);
+
+/** A stone, a sliding piece, or the twist that finishes a stone. */
 const playSchema = z.object({
   token: z.string().min(1).max(128),
-  row: z.number().int().min(0).max(64),
-  col: z.number().int().min(0).max(64),
+  row: coordinate.optional(),
+  col: coordinate.optional(),
+  from: z.object({ row: coordinate, col: coordinate }).optional(),
+  twist: z
+    .object({ quadrant: z.number().int().min(0).max(15), clockwise: z.boolean() })
+    .optional(),
 });
 
 /** Each refusal has one honest status code; none of them leak whose turn it is. */
@@ -107,10 +114,17 @@ export async function POST(
     if (!parsed.success) return badRequest("Invalid move.");
 
     const { id } = await ctx.params;
-    const outcome = await appendMove(id, parsed.data.token, {
-      row: parsed.data.row,
-      col: parsed.data.col,
-    });
+    const { token, row, col, from, twist } = parsed.data;
+    const move =
+      twist !== undefined
+        ? { kind: "twist" as const, ...twist }
+        : row !== undefined && col !== undefined
+          ? from !== undefined
+            ? { kind: "move" as const, row, col, from }
+            : { kind: "place" as const, row, col }
+          : null;
+    if (move === null) return badRequest("Invalid move.");
+    const outcome = await appendMove(id, token, move);
 
     if (!outcome.ok) {
       return NextResponse.json(

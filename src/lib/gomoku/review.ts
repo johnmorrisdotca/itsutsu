@@ -59,9 +59,12 @@ export function reviewAcrossVariants(state: GameState): ReviewNote[] {
   for (const variant of RULE_VARIANT_LIST) {
     if (variant === settings.variant) continue;
     const spec = VARIANT_SPECS[variant];
-    // A different rhythm of turns or length of line is a different game entirely.
+    // A different rhythm of turns, length of line or way of moving is a different game entirely.
     if (spec.stonesPerTurn !== own.stonesPerTurn) continue;
     if ((spec.winLength ?? settings.winLength) !== settings.winLength) continue;
+    if (spec.placement !== own.placement || spec.quadrantSize !== own.quadrantSize) continue;
+    if (spec.pieces !== own.pieces || spec.loseLength !== own.loseLength) continue;
+    if (spec.boardSizes !== null && !spec.boardSizes.includes(settings.size)) continue;
 
     const note = firstDivergence(state, variant);
     if (note !== null) notes.push(note);
