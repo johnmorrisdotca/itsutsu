@@ -8,6 +8,8 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { rulesFor } from "@/lib/gomoku/engine";
 import { GAME_STATUS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { GAME_COPY } from "@/components/game/game.constants";
+import type { ReactionEmoji } from "@/lib/history/reactions.constants";
+import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -88,6 +90,19 @@ export function SharedGame({
     await mutate((await response.json()) as GameDetail, { revalidate: false });
   }
 
+  /** Sends an emoji to the other player. Refusals are quiet: it is only a wave. */
+  async function react(emoji: ReactionEmoji, moveNumber: number | null) {
+    if (token === null) return;
+    const response = await fetch(`/api/games/${detail.id}/reactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, emoji, moveNumber }),
+    });
+    if (response.ok) {
+      await mutate((await response.json()) as GameDetail, { revalidate: false });
+    }
+  }
+
   return (
     <div className="flex w-full flex-col gap-4">
       <TurnBanner
@@ -117,12 +132,23 @@ export function SharedGame({
         </p>
       ) : null}
 
+      <ReactionBubbles reactions={detail.reactions ?? []} yourStone={seat} />
+
       <Board
         state={state}
         appearance={DEFAULT_APPEARANCE}
         readOnly={!playable}
         onPlay={play}
       />
+
+      {seat !== null && token !== null ? (
+        <ReactionBar
+          lastMove={state.moves.length > 0 ? state.moves.length : null}
+          disabled={false}
+          onSend={react}
+        />
+      ) : null}
+      <ReactionLog reactions={detail.reactions ?? []} />
     </div>
   );
 }

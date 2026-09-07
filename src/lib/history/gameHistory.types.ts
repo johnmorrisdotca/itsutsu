@@ -61,8 +61,19 @@ export type GameMove = {
   kind: string;
 };
 
+/** An emoji one player sent the other, as the shared game page shows it. */
+export type GameReaction = {
+  id: string;
+  stone: string;
+  emoji: string;
+  moveNumber: number | null;
+  createdAt: string;
+};
+
 export type GameDetail = GameSummary & {
   moves: GameMove[];
+  /** The most recent reactions, newest last. */
+  reactions: GameReaction[];
 };
 
 /** The envelope every paged endpoint returns. */

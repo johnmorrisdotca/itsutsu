@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS } from "./gameHistory.constants";
 import { parseHandicap } from "./gameSettingsSchema";
+import { REACTIONS_KEPT } from "./reactions.constants";
 import type {
   GameDetail,
   GameHistoryPage,
@@ -108,12 +109,23 @@ export async function fetchGameDetail(id: string): Promise<GameDetail | null> {
         orderBy: { number: "asc" },
         select: { number: true, row: true, col: true, stone: true, kind: true },
       },
+      reactions: {
+        orderBy: { createdAt: "desc" },
+        take: REACTIONS_KEPT,
+        select: { id: true, stone: true, emoji: true, moveNumber: true, createdAt: true },
+      },
     },
   });
 
   if (game === null) return null;
-  const { moves, ...summary } = game;
-  return { ...toSummary(summary), moves };
+  const { moves, reactions, ...summary } = game;
+  return {
+    ...toSummary(summary),
+    moves,
+    reactions: reactions
+      .map((reaction) => ({ ...reaction, createdAt: reaction.createdAt.toISOString() }))
+      .reverse(),
+  };
 }
 
 export async function fetchGameMovesPage(
