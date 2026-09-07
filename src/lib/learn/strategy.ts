@@ -28,7 +28,7 @@ export const GUIDES: readonly Guide[] = [
     title: "Five in a row, from the first stone",
     kanji: "五目の基本",
     summary: "Threats, shapes and tempo: the ideas every gomoku family game is built on.",
-    variants: ["freestyle", "standard", "renju", "omok", "caro", "ninuki", "dominoFive", "blockFive", "misereFive"],
+    variants: ["freestyle", "standard", "renju", "omok", "caro", "ninuki", "dominoFive", "blockFive", "misereFive", "toroidalFive", "obstacleFive"],
     sections: [
       {
         heading: "The game is about threats, not lines",

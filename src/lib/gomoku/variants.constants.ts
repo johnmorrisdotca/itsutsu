@@ -179,6 +179,35 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "19×19 is the standard board. 15×15 gives a shorter game.",
   },
+  toroidalFive: {
+    label: "Toroidal Five",
+    kanji: "輪王五目",
+    tagline: "Five in a row on a board with no edges: every side joins its opposite.",
+    origin:
+      "Our own game. Gomoku wrapped onto a torus, so the board has a middle everywhere and a corner nowhere.",
+    rules: [
+      "Five in a row wins, as in freestyle.",
+      "The left and right edges join, and so do the top and bottom: a line running off one side continues from the other.",
+      "Every intersection is therefore a centre intersection. There are no corners to hide in and no edge to shut a line against.",
+      "A line still has to be five distinct stones — a run cannot wrap the whole way round and meet itself.",
+    ],
+    board: "15×15 by default. A smaller board makes the wrapping easier to see.",
+  },
+  obstacleFive: {
+    label: "Obstacle Five",
+    kanji: "石場五目",
+    tagline: "Five in a row across a board scattered with dead squares and hotspots.",
+    origin:
+      "Our own game. The dead squares and hotspots of the drop family, on a board where stones stay where they are put.",
+    rules: [
+      "Five in a row wins.",
+      "Six squares are dead: no stone may be played there, and no line runs through them.",
+      "Two squares are hotspots, which count as a stone of either colour. A line may run through one.",
+      "Because a hotspot serves both sides, a stone that completes the other colour's five through one loses on the spot.",
+      "The squares are drawn from the game's seed, so both players see the same board and a replay lands them in the same places.",
+    ],
+    board: "15×15 by default; the same eight squares are scattered whatever the size.",
+  },
   dropFour: {
     label: "Drop Four",
     kanji: "落とし四目",

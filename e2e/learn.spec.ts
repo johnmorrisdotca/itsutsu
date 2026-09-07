@@ -5,7 +5,7 @@ test.describe("rules and learning", () => {
   test("every game has a rules page in the same template", async ({ page }) => {
     await page.goto("/rules");
     const index = page.getByTestId("rules-index");
-    await expect(index.getByRole("link")).toHaveCount(27);
+    await expect(index.getByRole("link")).toHaveCount(29);
     await expect(page.getByTestId("rules-attribution")).toContainText("trademark");
 
     await page.getByRole("link", { name: /Hot Drop/ }).click();

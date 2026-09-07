@@ -120,7 +120,9 @@ export type RuleVariant =
   | "misereFive"
   | "makerBreaker"
   | "wildTicTacToe"
-  | "notakto";
+  | "notakto"
+  | "toroidalFive"
+  | "obstacleFive";
 
 /**
  * Where a stone goes when played. `free`: where it was put. `drop`: it slides
@@ -196,6 +198,9 @@ export type OpeningState = {
  * One rule set, as data. The engine consults this and never the variant's
  * name, so adding a variant is a matter of adding a row.
  */
+/** Which edges of the board join up: a plane, a cylinder, or a torus. */
+export type WrapMode = "none" | "columns" | "both";
+
 export type VariantSpec = {
   /** Per colour, because renju lets white win with an overline and not black. */
   lineRule: Record<Stone, LineRule>;
@@ -223,8 +228,13 @@ export type VariantSpec = {
   boardSizes: readonly number[] | null;
   /** Whether the threat reading means anything; off where stones move after placing. */
   analysis: boolean;
-  /** The left and right edges join, so a line may run off one side and onto the other. */
-  wrap: boolean;
+  /**
+   * Which edges join. `columns` is a cylinder — left meets right; `both` is a
+   * torus, where top meets bottom as well. A mode rather than two booleans
+   * because "rows wrap but columns do not" is the same cylinder turned on its
+   * side, and there is no reason for the type to allow two ways to say it.
+   */
+  wrap: WrapMode;
   /** Squares taken out of play at random when the game starts. */
   deadSquares: number;
   /** Squares that count as either colour's stone, placed at random when the game starts. */

@@ -74,7 +74,10 @@ export function runWinsIndependently(
     case "wildTicTacToe":
     case "notakto":
       return length >= winLength;
-    // Five or more in a row, as freestyle.
+    // Five or more in a row, as freestyle. The torus and the obstacle board
+    // change where a line may run, not how long it has to be.
+    case "toroidalFive":
+    case "obstacleFive":
     case "ninuki":
     case "freestyle":
     default:
@@ -100,9 +103,14 @@ const SCAN_DIRECTIONS: Point[] = [
   { row: 1, col: -1 },
 ];
 
-/** The ring game joins the left and right edges; nothing else wraps. Restated by hand. */
-export function wrapsColumns(variant: string): boolean {
-  return variant === "ringDrop";
+/**
+ * Which edges a variant joins, restated by hand: the ring game is a cylinder,
+ * the toroidal game a torus, everything else a plain board.
+ */
+export function wrapsOf(variant: string): "none" | "columns" | "both" {
+  if (variant === "ringDrop") return "columns";
+  if (variant === "toroidalFive") return "both";
+  return "none";
 }
 
 /**
@@ -125,13 +133,16 @@ function wormPairs(board: Cell[]): Map<number, number> {
 
 export function bruteForceWinner(board: Cell[], settings: GameSettings): Stone | null {
   const { size } = settings;
-  const wrap = wrapsColumns(settings.variant);
+  const wrap = wrapsOf(settings.variant);
   const worms = settings.variant === "wormDrop" ? wormPairs(board) : new Map<number, number>();
+  const fold = (n: number) => ((n % size) + size) % size;
   const at = (row: number, col: number): Cell | "edge" => {
-    const c = wrap ? ((col % size) + size) % size : col;
-    return row < 0 || row >= size || c < 0 || c >= size
+    // Columns fold on a cylinder and a torus; rows only on a torus.
+    const c = wrap === "none" ? col : fold(col);
+    const r = wrap === "both" ? fold(row) : row;
+    return r < 0 || r >= size || c < 0 || c >= size
       ? "edge"
-      : board[indexOf(size, { row, col: c })];
+      : board[indexOf(size, { row: r, col: c })];
   };
   /*
    * Where a step lands after passing through a wormhole mouth: the cell past
@@ -154,9 +165,15 @@ export function bruteForceWinner(board: Cell[], settings: GameSettings): Stone |
       const colours: Stone[] = isStone(cell) ? [cell] : ["black", "white"];
 
       for (const stone of colours) for (const step of SCAN_DIRECTIONS) {
-        // Only measure from the start of a run, so each run is counted once.
-        if (matches(at(row - step.row, col - step.col), stone) && !wrap) continue;
-        if (wrap && matches(at(row - step.row, col - step.col), stone) && step.row !== 0) continue;
+        /*
+         * On a plain board, only measure from the start of a run so each run
+         * is counted once. Where edges join there may be no start at all — a
+         * run can circle the board — so every cell is a starting point and a
+         * run is simply measured forwards. That reaches the same answer for
+         * "is there a winning run", which is all this is asked, and it is the
+         * honest way to say "a wrapped run has no beginning".
+         */
+        if (wrap === "none" && matches(at(row - step.row, col - step.col), stone)) continue;
 
         let length = 0;
         let [r, c] = [row, col];

@@ -53,6 +53,8 @@ a new game with those rules.
 | **Connect6** 六子棋 | Black opens with one stone, then two stones a turn. Six in a row wins. |  |
 | **Sannuki-renju** 三抜き連珠 | Ninuki-renju where a flanked triple is captured as well as a pair. Fifteen stones win; so does five in a row. Our name for the pair-and-triple rule. | Keryo-Pente |
 | **Misère Five** 逆五目 | Five in a row loses. A full board goes to the opener. |  |
+| **Toroidal Five** 輪王五目 | Five in a row on a board with no edges: left joins right and top joins bottom, so a line may run off any side and continue from the far one. Every intersection is a centre one. |  |
+| **Obstacle Five** 石場五目 | Five in a row across six dead squares nothing can use and two hotspots that count as either colour. Drawn from the game's seed, so both players see the same board. |  |
 
 Each is a row of data in `VARIANT_SPECS` — the line rule per colour, the
 shapes each colour is forbidden, whether stones capture, stones per turn, a

@@ -82,7 +82,14 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   }
   if (spec.deadSquares > 0) board.push(`${spec.deadSquares === 1 ? "One square" : `${spec.deadSquares} squares`}, chosen at random when the game starts, ${spec.deadSquares === 1 ? "is" : "are"} dead: nothing can land there and no line runs through.`);
   if (spec.hotSquares > 0) board.push(`${spec.hotSquares === 1 ? "One square" : `${spec.hotSquares} squares`}, chosen at random, ${spec.hotSquares === 1 ? "is" : "are"} a hotspot that counts as either colour's stone.`);
-  if (spec.wrap) board.push("The left and right edges join, so a line may run off one side and onto the other.");
+  if (spec.wrap === "columns") {
+    board.push("The left and right edges join, so a line may run off one side and onto the other.");
+  }
+  if (spec.wrap === "both") {
+    board.push(
+      "Every edge joins its opposite: left to right and top to bottom. A line running off any side continues from the far one, so the board has a middle everywhere and a corner nowhere.",
+    );
+  }
   if (spec.wormholes > 0) board.push("Two squares, chosen at random when the game starts, are the mouths of a wormhole. Nothing can land on a mouth, and a line that reaches one continues from the other in the same direction.");
   if (spec.pieces !== null) board.push(`Each player has ${spec.pieces} pieces.`);
   if (spec.queue !== null) {

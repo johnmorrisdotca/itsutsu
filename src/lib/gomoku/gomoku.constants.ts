@@ -1,4 +1,5 @@
 import type {
+  WrapMode,
   Blocked,
   FirstPlayer,
   Hot,
@@ -70,7 +71,15 @@ export const RULE_VARIANTS = {
   makerBreaker: "makerBreaker",
   wildTicTacToe: "wildTicTacToe",
   notakto: "notakto",
+  toroidalFive: "toroidalFive",
+  obstacleFive: "obstacleFive",
 } as const satisfies Record<RuleVariant, RuleVariant>;
+
+export const WRAP_MODES = {
+  none: "none",
+  columns: "columns",
+  both: "both",
+} as const satisfies Record<WrapMode, WrapMode>;
 
 export const PIECE_QUEUES = {
   domino: "domino",
@@ -94,6 +103,8 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.sannuki,
   RULE_VARIANTS.connect6,
   RULE_VARIANTS.misereFive,
+  RULE_VARIANTS.toroidalFive,
+  RULE_VARIANTS.obstacleFive,
   RULE_VARIANTS.makerBreaker,
   RULE_VARIANTS.dominoFive,
   RULE_VARIANTS.blockFive,
@@ -246,7 +257,7 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     squareWins: false,
     boardSizes: null,
     analysis: true,
-    wrap: false,
+    wrap: WRAP_MODES.none,
     deadSquares: 0,
     hotSquares: 0,
     lineClear: false,
@@ -336,8 +347,29 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   }),
   tictactoe: small({ winLength: 3, boardSizes: [3] }),
   trapThree: small({ winLength: 4, loseLength: 3, boardSizes: [5] }),
+  /*
+   * A torus: both pairs of edges join, so every intersection is a middle one
+   * and no line can be shut down by running out of board.
+   */
+  toroidalFive: plain({
+    winLength: null,
+    allowFirstPlayerChoice: true,
+    wrap: WRAP_MODES.both,
+    openings: FREE_ONLY,
+  }),
+  /*
+   * Dead squares and hotspots scattered by the seed: the same furniture the
+   * drop family uses, on a board where the stones stay where they are put.
+   */
+  obstacleFive: plain({
+    winLength: null,
+    allowFirstPlayerChoice: true,
+    openings: FREE_ONLY,
+    deadSquares: 6,
+    hotSquares: 2,
+  }),
   dropFour: drop(),
-  ringDrop: drop({ wrap: true }),
+  ringDrop: drop({ wrap: WRAP_MODES.columns }),
   holeDrop: drop({ deadSquares: 1 }),
   hotDrop: drop({ hotSquares: 1, deadSquares: 1 }),
   clearDrop: drop({ lineClear: true }),

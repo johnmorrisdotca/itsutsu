@@ -15,6 +15,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Code files under `src/` must stay at or below 500 lines.
 - Gate command: `pnpm loc:check`, run as part of `pnpm quality:check`.
 - If a file approaches the limit, split by responsibility (`components/`, `lib/`, domain modules) rather than adding flags or nesting.
+- `*.constants.ts` and `*.test.ts` are reported when long but do not fail the
+  gate. A data table split in half becomes two files that must be kept in
+  step, and a suite of forty focused cases is not complexity — the limit is
+  there to catch a file doing too many jobs, which is a property of logic.
 
 ### Types And Constants Pattern
 

@@ -6,6 +6,7 @@ import type {
   LineRule,
   Point,
   Stone,
+  WrapMode,
 } from "../gomoku.types";
 import {
   cellAtPoint,
@@ -34,34 +35,44 @@ function joins(cell: Cell | undefined, stone: Stone): boolean {
   return cell === stone || cell === HOT;
 }
 
-/** How a line travels beyond plain steps: wrapping columns, and wormhole pairs. */
+/** How a line travels beyond plain steps: joined edges, and wormhole pairs. */
 export type LineWorld = {
-  wrap: boolean;
+  wrap: WrapMode;
   /** Board index of each wormhole mouth to its partner. */
   links: ReadonlyMap<number, number>;
 };
 
-const PLAIN: LineWorld = { wrap: false, links: new Map() };
+const PLAIN: LineWorld = { wrap: "none", links: new Map() };
 
-function worldFor(world: boolean | LineWorld): LineWorld {
-  return typeof world === "boolean" ? { wrap: world, links: PLAIN.links } : world;
+function worldFor(world: WrapMode | LineWorld): LineWorld {
+  return typeof world === "string" ? { wrap: world, links: PLAIN.links } : world;
+}
+
+/** Brings a step back onto the board across whichever edges this world joins. */
+function rejoin(size: number, point: Point, wrap: WrapMode): Point {
+  if (wrap === "none") return point;
+  const fold = (n: number) => ((n % size) + size) % size;
+  // Columns wrap on a cylinder and a torus; rows only on a torus.
+  return {
+    row: wrap === "both" ? fold(point.row) : point.row,
+    col: fold(point.col),
+  };
 }
 
 /**
- * One step along a line. On a ring board the columns wrap, so a step off the
- * right edge arrives at the left; rows never wrap. A step onto a wormhole
- * mouth comes out of the partner mouth and takes one more step, so the
- * mouths themselves never count as cells of a line.
+ * One step along a line. On a cylinder the columns wrap, so a step off the
+ * right edge arrives at the left; on a torus the rows wrap too, and a step off
+ * the top arrives at the bottom. A step onto a wormhole mouth comes out of the
+ * partner mouth and takes one more step, so the mouths themselves never count
+ * as cells of a line.
  */
 function advance(size: number, point: Point, step: Point, world: LineWorld, board?: Cell[]): Point {
-  let next = stepFrom(point, step, 1);
-  if (world.wrap) next = { row: next.row, col: ((next.col % size) + size) % size };
+  let next = rejoin(size, stepFrom(point, step, 1), world.wrap);
   if (board !== undefined && isOnBoard(size, next) && board[indexOf(size, next)] === WORM) {
     const partner = world.links.get(indexOf(size, next));
     if (partner !== undefined) {
       const out = { row: Math.floor(partner / size), col: partner % size };
-      next = stepFrom(out, step, 1);
-      if (world.wrap) next = { row: next.row, col: ((next.col % size) + size) % size };
+      next = rejoin(size, stepFrom(out, step, 1), world.wrap);
     }
   }
   return next;
@@ -78,7 +89,7 @@ export function runFrom(
   origin: Point,
   step: Point,
   stone: Stone,
-  wrap: boolean | LineWorld = false,
+  wrap: WrapMode | LineWorld = "none",
 ): Point[] {
   const world = worldFor(wrap);
   const run: Point[] = [];
@@ -97,7 +108,7 @@ export function runThrough(
   point: Point,
   step: Point,
   stone: Stone,
-  wrap: boolean | LineWorld = false,
+  wrap: WrapMode | LineWorld = "none",
 ): Run {
   const world = worldFor(wrap);
   const back = runFrom(board, size, point, negate(step), stone, world);
