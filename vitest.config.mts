@@ -9,5 +9,8 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts"],
     environment: "node",
+    // The full-game simulations play hundreds of games; a CI runner needs
+    // longer than the five-second default for one of those files.
+    testTimeout: 60_000,
   },
 });
