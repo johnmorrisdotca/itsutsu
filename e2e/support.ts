@@ -1,3 +1,7 @@
+/** Where the signed-in cookies from `auth.setup.ts` are kept. */
+export const ADMIN_STATE = ".auth/admin.json";
+export const PLAYER_STATE = ".auth/player.json";
+
 import type { Page } from "@playwright/test";
 
 /** Column letters as the board labels them, with "I" skipped as in go. */

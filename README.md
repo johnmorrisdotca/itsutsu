@@ -270,6 +270,51 @@ is a `422` listing what was wrong.
 curl 'localhost:6600/api/games?search=aki&result=black&sortBy=moveCount&sortDir=asc&pageSize=5'
 ```
 
+## Getting in
+
+The site is closed. Every page and every API route needs a signed session
+cookie, enforced in `src/proxy.ts` before a route is reached — so a new
+endpoint is private by default rather than private only if someone remembers
+to guard it.
+
+There are two ways through the door at `/join`:
+
+| | How | Lasts |
+| --- | --- | --- |
+| **Player** | A three-word invite code | 30 days |
+| **Operator** | An address in `ADMIN_EMAILS`, plus `ADMIN_TOKEN` | 1 day |
+
+Both exchange what was typed for an HMAC-signed cookie, so neither the phrase
+nor the token is presented again or stored by the client. Set `AUTH_SECRET` to
+turn the gate on; without one it cannot verify anything and stays open, which
+is what makes local development bearable and what a deployment must not do.
+
+### Invite codes
+
+The operator mints codes from the game page. They are three ordinary Japanese
+words — `natsu-yagura-fune` — chosen so a code can be read down a phone and
+typed back correctly: no long vowels, no doubled consonants, no `n` before a
+labial, all screened by a test. Capitals, spaces and hyphens all normalise to
+the same code.
+
+Three words from 259 is about 24 bits, far less than a random id, so the safety
+is not in the phrase alone:
+
+- the redeem endpoint allows five tries a minute per address;
+- a code is revocable, and revoking beats expiry and use count alike;
+- redeeming exchanges the phrase for a cookie, so the phrase stops being the
+  credential the moment it is used.
+
+Every rejection — unknown, revoked, expired, spent — answers identically, so a
+guesser learns nothing from which one they hit.
+
+### Rate limits
+
+`src/lib/api/rateLimit.ts`, following UmaKuma. Writes are far tighter than
+reads because a write costs a database row. The store is per-instance, so
+limits are approximate under serverless fan-out; that is a deliberate trade
+against needing Redis on the hot path.
+
 ## Games played from two devices
 
 `POST /api/games/live` returns `blackToken` and `whiteToken`. There is no
@@ -288,6 +333,16 @@ is free, whether the game is still running. The unique index on
 same move number cannot both succeed.
 
 Seat pages carry `robots: noindex`, because a seat link is a credential.
+
+### Reactions
+
+Either player can send the other an emoji during the game: a cheer for a
+move, a wince, a wave. The set is fixed, so nothing a stranger types is ever
+shown to another player, and each one is tied to the move it answered.
+Reactions ride along with the game on the same poll that carries moves, float
+over the board for a few seconds, and stay in a small log underneath.
+`POST /api/games/:id/reactions` takes a seat token and one of the listed
+emoji, and is limited per seat.
 
 ### Inside a site that has its own sign-in
 

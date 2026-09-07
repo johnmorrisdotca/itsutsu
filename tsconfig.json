@@ -6,6 +6,10 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    // Node runs scripts/*.ts directly by stripping types, so an import there
+    // has to name the .ts file it means. Safe with noEmit: nothing is emitted
+    // that could carry the extension into a build.
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",

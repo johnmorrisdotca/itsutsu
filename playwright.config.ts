@@ -16,7 +16,8 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "line" : [["list"]],
-  timeout: 60_000,
+  // Generous: auth setup may wait out a rate-limit window.
+  timeout: 120_000,
   expect: { timeout: 10_000 },
   use: {
     baseURL,
@@ -24,7 +25,21 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    // Signs in once; every other project reuses the cookies it saves.
+    { name: "setup", testMatch: /auth\.setup\.ts/ },
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"], storageState: ".auth/admin.json" },
+      dependencies: ["setup"],
+      testIgnore: /gate\.spec\.ts/,
+    },
+    {
+      // The gate is only meaningful without a session, so this one has none.
+      name: "gate",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: /gate\.spec\.ts/,
+      dependencies: ["setup"],
+    },
   ],
   webServer: {
     command: `WEB_PORT=${PORT} pnpm dev`,

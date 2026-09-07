@@ -24,6 +24,12 @@ import {
   variantSchema,
 } from "@/lib/history/gameSettingsSchema";
 import { createLiveGame } from "@/lib/history/liveGame";
+import {
+  RATE_LIMITS,
+  checkRateLimit,
+  createRateLimitResponse,
+  getClientIp,
+} from "@/lib/api/rateLimit";
 
 const liveGameSchema = z.object({
   blackName: z.string().max(PLAYER_NAME_MAX).default(""),
@@ -45,6 +51,12 @@ const liveGameSchema = z.object({
  */
 export async function POST(request: Request) {
   try {
+    const limited = checkRateLimit(
+      `live:${getClientIp(request)}`,
+      RATE_LIMITS.createGame,
+    );
+    if (!limited.allowed) return createRateLimitResponse(limited);
+
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
 

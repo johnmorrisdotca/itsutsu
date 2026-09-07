@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminInvites } from "@/components/auth/AdminInvites";
 import { StartSharedGame } from "@/components/live/StartSharedGame";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { AppearancePanel } from "./AppearancePanel";
@@ -63,6 +64,9 @@ export function GameOptions({
       </div>
       <div className={PANEL_CLASS}>
         <GameStatsPanel session={props.session} />
+      </div>
+      <div className={PANEL_CLASS}>
+        <AdminInvites />
       </div>
       <div className={PANEL_CLASS}>
         <GameReviewPanel session={props.session} streaks={streaks} />

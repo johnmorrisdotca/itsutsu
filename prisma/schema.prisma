@@ -66,6 +66,7 @@ model Game {
   durationMs Int?
 
   moves     Move[]
+  reactions Reaction[]
 
   /// Listing sorts by these; a compound index covers the default ordering.
   @@index([playedAt])
@@ -89,4 +90,49 @@ model Move {
 
   @@unique([gameId, number])
   @@index([gameId, number])
+}
+
+/// An invitation to play.
+///
+/// There are no accounts, so this is how someone gets in: the operator mints a
+/// three-word code and hands it over. Redeeming exchanges the phrase once for
+/// a signed cookie, so the phrase stops being the credential the moment it is
+/// used — which is what lets it be short enough to say out loud.
+model InviteCode {
+  /// The normalised phrase, e.g. "hoshi-kuma-nami". Lowercase, hyphenated.
+  code      String    @id
+  /// The operator who minted it, for the question "who let them in".
+  createdBy String
+  createdAt DateTime  @default(now())
+  /// Null never expires.
+  expiresAt DateTime?
+  /// Zero means unlimited.
+  maxUses   Int       @default(0)
+  uses      Int       @default(0)
+  /// Revoking beats every other field; a revoked code is dead immediately.
+  revoked   Boolean   @default(false)
+  /// Free text so the operator can remember who it was for.
+  note      String    @default("")
+  lastUsedAt DateTime?
+
+  @@index([createdAt])
+  @@index([revoked, expiresAt])
+}
+
+/// An emoji one player sent the other during a shared game.
+///
+/// The emoji comes from a fixed list, never free text, so nothing a stranger
+/// types is ever shown to another player. `moveNumber` is the move it was a
+/// reaction to, or null for a general remark.
+model Reaction {
+  id         String   @id @default(cuid())
+  gameId     String
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  /// The colour that sent it.
+  stone      String
+  emoji      String
+  moveNumber Int?
+  createdAt  DateTime @default(now())
+
+  @@index([gameId, createdAt])
 }
