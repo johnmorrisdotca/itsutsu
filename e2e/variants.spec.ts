@@ -116,6 +116,6 @@ test.describe("rule variants", () => {
 
     await expect(page.getByRole("button", { name: /^C5, empty$/ })).toBeVisible();
     await expect(page.getByRole("button", { name: /^D5, empty$/ })).toBeVisible();
-    await expect(page.getByTestId("variant-line")).toContainText("Black 1");
+    await expect(page.getByTestId("variant-line")).toContainText("Black 2");
   });
 });

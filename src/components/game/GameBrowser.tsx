@@ -4,10 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { availableOpenings } from "@/lib/gomoku/engine";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import {
-  OPENING_DISPLAY,
-  RULE_VARIANT_DISPLAY,
-} from "@/lib/gomoku/variants.constants";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
@@ -131,6 +129,11 @@ function GameBrowser({
                     <p className="text-xs text-zinc-600 italic dark:text-zinc-400">
                       {copy.origin}
                     </p>
+                    {copy.inspiredBy !== undefined ? (
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400" data-testid={`inspired-${option}`}>
+                        Inspired by {copy.inspiredBy}
+                      </p>
+                    ) : null}
                     <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-zinc-700 dark:text-zinc-300">
                       {copy.rules.map((rule) => (
                         <li key={rule}>{rule}</li>

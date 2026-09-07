@@ -95,6 +95,76 @@ describe("the RIF opening", () => {
   });
 });
 
+describe("the Sakata opening", () => {
+  const sakata = { variant: RULE_VARIANTS.renju, opening: OPENING_RULES.sakata } as const;
+
+  it("starts as RIF, offers the swap, then keeps the fifth stone inside the 7×7", () => {
+    let game = play(createGame(sakata), [centre, p(6, 8), p(7, 9)]);
+    expect(game.opening.stage).toBe(OPENING_STAGES.choosing);
+    game = chooseColour(game, STONES.white);
+    expect(game.opening.stage).toBe(OPENING_STAGES.done);
+    // White's second stone goes anywhere.
+    expect(isLegalMove(game, p(0, 0))).toBe(true);
+    game = playMove(game, p(0, 0));
+    // Black's third must stay within three of tengen.
+    expect(isLegalMove(game, p(3, 3))).toBe(false);
+    expect(isLegalMove(game, p(4, 4))).toBe(true);
+    game = playMove(game, p(4, 4));
+    expect(isLegalMove(game, p(14, 14))).toBe(true);
+  });
+});
+
+describe("the Tarannikov opening", () => {
+  const tarannikov = { variant: RULE_VARIANTS.renju, opening: OPENING_RULES.tarannikov } as const;
+
+  it("nests the first five stones and offers a swap after each", () => {
+    let game = createGame(tarannikov);
+    const stones = [centre, p(6, 7), p(5, 7), p(4, 7), p(3, 7)];
+    for (const [index, stone] of stones.entries()) {
+      // Just outside the square of the moment is refused; on it is fine.
+      expect(isLegalMove(game, p(7 - index - 1, 7))).toBe(false);
+      expect(isLegalMove(game, stone)).toBe(true);
+      game = playMove(game, stone);
+      expect(game.opening.stage).toBe(OPENING_STAGES.choosing);
+      // The seat that did not lay the stone decides.
+      expect(game.opening.actor).toBe(game.seats[game.toPlay]);
+      game = chooseColour(game, game.toPlay);
+    }
+    expect(game.opening.stage).toBe(OPENING_STAGES.done);
+    expect(game.opening.choices).toHaveLength(5);
+    expect(isLegalMove(game, p(0, 0))).toBe(true);
+  });
+
+  it("swaps the seats when the decider takes the other colour, and plays on", () => {
+    let game = playMove(createGame(tarannikov), centre);
+    // Seat two, holding white, takes black: the seats exchange and white is still to move.
+    expect(game.opening.actor).toBe(SEATS.two);
+    game = chooseColour(game, STONES.black);
+    expect(game.seats[STONES.black]).toBe(SEATS.two);
+    expect(game.toPlay).toBe(STONES.white);
+    expect(seatToPlay(game)).toBe(SEATS.one);
+    expect(game.opening.stage).toBe(OPENING_STAGES.placing);
+    game = playMove(game, p(6, 7));
+    expect(game.opening.stage).toBe(OPENING_STAGES.choosing);
+    expect(game.opening.actor).toBe(SEATS.two);
+  });
+
+  it("replays a record through all five decisions", () => {
+    let game = createGame(tarannikov);
+    const stones = [centre, p(6, 7), p(5, 7), p(4, 7), p(3, 7), p(0, 0)];
+    const choices = [STONES.black, STONES.white, STONES.black, STONES.black, STONES.white];
+    for (const [index, stone] of stones.entries()) {
+      game = playMove(game, stone);
+      if (index < choices.length) game = chooseColour(game, choices[index]);
+    }
+    const timeline = replayMoves(createGame(tarannikov), game.moves, game.opening.choices);
+    const last = timeline[timeline.length - 1];
+    expect(last.board).toEqual(game.board);
+    expect(last.seats).toEqual(game.seats);
+    expect(last.opening.stage).toBe(OPENING_STAGES.done);
+  });
+});
+
 describe("swap", () => {
   it("has seat one lay three stones of alternating colour", () => {
     let game = createGame({ opening: OPENING_RULES.swap });

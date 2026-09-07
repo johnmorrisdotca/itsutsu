@@ -42,15 +42,17 @@ Every game here is a line of stones at heart. The **Games** button opens a
 browser over the board with each rule set spelled out, and picking one starts
 a new game with those rules.
 
-| Game | What changes |
-| --- | --- |
-| **Freestyle** 自由 | Five or more wins. Choose who opens, or draw lots. Line length 4, 5 or 6. |
-| **Standard** 五目 | Exactly five wins; an overline (長連) does not. Black opens. |
-| **Renju** 連珠 | Black may not make a double three (三三), double four (四四) or overline. White may, and white's overline wins. Forbidden points are marked ✕ and cannot be played. |
-| **Omok** 오목 | The double three is forbidden for both sides. Overlines win. |
-| **Caro** Cờ ca-rô | Exactly five wins, and not if an enemy stone shuts it in at both ends. |
-| **Ninuki-renju** 二抜き連珠 | Flank a pair of enemy stones to capture it. Five in a row wins, and so does capturing five pairs. |
-| **Connect6** 六子棋 | Black opens with one stone, then two stones a turn. Six in a row wins. |
+| Game | What changes | Inspired by |
+| --- | --- | --- |
+| **Freestyle** 自由 | Five or more wins. Choose who opens, or draw lots. Line length 4, 5 or 6. |  |
+| **Standard** 五目 | Exactly five wins; an overline (長連) does not. Black opens. |  |
+| **Renju** 連珠 | Black may not make a double three (三三), double four (四四) or overline. White may, and white's overline wins. Forbidden points are marked ✕ and cannot be played. |  |
+| **Omok** 오목 | The double three is forbidden for both sides. Overlines win. |  |
+| **Caro** Cờ ca-rô | Exactly five wins, and not if an enemy stone shuts it in at both ends. |  |
+| **Ninuki-renju** 二抜き連珠 | Flank a pair of enemy stones to capture it. Five in a row wins, and so does capturing five pairs. |  |
+| **Connect6** 六子棋 | Black opens with one stone, then two stones a turn. Six in a row wins. |  |
+| **Sannuki-renju** 三抜き連珠 | Ninuki-renju where a flanked triple is captured as well as a pair. Fifteen stones win; so does five in a row. Our name for the pair-and-triple rule. | Keryo-Pente |
+| **Misère Five** 逆五目 | Five in a row loses. A full board goes to the opener. |  |
 
 Each is a row of data in `VARIANT_SPECS` — the line rule per colour, the
 shapes each colour is forbidden, whether stones capture, stones per turn, a
@@ -77,6 +79,12 @@ An opening only shapes the first stones, to blunt black's first-move advantage.
 | **Swap** | Player 1 places black, white, black; Player 2 picks a colour. |
 | **Swap2** | As Swap, or Player 2 adds white and black and hands the choice back. The World Championship rule. |
 | **RIF** | Renju's classic start: tengen, then inside the 3×3, then inside the 5×5, after which white may swap. |
+| **Sakata** | The RIF start and swap; then the fifth stone must land inside the 7×7, and there is only one of it. |
+| **Tarannikov** | The first five stones land inside the 1×1, 3×3, 5×5, 7×7 and 9×9 in turn; after each, the other seat may swap. |
+
+Yamaguchi, Soosyrv-8 and Taraguchi-10, and the fifth-move pair in full RIF, all
+rest on black offering several candidate fifth moves for white to prune. That
+mechanism is not built yet; the strategy guide for renju describes each of them.
 
 A swap opening pauses the game for a decision, and the decision is a timeline
 entry like a move, so it can be taken back. Stored games keep the moves and
@@ -92,35 +100,39 @@ in `VARIANT_SPECS` like the others, with its own board size pinned, and the
 settings it fixes are shown greyed rather than hidden, so the rules stay
 visible.
 
-| Game | What it is | Rules it pins |
-| --- | --- | --- |
-| **Drop Four** 落とし四目 | Play anywhere in a column and the stone falls to the bottom, as if the board were upright and magnetic. Four wins. | 7×7 or 9×9, four in a row |
-| **Twist Five** 回し五目 | Place a stone, then turn one of four 3×3 quadrants a quarter. Five anywhere wins after the turn; five for both is a draw. | 6×6, five |
-| **Twist Four** 回し四目 | The small twist game on four 2×2 quadrants. | 4×4, four |
-| **Trap Three** 罠三 | Four in a row wins; making exactly three of your own loses on the spot. | 5×5, four |
-| **Square Four** 四角四目 | Four pieces each: place them, then slide one a step per turn. A line or a 2×2 square wins. | 5×5, four |
-| **Tic-tac-toe** 三目並べ | Three in a row. | 3×3, three |
+| Game | What it is | Rules it pins | Inspired by |
+| --- | --- | --- | --- |
+| **Drop Four** 落とし四目 | Play anywhere in a column and the stone falls to the bottom, as if the board were upright and magnetic. Four wins. | 7×7 or 9×9, four in a row | Connect Four |
+| **Twist Five** 回し五目 | Place a stone, then turn one of four 3×3 quadrants a quarter. Five anywhere wins after the turn; five for both is a draw. | 6×6, five | Pentago |
+| **Twist Four** 回し四目 | The small twist game on four 2×2 quadrants. | 4×4, four | Pentago |
+| **Trap Three** 罠三 | Four in a row wins; making exactly three of your own loses on the spot. | 5×5, four | Squava |
+| **Square Four** 四角四目 | Four pieces each: place them, then slide one a step per turn. A line or a 2×2 square wins. | 5×5, four | Teeko |
+| **Tic-tac-toe** 三目並べ | Three in a row. | 3×3, three |  |
+| **Wild tic-tac-toe** 自由三目 | Place either colour; a line of either wins for whoever completes it. | 3×3, three |  |
+| **Notakto** 黒三目 | Every stone is black; three in a row loses. | 3×3, three |  |
+| **Maker and Breaker** 作り手と壊し手 | The mover places either colour. Black, the Maker, wins on any five of one colour; white, the Breaker, wins on a full board with none. Our name for the game published as Order and Chaos. | 6×6, five | Order and Chaos |
 
 **Two games of our own**, with the same engine and a queue of pieces that
 both players share:
 
-| Game | What it is |
-| --- | --- |
-| **Domino Five** 二連五目 | Gomoku where every piece is a domino of two stones, black-black, white-white or one of each. Both players draw the same random run and see the next three. Five wins for its colour whoever laid it, so a white-white domino in black's hand is a gift to the other side. Nothing fits, and the turn passes, on the record. |
-| **Block Five** 積み五目 | The same with the seven four-square shapes, two black and two white each, rotated and flipped as you like, and six single stones of your own colour per player to fill gaps. As in a two-player falling-block match, both sides get the same sequence. |
+| Game | What it is | Inspired by |
+| --- | --- | --- |
+| **Domino Five** 二連五目 | Gomoku where every piece is a domino of two stones, black-black, white-white or one of each. Both players draw the same random run and see the next three. Five wins for its colour whoever laid it, so a white-white domino in black's hand is a gift to the other side. Nothing fits, and the turn passes, on the record. |  |
+| **Block Five** 積み五目 | The same with the seven four-square shapes, two black and two white each, rotated and flipped as you like, and six single stones of your own colour per player to fill gaps. As in a two-player falling-block match, both sides get the same sequence. | the seven Tetris shapes |
 
 **The drop family** grows six ways, each a row in the table with one flag
 set, and each with a random element fixed by a seed stored with the game so a
 replay reproduces it:
 
-| Game | The one rule that changes |
-| --- | --- |
-| **Ring Drop** 輪落とし | The left and right edges join, so a line may wrap. |
-| **Hole Drop** 穴落とし | One random square is dead: stones fall past it and no line runs through it. |
-| **Hot Drop** 熱点落とし | One random hotspot counts as either colour, and one hole counts as nothing. A stone that finishes the other side's four through the hotspot loses. |
-| **Clear Drop** 消し落とし | A full bottom row disappears and everything drops a row, as in the falling-block game. |
-| **Giveaway Drop** 譲り落とし | Making four loses. You may not play on top of the opponent's last stone while another column has room. A full board goes to the opener. |
-| **Edge Drop** 縁寄せ | Gravity from all four edges: a stone must rest on an edge or against another stone. |
+| Game | The one rule that changes | Inspired by |
+| --- | --- | --- |
+| **Ring Drop** 輪落とし | The left and right edges join, so a line may wrap. | Connect Four |
+| **Hole Drop** 穴落とし | One random square is dead: stones fall past it and no line runs through it. | Connect Four |
+| **Hot Drop** 熱点落とし | One random hotspot counts as either colour, and one hole counts as nothing. A stone that finishes the other side's four through the hotspot loses. | Connect Four |
+| **Clear Drop** 消し落とし | A full bottom row disappears and everything drops a row, as in the falling-block game. | Connect Four |
+| **Giveaway Drop** 譲り落とし | Making four loses. You may not play on top of the opponent's last stone while another column has room. A full board goes to the opener. | Connect Four |
+| **Edge Drop** 縁寄せ | Gravity from all four edges: a stone must rest on an edge or against another stone. | Connect Four |
+| **Worm Drop** 穴通し落とし | Two random squares are the mouths of a wormhole: a line that reaches one continues from the other. | Connect Four |
 
 Twists and slides are part of the record: a twist is stored on the stone it
 finishes, a slide stores where the piece came from, and a replay reproduces

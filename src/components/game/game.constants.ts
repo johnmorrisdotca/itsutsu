@@ -157,6 +157,9 @@ export const GAME_COPY = {
   opensAtTengen: "Black opens at tengen, the centre point.",
   rifWhite: "White's first stone must touch tengen, inside the central 3×3.",
   rifBlack: "Black's second stone must land inside the central 5×5.",
+  sakataFifth: "Black's third stone, the fifth move, must land inside the central 7×7.",
+  nestedStone: (laid: number) =>
+    `Stone ${laid + 1} must land inside the central ${2 * laid + 1}×${2 * laid + 1}; then the other side may swap.`,
   proBlack: "Black's second stone must land outside the central 5×5.",
   longProBlack: "Black's second stone must land outside the central 7×7.",
   captures: { label: "Captures", kanji: "取り" },

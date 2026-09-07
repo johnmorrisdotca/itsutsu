@@ -10,7 +10,10 @@ import { playSequence } from "./support";
 const OUT = "public/games";
 
 /** A short scripted position per game: enough stones to show what it looks like. */
-const SCENES: Record<string, { size: number; moves: [number, number][]; twists?: [number, boolean][] }> = {
+const SCENES: Record<
+  string,
+  { size: number; moves: [number, number][]; twists?: [number, boolean][]; colours?: ("black" | "white")[] }
+> = {
   freestyle: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6], [9, 9], [5, 5]] },
   standard: { size: 15, moves: [[7, 7], [6, 8], [8, 6], [9, 5], [8, 8], [8, 7], [6, 6]] },
   renju: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [9, 9], [10, 10], [6, 8]] },
@@ -32,6 +35,12 @@ const SCENES: Record<string, { size: number; moves: [number, number][]; twists?:
   trapThree: { size: 5, moves: [[1, 1], [3, 3], [1, 3], [3, 1]] },
   squareFour: { size: 5, moves: [[0, 0], [4, 4], [0, 1], [4, 3], [1, 0], [3, 4], [2, 2], [3, 0]] },
   tictactoe: { size: 3, moves: [[1, 1], [0, 0], [2, 2], [0, 2], [0, 1]] },
+  sannuki: { size: 19, moves: [[9, 9], [9, 10], [9, 11], [9, 12], [10, 10], [8, 8], [9, 13]] },
+  wormDrop: { size: 7, moves: [[0, 3], [0, 2], [0, 4], [0, 3], [0, 5]] },
+  misereFive: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6]] },
+  makerBreaker: { size: 6, moves: [[2, 1], [2, 2], [3, 3], [2, 3], [1, 1], [4, 4]], colours: ["black", "black", "white", "black", "white", "white"] },
+  wildTicTacToe: { size: 3, moves: [[1, 1], [0, 0], [2, 2]], colours: ["white", "black", "white"] },
+  notakto: { size: 3, moves: [[1, 1], [0, 0], [2, 1]] },
 };
 
 test.describe("game screenshots", () => {
@@ -44,6 +53,8 @@ test.describe("game screenshots", () => {
       await page.getByTestId("rules").selectOption(variant);
       // The piece games lay a piece per click; the rest a stone.
       for (const [index, [row, col]] of scene.moves.entries()) {
+        const colour = scene.colours?.[index];
+        if (colour !== undefined) await page.getByTestId(`place-${colour}`).click();
         await playSequence(page, scene.size, [[row, col]]).catch(() => {});
         const twist = scene.twists?.[index];
         if (twist !== undefined) {

@@ -5,7 +5,8 @@ test.describe("rules and learning", () => {
   test("every game has a rules page in the same template", async ({ page }) => {
     await page.goto("/rules");
     const index = page.getByTestId("rules-index");
-    await expect(index.getByRole("link")).toHaveCount(21);
+    await expect(index.getByRole("link")).toHaveCount(27);
+    await expect(page.getByTestId("rules-attribution")).toContainText("trademark");
 
     await page.getByRole("link", { name: /Hot Drop/ }).click();
     const rules = page.getByTestId("rules-page");
@@ -39,6 +40,22 @@ test.describe("rules and learning", () => {
     await page.getByRole("link", { name: /Play Twist Four/ }).click();
     await expect(page.getByTestId("rules")).toHaveValue("twistFour");
     await expect(page.getByTestId("board-size")).toHaveValue("4");
+  });
+
+  test("the lobby leads with one game and folds the rest into families", async ({ page }) => {
+    await page.goto("/lobby");
+    await expect(page.getByTestId("lobby-start")).toContainText("Start here");
+    const families = page.getByTestId("lobby-family");
+    await expect(families).toHaveCount(5);
+    // Folded until opened, so the page is short.
+    await expect(families.first().getByRole("link", { name: "play" })).toBeHidden();
+    await families.filter({ hasText: "Small boards" }).locator("summary").click();
+    await families
+      .filter({ hasText: "Small boards" })
+      .locator("li", { hasText: "Notakto" })
+      .getByRole("link", { name: "play" })
+      .click();
+    await expect(page.getByTestId("rules")).toHaveValue("notakto");
   });
 
   test("the header reaches rules, learning and players", async ({ page }) => {

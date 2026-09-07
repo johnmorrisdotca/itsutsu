@@ -14,6 +14,9 @@ export function SiteHeader() {
         <p className="text-sm tracking-[0.2em] text-muted uppercase">Gomoku</p>
       </div>
       <nav className="flex items-center gap-4 text-sm">
+        <Link href="/lobby" className="hover:underline underline-offset-4">
+          Lobby <span className="font-mincho text-muted">広間</span>
+        </Link>
         <Link href="/" className="hover:underline underline-offset-4">
           Play
         </Link>

@@ -5,10 +5,8 @@ import { useMemo } from "react";
 import { reviewAcrossVariants, type ReviewNote } from "@/lib/gomoku/review";
 import { pointName } from "@/lib/gomoku/notation";
 import { GAME_STATUS, SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import {
-  FORBIDDEN_PATTERN_DISPLAY,
-  RULE_VARIANT_DISPLAY,
-} from "@/lib/gomoku/variants.constants";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { FORBIDDEN_PATTERN_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { GameState, Seat, Stone } from "@/lib/gomoku/gomoku.types";
 import { SectionTitle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";

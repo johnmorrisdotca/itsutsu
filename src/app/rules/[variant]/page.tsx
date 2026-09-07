@@ -57,6 +57,11 @@ export default async function RulesPage({ params }: PageProps<"/rules/[variant]"
               </h1>
               <p className="text-sm font-medium">{page.tagline}</p>
               <p className="text-xs text-muted italic">{page.origin}</p>
+              {page.inspiredBy !== undefined ? (
+                <p className="text-xs text-muted" data-testid="inspired-by">
+                  Inspired by {page.inspiredBy}. The name belongs to its owner; this is our own version of the rules.
+                </p>
+              ) : null}
             </header>
             <Part title="Object" kanji="目的" lines={page.object} />
             <Part title="Board" kanji="盤" lines={page.board} />

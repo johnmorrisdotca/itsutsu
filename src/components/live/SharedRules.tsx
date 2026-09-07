@@ -8,10 +8,8 @@ import {
   OPENING_RULES,
   RULE_VARIANT_LIST,
 } from "@/lib/gomoku/gomoku.constants";
-import {
-  OPENING_DISPLAY,
-  RULE_VARIANT_DISPLAY,
-} from "@/lib/gomoku/variants.constants";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import {

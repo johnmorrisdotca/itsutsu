@@ -15,11 +15,8 @@ import {
   VARIANT_SPECS,
   WIN_REASONS,
 } from "@/lib/gomoku/gomoku.constants";
-import {
-  FORBIDDEN_PATTERN_DISPLAY,
-  HANDICAP_RULE_DISPLAY,
-  SECOND_STONE_EXCLUSION_DISPLAY,
-} from "@/lib/gomoku/variants.constants";
+import { SECOND_STONE_EXCLUSION_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { FORBIDDEN_PATTERN_DISPLAY, HANDICAP_RULE_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { StoneMark } from "@/components/board/StoneMark";
 import { STONE_SETS } from "@/components/board/Board.constants";
 import { TONE_CLASS } from "@/components/ui/ui.constants";

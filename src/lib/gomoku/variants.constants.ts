@@ -1,9 +1,4 @@
-import type {
-  ForbiddenPattern,
-  HandicapRule,
-  OpeningRule,
-  RuleVariant,
-} from "./gomoku.types";
+import type { RuleVariant } from "./gomoku.types";
 
 /**
  * What a player is told about each rule set. `tagline` fits under a select;
@@ -15,6 +10,12 @@ export type VariantCopy = {
   kanji: string;
   tagline: string;
   origin: string;
+  /**
+   * The game this one is our version of, when it is a clone of a game sold or
+   * published under another name. Absent for the traditional games and for
+   * our own inventions. The name belongs to its owner; see RULES_ATTRIBUTION.
+   */
+  inspiredBy?: string;
   rules: readonly string[];
   /** Board advice, e.g. the size the game is traditionally played on. */
   board: string;
@@ -104,6 +105,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Sannuki-renju",
     kanji: "三抜き連珠",
     tagline: "The capture game where a flank takes a pair or a triple. Fifteen stones win.",
+    inspiredBy: "Keryo-Pente",
     origin: "Our name for the three-removal form of the capture game, played in the West as a tournament variant since the 1980s.",
     rules: [
       "Players take turns placing one stone.",
@@ -130,6 +132,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Maker and Breaker",
     kanji: "作り手と壊し手",
     tagline: "Both players place either colour. One wants a five, the other wants none.",
+    inspiredBy: "Order and Chaos",
     origin: "Our name for the classic order-versus-chaos game published in 1981, which mathematicians call a maker-breaker game.",
     rules: [
       "The first player is the Maker and wants five in a row of either colour, anywhere. The second is the Breaker and wants the board to fill with no five.",
@@ -180,6 +183,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Drop Four",
     kanji: "落とし四目",
     tagline: "Stones fall to the bottom of their column. Four in a row wins.",
+    inspiredBy: "Connect Four",
     origin: "Our version of the upright four-in-a-row game, with a magnet under the board instead of a frame.",
     rules: [
       "Play anywhere in a column and the stone slides to the lowest empty point in it, as if the board were upright and the stones magnetic.",
@@ -206,6 +210,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Block Five",
     kanji: "積み五目",
     tagline: "Gomoku with falling-block pieces: four stones each, two of each colour.",
+    inspiredBy: "the seven Tetris shapes",
     origin: "Our own game. The seven four-square shapes, coloured two and two, in a queue both players share.",
     rules: [
       "Each turn you lay the next piece in the queue: one of the seven four-square shapes, holding two black and two white stones. Rotate or flip it as you like.",
@@ -219,6 +224,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Ring Drop",
     kanji: "輪落とし",
     tagline: "Drop Four on a cylinder: the left and right edges join.",
+    inspiredBy: "Connect Four",
     origin: "Our version of the cylindrical four-in-a-row variant.",
     rules: [
       "Stones fall to the bottom of their column, as in Drop Four.",
@@ -231,6 +237,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Hole Drop",
     kanji: "穴落とし",
     tagline: "One square is dead: nothing can land on it or count through it.",
+    inspiredBy: "Connect Four",
     origin: "Our version of the dead-square four-in-a-row variant.",
     rules: [
       "Stones fall to the bottom of their column.",
@@ -243,6 +250,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Hot Drop",
     kanji: "熱点落とし",
     tagline: "A hotspot counts as either colour, and a hole counts as nothing.",
+    inspiredBy: "Connect Four",
     origin: "Our version of the double-trouble four-in-a-row variant.",
     rules: [
       "Stones fall to the bottom of their column.",
@@ -256,6 +264,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Clear Drop",
     kanji: "消し落とし",
     tagline: "A full bottom row vanishes and everything drops a row.",
+    inspiredBy: "Connect Four",
     origin: "Our version of the row-clearing four-in-a-row variant, borrowing the falling-block game's rule.",
     rules: [
       "Stones fall to the bottom of their column.",
@@ -268,6 +277,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Giveaway Drop",
     kanji: "譲り落とし",
     tagline: "Making four loses. Force your opponent into it.",
+    inspiredBy: "Connect Four",
     origin: "Our version of the giveaway four-in-a-row variant.",
     rules: [
       "Stones fall to the bottom of their column.",
@@ -281,6 +291,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Wormhole Drop",
     kanji: "穴通し落とし",
     tagline: "Two squares are joined: a line entering one comes out of the other.",
+    inspiredBy: "Connect Four",
     origin: "Our version of the wormhole four-in-a-row variant.",
     rules: [
       "Stones fall to the bottom of their column.",
@@ -293,6 +304,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Edge Drop",
     kanji: "縁寄せ",
     tagline: "Gravity from all four edges: a stone must rest on something.",
+    inspiredBy: "Connect Four",
     origin: "Our version of the four-edge gravity variant.",
     rules: [
       "A stone may be placed on any edge of the board, or beside a stone that is already there — above, below, left or right. Nothing floats.",
@@ -305,6 +317,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Twist Five",
     kanji: "回し五目",
     tagline: "Place a stone, then turn one quarter of the board. Five wins.",
+    inspiredBy: "Pentago",
     origin: "Our version of the quadrant-rotation game, on four 3×3 quadrants.",
     rules: [
       "A move is two parts: place a stone anywhere, then turn any one of the four 3×3 quadrants a quarter, either way.",
@@ -318,6 +331,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Twist Four",
     kanji: "回し四目",
     tagline: "The small twist game: four 2×2 quadrants, four in a row.",
+    inspiredBy: "Pentago",
     origin: "Our own smaller board for the rotation mechanic.",
     rules: [
       "Place a stone, then turn any one of the four 2×2 quadrants a quarter.",
@@ -330,6 +344,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Trap Three",
     kanji: "罠三",
     tagline: "Four in a row wins. Three in a row loses.",
+    inspiredBy: "Squava",
     origin: "Our version of the four-wins-three-loses game on a square board.",
     rules: [
       "Players take turns placing one stone. Either colour may open.",
@@ -343,6 +358,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Square Four",
     kanji: "四角四目",
     tagline: "Four pieces each. Line them up, or make a square.",
+    inspiredBy: "Teeko",
     origin: "Our version of the place-then-slide game with a square as a second way to win.",
     rules: [
       "Each player has four pieces. First they are placed, one a turn; then a turn moves one of your pieces one step to an adjacent empty point, in any direction.",
@@ -363,139 +379,6 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
       "With sound play it is always a draw, which is the whole lesson of the game.",
     ],
     board: "3×3.",
-  },
-};
-
-export type OpeningCopy = {
-  label: string;
-  kanji: string;
-  tagline: string;
-  rules: readonly string[];
-};
-
-export const OPENING_DISPLAY: Record<OpeningRule, OpeningCopy> = {
-  free: {
-    label: "Free",
-    kanji: "自由",
-    tagline: "Anywhere, in any order.",
-    rules: ["No restriction on where the first stones go."],
-  },
-  pro: {
-    label: "Pro",
-    kanji: "五路制限",
-    tagline: "Black's second stone must leave the central 5×5.",
-    rules: [
-      "Black opens at tengen, the centre point.",
-      "White's first stone may go anywhere.",
-      "Black's second stone, move three, must land outside the central 5×5 square.",
-      "After that the game is unrestricted. This is also the tournament rule in the capture game.",
-    ],
-  },
-  longPro: {
-    label: "Long Pro",
-    kanji: "七路制限",
-    tagline: "Black's second stone must leave the central 7×7.",
-    rules: [
-      "Black opens at tengen.",
-      "White's first stone may go anywhere.",
-      "Black's second stone, move three, must land outside the central 7×7 square.",
-      "A stiffer handicap than Pro for the first player.",
-    ],
-  },
-  swap: {
-    label: "Swap",
-    kanji: "交換",
-    tagline: "One player sets three stones, the other picks a colour.",
-    rules: [
-      "Player 1 places three stones: black, white, black, anywhere on the board.",
-      "Player 2 looks at the position and chooses to play black or white.",
-      "White moves next, whoever holds it. The chooser's clock runs while they decide.",
-    ],
-  },
-  swap2: {
-    label: "Swap2",
-    kanji: "交換二",
-    tagline: "As Swap, but the chooser may add two stones and hand the choice back.",
-    rules: [
-      "Player 1 places three stones: black, white, black.",
-      "Player 2 chooses: play black, play white, or add two more stones — white then black — and let Player 1 choose the colour instead.",
-      "White moves next once colours are settled.",
-      "The opening used at the Gomoku World Championship, because a fair three-stone position is hard to set.",
-    ],
-  },
-  rif: {
-    label: "RIF",
-    kanji: "連珠",
-    tagline: "The classic renju opening: centre, 3×3, 5×5, then white may swap.",
-    rules: [
-      "Black opens at tengen.",
-      "White's first stone must touch it, inside the central 3×3.",
-      "Black's second stone must land inside the central 5×5.",
-      "White then chooses to keep white or take black. The full tournament rule also has black offer two fifth moves for white to reject one; that step is not enforced here.",
-    ],
-  },
-};
-
-export const FORBIDDEN_PATTERN_DISPLAY: Record<
-  ForbiddenPattern,
-  { label: string; kanji: string }
-> = {
-  doubleThree: { label: "double three", kanji: "三三" },
-  doubleFour: { label: "double four", kanji: "四四" },
-  overline: { label: "overline", kanji: "長連" },
-};
-
-export const HANDICAP_RULE_DISPLAY: Record<
-  HandicapRule,
-  { label: string; kanji: string; description: string; from: string }
-> = {
-  doubleThree: {
-    label: "No double three",
-    kanji: "三三禁",
-    description: "May not make two open threes with one stone.",
-    from: "Renju, Omok",
-  },
-  doubleFour: {
-    label: "No double four",
-    kanji: "四四禁",
-    description: "May not make two fours with one stone.",
-    from: "Renju",
-  },
-  overline: {
-    label: "No overline",
-    kanji: "長連禁",
-    description: "May not make six or more in a row at all, and six never wins.",
-    from: "Renju",
-  },
-  exactLine: {
-    label: "Exactly five",
-    kanji: "五連限定",
-    description: "An overline does not win; the line must be exactly the length.",
-    from: "Standard, Renju",
-  },
-  openLine: {
-    label: "Open line only",
-    kanji: "両端開放",
-    description: "A line shut in at both ends by the opponent does not win.",
-    from: "Caro",
-  },
-  longerLine: {
-    label: "One more in a row",
-    kanji: "六連",
-    description: "Needs one more stone in a row than the opponent.",
-    from: "A traditional gomoku handicap",
-  },
-  singleStone: {
-    label: "One stone a turn",
-    kanji: "一手一子",
-    description: "Places one stone a turn where the game gives two.",
-    from: "Connect6",
-  },
-  noCaptures: {
-    label: "No captures",
-    kanji: "取り無し",
-    description: "Flanking a pair takes nothing.",
-    from: "Ninuki-renju",
   },
 };
 

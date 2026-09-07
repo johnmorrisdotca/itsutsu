@@ -118,6 +118,9 @@ export default function LobbyPage() {
                       <span className="flex flex-col">
                         <span className="font-medium">{copy.label}</span>
                         <span className="text-xs text-muted">{copy.tagline}</span>
+                        {copy.inspiredBy !== undefined ? (
+                          <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
+                        ) : null}
                       </span>
                       <span className="flex shrink-0 gap-2 text-xs">
                         <Link href={`/rules/${variant}`} className="underline-offset-2 hover:underline">rules</Link>

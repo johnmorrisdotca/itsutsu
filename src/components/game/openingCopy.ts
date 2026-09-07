@@ -43,6 +43,16 @@ export function openingPrompt(state: GameState, names: SeatNames): string | null
       if (moves.length === 1) return GAME_COPY.rifWhite;
       if (moves.length === 2) return GAME_COPY.rifBlack;
       return null;
+    case OPENING_RULES.sakata:
+      if (moves.length === 0) return GAME_COPY.opensAtTengen;
+      if (moves.length === 1) return GAME_COPY.rifWhite;
+      if (moves.length === 2) return GAME_COPY.rifBlack;
+      if (moves.length === 4) return GAME_COPY.sakataFifth;
+      return null;
+    case OPENING_RULES.tarannikov:
+      if (moves.length === 0) return GAME_COPY.opensAtTengen;
+      if (moves.length < 5) return GAME_COPY.nestedStone(moves.length);
+      return null;
     default:
       return null;
   }

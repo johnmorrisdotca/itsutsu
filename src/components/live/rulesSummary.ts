@@ -5,13 +5,8 @@ import {
   OPENING_RULES,
   STONE_DISPLAY,
 } from "@/lib/gomoku/gomoku.constants";
-import {
-  HANDICAP_RULE_DISPLAY,
-  OPENING_DISPLAY,
-  RULE_VARIANT_DISPLAY,
-  SECOND_STONE_EXCLUSION_DISPLAY,
-  variantLabel,
-} from "@/lib/gomoku/variants.constants";
+import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY, variantLabel } from "@/lib/gomoku/variants.constants";
+import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { Handicap, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /** The subset of settings a shared game carries, as strings from the store. */

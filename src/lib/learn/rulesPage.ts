@@ -4,11 +4,8 @@ import {
   VARIANT_SPECS,
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
-import {
-  FORBIDDEN_PATTERN_DISPLAY,
-  OPENING_DISPLAY,
-  RULE_VARIANT_DISPLAY,
-} from "@/lib/gomoku/variants.constants";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { FORBIDDEN_PATTERN_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /**
@@ -23,6 +20,8 @@ export type RulesPage = {
   kanji: string;
   tagline: string;
   origin: string;
+  /** The game this is our version of, if it is a clone; see VariantCopy. */
+  inspiredBy?: string;
   /** What you are trying to do, in one or two sentences. */
   object: string[];
   /** The board and what is on it. */
@@ -53,7 +52,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   const sizes = boardSizesFor(variant);
 
   const object: string[] = [];
-  if (spec.misere) {
+  if (spec.makerBreaker) {
+    object.push(`Black is the Maker and wins if any ${length} in a row of one colour appears, whoever placed it. White is the Breaker and wins if the board fills with no such line.`);
+  } else if (spec.misere) {
     object.push(`Avoid making ${length} in a row: the player who makes it loses.`);
   } else if (spec.loseLength !== null) {
     object.push(`Make ${length} in a row and win, without ever making exactly ${spec.loseLength}, which loses.`);
@@ -63,7 +64,12 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.lineRule.black !== spec.lineRule.white) {
     object.push(`For white, ${lineWording(spec.lineRule.white, length)}.`);
   }
-  if (spec.captures) object.push("Capturing five pairs of enemy stones also wins.");
+  if (spec.captures) {
+    object.push(
+      `Capturing ${spec.capturesToWin} enemy stones also wins${spec.captureSizes.length > 1 ? ", taken in pairs and triples" : ", five pairs"}.`,
+    );
+  }
+  if (spec.anyColour && !spec.makerBreaker) object.push("A line of either colour wins for the player who completed it.");
   if (spec.squareWins) object.push("Four of your pieces in a 2×2 square also wins.");
 
   const board: string[] = [
@@ -77,6 +83,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.deadSquares > 0) board.push(`${spec.deadSquares === 1 ? "One square" : `${spec.deadSquares} squares`}, chosen at random when the game starts, ${spec.deadSquares === 1 ? "is" : "are"} dead: nothing can land there and no line runs through.`);
   if (spec.hotSquares > 0) board.push(`${spec.hotSquares === 1 ? "One square" : `${spec.hotSquares} squares`}, chosen at random, ${spec.hotSquares === 1 ? "is" : "are"} a hotspot that counts as either colour's stone.`);
   if (spec.wrap) board.push("The left and right edges join, so a line may run off one side and onto the other.");
+  if (spec.wormholes > 0) board.push("Two squares, chosen at random when the game starts, are the mouths of a wormhole. Nothing can land on a mouth, and a line that reaches one continues from the other in the same direction.");
   if (spec.pieces !== null) board.push(`Each player has ${spec.pieces} pieces.`);
   if (spec.queue !== null) {
     board.push(
@@ -101,12 +108,23 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
         : "Players take turns placing one stone on an empty point.",
     );
   }
+  if (spec.singleColour) play.push("Every stone is black, whoever places it.");
+  else if (spec.anyColour) play.push("On your turn you choose which colour to place.");
   if (spec.placement === PLACEMENTS.drop) play.push("A stone played anywhere in a column falls to the lowest empty point in it.");
   if (spec.placement === PLACEMENTS.edge) play.push("A stone may only be placed on an edge of the board or directly beside a stone already there: above, below, left or right.");
   if (spec.quadrantSize !== null) play.push("After placing, turn any one quadrant a quarter, either way. The whole board is then read for lines, for both colours.");
-  if (spec.captures) play.push("Flanking exactly two enemy stones in a line, with your stone at each end, captures the pair. Only the closing stone captures; moving into a flanked position is safe.");
+  if (spec.captures) {
+    play.push(
+      spec.captureSizes.length > 1
+        ? "Flanking exactly two or exactly three enemy stones in a line, with your stone at each end, captures them. Only the closing stone captures; moving into a flanked position is safe."
+        : "Flanking exactly two enemy stones in a line, with your stone at each end, captures the pair. Only the closing stone captures; moving into a flanked position is safe.",
+    );
+  }
   if (spec.lineClear) play.push("When the bottom row is full it disappears and every stone above drops one row.");
-  if (spec.misere) play.push("You may not play directly on top of the opponent's last stone while any other column has room. A full board is a win for the player who opened.");
+  if (spec.misere) {
+    if (spec.placement === PLACEMENTS.drop) play.push("You may not play directly on top of the opponent's last stone while any other column has room.");
+    play.push("A full board is a win for the player who opened.");
+  } else if (spec.makerBreaker) play.push("A full board with no line is the Breaker's win.");
   else play.push(spec.quadrantSize !== null ? "A full board with no line, after its last turn, is a draw; a line for both colours at once is a draw." : "A full board with no line is a draw.");
 
   const house: string[] = [];
@@ -133,6 +151,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     kanji: copy.kanji,
     tagline: copy.tagline,
     origin: copy.origin,
+    inspiredBy: copy.inspiredBy,
     object,
     board,
     play,

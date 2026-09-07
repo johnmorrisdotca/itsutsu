@@ -141,8 +141,20 @@ export type Placement = "free" | "drop" | "edge";
  * back.
  * `rif`: the classic renju opening — centre, then inside the 3×3, then inside
  * the 5×5, after which white may swap colours.
+ * `sakata`: the RIF start and swap, and then the fifth stone must land inside
+ * the central 7×7.
+ * `tarannikov`: the first five stones must land inside the central 1×1, 3×3,
+ * 5×5, 7×7 and 9×9 in turn, and after each of them the other seat may swap.
  */
-export type OpeningRule = "free" | "pro" | "longPro" | "swap" | "swap2" | "rif";
+export type OpeningRule =
+  | "free"
+  | "pro"
+  | "longPro"
+  | "swap"
+  | "swap2"
+  | "rif"
+  | "sakata"
+  | "tarannikov";
 
 /**
  * What a completed line has to look like to win.

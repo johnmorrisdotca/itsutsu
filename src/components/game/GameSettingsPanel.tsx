@@ -12,10 +12,8 @@ import {
   WIN_LENGTHS,
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
-import {
-  OPENING_DISPLAY,
-  RULE_VARIANT_DISPLAY,
-} from "@/lib/gomoku/variants.constants";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { availableOpenings } from "@/lib/gomoku/engine";
 import type {
   FirstPlayer,

@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
 
 export const metadata = { title: "Rules · Gomoku" };
 
@@ -37,11 +38,19 @@ export default function RulesIndexPage() {
                     <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span>
                   </span>
                   <span className="text-xs text-muted">{copy.tagline}</span>
+                  {copy.inspiredBy !== undefined ? (
+                    <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
+                  ) : null}
                 </Link>
               </li>
             );
           })}
         </ul>
+        <section className="flex max-w-prose flex-col gap-2 text-xs text-muted" data-testid="rules-attribution">
+          {RULES_ATTRIBUTION.map((paragraph) => (
+            <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+          ))}
+        </section>
       </main>
     </div>
   );

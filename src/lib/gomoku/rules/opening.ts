@@ -30,6 +30,9 @@ const PRO_EXCLUSION = 2; // outside the 5×5
 const LONG_PRO_EXCLUSION = 3; // outside the 7×7
 const RIF_WHITE_REACH = 1; // inside the 3×3
 const RIF_BLACK_REACH = 2; // inside the 5×5
+const SAKATA_FIFTH_REACH = 3; // the fifth stone inside the 7×7
+/** Tarannikov: stone n (from zero) lands within n of tengen, so the first five nest in 1×1 … 9×9. */
+const TARANNIKOV_STONES = 5;
 
 /** Stones on the board once the swap protocols pause for a decision. */
 const SWAP_STONES = 3;
@@ -40,6 +43,13 @@ const SWAP_OPENINGS: readonly GameSettings["opening"][] = [
   OPENING_RULES.swap2,
 ];
 
+/** The renju protocols: colours alternate as usual, and a swap is offered along the way. */
+const RENJU_OPENINGS: readonly GameSettings["opening"][] = [
+  OPENING_RULES.rif,
+  OPENING_RULES.sakata,
+  OPENING_RULES.tarannikov,
+];
+
 export function initialOpening(
   settings: GameSettings,
   opener: Stone,
@@ -48,7 +58,7 @@ export function initialOpening(
   if (SWAP_OPENINGS.includes(settings.opening)) {
     return { stage: OPENING_STAGES.placing, actor: seats[opener], choices: [] };
   }
-  if (settings.opening === OPENING_RULES.rif) {
+  if (RENJU_OPENINGS.includes(settings.opening)) {
     return { stage: OPENING_STAGES.placing, actor: null, choices: [] };
   }
   return { stage: OPENING_STAGES.done, actor: null, choices: [] };
@@ -85,6 +95,14 @@ export function openingAllows(state: GameState, point: Point): boolean {
       if (n === 1) return distance <= RIF_WHITE_REACH;
       if (n === 2) return distance <= RIF_BLACK_REACH;
       return true;
+    case OPENING_RULES.sakata:
+      if (n === 0) return samePoint(point, centre);
+      if (n === 1) return distance <= RIF_WHITE_REACH;
+      if (n === 2) return distance <= RIF_BLACK_REACH;
+      if (n === 4) return distance <= SAKATA_FIFTH_REACH;
+      return true;
+    case OPENING_RULES.tarannikov:
+      return n >= TARANNIKOV_STONES || distance <= n;
     default:
       return true;
   }
@@ -106,8 +124,15 @@ export function openingAfterMove(state: GameState): OpeningState {
     actor: seat,
   });
 
+  if (settings.opening === OPENING_RULES.tarannikov) {
+    // After each of the first five stones, the seat that did not lay it may swap.
+    if (opening.stage === OPENING_STAGES.placing && n >= 1 && n <= TARANNIKOV_STONES) {
+      return decides(seats[otherStone(moves[n - 1].stone)]);
+    }
+    return opening;
+  }
   if (opening.stage === OPENING_STAGES.placing && n === SWAP_STONES) {
-    if (SWAP_OPENINGS.includes(settings.opening) || settings.opening === OPENING_RULES.rif) {
+    if (SWAP_OPENINGS.includes(settings.opening) || RENJU_OPENINGS.includes(settings.opening)) {
       return decides(seats[otherStone(opener)]);
     }
   }
@@ -148,11 +173,16 @@ export function chooseColour(state: GameState, stone: Stone): GameState {
       ? state.seats
       : { black: state.seats.white, white: state.seats.black };
 
+  // Tarannikov offers the swap again after the next stone, until five are down.
+  const more =
+    state.settings.opening === OPENING_RULES.tarannikov &&
+    state.moves.length < TARANNIKOV_STONES;
+
   return {
     ...state,
     seats,
     opening: {
-      stage: OPENING_STAGES.done,
+      stage: more ? OPENING_STAGES.placing : OPENING_STAGES.done,
       actor: null,
       choices: [...state.opening.choices, stone],
     },

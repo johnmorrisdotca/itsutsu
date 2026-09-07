@@ -9,11 +9,8 @@ import {
   STONE_DISPLAY,
   VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
-import {
-  HANDICAP_RULE_DISPLAY,
-  RULE_VARIANT_DISPLAY,
-  SECOND_STONE_EXCLUSION_DISPLAY,
-} from "@/lib/gomoku/variants.constants";
+import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { HANDICAP_RULE_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type {
   GameSettings,
   Handicap,

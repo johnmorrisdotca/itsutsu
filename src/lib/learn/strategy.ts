@@ -28,7 +28,7 @@ export const GUIDES: readonly Guide[] = [
     title: "Five in a row, from the first stone",
     kanji: "五目の基本",
     summary: "Threats, shapes and tempo: the ideas every gomoku family game is built on.",
-    variants: ["freestyle", "standard", "renju", "omok", "caro", "ninuki", "dominoFive", "blockFive"],
+    variants: ["freestyle", "standard", "renju", "omok", "caro", "ninuki", "dominoFive", "blockFive", "misereFive"],
     sections: [
       {
         heading: "The game is about threats, not lines",
@@ -69,6 +69,13 @@ export const GUIDES: readonly Guide[] = [
           "A line with an enemy stone at one end is a dead three: it can become a four but never an open four. Do not spend moves answering it until it is a four.",
         ],
       },
+      {
+        heading: "Misère Five: losing on purpose",
+        points: [
+          "Making five loses, so a four is a threat against its own maker: the opponent's task is to leave you nothing but the fifth point. Keep your lines short and broken, and force your opponent's to grow.",
+          "Parity decides the end. The board fills, and whoever is forced to complete a five loses; a full board with no five goes to the opener. Count the safe points late in the game as you would in Notakto.",
+        ],
+      },
     ],
   },
   {
@@ -102,6 +109,13 @@ export const GUIDES: readonly Guide[] = [
           "A good habit for white in a swap: take black in the balanced openings and white in the sharp ones, since black's forbidden points bite hardest when the position is sharp.",
         ],
       },
+      {
+        heading: "The opening protocols, and which are here",
+        paragraphs: [
+          "Renju has spent a century balancing its opening, and the protocols are its history. Three are playable here. RIF (連珠国際連盟ルール) confines the first three stones and lets white swap. Sakata (坂田ルール) is RIF with a single fifth move that must stay inside the central 7×7, which takes away black's sharpest fifth stones. Tarannikov nests the first five stones in the 1×1, 3×3, 5×5, 7×7 and 9×9 and offers a swap after every one of them, so any stone that tips the balance is simply handed to the other player.",
+          "Three more are not built yet, because they all rest on one mechanism this board does not have: black putting down several candidate fifth moves and white removing all but one. Yamaguchi has black declare, before the swap, how many fifth moves it will offer. Soosyrv-8 declares the number after white's fourth stone, up to eight, and then offers the swap. Taraguchi-10 is Tarannikov's nested squares with a swap after each of the first four stones, after which white may instead demand ten fifth-move candidates. When the candidate mechanism arrives, all three come with it, along with the fifth-move pair in full RIF.",
+        ],
+      },
     ],
   },
   {
@@ -109,7 +123,7 @@ export const GUIDES: readonly Guide[] = [
     title: "Ninuki-renju: two ways to win",
     kanji: "二抜きの考え方",
     summary: "Captures change the value of every shape. Threats can be taken apart, and pairs are points.",
-    variants: ["ninuki"],
+    variants: ["ninuki", "sannuki"],
     sections: [
       {
         heading: "Never leave a pair with an open end",
@@ -130,6 +144,14 @@ export const GUIDES: readonly Guide[] = [
         heading: "The Pro opening",
         paragraphs: [
           "Black's second stone must leave the central 5×5. It is the tournament rule for a reason: the first player's advantage is larger in the capture game than in plain gomoku, and the exclusion takes some of it back.",
+        ],
+      },
+      {
+        heading: "Sannuki-renju: triples fall too",
+        points: [
+          "Three in a row is no longer safe. A three with an empty point at one end and an enemy stone at the other is exactly as exposed as a pair. Only a four cannot be taken.",
+          "The count is in stones, fifteen to win. A triple is worth half again a pair, so an opponent who has left a three flanked is the first thing to look at.",
+          "Because threes are capturable, an open three is a weaker threat than in the pair game: your opponent may answer it by taking it, and gain three stones. Build fours from pairs plus one rather than from threes plus one where you can.",
         ],
       },
     ],
@@ -162,7 +184,7 @@ export const GUIDES: readonly Guide[] = [
     title: "The drop family: gravity is the board",
     kanji: "落としの考え方",
     summary: "Columns, parity and the threats you set up for later.",
-    variants: ["dropFour", "ringDrop", "holeDrop", "hotDrop", "clearDrop", "giveawayDrop", "edgeDrop"],
+    variants: ["dropFour", "ringDrop", "holeDrop", "hotDrop", "clearDrop", "giveawayDrop", "edgeDrop", "wormDrop"],
     sections: [
       {
         heading: "Threats are stored, not played",
@@ -186,6 +208,7 @@ export const GUIDES: readonly Guide[] = [
           "Clear Drop: a full bottom row vanishes and everything drops. A stored threat one row up becomes playable at once, and one on the bottom row disappears. Time the clearing.",
           "Giveaway Drop: play away from lines. The rule against playing on top of the opponent's last stone means you cannot be forced into a four by a single column; count the safe moves left, as in a game of nim.",
           "Edge Drop: the board fills from the outside in. Lines along the edges come early; lines through the centre come last, and the centre is where the game is decided.",
+          "Worm Drop: the two wormhole mouths join the board to itself. A line that reaches one mouth carries on from the other in the same direction, so a column or diagonal far from your stones may be next to them. Read every line through the mouths before you call a position safe.",
         ],
       },
     ],
@@ -216,10 +239,10 @@ export const GUIDES: readonly Guide[] = [
   },
   {
     slug: "small-games",
-    title: "Trap Three, Square Four and tic-tac-toe",
+    title: "Trap Three, Square Four, tic-tac-toe and the trick games",
     kanji: "小さな盤の考え方",
     summary: "Games short enough to read to the end, and what reading to the end feels like.",
-    variants: ["trapThree", "squareFour", "tictactoe"],
+    variants: ["trapThree", "squareFour", "tictactoe", "wildTicTacToe", "notakto", "makerBreaker"],
     sections: [
       {
         heading: "Trap Three",
@@ -243,6 +266,28 @@ export const GUIDES: readonly Guide[] = [
           "The centre is the strongest first move, and a corner is the strongest reply. An edge as the first move loses to correct play.",
           "The only winning idea is the fork: a move that makes two lines of two at once. Every drawing strategy is a list of forks to prevent.",
           "It is always a draw between players who know that. That is the lesson, and the reason the bigger boards exist.",
+        ],
+      },
+      {
+        heading: "Wild tic-tac-toe",
+        points: [
+          "You may place either colour, and a line of either wins for whoever completes it. So a line of two of any colour with an open end is a threat to you and a threat to your opponent equally: whoever moves next takes it.",
+          "Never leave a two with an open end on your opponent's turn unless you are forced to. The first player wins with the centre, followed by correct play; the second player's task is to keep every line at one stone or full.",
+        ],
+      },
+      {
+        heading: "Notakto",
+        points: [
+          "Every stone is black, and three in a row loses. Think of the board as a set of lines that are alive (two empty points or more, no three possible yet) and dead.",
+          "On one 3×3 board the first player loses with correct play: the centre is the only safe start and it still loses. Count the safe moves left after each of your candidates; the player who runs out first loses, so leave an even number.",
+        ],
+      },
+      {
+        heading: "Maker and Breaker",
+        points: [
+          "The Maker wants any five of one colour, whoever placed it; the Breaker wants a full board without one. The Breaker's job is easier to describe than to do: every open four of either colour must be answered with the other colour at once.",
+          "As Maker, build two-colour threats: a black four and a white four that share no point cannot both be blocked in one move. As Breaker, place stones where they cut two lines of different colours at once, and keep every line mixed.",
+          "On the 6×6 board the Maker is generally thought to have the edge, which is why the site lets the players change seats between games.",
         ],
       },
     ],
