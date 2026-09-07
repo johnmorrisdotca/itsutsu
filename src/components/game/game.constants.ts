@@ -58,6 +58,9 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   awareness: AWARENESS_LEVELS.outlook,
   hintPolicy: HINT_POLICIES.limited,
   hintsPerSeat: 3,
+  timeControl: "none",
+  earlyWarning: false,
+  showWinChance: false,
 };
 
 export const DEFAULT_SEAT_NAMES = { one: "", two: "" } as const;
@@ -87,4 +90,16 @@ export const GAME_COPY = {
   swapUnavailableDecided: "The position is already decided — no stealing it.",
   swapUnavailableSpent: "You have used your swap.",
   emptyRecord: "No stones yet.",
+  clock: { label: "Clock", kanji: "時計" },
+  byoyomi: { label: "Byoyomi", kanji: "秒読み" },
+  stats: { label: "This game", kanji: "内容" },
+  winChance: { label: "Chance of winning", kanji: "形勢" },
+  winChanceNote: "An estimate from the shape on the board, not a solved value.",
+  earlyWarning: { label: "Warn early", kanji: "予兆" },
+  earlyWarningHint:
+    "Warn each side before the other can build an open three, not just once one exists. Both players get it, so it stays fair — but it makes a game harder to win.",
+  building: { label: "Something is forming", kanji: "予兆" },
+  buildingDetail:
+    "Your opponent can start an open three here next move. Nothing is forced yet.",
+  outOfTime: "out of time",
 } as const;

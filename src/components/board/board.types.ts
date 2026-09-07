@@ -49,11 +49,17 @@ export type StoneSetTokens = {
 /**
  * Something drawn over an intersection that is not a stone.
  *
- * `forced` is the point a threat must be answered on, `hint` the engine's
- * suggestion, `help` a mark the opponent drew when asked for advice, and
- * `fatal` the losing move in the record. None of them change what is legal.
+ * `forced` is the point a threat must be answered on, `building` a point where
+ * the opponent could start one next move, `hint` the engine's suggestion,
+ * `help` a mark the opponent drew when asked for advice, and `fatal` the
+ * losing move in the record. None of them change what is legal.
  */
-export type BoardMarkKind = "forced" | "hint" | "help" | "fatal";
+export type BoardMarkKind =
+  | "forced"
+  | "building"
+  | "hint"
+  | "help"
+  | "fatal";
 
 export type BoardMark = Point & {
   kind: BoardMarkKind;

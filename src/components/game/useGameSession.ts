@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { assess, isSwapBlocked, newlyLost, suggestMove } from "@/lib/gomoku/analysis";
+import { winChance } from "@/lib/gomoku/winChance";
+import { TIME_CONTROLS } from "@/lib/clock/clock.constants";
 import {
   canSkip as engineCanSkip,
   canSwapSeats,
@@ -12,8 +14,9 @@ import {
   seatToPlay,
   skipMove,
   swapSeats,
+  winOnTime,
 } from "@/lib/gomoku/engine";
-import { SEATS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, SEATS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings, GameState, Point, Seat } from "@/lib/gomoku/gomoku.types";
 import type { Suggestion } from "@/lib/gomoku/analysis.types";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -25,6 +28,8 @@ import {
   GAME_COPY,
   HINT_POLICIES,
 } from "./game.constants";
+import { useGameClock } from "./useGameClock";
+import { emptyStats, missedThreat, recordHint, recordMove } from "./stats";
 import {
   clearSnapshot,
   loadSnapshot,
@@ -86,11 +91,42 @@ export function useGameSession(
     },
   );
   const [hint, setHint] = useState<Suggestion | null>(null);
+  const [stats, setStats] = useState(() => restored?.stats ?? emptyStats(0));
+  const [lostOnTime, setLostOnTime] = useState<Seat | null>(null);
+  // Set on mount rather than during render, which must stay pure.
+  const lastMoveAt = useRef(0);
+  useEffect(() => {
+    if (lastMoveAt.current === 0) lastMoveAt.current = Date.now();
+  }, []);
   const [helpRequest, setHelpRequest] = useState<Seat | null>(null);
   const [helpMark, setHelpMark] = useState<Point | null>(null);
 
   const state = timeline[index];
   const assessment = useMemo(() => assess(state), [state]);
+
+  const control = TIME_CONTROLS[settings.timeControl];
+  const atLatest = index === timeline.length - 1;
+
+  /** A flag falling ends the game properly, through the engine. */
+  const handleFlag = useCallback((seat: Seat) => {
+    setLostOnTime(seat);
+    setTimeline((current) => {
+      const latest = current[current.length - 1];
+      const loser =
+        latest.seats[STONES.black] === seat ? STONES.black : STONES.white;
+      const ended = winOnTime(latest, loser);
+      if (ended === latest) return current;
+      return [...current.slice(0, -1), ended];
+    });
+  }, []);
+
+  const clock = useGameClock({
+    control,
+    seatToPlay: seatToPlay(state),
+    // A clock stops while the game is over or the record is being reviewed.
+    running: state.status === GAME_STATUS.playing && atLatest,
+    onFlag: handleFlag,
+  });
 
   /*
    * Written on every change so a refresh, a closed tab or a crashed browser
@@ -99,8 +135,8 @@ export function useGameSession(
    */
   useEffect(() => {
     if (!persist) return;
-    saveSnapshot(toSnapshot(state, appearance, settings, names, hintsLeft));
-  }, [appearance, hintsLeft, names, persist, settings, state]);
+    saveSnapshot(toSnapshot(state, appearance, settings, names, hintsLeft, stats));
+  }, [appearance, hintsLeft, names, persist, settings, state, stats]);
 
   /** Advancing the timeline truncates any redo branch, as an edit should. */
   const advance = useCallback(
@@ -118,9 +154,28 @@ export function useGameSession(
   const commit = useCallback(
     (next: typeof state) => {
       if (next === state) return;
-      advance(next, findFatalMove(assessment, assess(next), next));
+
+      const played = next.moves[next.moves.length - 1];
+      const seat = seatToPlay(state);
+      const fatal = findFatalMove(assessment, assess(next), next);
+
+      const now = Date.now();
+      const thinkingMs = lastMoveAt.current === 0 ? 0 : now - lastMoveAt.current;
+      lastMoveAt.current = now;
+
+      if (played !== undefined) {
+        setStats((current) =>
+          recordMove(current, seat, {
+            thinkingMs,
+            missed: missedThreat(assessment.forcedPoints, played),
+            blunder: fatal !== null && fatal.stone === played.stone,
+          }),
+        );
+      }
+      clock.onMoveComplete(seat);
+      advance(next, fatal);
     },
-    [advance, assessment, state],
+    [advance, assessment, clock, state],
   );
 
   const play = useCallback(
@@ -173,10 +228,14 @@ export function useGameSession(
     setHelpMark(null);
     setHelpRequest(null);
     setHintsLeft({
-      one: DEFAULT_SESSION_SETTINGS.hintsPerSeat,
-      two: DEFAULT_SESSION_SETTINGS.hintsPerSeat,
+      one: settings.hintsPerSeat,
+      two: settings.hintsPerSeat,
     });
-  }, [persist]);
+    setStats(emptyStats());
+    setLostOnTime(null);
+    lastMoveAt.current = Date.now();
+    clock.reset(TIME_CONTROLS[settings.timeControl]);
+  }, [clock, persist, settings.hintsPerSeat, settings.timeControl]);
 
   const seat = seatToPlay(state);
 
@@ -186,6 +245,7 @@ export function useGameSession(
       if (hintsLeft[seat] <= 0) return;
       setHintsLeft((current) => ({ ...current, [seat]: current[seat] - 1 }));
     }
+    setStats((current) => recordHint(current, seat));
     setHint(suggestMove(state));
   }, [hintsLeft, seat, settings.hintPolicy, state]);
 
@@ -208,15 +268,28 @@ export function useGameSession(
     setAppearanceState((current) => ({ ...current, ...next }));
   }, []);
 
-  const setSessionSettings = useCallback((next: Partial<SessionSettings>) => {
-    setSettingsState((current) => {
-      const merged = { ...current, ...next };
+  const setSessionSettings = useCallback(
+    (next: Partial<SessionSettings>) => {
+      /*
+       * Side effects run beside the state update, not inside the updater —
+       * React may call an updater more than once, and resetting a clock twice
+       * is not the same as resetting it once.
+       */
       if (next.hintsPerSeat !== undefined) {
         setHintsLeft({ one: next.hintsPerSeat, two: next.hintsPerSeat });
       }
-      return merged;
-    });
-  }, []);
+      /*
+       * A new time control means new clocks. Without this the clocks kept
+       * whatever state the old control left them in — and "no clock" leaves
+       * them with no time at all, so every game started out already flagged.
+       */
+      if (next.timeControl !== undefined) {
+        clock.reset(TIME_CONTROLS[next.timeControl]);
+      }
+      setSettingsState((current) => ({ ...current, ...next }));
+    },
+    [clock],
+  );
 
   const setName = useCallback((target: Seat, name: string) => {
     setNames((current) => ({ ...current, [target]: name }));
@@ -252,6 +325,10 @@ export function useGameSession(
     hintsLeft,
     fatalMoves,
     helpRequest,
+    clocks: clock.clocks,
+    lostOnTime,
+    stats,
+    winChance: winChance(state, assessment),
     canUndo: index > 0 && state.settings.allowUndo,
     canRedo: index < timeline.length - 1,
     canSkip: engineCanSkip(state),
@@ -319,6 +396,12 @@ function buildMarks(
   if (settings.awareness === AWARENESS_LEVELS.full) {
     for (const point of assessment.forcedPoints) {
       marks.push({ ...point, kind: "forced" });
+    }
+    // One ply earlier than a forced point, and only if the game asked for it.
+    if (settings.earlyWarning) {
+      for (const point of assessment.buildingPoints) {
+        marks.push({ ...point, kind: "building" });
+      }
     }
   }
   if (helpMark !== null) marks.push({ ...helpMark, kind: "help" });

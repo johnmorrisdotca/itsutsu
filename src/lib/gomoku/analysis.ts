@@ -58,6 +58,8 @@ export function assess(state: GameState): Assessment {
     threats: reports(mover, mine, theirs),
     outlook: outlooks(mover, moverOutlook, foeOutlook),
     forcedPoints,
+    // What the opponent could start building if left alone.
+    buildingPoints: theirs.openThree,
     decided,
   });
 
@@ -97,11 +99,18 @@ export function assess(state: GameState): Assessment {
     }
     return build(OUTLOOKS.critical, OUTLOOKS.ahead, theirs.doubleThreat);
   }
+  /*
+   * Below this line nothing is forced. Being able to *build* an open three is
+   * an advantage, not an emergency, so it reads as "ahead" for whoever holds
+   * it and "even" for the other side — it must not be dressed up as a threat
+   * that has to be answered. The points themselves travel in `buildingPoints`,
+   * which a game only shows if it has opted into early warnings.
+   */
   if (mine.openThree.length > 0 && theirs.openThree.length === 0) {
-    return build(OUTLOOKS.ahead, OUTLOOKS.danger);
+    return build(OUTLOOKS.ahead, OUTLOOKS.even);
   }
   if (theirs.openThree.length > 0 && mine.openThree.length === 0) {
-    return build(OUTLOOKS.danger, OUTLOOKS.ahead, theirs.openThree);
+    return build(OUTLOOKS.even, OUTLOOKS.ahead);
   }
   return build(OUTLOOKS.even, OUTLOOKS.even);
 }
@@ -151,6 +160,7 @@ function settled(
     },
     outlook,
     forcedPoints: [],
+    buildingPoints: [],
     decided: true,
   };
 }

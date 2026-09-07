@@ -149,6 +149,7 @@ export const MARK_STYLE: Record<
   { colour: string; shape: "ring" | "cross" | "dot" }
 > = {
   forced: { colour: "#f97316", shape: "ring" },
+  building: { colour: "#eab308", shape: "dot" },
   hint: { colour: "#0ea5e9", shape: "dot" },
   help: { colour: "#a855f7", shape: "ring" },
   fatal: { colour: "#dc2626", shape: "cross" },

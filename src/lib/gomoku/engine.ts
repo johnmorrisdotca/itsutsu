@@ -277,6 +277,24 @@ export function swapSeats(state: GameState): GameState {
   };
 }
 
+/**
+ * Ends the game against a player who has run out of time.
+ *
+ * A clock is not a rule of gomoku, so the engine does not run one — but the
+ * result still has to be a proper game state rather than something the UI
+ * paints over the top, or the record and the board would disagree.
+ */
+export function winOnTime(state: GameState, loser: Stone): GameState {
+  if (state.status !== GAME_STATUS.playing) return state;
+
+  return {
+    ...state,
+    status: GAME_STATUS.won,
+    winner: otherStone(loser),
+    winningLine: [],
+  };
+}
+
 export function canUndo(state: GameState): boolean {
   return state.settings.allowUndo && state.moves.length > 0;
 }

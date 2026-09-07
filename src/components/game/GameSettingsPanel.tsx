@@ -16,6 +16,11 @@ import type {
   ObstacleLayout,
   RuleVariant,
 } from "@/lib/gomoku/gomoku.types";
+import {
+  TIME_CONTROLS,
+  TIME_CONTROL_DISPLAY,
+  type TimeControlName,
+} from "@/lib/clock/clock.constants";
 import { Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import {
   AWARENESS_DISPLAY,
@@ -134,6 +139,27 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           />
 
           <Field
+            label="Clock"
+            hint={TIME_CONTROL_DISPLAY[session.settings.timeControl].description}
+          >
+            <Select
+              value={session.settings.timeControl}
+              onChange={(event) =>
+                actions.setSessionSettings({
+                  timeControl: event.target.value as TimeControlName,
+                })
+              }
+              data-testid="time-control"
+            >
+              {Object.keys(TIME_CONTROLS).map((option) => (
+                <option key={option} value={option}>
+                  {TIME_CONTROL_DISPLAY[option as TimeControlName].label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field
             label="Awareness"
             hint={AWARENESS_DISPLAY[session.settings.awareness].description}
           >
@@ -173,6 +199,20 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
               ))}
             </Select>
           </Field>
+
+          <Toggle
+            label="Warn before a three forms"
+            checked={session.settings.earlyWarning}
+            onChange={(next) => actions.setSessionSettings({ earlyWarning: next })}
+            hint={GAME_COPY.earlyWarningHint}
+          />
+
+          <Toggle
+            label="Show chance of winning"
+            checked={session.settings.showWinChance}
+            onChange={(next) => actions.setSessionSettings({ showWinChance: next })}
+            hint={GAME_COPY.winChanceNote}
+          />
 
           {session.settings.hintPolicy === HINT_POLICIES.limited ? (
             <Field label="Hints each">

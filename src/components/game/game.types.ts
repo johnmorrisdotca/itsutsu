@@ -1,4 +1,10 @@
-import type { Assessment, Suggestion } from "@/lib/gomoku/analysis.types";
+import type {
+  Assessment,
+  Suggestion,
+  WinChance,
+} from "@/lib/gomoku/analysis.types";
+import type { SeatClock } from "@/lib/clock/clock.types";
+import type { TimeControlName } from "@/lib/clock/clock.constants";
 import type {
   GameSettings,
   GameState,
@@ -30,6 +36,34 @@ export type SessionSettings = {
   awareness: AwarenessLevel;
   hintPolicy: HintPolicy;
   hintsPerSeat: number;
+  timeControl: TimeControlName;
+  /**
+   * Warn each side before the other can build an open three, rather than only
+   * once one exists. It applies to both players or neither — a warning given
+   * to one side would simply be an advantage handed out.
+   */
+  earlyWarning: boolean;
+  /** Show a rough chance of winning for each colour. */
+  showWinChance: boolean;
+};
+
+/** What one player did over the course of a game. */
+export type SeatStats = {
+  moves: number;
+  /** Time spent thinking, summed across their moves. */
+  thinkingMs: number;
+  /** The longest single think. */
+  slowestMoveMs: number;
+  /** Moves the analysis flagged as throwing the game away. */
+  blunders: number;
+  /** Moves played while a threat was on the board that they did not answer. */
+  missedThreats: number;
+  hintsUsed: number;
+};
+
+export type GameStats = {
+  startedAt: number;
+  bySeat: Record<Seat, SeatStats>;
 };
 
 export type SeatNames = Record<Seat, string>;
@@ -54,6 +88,12 @@ export type GameSession = {
   fatalMoves: FatalMove[];
   /** The seat that asked for advice and is waiting for it. */
   helpRequest: Seat | null;
+  clocks: Record<Seat, SeatClock>;
+  /** The seat whose flag fell, when a game ended on time rather than on five. */
+  lostOnTime: Seat | null;
+  stats: GameStats;
+  /** A rough read on who is ahead, as percentages summing to 100. */
+  winChance: WinChance;
   canUndo: boolean;
   canRedo: boolean;
   canSkip: boolean;

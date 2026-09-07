@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { playAt, playSequence } from "./support";
+import { openAdvanced, playAt, playSequence } from "./support";
 
 /**
  * Screenshots, not assertions.
@@ -81,6 +81,25 @@ test.describe("screenshots", () => {
         path: `${SHOTS}/stones/${set}.png`,
       });
     }
+  });
+
+  test("clocks, win chance and the early warning", async ({ page }) => {
+    await openAdvanced(page);
+    await page.getByTestId("time-control").selectOption("rapid");
+    await page.getByLabel("Show chance of winning").check();
+    await page.getByLabel("Warn before a three forms").check();
+
+    await playSequence(page, 15, [[7, 3], [0, 0], [7, 4]]);
+    await page.getByTestId("building-warning").waitFor();
+    await page.screenshot({ path: `${SHOTS}/11-clock-and-odds.png`, fullPage: true });
+  });
+
+  test("the statistics after a game", async ({ page }) => {
+    await playSequence(page, 15, [
+      [7, 3], [0, 0], [7, 4], [0, 1], [7, 5], [14, 14], [7, 6], [0, 3], [7, 7],
+    ]);
+    await page.getByTestId("game-stats").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `${SHOTS}/12-game-stats.png`, fullPage: true });
   });
 
   test("the record and a replay", async ({ page }) => {

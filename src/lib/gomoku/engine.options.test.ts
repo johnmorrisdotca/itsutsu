@@ -13,6 +13,7 @@ import {
   skipTarget,
   swapSeats,
   undoMove,
+  winOnTime,
 } from "./engine";
 import {
   BLOCKED,
@@ -186,5 +187,30 @@ describe("undo permission", () => {
   it("stays available by default", () => {
     const game = playMove(createGame(), p(7, 7));
     expect(canUndo(game)).toBe(true);
+  });
+});
+
+describe("winOnTime", () => {
+  it("hands the game to the other colour", () => {
+    const game = playMove(createGame(), p(7, 7));
+    const timedOut = winOnTime(game, STONES.white);
+
+    expect(timedOut.status).toBe("won");
+    expect(timedOut.winner).toBe(STONES.black);
+    // Nobody made five, so there is no line to highlight.
+    expect(timedOut.winningLine).toEqual([]);
+  });
+
+  it("leaves the stones exactly where they were", () => {
+    const game = playMove(createGame(), p(7, 7));
+    expect(winOnTime(game, STONES.white).board).toEqual(game.board);
+  });
+
+  it("cannot reopen or overturn a finished game", () => {
+    const won = [p(7, 3), p(0, 0), p(7, 4), p(0, 1), p(7, 5), p(0, 2), p(7, 6), p(0, 3), p(7, 7)]
+      .reduce((state, point) => playMove(state, point), createGame());
+
+    expect(won.winner).toBe(STONES.black);
+    expect(winOnTime(won, STONES.black)).toBe(won);
   });
 });

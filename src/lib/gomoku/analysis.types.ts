@@ -59,9 +59,26 @@ export type Assessment = {
   outlook: Record<Stone, Outlook>;
   /** Intersections the player to move must answer, or lose. */
   forcedPoints: Point[];
+  /**
+   * Where the opponent could *build* a new open three next move.
+   *
+   * This is one ply earlier than `forcedPoints`, which names threats already
+   * on the board. Warning about it hands the defender a move they would
+   * otherwise have had to see coming, so it is off unless a game turns it on.
+   */
+  buildingPoints: Point[];
   /** True once one side has a win the other cannot prevent. */
   decided: boolean;
 };
+
+/**
+ * A rough read on who is ahead, as a percentage per colour summing to 100.
+ *
+ * It is an estimate from threats and shape, not a solved value — the engine
+ * does not search. Shown to players as a feel for the position, never as a
+ * fact about it.
+ */
+export type WinChance = Record<Stone, number>;
 
 export type SuggestionReason =
   | "win"

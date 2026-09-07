@@ -1,7 +1,7 @@
 import { createGame, playMove } from "@/lib/gomoku/engine";
 import type { GameSettings, GameState, Move, Seat, Stone } from "@/lib/gomoku/gomoku.types";
 import type { Appearance } from "@/components/board/board.types";
-import type { SeatNames, SessionSettings } from "./game.types";
+import type { GameStats, SeatNames, SessionSettings } from "./game.types";
 
 const KEY = "gomoku.session.v1";
 
@@ -23,6 +23,7 @@ export type GameSnapshot = {
   session: SessionSettings;
   names: SeatNames;
   hintsLeft: Record<Seat, number>;
+  stats: GameStats;
 };
 
 export function toSnapshot(
@@ -31,6 +32,7 @@ export function toSnapshot(
   session: SessionSettings,
   names: SeatNames,
   hintsLeft: Record<Seat, number>,
+  stats: GameStats,
 ): GameSnapshot {
   return {
     version: 1,
@@ -43,6 +45,7 @@ export function toSnapshot(
     session,
     names,
     hintsLeft,
+    stats,
   };
 }
 

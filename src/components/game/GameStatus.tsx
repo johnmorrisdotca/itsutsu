@@ -8,7 +8,7 @@ import { GAME_STATUS, SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.co
 import { StoneMark } from "@/components/board/StoneMark";
 import { STONE_SETS } from "@/components/board/Board.constants";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
-import { AWARENESS_LEVELS } from "./game.constants";
+import { AWARENESS_LEVELS, GAME_COPY } from "./game.constants";
 import type { GameSession } from "./game.types";
 
 /** Whose move it is, drawn with the stone they are actually holding. */
@@ -28,7 +28,9 @@ function ToPlay({ session }: { session: GameSession }) {
   const who = names[seat].trim() || SEAT_DISPLAY[seat].label;
   const text =
     state.status === GAME_STATUS.won
-      ? `${who} wins in ${state.moves.length} moves`
+      ? session.lostOnTime !== null
+        ? `${who} wins on time`
+        : `${who} wins in ${state.moves.length} moves`
       : `${who} to play`;
 
   return (
@@ -76,6 +78,40 @@ function Outlook({ session }: { session: GameSession }) {
   );
 }
 
+/**
+ * The early warning: something is forming, but nothing is forced yet.
+ *
+ * It only appears when a game has opted in, and it appears for both players
+ * on the same terms — a warning given to one side would just be an advantage.
+ */
+function BuildingNotice({ session }: { session: GameSession }) {
+  const { assessment, settings, state } = session;
+  if (!settings.earlyWarning) return null;
+  if (settings.awareness === AWARENESS_LEVELS.off) return null;
+  if (state.status !== GAME_STATUS.playing) return null;
+  if (assessment.buildingPoints.length === 0) return null;
+  // A real threat outranks a warning about a future one.
+  if (assessment.forcedPoints.length > 0) return null;
+
+  return (
+    <div
+      className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 ${TONE_CLASS.warn}`}
+      role="status"
+      data-testid="building-warning"
+    >
+      <span aria-hidden="true" className="font-mincho mt-0.5 text-xl leading-none font-semibold">
+        {GAME_COPY.building.kanji}
+      </span>
+      <span className="flex flex-col gap-0.5">
+        <span className="text-sm font-semibold">{GAME_COPY.building.label}</span>
+        <span className="text-xs leading-snug opacity-85">
+          {GAME_COPY.buildingDetail}
+        </span>
+      </span>
+    </div>
+  );
+}
+
 /** 敗着 — the move the analysis says threw the game away. */
 function FatalNotice({ session }: { session: GameSession }) {
   const latest = session.fatalMoves[session.fatalMoves.length - 1];
@@ -117,6 +153,7 @@ export function GameStatus({ session }: { session: GameSession }) {
         </p>
       </div>
       <Outlook session={session} />
+      <BuildingNotice session={session} />
       <FatalNotice session={session} />
     </section>
   );

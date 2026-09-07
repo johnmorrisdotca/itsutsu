@@ -3,7 +3,10 @@
 import { StartSharedGame } from "@/components/live/StartSharedGame";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { AppearancePanel } from "./AppearancePanel";
+import { GameClock } from "./GameClock";
 import { GameControls } from "./GameControls";
+import { GameStatsPanel } from "./GameStatsPanel";
+import { WinChanceBar } from "./WinChanceBar";
 import { GameSettingsPanel } from "./GameSettingsPanel";
 import { GameStatus } from "./GameStatus";
 import { MoveHistory } from "./MoveHistory";
@@ -21,6 +24,16 @@ export function GameSidebar(props: GamePanelProps) {
       <div className={PANEL_CLASS}>
         <GameStatus session={props.session} />
       </div>
+      {props.session.settings.timeControl !== "none" ? (
+        <div className={PANEL_CLASS}>
+          <GameClock session={props.session} />
+        </div>
+      ) : null}
+      {props.session.settings.showWinChance ? (
+        <div className={PANEL_CLASS}>
+          <WinChanceBar session={props.session} />
+        </div>
+      ) : null}
       <div className={PANEL_CLASS}>
         <GameControls {...props} />
       </div>
@@ -40,6 +53,9 @@ export function GameOptions(props: GamePanelProps) {
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div className={PANEL_CLASS}>
         <PlayerNames {...props} />
+      </div>
+      <div className={PANEL_CLASS}>
+        <GameStatsPanel session={props.session} />
       </div>
       <div className={PANEL_CLASS}>
         <StartSharedGame settings={props.session.state.settings} />

@@ -24,7 +24,8 @@
     "postinstall": "prisma generate",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "screenshots": "playwright test e2e/screenshots.spec.ts --reporter=line"
+    "screenshots": "playwright test e2e/screenshots.spec.ts --reporter=line",
+    "favicon": "node scripts/make-favicon.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
