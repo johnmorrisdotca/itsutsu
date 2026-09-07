@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS } from "./gameHistory.constants";
+import { parseHandicap } from "./gameSettingsSchema";
 import type {
   GameDetail,
   GameHistoryPage,
@@ -28,6 +29,8 @@ const SUMMARY_SELECT = {
   variant: true,
   obstacles: true,
   opener: true,
+  opening: true,
+  handicap: true,
   result: true,
   winner: true,
   moveCount: true,
@@ -37,7 +40,11 @@ const SUMMARY_SELECT = {
 type SummaryRow = Prisma.GameGetPayload<{ select: typeof SUMMARY_SELECT }>;
 
 function toSummary(row: SummaryRow): GameSummary {
-  return { ...row, playedAt: row.playedAt.toISOString() };
+  return {
+    ...row,
+    playedAt: row.playedAt.toISOString(),
+    handicap: parseHandicap(row.handicap),
+  };
 }
 
 /**

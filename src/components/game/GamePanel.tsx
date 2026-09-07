@@ -5,6 +5,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { AppearancePanel } from "./AppearancePanel";
 import { GameClock } from "./GameClock";
 import { GameControls } from "./GameControls";
+import { GameReviewPanel, type WinStreaks } from "./GameReviewPanel";
 import { GameStatsPanel } from "./GameStatsPanel";
 import { WinChanceBar } from "./WinChanceBar";
 import { GameSettingsPanel } from "./GameSettingsPanel";
@@ -38,6 +39,9 @@ export function GameSidebar(props: GamePanelProps) {
         <GameControls {...props} />
       </div>
       <div className={PANEL_CLASS}>
+        <StartSharedGame settings={props.session.state.settings} />
+      </div>
+      <div className={PANEL_CLASS}>
         <MoveHistory {...props} />
       </div>
     </aside>
@@ -48,7 +52,10 @@ export function GameSidebar(props: GamePanelProps) {
  * Everything you set once and then leave alone. It lives below the board
  * rather than beside it, which keeps the board as large as the screen allows.
  */
-export function GameOptions(props: GamePanelProps) {
+export function GameOptions({
+  streaks,
+  ...props
+}: GamePanelProps & { streaks: WinStreaks }) {
   return (
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div className={PANEL_CLASS}>
@@ -58,7 +65,7 @@ export function GameOptions(props: GamePanelProps) {
         <GameStatsPanel session={props.session} />
       </div>
       <div className={PANEL_CLASS}>
-        <StartSharedGame settings={props.session.state.settings} />
+        <GameReviewPanel session={props.session} streaks={streaks} />
       </div>
       <div className={PANEL_CLASS}>
         <GameSettingsPanel {...props} />

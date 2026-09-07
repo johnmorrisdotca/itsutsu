@@ -16,7 +16,7 @@ test.describe("surviving a refresh", () => {
 
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
     await expect(page.getByRole("button", { name: "J8, White stone" })).toBeVisible();
-    await expect(page.getByText(/to play/)).toContainText("Black");
+    await expect(page.getByTestId("to-play")).toContainText("Black");
   });
 
   test("undo still reaches back through a restored game", async ({ page }) => {

@@ -5,7 +5,9 @@ import useSWR from "swr";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
-import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { rulesFor } from "@/lib/gomoku/engine";
+import { GAME_STATUS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_COPY } from "@/components/game/game.constants";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -98,6 +100,20 @@ export function SharedGame({
       {error !== null ? (
         <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.warn}`}>
           {error}
+        </p>
+      ) : null}
+
+      {VARIANT_SPECS[state.settings.variant].captures ? (
+        <p className="text-xs text-muted" data-testid="shared-captures">
+          {GAME_COPY.captures.label} · {STONE_DISPLAY.black.label} {state.captures.black} ·{" "}
+          {STONE_DISPLAY.white.label} {state.captures.white} ·{" "}
+          {GAME_COPY.capturesToWin(state.settings.capturesToWin)}
+        </p>
+      ) : null}
+      {state.status === GAME_STATUS.playing &&
+      rulesFor(state.settings, state.toPlay).forbidden.length > 0 ? (
+        <p className="text-xs text-muted">
+          {STONE_DISPLAY[state.toPlay].label} may not play the points marked ✕.
         </p>
       ) : null}
 

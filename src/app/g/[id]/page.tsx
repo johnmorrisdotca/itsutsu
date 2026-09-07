@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
 import { SharedGame } from "@/components/live/SharedGame";
+import { SharedRules } from "@/components/live/SharedRules";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
@@ -85,6 +86,7 @@ export default async function SharedGamePage({
           </div>
 
           <aside className="flex w-full flex-col gap-4 lg:w-80">
+            <SharedRules game={game} token={token ?? null} seat={seat} />
             {invites.length > 0 ? (
               <InvitePanel invites={invites} yourStone={seat} />
             ) : (

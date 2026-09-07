@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
-import { Button, SectionTitle } from "@/components/ui/Controls";
+import { SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 
 export type SeatInvite = {
@@ -36,7 +36,7 @@ export function InvitePanel({
         keep yours to yourself.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
         {invites.map((invite) => (
           <SeatCard
             key={invite.stone}
@@ -109,11 +109,17 @@ function SeatCard({ invite, isYours }: { invite: SeatInvite; isYours: boolean })
         aria-label={`${display.label} seat link`}
       />
 
-      <div className="flex gap-2">
-        <Button onClick={copy}>{copied ? "Copied" : "Copy link"}</Button>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={copy}
+          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-black/5 dark:hover:bg-white/10"
+        >
+          {copied ? "Copied" : "Copy link"}
+        </button>
         <a
           href={smsHref}
-          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium hover:bg-black/5 dark:hover:bg-white/10"
+          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-black/5 dark:hover:bg-white/10"
         >
           Text it
         </a>

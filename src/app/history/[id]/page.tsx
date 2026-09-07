@@ -5,7 +5,8 @@ import { GameReplay } from "@/components/history/GameReplay";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
-import { RULE_VARIANT_DISPLAY, SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { variantLabel } from "@/lib/gomoku/variants.constants";
 
 export default async function GameDetailPage({
   params,
@@ -30,8 +31,7 @@ export default async function GameDetailPage({
             </h1>
             <p className="text-sm text-muted">
               {new Date(game.playedAt).toLocaleString()} · {game.size}×{game.size} ·{" "}
-              {RULE_VARIANT_DISPLAY[game.variant as "freestyle" | "standard"]?.label ??
-                game.variant}{" "}
+              {variantLabel(game.variant)}{" "}
               · {result.label} <span className="font-mincho">{result.kanji}</span>
             </p>
           </div>

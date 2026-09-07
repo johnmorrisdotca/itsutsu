@@ -4,11 +4,25 @@ import {
   FATAL_MOVE_DISPLAY,
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
-import { GAME_STATUS, SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { rulesFor, stonesLeft } from "@/lib/gomoku/engine";
+import {
+  GAME_STATUS,
+  HANDICAP_RULES,
+  SEAT_DISPLAY,
+  STONE_DISPLAY,
+  VARIANT_SPECS,
+  WIN_REASONS,
+} from "@/lib/gomoku/gomoku.constants";
+import {
+  FORBIDDEN_PATTERN_DISPLAY,
+  HANDICAP_RULE_DISPLAY,
+  SECOND_STONE_EXCLUSION_DISPLAY,
+} from "@/lib/gomoku/variants.constants";
 import { StoneMark } from "@/components/board/StoneMark";
 import { STONE_SETS } from "@/components/board/Board.constants";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { AWARENESS_LEVELS, GAME_COPY } from "./game.constants";
+import { openingPrompt } from "./openingCopy";
 import type { GameSession } from "./game.types";
 
 /** Whose move it is, drawn with the stone they are actually holding. */
@@ -28,13 +42,15 @@ function ToPlay({ session }: { session: GameSession }) {
   const who = names[seat].trim() || SEAT_DISPLAY[seat].label;
   const text =
     state.status === GAME_STATUS.won
-      ? session.lostOnTime !== null
+      ? state.winBy === WIN_REASONS.time || session.lostOnTime !== null
         ? `${who} wins on time`
-        : `${who} wins in ${state.moves.length} moves`
+        : state.winBy === WIN_REASONS.captures
+          ? `${who} ${GAME_COPY.winsByCaptures(state.settings.capturesToWin)}`
+          : `${who} wins in ${state.moves.length} moves`
       : `${who} to play`;
 
   return (
-    <p className="flex items-center gap-2.5 text-lg font-semibold">
+    <p className="flex items-center gap-2.5 text-lg font-semibold" data-testid="to-play">
       <span className="relative flex size-6 items-center justify-center">
         <StoneMark stone={stone} stones={stones} />
       </span>
@@ -140,6 +156,86 @@ function FatalNotice({ session }: { session: GameSession }) {
   );
 }
 
+/**
+ * What the variant adds to the plain turn line: the stone count in a two-stone
+ * turn, the capture tally, and which shapes the colour to move may not make.
+ * All of it is read from the engine; nothing here decides anything.
+ */
+function VariantLine({ session }: { session: GameSession }) {
+  const { state } = session;
+  const { settings } = state;
+  const spec = VARIANT_SPECS[settings.variant];
+  const rules = rulesFor(settings, state.toPlay);
+  const lines: string[] = [];
+
+  if (spec.stonesPerTurn > 1 && state.status === GAME_STATUS.playing) {
+    const left = stonesLeft(state);
+    const total = state.moves.length === 0 ? spec.firstTurnStones : rules.stonesPerTurn;
+    lines.push(GAME_COPY.stoneOfTurn(total - left + 1, total));
+  }
+  if (spec.captures) {
+    lines.push(
+      `${GAME_COPY.captures.label} · ${STONE_DISPLAY.black.label} ${state.captures.black} · ${STONE_DISPLAY.white.label} ${state.captures.white} · ${GAME_COPY.capturesToWin(settings.capturesToWin)}`,
+    );
+  }
+  const { handicap } = settings;
+  if (handicap.stone !== null) {
+    const parts = HANDICAP_RULES.filter((rule) => handicap[rule]).map(
+      (rule) => HANDICAP_RULE_DISPLAY[rule].label.toLowerCase(),
+    );
+    if (handicap.secondStoneExclusion > 0) {
+      parts.push(
+        `second stone ${SECOND_STONE_EXCLUSION_DISPLAY[handicap.secondStoneExclusion].label.toLowerCase()}`,
+      );
+    }
+    lines.push(
+      `${GAME_COPY.handicapFor(STONE_DISPLAY[handicap.stone].label)}${parts.length > 0 ? `: ${parts.join(", ")}` : ""}.`,
+    );
+  }
+  const forbidden = rules.forbidden;
+  if (forbidden.length > 0 && state.status === GAME_STATUS.playing) {
+    const shapes = forbidden
+      .map((pattern) => `${FORBIDDEN_PATTERN_DISPLAY[pattern].label} ${FORBIDDEN_PATTERN_DISPLAY[pattern].kanji}`)
+      .join(", ");
+    lines.push(GAME_COPY.forbiddenNote(STONE_DISPLAY[state.toPlay].label, shapes));
+  }
+
+  if (lines.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-0.5" data-testid="variant-line">
+      {lines.map((line) => (
+        <p key={line} className="text-xs text-zinc-500 dark:text-zinc-400">
+          {line}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+/** What the opening asks for right now, while it still asks for anything. */
+function OpeningNotice({ session }: { session: GameSession }) {
+  const { state, names } = session;
+  if (state.status !== GAME_STATUS.playing) return null;
+  const prompt = openingPrompt(state, names);
+  if (prompt === null) return null;
+
+  return (
+    <div
+      className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 ${TONE_CLASS.calm}`}
+      role="status"
+      data-testid="opening-notice"
+    >
+      <span aria-hidden="true" className="font-mincho mt-0.5 text-xl leading-none font-semibold">
+        {GAME_COPY.opening.kanji}
+      </span>
+      <span className="flex flex-col gap-0.5">
+        <span className="text-sm font-semibold">{GAME_COPY.opening.label}</span>
+        <span className="text-xs leading-snug opacity-85">{prompt}</span>
+      </span>
+    </div>
+  );
+}
+
 export function GameStatus({ session }: { session: GameSession }) {
   return (
     <section aria-live="polite" className="flex flex-col gap-3">
@@ -151,7 +247,9 @@ export function GameStatus({ session }: { session: GameSession }) {
             ? ` · reviewing ${session.moveIndex} of ${session.moveTotal}`
             : ""}
         </p>
+        <VariantLine session={session} />
       </div>
+      <OpeningNotice session={session} />
       <Outlook session={session} />
       <BuildingNotice session={session} />
       <FatalNotice session={session} />

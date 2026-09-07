@@ -5,9 +5,14 @@ import {
   BOARD_SIZES,
   DEFAULT_BOARD_SIZE,
   OBSTACLE_LAYOUTS,
+  OPENING_RULES,
   RULE_VARIANTS,
 } from "@/lib/gomoku/gomoku.constants";
-import type { ObstacleLayout, RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type {
+  ObstacleLayout,
+  OpeningRule,
+  RuleVariant,
+} from "@/lib/gomoku/gomoku.types";
 
 export const metadata = {
   title: "Gomoku",
@@ -38,6 +43,7 @@ export default async function EmbedPage({ searchParams }: PageProps<"/embed">) {
   const params = await searchParams;
 
   const variant = one(params.variant);
+  const opening = one(params.opening);
   const obstacles = one(params.obstacles);
 
   return (
@@ -49,6 +55,11 @@ export default async function EmbedPage({ searchParams }: PageProps<"/embed">) {
             variant !== undefined && variant in RULE_VARIANTS
               ? (variant as RuleVariant)
               : RULE_VARIANTS.freestyle,
+          // An opening the variant does not offer falls back to free in the engine.
+          opening:
+            opening !== undefined && opening in OPENING_RULES
+              ? (opening as OpeningRule)
+              : OPENING_RULES.free,
           obstacles:
             obstacles !== undefined && obstacles in OBSTACLE_LAYOUTS
               ? (obstacles as ObstacleLayout)

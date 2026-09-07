@@ -11,7 +11,7 @@ import {
   GAME_SORT_DISPLAY,
   GAME_VARIANT_FILTERS,
 } from "@/lib/history/gameHistory.constants";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { Field, Select } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 
@@ -87,9 +87,7 @@ export function HistoryFilters() {
         >
           {GAME_VARIANT_FILTERS.map((option) => (
             <option key={option} value={option}>
-              {option === "all"
-                ? "Any"
-                : RULE_VARIANT_DISPLAY[option as "freestyle" | "standard"].label}
+              {option === "all" ? "Any" : variantLabel(option)}
             </option>
           ))}
         </Select>

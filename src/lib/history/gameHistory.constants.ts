@@ -1,3 +1,5 @@
+import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+
 /**
  * The listing contract for game history. These arrays are the single source of
  * truth for what the API accepts: the Zod schemas read them, and the UI builds
@@ -17,7 +19,7 @@ export const GAME_RESULTS = ["black", "white", "draw", "abandoned"] as const;
 
 export const GAME_RESULT_FILTERS = ["all", ...GAME_RESULTS] as const;
 
-export const GAME_VARIANT_FILTERS = ["all", "freestyle", "standard"] as const;
+export const GAME_VARIANT_FILTERS = ["all", ...RULE_VARIANT_LIST] as const;
 
 export const GAME_SIZE_FILTERS = ["all", "9", "13", "15", "19"] as const;
 

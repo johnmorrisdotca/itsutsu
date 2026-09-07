@@ -7,13 +7,20 @@ import {
   FIRST_PLAYERS,
   OBSTACLE_LAYOUT_DISPLAY,
   OBSTACLE_LAYOUTS,
-  RULE_VARIANT_DISPLAY,
-  RULE_VARIANTS,
-  VARIANT_ALLOWS_FIRST_PLAYER_CHOICE,
+  OPENING_RULES,
+  RULE_VARIANT_LIST,
+  VARIANT_SPECS,
+  WIN_LENGTHS,
 } from "@/lib/gomoku/gomoku.constants";
+import {
+  OPENING_DISPLAY,
+  RULE_VARIANT_DISPLAY,
+} from "@/lib/gomoku/variants.constants";
+import { availableOpenings } from "@/lib/gomoku/engine";
 import type {
   FirstPlayer,
   ObstacleLayout,
+  OpeningRule,
   RuleVariant,
 } from "@/lib/gomoku/gomoku.types";
 import {
@@ -22,6 +29,8 @@ import {
   type TimeControlName,
 } from "@/lib/clock/clock.constants";
 import { Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
+import { GameBrowserButton } from "./GameBrowser";
+import { HandicapPanel } from "./HandicapPanel";
 import {
   AWARENESS_DISPLAY,
   AWARENESS_LEVELS,
@@ -33,14 +42,20 @@ import type { AwarenessLevel, GamePanelProps, HintPolicy } from "./game.types";
 
 export function GameSettingsPanel({ session, actions }: GamePanelProps) {
   const { settings } = session.state;
-  const { variant, size, firstPlayer, obstacles } = settings;
-  const canChooseOpener = VARIANT_ALLOWS_FIRST_PLAYER_CHOICE[variant];
+  const { variant, size, firstPlayer, obstacles, opening } = settings;
+  const spec = VARIANT_SPECS[variant];
+  const openings = availableOpenings(settings);
+  const canChooseOpener =
+    spec.allowFirstPlayerChoice && opening === OPENING_RULES.free;
 
   return (
     <section className="flex flex-col gap-4">
-      <SectionTitle kanji={GAME_COPY.settings.kanji}>
-        {GAME_COPY.settings.label}
-      </SectionTitle>
+      <div className="flex items-center justify-between gap-2">
+        <SectionTitle kanji={GAME_COPY.settings.kanji}>
+          {GAME_COPY.settings.label}
+        </SectionTitle>
+        <GameBrowserButton session={session} actions={actions} />
+      </div>
 
       <Field label="Board">
         <Select
@@ -56,20 +71,63 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
-      <Field label="Rules" hint={RULE_VARIANT_DISPLAY[variant].description}>
+      <Field label="Rules" hint={RULE_VARIANT_DISPLAY[variant].tagline}>
         <Select
           value={variant}
           onChange={(event) =>
             actions.reset({ variant: event.target.value as RuleVariant })
           }
+          data-testid="rules"
         >
-          {Object.values(RULE_VARIANTS).map((option) => (
+          {RULE_VARIANT_LIST.map((option) => (
             <option key={option} value={option}>
-              {RULE_VARIANT_DISPLAY[option].label}
+              {RULE_VARIANT_DISPLAY[option].label} · {RULE_VARIANT_DISPLAY[option].kanji}
             </option>
           ))}
         </Select>
       </Field>
+
+      <Field
+        label={GAME_COPY.opening.label}
+        hint={
+          openings.length > 1
+            ? OPENING_DISPLAY[opening].tagline
+            : `${RULE_VARIANT_DISPLAY[variant].label} has no opening protocol.`
+        }
+      >
+        <Select
+          value={opening}
+          disabled={openings.length <= 1}
+          onChange={(event) =>
+            actions.reset({ opening: event.target.value as OpeningRule })
+          }
+          data-testid="opening"
+        >
+          {openings.map((option) => (
+            <option key={option} value={option}>
+              {OPENING_DISPLAY[option].label}
+            </option>
+          ))}
+        </Select>
+      </Field>
+
+      {spec.winLength === null ? (
+        <Field label={GAME_COPY.lineLength.label} hint={GAME_COPY.lineLengthHint}>
+          <Select
+            value={settings.winLength}
+            onChange={(event) =>
+              actions.reset({ winLength: Number(event.target.value) })
+            }
+            data-testid="win-length"
+          >
+            {WIN_LENGTHS.map((option) => (
+              <option key={option} value={option}>
+                {option} in a row
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ) : null}
 
       <Field
         label="First stone"
@@ -119,6 +177,8 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </summary>
 
         <div className="mt-3 flex flex-col gap-3">
+          <HandicapPanel session={session} actions={actions} />
+
           <Toggle
             label="Allow taking moves back"
             checked={settings.allowUndo}

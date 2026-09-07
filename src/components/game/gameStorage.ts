@@ -1,5 +1,12 @@
-import { createGame, playMove } from "@/lib/gomoku/engine";
-import type { GameSettings, GameState, Move, Seat, Stone } from "@/lib/gomoku/gomoku.types";
+import { createGame, replayMoves } from "@/lib/gomoku/engine";
+import type {
+  GameSettings,
+  GameState,
+  Move,
+  OpeningChoice,
+  Seat,
+  Stone,
+} from "@/lib/gomoku/gomoku.types";
 import type { Appearance } from "@/components/board/board.types";
 import type { GameStats, SeatNames, SessionSettings } from "./game.types";
 
@@ -19,6 +26,8 @@ export type GameSnapshot = {
   moves: Move[];
   seats: Record<Stone, Seat>;
   swapsUsed: Record<Seat, number>;
+  /** Decisions taken in a swap opening. Absent from snapshots that predate them. */
+  openingChoices?: OpeningChoice[];
   appearance: Appearance;
   session: SessionSettings;
   names: SeatNames;
@@ -41,6 +50,7 @@ export function toSnapshot(
     moves: state.moves,
     seats: state.seats,
     swapsUsed: state.swapsUsed,
+    openingChoices: state.opening.choices,
     appearance,
     session,
     names,
@@ -59,15 +69,8 @@ export function toSnapshot(
  */
 export function restoreTimeline(snapshot: GameSnapshot): GameState[] {
   const start = createGame({ ...snapshot.settings, firstPlayer: snapshot.opener });
-  const timeline: GameState[] = [start];
-
-  for (const move of snapshot.moves) {
-    const previous = timeline[timeline.length - 1];
-    const next = playMove(previous, { row: move.row, col: move.col }, move.kind);
-    // A move that will not replay means the snapshot no longer fits the rules.
-    if (next === previous) break;
-    timeline.push(next);
-  }
+  // Stops at the first move that will not replay: the snapshot no longer fits the rules.
+  const timeline = replayMoves(start, snapshot.moves, snapshot.openingChoices ?? []);
 
   return timeline.map((state) => ({
     ...state,

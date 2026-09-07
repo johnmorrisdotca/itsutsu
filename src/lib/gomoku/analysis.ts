@@ -2,6 +2,7 @@ import { DEFENCE_WEIGHT, OUTLOOKS, SHAPE_BASE } from "./analysis.constants";
 import {
   cellAt,
   indexOf,
+  isLegalMove,
   isOnBoard,
   otherStone,
   seatToPlay,
@@ -277,12 +278,14 @@ export function suggestMove(state: GameState): Suggestion | null {
 
   const mover = state.toPlay;
   const foe = otherStone(mover);
-  const candidates = candidatePoints(state);
+  // Only moves the rules allow: not a forbidden shape, inside the opening.
+  const legal = (point: Point) => isLegalMove(state, point);
+  const candidates = candidatePoints(state).filter(legal);
   if (candidates.length === 0) return null;
 
   if (state.moves.length === 0) {
     const centre = tengen(state.settings.size);
-    if (cellAt(state, centre) === null) return made(centre, "opening");
+    if (cellAt(state, centre) === null && legal(centre)) return made(centre, "opening");
   }
 
   const mine = scanThreats(state, mover);
@@ -301,8 +304,9 @@ export function suggestMove(state: GameState): Suggestion | null {
   ];
 
   for (const [points, reason] of ladder) {
-    if (points.length === 0) continue;
-    const best = bestByShape(state, points, mover, foe);
+    const playable = points.filter(legal);
+    if (playable.length === 0) continue;
+    const best = bestByShape(state, playable, mover, foe);
     return made(best, reason);
   }
 

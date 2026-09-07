@@ -1,0 +1,180 @@
+import {
+  GAME_STATUS,
+  OPENING_CHOICE_EXTEND,
+  OPENING_RULES,
+  OPENING_STAGES,
+} from "../gomoku.constants";
+import { tengen } from "../obstacles";
+import type {
+  GameSettings,
+  GameState,
+  OpeningChoice,
+  OpeningState,
+  Point,
+  Seat,
+  Stone,
+} from "../gomoku.types";
+import { chebyshev, otherStone, samePoint } from "./board";
+import { rulesFor } from "./handicap";
+
+/**
+ * Opening protocols. Two kinds live here: placement restrictions (pro, long
+ * pro, the RIF opening) that only narrow where the first stones may go, and
+ * swap protocols where one seat lays every stone for a while and the other
+ * then picks a colour. The engine asks `openingAllows` before every stone and
+ * `openingAfterMove` after, and never looks at the protocol by name.
+ */
+
+/** Half-widths of the central squares the openings refer to. */
+const PRO_EXCLUSION = 2; // outside the 5×5
+const LONG_PRO_EXCLUSION = 3; // outside the 7×7
+const RIF_WHITE_REACH = 1; // inside the 3×3
+const RIF_BLACK_REACH = 2; // inside the 5×5
+
+/** Stones on the board once the swap protocols pause for a decision. */
+const SWAP_STONES = 3;
+const SWAP2_EXTENDED_STONES = 5;
+
+const SWAP_OPENINGS: readonly GameSettings["opening"][] = [
+  OPENING_RULES.swap,
+  OPENING_RULES.swap2,
+];
+
+export function initialOpening(
+  settings: GameSettings,
+  opener: Stone,
+  seats: Record<Stone, Seat>,
+): OpeningState {
+  if (SWAP_OPENINGS.includes(settings.opening)) {
+    return { stage: OPENING_STAGES.placing, actor: seats[opener], choices: [] };
+  }
+  if (settings.opening === OPENING_RULES.rif) {
+    return { stage: OPENING_STAGES.placing, actor: null, choices: [] };
+  }
+  return { stage: OPENING_STAGES.done, actor: null, choices: [] };
+}
+
+/**
+ * Whether the opening lets the next stone go on `point`. A handicap can add a
+ * pro-style exclusion of its own: the handicapped colour's second stone must
+ * leave the centre, whichever colour opened.
+ */
+export function openingAllows(state: GameState, point: Point): boolean {
+  const { settings, moves, opening, toPlay } = state;
+  if (opening.stage === OPENING_STAGES.choosing) return false;
+
+  const centre = tengen(settings.size);
+  const distance = chebyshev(point, centre);
+  const n = moves.length;
+
+  const exclusion = rulesFor(settings, toPlay).secondStoneExclusion;
+  if (exclusion > 0) {
+    const own = moves.filter((move) => move.stone === toPlay).length;
+    if (own === 1 && distance <= exclusion) return false;
+  }
+
+  switch (settings.opening) {
+    case OPENING_RULES.pro:
+      if (n === 0) return samePoint(point, centre);
+      return n !== 2 || distance > PRO_EXCLUSION;
+    case OPENING_RULES.longPro:
+      if (n === 0) return samePoint(point, centre);
+      return n !== 2 || distance > LONG_PRO_EXCLUSION;
+    case OPENING_RULES.rif:
+      if (n === 0) return samePoint(point, centre);
+      if (n === 1) return distance <= RIF_WHITE_REACH;
+      if (n === 2) return distance <= RIF_BLACK_REACH;
+      return true;
+    default:
+      return true;
+  }
+}
+
+/**
+ * The opening state once a stone has landed. A swap protocol pauses for a
+ * decision after its third stone, and again after the fifth if the chooser
+ * extended; the deciding seat is always the one that did not lay the stones.
+ */
+export function openingAfterMove(state: GameState): OpeningState {
+  const { opening, settings, moves, seats, opener } = state;
+  if (opening.stage === OPENING_STAGES.done) return opening;
+
+  const n = moves.length;
+  const decides = (seat: Seat): OpeningState => ({
+    ...opening,
+    stage: OPENING_STAGES.choosing,
+    actor: seat,
+  });
+
+  if (opening.stage === OPENING_STAGES.placing && n === SWAP_STONES) {
+    if (SWAP_OPENINGS.includes(settings.opening) || settings.opening === OPENING_RULES.rif) {
+      return decides(seats[otherStone(opener)]);
+    }
+  }
+  if (opening.stage === OPENING_STAGES.extending && n === SWAP2_EXTENDED_STONES) {
+    return decides(seats[opener]);
+  }
+  return opening;
+}
+
+/** Whether the game is waiting on a seat to pick a colour. */
+export function canChooseColour(state: GameState): boolean {
+  return (
+    state.status === GAME_STATUS.playing &&
+    state.opening.stage === OPENING_STAGES.choosing
+  );
+}
+
+/** Swap2 only: the first chooser may add two stones and pass the choice back. */
+export function canExtendOpening(state: GameState): boolean {
+  return (
+    canChooseColour(state) &&
+    state.settings.opening === OPENING_RULES.swap2 &&
+    state.moves.length === SWAP_STONES
+  );
+}
+
+/**
+ * The deciding seat takes `stone`. Seats are exchanged if that colour is not
+ * already theirs; the board and the colour to move are untouched.
+ */
+export function chooseColour(state: GameState, stone: Stone): GameState {
+  if (!canChooseColour(state)) return state;
+  const actor = state.opening.actor;
+  if (actor === null) return state;
+
+  const seats =
+    state.seats[stone] === actor
+      ? state.seats
+      : { black: state.seats.white, white: state.seats.black };
+
+  return {
+    ...state,
+    seats,
+    opening: {
+      stage: OPENING_STAGES.done,
+      actor: null,
+      choices: [...state.opening.choices, stone],
+    },
+  };
+}
+
+/** The chooser declines to choose and lays two more stones instead. */
+export function extendOpening(state: GameState): GameState {
+  if (!canExtendOpening(state)) return state;
+  return {
+    ...state,
+    opening: {
+      stage: OPENING_STAGES.extending,
+      actor: state.opening.actor,
+      choices: [...state.opening.choices, OPENING_CHOICE_EXTEND],
+    },
+  };
+}
+
+/** Replays one recorded decision. */
+export function applyOpeningChoice(state: GameState, choice: OpeningChoice): GameState {
+  return choice === OPENING_CHOICE_EXTEND
+    ? extendOpening(state)
+    : chooseColour(state, choice);
+}

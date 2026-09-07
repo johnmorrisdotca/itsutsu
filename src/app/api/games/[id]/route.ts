@@ -17,12 +17,30 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/games/[id]"
   }
 }
 
-/** Removes a game and its moves. Idempotent: deleting twice still answers 404. */
+/**
+ * Whether a request carries the operator's token. There are no accounts, so
+ * destructive operations are gated on one secret set in the environment; with
+ * none set, they do not exist at all. A public deployment must never expose an
+ * unauthenticated delete over the whole history table.
+ */
+function isOperator(request: Request): boolean {
+  const expected = process.env.ADMIN_TOKEN?.trim();
+  if (!expected) return false;
+  const header = request.headers.get("authorization") ?? "";
+  return header === `Bearer ${expected}`;
+}
+
+/**
+ * Removes a game and its moves. Idempotent: deleting twice still answers 404.
+ * Operator only — and a wrong or missing token answers 404 too, so the route
+ * gives nothing away about which ids exist.
+ */
 export async function DELETE(
-  _request: Request,
+  request: Request,
   ctx: RouteContext<"/api/games/[id]">,
 ) {
   try {
+    if (!isOperator(request)) return notFound("No such game.");
     const { id } = await ctx.params;
     const removed = await deleteGame(id);
     if (!removed) return notFound("No such game.");

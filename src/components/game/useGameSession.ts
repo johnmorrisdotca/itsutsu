@@ -2,34 +2,48 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { assess, isSwapBlocked, newlyLost, suggestMove } from "@/lib/gomoku/analysis";
+import { assess, isSwapBlocked, suggestMove } from "@/lib/gomoku/analysis";
 import { winChance } from "@/lib/gomoku/winChance";
-import { TIME_CONTROLS } from "@/lib/clock/clock.constants";
 import {
   canSkip as engineCanSkip,
   canSwapSeats,
+  chooseColour as engineChooseColour,
   createGame,
-  otherStone,
+  extendOpening as engineExtendOpening,
+  isLegalMove,
   playMove,
   seatToPlay,
   skipMove,
   swapSeats,
   winOnTime,
 } from "@/lib/gomoku/engine";
-import { GAME_STATUS, SEATS, STONES } from "@/lib/gomoku/gomoku.constants";
-import type { GameSettings, GameState, Point, Seat } from "@/lib/gomoku/gomoku.types";
-import type { Suggestion } from "@/lib/gomoku/analysis.types";
-import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
-import type { Appearance, BoardMark } from "@/components/board/board.types";
 import {
-  AWARENESS_LEVELS,
+  GAME_STATUS,
+  SEATS,
+  STONES,
+  VARIANT_SPECS,
+  WIN_LENGTH,
+} from "@/lib/gomoku/gomoku.constants";
+import type { GameSettings, Point, Seat, Stone } from "@/lib/gomoku/gomoku.types";
+import type { Suggestion } from "@/lib/gomoku/analysis.types";
+import type { Appearance } from "@/components/board/board.types";
+import {
   DEFAULT_SEAT_NAMES,
   DEFAULT_SESSION_SETTINGS,
   GAME_COPY,
   HINT_POLICIES,
+  HISTORY_MODES,
 } from "./game.constants";
 import { useGameClock } from "./useGameClock";
+import { buildMarks, findFatalMove } from "./sessionSupport";
 import { emptyStats, missedThreat, recordHint, recordMove } from "./stats";
+import {
+  restoredAppearance,
+  restoredHints,
+  restoredSettings,
+  restoredStats,
+  timeControlFor,
+} from "./restoreSession";
 import {
   clearSnapshot,
   loadSnapshot,
@@ -74,24 +88,21 @@ export function useGameSession(
     restored !== null ? restored.moves.map(() => null).concat([null]) : [null],
   );
 
-  const [appearance, setAppearanceState] = useState<Appearance>(
-    restored?.appearance ?? DEFAULT_APPEARANCE,
+  const [appearance, setAppearanceState] = useState<Appearance>(() =>
+    restoredAppearance(restored),
   );
-  const [settings, setSettingsState] = useState<SessionSettings>(
-    restored?.session ?? DEFAULT_SESSION_SETTINGS,
+  const [settings, setSettingsState] = useState<SessionSettings>(() =>
+    restoredSettings(restored),
   );
   const [names, setNames] = useState<SeatNames>(
     restored?.names ?? { ...DEFAULT_SEAT_NAMES },
   );
 
-  const [hintsLeft, setHintsLeft] = useState<Record<Seat, number>>(
-    restored?.hintsLeft ?? {
-      one: DEFAULT_SESSION_SETTINGS.hintsPerSeat,
-      two: DEFAULT_SESSION_SETTINGS.hintsPerSeat,
-    },
+  const [hintsLeft, setHintsLeft] = useState<Record<Seat, number>>(() =>
+    restoredHints(restored, DEFAULT_SESSION_SETTINGS.hintsPerSeat),
   );
   const [hint, setHint] = useState<Suggestion | null>(null);
-  const [stats, setStats] = useState(() => restored?.stats ?? emptyStats(0));
+  const [stats, setStats] = useState(() => restoredStats(restored));
   const [lostOnTime, setLostOnTime] = useState<Seat | null>(null);
   // Set on mount rather than during render, which must stay pure.
   const lastMoveAt = useRef(0);
@@ -99,12 +110,13 @@ export function useGameSession(
     if (lastMoveAt.current === 0) lastMoveAt.current = Date.now();
   }, []);
   const [helpRequest, setHelpRequest] = useState<Seat | null>(null);
+  const [pendingBranch, setPendingBranch] = useState<Point | null>(null);
   const [helpMark, setHelpMark] = useState<Point | null>(null);
 
   const state = timeline[index];
   const assessment = useMemo(() => assess(state), [state]);
 
-  const control = TIME_CONTROLS[settings.timeControl];
+  const control = timeControlFor(settings.timeControl);
   const atLatest = index === timeline.length - 1;
 
   /** A flag falling ends the game properly, through the engine. */
@@ -172,11 +184,16 @@ export function useGameSession(
           }),
         );
       }
-      clock.onMoveComplete(seat);
+      // A stone that leaves the same seat to move, as in connect6, is not a completed turn.
+      if (seatToPlay(next) !== seat || next.status !== GAME_STATUS.playing) {
+        clock.onMoveComplete(seat);
+      }
       advance(next, fatal);
     },
     [advance, assessment, clock, state],
   );
+
+  const reviewing = index < timeline.length - 1;
 
   const play = useCallback(
     (point: Point) => {
@@ -186,10 +203,30 @@ export function useGameSession(
         setHelpRequest(null);
         return;
       }
+      /*
+       * Playing from an earlier position destroys the moves after it. In
+       * review mode that is simply not allowed; in branch mode it is held
+       * back for confirmation, because silently discarding a game someone is
+       * only reading through is never what they meant.
+       */
+      if (reviewing) {
+        if (settings.historyMode !== HISTORY_MODES.branch) return;
+        if (!isLegalMove(state, point)) return;
+        setPendingBranch(point);
+        return;
+      }
       commit(playMove(state, point));
     },
-    [commit, helpRequest, state],
+    [commit, helpRequest, reviewing, settings.historyMode, state],
   );
+
+  const confirmBranch = useCallback(() => {
+    if (pendingBranch === null) return;
+    setPendingBranch(null);
+    commit(playMove(state, pendingBranch));
+  }, [commit, pendingBranch, state]);
+
+  const cancelBranch = useCallback(() => setPendingBranch(null), []);
 
   const skip = useCallback(() => {
     commit(skipMove(state, Math.random()));
@@ -202,6 +239,22 @@ export function useGameSession(
     if (next !== state) advance(next, null);
   }, [advance, assessment, state]);
 
+  /** Opening decisions are timeline entries too, so they can be taken back. */
+  const chooseColour = useCallback(
+    (stone: Stone) => {
+      if (reviewing) return;
+      const next = engineChooseColour(state, stone);
+      if (next !== state) advance(next, null);
+    },
+    [advance, reviewing, state],
+  );
+
+  const extendOpening = useCallback(() => {
+    if (reviewing) return;
+    const next = engineExtendOpening(state);
+    if (next !== state) advance(next, null);
+  }, [advance, reviewing, state]);
+
   const undo = useCallback(() => {
     if (index > 0 && state.settings.allowUndo) setIndex(index - 1);
   }, [index, state.settings.allowUndo]);
@@ -212,21 +265,35 @@ export function useGameSession(
 
   const jumpTo = useCallback(
     (target: number) => {
-      if (target >= 0 && target < timeline.length) setIndex(target);
+      if (target < 0 || target >= timeline.length) return;
+      // Moving elsewhere abandons a branch that was waiting to be confirmed.
+      setPendingBranch(null);
+      setIndex(target);
     },
     [timeline.length],
   );
 
+  const returnToLatest = useCallback(() => {
+    setPendingBranch(null);
+    setIndex(timeline.length - 1);
+  }, [timeline.length]);
+
   const reset = useCallback((next: Partial<GameSettings> = {}) => {
     if (persist) clearSnapshot();
-    setTimeline((current) => [
-      createGame({ ...current[0].settings, ...next }, Math.random()),
-    ]);
+    setTimeline((current) => {
+      const settings = { ...current[0].settings, ...next };
+      // A new variant brings its own line length unless one was asked for.
+      if (next.variant !== undefined && next.winLength === undefined) {
+        settings.winLength = VARIANT_SPECS[next.variant].winLength ?? WIN_LENGTH;
+      }
+      return [createGame(settings, Math.random())];
+    });
     setFatalAt([null]);
     setIndex(0);
     setHint(null);
     setHelpMark(null);
     setHelpRequest(null);
+    setPendingBranch(null);
     setHintsLeft({
       one: settings.hintsPerSeat,
       two: settings.hintsPerSeat,
@@ -234,7 +301,7 @@ export function useGameSession(
     setStats(emptyStats());
     setLostOnTime(null);
     lastMoveAt.current = Date.now();
-    clock.reset(TIME_CONTROLS[settings.timeControl]);
+    clock.reset(timeControlFor(settings.timeControl));
   }, [clock, persist, settings.hintsPerSeat, settings.timeControl]);
 
   const seat = seatToPlay(state);
@@ -284,7 +351,7 @@ export function useGameSession(
        * them with no time at all, so every game started out already flagged.
        */
       if (next.timeControl !== undefined) {
-        clock.reset(TIME_CONTROLS[next.timeControl]);
+        clock.reset(timeControlFor(next.timeControl));
       }
       setSettingsState((current) => ({ ...current, ...next }));
     },
@@ -336,6 +403,11 @@ export function useGameSession(
     swapBlockedReason,
     moveIndex: index,
     moveTotal: timeline.length - 1,
+    reviewing,
+    boardReadOnly:
+      reviewing && settings.historyMode !== HISTORY_MODES.branch,
+    pendingBranch,
+    branchDiscards: timeline.length - 1 - index,
   };
 
   const actions: GameActions = {
@@ -343,9 +415,14 @@ export function useGameSession(
     undo,
     redo,
     jumpTo,
+    returnToLatest,
+    confirmBranch,
+    cancelBranch,
     reset,
     skip,
     swap,
+    chooseColour,
+    extendOpening,
     askHint,
     grantHint,
     requestHelp,
@@ -356,65 +433,4 @@ export function useGameSession(
   };
 
   return { session, actions };
-}
-
-/**
- * Attributes a newly decided game to the move that threw it away.
- *
- * The move that makes a win unstoppable belongs to the winner, so the mistake
- * is the loser's most recent stone — the one that failed to answer.
- */
-function findFatalMove(
-  before: ReturnType<typeof assess>,
-  after: ReturnType<typeof assess>,
-  next: GameState,
-): FatalMove | null {
-  const loser = newlyLost(before, after);
-  if (loser === null) return null;
-
-  for (let index = next.moves.length - 1; index >= 0; index -= 1) {
-    if (next.moves[index].stone === loser) {
-      return { moveNumber: index + 1, stone: loser };
-    }
-  }
-  return null;
-}
-
-/**
- * Turns the reading of the position into things to draw. Forced points appear
- * only at the highest awareness level; a hint and a piece of advice always
- * appear, because they were explicitly asked for.
- */
-function buildMarks(
-  assessment: ReturnType<typeof assess>,
-  settings: SessionSettings,
-  hint: Suggestion | null,
-  helpMark: Point | null,
-): BoardMark[] {
-  const marks: BoardMark[] = [];
-
-  if (settings.awareness === AWARENESS_LEVELS.full) {
-    for (const point of assessment.forcedPoints) {
-      marks.push({ ...point, kind: "forced" });
-    }
-    // One ply earlier than a forced point, and only if the game asked for it.
-    if (settings.earlyWarning) {
-      for (const point of assessment.buildingPoints) {
-        marks.push({ ...point, kind: "building" });
-      }
-    }
-  }
-  if (helpMark !== null) marks.push({ ...helpMark, kind: "help" });
-  if (hint !== null) marks.push({ ...hint.point, kind: "hint" });
-
-  return marks;
-}
-
-/** The colour a seat is holding right now, for labelling the controls. */
-export function stoneForSeat(session: GameSession, seat: Seat) {
-  return session.state.seats.black === seat
-    ? "black"
-    : session.state.seats.white === seat
-      ? "white"
-      : otherStone(session.state.toPlay);
 }

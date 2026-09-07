@@ -1,0 +1,69 @@
+import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import type { Appearance } from "@/components/board/board.types";
+import { TIME_CONTROLS, type TimeControlName } from "@/lib/clock/clock.constants";
+import type { TimeControl } from "@/lib/clock/clock.types";
+import { DEFAULT_SESSION_SETTINGS } from "./game.constants";
+import { emptySeatStats, emptyStats } from "./stats";
+import type { GameStats, SessionSettings } from "./game.types";
+import type { GameSnapshot } from "./gameStorage";
+
+/**
+ * Reading a stored session back safely.
+ *
+ * A snapshot is JSON that some earlier version of this app wrote, so its shape
+ * is whatever that version happened to have. Restoring it wholesale means any
+ * field added since is simply missing, and `undefined` then travels a long way
+ * before it fails — a snapshot written before clocks existed had no
+ * `timeControl`, which surfaced as a crash inside `startClock`.
+ *
+ * So everything read back here is merged over the current defaults rather than
+ * trusted. That makes adding a field safe by construction, without discarding
+ * a game in progress the way a version bump would.
+ */
+export function restoredAppearance(snapshot: GameSnapshot | null): Appearance {
+  return { ...DEFAULT_APPEARANCE, ...snapshot?.appearance };
+}
+
+export function restoredSettings(snapshot: GameSnapshot | null): SessionSettings {
+  const merged = { ...DEFAULT_SESSION_SETTINGS, ...snapshot?.session };
+  return {
+    ...merged,
+    // A name that no longer exists must not become an undefined time control.
+    timeControl: knownTimeControl(merged.timeControl),
+  };
+}
+
+export function restoredStats(snapshot: GameSnapshot | null): GameStats {
+  const stored = snapshot?.stats;
+  if (stored === undefined) return emptyStats(0);
+
+  return {
+    startedAt: stored.startedAt ?? 0,
+    bySeat: {
+      one: { ...emptySeatStats(), ...stored.bySeat?.one },
+      two: { ...emptySeatStats(), ...stored.bySeat?.two },
+    },
+  };
+}
+
+export function restoredHints(
+  snapshot: GameSnapshot | null,
+  perSeat: number,
+): Record<"one" | "two", number> {
+  return {
+    one: snapshot?.hintsLeft?.one ?? perSeat,
+    two: snapshot?.hintsLeft?.two ?? perSeat,
+  };
+}
+
+/** Falls back to no clock rather than returning an undefined control. */
+export function knownTimeControl(name: string | undefined): TimeControlName {
+  return name !== undefined && name in TIME_CONTROLS
+    ? (name as TimeControlName)
+    : "none";
+}
+
+/** The control for a name, guaranteed to exist. */
+export function timeControlFor(name: string | undefined): TimeControl {
+  return TIME_CONTROLS[knownTimeControl(name)];
+}

@@ -27,13 +27,143 @@ export type MoveKind = "place" | "skip";
 export type Move = Point & {
   stone: Stone;
   kind: MoveKind;
+  /** Opponent stones this move took off the board, in the capture variants. */
+  captured?: Point[];
 };
 
 /**
+ * The named rule sets. Each is described as data in `VARIANT_SPECS`, so the
+ * engine reads a spec rather than switching on the name.
+ *
  * `freestyle`: five or more in a row wins.
  * `standard`: exactly five wins; an overline (six or more) does not.
+ * `renju`: black is forbidden the double three, double four and overline.
+ * `omok`: the double three is forbidden for both sides; overlines win.
+ * `caro`: exactly five wins, and not when blocked at both ends.
+ * `ninuki`: five in a row wins, and so does capturing five pairs.
+ * `connect6`: two stones a turn, six in a row wins.
  */
-export type RuleVariant = "freestyle" | "standard";
+export type RuleVariant =
+  | "freestyle"
+  | "standard"
+  | "renju"
+  | "omok"
+  | "caro"
+  | "ninuki"
+  | "connect6";
+
+/**
+ * How the first stones go down. Everything after the opening is the variant's
+ * business; these only shape the start, to blunt black's first-move advantage.
+ *
+ * `free`: anywhere, any order.
+ * `pro` / `longPro`: black opens at tengen and black's second stone must leave
+ * the central 5×5 (7×7 for long pro).
+ * `swap`: seat one places three stones, seat two picks a colour.
+ * `swap2`: as swap, but seat two may instead add two stones and hand the choice
+ * back.
+ * `rif`: the classic renju opening — centre, then inside the 3×3, then inside
+ * the 5×5, after which white may swap colours.
+ */
+export type OpeningRule = "free" | "pro" | "longPro" | "swap" | "swap2" | "rif";
+
+/**
+ * What a completed line has to look like to win.
+ *
+ * `atLeast`: `winLength` or longer.
+ * `exact`: precisely `winLength`; an overline is not a win.
+ * `exactOpen`: precisely `winLength`, and not shut in at both ends.
+ */
+export type LineRule = "atLeast" | "exact" | "exactOpen";
+
+/** Shapes a colour may be forbidden from making. See `rules/forbidden.ts`. */
+export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
+
+/** How a won game was won. Null while nobody has. */
+export type WinReason = "line" | "captures" | "time";
+
+/**
+ * Where a swap-style opening stands. `placing` and `extending` are stretches
+ * where one seat lays every stone regardless of colour; `choosing` is a pause
+ * where no stone is legal until the deciding seat has picked a colour.
+ */
+export type OpeningStage = "placing" | "choosing" | "extending" | "done";
+
+/** A decision taken during the opening: a colour, or two more stones. */
+export type OpeningChoice = Stone | "extend";
+
+export type OpeningState = {
+  stage: OpeningStage;
+  /** The seat acting outside the normal turn order, if any. */
+  actor: Seat | null;
+  /** Every decision so far, so a stored game can be replayed through them. */
+  choices: OpeningChoice[];
+};
+
+/**
+ * One rule set, as data. The engine consults this and never the variant's
+ * name, so adding a variant is a matter of adding a row.
+ */
+export type VariantSpec = {
+  /** Per colour, because renju lets white win with an overline and not black. */
+  lineRule: Record<Stone, LineRule>;
+  forbidden: Record<Stone, readonly ForbiddenPattern[]>;
+  /** Flanking a pair of enemy stones removes them. */
+  captures: boolean;
+  stonesPerTurn: number;
+  /** Connect6 opens with a single stone before the two-a-turn rhythm starts. */
+  firstTurnStones: number;
+  /** A pinned line length, or null when the players may choose. */
+  winLength: number | null;
+  /** Whether the players may hand the first stone to white or draw lots. */
+  allowFirstPlayerChoice: boolean;
+  openings: readonly OpeningRule[];
+};
+
+/**
+ * Extra restrictions one colour plays under, so a stronger player can give a
+ * weaker one a fair game. Every item is a rule some variant already imposes on
+ * a colour, applied here on top of whatever the variant says. A handicap
+ * belongs to a colour, not a seat, so seat swaps are off while one is set.
+ *
+ * `doubleThree` / `doubleFour` / `overline`: shapes this colour may not make.
+ * `exactLine`: this colour's overline is not a win.
+ * `openLine`: this colour's winning line must not be shut in at both ends.
+ * `longerLine`: this colour needs one more stone in a row.
+ * `singleStone`: one stone a turn where the variant gives two.
+ * `noCaptures`: this colour does not capture, in the capture variants.
+ * `secondStoneExclusion`: this colour's second stone must land outside the
+ * central square of this half-width (2 for 5×5, 3 for 7×7); 0 for none.
+ */
+export type Handicap = {
+  stone: Stone | null;
+  doubleThree: boolean;
+  doubleFour: boolean;
+  overline: boolean;
+  exactLine: boolean;
+  openLine: boolean;
+  longerLine: boolean;
+  singleStone: boolean;
+  noCaptures: boolean;
+  secondStoneExclusion: number;
+};
+
+/** The toggles of a handicap, without the colour that carries them. */
+export type HandicapRule = Exclude<keyof Handicap, "stone" | "secondStoneExclusion">;
+
+/**
+ * The rules one colour actually plays under: the variant's spec for that
+ * colour with the handicap laid over it. Everything in the engine that asks
+ * "may this colour…" reads one of these, never the spec directly.
+ */
+export type ColourRules = {
+  lineRule: LineRule;
+  forbidden: readonly ForbiddenPattern[];
+  captures: boolean;
+  stonesPerTurn: number;
+  winLength: number;
+  secondStoneExclusion: number;
+};
 
 export type GameStatus = "playing" | "won" | "draw";
 
@@ -61,6 +191,10 @@ export type GameSettings = {
   /** Stones in a line needed to win. */
   winLength: number;
   variant: RuleVariant;
+  opening: OpeningRule;
+  handicap: Handicap;
+  /** Pairs a colour must capture to win, in the variants that capture. */
+  capturesToWin: number;
   firstPlayer: FirstPlayer;
   obstacles: ObstacleLayout;
   /** Taking a move back. Off by default in the stricter variants. */
@@ -84,9 +218,13 @@ export type GameState = {
   seats: Record<Stone, Seat>;
   /** Swaps each seat has spent, counted against `settings.swapsPerSeat`. */
   swapsUsed: Record<Seat, number>;
+  /** Pairs each colour has captured. Always zero outside the capture variants. */
+  captures: Record<Stone, number>;
+  opening: OpeningState;
   toPlay: Stone;
   status: GameStatus;
   winner: Stone | null;
+  winBy: WinReason | null;
   /** The stones that completed the winning line, empty until someone wins. */
   winningLine: Point[];
 };

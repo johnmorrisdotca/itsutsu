@@ -1,10 +1,12 @@
 import { DIRECTIONS } from "./gomoku.constants";
 import {
   findWinningLine,
+  forbiddenAt,
   indexOf,
   isOnBoard,
   isStone,
   pointOf,
+  rulesFor,
 } from "./engine";
 import { tengen } from "./obstacles";
 import type { Cell, GameSettings, GameState, Point, Stone } from "./gomoku.types";
@@ -74,7 +76,7 @@ export function fiveCompletions(
   stone: Stone,
   around: Point,
 ): Point[] {
-  const reach = settings.winLength - 1;
+  const reach = rulesFor(settings, stone).winLength - 1;
   return linePoints(settings.size, around, reach).filter((point) => {
     if (board[indexOf(settings.size, point)] !== null) return false;
     const next = withStone(board, settings.size, point, stone);
@@ -95,7 +97,7 @@ function hasOpenFourFollowUp(
   around: Point,
   step: Point,
 ): boolean {
-  const reach = settings.winLength - 1;
+  const reach = rulesFor(settings, stone).winLength - 1;
 
   for (let k = -reach; k <= reach; k += 1) {
     if (k === 0) continue;
@@ -191,10 +193,15 @@ export function candidatePoints(state: GameState): Point[] {
   return points;
 }
 
-/** Every threat `stone` can create from the current position, by kind. */
+/**
+ * Every threat `stone` can create from the current position, by kind. A point
+ * the variant forbids that colour is no threat at all — black cannot win renju
+ * through a double three — so those are left out.
+ */
 export function scanThreats(state: GameState, stone: Stone): ThreatReport {
   const report = emptyReport(stone);
   for (const point of candidatePoints(state)) {
+    if (forbiddenAt(state.board, state.settings, stone, point) !== null) continue;
     const { kind } = threatAt(state.board, state.settings, stone, point);
     if (kind !== null) report[kind].push(point);
   }

@@ -1,14 +1,22 @@
 import type {
   Blocked,
   FirstPlayer,
+  ForbiddenPattern,
   GameSettings,
   GameStatus,
+  Handicap,
+  HandicapRule,
+  LineRule,
   MoveKind,
   ObstacleLayout,
+  OpeningRule,
+  OpeningStage,
   Point,
   RuleVariant,
   Seat,
   Stone,
+  VariantSpec,
+  WinReason,
 } from "./gomoku.types";
 
 export const STONES = {
@@ -26,31 +34,169 @@ export const STONE_DISPLAY: Record<Stone, { label: string; kanji: string }> = {
 export const RULE_VARIANTS = {
   freestyle: "freestyle",
   standard: "standard",
+  renju: "renju",
+  omok: "omok",
+  caro: "caro",
+  ninuki: "ninuki",
+  connect6: "connect6",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
-export const RULE_VARIANT_DISPLAY: Record<
-  RuleVariant,
-  { label: string; kanji: string; description: string }
-> = {
-  freestyle: {
-    label: "Freestyle",
-    kanji: "自由",
-    description: "Five or more in a row wins.",
-  },
-  standard: {
-    label: "Standard",
-    kanji: "五目",
-    description: "Exactly five wins. Six or more (長連) does not.",
-  },
+/** The variants in the order the browser and the filters list them. */
+export const RULE_VARIANT_LIST = [
+  RULE_VARIANTS.freestyle,
+  RULE_VARIANTS.standard,
+  RULE_VARIANTS.renju,
+  RULE_VARIANTS.omok,
+  RULE_VARIANTS.caro,
+  RULE_VARIANTS.ninuki,
+  RULE_VARIANTS.connect6,
+] as const satisfies readonly RuleVariant[];
+
+export const OPENING_RULES = {
+  free: "free",
+  pro: "pro",
+  longPro: "longPro",
+  swap: "swap",
+  swap2: "swap2",
+  rif: "rif",
+} as const satisfies Record<OpeningRule, OpeningRule>;
+
+export const OPENING_RULE_LIST = [
+  OPENING_RULES.free,
+  OPENING_RULES.pro,
+  OPENING_RULES.longPro,
+  OPENING_RULES.swap,
+  OPENING_RULES.swap2,
+  OPENING_RULES.rif,
+] as const satisfies readonly OpeningRule[];
+
+export const LINE_RULES = {
+  atLeast: "atLeast",
+  exact: "exact",
+  exactOpen: "exactOpen",
+} as const satisfies Record<LineRule, LineRule>;
+
+export const FORBIDDEN_PATTERNS = {
+  doubleThree: "doubleThree",
+  doubleFour: "doubleFour",
+  overline: "overline",
+} as const satisfies Record<ForbiddenPattern, ForbiddenPattern>;
+
+export const WIN_REASONS = {
+  line: "line",
+  captures: "captures",
+  time: "time",
+} as const satisfies Record<WinReason, WinReason>;
+
+export const OPENING_STAGES = {
+  placing: "placing",
+  choosing: "choosing",
+  extending: "extending",
+  done: "done",
+} as const satisfies Record<OpeningStage, OpeningStage>;
+
+/** The one opening choice that is not a colour. */
+export const OPENING_CHOICE_EXTEND = "extend" as const;
+
+/** Stones in a line needed to win, unless a variant pins it. */
+export const WIN_LENGTH = 5;
+
+/** Line lengths a player may pick in the variants that leave it open. */
+export const WIN_LENGTHS = [4, 5, 6] as const;
+
+/** Pairs to capture for a win in the capture variants. */
+export const DEFAULT_CAPTURES_TO_WIN = 5;
+
+/** The handicap toggles, in the order the settings list them. */
+export const HANDICAP_RULES = [
+  "doubleThree",
+  "doubleFour",
+  "overline",
+  "exactLine",
+  "openLine",
+  "longerLine",
+  "singleStone",
+  "noCaptures",
+] as const satisfies readonly HandicapRule[];
+
+/** Half-widths of the central square a handicapped second stone must leave. */
+export const SECOND_STONE_EXCLUSIONS = [0, 2, 3] as const;
+
+export const NO_HANDICAP: Handicap = {
+  stone: null,
+  doubleThree: false,
+  doubleFour: false,
+  overline: false,
+  exactLine: false,
+  openLine: false,
+  longerLine: false,
+  singleStone: false,
+  noCaptures: false,
+  secondStoneExclusion: 0,
 };
 
+const NO_PATTERNS: readonly ForbiddenPattern[] = [];
+const RENJU_PATTERNS: readonly ForbiddenPattern[] = [
+  FORBIDDEN_PATTERNS.doubleThree,
+  FORBIDDEN_PATTERNS.doubleFour,
+  FORBIDDEN_PATTERNS.overline,
+];
+const OMOK_PATTERNS: readonly ForbiddenPattern[] = [FORBIDDEN_PATTERNS.doubleThree];
+
+/** Openings that suit any one-stone-a-turn game. */
+const GOMOKU_OPENINGS: readonly OpeningRule[] = [
+  OPENING_RULES.free,
+  OPENING_RULES.pro,
+  OPENING_RULES.longPro,
+  OPENING_RULES.swap,
+  OPENING_RULES.swap2,
+];
+
+function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
+  return {
+    lineRule: { black: LINE_RULES.atLeast, white: LINE_RULES.atLeast },
+    forbidden: { black: NO_PATTERNS, white: NO_PATTERNS },
+    captures: false,
+    stonesPerTurn: 1,
+    firstTurnStones: 1,
+    winLength: WIN_LENGTH,
+    allowFirstPlayerChoice: false,
+    openings: GOMOKU_OPENINGS,
+    ...overrides,
+  };
+}
+
 /**
- * Standard fixes black as the opener, the way the formal rule sets do. Only
- * freestyle lets the players decide who takes the first stone.
+ * Every rule set, as data. The engine reads these and never the variant name,
+ * so a new variant is a new row here plus its copy in `variants.constants.ts`.
  */
-export const VARIANT_ALLOWS_FIRST_PLAYER_CHOICE: Record<RuleVariant, boolean> = {
-  freestyle: true,
-  standard: false,
+export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
+  freestyle: plain({ winLength: null, allowFirstPlayerChoice: true }),
+  standard: plain({
+    lineRule: { black: LINE_RULES.exact, white: LINE_RULES.exact },
+  }),
+  renju: plain({
+    // White's overline counts as five; black's is forbidden.
+    lineRule: { black: LINE_RULES.exact, white: LINE_RULES.atLeast },
+    forbidden: { black: RENJU_PATTERNS, white: NO_PATTERNS },
+    openings: [
+      OPENING_RULES.free,
+      OPENING_RULES.rif,
+      OPENING_RULES.pro,
+      OPENING_RULES.longPro,
+    ],
+  }),
+  omok: plain({ forbidden: { black: OMOK_PATTERNS, white: OMOK_PATTERNS } }),
+  caro: plain({
+    lineRule: { black: LINE_RULES.exactOpen, white: LINE_RULES.exactOpen },
+  }),
+  ninuki: plain({ captures: true, allowFirstPlayerChoice: true }),
+  connect6: plain({
+    stonesPerTurn: 2,
+    winLength: 6,
+    allowFirstPlayerChoice: true,
+    openings: [OPENING_RULES.free],
+  }),
 };
 
 export const GAME_STATUS = {
@@ -125,14 +271,15 @@ export const BOARD_SIZE_DISPLAY: Record<
 
 export const DEFAULT_BOARD_SIZE = 15;
 
-export const WIN_LENGTH = 5;
-
 export const DEFAULT_SWAPS_PER_SEAT = 1;
 
 export const DEFAULT_SETTINGS: GameSettings = {
   size: DEFAULT_BOARD_SIZE,
   winLength: WIN_LENGTH,
   variant: RULE_VARIANTS.freestyle,
+  opening: OPENING_RULES.free,
+  handicap: NO_HANDICAP,
+  capturesToWin: DEFAULT_CAPTURES_TO_WIN,
   firstPlayer: FIRST_PLAYERS.black,
   obstacles: OBSTACLE_LAYOUTS.none,
   allowUndo: true,

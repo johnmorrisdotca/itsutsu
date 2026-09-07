@@ -2,11 +2,49 @@
 
 import { SUGGESTION_DISPLAY } from "@/lib/gomoku/analysis.constants";
 import { pointName } from "@/lib/gomoku/notation";
-import { seatToPlay } from "@/lib/gomoku/engine";
-import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { canChooseColour, canExtendOpening, seatToPlay } from "@/lib/gomoku/engine";
+import { SEAT_DISPLAY, STONES } from "@/lib/gomoku/gomoku.constants";
 import { Button } from "@/components/ui/Controls";
+import { TONE_CLASS } from "@/components/ui/ui.constants";
+import { GameBrowserButton } from "./GameBrowser";
 import { GAME_COPY, HINT_POLICIES } from "./game.constants";
+import { openingPrompt } from "./openingCopy";
 import type { GamePanelProps } from "./game.types";
+
+/**
+ * The decision a swap opening pauses on: which colour the deciding seat takes,
+ * and in swap2 the option of laying two more stones instead.
+ */
+function OpeningChoice({ session, actions }: GamePanelProps) {
+  const { state, names } = session;
+  if (!canChooseColour(state) || session.reviewing) return null;
+
+  return (
+    <div
+      className={`flex flex-col gap-2 rounded-xl border px-3 py-2.5 ${TONE_CLASS.good}`}
+      data-testid="opening-choice"
+    >
+      <p className="text-sm font-semibold">{openingPrompt(state, names)}</p>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => actions.chooseColour(STONES.black)} data-testid="take-black">
+          {GAME_COPY.takeBlack.label}
+        </Button>
+        <Button onClick={() => actions.chooseColour(STONES.white)} data-testid="take-white">
+          {GAME_COPY.takeWhite.label}
+        </Button>
+        {canExtendOpening(state) ? (
+          <Button
+            onClick={actions.extendOpening}
+            title={GAME_COPY.extendOpeningHint}
+            data-testid="extend-opening"
+          >
+            {GAME_COPY.extendOpening.label}
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 /** What the engine suggested, once a hint has been spent on this position. */
 function HintLine({ session }: Pick<GamePanelProps, "session">) {
@@ -49,7 +87,10 @@ export function GameControls({ session, actions }: GamePanelProps) {
         <Button onClick={() => actions.reset()} strong>
           {GAME_COPY.newGame.label}
         </Button>
+        <GameBrowserButton session={session} actions={actions} />
       </div>
+
+      <OpeningChoice session={session} actions={actions} />
 
       {state.settings.allowSkip || state.settings.allowSwap ? (
         <div className="flex flex-wrap gap-2">

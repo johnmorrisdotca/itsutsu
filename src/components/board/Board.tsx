@@ -1,6 +1,14 @@
 "use client";
 
-import { indexOf, lastMove, pointOf } from "@/lib/gomoku/engine";
+import { useMemo } from "react";
+
+import {
+  forbiddenPoints,
+  indexOf,
+  lastMove,
+  legalPoints,
+  pointOf,
+} from "@/lib/gomoku/engine";
 import { BLOCKED, GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { columnLetter, pointName, rowNumber } from "@/lib/gomoku/notation";
 import type { Cell, GameState } from "@/lib/gomoku/gomoku.types";
@@ -9,9 +17,10 @@ import { BoardLines } from "./BoardLines";
 import { Intersection } from "./Intersection";
 import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
 
-function cellDescription(cell: Cell): string {
+function cellDescription(cell: Cell, forbidden: boolean): string {
   if (cell === BLOCKED) return "blocked";
-  return cell === null ? "empty" : `${STONE_DISPLAY[cell].label} stone`;
+  if (cell === null) return forbidden ? "forbidden" : "empty";
+  return `${STONE_DISPLAY[cell].label} stone`;
 }
 
 function ColumnLabels({ size, theme }: { size: number; theme: BoardThemeTokens }) {
@@ -92,9 +101,26 @@ export function Board({
     state.winningLine.map((point) => indexOf(size, point)),
   );
   const numbers = numberByIndex(state, appearance.showMoveNumbers);
-  const overlays = markByIndex(size, marks);
-  const ghost =
-    !readOnly && state.status === GAME_STATUS.playing ? state.toPlay : null;
+  const live = !readOnly && state.status === GAME_STATUS.playing;
+  const ghost = live ? state.toPlay : null;
+
+  /*
+   * What the rules allow right now, asked of the engine once per position.
+   * Forbidden points are drawn as a rule of the game, under any advice marks,
+   * and everything outside the opening's reach is simply not offered.
+   */
+  const legal = useMemo(
+    () => (live ? new Set(legalPoints(state).map((point) => indexOf(size, point))) : null),
+    [live, size, state],
+  );
+  const forbidden = useMemo(
+    () => (live ? new Set(forbiddenPoints(state).map((point) => indexOf(size, point))) : new Set<number>()),
+    [live, size, state],
+  );
+  const overlays = markByIndex(size, [
+    ...Array.from(forbidden, (index) => ({ ...pointOf(size, index), kind: "forbidden" as const })),
+    ...marks,
+  ]);
 
   const gutter = appearance.showCoordinates ? LABEL_GUTTER : "0px";
 
@@ -131,15 +157,16 @@ export function Board({
         >
           {state.board.map((cell, index) => {
             const point = pointOf(size, index);
+            const playable = legal === null || legal.has(index);
             return (
               <Intersection
                 key={index}
                 point={point}
                 cell={cell}
-                label={`${pointName(size, point)}, ${cellDescription(cell)}`}
+                label={`${pointName(size, point)}, ${cellDescription(cell, forbidden.has(index))}`}
                 isLast={index === lastIndex}
                 isWinning={winningIndices.has(index)}
-                ghost={ghost}
+                ghost={playable ? ghost : null}
                 moveNumber={numbers.get(index) ?? null}
                 mark={overlays.get(index) ?? null}
                 stones={stones}

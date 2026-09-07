@@ -10,8 +10,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  /// Migrations need a direct connection; a pooled URL (Neon, PgBouncer) goes in DATABASE_URL.
+  directUrl = env("DIRECT_URL")
 }
 
 /// How a game ended. `abandoned` is a game that was recorded before anyone won.
@@ -51,6 +53,10 @@ model Game {
   variant   String
   obstacles String
   opener    String
+  /// Opening protocol, see OpeningRule. Games recorded before it existed are "free".
+  opening   String     @default("free")
+  /// A per-colour handicap, see Handicap, or null for none.
+  handicap  Json?
 
   result    GameResult
   /// Set for a decisive game, null for a draw or an abandoned one.

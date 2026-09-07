@@ -9,32 +9,31 @@ import {
   unprocessable,
 } from "@/lib/api/apiResponse";
 import {
-  BOARD_SIZES,
-  OBSTACLE_LAYOUTS,
-  RULE_VARIANTS,
+  DEFAULT_SETTINGS,
+  NO_HANDICAP,
   STONES,
-  WIN_LENGTH,
+  VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
 import { PLAYER_NAME_MAX } from "@/lib/history/gameHistory.constants";
+import {
+  boardSizeSchema,
+  handicapSchema,
+  obstaclesSchema,
+  sharedOpeningSchema,
+  stoneSchema,
+  variantSchema,
+} from "@/lib/history/gameSettingsSchema";
 import { createLiveGame } from "@/lib/history/liveGame";
 
 const liveGameSchema = z.object({
   blackName: z.string().max(PLAYER_NAME_MAX).default(""),
   whiteName: z.string().max(PLAYER_NAME_MAX).default(""),
-  size: z
-    .number()
-    .int()
-    .refine((size) => (BOARD_SIZES as readonly number[]).includes(size), {
-      message: "Not a board size this game offers.",
-    })
-    .default(15),
-  variant: z
-    .enum([RULE_VARIANTS.freestyle, RULE_VARIANTS.standard])
-    .default(RULE_VARIANTS.freestyle),
-  obstacles: z
-    .enum([OBSTACLE_LAYOUTS.none, OBSTACLE_LAYOUTS.hoshi])
-    .default(OBSTACLE_LAYOUTS.none),
-  opener: z.enum([STONES.black, STONES.white]).default(STONES.black),
+  size: boardSizeSchema.default(DEFAULT_SETTINGS.size),
+  variant: variantSchema,
+  obstacles: obstaclesSchema,
+  opening: sharedOpeningSchema,
+  handicap: handicapSchema,
+  opener: stoneSchema.default(STONES.black),
 });
 
 /**
@@ -56,7 +55,8 @@ export async function POST(request: Request) {
 
     const created = await createLiveGame({
       ...parsed.data,
-      winLength: WIN_LENGTH,
+      handicap: parsed.data.handicap ?? NO_HANDICAP,
+      winLength: VARIANT_SPECS[parsed.data.variant].winLength ?? DEFAULT_SETTINGS.winLength,
     });
 
     return NextResponse.json(created, {

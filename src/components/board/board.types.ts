@@ -52,14 +52,17 @@ export type StoneSetTokens = {
  * `forced` is the point a threat must be answered on, `building` a point where
  * the opponent could start one next move, `hint` the engine's suggestion,
  * `help` a mark the opponent drew when asked for advice, and `fatal` the
- * losing move in the record. None of them change what is legal.
+ * losing move in the record. None of those change what is legal. `forbidden`
+ * is the exception: it is the rules, not advice — a point the colour to move
+ * may not play, which the board draws itself from the engine.
  */
 export type BoardMarkKind =
   | "forced"
   | "building"
   | "hint"
   | "help"
-  | "fatal";
+  | "fatal"
+  | "forbidden";
 
 export type BoardMark = Point & {
   kind: BoardMarkKind;

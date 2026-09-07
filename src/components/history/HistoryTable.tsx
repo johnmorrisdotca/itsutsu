@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
-import { RULE_VARIANT_DISPLAY, SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { variantLabel } from "@/lib/gomoku/variants.constants";
 
 function playedOn(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
@@ -47,9 +48,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               <span className="text-sm text-muted">
                 {game.size}×{game.size}
                 <span className="px-2">·</span>
-                {RULE_VARIANT_DISPLAY[
-                  game.variant as "freestyle" | "standard"
-                ]?.label ?? game.variant}
+                {variantLabel(game.variant)}
               </span>
 
               <span className="text-sm text-muted tabular-nums">

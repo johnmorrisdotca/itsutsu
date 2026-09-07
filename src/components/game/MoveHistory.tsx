@@ -3,8 +3,13 @@
 import { pointName } from "@/lib/gomoku/notation";
 import { MOVE_KINDS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { FATAL_MOVE_DISPLAY } from "@/lib/gomoku/analysis.constants";
-import { SectionTitle } from "@/components/ui/Controls";
-import { GAME_COPY } from "./game.constants";
+import { SectionTitle, Select } from "@/components/ui/Controls";
+import {
+  GAME_COPY,
+  HISTORY_MODES,
+  HISTORY_MODE_DISPLAY,
+} from "./game.constants";
+import type { HistoryMode } from "./game.types";
 import type { GamePanelProps } from "./game.types";
 
 /**
@@ -18,9 +23,30 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
 
   return (
     <section className="flex flex-col gap-2">
-      <SectionTitle kanji={GAME_COPY.moveHistory.kanji}>
-        {GAME_COPY.moveHistory.label}
-      </SectionTitle>
+      <div className="flex items-center justify-between gap-2">
+        <SectionTitle kanji={GAME_COPY.moveHistory.kanji}>
+          {GAME_COPY.moveHistory.label}
+        </SectionTitle>
+        <Select
+          value={session.settings.historyMode}
+          onChange={(event) =>
+            actions.setSessionSettings({
+              historyMode: event.target.value as HistoryMode,
+            })
+          }
+          aria-label="What clicking a move does"
+          data-testid="history-mode"
+        >
+          {Object.values(HISTORY_MODES).map((option) => (
+            <option key={option} value={option}>
+              {HISTORY_MODE_DISPLAY[option].label}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <p className="text-xs text-muted">
+        {HISTORY_MODE_DISPLAY[session.settings.historyMode].description}
+      </p>
 
       {state.moves.length === 0 ? (
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -65,6 +91,14 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                   {move.kind === MOVE_KINDS.skip ? (
                     <span className="text-xs text-zinc-500">
                       {GAME_COPY.skip.kanji}
+                    </span>
+                  ) : null}
+                  {move.captured !== undefined ? (
+                    <span
+                      className="text-xs text-zinc-500"
+                      title={`${GAME_COPY.captures.label}: ${move.captured.length / 2}`}
+                    >
+                      {GAME_COPY.captures.kanji}×{move.captured.length / 2}
                     </span>
                   ) : null}
                   {fatal ? (

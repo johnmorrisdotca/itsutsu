@@ -19,7 +19,7 @@ function Mark({ mark }: { mark: BoardMark }) {
   if (shape === "cross") {
     return (
       <span
-        className="pointer-events-none absolute inset-[18%]"
+        className="pointer-events-none absolute inset-[22%] opacity-80"
         style={{
           background: `linear-gradient(45deg, transparent 44%, ${colour} 44%, ${colour} 56%, transparent 56%),
                        linear-gradient(-45deg, transparent 44%, ${colour} 44%, ${colour} 56%, transparent 56%)`,

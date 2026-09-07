@@ -31,12 +31,22 @@ export type AwarenessLevel = "off" | "outlook" | "full";
  */
 export type HintPolicy = "off" | "limited" | "unlimited";
 
+/**
+ * What clicking a move in the record does.
+ *
+ * `review` walks the game without being able to change it — the board is read
+ * only until you return to the latest move. `branch` lets you play from an
+ * earlier position, which discards everything after it, and asks first.
+ */
+export type HistoryMode = "review" | "branch";
+
 /** Everything about a session that is not a rule of the game. */
 export type SessionSettings = {
   awareness: AwarenessLevel;
   hintPolicy: HintPolicy;
   hintsPerSeat: number;
   timeControl: TimeControlName;
+  historyMode: HistoryMode;
   /**
    * Warn each side before the other can build an open three, rather than only
    * once one exists. It applies to both players or neither — a warning given
@@ -102,6 +112,17 @@ export type GameSession = {
   swapBlockedReason: string | null;
   moveIndex: number;
   moveTotal: number;
+  /** True while an earlier position is being looked at. */
+  reviewing: boolean;
+  /** True when the board cannot be played on at all right now. */
+  boardReadOnly: boolean;
+  /**
+   * A move waiting on confirmation because playing it would discard the moves
+   * after the position being reviewed.
+   */
+  pendingBranch: Point | null;
+  /** How many moves confirming that branch would throw away. */
+  branchDiscards: number;
 };
 
 export type GameActions = {
@@ -109,9 +130,18 @@ export type GameActions = {
   undo: () => void;
   redo: () => void;
   jumpTo: (index: number) => void;
+  /** Jump back to the newest position, where play resumes. */
+  returnToLatest: () => void;
+  /** Play the pending move, discarding everything after it. */
+  confirmBranch: () => void;
+  cancelBranch: () => void;
   reset: (settings?: Partial<GameSettings>) => void;
   skip: () => void;
   swap: () => void;
+  /** Settles a swap opening: the deciding seat takes this colour. */
+  chooseColour: (stone: Stone) => void;
+  /** Swap2 only: decline to choose and lay two more stones. */
+  extendOpening: () => void;
   askHint: () => void;
   grantHint: () => void;
   requestHelp: () => void;

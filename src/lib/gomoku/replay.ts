@@ -1,5 +1,6 @@
-import { createGame, playMove } from "./engine";
-import type { GameState, Stone } from "./gomoku.types";
+import { createGame, replayMoves } from "./engine";
+import { NO_HANDICAP } from "./gomoku.constants";
+import type { GameState, Handicap, Stone } from "./gomoku.types";
 
 /** The stored shape of a game, as both the API and the pages see it. */
 type StoredGame = {
@@ -8,6 +9,8 @@ type StoredGame = {
   variant: string;
   obstacles: string;
   opener: string;
+  opening?: string;
+  handicap?: Handicap | null;
   moves: { row: number; col: number }[];
 };
 
@@ -17,6 +20,9 @@ type StoredGame = {
  * A stored game is a move list, never a board, so this is the only way to read
  * one back — and because it runs the same engine, a replayed game and a live
  * one can never disagree about what is legal or who has won.
+ *
+ * Swap-opening decisions are not stored, so a game with one replays as though
+ * the chooser kept their colour: the stones are the same either way.
  */
 export function replayTimeline(game: StoredGame): GameState[] {
   const start = createGame({
@@ -24,16 +30,13 @@ export function replayTimeline(game: StoredGame): GameState[] {
     winLength: game.winLength,
     variant: game.variant as GameState["settings"]["variant"],
     obstacles: game.obstacles as GameState["settings"]["obstacles"],
+    opening: (game.opening ?? "free") as GameState["settings"]["opening"],
+    handicap: game.handicap ?? NO_HANDICAP,
     firstPlayer: game.opener as Stone,
     allowUndo: false,
     allowSwap: false,
   });
-
-  const states = [start];
-  for (const move of game.moves) {
-    states.push(playMove(states[states.length - 1], { row: move.row, col: move.col }));
-  }
-  return states;
+  return replayMoves(start, game.moves);
 }
 
 /** The position as it stands now. */

@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  quality-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.11.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run quality checks
+        run: pnpm quality:check
+
+      # The audit is a network call to the registry. A timeout is not a
+      # finding, so the network gets three chances; a real vulnerability fails
+      # all three the same way and the gate stays exactly as strict.
+      - name: Audit production dependencies
+        run: |
+          for attempt in 1 2 3; do
+            if pnpm security:check; then
+              echo "Audit clean on attempt $attempt."
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "::warning::Audit attempt $attempt failed; retrying in 20s."
+              sleep 20
+            fi
+          done
+          echo "::error::Audit failed three times. A repeated finding is real; a repeated timeout means the registry is down."
+          exit 1
+
+      - name: Build app
+        run: pnpm build
+        env:
+          # The build needs a URL to generate the client; nothing connects to it.
+          DATABASE_URL: postgresql://build:build@localhost:5432/build
+          DIRECT_URL: postgresql://build:build@localhost:5432/build

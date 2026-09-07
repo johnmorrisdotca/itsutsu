@@ -25,15 +25,15 @@ test.describe("game options", () => {
     await page.goto("/");
     await page.getByTestId("first-player").selectOption("white");
 
-    await expect(page.getByText(/to play/)).toContainText("White");
+    await expect(page.getByTestId("to-play")).toContainText("White");
   });
 
   test("standard rules refuse to hand the first stone over", async ({ page }) => {
     await page.goto("/");
-    await page.getByLabel("Rules").selectOption("standard");
+    await page.getByTestId("rules").selectOption("standard");
 
     await expect(page.getByTestId("first-player")).toBeDisabled();
-    await expect(page.getByText(/to play/)).toContainText("Black");
+    await expect(page.getByTestId("to-play")).toContainText("Black");
   });
 
   test("undo can be switched off for a game where stones are final", async ({ page }) => {

@@ -3,11 +3,17 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { createGame, isLegalMove, playMove } from "@/lib/gomoku/engine";
+import { createGame, isLegalMove, playMove, replayMoves } from "@/lib/gomoku/engine";
 import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
-import type { CreatedGame, MoveOutcome } from "./liveGame.types";
+import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
+import type {
+  CreatedGame,
+  LiveGameSettings,
+  MoveOutcome,
+  SettingsOutcome,
+} from "./liveGame.types";
 
 /** Prisma's code for "a unique constraint was violated". */
 const UNIQUE_VIOLATION = "P2002";
@@ -20,6 +26,8 @@ const GAME_ROW = {
   variant: true,
   obstacles: true,
   opener: true,
+  opening: true,
+  handicap: true,
   blackToken: true,
   whiteToken: true,
   moves: { orderBy: { number: "asc" }, select: { row: true, col: true } },
@@ -40,34 +48,67 @@ function replay(row: GameRow): GameState {
     winLength: row.winLength,
     variant: row.variant as GameState["settings"]["variant"],
     obstacles: row.obstacles as GameState["settings"]["obstacles"],
+    opening: row.opening as GameState["settings"]["opening"],
+    handicap: parseHandicap(row.handicap),
     firstPlayer: row.opener as Stone,
     // A shared game is played from two devices, so neither side may rewind it.
     allowUndo: false,
     allowSwap: false,
   });
 
-  return row.moves.reduce(
-    (state, move) => playMove(state, { row: move.row, col: move.col }),
-    start,
-  );
+  const timeline = replayMoves(start, row.moves);
+  return timeline[timeline.length - 1];
 }
 
 /** Starts an empty game and mints a key for each seat. */
-export async function createLiveGame(input: {
-  blackName: string;
-  whiteName: string;
-  size: number;
-  winLength: number;
-  variant: string;
-  obstacles: string;
-  opener: Stone;
-}): Promise<CreatedGame> {
+export async function createLiveGame(
+  input: LiveGameSettings & {
+    blackName: string;
+    whiteName: string;
+    winLength: number;
+    opener: Stone;
+  },
+): Promise<CreatedGame> {
+  const { handicap, ...rest } = input;
   const game = await prisma.game.create({
-    data: { ...input, status: "active", result: "abandoned", moveCount: 0 },
+    data: {
+      ...rest,
+      handicap: storedHandicap(handicap) ?? undefined,
+      status: "active",
+      result: "abandoned",
+      moveCount: 0,
+    },
     select: { id: true, blackToken: true, whiteToken: true },
   });
   return game;
 }
+
+/**
+ * Changes a shared game's rules. Only a seat holder may, and only while the
+ * board is empty: once a stone is down the rules are part of the record.
+ */
+export async function updateLiveGameSettings(
+  id: string,
+  token: string,
+  settings: LiveGameSettings & { winLength: number },
+): Promise<SettingsOutcome> {
+  const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
+  if (row === null) return { ok: false, reason: "not-found" };
+  if (row.status !== "active") return { ok: false, reason: "finished" };
+  if (stoneForToken(row, token) === null) return { ok: false, reason: "wrong-token" };
+  if (row.moves.length > 0) return { ok: false, reason: "started" };
+
+  const { handicap, ...rest } = settings;
+  await prisma.game.update({
+    where: { id },
+    data: { ...rest, handicap: storedHandicap(handicap) ?? Prisma.JsonNull },
+  });
+
+  const game = await fetchGameDetail(id);
+  if (game === null) return { ok: false, reason: "not-found" };
+  return { ok: true, game };
+}
+
 
 /** The seat a token holds, or null when the token belongs to neither. */
 function stoneForToken(row: GameRow, token: string): Stone | null {

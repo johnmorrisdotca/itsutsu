@@ -25,7 +25,10 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "screenshots": "playwright test e2e/screenshots.spec.ts --reporter=line",
-    "favicon": "node scripts/make-favicon.mjs"
+    "favicon": "node scripts/make-favicon.mjs",
+    "security:check": "pnpm audit --prod --audit-level high",
+    "db:drift:check": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code --script",
+    "preflight:prod": "pnpm quality:check && pnpm security:check && pnpm build"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -52,7 +55,7 @@
     "vitest": "^5.0.0"
   },
   "packageManager": "pnpm@10.11.0",
-  "description": "Gomoku (五目並べ) — five in a row on a go board.",
+  "description": "Gomoku (\u4e94\u76ee\u4e26\u3079) \u2014 five in a row on a go board.",
   "engines": {
     "node": ">=20.9.0"
   },

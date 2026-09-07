@@ -1,3 +1,4 @@
+import type { Handicap } from "@/lib/gomoku/gomoku.types";
 import type {
   GAME_RESULT_FILTERS,
   GAME_RESULTS,
@@ -43,6 +44,9 @@ export type GameSummary = {
   variant: string;
   obstacles: string;
   opener: string;
+  opening: string;
+  /** The handicap the game was played under; `stone` is null for none. */
+  handicap: Handicap;
   result: GameResult;
   winner: string | null;
   moveCount: number;

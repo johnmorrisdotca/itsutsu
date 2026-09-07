@@ -3,17 +3,17 @@ import "server-only";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import {
-  MOVE_KINDS,
-  OBSTACLE_LAYOUTS,
-  RULE_VARIANTS,
-  STONES,
-} from "@/lib/gomoku/gomoku.constants";
+import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { fetchGameDetail } from "./gameHistory";
 import { GAME_RESULTS, PLAYER_NAME_MAX } from "./gameHistory.constants";
+import {
+  handicapSchema,
+  obstaclesSchema,
+  openingSchema,
+  stoneSchema,
+  variantSchema,
+} from "./gameSettingsSchema";
 import type { GameDetail } from "./gameHistory.types";
-
-const stoneSchema = z.enum([STONES.black, STONES.white]);
 
 const moveSchema = z.object({
   row: z.number().int().min(0).max(64),
@@ -33,10 +33,10 @@ export const gameRecordSchema = z
     whiteName: z.string().max(PLAYER_NAME_MAX).default(""),
     size: z.number().int().min(5).max(25),
     winLength: z.number().int().min(3).max(9),
-    variant: z.enum([RULE_VARIANTS.freestyle, RULE_VARIANTS.standard]),
-    obstacles: z
-      .enum([OBSTACLE_LAYOUTS.none, OBSTACLE_LAYOUTS.hoshi])
-      .default(OBSTACLE_LAYOUTS.none),
+    variant: variantSchema,
+    obstacles: obstaclesSchema,
+    opening: openingSchema,
+    handicap: handicapSchema,
     opener: stoneSchema,
     result: z.enum(GAME_RESULTS),
     winner: stoneSchema.nullable().default(null),
@@ -56,6 +56,8 @@ export const gameRecordSchema = z
   )
   .refine(
     (game) => {
+      // A captured point is open again, so the capture variants may reuse one.
+      if (VARIANT_SPECS[game.variant].captures) return true;
       const seen = new Set(game.moves.map((move) => `${move.row},${move.col}`));
       return seen.size === game.moves.length;
     },
@@ -77,6 +79,8 @@ export async function recordGame(input: GameRecordInput): Promise<GameDetail> {
       winLength: input.winLength,
       variant: input.variant,
       obstacles: input.obstacles,
+      opening: input.opening,
+      handicap: input.handicap ?? undefined,
       opener: input.opener,
       result: input.result,
       winner: input.winner,
