@@ -12,8 +12,10 @@ import { DEFAULT_SETTINGS, NO_HANDICAP, VARIANT_SPECS } from "@/lib/gomoku/gomok
 import {
   boardSizeSchema,
   handicapSchema,
+  moveTimeSchema,
   obstaclesSchema,
   sharedOpeningSchema,
+  timeoutPenaltySchema,
   variantSchema,
 } from "@/lib/history/gameSettingsSchema";
 import { updateLiveGameSettings } from "@/lib/history/liveGame";
@@ -25,6 +27,8 @@ const settingsSchema = z.object({
   obstacles: obstaclesSchema,
   opening: sharedOpeningSchema,
   handicap: handicapSchema,
+  moveTimeMs: moveTimeSchema,
+  timeoutPenalty: timeoutPenaltySchema,
 });
 
 const REFUSAL_STATUS: Record<string, number> = {

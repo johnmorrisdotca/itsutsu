@@ -1,17 +1,13 @@
 import {
-  DEFAULT_SETTINGS,
-  FIRST_STONE,
-  FIRST_PLAYERS,
   GAME_STATUS,
   MOVE_KINDS,
-  OPENING_RULES,
+  NO_POINT,
   OPENING_STAGES,
-  SEATS,
+  PLACEMENTS,
   STONES,
   VARIANT_SPECS,
   WIN_REASONS,
 } from "./gomoku.constants";
-import { emptyBoard } from "./obstacles";
 import {
   indexOf,
   isOnBoard,
@@ -20,34 +16,41 @@ import {
 } from "./rules/board";
 import { capturesFrom, pairsIn, removeStones } from "./rules/captures";
 import { forbiddenAt } from "./rules/forbidden";
-import { hasHandicap } from "./rules/handicap";
 import {
   applyOpeningChoice,
-  initialOpening,
   openingAfterMove,
   openingAllows,
 } from "./rules/opening";
 import {
+  blockedByGiveaway,
+  clearBottomRow,
   inMovePhase,
   movePiece,
   resolvePlacement,
+  restoreBottomRow,
+  restsOnSomething,
   settleStone,
   twistBoard,
   won,
 } from "./rules/mechanics";
+import {
+  footprintFits,
+  isPieceInHand,
+  piecePlacements,
+  singlesUsedBy,
+} from "./rules/queue";
+import { winningLineFor } from "./rules/lines";
 import { stonesLeftInTurn } from "./rules/turns";
 import { rotateQuadrant } from "./rules/twist";
 import type {
   Cell,
   ForbiddenPattern,
-  GameSettings,
   GameState,
   Move,
   MoveInput,
   OpeningChoice,
-  OpeningRule,
+  PieceCell,
   Point,
-  Seat,
   Stone,
 } from "./gomoku.types";
 
@@ -59,6 +62,20 @@ import type {
  */
 
 export { indexOf, isOnBoard, isStone, otherStone, pointOf } from "./rules/board";
+export {
+  availableOpenings,
+  createGame,
+  normaliseSettings,
+  resolveOpener,
+} from "./rules/creation";
+export {
+  canSwapSeats,
+  forfeitTurn,
+  seatOf,
+  seatToPlay,
+  swapSeats,
+  winOnTime,
+} from "./rules/seats";
 export { findWinningLine } from "./rules/lines";
 export { hasHandicap, rulesFor } from "./rules/handicap";
 export { forbiddenAt, forbiddenPoints } from "./rules/forbidden";
@@ -81,112 +98,23 @@ export {
   twistBoard,
 } from "./rules/mechanics";
 export {
+  footprintAt,
+  footprintFits,
+  orientCells,
+  orientations,
+  piecePlacements,
+  queuedPiece,
+  upcomingPieces,
+} from "./rules/queue";
+export {
   canChooseColour,
   canExtendOpening,
   chooseColour,
   extendOpening,
 } from "./rules/opening";
 
-/** Openings that move colours between seats, which a colour-bound handicap cannot survive. */
-const SWAPPING_OPENINGS: readonly GameSettings["opening"][] = [
-  OPENING_RULES.swap,
-  OPENING_RULES.swap2,
-  OPENING_RULES.rif,
-];
-
-/**
- * The openings these settings may use: what the variant offers, less the
- * colour-swapping ones when a handicap is bound to a colour.
- */
-export function availableOpenings(settings: GameSettings): OpeningRule[] {
-  const offered = VARIANT_SPECS[settings.variant].openings;
-  return hasHandicap(settings)
-    ? offered.filter((opening) => !SWAPPING_OPENINGS.includes(opening))
-    : [...offered];
-}
-
-/**
- * Settings that agree with their variant: a pinned line length wins over the
- * player's choice, an opening the variant does not offer falls back to free,
- * and a handicap rules out the openings that swap colours. Applied on creation
- * so a state can never carry a contradiction.
- */
-export function normaliseSettings(settings: GameSettings): GameSettings {
-  const spec = VARIANT_SPECS[settings.variant];
-  // A game with a board of its own is played on it; the rest take any size they are given.
-  const size =
-    spec.boardSizes !== null && !spec.boardSizes.includes(settings.size)
-      ? spec.boardSizes[0]
-      : settings.size;
-  return {
-    ...settings,
-    size,
-    winLength: spec.winLength ?? settings.winLength,
-    opening: availableOpenings(settings).includes(settings.opening)
-      ? settings.opening
-      : OPENING_RULES.free,
-  };
-}
-
-/**
- * The colour that opens. `random` is decided by `roll`, a number in [0, 1),
- * which the caller supplies so this stays pure and testable. Variants that
- * constrain black, and every opening protocol, put black on move one.
- */
-export function resolveOpener(settings: GameSettings, roll = 0): Stone {
-  if (!VARIANT_SPECS[settings.variant].allowFirstPlayerChoice) return FIRST_STONE;
-  if (settings.opening !== OPENING_RULES.free) return FIRST_STONE;
-  if (settings.firstPlayer === FIRST_PLAYERS.random) {
-    return roll < 0.5 ? STONES.black : STONES.white;
-  }
-  return settings.firstPlayer;
-}
-
-export function createGame(
-  overrides: Partial<GameSettings> = {},
-  roll = 0,
-): GameState {
-  const settings = normaliseSettings({ ...DEFAULT_SETTINGS, ...overrides });
-  const opener = resolveOpener(settings, roll);
-  // Seat one always takes the opening colour, whichever that turned out to be.
-  const seats = {
-    [opener]: SEATS.one,
-    [otherStone(opener)]: SEATS.two,
-  } as Record<Stone, Seat>;
-
-  return {
-    settings,
-    board: emptyBoard(settings),
-    moves: [],
-    opener,
-    seats,
-    swapsUsed: { one: 0, two: 0 },
-    captures: { black: 0, white: 0 },
-    opening: initialOpening(settings, opener, seats),
-    toPlay: opener,
-    pendingTwist: false,
-    status: GAME_STATUS.playing,
-    winner: null,
-    winBy: null,
-    winningLine: [],
-  };
-}
-
 export function cellAt(state: GameState, point: Point): Cell {
   return state.board[indexOf(state.settings.size, point)];
-}
-
-/** The seat holding `stone` right now. Swaps move seats between colours. */
-export function seatOf(state: GameState, stone: Stone): Seat {
-  return state.seats[stone];
-}
-
-/**
- * The seat whose turn it is. During a swap opening one seat lays every stone
- * and then the other decides, whatever colour those stones are.
- */
-export function seatToPlay(state: GameState): Seat {
-  return state.opening.actor ?? seatOf(state, state.toPlay);
 }
 
 /**
@@ -198,8 +126,13 @@ export function isLegalMove(state: GameState, point: Point): boolean {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
   if (!isOnBoard(state.settings.size, point) || cellAt(state, point) !== null) return false;
   if (inMovePhase(state)) return false;
+  // In a piece game a lone stone is a single, and there are only so many.
+  if (VARIANT_SPECS[state.settings.variant].queue !== null && singlesLeft(state) <= 0) return false;
   const landing = resolvePlacement(state, point);
   if (landing.row !== point.row || landing.col !== point.col) return false;
+  const spec = VARIANT_SPECS[state.settings.variant];
+  if (spec.placement === PLACEMENTS.edge && !restsOnSomething(state, point)) return false;
+  if (spec.misere && blockedByGiveaway(state, point)) return false;
   return (
     openingAllows(state, point) &&
     forbiddenAt(state.board, state.settings, state.toPlay, point) === null
@@ -228,6 +161,77 @@ export function emptyPoints(state: GameState): Point[] {
 /** Stones the colour to move still has to place before the turn passes. */
 export function stonesLeft(state: GameState): number {
   return stonesLeftInTurn(state.settings, state.moves, state.toPlay);
+}
+
+/** Single stones the colour to move may still lay instead of a piece. */
+export function singlesLeft(state: GameState): number {
+  const { singles } = VARIANT_SPECS[state.settings.variant];
+  return Math.max(0, singles - singlesUsedBy(state.moves, state.toPlay));
+}
+
+/**
+ * Lays the piece in hand on `cells`. The cells must be that piece in some
+ * orientation, on empty points. A piece carries both colours, so it can
+ * finish a line for either side: one line wins for its owner, whoever laid
+ * it; a line for each is a draw.
+ */
+export function placePiece(state: GameState, cells: readonly PieceCell[]): GameState {
+  if (state.status !== GAME_STATUS.playing || state.pendingTwist) return state;
+  if (!isPieceInHand(state, cells)) return state;
+  const { settings, toPlay } = state;
+  if (!footprintFits(state.board, settings.size, cells)) return state;
+
+  const board = state.board.slice();
+  for (const cell of cells) board[indexOf(settings.size, cell)] = cell.stone;
+  const move: Move = {
+    row: cells[0].row,
+    col: cells[0].col,
+    stone: toPlay,
+    kind: MOVE_KINDS.piece,
+    cells: [...cells],
+  };
+  const laid: GameState = { ...state, board, moves: [...state.moves, move] };
+
+  const lines: Record<Stone, Point[]> = { black: [], white: [] };
+  for (const cell of cells) {
+    if (lines[cell.stone].length === 0) {
+      lines[cell.stone] = winningLineFor(board, settings, cell, cell.stone);
+    }
+  }
+  if (lines.black.length > 0 && lines.white.length > 0) {
+    return { ...laid, status: GAME_STATUS.draw };
+  }
+  if (lines.black.length > 0) return won(laid, STONES.black, WIN_REASONS.line, lines.black);
+  if (lines.white.length > 0) return won(laid, STONES.white, WIN_REASONS.line, lines.white);
+  if (!board.includes(null)) return { ...laid, status: GAME_STATUS.draw };
+  return { ...laid, toPlay: otherStone(toPlay) };
+}
+
+/**
+ * Whether the colour to move has nothing to lay: no footprint fits the piece
+ * in hand and no single is left. Then the turn passes, on the record.
+ */
+export function mustPass(state: GameState): boolean {
+  if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
+  if (VARIANT_SPECS[state.settings.variant].queue === null) return false;
+  if (singlesLeft(state) > 0 && legalPoints(state).length > 0) return false;
+  return piecePlacements(state).length === 0;
+}
+
+/**
+ * Takes a turn without a stone. Two passes in a row end the game as a draw,
+ * since neither side can move. A pass is a row in the record like any move,
+ * so a replay passes at the same point.
+ */
+export function passTurn(state: GameState): GameState {
+  if (!mustPass(state)) return state;
+  const move: Move = { ...NO_POINT, stone: state.toPlay, kind: MOVE_KINDS.pass };
+  const passed: GameState = { ...state, moves: [...state.moves, move] };
+  const previous = state.moves[state.moves.length - 1];
+  if (previous !== undefined && previous.kind === MOVE_KINDS.pass) {
+    return { ...passed, status: GAME_STATUS.draw };
+  }
+  return { ...passed, toPlay: otherStone(state.toPlay) };
 }
 
 /**
@@ -265,15 +269,28 @@ export function playMove(
   // A twist game's move is not over until a quadrant has turned.
   if (spec.quadrantSize !== null) return { ...placed, pendingTwist: true };
 
-  if (!board.includes(null)) {
-    return { ...placed, status: GAME_STATUS.draw };
+  // The falling-block rule: a full bottom row goes, and the move remembers it.
+  let after = placed;
+  if (spec.lineClear) {
+    const cleared = clearBottomRow(board, settings.size);
+    if (cleared !== null) {
+      const remembered = { ...move, cleared: cleared.cleared };
+      after = { ...placed, board: cleared.board, moves: [...state.moves, remembered] };
+    }
   }
 
-  const stays = stonesLeftInTurn(settings, moves, toPlay) > 0;
+  if (!after.board.includes(null)) {
+    // In the giveaway game a full board is a win for whoever opened.
+    return spec.misere
+      ? won(after, state.opener, WIN_REASONS.full, [])
+      : { ...after, status: GAME_STATUS.draw };
+  }
+
+  const stays = stonesLeftInTurn(settings, after.moves, toPlay) > 0;
   return {
-    ...placed,
+    ...after,
     toPlay: stays ? toPlay : otherStone(toPlay),
-    opening: openingAfterMove(placed),
+    opening: openingAfterMove(after),
   };
 }
 
@@ -317,55 +334,6 @@ export function skipMove(state: GameState, roll = 0): GameState {
   return playMove(state, target, MOVE_KINDS.skip);
 }
 
-/**
- * Whether the seat to play may trade seats right now. This covers the
- * mechanical limits only; `analysis.ts` adds the rule that you cannot swap
- * into a position the opponent has already won. Not while an opening protocol
- * is still settling who holds which colour, and never under a handicap, which
- * belongs to a colour and would otherwise change hands with it.
- */
-export function canSwapSeats(state: GameState): boolean {
-  return (
-    state.settings.allowSwap &&
-    !hasHandicap(state.settings) &&
-    state.status === GAME_STATUS.playing &&
-    state.opening.stage === OPENING_STAGES.done &&
-    state.moves.length > 0 &&
-    state.swapsUsed[seatToPlay(state)] < state.settings.swapsPerSeat
-  );
-}
-
-/**
- * Trades seats: the player to move hands over their colour and takes the
- * opponent's stones instead. The board is untouched and the turn passes, so a
- * swap costs you the move you were about to make.
- */
-export function swapSeats(state: GameState): GameState {
-  if (!canSwapSeats(state)) return state;
-
-  const mover = seatToPlay(state);
-  return {
-    ...state,
-    seats: {
-      black: state.seats[STONES.white],
-      white: state.seats[STONES.black],
-    },
-    swapsUsed: { ...state.swapsUsed, [mover]: state.swapsUsed[mover] + 1 },
-  };
-}
-
-/**
- * Ends the game against a player who has run out of time.
- *
- * A clock is not a rule of gomoku, so the engine does not run one — but the
- * result still has to be a proper game state rather than something the UI
- * paints over the top, or the record and the board would disagree.
- */
-export function winOnTime(state: GameState, loser: Stone): GameState {
-  if (state.status !== GAME_STATUS.playing) return state;
-  return won(state, otherStone(loser), WIN_REASONS.time, []);
-}
-
 export function canUndo(state: GameState): boolean {
   return state.settings.allowUndo && state.moves.length > 0;
 }
@@ -386,7 +354,12 @@ export function undoMove(state: GameState): GameState {
   if (last.twist !== undefined && quadrantSize !== null) {
     board = rotateQuadrant(board, size, quadrantSize, last.twist.quadrant, !last.twist.clockwise);
   }
-  board[indexOf(size, last)] = null;
+  if (last.cleared !== undefined) board = restoreBottomRow(board, size, last.cleared);
+  if (last.kind === MOVE_KINDS.piece) {
+    for (const cell of last.cells ?? []) board[indexOf(size, cell)] = null;
+  } else if (last.kind !== MOVE_KINDS.pass) {
+    board[indexOf(size, last)] = null;
+  }
   if (last.from !== undefined) board[indexOf(size, last.from)] = last.stone;
   for (const point of last.captured ?? []) {
     board[indexOf(size, point)] = otherStone(last.stone);
@@ -410,7 +383,8 @@ export function undoMove(state: GameState): GameState {
 }
 
 export function lastMove(state: GameState): Point | null {
-  return state.moves.length > 0 ? state.moves[state.moves.length - 1] : null;
+  const last = state.moves[state.moves.length - 1];
+  return last === undefined || last.kind === MOVE_KINDS.pass ? null : last;
 }
 
 /**
@@ -441,9 +415,13 @@ export function replayMoves(
     }
     const point = { row: move.row, col: move.col };
     let next =
-      move.from !== undefined
-        ? movePiece(current, { row: move.from.row, col: move.from.col }, point)
-        : playMove(current, point);
+      move.kind === MOVE_KINDS.pass
+        ? passTurn(current)
+        : move.cells !== undefined
+          ? placePiece(current, move.cells)
+          : move.from !== undefined
+            ? movePiece(current, { row: move.from.row, col: move.from.col }, point)
+            : playMove(current, point);
     if (next === current) break;
     timeline.push(next);
     // A recorded twist is part of the same move, and lands in the same replay step.

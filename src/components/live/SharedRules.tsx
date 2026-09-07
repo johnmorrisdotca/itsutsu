@@ -14,7 +14,13 @@ import {
 } from "@/lib/gomoku/variants.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
-import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
+import {
+  MOVE_TIME_OPTIONS,
+  SHARED_OPENINGS,
+  TIMEOUT_PENALTIES,
+} from "@/lib/history/gameSettingsSchema";
+import { describeMoveTime } from "@/lib/history/deadline";
+import { GAME_COPY } from "@/components/game/game.constants";
 import { Button, Field, SectionTitle, Select } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { describeHandicap, describeRules } from "./rulesSummary";
@@ -41,7 +47,15 @@ export function SharedRules({
   const variant = game.variant as RuleVariant;
   const copy = RULE_VARIANT_DISPLAY[variant];
 
-  async function change(next: Partial<{ size: number; variant: string; opening: string }>) {
+  async function change(
+    next: Partial<{
+      size: number;
+      variant: string;
+      opening: string;
+      moveTimeMs: number | null;
+      timeoutPenalty: string;
+    }>,
+  ) {
     if (!editable) return;
     setSaving(true);
     setError(null);
@@ -50,6 +64,8 @@ export function SharedRules({
       variant: game.variant,
       obstacles: game.obstacles,
       opening: game.opening,
+      moveTimeMs: game.moveTimeMs,
+      timeoutPenalty: game.timeoutPenalty,
       ...next,
     };
     // A variant that does not offer the current opening drops back to free.
@@ -97,6 +113,12 @@ export function SharedRules({
           The handicapped colour plays under those extra restrictions; the other colour plays the plain game.
         </p>
       ) : null}
+      <p className="text-xs text-muted" data-testid="shared-clock-line">
+        {describeMoveTime(game.moveTimeMs)}
+        {game.moveTimeMs !== null
+          ? `. ${game.timeoutPenalty === "game" ? GAME_COPY.penaltyGame : GAME_COPY.penaltyTurn}`
+          : ""}
+      </p>
 
       {editable ? (
         <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">
@@ -143,6 +165,37 @@ export function SharedRules({
               ))}
             </Select>
           </Field>
+          <Field label={GAME_COPY.moveTime.label}>
+            <Select
+              value={game.moveTimeMs === null ? "none" : String(game.moveTimeMs)}
+              disabled={saving}
+              onChange={(event) =>
+                change({ moveTimeMs: event.target.value === "none" ? null : Number(event.target.value) })
+              }
+              data-testid="shared-rules-move-time"
+            >
+              {MOVE_TIME_OPTIONS.map((option) => (
+                <option key={option ?? "none"} value={option === null ? "none" : option}>
+                  {describeMoveTime(option)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {game.moveTimeMs !== null ? (
+            <Field label={GAME_COPY.penalty.label}>
+              <Select
+                value={game.timeoutPenalty}
+                disabled={saving}
+                onChange={(event) => change({ timeoutPenalty: event.target.value })}
+              >
+                {TIMEOUT_PENALTIES.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "turn" ? GAME_COPY.penaltyTurn : GAME_COPY.penaltyGame}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          ) : null}
           {game.handicap.stone !== null ? (
             <Button
               onClick={() =>
@@ -155,6 +208,8 @@ export function SharedRules({
                     variant: game.variant,
                     obstacles: game.obstacles,
                     opening: game.opening,
+                    moveTimeMs: game.moveTimeMs,
+                    timeoutPenalty: game.timeoutPenalty,
                     handicap: null,
                   }),
                 }).then(() => router.refresh())

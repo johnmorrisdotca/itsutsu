@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { cellAt, inMovePhase, pieceMoves, rulesFor } from "@/lib/gomoku/engine";
+import { PieceTray } from "@/components/game/PieceTray";
+import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
+import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
+import { Button } from "@/components/ui/Controls";
+import { usePieceHand } from "@/components/game/usePieceHand";
 import { GAME_STATUS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
@@ -67,6 +72,38 @@ export function SharedGame({
   const yourTurn = seat !== null && state.toPlay === seat;
   const playable = yourTurn && state.status === GAME_STATUS.playing;
   const [selected, setSelected] = useState<Point | null>(null);
+  const { hand, rotate, flip, toggleSingle } = usePieceHand(state);
+
+  /*
+   * The deadline is the server's: it comes with the game and is only shown
+   * here. A once-a-second tick keeps the countdown honest between polls.
+   */
+  const deadline = deadlineFor(detail);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (deadline === null || state.status !== GAME_STATUS.playing) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [deadline, state.status]);
+  const overdue = isOverdue(deadline, new Date(now));
+  const canClaim = overdue && seat !== null && !yourTurn && state.status === GAME_STATUS.playing;
+
+  async function claim() {
+    if (token === null) return;
+    setError(null);
+    const response = await fetch(`/api/games/${detail.id}/timeout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setError(payload?.error ?? "That could not be claimed.");
+      await mutate();
+      return;
+    }
+    await mutate((await response.json()) as GameDetail, { revalidate: false });
+  }
 
   /** Sends one move, of any of the three shapes, and takes the server's answer as the truth. */
   async function send(body: Record<string, unknown>) {
@@ -91,6 +128,12 @@ export function SharedGame({
 
   async function play(point: Point) {
     if (!playable) return;
+    // The piece games: the click is the corner of the piece in hand.
+    if (hand.piece !== null && !hand.layingSingle) {
+      const footprint = hand.footprintFor(point);
+      if (footprint !== null) await send({ cells: footprint });
+      return;
+    }
     // The sliding games: pick a piece up, then put it down.
     if (inMovePhase(state)) {
       const lands =
@@ -119,13 +162,18 @@ export function SharedGame({
     await send({ twist: { quadrant, clockwise } });
   }
 
+  async function pass() {
+    if (!playable) return;
+    await send({ pass: true });
+  }
+
   /** Sends an emoji to the other player. Refusals are quiet: it is only a wave. */
-  async function react(emoji: ReactionEmoji, moveNumber: number | null) {
+  async function react(emoji: ReactionEmoji, moveNumber: number | null, text: string | null) {
     if (token === null) return;
     const response = await fetch(`/api/games/${detail.id}/reactions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, emoji, moveNumber }),
+      body: JSON.stringify({ token, emoji, moveNumber, text }),
     });
     if (response.ok) {
       await mutate((await response.json()) as GameDetail, { revalidate: false });
@@ -145,6 +193,35 @@ export function SharedGame({
         <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.warn}`}>
           {error}
         </p>
+      ) : null}
+
+      {deadline !== null && state.status === GAME_STATUS.playing ? (
+        <div
+          className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm ${
+            overdue ? TONE_CLASS.alarm : TONE_CLASS.calm
+          }`}
+          data-testid="deadline"
+        >
+          <span>
+            {STONE_DISPLAY[state.toPlay].label} {GAME_COPY.mustMoveBy}{" "}
+            <span className="font-mono tabular-nums">{deadline.toLocaleTimeString()}</span>
+            {" · "}
+            <span className="font-mono tabular-nums" data-testid="deadline-remaining">
+              {describeRemaining(deadline, new Date(now))}
+            </span>
+            {detail.timeoutPenalty === "turn" && (detail.forfeits.black > 0 || detail.forfeits.white > 0) ? (
+              <span className="ml-2 text-xs opacity-80">
+                {STONE_DISPLAY[state.toPlay].label}:{" "}
+                {GAME_COPY.forfeitsNote(detail.forfeits[state.toPlay], FORFEITS_TO_LOSE)}
+              </span>
+            ) : null}
+          </span>
+          {canClaim ? (
+            <Button onClick={claim} strong title={GAME_COPY.claimHint} data-testid="claim-timeout">
+              {detail.timeoutPenalty === "game" ? GAME_COPY.claimGame.label : GAME_COPY.claimTurn.label}
+            </Button>
+          ) : null}
+        </div>
       ) : null}
 
       {VARIANT_SPECS[state.settings.variant].captures ? (
@@ -170,7 +247,19 @@ export function SharedGame({
         onPlay={play}
         onTwist={twist}
         selected={selected}
+        footprintFor={hand.piece !== null ? hand.footprintFor : undefined}
       />
+
+      {hand.piece !== null && seat !== null ? (
+        <PieceTray
+          hand={hand}
+          disabled={!playable}
+          onRotate={rotate}
+          onFlip={flip}
+          onToggleSingle={toggleSingle}
+          onPass={pass}
+        />
+      ) : null}
 
       {seat !== null && token !== null ? (
         <ReactionBar

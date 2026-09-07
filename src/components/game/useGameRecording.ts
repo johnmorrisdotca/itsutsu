@@ -73,6 +73,7 @@ export function useGameRecording(session: GameSession): WinStreaks {
       obstacles: state.settings.obstacles,
       opening: state.settings.opening,
       handicap: state.settings.handicap.stone === null ? null : state.settings.handicap,
+      seed: state.settings.seed,
       opener: state.opener,
       result: state.winner ?? "draw",
       winner: state.winner,
@@ -83,6 +84,7 @@ export function useGameRecording(session: GameSession): WinStreaks {
         kind: move.kind,
         from: move.from,
         twist: move.twist,
+        cells: move.cells,
       })),
     };
 

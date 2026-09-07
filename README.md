@@ -101,10 +101,86 @@ visible.
 | **Square Four** 四角四目 | Four pieces each: place them, then slide one a step per turn. A line or a 2×2 square wins. | 5×5, four |
 | **Tic-tac-toe** 三目並べ | Three in a row. | 3×3, three |
 
+**Two games of our own**, with the same engine and a queue of pieces that
+both players share:
+
+| Game | What it is |
+| --- | --- |
+| **Domino Five** 二連五目 | Gomoku where every piece is a domino of two stones, black-black, white-white or one of each. Both players draw the same random run and see the next three. Five wins for its colour whoever laid it, so a white-white domino in black's hand is a gift to the other side. Nothing fits, and the turn passes, on the record. |
+| **Block Five** 積み五目 | The same with the seven four-square shapes, two black and two white each, rotated and flipped as you like, and six single stones of your own colour per player to fill gaps. As in a two-player falling-block match, both sides get the same sequence. |
+
+**The drop family** grows six ways, each a row in the table with one flag
+set, and each with a random element fixed by a seed stored with the game so a
+replay reproduces it:
+
+| Game | The one rule that changes |
+| --- | --- |
+| **Ring Drop** 輪落とし | The left and right edges join, so a line may wrap. |
+| **Hole Drop** 穴落とし | One random square is dead: stones fall past it and no line runs through it. |
+| **Hot Drop** 熱点落とし | One random hotspot counts as either colour, and one hole counts as nothing. A stone that finishes the other side's four through the hotspot loses. |
+| **Clear Drop** 消し落とし | A full bottom row disappears and everything drops a row, as in the falling-block game. |
+| **Giveaway Drop** 譲り落とし | Making four loses. You may not play on top of the opponent's last stone while another column has room. A full board goes to the opener. |
+| **Edge Drop** 縁寄せ | Gravity from all four edges: a stone must rest on an edge or against another stone. |
+
 Twists and slides are part of the record: a twist is stored on the stone it
 finishes, a slide stores where the piece came from, and a replay reproduces
 both. The threat reading is switched off for the twist and sliding games,
 because a line-by-line reading of a board whose stones move says nothing true.
+
+### Rules pages and the learning shelf
+
+Every game has a rules page at `/rules/<game>` in one template — Object,
+Board, Play, House rules — generated from the same spec the engine plays by,
+so the page cannot drift from the rules. Each carries a screenshot of the
+game in progress when one has been taken (`pnpm screenshots:games` writes
+them into `public/games/`) and links to the strategy guides that apply.
+
+`/learn` holds the guides: threats, shapes and tempo for the five-in-a-row
+family; Renju's forbidden points and openings; captures; two stones a turn;
+the drop family's parity; the twist games; the small games; and the piece
+games. Written to be learned from, with the Japanese terms where the
+literature uses them. Both sections are linked from the header.
+
+### Players, ratings and records
+
+A name is a player. There are no accounts, so whoever enters a name plays
+for its record, and the site says so. Every finished game between two named
+players updates both records and exchanges rating points:
+
+| Tier | When | K |
+| --- | --- | --- |
+| Unrated 未定 | fewer than four rated games | 40 |
+| Provisional 仮 | four to nineteen | 40 |
+| Established 確定 | twenty or more | 20 |
+
+Elo, starting at 1600, with a favourite by more than 400 points gaining
+nothing for a win. Anonymous seats are never rated. `/players` lists the
+leaders and `/players/<name>` shows a profile: rating, tier, won-lost-drawn
+overall and by game, and recent games with replays. Ladders and tournaments
+are not built; they are the next thing on the list.
+
+### Notes, messages and deadlines
+
+**Private notes** live under the record on the local board and beside a
+shared game. They stay in the browser and are never sent anywhere.
+
+**A message with an emoji.** In a shared game a short message can ride along
+with a reaction. It reaches the other side on the next poll, floats over
+their board with the emoji, and stays in the log.
+
+**Deadlines with grace.** A shared game can carry a per-move limit, from five
+minutes to a week, and a penalty for missing it. The graceful penalty
+forfeits the turn: the waiting player may claim it, which records a pass and
+hands the move back, or simply keep waiting, which is the "pass it back". Three
+forfeits in a row lose the game. The strict penalty loses the game at once.
+The server owns the clock: it stamps every move and refuses a claim made
+early. Both settings are chosen when the game is started and can be changed
+until the first stone.
+
+**Email** is a placeholder. `src/lib/notify/email.ts` receives every event
+that would be mailed — your turn, game over, invitations, a deadline near —
+and records that nothing was sent. There is no provider and no address list;
+wiring one is a decision for later, and this is the seam it plugs into.
 
 ### Are you still there?
 

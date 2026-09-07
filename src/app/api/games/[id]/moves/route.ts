@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/apiResponse";
 import { fetchGameMovesPage } from "@/lib/history/gameHistory";
 import { appendMove } from "@/lib/history/liveGame";
+import { pieceCellsSchema } from "@/lib/history/gameSettingsSchema";
 import {
   GAME_PAGE_MAX,
   GAME_PAGE_SIZE_MAX,
@@ -70,6 +71,8 @@ const playSchema = z.object({
   twist: z
     .object({ quadrant: z.number().int().min(0).max(15), clockwise: z.boolean() })
     .optional(),
+  cells: pieceCellsSchema.optional(),
+  pass: z.boolean().optional(),
 });
 
 /** Each refusal has one honest status code; none of them leak whose turn it is. */
@@ -114,9 +117,13 @@ export async function POST(
     if (!parsed.success) return badRequest("Invalid move.");
 
     const { id } = await ctx.params;
-    const { token, row, col, from, twist } = parsed.data;
+    const { token, row, col, from, twist, cells, pass } = parsed.data;
     const move =
-      twist !== undefined
+      pass === true
+        ? { kind: "pass" as const }
+        : cells !== undefined && cells !== null
+          ? { kind: "piece" as const, cells }
+        : twist !== undefined
         ? { kind: "twist" as const, ...twist }
         : row !== undefined && col !== undefined
           ? from !== undefined

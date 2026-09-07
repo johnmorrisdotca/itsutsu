@@ -1,6 +1,8 @@
 import type {
   Blocked,
   FirstPlayer,
+  Hot,
+  PieceQueue,
   ForbiddenPattern,
   GameSettings,
   GameStatus,
@@ -27,6 +29,11 @@ export const STONES = {
 
 export const BLOCKED: Blocked = "blocked";
 
+export const HOT: Hot = "hot";
+
+/** Seeds are 31-bit integers, small enough for every store and reproducible everywhere. */
+export const SEED_RANGE = 2 ** 31;
+
 export const STONE_DISPLAY: Record<Stone, { label: string; kanji: string }> = {
   black: { label: "Black", kanji: "黒" },
   white: { label: "White", kanji: "白" },
@@ -46,7 +53,26 @@ export const RULE_VARIANTS = {
   twistFive: "twistFive",
   twistFour: "twistFour",
   squareFour: "squareFour",
+  ringDrop: "ringDrop",
+  holeDrop: "holeDrop",
+  hotDrop: "hotDrop",
+  clearDrop: "clearDrop",
+  giveawayDrop: "giveawayDrop",
+  edgeDrop: "edgeDrop",
+  dominoFive: "dominoFive",
+  blockFive: "blockFive",
 } as const satisfies Record<RuleVariant, RuleVariant>;
+
+export const PIECE_QUEUES = {
+  domino: "domino",
+  tetro: "tetro",
+} as const satisfies Record<PieceQueue, PieceQueue>;
+
+/** How many queued pieces a player is shown ahead of the one in hand. */
+export const PIECE_PREVIEW = 3;
+
+/** A pass has no point on the board. */
+export const NO_POINT: Point = { row: -1, col: -1 };
 
 /** The variants in the order the browser and the filters list them. */
 export const RULE_VARIANT_LIST = [
@@ -57,7 +83,15 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.caro,
   RULE_VARIANTS.ninuki,
   RULE_VARIANTS.connect6,
+  RULE_VARIANTS.dominoFive,
+  RULE_VARIANTS.blockFive,
   RULE_VARIANTS.dropFour,
+  RULE_VARIANTS.ringDrop,
+  RULE_VARIANTS.holeDrop,
+  RULE_VARIANTS.hotDrop,
+  RULE_VARIANTS.clearDrop,
+  RULE_VARIANTS.giveawayDrop,
+  RULE_VARIANTS.edgeDrop,
   RULE_VARIANTS.twistFive,
   RULE_VARIANTS.twistFour,
   RULE_VARIANTS.trapThree,
@@ -68,6 +102,7 @@ export const RULE_VARIANT_LIST = [
 export const PLACEMENTS = {
   free: "free",
   drop: "drop",
+  edge: "edge",
 } as const satisfies Record<Placement, Placement>;
 
 export const OPENING_RULES = {
@@ -106,6 +141,7 @@ export const WIN_REASONS = {
   time: "time",
   trap: "trap",
   square: "square",
+  full: "full",
 } as const satisfies Record<WinReason, WinReason>;
 
 export const OPENING_STAGES = {
@@ -191,8 +227,25 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     squareWins: false,
     boardSizes: null,
     analysis: true,
+    wrap: false,
+    deadSquares: 0,
+    hotSquares: 0,
+    lineClear: false,
+    misere: false,
+    queue: null,
+    singles: 0,
     ...overrides,
   };
+}
+
+/** The drop family: gravity columns, four in a row, a 7×7 or 9×9 board. */
+function drop(overrides: Partial<VariantSpec> = {}): VariantSpec {
+  return small({
+    winLength: 4,
+    placement: PLACEMENTS.drop,
+    ...overrides,
+    boardSizes: overrides.boardSizes ?? [7, 9],
+  });
 }
 
 /** The games that are not gomoku: a small board of their own and no opening protocol. */
@@ -233,7 +286,28 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   }),
   tictactoe: small({ winLength: 3, boardSizes: [3] }),
   trapThree: small({ winLength: 4, loseLength: 3, boardSizes: [5] }),
-  dropFour: small({ winLength: 4, placement: PLACEMENTS.drop, boardSizes: [7, 9] }),
+  dropFour: drop(),
+  ringDrop: drop({ wrap: true }),
+  holeDrop: drop({ deadSquares: 1 }),
+  hotDrop: drop({ hotSquares: 1, deadSquares: 1 }),
+  clearDrop: drop({ lineClear: true }),
+  giveawayDrop: drop({ misere: true }),
+  edgeDrop: small({ winLength: 4, placement: PLACEMENTS.edge, boardSizes: [7, 9] }),
+  dominoFive: plain({
+    queue: PIECE_QUEUES.domino,
+    allowFirstPlayerChoice: true,
+    openings: FREE_ONLY,
+    boardSizes: [13, 15, 19],
+    analysis: false,
+  }),
+  blockFive: plain({
+    queue: PIECE_QUEUES.tetro,
+    singles: 6,
+    allowFirstPlayerChoice: true,
+    openings: FREE_ONLY,
+    boardSizes: [13, 15, 19],
+    analysis: false,
+  }),
   twistFive: small({ winLength: 5, quadrantSize: 3, boardSizes: [6], analysis: false }),
   twistFour: small({ winLength: 4, quadrantSize: 2, boardSizes: [4], analysis: false }),
   squareFour: small({
@@ -260,6 +334,8 @@ export const MOVE_KINDS = {
   place: "place",
   skip: "skip",
   move: "move",
+  piece: "piece",
+  pass: "pass",
 } as const satisfies Record<MoveKind, MoveKind>;
 
 export const SEATS = {
@@ -339,6 +415,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   variant: RULE_VARIANTS.freestyle,
   opening: OPENING_RULES.free,
   handicap: NO_HANDICAP,
+  seed: 0,
   capturesToWin: DEFAULT_CAPTURES_TO_WIN,
   firstPlayer: FIRST_PLAYERS.black,
   obstacles: OBSTACLE_LAYOUTS.none,

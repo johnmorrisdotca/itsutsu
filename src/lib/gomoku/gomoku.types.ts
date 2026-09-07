@@ -9,8 +9,11 @@ export type Stone = "black" | "white";
 /** An intersection the rules have taken out of play. See `obstacles.ts`. */
 export type Blocked = "blocked";
 
-/** One intersection of the board: a stone, an obstacle, or nothing. */
-export type Cell = Stone | Blocked | null;
+/** A hotspot: an intersection that counts as either colour's stone in a line. */
+export type Hot = "hot";
+
+/** One intersection of the board: a stone, an obstacle, a hotspot, or nothing. */
+export type Cell = Stone | Blocked | Hot | null;
 
 /** Zero-based board coordinates. Row 0 is the top, column 0 is the left. */
 export type Point = {
@@ -23,8 +26,22 @@ export type Point = {
  * `skip`: a deliberately wasted move, dropped on the emptiest corner.
  * `move`: a piece stepping from `from` to the move's point, in the games
  * where a fixed handful of pieces move once they are all down.
+ * `piece`: a multi-cell piece from the queue, laid as `cells`.
+ * `pass`: a turn taken without a stone — nothing fit, or a deadline went by.
+ * A pass has no point; its row and column are -1.
  */
-export type MoveKind = "place" | "skip" | "move";
+export type MoveKind = "place" | "skip" | "move" | "piece" | "pass";
+
+/** One cell of a multi-cell piece, with the colour it carries. */
+export type PieceCell = Point & { stone: Stone };
+
+/** A piece from the queue: its cells relative to the top-left of its bounding box. */
+export type Piece = {
+  cells: readonly PieceCell[];
+};
+
+/** Which queue of pieces a game draws from. */
+export type PieceQueue = "domino" | "tetro";
 
 /** A quarter turn of one quadrant, which ends a move in the twist games. */
 export type Twist = {
@@ -41,12 +58,19 @@ export type Move = Point & {
   from?: Point;
   /** The twist that finished this move, once it has been made. */
   twist?: Twist;
+  /** The bottom row this move cleared, so it can be put back by an undo. */
+  cleared?: Cell[];
+  /** The cells a piece covered, with their colours, on `piece` kinds. */
+  cells?: PieceCell[];
 };
 
 /** The shape of a move as a record or a request carries it, without the colour. */
 export type MoveInput = Point & {
+  /** As a record stores it: a string, checked against MOVE_KINDS where it matters. */
+  kind?: string;
   from?: Point;
   twist?: Twist;
+  cells?: PieceCell[];
 };
 
 /**
@@ -74,14 +98,22 @@ export type RuleVariant =
   | "dropFour"
   | "twistFive"
   | "twistFour"
-  | "squareFour";
+  | "squareFour"
+  | "ringDrop"
+  | "holeDrop"
+  | "hotDrop"
+  | "clearDrop"
+  | "giveawayDrop"
+  | "edgeDrop"
+  | "dominoFive"
+  | "blockFive";
 
 /**
  * Where a stone goes when played. `free`: where it was put. `drop`: it slides
  * to the lowest empty cell of its column, as if the board were upright and
  * the stones were magnetic.
  */
-export type Placement = "free" | "drop";
+export type Placement = "free" | "drop" | "edge";
 
 /**
  * How the first stones go down. Everything after the opening is the variant's
@@ -114,7 +146,7 @@ export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
  * How a won game was won. Null while nobody has. `trap` is the loser's doing:
  * they made the line the rules forbid. `square` is four in a 2×2.
  */
-export type WinReason = "line" | "captures" | "time" | "trap" | "square";
+export type WinReason = "line" | "captures" | "time" | "trap" | "square" | "full";
 
 /**
  * Where a swap-style opening stands. `placing` and `extending` are stretches
@@ -165,6 +197,20 @@ export type VariantSpec = {
   boardSizes: readonly number[] | null;
   /** Whether the threat reading means anything; off where stones move after placing. */
   analysis: boolean;
+  /** The left and right edges join, so a line may run off one side and onto the other. */
+  wrap: boolean;
+  /** Squares taken out of play at random when the game starts. */
+  deadSquares: number;
+  /** Squares that count as either colour's stone, placed at random when the game starts. */
+  hotSquares: number;
+  /** A full bottom row disappears and everything above it drops, as in the falling-block game. */
+  lineClear: boolean;
+  /** Making the winning line loses, and a full board goes to the player who opened. */
+  misere: boolean;
+  /** Pieces come from a shared seeded queue rather than being single stones. */
+  queue: PieceQueue | null;
+  /** Single stones of your own colour each player may lay instead of a piece. */
+  singles: number;
 };
 
 /**
@@ -240,6 +286,11 @@ export type GameSettings = {
   variant: RuleVariant;
   opening: OpeningRule;
   handicap: Handicap;
+  /**
+   * The random seed the game was created with: it places dead and hot
+   * squares and draws the piece queues, so a stored game reproduces them.
+   */
+  seed: number;
   /** Pairs a colour must capture to win, in the variants that capture. */
   capturesToWin: number;
   firstPlayer: FirstPlayer;

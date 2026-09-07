@@ -7,11 +7,11 @@ import {
   VARIANT_SPECS,
   WIN_REASONS,
 } from "../gomoku.constants";
-import type { GameState, Move, Point, Stone } from "../gomoku.types";
-import { indexOf, isOnBoard, isStone, otherStone } from "./board";
+import type { Cell, GameState, Move, Point, Stone } from "../gomoku.types";
+import { cellAtPoint, indexOf, isOnBoard, isStone, otherStone, stepFrom } from "./board";
 import { dropTarget } from "./drop";
 import { rulesFor } from "./handicap";
-import { findWinningLine, runThrough } from "./lines";
+import { findWinningLine, runThrough, winningLineFor } from "./lines";
 import { countStones, pieceDestinations, squareThrough } from "./pieces";
 import { findAllWins, rotateQuadrant } from "./twist";
 
@@ -43,6 +43,39 @@ export function resolvePlacement(state: GameState, point: Point): Point {
   return dropTarget(state.board, state.settings.size, point.col) ?? point;
 }
 
+/**
+ * Four-edge gravity: a stone must rest against the edge of the board or,
+ * orthogonally, against something already there. Nothing floats.
+ */
+export function restsOnSomething(state: GameState, point: Point): boolean {
+  const { size } = state.settings;
+  if (point.row === 0 || point.col === 0 || point.row === size - 1 || point.col === size - 1) {
+    return true;
+  }
+  return [
+    { row: -1, col: 0 },
+    { row: 1, col: 0 },
+    { row: 0, col: -1 },
+    { row: 0, col: 1 },
+  ].some((step) => cellAtPoint(state.board, size, stepFrom(point, step, 1)) !== null);
+}
+
+/**
+ * The giveaway rule that stops a player being forced into a four: you may
+ * not play directly on top of the opponent's last stone while any other
+ * column has room.
+ */
+export function blockedByGiveaway(state: GameState, point: Point): boolean {
+  const last = state.moves[state.moves.length - 1];
+  if (last === undefined) return false;
+  if (point.col !== last.col || point.row !== last.row - 1) return false;
+  const { size } = state.settings;
+  for (let col = 0; col < size; col += 1) {
+    if (col !== last.col && state.board[indexOf(size, { row: 0, col })] === null) return true;
+  }
+  return false;
+}
+
 /** Whether the colour to move has all its pieces down and must now slide one. */
 export function inMovePhase(state: GameState): boolean {
   const { pieces } = VARIANT_SPECS[state.settings.variant];
@@ -61,7 +94,17 @@ export function settleStone(state: GameState, point: Point): GameState | null {
   const spec = VARIANT_SPECS[settings.variant];
 
   const winningLine = findWinningLine(board, settings, point);
-  if (winningLine.length > 0) return won(state, stone, WIN_REASONS.line, winningLine);
+  if (winningLine.length > 0) {
+    // In the giveaway game a line is the one thing you must not make.
+    return spec.misere
+      ? won(state, otherStone(stone), WIN_REASONS.trap, winningLine)
+      : won(state, stone, WIN_REASONS.line, winningLine);
+  }
+  // A hotspot on the line can complete the other colour's line with your stone.
+  if (spec.hotSquares > 0) {
+    const theirs = winningLineFor(board, settings, point, otherStone(stone));
+    if (theirs.length > 0) return won(state, otherStone(stone), WIN_REASONS.line, theirs);
+  }
 
   if (spec.squareWins) {
     const square = squareThrough(board, settings.size, point, stone);
@@ -141,3 +184,21 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
   return settleStone(moved, to) ?? { ...moved, toPlay: otherStone(toPlay) };
 }
 
+
+/**
+ * The falling-block rule: a full bottom row vanishes and everything above it
+ * drops a row. Returns the board and the row that went, or null when the
+ * bottom row still has a gap. Only stones fill a row; a dead square never
+ * does, so the two rules are not combined in any variant.
+ */
+export function clearBottomRow(board: Cell[], size: number): { board: Cell[]; cleared: Cell[] } | null {
+  const bottom = board.slice((size - 1) * size);
+  if (bottom.some((cell) => cell === null)) return null;
+  const next = new Array<Cell>(size).fill(null).concat(board.slice(0, (size - 1) * size));
+  return { board: next, cleared: bottom };
+}
+
+/** Puts a cleared row back: the inverse of `clearBottomRow`. */
+export function restoreBottomRow(board: Cell[], size: number, cleared: Cell[]): Cell[] {
+  return board.slice(size).concat(cleared);
+}

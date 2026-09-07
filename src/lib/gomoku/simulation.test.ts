@@ -103,8 +103,10 @@ describe("simulated games", () => {
           final.moves.map((move) => ({
             row: move.row,
             col: move.col,
+            kind: move.kind,
             from: move.from,
             twist: move.twist,
+            cells: move.cells,
           })),
           final.opening.choices,
         );

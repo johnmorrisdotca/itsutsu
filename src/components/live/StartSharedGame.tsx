@@ -5,9 +5,15 @@ import { useState } from "react";
 
 import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
-import { Button, SectionTitle } from "@/components/ui/Controls";
+import { Button, Field, SectionTitle, Select } from "@/components/ui/Controls";
 import { GAME_COPY } from "@/components/game/game.constants";
-import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
+import { describeMoveTime } from "@/lib/history/deadline";
+import {
+  MOVE_TIME_OPTIONS,
+  SHARED_OPENINGS,
+  TIMEOUT_PENALTIES,
+  type TimeoutPenalty,
+} from "@/lib/history/gameSettingsSchema";
 import type { CreatedGame } from "@/lib/history/liveGame.types";
 import { describeRules } from "./rulesSummary";
 
@@ -22,6 +28,8 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
   const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [moveTimeMs, setMoveTimeMs] = useState<number | null>(null);
+  const [timeoutPenalty, setTimeoutPenalty] = useState<TimeoutPenalty>("turn");
   // Swap openings move colours between players, which a seat link cannot follow.
   const sharedOpening = SHARED_OPENINGS.includes(settings.opening)
     ? settings.opening
@@ -41,6 +49,8 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
           obstacles: settings.obstacles,
           opening: sharedOpening,
           handicap: settings.handicap.stone === null ? null : settings.handicap,
+          moveTimeMs,
+          timeoutPenalty,
         }),
       });
 
@@ -66,6 +76,36 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
         {describeRules({ ...settings, opening: sharedOpening })}
         {sharedOpening !== settings.opening ? ` ${GAME_COPY.sharedOpeningNote}` : ""}
       </p>
+      <Field label={GAME_COPY.moveTime.label} hint={GAME_COPY.moveTimeHint}>
+        <Select
+          value={moveTimeMs === null ? "none" : String(moveTimeMs)}
+          onChange={(event) =>
+            setMoveTimeMs(event.target.value === "none" ? null : Number(event.target.value))
+          }
+          data-testid="shared-move-time"
+        >
+          {MOVE_TIME_OPTIONS.map((option) => (
+            <option key={option ?? "none"} value={option === null ? "none" : option}>
+              {describeMoveTime(option)}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      {moveTimeMs !== null ? (
+        <Field label={GAME_COPY.penalty.label} hint={GAME_COPY.penaltyHint}>
+          <Select
+            value={timeoutPenalty}
+            onChange={(event) => setTimeoutPenalty(event.target.value as TimeoutPenalty)}
+            data-testid="shared-penalty"
+          >
+            {TIMEOUT_PENALTIES.map((option) => (
+              <option key={option} value={option}>
+                {option === "turn" ? GAME_COPY.penaltyTurn : GAME_COPY.penaltyGame}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ) : null}
       <Button onClick={start} disabled={starting} data-testid="start-shared-game">
         {starting ? "Starting…" : "Start a shared game"}
       </Button>

@@ -47,6 +47,16 @@ export type GameSummary = {
   opening: string;
   /** The handicap the game was played under; `stone` is null for none. */
   handicap: Handicap;
+  /** The random seed, for the variants that scatter squares or draw pieces. */
+  seed: number;
+  /** Per-move time limit in milliseconds, or null for none. Shared games only. */
+  moveTimeMs: number | null;
+  /** What a missed deadline costs: "turn" or "game". */
+  timeoutPenalty: string;
+  /** When the last move landed, as an ISO string, or null before the first. */
+  lastMoveAt: string | null;
+  /** Consecutive forfeits each colour has run up. */
+  forfeits: { black: number; white: number };
   result: GameResult;
   winner: string | null;
   moveCount: number;
@@ -63,6 +73,8 @@ export type GameMove = {
   from?: { row: number; col: number };
   /** The quarter turn that finished the move, in the twist games. */
   twist?: { quadrant: number; clockwise: boolean };
+  /** The cells a piece covered, with their colours, in the piece games. */
+  cells?: { row: number; col: number; stone: "black" | "white" }[];
 };
 
 /** An emoji one player sent the other, as the shared game page shows it. */
@@ -70,6 +82,8 @@ export type GameReaction = {
   id: string;
   stone: string;
   emoji: string;
+  /** A short message sent with it, or null. */
+  text: string | null;
   moveNumber: number | null;
   createdAt: string;
 };

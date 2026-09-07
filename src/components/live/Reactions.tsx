@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+import { INPUT_CLASS } from "@/components/ui/ui.constants";
+
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameReaction } from "@/lib/history/gameHistory.types";
 import {
+  MESSAGE_MAX,
   REACTIONS,
   REACTION_SHOW_MS,
   type ReactionEmoji,
@@ -22,23 +25,48 @@ export function ReactionBar({
 }: {
   lastMove: number | null;
   disabled: boolean;
-  onSend: (emoji: ReactionEmoji, moveNumber: number | null) => void;
+  onSend: (emoji: ReactionEmoji, moveNumber: number | null, text: string | null) => void;
 }) {
+  const [text, setText] = useState("");
+
+  const send = (emoji: ReactionEmoji) => {
+    const message = text.trim();
+    onSend(emoji, lastMove, message === "" ? null : message);
+    setText("");
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-1.5" data-testid="reaction-bar">
-      {REACTIONS.map((reaction) => (
-        <button
-          key={reaction.emoji}
-          type="button"
-          onClick={() => onSend(reaction.emoji, lastMove)}
-          disabled={disabled}
-          title={reaction.label}
-          aria-label={`Send ${reaction.label}`}
-          className="rounded-full border border-rule bg-white/70 px-2 py-1 text-lg leading-none transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-900/60"
-        >
-          {reaction.emoji}
-        </button>
-      ))}
+    <div className="flex flex-col gap-2" data-testid="reaction-bar">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {REACTIONS.map((reaction) => (
+          <button
+            key={reaction.emoji}
+            type="button"
+            onClick={() => send(reaction.emoji)}
+            disabled={disabled}
+            title={reaction.label}
+            aria-label={`Send ${reaction.label}`}
+            className="rounded-full border border-rule bg-white/70 px-2 py-1 text-lg leading-none transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-900/60"
+          >
+            {reaction.emoji}
+          </button>
+        ))}
+      </div>
+      {/* A few words to go with the emoji. The emoji sends it; a message never goes alone. */}
+      <input
+        type="text"
+        value={text}
+        maxLength={MESSAGE_MAX}
+        disabled={disabled}
+        onChange={(event) => setText(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && text.trim() !== "") send(REACTIONS[0].emoji);
+        }}
+        placeholder="Say something with it…"
+        aria-label="Message to send with an emoji"
+        className={`${INPUT_CLASS} text-xs`}
+        data-testid="reaction-text"
+      />
     </div>
   );
 }
@@ -97,8 +125,13 @@ export function ReactionBubbles({
             <span className="text-xs text-muted">
               {mine ? "You" : STONE_DISPLAY[reaction.stone as Stone]?.label ?? reaction.stone}
               {reaction.moveNumber !== null ? ` · move ${reaction.moveNumber}` : ""}
-              {label ? ` · ${label}` : ""}
+              {reaction.text ? "" : label ? ` · ${label}` : ""}
             </span>
+            {reaction.text ? (
+              <span className="max-w-[16rem] text-sm" data-testid="reaction-message">
+                {reaction.text}
+              </span>
+            ) : null}
           </span>
         );
       })}
@@ -113,7 +146,10 @@ export function ReactionLog({ reactions }: { reactions: GameReaction[] }) {
   return (
     <p className="flex flex-wrap items-center gap-1 text-xs text-muted" data-testid="reaction-log">
       {recent.map((reaction) => (
-        <span key={reaction.id} title={`${reaction.stone}${reaction.moveNumber !== null ? `, move ${reaction.moveNumber}` : ""}`}>
+        <span
+          key={reaction.id}
+          title={`${reaction.stone}${reaction.moveNumber !== null ? `, move ${reaction.moveNumber}` : ""}${reaction.text ? `: ${reaction.text}` : ""}`}
+        >
           <span
             aria-hidden="true"
             className={`mr-0.5 inline-block size-2 rounded-full align-middle ${
@@ -123,6 +159,7 @@ export function ReactionLog({ reactions }: { reactions: GameReaction[] }) {
             }`}
           />
           {reaction.emoji}
+          {reaction.text ? <span className="ml-1 text-zinc-700 dark:text-zinc-200">{reaction.text}</span> : null}
         </span>
       ))}
     </p>

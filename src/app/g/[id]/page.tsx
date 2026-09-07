@@ -6,6 +6,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
 import { SharedGame } from "@/components/live/SharedGame";
 import { SharedRules } from "@/components/live/SharedRules";
+import { NotesPanel } from "@/components/game/NotesPanel";
+import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
@@ -87,6 +89,11 @@ export default async function SharedGamePage({
 
           <aside className="flex w-full flex-col gap-4 lg:w-80">
             <SharedRules game={game} token={token ?? null} seat={seat} />
+            {seat !== null ? (
+              <div className={PANEL_CLASS}>
+                <NotesPanel gameKey={`shared:${id}`} />
+              </div>
+            ) : null}
             {invites.length > 0 ? (
               <InvitePanel invites={invites} yourStone={seat} />
             ) : (

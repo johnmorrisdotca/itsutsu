@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+
 /**
  * The board, loaded on the client only.
  *
@@ -22,6 +24,6 @@ const GameView = dynamic(
   },
 );
 
-export function GameViewClient() {
-  return <GameView />;
+export function GameViewClient({ variant }: { variant?: RuleVariant }) {
+  return <GameView variant={variant} />;
 }

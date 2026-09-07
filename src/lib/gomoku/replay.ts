@@ -11,6 +11,7 @@ type StoredGame = {
   opener: string;
   opening?: string;
   handicap?: Handicap | null;
+  seed?: number;
   moves: MoveInput[];
 };
 
@@ -32,6 +33,7 @@ export function replayTimeline(game: StoredGame): GameState[] {
     obstacles: game.obstacles as GameState["settings"]["obstacles"],
     opening: (game.opening ?? "free") as GameState["settings"]["opening"],
     handicap: game.handicap ?? NO_HANDICAP,
+    seed: game.seed ?? 0,
     firstPlayer: game.opener as Stone,
     allowUndo: false,
     allowSwap: false,

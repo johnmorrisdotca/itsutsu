@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import {
-  BOARD_SIZES,
+  ALL_BOARD_SIZES,
   NO_HANDICAP,
   OBSTACLE_LAYOUTS,
   OPENING_RULES,
@@ -20,6 +20,19 @@ import type { Handicap, OpeningRule } from "@/lib/gomoku/gomoku.types";
 
 export const stoneSchema = z.enum([STONES.black, STONES.white]);
 
+/** The cells of a piece as a record carries them. A pass has none. */
+export const pieceCellsSchema = z
+  .array(
+    z.object({
+      row: z.number().int().min(0).max(64),
+      col: z.number().int().min(0).max(64),
+      stone: stoneSchema,
+    }),
+  )
+  .min(2)
+  .max(4)
+  .nullable();
+
 export const variantSchema = z.enum(RULE_VARIANT_LIST).default(RULE_VARIANTS.freestyle);
 
 export const obstaclesSchema = z
@@ -29,7 +42,7 @@ export const obstaclesSchema = z
 export const boardSizeSchema = z
   .number()
   .int()
-  .refine((size) => (BOARD_SIZES as readonly number[]).includes(size), {
+  .refine((size) => (ALL_BOARD_SIZES as readonly number[]).includes(size), {
     message: "Not a board size this game offers.",
   });
 
@@ -59,6 +72,34 @@ export const SHARED_OPENINGS: readonly OpeningRule[] = [
 export const sharedOpeningSchema = z
   .enum([OPENING_RULES.free, OPENING_RULES.pro, OPENING_RULES.longPro])
   .default(OPENING_RULES.free);
+
+/** Per-move time limits a shared game may use, in milliseconds. Null is no clock. */
+export const MOVE_TIME_OPTIONS = [
+  null,
+  5 * 60_000,
+  30 * 60_000,
+  60 * 60_000,
+  6 * 60 * 60_000,
+  24 * 60 * 60_000,
+  3 * 24 * 60 * 60_000,
+  7 * 24 * 60 * 60_000,
+] as const;
+
+export const TIMEOUT_PENALTIES = ["turn", "game"] as const;
+export type TimeoutPenalty = (typeof TIMEOUT_PENALTIES)[number];
+
+/** Three missed turns in a row lose the game under the graceful penalty. */
+export const FORFEITS_TO_LOSE = 3;
+
+export const moveTimeSchema = z
+  .number()
+  .int()
+  .min(60_000)
+  .max(30 * 24 * 60 * 60_000)
+  .nullable()
+  .default(null);
+
+export const timeoutPenaltySchema = z.enum(TIMEOUT_PENALTIES).default("turn");
 
 export const handicapSchema = z
   .object({

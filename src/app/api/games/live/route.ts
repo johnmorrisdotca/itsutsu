@@ -18,9 +18,11 @@ import { PLAYER_NAME_MAX } from "@/lib/history/gameHistory.constants";
 import {
   boardSizeSchema,
   handicapSchema,
+  moveTimeSchema,
   obstaclesSchema,
   sharedOpeningSchema,
   stoneSchema,
+  timeoutPenaltySchema,
   variantSchema,
 } from "@/lib/history/gameSettingsSchema";
 import { createLiveGame } from "@/lib/history/liveGame";
@@ -39,6 +41,8 @@ const liveGameSchema = z.object({
   obstacles: obstaclesSchema,
   opening: sharedOpeningSchema,
   handicap: handicapSchema,
+  moveTimeMs: moveTimeSchema,
+  timeoutPenalty: timeoutPenaltySchema,
   opener: stoneSchema.default(STONES.black),
 });
 

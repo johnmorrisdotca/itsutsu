@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS } from "./gameHistory.constants";
-import { parseHandicap } from "./gameSettingsSchema";
+import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
 import { REACTIONS_KEPT } from "./reactions.constants";
 import type {
   GameDetail,
@@ -33,6 +33,12 @@ const SUMMARY_SELECT = {
   opener: true,
   opening: true,
   handicap: true,
+  seed: true,
+  moveTimeMs: true,
+  timeoutPenalty: true,
+  lastMoveAt: true,
+  blackForfeits: true,
+  whiteForfeits: true,
   result: true,
   winner: true,
   moveCount: true,
@@ -52,6 +58,7 @@ const MOVE_SELECT = {
   fromCol: true,
   twistQuadrant: true,
   twistClockwise: true,
+  cells: true,
 } as const;
 
 type MoveRow = Prisma.MoveGetPayload<{ select: typeof MOVE_SELECT }>;
@@ -71,14 +78,19 @@ export function toGameMove(row: MoveRow): GameMove {
   if (row.twistQuadrant !== null && row.twistClockwise !== null) {
     move.twist = { quadrant: row.twistQuadrant, clockwise: row.twistClockwise };
   }
+  const cells = pieceCellsSchema.safeParse(row.cells);
+  if (cells.success && cells.data !== null) move.cells = cells.data;
   return move;
 }
 
 function toSummary(row: SummaryRow): GameSummary {
+  const { blackForfeits, whiteForfeits, ...rest } = row;
   return {
-    ...row,
+    ...rest,
     playedAt: row.playedAt.toISOString(),
+    lastMoveAt: row.lastMoveAt === null ? null : row.lastMoveAt.toISOString(),
     handicap: parseHandicap(row.handicap),
+    forfeits: { black: blackForfeits, white: whiteForfeits },
   };
 }
 
@@ -146,7 +158,7 @@ export async function fetchGameDetail(id: string): Promise<GameDetail | null> {
       reactions: {
         orderBy: { createdAt: "desc" },
         take: REACTIONS_KEPT,
-        select: { id: true, stone: true, emoji: true, moveNumber: true, createdAt: true },
+        select: { id: true, stone: true, emoji: true, text: true, moveNumber: true, createdAt: true },
       },
     },
   });

@@ -1,4 +1,4 @@
-import { BLOCKED, DIRECTIONS, LINE_RULES } from "../gomoku.constants";
+import { BLOCKED, DIRECTIONS, HOT, LINE_RULES, VARIANT_SPECS } from "../gomoku.constants";
 import type {
   Cell,
   GameSettings,
@@ -28,9 +28,25 @@ export type Run = {
   ends: [Cell | undefined, Cell | undefined];
 };
 
+/** A hotspot is every colour's stone at once. */
+function joins(cell: Cell | undefined, stone: Stone): boolean {
+  return cell === stone || cell === HOT;
+}
+
+/**
+ * One step along a line. On a ring board the columns wrap, so a step off the
+ * right edge arrives at the left; rows never wrap.
+ */
+function advance(size: number, point: Point, step: Point, wrap: boolean): Point {
+  const next = stepFrom(point, step, 1);
+  if (!wrap) return next;
+  return { row: next.row, col: ((next.col % size) + size) % size };
+}
+
 /**
  * Walks from `origin` in `step` increments while the stones match, returning
- * the points visited (excluding `origin`).
+ * the points visited (excluding `origin`). On a wrapping board the walk is
+ * capped at the board's width, or a full ring would never end.
  */
 export function runFrom(
   board: Cell[],
@@ -38,12 +54,13 @@ export function runFrom(
   origin: Point,
   step: Point,
   stone: Stone,
+  wrap = false,
 ): Point[] {
   const run: Point[] = [];
-  let next = stepFrom(origin, step, 1);
-  while (isOnBoard(size, next) && board[indexOf(size, next)] === stone) {
+  let next = advance(size, origin, step, wrap);
+  while (isOnBoard(size, next) && joins(board[indexOf(size, next)], stone) && run.length < size - 1) {
     run.push(next);
-    next = stepFrom(next, step, 1);
+    next = advance(size, next, step, wrap);
   }
   return run;
 }
@@ -55,15 +72,16 @@ export function runThrough(
   point: Point,
   step: Point,
   stone: Stone,
+  wrap = false,
 ): Run {
-  const back = runFrom(board, size, point, negate(step), stone);
-  const forward = runFrom(board, size, point, step, stone);
+  const back = runFrom(board, size, point, negate(step), stone, wrap);
+  const forward = runFrom(board, size, point, step, stone, wrap);
   const cells = [...back.reverse(), point, ...forward];
   return {
     cells,
     ends: [
-      cellAtPoint(board, size, stepFrom(cells[0], step, -1)),
-      cellAtPoint(board, size, stepFrom(cells[cells.length - 1], step, 1)),
+      cellAtPoint(board, size, advance(size, cells[0], negate(step), wrap)),
+      cellAtPoint(board, size, advance(size, cells[cells.length - 1], step, wrap)),
     ],
   };
 }
@@ -112,10 +130,25 @@ export function findWinningLine(
 ): Point[] {
   const stone = board[indexOf(settings.size, point)];
   if (!isStone(stone)) return [];
+  return winningLineFor(board, settings, point, stone);
+}
+
+/**
+ * The winning line of `stone` through `point`, whatever sits at `point` — a
+ * hotspot completes a line for either colour, so both are asked.
+ */
+export function winningLineFor(
+  board: Cell[],
+  settings: GameSettings,
+  point: Point,
+  stone: Stone,
+): Point[] {
+  if (!joins(board[indexOf(settings.size, point)], stone)) return [];
   const { lineRule, winLength } = rulesFor(settings, stone);
+  const wrap = VARIANT_SPECS[settings.variant].wrap;
 
   for (const step of DIRECTIONS) {
-    const run = runThrough(board, settings.size, point, step, stone);
+    const run = runThrough(board, settings.size, point, step, stone, wrap);
     if (runWins(lineRule, run, winLength, stone)) return run.cells;
   }
   return [];

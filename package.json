@@ -30,7 +30,8 @@
     "db:drift:check": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code --script",
     "preflight:prod": "pnpm quality:check && pnpm security:check && pnpm build",
     "invite": "node --env-file=.env scripts/mint-invite.ts",
-    "embed-token": "node --env-file=.env scripts/mint-embed-token.ts"
+    "embed-token": "node --env-file=.env scripts/mint-embed-token.ts",
+    "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -57,7 +58,7 @@
     "vitest": "^5.0.0"
   },
   "packageManager": "pnpm@10.11.0",
-  "description": "Gomoku (五目並べ) — five in a row on a go board.",
+  "description": "Gomoku (\u4e94\u76ee\u4e26\u3079) \u2014 five in a row on a go board.",
   "engines": {
     "node": ">=20.9.0"
   },

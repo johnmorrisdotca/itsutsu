@@ -183,6 +183,15 @@ function VariantLine({ session }: { session: GameSession }) {
   const lines: string[] = [];
 
   if (state.status === GAME_STATUS.playing) {
+    if (session.hand.piece !== null) {
+      lines.push(
+        session.hand.mustPass
+          ? GAME_COPY.mustPass
+          : session.hand.layingSingle
+            ? GAME_COPY.singlePrompt
+            : GAME_COPY.piecePrompt,
+      );
+    }
     if (state.pendingTwist) lines.push(GAME_COPY.twistPrompt);
     else if (inMovePhase(state)) {
       lines.push(session.selected === null ? GAME_COPY.pickPiece : GAME_COPY.placePiece);

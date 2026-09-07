@@ -27,6 +27,7 @@ export async function addReaction(
   token: string,
   emoji: ReactionEmoji,
   moveNumber: number | null,
+  text: string | null = null,
 ): Promise<ReactionOutcome> {
   const row = await prisma.game.findUnique({
     where: { id },
@@ -45,7 +46,7 @@ export async function addReaction(
     return { ok: false, reason: "no-such-move" };
   }
 
-  await prisma.reaction.create({ data: { gameId: id, stone, emoji, moveNumber } });
+  await prisma.reaction.create({ data: { gameId: id, stone, emoji, moveNumber, text } });
 
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };

@@ -57,6 +57,18 @@ model Game {
   opening   String     @default("free")
   /// A per-colour handicap, see Handicap, or null for none.
   handicap  Json?
+  /// The random seed the game was created with: dead and hot squares, piece queues.
+  seed      Int        @default(0)
+
+  /// Per-move time limit for a shared game, in milliseconds; null for none.
+  moveTimeMs     Int?
+  /// What running out of time costs: "turn" (graceful) or "game".
+  timeoutPenalty String     @default("turn")
+  /// When the last move landed, so a deadline can be computed on the server.
+  lastMoveAt     DateTime?
+  /// Consecutive turns each colour has forfeited to the clock. Three lose the game.
+  blackForfeits  Int        @default(0)
+  whiteForfeits  Int        @default(0)
 
   result    GameResult
   /// Set for a decisive game, null for a draw or an abandoned one.
@@ -93,6 +105,8 @@ model Move {
   /// The quarter turn that ended this move in a twist game: which quadrant, which way.
   twistQuadrant  Int?
   twistClockwise Boolean?
+  /// The cells a multi-cell piece covered, with their colours, on "piece" kinds.
+  cells          Json?
 
   @@unique([gameId, number])
   @@index([gameId, number])
@@ -137,8 +151,28 @@ model Reaction {
   /// The colour that sent it.
   stone      String
   emoji      String
+  /// A short message sent with the move, if any.
+  text       String?
   moveNumber Int?
   createdAt  DateTime @default(now())
 
   @@index([gameId, createdAt])
+}
+
+/// A player, known by name. There are no accounts, so the name is the
+/// identity, folded to lower case: whoever plays as "Aki" is Aki.
+model Player {
+  /// The name as folded for matching.
+  key        String   @id
+  /// The name as last typed, for display.
+  name       String
+  rating     Int      @default(1600)
+  ratedGames Int      @default(0)
+  wins       Int      @default(0)
+  losses     Int      @default(0)
+  draws      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([rating])
 }

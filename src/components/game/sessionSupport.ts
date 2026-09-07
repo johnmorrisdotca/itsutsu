@@ -1,7 +1,8 @@
 import type { Assessment, Suggestion } from "@/lib/gomoku/analysis.types";
 import { newlyLost } from "@/lib/gomoku/analysis";
 import { otherStone } from "@/lib/gomoku/engine";
-import type { GameState, Point, Seat } from "@/lib/gomoku/gomoku.types";
+import { VARIANT_SPECS, WIN_LENGTH } from "@/lib/gomoku/gomoku.constants";
+import type { GameSettings, GameState, Point, Seat } from "@/lib/gomoku/gomoku.types";
 import type { BoardMark } from "@/components/board/board.types";
 import { AWARENESS_LEVELS } from "./game.constants";
 import type { FatalMove, GameSession, SessionSettings } from "./game.types";
@@ -62,6 +63,25 @@ export function buildMarks(
   if (hint !== null) marks.push({ ...hint.point, kind: "hint" });
 
   return marks;
+}
+
+/**
+ * The settings a new game starts from: the old ones with the changes laid
+ * over, minus the seed — a new game draws its own, or the dead squares and
+ * the piece queue would repeat — and with the line length following a new
+ * variant unless one was asked for.
+ */
+export function nextGameSettings(
+  current: GameSettings,
+  next: Partial<GameSettings>,
+): GameSettings {
+  const { seed: _previous, ...carried } = current;
+  void _previous;
+  const settings = { ...carried, ...next } as GameSettings;
+  if (next.variant !== undefined && next.winLength === undefined) {
+    settings.winLength = VARIANT_SPECS[next.variant].winLength ?? WIN_LENGTH;
+  }
+  return settings;
 }
 
 /** The colour a seat is holding right now, for labelling the controls. */

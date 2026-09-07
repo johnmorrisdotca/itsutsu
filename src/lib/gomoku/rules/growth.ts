@@ -134,7 +134,10 @@ export function ringHoldsMoves(state: GameState, margin: number): boolean {
     point.row < margin || point.col < margin || point.row > last || point.col > last;
 
   return state.moves.some(
-    (move) => outside(move) || (move.from !== undefined && outside(move.from)),
+    (move) =>
+      (move.kind !== "pass" && outside(move)) ||
+      (move.from !== undefined && outside(move.from)) ||
+      (move.cells !== undefined && move.cells.some(outside)),
   );
 }
 

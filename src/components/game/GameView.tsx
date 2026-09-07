@@ -2,6 +2,7 @@
 
 import { Board } from "@/components/board/Board";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { GameOptions, GameSidebar } from "./GamePanel";
 import { IdleModal } from "./IdleModal";
 import { useIdleWatch } from "./useIdleWatch";
@@ -9,10 +10,14 @@ import { BranchPrompt, ReviewBanner } from "./ReviewControls";
 import { useGameRecording } from "./useGameRecording";
 import { useGameSession } from "./useGameSession";
 
-export function GameView() {
+export function GameView({ variant }: { variant?: RuleVariant }) {
   // Nothing moving for a couple of minutes pauses the clock behind a modal.
   const { idle, confirm } = useIdleWatch();
-  const { session, actions } = useGameSession({}, { persist: true, paused: idle });
+  // A game asked for by name starts fresh; otherwise the last game resumes.
+  const { session, actions } = useGameSession(
+    variant === undefined ? {} : { variant },
+    { persist: true, paused: idle, fresh: variant !== undefined },
+  );
   const streaks = useGameRecording(session);
   const showIdle = idle && session.state.status === GAME_STATUS.playing;
 
@@ -31,6 +36,7 @@ export function GameView() {
               onPlay={actions.play}
               onTwist={actions.twist}
               selected={session.selected}
+              footprintFor={session.hand.piece !== null ? session.hand.footprintFor : undefined}
             />
           </div>
         </div>

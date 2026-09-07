@@ -13,6 +13,8 @@ import { WinChanceBar } from "./WinChanceBar";
 import { GameSettingsPanel } from "./GameSettingsPanel";
 import { GameStatus } from "./GameStatus";
 import { MoveHistory } from "./MoveHistory";
+import { NotesPanel } from "./NotesPanel";
+import { PieceTray } from "./PieceTray";
 import { PlayerNames } from "./PlayerNames";
 import type { GamePanelProps } from "./game.types";
 
@@ -37,6 +39,18 @@ export function GameSidebar(props: GamePanelProps) {
           <WinChanceBar session={props.session} />
         </div>
       ) : null}
+      {props.session.hand.piece !== null ? (
+        <div className={PANEL_CLASS}>
+          <PieceTray
+            hand={props.session.hand}
+            disabled={props.session.reviewing || props.session.state.status !== "playing"}
+            onRotate={props.actions.rotatePiece}
+            onFlip={props.actions.flipPiece}
+            onToggleSingle={props.actions.toggleSingle}
+            onPass={props.actions.pass}
+          />
+        </div>
+      ) : null}
       <div className={PANEL_CLASS}>
         <GameControls {...props} />
       </div>
@@ -45,6 +59,9 @@ export function GameSidebar(props: GamePanelProps) {
       </div>
       <div className={PANEL_CLASS}>
         <MoveHistory {...props} />
+      </div>
+      <div className={PANEL_CLASS}>
+        <NotesPanel gameKey={`local:${props.session.state.settings.seed}`} />
       </div>
     </aside>
   );

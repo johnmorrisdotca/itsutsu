@@ -13,6 +13,7 @@ import type {
   Stone,
 } from "@/lib/gomoku/gomoku.types";
 import type { Appearance, BoardMark } from "@/components/board/board.types";
+import type { PieceHand } from "./usePieceHand";
 
 /**
  * How much the board tells a player about the position.
@@ -122,6 +123,8 @@ export type GameSession = {
   boardReadOnly: boolean;
   /** The piece picked up to slide, in the games where pieces move. */
   selected: Point | null;
+  /** The piece in hand, in the games that draw from a queue. */
+  hand: PieceHand;
   /**
    * A move waiting on confirmation because playing it would discard the moves
    * after the position being reviewed.
@@ -167,6 +170,11 @@ export type GameActions = {
   extendOpening: () => void;
   /** Turns a quadrant to finish the move, in the twist games. */
   twist: (quadrant: number, clockwise: boolean) => void;
+  /** The piece games: turn or flip the piece in hand, lay a single instead, or pass. */
+  rotatePiece: () => void;
+  flipPiece: () => void;
+  toggleSingle: () => void;
+  pass: () => void;
   /** Offers the other player a bigger or smaller board. */
   proposeResize: (direction: ResizeDirection) => void;
   /** The other seat agrees, and the board changes. */

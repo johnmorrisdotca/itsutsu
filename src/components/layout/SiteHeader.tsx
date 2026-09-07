@@ -17,6 +17,15 @@ export function SiteHeader() {
         <Link href="/" className="hover:underline underline-offset-4">
           Play
         </Link>
+        <Link href="/rules" className="hover:underline underline-offset-4">
+          Rules <span className="font-mincho text-muted">規則</span>
+        </Link>
+        <Link href="/learn" className="hover:underline underline-offset-4">
+          Learn <span className="font-mincho text-muted">学び</span>
+        </Link>
+        <Link href="/players" className="hover:underline underline-offset-4">
+          Players <span className="font-mincho text-muted">対局者</span>
+        </Link>
         <Link href="/history" className="hover:underline underline-offset-4">
           Record <span className="font-mincho text-muted">棋譜</span>
         </Link>

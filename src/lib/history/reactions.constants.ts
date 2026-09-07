@@ -31,5 +31,8 @@ export const REACTIONS_KEPT = 30;
 /** How long an incoming reaction floats over the board before fading. */
 export const REACTION_SHOW_MS = 6_000;
 
+/** The longest message that may ride along with an emoji. */
+export const MESSAGE_MAX = 140;
+
 /** A seat may not send more than this many reactions in a minute. */
 export const REACTION_RATE_LIMIT = { windowMs: 60_000, maxRequests: 20 };

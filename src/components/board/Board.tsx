@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import {
   canTwist,
@@ -16,12 +16,13 @@ import {
 import {
   BLOCKED,
   GAME_STATUS,
+  HOT,
   PLACEMENTS,
   STONE_DISPLAY,
   VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
 import { columnLetter, pointName, rowNumber } from "@/lib/gomoku/notation";
-import type { Cell, GameState } from "@/lib/gomoku/gomoku.types";
+import type { Cell, GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { BOARD_THEMES, LABEL_GUTTER, STONE_SETS } from "./Board.constants";
 import { BoardLines } from "./BoardLines";
 import { Intersection } from "./Intersection";
@@ -30,6 +31,7 @@ import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
 
 function cellDescription(cell: Cell, forbidden: boolean): string {
   if (cell === BLOCKED) return "blocked";
+  if (cell === HOT) return "hotspot";
   if (cell === null) return forbidden ? "forbidden" : "empty";
   return `${STONE_DISPLAY[cell].label} stone`;
 }
@@ -103,7 +105,9 @@ export function Board({
   onPlay,
   onTwist,
   selected = null,
+  footprintFor,
 }: BoardProps) {
+  const [hovered, setHovered] = useState<Point | null>(null);
   const { size } = state.settings;
   const spec = VARIANT_SPECS[state.settings.variant];
   const theme = BOARD_THEMES[appearance.boardTheme];
@@ -152,6 +156,22 @@ export function Board({
   const twisting = live && onTwist !== undefined && canTwist(state) && spec.quadrantSize !== null;
   const dropping = spec.placement === PLACEMENTS.drop;
 
+  /*
+   * The piece games: the piece in hand hangs under the pointer with its
+   * corner on the hovered point, cell colours and all, and a click lays it
+   * there. Where it does not fit, nothing is shown and nothing happens.
+   */
+  const footprint = useMemo(() => {
+    if (!live || footprintFor === undefined) return new Map<number, Stone>();
+    const cells = new Map<number, Stone>();
+    // Every empty point is a possible corner, so a click anywhere can be a lay.
+    if (hovered !== null) {
+      for (const cell of footprintFor(hovered) ?? []) cells.set(indexOf(size, cell), cell.stone);
+    }
+    return cells;
+  }, [footprintFor, hovered, live, size]);
+  const piecing = live && footprintFor !== undefined && spec.queue !== null;
+
   const gutter = appearance.showCoordinates ? LABEL_GUTTER : "0px";
 
   return (
@@ -194,6 +214,9 @@ export function Board({
             const routed = dropping && cell === null && legal !== null && legal.has(landingIndex);
             const ownPiece = sliding && cell === state.toPlay;
             const target = destinations.has(index);
+            const inFootprint = footprint.has(index);
+            // In a piece game a corner can be laid wherever the piece fits.
+            const cornerFits = piecing && cell === null && footprintFor?.(point) !== null && !legal?.has(index);
             return (
               <Intersection
                 key={index}
@@ -202,8 +225,10 @@ export function Board({
                 label={`${pointName(size, point)}, ${cellDescription(cell, forbidden.has(index))}`}
                 isLast={index === lastIndex}
                 isWinning={winningIndices.has(index)}
-                ghost={playable || target ? ghost : null}
-                clickable={routed || ownPiece || target}
+                ghost={(playable || target) && !piecing ? ghost : null}
+                ghostStone={inFootprint ? (footprint.get(index) ?? null) : null}
+                clickable={routed || ownPiece || target || (piecing && (cornerFits || playable))}
+                onHover={piecing ? setHovered : undefined}
                 moveNumber={numbers.get(index) ?? null}
                 mark={overlays.get(index) ?? null}
                 stones={stones}

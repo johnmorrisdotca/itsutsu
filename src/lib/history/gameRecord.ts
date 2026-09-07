@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { recordResult } from "@/lib/rating/players";
 import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { fetchGameDetail } from "./gameHistory";
 import { GAME_RESULTS, PLAYER_NAME_MAX } from "./gameHistory.constants";
@@ -10,6 +11,7 @@ import {
   handicapSchema,
   obstaclesSchema,
   openingSchema,
+  pieceCellsSchema,
   stoneSchema,
   variantSchema,
 } from "./gameSettingsSchema";
@@ -17,11 +19,15 @@ import type { GameDetail } from "./gameHistory.types";
 
 const coordinate = z.number().int().min(0).max(64);
 
+/** A pass sits at -1,-1; every other move is on the board. */
 const moveSchema = z.object({
-  row: coordinate,
-  col: coordinate,
+  row: z.number().int().min(-1).max(64),
+  col: z.number().int().min(-1).max(64),
   stone: stoneSchema,
-  kind: z.enum([MOVE_KINDS.place, MOVE_KINDS.skip, MOVE_KINDS.move]).default(MOVE_KINDS.place),
+  kind: z
+    .enum([MOVE_KINDS.place, MOVE_KINDS.skip, MOVE_KINDS.move, MOVE_KINDS.piece, MOVE_KINDS.pass])
+    .default(MOVE_KINDS.place),
+  cells: pieceCellsSchema.optional(),
   from: z.object({ row: coordinate, col: coordinate }).optional(),
   twist: z
     .object({ quadrant: z.number().int().min(0).max(15), clockwise: z.boolean() })
@@ -43,16 +49,22 @@ export const gameRecordSchema = z
     obstacles: obstaclesSchema,
     opening: openingSchema,
     handicap: handicapSchema,
+    seed: z.number().int().min(0).max(2 ** 31 - 1).default(0),
     opener: stoneSchema,
     result: z.enum(GAME_RESULTS),
     winner: stoneSchema.nullable().default(null),
     durationMs: z.number().int().min(0).max(86_400_000).nullable().default(null),
     moves: z.array(moveSchema).max(625),
   })
-  .refine((game) => game.moves.every((move) => move.row < game.size && move.col < game.size), {
-    message: "A move falls outside the board.",
-    path: ["moves"],
-  })
+  .refine(
+    (game) =>
+      game.moves.every(
+        (move) =>
+          move.kind === MOVE_KINDS.pass ||
+          (move.row >= 0 && move.col >= 0 && move.row < game.size && move.col < game.size),
+      ),
+    { message: "A move falls outside the board.", path: ["moves"] },
+  )
   .refine(
     (game) =>
       game.result === "draw" || game.result === "abandoned"
@@ -64,7 +76,7 @@ export const gameRecordSchema = z
     (game) => {
       // A captured point is open again, and so is one a piece slid out of, so those may reuse one.
       const spec = VARIANT_SPECS[game.variant];
-      if (spec.captures || spec.pieces !== null) return true;
+      if (spec.captures || spec.pieces !== null || spec.queue !== null) return true;
       const seen = new Set(game.moves.map((move) => `${move.row},${move.col}`));
       return seen.size === game.moves.length;
     },
@@ -88,6 +100,7 @@ export async function recordGame(input: GameRecordInput): Promise<GameDetail> {
       obstacles: input.obstacles,
       opening: input.opening,
       handicap: input.handicap ?? undefined,
+      seed: input.seed,
       opener: input.opener,
       result: input.result,
       winner: input.winner,
@@ -104,11 +117,17 @@ export async function recordGame(input: GameRecordInput): Promise<GameDetail> {
           fromCol: move.from?.col,
           twistQuadrant: move.twist?.quadrant,
           twistClockwise: move.twist?.clockwise,
+          cells: move.cells ?? undefined,
         })),
       },
     },
     select: { id: true },
   });
+
+  // A decisive or drawn game between two named players moves their ratings.
+  if (input.result !== "abandoned") {
+    await recordResult(input.blackName, input.whiteName, input.winner);
+  }
 
   const detail = await fetchGameDetail(created.id);
   if (detail === null) {

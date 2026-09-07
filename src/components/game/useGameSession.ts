@@ -19,7 +19,9 @@ import {
   inMovePhase,
   isLegalMove,
   movePiece,
+  passTurn,
   pieceMoves,
+  placePiece,
   playMove,
   seatToPlay,
   twistBoard,
@@ -31,8 +33,6 @@ import {
   GAME_STATUS,
   SEATS,
   STONES,
-  VARIANT_SPECS,
-  WIN_LENGTH,
 } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings, Point, Seat, Stone } from "@/lib/gomoku/gomoku.types";
 import type { Suggestion } from "@/lib/gomoku/analysis.types";
@@ -45,7 +45,8 @@ import {
   HISTORY_MODES,
 } from "./game.constants";
 import { useGameClock } from "./useGameClock";
-import { buildMarks, findFatalMove } from "./sessionSupport";
+import { usePieceHand } from "./usePieceHand";
+import { buildMarks, findFatalMove, nextGameSettings } from "./sessionSupport";
 import { emptyStats, missedThreat, recordHint, recordMove } from "./stats";
 import {
   restoredAppearance,
@@ -80,14 +81,19 @@ import type {
  */
 export function useGameSession(
   initial: Partial<GameSettings> = {},
-  { persist = false, paused = false }: { persist?: boolean; paused?: boolean } = {},
+  {
+    persist = false,
+    paused = false,
+    fresh = false,
+  }: { persist?: boolean; paused?: boolean; fresh?: boolean } = {},
 ) {
   /*
    * Restored in the initialiser rather than an effect. The component that
    * calls this is mounted client-side only, so there is no server render for a
    * restored game to disagree with, and no flash of an empty board.
    */
-  const restored = persist ? loadSnapshot() : null;
+  // `fresh` ignores a stored game on purpose: the caller asked for a new one.
+  const restored = persist && !fresh ? loadSnapshot() : null;
 
   const line = useGameTimeline(initial, restored);
   const { state, index, timeline, atLatest, reviewing } = line;
@@ -154,6 +160,7 @@ export function useGameSession(
   }, [appearance, hintsLeft, names, persist, settings, state, stats]);
 
   const [selected, setSelected] = useState<Point | null>(null);
+  const { hand, rotate: rotatePiece, flip: flipPiece, toggleSingle } = usePieceHand(state);
 
   const commit = useCallback(
     (next: typeof state) => {
@@ -215,6 +222,12 @@ export function useGameSession(
        * piece up and the second puts it down. Clicking another of your own
        * pieces changes your mind; clicking the same one puts it back.
        */
+      // The piece games: the click is where the piece's corner goes, unless a single is chosen.
+      if (hand.piece !== null && !hand.layingSingle) {
+        const footprint = hand.footprintFor(point);
+        if (footprint !== null) commit(placePiece(state, footprint));
+        return;
+      }
       if (inMovePhase(state)) {
         const lands =
           selected !== null &&
@@ -235,8 +248,14 @@ export function useGameSession(
       }
       commit(playMove(state, point));
     },
-    [commit, helpRequest, reviewing, selected, settings.historyMode, state],
+    [commit, hand, helpRequest, reviewing, selected, settings.historyMode, state],
   );
+
+  /** Passes the turn in a piece game when nothing fits. */
+  const pass = useCallback(() => {
+    if (reviewing) return;
+    commit(passTurn(state));
+  }, [commit, reviewing, state]);
 
   /** Finishes a move in the twist games by turning one quadrant. */
   const twist = useCallback(
@@ -286,12 +305,7 @@ export function useGameSession(
     if (persist) clearSnapshot();
     setSelected(null);
 
-    const gameSettings = { ...timeline[0].settings, ...next };
-    // A new variant brings its own line length unless one was asked for.
-    if (next.variant !== undefined && next.winLength === undefined) {
-      gameSettings.winLength =
-        VARIANT_SPECS[next.variant].winLength ?? WIN_LENGTH;
-    }
+    const gameSettings = nextGameSettings(timeline[0].settings, next);
     line.restart(gameSettings);
     setHint(null);
     setHelpMark(null);
@@ -437,6 +451,7 @@ export function useGameSession(
     boardReadOnly:
       reviewing && settings.historyMode !== HISTORY_MODES.branch,
     selected,
+    hand,
     pendingBranch,
     branchDiscards: timeline.length - 1 - index,
   };
@@ -455,6 +470,10 @@ export function useGameSession(
     chooseColour,
     extendOpening,
     twist,
+    rotatePiece,
+    flipPiece,
+    toggleSingle,
+    pass,
     askHint,
     grantHint,
     requestHelp,

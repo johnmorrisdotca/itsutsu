@@ -4,12 +4,18 @@ import { z } from "zod";
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/api/rateLimit";
 import { addReaction } from "@/lib/history/reactions";
-import { REACTION_EMOJI, REACTION_RATE_LIMIT } from "@/lib/history/reactions.constants";
+import {
+  MESSAGE_MAX,
+  REACTION_EMOJI,
+  REACTION_RATE_LIMIT,
+} from "@/lib/history/reactions.constants";
 
 const reactionSchema = z.object({
   token: z.string().min(1).max(128),
   emoji: z.enum(REACTION_EMOJI),
   moveNumber: z.number().int().min(1).max(1000).nullable().default(null),
+  /** A short message with the emoji. Trimmed; blank means none. */
+  text: z.string().max(MESSAGE_MAX).nullable().default(null),
 });
 
 const REFUSAL_STATUS: Record<string, number> = {
@@ -45,11 +51,13 @@ export async function POST(
     const limited = checkRateLimit(`reaction:${id}:${parsed.data.token}`, REACTION_RATE_LIMIT);
     if (!limited.allowed) return createRateLimitResponse(limited);
 
+    const text = parsed.data.text?.trim() || null;
     const outcome = await addReaction(
       id,
       parsed.data.token,
       parsed.data.emoji,
       parsed.data.moveNumber,
+      text,
     );
 
     if (!outcome.ok) {

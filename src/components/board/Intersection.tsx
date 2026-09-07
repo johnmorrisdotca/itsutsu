@@ -1,7 +1,18 @@
-import { BLOCKED } from "@/lib/gomoku/gomoku.constants";
+import { BLOCKED, HOT } from "@/lib/gomoku/gomoku.constants";
 import { MARK_STYLE } from "./Board.constants";
 import { StoneMark } from "./StoneMark";
 import type { BoardMark, IntersectionProps } from "./board.types";
+
+/** A hotspot: half black, half white, because it is both at once. */
+function Hotspot() {
+  return (
+    <span
+      className="block h-[70%] w-[70%] rounded-full shadow-inner"
+      style={{ background: "linear-gradient(135deg, #111 0%, #111 50%, #f5f5f5 50%, #f5f5f5 100%)" }}
+      aria-hidden="true"
+    />
+  );
+}
 
 /** An intersection the rules sealed off: drawn as a knot, never as a stone. */
 function Obstacle() {
@@ -54,6 +65,8 @@ export function Intersection({
   isWinning,
   ghost,
   clickable = false,
+  ghostStone = null,
+  onHover,
   moveNumber,
   mark,
   stones,
@@ -67,12 +80,16 @@ export function Intersection({
     <button
       type="button"
       onClick={() => onPlay(point)}
+      onPointerEnter={onHover === undefined ? undefined : () => onHover(point)}
+      onPointerLeave={onHover === undefined ? undefined : () => onHover(null)}
       disabled={!playable}
       aria-label={label}
       className="group relative flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:cursor-default"
     >
       {cell === BLOCKED ? (
         <Obstacle />
+      ) : cell === HOT ? (
+        <Hotspot />
       ) : cell !== null ? (
         <StoneMark
           stone={cell}
@@ -82,6 +99,10 @@ export function Intersection({
           winningColour={winningColour}
           moveNumber={moveNumber}
         />
+      ) : ghostStone !== null ? (
+        <span className="flex h-full w-full items-center justify-center opacity-60">
+          <StoneMark stone={ghostStone} stones={stones} />
+        </span>
       ) : ghost !== null ? (
         <StoneMark stone={ghost} stones={stones} ghost />
       ) : null}

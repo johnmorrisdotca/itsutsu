@@ -1,4 +1,4 @@
-import type { Cell, GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
+import type { Cell, GameState, PieceCell, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import type { BOARD_THEMES, STONE_SETS } from "./Board.constants";
 
 export type BoardTheme = keyof typeof BOARD_THEMES;
@@ -83,6 +83,11 @@ export type BoardProps = {
   onTwist?: (quadrant: number, clockwise: boolean) => void;
   /** The piece picked up, in the sliding games, so its stone stays clickable. */
   selected?: Point | null;
+  /**
+   * In the piece games: the cells the piece in hand would cover with its
+   * corner on the hovered point, or null where it does not fit.
+   */
+  footprintFor?: (anchor: Point) => PieceCell[] | null;
 };
 
 export type IntersectionProps = {
@@ -96,6 +101,9 @@ export type IntersectionProps = {
   ghost: Stone | null;
   /** Clickable even without a ghost: a column in a drop game, a piece to slide. */
   clickable?: boolean;
+  /** A ghost of this colour shown regardless of hover: a cell of the piece in hand. */
+  ghostStone?: Stone | null;
+  onHover?: (point: Point | null) => void;
   /** Printed on the stone when move numbers are on. */
   moveNumber: number | null;
   mark: BoardMark | null;
