@@ -11,17 +11,28 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
 
-const SIZES = [16, 32, 48, 64, 128, 256];
+const SIZES = [16, 24, 32, 48, 64, 128, 256];
 const SOURCE = "src/app/icon.svg";
+/*
+ * The 5x5 marble matrix is the mark, and it is an "i" — but at 16px a 5x5
+ * grid is three-pixel circles, which is a smudge. So the two smallest sizes
+ * use the kit's compact i-and-stone icon instead, which is the same letter
+ * drawn in a form that survives a browser tab. An ICO carries one image per
+ * size, so nothing has to compromise.
+ */
+const SMALL_SOURCE = "public/brand/itsutsu-icon.svg";
+const SMALL_UP_TO = 24;
 const TARGET = "src/app/favicon.ico";
 
-const svg = readFileSync(SOURCE, "utf8");
+const large = readFileSync(SOURCE, "utf8");
+const small = readFileSync(SMALL_SOURCE, "utf8");
 const browser = await chromium.launch();
 const page = await browser.newPage();
 
 const pngs = [];
 for (const size of SIZES) {
   await page.setViewportSize({ width: size, height: size });
+  const svg = size <= SMALL_UP_TO ? small : large;
   await page.setContent(
     `<html><body style="margin:0">${svg.replace(
       "<svg ",
@@ -62,5 +73,6 @@ writeFileSync(
 );
 
 console.log(
-  `favicon.ico written from ${SOURCE} — ${pngs.length} sizes (${SIZES.join(", ")}px)`,
+  `favicon.ico written — ${pngs.length} sizes (${SIZES.join(", ")}px); ` +
+    `${SMALL_SOURCE} up to ${SMALL_UP_TO}px, ${SOURCE} above`,
 );

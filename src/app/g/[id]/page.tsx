@@ -15,7 +15,7 @@ import { seatForToken } from "@/lib/history/liveGame";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
-  title: "Game · Gomoku",
+  title: "Game",
   // A seat link is a credential; it must never be indexed.
   robots: { index: false, follow: false },
 };

@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title"><title id="title">Itsutsu 5 by 5 marble matrix i</title><rect width="240" height="240" rx="28" fill="#22231F"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title"><title id="title">Itsutsu 5 by 5 marble matrix i</title><rect width="240" height="240" rx="28" fill="#F7F5F1"/>
 <circle cx="36" cy="36" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="78" cy="36" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
-<circle cx="120" cy="36" r="15" fill="#FFFEF9" stroke="#FFFEF9" stroke-width="5"/>
+<circle cx="120" cy="36" r="15" fill="#FFFEF9" stroke="#22231F" stroke-width="5"/>
 <circle cx="162" cy="36" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="204" cy="36" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="36" cy="78" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
@@ -11,17 +11,17 @@
 <circle cx="204" cy="78" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="36" cy="120" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="78" cy="120" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
-<circle cx="120" cy="120" r="15" fill="#FFFEF9" stroke="#FFFEF9" stroke-width="5"/>
+<circle cx="120" cy="120" r="15" fill="#FFFEF9" stroke="#22231F" stroke-width="5"/>
 <circle cx="162" cy="120" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="204" cy="120" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="36" cy="162" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="78" cy="162" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
-<circle cx="120" cy="162" r="15" fill="#FFFEF9" stroke="#FFFEF9" stroke-width="5"/>
+<circle cx="120" cy="162" r="15" fill="#FFFEF9" stroke="#22231F" stroke-width="5"/>
 <circle cx="162" cy="162" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="204" cy="162" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="36" cy="204" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="78" cy="204" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
-<circle cx="120" cy="204" r="15" fill="#FFFEF9" stroke="#FFFEF9" stroke-width="5"/>
+<circle cx="120" cy="204" r="15" fill="#FFFEF9" stroke="#22231F" stroke-width="5"/>
 <circle cx="162" cy="204" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 <circle cx="204" cy="204" r="15" fill="#22231F" stroke="#FFFEF9" stroke-width="5"/>
 </svg>

@@ -1,9 +1,10 @@
 import { JoinForm } from "@/components/auth/JoinForm";
+import { BrandAvatar, BrandWordmark } from "@/components/layout/BrandMarks";
 import { safeDestination } from "@/lib/auth/redirect";
 import { isGoogleAuthConfigured } from "@/lib/auth/google";
 
 export const metadata = {
-  title: "Join · Gomoku",
+  title: "Join",
   robots: { index: false, follow: false },
 };
 
@@ -16,9 +17,9 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
 
   return (
     <div className="paper flex flex-1 flex-col items-center justify-center gap-8 px-4 py-16">
-      <header className="flex flex-col items-center gap-2">
-        <p className="font-mincho text-4xl font-bold">五目並べ</p>
-        <p className="text-sm tracking-[0.2em] text-muted uppercase">Gomoku</p>
+      <header className="flex flex-col items-center gap-4">
+        <BrandAvatar className="size-24" />
+        <BrandWordmark className="h-8 w-auto" />
       </header>
       <JoinForm next={next} googleReady={isGoogleAuthConfigured()} />
     </div>

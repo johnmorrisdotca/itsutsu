@@ -41,6 +41,9 @@ const OPEN_PATHS = [
   // The screenshots those pages load. Files under public/ are not Next's own
   // assets, so the matcher does not exempt them and they need naming here.
   "/games",
+  // The logo. The join page is open, so the marks it draws must be too, or a
+  // visitor with no cookie sees a broken image where the name should be.
+  "/brand",
 ];
 
 /**

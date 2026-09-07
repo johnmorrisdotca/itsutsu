@@ -24,8 +24,9 @@ const mincho = Zen_Old_Mincho({
 });
 
 export const metadata: Metadata = {
-  title: "Gomoku 五目並べ",
-  description: "Five in a row on a go board. Two players, one browser.",
+  title: { default: "Itsutsu 五つ", template: "%s · Itsutsu" },
+  description:
+    "Itsutsu: gomoku, renju, connect6 and the family of line-and-grid games. Two players, one browser — or two devices, a code apart.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

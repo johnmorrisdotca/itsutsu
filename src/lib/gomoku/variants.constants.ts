@@ -210,7 +210,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     label: "Block Five",
     kanji: "積み五目",
     tagline: "Gomoku with falling-block pieces: four stones each, two of each colour.",
-    inspiredBy: "the seven Tetris shapes",
+    inspiredBy: "the seven tetromino shapes",
     origin: "Our own game. The seven four-square shapes, coloured two and two, in a queue both players share.",
     rules: [
       "Each turn you lay the next piece in the queue: one of the seven four-square shapes, holding two black and two white stones. Rotate or flip it as you like.",

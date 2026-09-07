@@ -16,7 +16,7 @@ import type {
 } from "@/lib/gomoku/gomoku.types";
 
 export const metadata = {
-  title: "Gomoku",
+  title: "Itsutsu",
   // An embedded board should never turn up as a search result of its own.
   robots: { index: false, follow: false },
 };

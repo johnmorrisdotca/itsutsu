@@ -6,7 +6,7 @@ import { fetchGameHistoryPage } from "@/lib/history/gameHistory";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 
 export const metadata = {
-  title: "Record 棋譜 · Gomoku",
+  title: "Record 棋譜",
   description: "Every game played, with the stones in the order they were laid.",
 };
 

@@ -11,7 +11,8 @@
  * So a destination must begin with exactly one slash, and the character after
  * it must be neither a slash nor a backslash. Anything else becomes "/".
  */
-export const DEFAULT_DESTINATION = "/";
+/** Newcomers land in the lobby — the calm entrance — rather than mid-board. */
+export const DEFAULT_DESTINATION = "/lobby";
 
 export function safeDestination(next: string | null | undefined): string {
   if (!next) return DEFAULT_DESTINATION;

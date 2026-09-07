@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         snippet:
           `<iframe src="${url.toString()}"\n` +
           `        style="border:0;width:100%;height:640px"\n` +
-          `        title="Gomoku"></iframe>`,
+          `        title="Itsutsu"></iframe>`,
       },
       { status: 201, headers: NO_STORE },
     );

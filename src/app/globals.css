@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
+  /* The Itsutsu kit: ivory paper, charcoal ink. */
   --background: #f7f5f1;
-  --foreground: #1a1917;
+  --foreground: #22231f;
   --muted: #6f6a62;
   --rule: #e3ded4;
 }
@@ -19,8 +20,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #121110;
-    --foreground: #ececea;
+    --background: #22231f;
+    --foreground: #fffef9;
     --muted: #9b958c;
     --rule: #2a2825;
   }

@@ -37,7 +37,7 @@ if (scope === "data") url.searchParams.set("stats", "1");
 
 console.log(`\n  <iframe src="${url.toString()}"`);
 console.log(`          style="border:0;width:100%;height:640px"`);
-console.log(`          title="Gomoku"></iframe>\n`);
+console.log(`          title="Itsutsu"></iframe>\n`);
 console.log(`  label   ${label}`);
 console.log(`  scope   ${scope}`);
 console.log(`  expires in ${days} days`);

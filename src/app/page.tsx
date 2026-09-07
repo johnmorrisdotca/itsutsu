@@ -18,7 +18,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   return (
     <div className="paper flex flex-1 flex-col items-center px-4 py-8 sm:px-8">
       <main className="flex w-full max-w-6xl flex-col gap-8">
-        <SiteHeader />
+        <SiteHeader hero />
         <GameViewClient variant={variant} />
         <footer className="flex flex-col gap-2 border-t border-rule pt-5 text-sm text-muted">
           <p>
@@ -26,7 +26,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             first to line up five in a row, in any direction, wins.
           </p>
           <p>
-            Every finished game is filed in the{" "}
+            This is <span className="font-mincho">五目並べ</span> — gomoku, five
+            in a row on a go board. Every finished game is filed in the{" "}
             <Link href="/history" className="underline underline-offset-4">
               record
             </Link>
