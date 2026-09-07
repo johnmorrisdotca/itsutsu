@@ -59,4 +59,6 @@ export const INVITE_WORDS: readonly string[] = [
   "hasami", "hari", "himo", "ito", "nomi", "kanzashi", "kinu", "momen",
   "nawa", "nuno", "ori", "sao", "shuriken", "sumire", "tsurugi", "yari",
   "yumi", "zeni", "koban", "makimono", "tegami", "shirushi", "hanko", "fumi",
+  // Family names, so the house can have permanent codes it will remember.
+  "hanako", "kamiko", "john", "alecia",
 ] as const;
