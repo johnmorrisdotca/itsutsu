@@ -6,13 +6,13 @@
  * `proxy.ts` can check it on the Edge runtime, where Prisma cannot run.
  *
  *   pnpm embed-token umakuma
- *   pnpm embed-token umakuma 90 https://www.umakuma.com data
+ *   pnpm embed-token umakuma 90 https://itsutsu.com data
  */
 import { signEmbedToken } from "../src/lib/auth/embedToken.ts";
 
 const label = process.argv[2];
 const days = Number(process.argv[3] ?? 365);
-const site = process.argv[4] ?? "https://gomoku-swart.vercel.app";
+const site = process.argv[4] ?? "https://itsutsu.com";
 // "data" also lets the embed read the summary endpoint; "board" is the board alone.
 const scope = process.argv[5] === "data" ? "data" : "board";
 
