@@ -7,3 +7,38 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Workspace Gates
+
+### File Size Gate
+
+- Code files under `src/` must stay at or below 500 lines.
+- Gate command: `pnpm loc:check`, run as part of `pnpm quality:check`.
+- If a file approaches the limit, split by responsibility (`components/`, `lib/`, domain modules) rather than adding flags or nesting.
+
+### Types And Constants Pattern
+
+- Shared `type` and `Props` declarations live in adjacent `*.types.ts` files (for example `board.types.ts`), not inline in components.
+- One constants module per component group (`Board.constants.ts`), not one per component.
+- Domain values (`Stone`, `RuleVariant`, `GameStatus`) are compared through the constants in `src/lib/gomoku/gomoku.constants.ts`, never inline string literals. Display text for domain values comes from `STONE_DISPLAY` / `RULE_VARIANT_DISPLAY`.
+
+### Engine Is Pure
+
+- Game rules live only in `src/lib/gomoku/engine.ts` and are unit tested in `engine.test.ts`. Components and hooks never inspect the board to decide outcomes; they call the engine.
+- Every engine function returns a new `GameState` and leaves its input untouched.
+
+## Stack
+
+- Next.js 16 (App Router), React 19, TypeScript 5, Tailwind v4.
+- Node 24.x, **pnpm** (never npm/yarn).
+- Vitest for unit tests.
+
+## Scripts
+
+| Task | Command |
+| --- | --- |
+| Dev server (port 6600, override with `WEB_PORT`) | `pnpm dev` |
+| Lint / fix | `pnpm lint` / `pnpm lint:fix` |
+| Typecheck | `pnpm typecheck` |
+| Unit tests | `pnpm test:unit` |
+| All gates | `pnpm quality:check` |

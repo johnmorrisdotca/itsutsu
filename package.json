@@ -3,10 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p ${WEB_PORT:-6600}",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "next start -p ${WEB_PORT:-6600}",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "typecheck": "tsc --noEmit",
+    "loc:check": "node scripts/check-max-loc.mjs",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "quality:check": "pnpm lint && pnpm loc:check && pnpm typecheck && pnpm test:unit",
+    "quality:fix": "pnpm lint:fix && pnpm quality:check"
   },
   "dependencies": {
     "next": "16.3.4",
@@ -21,7 +28,12 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.0"
   },
-  "packageManager": "pnpm@10.11.0"
+  "packageManager": "pnpm@10.11.0",
+  "description": "Gomoku (五目並べ) — five in a row on a go board.",
+  "engines": {
+    "node": ">=20.9.0"
+  }
 }
