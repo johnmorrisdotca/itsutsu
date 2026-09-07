@@ -125,6 +125,8 @@ export type GameSession = {
   selected: Point | null;
   /** The piece in hand, in the games that draw from a queue. */
   hand: PieceHand;
+  /** The colour the mover will place, in the games where they choose; null elsewhere. */
+  placing: Stone | null;
   /**
    * A move waiting on confirmation because playing it would discard the moves
    * after the position being reviewed.
@@ -170,6 +172,8 @@ export type GameActions = {
   extendOpening: () => void;
   /** Turns a quadrant to finish the move, in the twist games. */
   twist: (quadrant: number, clockwise: boolean) => void;
+  /** In the games where the mover chooses the colour, which one to place next. */
+  setPlacing: (stone: Stone) => void;
   /** The piece games: turn or flip the piece in hand, lay a single instead, or pass. */
   rotatePiece: () => void;
   flipPiece: () => void;

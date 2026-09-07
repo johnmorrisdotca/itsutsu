@@ -87,18 +87,21 @@ export function inMovePhase(state: GameState): boolean {
  * fifth captured pair, or — in the trap game — a losing line. Null when the
  * game goes on. A win outranks a trap: four in a row is not also three.
  */
-export function settleStone(state: GameState, point: Point): GameState | null {
+export function settleStone(state: GameState, point: Point, mover?: Stone): GameState | null {
   const { settings, board, captures } = state;
   const stone = board[indexOf(settings.size, point)];
   if (!isStone(stone)) return null;
   const spec = VARIANT_SPECS[settings.variant];
+  const by = mover ?? stone;
 
   const winningLine = findWinningLine(board, settings, point);
   if (winningLine.length > 0) {
-    // In the giveaway game a line is the one thing you must not make.
-    return spec.misere
-      ? won(state, otherStone(stone), WIN_REASONS.trap, winningLine)
-      : won(state, stone, WIN_REASONS.line, winningLine);
+    // In the giveaway games a line is the one thing you must not make.
+    if (spec.misere) return won(state, otherStone(by), WIN_REASONS.trap, winningLine);
+    // The maker wins any line; in a choose-your-colour game the mover wins their line.
+    if (spec.makerBreaker) return won(state, STONES.black, WIN_REASONS.line, winningLine);
+    if (spec.anyColour) return won(state, by, WIN_REASONS.line, winningLine);
+    return won(state, stone, WIN_REASONS.line, winningLine);
   }
   // A hotspot on the line can complete the other colour's line with your stone.
   if (spec.hotSquares > 0) {
@@ -112,6 +115,13 @@ export function settleStone(state: GameState, point: Point): GameState | null {
   }
   if (rulesFor(settings, stone).captures && captures[stone] >= settings.capturesToWin) {
     return won(state, stone, WIN_REASONS.captures, []);
+  }
+  // Where the mover picks the colour, the other colour's line may have been completed too.
+  if (spec.anyColour) {
+    const other = winningLineFor(board, settings, point, otherStone(stone));
+    if (other.length > 0) {
+      return won(state, spec.makerBreaker ? STONES.black : by, WIN_REASONS.line, other);
+    }
   }
   if (spec.loseLength !== null) {
     for (const step of DIRECTIONS) {

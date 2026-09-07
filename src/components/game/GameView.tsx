@@ -37,6 +37,7 @@ export function GameView({ variant }: { variant?: RuleVariant }) {
               onTwist={actions.twist}
               selected={session.selected}
               footprintFor={session.hand.piece !== null ? session.hand.footprintFor : undefined}
+              placing={session.placing}
             />
           </div>
         </div>

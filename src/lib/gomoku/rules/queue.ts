@@ -83,7 +83,7 @@ export function piecesLaidBy(moves: readonly Move[], stone: Stone): number {
 
 /** How many single stones `stone` has spent. */
 export function singlesUsedBy(moves: readonly Move[], stone: Stone): number {
-  return moves.filter((move) => move.stone === stone && move.kind === MOVE_KINDS.place).length;
+  return moves.filter((move) => (move.by ?? move.stone) === stone && move.kind === MOVE_KINDS.place).length;
 }
 
 /** The piece the colour to move must lay next, or null outside the piece games. */

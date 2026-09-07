@@ -3,13 +3,33 @@
 import { SUGGESTION_DISPLAY } from "@/lib/gomoku/analysis.constants";
 import { pointName } from "@/lib/gomoku/notation";
 import { canChooseColour, canExtendOpening, seatToPlay } from "@/lib/gomoku/engine";
-import { SEAT_DISPLAY, STONES } from "@/lib/gomoku/gomoku.constants";
+import { SEAT_DISPLAY, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { Button } from "@/components/ui/Controls";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { GameBrowserButton } from "./GameBrowser";
 import { GAME_COPY, HINT_POLICIES } from "./game.constants";
 import { openingPrompt } from "./openingCopy";
 import type { GamePanelProps } from "./game.types";
+
+/** Which colour the next stone will be, in the games where the mover chooses. */
+function ColourChooser({ session, actions }: GamePanelProps) {
+  if (session.placing === null || session.state.status !== "playing") return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2" data-testid="colour-chooser">
+      <span className="text-xs text-zinc-500 dark:text-zinc-400">{GAME_COPY.placeAs}</span>
+      {Object.values(STONES).map((stone) => (
+        <Button
+          key={stone}
+          onClick={() => actions.setPlacing(stone)}
+          strong={session.placing === stone}
+          data-testid={`place-${stone}`}
+        >
+          {STONE_DISPLAY[stone].label}
+        </Button>
+      ))}
+    </div>
+  );
+}
 
 /**
  * The decision a swap opening pauses on: which colour the deciding seat takes,
@@ -91,6 +111,7 @@ export function GameControls({ session, actions }: GamePanelProps) {
       </div>
 
       <OpeningChoice session={session} actions={actions} />
+      <ColourChooser session={session} actions={actions} />
 
       {state.settings.allowSkip || state.settings.allowSwap ? (
         <div className="flex flex-wrap gap-2">

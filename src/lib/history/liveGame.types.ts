@@ -5,7 +5,7 @@ import type { Handicap, PieceCell, Point } from "@/lib/gomoku/gomoku.types";
  * turn that finishes a stone in the twist games.
  */
 export type MoveRequest =
-  | { kind: "place"; row: number; col: number }
+  | { kind: "place"; row: number; col: number; stone?: "black" | "white" }
   | { kind: "move"; row: number; col: number; from: Point }
   | { kind: "twist"; quadrant: number; clockwise: boolean }
   | { kind: "piece"; cells: PieceCell[] }

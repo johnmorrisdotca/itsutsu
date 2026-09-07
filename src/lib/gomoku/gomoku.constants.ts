@@ -3,6 +3,7 @@ import type {
   FirstPlayer,
   Hot,
   PieceQueue,
+  Worm,
   ForbiddenPattern,
   GameSettings,
   GameStatus,
@@ -30,6 +31,8 @@ export const STONES = {
 export const BLOCKED: Blocked = "blocked";
 
 export const HOT: Hot = "hot";
+
+export const WORM: Worm = "worm";
 
 /** Seeds are 31-bit integers, small enough for every store and reproducible everywhere. */
 export const SEED_RANGE = 2 ** 31;
@@ -61,6 +64,12 @@ export const RULE_VARIANTS = {
   edgeDrop: "edgeDrop",
   dominoFive: "dominoFive",
   blockFive: "blockFive",
+  sannuki: "sannuki",
+  wormDrop: "wormDrop",
+  misereFive: "misereFive",
+  makerBreaker: "makerBreaker",
+  wildTicTacToe: "wildTicTacToe",
+  notakto: "notakto",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 export const PIECE_QUEUES = {
@@ -82,7 +91,10 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.omok,
   RULE_VARIANTS.caro,
   RULE_VARIANTS.ninuki,
+  RULE_VARIANTS.sannuki,
   RULE_VARIANTS.connect6,
+  RULE_VARIANTS.misereFive,
+  RULE_VARIANTS.makerBreaker,
   RULE_VARIANTS.dominoFive,
   RULE_VARIANTS.blockFive,
   RULE_VARIANTS.dropFour,
@@ -92,11 +104,14 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.clearDrop,
   RULE_VARIANTS.giveawayDrop,
   RULE_VARIANTS.edgeDrop,
+  RULE_VARIANTS.wormDrop,
   RULE_VARIANTS.twistFive,
   RULE_VARIANTS.twistFour,
   RULE_VARIANTS.trapThree,
   RULE_VARIANTS.squareFour,
   RULE_VARIANTS.tictactoe,
+  RULE_VARIANTS.wildTicTacToe,
+  RULE_VARIANTS.notakto,
 ] as const satisfies readonly RuleVariant[];
 
 export const PLACEMENTS = {
@@ -160,8 +175,8 @@ export const WIN_LENGTH = 5;
 /** Line lengths a player may pick in the variants that leave it open. */
 export const WIN_LENGTHS = [4, 5, 6] as const;
 
-/** Pairs to capture for a win in the capture variants. */
-export const DEFAULT_CAPTURES_TO_WIN = 5;
+/** Enemy stones to capture for a win in the capture game: five pairs. */
+export const DEFAULT_CAPTURES_TO_WIN = 10;
 
 /** The handicap toggles, in the order the settings list them. */
 export const HANDICAP_RULES = [
@@ -234,6 +249,12 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     misere: false,
     queue: null,
     singles: 0,
+    captureSizes: [2],
+    capturesToWin: null,
+    wormholes: 0,
+    anyColour: false,
+    singleColour: false,
+    makerBreaker: false,
     ...overrides,
   };
 }
@@ -244,7 +265,7 @@ function drop(overrides: Partial<VariantSpec> = {}): VariantSpec {
     winLength: 4,
     placement: PLACEMENTS.drop,
     ...overrides,
-    boardSizes: overrides.boardSizes ?? [7, 9],
+    boardSizes: overrides.boardSizes ?? [7, 9, 10],
   });
 }
 
@@ -277,7 +298,30 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   caro: plain({
     lineRule: { black: LINE_RULES.exactOpen, white: LINE_RULES.exactOpen },
   }),
-  ninuki: plain({ captures: true, allowFirstPlayerChoice: true }),
+  ninuki: plain({ captures: true, capturesToWin: 10, allowFirstPlayerChoice: true }),
+  sannuki: plain({
+    captures: true,
+    captureSizes: [2, 3],
+    capturesToWin: 15,
+    allowFirstPlayerChoice: true,
+  }),
+  misereFive: plain({ misere: true, allowFirstPlayerChoice: true, openings: FREE_ONLY }),
+  makerBreaker: small({
+    anyColour: true,
+    makerBreaker: true,
+    boardSizes: [6],
+    allowFirstPlayerChoice: false,
+    analysis: false,
+  }),
+  wildTicTacToe: small({ winLength: 3, anyColour: true, boardSizes: [3], analysis: false }),
+  notakto: small({
+    winLength: 3,
+    singleColour: true,
+    misere: true,
+    boardSizes: [3],
+    allowFirstPlayerChoice: false,
+    analysis: false,
+  }),
   connect6: plain({
     stonesPerTurn: 2,
     winLength: 6,
@@ -292,7 +336,8 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   hotDrop: drop({ hotSquares: 1, deadSquares: 1 }),
   clearDrop: drop({ lineClear: true }),
   giveawayDrop: drop({ misere: true }),
-  edgeDrop: small({ winLength: 4, placement: PLACEMENTS.edge, boardSizes: [7, 9] }),
+  edgeDrop: small({ winLength: 4, placement: PLACEMENTS.edge, boardSizes: [7, 9, 10] }),
+  wormDrop: drop({ wormholes: 2 }),
   dominoFive: plain({
     queue: PIECE_QUEUES.domino,
     allowFirstPlayerChoice: true,
@@ -388,7 +433,7 @@ export const OBSTACLE_LAYOUT_DISPLAY: Record<
 export const BOARD_SIZES = [9, 13, 15, 19] as const;
 
 /** Every size any game here is played on, for the schemas at the API edge. */
-export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 9, 13, 15, 19] as const;
+export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 9, 10, 13, 15, 19] as const;
 
 export const BOARD_SIZE_DISPLAY: Record<
   number,
@@ -399,6 +444,7 @@ export const BOARD_SIZE_DISPLAY: Record<
   5: { label: "Five", kanji: "五路", note: "Trap Three, Square Four" },
   6: { label: "Six", kanji: "六路", note: "Twist Five" },
   7: { label: "Seven", kanji: "七路", note: "Drop Four" },
+  10: { label: "Ten", kanji: "十路", note: "The big drop board" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },
   13: { label: "Medium", kanji: "中盤", note: "Shorter game" },
   15: { label: "Standard", kanji: "正盤", note: "Tournament size" },

@@ -12,8 +12,11 @@ export type Blocked = "blocked";
 /** A hotspot: an intersection that counts as either colour's stone in a line. */
 export type Hot = "hot";
 
-/** One intersection of the board: a stone, an obstacle, a hotspot, or nothing. */
-export type Cell = Stone | Blocked | Hot | null;
+/** A wormhole: a line entering it comes out of its partner and carries on. */
+export type Worm = "worm";
+
+/** One intersection of the board: a stone, an obstacle, a hotspot, a wormhole, or nothing. */
+export type Cell = Stone | Blocked | Hot | Worm | null;
 
 /** Zero-based board coordinates. Row 0 is the top, column 0 is the left. */
 export type Point = {
@@ -50,7 +53,10 @@ export type Twist = {
 };
 
 export type Move = Point & {
+  /** The colour of the stone placed. */
   stone: Stone;
+  /** The colour that moved, when the game lets a mover place the other colour. */
+  by?: Stone;
   kind: MoveKind;
   /** Opponent stones this move took off the board, in the capture variants. */
   captured?: Point[];
@@ -68,6 +74,8 @@ export type Move = Point & {
 export type MoveInput = Point & {
   /** As a record stores it: a string, checked against MOVE_KINDS where it matters. */
   kind?: string;
+  /** The colour placed, where the mover chose it. */
+  stone?: string;
   from?: Point;
   twist?: Twist;
   cells?: PieceCell[];
@@ -106,7 +114,13 @@ export type RuleVariant =
   | "giveawayDrop"
   | "edgeDrop"
   | "dominoFive"
-  | "blockFive";
+  | "blockFive"
+  | "sannuki"
+  | "wormDrop"
+  | "misereFive"
+  | "makerBreaker"
+  | "wildTicTacToe"
+  | "notakto";
 
 /**
  * Where a stone goes when played. `free`: where it was put. `drop`: it slides
@@ -211,6 +225,18 @@ export type VariantSpec = {
   queue: PieceQueue | null;
   /** Single stones of your own colour each player may lay instead of a piece. */
   singles: number;
+  /** How many enemy stones a flank may take at once: pairs, or pairs and triples. */
+  captureSizes: readonly number[];
+  /** Enemy stones to capture for a win, in stones, in the capture variants. */
+  capturesToWin: number | null;
+  /** Two random squares joined by a wormhole: a line entering one leaves the other. */
+  wormholes: number;
+  /** The mover chooses the colour of every stone. */
+  anyColour: boolean;
+  /** Every stone is black, whoever placed it. */
+  singleColour: boolean;
+  /** Maker wants a line of either colour; breaker wants a full board without one. */
+  makerBreaker: boolean;
 };
 
 /**

@@ -93,13 +93,13 @@ describe("capturesFrom", () => {
 });
 
 describe("playing a capture", () => {
-  it("lifts the pair and counts it", () => {
+  it("lifts the pair and counts its stones", () => {
     const state = fromDiagram(FLANK, ninuki);
     const next = playMove(state, p(4, 4));
 
     expect(cellAt(next, p(4, 2))).toBeNull();
     expect(cellAt(next, p(4, 3))).toBeNull();
-    expect(next.captures.black).toBe(1);
+    expect(next.captures.black).toBe(2);
     expect(next.moves[next.moves.length - 1].captured).toHaveLength(2);
   });
 
@@ -125,9 +125,9 @@ describe("playing a capture", () => {
     expect(next.captures.black).toBe(0);
   });
 
-  it("wins on the fifth pair", () => {
+  it("wins on the fifth pair, ten stones", () => {
     const state = fromDiagram(FLANK, ninuki);
-    const nearly = { ...state, captures: { black: 4, white: 0 } };
+    const nearly = { ...state, captures: { black: 8, white: 0 } };
     const next = playMove(nearly, p(4, 4));
 
     expect(next.status).toBe(GAME_STATUS.won);

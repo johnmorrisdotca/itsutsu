@@ -1,4 +1,5 @@
-import { BLOCKED, DIRECTIONS, HOT, LINE_RULES, VARIANT_SPECS } from "../gomoku.constants";
+import { BLOCKED, DIRECTIONS, HOT, LINE_RULES, VARIANT_SPECS, WORM } from "../gomoku.constants";
+import { wormholeLinks } from "../obstacles";
 import type {
   Cell,
   GameSettings,
@@ -33,14 +34,37 @@ function joins(cell: Cell | undefined, stone: Stone): boolean {
   return cell === stone || cell === HOT;
 }
 
+/** How a line travels beyond plain steps: wrapping columns, and wormhole pairs. */
+export type LineWorld = {
+  wrap: boolean;
+  /** Board index of each wormhole mouth to its partner. */
+  links: ReadonlyMap<number, number>;
+};
+
+const PLAIN: LineWorld = { wrap: false, links: new Map() };
+
+function worldFor(world: boolean | LineWorld): LineWorld {
+  return typeof world === "boolean" ? { wrap: world, links: PLAIN.links } : world;
+}
+
 /**
  * One step along a line. On a ring board the columns wrap, so a step off the
- * right edge arrives at the left; rows never wrap.
+ * right edge arrives at the left; rows never wrap. A step onto a wormhole
+ * mouth comes out of the partner mouth and takes one more step, so the
+ * mouths themselves never count as cells of a line.
  */
-function advance(size: number, point: Point, step: Point, wrap: boolean): Point {
-  const next = stepFrom(point, step, 1);
-  if (!wrap) return next;
-  return { row: next.row, col: ((next.col % size) + size) % size };
+function advance(size: number, point: Point, step: Point, world: LineWorld, board?: Cell[]): Point {
+  let next = stepFrom(point, step, 1);
+  if (world.wrap) next = { row: next.row, col: ((next.col % size) + size) % size };
+  if (board !== undefined && isOnBoard(size, next) && board[indexOf(size, next)] === WORM) {
+    const partner = world.links.get(indexOf(size, next));
+    if (partner !== undefined) {
+      const out = { row: Math.floor(partner / size), col: partner % size };
+      next = stepFrom(out, step, 1);
+      if (world.wrap) next = { row: next.row, col: ((next.col % size) + size) % size };
+    }
+  }
+  return next;
 }
 
 /**
@@ -54,13 +78,14 @@ export function runFrom(
   origin: Point,
   step: Point,
   stone: Stone,
-  wrap = false,
+  wrap: boolean | LineWorld = false,
 ): Point[] {
+  const world = worldFor(wrap);
   const run: Point[] = [];
-  let next = advance(size, origin, step, wrap);
+  let next = advance(size, origin, step, world, board);
   while (isOnBoard(size, next) && joins(board[indexOf(size, next)], stone) && run.length < size - 1) {
     run.push(next);
-    next = advance(size, next, step, wrap);
+    next = advance(size, next, step, world, board);
   }
   return run;
 }
@@ -72,17 +97,27 @@ export function runThrough(
   point: Point,
   step: Point,
   stone: Stone,
-  wrap = false,
+  wrap: boolean | LineWorld = false,
 ): Run {
-  const back = runFrom(board, size, point, negate(step), stone, wrap);
-  const forward = runFrom(board, size, point, step, stone, wrap);
+  const world = worldFor(wrap);
+  const back = runFrom(board, size, point, negate(step), stone, world);
+  const forward = runFrom(board, size, point, step, stone, world);
   const cells = [...back.reverse(), point, ...forward];
   return {
     cells,
     ends: [
-      cellAtPoint(board, size, advance(size, cells[0], negate(step), wrap)),
-      cellAtPoint(board, size, advance(size, cells[cells.length - 1], step, wrap)),
+      cellAtPoint(board, size, advance(size, cells[0], negate(step), world, board)),
+      cellAtPoint(board, size, advance(size, cells[cells.length - 1], step, world, board)),
     ],
+  };
+}
+
+/** The line world for these settings: wrapping and wormholes, from the seed. */
+export function lineWorld(settings: GameSettings): LineWorld {
+  const spec = VARIANT_SPECS[settings.variant];
+  return {
+    wrap: spec.wrap,
+    links: spec.wormholes > 0 ? wormholeLinks(settings) : PLAIN.links,
   };
 }
 
@@ -145,10 +180,10 @@ export function winningLineFor(
 ): Point[] {
   if (!joins(board[indexOf(settings.size, point)], stone)) return [];
   const { lineRule, winLength } = rulesFor(settings, stone);
-  const wrap = VARIANT_SPECS[settings.variant].wrap;
+  const world = lineWorld(settings);
 
   for (const step of DIRECTIONS) {
-    const run = runThrough(board, settings.size, point, step, stone, wrap);
+    const run = runThrough(board, settings.size, point, step, stone, world);
     if (runWins(lineRule, run, winLength, stone)) return run.cells;
   }
   return [];

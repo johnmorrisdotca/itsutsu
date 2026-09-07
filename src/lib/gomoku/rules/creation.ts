@@ -55,6 +55,7 @@ export function normaliseSettings(settings: GameSettings): GameSettings {
   return {
     ...settings,
     size,
+    capturesToWin: spec.capturesToWin ?? settings.capturesToWin,
     winLength: spec.winLength ?? settings.winLength,
     opening: availableOpenings(settings).includes(settings.opening)
       ? settings.opening

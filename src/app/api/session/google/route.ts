@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isAdminEmail } from "@/lib/auth/admin";
 import { authOptions } from "@/lib/auth/google";
+import { safeDestination } from "@/lib/auth/redirect";
 import {
   ADMIN_SESSION_DAYS,
   SESSION_COOKIE,
@@ -25,8 +26,7 @@ import {
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const next = url.searchParams.get("next");
-  const destination = next?.startsWith("/") ? next : "/";
+  const destination = safeDestination(url.searchParams.get("next"));
 
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;

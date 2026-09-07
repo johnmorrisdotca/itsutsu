@@ -75,12 +75,14 @@ describe("simulated games", () => {
         let run = 0;
         let previous: Stone | null = null;
         for (const move of final.moves) {
-          run = move.stone === previous ? run + 1 : 1;
-          previous = move.stone;
+          // Identity is the mover, which differs from the colour where the mover chooses it.
+          const mover = move.by ?? move.stone;
+          run = mover === previous ? run + 1 : 1;
+          previous = mover;
           expect(
             run,
             `${variant} seed ${seed}: ${run} stones in one turn`,
-          ).toBeLessThanOrEqual(rulesFor(final.settings, move.stone).stonesPerTurn);
+          ).toBeLessThanOrEqual(rulesFor(final.settings, mover).stonesPerTurn);
         }
       }
     }
@@ -107,6 +109,8 @@ describe("simulated games", () => {
             from: move.from,
             twist: move.twist,
             cells: move.cells,
+            // The colour placed, which the replay needs where the mover chose it.
+            stone: move.stone,
           })),
           final.opening.choices,
         );

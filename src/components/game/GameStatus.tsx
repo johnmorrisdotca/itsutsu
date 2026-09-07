@@ -208,6 +208,11 @@ function VariantLine({ session }: { session: GameSession }) {
       `${GAME_COPY.captures.label} · ${STONE_DISPLAY.black.label} ${state.captures.black} · ${STONE_DISPLAY.white.label} ${state.captures.white} · ${GAME_COPY.capturesToWin(settings.capturesToWin)}`,
     );
   }
+  if (spec.makerBreaker) {
+    const nameOf = (stone: "black" | "white") =>
+      session.names[state.seats[stone]].trim() || SEAT_DISPLAY[state.seats[stone]].label;
+    lines.push(GAME_COPY.makerBreakerRoles(nameOf(STONES.black), nameOf(STONES.white)));
+  }
   const { handicap } = settings;
   if (handicap.stone !== null) {
     const parts = HANDICAP_RULES.filter((rule) => handicap[rule]).map(

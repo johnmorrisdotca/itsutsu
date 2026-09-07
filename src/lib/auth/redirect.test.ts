@@ -1,0 +1,39 @@
+import { describe, expect, it } from "vitest";
+
+import { safeDestination } from "./redirect";
+
+describe("safeDestination", () => {
+  it("keeps an ordinary path, query and all", () => {
+    expect(safeDestination("/history")).toBe("/history");
+    expect(safeDestination("/?game=connect6")).toBe("/?game=connect6");
+    expect(safeDestination("/g/abc?p=xyz")).toBe("/g/abc?p=xyz");
+  });
+
+  /**
+   * The ones a `startsWith("/")` check lets through. A browser reads both as
+   * protocol-relative and leaves the site, which is how a sign-in page becomes
+   * a phishing redirect wearing a real domain.
+   */
+  it.each(["//evil.test", "//evil.test/path", "/\\evil.test", "/\\\\evil.test"])(
+    "refuses %j, which resolves off-site",
+    (input) => {
+      expect(safeDestination(input)).toBe("/");
+    },
+  );
+
+  it("refuses an absolute URL", () => {
+    for (const input of ["https://evil.test", "http://evil.test", "javascript:alert(1)"]) {
+      expect(safeDestination(input)).toBe("/");
+    }
+  });
+
+  it("refuses nothing at all", () => {
+    for (const input of [null, undefined, ""]) {
+      expect(safeDestination(input)).toBe("/");
+    }
+  });
+
+  it("keeps a bare slash", () => {
+    expect(safeDestination("/")).toBe("/");
+  });
+});

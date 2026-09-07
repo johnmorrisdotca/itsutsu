@@ -252,14 +252,16 @@ export async function appendMove(
   } else {
     const point = resolvePlacement(state, { row: request.row, col: request.col });
     if (!isLegalMove(state, point)) return { ok: false, reason: "illegal" };
-    next = playMove(state, point);
+    next = playMove(state, point, MOVE_KINDS.place, request.stone ?? null);
+    const placed = next.moves[next.moves.length - 1];
     write = prisma.move.create({
       data: {
         gameId: id,
         number: next.moves.length,
         row: point.row,
         col: point.col,
-        stone,
+        // The colour placed; the mover is the seat that sent it.
+        stone: placed.stone,
         kind: MOVE_KINDS.place,
       },
     });

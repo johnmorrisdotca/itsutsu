@@ -17,6 +17,7 @@ import {
   BLOCKED,
   GAME_STATUS,
   HOT,
+  WORM,
   PLACEMENTS,
   STONE_DISPLAY,
   VARIANT_SPECS,
@@ -32,6 +33,7 @@ import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
 function cellDescription(cell: Cell, forbidden: boolean): string {
   if (cell === BLOCKED) return "blocked";
   if (cell === HOT) return "hotspot";
+  if (cell === WORM) return "wormhole";
   if (cell === null) return forbidden ? "forbidden" : "empty";
   return `${STONE_DISPLAY[cell].label} stone`;
 }
@@ -106,6 +108,7 @@ export function Board({
   onTwist,
   selected = null,
   footprintFor,
+  placing = null,
 }: BoardProps) {
   const [hovered, setHovered] = useState<Point | null>(null);
   const { size } = state.settings;
@@ -120,7 +123,7 @@ export function Board({
   );
   const numbers = numberByIndex(state, appearance.showMoveNumbers);
   const live = !readOnly && state.status === GAME_STATUS.playing;
-  const ghost = live ? state.toPlay : null;
+  const ghost = live ? (spec.singleColour ? "black" : (placing ?? state.toPlay)) : null;
 
   /*
    * What the rules allow right now, asked of the engine once per position.

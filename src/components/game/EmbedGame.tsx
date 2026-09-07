@@ -86,6 +86,7 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
         onTwist={actions.twist}
         selected={session.selected}
         footprintFor={session.hand.piece !== null ? session.hand.footprintFor : undefined}
+        placing={session.placing}
       />
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="text-muted">

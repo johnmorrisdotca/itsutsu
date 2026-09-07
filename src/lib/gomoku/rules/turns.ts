@@ -10,7 +10,7 @@ import { rulesFor } from "./handicap";
 export function stonesPlacedThisTurn(moves: readonly Move[], stone: Stone): number {
   let placed = 0;
   for (let index = moves.length - 1; index >= 0; index -= 1) {
-    if (moves[index].stone !== stone) break;
+    if ((moves[index].by ?? moves[index].stone) !== stone) break;
     placed += 1;
   }
   return placed;

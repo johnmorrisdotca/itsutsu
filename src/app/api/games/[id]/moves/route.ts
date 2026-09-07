@@ -67,6 +67,8 @@ const playSchema = z.object({
   token: z.string().min(1).max(128),
   row: coordinate.optional(),
   col: coordinate.optional(),
+  /** The colour to place, in the games where the mover chooses. */
+  stone: z.enum(["black", "white"]).optional(),
   from: z.object({ row: coordinate, col: coordinate }).optional(),
   twist: z
     .object({ quadrant: z.number().int().min(0).max(15), clockwise: z.boolean() })
@@ -117,7 +119,7 @@ export async function POST(
     if (!parsed.success) return badRequest("Invalid move.");
 
     const { id } = await ctx.params;
-    const { token, row, col, from, twist, cells, pass } = parsed.data;
+    const { token, row, col, from, twist, cells, pass, stone } = parsed.data;
     const move =
       pass === true
         ? { kind: "pass" as const }
@@ -128,7 +130,7 @@ export async function POST(
         : row !== undefined && col !== undefined
           ? from !== undefined
             ? { kind: "move" as const, row, col, from }
-            : { kind: "place" as const, row, col }
+            : { kind: "place" as const, row, col, stone }
           : null;
     if (move === null) return badRequest("Invalid move.");
     const outcome = await appendMove(id, token, move);

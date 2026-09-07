@@ -309,7 +309,7 @@ describe("turn and capture handicaps", () => {
     );
     const taken = playMove(white, p(4, 4));
     expect(cellAt(taken, p(4, 2))).toBeNull();
-    expect(taken.captures.white).toBe(1);
+    expect(taken.captures.white).toBe(2);
   });
 });
 

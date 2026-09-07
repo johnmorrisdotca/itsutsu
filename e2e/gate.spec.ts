@@ -105,4 +105,32 @@ test.describe("the pages that stay open", () => {
       expect((await request.get(path)).status(), `${path}`).toBe(401);
     }
   });
+
+  test("will not be talked into redirecting off-site", async ({ page }) => {
+    /*
+     * `next` is attacker-controlled, and startsWith("/") is not enough:
+     * a browser reads //host and /\host as protocol-relative and leaves the
+     * site, which is how a sign-in page becomes a phishing redirect wearing a
+     * real domain.
+     */
+    for (const hostile of ["//example.com", "/\\example.com", "https://example.com"]) {
+      await page.goto(`/join?next=${encodeURIComponent(hostile)}`);
+      await page.getByTestId("toggle-mode").click();
+
+      const href = await page.getByTestId("google-signin").getAttribute("href");
+      expect(
+        decodeURIComponent(href ?? ""),
+        `${hostile} should not survive into the sign-in link`,
+      ).toContain("next=/");
+      expect(decodeURIComponent(href ?? "")).not.toContain("example.com");
+    }
+  });
+
+  test("keeps a legitimate destination through the door", async ({ page }) => {
+    await page.goto("/join?next=%2Fhistory");
+    await page.getByTestId("toggle-mode").click();
+    expect(
+      decodeURIComponent((await page.getByTestId("google-signin").getAttribute("href")) ?? ""),
+    ).toContain("next=/history");
+  });
 });

@@ -11,7 +11,7 @@ import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadlin
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
 import { Button } from "@/components/ui/Controls";
 import { usePieceHand } from "@/components/game/usePieceHand";
-import { GAME_STATUS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
@@ -73,6 +73,8 @@ export function SharedGame({
   const playable = yourTurn && state.status === GAME_STATUS.playing;
   const [selected, setSelected] = useState<Point | null>(null);
   const { hand, rotate, flip, toggleSingle } = usePieceHand(state);
+  const choosesColour = VARIANT_SPECS[state.settings.variant].anyColour;
+  const [placing, setPlacing] = useState<Stone>(STONES.black);
 
   /*
    * The deadline is the server's: it comes with the game and is only shown
@@ -154,7 +156,11 @@ export function SharedGame({
       }
       return;
     }
-    await send({ row: point.row, col: point.col });
+    await send(
+      choosesColour
+        ? { row: point.row, col: point.col, stone: placing }
+        : { row: point.row, col: point.col },
+    );
   }
 
   async function twist(quadrant: number, clockwise: boolean) {
@@ -248,7 +254,19 @@ export function SharedGame({
         onTwist={twist}
         selected={selected}
         footprintFor={hand.piece !== null ? hand.footprintFor : undefined}
+        placing={choosesColour ? placing : null}
       />
+
+      {choosesColour && playable ? (
+        <div className="flex flex-wrap items-center gap-2" data-testid="colour-chooser">
+          <span className="text-xs text-muted">{GAME_COPY.placeAs}</span>
+          {Object.values(STONES).map((stone) => (
+            <Button key={stone} onClick={() => setPlacing(stone)} strong={placing === stone}>
+              {STONE_DISPLAY[stone].label}
+            </Button>
+          ))}
+        </div>
+      ) : null}
 
       {hand.piece !== null && seat !== null ? (
         <PieceTray

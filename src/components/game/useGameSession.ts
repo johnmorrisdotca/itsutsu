@@ -31,8 +31,10 @@ import {
 } from "@/lib/gomoku/engine";
 import {
   GAME_STATUS,
+  MOVE_KINDS,
   SEATS,
   STONES,
+  VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings, Point, Seat, Stone } from "@/lib/gomoku/gomoku.types";
 import type { Suggestion } from "@/lib/gomoku/analysis.types";
@@ -161,6 +163,11 @@ export function useGameSession(
 
   const [selected, setSelected] = useState<Point | null>(null);
   const { hand, rotate: rotatePiece, flip: flipPiece, toggleSingle } = usePieceHand(state);
+  // The choose-a-colour games: which colour the next stone will be. Black to begin with.
+  const choosesColour = VARIANT_SPECS[state.settings.variant].anyColour;
+  const [placingChoice, setPlacingChoice] = useState<Stone>(STONES.black);
+  const placing = choosesColour ? placingChoice : null;
+  const setPlacing = useCallback((stone: Stone) => setPlacingChoice(stone), []);
 
   const commit = useCallback(
     (next: typeof state) => {
@@ -246,9 +253,9 @@ export function useGameSession(
         }
         return;
       }
-      commit(playMove(state, point));
+      commit(playMove(state, point, MOVE_KINDS.place, placing));
     },
-    [commit, hand, helpRequest, reviewing, selected, settings.historyMode, state],
+    [commit, hand, helpRequest, placing, reviewing, selected, settings.historyMode, state],
   );
 
   /** Passes the turn in a piece game when nothing fits. */
@@ -269,8 +276,8 @@ export function useGameSession(
   const confirmBranch = useCallback(() => {
     if (pendingBranch === null) return;
     setPendingBranch(null);
-    commit(playMove(state, pendingBranch));
-  }, [commit, pendingBranch, state]);
+    commit(playMove(state, pendingBranch, MOVE_KINDS.place, placing));
+  }, [commit, pendingBranch, placing, state]);
 
   const cancelBranch = useCallback(() => setPendingBranch(null), []);
 
@@ -452,6 +459,7 @@ export function useGameSession(
       reviewing && settings.historyMode !== HISTORY_MODES.branch,
     selected,
     hand,
+    placing,
     pendingBranch,
     branchDiscards: timeline.length - 1 - index,
   };
@@ -470,6 +478,7 @@ export function useGameSession(
     chooseColour,
     extendOpening,
     twist,
+    setPlacing,
     rotatePiece,
     flipPiece,
     toggleSingle,

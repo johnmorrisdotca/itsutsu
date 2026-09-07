@@ -1,4 +1,4 @@
-import { BLOCKED, HOT } from "@/lib/gomoku/gomoku.constants";
+import { BLOCKED, HOT, WORM } from "@/lib/gomoku/gomoku.constants";
 import { MARK_STYLE } from "./Board.constants";
 import { StoneMark } from "./StoneMark";
 import type { BoardMark, IntersectionProps } from "./board.types";
@@ -9,6 +9,16 @@ function Hotspot() {
     <span
       className="block h-[70%] w-[70%] rounded-full shadow-inner"
       style={{ background: "linear-gradient(135deg, #111 0%, #111 50%, #f5f5f5 50%, #f5f5f5 100%)" }}
+      aria-hidden="true"
+    />
+  );
+}
+
+/** A wormhole mouth: a ring with nothing inside, because a line falls through it. */
+function Wormhole() {
+  return (
+    <span
+      className="block h-[66%] w-[66%] rounded-full border-[0.2em] border-indigo-700/80 border-dashed"
       aria-hidden="true"
     />
   );
@@ -90,6 +100,8 @@ export function Intersection({
         <Obstacle />
       ) : cell === HOT ? (
         <Hotspot />
+      ) : cell === WORM ? (
+        <Wormhole />
       ) : cell !== null ? (
         <StoneMark
           stone={cell}

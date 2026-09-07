@@ -14,7 +14,7 @@ import {
   otherStone,
   pointOf,
 } from "./rules/board";
-import { capturesFrom, pairsIn, removeStones } from "./rules/captures";
+import { capturesFrom, removeStones, stonesIn } from "./rules/captures";
 import { forbiddenAt } from "./rules/forbidden";
 import {
   applyOpeningChoice,
@@ -132,7 +132,7 @@ export function isLegalMove(state: GameState, point: Point): boolean {
   if (landing.row !== point.row || landing.col !== point.col) return false;
   const spec = VARIANT_SPECS[state.settings.variant];
   if (spec.placement === PLACEMENTS.edge && !restsOnSomething(state, point)) return false;
-  if (spec.misere && blockedByGiveaway(state, point)) return false;
+  if (spec.misere && spec.placement === PLACEMENTS.drop && blockedByGiveaway(state, point)) return false;
   return (
     openingAllows(state, point) &&
     forbiddenAt(state.board, state.settings, state.toPlay, point) === null
@@ -243,27 +243,31 @@ export function playMove(
   state: GameState,
   where: Point,
   kind: Move["kind"] = MOVE_KINDS.place,
+  chosen: Stone | null = null,
 ): GameState {
   const point = resolvePlacement(state, where);
   if (!isLegalMove(state, point)) return state;
 
   const { settings, toPlay } = state;
   const spec = VARIANT_SPECS[settings.variant];
-  const captured = capturesFrom(state.board, settings, toPlay, point);
+  // The colour of the stone: the mover's, unless the game lets them choose, or fixes it.
+  const stone = spec.singleColour ? STONES.black : spec.anyColour ? (chosen ?? toPlay) : toPlay;
+  const captured = capturesFrom(state.board, settings, stone, point);
   let board = state.board.slice();
-  board[indexOf(settings.size, point)] = toPlay;
+  board[indexOf(settings.size, point)] = stone;
   board = removeStones(board, settings.size, captured);
 
-  const move: Move = { ...point, stone: toPlay, kind };
+  const move: Move = { ...point, stone, kind };
+  if (stone !== toPlay) move.by = toPlay;
   if (captured.length > 0) move.captured = captured;
   const moves = [...state.moves, move];
   const captures = {
     ...state.captures,
-    [toPlay]: state.captures[toPlay] + pairsIn(captured),
+    [stone]: state.captures[stone] + stonesIn(captured),
   };
   const placed: GameState = { ...state, board, moves, captures };
 
-  const decided = settleStone(placed, point);
+  const decided = settleStone(placed, point, toPlay);
   if (decided !== null) return decided;
 
   // A twist game's move is not over until a quadrant has turned.
@@ -280,10 +284,10 @@ export function playMove(
   }
 
   if (!after.board.includes(null)) {
-    // In the giveaway game a full board is a win for whoever opened.
-    return spec.misere
-      ? won(after, state.opener, WIN_REASONS.full, [])
-      : { ...after, status: GAME_STATUS.draw };
+    // A full board: the giveaway games give it to whoever opened, the breaker game to the breaker.
+    if (spec.misere) return won(after, state.opener, WIN_REASONS.full, []);
+    if (spec.makerBreaker) return won(after, STONES.white, WIN_REASONS.full, []);
+    return { ...after, status: GAME_STATUS.draw };
   }
 
   const stays = stonesLeftInTurn(settings, after.moves, toPlay) > 0;
@@ -372,9 +376,9 @@ export function undoMove(state: GameState): GameState {
     moves: state.moves.slice(0, -1),
     captures: {
       ...state.captures,
-      [last.stone]: state.captures[last.stone] - pairsIn(last.captured ?? []),
+      [last.stone]: state.captures[last.stone] - stonesIn(last.captured ?? []),
     },
-    toPlay: last.stone,
+    toPlay: last.by ?? last.stone,
     status: GAME_STATUS.playing,
     winner: null,
     winBy: null,
@@ -421,7 +425,12 @@ export function replayMoves(
           ? placePiece(current, move.cells)
           : move.from !== undefined
             ? movePiece(current, { row: move.from.row, col: move.from.col }, point)
-            : playMove(current, point);
+            : playMove(
+                current,
+                point,
+                MOVE_KINDS.place,
+                move.stone === STONES.black || move.stone === STONES.white ? move.stone : null,
+              );
     if (next === current) break;
     timeline.push(next);
     // A recorded twist is part of the same move, and lands in the same replay step.

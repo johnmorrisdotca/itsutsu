@@ -88,6 +88,8 @@ export type BoardProps = {
    * corner on the hovered point, or null where it does not fit.
    */
   footprintFor?: (anchor: Point) => PieceCell[] | null;
+  /** The colour the next stone will be, where that is not the mover's colour. */
+  placing?: Stone | null;
 };
 
 export type IntersectionProps = {

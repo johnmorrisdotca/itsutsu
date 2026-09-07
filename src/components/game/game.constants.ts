@@ -160,8 +160,8 @@ export const GAME_COPY = {
   proBlack: "Black's second stone must land outside the central 5×5.",
   longProBlack: "Black's second stone must land outside the central 7×7.",
   captures: { label: "Captures", kanji: "取り" },
-  capturesToWin: (pairs: number) => `${pairs} pairs win`,
-  winsByCaptures: (pairs: number) => `wins by capturing ${pairs} pairs`,
+  capturesToWin: (stones: number) => `${stones} stones win`,
+  winsByCaptures: (stones: number) => `wins by capturing ${stones} stones`,
   stoneOfTurn: (placed: number, total: number) => `Stone ${placed} of ${total} this turn`,
   forbiddenNote: (colour: string, shapes: string) =>
     `${colour} may not play the points marked ✕: ${shapes}.`,
@@ -226,6 +226,9 @@ export const GAME_COPY = {
   notes: { label: "Notes", kanji: "覚え書き" },
   notesHint: "Private. Kept in this browser and never sent to anyone.",
   notesPlaceholder: "What you are planning, what you noticed, what to try next time…",
+  placeAs: "Place a stone as",
+  makerBreakerRoles: (maker: string, breaker: string) =>
+    `${maker} is the Maker and wants a five of either colour; ${breaker} is the Breaker and wants none.`,
   moveTime: { label: "Time per move", kanji: "持ち時間" },
   moveTimeHint: "How long each player has for a move in a shared game. The clock starts when the other side moves.",
   penalty: { label: "Running out of time", kanji: "時間切れ" },

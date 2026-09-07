@@ -139,7 +139,14 @@ function playOut(settings: Partial<GameSettings>, seed: number): GameState {
 
     const point = legal[Math.floor(random() * legal.length)];
     const before = state;
-    const after = playMove(state, point);
+    // Where the mover may choose the colour, choose at random, so both are exercised.
+    const chosen =
+      state.settings.variant === "makerBreaker" || state.settings.variant === "wildTicTacToe"
+        ? random() < 0.5
+          ? "black"
+          : "white"
+        : null;
+    const after = playMove(state, point, "place", chosen);
 
     expect(after, `seed ${seed}: a legal move was refused`).not.toBe(before);
     checkMove(before, after, point, seed);
@@ -157,8 +164,13 @@ function playOut(settings: Partial<GameSettings>, seed: number): GameState {
     }
 
     guard += 1;
+    // Captures and clears free points, so a game may outlast the board's count.
+    const freed =
+      state.captures.black +
+      state.captures.white +
+      state.moves.reduce((total, move) => total + (move.cleared?.length ?? 0), 0);
     expect(guard, `seed ${seed}: game did not terminate`).toBeLessThanOrEqual(
-      state.settings.size * state.settings.size + 1,
+      state.settings.size * state.settings.size + freed + 1,
     );
   }
 

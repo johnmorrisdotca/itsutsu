@@ -1,6 +1,7 @@
 import {
   BLOCKED,
   HOT,
+  WORM,
   OBSTACLE_LAYOUTS,
   STAR_POINTS,
   VARIANT_SPECS,
@@ -34,10 +35,10 @@ export function obstaclePoints(settings: GameSettings): Point[] {
  * come first, then hotspots, all distinct, and never on the bottom row of a
  * drop game, where they would only ever be a wall.
  */
-export function randomSquares(settings: GameSettings): { dead: Point[]; hot: Point[] } {
+export function randomSquares(settings: GameSettings): { dead: Point[]; hot: Point[]; worm: Point[] } {
   const spec = VARIANT_SPECS[settings.variant];
-  const total = spec.deadSquares + spec.hotSquares;
-  if (total === 0) return { dead: [], hot: [] };
+  const total = spec.deadSquares + spec.hotSquares + spec.wormholes;
+  if (total === 0) return { dead: [], hot: [], worm: [] };
 
   const { size } = settings;
   const candidates = size * (size - 1);
@@ -46,7 +47,29 @@ export function randomSquares(settings: GameSettings): { dead: Point[]; hot: Poi
     row: Math.floor(index / size),
     col: index % size,
   }));
-  return { dead: points.slice(0, spec.deadSquares), hot: points.slice(spec.deadSquares) };
+  const hotFrom = spec.deadSquares;
+  const wormFrom = hotFrom + spec.hotSquares;
+  return {
+    dead: points.slice(0, hotFrom),
+    hot: points.slice(hotFrom, wormFrom),
+    worm: points.slice(wormFrom),
+  };
+}
+
+/**
+ * The wormholes as a map from each mouth to its partner, by board index. A
+ * line walking into one mouth continues from the cell past the other.
+ */
+export function wormholeLinks(settings: GameSettings): Map<number, number> {
+  const links = new Map<number, number>();
+  const { worm } = randomSquares(settings);
+  for (let i = 0; i + 1 < worm.length; i += 2) {
+    const a = worm[i].row * settings.size + worm[i].col;
+    const b = worm[i + 1].row * settings.size + worm[i + 1].col;
+    links.set(a, b);
+    links.set(b, a);
+  }
+  return links;
 }
 
 /** A board with the layout's obstacles already in place and nothing else on it. */
@@ -55,8 +78,9 @@ export function emptyBoard(settings: GameSettings): Cell[] {
   for (const point of obstaclePoints(settings)) {
     board[point.row * settings.size + point.col] = BLOCKED;
   }
-  const { dead, hot } = randomSquares(settings);
+  const { dead, hot, worm } = randomSquares(settings);
   for (const point of dead) board[point.row * settings.size + point.col] = BLOCKED;
   for (const point of hot) board[point.row * settings.size + point.col] = HOT;
+  for (const point of worm) board[point.row * settings.size + point.col] = WORM;
   return board;
 }

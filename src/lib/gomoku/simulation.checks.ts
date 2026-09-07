@@ -70,6 +70,12 @@ function runWinsIndependently(
     case "squareFour":
     case "dominoFive":
     case "blockFive":
+    case "sannuki":
+    case "wormDrop":
+    case "misereFive":
+    case "makerBreaker":
+    case "wildTicTacToe":
+    case "notakto":
       return length >= winLength;
     // Five or more in a row, as freestyle.
     case "ninuki":
@@ -102,14 +108,43 @@ function wrapsColumns(variant: string): boolean {
   return variant === "ringDrop";
 }
 
+/**
+ * The wormhole game's mouths, paired by hand from the board rather than the
+ * engine's link map: the first two "worm" cells in reading order are a pair,
+ * which is also how the engine draws them.
+ */
+function wormPairs(board: Cell[]): Map<number, number> {
+  const mouths: number[] = [];
+  board.forEach((cell, index) => {
+    if (cell === "worm") mouths.push(index);
+  });
+  const pairs = new Map<number, number>();
+  for (let i = 0; i + 1 < mouths.length; i += 2) {
+    pairs.set(mouths[i], mouths[i + 1]);
+    pairs.set(mouths[i + 1], mouths[i]);
+  }
+  return pairs;
+}
+
 function bruteForceWinner(board: Cell[], settings: GameSettings): Stone | null {
   const { size } = settings;
   const wrap = wrapsColumns(settings.variant);
+  const worms = settings.variant === "wormDrop" ? wormPairs(board) : new Map<number, number>();
   const at = (row: number, col: number): Cell | "edge" => {
     const c = wrap ? ((col % size) + size) % size : col;
     return row < 0 || row >= size || c < 0 || c >= size
       ? "edge"
       : board[indexOf(size, { row, col: c })];
+  };
+  /*
+   * Where a step lands after passing through a wormhole mouth: the cell past
+   * the partner mouth, in the same direction. Restated here on purpose.
+   */
+  const through = (row: number, col: number, step: Point): [number, number] => {
+    if (worms.size === 0 || row < 0 || row >= size || col < 0 || col >= size) return [row, col];
+    const partner = worms.get(indexOf(size, { row, col }));
+    if (partner === undefined) return [row, col];
+    return [Math.floor(partner / size) + step.row, (partner % size) + step.col];
   };
   // A hotspot is both colours at once, so it extends either colour's run.
   const matches = (cell: Cell | "edge", stone: Stone) => cell === stone || cell === "hot";
@@ -127,17 +162,14 @@ function bruteForceWinner(board: Cell[], settings: GameSettings): Stone | null {
         if (wrap && matches(at(row - step.row, col - step.col), stone) && step.row !== 0) continue;
 
         let length = 0;
-        while (
-          matches(at(row + step.row * length, col + step.col * length), stone) &&
-          length < size
-        ) {
+        let [r, c] = [row, col];
+        while (matches(at(r, c), stone) && length < size) {
           length += 1;
+          [r, c] = through(r + step.row, c + step.col, step);
         }
 
-        const ends = [
-          at(row - step.row, col - step.col),
-          at(row + step.row * length, col + step.col * length),
-        ];
+        const [br, bc] = through(row - step.row, col - step.col, { row: -step.row, col: -step.col });
+        const ends = [at(br, bc), at(r, c)];
         // Empty and the edge both leave a line open; a stone or obstacle seals it.
         const blockedEnds = ends.filter(
           (end) => end !== null && end !== "edge",
@@ -189,20 +221,33 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
   }, []);
   const playedIndex = indexOf(after.settings.size, played);
   expect(changed, `${where}: the played point did not change`).toContain(playedIndex);
-  expect(seen(playedIndex), `${where}: wrong stone was placed`).toBe(before.toPlay);
+  // The colour placed is the mover's, unless the game fixes it or lets the mover choose.
+  const placedStone = after.moves[after.moves.length - 1].stone;
+  if (choosesColour(after.settings.variant)) {
+    expect(after.moves[after.moves.length - 1].by ?? placedStone, `${where}: mover not recorded`).toBe(before.toPlay);
+  } else {
+    expect(seen(playedIndex), `${where}: wrong stone was placed`).toBe(before.toPlay);
+  }
+  expect(seen(playedIndex), `${where}: placed stone missing`).toBe(placedStone);
 
   const lifted = changed.filter((index) => index !== playedIndex);
   for (const index of lifted) {
     expect(before.board[index], `${where}: lifted a stone that was not the opponent's`)
-      .toBe(otherStone(before.toPlay));
+      .toBe(otherStone(placedStone));
     expect(seen(index), `${where}: a lifted stone was not removed`).toBeNull();
   }
 
-  const pairs =
-    after.captures[before.toPlay] - before.captures[before.toPlay];
-  expect(lifted.length, `${where}: stones lifted do not match pairs captured`).toBe(
-    pairs * 2,
-  );
+  // Captures are tallied in stones, and only groups of the sizes the variant allows.
+  const taken = after.captures[placedStone] - before.captures[placedStone];
+  expect(lifted.length, `${where}: stones lifted do not match stones captured`).toBe(taken);
+  if (lifted.length > 0) {
+    const allowed = after.settings.variant === "sannuki" ? [2, 3] : [2];
+    // Every capture is one group per direction; the total is a sum of allowed sizes.
+    expect(
+      canBeSummedFrom(lifted.length, allowed),
+      `${where}: captured a group of a size the variant does not allow`,
+    ).toBe(true);
+  }
 
   /*
    * Stones on the board equal moves played, less any lifted by a capture.
@@ -222,7 +267,7 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
     0,
   );
   expect(
-    stones + captured * 2 + clearedStones,
+    stones + captured + clearedStones,
     `${where}: stones on board do not match moves less captures and clears`,
   ).toBe(laid);
 
@@ -248,13 +293,13 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
     // Won by lifting pairs off the board; there is no line to corroborate.
     expect(after.winner, `${where}: capture win without a winner`).not.toBeNull();
   } else if (after.status === GAME_STATUS.won && after.winBy === "trap") {
-    // The mover made the forbidden line: the other colour wins.
+    // The mover made the forbidden line: the other player wins.
     expect(after.winner, `${where}: trap win went to the wrong colour`).toBe(
       otherStone(before.toPlay),
     );
-    if (after.settings.variant === "giveawayDrop") {
-      // In the giveaway game the forbidden line is the winning length itself.
-      expect(brute, `${where}: giveaway loss without a line on the board`).toBe(before.toPlay);
+    if (isMisere(after.settings.variant)) {
+      // In the giveaway games the forbidden line is the winning length itself.
+      expect(brute, `${where}: giveaway loss without a line on the board`).toBe(placedStone);
     } else {
       expect(brute, `${where}: trap declared although a winning line is on the board`).toBeNull();
       expect(
@@ -264,7 +309,10 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
     }
   } else if (after.status === GAME_STATUS.won && after.winBy === "full") {
     expect(after.board.includes(null), `${where}: full-board win with room left`).toBe(false);
-    expect(after.winner, `${where}: full board went to the wrong player`).toBe(after.opener);
+    // The giveaway games hand a full board to the opener; the breaker game to the breaker, white.
+    expect(after.winner, `${where}: full board went to the wrong player`).toBe(
+      after.settings.variant === "makerBreaker" ? "white" : after.opener,
+    );
   } else if (after.status === GAME_STATUS.won && after.winBy === "square") {
     expect(after.winner, `${where}: square win went to the wrong colour`).toBe(before.toPlay);
     expect(after.winningLine, `${where}: a square has four stones`).toHaveLength(4);
@@ -272,10 +320,18 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
       expect(cellAt(after, point), `${where}: square holds a wrong stone`).toBe(after.winner);
     }
   } else if (after.status === GAME_STATUS.won) {
-    expect(after.winner, `${where}: declared a winner the board does not show`).toBe(
-      brute,
-    );
-    if (after.settings.variant !== "hotDrop") {
+    if (choosesColour(after.settings.variant)) {
+      // A line of either colour: the board shows one, and it goes to the maker or the mover.
+      expect(brute, `${where}: declared a winner the board does not show`).not.toBeNull();
+      expect(after.winner, `${where}: line went to the wrong player`).toBe(
+        after.settings.variant === "makerBreaker" ? "black" : before.toPlay,
+      );
+    } else {
+      expect(after.winner, `${where}: declared a winner the board does not show`).toBe(brute);
+    }
+    if (choosesColour(after.settings.variant)) {
+      // Handled above.
+    } else if (after.settings.variant !== "hotDrop") {
       // Through a hotspot, a stone can finish the other colour's line.
       expect(after.winner, `${where}: winner is not the player who moved`).toBe(
         before.toPlay,
@@ -287,10 +343,15 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
     ).toBeGreaterThanOrEqual(after.settings.winLength);
     for (const point of after.winningLine) {
       const held = cellAt(after, point);
-      expect(
-        held === "hot" ? after.winner : held,
-        `${where}: winning line holds a wrong stone`,
-      ).toBe(after.winner);
+      // In the choose-a-colour games the line may be of either colour.
+      if (choosesColour(after.settings.variant)) {
+        expect(isStone(held), `${where}: winning line holds a non-stone`).toBe(true);
+      } else {
+        expect(
+          held === "hot" ? after.winner : held,
+          `${where}: winning line holds a wrong stone`,
+        ).toBe(after.winner);
+      }
     }
   } else {
     expect(brute, `${where}: missed a win that is on the board`).toBeNull();
@@ -316,6 +377,22 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
     );
     expect(undone.moves.length).toBe(before.moves.length);
   }
+}
+
+/** The games where the mover picks, or does not own, the colour placed. Restated by hand. */
+function choosesColour(variant: string): boolean {
+  return variant === "makerBreaker" || variant === "wildTicTacToe" || variant === "notakto";
+}
+
+/** The games where making the line loses. Restated by hand. */
+function isMisere(variant: string): boolean {
+  return variant === "giveawayDrop" || variant === "misereFive" || variant === "notakto";
+}
+
+/** Whether `total` is a sum of the given group sizes. */
+function canBeSummedFrom(total: number, sizes: number[]): boolean {
+  if (total === 0) return true;
+  return sizes.some((size) => total - size >= 0 && canBeSummedFrom(total - size, sizes));
 }
 
 /** The longest unbroken run of `stone` through `point`, in any direction. */

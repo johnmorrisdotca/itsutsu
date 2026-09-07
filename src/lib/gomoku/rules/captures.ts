@@ -1,18 +1,18 @@
-import { DIRECTIONS } from "../gomoku.constants";
+import { DIRECTIONS, VARIANT_SPECS } from "../gomoku.constants";
 import type { Cell, GameSettings, Point, Stone } from "../gomoku.types";
 import { cellAtPoint, indexOf, isStone, stepFrom } from "./board";
 import { rulesFor } from "./handicap";
 
-/** How many enemy stones a flank takes: always a pair, as the name 二抜き says. */
-const PAIR = 2;
-
 /**
  * The enemy stones a stone of `stone` landing on `point` would capture: every
- * pair of enemy stones in a straight line from it with another friendly stone
- * immediately beyond. Empty outside the capture variants.
+ * group of enemy stones of an allowed size in a straight line from it, with
+ * another friendly stone immediately beyond. A pair in the two-removal game
+ * (二抜き); a pair or a triple in the three-removal game. Empty outside the
+ * capture variants.
  *
- * Only the closing stone captures. A pair that moves *into* a flanked position
- * is safe, which is what makes the game playable rather than a bloodbath.
+ * Only the closing stone captures. A group that moves *into* a flanked
+ * position is safe, which is what makes the game playable rather than a
+ * bloodbath.
  */
 export function capturesFrom(
   board: Cell[],
@@ -23,19 +23,24 @@ export function capturesFrom(
   if (!rulesFor(settings, stone).captures) return [];
 
   const { size } = settings;
+  const sizes = VARIANT_SPECS[settings.variant].captureSizes;
   const taken: Point[] = [];
 
   for (const step of DIRECTIONS) {
     for (const sign of [1, -1]) {
       const along = { row: step.row * sign, col: step.col * sign };
-      const pair = [stepFrom(point, along, 1), stepFrom(point, along, 2)];
-      const beyond = stepFrom(point, along, PAIR + 1);
-
-      const flanked = pair.every((cell) => {
-        const value = cellAtPoint(board, size, cell);
-        return isStone(value ?? null) && value !== stone;
-      });
-      if (flanked && cellAtPoint(board, size, beyond) === stone) taken.push(...pair);
+      // Count the enemy run beyond the point, then see whether a friendly stone closes it.
+      const group: Point[] = [];
+      let next = stepFrom(point, along, 1);
+      while (group.length < Math.max(...sizes)) {
+        const value = cellAtPoint(board, size, next);
+        if (!isStone(value ?? null) || value === stone) break;
+        group.push(next);
+        next = stepFrom(next, along, 1);
+      }
+      if (sizes.includes(group.length) && cellAtPoint(board, size, next) === stone) {
+        taken.push(...group);
+      }
     }
   }
   return taken;
@@ -49,7 +54,7 @@ export function removeStones(board: Cell[], size: number, points: Point[]): Cell
   return next;
 }
 
-/** Pairs captured, from the stones removed. */
-export function pairsIn(points: Point[]): number {
-  return points.length / PAIR;
+/** Stones captured, which is what the tally counts. */
+export function stonesIn(points: Point[]): number {
+  return points.length;
 }
