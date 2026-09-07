@@ -252,10 +252,11 @@ export type GameSettings = {
   allowSwap: boolean;
   swapsPerSeat: number;
   /**
-   * Letting the board grow to the next size up mid-game, re-centring the
-   * stones. Gives a crowded game somewhere to go.
+   * Letting the board change size mid-game, re-centring the stones: up when a
+   * game has run out of room, down when it is dragging and the outer ring is
+   * unused. Both directions need the other player to agree.
    */
-  allowGrowth: boolean;
+  allowResize: boolean;
 };
 
 export type GameState = {

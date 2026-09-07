@@ -222,6 +222,33 @@ opponent** — a gift of a hint being a rather better way to be generous than
 taking a move back. Or ask your opponent directly: they mark the point they
 would play, and you decide what to do about it.
 
+### The board can change size, if both players agree
+
+A game that has run out of room is not always a game that has run out of ideas,
+so the board can step up to the next size — and a game that is dragging with an
+unused outer ring can step down. The stones keep their positions relative to
+each other; the centre stays the centre.
+
+It is proposed and agreed to rather than done, because it changes the game both
+players are in. Nobody loses a turn either way.
+
+Two rules hold it together, and both come from the same place — a stored game
+is its settings plus its moves, and it has to replay to the position it
+produced:
+
+- **resizing never passes the turn.** A resize places no stone, so nothing in
+  the record marks it; changing whose turn it was would make a replay alternate
+  colours differently from the game that was played.
+- **shrinking asks the record, not the board.** A ring can look empty and still
+  hold a captured stone's move, or the `from` of a piece that slid inwards.
+  Either would replay as a stone placed outside the smaller board, so the check
+  is over `state.moves` — including each move's `from` — and not over the
+  stones currently standing.
+
+Games with a board size of their own — tic-tac-toe, the twist games, Trap Three
+— cannot resize out of it, and neither can a board with obstacles, since those
+are derived from the size.
+
 ### It looks like a board
 
 Five surfaces — kaya, shin-kaya, washi, sumi, matcha — and five stone sets.

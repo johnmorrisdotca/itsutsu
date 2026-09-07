@@ -98,6 +98,10 @@ export type GameSession = {
   fatalMoves: FatalMove[];
   /** The seat that asked for advice and is waiting for it. */
   helpRequest: Seat | null;
+  /** A board change waiting on the other player's agreement. */
+  resizeProposal: ResizeProposal | null;
+  canProposeGrow: boolean;
+  canProposeShrink: boolean;
   clocks: Record<Seat, SeatClock>;
   /** The seat whose flag fell, when a game ended on time rather than on five. */
   lostOnTime: Seat | null;
@@ -127,6 +131,23 @@ export type GameSession = {
   branchDiscards: number;
 };
 
+/** Which way a resize would go. */
+export type ResizeDirection = "grow" | "shrink";
+
+/**
+ * A resize waiting on the other player.
+ *
+ * Changing the board is not one player's move to make — it changes the game
+ * both of them are playing — so it is proposed and then agreed to, rather
+ * than done.
+ */
+export type ResizeProposal = {
+  from: Seat;
+  direction: ResizeDirection;
+  /** The size it would become, for the prompt to name. */
+  size: number;
+};
+
 export type GameActions = {
   play: (point: Point) => void;
   undo: () => void;
@@ -146,6 +167,11 @@ export type GameActions = {
   extendOpening: () => void;
   /** Turns a quadrant to finish the move, in the twist games. */
   twist: (quadrant: number, clockwise: boolean) => void;
+  /** Offers the other player a bigger or smaller board. */
+  proposeResize: (direction: ResizeDirection) => void;
+  /** The other seat agrees, and the board changes. */
+  acceptResize: () => void;
+  declineResize: () => void;
   askHint: () => void;
   grantHint: () => void;
   requestHelp: () => void;

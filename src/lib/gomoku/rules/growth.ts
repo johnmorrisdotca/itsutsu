@@ -8,7 +8,7 @@ import type { Cell, GameState, Move, Point } from "../gomoku.types";
 import { emptyBoard } from "../obstacles";
 
 /**
- * Growing the board mid-game.
+ * Changing the board size mid-game, in either direction.
  *
  * A game that has run out of room is not necessarily a game that has run out
  * of ideas, so a bigger board gives both players somewhere to go. The stones
@@ -49,7 +49,7 @@ export function canGrowBoard(state: GameState): boolean {
   // A game played on a board of its own size cannot grow out of it.
   if (VARIANT_SPECS[state.settings.variant].boardSizes !== null) return false;
   return (
-    state.settings.allowGrowth &&
+    state.settings.allowResize &&
     state.status === GAME_STATUS.playing &&
     // See the note above: obstacles are derived from size, so they would not
     // survive a replay of a grown game.
@@ -98,6 +98,10 @@ export function growBoard(state: GameState): GameState {
   const moves: Move[] = state.moves.map((move) => ({
     ...move,
     ...shift(move, offset),
+    ...(move.from === undefined ? {} : { from: shift(move.from, offset) }),
+    ...(move.captured === undefined
+      ? {}
+      : { captured: move.captured.map((point) => shift(point, offset)) }),
   }));
 
   return {
@@ -105,6 +109,91 @@ export function growBoard(state: GameState): GameState {
     settings,
     board,
     moves,
+    winningLine: state.winningLine.map((point) => shift(point, offset)),
+  };
+}
+
+/** The next size down, or null when the board is already the smallest. */
+export function previousBoardSize(size: number): number | null {
+  const smaller = BOARD_SIZES.filter((option) => option < size);
+  return smaller.length > 0 ? Math.max(...smaller) : null;
+}
+
+/**
+ * Whether the ring that shrinking would remove holds any recorded move.
+ *
+ * This asks the record, not the board, and the difference matters. A captured
+ * stone leaves the board but its move stays in the list, and a piece that
+ * slid inwards leaves a move whose `from` is still out there. Either would
+ * replay as a stone placed outside the smaller board, so a ring that looks
+ * empty can still be occupied as far as the record is concerned.
+ */
+export function ringHoldsMoves(state: GameState, margin: number): boolean {
+  const last = state.settings.size - 1 - margin;
+  const outside = (point: Point) =>
+    point.row < margin || point.col < margin || point.row > last || point.col > last;
+
+  return state.moves.some(
+    (move) => outside(move) || (move.from !== undefined && outside(move.from)),
+  );
+}
+
+export function canShrinkBoard(state: GameState): boolean {
+  // A game played on a board of its own size cannot shrink out of it either.
+  if (VARIANT_SPECS[state.settings.variant].boardSizes !== null) return false;
+
+  const to = previousBoardSize(state.settings.size);
+  if (to === null) return false;
+
+  return (
+    state.settings.allowResize &&
+    state.status === GAME_STATUS.playing &&
+    state.settings.obstacles === OBSTACLE_LAYOUTS.none &&
+    !ringHoldsMoves(state, growthOffset(to, state.settings.size))
+  );
+}
+
+/**
+ * Returns the game on a smaller board, or the state unchanged when the ring
+ * that would be removed is in use. Everything shifts inwards by the same
+ * offset growing shifts out by, so the stones keep their positions relative
+ * to each other and the centre stays the centre.
+ */
+export function shrinkBoard(state: GameState): GameState {
+  if (!canShrinkBoard(state)) return state;
+
+  const from = state.settings.size;
+  const to = previousBoardSize(from);
+  if (to === null) return state;
+
+  const offset = -growthOffset(to, from);
+  const settings = { ...state.settings, size: to };
+
+  const board: Cell[] = emptyBoard(settings);
+  state.board.forEach((cell, index) => {
+    if (cell === null || cell === "blocked") return;
+    const point = shift(
+      { row: Math.floor(index / from), col: index % from },
+      offset,
+    );
+    board[point.row * to + point.col] = cell;
+  });
+
+  const moves: Move[] = state.moves.map((move) => ({
+    ...move,
+    ...shift(move, offset),
+    ...(move.from === undefined ? {} : { from: shift(move.from, offset) }),
+    ...(move.captured === undefined
+      ? {}
+      : { captured: move.captured.map((point) => shift(point, offset)) }),
+  }));
+
+  return {
+    ...state,
+    settings,
+    board,
+    moves,
+    // As with growing: no turn passes, or the record would stop replaying.
     winningLine: state.winningLine.map((point) => shift(point, offset)),
   };
 }

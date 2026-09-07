@@ -202,6 +202,12 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             onChange={(next) => actions.reset({ allowSwap: next })}
             hint={GAME_COPY.swapHint}
           />
+          <Toggle
+            label="Allow resizing the board"
+            checked={settings.allowResize}
+            onChange={(next) => actions.reset({ allowResize: next })}
+            hint={GAME_COPY.resizeHint}
+          />
 
           <Field
             label="Clock"

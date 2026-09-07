@@ -129,6 +129,13 @@ export const GAME_COPY = {
   buildingDetail:
     "Your opponent can start an open three here next move. Nothing is forced yet.",
   outOfTime: "out of time",
+  grow: { label: "Bigger board", kanji: "拡張" },
+  shrink: { label: "Smaller board", kanji: "縮小" },
+  resizeHint:
+    "Changes the board for both of you, so the other player has to agree. The stones keep their positions.",
+  resizeAgree: { label: "Agree", kanji: "同意" },
+  resizeDecline: { label: "No thanks", kanji: "辞退" },
+  shrinkBlocked: "The outer ring is in use, so the board cannot get smaller.",
   reviewing: { label: "Reviewing", kanji: "検討" },
   reviewingDetail: "You are looking at an earlier position.",
   returnToLatest: { label: "Back to the game", kanji: "戻る" },

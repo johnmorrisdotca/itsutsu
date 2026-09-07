@@ -145,6 +145,52 @@ export function GameControls({ session, actions }: GamePanelProps) {
         </div>
       ) : null}
 
+      {session.resizeProposal !== null ? (
+        <div
+          className={`flex flex-col gap-2 rounded-xl border px-3 py-2.5 ${TONE_CLASS.warn}`}
+          role="alertdialog"
+          data-testid="resize-proposal"
+        >
+          <p className="text-sm font-semibold">
+            {SEAT_DISPLAY[session.resizeProposal.from].label} wants a{" "}
+            {session.resizeProposal.direction === "grow" ? "bigger" : "smaller"}{" "}
+            board — {session.resizeProposal.size}×{session.resizeProposal.size}.
+          </p>
+          <p className="text-xs leading-snug opacity-85">
+            The stones keep their positions, and nobody loses a turn.
+          </p>
+          <div className="flex gap-2">
+            <Button onClick={actions.acceptResize} strong data-testid="accept-resize">
+              {GAME_COPY.resizeAgree.label}
+            </Button>
+            <Button onClick={actions.declineResize} data-testid="decline-resize">
+              {GAME_COPY.resizeDecline.label}
+            </Button>
+          </div>
+        </div>
+      ) : session.canProposeGrow || session.canProposeShrink ? (
+        <div className="flex flex-wrap gap-2">
+          {session.canProposeGrow ? (
+            <Button
+              onClick={() => actions.proposeResize("grow")}
+              title={GAME_COPY.resizeHint}
+              data-testid="propose-grow"
+            >
+              {GAME_COPY.grow.label}
+            </Button>
+          ) : null}
+          {session.canProposeShrink ? (
+            <Button
+              onClick={() => actions.proposeResize("shrink")}
+              title={GAME_COPY.resizeHint}
+              data-testid="propose-shrink"
+            >
+              {GAME_COPY.shrink.label}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-2">
         {helpRequest === null ? (
           <Button onClick={actions.requestHelp} title={GAME_COPY.askHelpHint}>

@@ -62,7 +62,14 @@ export { indexOf, isOnBoard, isStone, otherStone, pointOf } from "./rules/board"
 export { findWinningLine } from "./rules/lines";
 export { hasHandicap, rulesFor } from "./rules/handicap";
 export { forbiddenAt, forbiddenPoints } from "./rules/forbidden";
-export { canGrowBoard, growBoard, nextBoardSize } from "./rules/growth";
+export {
+  canGrowBoard,
+  canShrinkBoard,
+  growBoard,
+  nextBoardSize,
+  previousBoardSize,
+  shrinkBoard,
+} from "./rules/growth";
 export { dropTarget, landingPoints } from "./rules/drop";
 export { quadrantCount, quadrantOrigin } from "./rules/twist";
 export {

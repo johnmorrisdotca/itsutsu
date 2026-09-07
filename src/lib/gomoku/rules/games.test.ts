@@ -46,7 +46,7 @@ describe("tic-tac-toe", () => {
   });
 
   it("cannot grow", () => {
-    expect(canGrowBoard(createGame({ variant: RULE_VARIANTS.tictactoe, allowGrowth: true }))).toBe(false);
+    expect(canGrowBoard(createGame({ variant: RULE_VARIANTS.tictactoe, allowResize: true }))).toBe(false);
   });
 });
 

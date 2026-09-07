@@ -13,7 +13,7 @@ describe("games that grow mid-play", () => {
   it("keeps every stone, and stays playable, across a growth", () => {
     for (let seed = 1; seed <= 40; seed += 1) {
       const random = rng(seed * 23);
-      let state = createGame({ size: 9, allowGrowth: true }, random());
+      let state = createGame({ size: 9, allowResize: true }, random());
 
       // Play a while, then grow, then play on to the end.
       for (let move = 0; move < 12 && state.status === GAME_STATUS.playing; move += 1) {
@@ -63,7 +63,7 @@ describe("games that grow mid-play", () => {
   });
 
   it("cannot grow past the largest board", () => {
-    const state = createGame({ size: 19, allowGrowth: true });
+    const state = createGame({ size: 19, allowResize: true });
     expect(growBoard(state)).toBe(state);
   });
 });

@@ -6,7 +6,13 @@ import { assess, isSwapBlocked, suggestMove } from "@/lib/gomoku/analysis";
 import { winChance } from "@/lib/gomoku/winChance";
 import {
   canSkip as engineCanSkip,
+  canGrowBoard,
+  canShrinkBoard,
   canSwapSeats,
+  growBoard,
+  nextBoardSize,
+  previousBoardSize,
+  shrinkBoard,
   chooseColour as engineChooseColour,
   extendOpening as engineExtendOpening,
   cellAt,
@@ -57,6 +63,8 @@ import {
 } from "./gameStorage";
 import type {
   GameActions,
+  ResizeDirection,
+  ResizeProposal,
   GameSession,
   SeatNames,
   SessionSettings,
@@ -106,6 +114,7 @@ export function useGameSession(
     if (lastMoveAt.current === 0) lastMoveAt.current = Date.now();
   }, []);
   const [helpRequest, setHelpRequest] = useState<Seat | null>(null);
+  const [resizeProposal, setResizeProposal] = useState<ResizeProposal | null>(null);
   const [pendingBranch, setPendingBranch] = useState<Point | null>(null);
   const [helpMark, setHelpMark] = useState<Point | null>(null);
 
@@ -173,6 +182,8 @@ export function useGameSession(
       if (seatToPlay(next) !== seat || next.status !== GAME_STATUS.playing) {
         clock.onMoveComplete(seat);
       }
+      // A move settles the question; a stale offer must not outlive it.
+      setResizeProposal(null);
       line.advance(next, fatal);
     },
     [line, assessment, clock, state],
@@ -286,6 +297,7 @@ export function useGameSession(
     setHelpMark(null);
     setHelpRequest(null);
     setPendingBranch(null);
+    setResizeProposal(null);
     setHintsLeft({
       one: settings.hintsPerSeat,
       two: settings.hintsPerSeat,
@@ -319,6 +331,34 @@ export function useGameSession(
       [other]: current[other] + 1,
     }));
   }, [hintsLeft, seat, settings.hintPolicy]);
+
+  /*
+   * A resize changes the game both players are in, so it is offered rather
+   * than done. The proposal is session state, not engine state: it is a
+   * negotiation about the rules, not a move within them, and nothing about it
+   * belongs in the record.
+   */
+  const proposeResize = useCallback(
+    (direction: ResizeDirection) => {
+      const size =
+        direction === "grow"
+          ? nextBoardSize(state.settings.size)
+          : previousBoardSize(state.settings.size);
+      if (size === null) return;
+      setResizeProposal({ from: seatToPlay(state), direction, size });
+    },
+    [state],
+  );
+
+  const acceptResize = useCallback(() => {
+    if (resizeProposal === null) return;
+    const next =
+      resizeProposal.direction === "grow" ? growBoard(state) : shrinkBoard(state);
+    setResizeProposal(null);
+    if (next !== state) line.advance(next, null);
+  }, [line, resizeProposal, state]);
+
+  const declineResize = useCallback(() => setResizeProposal(null), []);
 
   const requestHelp = useCallback(() => setHelpRequest(seat), [seat]);
   const cancelHelp = useCallback(() => setHelpRequest(null), []);
@@ -379,6 +419,9 @@ export function useGameSession(
     hintsLeft,
     fatalMoves: line.fatalMoves,
     helpRequest,
+    resizeProposal,
+    canProposeGrow: resizeProposal === null && canGrowBoard(state),
+    canProposeShrink: resizeProposal === null && canShrinkBoard(state),
     clocks: clock.clocks,
     lostOnTime,
     stats,
@@ -416,6 +459,9 @@ export function useGameSession(
     grantHint,
     requestHelp,
     cancelHelp,
+    proposeResize,
+    acceptResize,
+    declineResize,
     setAppearance,
     setSessionSettings,
     setName,
