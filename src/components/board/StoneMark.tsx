@@ -1,8 +1,3 @@
-import {
-  LAST_MOVE_DOT_CLASS,
-  STONE_CLASS,
-  WINNING_RING_CLASS,
-} from "./Board.constants";
 import type { StoneMarkProps } from "./board.types";
 
 /**
@@ -11,24 +6,40 @@ import type { StoneMarkProps } from "./board.types";
  */
 export function StoneMark({
   stone,
+  stones,
   isLast = false,
   isWinning = false,
+  winningColour = "#d92d20",
   ghost = false,
+  moveNumber = null,
 }: StoneMarkProps) {
-  const classes = [
-    "relative flex h-[86%] w-[86%] items-center justify-center rounded-full",
-    STONE_CLASS[stone],
-    ghost
-      ? "opacity-0 transition-opacity group-hover:opacity-50 group-focus-visible:opacity-50"
-      : "shadow-[1px_1px_2px_rgba(0,0,0,0.45)]",
-    isWinning ? WINNING_RING_CLASS : "",
-  ].join(" ");
+  const ink = stone === "black" ? stones.blackInk : stones.whiteInk;
 
   return (
-    <span className={classes} aria-hidden="true">
-      {isLast ? (
+    <span
+      className={[
+        "relative flex h-[86%] w-[86%] items-center justify-center rounded-full",
+        ghost
+          ? "opacity-0 transition-opacity duration-150 group-hover:opacity-45 group-focus-visible:opacity-45"
+          : "shadow-[1px_2px_3px_rgba(0,0,0,0.45)]",
+      ].join(" ")}
+      style={{
+        background: stone === "black" ? stones.black : stones.white,
+        boxShadow: isWinning ? `0 0 0 0.16em ${winningColour}` : undefined,
+      }}
+      aria-hidden="true"
+    >
+      {moveNumber !== null ? (
         <span
-          className={`block h-[28%] w-[28%] rounded-full ${LAST_MOVE_DOT_CLASS[stone]}`}
+          className="font-mono leading-none tabular-nums"
+          style={{ color: ink, fontSize: "0.5em" }}
+        >
+          {moveNumber}
+        </span>
+      ) : isLast ? (
+        <span
+          className="block h-[28%] w-[28%] rounded-full"
+          style={{ background: ink }}
         />
       ) : null}
     </span>

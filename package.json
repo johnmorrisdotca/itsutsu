@@ -13,20 +13,39 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "quality:check": "pnpm lint && pnpm loc:check && pnpm typecheck && pnpm test:unit",
-    "quality:fix": "pnpm lint:fix && pnpm quality:check"
+    "quality:fix": "pnpm lint:fix && pnpm quality:check",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "local:db:up": "docker compose -f docker-compose.local.yml up -d --wait",
+    "local:db:down": "docker compose -f docker-compose.local.yml down",
+    "local:db:reset": "docker compose -f docker-compose.local.yml down -v && pnpm local:db:up && pnpm db:deploy",
+    "postinstall": "prisma generate",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "screenshots": "playwright test e2e/screenshots.spec.ts --reporter=line"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "next": "16.3.4",
+    "qrcode": "^1.5.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "swr": "^2.5.1",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.0"
@@ -35,5 +54,11 @@
   "description": "Gomoku (五目並べ) — five in a row on a go board.",
   "engines": {
     "node": ">=20.9.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "prisma"
+    ]
   }
 }

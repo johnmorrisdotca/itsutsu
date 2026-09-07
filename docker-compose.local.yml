@@ -1,0 +1,28 @@
+# Local development database.
+#
+# Disposable Postgres so the app and its tests can run without touching a shared
+# cloud database. Managed through `pnpm local:db:*` — see README.
+name: gomoku-local
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: gomoku-localdb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gomoku
+      POSTGRES_PASSWORD: gomoku
+      POSTGRES_DB: gomoku
+    ports:
+      # Deliberately not 5432, and not 55432 or 55433, which other local projects already hold.
+      - "55434:5432"
+    volumes:
+      - gomoku-localdb:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gomoku -d gomoku"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  gomoku-localdb:

@@ -1,0 +1,84 @@
+import type { Point, Stone } from "./gomoku.types";
+
+/**
+ * What a single move would create for the colour playing it. Ordered by
+ * severity: a `five` ends the game, an `openFour` cannot be answered, a `four`
+ * forces a reply, an `openThree` threatens to become an open four.
+ */
+export type ThreatKind =
+  | "five"
+  | "openFour"
+  | "doubleThreat"
+  | "four"
+  | "openThree";
+
+/**
+ * What one candidate move would create, in enough detail to spot the combined
+ * threats that decide games. `fiveCompletions` counts the ways to make five
+ * straight after the move. `openThreeDirections` counts the *lines* along
+ * which the move sets up an open four — counted per direction, because a
+ * single open three has a follow-up at each end and is still only one threat.
+ */
+export type MoveThreat = {
+  kind: ThreatKind | null;
+  fiveCompletions: number;
+  openThreeDirections: number;
+};
+
+/** Where a colour can create each kind of threat, given the current board. */
+export type ThreatReport = {
+  stone: Stone;
+  /** Completes a winning line immediately. */
+  five: Point[];
+  /** Creates two separate ways to make five. Unanswerable. */
+  openFour: Point[];
+  /** Two threats at once — the classic four-and-three (四三). Unanswerable. */
+  doubleThreat: Point[];
+  /** Creates exactly one way to make five. Forces a reply. */
+  four: Point[];
+  /** Creates a position where an open four is available next. */
+  openThree: Point[];
+};
+
+/**
+ * How the game looks for one colour. These never change the rules — they only
+ * describe the position so a player can see what they are walking into.
+ */
+export type Outlook =
+  | "won"
+  | "winning"
+  | "ahead"
+  | "even"
+  | "danger"
+  | "critical"
+  | "lost";
+
+export type Assessment = {
+  toPlay: Stone;
+  threats: Record<Stone, ThreatReport>;
+  outlook: Record<Stone, Outlook>;
+  /** Intersections the player to move must answer, or lose. */
+  forcedPoints: Point[];
+  /** True once one side has a win the other cannot prevent. */
+  decided: boolean;
+};
+
+export type SuggestionReason =
+  | "win"
+  | "blockWin"
+  | "openFour"
+  | "blockOpenFour"
+  | "doubleThreat"
+  | "blockDoubleThreat"
+  | "four"
+  | "openThree"
+  | "blockOpenThree"
+  | "shape"
+  | "opening";
+
+export type Suggestion = {
+  point: Point;
+  reason: SuggestionReason;
+  /** 0-100, how strongly the engine likes this move. */
+  confidence: number;
+};

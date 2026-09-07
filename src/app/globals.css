@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f5f1;
+  --foreground: #1a1917;
+  --muted: #6f6a62;
+  --rule: #e3ded4;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-mincho: var(--font-mincho);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #121110;
+    --foreground: #ececea;
+    --muted: #9b958c;
+    --rule: #2a2825;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Japanese display text: the title, the kanji beside a label, section marks. */
+.font-mincho {
+  font-family: var(--font-mincho), "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+
+/*
+ * A faint paper grain behind the page. Two offset gradients rather than an
+ * image, so it costs nothing to load and scales to any viewport.
+ */
+.paper {
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(0, 0, 0, 0.025) 0%, transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(0, 0, 0, 0.02) 0%, transparent 40%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

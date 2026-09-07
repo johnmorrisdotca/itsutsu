@@ -1,0 +1,86 @@
+// Game history for gomoku.
+//
+// Every finished game is recorded once, with its stones in order, so a game can
+// be replayed move by move long after the browser tab that played it is gone.
+// The board itself is never stored: a board is exactly the settings plus the
+// move list, and storing both would let them disagree.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// How a game ended. `abandoned` is a game that was recorded before anyone won.
+enum GameResult {
+  black
+  white
+  draw
+  abandoned
+}
+
+/// Whether a game is still being played or is over.
+enum GameLifecycle {
+  active
+  finished
+}
+
+model Game {
+  id        String     @id @default(cuid())
+  playedAt  DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  status    GameLifecycle @default(finished)
+
+  /// Seat keys. There is no sign-in here, so holding a seat's token *is* the
+  /// claim to that seat: whoever has the link plays that colour. They are
+  /// generated per game and never derived from anything guessable.
+  blackToken String    @unique @default(cuid())
+  whiteToken String    @unique @default(cuid())
+
+  /// Display names, free text. Blank means the seat was anonymous.
+  blackName String     @default("")
+  whiteName String     @default("")
+
+  /// The settings the game was played under, mirrored from GameSettings.
+  size      Int
+  winLength Int
+  variant   String
+  obstacles String
+  opener    String
+
+  result    GameResult
+  /// Set for a decisive game, null for a draw or an abandoned one.
+  winner    String?
+  moveCount Int
+  /// Wall-clock length, when the client tracked it.
+  durationMs Int?
+
+  moves     Move[]
+
+  /// Listing sorts by these; a compound index covers the default ordering.
+  @@index([playedAt])
+  @@index([result, playedAt])
+  @@index([size, playedAt])
+  @@index([status, updatedAt])
+}
+
+model Move {
+  id     String  @id @default(cuid())
+  gameId String
+  game   Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  /// 1-based, matching the move numbers shown on the board.
+  number Int
+  row    Int
+  col    Int
+  stone  String
+  /// "place" for an ordinary stone, "skip" for a deliberately wasted turn.
+  kind   String  @default("place")
+
+  @@unique([gameId, number])
+  @@index([gameId, number])
+}

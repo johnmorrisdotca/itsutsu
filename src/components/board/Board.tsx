@@ -1,27 +1,31 @@
 "use client";
 
 import { indexOf, lastMove, pointOf } from "@/lib/gomoku/engine";
-import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { BLOCKED, GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { columnLetter, pointName, rowNumber } from "@/lib/gomoku/notation";
-import type { Cell } from "@/lib/gomoku/gomoku.types";
-import { BOARD_SURFACE_CLASS, LABEL_GUTTER } from "./Board.constants";
+import type { Cell, GameState } from "@/lib/gomoku/gomoku.types";
+import { BOARD_THEMES, LABEL_GUTTER, STONE_SETS } from "./Board.constants";
 import { BoardLines } from "./BoardLines";
 import { Intersection } from "./Intersection";
-import type { BoardProps } from "./board.types";
+import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
 
 function cellDescription(cell: Cell): string {
+  if (cell === BLOCKED) return "blocked";
   return cell === null ? "empty" : `${STONE_DISPLAY[cell].label} stone`;
 }
 
-function ColumnLabels({ size }: { size: number }) {
+function ColumnLabels({ size, theme }: { size: number; theme: BoardThemeTokens }) {
   return (
     <div
-      className="grid text-center text-xs text-zinc-500 select-none"
-      style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+      className="grid text-center text-[0.65rem] font-medium select-none"
+      style={{
+        gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+        color: theme.coordinate,
+      }}
       aria-hidden="true"
     >
       {Array.from({ length: size }, (_, col) => (
-        <span key={col} className="self-end leading-none pb-1">
+        <span key={col} className="self-end pb-1 leading-none">
           {columnLetter(col)}
         </span>
       ))}
@@ -29,11 +33,14 @@ function ColumnLabels({ size }: { size: number }) {
   );
 }
 
-function RowLabels({ size }: { size: number }) {
+function RowLabels({ size, theme }: { size: number; theme: BoardThemeTokens }) {
   return (
     <div
-      className="grid text-right text-xs text-zinc-500 select-none"
-      style={{ gridTemplateRows: `repeat(${size}, minmax(0, 1fr))` }}
+      className="grid text-right text-[0.65rem] font-medium select-none"
+      style={{
+        gridTemplateRows: `repeat(${size}, minmax(0, 1fr))`,
+        color: theme.coordinate,
+      }}
       aria-hidden="true"
     >
       {Array.from({ length: size }, (_, row) => (
@@ -45,34 +52,79 @@ function RowLabels({ size }: { size: number }) {
   );
 }
 
+/** Move number for each occupied intersection, when numbers are being shown. */
+function numberByIndex(state: GameState, show: boolean): Map<number, number> {
+  const numbers = new Map<number, number>();
+  if (!show) return numbers;
+  state.moves.forEach((move, index) => {
+    numbers.set(indexOf(state.settings.size, move), index + 1);
+  });
+  return numbers;
+}
+
+function markByIndex(
+  size: number,
+  marks: readonly BoardMark[],
+): Map<number, BoardMark> {
+  const byIndex = new Map<number, BoardMark>();
+  for (const mark of marks) byIndex.set(indexOf(size, mark), mark);
+  return byIndex;
+}
+
 /**
- * The playing surface: coordinate gutters, the wooden board with its lines,
- * and one button per intersection laid over the lines.
+ * The playing surface: coordinate gutters, the board with its lines, and one
+ * button per intersection laid over them.
  */
-export function Board({ state, onPlay }: BoardProps) {
+export function Board({
+  state,
+  appearance,
+  marks = [],
+  readOnly = false,
+  onPlay,
+}: BoardProps) {
   const { size } = state.settings;
+  const theme = BOARD_THEMES[appearance.boardTheme];
+  const stones = STONE_SETS[appearance.stoneSet];
+
   const last = lastMove(state);
   const lastIndex = last === null ? -1 : indexOf(size, last);
   const winningIndices = new Set(
     state.winningLine.map((point) => indexOf(size, point)),
   );
-  const ghost = state.status === GAME_STATUS.playing ? state.toPlay : null;
+  const numbers = numberByIndex(state, appearance.showMoveNumbers);
+  const overlays = markByIndex(size, marks);
+  const ghost =
+    !readOnly && state.status === GAME_STATUS.playing ? state.toPlay : null;
+
+  const gutter = appearance.showCoordinates ? LABEL_GUTTER : "0px";
 
   return (
     <div
       className="grid w-full"
       style={{
-        gridTemplateColumns: `${LABEL_GUTTER} minmax(0, 1fr)`,
-        gridTemplateRows: `${LABEL_GUTTER} auto`,
+        gridTemplateColumns: `${gutter} minmax(0, 1fr)`,
+        gridTemplateRows: `${gutter} auto`,
       }}
     >
       <div />
-      <ColumnLabels size={size} />
-      <RowLabels size={size} />
+      {appearance.showCoordinates ? (
+        <ColumnLabels size={size} theme={theme} />
+      ) : (
+        <div />
+      )}
+      {appearance.showCoordinates ? (
+        <RowLabels size={size} theme={theme} />
+      ) : (
+        <div />
+      )}
       <div
-        className={`relative aspect-square rounded-sm shadow-lg ${BOARD_SURFACE_CLASS}`}
+        className="relative aspect-square rounded-md"
+        style={{
+          background: theme.surface,
+          boxShadow: `0 0 0 0.4rem ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)`,
+        }}
       >
-        <BoardLines size={size} />
+        <BoardLines size={size} theme={theme} />
         <div
           className="absolute inset-0 grid"
           style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
@@ -88,6 +140,11 @@ export function Board({ state, onPlay }: BoardProps) {
                 isLast={index === lastIndex}
                 isWinning={winningIndices.has(index)}
                 ghost={ghost}
+                moveNumber={numbers.get(index) ?? null}
+                mark={overlays.get(index) ?? null}
+                stones={stones}
+                winningColour={theme.winning}
+                readOnly={readOnly}
                 onPlay={onPlay}
               />
             );

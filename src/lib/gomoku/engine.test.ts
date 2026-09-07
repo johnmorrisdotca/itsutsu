@@ -16,7 +16,7 @@ const p = (row: number, col: number): Point => ({ row, col });
 
 /** Plays the given points in order, alternating colours from black. */
 function play(state: GameState, points: Point[]): GameState {
-  return points.reduce(playMove, state);
+  return points.reduce((current, point) => playMove(current, point), state);
 }
 
 /**
