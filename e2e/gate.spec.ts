@@ -68,4 +68,41 @@ test.describe("a visitor with no invite", () => {
     }
     expect(statuses, "guessing should hit a 429").toContain(429);
   });
+
+  test("keeps the query when sending someone to the door", async ({ page }) => {
+    // A link like /?game=connect6 means "this game". Dropping the query would
+    // land the visitor on a different one from the one they clicked.
+    await page.goto("/?game=connect6");
+    await expect(page).toHaveURL(/\/join\?next=%2F%3Fgame%3Dconnect6/);
+  });
+});
+
+test.describe("the pages that stay open", () => {
+  test("rules and learning are readable without an invite", async ({ page }) => {
+    for (const path of ["/rules", "/learn"]) {
+      await page.goto(path);
+      await expect(page, `${path} should not send you to the door`).not.toHaveURL(
+        /\/join/,
+      );
+    }
+  });
+
+  test("a variant's rules page is readable too", async ({ request }) => {
+    expect((await request.get("/rules/connect6")).status()).toBe(200);
+  });
+
+  test("the screenshots those pages load are readable", async ({ request }) => {
+    // public/ is not exempted by the matcher, so these had to be named.
+    expect((await request.get("/games/caro.jpg")).status()).toBe(200);
+  });
+
+  test("but nothing else opened by accident", async ({ request }) => {
+    for (const path of ["/", "/history", "/players"]) {
+      const response = await request.get(path, { maxRedirects: 0 });
+      expect(response.status(), `${path} should still be gated`).toBe(307);
+    }
+    for (const path of ["/api/games", "/api/players?q=a"]) {
+      expect((await request.get(path)).status(), `${path}`).toBe(401);
+    }
+  });
 });

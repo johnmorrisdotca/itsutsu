@@ -36,6 +36,7 @@
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "next": "16.3.4",
+    "next-auth": "^4.24.15",
     "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -58,7 +59,7 @@
     "vitest": "^5.0.0"
   },
   "packageManager": "pnpm@10.11.0",
-  "description": "Gomoku (\u4e94\u76ee\u4e26\u3079) \u2014 five in a row on a go board.",
+  "description": "Gomoku (五目並べ) — five in a row on a go board.",
   "engines": {
     "node": ">=20.9.0"
   },

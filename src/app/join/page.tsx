@@ -1,4 +1,5 @@
 import { JoinForm } from "@/components/auth/JoinForm";
+import { isGoogleAuthConfigured } from "@/lib/auth/google";
 
 export const metadata = {
   title: "Join · Gomoku",
@@ -18,7 +19,7 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         <p className="font-mincho text-4xl font-bold">五目並べ</p>
         <p className="text-sm tracking-[0.2em] text-muted uppercase">Gomoku</p>
       </header>
-      <JoinForm next={next} />
+      <JoinForm next={next} googleReady={isGoogleAuthConfigured()} />
     </div>
   );
 }

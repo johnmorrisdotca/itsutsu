@@ -18,13 +18,29 @@ import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
  * Next 16 and renamed.
  */
 
-/** Paths that must stay reachable, or nobody could ever get in. */
+/**
+ * Paths that stay reachable without a session.
+ *
+ * Two kinds. The sign-in routes, because a door nobody can reach is not a
+ * door. And the rules and learning pages, which are documentation: they render
+ * nothing a visitor wrote, hold no data, and are the pages you would want
+ * someone to be able to read and link to before deciding to ask for an invite.
+ * Everything else, including /players and the whole API, stays shut.
+ */
 const OPEN_PATHS = [
   "/join",
   "/api/session",
+  // Google sign-in. A sign-in route that cannot be reached without signing in
+  // first would be of no use to anybody.
+  "/api/auth",
   "/favicon.ico",
   "/icon.svg",
   "/robots.txt",
+  "/rules",
+  "/learn",
+  // The screenshots those pages load. Files under public/ are not Next's own
+  // assets, so the matcher does not exempt them and they need naming here.
+  "/games",
 ];
 
 /**
@@ -88,8 +104,13 @@ export async function proxy(request: NextRequest) {
   }
 
   const join = new URL("/join", request.url);
-  // So the door can put you back where you were heading.
-  if (pathname !== "/") join.searchParams.set("next", pathname);
+  /*
+   * Carry the whole path, query included. A link like /?game=connect6 means
+   * "this game", and dropping the query at the door would land the visitor on
+   * a different game from the one they clicked.
+   */
+  const wanted = `${pathname}${request.nextUrl.search}`;
+  if (wanted !== "/") join.searchParams.set("next", wanted);
   return NextResponse.redirect(join);
 }
 

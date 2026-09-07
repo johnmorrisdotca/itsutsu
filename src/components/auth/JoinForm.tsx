@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 
 import {
   BUTTON_BASE,
+  BUTTON_QUIET,
   BUTTON_STRONG,
   INPUT_CLASS,
   PANEL_CLASS,
@@ -19,7 +20,13 @@ import { CODE_WORDS } from "@/lib/invite/inviteCode";
  * their email and token. Both exchange what they typed for a signed cookie and
  * are never asked for it again.
  */
-export function JoinForm({ next }: { next: string }) {
+export function JoinForm({
+  next,
+  googleReady,
+}: {
+  next: string;
+  googleReady: boolean;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<"invite" | "admin">("invite");
   const [code, setCode] = useState("");
@@ -133,6 +140,23 @@ export function JoinForm({ next }: { next: string }) {
         >
           {error}
         </p>
+      ) : null}
+
+      {mode === "admin" && googleReady ? (
+        <>
+          <a
+            href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(
+              `/api/session/google?next=${next}`,
+            )}`}
+            className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`}
+            data-testid="google-signin"
+          >
+            Continue with Google
+          </a>
+          <p className="text-center text-xs text-muted">
+            or use the operator token
+          </p>
+        </>
       ) : null}
 
       <div className="flex items-center justify-between gap-3">
