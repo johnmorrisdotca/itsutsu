@@ -285,6 +285,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   allowUndo: true,
   allowSkip: false,
   allowSwap: false,
+  allowGrowth: false,
   swapsPerSeat: DEFAULT_SWAPS_PER_SEAT,
 };
 

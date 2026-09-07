@@ -204,6 +204,11 @@ export type GameSettings = {
   /** Trading seats with the opponent. `swapsPerSeat` caps how often. */
   allowSwap: boolean;
   swapsPerSeat: number;
+  /**
+   * Letting the board grow to the next size up mid-game, re-centring the
+   * stones. Gives a crowded game somewhere to go.
+   */
+  allowGrowth: boolean;
 };
 
 export type GameState = {

@@ -8,7 +8,6 @@ import {
   canSkip as engineCanSkip,
   canSwapSeats,
   chooseColour as engineChooseColour,
-  createGame,
   extendOpening as engineExtendOpening,
   isLegalMove,
   playMove,
@@ -44,15 +43,14 @@ import {
   restoredStats,
   timeControlFor,
 } from "./restoreSession";
+import { useGameTimeline } from "./useGameTimeline";
 import {
   clearSnapshot,
   loadSnapshot,
-  restoreTimeline,
   saveSnapshot,
   toSnapshot,
 } from "./gameStorage";
 import type {
-  FatalMove,
   GameActions,
   GameSession,
   SeatNames,
@@ -78,15 +76,8 @@ export function useGameSession(
    */
   const restored = persist ? loadSnapshot() : null;
 
-  const [timeline, setTimeline] = useState(() =>
-    restored !== null ? restoreTimeline(restored) : [createGame(initial, Math.random())],
-  );
-  const [index, setIndex] = useState(() =>
-    restored !== null ? restored.moves.length : 0,
-  );
-  const [fatalAt, setFatalAt] = useState<(FatalMove | null)[]>(() =>
-    restored !== null ? restored.moves.map(() => null).concat([null]) : [null],
-  );
+  const line = useGameTimeline(initial, restored);
+  const { state, index, timeline, atLatest, reviewing } = line;
 
   const [appearance, setAppearanceState] = useState<Appearance>(() =>
     restoredAppearance(restored),
@@ -113,24 +104,22 @@ export function useGameSession(
   const [pendingBranch, setPendingBranch] = useState<Point | null>(null);
   const [helpMark, setHelpMark] = useState<Point | null>(null);
 
-  const state = timeline[index];
   const assessment = useMemo(() => assess(state), [state]);
 
   const control = timeControlFor(settings.timeControl);
-  const atLatest = index === timeline.length - 1;
 
   /** A flag falling ends the game properly, through the engine. */
-  const handleFlag = useCallback((seat: Seat) => {
-    setLostOnTime(seat);
-    setTimeline((current) => {
-      const latest = current[current.length - 1];
-      const loser =
-        latest.seats[STONES.black] === seat ? STONES.black : STONES.white;
-      const ended = winOnTime(latest, loser);
-      if (ended === latest) return current;
-      return [...current.slice(0, -1), ended];
-    });
-  }, []);
+  const handleFlag = useCallback(
+    (seat: Seat) => {
+      setLostOnTime(seat);
+      line.replaceLatest((latest) => {
+        const loser =
+          latest.seats[STONES.black] === seat ? STONES.black : STONES.white;
+        return winOnTime(latest, loser);
+      });
+    },
+    [line],
+  );
 
   const clock = useGameClock({
     control,
@@ -149,19 +138,6 @@ export function useGameSession(
     if (!persist) return;
     saveSnapshot(toSnapshot(state, appearance, settings, names, hintsLeft, stats));
   }, [appearance, hintsLeft, names, persist, settings, state, stats]);
-
-  /** Advancing the timeline truncates any redo branch, as an edit should. */
-  const advance = useCallback(
-    (next: typeof state, fatal: FatalMove | null) => {
-      setTimeline((current) => [...current.slice(0, index + 1), next]);
-      setFatalAt((current) => [...current.slice(0, index + 1), fatal]);
-      setIndex(index + 1);
-      setHint(null);
-      setHelpMark(null);
-      setHelpRequest(null);
-    },
-    [index],
-  );
 
   const commit = useCallback(
     (next: typeof state) => {
@@ -188,12 +164,11 @@ export function useGameSession(
       if (seatToPlay(next) !== seat || next.status !== GAME_STATUS.playing) {
         clock.onMoveComplete(seat);
       }
-      advance(next, fatal);
+      line.advance(next, fatal);
     },
-    [advance, assessment, clock, state],
+    [line, assessment, clock, state],
   );
 
-  const reviewing = index < timeline.length - 1;
 
   const play = useCallback(
     (point: Point) => {
@@ -236,60 +211,35 @@ export function useGameSession(
   const swap = useCallback(() => {
     if (isSwapBlocked(assessment)) return;
     const next = swapSeats(state);
-    if (next !== state) advance(next, null);
-  }, [advance, assessment, state]);
+    if (next !== state) line.advance(next, null);
+  }, [line, assessment, state]);
 
   /** Opening decisions are timeline entries too, so they can be taken back. */
   const chooseColour = useCallback(
     (stone: Stone) => {
       if (reviewing) return;
       const next = engineChooseColour(state, stone);
-      if (next !== state) advance(next, null);
+      if (next !== state) line.advance(next, null);
     },
-    [advance, reviewing, state],
+    [line, reviewing, state],
   );
 
   const extendOpening = useCallback(() => {
     if (reviewing) return;
     const next = engineExtendOpening(state);
-    if (next !== state) advance(next, null);
-  }, [advance, reviewing, state]);
-
-  const undo = useCallback(() => {
-    if (index > 0 && state.settings.allowUndo) setIndex(index - 1);
-  }, [index, state.settings.allowUndo]);
-
-  const redo = useCallback(() => {
-    if (index < timeline.length - 1) setIndex(index + 1);
-  }, [index, timeline.length]);
-
-  const jumpTo = useCallback(
-    (target: number) => {
-      if (target < 0 || target >= timeline.length) return;
-      // Moving elsewhere abandons a branch that was waiting to be confirmed.
-      setPendingBranch(null);
-      setIndex(target);
-    },
-    [timeline.length],
-  );
-
-  const returnToLatest = useCallback(() => {
-    setPendingBranch(null);
-    setIndex(timeline.length - 1);
-  }, [timeline.length]);
+    if (next !== state) line.advance(next, null);
+  }, [line, reviewing, state]);
 
   const reset = useCallback((next: Partial<GameSettings> = {}) => {
     if (persist) clearSnapshot();
-    setTimeline((current) => {
-      const settings = { ...current[0].settings, ...next };
-      // A new variant brings its own line length unless one was asked for.
-      if (next.variant !== undefined && next.winLength === undefined) {
-        settings.winLength = VARIANT_SPECS[next.variant].winLength ?? WIN_LENGTH;
-      }
-      return [createGame(settings, Math.random())];
-    });
-    setFatalAt([null]);
-    setIndex(0);
+
+    const gameSettings = { ...timeline[0].settings, ...next };
+    // A new variant brings its own line length unless one was asked for.
+    if (next.variant !== undefined && next.winLength === undefined) {
+      gameSettings.winLength =
+        VARIANT_SPECS[next.variant].winLength ?? WIN_LENGTH;
+    }
+    line.restart(gameSettings);
     setHint(null);
     setHelpMark(null);
     setHelpRequest(null);
@@ -302,7 +252,7 @@ export function useGameSession(
     setLostOnTime(null);
     lastMoveAt.current = Date.now();
     clock.reset(timeControlFor(settings.timeControl));
-  }, [clock, persist, settings.hintsPerSeat, settings.timeControl]);
+  }, [clock, line, persist, settings.hintsPerSeat, settings.timeControl, timeline]);
 
   const seat = seatToPlay(state);
 
@@ -367,11 +317,6 @@ export function useGameSession(
     [assessment, helpMark, hint, settings],
   );
 
-  const fatalMoves = useMemo(
-    () => fatalAt.slice(0, index + 1).filter((entry): entry is FatalMove => entry !== null),
-    [fatalAt, index],
-  );
-
   const swapBlockedReason = useMemo(() => {
     if (!state.settings.allowSwap) return null;
     if (isSwapBlocked(assessment)) return GAME_COPY.swapUnavailableDecided;
@@ -390,7 +335,7 @@ export function useGameSession(
     marks,
     hint,
     hintsLeft,
-    fatalMoves,
+    fatalMoves: line.fatalMoves,
     helpRequest,
     clocks: clock.clocks,
     lostOnTime,
@@ -412,10 +357,10 @@ export function useGameSession(
 
   const actions: GameActions = {
     play,
-    undo,
-    redo,
-    jumpTo,
-    returnToLatest,
+    undo: line.undo,
+    redo: line.redo,
+    jumpTo: line.jumpTo,
+    returnToLatest: line.returnToLatest,
     confirmBranch,
     cancelBranch,
     reset,
