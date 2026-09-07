@@ -5,7 +5,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
-export const metadata = { title: "Lobby · Gomoku" };
+export const metadata = { title: "Lobby" };
 
 /** The games grouped the way a newcomer should meet them: one first, then families. */
 const FAMILIES: { title: string; kanji: string; blurb: string; games: RuleVariant[] }[] = [

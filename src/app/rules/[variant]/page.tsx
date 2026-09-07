@@ -9,7 +9,7 @@ import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
 import { hasGameImage } from "@/lib/learn/images";
 
-export const metadata = { title: "Rules · Gomoku" };
+export const metadata = { title: "Rules" };
 
 export function generateStaticParams() {
   return RULE_VARIANT_LIST.map((variant) => ({ variant }));

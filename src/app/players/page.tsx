@@ -5,7 +5,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { fetchLeaders } from "@/lib/rating/players";
 
-export const metadata = { title: "Players · Gomoku" };
+export const metadata = { title: "Players" };
 
 const LEADERS = 50;
 

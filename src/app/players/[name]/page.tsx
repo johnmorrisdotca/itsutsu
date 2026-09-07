@@ -8,7 +8,7 @@ import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { fetchPlayer } from "@/lib/rating/players";
 
-export const metadata = { title: "Player · Gomoku" };
+export const metadata = { title: "Player" };
 
 /**
  * One player's profile: rating and tier, the record overall and by game, and

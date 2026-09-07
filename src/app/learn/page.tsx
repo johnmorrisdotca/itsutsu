@@ -5,7 +5,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { GUIDES } from "@/lib/learn/strategy";
 
-export const metadata = { title: "Learn · Gomoku" };
+export const metadata = { title: "Learn" };
 
 /** The strategy guides, one card each, with the games they cover. */
 export default function LearnIndexPage() {

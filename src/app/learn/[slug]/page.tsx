@@ -6,7 +6,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { GUIDES, guideBySlug } from "@/lib/learn/strategy";
 
-export const metadata = { title: "Learn · Gomoku" };
+export const metadata = { title: "Learn" };
 
 export function generateStaticParams() {
   return GUIDES.map((guide) => ({ slug: guide.slug }));

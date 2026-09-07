@@ -6,7 +6,7 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
 
-export const metadata = { title: "Rules · Gomoku" };
+export const metadata = { title: "Rules" };
 
 /** Every game, one card each, leading to its rules page. */
 export default function RulesIndexPage() {
