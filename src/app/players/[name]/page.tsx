@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
+import { matchPath } from "@/lib/gomoku/slugs";
+import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
@@ -31,26 +32,26 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
           <h1 className="text-lg font-semibold">{player?.name ?? decoded}</h1>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
             <div>
-              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">Rating</dt>
+              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Rating</dt>
               <dd className="font-mono text-lg tabular-nums" data-testid="player-rating">
                 {player?.rating ?? "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">Tier</dt>
+              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Tier</dt>
               <dd>
                 {tier === null ? "Unrated" : tier.label}{" "}
                 {tier !== null ? <span className="font-mincho text-muted">{tier.kanji}</span> : null}
               </dd>
             </div>
             <div>
-              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">Record</dt>
+              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Record</dt>
               <dd className="font-mono tabular-nums" data-testid="player-record">
                 {record.wins}W · {record.losses}L · {record.draws}D
               </dd>
             </div>
             <div>
-              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">Games</dt>
+              <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Games</dt>
               <dd className="font-mono tabular-nums">{record.games}</dd>
             </div>
           </dl>
@@ -59,7 +60,7 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
 
         {record.byVariant.length > 0 ? (
           <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">By game</h2>
+            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">By game</h2>
             <table className="w-full text-sm" data-testid="player-by-variant">
               <tbody>
                 {record.byVariant.map((row) => (
@@ -77,7 +78,7 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
 
         {record.recent.length > 0 ? (
           <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">Recent games</h2>
+            <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Recent games</h2>
             <ul className="flex flex-col divide-y divide-rule text-sm">
               {record.recent.map((game) => (
                 <li key={game.id} className="flex items-center justify-between gap-3 py-1.5">
@@ -86,7 +87,7 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
                   </span>
                   <span className="flex items-center gap-3">
                     <span className="font-mono text-xs tabular-nums">{game.outcome}</span>
-                    <Link href={`/history/${game.id}`} className="text-xs underline-offset-2 hover:underline">
+                    <Link href={matchPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline">
                       replay
                     </Link>
                   </span>

@@ -24,6 +24,13 @@ const GameView = dynamic(
   },
 );
 
-export function GameViewClient({ variant }: { variant?: RuleVariant }) {
-  return <GameView variant={variant} />;
+export function GameViewClient({
+  variant,
+  trackPath = false,
+}: {
+  variant?: RuleVariant;
+  /** Keep the address at /games/<slug> as the game in play changes. */
+  trackPath?: boolean;
+}) {
+  return <GameView variant={variant} trackPath={trackPath} />;
 }

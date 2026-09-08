@@ -43,7 +43,7 @@ test.describe("rules and learning", () => {
   });
 
   test("the lobby leads with one game and folds the rest into families", async ({ page }) => {
-    await page.goto("/lobby");
+    await page.goto("/games");
     await expect(page.getByTestId("lobby-start")).toContainText("Start here");
     const families = page.getByTestId("lobby-family");
     await expect(families).toHaveCount(5);

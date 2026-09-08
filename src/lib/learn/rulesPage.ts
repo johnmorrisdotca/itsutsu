@@ -163,6 +163,6 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     board,
     play,
     house,
-    image: `/games/${variant}.jpg`,
+    image: `/art/games/${variant}.jpg`,
   };
 }

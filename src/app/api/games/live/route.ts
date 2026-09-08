@@ -25,6 +25,7 @@ import {
   timeoutPenaltySchema,
   variantSchema,
 } from "@/lib/history/gameSettingsSchema";
+import { matchPath } from "@/lib/gomoku/slugs";
 import { createLiveGame } from "@/lib/history/liveGame";
 import {
   RATE_LIMITS,
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(created, {
       status: 201,
-      headers: { ...NO_STORE, Location: `/g/${created.id}` },
+      headers: { ...NO_STORE, Location: matchPath(parsed.data.variant, created.id) },
     });
   } catch (error) {
     console.error(error);

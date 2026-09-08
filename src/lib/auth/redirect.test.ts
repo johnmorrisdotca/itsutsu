@@ -5,8 +5,8 @@ import { safeDestination } from "./redirect";
 describe("safeDestination", () => {
   it("keeps an ordinary path, query and all", () => {
     expect(safeDestination("/history")).toBe("/history");
-    expect(safeDestination("/?game=connect6")).toBe("/?game=connect6");
-    expect(safeDestination("/g/abc?p=xyz")).toBe("/g/abc?p=xyz");
+    expect(safeDestination("/history?result=white")).toBe("/history?result=white");
+    expect(safeDestination("/games/gomoku/abc/seat/xyz")).toBe("/games/gomoku/abc/seat/xyz");
   });
 
   /**
@@ -17,19 +17,19 @@ describe("safeDestination", () => {
   it.each(["//evil.test", "//evil.test/path", "/\\evil.test", "/\\\\evil.test"])(
     "refuses %j, which resolves off-site",
     (input) => {
-      expect(safeDestination(input)).toBe("/lobby");
+      expect(safeDestination(input)).toBe("/games");
     },
   );
 
   it("refuses an absolute URL", () => {
     for (const input of ["https://evil.test", "http://evil.test", "javascript:alert(1)"]) {
-      expect(safeDestination(input)).toBe("/lobby");
+      expect(safeDestination(input)).toBe("/games");
     }
   });
 
   it("refuses nothing at all", () => {
     for (const input of [null, undefined, ""]) {
-      expect(safeDestination(input)).toBe("/lobby");
+      expect(safeDestination(input)).toBe("/games");
     }
   });
 

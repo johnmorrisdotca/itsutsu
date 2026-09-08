@@ -1,11 +1,12 @@
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, PANEL_LINK_CLASS } from "@/components/ui/ui.constants";
+import { gamePath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
-export const metadata = { title: "Lobby" };
+export const metadata = { title: "Games" };
 
 /** The games grouped the way a newcomer should meet them: one first, then families. */
 const FAMILIES: { title: string; kanji: string; blurb: string; games: RuleVariant[] }[] = [
@@ -42,7 +43,7 @@ const FAMILIES: { title: string; kanji: string; blurb: string; games: RuleVarian
 ];
 
 /**
- * The lobby: where a person lands after joining. One plain choice first, so
+ * The games: where a person lands after joining. One plain choice first, so
  * nobody has to understand thirty games to start playing; the families sit
  * below for whoever wants to look around.
  */
@@ -54,10 +55,10 @@ export default function LobbyPage() {
 
         <section className="grid gap-4 md:grid-cols-3" data-testid="lobby-start">
           <Link
-            href="/?game=freestyle"
-            className={`${PANEL_CLASS} flex flex-col gap-2 md:col-span-2 transition-colors hover:border-zinc-400 dark:hover:border-zinc-600`}
+            href={gamePath("freestyle")}
+            className={`${PANEL_LINK_CLASS} flex flex-col gap-2 md:col-span-2`}
           >
-            <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">
+            <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
               Start here
             </span>
             <span className="text-2xl font-semibold">
@@ -71,7 +72,7 @@ export default function LobbyPage() {
           <div className="flex flex-col gap-4">
             <Link
               href="/"
-              className={`${PANEL_CLASS} flex flex-col gap-1 transition-colors hover:border-zinc-400 dark:hover:border-zinc-600`}
+              className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}
             >
               <span className="font-semibold">Play apart <span className="font-mincho text-xs font-normal opacity-70">通信対局</span></span>
               <span className="text-xs text-muted">
@@ -80,7 +81,7 @@ export default function LobbyPage() {
             </Link>
             <Link
               href="/learn"
-              className={`${PANEL_CLASS} flex flex-col gap-1 transition-colors hover:border-zinc-400 dark:hover:border-zinc-600`}
+              className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}
             >
               <span className="font-semibold">Learn first <span className="font-mincho text-xs font-normal opacity-70">学び</span></span>
               <span className="text-xs text-muted">
@@ -124,7 +125,7 @@ export default function LobbyPage() {
                       </span>
                       <span className="flex shrink-0 gap-2 text-xs">
                         <Link href={`/rules/${variant}`} className="underline-offset-2 hover:underline">rules</Link>
-                        <Link href={`/?game=${variant}`} className="font-semibold underline-offset-2 hover:underline">play</Link>
+                        <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">play</Link>
                       </span>
                     </li>
                   );

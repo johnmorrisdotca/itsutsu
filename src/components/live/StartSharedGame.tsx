@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
+import { seatPath } from "@/lib/gomoku/slugs";
 import { Button, Field, SectionTitle, Select } from "@/components/ui/Controls";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
@@ -57,7 +58,7 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
       if (!response.ok) throw new Error("The game could not be started.");
 
       const created = (await response.json()) as CreatedGame;
-      router.push(`/g/${created.id}?p=${created.blackToken}`);
+      router.push(seatPath(settings.variant, created.id, created.blackToken));
     } catch {
       setError("Could not start a shared game. Try again.");
       setStarting(false);
@@ -72,7 +73,7 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
         gets its own address and a QR code for each player, so you can take
         turns from two devices.
       </p>
-      <p className="text-xs text-zinc-700 dark:text-zinc-200" data-testid="shared-rules-summary">
+      <p className="text-xs text-ink-soft" data-testid="shared-rules-summary">
         {describeRules({ ...settings, opening: sharedOpening })}
         {sharedOpening !== settings.opening ? ` ${GAME_COPY.sharedOpeningNote}` : ""}
       </p>
@@ -110,7 +111,7 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
         {starting ? "Starting…" : "Start a shared game"}
       </Button>
       {error !== null ? (
-        <p className="text-xs text-rose-600 dark:text-rose-400">{error}</p>
+        <p className="text-xs text-shu">{error}</p>
       ) : null}
     </section>
   );

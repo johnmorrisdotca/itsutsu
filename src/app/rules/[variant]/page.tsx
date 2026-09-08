@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { gamePath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
@@ -18,7 +19,7 @@ export function generateStaticParams() {
 function Part({ title, kanji, lines }: { title: string; kanji: string; lines: string[] }) {
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">
+      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
         {title} <span className="font-mincho text-xs normal-case tracking-normal">{kanji}</span>
       </h2>
       <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
@@ -68,7 +69,7 @@ export default async function RulesPage({ params }: PageProps<"/rules/[variant]"
             <Part title="Play" kanji="手順" lines={page.play} />
             <Part title="House rules" kanji="細則" lines={page.house} />
             <p className="text-sm">
-              <Link href={`/?game=${variant}`} className="font-semibold underline-offset-2 hover:underline">
+              <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">
                 Play {page.title} →
               </Link>
             </p>
@@ -84,7 +85,7 @@ export default async function RulesPage({ params }: PageProps<"/rules/[variant]"
             ) : null}
             {guides.length > 0 ? (
               <section className={`${PANEL_CLASS} flex flex-col gap-2`}>
-                <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">
+                <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
                   Learn <span className="font-mincho normal-case tracking-normal">学び</span>
                 </h2>
                 <ul className="flex flex-col gap-2 text-sm">

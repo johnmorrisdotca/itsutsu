@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -9,9 +9,27 @@ import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
-export function GameReplay({ game }: { game: GameDetail }) {
+export function GameReplay({
+  game,
+  initialIndex,
+  basePath,
+}: {
+  game: GameDetail;
+  /** The move to open at; the final position when not given. */
+  initialIndex?: number;
+  /** The match's address; a position is that with the move number appended, and it is kept in the bar as the scrubber moves. */
+  basePath?: string;
+}) {
   const timeline = useMemo(() => replayTimeline(game), [game]);
-  const [index, setIndex] = useState(timeline.length - 1);
+  const [index, setIndex] = useState(
+    Math.min(initialIndex ?? timeline.length - 1, timeline.length - 1),
+  );
+
+  useEffect(() => {
+    if (basePath === undefined) return;
+    const next = `${basePath}/${index}`;
+    if (window.location.pathname !== next) window.history.replaceState(null, "", next);
+  }, [basePath, index]);
   const [showNumbers, setShowNumbers] = useState(false);
 
   const state = timeline[index];
@@ -50,7 +68,7 @@ export function GameReplay({ game }: { game: GameDetail }) {
             max={timeline.length - 1}
             value={index}
             onChange={(event) => setIndex(Number(event.target.value))}
-            className="w-full accent-zinc-900 dark:accent-zinc-100"
+            className="w-full accent-ink"
             aria-label="Move"
             data-testid="replay-scrubber"
           />

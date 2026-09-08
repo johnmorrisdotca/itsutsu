@@ -121,7 +121,7 @@ test.describe("screenshots", () => {
       data: { token: game.blackToken, row: 7, col: 7 },
     });
 
-    await page.goto(`/g/${game.id}?p=${game.whiteToken}`);
+    await page.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
     await page.screenshot({ path: `${SHOTS}/08-shared-game.png`, fullPage: true });
   });
 

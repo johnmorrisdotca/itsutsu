@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BrandHero, BrandWordmark } from "./BrandMarks";
 
 const NAV = [
-  { href: "/lobby", label: "Games" },
+  { href: "/games", label: "Games" },
   { href: "/", label: "Play" },
   { href: "/history", label: "Record", kanji: "棋譜" },
   { href: "/rules", label: "Rules" },

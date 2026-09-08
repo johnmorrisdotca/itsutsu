@@ -40,7 +40,7 @@ const OPEN_PATHS = [
   "/learn",
   // The screenshots those pages load. Files under public/ are not Next's own
   // assets, so the matcher does not exempt them and they need naming here.
-  "/games",
+  "/art",
   // The logo. The join page is open, so the marks it draws must be too, or a
   // visitor with no cookie sees a broken image where the name should be.
   "/brand",
@@ -108,9 +108,9 @@ export async function proxy(request: NextRequest) {
 
   const join = new URL("/join", request.url);
   /*
-   * Carry the whole path, query included. A link like /?game=connect6 means
-   * "this game", and dropping the query at the door would land the visitor on
-   * a different game from the one they clicked.
+   * Carry the whole path, query included. A seat link carries its claim in the
+   * path, and a record page its filters in the query; dropping either at the
+   * door would land the visitor somewhere other than where they were sent.
    */
   const wanted = `${pathname}${request.nextUrl.search}`;
   if (wanted !== "/") join.searchParams.set("next", wanted);

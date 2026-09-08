@@ -463,9 +463,15 @@ against needing Redis on the hot path.
 ## Games played from two devices
 
 `POST /api/games/live` returns `blackToken` and `whiteToken`. There is no
-sign-in, so **a seat token is the seat**: whoever opens `/g/:id?p=<token>` plays
-that colour. `/g/:id` without a token is a spectator view, and it is never shown
-the seat links.
+sign-in, so **a seat token is the seat**: whoever opens
+`/games/:slug/:id/seat/<token>` plays that colour. That address claims the seat
+into a cookie and sends the visitor on to the match at `/games/:slug/:id`, so
+the credential is used once and never sits in the address bar. The match without
+a claim is a spectator view, and it is never shown the seat links.
+
+A match is one resource whether it is live or filed: the same address replays
+it once it is over, and `/games/:slug/:id/:move` is the position after that many
+moves. Both views keep the address current as the position changes.
 
 <img src="docs/images/shared-game.jpg" alt="A shared game showing a QR code for each seat" width="820">
 

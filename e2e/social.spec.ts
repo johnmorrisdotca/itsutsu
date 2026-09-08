@@ -29,8 +29,8 @@ test.describe("notes, messages, deadlines and players", () => {
     const game = await startGame(request);
     const black = await (await browser.newContext()).newPage();
     const white = await (await browser.newContext()).newPage();
-    await black.goto(`/g/${game.id}?p=${game.blackToken}`);
-    await white.goto(`/g/${game.id}?p=${game.whiteToken}`);
+    await black.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await white.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
 
     await white.getByTestId("reaction-text").fill("Take your time, no rush");
     await white.getByRole("button", { name: "Send Take your time" }).click();
@@ -42,7 +42,7 @@ test.describe("notes, messages, deadlines and players", () => {
   test("a shared game with a clock shows the deadline and refuses an early claim", async ({ browser, request }) => {
     const game = await startGame(request, { moveTimeMs: 5 * 60_000, timeoutPenalty: "turn" });
     const white = await (await browser.newContext()).newPage();
-    await white.goto(`/g/${game.id}?p=${game.whiteToken}`);
+    await white.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
 
     await expect(white.getByTestId("shared-clock-line")).toContainText("5 minutes a move");
     await expect(white.getByTestId("deadline")).toContainText("Black must move by");

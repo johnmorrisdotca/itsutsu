@@ -41,10 +41,13 @@ export function SharedGame({
   initial,
   token,
   seat,
+  basePath,
 }: {
   initial: GameDetail;
   token: string | null;
   seat: Stone | null;
+  /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
+  basePath?: string;
 }) {
   const [error, setError] = useState<string | null>(null);
   /*
@@ -69,6 +72,13 @@ export function SharedGame({
 
   const detail = game ?? initial;
   const state = replayGame(detail);
+
+  const played = state.moves.length;
+  useEffect(() => {
+    if (basePath === undefined) return;
+    const next = `${basePath}/${played}`;
+    if (window.location.pathname !== next) window.history.replaceState(null, "", next);
+  }, [basePath, played]);
   const yourTurn = seat !== null && state.toPlay === seat;
   const playable = yourTurn && state.status === GAME_STATUS.playing;
   const [selected, setSelected] = useState<Point | null>(null);

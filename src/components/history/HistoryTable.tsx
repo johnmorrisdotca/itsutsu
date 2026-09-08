@@ -1,10 +1,11 @@
 import Link from "next/link";
 
+import { matchPath } from "@/lib/gomoku/slugs";
+
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
-
 function playedOn(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     dateStyle: "medium",
@@ -33,8 +34,8 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
         return (
           <li key={game.id}>
             <Link
-              href={`/history/${game.id}`}
-              className="grid grid-cols-2 items-center gap-3 rounded-xl border border-rule px-4 py-3 transition-colors hover:bg-black/[0.03] sm:grid-cols-[1fr_auto_auto_auto] dark:hover:bg-white/[0.04]"
+              href={matchPath(game.variant, game.id)}
+              className="grid grid-cols-2 items-center gap-3 rounded-xl border border-rule px-4 py-3 transition-colors hover:bg-shade sm:grid-cols-[1fr_auto_auto_auto]"
             >
               <span className="flex flex-col">
                 <span className="font-medium">
