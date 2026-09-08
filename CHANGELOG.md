@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.47.0
+- Champions 名人: the best-rated player at every game on one page, and each game's own ladder beneath it
+
 ## 0.46.0
 - The invite code stays out of the way until you say you need one
 

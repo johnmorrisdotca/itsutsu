@@ -167,7 +167,12 @@ export default async function PlayersPage() {
         </h2>
         <p className="text-sm text-muted">
           Ratings are Elo, starting at 1600. A player is unrated for the first few games,
-          provisional while the rating settles, and established after twenty.
+          provisional while the rating settles, and established after twenty. Each game keeps a
+          ladder of its own too: see the{" "}
+          <Link href="/champions" className="underline underline-offset-4" data-testid="champions-link">
+            champions <span className="font-mincho">名人</span>
+          </Link>
+          .
         </p>
         {leaders.length === 0 ? (
           <p className="text-sm text-muted" data-testid="players-empty">

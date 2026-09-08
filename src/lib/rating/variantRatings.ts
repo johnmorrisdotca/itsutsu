@@ -141,3 +141,45 @@ export async function fetchVariantStandings(name: string): Promise<VariantStandi
   });
   return rows.map(toStanding);
 }
+
+/** One game's standing at a glance: who leads it, and how much play is behind that. */
+export type VariantChampion = {
+  variant: string;
+  leader: VariantStanding;
+  /** Names with a standing in this game. */
+  players: number;
+  /** Rated games played under it. A game moves two standings, so it is counted once here. */
+  games: number;
+};
+
+/**
+ * The champion of every game that has one, from every standing best first.
+ * Pure, so the picking is testable without a database: the first standing
+ * seen for a variant leads it, and every later one only adds to the tallies.
+ */
+export function championsOf(standings: readonly VariantStanding[]): Map<string, VariantChampion> {
+  const champions = new Map<string, VariantChampion>();
+  for (const standing of standings) {
+    const entry = champions.get(standing.variant);
+    if (entry === undefined) {
+      champions.set(standing.variant, { variant: standing.variant, leader: standing, players: 1, games: standing.ratedGames });
+    } else {
+      entry.players += 1;
+      entry.games += standing.ratedGames;
+    }
+  }
+  for (const entry of champions.values()) entry.games = Math.round(entry.games / 2);
+  return champions;
+}
+
+/**
+ * The best-rated player at every game, keyed by variant. A variant nobody
+ * has played rated is simply absent. This reads every standing, which is
+ * members times games at most — small for a club, and one query.
+ */
+export async function fetchChampions(): Promise<Map<string, VariantChampion>> {
+  const rows = await prisma.playerVariantRating.findMany({
+    orderBy: [{ rating: "desc" }, { ratedGames: "desc" }],
+  });
+  return championsOf(rows.map(toStanding));
+}

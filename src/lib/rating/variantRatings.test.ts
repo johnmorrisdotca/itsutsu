@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { rateGame } from "./elo";
-import { scoreForBlack } from "./variantRatings";
+import { rateGame, tierFor } from "./elo";
+import { championsOf, scoreForBlack, type VariantStanding } from "./variantRatings";
 
 /**
  * The database side of variantRatings is exercised end to end; what is worth
@@ -29,5 +29,39 @@ describe("scoreForBlack", () => {
     expect(rated.first.rating).toBe(1600);
     expect(rated.second.rating).toBe(1600);
     expect(rated.first.ratedGames).toBe(4);
+  });
+});
+
+describe("championsOf", () => {
+  const standing = (variant: string, name: string, rating: number, ratedGames: number): VariantStanding => ({
+    key: name.toLowerCase(),
+    name,
+    variant,
+    rating,
+    ratedGames,
+    tier: tierFor(ratedGames),
+    wins: 0,
+    losses: 0,
+    draws: 0,
+  });
+
+  it("crowns the first standing seen for each game and tallies the rest", () => {
+    const champions = championsOf([
+      standing("renju", "Aki", 1700, 24),
+      standing("notakto", "Ren", 1620, 1),
+      standing("renju", "Sora", 1640, 10),
+      standing("renju", "Mio", 1500, 4),
+      standing("notakto", "Aki", 1580, 1),
+    ]);
+    expect(champions.get("renju")?.leader.name).toBe("Aki");
+    expect(champions.get("renju")?.players).toBe(3);
+    expect(champions.get("renju")?.games).toBe(19);
+    expect(champions.get("notakto")?.leader.name).toBe("Ren");
+    expect(champions.get("notakto")?.games).toBe(1);
+    expect(champions.has("freestyle")).toBe(false);
+  });
+
+  it("is empty when nobody has played rated", () => {
+    expect(championsOf([]).size).toBe(0);
   });
 });

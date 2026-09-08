@@ -100,3 +100,11 @@ export function rulesPath(variant: string): string {
 export function seatPath(variant: string, id: string, token: string): string {
   return `${matchPath(variant, id)}/seat/${token}`;
 }
+
+/**
+ * /champions/<slug> — one game's own ladder. /champions is every game with
+ * the player at the top of each.
+ */
+export function championsPath(variant: string): string {
+  return `/champions/${slugFor(variant)}`;
+}

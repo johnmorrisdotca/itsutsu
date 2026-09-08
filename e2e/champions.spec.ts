@@ -1,0 +1,45 @@
+import { expect, test } from "@playwright/test";
+
+test.describe("champions", () => {
+  test("every game has a line, and a rated game puts its players on that game's ladder", async ({ page, request }) => {
+    const stamp = Date.now().toString(36);
+    const black = `Hana ${stamp}`;
+    const white = `Taro ${stamp}`;
+    // A shared game, ended by resignation: the one kind of finish that moves a game's own ladder.
+    const started = await request.post("/api/games/live", {
+      data: { blackName: black, whiteName: white, size: 9, variant: "freestyle" },
+    });
+    expect(started.status()).toBe(201);
+    const game = (await started.json()) as { id: string; whiteToken: string };
+    expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status()).toBe(200);
+
+    await page.goto("/champions");
+    await expect(page.getByTestId("champions")).toBeVisible();
+    // Every game is listed, played or not.
+    await expect(page.getByTestId("champion-row-notakto")).toBeVisible();
+    await expect(page.getByTestId("champion-row-freestyle")).not.toContainText("No rated games yet");
+
+    await page.getByTestId("champion-row-freestyle").getByRole("link", { name: /^Freestyle/ }).click();
+    await expect(page).toHaveURL(/\/champions\/gomoku$/);
+    const table = page.getByTestId("standings-table");
+    await expect(table).toContainText(black);
+    await expect(table).toContainText(white);
+    // The winner stands above the loser.
+    const names = await table.locator("tbody tr").allInnerTexts();
+    expect(names.findIndex((row) => row.includes(black))).toBeLessThan(names.findIndex((row) => row.includes(white)));
+  });
+
+  test("a game's page names its family, and a game that does not exist is not found", async ({ page }) => {
+    await page.goto("/champions/toroidal-five");
+    await expect(page.getByTestId("game-champions")).toBeVisible();
+    await expect(page.getByTestId("sibling-champions")).toContainText("Obstacle");
+    const missing = await page.goto("/champions/no-such-game");
+    expect(missing?.status()).toBe(404);
+  });
+
+  test("the players page leads to the champions", async ({ page }) => {
+    await page.goto("/players");
+    await page.getByTestId("champions-link").click();
+    await expect(page).toHaveURL(/\/champions$/);
+  });
+});
