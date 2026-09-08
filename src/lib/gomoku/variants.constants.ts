@@ -463,6 +463,20 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "4×4, 6×6 or 8×8, and the smaller boards can grow.",
   },
+  grandReversi: {
+    label: "Grand Reversi",
+    kanji: "大リバーシ",
+    tagline: "The flipping game on a 10×10 board: a longer game, with more middle to fight over before anyone reaches an edge.",
+    origin: "The big board the play-by-mail sites kept beside the usual one — ItsYourTurn called it Flipversi 10×10. The same rules, thirty-six more squares, and the corners farther from everything.",
+    inspiredBy: "Othello",
+    rules: [
+      "The centre starts with two discs of each colour on the diagonals, as on the small board.",
+      "A disc goes only where it brackets one or more of the other colour in a straight run, with one of your own at the far end. Every bracketed run turns.",
+      "A colour with nowhere to go passes; the turn stays with the other colour until both are stuck.",
+      "When neither can move, the discs are counted. More wins; equal is a draw.",
+    ],
+    board: "10×10, and only that. Ninety-six discs go down instead of sixty, and the edges are two squares farther from the centre, so the opening runs long before either side touches one.",
+  },
 };
 
 export const SECOND_STONE_EXCLUSION_DISPLAY: Record<number, { label: string; kanji: string }> = {

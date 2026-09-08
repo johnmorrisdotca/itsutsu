@@ -30,7 +30,7 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
     title: "Flips",
     kanji: "反転",
     blurb: "Nothing is yours until the end. Bracket a run of the other colour and it turns.",
-    games: ["reversi", "classicReversi", "antiReversi", "miniReversi"],
+    games: ["reversi", "classicReversi", "antiReversi", "miniReversi", "grandReversi"],
   },
   {
     title: "Strange boards",

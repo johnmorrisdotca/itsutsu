@@ -126,6 +126,7 @@ export type RuleVariant =
   | "classicReversi"
   | "antiReversi"
   | "miniReversi"
+  | "grandReversi"
   | "obstacleFive";
 
 /**

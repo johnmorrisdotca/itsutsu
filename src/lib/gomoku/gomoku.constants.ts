@@ -77,6 +77,7 @@ export const RULE_VARIANTS = {
   classicReversi: "classicReversi",
   antiReversi: "antiReversi",
   miniReversi: "miniReversi",
+  grandReversi: "grandReversi",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 export const WRAP_MODES = {
@@ -131,6 +132,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.classicReversi,
   RULE_VARIANTS.antiReversi,
   RULE_VARIANTS.miniReversi,
+  RULE_VARIANTS.grandReversi,
 ] as const satisfies readonly RuleVariant[];
 
 export const PLACEMENTS = {
@@ -255,6 +257,8 @@ export const STARTING_DISCS = { none: "none", fixed: "fixed", laid: "laid" } as 
 /** The board a flipping game is played on, and the small ones it may grow from. */
 const REVERSI_SIZES = [8] as const;
 const MINI_REVERSI_SIZES = [4, 6, 8] as const;
+/** The big board the play-by-mail sites offered beside the usual one. */
+const GRAND_REVERSI_SIZES = [10] as const;
 
 function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return {
@@ -431,6 +435,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   classicReversi: flipping({ startingDiscs: STARTING_DISCS.laid }),
   antiReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, misere: true }),
   miniReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: MINI_REVERSI_SIZES }),
+  grandReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: GRAND_REVERSI_SIZES }),
 };
 
 /** The board sizes a variant plays on. */
@@ -514,7 +519,7 @@ export const BOARD_SIZE_DISPLAY: Record<
   6: { label: "Six", kanji: "六路", note: "Twist Five, Mini Reversi" },
   7: { label: "Seven", kanji: "七路", note: "Drop Four" },
   8: { label: "Eight", kanji: "八路", note: "Reversi" },
-  10: { label: "Ten", kanji: "十路", note: "The big drop board" },
+  10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },
   13: { label: "Medium", kanji: "中盤", note: "Shorter game" },
   15: { label: "Standard", kanji: "正盤", note: "Tournament size" },

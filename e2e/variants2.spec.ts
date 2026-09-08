@@ -101,6 +101,19 @@ test.describe("the flipping games", () => {
     await expect(page.getByTestId("disc-count")).toHaveText(/2.*2/);
   });
 
+  test("grand reversi opens on ten by ten, with the same four moves two squares further from the edge", async ({ page }) => {
+    await page.goto("/games/grand-reversi");
+    await page.evaluate(() => window.localStorage.clear());
+    await page.goto("/games/grand-reversi");
+    await expect(page.getByTestId("disc-count")).toHaveText(/2.*2/);
+    await expect(page.getByRole("button", { name: /empty$/ })).toHaveCount(96);
+    const legal = page.getByRole("button", { name: /empty$/ }).and(page.locator(":not([disabled])"));
+    await expect(legal).toHaveCount(4);
+    await page.getByRole("button", { name: /^E7, empty$/ }).click();
+    await expect(page.getByTestId("disc-count")).toHaveText(/4.*1/);
+    await expect(page.getByTestId("to-play")).toContainText("White");
+  });
+
   test("the rules page for a flipping game speaks of discs, at its kebab address", async ({ page }) => {
     await page.goto("/rules/anti-reversi");
     await expect(page.getByText(/fewer discs/i).first()).toBeVisible();

@@ -223,7 +223,8 @@ function isFlipping(variant: string): boolean {
     variant === "reversi" ||
     variant === "classicReversi" ||
     variant === "antiReversi" ||
-    variant === "miniReversi"
+    variant === "miniReversi" ||
+    variant === "grandReversi"
   );
 }
 

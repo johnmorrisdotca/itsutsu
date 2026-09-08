@@ -47,6 +47,7 @@ const SCENES: Record<
   classicReversi: { size: 8, moves: [[3, 3], [3, 4], [4, 4], [4, 3], [2, 4], [2, 3], [2, 2]] },
   antiReversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3]] },
   miniReversi: { size: 4, moves: [[0, 1], [0, 2], [0, 3]] },
+  grandReversi: { size: 10, moves: [[3, 4], [3, 5], [3, 6], [5, 3], [6, 4]] },
 };
 
 test.describe("game screenshots", () => {

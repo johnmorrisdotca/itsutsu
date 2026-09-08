@@ -30,6 +30,7 @@ const GAME_ALIASES: Record<string, RuleVariant> = {
   Reversi: RULE_VARIANTS.reversi,
   Flipversi: RULE_VARIANTS.reversi,
   "Flipversi 6x6": RULE_VARIANTS.miniReversi,
+  "Flipversi 10x10": RULE_VARIANTS.grandReversi,
   "Anti-Flipversi": RULE_VARIANTS.antiReversi,
   "Anti-Flipversi 6x6": RULE_VARIANTS.antiReversi,
 

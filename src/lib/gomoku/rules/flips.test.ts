@@ -136,3 +136,25 @@ describe("the centre discs as a setting", () => {
     expect(game.board.every((cell) => cell === null)).toBe(true);
   });
 });
+
+describe("grand reversi", () => {
+  it("is reversi on ten by ten and nothing else: the centre four, and the four openings around them", () => {
+    const game = createGame({ variant: "grandReversi" });
+    expect(game.settings.size).toBe(10);
+    expect(discCount(game.board)).toEqual({ black: 2, white: 2 });
+    expect(game.board[4 * 10 + 4]).toBe(STONES.white);
+    expect(game.board[4 * 10 + 5]).toBe(STONES.black);
+    expect(legalPoints(game).map((pt) => `${pt.row},${pt.col}`).sort()).toEqual(
+      ["3,4", "4,3", "5,6", "6,5"],
+    );
+    const after = playMove(game, p(3, 4));
+    expect(after.board[4 * 10 + 4]).toBe(STONES.black);
+    expect(discCount(after.board)).toEqual({ black: 4, white: 1 });
+  });
+
+  it("refuses the small board: asked for eight, it plays ten", () => {
+    const game = createGame({ variant: "grandReversi", size: 8 });
+    expect(game.settings.size).toBe(10);
+    expect(game.board).toHaveLength(100);
+  });
+});
