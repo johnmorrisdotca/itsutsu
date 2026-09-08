@@ -26,15 +26,18 @@ export function JoinForm({
   next,
   googleReady,
   pending,
+  initialCode = "",
 }: {
   next: string;
   googleReady: boolean;
   /** A Google account at the door that is not yet a member: one code makes it one. */
   pending: { name: string; email: string } | null;
+  /** A code carried in the address, from an invitation link. */
+  initialCode?: string;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"invite" | "admin">("invite");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode);
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);

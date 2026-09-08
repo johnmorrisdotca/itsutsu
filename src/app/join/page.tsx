@@ -40,7 +40,12 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         <BrandAvatar className="size-24" />
         <BrandWordmark className="h-8 w-auto" />
       </header>
-      <JoinForm next={next} googleReady={isGoogleAuthConfigured()} pending={pending} />
+      <JoinForm
+        next={next}
+        googleReady={isGoogleAuthConfigured()}
+        pending={pending}
+        initialCode={typeof params.code === "string" ? params.code.slice(0, 80) : ""}
+      />
     </div>
   );
 }

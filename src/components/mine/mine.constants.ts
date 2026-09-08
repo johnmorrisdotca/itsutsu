@@ -6,6 +6,7 @@ export const MY_GAMES_COPY = {
     yourMove: { label: "Your move", kanji: "手番", hint: "Waiting on you." },
     theirMove: { label: "Their move", kanji: "相手番", hint: "Waiting on the other side. You will be told when it is yours." },
     unstarted: { label: "Not started", kanji: "未着手", hint: "Boards with no stones yet. Hand out the other seat, post it for anyone, or play first." },
+    hotSeat: { label: "At this screen", kanji: "対面", hint: "Two people at one board, in this browser. Kept, never rated." },
     finished: { label: "Lately finished", kanji: "終局", hint: "Filed in the record." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
   stale: "Stale",

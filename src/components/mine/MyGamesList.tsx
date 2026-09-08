@@ -35,7 +35,22 @@ export async function MyGamesList() {
   const now = new Date();
   const groups = await fetchMyGames(claims, email, now);
   const total = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
-  if (total === 0) return null;
+  if (total === 0) {
+    if (email === null) return null;
+    return (
+      <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-empty">
+        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
+          {MY_GAMES_COPY.title.label}
+          <span className="font-mincho text-sm font-normal opacity-70">{MY_GAMES_COPY.title.kanji}</span>
+        </h2>
+        <p className="text-sm text-muted">
+          Nothing waiting on you yet. Challenge someone from the{" "}
+          <Link href="/players" className="underline underline-offset-4">players</Link> page, take an open
+          seat below, or start a game and hand the other seat to a friend.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="flex flex-col gap-4" data-testid="my-games">

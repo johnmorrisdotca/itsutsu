@@ -10,7 +10,7 @@ import type { GameSummary } from "./gameHistory.types";
 /** A game nobody has touched for this long is flagged, so it can be dealt with. */
 export const STALE_AFTER_DAYS = 14;
 
-export const MY_GAME_GROUPS = ["yourMove", "theirMove", "unstarted", "finished"] as const;
+export const MY_GAME_GROUPS = ["yourMove", "theirMove", "unstarted", "hotSeat", "finished"] as const;
 export type MyGameGroup = (typeof MY_GAME_GROUPS)[number];
 
 export type MyGame = {
@@ -40,7 +40,7 @@ export async function fetchMyGames(
   email: string | null = null,
   now = new Date(),
 ): Promise<MyGames> {
-  const groups: MyGames = { yourMove: [], theirMove: [], unstarted: [], finished: [] };
+  const groups: MyGames = { yourMove: [], theirMove: [], unstarted: [], hotSeat: [], finished: [] };
   if (claims.size === 0 && email === null) return groups;
 
   const rows = await prisma.game.findMany({
@@ -80,13 +80,17 @@ export async function fetchMyGames(
     const state = replayGame({ ...game, moves: row.moves.map(toGameMove) });
     const running = game.status === "active" && state.status === GAME_STATUS.playing;
     const since = game.lastMoveAt ?? game.playedAt;
+    // One token for both chairs: a game at one screen, always waiting on this browser.
+    const hotSeat = row.blackToken === row.whiteToken;
     const group: MyGameGroup = !running
       ? "finished"
-      : game.moveCount === 0
-        ? "unstarted"
-        : state.toPlay === seat
-          ? "yourMove"
-          : "theirMove";
+      : hotSeat
+        ? "hotSeat"
+        : game.moveCount === 0
+          ? "unstarted"
+          : state.toPlay === seat
+            ? "yourMove"
+            : "theirMove";
 
     groups[group].push({
       game,

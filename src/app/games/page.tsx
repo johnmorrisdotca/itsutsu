@@ -3,6 +3,8 @@ import Link from "next/link";
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { InviteFriends } from "@/components/mine/InviteFriends";
+import { currentEmail } from "@/lib/auth/currentSession";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
@@ -19,7 +21,8 @@ export const metadata = { title: "Games" };
  * nobody has to understand thirty games to start playing; the families sit
  * below for whoever wants to look around.
  */
-export default function LobbyPage() {
+export default async function LobbyPage() {
+  const email = await currentEmail();
   return (
     <Page width="standard">
       <SiteHeader />
@@ -27,6 +30,7 @@ export default function LobbyPage() {
       <MyGamesList />
       <OpenGamesBoard />
       <LocalGameCardClient />
+      {email !== null ? <InviteFriends /> : null}
 
       <section className="grid gap-4 md:grid-cols-3" data-testid="lobby-start">
         <Link
