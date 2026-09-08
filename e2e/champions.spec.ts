@@ -19,7 +19,7 @@ test.describe("champions", () => {
     await expect(page.getByTestId("champion-row-notakto")).toBeVisible();
     await expect(page.getByTestId("champion-row-freestyle")).not.toContainText("No rated games yet");
 
-    await page.getByTestId("champion-row-freestyle").getByRole("link", { name: /^Freestyle/ }).click();
+    await page.getByTestId("champion-row-freestyle").getByRole("link", { name: /^Gomoku/ }).click();
     await expect(page).toHaveURL(/\/champions\/gomoku$/);
     const table = page.getByTestId("standings-table");
     await expect(table).toContainText(black);

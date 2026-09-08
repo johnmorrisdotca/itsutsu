@@ -106,7 +106,7 @@ export default async function LobbyPage() {
                     <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
                   </span>
                   <span className="text-xs font-normal text-muted">
-                    {family.games.length} games · {playedIn(family.games)} played here
+                    {family.games.length} {family.games.length === 1 ? "game" : "games"} · {playedIn(family.games)} played here
                   </span>
                 </span>
               </span>

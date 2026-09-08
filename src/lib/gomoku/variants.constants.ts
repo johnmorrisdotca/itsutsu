@@ -23,10 +23,10 @@ export type VariantCopy = {
 
 export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
   freestyle: {
-    label: "Freestyle",
-    kanji: "自由",
+    label: "Gomoku",
+    kanji: "五目並べ",
     tagline: "Five or more in a row wins.",
-    origin: "The casual game played everywhere, with no restrictions at all.",
+    origin: "The game as it is played everywhere, with no restrictions at all: the plain name belongs to the plain game, and the others are this one with a rule tightened.",
     rules: [
       "Players take turns placing one stone on any empty intersection.",
       "The first to line up five or more of their own stones, in any direction, wins.",
@@ -36,10 +36,10 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     board: "Any size. Black has a proven forced win on 15×15 with perfect play, so stronger players give the first stone away or pick an opening protocol.",
   },
   standard: {
-    label: "Standard",
-    kanji: "五目",
+    label: "Tournament Gomoku",
+    kanji: "競技五目",
     tagline: "Exactly five wins. Six or more does not.",
-    origin: "The tournament form of gomoku, as played at Gomocup.",
+    origin: "The tournament form of Gomoku, as played at Gomocup: the plain game with the overline taken away.",
     rules: [
       "Players take turns placing one stone.",
       "Exactly five in a row wins. An overline (長連) of six or more is not a win — play simply continues.",

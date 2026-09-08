@@ -101,7 +101,7 @@ test.describe("rule variants", () => {
       [3, 4], [0, 3],
     ]);
 
-    // Freestyle would allow E5; the handicap marks it forbidden for black only.
+    // Plain Gomoku would allow E5; the handicap marks it forbidden for black only.
     await expect(page.getByRole("button", { name: /^E5, forbidden$/ })).toBeDisabled();
     await expect(page.getByTestId("variant-line")).toContainText("Black plays with a handicap");
     // The swap openings are withdrawn while a handicap is set.

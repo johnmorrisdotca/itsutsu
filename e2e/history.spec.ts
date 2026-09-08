@@ -52,7 +52,7 @@ test.describe("the game record", () => {
 
   test("one game's record is a collection with its own address", async ({ page }) => {
     await page.goto("/history/gomoku?result=white");
-    await expect(page.getByTestId("record-game")).toContainText("Freestyle");
+    await expect(page.getByTestId("record-game")).toContainText("Gomoku");
     await expect(page.getByTestId("history-game")).toHaveValue("freestyle");
     // The other filters ride along in the query.
     await expect(page.getByTestId("history-result")).toHaveValue("white");

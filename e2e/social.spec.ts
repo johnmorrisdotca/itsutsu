@@ -89,7 +89,7 @@ test.describe("notes, messages, deadlines and players", () => {
     await page.goto(`/players/${encodeURIComponent(black)}`);
     await expect(page.getByTestId("player-record")).toContainText("1W · 0L · 0D");
     await expect(page.getByTestId("player-rating")).toContainText("1620");
-    await expect(page.getByTestId("player-by-variant")).toContainText("Freestyle");
+    await expect(page.getByTestId("player-by-variant")).toContainText("Gomoku");
 
     await page.goto(`/players/${encodeURIComponent(white)}`);
     await expect(page.getByTestId("player-record")).toContainText("0W · 1L · 0D");

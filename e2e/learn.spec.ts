@@ -1,11 +1,14 @@
 import { expect, test } from "@playwright/test";
+import { GAME_FAMILIES } from "../src/lib/gomoku/families";
+import { RULE_VARIANT_LIST } from "../src/lib/gomoku/gomoku.constants";
 
 /** The rules pages and the learning shelf, and the link from one to the board. */
 test.describe("rules and learning", () => {
   test("every game has a rules page in the same template", async ({ page }) => {
     await page.goto("/rules");
     const index = page.getByTestId("rules-index");
-    await expect(index.getByRole("link")).toHaveCount(33);
+    // One card per game, however many there are today.
+    await expect(index.getByRole("link")).toHaveCount(RULE_VARIANT_LIST.length);
     await expect(page.getByTestId("rules-attribution")).toContainText("trademark");
 
     await page.getByRole("link", { name: /Hot Drop/ }).click();
@@ -76,14 +79,14 @@ test.describe("rules and learning", () => {
     await expect(page.getByTestId("lobby-start")).toContainText("Start a game");
     await expect(page.getByTestId("auto-match")).toBeVisible();
     const families = page.getByTestId("lobby-family");
-    await expect(families).toHaveCount(7);
+    await expect(families).toHaveCount(GAME_FAMILIES.length);
     // The first family is open; the rest are folded, so the page stays short.
-    await expect(families.nth(1).getByRole("link", { name: "play" })).toBeHidden();
+    await expect(families.nth(1).getByRole("link", { name: "play", exact: true })).toBeHidden();
     await families.filter({ hasText: "Small boards" }).locator("summary").click();
     await families
       .filter({ hasText: "Small boards" })
       .locator("li", { hasText: "Notakto" })
-      .getByRole("link", { name: "play" })
+      .getByRole("link", { name: "play", exact: true })
       .click();
     await expect(page.getByTestId("rules")).toHaveValue("notakto");
   });

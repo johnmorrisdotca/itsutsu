@@ -142,7 +142,7 @@ export const HANDICAP_RULE_DISPLAY: Record<
     label: "Exactly five",
     kanji: "五連限定",
     description: "An overline does not win; the line must be exactly the length.",
-    from: "Standard, Renju",
+    from: "Tournament Gomoku, Renju",
   },
   openLine: {
     label: "Open line only",

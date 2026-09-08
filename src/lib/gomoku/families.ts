@@ -5,7 +5,7 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
   {
     title: "Five in a row",
     kanji: "五目",
-    blurb: "The classic and its tournament forms. Start with Freestyle; the rest tighten the rules.",
+    blurb: "The classic and its tournament forms. Start with Gomoku; the rest tighten the rules.",
     games: ["freestyle", "standard", "renju", "omok", "caro", "connect6", "misereFive"],
   },
   {

@@ -73,6 +73,22 @@ const MARKS: Record<string, Mark> = {
       { r: 2, c: 0, white: true },
     ],
   },
+  Races: {
+    n: 5,
+    cells: true,
+    stones: [
+      { r: 0, c: 0 },
+      { r: 0, c: 1 },
+      { r: 1, c: 0 },
+      { r: 2, c: 2 },
+      { r: 4, c: 4, white: true },
+      { r: 4, c: 3, white: true },
+      { r: 3, c: 4, white: true },
+      { r: 3, c: 3, white: true, faded: true },
+    ],
+    // A black piece mid-jump over the white one in its path.
+    path: "M 2.5 2.5 Q 3.5 1.6 4.5 2.5",
+  },
   "Strange boards": {
     n: 5,
     stones: [

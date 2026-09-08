@@ -58,7 +58,7 @@ export const GUIDES: readonly Guide[] = [
         points: [
           "Black's first stone belongs in the centre; every line through tengen (天元) has the most room.",
           "White's first stone goes adjacent or diagonal to it. Too far away and black builds unopposed; too close and white gets tangled.",
-          "Freestyle is a known black win with perfect play, which is why the serious rule sets restrict black (Renju), swap colours (Swap2) or push black's second stone away (Pro). If you play freestyle for a game that matters, give white the first move now and then, or use an opening.",
+          "Plain Gomoku is a known black win with perfect play, which is why the serious rule sets restrict black (Renju), swap colours (Swap2) or push black's second stone away (Pro). If you play the plain game for a game that matters, give white the first move now and then, or use an opening.",
         ],
       },
       {

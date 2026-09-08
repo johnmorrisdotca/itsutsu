@@ -44,8 +44,8 @@ a new game with those rules.
 
 | Game | What changes | Inspired by |
 | --- | --- | --- |
-| **Freestyle** 自由 | Five or more wins. Choose who opens, or draw lots. Line length 4, 5 or 6. |  |
-| **Standard** 五目 | Exactly five wins; an overline (長連) does not. Black opens. |  |
+| **Gomoku** 五目並べ | Five or more wins. Choose who opens, or draw lots. Line length 4, 5 or 6. |  |
+| **Tournament Gomoku** 競技五目 | Exactly five wins; an overline (長連) does not. Black opens. |  |
 | **Renju** 連珠 | Black may not make a double three (三三), double four (四四) or overline. White may, and white's overline wins. Forbidden points are marked ✕ and cannot be played. |  |
 | **Omok** 오목 | The double three is forbidden for both sides. Overlines win. |  |
 | **Caro** Cờ ca-rô | Exactly five wins, and not if an enemy stone shuts it in at both ends. |  |
@@ -214,7 +214,7 @@ toggle is a restriction some variant already imposes on a colour:
 | No double three 三三禁 | Renju, Omok |
 | No double four 四四禁 | Renju |
 | No overline 長連禁 (six never wins, and may not be made) | Renju |
-| Exactly five 五連限定 | Standard, Renju |
+| Exactly five 五連限定 | Tournament Gomoku, Renju |
 | Open line only 両端開放 | Caro |
 | One more in a row 六連 | A traditional gomoku handicap |
 | One stone a turn 一手一子 | Connect6 |
@@ -233,7 +233,7 @@ are switched off while one is set.
 When a game ends, a review (感想戦) appears beside the statistics. It replays
 the game under every other rule set with the same shape of turn and line and
 reports where they would have parted: a stone Renju or Omok would have
-forbidden, a winning overline Standard would not have counted, a five Caro
+forbidden, a winning overline Tournament Gomoku would not have counted, a five Caro
 would have called shut in, a pair Ninuki-renju would have captured, or a game
 another rule set would already have ended. It also says whether the winner
 gave the game away along the route and still won, and — for named players —
