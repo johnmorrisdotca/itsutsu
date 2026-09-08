@@ -96,7 +96,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
         ? null
         : await prisma.member.findUnique({ where: { email: otherEmail }, select: { name: true, country: true, awayFrom: true, awayUntil: true } });
     if (member !== null || otherName !== "") {
-      const now = Date.now();
+      const now = new Date().getTime();
       const away =
         member?.awayFrom && member.awayUntil && member.awayFrom.getTime() <= now && member.awayUntil.getTime() > now
           ? member.awayUntil.toISOString()
