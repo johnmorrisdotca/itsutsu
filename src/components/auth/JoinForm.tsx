@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -100,15 +101,15 @@ export function JoinForm({
 
       {googleReady && pending === null ? (
         <>
-          <a
-            href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(
-              `/api/session/google?next=${next}`,
-            )}`}
+          <button
+            type="button"
+            // NextAuth starts sign-in from a POST with its CSRF token; a plain link only bounces back here.
+            onClick={() => void signIn("google", { callbackUrl: `/api/session/google?next=${next}` })}
             className={`${BUTTON_BASE} ${BUTTON_STRONG} w-full py-2`}
             data-testid="google-signin"
           >
             Continue with Google
-          </a>
+          </button>
           <p className="text-center text-xs text-muted">
             {mode === "invite" ? "or, with an invite code" : "or, with the operator token"}
           </p>
