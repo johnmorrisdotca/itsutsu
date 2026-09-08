@@ -80,9 +80,9 @@ export default function Home() {
           <span className="font-mincho text-xs font-normal opacity-70">由来</span>
         </h2>
         <p className="text-sm leading-relaxed text-ink-soft">
-          For years the founder of this site and his parents played five-in-a-row, Pente and Othello
-            across two households on the great turn-based sites of the early web, ItsYourTurn and
-            GoldToken — sometimes hours a day, dozens of games open at once, and memberships bought to
+          For years the founder of this site and his parents played across two households on the great
+            turn-based sites of the early web, ItsYourTurn and GoldToken — Othello with his father, and
+            five-in-a-row, Pente and Othello with his mother — sometimes hours a day, dozens of games open at once, and memberships bought to
             lift the daily cap on moves, because twenty was never going to last until lunch. Those sites
             understood that a game between people who love each other does not need to be fast; it
             needs to be kept. Itsutsu is a continuation of that, and a tribute to it.

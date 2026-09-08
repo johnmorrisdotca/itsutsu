@@ -42,8 +42,9 @@ const BASE_SECTIONS: AboutSection[] = [
     kanji: "由来",
     paragraphs: [
       <>
-        For years the founder of this site and his parents played five-in-a-row, Pente and their cousins
-        across two households on the great turn-based sites of the early web:{" "}
+        For years the founder of this site and his parents played across two households on the great
+        turn-based sites of the early web — Othello with his father, more than anything, and five-in-a-row,
+        Pente and Othello with his mother — on{" "}
         <Out href="https://www.itsyourturn.com/">ItsYourTurn</Out> and{" "}
         <Out href="https://www.goldtoken.com/">GoldToken</Out>. Not a move a day — sometimes hours a day.
         Dozens of games open at once between the same three people, each of them checking back every
@@ -94,8 +95,8 @@ const BASE_SECTIONS: AboutSection[] = [
         Renju’s capturing cousin, <Game variant="ninuki">ninuki-renju</Game>, lets a pair of stones be taken by bracketing
         them, and it crossed the Pacific in an unlikely way: in 1977 Gary Gabrel, working at a restaurant in Stillwater,
         Oklahoma, turned it into <em>Pente</em>, which became one of the best-selling abstract games in America in the
-        early 1980s. Pente is the game the founder’s family played most, and the capture games here are drawn from the
-        same well.
+        early 1980s. Pente is the game the founder and his mother played most, and the capture games here are drawn
+        from the same well.
       </>,
       <>
         The line has kept growing. <Game variant="connect6">Connect6</Game> was invented in 2003 by Professor I-Chen Wu
@@ -139,8 +140,8 @@ const BASE_SECTIONS: AboutSection[] = [
     kanji: "オセロ",
     paragraphs: [
       <>
-        The other game the family played for hours, and got properly good at, was Othello — and it is a
-        Japanese game, which surprises people. Its ancestor, Reversi, was an English parlour game of the
+        Othello was the game the founder and his father played, more than any other, for hours at a stretch,
+        and got properly good at — and it is a Japanese game, which surprises people. Its ancestor, Reversi, was an English parlour game of the
         1880s, claimed by two rival inventors who argued about it in the letters pages. The game as the
         world plays it now — the fixed opening of four discs in the centre, the 8×8 board, the name from
         Shakespeare’s play about a Moor and a Venetian, black and white turning on each other — was set
