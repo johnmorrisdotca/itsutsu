@@ -218,7 +218,7 @@ export function SharedRules({
             </Button>
           ) : null}
           {error !== null ? (
-            <p className="text-xs text-rose-600 dark:text-rose-400">{error}</p>
+            <p className="text-xs text-shu">{error}</p>
           ) : null}
         </div>
       ) : null}

@@ -99,7 +99,7 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
         <button
           type="button"
           onClick={() => actions.reset()}
-          className="rounded-lg border border-rule px-2.5 py-1 text-sm hover:bg-black/5 dark:hover:bg-white/10"
+          className="rounded-lg border border-rule px-2.5 py-1 text-sm hover:bg-shade"
         >
           New game
         </button>

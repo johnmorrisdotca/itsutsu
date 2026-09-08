@@ -16,7 +16,7 @@ function ColourChooser({ session, actions }: GamePanelProps) {
   if (session.placing === null || session.state.status !== "playing") return null;
   return (
     <div className="flex flex-wrap items-center gap-2" data-testid="colour-chooser">
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">{GAME_COPY.placeAs}</span>
+      <span className="text-xs text-muted">{GAME_COPY.placeAs}</span>
       {Object.values(STONES).map((stone) => (
         <Button
           key={stone}
@@ -73,7 +73,7 @@ function HintLine({ session }: Pick<GamePanelProps, "session">) {
 
   const { label, kanji } = SUGGESTION_DISPLAY[hint.reason];
   return (
-    <p className="text-xs text-sky-700 dark:text-sky-300" data-testid="hint-line">
+    <p className="text-xs text-moss" data-testid="hint-line">
       <span className="font-mono font-semibold">
         {pointName(state.settings.size, hint.point)}
       </span>{" "}
@@ -219,7 +219,7 @@ export function GameControls({ session, actions }: GamePanelProps) {
           </Button>
         ) : (
           <div
-            className="flex flex-col gap-2 rounded-xl border border-purple-300/80 bg-purple-50 px-3 py-2.5 text-purple-950 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-100"
+            className="flex flex-col gap-2 rounded-xl border border-moss/40 bg-moss-soft px-3 py-2.5 text-ink"
             data-testid="help-request"
           >
             <p className="text-sm font-semibold">

@@ -20,8 +20,8 @@ function ThemeSwatches({ session, actions }: GamePanelProps) {
             aria-pressed={active}
             title={`${theme.label} ${theme.kanji}`}
             data-testid={`board-theme-${key}`}
-            className={`size-9 rounded-lg outline-none transition focus-visible:ring-2 focus-visible:ring-sky-400 ${
-              active ? "ring-2 ring-zinc-900 dark:ring-zinc-100" : "ring-1 ring-black/10"
+            className={`size-9 rounded-lg outline-none transition focus-visible:ring-2 focus-visible:ring-moss ${
+              active ? "ring-2 ring-ink" : "ring-1 ring-rule-strong"
             }`}
             style={{ background: theme.surface }}
           >
@@ -46,8 +46,8 @@ function StoneSwatches({ session, actions }: GamePanelProps) {
             aria-pressed={active}
             title={`${set.label} ${set.kanji}`}
             data-testid={`stone-set-${key}`}
-            className={`flex size-9 items-center justify-center gap-0.5 rounded-lg bg-zinc-200 outline-none transition focus-visible:ring-2 focus-visible:ring-sky-400 dark:bg-zinc-700 ${
-              active ? "ring-2 ring-zinc-900 dark:ring-zinc-100" : "ring-1 ring-black/10"
+            className={`flex size-9 items-center justify-center gap-0.5 rounded-lg bg-rule outline-none transition focus-visible:ring-2 focus-visible:ring-moss ${
+              active ? "ring-2 ring-ink" : "ring-1 ring-rule-strong"
             }`}
           >
             <span className="size-3 rounded-full" style={{ background: set.black }} />

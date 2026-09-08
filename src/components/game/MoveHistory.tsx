@@ -49,12 +49,12 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
       </p>
 
       {state.moves.length === 0 ? (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs text-muted">
           {GAME_COPY.emptyRecord}
         </p>
       ) : (
         <ol
-          className="max-h-56 overflow-y-auto rounded-lg border border-zinc-200/70 text-sm dark:border-zinc-800"
+          className="max-h-56 overflow-y-auto rounded-lg border border-rule text-sm"
           data-testid="move-history"
         >
           {state.moves.map((move, index) => {
@@ -67,19 +67,19 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                 <button
                   type="button"
                   onClick={() => actions.jumpTo(number)}
-                  className={`flex w-full items-center gap-2 px-2.5 py-1 text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 ${
-                    current ? "bg-zinc-100 font-semibold dark:bg-zinc-800" : ""
+                  className={`flex w-full items-center gap-2 px-2.5 py-1 text-left transition-colors hover:bg-shade ${
+                    current ? "bg-shade font-semibold" : ""
                   }`}
                 >
-                  <span className="w-7 shrink-0 text-right font-mono text-xs text-zinc-400 tabular-nums">
+                  <span className="w-7 shrink-0 text-right font-mono text-xs text-muted tabular-nums">
                     {number}
                   </span>
                   <span
                     aria-hidden="true"
                     className={`size-2.5 shrink-0 rounded-full ${
                       move.stone === "black"
-                        ? "bg-zinc-900 dark:bg-zinc-100"
-                        : "border border-zinc-400 bg-white"
+                        ? "bg-ink"
+                        : "border border-rule-strong bg-ivory"
                     }`}
                   />
                   <span className="font-mono">
@@ -94,13 +94,13 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                     {STONE_DISPLAY[move.stone].label}
                   </span>
                   {move.kind === MOVE_KINDS.skip ? (
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-muted">
                       {GAME_COPY.skip.kanji}
                     </span>
                   ) : null}
                   {move.captured !== undefined ? (
                     <span
-                      className="text-xs text-zinc-500"
+                      className="text-xs text-muted"
                       title={`${GAME_COPY.captures.label}: ${move.captured.length / 2}`}
                     >
                       {GAME_COPY.captures.kanji}×{move.captured.length / 2}
@@ -108,7 +108,7 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                   ) : null}
                   {fatal ? (
                     <span
-                      className="ml-auto rounded px-1.5 py-0.5 text-[0.65rem] font-semibold text-rose-700 ring-1 ring-rose-300 dark:text-rose-300 dark:ring-rose-800"
+                      className="ml-auto rounded px-1.5 py-0.5 text-[0.65rem] font-semibold text-shu ring-1 ring-shu/40"
                       title={FATAL_MOVE_DISPLAY.detail}
                     >
                       {FATAL_MOVE_DISPLAY.kanji}

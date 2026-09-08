@@ -172,7 +172,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
       </Field>
 
       <details className="group flex flex-col gap-3">
-        <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase select-none hover:text-zinc-800 dark:hover:text-zinc-200">
+        <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase select-none hover:text-ink">
           {GAME_COPY.advanced.label} {GAME_COPY.advanced.kanji}
           <span className="ml-1 opacity-60 group-open:hidden">+</span>
           <span className="ml-1 hidden opacity-60 group-open:inline">−</span>
@@ -308,7 +308,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </div>
       </details>
 
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs text-muted">
         Changing a rule starts a new game.
       </p>
     </section>

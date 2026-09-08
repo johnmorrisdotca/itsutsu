@@ -31,7 +31,7 @@ export default function RulesIndexPage() {
               <li key={variant}>
                 <Link
                   href={`/rules/${variant}`}
-                  className={`${PANEL_CLASS} flex h-full flex-col gap-1 transition-colors hover:border-zinc-400 dark:hover:border-zinc-600`}
+                  className={`${PANEL_CLASS} flex h-full flex-col gap-1 transition-colors hover:border-rule-strong`}
                 >
                   <span className="flex items-baseline gap-2 font-semibold">
                     {copy.label}

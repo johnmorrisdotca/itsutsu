@@ -42,7 +42,7 @@ export function HistoryFilters() {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <label className="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
-        <span className="text-sm text-zinc-700 dark:text-zinc-200">Player</span>
+        <span className="text-sm text-ink-soft">Player</span>
         <input
           type="search"
           className={INPUT_CLASS}

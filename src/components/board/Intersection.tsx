@@ -18,7 +18,7 @@ function Hotspot() {
 function Wormhole() {
   return (
     <span
-      className="block h-[66%] w-[66%] rounded-full border-[0.2em] border-indigo-700/80 border-dashed"
+      className="block h-[66%] w-[66%] rounded-full border-[0.2em] border-moss border-dashed"
       aria-hidden="true"
     />
   );
@@ -94,7 +94,7 @@ export function Intersection({
       onPointerLeave={onHover === undefined ? undefined : () => onHover(null)}
       disabled={!playable}
       aria-label={label}
-      className="group relative flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:cursor-default"
+      className="group relative flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-default"
     >
       {cell === BLOCKED ? (
         <Obstacle />

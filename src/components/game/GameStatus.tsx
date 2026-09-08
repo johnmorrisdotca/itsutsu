@@ -67,7 +67,7 @@ function ToPlay({ session }: { session: GameSession }) {
       </span>
       <span className="leading-tight">
         {text}
-        <span className="ml-2 text-sm font-normal text-zinc-500 dark:text-zinc-400">
+        <span className="ml-2 text-sm font-normal text-muted">
           {label} {kanji}
         </span>
       </span>
@@ -236,7 +236,7 @@ function VariantLine({ session }: { session: GameSession }) {
   return (
     <div className="flex flex-col gap-0.5" data-testid="variant-line">
       {lines.map((line) => (
-        <p key={line} className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p key={line} className="text-xs text-muted">
           {line}
         </p>
       ))}
@@ -273,7 +273,7 @@ export function GameStatus({ session }: { session: GameSession }) {
     <section aria-live="polite" className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <ToPlay session={session} />
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted">
           Move {session.state.moves.length + 1}
           {session.moveIndex < session.moveTotal
             ? ` · reviewing ${session.moveIndex} of ${session.moveTotal}`

@@ -70,11 +70,11 @@ export function GameReviewPanel({
       <SectionTitle kanji={GAME_COPY.review.kanji}>{GAME_COPY.review.label}</SectionTitle>
 
       {!finished ? (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">{GAME_COPY.reviewEmpty}</p>
+        <p className="text-xs text-muted">{GAME_COPY.reviewEmpty}</p>
       ) : (
         <div className="flex flex-col gap-3 text-sm">
           {winner !== null ? (
-            <ul className="flex flex-col gap-1 text-zinc-700 dark:text-zinc-200">
+            <ul className="flex flex-col gap-1 text-ink-soft">
               <li>
                 {recovered > 0
                   ? GAME_COPY.reviewRecovered(nameFor(winner), recovered)
@@ -92,10 +92,10 @@ export function GameReviewPanel({
 
           {notes.length > 0 ? (
             <div className="flex flex-col gap-1">
-              <p className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase dark:text-zinc-400">
+              <p className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
                 {GAME_COPY.reviewOtherRules}
               </p>
-              <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-zinc-700 dark:text-zinc-300">
+              <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-ink-soft">
                 {notes.map((note) => (
                   <li key={`${note.variant}-${note.moveNumber}`} data-testid="review-note">
                     {describe(note, state)}

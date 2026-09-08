@@ -27,13 +27,13 @@ export function WinChanceBar({ session }: { session: GameSession }) {
         aria-label={`Black ${black} percent, White ${white} percent`}
       >
         <div
-          className="flex items-center justify-start bg-zinc-900 pl-2 text-[0.7rem] font-semibold text-white transition-[width] duration-500 dark:bg-zinc-100 dark:text-zinc-900"
+          className="flex items-center justify-start bg-ink pl-2 text-[0.7rem] font-semibold text-paper transition-[width] duration-500"
           style={{ width: `${black}%` }}
         >
           {black >= 18 ? `${black}%` : null}
         </div>
         <div
-          className="flex items-center justify-end bg-zinc-200 pr-2 text-[0.7rem] font-semibold text-zinc-800 transition-[width] duration-500 dark:bg-zinc-600 dark:text-zinc-50"
+          className="flex items-center justify-end bg-rule pr-2 text-[0.7rem] font-semibold text-ink transition-[width] duration-500"
           style={{ width: `${white}%` }}
         >
           {white >= 18 ? `${white}%` : null}

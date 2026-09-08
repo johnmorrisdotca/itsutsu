@@ -27,14 +27,14 @@ export default function LearnIndexPage() {
             <li key={guide.slug}>
               <Link
                 href={`/learn/${guide.slug}`}
-                className={`${PANEL_CLASS} flex h-full flex-col gap-2 transition-colors hover:border-zinc-400 dark:hover:border-zinc-600`}
+                className={`${PANEL_CLASS} flex h-full flex-col gap-2 transition-colors hover:border-rule-strong`}
               >
                 <span className="flex items-baseline gap-2 font-semibold">
                   {guide.title}
                   <span className="font-mincho text-xs font-normal opacity-70">{guide.kanji}</span>
                 </span>
                 <span className="text-xs text-muted">{guide.summary}</span>
-                <span className="text-[0.65rem] text-zinc-500">
+                <span className="text-[0.65rem] text-muted">
                   {guide.variants.map((variant) => RULE_VARIANT_DISPLAY[variant].label).join(" · ")}
                 </span>
               </Link>

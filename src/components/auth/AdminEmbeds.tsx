@@ -87,7 +87,7 @@ export function AdminEmbeds() {
           type="checkbox"
           checked={withData}
           onChange={(event) => setWithData(event.target.checked)}
-          className="size-3.5 accent-zinc-900 dark:accent-zinc-100"
+          className="size-3.5 accent-ink"
           data-testid="embed-with-data"
         />
         Also let it read games played and player names
@@ -116,7 +116,7 @@ export function AdminEmbeds() {
             {minted.label} · {minted.scope === "data" ? "board and data" : "board only"} ·
             expires in {minted.expiresInDays} days
           </p>
-          <pre className="overflow-x-auto rounded-lg bg-black/10 p-2 text-[0.65rem] leading-relaxed dark:bg-black/30">
+          <pre className="overflow-x-auto rounded-lg bg-shade p-2 text-[0.65rem] leading-relaxed">
             <code>{minted.snippet}</code>
           </pre>
           <Button onClick={() => copy(minted.snippet)}>

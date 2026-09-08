@@ -1,18 +1,59 @@
 @import "tailwindcss";
 
+/*
+ * The Itsutsu palette, from the brand kit (docs/brand/START-HERE.md).
+ *
+ * Two inks and two papers are the whole identity: ivory #FFFEF9 and charcoal
+ * #22231F, with the kit's canvas paper a shade under ivory so a card can sit
+ * on the page and still read as lighter. Moss is the kit's one colour — the
+ * sticker is printed in it — so it is the accent for links, focus and "good".
+ * Alarm and warning are shu (朱, vermilion) and ochre (黄土): traditional
+ * pigments rather than a web red and yellow, so a warning banner belongs on
+ * the same page as the stones.
+ *
+ * Every token has a light and a dark value, and the utilities below read the
+ * token, so a component says `bg-ivory` once and gets both themes. The dark
+ * theme is not an inversion: paper becomes charcoal, ivory becomes a slightly
+ * raised charcoal, and the accents are lifted so they keep their contrast.
+ */
 :root {
-  /* The Itsutsu kit: ivory paper, charcoal ink. */
-  --background: #f7f5f1;
-  --foreground: #22231f;
+  --paper: #f7f5f1;
+  --ivory: #fffef9;
+  --ink: #22231f;
+  --ink-soft: #4b4a44;
   --muted: #6f6a62;
   --rule: #e3ded4;
+  --rule-strong: #c6bfb1;
+  --moss: #52664b;
+  --moss-soft: #e8ede3;
+  --shu: #b2302f;
+  --shu-soft: #f8e5e2;
+  --ochre: #9d6c1f;
+  --ochre-soft: #f6ecd7;
+  --shade: rgba(34, 35, 31, 0.06);
+
+  /* Kept for anything that still names them. */
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-ivory: var(--ivory);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
   --color-muted: var(--muted);
   --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-moss: var(--moss);
+  --color-moss-soft: var(--moss-soft);
+  --color-shu: var(--shu);
+  --color-shu-soft: var(--shu-soft);
+  --color-ochre: var(--ochre);
+  --color-ochre-soft: var(--ochre-soft);
+  --color-shade: var(--shade);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-mincho: var(--font-mincho);
@@ -20,16 +61,26 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #22231f;
-    --foreground: #fffef9;
+    --paper: #22231f;
+    --ivory: #2b2c27;
+    --ink: #fffef9;
+    --ink-soft: #d9d5cb;
     --muted: #9b958c;
-    --rule: #2a2825;
+    --rule: #3a3b34;
+    --rule-strong: #55564d;
+    --moss: #93ab88;
+    --moss-soft: #2d3829;
+    --shu: #e4837c;
+    --shu-soft: #45251f;
+    --ochre: #d9aa5a;
+    --ochre-soft: #3f3320;
+    --shade: rgba(255, 254, 249, 0.07);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 

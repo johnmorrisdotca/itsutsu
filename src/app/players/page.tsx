@@ -36,7 +36,7 @@ export default async function PlayersPage() {
             </p>
           ) : (
             <table className="w-full text-sm" data-testid="players-table">
-              <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase">
+              <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
                 <tr>
                   <th className="py-1 pr-3">Player</th>
                   <th className="py-1 pr-3">Rating</th>

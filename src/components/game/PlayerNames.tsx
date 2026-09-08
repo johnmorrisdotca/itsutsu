@@ -20,17 +20,17 @@ export function PlayerNames({ session, actions }: GamePanelProps) {
         const stone = colourOf(session.state.seats, seat);
         return (
           <label key={seat} className="flex flex-col gap-1">
-            <span className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
+            <span className="flex items-center gap-2 text-sm text-ink-soft">
               <span
                 aria-hidden="true"
                 className={`size-2.5 rounded-full ${
                   stone === "black"
-                    ? "bg-zinc-900 dark:bg-zinc-100"
-                    : "border border-zinc-400 bg-white"
+                    ? "bg-ink"
+                    : "border border-rule-strong bg-ivory"
                 }`}
               />
               {SEAT_DISPLAY[seat].label}
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-muted">
                 {STONE_DISPLAY[stone].kanji}
               </span>
             </span>

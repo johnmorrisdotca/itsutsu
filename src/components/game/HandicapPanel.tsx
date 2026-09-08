@@ -97,7 +97,7 @@ export function HandicapPanel({ session, actions }: GamePanelProps) {
       </Field>
 
       {stone !== null ? (
-        <div className="flex flex-col gap-3 rounded-xl border border-zinc-200/70 p-3 dark:border-zinc-800">
+        <div className="flex flex-col gap-3 rounded-xl border border-rule p-3">
           {HANDICAP_RULES.map((rule) => {
             const copy = HANDICAP_RULE_DISPLAY[rule];
             const { available, imposed, note } = relevance(rule, settings, stone);

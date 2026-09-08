@@ -31,7 +31,7 @@ export function IdleModal({ open, onConfirm }: { open: boolean; onConfirm: () =>
         onConfirm();
       }}
       aria-labelledby="idle-title"
-      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-zinc-200 bg-[#f7f4ee] p-6 text-zinc-900 shadow-2xl backdrop:bg-black/60 backdrop:backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-2xl border border-rule bg-paper p-6 text-ink shadow-2xl backdrop:bg-ink/60 backdrop:backdrop-blur-sm"
       data-testid="idle-modal"
     >
       <div className="flex flex-col items-center gap-4 text-center">
@@ -41,7 +41,7 @@ export function IdleModal({ open, onConfirm }: { open: boolean; onConfirm: () =>
         <h2 id="idle-title" className="text-lg font-semibold">
           {GAME_COPY.idle.label}
         </h2>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{GAME_COPY.idleDetail}</p>
+        <p className="text-sm text-muted">{GAME_COPY.idleDetail}</p>
         <Button onClick={onConfirm} strong data-testid="idle-confirm">
           {GAME_COPY.idleConfirm}
         </Button>

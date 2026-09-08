@@ -61,9 +61,9 @@ function ClockFace({
     <div
       className={`flex flex-col gap-1 rounded-xl border px-3 py-2 transition-colors ${
         clock.flagged
-          ? "border-rose-400 bg-rose-50 dark:border-rose-700 dark:bg-rose-950/50"
+          ? "border-shu bg-shu-soft"
           : active
-            ? "border-zinc-900 bg-white/80 dark:border-zinc-100 dark:bg-zinc-900/70"
+            ? "border-ink bg-ivory/80"
             : "border-rule"
       }`}
       data-testid={`clock-${seat}`}
@@ -74,8 +74,8 @@ function ClockFace({
           aria-hidden="true"
           className={`size-2 rounded-full ${
             stone === "black"
-              ? "bg-zinc-900 dark:bg-zinc-100"
-              : "border border-zinc-400 bg-white"
+              ? "bg-ink"
+              : "border border-rule-strong bg-ivory"
           }`}
         />
         <span className="truncate">{name}</span>
@@ -85,9 +85,9 @@ function ClockFace({
       <span
         className={`font-mono text-2xl leading-none tabular-nums ${
           clock.flagged
-            ? "text-rose-600 dark:text-rose-300"
+            ? "text-shu"
             : urgent
-              ? "text-amber-600 dark:text-amber-400"
+              ? "text-ochre"
               : ""
         }`}
       >
@@ -100,7 +100,7 @@ function ClockFace({
         </span>
       ) : null}
       {clock.flagged ? (
-        <span className="text-[0.65rem] font-semibold text-rose-600 dark:text-rose-300">
+        <span className="text-[0.65rem] font-semibold text-shu">
           {GAME_COPY.outOfTime}
         </span>
       ) : null}

@@ -32,8 +32,8 @@ function PieceGlyph({ cells, scale = 1 }: { cells: readonly PieceCell[]; scale?:
               cell === undefined
                 ? ""
                 : cell.stone === "black"
-                  ? "bg-zinc-900 shadow-sm dark:bg-zinc-100"
-                  : "border border-zinc-400 bg-white shadow-sm"
+                  ? "bg-ink shadow-sm"
+                  : "border border-rule-strong bg-ivory shadow-sm"
             }`}
           />
         );
@@ -98,7 +98,7 @@ export function PieceTray({
 
       {hand.mustPass ? (
         <div className="flex flex-col gap-2">
-          <p className="text-xs text-amber-800 dark:text-amber-200">{GAME_COPY.mustPass}</p>
+          <p className="text-xs text-ochre">{GAME_COPY.mustPass}</p>
           <Button onClick={onPass} disabled={disabled} strong data-testid="pass-turn">
             {GAME_COPY.passTurn.label}
           </Button>
@@ -107,7 +107,7 @@ export function PieceTray({
 
       {hand.next.length > 0 ? (
         <div className="flex flex-col gap-1.5">
-          <p className="text-[0.7rem] font-semibold tracking-[0.14em] text-zinc-500 uppercase dark:text-zinc-400">
+          <p className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
             {GAME_COPY.nextPieces.label} <span className="font-mincho normal-case tracking-normal">{GAME_COPY.nextPieces.kanji}</span>
           </p>
           <div className="flex flex-wrap items-start gap-3" data-testid="next-pieces">

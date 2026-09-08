@@ -7,6 +7,9 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { INPUT_CLASS, TONE_CLASS } from "@/components/ui/ui.constants";
 import type { InviteSummary } from "@/lib/invite/inviteStore";
 
+/** How many codes the list shows before it folds. */
+const RECENT_INVITES = 5;
+
 type SessionInfo = { signedIn: boolean; admin: boolean; email: string | null };
 
 const json = async <T,>(url: string): Promise<T> => {
@@ -36,6 +39,7 @@ export function AdminInvites() {
   const [minted, setMinted] = useState<InviteSummary | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   if (!isAdmin) return null;
 
@@ -75,6 +79,12 @@ export function AdminInvites() {
   }
 
   const active = (data?.items ?? []).filter((invite) => invite.active);
+  /*
+   * A few at a time. Every code ever minted stays valid, and on a site that
+   * has been running a while that is a long list; the newest are the ones
+   * being handed out, so those are shown and the rest fold away.
+   */
+  const shown = showAll ? active : active.slice(0, RECENT_INVITES);
 
   return (
     <section className="flex flex-col gap-3" data-testid="admin-invites">
@@ -116,7 +126,7 @@ export function AdminInvites() {
 
       {active.length > 0 ? (
         <ul className="flex flex-col gap-1 text-sm" data-testid="active-invites">
-          {active.map((invite) => (
+          {shown.map((invite) => (
             <li
               key={invite.code}
               className="flex items-center gap-2 rounded-lg border border-rule px-2.5 py-1.5"
@@ -131,12 +141,24 @@ export function AdminInvites() {
               <button
                 type="button"
                 onClick={() => revoke(invite.code)}
-                className="text-xs text-rose-600 underline underline-offset-4 dark:text-rose-400"
+                className="text-xs text-shu underline underline-offset-4"
               >
                 Revoke
               </button>
             </li>
           ))}
+          {active.length > RECENT_INVITES ? (
+            <li>
+              <button
+                type="button"
+                onClick={() => setShowAll(!showAll)}
+                className="text-xs text-muted underline underline-offset-4"
+                data-testid="toggle-all-invites"
+              >
+                {showAll ? "Show the newest only" : `Show all ${active.length}`}
+              </button>
+            </li>
+          ) : null}
         </ul>
       ) : (
         <p className="text-xs text-muted">No codes in circulation.</p>

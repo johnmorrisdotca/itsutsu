@@ -50,12 +50,12 @@ export function Field({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="flex items-center justify-between gap-3 text-sm text-zinc-700 dark:text-zinc-200">
+      <span className="flex items-center justify-between gap-3 text-sm text-ink-soft">
         {label}
         {children}
       </span>
       {hint !== undefined ? (
-        <span className="text-xs leading-snug text-zinc-500 dark:text-zinc-400">
+        <span className="text-xs leading-snug text-muted">
           {hint}
         </span>
       ) : null}
@@ -83,18 +83,18 @@ export function Toggle({
 }) {
   return (
     <label className={`flex flex-col gap-1 ${disabled ? "opacity-55" : ""}`}>
-      <span className="flex items-center justify-between gap-3 text-sm text-zinc-700 dark:text-zinc-200">
+      <span className="flex items-center justify-between gap-3 text-sm text-ink-soft">
         {label}
         <input
           type="checkbox"
           checked={checked}
           disabled={disabled}
           onChange={(event) => onChange(event.target.checked)}
-          className="size-4 accent-zinc-900 disabled:cursor-not-allowed dark:accent-zinc-100"
+          className="size-4 accent-ink disabled:cursor-not-allowed"
         />
       </span>
       {hint !== undefined ? (
-        <span className="text-xs leading-snug text-zinc-500 dark:text-zinc-400">
+        <span className="text-xs leading-snug text-muted">
           {hint}
         </span>
       ) : null}

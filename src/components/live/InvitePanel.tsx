@@ -79,8 +79,8 @@ function SeatCard({ invite, isYours }: { invite: SeatInvite; isYours: boolean })
           aria-hidden="true"
           className={`size-3 rounded-full ${
             invite.stone === "black"
-              ? "bg-zinc-900 dark:bg-zinc-100"
-              : "border border-zinc-400 bg-white"
+              ? "bg-ink"
+              : "border border-rule-strong bg-ivory"
           }`}
         />
         {display.label}
@@ -96,6 +96,7 @@ function SeatCard({ invite, isYours }: { invite: SeatInvite; isYours: boolean })
       <img
         src={invite.qr}
         alt={`QR code for the ${display.label} seat`}
+        // A QR code is scanned, not themed: it stays white on every background.
         className="w-full max-w-[9rem] self-center rounded-lg bg-white p-1.5"
         width={160}
         height={160}
@@ -113,13 +114,13 @@ function SeatCard({ invite, isYours }: { invite: SeatInvite; isYours: boolean })
         <button
           type="button"
           onClick={copy}
-          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-black/5 dark:hover:bg-white/10"
+          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-shade"
         >
           {copied ? "Copied" : "Copy link"}
         </button>
         <a
           href={smsHref}
-          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-black/5 dark:hover:bg-white/10"
+          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-shade"
         >
           Text it
         </a>

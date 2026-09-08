@@ -68,11 +68,11 @@ function GameBrowser({
         if (event.target === event.currentTarget) onClose();
       }}
       aria-labelledby="game-browser-title"
-      className="m-auto max-h-[92vh] w-[min(60rem,calc(100vw-1.5rem))] rounded-2xl border border-zinc-200 bg-[#f7f4ee] p-0 text-zinc-900 shadow-2xl backdrop:bg-black/55 backdrop:backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+      className="m-auto max-h-[92vh] w-[min(60rem,calc(100vw-1.5rem))] rounded-2xl border border-rule bg-paper p-0 text-ink shadow-2xl backdrop:bg-ink/55 backdrop:backdrop-blur-sm"
       data-testid="game-browser"
     >
       <div className="flex max-h-[92vh] flex-col">
-        <header className="flex items-start justify-between gap-4 border-b border-zinc-200/80 px-6 py-4 dark:border-zinc-800">
+        <header className="flex items-start justify-between gap-4 border-b border-rule px-6 py-4">
           <div className="flex flex-col gap-1">
             <h2 id="game-browser-title" className="flex items-baseline gap-2 text-lg font-semibold">
               {GAME_COPY.browserTitle}
@@ -80,7 +80,7 @@ function GameBrowser({
                 {GAME_COPY.browser.kanji}
               </span>
             </h2>
-            <p className="max-w-prose text-xs text-zinc-600 dark:text-zinc-400">
+            <p className="max-w-prose text-xs text-muted">
               {GAME_COPY.browserIntro}
             </p>
           </div>
@@ -107,8 +107,8 @@ function GameBrowser({
                     onFocus={() => setShown(option)}
                     className={`flex h-full flex-col gap-2 rounded-xl border p-4 transition-colors ${
                       focused
-                        ? "border-zinc-500 bg-white dark:border-zinc-400 dark:bg-zinc-800"
-                        : "border-zinc-200 bg-white/60 dark:border-zinc-800 dark:bg-zinc-900/60"
+                        ? "border-ink bg-ivory"
+                        : "border-rule bg-ivory/60"
                     }`}
                     data-testid={`game-card-${option}`}
                   >
@@ -120,26 +120,26 @@ function GameBrowser({
                         </span>
                       </span>
                       {current ? (
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-emerald-900 uppercase dark:bg-emerald-900/60 dark:text-emerald-100">
+                        <span className="rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-moss uppercase">
                           {GAME_COPY.browserCurrent}
                         </span>
                       ) : null}
                     </h3>
                     <p className="text-sm font-medium">{copy.tagline}</p>
-                    <p className="text-xs text-zinc-600 italic dark:text-zinc-400">
+                    <p className="text-xs text-muted italic">
                       {copy.origin}
                     </p>
                     {copy.inspiredBy !== undefined ? (
-                      <p className="text-xs text-zinc-600 dark:text-zinc-400" data-testid={`inspired-${option}`}>
+                      <p className="text-xs text-muted" data-testid={`inspired-${option}`}>
                         Inspired by {copy.inspiredBy}
                       </p>
                     ) : null}
-                    <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-zinc-700 dark:text-zinc-300">
+                    <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-ink-soft">
                       {copy.rules.map((rule) => (
                         <li key={rule}>{rule}</li>
                       ))}
                     </ul>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{copy.board}</p>
+                    <p className="text-xs text-muted">{copy.board}</p>
                     <div className="mt-auto pt-2">
                       <Button
                         onClick={() => play(option)}
@@ -167,7 +167,7 @@ function GameBrowser({
                 return (
                   <li
                     key={option}
-                    className="flex flex-col gap-2 rounded-xl border border-zinc-200 bg-white/60 p-3 dark:border-zinc-800 dark:bg-zinc-900/60"
+                    className="flex flex-col gap-2 rounded-xl border border-rule bg-ivory/60 p-3"
                   >
                     <h4 className="flex items-baseline gap-2 text-sm font-semibold">
                       {copy.label}
@@ -176,7 +176,7 @@ function GameBrowser({
                       </span>
                     </h4>
                     <p className="text-xs font-medium">{copy.tagline}</p>
-                    <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-zinc-700 dark:text-zinc-300">
+                    <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-ink-soft">
                       {copy.rules.map((rule) => (
                         <li key={rule}>{rule}</li>
                       ))}

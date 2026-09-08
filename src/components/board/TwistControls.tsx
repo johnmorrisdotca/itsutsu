@@ -75,7 +75,7 @@ function TwistButton({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="flex size-8 items-center justify-center rounded-full border border-amber-400 bg-amber-50/95 text-lg leading-none text-amber-900 shadow-md transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-sky-400 animate-pulse"
+      className="flex size-8 items-center justify-center rounded-full border border-ochre/60 bg-ochre-soft text-lg leading-none text-ink shadow-md transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-moss animate-pulse"
       data-testid={testId}
     >
       {glyph}

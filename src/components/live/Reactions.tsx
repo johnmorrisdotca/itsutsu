@@ -46,7 +46,7 @@ export function ReactionBar({
             disabled={disabled}
             title={reaction.label}
             aria-label={`Send ${reaction.label}`}
-            className="rounded-full border border-rule bg-white/70 px-2 py-1 text-lg leading-none transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-900/60"
+            className="rounded-full border border-rule bg-ivory/70 px-2 py-1 text-lg leading-none transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {reaction.emoji}
           </button>
@@ -116,8 +116,8 @@ export function ReactionBubbles({
             key={reaction.id}
             className={`flex items-center gap-2 rounded-full border px-3 py-1 text-sm shadow-sm ${
               mine
-                ? "border-zinc-300 bg-white/80 dark:border-zinc-700 dark:bg-zinc-900/70"
-                : "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/60"
+                ? "border-rule-strong bg-ivory/80"
+                : "border-moss/50 bg-moss-soft"
             }`}
             data-testid={mine ? "reaction-mine" : "reaction-theirs"}
           >
@@ -154,12 +154,12 @@ export function ReactionLog({ reactions }: { reactions: GameReaction[] }) {
             aria-hidden="true"
             className={`mr-0.5 inline-block size-2 rounded-full align-middle ${
               reaction.stone === "black"
-                ? "bg-zinc-900 dark:bg-zinc-100"
-                : "border border-zinc-400 bg-white"
+                ? "bg-ink"
+                : "border border-rule-strong bg-ivory"
             }`}
           />
           {reaction.emoji}
-          {reaction.text ? <span className="ml-1 text-zinc-700 dark:text-zinc-200">{reaction.text}</span> : null}
+          {reaction.text ? <span className="ml-1 text-ink-soft">{reaction.text}</span> : null}
         </span>
       ))}
     </p>
