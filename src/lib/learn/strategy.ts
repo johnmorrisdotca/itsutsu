@@ -157,7 +157,7 @@ export const GUIDES: readonly Guide[] = [
     ],
   },
   {
-    slug: "connect6",
+    slug: "connect-six",
     title: "Connect6: two stones a turn",
     kanji: "六子棋の考え方",
     summary: "Threats arrive in pairs, and a line of four with open ends is already decisive.",
