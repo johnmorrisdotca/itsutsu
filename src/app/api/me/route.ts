@@ -77,7 +77,10 @@ export async function PATCH(request: Request) {
     if (name !== undefined) {
       const member = await renameMember(me.email, name);
       if (member === null) {
-        return NextResponse.json({ error: "Someone here already has that name." }, { status: 409, headers: NO_STORE });
+        return NextResponse.json(
+          { error: "That name is not free: somebody here goes by it, it is kept for a remembered player, or a record already stands under it." },
+          { status: 409, headers: NO_STORE },
+        );
       }
       shown = member.name;
       const token = await signSession({ ...me, name: member.name });

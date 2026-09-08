@@ -1,6 +1,8 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { playerKey } from "@/lib/rating/playerKey";
+import { isReservedKey } from "@/lib/rating/reservedKeys";
 
 export type Member = { email: string; name: string; picture: string };
 
@@ -45,13 +47,37 @@ export async function admitMember(
   return { ...row, created: false };
 }
 
-/** Changes a member's display name. Null when the name is taken by another member. */
+/**
+ * Changes a member's display name. Null when the name is not theirs to take.
+ *
+ * Three ways it is not. Another member is called that. It is a reserved name —
+ * a remembered or honorary player, who cannot answer for themselves and whose
+ * name nobody else may wear. Or a record already stands under it, earned by
+ * whoever played as that name before: a rating is not something a rename may
+ * inherit, and a name that has been vacated is not therefore free.
+ */
 export async function renameMember(email: string, name: string): Promise<Member | null> {
+  const key = playerKey(name);
+  if (isReservedKey(key)) return null;
+
   const clash = await prisma.member.findFirst({
     where: { email: { not: foldEmail(email) }, name: { equals: name, mode: "insensitive" } },
     select: { email: true },
   });
   if (clash !== null) return null;
+
+  /*
+   * A record under this name belongs to whoever earned it. It is theirs to
+   * keep using only if they are the one being renamed — which today means
+   * their current name folds to the same key, a change of capitalisation.
+   */
+  if (key !== "") {
+    const current = await prisma.member.findUnique({ where: { email: foldEmail(email) }, select: { name: true } });
+    if (playerKey(current?.name ?? "") !== key) {
+      const record = await prisma.player.findUnique({ where: { key }, select: { key: true } });
+      if (record !== null) return null;
+    }
+  }
   return prisma.member.update({
     where: { email: foldEmail(email) },
     data: { name },

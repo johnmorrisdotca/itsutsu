@@ -6,6 +6,12 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.55.0
+- A rename can no longer reach a remembered player's name, or a name with a record behind it: a rating belongs to whoever earned it
+- New game asks first when a board is under way, instead of throwing it away on a stray click
+- A hint you are already looking at is free to look at again; only a new answer costs a use
+- An invite code can be made good for one person only, which the store always understood and the form never offered
+
 ## 0.54.0
 - Starting a game is one sentence now — play this game, at this pace, with anyone, a member, or someone at this screen — over one board of open seats and whoever is here. Auto-match and posting a seat were the same wish said twice: asking for a game sits you down at a matching seat if there is one and posts yours if there is not.
 

@@ -79,6 +79,26 @@ test.describe("the small games", () => {
     await expect(page.getByRole("button", { name: "J8, White stone" })).toBeVisible();
   });
 
+  test("a game under way asks before New game throws it away", async ({ page }) => {
+    await page.goto("/games/gomoku");
+    await page.evaluate(() => window.localStorage.clear());
+    await page.goto("/games/gomoku");
+
+    // Nothing to lose on an empty board: New game just starts one.
+    await page.getByRole("button", { name: /^New game/ }).click();
+    await expect(page.getByTestId("new-game-confirm")).toHaveCount(0);
+
+    await playSequence(page, 15, [[7, 7], [7, 8]]);
+    await page.getByRole("button", { name: /^New game/ }).click();
+    await expect(page.getByTestId("new-game-confirm")).toBeVisible();
+    await page.getByRole("button", { name: /^Never mind/ }).click();
+    await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
+
+    await page.getByRole("button", { name: /^New game/ }).click();
+    await page.getByTestId("new-game-yes").click();
+    await expect(page.getByRole("button", { name: /^H8, empty$/ })).toBeVisible();
+  });
+
   test("square four places four pieces then slides them", async ({ page }) => {
     await page.goto("/games/gomoku");
     await openSetup(page);

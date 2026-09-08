@@ -36,6 +36,12 @@ export function AdminInvites() {
   );
 
   const [note, setNote] = useState("");
+  /*
+   * A code is good forever and for anyone by default, which is right for a
+   * link handed to a household. One person, once, is the other thing an
+   * invitation often means, and the store has always understood it.
+   */
+  const [onceOnly, setOnceOnly] = useState(false);
   const [minted, setMinted] = useState<InviteSummary | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -49,11 +55,12 @@ export function AdminInvites() {
       const response = await fetch("/api/invites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note }),
+        body: JSON.stringify({ note, maxUses: onceOnly ? 1 : 0 }),
       });
       if (response.ok) {
         setMinted((await response.json()) as InviteSummary);
         setNote("");
+        setOnceOnly(false);
         setCopied(false);
         await mutate();
       }
@@ -106,6 +113,15 @@ export function AdminInvites() {
           {busy ? "…" : "New code"}
         </Button>
       </div>
+      <label className="flex items-center gap-2 text-xs text-muted">
+        <input
+          type="checkbox"
+          checked={onceOnly}
+          onChange={(event) => setOnceOnly(event.target.checked)}
+          data-testid="invite-once"
+        />
+        One person only — the code is spent as soon as it is used. Otherwise it stays good for anyone who has it.
+      </label>
 
       {minted !== null ? (
         <div
@@ -136,7 +152,7 @@ export function AdminInvites() {
                 <span className="truncate text-xs text-muted">{invite.note}</span>
               ) : null}
               <span className="ml-auto text-xs text-muted tabular-nums">
-                {invite.uses} used
+                {invite.maxUses > 0 ? `${invite.uses} of ${invite.maxUses} used` : `${invite.uses} used`}
               </span>
               <button
                 type="button"

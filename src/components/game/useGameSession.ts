@@ -329,13 +329,16 @@ export function useGameSession(
 
   const askHint = useCallback(() => {
     if (settings.hintPolicy === HINT_POLICIES.off) return;
+    // The hint for this position is already showing: reading it again is free.
+    // A hint costs a use when it is a new answer, which is after a move.
+    if (hint !== null) return;
     if (settings.hintPolicy === HINT_POLICIES.limited) {
       if (hintsLeft[seat] <= 0) return;
       setHintsLeft((current) => ({ ...current, [seat]: current[seat] - 1 }));
     }
     setStats((current) => recordHint(current, seat));
     setHint(suggestMove(state));
-  }, [hintsLeft, seat, settings.hintPolicy, state]);
+  }, [hint, hintsLeft, seat, settings.hintPolicy, state]);
 
   /** Hands one of your own hints to the other seat. */
   const grantHint = useCallback(() => {
