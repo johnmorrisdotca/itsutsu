@@ -12,7 +12,7 @@ export const MY_GAMES_COPY = {
   staleHint: (days: number) => `No move for more than ${days} days. Resign it, or make a move.`,
   resign: { label: "Resign", kanji: "投了" },
   resignConfirm: "Resign this game? The other side wins and it is filed in the record.",
-  localGame: { label: "On this device", kanji: "この端末" },
+  localGame: { label: "Your game", kanji: "続き" },
   openBoard: { label: "Open seats", kanji: "対局募集", hint: "Games somebody has posted for anyone. Sit down and it is yours." },
   sit: { label: "Sit as White", kanji: "着席" },
   sitTaken: "Somebody else just took that seat.",

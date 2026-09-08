@@ -9,8 +9,8 @@ const fetcher = async (url: string): Promise<{ admin: boolean } | null> => {
 };
 
 /** A link to /admin, shown to the operator only. Everyone else sees nothing here. */
-export function AdminLink() {
-  const { data } = useSWR("/api/session", fetcher);
+export function AdminLink({ initial }: { initial: { admin: boolean } }) {
+  const { data } = useSWR("/api/session", fetcher, { fallbackData: initial });
   if (data?.admin !== true) return null;
   return (
     <Link href="/admin" className="whitespace-nowrap hover:underline underline-offset-4" data-testid="admin-link">

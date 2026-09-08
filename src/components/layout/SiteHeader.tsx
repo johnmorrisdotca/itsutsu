@@ -1,37 +1,33 @@
 import Link from "next/link";
 
-import { AccountMenu } from "@/components/auth/AccountMenu";
+import { AccountMenu, type Who } from "@/components/auth/AccountMenu";
 import { AdminLink } from "@/components/auth/AdminLink";
-import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
+import { currentSession } from "@/lib/auth/currentSession";
 
 import { BrandHero, BrandWordmark } from "./BrandMarks";
+import { NavLinks } from "./NavLinks";
 
-const NAV = [
-  { href: "/games", label: "Play", kanji: "遊ぶ" },
-  { href: "/history", label: "Record", kanji: "棋譜" },
-  { href: "/rules", label: "Rules" },
-  { href: "/learn", label: "Learn" },
-  { href: "/players", label: "Players" },
-  { href: "/about", label: "About" },
-] as const;
+/** Who is signed in, read on the server so the header is right on first paint. */
+async function whoIsHere(): Promise<Who> {
+  const session = await currentSession();
+  if (session === null) return { signedIn: false, admin: false, email: null, name: null, picture: null, member: false };
+  return {
+    signedIn: true,
+    admin: session.kind === "admin",
+    email: session.email ?? null,
+    name: session.name ?? null,
+    picture: session.picture ?? null,
+    member: session.kind === "player" && session.email !== undefined,
+  };
+}
 
-function Nav() {
+async function Nav() {
+  const who = await whoIsHere();
   return (
     <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-      {NAV.map((item) => (
-        <Link key={item.href} href={item.href} className="whitespace-nowrap hover:underline underline-offset-4">
-          {item.label}
-          {"kanji" in item ? (
-            <>
-              {" "}
-              <span className="font-mincho text-muted">{item.kanji}</span>
-            </>
-          ) : null}
-          {item.href === "/games" ? <YourTurnBadge /> : null}
-        </Link>
-      ))}
-      <AdminLink />
-      <AccountMenu />
+      <NavLinks />
+      <AdminLink initial={who} />
+      <AccountMenu initial={who} />
     </nav>
   );
 }
@@ -45,7 +41,7 @@ function Nav() {
  * once per page rather than twice stacked. The game being played says its own
  * name where it is played, not up here.
  */
-export function SiteHeader({ hero = false }: { hero?: boolean }) {
+export async function SiteHeader({ hero = false }: { hero?: boolean }) {
   if (hero) {
     return (
       <header className="flex flex-col items-center gap-3 border-b border-rule pb-6">
