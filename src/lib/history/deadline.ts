@@ -10,10 +10,49 @@ import { MOVE_TIME_OPTIONS } from "./gameSettingsSchema";
 export function deadlineFor(game: {
   moveTimeMs: number | null;
   lastMoveAt: Date | string | null;
+  deadlineAt?: Date | string | null;
 }): Date | null {
-  if (game.moveTimeMs === null || game.lastMoveAt === null) return null;
+  if (game.moveTimeMs === null) return null;
+  if (game.deadlineAt !== undefined && game.deadlineAt !== null) {
+    return typeof game.deadlineAt === "string" ? new Date(game.deadlineAt) : game.deadlineAt;
+  }
+  if (game.lastMoveAt === null) return null;
   const since = typeof game.lastMoveAt === "string" ? new Date(game.lastMoveAt) : game.lastMoveAt;
   return new Date(since.getTime() + game.moveTimeMs);
+}
+
+export type ClockMode = "move" | "game";
+export const CLOCK_MODES: readonly ClockMode[] = ["move", "game"];
+
+/** The clock in words, for either mode. */
+export function describeClock(mode: string, moveTimeMs: number | null): string {
+  if (moveTimeMs === null) return "No clock";
+  if (mode === "game") return `${describeMoveTime(moveTimeMs).replace(" a move", "")} each for the whole game`;
+  return describeMoveTime(moveTimeMs);
+}
+
+/**
+ * Courtesy time, when one side gives the other more: a whole extra period
+ * under the per-move clock, a tenth of the budget (five minutes at least)
+ * under the whole-game clock.
+ */
+export function courtesyMs(mode: string, moveTimeMs: number): number {
+  if (mode === "game") return Math.max(5 * 60_000, Math.round(moveTimeMs / 10));
+  return moveTimeMs;
+}
+
+/** The deadline for the colour to move, from the clock's shape and what that colour has left. */
+export function nextDeadline(
+  game: { clockMode: string; moveTimeMs: number | null; blackTimeMs: number | null; whiteTimeMs: number | null },
+  toPlay: "black" | "white",
+  now: Date,
+): Date | null {
+  if (game.moveTimeMs === null) return null;
+  if (game.clockMode === "game") {
+    const left = toPlay === "black" ? game.blackTimeMs : game.whiteTimeMs;
+    return new Date(now.getTime() + Math.max(0, left ?? game.moveTimeMs));
+  }
+  return new Date(now.getTime() + game.moveTimeMs);
 }
 
 /** Whether the deadline has passed at `now`. */

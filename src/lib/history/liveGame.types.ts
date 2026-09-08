@@ -25,6 +25,10 @@ export type LiveGameSettings = {
   timeoutPenalty: string;
   /** Whether a seat may give the game up. */
   allowResign: boolean;
+  /** "move": the limit resets each turn. "game": one budget a side for the whole game. */
+  clockMode?: string;
+  /** Whether the result moves ratings. */
+  rated?: boolean;
   /** Post the white seat on the games page for anyone to take. */
   open: boolean;
 };

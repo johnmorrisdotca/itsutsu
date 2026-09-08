@@ -113,6 +113,21 @@ export function SharedGame({
   const overdue = isOverdue(deadline, new Date(now));
   const canClaim = overdue && seat !== null && !yourTurn && state.status === GAME_STATUS.playing;
 
+  async function give() {
+    setError(null);
+    const response = await fetch(`/api/games/${detail.id}/time`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setError(payload?.error ?? "Time could not be given.");
+      return;
+    }
+    await mutate((await response.json()) as GameDetail, { revalidate: false });
+  }
+
   async function claim() {
     if (token === null) return;
     setError(null);
@@ -251,10 +266,21 @@ export function SharedGame({
           </span>
           {canClaim ? (
             <Button onClick={claim} strong title={GAME_COPY.claimHint} data-testid="claim-timeout">
-              {detail.timeoutPenalty === "game" ? GAME_COPY.claimGame.label : GAME_COPY.claimTurn.label}
+              {detail.timeoutPenalty === "game" || detail.clockMode === "game" ? GAME_COPY.claimGame.label : GAME_COPY.claimTurn.label}
+            </Button>
+          ) : null}
+          {seat !== null && !yourTurn && state.status === GAME_STATUS.playing ? (
+            <Button onClick={give} title="Add time to the other side's clock for this move. Nobody has to win on the clock." data-testid="give-time">
+              Give more time
             </Button>
           ) : null}
         </div>
+      ) : null}
+      {detail.clockMode === "game" && detail.moveTimeMs !== null ? (
+        <p className="text-xs text-muted" data-testid="time-budgets">
+          Time left for the whole game · {STONE_DISPLAY.black.label} {describeBudget(detail.blackTimeMs ?? detail.moveTimeMs)} ·{" "}
+          {STONE_DISPLAY.white.label} {describeBudget(detail.whiteTimeMs ?? detail.moveTimeMs)}
+        </p>
       ) : null}
 
       {VARIANT_SPECS[state.settings.variant].captures ? (
@@ -420,4 +446,9 @@ function subscribeQuiet(onChange: () => void): () => void {
     window.removeEventListener(QUIET_EVENT, onChange);
     window.removeEventListener("storage", onChange);
   };
+}
+
+/** A budget in words: "1h 20m", "45s". */
+function describeBudget(ms: number): string {
+  return describeRemaining(new Date(ms), new Date(0));
 }

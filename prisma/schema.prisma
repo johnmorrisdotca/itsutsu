@@ -67,7 +67,19 @@ model Game {
   seed      Int    @default(0)
 
   /// Per-move time limit for a shared game, in milliseconds; null for none.
+  /// Under the whole-game clock this is each side's budget for the whole game.
   moveTimeMs     Int?
+  /// "move": the limit is per move and resets each turn. "game": one budget a side for the whole game.
+  clockMode      String     @default("move")
+  /// Time each side has left under the whole-game clock, in milliseconds; null under the per-move clock.
+  blackTimeMs    Int?
+  whiteTimeMs    Int?
+  /// When the colour to move must have moved by; the server sets it on every move.
+  deadlineAt     DateTime?
+  /// Courtesy time the waiting side gave the mover for this move, in milliseconds. Cleared on the move.
+  extraMs        Int        @default(0)
+  /// Whether the result moves ratings. Off makes a friendly game between rated players.
+  rated          Boolean    @default(true)
   /// What running out of time costs: "turn" (graceful) or "game".
   timeoutPenalty String    @default("turn")
   /// When the last move landed, so a deadline can be computed on the server.
@@ -98,6 +110,8 @@ model Game {
   durationMs Int?
 
   moves     Move[]
+
+  gifts     TimeGift[]
   reactions Reaction[]
 
   /// Listing sorts by these; a compound index covers the default ordering.
@@ -256,6 +270,19 @@ model Member {
   /// Listed among who is here, and mailed when it is their move.
   showOnline  Boolean  @default(true)
   emailNotify Boolean  @default(true)
+}
+
+/// Courtesy time one seat gave the other during a game, kept so sportsmanship can be read later.
+model TimeGift {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  /// The colour that gave the time; the other colour received it.
+  giver     String
+  givenMs   Int
+  createdAt DateTime @default(now())
+
+  @@index([gameId])
 }
 
 /// A request to be paired with anyone who wants the same game at the same pace.

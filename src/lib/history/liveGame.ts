@@ -39,7 +39,7 @@ import type {
   TimeoutOutcome,
 } from "./liveGame.types";
 import { FORFEITS_TO_LOSE } from "./gameSettingsSchema";
-import { deadlineFor } from "./deadline";
+import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
 import { toGameMove } from "./gameHistory";
 
 /** Prisma's code for "a unique constraint was violated". */
@@ -64,6 +64,12 @@ export const GAME_ROW = {
   blackForfeits: true,
   whiteForfeits: true,
   allowResign: true,
+  clockMode: true,
+  blackTimeMs: true,
+  whiteTimeMs: true,
+  deadlineAt: true,
+  extraMs: true,
+  rated: true,
   openSeat: true,
   openedAt: true,
   blackToken: true,
@@ -143,11 +149,18 @@ export async function createLiveGame(
     from?: { id: string; moves: number };
   },
 ): Promise<CreatedGame> {
-  const { handicap, open, hotSeat = false, seed, from, ...rest } = input;
+  const { handicap, open, hotSeat = false, seed, from, clockMode = "move", rated = true, ...rest } = input;
   const token = randomBytes(18).toString("base64url");
+  const startedAt = new Date();
+  const budget = clockMode === "game" ? rest.moveTimeMs : null;
   const game = await prisma.game.create({
     data: {
       ...rest,
+      clockMode,
+      rated,
+      blackTimeMs: budget,
+      whiteTimeMs: budget,
+      deadlineAt: rest.moveTimeMs === null ? null : new Date(startedAt.getTime() + rest.moveTimeMs),
       handicap: storedHandicap(handicap) ?? undefined,
       ...(hotSeat ? { blackToken: token, whiteToken: token } : {}),
       // An open game posts its white seat for anyone; the creator sits as black.
@@ -156,7 +169,7 @@ export async function createLiveGame(
       // The server draws the seed: the two players must see the same board.
       seed: hotSeat && seed !== undefined ? seed : seedFromRoll(Math.random(), SEED_RANGE),
       // The first deadline runs from the moment the game exists.
-      lastMoveAt: new Date(),
+      lastMoveAt: startedAt,
       status: "active",
       result: "abandoned",
       moveCount: 0,
@@ -197,11 +210,20 @@ export async function updateLiveGameSettings(
   if (stoneForToken(row, token) === null) return { ok: false, reason: "wrong-token" };
   if (row.moves.length > 0) return { ok: false, reason: "started" };
 
-  const { handicap, open, ...rest } = settings;
+  const { handicap, open, clockMode = row.clockMode, rated = row.rated, ...rest } = settings;
+  const now = new Date();
+  const budget = clockMode === "game" ? rest.moveTimeMs : null;
   await prisma.game.update({
     where: { id },
     data: {
       ...rest,
+      clockMode,
+      rated,
+      blackTimeMs: budget,
+      whiteTimeMs: budget,
+      deadlineAt: rest.moveTimeMs === null ? null : new Date(now.getTime() + rest.moveTimeMs),
+      extraMs: 0,
+      lastMoveAt: now,
       handicap: storedHandicap(handicap) ?? Prisma.JsonNull,
       openSeat: open ? STONES.white : null,
       openedAt: open ? (row.openedAt ?? new Date()) : null,
@@ -317,6 +339,8 @@ export async function appendMove(
     });
   }
   const finished = next.status !== GAME_STATUS.playing;
+  const now = new Date();
+  const clock = spendClock(row, stone, now);
 
   try {
     await prisma.$transaction([
@@ -333,7 +357,10 @@ export async function appendMove(
           status: finished ? "finished" : "active",
           result: next.winner ?? (finished ? "draw" : "abandoned"),
           winner: next.winner,
-          lastMoveAt: new Date(),
+          lastMoveAt: now,
+          ...clock,
+          deadlineAt: finished ? null : nextDeadline({ ...row, ...clock }, next.toPlay, now),
+          extraMs: 0,
           // A move made in time clears the mover's run of forfeits.
           ...(stone === STONES.black ? { blackForfeits: 0 } : { whiteForfeits: 0 }),
         },
@@ -350,13 +377,71 @@ export async function appendMove(
   }
 
   if (finished) {
-    // A game at one screen is filed, never rated: the site cannot tell who was playing.
-    if (!isHotSeat(row)) await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
+    // A game at one screen is filed, never rated: the site cannot tell who was playing. Nor is a friendly.
+    if (!isHotSeat(row) && row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
     if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
   } else if (next.toPlay !== stone && !isHotSeat(row)) {
     await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });
   }
 
+  const game = await fetchGameDetail(id);
+  if (game === null) return { ok: false, reason: "not-found" };
+  return { ok: true, game };
+}
+
+/**
+ * What a move does to the clock. Under the whole-game clock the mover's
+ * budget loses the time they took; under the per-move clock nothing carries.
+ */
+function spendClock(
+  row: { clockMode: string; moveTimeMs: number | null; lastMoveAt: Date | null; blackTimeMs: number | null; whiteTimeMs: number | null; extraMs: number },
+  mover: Stone,
+  now: Date,
+): { blackTimeMs: number | null; whiteTimeMs: number | null } {
+  const { blackTimeMs, whiteTimeMs } = row;
+  if (row.clockMode !== "game" || row.moveTimeMs === null || row.lastMoveAt === null) return { blackTimeMs, whiteTimeMs };
+  // Courtesy time for this move is not charged to the mover.
+  const taken = Math.max(0, now.getTime() - row.lastMoveAt.getTime() - row.extraMs);
+  const left = (mover === STONES.black ? blackTimeMs : whiteTimeMs) ?? row.moveTimeMs;
+  const remaining = Math.max(0, left - taken);
+  return mover === STONES.black ? { blackTimeMs: remaining, whiteTimeMs } : { blackTimeMs, whiteTimeMs: remaining };
+}
+
+/**
+ * Gives the other side more time on the current move. Only the side that is
+ * waiting may give it — it is theirs to give, since it is their win the clock
+ * would hand them — and it is kept as a gift on the record, so the courtesy
+ * and the need can both be read later.
+ */
+export async function giveTime(id: string, token: string, now = new Date()): Promise<TimeoutOutcome> {
+  const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
+  if (row === null) return { ok: false, reason: "not-found" };
+  if (row.status !== "active") return { ok: false, reason: "finished" };
+  const giver = stoneForToken(row, token);
+  if (giver === null) return { ok: false, reason: "wrong-token" };
+  if (row.moveTimeMs === null) return { ok: false, reason: "no-clock" };
+  const state = replay(row);
+  if (state.status !== GAME_STATUS.playing) return { ok: false, reason: "finished" };
+  if (state.toPlay === giver) return { ok: false, reason: "your-own-turn" };
+
+  const gift = courtesyMs(row.clockMode, row.moveTimeMs);
+  const deadline = deadlineFor(row) ?? now;
+  const receiver = state.toPlay;
+  await prisma.$transaction([
+    prisma.timeGift.create({ data: { gameId: id, giver, givenMs: gift } }),
+    prisma.game.update({
+      where: { id },
+      data: {
+        extraMs: row.extraMs + gift,
+        deadlineAt: new Date(Math.max(deadline.getTime(), now.getTime()) + gift),
+        ...(row.clockMode === "game"
+          ? receiver === STONES.black
+            ? { blackTimeMs: (row.blackTimeMs ?? row.moveTimeMs) + gift }
+            : { whiteTimeMs: (row.whiteTimeMs ?? row.moveTimeMs) + gift }
+          : {}),
+      },
+    }),
+  ]);
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };
   return { ok: true, game };
@@ -403,7 +488,8 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   if (now.getTime() < deadline.getTime()) return { ok: false, reason: "not-due" };
 
   const forfeits = (absent === STONES.black ? row.blackForfeits : row.whiteForfeits) + 1;
-  const strict = row.timeoutPenalty === "game" || forfeits >= FORFEITS_TO_LOSE;
+  // Out of time for the whole game is out of time: the budget cannot forfeit a turn and go on.
+  const strict = row.timeoutPenalty === "game" || row.clockMode === "game" || forfeits >= FORFEITS_TO_LOSE;
   const next = strict ? winOnTime(state, absent) : forfeitTurn(state);
   if (next === state) return { ok: false, reason: "finished" };
   const finished = next.status !== GAME_STATUS.playing;
@@ -425,6 +511,8 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
         result: next.winner ?? (finished ? "draw" : "abandoned"),
         winner: next.winner,
         lastMoveAt: now,
+        deadlineAt: finished ? null : nextDeadline(row, next.toPlay, now),
+        extraMs: 0,
         ...(absent === STONES.black ? { blackForfeits: forfeits } : { whiteForfeits: forfeits }),
       },
     }),
@@ -433,7 +521,7 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
 
   if (finished) {
     if (!isHotSeat(row)) {
-      await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
+      if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
       await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
     }
   } else if (!isHotSeat(row)) {
@@ -469,7 +557,7 @@ export async function resignGame(id: string, token: string, now = new Date()): P
     data: { status: "finished", result: next.winner, winner: next.winner, lastMoveAt: now },
   });
   if (!isHotSeat(row)) {
-    await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
+    if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
     await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
   }
 

@@ -51,6 +51,8 @@ const liveGameSchema = z.object({
   moveTimeMs: moveTimeSchema,
   timeoutPenalty: timeoutPenaltySchema,
   allowResign: z.boolean().default(true),
+  clockMode: z.enum(["move", "game"]).default("move"),
+  rated: z.boolean().default(true),
   open: z.boolean().default(false),
   opener: stoneSchema.default(STONES.black),
   /** Two people at one screen: one seat key for both chairs, kept in this browser. */

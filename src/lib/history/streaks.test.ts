@@ -31,6 +31,12 @@ function game(
     moveCount: 20,
     durationMs: null,
   allowResign: true,
+  clockMode: "move",
+  blackTimeMs: null,
+  whiteTimeMs: null,
+  deadlineAt: null,
+  extraMs: 0,
+  rated: true,
   openSeat: null,
   };
 }

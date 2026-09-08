@@ -30,6 +30,8 @@ const settingsSchema = z.object({
   moveTimeMs: moveTimeSchema,
   timeoutPenalty: timeoutPenaltySchema,
   allowResign: z.boolean().default(true),
+  clockMode: z.enum(["move", "game"]).default("move"),
+  rated: z.boolean().default(true),
   open: z.boolean().default(false),
 });
 

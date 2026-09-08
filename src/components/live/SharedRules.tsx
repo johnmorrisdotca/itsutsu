@@ -17,7 +17,7 @@ import {
   SHARED_OPENINGS,
   TIMEOUT_PENALTIES,
 } from "@/lib/history/gameSettingsSchema";
-import { describeMoveTime } from "@/lib/history/deadline";
+import { describeClock, describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { Button, Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -52,6 +52,8 @@ export function SharedRules({
       opening: string;
       moveTimeMs: number | null;
       timeoutPenalty: string;
+      clockMode: string;
+      rated: boolean;
       allowResign: boolean;
       open: boolean;
     }>,
@@ -66,6 +68,8 @@ export function SharedRules({
       opening: game.opening,
       moveTimeMs: game.moveTimeMs,
       timeoutPenalty: game.timeoutPenalty,
+      clockMode: game.clockMode,
+      rated: game.rated,
       allowResign: game.allowResign,
       open: game.openSeat !== null,
       ...next,
@@ -121,8 +125,9 @@ export function SharedRules({
         </p>
       ) : null}
       <p className="text-xs text-muted" data-testid="shared-clock-line">
-        {describeMoveTime(game.moveTimeMs)}
-        {game.moveTimeMs !== null
+        {describeClock(game.clockMode, game.moveTimeMs)}
+        {!game.rated ? ". Friendly: ratings unaffected" : ""}
+        {game.moveTimeMs !== null && game.clockMode !== "game"
           ? `. ${game.timeoutPenalty === "game" ? GAME_COPY.penaltyGame : GAME_COPY.penaltyTurn}`
           : ""}
       </p>
@@ -203,6 +208,20 @@ export function SharedRules({
             </Select>
           </Field>
           {game.moveTimeMs !== null ? (
+            <Field label="Clock">
+              <Select value={game.clockMode} disabled={saving} onChange={(event) => change({ clockMode: event.target.value })} data-testid="shared-rules-clock-mode">
+                <option value="move">Time is per move</option>
+                <option value="game">Time is for the whole game</option>
+              </Select>
+            </Field>
+          ) : null}
+          <Field label="Ratings">
+            <Select value={game.rated ? "rated" : "friendly"} disabled={saving} onChange={(event) => change({ rated: event.target.value === "rated" })} data-testid="shared-rules-rated">
+              <option value="rated">Game will affect ratings</option>
+              <option value="friendly">Game will NOT affect ratings</option>
+            </Select>
+          </Field>
+          {game.moveTimeMs !== null && game.clockMode !== "game" ? (
             <Field label={GAME_COPY.penalty.label}>
               <Select
                 value={game.timeoutPenalty}

@@ -59,6 +59,17 @@ export type GameSummary = {
   forfeits: { black: number; white: number };
   /** Whether a seat may give the game up. */
   allowResign: boolean;
+  /** "move" or "game": whether the limit is per move or a budget for the whole game. */
+  clockMode: string;
+  /** Time each side has left under the whole-game clock; null under the per-move clock. */
+  blackTimeMs: number | null;
+  whiteTimeMs: number | null;
+  /** When the colour to move must have moved by, as the server set it. */
+  deadlineAt: string | null;
+  /** Courtesy time given for the current move. */
+  extraMs: number;
+  /** Whether the result moves ratings. */
+  rated: boolean;
   /** A seat anyone may take, while it waits; null otherwise. */
   openSeat: string | null;
   result: GameResult;

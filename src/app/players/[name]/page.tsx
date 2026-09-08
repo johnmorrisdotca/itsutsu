@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
+import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
 import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyGames.data";
 import { findLegacyPlayer, findLinkedLegacies } from "@/lib/legacy/legacyPlayers.data";
 import type { LegacyClassRecord, LegacyGame, LegacyGameRecord, LegacyPlayer } from "@/lib/legacy/legacyPlayers.types";
@@ -220,7 +221,7 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
     return <LegacyOwnPage legacy={legacyBySlug} />;
   }
 
-  const [player, record] = await Promise.all([fetchPlayer(decoded), fetchPlayerRecord(decoded)]);
+  const [player, record, gifts] = await Promise.all([fetchPlayer(decoded), fetchPlayerRecord(decoded), fetchTimeGiftRecord(decoded)]);
   const hasLiveData = player !== null || record.games > 0;
   // A live account with no games yet but more than one linked record is not
   // reachable today — nothing sets linkedKey yet — so only the first would
@@ -266,6 +267,15 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
         {tier !== null ? <p className="text-xs text-muted">{tier.note}</p> : null}
       </section>
 
+      {gifts.gaveIn > 0 || gifts.receivedIn > 0 ? (
+        <p className="text-xs text-muted" data-testid="time-gifts">
+          With the clock: {gifts.gaveIn > 0 ? `gave the other side more time in ${gifts.gaveIn} game${gifts.gaveIn === 1 ? "" : "s"}` : "never needed to give time"}
+          {gifts.receivedIn > 0
+            ? `; was given time in ${gifts.receivedIn}, and went on to win ${gifts.wonAfterReceiving} and lose ${gifts.lostAfterReceiving} of those`
+            : ""}
+          .
+        </p>
+      ) : null}
       {record.byVariant.length > 0 ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
           <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">By game</h2>

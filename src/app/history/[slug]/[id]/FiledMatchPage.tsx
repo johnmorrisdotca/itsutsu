@@ -110,6 +110,7 @@ function FiledMatch({
             {game.size}×{game.size} ·{" "}
             {variantLabel(game.variant)}{" "}
             · {result.label} <span className="font-mincho">{result.kanji}</span>
+            {!game.rated ? <span className="ml-2 rounded-full border border-rule px-2 py-0.5 text-xs">Friendly · unrated</span> : null}
           </p>
         </div>
         <span className="flex items-center gap-3">

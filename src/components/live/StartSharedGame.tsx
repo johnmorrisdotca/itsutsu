@@ -30,6 +30,8 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [moveTimeMs, setMoveTimeMs] = useState<number | null>(null);
+  const [clockMode, setClockMode] = useState<"move" | "game">("move");
+  const [rated, setRated] = useState(true);
   const [timeoutPenalty, setTimeoutPenalty] = useState<TimeoutPenalty>("turn");
   const [allowResign, setAllowResign] = useState(true);
   const [open, setOpen] = useState(false);
@@ -54,6 +56,8 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
           handicap: settings.handicap.stone === null ? null : settings.handicap,
           moveTimeMs,
           timeoutPenalty,
+          clockMode,
+          rated,
           allowResign,
           open,
         }),
@@ -97,6 +101,14 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
         </Select>
       </Field>
       {moveTimeMs !== null ? (
+        <Field label="Clock" hint={clockMode === "game" ? "One budget each for the whole game; it counts down and never resets." : "The limit is for each move and starts again every turn."}>
+          <Select value={clockMode} onChange={(event) => setClockMode(event.target.value as "move" | "game")} data-testid="shared-clock-mode">
+            <option value="move">Time is per move</option>
+            <option value="game">Time is for the whole game</option>
+          </Select>
+        </Field>
+      ) : null}
+      {moveTimeMs !== null && clockMode === "move" ? (
         <Field label={GAME_COPY.penalty.label} hint={GAME_COPY.penaltyHint}>
           <Select
             value={timeoutPenalty}
@@ -111,6 +123,12 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
           </Select>
         </Field>
       ) : null}
+      <Field label="Ratings" hint="A friendly game is filed like any other, but moves nobody's rating.">
+        <Select value={rated ? "rated" : "friendly"} onChange={(event) => setRated(event.target.value === "rated")} data-testid="shared-rated">
+          <option value="rated">Game will affect ratings</option>
+          <option value="friendly">Game will NOT affect ratings</option>
+        </Select>
+      </Field>
       <Toggle
         label={GAME_COPY.allowResign.label}
         hint={GAME_COPY.allowResignHint}
