@@ -93,7 +93,9 @@ export default async function LobbyPage() {
         </h2>
         <p className="max-w-prose text-sm text-muted">
           Everything below is five in a row with one idea changed. Open a family to see
-          its games; each one has a rules page and a place in the learning shelf.
+          its games; each one has a rules page and a place in the learning shelf. The whole list, as
+          plain text, is on{" "}
+          <Link href="/games/all" className="underline underline-offset-4">one page</Link>.
         </p>
         {GAME_FAMILIES.map((family, index) => (
           <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family" open={index === 0}>

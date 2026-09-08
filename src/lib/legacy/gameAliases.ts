@@ -1,5 +1,6 @@
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 /**
  * A source site's own name for a game, mapped to the Itsutsu variant it
@@ -57,4 +58,17 @@ const GAME_ALIASES: Record<string, RuleVariant> = {
 /** The Itsutsu variant a source site's own game name corresponds to, or null when there isn't one. */
 export function aliasedVariant(gameName: string): RuleVariant | null {
   return GAME_ALIASES[gameName] ?? null;
+}
+
+/**
+ * The other way round: every name the source sites gave one of our games,
+ * for a page that says what a game is also known as. Only names that differ
+ * from our own label are worth listing, and each once.
+ */
+export function aliasesFor(variant: RuleVariant): string[] {
+  const own = RULE_VARIANT_DISPLAY[variant].label.toLowerCase();
+  const names = Object.entries(GAME_ALIASES)
+    .filter(([name, target]) => target === variant && name.toLowerCase() !== own)
+    .map(([name]) => name);
+  return [...new Set(names)];
 }

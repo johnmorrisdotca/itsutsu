@@ -6,6 +6,13 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.51.0
+- The plain game is called Gomoku 五目並べ now, not Freestyle, and the exact-five tournament form is Tournament Gomoku 競技五目: the plain name on the plain game, a qualifier on the tightened one, as GoldToken names them
+- Every game on one plain page at /games/all, family by family, with the names the other sites gave each one
+
+## 0.50.4
+- Stale test assumptions fixed after the Gomoku rename
+
 ## 0.50.3
 - A name in the record leads to that player's page; the replay says when the game started at move 0, so nothing jumps; a match shows when it began and, once over, when it ended, and the board learns of a resignation or a strict timeout without a reload; the arrow keys walk the record on a replay and on the board; the move list folds away; the record lists finished games only
 

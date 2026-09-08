@@ -21,6 +21,19 @@ test.describe("rules and learning", () => {
     await expect(rules).toContainText("falls to the lowest empty point");
   });
 
+  test("every game is on one plain page, family by family, with its other names", async ({ page }) => {
+    await page.goto("/rules");
+    await page.getByTestId("every-game-link").click();
+    await expect(page).toHaveURL(/\/games\/all$/);
+    await expect(page.getByTestId("every-game-family")).toHaveCount(GAME_FAMILIES.length);
+    await expect(page.getByTestId("every-game").locator("dt")).toHaveCount(RULE_VARIANT_LIST.length);
+    await expect(page.getByTestId("every-game-freestyle")).toContainText("Also known as Go-Moku");
+    // Our own name for a game is not one of its other names.
+    await expect(page.getByTestId("every-game-halma")).not.toContainText("Also known as");
+    await page.getByTestId("every-game-halma").getByRole("link", { name: "rules", exact: true }).click();
+    await expect(page).toHaveURL(/\/rules\/halma$/);
+  });
+
   test("renju's rules page names the forbidden shapes and links a guide", async ({ page }) => {
     await page.goto("/rules/renju");
     await expect(page.getByTestId("rules-page")).toContainText("double three");

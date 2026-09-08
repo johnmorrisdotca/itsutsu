@@ -9,6 +9,9 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    // Build output anywhere, including a sibling agent's worktree under .claude/.
+    "**/.next/**",
+    ".claude/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

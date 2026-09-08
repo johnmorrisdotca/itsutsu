@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { Page } from "@/components/layout/Page";
@@ -21,7 +22,12 @@ export default function RulesIndexPage() {
         <p className="max-w-prose text-sm text-muted">
           Every game here is a line of stones at heart. Each page follows the same shape,
           so once you have read one you know where to look on the rest: what you are
-          trying to do, the board, how a turn goes, and the details.
+          trying to do, the board, how a turn goes, and the details. For the whole list as plain
+          text, see{" "}
+          <Link href="/games/all" className="underline underline-offset-4" data-testid="every-game-link">
+            every game
+          </Link>
+          .
         </p>
       </section>
       {/* The filter reads the query on the client, so it renders once that is known. */}
