@@ -78,7 +78,7 @@ export default async function PlayersPage() {
                   </Link>
                   <span className="text-muted">
                     {" "}
-                    — never played here, but their record from {legacy.source} is kept.
+                    — never played here, but {legacy.possessive ?? "their"} record from {legacy.source} is kept.
                   </span>
                 </li>
               ))}

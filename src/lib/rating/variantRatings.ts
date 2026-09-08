@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from "./elo";
 import { playerKey } from "./playerKey";
+import { isReservedKey } from "./reservedKeys";
 
 /**
  * Ratings per game, alongside the global ladder.
@@ -64,7 +65,15 @@ export async function recordVariantResult(
 ): Promise<void> {
   const blackKey = playerKey(blackName);
   const whiteKey = playerKey(whiteName);
-  if (blackKey === "" || whiteKey === "" || blackKey === whiteKey) return;
+  if (
+    blackKey === "" ||
+    whiteKey === "" ||
+    blackKey === whiteKey ||
+    isReservedKey(blackKey) ||
+    isReservedKey(whiteKey)
+  ) {
+    return;
+  }
 
   const [black, white] = await Promise.all([
     prisma.playerVariantRating.upsert({

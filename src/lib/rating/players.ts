@@ -12,6 +12,7 @@ import { recordVariantResult } from "./variantRatings";
  */
 
 import { playerKey } from "./playerKey";
+import { isReservedKey } from "./reservedKeys";
 
 export { playerKey };
 
@@ -72,7 +73,15 @@ export async function recordResult(
 ): Promise<void> {
   const blackKey = playerKey(blackName);
   const whiteKey = playerKey(whiteName);
-  if (blackKey === "" || whiteKey === "" || blackKey === whiteKey) return;
+  if (
+    blackKey === "" ||
+    whiteKey === "" ||
+    blackKey === whiteKey ||
+    isReservedKey(blackKey) ||
+    isReservedKey(whiteKey)
+  ) {
+    return;
+  }
 
   const [black, white] = await Promise.all([
     prisma.player.upsert({

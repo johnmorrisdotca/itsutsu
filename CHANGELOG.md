@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.36.0
+- A remembered record: a player who never played here, kept from ItsYourTurn
+
 ## 0.35.0
 - Who is here on the players page, with the five, fifteen and thirty minute marks; a fuller profile — city, country, time zone, a line about you, and whether you are listed or mailed; a buddy list, starred from the players page.
 
