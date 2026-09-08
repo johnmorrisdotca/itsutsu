@@ -20,7 +20,7 @@ const PITCH = [
   {
     title: "Every game kept",
     kanji: "棋譜",
-    body: "A finished game is filed with its stones in order. Replay it, send a friend the exact move you mean, and see how a player's rating moves.",
+    body: "A finished game is filed with its stones in order, and kept for good: no move history here goes missing after a few years. Replay it, send a friend the exact move you mean, and see how a player's rating moves.",
   },
   {
     title: "Fork any position",
