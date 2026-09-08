@@ -11,6 +11,7 @@ describe("legacy records", () => {
 
   it("distinguishes remembered from elsewhere", () => {
     expect(findLegacyPlayer("chibi")?.kind).toBe("remembered");
+    expect(findLegacyPlayer("kyokosan")?.kind).toBe("remembered");
     expect(findLegacyPlayer("incognito")?.kind).toBe("elsewhere");
   });
 
@@ -18,14 +19,14 @@ describe("legacy records", () => {
     expect(findLinkedLegacy("incognito")).toBeNull();
   });
 
-  it("every detail row sums to the summary it belongs under, when the detail claims to be complete", () => {
-    for (const player of LEGACY_PLAYERS.filter((p) => p.detailComplete)) {
-      const detailTotal = player.detail.reduce((sum, row) => sum + row.won + row.lost + row.drawn, 0);
-      const summaryTotal = player.summary.reduce(
-        (sum, row) => sum + row.record.won + row.record.lost + row.record.drawn,
-        0,
-      );
-      expect(detailTotal).toBe(summaryTotal);
+  it("every class's by-game detail sums to that class's own total, when it claims to be complete", () => {
+    for (const player of LEGACY_PLAYERS) {
+      for (const row of player.summary) {
+        if (!row.detailComplete || row.detail === undefined) continue;
+        const detailTotal = row.detail.reduce((sum, game) => sum + game.won + game.lost + game.drawn, 0);
+        const classTotal = row.record.won + row.record.lost + row.record.drawn;
+        expect(detailTotal, `${player.slug} / ${row.class}`).toBe(classTotal);
+      }
     }
   });
 });

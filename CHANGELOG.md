@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.38.0
+- Kyokosan's record, and the first kept game — a board you can step through, verified legal move by move
+
 ## 0.37.0
 - A live member's record from before Itsutsu, kept alongside what they've earned here
 

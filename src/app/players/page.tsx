@@ -62,7 +62,7 @@ export default async function PlayersPage() {
           <RecencyLegend />
         </div>
 
-        {LEGACY_PLAYERS.length > 0 ? (
+        {LEGACY_PLAYERS.some((legacy) => legacy.kind === "remembered") ? (
           <div
             className="flex flex-col gap-2 rounded-lg border border-rule-strong bg-ivory/60 px-3 py-2.5"
             data-testid="legacy-roll"
@@ -71,7 +71,7 @@ export default async function PlayersPage() {
               Remembered <span className="font-mincho font-normal normal-case tracking-normal opacity-70">偲ぶ</span>
             </span>
             <ul className="flex flex-col gap-1 text-sm">
-              {LEGACY_PLAYERS.map((legacy) => (
+              {LEGACY_PLAYERS.filter((legacy) => legacy.kind === "remembered").map((legacy) => (
                 <li key={legacy.slug}>
                   <Link href={`/players/${legacy.slug}`} className="font-medium underline-offset-4 hover:underline">
                     {legacy.name}

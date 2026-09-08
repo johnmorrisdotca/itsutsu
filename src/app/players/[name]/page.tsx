@@ -2,61 +2,86 @@ import Link from "next/link";
 
 import { recordPath } from "@/lib/gomoku/slugs";
 import { notFound } from "next/navigation";
+import { GameReplay } from "@/components/history/GameReplay";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
+import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyGames.data";
 import { findLegacyPlayer, findLinkedLegacy } from "@/lib/legacy/legacyPlayers.data";
-import type { LegacyPlayer } from "@/lib/legacy/legacyPlayers.types";
+import type { LegacyClassRecord, LegacyGame, LegacyPlayer } from "@/lib/legacy/legacyPlayers.types";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { fetchPlayer } from "@/lib/rating/players";
 import { playerKey } from "@/lib/rating/playerKey";
 
 export const metadata = { title: "Player" };
 
-/** The two tables every legacy record shows: totals by class, then by game. */
-function LegacyTables({ legacy }: { legacy: LegacyPlayer }) {
+/** One class of games: its own totals, and its own by-game table when one was kept. */
+function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
   return (
-    <>
-      <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-        <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Summary</h2>
-        <table className="w-full text-sm" data-testid="legacy-summary">
-          <tbody>
-            {legacy.summary.map((row) => (
-              <tr key={row.class} className="border-t border-rule">
-                <td className="py-1.5 pr-3">{row.class}</td>
-                <td className="py-1.5 pr-3 font-mono tabular-nums">
-                  {row.record.won}W · {row.record.lost}L · {row.record.drawn}D
-                </td>
-                <td className="py-1.5 text-xs text-muted">{row.record.won + row.record.lost + row.record.drawn} games</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      {legacy.detail.length > 0 ? (
-        <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-          <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">By game</h2>
+    <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
+      <h2 className="flex items-baseline justify-between gap-3 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+        {row.class}
+        <span className="font-mono normal-case tracking-normal text-ink-soft" data-testid="legacy-class-total">
+          {row.record.won}W · {row.record.lost}L · {row.record.drawn}D
+        </span>
+      </h2>
+      {row.detail !== undefined && row.detail.length > 0 ? (
+        <>
           <table className="w-full text-sm" data-testid="legacy-detail">
             <tbody>
-              {legacy.detail.map((row) => (
-                <tr key={row.game} className="border-t border-rule">
-                  <td className="py-1.5 pr-3">{row.game}</td>
+              {row.detail.map((game) => (
+                <tr key={game.game} className="border-t border-rule">
+                  <td className="py-1.5 pr-3">{game.game}</td>
                   <td className="py-1.5 pr-3 font-mono tabular-nums">
-                    {row.won}W · {row.lost}L · {row.drawn}D
+                    {game.won}W · {game.lost}L · {game.drawn}D
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {!legacy.detailComplete ? (
-            <p className="text-xs text-muted">As far as was recorded — {legacy.source} may hold more than what is copied down here.</p>
+          {!row.detailComplete ? (
+            <p className="text-xs text-muted">As far as was recorded — the source site may hold more than what is copied down here.</p>
           ) : null}
-        </section>
+        </>
       ) : null}
-    </>
+    </section>
+  );
+}
+
+/** The games kept in full for one slug — a board a reader can step through, not just a result. */
+function KeptGames({ slug }: { slug: string }) {
+  const games = keptGamesFor(slug);
+  if (games.length === 0) return null;
+  return (
+    <section className="flex flex-col gap-4" data-testid="kept-games">
+      <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Games we have</h2>
+      {games.map((game) => (
+        <KeptGame key={game.id} game={game} viewedAs={slug} />
+      ))}
+    </section>
+  );
+}
+
+function KeptGame({ game, viewedAs }: { game: LegacyGame; viewedAs: string }) {
+  const isBlack = game.black === viewedAs;
+  const opponentSlug = isBlack ? game.white : game.black;
+  const opponentName = keptGameName(opponentSlug);
+  const colour = isBlack ? "black" : "white";
+  const result = game.winner === null ? "drew" : game.winner === colour ? "won" : "lost";
+  return (
+    <div className={`${PANEL_CLASS} flex flex-col gap-3`}>
+      <p className="text-sm text-muted">
+        {game.playedAt} · {variantLabel(game.variant)}, {game.size}×{game.size} · vs{" "}
+        <Link href={`/players/${opponentSlug}`} className="font-medium text-ink-soft underline-offset-2 hover:underline">
+          {opponentName}
+        </Link>{" "}
+        · played <span className="font-medium text-ink-soft">{colour}</span> · <span className="font-medium text-ink-soft">{result}</span> ·{" "}
+        {game.source}
+      </p>
+      <GameReplay game={keptGameDetail(game)} />
+    </div>
   );
 }
 
@@ -82,7 +107,10 @@ function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
         </p>
         {legacy.note !== undefined ? <p className="border-l-2 border-rule-strong pl-3 text-sm italic text-ink-soft">{legacy.note}</p> : null}
       </section>
-      <LegacyTables legacy={legacy} />
+      {legacy.summary.map((row) => (
+        <LegacyClassTable key={row.class} row={row} />
+      ))}
+      <KeptGames slug={legacy.slug} />
     </Page>
   );
 }
@@ -116,19 +144,29 @@ function LegacyElsewherePanel({ legacy }: { legacy: LegacyPlayer }) {
       </table>
       <details>
         <summary className="cursor-pointer text-xs text-muted underline-offset-2 hover:underline">By game</summary>
-        <table className="mt-2 w-full text-sm" data-testid="legacy-detail">
-          <tbody>
-            {legacy.detail.map((row) => (
-              <tr key={row.game} className="border-t border-rule">
-                <td className="py-1.5 pr-3">{row.game}</td>
-                <td className="py-1.5 pr-3 font-mono tabular-nums">
-                  {row.won}W · {row.lost}L · {row.drawn}D
-                </td>
-              </tr>
+        <div className="mt-2 flex flex-col gap-4">
+          {legacy.summary
+            .filter((row) => row.detail !== undefined && row.detail.length > 0)
+            .map((row) => (
+              <div key={row.class} className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-muted">{row.class}</span>
+                <table className="w-full text-sm" data-testid="legacy-detail">
+                  <tbody>
+                    {row.detail?.map((game) => (
+                      <tr key={game.game} className="border-t border-rule">
+                        <td className="py-1.5 pr-3">{game.game}</td>
+                        <td className="py-1.5 pr-3 font-mono tabular-nums">
+                          {game.won}W · {game.lost}L · {game.drawn}D
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             ))}
-          </tbody>
-        </table>
+        </div>
       </details>
+      <KeptGames slug={legacy.slug} />
     </section>
   );
 }

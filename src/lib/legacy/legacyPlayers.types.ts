@@ -6,13 +6,26 @@ export type LegacyGameRecord = {
   drawn: number;
 };
 
+/** One class of games (Regular, Tournament, Ladder — whatever the source site called it), with its own by-game breakdown. */
+export type LegacyClassRecord = {
+  class: string;
+  record: LegacyGameRecord;
+  /**
+   * Per-game-type detail for this class, as far as it was recorded. Not
+   * claimed to be exhaustive unless detailComplete says so — a source
+   * profile page can hold more than was ever copied down.
+   */
+  detail?: LegacyGameRecord[];
+  detailComplete?: boolean;
+};
+
 /**
  * A record kept from somewhere else.
  *
  * "remembered" is someone who never played on Itsutsu at all — their record
  * comes from another site and would otherwise simply vanish when that site
  * does. Their slug is permanently reserved: see RESERVED_PLAYER_KEYS in
- * rating/reservedKeys.ts, and isReservedFor below.
+ * rating/reservedKeys.ts.
  *
  * "elsewhere" is a live member here who also has a record from before
  * Itsutsu existed. Nothing about them is reserved — they play under their
@@ -35,15 +48,24 @@ export type LegacyPlayer = {
   lastActive?: string;
   /** A line of context, sourced rather than invented — a fact worth keeping, not a guess at how someone felt. */
   note?: string;
-  /** Won-lost-drawn across every game class the source site tracked. */
-  summary: { class: string; record: LegacyGameRecord }[];
-  /**
-   * Per-game-type detail, as far as it was recorded. Not claimed to be
-   * exhaustive — a source profile page can hold more than was ever copied
-   * down, and this says so rather than passing off a partial list as complete.
-   */
-  detail: LegacyGameRecord[];
-  detailComplete: boolean;
+  /** Every class of game the source site tracked, each with its own totals and, where recorded, its own by-game table. */
+  summary: LegacyClassRecord[];
   /** For kind "elsewhere": the folded key of the live Itsutsu name this record belongs beside. */
   linkedKey?: string;
+};
+
+/** A single game kept in full — moves proven legal by replay, not just a result. */
+export type LegacyGame = {
+  id: string;
+  variant: string;
+  size: number;
+  /** As recorded at the source; shown verbatim, not parsed as a precise instant. */
+  playedAt: string;
+  source: string;
+  /** Slugs into LEGACY_PLAYERS, or a live player's own key once one side is a live account. */
+  black: string;
+  white: string;
+  winner: "black" | "white" | null;
+  /** Alternating black, white, black... from the first move. */
+  moves: { row: number; col: number }[];
 };
