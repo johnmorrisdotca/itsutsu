@@ -15,6 +15,13 @@ export type LegacyGameRecord = {
   log?: LegacyGameLogEntry[];
 };
 
+/** A remark left on something a legacy player posted at the source — kept as found, never paraphrased. */
+export type LegacyComment = {
+  text: string;
+  by: string;
+  at: string;
+};
+
 /** One class of games (Regular, Tournament, Ladder — whatever the source site called it), with its own by-game breakdown. */
 export type LegacyClassRecord = {
   class: string;
@@ -61,14 +68,20 @@ export type LegacyPlayer = {
   possessive?: "his" | "her" | "their";
   source: string;
   sourceUrl?: string;
+  /** The source site's own player id, for linking back precisely — not guessed at when a site never showed it. */
+  sourceId?: string;
   joined?: string;
   lastActive?: string;
   /** A line of context, sourced rather than invented — a fact worth keeping, not a guess at how someone felt. */
   note?: string;
+  /** Remarks left on something this person posted at the source, kept as found. */
+  comments?: LegacyComment[];
   /** Every class of game the source site tracked, each with its own totals and, where recorded, its own by-game table. */
   summary: LegacyClassRecord[];
   /** For kind "elsewhere": the folded key of the live Itsutsu name this record belongs beside. */
   linkedKey?: string;
+  /** Slugs of this same person's other kept records, from other sites. */
+  relatedSlugs?: string[];
 };
 
 /** A single game kept in full — moves proven legal by replay, not just a result. */

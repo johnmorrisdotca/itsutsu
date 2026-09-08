@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { recordPath } from "@/lib/gomoku/slugs";
+import { recordPath, rulesPath } from "@/lib/gomoku/slugs";
 import { notFound } from "next/navigation";
 import { GameReplay } from "@/components/history/GameReplay";
 import { Page } from "@/components/layout/Page";
@@ -9,6 +9,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
+import { aliasedVariant } from "@/lib/legacy/gameAliases";
 import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyGames.data";
 import { findLegacyPlayer, findLinkedLegacies } from "@/lib/legacy/legacyPlayers.data";
 import type { LegacyClassRecord, LegacyGame, LegacyGameRecord, LegacyPlayer } from "@/lib/legacy/legacyPlayers.types";
@@ -17,6 +18,17 @@ import { fetchPlayer } from "@/lib/rating/players";
 import { playerKey } from "@/lib/rating/playerKey";
 
 export const metadata = { title: "Player" };
+
+/** A source site's game name, linked to the Itsutsu game it actually is, when there is one. */
+function GameName({ name }: { name: string }) {
+  const variant = aliasedVariant(name);
+  if (variant === null) return <>{name}</>;
+  return (
+    <Link href={rulesPath(variant)} className="underline-offset-2 hover:underline">
+      {name}
+    </Link>
+  );
+}
 
 /** One game's individual results, where the source site logged them one by one rather than only a total. */
 function GameLog({ game }: { game: LegacyGameRecord }) {
@@ -56,7 +68,7 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
               {row.detail.map((game) => (
                 <tr key={game.game} className="border-t border-rule">
                   <td className="py-1.5 pr-3 align-top">
-                    {game.game}
+                    <GameName name={game.game} />
                     <GameLog game={game} />
                   </td>
                   <td className="py-1.5 pr-3 align-top font-mono tabular-nums">
@@ -110,6 +122,46 @@ function KeptGame({ game, viewedAs }: { game: LegacyGame; viewedAs: string }) {
   );
 }
 
+/** Remarks left on something a legacy player posted at the source — kept exactly as found. */
+function LegacyComments({ legacy }: { legacy: LegacyPlayer }) {
+  if (legacy.comments === undefined || legacy.comments.length === 0) return null;
+  return (
+    <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="legacy-comments">
+      <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Comments</h2>
+      <ul className="flex flex-col gap-3">
+        {legacy.comments.map((comment, index) => (
+          <li key={`${comment.by}-${comment.at}-${index}`} className="flex flex-col gap-0.5 border-t border-rule pt-3 first:border-t-0 first:pt-0">
+            <p className="text-sm whitespace-pre-line">{comment.text}</p>
+            <p className="text-xs text-muted">
+              <span className="font-medium text-ink-soft">{comment.by}</span> · {comment.at}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Other kept records for the same person, on other sites. */
+function RelatedLegacy({ legacy }: { legacy: LegacyPlayer }) {
+  if (legacy.relatedSlugs === undefined || legacy.relatedSlugs.length === 0) return null;
+  const related = legacy.relatedSlugs.map((slug) => findLegacyPlayer(slug)).filter((entry) => entry !== null);
+  if (related.length === 0) return null;
+  return (
+    <p className="text-xs text-muted">
+      Also kept:{" "}
+      {related.map((entry, index) => (
+        <span key={entry.slug}>
+          {index > 0 ? ", " : ""}
+          <Link href={`/players/${entry.slug}`} className="underline-offset-2 hover:underline">
+            {entry.name} on {entry.source}
+          </Link>
+        </span>
+      ))}
+    </p>
+  );
+}
+
 const LEGACY_OWN_PAGE_COPY: Record<"remembered" | "honorary", { badge: string; tail: string }> = {
   remembered: { badge: "Remembered", tail: "Never played on Itsutsu — this record is kept, not earned here." },
   honorary: { badge: "Honorary member", tail: "Never played on Itsutsu — kept here as an honorary member, in her own right." },
@@ -134,11 +186,13 @@ function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
           {copy?.tail ?? "From before Itsutsu — kept alongside whatever they've since earned here."}
         </p>
         {legacy.note !== undefined ? <p className="border-l-2 border-rule-strong pl-3 text-sm italic text-ink-soft">{legacy.note}</p> : null}
+        <RelatedLegacy legacy={legacy} />
       </section>
       {legacy.summary.map((row) => (
         <LegacyClassTable key={row.class} row={row} />
       ))}
       <KeptGames slug={legacy.slug} />
+      <LegacyComments legacy={legacy} />
     </Page>
   );
 }
@@ -183,7 +237,7 @@ function LegacyElsewherePanel({ legacy }: { legacy: LegacyPlayer }) {
                     {row.detail?.map((game) => (
                       <tr key={game.game} className="border-t border-rule">
                         <td className="py-1.5 pr-3 align-top">
-                          {game.game}
+                          <GameName name={game.game} />
                           <GameLog game={game} />
                         </td>
                         <td className="py-1.5 pr-3 align-top font-mono tabular-nums">
