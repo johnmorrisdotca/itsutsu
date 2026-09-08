@@ -14,8 +14,8 @@ function Out({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
-const TH = "py-1 pr-3 text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase";
-const TD = "py-1 pr-3 align-top";
+const TH = "px-3 py-1.5 text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase";
+const TD = "px-3 py-1.5 align-top";
 
 function Table({ head, rows, caption }: { head: string[]; rows: ReactNode[][]; caption: ReactNode }) {
   return (
@@ -24,8 +24,8 @@ function Table({ head, rows, caption }: { head: string[]; rows: ReactNode[][]; c
         <table className="w-full text-sm">
           <thead>
             <tr>
-              {head.map((cell) => (
-                <th key={cell} className={TH}>
+              {head.map((cell, i) => (
+                <th key={i} className={TH}>
                   {cell}
                 </th>
               ))}

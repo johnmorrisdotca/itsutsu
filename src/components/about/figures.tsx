@@ -22,7 +22,7 @@ export const HOGETSU = (
     caption={
       <>
         <span className="font-mincho">浦月</span> <em>Hogetsu</em>, the diagonal opening. Renju names all twenty-six
-        openings after moons and flowers; this one is so strong for black that tournament rules let white swap seats
+        openings after moons and stars; this one is so strong for black that tournament rules let white swap seats
         after it.
       </>
     }
