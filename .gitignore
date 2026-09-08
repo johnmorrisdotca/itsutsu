@@ -52,3 +52,6 @@ next-env.d.ts
 
 # Playwright saved sessions
 /.auth/
+
+# Worktrees agents work in; never part of the repository.
+.claude/worktrees/
