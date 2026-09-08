@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { SiteFooter } from "./SiteFooter";
+
 /**
  * The three widths a page may be, and no others.
  *
@@ -32,7 +34,10 @@ export function Page({
 }) {
   return (
     <div className="paper flex flex-1 flex-col items-center px-4 py-6 sm:px-8 sm:py-8">
-      <main className={`flex w-full flex-col ${PAGE_WIDTH[width]} ${gap}`}>{children}</main>
+      <main className={`flex w-full flex-col ${PAGE_WIDTH[width]} ${gap}`}>
+        {children}
+        <SiteFooter />
+      </main>
     </div>
   );
 }

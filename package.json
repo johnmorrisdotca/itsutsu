@@ -1,8 +1,9 @@
 {
   "name": "gomoku",
-  "version": "0.1.0",
+  "version": "0.33.0",
   "private": true,
   "scripts": {
+    "version:bump": "node scripts/bump-version.mjs",
     "dev": "next dev -p ${WEB_PORT:-6600}",
     "build": "next build",
     "start": "next start -p ${WEB_PORT:-6600}",
