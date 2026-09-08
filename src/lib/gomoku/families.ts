@@ -33,6 +33,12 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
     games: ["reversi", "classicReversi", "antiReversi", "miniReversi"],
   },
   {
+    title: "Strange boards",
+    kanji: "変盤",
+    blurb: "Five in a row, on a board that does not behave: edges that join, and squares you cannot use.",
+    games: ["toroidalFive", "obstacleFive"],
+  },
+  {
     title: "Small boards",
     kanji: "小盤",
     blurb: "Games you can read to the end, and games where the trick is what you must not do.",
