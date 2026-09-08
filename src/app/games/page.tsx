@@ -19,6 +19,9 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export const metadata = { title: "Games" };
 
+// Read from the database on every request, never at build time.
+export const dynamic = "force-dynamic";
+
 
 /**
  * The games: where a person lands after joining. One plain choice first, so
