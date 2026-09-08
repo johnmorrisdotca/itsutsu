@@ -41,7 +41,7 @@ export async function RecordPage({ variant, params }: { variant?: RuleVariant; p
   const copy = variant === undefined ? null : RULE_VARIANT_DISPLAY[variant];
 
   return (
-    <Page width="wide" gap="gap-6">
+    <Page width="standard" gap="gap-6">
       <SiteHeader />
 
       <div className="flex flex-col gap-1">

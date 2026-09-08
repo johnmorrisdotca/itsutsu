@@ -45,9 +45,9 @@ export function AccountMenu({ initial }: { initial: Who }) {
         <img src={data.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
       ) : null}
       {data.member || data.admin ? (
-        <span className="max-w-32 truncate text-ink-soft" title={data.email ?? undefined}>
+        <Link href="/me" className="max-w-32 truncate text-ink-soft underline-offset-4 hover:underline" title={data.email ?? undefined} data-testid="me-link">
           {label}
-        </span>
+        </Link>
       ) : null}
       <button
         type="button"

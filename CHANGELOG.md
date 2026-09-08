@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.34.0
+- A profile page: choose the name other players see, on first sign-in and any time after; your record by game and your invite link. New members are marked on the players page. The record list sits on the standard column.
+
 ## 0.33.5
 - The door names the sign-in error it was given; the operator's door is reached by address only.
 

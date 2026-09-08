@@ -54,11 +54,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(join);
   }
 
-  await admitMember({ email, name, picture });
+  const admitted = await admitMember({ email, name, picture });
+  // The first visit is the registration: choose the name other players will see.
+  const welcome = `/me?welcome=1&next=${encodeURIComponent(destination)}`;
   return grant(
-    { kind: "player", email: foldEmail(email), name, picture, exp: expiryInDays(PLAYER_SESSION_DAYS) },
+    { kind: "player", email: foldEmail(email), name: admitted.name, picture, exp: expiryInDays(PLAYER_SESSION_DAYS) },
     PLAYER_SESSION_DAYS,
-    destination,
+    admitted.created ? welcome : destination,
     url.origin,
   );
 }

@@ -126,8 +126,14 @@ export type DirectoryEntry = {
   name: string;
   picture: string;
   lastSeenAt: string;
+  joinedAt: string;
+  /** Joined within the last two weeks: someone to welcome. */
+  isNew: boolean;
   profile: PlayerProfile | null;
 };
+
+/** How long a member counts as new in the directory. */
+const NEW_FOR_DAYS = 14;
 
 /**
  * Everyone who has come in, most recently seen first, with the record their
@@ -144,6 +150,8 @@ export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
     name: member.name,
     picture: member.picture,
     lastSeenAt: member.lastSeenAt.toISOString(),
+    joinedAt: member.createdAt.toISOString(),
+    isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
     profile: byKey.get(playerKey(member.name)) ?? null,
   }));
 }

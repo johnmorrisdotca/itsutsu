@@ -31,7 +31,8 @@ export default async function PlayersPage() {
         </h1>
         <p className="text-sm text-muted">
           Everyone who has come in, most recently seen first, with the record their name has
-          earned. Challenge anyone: the game is in their list the moment you start it.
+          earned. New members are marked for two weeks; challenge one, and the game is in their
+          list the moment you start it.
         </p>
         <table className="w-full text-sm" data-testid="directory">
           <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
@@ -41,7 +42,7 @@ export default async function PlayersPage() {
               <th className="py-1 pr-3">L</th>
               <th className="py-1 pr-3">D</th>
               <th className="py-1 pr-3">Rating</th>
-              <th className="py-1 pr-3">Seen</th>
+              <th className="py-1 pr-3">Joined</th>
               <th className="py-1"></th>
             </tr>
           </thead>
@@ -69,7 +70,12 @@ export default async function PlayersPage() {
                 <td className="py-1.5 pr-3 font-mono tabular-nums">
                   {entry.profile !== null && entry.profile.tier !== "unrated" ? entry.profile.rating : "–"}
                 </td>
-                <td className="py-1.5 pr-3 text-xs text-muted">{new Date(entry.lastSeenAt).toLocaleDateString()}</td>
+                <td className="py-1.5 pr-3 text-xs text-muted">
+                  {new Date(entry.joinedAt).toLocaleDateString()}
+                  {entry.isNew ? (
+                    <span className="ml-2 rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">New 新人</span>
+                  ) : null}
+                </td>
                 <td className="py-1.5 text-right">
                   {me?.email && me.email !== entry.email ? <ChallengeButton email={entry.email} /> : null}
                 </td>
