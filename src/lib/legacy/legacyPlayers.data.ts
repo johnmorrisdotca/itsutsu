@@ -155,6 +155,69 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
       },
     ],
   },
+  {
+    slug: "jmorris",
+    name: "John Morris",
+    kind: "elsewhere",
+    location: "Canada",
+    possessive: "his",
+    source: "GoldToken.com",
+    joined: "2011-06-25",
+    lastActive: "2026-09-08",
+    note: "Reversi here is the same game as Flipversi on ItsYourTurn — one game, two sites' names for it. GoldToken's own rating averaged 1689 across every game; a different scale from Itsutsu's Elo, not converted or compared.",
+    summary: [
+      {
+        class: "Friendly games",
+        record: { game: "Friendly games", won: 188, lost: 41, drawn: 7 },
+        detailComplete: true,
+        detail: [
+          { game: "Golden Pente", won: 64, lost: 6, drawn: 0 },
+          { game: "Pente", won: 82, lost: 14, drawn: 0 },
+          { game: "Large Go Moku", won: 23, lost: 3, drawn: 0 },
+          {
+            game: "Go Moku",
+            won: 18,
+            lost: 7,
+            drawn: 0,
+            log: [
+              { date: "2020-01-15", opponent: "GROWLINGMAD", result: "won" },
+              { date: "2020-01-14", opponent: "GROWLINGMAD", result: "won" },
+              { date: "2020-01-07", opponent: "GROWLINGMAD", result: "won" },
+              { date: "2019-12-27", opponent: "GROWLINGMAD", result: "won" },
+              { date: "2019-12-08", opponent: "curlywolf", result: "lost" },
+              { date: "2019-11-26", opponent: "AmberLove", result: "won" },
+              { date: "2019-10-21", opponent: "Wild Horse", result: "won" },
+              { date: "2019-10-21", opponent: "Wild Horse", result: "won" },
+              { date: "2019-10-21", opponent: "JL579", result: "lost" },
+              { date: "2019-10-15", opponent: "JL579", result: "lost" },
+              { date: "2019-10-04", opponent: "builderbob54", result: "lost" },
+              { date: "2019-09-30", opponent: "builderbob54", result: "lost" },
+              { date: "2019-09-03", opponent: "AmberLove", result: "lost" },
+              { date: "2019-08-22", opponent: "curlywolf", result: "won" },
+              { date: "2019-07-23", opponent: "Wild Horse", result: "lost" },
+              { date: "2011-09-17", opponent: "asiula", result: "won" },
+              { date: "2011-08-31", opponent: "asiula", result: "won" },
+              { date: "2011-08-07", opponent: "Kentish Martin", result: "won" },
+              { date: "2011-08-05", opponent: "Kentish Martin", result: "won" },
+              { date: "2011-08-03", opponent: "BITman", result: "won" },
+              { date: "2011-08-03", opponent: "Aspen", result: "won" },
+              { date: "2011-07-28", opponent: "Aspen", result: "won" },
+              { date: "2011-07-06", opponent: "Aspen", result: "won" },
+              { date: "2011-07-04", opponent: "BITman", result: "won" },
+              { date: "2011-07-03", opponent: "Aspen", result: "won" },
+            ],
+          },
+          { game: "Backgammon", won: 0, lost: 3, drawn: 2 },
+          { game: "Nackgammon", won: 0, lost: 4, drawn: 2 },
+          { game: "Small Go Moku", won: 1, lost: 0, drawn: 0 },
+          { game: "Long Gammon", won: 0, lost: 2, drawn: 1 },
+          { game: "Nackgammon (3 Point)", won: 0, lost: 0, drawn: 1 },
+          { game: "Backgammon (3 Point)", won: 0, lost: 0, drawn: 1 },
+          { game: "Reversi", won: 0, lost: 2, drawn: 0 },
+        ],
+      },
+    ],
+  },
 ];
 
 export function findLegacyPlayer(slug: string): LegacyPlayer | null {
@@ -162,7 +225,11 @@ export function findLegacyPlayer(slug: string): LegacyPlayer | null {
   return LEGACY_PLAYERS.find((player) => player.slug === key) ?? null;
 }
 
-/** The elsewhere record belonging beside a live player's own name, if any. */
-export function findLinkedLegacy(liveKey: string): LegacyPlayer | null {
-  return LEGACY_PLAYERS.find((player) => player.kind === "elsewhere" && player.linkedKey === liveKey) ?? null;
+/**
+ * Every elsewhere record belonging beside a live player's own name — a
+ * person can have played on more than one site before Itsutsu existed, so
+ * this is a list, not a single match.
+ */
+export function findLinkedLegacies(liveKey: string): LegacyPlayer[] {
+  return LEGACY_PLAYERS.filter((player) => player.kind === "elsewhere" && player.linkedKey === liveKey);
 }

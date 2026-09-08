@@ -1,9 +1,18 @@
+/** One finished game, as a source site's own per-opponent log listed it — no moves, just who and when. */
+export type LegacyGameLogEntry = {
+  date: string;
+  opponent: string;
+  result: "won" | "lost" | "drawn";
+};
+
 /** One game type's record on the site a legacy player came from. */
 export type LegacyGameRecord = {
   game: string;
   won: number;
   lost: number;
   drawn: number;
+  /** The individual games behind this row, where the source site listed them one by one. Sums to won+lost+drawn when given in full. */
+  log?: LegacyGameLogEntry[];
 };
 
 /** One class of games (Regular, Tournament, Ladder — whatever the source site called it), with its own by-game breakdown. */

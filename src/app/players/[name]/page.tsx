@@ -9,13 +9,34 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyGames.data";
-import { findLegacyPlayer, findLinkedLegacy } from "@/lib/legacy/legacyPlayers.data";
-import type { LegacyClassRecord, LegacyGame, LegacyPlayer } from "@/lib/legacy/legacyPlayers.types";
+import { findLegacyPlayer, findLinkedLegacies } from "@/lib/legacy/legacyPlayers.data";
+import type { LegacyClassRecord, LegacyGame, LegacyGameRecord, LegacyPlayer } from "@/lib/legacy/legacyPlayers.types";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { fetchPlayer } from "@/lib/rating/players";
 import { playerKey } from "@/lib/rating/playerKey";
 
 export const metadata = { title: "Player" };
+
+/** One game's individual results, where the source site logged them one by one rather than only a total. */
+function GameLog({ game }: { game: LegacyGameRecord }) {
+  if (game.log === undefined || game.log.length === 0) return null;
+  return (
+    <details className="ml-0">
+      <summary className="cursor-pointer text-xs text-muted underline-offset-2 hover:underline">
+        {game.log.length} games, one by one
+      </summary>
+      <ul className="mt-1.5 flex flex-col divide-y divide-rule text-xs" data-testid="legacy-log">
+        {game.log.map((entry, index) => (
+          <li key={`${entry.date}-${entry.opponent}-${index}`} className="flex items-center justify-between gap-3 py-1">
+            <span className="text-muted">{entry.date}</span>
+            <span className="flex-1 truncate px-2">{entry.opponent}</span>
+            <span className="font-mono">{entry.result}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
 
 /** One class of games: its own totals, and its own by-game table when one was kept. */
 function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
@@ -33,8 +54,11 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
             <tbody>
               {row.detail.map((game) => (
                 <tr key={game.game} className="border-t border-rule">
-                  <td className="py-1.5 pr-3">{game.game}</td>
-                  <td className="py-1.5 pr-3 font-mono tabular-nums">
+                  <td className="py-1.5 pr-3 align-top">
+                    {game.game}
+                    <GameLog game={game} />
+                  </td>
+                  <td className="py-1.5 pr-3 align-top font-mono tabular-nums">
                     {game.won}W · {game.lost}L · {game.drawn}D
                   </td>
                 </tr>
@@ -157,8 +181,11 @@ function LegacyElsewherePanel({ legacy }: { legacy: LegacyPlayer }) {
                   <tbody>
                     {row.detail?.map((game) => (
                       <tr key={game.game} className="border-t border-rule">
-                        <td className="py-1.5 pr-3">{game.game}</td>
-                        <td className="py-1.5 pr-3 font-mono tabular-nums">
+                        <td className="py-1.5 pr-3 align-top">
+                          {game.game}
+                          <GameLog game={game} />
+                        </td>
+                        <td className="py-1.5 pr-3 align-top font-mono tabular-nums">
                           {game.won}W · {game.lost}L · {game.drawn}D
                         </td>
                       </tr>
@@ -195,10 +222,14 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
 
   const [player, record] = await Promise.all([fetchPlayer(decoded), fetchPlayerRecord(decoded)]);
   const hasLiveData = player !== null || record.games > 0;
-  const linked = findLinkedLegacy(playerKey(decoded)) ?? (hasLiveData ? null : legacyBySlug);
+  // A live account with no games yet but more than one linked record is not
+  // reachable today — nothing sets linkedKey yet — so only the first would
+  // show here; worth widening if that combination ever becomes real.
+  const linkedByKey = findLinkedLegacies(playerKey(decoded));
+  const linked = linkedByKey.length > 0 ? linkedByKey : hasLiveData || legacyBySlug === null ? [] : [legacyBySlug];
 
-  if (!hasLiveData && linked === null) notFound();
-  if (!hasLiveData && linked !== null) return <LegacyOwnPage legacy={linked} />;
+  if (!hasLiveData && linked.length === 0) notFound();
+  if (!hasLiveData && linked.length > 0) return <LegacyOwnPage legacy={linked[0]} />;
 
   const tier = player === null ? null : TIER_DISPLAY[player.tier];
 
@@ -274,7 +305,9 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
         </section>
       ) : null}
 
-      {linked !== null ? <LegacyElsewherePanel legacy={linked} /> : null}
+      {linked.map((legacy) => (
+        <LegacyElsewherePanel key={legacy.slug} legacy={legacy} />
+      ))}
   </Page>
   );
 }
