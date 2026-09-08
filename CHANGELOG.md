@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.58.0
+- A game's address is short enough to read out: /games/notakto/k3m9-p2qx/4, in place of a generated database id
+
 ## 0.57.0
 - The backlog says who has each item, groups itself under headings by status, and is on the Admin page rather than a card pointing at it
 - The games below the lobby are for looking around: there is one way to start a game on the page now, and it always asks first

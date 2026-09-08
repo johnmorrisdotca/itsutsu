@@ -28,7 +28,7 @@ test.describe("starting a game is one sentence", () => {
 
     await page.getByTestId("start-game-go").click();
     // The seat link seats whoever posted it, and lands on the board.
-    await expect(page).toHaveURL(/\/games\/trap-three\/[a-z0-9]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/trap-three\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
 
     // Tidy up after itself: an abandoned seat would meet the next run.
@@ -56,7 +56,7 @@ test.describe("starting a game is one sentence", () => {
     await expect(page.getByTestId("start-game-hint")).toContainText("asking for exactly this");
 
     await page.getByTestId("start-game-go").click();
-    await expect(page).toHaveURL(/\/games\/notakto\/[a-z0-9]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/notakto\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("turn-banner")).toBeVisible();
   });
 

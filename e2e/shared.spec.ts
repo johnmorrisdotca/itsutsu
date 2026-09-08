@@ -52,7 +52,7 @@ test.describe("a game played from two devices", () => {
     await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
 
     // The claim is in a cookie now; the bar shows the match and nothing secret.
-    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9-]+\/0$/);
     expect(page.url()).not.toContain(game.blackToken);
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
 
@@ -107,7 +107,7 @@ test.describe("a game played from two devices", () => {
     await expect(page.getByTestId("post-seat-note")).toBeVisible();
     await expect(page.getByLabel("Open to anyone")).toBeChecked();
     await page.getByTestId("start-shared-game").click();
-    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("shared-open-line")).toContainText("posted on the games page");
   });
 
@@ -131,7 +131,7 @@ test.describe("a game played from two devices", () => {
     await page.getByTestId("start-shared-game").click();
 
     // The match, with its move count on the end: a fresh board is position 0.
-    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
   });
 });

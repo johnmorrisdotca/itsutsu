@@ -5,6 +5,7 @@ import { randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { freeGameId } from "./gameId";
 import {
   canTwist,
   createGame,
@@ -152,6 +153,7 @@ export async function createLiveGame(
   const budget = clockMode === "game" ? rest.moveTimeMs : null;
   const game = await prisma.game.create({
     data: {
+      id: await freeGameId(),
       ...rest,
       clockMode,
       rated,

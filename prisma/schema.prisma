@@ -31,7 +31,10 @@ enum GameLifecycle {
 }
 
 model Game {
-  id        String   @id @default(cuid())
+  /// Eight characters in two blocks — k3m9-p2qx — made by makeGameId and
+  /// checked free before use. Not a generated default: a game's id is in
+  /// every address it has, so it is chosen deliberately, not by the client.
+  id        String   @id
   playedAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 

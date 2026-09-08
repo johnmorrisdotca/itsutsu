@@ -4,6 +4,7 @@ import "server-only";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { freeGameId } from "./gameId";
 import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { fetchGameDetail } from "./gameHistory";
 import { GAME_RESULTS } from "./gameHistory.constants";
@@ -92,6 +93,7 @@ export type GameRecordInput = z.infer<typeof gameRecordSchema>;
 export async function recordGame(input: GameRecordInput): Promise<GameDetail> {
   const created = await prisma.game.create({
     data: {
+      id: await freeGameId(),
       blackName: input.blackName.trim(),
       whiteName: input.whiteName.trim(),
       size: input.size,
