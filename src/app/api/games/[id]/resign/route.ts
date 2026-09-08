@@ -12,12 +12,14 @@ const REFUSAL_STATUS: Record<string, number> = {
   "not-found": 404,
   finished: 409,
   "wrong-token": 403,
+  "not-allowed": 409,
 };
 
 const REFUSAL_MESSAGE: Record<string, string> = {
   "not-found": "No such game.",
   finished: "That game is already over.",
   "wrong-token": "You do not hold a seat in this game.",
+  "not-allowed": "This game was set up so that nobody may resign it.",
 };
 
 /**

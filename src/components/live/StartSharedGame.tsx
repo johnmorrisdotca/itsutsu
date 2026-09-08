@@ -6,7 +6,7 @@ import { useState } from "react";
 import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { seatPath } from "@/lib/gomoku/slugs";
-import { Button, Field, SectionTitle, Select } from "@/components/ui/Controls";
+import { Button, Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
 import {
@@ -31,6 +31,8 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
   const [error, setError] = useState<string | null>(null);
   const [moveTimeMs, setMoveTimeMs] = useState<number | null>(null);
   const [timeoutPenalty, setTimeoutPenalty] = useState<TimeoutPenalty>("turn");
+  const [allowResign, setAllowResign] = useState(true);
+  const [open, setOpen] = useState(false);
   // Swap openings move colours between players, which a seat link cannot follow.
   const sharedOpening = SHARED_OPENINGS.includes(settings.opening)
     ? settings.opening
@@ -52,6 +54,8 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
           handicap: settings.handicap.stone === null ? null : settings.handicap,
           moveTimeMs,
           timeoutPenalty,
+          allowResign,
+          open,
         }),
       });
 
@@ -107,6 +111,18 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
           </Select>
         </Field>
       ) : null}
+      <Toggle
+        label={GAME_COPY.allowResign.label}
+        hint={GAME_COPY.allowResignHint}
+        checked={allowResign}
+        onChange={setAllowResign}
+      />
+      <Toggle
+        label={GAME_COPY.openSeat.label}
+        hint={GAME_COPY.openSeatHint}
+        checked={open}
+        onChange={setOpen}
+      />
       <Button onClick={start} disabled={starting} data-testid="start-shared-game">
         {starting ? "Starting…" : "Start a shared game"}
       </Button>

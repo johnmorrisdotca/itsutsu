@@ -39,6 +39,8 @@ export const SUMMARY_SELECT = {
   lastMoveAt: true,
   blackForfeits: true,
   whiteForfeits: true,
+  allowResign: true,
+  openSeat: true,
   result: true,
   winner: true,
   moveCount: true,

@@ -19,7 +19,7 @@ import {
 } from "@/lib/history/gameSettingsSchema";
 import { describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
-import { Button, Field, SectionTitle, Select } from "@/components/ui/Controls";
+import { Button, Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { describeHandicap, describeRules } from "./rulesSummary";
 
@@ -52,6 +52,8 @@ export function SharedRules({
       opening: string;
       moveTimeMs: number | null;
       timeoutPenalty: string;
+      allowResign: boolean;
+      open: boolean;
     }>,
   ) {
     if (!editable) return;
@@ -64,6 +66,8 @@ export function SharedRules({
       opening: game.opening,
       moveTimeMs: game.moveTimeMs,
       timeoutPenalty: game.timeoutPenalty,
+      allowResign: game.allowResign,
+      open: game.openSeat !== null,
       ...next,
     };
     // A variant that does not offer the current opening drops back to free.
@@ -109,6 +113,11 @@ export function SharedRules({
       {describeHandicap(game.handicap) !== null ? (
         <p className="text-xs text-muted">
           The handicapped colour plays under those extra restrictions; the other colour plays the plain game.
+        </p>
+      ) : null}
+      {game.openSeat !== null ? (
+        <p className="text-xs text-moss" data-testid="shared-open-line">
+          The {game.openSeat} seat is posted on the games page for anyone to take.
         </p>
       ) : null}
       <p className="text-xs text-muted" data-testid="shared-clock-line">
@@ -163,6 +172,20 @@ export function SharedRules({
               ))}
             </Select>
           </Field>
+          <Toggle
+            label={GAME_COPY.allowResign.label}
+            hint={GAME_COPY.allowResignHint}
+            checked={game.allowResign}
+            onChange={(next) => change({ allowResign: next })}
+            disabled={saving}
+          />
+          <Toggle
+            label={GAME_COPY.openSeat.label}
+            hint={GAME_COPY.openSeatHint}
+            checked={game.openSeat !== null}
+            onChange={(next) => change({ open: next })}
+            disabled={saving}
+          />
           <Field label={GAME_COPY.moveTime.label}>
             <Select
               value={game.moveTimeMs === null ? "none" : String(game.moveTimeMs)}

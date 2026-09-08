@@ -57,6 +57,10 @@ export type GameSummary = {
   lastMoveAt: string | null;
   /** Consecutive forfeits each colour has run up. */
   forfeits: { black: number; white: number };
+  /** Whether a seat may give the game up. */
+  allowResign: boolean;
+  /** A seat anyone may take, while it waits; null otherwise. */
+  openSeat: string | null;
   result: GameResult;
   winner: string | null;
   moveCount: number;

@@ -75,18 +75,20 @@ export default function Home() {
           <span className="font-mincho text-xs font-normal opacity-70">由来</span>
         </h2>
         <p className="text-sm leading-relaxed text-ink-soft">
-          For years the founder of this site played five-in-a-row and Pente with his mother and father on
-          two of the great turn-based sites of the early web, ItsYourTurn and GoldToken — a move a day, a
-          game that ran for a month across three houses. Those sites understood that a board game between
-          people who love each other does not need to be fast; it needs to be kept. Itsutsu is a
-          continuation of that, and a tribute to it.
-        </p>
+          For years the founder of this site and his parents played five-in-a-row, Pente and Othello
+            across two households on the great turn-based sites of the early web, ItsYourTurn and
+            GoldToken — sometimes hours a day, dozens of games open at once, and memberships bought to
+            lift the daily cap on moves, because twenty was never going to last until lunch. Those sites
+            understood that a game between people who love each other does not need to be fast; it
+            needs to be kept. Itsutsu is a continuation of that, and a tribute to it.
+          </p>
         <p className="text-sm leading-relaxed text-ink-soft">
-          The game itself is older than almost anything people still play: five in a row has been played
-          on go boards in Japan since the Heian period, a thousand years ago, and the name of this site is
-          just the Japanese for the number — <span className="font-mincho">五つ</span>, five stones.
+          The family is half Japanese, and the games came with the heritage. Five in a row has been
+          played on go boards in Japan since the Heian period, a thousand years ago, and the name of
+          this site is just the Japanese for the number — <span className="font-mincho">五つ</span>,
+          five stones.
         </p>
-        <p className="text-sm">
+          <p className="text-sm">
           <Link href="/about" className="font-medium underline underline-offset-4" data-testid="read-story">
             Read the whole story →
           </Link>

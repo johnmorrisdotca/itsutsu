@@ -116,7 +116,7 @@ export const RATE_LIMITS = {
   /** Recording a finished game. */
   recordGame: { windowMs: 60_000, maxRequests: 20 },
   /** Starting a shared game. */
-  createGame: { windowMs: 60_000, maxRequests: 10 },
+  createGame: { windowMs: 60_000, maxRequests: 30 },
   /** Playing a stone in a shared game — generous, it is the hot path. */
   playMove: { windowMs: 60_000, maxRequests: 120 },
   /** Redeeming an invite code. Deliberately mean: this is the guessing path. */

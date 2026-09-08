@@ -47,6 +47,12 @@ model Game {
   blackName String     @default("")
   whiteName String     @default("")
 
+  /// The member (by email) holding each seat, when a signed-in player took it.
+  /// A seat taken from a scanned link with no sign-in has none, and is known
+  /// only to the browser holding its token.
+  blackMember String?
+  whiteMember String?
+
   /// The settings the game was played under, mirrored from GameSettings.
   size      Int
   winLength Int
@@ -70,6 +76,14 @@ model Game {
   blackForfeits  Int        @default(0)
   whiteForfeits  Int        @default(0)
 
+  /// Whether a seat may give the game up. The host decides when setting it up.
+  allowResign    Boolean    @default(true)
+  /// A seat anyone may take, posted on the games page: "white" while it waits,
+  /// null once somebody has sat down or when the game was never open.
+  openSeat       String?
+  /// When the open seat was posted, so the board lists the newest first.
+  openedAt       DateTime?
+
   result    GameResult
   /// Set for a decisive game, null for a draw or an abandoned one.
   winner    String?
@@ -85,6 +99,9 @@ model Game {
   @@index([result, playedAt])
   @@index([size, playedAt])
   @@index([status, updatedAt])
+  @@index([openSeat, openedAt])
+  @@index([blackMember])
+  @@index([whiteMember])
 }
 
 model Move {
@@ -175,4 +192,18 @@ model Player {
   updatedAt  DateTime @updatedAt
 
   @@index([rating])
+}
+
+/// Somebody who has been let in by name: a Google account that once redeemed
+/// an invite, or that the operator admitted. There is no password here — Google
+/// proves the address, this row says the address is welcome — and there is no
+/// separate account to create: the first sign-in is the registration.
+model Member {
+  email       String   @id
+  name        String   @default("")
+  picture     String   @default("")
+  /// The invite code that let this member in, or blank when the operator did.
+  invitedWith String   @default("")
+  createdAt   DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
 }

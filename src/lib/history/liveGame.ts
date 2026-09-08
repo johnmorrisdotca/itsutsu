@@ -61,6 +61,9 @@ const GAME_ROW = {
   lastMoveAt: true,
   blackForfeits: true,
   whiteForfeits: true,
+  allowResign: true,
+  openSeat: true,
+  openedAt: true,
   blackToken: true,
   whiteToken: true,
   moves: {
@@ -117,11 +120,14 @@ export async function createLiveGame(
     opener: Stone;
   },
 ): Promise<CreatedGame> {
-  const { handicap, ...rest } = input;
+  const { handicap, open, ...rest } = input;
   const game = await prisma.game.create({
     data: {
       ...rest,
       handicap: storedHandicap(handicap) ?? undefined,
+      // An open game posts its white seat for anyone; the creator sits as black.
+      openSeat: open ? STONES.white : null,
+      openedAt: open ? new Date() : null,
       // The server draws the seed: the two players must see the same board.
       seed: seedFromRoll(Math.random(), SEED_RANGE),
       // The first deadline runs from the moment the game exists.
@@ -150,12 +156,14 @@ export async function updateLiveGameSettings(
   if (stoneForToken(row, token) === null) return { ok: false, reason: "wrong-token" };
   if (row.moves.length > 0) return { ok: false, reason: "started" };
 
-  const { handicap, ...rest } = settings;
+  const { handicap, open, ...rest } = settings;
   await prisma.game.update({
     where: { id },
     data: {
       ...rest,
       handicap: storedHandicap(handicap) ?? Prisma.JsonNull,
+      openSeat: open ? STONES.white : null,
+      openedAt: open ? (row.openedAt ?? new Date()) : null,
       seed: seedFromRoll(Math.random(), SEED_RANGE),
     },
   });
@@ -405,6 +413,8 @@ export async function resignGame(id: string, token: string, now = new Date()): P
   if (row.status !== "active") return { ok: false, reason: "finished" };
   const loser = stoneForToken(row, token);
   if (loser === null) return { ok: false, reason: "wrong-token" };
+  // The host may have set the game up so that nobody walks away from it.
+  if (!row.allowResign) return { ok: false, reason: "not-allowed" };
 
   const state = replay(row);
   const next = resign(state, loser);

@@ -5,7 +5,7 @@ export const MY_GAMES_COPY = {
   groups: {
     yourMove: { label: "Your move", kanji: "手番", hint: "Waiting on you." },
     theirMove: { label: "Their move", kanji: "相手番", hint: "Waiting on the other side. You will be told when it is yours." },
-    unstarted: { label: "Not started", kanji: "未着手", hint: "Boards with no stones yet. Hand out the other seat, or play first." },
+    unstarted: { label: "Not started", kanji: "未着手", hint: "Boards with no stones yet. Hand out the other seat, post it for anyone, or play first." },
     finished: { label: "Lately finished", kanji: "終局", hint: "Filed in the record." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
   stale: "Stale",
@@ -13,6 +13,9 @@ export const MY_GAMES_COPY = {
   resign: { label: "Resign", kanji: "投了" },
   resignConfirm: "Resign this game? The other side wins and it is filed in the record.",
   localGame: { label: "On this device", kanji: "この端末" },
+  openBoard: { label: "Open seats", kanji: "対局募集", hint: "Games somebody has posted for anyone. Sit down and it is yours." },
+  sit: { label: "Sit as White", kanji: "着席" },
+  sitTaken: "Somebody else just took that seat.",
   continueGame: "Continue",
   yourTurn: (count: number) => (count === 1 ? "1 game waiting on you" : `${count} games waiting on you`),
 } as const;

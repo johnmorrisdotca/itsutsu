@@ -22,18 +22,21 @@ test.describe("your games", () => {
     await blackPage.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
     await whitePage.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
 
+    // The row for this game, wherever it is listed: other games may be listed too.
+    const row = (page: import("@playwright/test").Page) =>
+      page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
+
     // Nobody has moved: not started, for both.
     await blackPage.goto("/games");
-    await expect(blackPage.getByTestId("my-games-unstarted")).toContainText("Kai");
-    await expect(blackPage.getByTestId("your-turn-badge")).toHaveCount(0);
+    await expect(blackPage.getByTestId("my-games-unstarted").locator(row(blackPage))).toBeVisible();
 
-    // Black plays; now it is white's move, and white's badge says so.
+    // Black plays; now it is white's move, and white's badge counts it.
     await request.post(`/api/games/${game.id}/moves`, { data: { token: game.blackToken, row: 4, col: 4 } });
     await blackPage.goto("/games");
-    await expect(blackPage.getByTestId("my-games-theirMove")).toContainText("Kai");
+    await expect(blackPage.getByTestId("my-games-theirMove").locator(row(blackPage))).toBeVisible();
     await whitePage.goto("/games");
-    await expect(whitePage.getByTestId("my-games-yourMove")).toContainText("Mio");
-    await expect(whitePage.getByTestId("your-turn-badge")).toHaveText("1");
+    await expect(whitePage.getByTestId("my-games-yourMove").locator(row(whitePage))).toBeVisible();
+    await expect(whitePage.getByTestId("your-turn-badge")).not.toHaveText("0");
 
     await black.close();
     await white.close();
@@ -48,8 +51,9 @@ test.describe("your games", () => {
     await page.goto("/games");
 
     page.on("dialog", (dialog) => dialog.accept());
-    await page.getByTestId("my-games-yourMove").getByTestId("resign").click();
-    await expect(page.getByTestId("my-games-finished")).toContainText("Kai");
+    const row = page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
+    await row.getByTestId("resign").click();
+    await expect(page.getByTestId("my-games-finished").locator(row)).toBeVisible();
 
     // Black won by resignation, and the record says so.
     const detail = await request.get(`/api/games/${game.id}`);
@@ -67,3 +71,39 @@ test.describe("your games", () => {
     expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.blackToken } })).status()).toBe(409);
   });
 });
+
+test.describe("open seats", () => {
+  test("a game posted for anyone can be sat at by somebody else, once", async ({ browser, request }) => {
+    const created = await request.post("/api/games/live", {
+      data: { blackName: "Host", size: 9, open: true },
+    });
+    expect(created.status()).toBe(201);
+    const game = (await created.json()) as { id: string; blackToken: string };
+
+    const guest = await browser.newContext({ storageState: ".auth/admin.json" });
+    const page = await guest.newPage();
+    await page.goto("/games");
+    const row = page.getByTestId("open-game").filter({ hasText: "Host" });
+    await expect(row).toBeVisible();
+    await row.getByTestId("sit").click();
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/${game.id}`));
+    await expect(page.getByTestId("turn-banner")).toContainText("Waiting");
+
+    // The seat is gone from the board, and a second taker is refused.
+    await page.goto("/games");
+    await expect(page.getByTestId("open-game").filter({ hasText: "Host" })).toHaveCount(0);
+    expect((await request.post(`/api/games/${game.id}/sit`)).status()).toBe(409);
+    await guest.close();
+  });
+
+  test("a game set up with no resigning refuses it", async ({ request }) => {
+    const created = await request.post("/api/games/live", {
+      data: { blackName: "Kai", whiteName: "Mio", size: 9, allowResign: false },
+    });
+    const game = (await created.json()) as { id: string; whiteToken: string };
+    const refused = await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
+    expect(refused.status()).toBe(409);
+    expect(((await refused.json()) as { reason: string }).reason).toBe("not-allowed");
+  });
+});
+

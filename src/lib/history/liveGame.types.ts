@@ -23,6 +23,10 @@ export type LiveGameSettings = {
   moveTimeMs: number | null;
   /** What a missed deadline costs: "turn" or "game". */
   timeoutPenalty: string;
+  /** Whether a seat may give the game up. */
+  allowResign: boolean;
+  /** Post the white seat on the games page for anyone to take. */
+  open: boolean;
 };
 
 /** Why a timeout claim was refused. */
@@ -32,7 +36,8 @@ export type TimeoutRefusal =
   | "wrong-token"
   | "no-clock"
   | "not-due"
-  | "your-own-turn";
+  | "your-own-turn"
+  | "not-allowed";
 
 export type TimeoutOutcome =
   | { ok: true; game: GameDetail }

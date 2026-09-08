@@ -29,6 +29,8 @@ const settingsSchema = z.object({
   handicap: handicapSchema,
   moveTimeMs: moveTimeSchema,
   timeoutPenalty: timeoutPenaltySchema,
+  allowResign: z.boolean().default(true),
+  open: z.boolean().default(false),
 });
 
 const REFUSAL_STATUS: Record<string, number> = {

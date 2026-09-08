@@ -1,9 +1,7 @@
 "use client";
 
-import { AdminEmbeds } from "@/components/auth/AdminEmbeds";
-import { AdminInvites } from "@/components/auth/AdminInvites";
 import { StartSharedGame } from "@/components/live/StartSharedGame";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { AppearancePanel } from "./AppearancePanel";
 import { GameClock } from "./GameClock";
 import { GameControls } from "./GameControls";
@@ -70,34 +68,43 @@ export function GameSidebar(props: GamePanelProps) {
 /**
  * Everything you set once and then leave alone. It lives below the board
  * rather than beside it, which keeps the board as large as the screen allows.
+ *
+ * The set-up — rules and appearance — is open while the board is empty and
+ * folds away once a stone is down, so a game in progress shows the players,
+ * the numbers and the review, and the settings are a click away rather than
+ * a screen away. The operator's own panels are on /admin, not here.
  */
 export function GameOptions({
   streaks,
   ...props
 }: GamePanelProps & { streaks: WinStreaks }) {
+  const untouched = props.session.state.moves.length === 0;
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div className={PANEL_CLASS}>
-        <PlayerNames {...props} />
+    <section className="flex flex-col gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className={PANEL_CLASS}>
+          <PlayerNames {...props} />
+        </div>
+        <div className={PANEL_CLASS}>
+          <GameStatsPanel session={props.session} />
+        </div>
+        <div className={PANEL_CLASS}>
+          <GameReviewPanel session={props.session} streaks={streaks} />
+        </div>
       </div>
-      <div className={PANEL_CLASS}>
-        <GameStatsPanel session={props.session} />
-      </div>
-      <div className={PANEL_CLASS}>
-        <AdminInvites />
-      </div>
-      <div className={PANEL_CLASS}>
-        <AdminEmbeds />
-      </div>
-      <div className={PANEL_CLASS}>
-        <GameReviewPanel session={props.session} streaks={streaks} />
-      </div>
-      <div className={PANEL_CLASS}>
-        <GameSettingsPanel {...props} />
-      </div>
-      <div className={PANEL_CLASS}>
-        <AppearancePanel {...props} />
-      </div>
+      <details className={`${PANEL_CLASS} group`} open={untouched} data-testid="game-setup">
+        <summary className={`flex cursor-pointer list-none items-baseline justify-between gap-3 ${SECTION_TITLE}`}>
+          <span>
+            Set up <span className="font-mincho text-[0.8rem] font-normal tracking-normal">設定</span>
+          </span>
+          <span className="font-normal tracking-normal group-open:hidden">show</span>
+          <span className="hidden font-normal tracking-normal group-open:inline">hide</span>
+        </summary>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <GameSettingsPanel {...props} />
+          <AppearancePanel {...props} />
+        </div>
+      </details>
     </section>
   );
 }

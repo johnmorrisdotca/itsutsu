@@ -38,19 +38,29 @@ export const ABOUT_SECTIONS: AboutSection[] = [
     kanji: "由来",
     paragraphs: [
       <>
-        For years the founder of this site played five-in-a-row, Pente and their cousins with his mother
-        and father on two of the great turn-based sites of the early web: <Out href="https://www.itsyourturn.com/">ItsYourTurn</Out> and{" "}
-        <Out href="https://www.goldtoken.com/">GoldToken</Out>. A move a day, sometimes a move a week. A game that ran for a
-        month across three houses and two time zones, with a note attached to every stone. Those sites understood something
-        that has been half-forgotten since: a board game between people who love each other does not need to be fast.
-        It needs to be <em>kept</em> — the position always there when you come back, the record of who played what, and a
-        quiet ladder to climb.
+        For years the founder of this site and his parents played five-in-a-row, Pente and their cousins
+        across two households on the great turn-based sites of the early web:{" "}
+        <Out href="https://www.itsyourturn.com/">ItsYourTurn</Out> and{" "}
+        <Out href="https://www.goldtoken.com/">GoldToken</Out>. Not a move a day — sometimes hours a day.
+        Dozens of games open at once between the same three people, each of them checking back every
+        few minutes to see if it was their turn, and it usually was. The sites metered it: a free
+        account got so many moves a day, twenty on one, a hundred on another, and the family bought the
+        memberships to lift the cap, because twenty moves was not going to last until lunch.
       </>,
       <>
-        Itsutsu is a continuation of that, and a tribute to it. It keeps what mattered — the game waits for you, every
-        finished game is filed, the other seat is a link you can hand to anyone — and adds what the phone in your pocket
-        makes possible: a QR code for the other chair, a board that warns you when you are in trouble, a hint when you
-        want one. The pace is still yours.
+        What those sites understood has been half-forgotten since. A game between people who love
+        each other does not need to be fast, but it does need to be <em>kept</em>: the position always
+        there when you come back, the list of games waiting on you, the record of who beat whom, and a
+        ladder to climb. It is also a way of being in the same room while living in two houses. A move
+        is a small message that says <em>I am here and I am thinking about you</em>, and a hundred of
+        them in a day is a conversation.
+      </>,
+      <>
+        Itsutsu is a continuation of that, and a tribute to it. It keeps what mattered — the game waits
+        for you, your games are listed with the ones waiting on you first, every finished game is filed,
+        the other seat is a link you can hand to anyone — and adds what the phone in your pocket makes
+        possible: a QR code for the other chair, a board that warns you when you are in trouble, a hint
+        when you want one. There is no cap on moves. Play a hundred.
       </>,
     ],
   },
@@ -96,17 +106,46 @@ export const ABOUT_SECTIONS: AboutSection[] = [
     kanji: "和",
     paragraphs: [
       <>
-        The name is the number. <span className="font-mincho">五つ</span>, <em>itsutsu</em>, is simply “five” — the five
-        stones in a row, and the five stones in the mark. Everything about how the site looks follows from the equipment
-        the game was played on for centuries: the ivory of a clamshell stone and the charcoal of slate, the honey of a
-        kaya board, the washi of a printed record. The Japanese display type is a mincho face, the family a go book uses
-        for its diagrams. Where a label has a Japanese name beside it, that name is the older one.
+        The family is half Japanese, and the games came with the heritage. Five in a row, go, and
+        Othello were played at home long before any of them were played through a screen, and the
+        Japanese names beside the labels here are not decoration — they are what the games were called
+        at the table. The name of the site is the number. <span className="font-mincho">五つ</span>,{" "}
+        <em>itsutsu</em>, is simply “five”: the five stones in a row, and the five stones in the mark.
+      </>,
+      <>
+        How the site looks follows from the equipment the games were played on for centuries: the
+        ivory of a clamshell stone and the charcoal of slate, the honey of a kaya board, the washi of a
+        printed record. The Japanese display type is a mincho face, the family a go book uses for its
+        diagrams. Where a label has a Japanese name beside it, that name is the older one.
       </>,
       <>
         There is a design idea underneath as well, and it is a Japanese one: <span className="font-mincho">間</span>,{" "}
         <em>ma</em>, the space between things that gives them their shape. A board is mostly empty. A good position is
         read as much by where the stones are not as by where they are. The pages here try to leave room in the same way,
         and to say one thing at a time.
+      </>,
+    ],
+  },
+  {
+    title: "Othello",
+    kanji: "オセロ",
+    paragraphs: [
+      <>
+        The other game the family played for hours, and got properly good at, was Othello — and it is a
+        Japanese game, which surprises people. Its ancestor, Reversi, was an English parlour game of the
+        1880s, claimed by two rival inventors who argued about it in the letters pages. The game as the
+        world plays it now — the fixed opening of four discs in the centre, the 8×8 board, the name from
+        Shakespeare’s play about a Moor and a Venetian, black and white turning on each other — was set
+        down by Goro Hasegawa in Japan and published there in 1973. Japan has produced most of the
+        world champions since the first world championship in 1977, and the game’s one-line pitch,
+        “a minute to learn, a lifetime to master,” is a Japanese slogan too.
+      </>,
+      <>
+        Othello is the opposite of five in a row in one important way. In gomoku a stone is forever; in
+        Othello nothing is yours until the end, and a board that is nearly all one colour on move fifty
+        can belong to the other side on move sixty. Playing both for years teaches a kind of double
+        vision: to see a position as a set of lines and as a set of edges and corners at the same time.
+        It is not on the board here yet. It is the next thing the family wants.
       </>,
     ],
   },

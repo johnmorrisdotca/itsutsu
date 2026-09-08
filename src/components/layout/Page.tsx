@@ -7,15 +7,14 @@ import type { ReactNode } from "react";
  *             a replay, the record
  *   standard  a page of cards, a form, a list: the front, the games, rules,
  *             learning, players
- *   prose     a page that is read top to bottom: about, a lesson
  *
- * Every page is one of these, so two pages of the same kind are the same
- * width and the eye does not have to re-find the margin between them.
+ * A page that is read top to bottom — about, a lesson — is the standard
+ * width too, so its header lines up with every other page's; it narrows
+ * its own text column inside (max-w-3xl) for the line length, not the frame.
  */
 export const PAGE_WIDTH = {
   wide: "max-w-6xl",
   standard: "max-w-5xl",
-  prose: "max-w-3xl",
 } as const;
 
 export type PageWidth = keyof typeof PAGE_WIDTH;

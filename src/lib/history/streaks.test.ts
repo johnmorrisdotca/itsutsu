@@ -30,6 +30,8 @@ function game(
     winner,
     moveCount: 20,
     durationMs: null,
+  allowResign: true,
+  openSeat: null,
   };
 }
 

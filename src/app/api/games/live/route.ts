@@ -44,6 +44,8 @@ const liveGameSchema = z.object({
   handicap: handicapSchema,
   moveTimeMs: moveTimeSchema,
   timeoutPenalty: timeoutPenaltySchema,
+  allowResign: z.boolean().default(true),
+  open: z.boolean().default(false),
   opener: stoneSchema.default(STONES.black),
 });
 

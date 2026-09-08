@@ -5,6 +5,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
+import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
 import { PANEL_CLASS, PANEL_LINK_CLASS } from "@/components/ui/ui.constants";
 import { gamePath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -57,6 +58,7 @@ export default function LobbyPage() {
       <SiteHeader />
 
       <MyGamesList />
+      <OpenGamesBoard />
       <LocalGameCardClient />
 
       <section className="grid gap-4 md:grid-cols-3" data-testid="lobby-start">

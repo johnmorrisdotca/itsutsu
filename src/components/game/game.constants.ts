@@ -239,6 +239,10 @@ export const GAME_COPY = {
   penaltyGame: "Loses the game.",
   penaltyHint:
     "Graceful: a missed deadline costs the turn, and the waiting player may claim it or simply keep waiting. Strict: a missed deadline is a loss.",
+  allowResign: { label: "Allow resigning", kanji: "投了可" },
+  allowResignHint: "Either seat may give the game up. Off, and a game can only be won, drawn or timed out.",
+  openSeat: { label: "Open to anyone", kanji: "公開" },
+  openSeatHint: "Post the other seat on the games page. Whoever answers first sits down as White.",
   mustMoveBy: "must move by",
   claimTurn: { label: "Claim the turn", kanji: "手番請求" },
   claimGame: { label: "Claim the win", kanji: "勝ち請求" },

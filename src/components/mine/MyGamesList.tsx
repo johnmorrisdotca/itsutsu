@@ -5,6 +5,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, recordPath } from "@/lib/gomoku/slugs";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
+import { currentEmail } from "@/lib/auth/currentSession";
 import { MY_GAME_GROUPS, STALE_AFTER_DAYS, fetchMyGames, type MyGame, type MyGameGroup } from "@/lib/history/myGames";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { MY_GAMES_COPY } from "./mine.constants";
@@ -29,9 +30,10 @@ function ago(iso: string, now: Date): string {
  */
 export async function MyGamesList() {
   const claims = seatClaims((await cookies()).getAll());
-  if (claims.size === 0) return null;
+  const email = await currentEmail();
+  if (claims.size === 0 && email === null) return null;
   const now = new Date();
-  const groups = await fetchMyGames(claims, now);
+  const groups = await fetchMyGames(claims, email, now);
   const total = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   if (total === 0) return null;
 
@@ -81,6 +83,7 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
         group === "yourMove" ? "border-moss/50 bg-moss-soft" : "border-rule"
       }`}
       data-testid="my-game"
+      data-id={game.id}
       data-stale={item.stale}
     >
       <Link href={href} className="flex min-w-0 flex-1 flex-col gap-0.5 underline-offset-4 hover:underline">
@@ -97,7 +100,7 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
           {MY_GAMES_COPY.stale}
         </span>
       ) : null}
-      {running ? <ResignButton id={game.id} /> : null}
+      {running && game.allowResign ? <ResignButton id={game.id} /> : null}
     </li>
   );
 }

@@ -460,6 +460,25 @@ reads because a write costs a database row. The store is per-instance, so
 limits are approximate under serverless fan-out; that is a deliberate trade
 against needing Redis on the hot path.
 
+## Who gets in
+
+Google is the front door; an invite code is the side door. `signIn` in
+`src/lib/auth/google.ts` admits any verified Google address — it proves
+identity only — and `/api/session/google` then decides membership: an
+`ADMIN_EMAILS` address gets the operator's cookie, a `Member` row gets a
+member's cookie (name and picture included), and anyone else is sent back to
+`/join`, where their Google identity waits for an invite code. Redeeming a code
+while a Google identity is waiting creates the `Member` row: the first sign-in
+is the registration, and from then on Google alone lets them in on any device.
+
+A code redeemed with no account behind it still lets that browser in, as
+before. Sessions are one signed cookie either way (`src/lib/auth/session.ts`);
+signing out clears it and Google's own cookies, so a shared phone asks again.
+
+A member's seats are bound to their address (`Game.blackMember` /
+`whiteMember`) when they start, scan or sit at a game, so their games follow
+the account; a phone with no account holds its seats by cookie.
+
 ## Games played from two devices
 
 `POST /api/games/live` returns `blackToken` and `whiteToken`. There is no
@@ -495,6 +514,12 @@ lists the seats this browser holds, in the queue the turn-based sites taught:
 games waiting on you sits beside "Play" in the header. "Yours" is decided by
 the seat cookies on the request (`GET /api/games/mine`) — there are no
 accounts, so the cookies are the only thing that knows which seats are yours.
+
+A game may be posted **open**: its white seat goes on a noticeboard on the
+games page (`openSeat`), and whoever answers first sits down
+(`POST /api/games/:id/sit`, a conditional update so two takers cannot both
+win). Whether a seat may **resign** is the host's choice (`allowResign`);
+both options can be changed until the first stone.
 
 A game with no move for `STALE_AFTER_DAYS` is flagged stale. Any seat holder
 may resign a running game at any time (`POST /api/games/:id/resign`, seat

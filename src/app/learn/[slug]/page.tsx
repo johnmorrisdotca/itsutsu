@@ -20,9 +20,9 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
   if (guide === null) notFound();
 
   return (
-    <Page width="prose" gap="gap-6">
+    <Page width="standard" gap="gap-6">
       <SiteHeader />
-      <article className={`${PANEL_CLASS} flex flex-col gap-6`} data-testid="guide-page">
+      <article className={`${PANEL_CLASS} flex max-w-3xl flex-col gap-6`} data-testid="guide-page">
         <header className="flex flex-col gap-1">
           <p className="text-xs text-muted">
             <Link href="/learn" className="underline-offset-2 hover:underline">
