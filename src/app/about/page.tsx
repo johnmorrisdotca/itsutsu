@@ -15,7 +15,6 @@ export default function AboutPage() {
     <Page width="standard" gap="gap-10">
       <SiteHeader />
 
-      <div className="flex max-w-3xl flex-col gap-10">
       <header className="flex flex-col gap-2">
         <h1 className="flex items-baseline gap-3 text-2xl font-semibold">
           About <span className="font-mincho text-lg font-normal opacity-70">五つについて</span>
@@ -39,7 +38,6 @@ export default function AboutPage() {
           ))}
         </section>
       ))}
-      </div>
     </Page>
   );
 }
