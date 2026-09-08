@@ -90,7 +90,7 @@ test.describe("rules and learning", () => {
   test("the lobby offers the ways to start a game and folds the catalogue into families", async ({ page }) => {
     await page.goto("/games");
     await expect(page.getByTestId("lobby-start")).toContainText("Start a game");
-    await expect(page.getByTestId("auto-match")).toBeVisible();
+    await expect(page.getByTestId("start-game")).toBeVisible();
     const families = page.getByTestId("lobby-family");
     await expect(families).toHaveCount(GAME_FAMILIES.length);
     // The first family is open; the rest are folded, so the page stays short.

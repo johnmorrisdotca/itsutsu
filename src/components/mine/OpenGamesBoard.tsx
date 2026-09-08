@@ -1,23 +1,19 @@
-import { cookies } from "next/headers";
-
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
-import { fetchOpenGames } from "@/lib/history/openGames";
-import { seatClaims } from "@/lib/history/seatCookie";
-import { MY_GAMES_COPY } from "./mine.constants";
+import type { GameSummary } from "@/lib/history/gameHistory.types";
+import { MY_GAMES_COPY, START_COPY } from "./mine.constants";
 import { SitButton } from "./SitButton";
 
 /**
- * The noticeboard: games somebody has posted with a seat for anyone. Shown
- * only when there is something on it, and never a game this browser is
- * already in.
+ * The noticeboard: games somebody has posted with a seat for anyone. It sits
+ * beside the room, and an empty board says so rather than disappearing —
+ * "nobody is asking" is the thing a person needs to know before they ask.
+ * A game this browser is already in is never on it; you cannot sit across
+ * from yourself.
  */
-export async function OpenGamesBoard() {
-  const claims = seatClaims((await cookies()).getAll());
-  const games = await fetchOpenGames(claims.keys());
-  if (games.length === 0) return null;
+export function OpenGamesBoard({ games }: { games: GameSummary[] }) {
   const copy = MY_GAMES_COPY.openBoard;
 
   return (
@@ -25,9 +21,9 @@ export async function OpenGamesBoard() {
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
         {copy.label}
         <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{copy.kanji}</span>
-        <span className="font-normal tracking-normal">{games.length}</span>
+        {games.length > 0 ? <span className="font-normal tracking-normal">{games.length}</span> : null}
       </h2>
-      <p className="text-xs text-muted">{copy.hint}</p>
+      <p className="text-xs text-muted">{games.length === 0 ? START_COPY.noSeats : copy.hint}</p>
       <ul className="flex flex-col gap-1.5">
         {games.map((game) => (
           <li

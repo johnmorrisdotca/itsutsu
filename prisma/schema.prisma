@@ -292,6 +292,9 @@ model TimeGift {
 }
 
 /// A request to be paired with anyone who wants the same game at the same pace.
+/// Unused since 0.54.0, when starting a game became one sentence: a request
+/// with nobody to pair against is a posted seat now, which everyone can see.
+/// Kept until it is certain nothing is waiting in it, then dropped.
 model AutoMatchRequest {
   id         String   @id @default(cuid())
   member     String

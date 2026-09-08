@@ -38,6 +38,8 @@ function game(
   extraMs: 0,
   rated: true,
   openSeat: null,
+  blackMember: null,
+  whiteMember: null,
   };
 }
 

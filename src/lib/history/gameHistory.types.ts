@@ -72,6 +72,9 @@ export type GameSummary = {
   rated: boolean;
   /** A seat anyone may take, while it waits; null otherwise. */
   openSeat: string | null;
+  /** The member holding each seat, when an account holds it rather than a link. */
+  blackMember: string | null;
+  whiteMember: string | null;
   result: GameResult;
   winner: string | null;
   moveCount: number;

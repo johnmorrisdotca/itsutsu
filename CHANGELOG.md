@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.54.0
+- Starting a game is one sentence now — play this game, at this pace, with anyone, a member, or someone at this screen — over one board of open seats and whoever is here. Auto-match and posting a seat were the same wish said twice: asking for a game sits you down at a matching seat if there is one and posts yours if there is not.
+
 ## 0.53.0
 - A backlog 積み残し: every feature asked for and every fault reported on one page, with what has become of each. Anyone who is in can add to it, and move an item from proposed to planned, building, done or dropped. Beneath it, every release so far, read from the changelog itself; the operator reaches both from the Admin page.
 

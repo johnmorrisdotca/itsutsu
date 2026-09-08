@@ -80,6 +80,8 @@ export function keptGameDetail(game: LegacyGame): GameDetail {
     extraMs: 0,
     rated: true,
     openSeat: null,
+    blackMember: null,
+    whiteMember: null,
     result: game.winner ?? "draw",
     winner: game.winner,
     moveCount: moves.length,

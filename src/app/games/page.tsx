@@ -4,8 +4,19 @@ import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { InviteFriends } from "@/components/mine/InviteFriends";
-import { AutoMatchPanel } from "@/components/mine/AutoMatchPanel";
-import { fetchWaitingCounts } from "@/lib/social/autoMatch";
+import { cookies } from "next/headers";
+
+import { HereNowPanel } from "@/components/mine/HereNowPanel";
+import { StartGame } from "@/components/mine/StartGame";
+import { START_COPY } from "@/components/mine/mine.constants";
+import type { GameGroup, Opponent, SeatOnBoard } from "@/components/mine/startGame.types";
+import { boardSizesFor, DEFAULT_BOARD_SIZE, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { fetchOpenGames } from "@/lib/history/openGames";
+import { seatClaims } from "@/lib/history/seatCookie";
+import { fetchBuddies } from "@/lib/social/buddies";
+import { ignoredEmails } from "@/lib/social/ignores";
+import { fetchHereNow } from "@/lib/social/presence";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { fetchPlayedCounts } from "@/lib/history/gameCounts";
 import { recordPath } from "@/lib/gomoku/slugs";
@@ -15,7 +26,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
-import { PANEL_CLASS, PANEL_LINK_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { gamePath, rulesPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
@@ -31,59 +42,75 @@ export const dynamic = "force-dynamic";
  * below for whoever wants to look around.
  */
 export default async function LobbyPage() {
-  const [email, counts, waitingCounts] = await Promise.all([currentEmail(), fetchPlayedCounts(), fetchWaitingCounts()]);
-  const waiting = Object.fromEntries(waitingCounts);
+  const claims = seatClaims((await cookies()).getAll());
+  const [email, counts, seatGames, here] = await Promise.all([
+    currentEmail(),
+    fetchPlayedCounts(),
+    fetchOpenGames(claims.keys()),
+    fetchHereNow(),
+  ]);
+  const [buddies, ignored] = await Promise.all([
+    email === null ? Promise.resolve([]) : fetchBuddies(email),
+    email === null ? Promise.resolve(new Set<string>()) : ignoredEmails(email),
+  ]);
   const playedIn = (games: readonly string[]) => games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0);
+
+  /*
+   * A seat posted by somebody this member ignores is not on their board: the
+   * ignore list is a rule about who may reach you, and a seat is a way in.
+   */
+  const openSeats = seatGames.filter((game) => {
+    const poster = game.openSeat === STONES.black ? game.whiteMember : game.blackMember;
+    return poster === null || !ignored.has(poster);
+  });
+
+  // The sentence reads the same lists the page below it shows.
+  const families: GameGroup[] = GAME_FAMILIES.map((family) => ({
+    title: family.title,
+    kanji: family.kanji,
+    games: family.games.map((variant) => ({
+      variant,
+      label: RULE_VARIANT_DISPLAY[variant].label,
+      kanji: RULE_VARIANT_DISPLAY[variant].kanji,
+      size: boardSizesFor(variant as RuleVariant)[0] ?? DEFAULT_BOARD_SIZE,
+    })),
+  }));
+  const seats: SeatOnBoard[] = openSeats.map((game) => ({
+    id: game.id,
+    variant: game.variant,
+    moveTimeMs: game.moveTimeMs,
+    who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || "Somebody",
+  }));
+  const hereEmails = new Set(here.map((entry) => entry.email));
+  const opponents: Opponent[] = [
+    ...here.filter((entry) => entry.email !== email && !ignored.has(entry.email)).map((entry) => ({ email: entry.email, name: entry.name || entry.email, here: true })),
+    ...buddies
+      .filter((buddy) => !hereEmails.has(buddy.email) && !ignored.has(buddy.email))
+      .map((buddy) => ({ email: buddy.email, name: buddy.name || buddy.email, here: false })),
+  ];
   return (
     <Page width="standard">
       <SiteHeader />
 
       <MyGamesList />
-      <OpenGamesBoard />
       <LocalGameCardClient />
-      {email !== null ? <InviteFriends /> : null}
 
       <section className="flex flex-col gap-4" data-testid="lobby-start">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          Start a game <span className="font-mincho text-sm font-normal opacity-70">対局を始める</span>
+          {START_COPY.title.label}{" "}
+          <span className="font-mincho text-sm font-normal opacity-70">{START_COPY.title.kanji}</span>
         </h2>
-        <p className="max-w-prose text-sm text-muted">
-          Four ways in, as the elder sites had them: let the site pair you, take a seat somebody posted, post one
-          yourself, or challenge a member by name. Or just play at this screen.
-        </p>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className={`${PANEL_CLASS} flex flex-col gap-2 md:col-span-2`}>
-            <h3 className="flex items-baseline gap-2 font-semibold">
-              Auto-match <span className="font-mincho text-xs font-normal opacity-70">自動対局</span>
-            </h3>
-            {email !== null ? (
-              <AutoMatchPanel waiting={waiting} />
-            ) : (
-              <p className="text-sm text-muted">
-                Sign in, name a game and a pace, and the site pairs you with the next member who wants the same.
-              </p>
-            )}
-          </div>
-          <a href="#open-seats" className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>
-            <span className="font-semibold">Waiting room <span className="font-mincho text-xs font-normal opacity-70">待合室</span></span>
-            <span className="text-xs text-muted">Seats other members have posted for anyone. Sit down and play.</span>
-          </a>
-          <Link href={`${gamePath("freestyle")}#post-seat`} className={`${PANEL_LINK_CLASS} flex flex-col gap-1`} data-testid="post-a-seat">
-            <span className="font-semibold">Post a seat <span className="font-mincho text-xs font-normal opacity-70">席を出す</span></span>
-            <span className="text-xs text-muted">
-              Choose the game and the pace, and start it. The other seat goes on the games page, and whoever answers first sits down opposite you.
-            </span>
-          </Link>
-          <Link href="/players" className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>
-            <span className="font-semibold">Challenge a member <span className="font-mincho text-xs font-normal opacity-70">挑戦</span></span>
-            <span className="text-xs text-muted">Pick a name on the players page. The game is in their list at once.</span>
-          </Link>
-          <Link href={gamePath("freestyle")} className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>
-            <span className="font-semibold">Two at one screen <span className="font-mincho text-xs font-normal opacity-70">対面</span></span>
-            <span className="text-xs text-muted">Play Gomoku, or any game below, across the table right now.</span>
-          </Link>
+        <p className="max-w-prose text-sm text-muted">{START_COPY.lead}</p>
+        <div className={PANEL_CLASS}>
+          <StartGame families={families} seats={seats} opponents={opponents} signedIn={email !== null} />
+        </div>
+        <div className="grid gap-4 md:grid-cols-[3fr_2fr]">
+          <OpenGamesBoard games={openSeats} />
+          <HereNowPanel here={here} me={email} />
         </div>
       </section>
+
+      {email !== null ? <InviteFriends /> : null}
 
       <BrandStones className="py-1 opacity-80" />
 

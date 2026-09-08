@@ -20,3 +20,54 @@ export const MY_GAMES_COPY = {
   continueGame: "Continue",
   yourTurn: (count: number) => (count === 1 ? "1 game waiting on you" : `${count} games waiting on you`),
 } as const;
+
+/** The paces a game may be asked for, in the words the clock uses. */
+export const PACES: readonly { value: number | null; label: string }[] = [
+  { value: 24 * 60 * 60_000, label: "1 day a move" },
+  { value: 5 * 60_000, label: "5 minutes a move" },
+  { value: 30 * 60_000, label: "30 minutes a move" },
+  { value: 60 * 60_000, label: "1 hour a move" },
+  { value: 6 * 60 * 60_000, label: "6 hours a move" },
+  { value: 3 * 24 * 60 * 60_000, label: "3 days a move" },
+  { value: 7 * 24 * 60 * 60_000, label: "7 days a move" },
+  { value: null, label: "no clock" },
+];
+
+/**
+ * Starting a game is one question — what, how fast, and with whom — so the
+ * page asks it as one sentence and the button says what pressing it does.
+ */
+export const START_COPY = {
+  title: { label: "Start a game", kanji: "対局を始める" },
+  lead:
+    "Say what you want to play, how fast, and with whom. If somebody already wants the same, you sit down together now; if not, your seat waits on the board below and you are told when it is taken.",
+  play: "Play",
+  at: "at",
+  with: "with",
+  anyone: "anyone",
+  atThisScreen: "someone at this screen",
+  hereNow: { label: "Here now", kanji: "在室" },
+  buddies: { label: "Buddies", kanji: "仲間" },
+  post: "Post the seat",
+  sitWith: (who: string) => `Sit down with ${who}`,
+  setUp: "Set up the board",
+  challenge: (who: string) => `Challenge ${who}`,
+  seatsOpen: (count: number) => (count === 1 ? "1 seat open" : `${count} seats open`),
+  matchHint: (who: string) =>
+    `${who} is asking for exactly this. You sit down together now; colours are drawn at random.`,
+  firstHint: (game: string) =>
+    `Nobody is asking for ${game} right now, so yours would be first on the board. You are told when somebody sits down, and the game appears in your list.`,
+  otherPaceHint: (count: number, game: string) =>
+    `${count === 1 ? "One seat is" : `${count} seats are`} open for ${game} at another pace — change the pace to sit down at once, or post yours and wait for this one.`,
+  screenHint: "Two people, one board, right now. Kept in this browser, never rated, and the pace does not apply.",
+  challengeHintHere: (who: string) => `The game is in ${who}'s list the moment you start it; there is nothing to accept. ${who} is here now.`,
+  challengeHintAway: (who: string, pace: string) =>
+    `The game is in ${who}'s list the moment you start it; there is nothing to accept. ${who} is not here at the moment, which is fine at ${pace.toLowerCase()}.`,
+  signedOut: "Sign in to play against somebody else. Two at one screen works either way.",
+  failed: "That game could not be started. Try again.",
+  seatTaken: "Somebody took that seat first. Yours is posted instead.",
+  noSeats:
+    "Nobody is asking for a game right now. Post a seat above and yours is first on the board.",
+  onlyMine: "Only yours so far. It stays until somebody sits down or you withdraw it.",
+  nobodyHere: "Nobody else is here just now. A seat posted above waits for whoever comes in next.",
+} as const;

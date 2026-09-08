@@ -101,9 +101,9 @@ test.describe("a game played from two devices", () => {
   });
 
   test("the lobby's Post a seat lands on the sharing panel with the other seat already open", async ({ page }) => {
-    await page.goto("/games");
-    await page.getByTestId("post-a-seat").click();
-    await expect(page).toHaveURL(/\/games\/gomoku#post-seat$/);
+    // The lobby posts a seat from its own sentence now; the fragment is the
+    // way in for a bookmark, or for somebody sent the address directly.
+    await page.goto("/games/gomoku#post-seat");
     await expect(page.getByTestId("post-seat-note")).toBeVisible();
     await expect(page.getByLabel("Open to anyone")).toBeChecked();
     await page.getByTestId("start-shared-game").click();

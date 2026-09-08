@@ -47,6 +47,8 @@ export const SUMMARY_SELECT = {
   extraMs: true,
   rated: true,
   openSeat: true,
+  blackMember: true,
+  whiteMember: true,
   result: true,
   winner: true,
   moveCount: true,
