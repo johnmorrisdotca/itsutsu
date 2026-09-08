@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { RULE_VARIANT_LIST } from "./gomoku.constants";
-import { GAME_SLUGS, gamePath, matchPath, seatPath, slugFor, variantFor } from "./slugs";
+import { GAME_SLUGS, gamePath, matchPath, recordPath, seatPath, slugFor, variantFor } from "./slugs";
 
 describe("game slugs", () => {
   it("gives every variant a slug of its own", () => {
@@ -36,5 +36,7 @@ describe("game slugs", () => {
     expect(matchPath("dropFour", "abc")).toBe("/games/drop-four/abc");
     expect(matchPath("dropFour", "abc", 12)).toBe("/games/drop-four/abc/12");
     expect(seatPath("renju", "abc", "tok")).toBe("/games/renju/abc/seat/tok");
+    expect(recordPath("abc")).toBe("/history/abc");
+    expect(recordPath("abc", 5)).toBe("/history/abc/5");
   });
 });

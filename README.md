@@ -469,9 +469,10 @@ into a cookie and sends the visitor on to the match at `/games/:slug/:id`, so
 the credential is used once and never sits in the address bar. The match without
 a claim is a spectator view, and it is never shown the seat links.
 
-A match is one resource whether it is live or filed: the same address replays
-it once it is over, and `/games/:slug/:id/:move` is the position after that many
-moves. Both views keep the address current as the position changes.
+`/games/:slug/:id/:move` is the position after that many moves, kept current in
+the bar as play goes on. Once the game is over it belongs to the record:
+`/history/:id` replays it and `/history/:id/:move` is the position after that
+move — the address to send someone who should see that moment.
 
 <img src="docs/images/shared-game.jpg" alt="A shared game showing a QR code for each seat" width="820">
 

@@ -74,6 +74,16 @@ export function matchPath(variant: string, id: string, move?: number): string {
   return move === undefined ? base : `${base}/${move}`;
 }
 
+/**
+ * /history/<id> — a filed game in the record, and with a move number, the
+ * position after that move: /history/<id>/5 is the board after the fifth
+ * stone, the thing to send someone who should see that moment.
+ */
+export function recordPath(id: string, move?: number): string {
+  const base = `/history/${id}`;
+  return move === undefined ? base : `${base}/${move}`;
+}
+
 /** The link that claims a seat. It carries a credential, so it is handed out, never listed. */
 export function seatPath(variant: string, id: string, token: string): string {
   return `${matchPath(variant, id)}/seat/${token}`;

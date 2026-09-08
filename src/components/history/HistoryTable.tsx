@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { matchPath } from "@/lib/gomoku/slugs";
+import { recordPath } from "@/lib/gomoku/slugs";
 
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
@@ -34,7 +34,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
         return (
           <li key={game.id}>
             <Link
-              href={matchPath(game.variant, game.id)}
+              href={recordPath(game.id)}
               className="grid grid-cols-2 items-center gap-3 rounded-xl border border-rule px-4 py-3 transition-colors hover:bg-shade sm:grid-cols-[1fr_auto_auto_auto]"
             >
               <span className="flex flex-col">

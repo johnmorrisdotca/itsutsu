@@ -1,21 +1,17 @@
 import { cookies, headers } from "next/headers";
-import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import QRCode from "qrcode";
 
-import { GameReplay } from "@/components/history/GameReplay";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
 import { SharedGame } from "@/components/live/SharedGame";
 import { SharedRules } from "@/components/live/SharedRules";
 import { NotesPanel } from "@/components/game/NotesPanel";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { SEAT_DISPLAY, STONES } from "@/lib/gomoku/gomoku.constants";
+import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
-import { matchPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
+import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
-import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatForToken } from "@/lib/history/liveGame";
 import { prisma } from "@/lib/prisma";
@@ -34,14 +30,13 @@ async function origin(): Promise<string> {
 }
 
 /**
- * A match, at /games/<slug>/<id>.
+ * A match being played, at /games/<slug>/<id>.
  *
- * The same address whether the game is being played or has been filed: while
- * it is live the board is the shared one, moving as the other side moves, and
- * once it is over the same page replays it. A move number on the end names a
- * position — /games/gomoku/<id>/12 is the board after the twelfth stone — and
- * both views keep the address current as the position changes, so what is in
- * the bar is always the thing on the screen.
+ * The board is the shared one, moving as the other side moves, and a move
+ * number on the end names a position — /games/gomoku/<id>/12 is the board
+ * after the twelfth stone — kept current in the bar as play goes on. Once the
+ * game is over it belongs to the record, and this address hands over to
+ * /history/<id>, where the same position is replayed.
  *
  * A seat is claimed through /seat/<token>, which puts the credential in a
  * cookie and leaves it out of the address. So a seat link can be scanned from
@@ -58,11 +53,10 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
   const token = (await cookies()).get(seatCookieName(id))?.value;
   const seat = await seatForToken(id, token);
 
-  return game.status === "active" ? (
-    <LiveMatch game={game} token={token ?? null} seat={seat} />
-  ) : (
-    <FiledMatch game={game} move={move ?? game.moveCount} />
-  );
+  // A match that is over lives in the record, at the record's address.
+  if (game.status !== "active") redirect(recordPath(game.id, move));
+
+  return <LiveMatch game={game} token={token ?? null} seat={seat} />;
 }
 
 async function LiveMatch({
@@ -139,42 +133,6 @@ async function LiveMatch({
             )}
           </aside>
         </div>
-      </main>
-    </div>
-  );
-}
-
-function FiledMatch({ game, move }: { game: GameDetail; move: number }) {
-  const result = GAME_RESULT_DISPLAY[game.result];
-  const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
-  const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
-
-  return (
-    <div className="paper flex flex-1 flex-col items-center px-4 py-8 sm:px-8">
-      <main className="flex w-full max-w-6xl flex-col gap-6">
-        <SiteHeader />
-
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-semibold">
-              {black} <span className="px-1 text-muted">vs</span> {white}
-            </h1>
-            <p className="text-sm text-muted">
-              {new Date(game.playedAt).toLocaleString()} · {game.size}×{game.size} ·{" "}
-              {variantLabel(game.variant)}{" "}
-              · {result.label} <span className="font-mincho">{result.kanji}</span>
-            </p>
-          </div>
-          <Link href="/history" className="text-sm underline underline-offset-4">
-            Back to the record
-          </Link>
-        </div>
-
-        <GameReplay
-          game={game}
-          initialIndex={move}
-          basePath={matchPath(game.variant, game.id)}
-        />
       </main>
     </div>
   );
