@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.33.2
+- Reversi and Mini Reversi have their pictures; the About page says the Pente tournament rule is the Pro opening here.
+
 ## 0.33.1
 - Sign-in works from www.itsutsu.com: every www. visit is sent to itsutsu.com first.
 

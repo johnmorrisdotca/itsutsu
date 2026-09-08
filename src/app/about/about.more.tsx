@@ -222,7 +222,8 @@ export const OPENINGS_SECTION: AboutSection = {
       named, but there is one rule with a name: in tournament play black’s second stone must be at least three
       intersections from the centre, the <em>tournament rule</em>, which does for Pente what the swap does for renju.
       The <Link href={gamePath("ninuki")} className="font-medium text-ink underline underline-offset-4">capture games</Link> here
-      play without it for now.
+      offer it as the <em>Pro</em> opening in their set-up: first stone in the centre, black’s second outside the
+      central 5×5.
     </>,
   ],
   figures: { 0: KAGETSU, 1: OPENINGS },

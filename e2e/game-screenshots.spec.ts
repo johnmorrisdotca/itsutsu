@@ -43,10 +43,10 @@ const SCENES: Record<
   notakto: { size: 3, moves: [[1, 1], [0, 0], [2, 1]] },
   toroidalFive: { size: 15, moves: [[0, 7], [7, 0], [14, 8], [7, 14], [1, 6], [13, 9]] },
   obstacleFive: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6]] },
-  reversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3], [3, 2]] },
+  reversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3]] },
   classicReversi: { size: 8, moves: [[3, 3], [3, 4], [4, 4], [4, 3], [2, 4], [2, 3], [2, 2]] },
   antiReversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3]] },
-  miniReversi: { size: 4, moves: [[0, 1], [0, 2], [0, 3], [3, 0]] },
+  miniReversi: { size: 4, moves: [[0, 1], [0, 2], [0, 3]] },
 };
 
 test.describe("game screenshots", () => {
