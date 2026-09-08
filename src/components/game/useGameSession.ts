@@ -60,7 +60,7 @@ import {
 import { useGameTimeline } from "./useGameTimeline";
 import {
   clearSnapshot,
-  loadSnapshot,
+  snapshotToResume,
   saveSnapshot,
   toSnapshot,
 } from "./gameStorage";
@@ -94,8 +94,8 @@ export function useGameSession(
    * calls this is mounted client-side only, so there is no server render for a
    * restored game to disagree with, and no flash of an empty board.
    */
-  // `fresh` ignores a stored game on purpose: the caller asked for a new one.
-  const restored = persist && !fresh ? loadSnapshot() : null;
+  // `fresh` asks for this game: a stored game of the same kind still resumes.
+  const restored = persist ? snapshotToResume(fresh, initial.variant) : null;
 
   const line = useGameTimeline(initial, restored);
   const { state, index, timeline, atLatest, reviewing } = line;

@@ -75,13 +75,16 @@ export function matchPath(variant: string, id: string, move?: number): string {
 }
 
 /**
- * /history/<id> — a filed game in the record, and with a move number, the
- * position after that move: /history/<id>/5 is the board after the fifth
- * stone, the thing to send someone who should see that moment.
+ * The record, by game. /history/<slug> is every finished game of one kind;
+ * /history/<slug>/<id> is one of them, replayed; and with a move number,
+ * /history/<slug>/<id>/5 is the board after the fifth stone — the address
+ * to send someone who should see that moment. The same shape as /games, so
+ * a game's name is in the address wherever the game is.
  */
-export function recordPath(id: string, move?: number): string {
-  const base = `/history/${id}`;
-  return move === undefined ? base : `${base}/${move}`;
+export function recordPath(variant: string, id?: string, move?: number): string {
+  const base = `/history/${slugFor(variant)}`;
+  if (id === undefined) return base;
+  return move === undefined ? `${base}/${id}` : `${base}/${id}/${move}`;
 }
 
 /** The link that claims a seat. It carries a credential, so it is handed out, never listed. */

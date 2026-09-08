@@ -4,21 +4,21 @@ import { notFound, redirect } from "next/navigation";
 import { GameReplay } from "@/components/history/GameReplay";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { matchPath, recordPath } from "@/lib/gomoku/slugs";
+import { matchPath, recordPath, slugFor } from "@/lib/gomoku/slugs";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
 /**
- * A filed game, at /history/<id>: the replay, and with a move number on the
- * end, /history/<id>/12, the position after the twelfth stone. The scrubber
+ * A filed game, at /history/<slug>/<id>: the replay, and with a move number on
+ * the end, /history/<slug>/<id>/12, the position after the twelfth stone. The scrubber
  * keeps the address on the position it shows, so the bar can be copied to
  * send someone exactly this moment of the game.
  */
-export async function FiledMatchPage({ id, move }: { id: string; move?: number }) {
+export async function FiledMatchPage({ slug, id, move }: { slug: string; id: string; move?: number }) {
   const game = await fetchGameDetail(id);
-  if (game === null) notFound();
+  if (game === null || slugFor(game.variant) !== slug) notFound();
   if (move !== undefined && (!Number.isInteger(move) || move < 0 || move > game.moveCount)) {
     notFound();
   }
@@ -49,7 +49,7 @@ function FiledMatch({ game, move }: { game: GameDetail; move: number }) {
               · {result.label} <span className="font-mincho">{result.kanji}</span>
             </p>
           </div>
-          <Link href="/history" className="text-sm underline underline-offset-4">
+          <Link href={recordPath(game.variant)} className="text-sm underline underline-offset-4">
             Back to the record
           </Link>
         </div>
@@ -57,7 +57,7 @@ function FiledMatch({ game, move }: { game: GameDetail; move: number }) {
         <GameReplay
           game={game}
           initialIndex={move}
-          basePath={recordPath(game.id)}
+          basePath={recordPath(game.variant, game.id)}
         />
       </main>
     </div>

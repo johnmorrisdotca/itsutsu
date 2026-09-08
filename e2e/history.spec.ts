@@ -3,9 +3,9 @@ import { playAt, playSequence, winningSequence } from "./support";
 
 test.describe("the game record", () => {
   test("a finished game is filed and can be replayed", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     // Name the players so this game is findable among the rest.
     const stamp = `Tester${Date.now()}`;
@@ -38,10 +38,23 @@ test.describe("the game record", () => {
     await expect(page.getByTestId("history-result")).toHaveValue("white");
   });
 
+  test("one game's record is a collection with its own address", async ({ page }) => {
+    await page.goto("/history/gomoku?result=white");
+    await expect(page.getByTestId("record-game")).toContainText("Freestyle");
+    await expect(page.getByTestId("history-game")).toHaveValue("freestyle");
+    // The other filters ride along in the query.
+    await expect(page.getByTestId("history-result")).toHaveValue("white");
+    // Choosing another game moves to its record and keeps them.
+    await page.getByTestId("history-game").selectOption("renju");
+    await expect(page).toHaveURL(/\/history\/renju\?result=white$/);
+    await page.getByTestId("history-game").selectOption("all");
+    await expect(page).toHaveURL(/\/history\?result=white$/);
+  });
+
   test("an unfinished game is not filed", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     const stamp = `Unfinished${Date.now()}`;
     await page.getByLabel(/Player 1/).first().fill(stamp);

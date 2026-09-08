@@ -7,9 +7,12 @@ import type { Pagination } from "@/lib/history/gameHistory.types";
 export function Pager({
   pagination,
   params,
+  basePath = "/history",
 }: {
   pagination: Pagination;
   params: Record<string, string | undefined>;
+  /** The collection being paged: /history, or /history/<slug> for one game's record. */
+  basePath?: string;
 }) {
   const href = (page: number) => {
     const next = new URLSearchParams();
@@ -17,7 +20,7 @@ export function Pager({
       if (value !== undefined && key !== "page") next.set(key, value);
     }
     next.set("page", String(page));
-    return `/history?${next.toString()}`;
+    return `${basePath}?${next.toString()}`;
   };
 
   const { page, totalPages, total } = pagination;

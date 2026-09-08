@@ -101,7 +101,7 @@ test.describe("a game played from two devices", () => {
   });
 
   test("starting a shared game from the board lands on the match", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("start-shared-game").click();
 
     // The match, with its move count on the end: a fresh board is position 0.

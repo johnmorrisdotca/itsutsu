@@ -3,7 +3,7 @@ import { openAdvanced, playAt, playSequence, winningSequence } from "./support";
 
 test.describe("playing a game", () => {
   test("black wins with five in a row", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     await playSequence(page, 15, winningSequence());
 
@@ -15,7 +15,7 @@ test.describe("playing a game", () => {
   });
 
   test("stones alternate colour and the record follows along", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     await playAt(page, 15, 7, 7);
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
@@ -28,7 +28,7 @@ test.describe("playing a game", () => {
   });
 
   test("undo takes the last stone back, redo puts it down again", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await playAt(page, 15, 7, 7);
 
     await page.getByRole("button", { name: "Undo" }).click();
@@ -41,7 +41,7 @@ test.describe("playing a game", () => {
 
 test.describe("awareness", () => {
   test("warns the player who has to answer a threat", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     // Black builds an open three; white is then the side that must respond.
     await playSequence(page, 15, [
@@ -57,7 +57,7 @@ test.describe("awareness", () => {
   });
 
   test("says nothing at all when awareness is switched off", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await openAdvanced(page);
     await page.getByTestId("awareness").selectOption("off");
 
@@ -67,7 +67,7 @@ test.describe("awareness", () => {
   });
 
   test("marks the losing move once a game is thrown away", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await openAdvanced(page);
     await page.getByTestId("awareness").selectOption("full");
 
@@ -88,7 +88,7 @@ test.describe("awareness", () => {
 
 test.describe("hints", () => {
   test("spends an allowance and names a point", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await playSequence(page, 15, [[7, 3], [0, 0], [7, 4], [0, 1], [7, 5], [0, 2]]);
 
     await page.getByTestId("ask-hint").click();

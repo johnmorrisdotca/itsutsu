@@ -34,7 +34,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
         return (
           <li key={game.id}>
             <Link
-              href={recordPath(game.id)}
+              href={recordPath(game.variant, game.id)}
               className="grid grid-cols-2 items-center gap-3 rounded-xl border border-rule px-4 py-3 transition-colors hover:bg-shade sm:grid-cols-[1fr_auto_auto_auto]"
             >
               <span className="flex flex-col">

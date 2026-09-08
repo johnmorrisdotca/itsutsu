@@ -3,9 +3,9 @@ import { openAdvanced, playAt, playSequence } from "./support";
 
 test.describe("clocks", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
   });
 
   test("there is no clock unless a game asks for one", async ({ page }) => {
@@ -47,9 +47,9 @@ test.describe("clocks", () => {
 
 test.describe("game statistics", () => {
   test("count moves for each player", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     await playSequence(page, 15, [[7, 7], [7, 8], [8, 8]]);
 
@@ -60,9 +60,9 @@ test.describe("game statistics", () => {
   });
 
   test("count a threat that was ignored", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     // Black builds an open three; white plays far away instead of answering.
     await playSequence(page, 15, [[7, 3], [0, 0], [7, 4], [0, 1], [7, 5], [14, 14]]);
@@ -76,18 +76,18 @@ test.describe("game statistics", () => {
 
 test.describe("early warning", () => {
   test("is off by default, so two stones raise nothing", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     await playSequence(page, 15, [[7, 3], [0, 0], [7, 4]]);
     await expect(page.getByTestId("building-warning")).toHaveCount(0);
   });
 
   test("warns before an open three exists once it is turned on", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     await openAdvanced(page);
     await page.getByLabel("Warn before a three forms").check();
@@ -101,9 +101,9 @@ test.describe("early warning", () => {
 
 test.describe("chance of winning", () => {
   test("is hidden until asked for, then splits a hundred points", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     await expect(page.getByTestId("win-chance")).toHaveCount(0);
 
@@ -116,9 +116,9 @@ test.describe("chance of winning", () => {
   });
 
   test("swings towards the side building a threat", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
 
     await openAdvanced(page);
     await page.getByLabel("Show chance of winning").check();

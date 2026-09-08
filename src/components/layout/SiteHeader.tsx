@@ -3,12 +3,12 @@ import Link from "next/link";
 import { BrandHero, BrandWordmark } from "./BrandMarks";
 
 const NAV = [
-  { href: "/games", label: "Games" },
-  { href: "/", label: "Play" },
+  { href: "/games", label: "Play", kanji: "遊ぶ" },
   { href: "/history", label: "Record", kanji: "棋譜" },
   { href: "/rules", label: "Rules" },
   { href: "/learn", label: "Learn" },
   { href: "/players", label: "Players" },
+  { href: "/about", label: "About" },
 ] as const;
 
 function Nav() {
@@ -32,7 +32,7 @@ function Nav() {
 /**
  * The masthead.
  *
- * Two forms of the same thing. The home page carries the full hero — the 五つ
+ * Two forms of the same thing. The front page carries the full hero — the 五つ
  * avatar beside the wordmark — because that is the page that introduces the
  * site. Every other page carries the compact wordmark, so the mark appears
  * once per page rather than twice stacked. The game being played says its own

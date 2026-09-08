@@ -8,7 +8,7 @@ import { openAdvanced, playAt, playSequence } from "./support";
  */
 test.describe("the small games", () => {
   test("tic-tac-toe is three in a row on a locked 3×3 board", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("rules").selectOption("tictactoe");
 
     await expect(page.getByTestId("board-size")).toBeDisabled();
@@ -21,7 +21,7 @@ test.describe("the small games", () => {
   });
 
   test("drop four lands a stone at the bottom of the column it was played in", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("rules").selectOption("dropFour");
     await expect(page.getByTestId("board-size")).toHaveValue("7");
 
@@ -33,7 +33,7 @@ test.describe("the small games", () => {
   });
 
   test("twist five owes a quarter turn after each stone", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("rules").selectOption("twistFive");
 
     await expect(page.getByTestId("twist-controls")).toHaveCount(0);
@@ -51,7 +51,7 @@ test.describe("the small games", () => {
   });
 
   test("trap three loses on three in a row", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("rules").selectOption("trapThree");
 
     await playSequence(page, 5, [[1, 1], [3, 1], [1, 2], [3, 2], [1, 3]]);
@@ -60,7 +60,7 @@ test.describe("the small games", () => {
   });
 
   test("square four places four pieces then slides them", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("rules").selectOption("squareFour");
 
     await playSequence(page, 5, [
@@ -78,7 +78,7 @@ test.describe("the small games", () => {
   });
 
   test("fixed rules are shown greyed rather than hidden", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("rules").selectOption("twistFour");
     await openAdvanced(page);
 

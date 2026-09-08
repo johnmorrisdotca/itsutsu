@@ -4,6 +4,7 @@ import type {
   GameState,
   Move,
   OpeningChoice,
+  RuleVariant,
   Seat,
   Stone,
 } from "@/lib/gomoku/gomoku.types";
@@ -99,6 +100,18 @@ export function loadSnapshot(): GameSnapshot | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * The stored game to resume, if any. `fresh` means "this game, not whatever
+ * was stored": a stored game of the same kind is resumed, since arriving at a
+ * game's own address should find the game in progress there, and a stored
+ * game of another kind is left behind for a new one.
+ */
+export function snapshotToResume(fresh: boolean, variant: RuleVariant | undefined): GameSnapshot | null {
+  const stored = loadSnapshot();
+  if (stored === null) return null;
+  return !fresh || stored.settings.variant === variant ? stored : null;
 }
 
 export function clearSnapshot(): void {

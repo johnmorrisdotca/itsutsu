@@ -22,7 +22,7 @@ export function GameView({
 }) {
   // Nothing moving for a couple of minutes pauses the clock behind a modal.
   const { idle, confirm } = useIdleWatch();
-  // A game asked for by name starts fresh; otherwise the last game resumes.
+  // A game asked for by name resumes if it is the stored one, else starts fresh.
   const { session, actions } = useGameSession(
     variant === undefined ? {} : { variant },
     { persist: true, paused: idle, fresh: variant !== undefined },

@@ -11,6 +11,8 @@ import {
   GAME_SORT_DISPLAY,
   GAME_VARIANT_FILTERS,
 } from "@/lib/history/gameHistory.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { recordPath } from "@/lib/gomoku/slugs";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { Field, Select } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
@@ -20,10 +22,26 @@ import { INPUT_CLASS } from "@/components/ui/ui.constants";
  * view can be linked, bookmarked and reloaded — and so the server component
  * beside it stays the only thing that reads the query.
  */
-export function HistoryFilters() {
+export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+
+  /*
+   * The game is not a filter but a collection: /history/<slug> is one game's
+   * record, with its own address, so choosing a game goes there, and the
+   * other filters come along in the query.
+   */
+  const chooseGame = useCallback(
+    (next: string) => {
+      const query = new URLSearchParams(params.toString());
+      query.delete("page");
+      const base = next === "all" ? "/history" : recordPath(next);
+      const search = query.toString();
+      router.replace(search === "" ? base : `${base}?${search}`);
+    },
+    [params, router],
+  );
 
   const update = useCallback(
     (key: string, value: string) => {
@@ -82,8 +100,9 @@ export function HistoryFilters() {
 
       <Field label="Rules">
         <Select
-          value={value("variant", "all")}
-          onChange={(event) => update("variant", event.target.value)}
+          value={variant ?? "all"}
+          onChange={(event) => chooseGame(event.target.value)}
+          data-testid="history-game"
         >
           {GAME_VARIANT_FILTERS.map((option) => (
             <option key={option} value={option}>

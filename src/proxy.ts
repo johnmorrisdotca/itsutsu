@@ -46,6 +46,7 @@ const OPEN_PATHS = [
   "/robots.txt",
   "/rules",
   "/learn",
+  "/about",
   // The screenshots those pages load. Files under public/ are not Next's own
   // assets, so the matcher does not exempt them and they need naming here.
   "/art",
@@ -66,6 +67,8 @@ function gateIsConfigured(): boolean {
 }
 
 function isOpenPath(pathname: string): boolean {
+  // The front page says what the site is; it shows no game and needs no key.
+  if (pathname === "/") return true;
   return OPEN_PATHS.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );

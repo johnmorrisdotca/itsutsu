@@ -7,7 +7,7 @@ import { openAdvanced, playAt, playSequence } from "./support";
  */
 test.describe("rule variants", () => {
   test("the games browser lists every variant and switches the rules", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("open-game-browser").first().click();
 
     const browser = page.getByTestId("game-browser");
@@ -24,7 +24,7 @@ test.describe("rule variants", () => {
   });
 
   test("renju marks black's double three as forbidden and refuses it", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("board-size").selectOption("9");
     await page.getByTestId("rules").selectOption("renju");
 
@@ -46,7 +46,7 @@ test.describe("rule variants", () => {
   });
 
   test("swap2 pauses after three stones for a colour choice", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("opening").selectOption("swap2");
     await expect(page.getByTestId("opening-notice")).toContainText("first three stones");
 
@@ -67,7 +67,7 @@ test.describe("rule variants", () => {
   });
 
   test("connect6 gives two stones a turn after the first", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("rules").selectOption("connect6");
     await page.getByTestId("board-size").selectOption("19");
 
@@ -82,7 +82,7 @@ test.describe("rule variants", () => {
   });
 
   test("a handicap forbids one colour a shape the game otherwise allows", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("board-size").selectOption("9");
     await openAdvanced(page);
     await page.getByTestId("handicap-stone").selectOption("black");
@@ -103,7 +103,7 @@ test.describe("rule variants", () => {
   });
 
   test("ninuki lifts a flanked pair off the board", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.getByTestId("board-size").selectOption("9");
     await page.getByTestId("rules").selectOption("ninuki");
 

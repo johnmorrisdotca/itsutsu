@@ -54,7 +54,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
   const seat = await seatForToken(id, token);
 
   // A match that is over lives in the record, at the record's address.
-  if (game.status !== "active") redirect(recordPath(game.id, move));
+  if (game.status !== "active") redirect(recordPath(game.variant, game.id, move));
 
   return <LiveMatch game={game} token={token ?? null} seat={seat} />;
 }

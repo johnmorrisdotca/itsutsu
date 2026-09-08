@@ -22,9 +22,9 @@ const OPENING: [number, number][] = [
 test.describe("screenshots", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
   });
 
   test("the board in play", async ({ page }) => {
@@ -135,7 +135,7 @@ test.describe("screenshots", () => {
 
   test("dark mode", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await playSequence(page, 15, OPENING);
     await page.getByTestId("board-theme-sumi").click();
     await page.screenshot({ path: `${SHOTS}/10-dark-mode.png`, fullPage: true });

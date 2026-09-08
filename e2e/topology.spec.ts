@@ -13,9 +13,9 @@ test.describe("Toroidal Five", () => {
   });
 
   test("wins on a line that runs off one edge and back on the other", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await openAdvanced(page);
     await page.getByTestId("rules").selectOption("toroidalFive");
     await page.getByTestId("board-size").selectOption("9");
@@ -36,9 +36,9 @@ test.describe("Toroidal Five", () => {
 
 test.describe("Obstacle Five", () => {
   test("puts dead squares and hotspots on the board", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/");
+    await page.goto("/games/gomoku");
     await openAdvanced(page);
     await page.getByTestId("rules").selectOption("obstacleFive");
 

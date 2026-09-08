@@ -1,7 +1,7 @@
-import Link from "next/link";
+import { Suspense } from "react";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { RulesIndex } from "@/components/rules/RulesIndex";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
@@ -24,28 +24,21 @@ export default function RulesIndexPage() {
             trying to do, the board, how a turn goes, and the details.
           </p>
         </section>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="rules-index">
-          {RULE_VARIANT_LIST.map((variant) => {
-            const copy = RULE_VARIANT_DISPLAY[variant];
-            return (
-              <li key={variant}>
-                <Link
-                  href={`/rules/${variant}`}
-                  className={`${PANEL_CLASS} flex h-full flex-col gap-1 transition-colors hover:border-rule-strong`}
-                >
-                  <span className="flex items-baseline gap-2 font-semibold">
-                    {copy.label}
-                    <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span>
-                  </span>
-                  <span className="text-xs text-muted">{copy.tagline}</span>
-                  {copy.inspiredBy !== undefined ? (
-                    <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
-                  ) : null}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        {/* The filter reads the query on the client, so it renders once that is known. */}
+        <Suspense>
+          <RulesIndex
+            cards={RULE_VARIANT_LIST.map((variant) => {
+              const copy = RULE_VARIANT_DISPLAY[variant];
+              return {
+                variant,
+                label: copy.label,
+                kanji: copy.kanji,
+                tagline: copy.tagline,
+                inspiredBy: copy.inspiredBy,
+              };
+            })}
+          />
+        </Suspense>
         <section className="flex max-w-prose flex-col gap-2 text-xs text-muted" data-testid="rules-attribution">
           {RULES_ATTRIBUTION.map((paragraph) => (
             <p key={paragraph.slice(0, 24)}>{paragraph}</p>

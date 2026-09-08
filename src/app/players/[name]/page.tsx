@@ -87,7 +87,7 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
                   </span>
                   <span className="flex items-center gap-3">
                     <span className="font-mono text-xs tabular-nums">{game.outcome}</span>
-                    <Link href={recordPath(game.id)} className="text-xs underline-offset-2 hover:underline">
+                    <Link href={recordPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline">
                       replay
                     </Link>
                   </span>

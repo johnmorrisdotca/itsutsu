@@ -35,6 +35,21 @@ test.describe("rules and learning", () => {
     await expect(page.getByTestId("rules-page")).toContainText("edges join");
   });
 
+  test("the rules can be narrowed to a first letter", async ({ page }) => {
+    await page.goto("/rules");
+    const cards = page.getByTestId("rules-index").getByRole("listitem");
+    const all = await cards.count();
+    // No game starts with X; the button says so by refusing.
+    await expect(page.getByTestId("letter-X")).toBeDisabled();
+    await page.getByTestId("letter-T").click();
+    await expect(page).toHaveURL(/\/rules\?letter=T$/);
+    await expect(cards.first()).toContainText(/^T/);
+    expect(await cards.count()).toBeLessThan(all);
+    for (const card of await cards.allTextContents()) expect(card.trim()).toMatch(/^T/);
+    await page.getByTestId("letter-All").click();
+    await expect(cards).toHaveCount(all);
+  });
+
   test("a rules page can start a game of that kind", async ({ page }) => {
     await page.goto("/rules/twistFour");
     await page.getByRole("link", { name: /Play Twist Four/ }).click();
@@ -59,12 +74,12 @@ test.describe("rules and learning", () => {
   });
 
   test("the header reaches rules, learning and players", async ({ page }) => {
-    await page.goto("/");
-    await page.getByRole("link", { name: /^Rules/ }).click();
+    await page.goto("/games/gomoku");
+    await page.getByRole("navigation").getByRole("link", { name: /^Rules/ }).click();
     await expect(page).toHaveURL(/\/rules$/);
-    await page.getByRole("link", { name: /^Learn/ }).click();
+    await page.getByRole("navigation").getByRole("link", { name: /^Learn/ }).click();
     await expect(page).toHaveURL(/\/learn$/);
-    await page.getByRole("link", { name: /^Players/ }).click();
+    await page.getByRole("navigation").getByRole("link", { name: /^Players/ }).click();
     await expect(page).toHaveURL(/\/players$/);
   });
 });

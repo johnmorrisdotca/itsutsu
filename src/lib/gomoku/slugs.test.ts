@@ -36,7 +36,8 @@ describe("game slugs", () => {
     expect(matchPath("dropFour", "abc")).toBe("/games/drop-four/abc");
     expect(matchPath("dropFour", "abc", 12)).toBe("/games/drop-four/abc/12");
     expect(seatPath("renju", "abc", "tok")).toBe("/games/renju/abc/seat/tok");
-    expect(recordPath("abc")).toBe("/history/abc");
-    expect(recordPath("abc", 5)).toBe("/history/abc/5");
+    expect(recordPath("freestyle")).toBe("/history/gomoku");
+    expect(recordPath("freestyle", "abc")).toBe("/history/gomoku/abc");
+    expect(recordPath("freestyle", "abc", 5)).toBe("/history/gomoku/abc/5");
   });
 });

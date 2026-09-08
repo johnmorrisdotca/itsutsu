@@ -7,10 +7,17 @@ import { expect, test } from "@playwright/test";
  * which is exactly what happened once already on the production alias.
  */
 test.describe("a visitor with no invite", () => {
-  test("is sent to the door instead of the board", async ({ page }) => {
-    await page.goto("/");
-    await expect(page).toHaveURL(/\/join/);
+  test("is sent to the door instead of the games", async ({ page }) => {
+    await page.goto("/games");
+    await expect(page).toHaveURL(/\/join\?next=%2Fgames/);
     await expect(page.getByTestId("invite-code")).toBeVisible();
+  });
+
+  test("can read the front page, which shows no game", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).not.toHaveURL(/\/join/);
+    await expect(page.getByTestId("front-door")).toBeVisible();
+    await expect(page.getByTestId("to-play")).toHaveCount(0);
   });
 
   test("is sent back to where they were heading, after joining", async ({ page }) => {
@@ -79,7 +86,7 @@ test.describe("a visitor with no invite", () => {
 
 test.describe("the pages that stay open", () => {
   test("rules and learning are readable without an invite", async ({ page }) => {
-    for (const path of ["/rules", "/learn"]) {
+    for (const path of ["/rules", "/learn", "/about"]) {
       await page.goto(path);
       await expect(page, `${path} should not send you to the door`).not.toHaveURL(
         /\/join/,
@@ -93,11 +100,11 @@ test.describe("the pages that stay open", () => {
 
   test("the screenshots those pages load are readable", async ({ request }) => {
     // public/ is not exempted by the matcher, so these had to be named.
-    expect((await request.get("/games/caro.jpg")).status()).toBe(200);
+    expect((await request.get("/art/games/caro.jpg")).status()).toBe(200);
   });
 
   test("but nothing else opened by accident", async ({ request }) => {
-    for (const path of ["/", "/history", "/players"]) {
+    for (const path of ["/games", "/games/gomoku", "/history", "/players"]) {
       const response = await request.get(path, { maxRedirects: 0 });
       expect(response.status(), `${path} should still be gated`).toBe(307);
     }
