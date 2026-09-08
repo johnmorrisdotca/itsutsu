@@ -21,7 +21,7 @@ export async function OpenGamesBoard() {
   const copy = MY_GAMES_COPY.openBoard;
 
   return (
-    <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="open-games">
+    <section id="open-seats" className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="open-games">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
         {copy.label}
         <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{copy.kanji}</span>

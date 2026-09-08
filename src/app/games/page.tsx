@@ -4,6 +4,8 @@ import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { InviteFriends } from "@/components/mine/InviteFriends";
+import { AutoMatchPanel } from "@/components/mine/AutoMatchPanel";
+import { fetchWaitingCounts } from "@/lib/social/autoMatch";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { fetchPlayedCounts } from "@/lib/history/gameCounts";
 import { recordPath } from "@/lib/gomoku/slugs";
@@ -29,7 +31,8 @@ export const dynamic = "force-dynamic";
  * below for whoever wants to look around.
  */
 export default async function LobbyPage() {
-  const [email, counts] = await Promise.all([currentEmail(), fetchPlayedCounts()]);
+  const [email, counts, waitingCounts] = await Promise.all([currentEmail(), fetchPlayedCounts(), fetchWaitingCounts()]);
+  const waiting = Object.fromEntries(waitingCounts);
   const playedIn = (games: readonly string[]) => games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0);
   return (
     <Page width="standard">
@@ -40,40 +43,44 @@ export default async function LobbyPage() {
       <LocalGameCardClient />
       {email !== null ? <InviteFriends /> : null}
 
-      <section className="grid gap-4 md:grid-cols-3" data-testid="lobby-start">
-        <Link
-          href={gamePath("freestyle")}
-          className={`${PANEL_LINK_CLASS} flex flex-col gap-2 md:col-span-2`}
-        >
-          <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-            Start here
-          </span>
-          <span className="text-2xl font-semibold">
-            Play Gomoku <span className="font-mincho text-base font-normal opacity-70">五目並べ</span>
-          </span>
-          <span className="text-sm text-muted">
-            Two players, one screen, five in a row. The board tells you when you are in
-            trouble, and there is a hint if you want one. Everything else can wait.
-          </span>
-        </Link>
-        <div className="flex flex-col gap-4">
-          <Link
-            href="/"
-            className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}
-          >
-            <span className="font-semibold">Play apart <span className="font-mincho text-xs font-normal opacity-70">通信対局</span></span>
+      <section className="flex flex-col gap-4" data-testid="lobby-start">
+        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
+          Start a game <span className="font-mincho text-sm font-normal opacity-70">対局を始める</span>
+        </h2>
+        <p className="max-w-prose text-sm text-muted">
+          Four ways in, as the elder sites had them: let the site pair you, take a seat somebody posted, post one
+          yourself, or challenge a member by name. Or just play at this screen.
+        </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className={`${PANEL_CLASS} flex flex-col gap-2 md:col-span-2`}>
+            <h3 className="flex items-baseline gap-2 font-semibold">
+              Auto-match <span className="font-mincho text-xs font-normal opacity-70">自動対局</span>
+            </h3>
+            {email !== null ? (
+              <AutoMatchPanel waiting={waiting} />
+            ) : (
+              <p className="text-sm text-muted">
+                Sign in, name a game and a pace, and the site pairs you with the next member who wants the same.
+              </p>
+            )}
+          </div>
+          <a href="#open-seats" className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>
+            <span className="font-semibold">Waiting room <span className="font-mincho text-xs font-normal opacity-70">待合室</span></span>
+            <span className="text-xs text-muted">Seats other members have posted for anyone. Sit down and play.</span>
+          </a>
+          <Link href={gamePath("freestyle")} className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>
+            <span className="font-semibold">Post a seat <span className="font-mincho text-xs font-normal opacity-70">席を出す</span></span>
             <span className="text-xs text-muted">
-              Start a game with a link for each seat and take turns from two phones.
+              Set a game up, tick “Open to anyone”, and whoever answers first sits down opposite you.
             </span>
           </Link>
-          <Link
-            href="/learn"
-            className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}
-          >
-            <span className="font-semibold">Learn first <span className="font-mincho text-xs font-normal opacity-70">学び</span></span>
-            <span className="text-xs text-muted">
-              Ten minutes on threats and shapes will make every game here better.
-            </span>
+          <Link href="/players" className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>
+            <span className="font-semibold">Challenge a member <span className="font-mincho text-xs font-normal opacity-70">挑戦</span></span>
+            <span className="text-xs text-muted">Pick a name on the players page. The game is in their list at once.</span>
+          </Link>
+          <Link href={gamePath("freestyle")} className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>
+            <span className="font-semibold">Two at one screen <span className="font-mincho text-xs font-normal opacity-70">対面</span></span>
+            <span className="text-xs text-muted">Play Gomoku, or any game below, across the table right now.</span>
           </Link>
         </div>
       </section>

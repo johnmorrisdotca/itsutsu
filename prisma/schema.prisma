@@ -255,6 +255,19 @@ model Member {
   emailNotify Boolean  @default(true)
 }
 
+/// A request to be paired with anyone who wants the same game at the same pace.
+model AutoMatchRequest {
+  id         String   @id @default(cuid())
+  member     String
+  variant    String
+  /// Per-move time limit in milliseconds, or null for none; a pairing must agree on it.
+  moveTimeMs Int?
+  createdAt  DateTime @default(now())
+
+  @@index([variant, moveTimeMs, createdAt])
+  @@index([member])
+}
+
 /// A member's ignore list: a member who may not challenge the owner.
 model Ignore {
   owner     String

@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.42.0
+- Auto-match: name a game and a pace and be paired with the next member who wants the same. The Play page lays out the four ways to start a game.
+
 ## 0.41.0
 - The replay shows the whole game as a move list, each move a link to its position, with a copy button.
 
