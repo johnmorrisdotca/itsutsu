@@ -7,6 +7,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
 ## 0.43.0
+- After a game, say privately how you think you played: thumbs up or down, and a tally of your own reads on your profile.
+
+## 0.43.0
 - John's GoldToken record too, and a member can now carry more than one kept record
 
 ## 0.42.0

@@ -11,6 +11,7 @@ import { BuddyButton } from "@/components/mine/BuddyButton";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { fetchBuddies } from "@/lib/social/buddies";
 import { fetchIgnored } from "@/lib/social/ignores";
+import { fetchVerdictTally } from "@/lib/history/verdicts";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
@@ -34,7 +35,12 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   const me = await currentSession();
   if (!me?.email) redirect("/join?next=%2Fme");
 
-  const [member, buddies, ignored] = await Promise.all([fetchProfile(me.email), fetchBuddies(me.email), fetchIgnored(me.email)]);
+  const [member, buddies, ignored, tally] = await Promise.all([
+    fetchProfile(me.email),
+    fetchBuddies(me.email),
+    fetchIgnored(me.email),
+    fetchVerdictTally(me.email),
+  ]);
   const name = member?.name ?? me.name ?? "";
   const welcome = params.welcome === "1";
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
@@ -160,6 +166,12 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
               ))}
             </tbody>
           </table>
+        ) : null}
+        {tally.answered > 0 ? (
+          <p className="text-xs text-muted" data-testid="verdict-tally">
+            Your own read: you thought you played well in {tally.up} of the {tally.answered} games you judged
+            {tally.upWins > 0 || tally.downWins > 0 ? `, and won ${tally.upWins} of the ${tally.up} you felt good about and ${tally.downWins} of the ${tally.down} you did not` : ""}. Only you see this.
+          </p>
         ) : null}
         {name !== "" ? (
           <p className="text-xs">

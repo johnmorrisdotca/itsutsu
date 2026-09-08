@@ -80,6 +80,9 @@ model Game {
   allowResign Boolean   @default(true)
   /// A seat anyone may take, posted on the games page: "white" while it waits,
   /// null once somebody has sat down or when the game was never open.
+  /// Each seat's private read on its own play, given once the game is over: "up" or "down".
+  blackVerdict String?
+  whiteVerdict String?
   /// A seat may hide a finished regular game from its own public list. Totals still count it.
   hiddenByBlack Boolean @default(false)
   hiddenByWhite Boolean @default(false)

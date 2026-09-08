@@ -12,6 +12,10 @@ import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { HideGameButton } from "@/components/history/HideGameButton";
+import { SelfVerdict, type Verdict } from "@/components/history/SelfVerdict";
+import { seatCookieName } from "@/lib/history/seatCookie";
+import { resolveSeat } from "@/lib/history/seats";
+import { cookies } from "next/headers";
 import { currentSession } from "@/lib/auth/currentSession";
 import { prisma } from "@/lib/prisma";
 
@@ -38,7 +42,7 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
     currentSession(),
     prisma.game.findUnique({
       where: { id },
-      select: { blackMember: true, whiteMember: true, hiddenByBlack: true, hiddenByWhite: true },
+      select: { blackMember: true, whiteMember: true, hiddenByBlack: true, hiddenByWhite: true, blackVerdict: true, whiteVerdict: true },
     }),
   ]);
   const mine = me?.email ?? null;
@@ -54,7 +58,21 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
           ? members.blackMember
           : null;
 
-  return <FiledMatch game={game} move={move ?? game.moveCount} rematch={other} seated={myColour !== null} hidden={hidden} />;
+  // A seat held by cookie counts too: a game played from a scanned link, or at one screen.
+  const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, mine);
+  const seatColour = myColour ?? claim?.seat ?? null;
+  const verdict = (seatColour === "black" ? members?.blackVerdict : seatColour === "white" ? members?.whiteVerdict : null) as Verdict;
+
+  return (
+    <FiledMatch
+      game={game}
+      move={move ?? game.moveCount}
+      rematch={other}
+      seated={myColour !== null}
+      hidden={hidden}
+      verdict={seatColour === null ? undefined : verdict}
+    />
+  );
 }
 
 function FiledMatch({
@@ -63,12 +81,15 @@ function FiledMatch({
   rematch,
   seated,
   hidden,
+  verdict,
 }: {
   game: GameDetail;
   move: number;
   rematch: string | null;
   seated: boolean;
   hidden: boolean;
+  /** The viewer's own read on their play, when they held a seat; undefined for a reader. */
+  verdict?: Verdict;
 }) {
   const result = GAME_RESULT_DISPLAY[game.result];
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
@@ -102,6 +123,8 @@ function FiledMatch({
           </Link>
         </span>
       </div>
+
+      {verdict !== undefined ? <SelfVerdict id={game.id} initial={verdict} /> : null}
 
       <GameReplay
         game={game}
