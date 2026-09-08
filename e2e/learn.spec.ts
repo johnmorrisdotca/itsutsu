@@ -5,7 +5,7 @@ test.describe("rules and learning", () => {
   test("every game has a rules page in the same template", async ({ page }) => {
     await page.goto("/rules");
     const index = page.getByTestId("rules-index");
-    await expect(index.getByRole("link")).toHaveCount(29);
+    await expect(index.getByRole("link")).toHaveCount(33);
     await expect(page.getByTestId("rules-attribution")).toContainText("trademark");
 
     await page.getByRole("link", { name: /Hot Drop/ }).click();
@@ -71,13 +71,14 @@ test.describe("rules and learning", () => {
     await expect(page.getByTestId("board-size")).toHaveValue("4");
   });
 
-  test("the lobby leads with one game and folds the rest into families", async ({ page }) => {
+  test("the lobby offers the ways to start a game and folds the catalogue into families", async ({ page }) => {
     await page.goto("/games");
-    await expect(page.getByTestId("lobby-start")).toContainText("Start here");
+    await expect(page.getByTestId("lobby-start")).toContainText("Start a game");
+    await expect(page.getByTestId("auto-match")).toBeVisible();
     const families = page.getByTestId("lobby-family");
-    await expect(families).toHaveCount(6);
-    // Folded until opened, so the page is short.
-    await expect(families.first().getByRole("link", { name: "play" })).toBeHidden();
+    await expect(families).toHaveCount(7);
+    // The first family is open; the rest are folded, so the page stays short.
+    await expect(families.nth(1).getByRole("link", { name: "play" })).toBeHidden();
     await families.filter({ hasText: "Small boards" }).locator("summary").click();
     await families
       .filter({ hasText: "Small boards" })
