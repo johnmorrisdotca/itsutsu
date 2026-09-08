@@ -30,6 +30,7 @@ import { matchPath } from "@/lib/gomoku/slugs";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { parseHandicap } from "@/lib/history/gameSettingsSchema";
 import { currentSession } from "@/lib/auth/currentSession";
+import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
 import { createLiveGame } from "@/lib/history/liveGame";
 import {
@@ -137,6 +138,10 @@ export async function POST(request: Request) {
       if (!me?.email) return NextResponse.json({ error: "Sign in to challenge someone." }, { status: 401, headers: NO_STORE });
       const other = await prisma.member.findUnique({ where: { email: challenge } });
       if (other === null) return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
+      if (await isIgnoring(other.email, me.email)) {
+        return NextResponse.json({ error: "That member is not taking games from you." }, { status: 403, headers: NO_STORE });
+      }
+
       seats = {
         blackMember: me.email,
         whiteMember: other.email,

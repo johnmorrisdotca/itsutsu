@@ -7,6 +7,8 @@ import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { fetchDirectory, fetchLeaders } from "@/lib/rating/players";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { BuddyButton } from "@/components/mine/BuddyButton";
+import { IgnoreButton } from "@/components/mine/IgnoreButton";
+import { ignoredEmails } from "@/lib/social/ignores";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { buddyEmails } from "@/lib/social/buddies";
 import { fetchHereNow, recencyOf } from "@/lib/social/presence";
@@ -63,6 +65,7 @@ export default async function PlayersPage() {
     fetchHereNow(now),
   ]);
   const buddies = me?.email ? await buddyEmails(me.email) : new Set<string>();
+  const ignored = me?.email ? await ignoredEmails(me.email) : new Set<string>();
   const hereNow = here.filter((entry) => entry.recency === "now").length;
 
   return (
@@ -145,7 +148,12 @@ export default async function PlayersPage() {
                   ) : null}
                 </td>
                 <td className="py-1.5 text-right">
-                  {me?.email && me.email !== entry.email ? <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} /> : null}
+                  {me?.email && me.email !== entry.email ? (
+                    <span className="flex justify-end gap-1">
+                      <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} />
+                      <IgnoreButton email={entry.email} ignoring={ignored.has(entry.email)} />
+                    </span>
+                  ) : null}
                 </td>
                 <td className="py-1.5 text-right">
                   {me?.email && me.email !== entry.email ? <ChallengeButton email={entry.email} /> : null}

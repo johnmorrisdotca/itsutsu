@@ -10,6 +10,8 @@ import { ProfileForm } from "@/components/mine/ProfileForm";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { fetchBuddies } from "@/lib/social/buddies";
+import { fetchIgnored } from "@/lib/social/ignores";
+import { IgnoreButton } from "@/components/mine/IgnoreButton";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
 import { fetchProfile } from "@/lib/auth/members";
@@ -32,7 +34,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   const me = await currentSession();
   if (!me?.email) redirect("/join?next=%2Fme");
 
-  const [member, buddies] = await Promise.all([fetchProfile(me.email), fetchBuddies(me.email)]);
+  const [member, buddies, ignored] = await Promise.all([fetchProfile(me.email), fetchBuddies(me.email), fetchIgnored(me.email)]);
   const name = member?.name ?? me.name ?? "";
   const welcome = params.welcome === "1";
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
@@ -168,6 +170,24 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
           </p>
         ) : null}
       </section>
+
+      {ignored.length > 0 ? (
+        <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="ignored">
+          <h2 className="flex items-baseline gap-2 font-semibold">
+            Ignored <span className="font-mincho text-xs font-normal opacity-70">無視</span>
+            <span className="text-xs font-normal text-muted">{ignored.length}</span>
+          </h2>
+          <p className="text-xs text-muted">They cannot challenge you, and their messages in a game are hidden from you.</p>
+          <ul className="flex flex-col gap-1 text-sm">
+            {ignored.map((entry) => (
+              <li key={entry.email} className="flex items-center gap-3">
+                <span>{entry.name}</span>
+                <span className="ml-auto"><IgnoreButton email={entry.email} ignoring /></span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <InviteFriends />
     </Page>

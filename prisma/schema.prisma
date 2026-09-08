@@ -80,6 +80,9 @@ model Game {
   allowResign Boolean   @default(true)
   /// A seat anyone may take, posted on the games page: "white" while it waits,
   /// null once somebody has sat down or when the game was never open.
+  /// A seat may hide a finished regular game from its own public list. Totals still count it.
+  hiddenByBlack Boolean @default(false)
+  hiddenByWhite Boolean @default(false)
   openSeat    String?
   /// When the open seat was posted, so the board lists the newest first.
   openedAt    DateTime?
@@ -250,6 +253,16 @@ model Member {
   /// Listed among who is here, and mailed when it is their move.
   showOnline  Boolean  @default(true)
   emailNotify Boolean  @default(true)
+}
+
+/// A member's ignore list: a member who may not challenge the owner.
+model Ignore {
+  owner     String
+  ignored   String
+  createdAt DateTime @default(now())
+
+  @@id([owner, ignored])
+  @@index([ignored])
 }
 
 /// A member's buddy list: one row per pair, owner to buddy, by email.

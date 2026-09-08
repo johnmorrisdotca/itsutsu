@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.40.0
+- Ignore a member: they cannot challenge you and their messages are hidden from you; undo it from your profile. In any shared game, mute just that opponent's messages with one switch.
+
 ## 0.39.0
 - The replay says when each move was made. A finished game can be hidden from your own public list; it still counts.
 

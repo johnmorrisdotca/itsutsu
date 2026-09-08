@@ -14,6 +14,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { isHotSeat } from "@/lib/history/liveGame";
+import { isIgnoring } from "@/lib/social/ignores";
 import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -82,8 +83,13 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
    * it, "against Kyokosan from Canada".
    */
   let opponent: { name: string; country: string } | null = null;
+  let muted: Stone | null = null;
   if (seat !== null && tokens !== null) {
     const otherEmail = seat === STONES.black ? tokens.whiteMember : tokens.blackMember;
+    const myEmail = await currentEmail();
+    if (myEmail !== null && otherEmail !== null && (await isIgnoring(myEmail, otherEmail))) {
+      muted = seat === STONES.black ? STONES.white : STONES.black;
+    }
     const otherName = (seat === STONES.black ? game.whiteName : game.blackName).trim();
     const member = otherEmail === null ? null : await prisma.member.findUnique({ where: { email: otherEmail }, select: { name: true, country: true } });
     if (member !== null || otherName !== "") {
@@ -91,7 +97,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     }
   }
 
-  return <LiveMatch game={game} token={token ?? null} seat={seat} move={move ?? game.moveCount} opponent={opponent} />;
+  return <LiveMatch game={game} token={token ?? null} seat={seat} move={move ?? game.moveCount} opponent={opponent} muted={muted} />;
 }
 
 async function LiveMatch({
@@ -100,6 +106,7 @@ async function LiveMatch({
   seat,
   move,
   opponent,
+  muted,
 }: {
   game: GameDetail;
   token: string | null;
@@ -107,6 +114,7 @@ async function LiveMatch({
   /** The position the address names, for forking a new game from it. */
   move: number;
   opponent: { name: string; country: string } | null;
+  muted: Stone | null;
 }) {
   /*
    * Seat links are only handed out to someone who already holds one. A reader
@@ -153,6 +161,7 @@ async function LiveMatch({
               seat={seat}
               basePath={matchPath(game.variant, game.id)}
               opponent={opponent}
+              muted={muted}
             />
           </div>
         </div>

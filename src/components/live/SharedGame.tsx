@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import useSWR from "swr";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
-import { cellAt, discCount, inMovePhase, pieceMoves, rulesFor } from "@/lib/gomoku/engine";
+import { cellAt, discCount, inMovePhase, pieceMoves, rulesFor, otherStone } from "@/lib/gomoku/engine";
 import { PieceTray } from "@/components/game/PieceTray";
 import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
@@ -44,6 +44,7 @@ export function SharedGame({
   seat,
   basePath,
   opponent = null,
+  muted = null,
 }: {
   initial: GameDetail;
   token: string | null;
@@ -52,8 +53,16 @@ export function SharedGame({
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
   opponent?: { name: string; country: string } | null;
+  /** A seat whose messages the viewer has chosen not to see. */
+  muted?: Stone | null;
 }) {
   const [error, setError] = useState<string | null>(null);
+  // Mute this opponent's messages for this game only; remembered in this browser.
+  const quiet = useSyncExternalStore(
+    subscribeQuiet,
+    () => readQuiet(initial.id),
+    () => false,
+  );
   /*
    * Whether to keep asking. Driven from `onSuccess` rather than SWR's
    * function-form `refreshInterval`, which does not schedule a poll at all.
@@ -200,6 +209,10 @@ export function SharedGame({
     }
   }
 
+  // An ignored seat's messages are simply not shown; nor are the other seat's while this game is muted.
+  const silenced = muted !== null ? muted : quiet && seat !== null ? otherStone(seat) : null;
+  const shown = (detail.reactions ?? []).filter((reaction) => silenced === null || reaction.stone !== silenced);
+
   return (
     <div className="flex w-full flex-col gap-4">
       <TurnBanner
@@ -258,7 +271,7 @@ export function SharedGame({
         </p>
       ) : null}
 
-      <ReactionBubbles reactions={detail.reactions ?? []} yourStone={seat} />
+      <ReactionBubbles reactions={shown} yourStone={seat} />
 
       <Board
         state={state}
@@ -306,6 +319,18 @@ export function SharedGame({
           onSend={react}
         />
       ) : null}
+      {seat !== null && muted === null ? (
+        <label className="flex items-center gap-2 text-xs text-muted">
+          <input
+            type="checkbox"
+            checked={quiet}
+            onChange={(event) => writeQuiet(initial.id, event.target.checked)}
+            className="size-3.5 accent-ink"
+            data-testid="mute-game"
+          />
+          Mute this opponent&apos;s messages in this game
+        </label>
+      ) : null}
       {opponent !== null && seat !== null ? (
         <p className="text-xs text-muted" data-testid="opponent-line">
           You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
@@ -313,7 +338,7 @@ export function SharedGame({
           {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
         </p>
       ) : null}
-      <ReactionLog reactions={detail.reactions ?? []} />
+      <ReactionLog reactions={shown} />
     </div>
   );
 }
@@ -364,4 +389,35 @@ function TurnBanner({
         : `Waiting for ${STONE_DISPLAY[state.toPlay].label}…`}
     </p>
   );
+}
+
+const QUIET_KEY = (id: string) => `itsutsu.mute.${id}`;
+
+function readQuiet(id: string): boolean {
+  try {
+    return window.localStorage.getItem(QUIET_KEY(id)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+const QUIET_EVENT = "itsutsu:mute";
+
+function writeQuiet(id: string, quiet: boolean): void {
+  try {
+    if (quiet) window.localStorage.setItem(QUIET_KEY(id), "1");
+    else window.localStorage.removeItem(QUIET_KEY(id));
+  } catch {
+    // Not remembered, then.
+  }
+  window.dispatchEvent(new Event(QUIET_EVENT));
+}
+
+function subscribeQuiet(onChange: () => void): () => void {
+  window.addEventListener(QUIET_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(QUIET_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
 }
