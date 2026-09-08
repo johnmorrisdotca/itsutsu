@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { Applause } from "@/components/history/Applause";
 import { GameReplay } from "@/components/history/GameReplay";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -17,6 +18,7 @@ import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
 import { cookies } from "next/headers";
 import { currentSession } from "@/lib/auth/currentSession";
+import { fetchApplause, type ApplauseTally } from "@/lib/history/applause";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -38,12 +40,13 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
    * A rematch is a challenge to the other seat's account, offered to whoever
    * held a seat here and is signed in. Colours swap: the challenger takes black.
    */
-  const [me, members] = await Promise.all([
+  const [me, members, applause] = await Promise.all([
     currentSession(),
     prisma.game.findUnique({
       where: { id },
       select: { blackMember: true, whiteMember: true, hiddenByBlack: true, hiddenByWhite: true, blackVerdict: true, whiteVerdict: true },
     }),
+    currentSession().then((session) => fetchApplause(id, session?.email ?? null)),
   ]);
   const mine = me?.email ?? null;
   const myColour =
@@ -71,6 +74,8 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
       seated={myColour !== null}
       hidden={hidden}
       verdict={seatColour === null ? undefined : verdict}
+      applause={applause}
+      signedIn={mine !== null}
     />
   );
 }
@@ -82,6 +87,8 @@ function FiledMatch({
   seated,
   hidden,
   verdict,
+  applause,
+  signedIn,
 }: {
   game: GameDetail;
   move: number;
@@ -90,6 +97,8 @@ function FiledMatch({
   hidden: boolean;
   /** The viewer's own read on their play, when they held a seat; undefined for a reader. */
   verdict?: Verdict;
+  applause: ApplauseTally;
+  signedIn: boolean;
 }) {
   const result = GAME_RESULT_DISPLAY[game.result];
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
@@ -126,6 +135,9 @@ function FiledMatch({
       </div>
 
       {verdict !== undefined ? <SelfVerdict id={game.id} initial={verdict} /> : null}
+
+      {/* Anybody may say the game was worth playing, not only the two who played it. */}
+      <Applause gameId={game.id} initial={applause} signedIn={signedIn} />
 
       <GameReplay
         game={game}

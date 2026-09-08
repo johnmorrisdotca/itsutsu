@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.59.0
+- Applause 拍手 on a finished game: anybody who has seen it may leave one kind mark, and there is no way to boo
+
 ## 0.58.0
 - A game's address is short enough to read out: /games/notakto/k3m9-p2qx/4, in place of a generated database id
 

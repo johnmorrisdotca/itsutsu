@@ -116,6 +116,7 @@ model Game {
 
   gifts     TimeGift[]
   reactions Reaction[]
+  applause  Applause[]
 
   /// Listing sorts by these; a compound index covers the default ordering.
   @@index([playedAt])
@@ -188,6 +189,25 @@ model InviteCode {
 /// The emoji comes from a fixed list, never free text, so nothing a stranger
 /// types is ever shown to another player. `moveNumber` is the move it was a
 /// reaction to, or null for a general remark.
+/// A public mark of appreciation on a finished game.
+///
+/// Anybody who can see the game may leave one, not only the two who played
+/// it, and each member leaves at most one — so the tally counts people, not
+/// clicks. There is deliberately no opposite: a game nobody marks stays
+/// quiet rather than showing a score against it.
+model Applause {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  /// The member who left it, by address.
+  member    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([gameId, member])
+  @@index([gameId])
+}
+
 model Reaction {
   id         String   @id @default(cuid())
   gameId     String
