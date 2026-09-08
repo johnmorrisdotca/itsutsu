@@ -14,4 +14,8 @@ describe("reserved player keys", () => {
   it("leaves an ordinary name unreserved", () => {
     expect(isReservedKey("aki")).toBe(false);
   });
+
+  it("does not reserve an elsewhere record — a live member plays under their own name", () => {
+    expect(RESERVED_PLAYER_KEYS.has("incognito")).toBe(false);
+  });
 });

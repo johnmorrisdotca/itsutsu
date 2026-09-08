@@ -7,14 +7,23 @@ export type LegacyGameRecord = {
 };
 
 /**
- * A player who is remembered here but never played on Itsutsu — their record
- * comes from another site, kept because it would otherwise simply vanish
- * when that site does. Reserved so the name can never be taken by a live
- * account; see RESERVED_PLAYER_KEYS in rating/reservedKeys.ts.
+ * A record kept from somewhere else.
+ *
+ * "remembered" is someone who never played on Itsutsu at all — their record
+ * comes from another site and would otherwise simply vanish when that site
+ * does. Their slug is permanently reserved: see RESERVED_PLAYER_KEYS in
+ * rating/reservedKeys.ts, and isReservedFor below.
+ *
+ * "elsewhere" is a live member here who also has a record from before
+ * Itsutsu existed. Nothing about them is reserved — they play under their
+ * own live name — this is just the earlier chapter, kept alongside it.
  */
+export type LegacyKind = "remembered" | "elsewhere";
+
 export type LegacyPlayer = {
   slug: string;
   name: string;
+  kind: LegacyKind;
   /** The handle their record was kept under, if different from the display name. */
   handle?: string;
   location?: string;
@@ -24,7 +33,7 @@ export type LegacyPlayer = {
   sourceUrl?: string;
   joined?: string;
   lastActive?: string;
-  /** A line in someone's own words, shown above the record. Never invented on their behalf. */
+  /** A line of context, sourced rather than invented — a fact worth keeping, not a guess at how someone felt. */
   note?: string;
   /** Won-lost-drawn across every game class the source site tracked. */
   summary: { class: string; record: LegacyGameRecord }[];
@@ -35,4 +44,6 @@ export type LegacyPlayer = {
    */
   detail: LegacyGameRecord[];
   detailComplete: boolean;
+  /** For kind "elsewhere": the folded key of the live Itsutsu name this record belongs beside. */
+  linkedKey?: string;
 };
