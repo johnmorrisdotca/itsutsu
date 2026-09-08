@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.33.4
+- The door: no operator link, a plain message when Google sign-in did not complete, and the edition stamp at the foot.
+
 ## 0.33.3
 - Continue with Google actually continues: the button starts NextAuth's sign-in properly instead of linking to it.
 

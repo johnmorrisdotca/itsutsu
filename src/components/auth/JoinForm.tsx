@@ -37,7 +37,7 @@ export function JoinForm({
   initialCode?: string;
 }) {
   const router = useRouter();
-  const [mode, setMode] = useState<"invite" | "admin">("invite");
+  const [mode] = useState<"invite" | "admin">("invite");
   const [code, setCode] = useState(initialCode);
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
@@ -179,23 +179,11 @@ export function JoinForm({
         >
           {busy ? "Checking…" : "Enter"}
         </button>
-        {pending === null ? (
-          <button
-            type="button"
-            className="text-xs text-muted underline underline-offset-4"
-            onClick={() => {
-              setMode(mode === "invite" ? "admin" : "invite");
-              setError(null);
-            }}
-            data-testid="toggle-mode"
-          >
-            {mode === "invite" ? "I'm the operator" : "I have an invite code"}
-          </button>
-        ) : (
+        {pending !== null ? (
           <Link href="/api/auth/signout" className="text-xs text-muted underline underline-offset-4">
             Not you? Use another account
           </Link>
-        )}
+        ) : null}
       </div>
     </form>
   );
