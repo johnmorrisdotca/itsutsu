@@ -86,7 +86,9 @@ export default async function PlayersPage() {
               {here.map((entry) => (
                 <span key={entry.email} className="flex items-center gap-1">
                   <RecencyMark recency={entry.recency} />
-                  {entry.name || entry.email}
+                  <Link href={`/players/${encodeURIComponent(entry.name)}`} className="underline-offset-2 hover:underline">
+                    {entry.name || entry.email}
+                  </Link>
                   {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
                 </span>
               ))}
