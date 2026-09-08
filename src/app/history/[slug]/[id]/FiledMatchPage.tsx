@@ -11,6 +11,7 @@ import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
+import { HideGameButton } from "@/components/history/HideGameButton";
 import { currentSession } from "@/lib/auth/currentSession";
 import { prisma } from "@/lib/prisma";
 
@@ -35,9 +36,15 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
    */
   const [me, members] = await Promise.all([
     currentSession(),
-    prisma.game.findUnique({ where: { id }, select: { blackMember: true, whiteMember: true } }),
+    prisma.game.findUnique({
+      where: { id },
+      select: { blackMember: true, whiteMember: true, hiddenByBlack: true, hiddenByWhite: true },
+    }),
   ]);
   const mine = me?.email ?? null;
+  const myColour =
+    mine === null || members === null ? null : members.blackMember === mine ? "black" : members.whiteMember === mine ? "white" : null;
+  const hidden = myColour === "black" ? members?.hiddenByBlack ?? false : myColour === "white" ? members?.hiddenByWhite ?? false : false;
   const other =
     mine === null || members === null
       ? null
@@ -47,10 +54,22 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
           ? members.blackMember
           : null;
 
-  return <FiledMatch game={game} move={move ?? game.moveCount} rematch={other} />;
+  return <FiledMatch game={game} move={move ?? game.moveCount} rematch={other} seated={myColour !== null} hidden={hidden} />;
 }
 
-function FiledMatch({ game, move, rematch }: { game: GameDetail; move: number; rematch: string | null }) {
+function FiledMatch({
+  game,
+  move,
+  rematch,
+  seated,
+  hidden,
+}: {
+  game: GameDetail;
+  move: number;
+  rematch: string | null;
+  seated: boolean;
+  hidden: boolean;
+}) {
   const result = GAME_RESULT_DISPLAY[game.result];
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
@@ -77,6 +96,7 @@ function FiledMatch({ game, move, rematch }: { game: GameDetail; move: number; r
             <ChallengeButton email={rematch} variant={game.variant} label="Rematch 再戦" strong />
           ) : null}
           <ChallengeButton from={{ id: game.id, move }} label={`Play from move ${move} 分岐`} />
+          {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}
           <Link href={recordPath(game.variant)} className="text-sm underline underline-offset-4">
             Back to the record
           </Link>

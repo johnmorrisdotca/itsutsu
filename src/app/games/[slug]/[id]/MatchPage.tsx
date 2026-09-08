@@ -65,7 +65,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
    */
   const tokens = await prisma.game.findUnique({
     where: { id },
-    select: { blackToken: true, whiteToken: true },
+    select: { blackToken: true, whiteToken: true, blackMember: true, whiteMember: true },
   });
   if (tokens !== null && isHotSeat(tokens) && claim !== null) {
     return (
@@ -76,7 +76,22 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     );
   }
 
-  return <LiveMatch game={game} token={token ?? null} seat={seat} move={move ?? game.moveCount} />;
+  /*
+   * Who sits across the board: the other seat's name and, when it is an
+   * account that said where it is, its country — the way the elder sites put
+   * it, "against Kyokosan from Canada".
+   */
+  let opponent: { name: string; country: string } | null = null;
+  if (seat !== null && tokens !== null) {
+    const otherEmail = seat === STONES.black ? tokens.whiteMember : tokens.blackMember;
+    const otherName = (seat === STONES.black ? game.whiteName : game.blackName).trim();
+    const member = otherEmail === null ? null : await prisma.member.findUnique({ where: { email: otherEmail }, select: { name: true, country: true } });
+    if (member !== null || otherName !== "") {
+      opponent = { name: member?.name || otherName || "the other seat", country: member?.country ?? "" };
+    }
+  }
+
+  return <LiveMatch game={game} token={token ?? null} seat={seat} move={move ?? game.moveCount} opponent={opponent} />;
 }
 
 async function LiveMatch({
@@ -84,12 +99,14 @@ async function LiveMatch({
   token,
   seat,
   move,
+  opponent,
 }: {
   game: GameDetail;
   token: string | null;
   seat: Stone | null;
   /** The position the address names, for forking a new game from it. */
   move: number;
+  opponent: { name: string; country: string } | null;
 }) {
   /*
    * Seat links are only handed out to someone who already holds one. A reader
@@ -135,6 +152,7 @@ async function LiveMatch({
               token={token}
               seat={seat}
               basePath={matchPath(game.variant, game.id)}
+              opponent={opponent}
             />
           </div>
         </div>

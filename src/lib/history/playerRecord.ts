@@ -34,7 +34,7 @@ export async function fetchPlayerRecord(name: string): Promise<PlayerRecord> {
       ],
     },
     orderBy: { playedAt: "desc" },
-    select: { id: true, variant: true, blackName: true, whiteName: true, winner: true },
+    select: { id: true, variant: true, blackName: true, whiteName: true, winner: true, hiddenByBlack: true, hiddenByWhite: true },
   });
 
   const record: PlayerRecord = { ...empty, byVariant: [], recent: [] };
@@ -55,7 +55,9 @@ export async function fetchPlayerRecord(name: string): Promise<PlayerRecord> {
     else tally.draws += 1;
     byVariant.set(game.variant, tally);
 
-    if (record.recent.length < RECENT) {
+    // A game this player hid counts, and is not listed.
+    const hidden = isBlack ? game.hiddenByBlack : game.hiddenByWhite;
+    if (!hidden && record.recent.length < RECENT) {
       record.recent.push({
         id: game.id,
         variant: game.variant,

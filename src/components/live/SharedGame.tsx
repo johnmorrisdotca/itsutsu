@@ -43,12 +43,15 @@ export function SharedGame({
   token,
   seat,
   basePath,
+  opponent = null,
 }: {
   initial: GameDetail;
   token: string | null;
   seat: Stone | null;
   /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
   basePath?: string;
+  /** Who sits across the board, and where they are, when the seat is an account with a country set. */
+  opponent?: { name: string; country: string } | null;
 }) {
   const [error, setError] = useState<string | null>(null);
   /*
@@ -302,6 +305,13 @@ export function SharedGame({
           disabled={false}
           onSend={react}
         />
+      ) : null}
+      {opponent !== null && seat !== null ? (
+        <p className="text-xs text-muted" data-testid="opponent-line">
+          You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
+          <span className="font-medium text-ink">{opponent.name}</span>
+          {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
+        </p>
       ) : null}
       <ReactionLog reactions={detail.reactions ?? []} />
     </div>

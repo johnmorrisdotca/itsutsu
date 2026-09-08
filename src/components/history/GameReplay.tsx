@@ -59,6 +59,11 @@ export function GameReplay({
                 <span className="font-mono">
                   {pointName(game.size, current)}
                 </span>
+                {current.createdAt ? (
+                  <span className="block text-xs" data-testid="move-made-at">
+                    made {new Date(current.createdAt).toLocaleString()}
+                  </span>
+                ) : null}
               </>
             ) : null}
           </p>
