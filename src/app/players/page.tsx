@@ -11,6 +11,7 @@ import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { buddyEmails } from "@/lib/social/buddies";
 import { fetchHereNow, recencyOf } from "@/lib/social/presence";
 import { currentSession } from "@/lib/auth/currentSession";
+import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
 
 export const metadata = { title: "Players" };
 
@@ -45,7 +46,7 @@ export default async function PlayersPage() {
           <p className="text-sm">
             <span className="font-semibold">{hereNow}</span> {hereNow === 1 ? "player" : "players"} here in the last five
             minutes, <span className="font-semibold">{here.length}</span> in the last half hour.
-            <span className="ml-2 text-xs text-muted">Your time: {now.toUTCString().slice(17, 22)} UTC</span>
+            <span className="ml-2 text-xs text-muted">Site clock: {now.toUTCString().slice(17, 22)} UTC</span>
           </p>
           {here.length > 0 ? (
             <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
@@ -60,6 +61,31 @@ export default async function PlayersPage() {
           ) : null}
           <RecencyLegend />
         </div>
+
+        {LEGACY_PLAYERS.length > 0 ? (
+          <div
+            className="flex flex-col gap-2 rounded-lg border border-rule-strong bg-ivory/60 px-3 py-2.5"
+            data-testid="legacy-roll"
+          >
+            <span className="flex items-baseline gap-2 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
+              Remembered <span className="font-mincho font-normal normal-case tracking-normal opacity-70">偲ぶ</span>
+            </span>
+            <ul className="flex flex-col gap-1 text-sm">
+              {LEGACY_PLAYERS.map((legacy) => (
+                <li key={legacy.slug}>
+                  <Link href={`/players/${legacy.slug}`} className="font-medium underline-offset-4 hover:underline">
+                    {legacy.name}
+                  </Link>
+                  <span className="text-muted">
+                    {" "}
+                    — never played here, but their record from {legacy.source} is kept.
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
         <p className="text-sm text-muted">
           Everyone who has come in, most recently seen first, with the record their name has
           earned. New members are marked for two weeks; challenge one, and the game is in their
