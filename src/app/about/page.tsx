@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -32,9 +34,10 @@ export default function AboutPage() {
             <span className="font-mincho text-sm font-normal opacity-70">{section.kanji}</span>
           </h2>
           {section.paragraphs.map((paragraph, i) => (
-            <p key={i} className="text-[0.95rem] leading-relaxed text-ink-soft">
-              {paragraph}
-            </p>
+            <Fragment key={i}>
+              <p className="text-[0.95rem] leading-relaxed text-ink-soft">{paragraph}</p>
+              {section.figures?.[i] ? <div className="py-2">{section.figures[i]}</div> : null}
+            </Fragment>
           ))}
         </section>
       ))}

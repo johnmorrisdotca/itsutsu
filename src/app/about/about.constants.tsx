@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { HOGETSU, ORIGINS, OTHELLO_START, PENTE_CAPTURE, SOLVED } from "@/components/about/figures";
 import { gamePath } from "@/lib/gomoku/slugs";
 
 /** A link to a game’s own page, from prose. */
@@ -25,6 +26,8 @@ export type AboutSection = {
   title: string;
   kanji: string;
   paragraphs: ReactNode[];
+  /** A picture to print after the paragraph with that index. */
+  figures?: Record<number, ReactNode>;
 };
 
 /**
@@ -45,7 +48,10 @@ export const ABOUT_SECTIONS: AboutSection[] = [
         Dozens of games open at once between the same three people, each of them checking back every
         few minutes to see if it was their turn, and it usually was. The sites metered it: a free
         account got so many moves a day, twenty on one, a hundred on another, and the family bought the
-        memberships to lift the cap, because twenty moves was not going to last until lunch.
+        memberships to lift the cap, because twenty moves was not going to last until lunch. His father
+        played on <Out href="https://www.littlegolem.net/">Little Golem</Out> as well, the connoisseur’s site,
+        against strangers from everywhere; the founder never joined it, but it was part of the same household
+        of games.
       </>,
       <>
         What those sites understood has been half-forgotten since. A game between people who love
@@ -100,6 +106,7 @@ export const ABOUT_SECTIONS: AboutSection[] = [
         idea and wander off in eight directions.
       </>,
     ],
+    figures: { 0: ORIGINS, 1: HOGETSU, 2: PENTE_CAPTURE },
   },
   {
     title: "The Japanese thread",
@@ -145,9 +152,20 @@ export const ABOUT_SECTIONS: AboutSection[] = [
         Othello nothing is yours until the end, and a board that is nearly all one colour on move fifty
         can belong to the other side on move sixty. Playing both for years teaches a kind of double
         vision: to see a position as a set of lines and as a set of edges and corners at the same time.
-        It is not on the board here yet. It is the next thing the family wants.
+        It is on the board here now: <Game variant="reversi">Othello</Game> as the family played it, the
+        older <Game variant="classicReversi">reversi</Game> with its free opening, an{" "}
+        <Game variant="antiReversi">anti</Game> game where fewer discs wins, and a{" "}
+        <Game variant="miniReversi">small board</Game> that can grow into the full one mid-game.
+      </>,
+      <>
+        Othello also settles an old argument. Free gomoku was solved in 1993 and renju in 2001 — both wins
+        for the first player, which is why renju’s handicaps exist — and the 6×6 Othello board was shown
+        the same year to be a win for the <em>second</em>. The full board held out until 2023, when
+        Hiroki Takizawa showed that perfect play from both sides is a draw: thirty-two discs each. No
+        one will ever play it perfectly, which is the point.
       </>,
     ],
+    figures: { 0: OTHELLO_START, 2: SOLVED },
   },
   {
     title: "Ladders, ratings and tournaments",
@@ -185,7 +203,8 @@ export const ABOUT_SECTIONS: AboutSection[] = [
         and is where the founder’s family played for years. <Out href="https://www.goldtoken.com/">GoldToken</Out> came
         soon after with a larger catalogue, tournaments and a community that felt like a club.{" "}
         <Out href="https://www.littlegolem.net/">Little Golem</Out> is the connoisseur’s turn-based site — Hex, Go,
-        gomoku and dozens of abstracts, with championships that some of the world’s strongest players enter.{" "}
+        gomoku and dozens of abstracts, with championships that some of the world’s strongest players enter;
+        the founder’s father played there for years.{" "}
         <Out href="https://pente.org/">Pente.org</Out> has kept ranked Pente alive online for decades, and{" "}
         <Out href="https://www.playok.com/">PlayOK</Out> — many still call it Kurnik — is where you go for a live game
         of gomoku against a stranger at two in the morning.
