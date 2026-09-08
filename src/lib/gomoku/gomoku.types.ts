@@ -174,7 +174,7 @@ export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
  * How a won game was won. Null while nobody has. `trap` is the loser's doing:
  * they made the line the rules forbid. `square` is four in a 2×2.
  */
-export type WinReason = "line" | "captures" | "time" | "trap" | "square" | "full";
+export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full";
 
 /**
  * Where a swap-style opening stands. `placing` and `extending` are stretches

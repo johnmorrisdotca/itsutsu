@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { matchPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { seatForToken } from "@/lib/history/liveGame";
-import { seatCookieName } from "../../MatchPage";
+import { seatCookieName } from "@/lib/history/seatCookie";
 
 /** How long a claimed seat is remembered. A shared game is played over days at most. */
 const SEAT_COOKIE_DAYS = 30;

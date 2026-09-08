@@ -7,7 +7,6 @@ import {
   canTwist,
   createGame,
   forfeitTurn,
-  winOnTime,
   inMovePhase,
   isLegalMove,
   movePiece,
@@ -17,8 +16,10 @@ import {
   placePiece,
   playMove,
   replayMoves,
+  resign,
   resolvePlacement,
   twistBoard,
+  winOnTime,
 } from "@/lib/gomoku/engine";
 import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES } from "@/lib/gomoku/gomoku.constants";
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
@@ -386,6 +387,35 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   } else {
     await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });
   }
+
+  const game = await fetchGameDetail(id);
+  if (game === null) return { ok: false, reason: "not-found" };
+  return { ok: true, game };
+}
+
+/**
+ * Resigns a game. Any seat holder may, at any time while it runs — a game
+ * one side has stopped answering is finished by the side that is still
+ * here, and a game that is lost is finished by the side that knows it. The
+ * other colour wins, and the record says why.
+ */
+export async function resignGame(id: string, token: string, now = new Date()): Promise<TimeoutOutcome> {
+  const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
+  if (row === null) return { ok: false, reason: "not-found" };
+  if (row.status !== "active") return { ok: false, reason: "finished" };
+  const loser = stoneForToken(row, token);
+  if (loser === null) return { ok: false, reason: "wrong-token" };
+
+  const state = replay(row);
+  const next = resign(state, loser);
+  if (next === state || next.winner === null) return { ok: false, reason: "finished" };
+
+  await prisma.game.update({
+    where: { id },
+    data: { status: "finished", result: next.winner, winner: next.winner, lastMoveAt: now },
+  });
+  await recordResult(row.blackName, row.whiteName, next.winner);
+  await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
 
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };

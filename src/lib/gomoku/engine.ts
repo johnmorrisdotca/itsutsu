@@ -71,6 +71,7 @@ export {
 export {
   canSwapSeats,
   forfeitTurn,
+  resign,
   seatOf,
   seatToPlay,
   swapSeats,

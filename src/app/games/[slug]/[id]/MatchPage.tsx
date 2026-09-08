@@ -15,12 +15,8 @@ import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatForToken } from "@/lib/history/liveGame";
+import { seatCookieName } from "@/lib/history/seatCookie";
 import { prisma } from "@/lib/prisma";
-
-/** The cookie a claimed seat lives in. One per match, so two games never share a claim. */
-export function seatCookieName(id: string): string {
-  return `seat_${id}`;
-}
 
 /** The site's own origin, taken from the request so links work behind any host. */
 async function origin(): Promise<string> {

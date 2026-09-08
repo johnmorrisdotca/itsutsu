@@ -78,6 +78,16 @@ export function winOnTime(state: GameState, loser: Stone): GameState {
   return won(state, otherStone(loser), WIN_REASONS.time, []);
 }
 
+/**
+ * Gives the game up. The other colour wins at once, with no line to show;
+ * the record keeps the moves as they were and says why it ended. A finished
+ * game cannot be resigned — there is nothing left to give.
+ */
+export function resign(state: GameState, loser: Stone): GameState {
+  if (state.status !== GAME_STATUS.playing) return state;
+  return won(state, otherStone(loser), WIN_REASONS.resign, []);
+}
+
 
 /**
  * Takes the turn away from the colour to move without a stone: the graceful

@@ -169,6 +169,7 @@ export const WIN_REASONS = {
   line: "line",
   captures: "captures",
   time: "time",
+  resign: "resign",
   trap: "trap",
   square: "square",
   full: "full",

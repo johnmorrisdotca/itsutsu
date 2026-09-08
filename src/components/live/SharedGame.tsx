@@ -11,7 +11,8 @@ import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadlin
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
 import { Button } from "@/components/ui/Controls";
 import { usePieceHand } from "@/components/game/usePieceHand";
-import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
+import { ResignButton } from "@/components/mine/ResignButton";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
@@ -289,6 +290,12 @@ export function SharedGame({
         />
       ) : null}
 
+      {seat !== null && state.status === GAME_STATUS.playing ? (
+        <div className="flex justify-end">
+          <ResignButton id={detail.id} onDone={() => void mutate()} />
+        </div>
+      ) : null}
+
       {seat !== null && token !== null ? (
         <ReactionBar
           lastMove={state.moves.length > 0 ? state.moves.length : null}
@@ -318,7 +325,9 @@ function TurnBanner({
       <p className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${TONE_CLASS.great}`}>
         {won === null
           ? "Draw. The board is full."
-          : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
+          : state.winBy === WIN_REASONS.resign
+            ? `${STONE_DISPLAY[won].label} wins by resignation.`
+            : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
       </p>
     );
   }

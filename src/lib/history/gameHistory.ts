@@ -20,7 +20,7 @@ import type {
 } from "./gameHistory.types";
 
 /** The listing projection: everything a row shows, and no move rows. */
-const SUMMARY_SELECT = {
+export const SUMMARY_SELECT = {
   id: true,
   playedAt: true,
   status: true,
@@ -83,7 +83,7 @@ export function toGameMove(row: MoveRow): GameMove {
   return move;
 }
 
-function toSummary(row: SummaryRow): GameSummary {
+export function toSummary(row: SummaryRow): GameSummary {
   const { blackForfeits, whiteForfeits, ...rest } = row;
   return {
     ...rest,

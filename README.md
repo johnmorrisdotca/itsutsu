@@ -487,6 +487,21 @@ same move number cannot both succeed.
 
 Seat pages carry `robots: noindex`, because a seat link is a credential.
 
+### Your games
+
+Nobody is stopped from clicking away from a game; instead the games page
+lists the seats this browser holds, in the queue the turn-based sites taught:
+**your move**, **their move**, **not started**, **lately finished**. A count of
+games waiting on you sits beside "Play" in the header. "Yours" is decided by
+the seat cookies on the request (`GET /api/games/mine`) — there are no
+accounts, so the cookies are the only thing that knows which seats are yours.
+
+A game with no move for `STALE_AFTER_DAYS` is flagged stale. Any seat holder
+may resign a running game at any time (`POST /api/games/:id/resign`, seat
+proved by token or cookie); the other colour wins, the record says
+"by resignation", and the ratings move. Timed games additionally let the
+waiting side claim a missed deadline.
+
 ### Reactions
 
 Either player can send the other an emoji during the game: a cheer for a

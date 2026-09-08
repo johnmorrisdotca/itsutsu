@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
+
 import { BrandHero, BrandWordmark } from "./BrandMarks";
 
 const NAV = [
@@ -23,6 +25,7 @@ function Nav() {
               <span className="font-mincho text-muted">{item.kanji}</span>
             </>
           ) : null}
+          {item.href === "/games" ? <YourTurnBadge /> : null}
         </Link>
       ))}
     </nav>
