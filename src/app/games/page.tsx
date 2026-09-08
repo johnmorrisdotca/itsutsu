@@ -68,10 +68,10 @@ export default async function LobbyPage() {
             <span className="font-semibold">Waiting room <span className="font-mincho text-xs font-normal opacity-70">待合室</span></span>
             <span className="text-xs text-muted">Seats other members have posted for anyone. Sit down and play.</span>
           </a>
-          <Link href={gamePath("freestyle")} className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>
+          <Link href={`${gamePath("freestyle")}#post-seat`} className={`${PANEL_LINK_CLASS} flex flex-col gap-1`} data-testid="post-a-seat">
             <span className="font-semibold">Post a seat <span className="font-mincho text-xs font-normal opacity-70">席を出す</span></span>
             <span className="text-xs text-muted">
-              Set a game up, tick “Open to anyone”, and whoever answers first sits down opposite you.
+              Choose the game and the pace, and start it. The other seat goes on the games page, and whoever answers first sits down opposite you.
             </span>
           </Link>
           <Link href="/players" className={`${PANEL_LINK_CLASS} flex flex-col gap-1`}>

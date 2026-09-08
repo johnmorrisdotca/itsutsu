@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Board } from "@/components/board/Board";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
@@ -28,6 +28,8 @@ export function GameView({
 }) {
   // Nothing moving for a couple of minutes pauses the clock behind a modal.
   const { idle, confirm } = useIdleWatch();
+  // /games/<slug>#post-seat: the lobby's "Post a seat" lands here wanting the sharing panel.
+  const [postSeat] = useState(() => typeof window !== "undefined" && window.location.hash === "#post-seat");
   // A game asked for by name resumes if it is the stored one, else starts fresh.
   const { session, actions } = useGameSession(
     variant === undefined ? {} : { variant },
@@ -106,7 +108,7 @@ export function GameView({
             />
           </div>
         </div>
-        <GameSidebar session={session} actions={actions} />
+        <GameSidebar session={session} actions={actions} postSeat={postSeat} />
       </div>
       <GameOptions session={session} actions={actions} streaks={streaks} />
       <IdleModal open={showIdle} onConfirm={confirm} />

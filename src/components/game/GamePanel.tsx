@@ -21,7 +21,7 @@ import type { GamePanelProps } from "./game.types";
  * controls, and the record. It sits beside the board and sticks to the top, so
  * none of it scrolls away mid-game.
  */
-export function GameSidebar(props: GamePanelProps) {
+export function GameSidebar({ postSeat = false, ...props }: GamePanelProps & { postSeat?: boolean }) {
   return (
     <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-80">
       <div className={PANEL_CLASS}>
@@ -53,7 +53,7 @@ export function GameSidebar(props: GamePanelProps) {
         <GameControls {...props} />
       </div>
       <div className={PANEL_CLASS}>
-        <StartSharedGame settings={props.session.state.settings} />
+        <StartSharedGame settings={props.session.state.settings} postSeat={postSeat} />
       </div>
       <div className={PANEL_CLASS}>
         <MoveHistory {...props} />

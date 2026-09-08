@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
@@ -25,8 +25,16 @@ import { describeRules } from "./rulesSummary";
  * link is theirs to hand over, which is what stands in for an invitation when
  * there is nobody to send an email to.
  */
-export function StartSharedGame({ settings }: { settings: GameSettings }) {
+export function StartSharedGame({
+  settings,
+  postSeat = false,
+}: {
+  settings: GameSettings;
+  /** Arrived to post a seat: the other seat starts open, and this panel comes into view. */
+  postSeat?: boolean;
+}) {
   const router = useRouter();
+  const panel = useRef<HTMLElement>(null);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [moveTimeMs, setMoveTimeMs] = useState<number | null>(null);
@@ -34,11 +42,17 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
   const [rated, setRated] = useState(true);
   const [timeoutPenalty, setTimeoutPenalty] = useState<TimeoutPenalty>("turn");
   const [allowResign, setAllowResign] = useState(true);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(postSeat);
   // Swap openings move colours between players, which a seat link cannot follow.
   const sharedOpening = SHARED_OPENINGS.includes(settings.opening)
     ? settings.opening
     : OPENING_RULES.free;
+
+  // The panel sits beside the board on a wide screen and below it on a phone;
+  // someone who came to post a seat should not have to go looking for it.
+  useEffect(() => {
+    if (postSeat) panel.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [postSeat]);
 
   async function start() {
     setStarting(true);
@@ -74,8 +88,14 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
   }
 
   return (
-    <section className="flex flex-col gap-2">
+    <section ref={panel} id="post-seat" className="flex scroll-mt-6 flex-col gap-2">
       <SectionTitle kanji="通信対局">Play apart</SectionTitle>
+      {postSeat ? (
+        <p className="text-xs text-moss" data-testid="post-seat-note">
+          Posting a seat: start the game and the other seat goes on the games page for whoever
+          answers first. To change the game or the board first, use Set up, under the board.
+        </p>
+      ) : null}
       <p className="text-xs text-muted">
         The board here is a local game and stays in this browser. A shared game
         gets its own address and a QR code for each player, so you can take

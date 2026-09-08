@@ -100,6 +100,17 @@ test.describe("a game played from two devices", () => {
     expect((await outOfTurn.json()).reason).toBe("not-your-turn");
   });
 
+  test("the lobby's Post a seat lands on the sharing panel with the other seat already open", async ({ page }) => {
+    await page.goto("/games");
+    await page.getByTestId("post-a-seat").click();
+    await expect(page).toHaveURL(/\/games\/gomoku#post-seat$/);
+    await expect(page.getByTestId("post-seat-note")).toBeVisible();
+    await expect(page.getByLabel("Open to anyone")).toBeChecked();
+    await page.getByTestId("start-shared-game").click();
+    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9]+\/0$/);
+    await expect(page.getByTestId("shared-open-line")).toContainText("posted on the games page");
+  });
+
   test("starting a shared game from the board lands on the match", async ({ page }) => {
     await page.goto("/games/gomoku");
     await page.getByTestId("start-shared-game").click();
