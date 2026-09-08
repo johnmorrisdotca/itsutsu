@@ -4,7 +4,7 @@ import {
   FATAL_MOVE_DISPLAY,
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
-import { discCount, inMovePhase, rulesFor, stonesLeft } from "@/lib/gomoku/engine";
+import { campSize, discCount, inMovePhase, piecesHome, rulesFor, stonesLeft } from "@/lib/gomoku/engine";
 import {
   GAME_STATUS,
   HANDICAP_RULES,
@@ -59,6 +59,8 @@ function ToPlay({ session }: { session: GameSession }) {
               ? GAME_COPY.winsBySquare(who)
               : state.winBy === WIN_REASONS.count
                 ? `${who} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}`
+                : state.winBy === WIN_REASONS.camp
+                  ? `${who} wins: the far camp is full`
                 : state.winBy === WIN_REASONS.resign
                   ? `${who} wins by resignation`
                   : `${who} wins in ${state.moves.length} moves`
@@ -195,7 +197,15 @@ function VariantLine({ session }: { session: GameSession }) {
     }
     if (state.pendingTwist) lines.push(GAME_COPY.twistPrompt);
     else if (inMovePhase(state)) {
-      lines.push(session.selected === null ? GAME_COPY.pickPiece : GAME_COPY.placePiece);
+      lines.push(
+        session.selected === null
+          ? spec.camps
+            ? GAME_COPY.pickRacer
+            : GAME_COPY.pickPiece
+          : spec.camps
+            ? GAME_COPY.placeRacer
+            : GAME_COPY.placePiece,
+      );
     } else if (spec.placement === PLACEMENTS.drop) lines.push(GAME_COPY.dropPrompt);
   }
 
@@ -277,6 +287,14 @@ export function GameStatus({ session }: { session: GameSession }) {
     <section aria-live="polite" className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <ToPlay session={session} />
+        {VARIANT_SPECS[session.state.settings.variant].camps ? (
+          <p className="text-sm" data-testid="home-count">
+            <span className="font-mono tabular-nums">● {piecesHome(session.state.board, session.state.settings.size, STONES.black)}</span>
+            <span className="px-2 text-muted">·</span>
+            <span className="font-mono tabular-nums">○ {piecesHome(session.state.board, session.state.settings.size, STONES.white)}</span>
+            <span className="ml-2 text-muted">of {campSize(session.state.settings.size)} home</span>
+          </p>
+        ) : null}
         {VARIANT_SPECS[session.state.settings.variant].flips ? (
           <p className="text-sm" data-testid="disc-count">
             <span className="font-mono tabular-nums">● {discCount(session.state.board).black}</span>

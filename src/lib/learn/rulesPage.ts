@@ -52,7 +52,10 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   const sizes = boardSizesFor(variant);
 
   const object: string[] = [];
-  if (spec.flips) {
+  if (spec.camps) {
+    object.push("Be the first to fill the far corner camp with your pieces. Nothing is captured and no line counts for anything.");
+    object.push("A side that keeps pieces at home to block still loses once every other square of its camp is taken.");
+  } else if (spec.flips) {
     object.push(
       spec.misere
         ? "Finish with fewer discs than the other colour. Everything turns as usual; the object is upside down."
@@ -99,6 +102,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   }
   if (spec.wormholes > 0) board.push("Two squares, chosen at random when the game starts, are the mouths of a wormhole. Nothing can land on a mouth, and a line that reaches one continues from the other in the same direction.");
   if (spec.pieces !== null) board.push(`Each player has ${spec.pieces} pieces.`);
+  if (spec.camps) {
+    board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
+  }
   if (spec.queue !== null) {
     board.push(
       spec.queue === "domino"
@@ -108,7 +114,12 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   }
 
   const play: string[] = [];
-  if (spec.flips) {
+  if (spec.camps) {
+    play.push("A turn moves one piece. It may step to any neighbouring empty square, in any of the eight directions.");
+    play.push("Or it may jump: over an adjacent piece of either colour, into the empty square straight beyond it. From there it may jump again, and again, turning corners as it likes, so long as each jump crosses a piece. A move may stop after any jump.");
+    play.push("A piece jumped over is not taken; it stays where it is.");
+    play.push("The game ends the moment a move fills the far camp.");
+  } else if (spec.flips) {
     play.push(
       spec.startingDiscs === "laid"
         ? "The board starts empty. The first four discs are laid in the centre four squares, one a turn, turning nothing."
@@ -145,8 +156,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     );
   }
   if (spec.lineClear) play.push("When the bottom row is full it disappears and every stone above drops one row.");
-  if (spec.flips) {
-    // Said above; a full board is only the usual way for both to be stuck.
+  if (spec.flips || spec.camps) {
+    // Said above; a full board is only the usual way for both to be stuck, and a race has no full board.
   } else if (spec.misere) {
     if (spec.placement === PLACEMENTS.drop) play.push("You may not play directly on top of the opponent's last stone while any other column has room.");
     play.push("A full board is a win for the player who opened.");
@@ -173,6 +184,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
       ? "The threat reading, hints and the chance-of-winning bar apply."
       : spec.flips
         ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only discs to count."
+        : spec.camps
+          ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only distance to cover."
         : "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.",
   );
   house.push(copy.board);

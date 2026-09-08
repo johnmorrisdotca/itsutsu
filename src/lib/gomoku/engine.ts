@@ -83,6 +83,7 @@ export { findWinningLine } from "./rules/lines";
 export { hasHandicap, rulesFor } from "./rules/handicap";
 export { forbiddenAt, forbiddenPoints } from "./rules/forbidden";
 export { centreSquares, discCount, flipsAt, hasFlipMove, inLayingPhase } from "./rules/flips";
+export { campOf, campSize, campSquares, piecesHome } from "./rules/camps";
 export {
   canGrowBoard,
   canShrinkBoard,

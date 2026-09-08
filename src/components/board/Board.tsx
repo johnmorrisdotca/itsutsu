@@ -12,6 +12,7 @@ import {
   pieceMoves,
   pointOf,
   resolvePlacement,
+  campOf,
 } from "@/lib/gomoku/engine";
 import {
   BLOCKED,
@@ -118,7 +119,7 @@ export function Board({
   // Othello and the drop games are played in the squares; the rest on the lines.
   const cells =
     appearance.grid === "cells" ||
-    (appearance.grid === "auto" && (spec.flips || spec.placement !== PLACEMENTS.free));
+    (appearance.grid === "auto" && (spec.flips || spec.camps || spec.placement !== PLACEMENTS.free));
 
   const last = lastMove(state);
   const lastIndex = last === null ? -1 : indexOf(size, last);
@@ -238,6 +239,7 @@ export function Board({
                 onHover={piecing ? setHovered : undefined}
                 moveNumber={numbers.get(index) ?? null}
                 mark={overlays.get(index) ?? null}
+                camp={spec.camps ? campOf(size, point) : null}
                 stones={stones}
                 winningColour={theme.winning}
                 readOnly={readOnly}

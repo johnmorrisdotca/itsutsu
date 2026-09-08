@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { openSetup, playSequence } from "./support";
+import { COLUMN_LETTERS } from "../src/lib/gomoku/board.constants";
 
 /**
  * One screenshot per game, mid-play, into public/art/games/ for the rules pages.
@@ -12,7 +13,14 @@ const OUT = "public/art/games";
 /** A short scripted position per game: enough stones to show what it looks like. */
 const SCENES: Record<
   string,
-  { size: number; moves: [number, number][]; twists?: [number, boolean][]; colours?: ("black" | "white")[] }
+  {
+    size: number;
+    moves: [number, number][];
+    twists?: [number, boolean][];
+    colours?: ("black" | "white")[];
+    /** The race games: pieces already down, so the scene is a run of moves, black first. */
+    slides?: [[number, number], [number, number]][];
+  }
 > = {
   freestyle: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6], [9, 9], [5, 5]] },
   standard: { size: 15, moves: [[7, 7], [6, 8], [8, 6], [9, 5], [8, 8], [8, 7], [6, 6]] },
@@ -48,6 +56,14 @@ const SCENES: Record<
   antiReversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3]] },
   miniReversi: { size: 4, moves: [[0, 1], [0, 2], [0, 3]] },
   grandReversi: { size: 10, moves: [[3, 4], [3, 5], [3, 6], [5, 3], [6, 4]] },
+  halma: {
+    size: 16,
+    moves: [],
+    slides: [
+      [[4, 1], [5, 2]], [[11, 14], [10, 13]], [[3, 2], [4, 3]], [[12, 13], [11, 12]],
+      [[4, 0], [5, 1]], [[11, 15], [10, 14]], [[2, 3], [3, 3]], [[13, 12], [12, 12]],
+    ],
+  },
 };
 
 test.describe("game screenshots", () => {
@@ -69,6 +85,11 @@ test.describe("game screenshots", () => {
           const control = page.getByTestId(`twist-${twist[0]}-${twist[1] ? "cw" : "ccw"}`);
           if (await control.count()) await control.click();
         }
+      }
+      for (const [index, [from, to]] of (scene.slides ?? []).entries()) {
+        const colour = index % 2 === 0 ? "Black" : "White";
+        await page.getByRole("button", { name: `${COLUMN_LETTERS[from[1]]}${scene.size - from[0]}, ${colour} stone` }).click();
+        await page.getByRole("button", { name: new RegExp(`^${COLUMN_LETTERS[to[1]]}${scene.size - to[0]}, empty$`) }).click();
       }
       const board = page.locator(".aspect-square").first();
       await expect(board).toBeVisible();

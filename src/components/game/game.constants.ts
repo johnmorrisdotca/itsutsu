@@ -205,6 +205,8 @@ export const GAME_COPY = {
   twistPrompt: "Turn a quadrant to finish your move.",
   pickPiece: "Pick one of your pieces to slide.",
   placePiece: "Choose the point it slides to, or pick a different piece.",
+  pickRacer: "Pick one of your pieces to move: a step, or a chain of jumps.",
+  placeRacer: "Choose where it lands, or pick a different piece.",
   dropPrompt: "Play anywhere in a column. The stone falls to the bottom.",
   winsByTrap: (who: string, loser: string) => `${who} wins. ${loser} made three in a row.`,
   winsBySquare: (who: string) => `${who} wins with a square`,

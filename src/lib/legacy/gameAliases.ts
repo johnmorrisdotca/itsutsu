@@ -34,6 +34,9 @@ const GAME_ALIASES: Record<string, RuleVariant> = {
   "Anti-Flipversi": RULE_VARIANTS.antiReversi,
   "Anti-Flipversi 6x6": RULE_VARIANTS.antiReversi,
 
+  // The race game, under the name every site gives it.
+  Halma: RULE_VARIANTS.halma,
+
   "Connect 6": RULE_VARIANTS.connect6,
   "Connect Six": RULE_VARIANTS.connect6,
 

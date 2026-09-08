@@ -383,6 +383,55 @@ function checkSlide(before: GameState, after: GameState, from: Point, to: Point,
 /** How many slides a random sliding game is allowed before it is called off. */
 const SLIDE_CAP = 80;
 
+/** The race games, restated by hand. */
+function isRace(variant: string): boolean {
+  return variant === "halma";
+}
+
+/** Whether `to` is reachable from `from` by one step or a chain of jumps, worked out by hand. */
+function reachableByHand(board: readonly Cell[], size: number, from: Point, to: Point): boolean {
+  const at = (row: number, col: number) => (row < 0 || col < 0 || row >= size || col >= size ? undefined : board[row * size + col]);
+  if (Math.max(Math.abs(from.row - to.row), Math.abs(from.col - to.col)) === 1) return true;
+  const seen = new Set<number>([from.row * size + from.col]);
+  const stack: Point[] = [from];
+  while (stack.length > 0) {
+    const here = stack.pop() as Point;
+    for (let dr = -1; dr <= 1; dr += 1) {
+      for (let dc = -1; dc <= 1; dc += 1) {
+        if (dr === 0 && dc === 0) continue;
+        const over = at(here.row + dr, here.col + dc);
+        const beyond = at(here.row + 2 * dr, here.col + 2 * dc);
+        if (over === undefined || over === null || beyond !== null) continue;
+        const landing = { row: here.row + 2 * dr, col: here.col + 2 * dc };
+        if (landing.row === to.row && landing.col === to.col) return true;
+        const key = landing.row * size + landing.col;
+        if (!seen.has(key)) {
+          seen.add(key);
+          stack.push(landing);
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/** What must hold after a race move: one piece went from `from` to `to` by a step or jumps, nothing else changed. */
+function checkRaceMove(before: GameState, after: GameState, from: Point, to: Point, seed: number) {
+  const where = `${after.settings.variant} seed ${seed}, move ${from.row},${from.col} to ${to.row},${to.col}`;
+  expect(cellAt(before, to), `${where}: landed on a piece`).toBeNull();
+  expect(cellAt(after, from), `${where}: piece still at its origin`).toBeNull();
+  expect(cellAt(after, to), `${where}: piece did not arrive`).toBe(before.toPlay);
+  // A step is one square; anything further must be a chain of jumps over pieces on the board before the move.
+  expect(reachableByHand(before.board, after.settings.size, from, to), `${where}: not a step or a jump chain`).toBe(true);
+  const changed = after.board.filter((cell, index) => cell !== before.board[index]).length;
+  expect(changed, `${where}: more than two cells changed`).toBe(2);
+  expect(after.moves[after.moves.length - 1], `${where}: move not recorded`).toMatchObject({ kind: "move", from });
+  if (after.status === GAME_STATUS.playing) expect(after.toPlay).toBe(otherStone(before.toPlay));
+  if (after.settings.allowUndo) {
+    expect(undoMove(after).board, `${where}: undo did not move the piece back`).toEqual(before.board);
+  }
+}
+
 /** What must hold after a piece is laid: every cell placed with its colour, nothing else. */
 function checkPiece(before: GameState, after: GameState, cells: readonly { row: number; col: number; stone: Stone }[], seed: number) {
   const where = `${after.settings.variant} seed ${seed}, piece after move ${after.moves.length}`;
@@ -418,6 +467,8 @@ export {
   bruteForceWinner,
   checkMove,
   checkPass,
+  checkRaceMove,
+  isRace,
   checkPiece,
   checkSlide,
   checkTwist,

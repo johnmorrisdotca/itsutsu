@@ -39,6 +39,12 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
     games: ["toroidalFive", "obstacleFive"],
   },
   {
+    title: "Races",
+    kanji: "競走",
+    blurb: "No lines and nothing captured. Get every piece across the board before the other side does.",
+    games: ["halma"],
+  },
+  {
     title: "Small boards",
     kanji: "小盤",
     blurb: "Games you can read to the end, and games where the trick is what you must not do.",

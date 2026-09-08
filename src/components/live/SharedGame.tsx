@@ -391,7 +391,9 @@ function TurnBanner({
             ? `${STONE_DISPLAY[won].label} wins by resignation.`
             : state.winBy === WIN_REASONS.count
               ? `${STONE_DISPLAY[won].label} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}.`
-              : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
+              : state.winBy === WIN_REASONS.camp
+                ? `${STONE_DISPLAY[won].label} wins: the far camp is full.`
+                : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
       </p>
     );
   }

@@ -116,6 +116,8 @@ export type IntersectionProps = {
   /** Printed on the stone when move numbers are on. */
   moveNumber: number | null;
   mark: BoardMark | null;
+  /** Whose home camp this square is, in a race game; shaded so the corners read as camps. */
+  camp?: Stone | null;
   stones: StoneSetTokens;
   winningColour: string;
   readOnly: boolean;

@@ -21,8 +21,10 @@ import {
   checkMove,
   checkPass,
   checkPiece,
+  checkRaceMove,
   checkSlide,
   checkTwist,
+  isRace,
   runWinsIndependently,
   SLIDE_CAP,
 } from "./simulation.checks";
@@ -75,7 +77,8 @@ function playOut(settings: Partial<GameSettings>, seed: number): GameState {
       const before = state;
       const after = movePiece(state, from, to);
       expect(after, `seed ${seed}: a legal slide was refused`).not.toBe(before);
-      checkSlide(before, after, from, to, seed);
+      if (isRace(state.settings.variant)) checkRaceMove(before, after, from, to, seed);
+      else checkSlide(before, after, from, to, seed);
       state = after;
       slides += 1;
       if (slides >= SLIDE_CAP) break;

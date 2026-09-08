@@ -79,6 +79,7 @@ export function Intersection({
   onHover,
   moveNumber,
   mark,
+  camp = null,
   stones,
   winningColour,
   readOnly,
@@ -96,6 +97,13 @@ export function Intersection({
       aria-label={label}
       className="group relative flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-default"
     >
+      {camp !== null ? (
+        <span
+          className="pointer-events-none absolute inset-0"
+          style={{ background: camp === "black" ? "rgba(20, 20, 20, 0.16)" : "rgba(255, 255, 255, 0.34)" }}
+          aria-hidden="true"
+        />
+      ) : null}
       {cell === BLOCKED ? (
         <Obstacle />
       ) : cell === HOT ? (

@@ -127,6 +127,7 @@ export type RuleVariant =
   | "antiReversi"
   | "miniReversi"
   | "grandReversi"
+  | "halma"
   | "obstacleFive";
 
 /**
@@ -179,7 +180,7 @@ export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
  * How a won game was won. Null while nobody has. `trap` is the loser's doing:
  * they made the line the rules forbid. `square` is four in a 2×2.
  */
-export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count";
+export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count" | "camp";
 
 /**
  * Where a swap-style opening stands. `placing` and `extending` are stretches
@@ -273,6 +274,12 @@ export type VariantSpec = {
   flips: boolean;
   /** How the centre is set before the first move: fixed, laid by the players, or empty. */
   startingDiscs: StartingDiscs;
+  /**
+   * The race games. Every piece starts in a corner camp; a move is a step or
+   * a chain of jumps over any piece; filling the far camp wins. Lines,
+   * captures and placing mean nothing here.
+   */
+  camps: boolean;
 };
 
 /** How a flipping game begins: nothing, the fixed four, or four the players lay themselves. */

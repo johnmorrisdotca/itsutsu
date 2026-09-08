@@ -9,6 +9,7 @@ import {
 } from "../gomoku.constants";
 import type { Cell, GameState, Move, Point, Stone } from "../gomoku.types";
 import { cellAtPoint, indexOf, isOnBoard, isStone, otherStone, stepFrom } from "./board";
+import { campFilled, campMoves, campSquares } from "./camps";
 import { dropTarget } from "./drop";
 import { rulesFor } from "./handicap";
 import { findWinningLine, runThrough, winningLineFor } from "./lines";
@@ -78,7 +79,9 @@ export function blockedByGiveaway(state: GameState, point: Point): boolean {
 
 /** Whether the colour to move has all its pieces down and must now slide one. */
 export function inMovePhase(state: GameState): boolean {
-  const { pieces } = VARIANT_SPECS[state.settings.variant];
+  const { pieces, camps } = VARIANT_SPECS[state.settings.variant];
+  // In a race game every piece is down from the start.
+  if (camps) return true;
   return pieces !== null && countStones(state.board, state.toPlay) >= pieces;
 }
 
@@ -174,6 +177,7 @@ export function pieceMoves(state: GameState, from: Point): Point[] {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return [];
   if (!inMovePhase(state)) return [];
   if (!isOnBoard(state.settings.size, from) || state.board[indexOf(state.settings.size, from)] !== state.toPlay) return [];
+  if (VARIANT_SPECS[state.settings.variant].camps) return campMoves(state.board, state.settings.size, from);
   return pieceDestinations(state.board, state.settings.size, from);
 }
 
@@ -191,6 +195,12 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
   const move: Move = { ...to, stone: toPlay, kind: MOVE_KINDS.move, from };
   const moved: GameState = { ...state, board, moves: [...state.moves, move] };
 
+  // A race is decided by the far camp filling, and by nothing else on the board.
+  if (VARIANT_SPECS[settings.variant].camps) {
+    return campFilled(board, settings.size, toPlay)
+      ? won(moved, toPlay, WIN_REASONS.camp, campSquares(settings.size, otherStone(toPlay)))
+      : { ...moved, toPlay: otherStone(toPlay) };
+  }
   return settleStone(moved, to) ?? { ...moved, toPlay: otherStone(toPlay) };
 }
 

@@ -477,6 +477,19 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "10×10, and only that. Ninety-six discs go down instead of sixty, and the edges are two squares farther from the centre, so the opening runs long before either side touches one.",
   },
+  halma: {
+    label: "Halma",
+    kanji: "ハルマ",
+    tagline: "A race across the board: step, or jump chains over any piece, and fill the far corner first.",
+    origin: "Invented in Boston in 1883 by George Howard Monks, a surgeon, and named from the Greek for a jump. The play-by-mail sites kept it beside the line games; the family played it on ItsYourTurn.",
+    rules: [
+      "Each side starts with its pieces filling a camp in one corner: nineteen on the 16×16 board, thirteen on 10×10, ten on 8×8.",
+      "A move is one piece, either a step to a neighbouring empty square in any direction, or a jump over an adjacent piece of either colour into the empty square beyond. A jump may go on jumping in the same move as long as there is a piece to cross.",
+      "Nothing is ever captured. A piece jumped over stays where it is.",
+      "The first side to fill the far camp wins. A side that stays at home to block loses anyway once every other square in the camp is taken.",
+    ],
+    board: "16×16 is Halma as published, with nineteen pieces a side; 10×10 and 8×8 are the quick boards, with thirteen and ten. Played in the squares, like Reversi.",
+  },
 };
 
 export const SECOND_STONE_EXCLUSION_DISPLAY: Record<number, { label: string; kanji: string }> = {

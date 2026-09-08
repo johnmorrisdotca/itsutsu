@@ -1,3 +1,4 @@
+import { startingPieces } from "./camps";
 import { startingDiscs } from "./flips";
 import {
   DEFAULT_SETTINGS,
@@ -96,6 +97,12 @@ export function createGame(
   const board = emptyBoard(settings);
   for (const disc of startingDiscs(settings)) {
     board[disc.point.row * settings.size + disc.point.col] = disc.stone;
+  }
+  // A race game begins with both camps full, likewise part of the position.
+  if (VARIANT_SPECS[settings.variant].camps) {
+    for (const piece of startingPieces(settings)) {
+      board[piece.point.row * settings.size + piece.point.col] = piece.stone;
+    }
   }
 
   return {
