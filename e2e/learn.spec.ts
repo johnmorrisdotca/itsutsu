@@ -50,8 +50,22 @@ test.describe("rules and learning", () => {
     await expect(cards).toHaveCount(all);
   });
 
+  test("the rules can be narrowed by what wins, together with a letter", async ({ page }) => {
+    await page.goto("/rules");
+    const cards = page.getByTestId("rules-index").getByRole("listitem");
+    await page.getByTestId("kind-flips").click();
+    await expect(page).toHaveURL(/\/rules\?kind=flips$/);
+    for (const card of await cards.allTextContents()) expect(card).toMatch(/Reversi/);
+    // With flips chosen, a letter no flipping game starts with cannot be pressed.
+    await expect(page.getByTestId("letter-T")).toBeDisabled();
+    await page.getByTestId("letter-A").click();
+    await expect(page).toHaveURL(/\/rules\?kind=flips&letter=A$/);
+    await expect(cards).toHaveCount(1);
+    await expect(cards.first()).toContainText("Anti-Reversi");
+  });
+
   test("a rules page can start a game of that kind", async ({ page }) => {
-    await page.goto("/rules/twistFour");
+    await page.goto("/rules/twist-four");
     await page.getByRole("link", { name: /Play Twist Four/ }).click();
     await expect(page.getByTestId("rules")).toHaveValue("twistFour");
     await expect(page.getByTestId("board-size")).toHaveValue("4");
@@ -61,7 +75,7 @@ test.describe("rules and learning", () => {
     await page.goto("/games");
     await expect(page.getByTestId("lobby-start")).toContainText("Start here");
     const families = page.getByTestId("lobby-family");
-    await expect(families).toHaveCount(5);
+    await expect(families).toHaveCount(6);
     // Folded until opened, so the page is short.
     await expect(families.first().getByRole("link", { name: "play" })).toBeHidden();
     await families.filter({ hasText: "Small boards" }).locator("summary").click();

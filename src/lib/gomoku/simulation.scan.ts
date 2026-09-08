@@ -217,3 +217,51 @@ export function longestRunThrough(board: Cell[], size: number, point: Point, sto
 }
 
 /** What must hold after a quadrant turns: same stones, moved together, read by the whole board. */
+
+/*
+ * The flipping games, restated by hand. The scan walks the eight directions
+ * from the placed point over the other colour until it meets the mover's own
+ * disc; anything else — the edge, a gap — and that direction turns nothing.
+ * Written without the engine's helpers, so a mistake there is not a mistake
+ * here.
+ */
+const EIGHT: readonly [number, number][] = [
+  [-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1],
+];
+
+export function flipsByHand(board: Cell[], size: number, stone: Stone, point: Point): Point[] {
+  const cell = (row: number, col: number): Cell | undefined =>
+    row < 0 || col < 0 || row >= size || col >= size ? undefined : board[row * size + col];
+  const enemy = stone === "black" ? "white" : "black";
+  const turned: Point[] = [];
+  for (const [dr, dc] of EIGHT) {
+    const run: Point[] = [];
+    let row = point.row + dr;
+    let col = point.col + dc;
+    while (cell(row, col) === enemy) {
+      run.push({ row, col });
+      row += dr;
+      col += dc;
+    }
+    if (run.length > 0 && cell(row, col) === stone) turned.push(...run);
+  }
+  return turned;
+}
+
+/** Discs of each colour, counted the plain way. */
+export function countByHand(board: Cell[]): { black: number; white: number } {
+  return {
+    black: board.filter((cell) => cell === "black").length,
+    white: board.filter((cell) => cell === "white").length,
+  };
+}
+
+/** Whether `stone` has any legal flip anywhere on the board, by the hand scan. */
+export function canFlipAnywhereByHand(board: Cell[], size: number, stone: Stone): boolean {
+  for (let index = 0; index < board.length; index += 1) {
+    if (board[index] !== null) continue;
+    const point = { row: Math.floor(index / size), col: index % size };
+    if (flipsByHand(board, size, stone, point).length > 0) return true;
+  }
+  return false;
+}

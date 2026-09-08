@@ -7,7 +7,7 @@ import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
 import { PANEL_CLASS, PANEL_LINK_CLASS } from "@/components/ui/ui.constants";
-import { gamePath } from "@/lib/gomoku/slugs";
+import { gamePath, rulesPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
@@ -38,6 +38,12 @@ const FAMILIES: { title: string; kanji: string; blurb: string; games: RuleVarian
     kanji: "駒と回し",
     blurb: "Our own games: lay dominoes or blocks from a shared queue, or turn the board after every stone.",
     games: ["dominoFive", "blockFive", "twistFive", "twistFour"],
+  },
+  {
+    title: "Flips",
+    kanji: "反転",
+    blurb: "Nothing is yours until the end. Bracket a run of the other colour and it turns.",
+    games: ["reversi", "classicReversi", "antiReversi", "miniReversi"],
   },
   {
     title: "Small boards",
@@ -134,7 +140,7 @@ export default function LobbyPage() {
                       ) : null}
                     </span>
                     <span className="flex shrink-0 gap-2 text-xs">
-                      <Link href={`/rules/${variant}`} className="underline-offset-2 hover:underline">rules</Link>
+                      <Link href={rulesPath(variant)} className="underline-offset-2 hover:underline">rules</Link>
                       <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">play</Link>
                     </span>
                   </li>

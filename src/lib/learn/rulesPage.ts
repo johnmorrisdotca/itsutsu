@@ -52,7 +52,14 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   const sizes = boardSizesFor(variant);
 
   const object: string[] = [];
-  if (spec.makerBreaker) {
+  if (spec.flips) {
+    object.push(
+      spec.misere
+        ? "Finish with fewer discs than the other colour. Everything turns as usual; the object is upside down."
+        : "Finish with more discs than the other colour.",
+    );
+    object.push("The game ends when neither colour has a legal move — usually a full board. Equal counts are a draw.");
+  } else if (spec.makerBreaker) {
     object.push(`Black is the Maker and wins if any ${length} in a row of one colour appears, whoever placed it. White is the Breaker and wins if the board fills with no such line.`);
   } else if (spec.misere) {
     object.push(`Avoid making ${length} in a row: the player who makes it loses.`);
@@ -101,7 +108,16 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   }
 
   const play: string[] = [];
-  if (spec.queue !== null) {
+  if (spec.flips) {
+    play.push(
+      spec.startingDiscs === "laid"
+        ? "The board starts empty. The first four discs are laid in the centre four squares, one a turn, turning nothing."
+        : "The centre four squares start with two discs of each colour, on the diagonals.",
+    );
+    play.push("A disc goes only where it brackets one or more of the other colour in a straight run — any direction — with one of your own at the far end. Every bracketed run turns to your colour.");
+    play.push("A colour with nowhere to go passes, and the other colour plays again. You may not pass while you have a move.");
+    play.push("When neither colour can move, the discs are counted.");
+  } else if (spec.queue !== null) {
     play.push("Each turn you lay the next piece in the queue, turned or flipped as you like, on empty points.");
     if (spec.singles > 0) play.push(`Instead of a piece you may lay a single stone of your own colour; each player has ${spec.singles} for the game.`);
     play.push("A piece carries both colours, so it can finish a line for either side; the line's owner wins whoever laid it, and a line for each at once is a draw.");
@@ -128,7 +144,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     );
   }
   if (spec.lineClear) play.push("When the bottom row is full it disappears and every stone above drops one row.");
-  if (spec.misere) {
+  if (spec.flips) {
+    // Said above; a full board is only the usual way for both to be stuck.
+  } else if (spec.misere) {
     if (spec.placement === PLACEMENTS.drop) play.push("You may not play directly on top of the opponent's last stone while any other column has room.");
     play.push("A full board is a win for the player who opened.");
   } else if (spec.makerBreaker) play.push("A full board with no line is the Breaker's win.");
@@ -149,7 +167,13 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.openings.length > 1) {
     house.push(`Openings on offer: ${spec.openings.map((opening) => OPENING_DISPLAY[opening].label).join(", ")}.`);
   }
-  house.push(spec.analysis ? "The threat reading, hints and the chance-of-winning bar apply." : "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.");
+  house.push(
+    spec.analysis
+      ? "The threat reading, hints and the chance-of-winning bar apply."
+      : spec.flips
+        ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only discs to count."
+        : "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.",
+  );
   house.push(copy.board);
 
   return {

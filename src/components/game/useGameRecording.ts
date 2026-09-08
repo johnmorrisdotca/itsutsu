@@ -22,9 +22,9 @@ async function fetchStreak(name: string): Promise<number | null> {
   if (name === "") return null;
   const query = new URLSearchParams({
     player: name,
-    sortBy: "playedAt",
-    sortDir: "desc",
-    pageSize: String(STREAK_WINDOW),
+    sort: "played",
+    order: "desc",
+    limit: String(STREAK_WINDOW),
   });
   const response = await fetch(`/api/games?${query}`);
   if (!response.ok) return null;

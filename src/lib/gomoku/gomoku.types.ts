@@ -122,6 +122,10 @@ export type RuleVariant =
   | "wildTicTacToe"
   | "notakto"
   | "toroidalFive"
+  | "reversi"
+  | "classicReversi"
+  | "antiReversi"
+  | "miniReversi"
   | "obstacleFive";
 
 /**
@@ -174,7 +178,7 @@ export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
  * How a won game was won. Null while nobody has. `trap` is the loser's doing:
  * they made the line the rules forbid. `square` is four in a 2×2.
  */
-export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full";
+export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count";
 
 /**
  * Where a swap-style opening stands. `placing` and `extending` are stretches
@@ -259,7 +263,19 @@ export type VariantSpec = {
   singleColour: boolean;
   /** Maker wants a line of either colour; breaker wants a full board without one. */
   makerBreaker: boolean;
+  /**
+   * The flipping games. A stone may only be placed where it flanks a line of
+   * the other colour, which then turns; a colour with no such place passes;
+   * when neither can move the discs are counted. Lines and captures mean
+   * nothing here — the whole of the game is in the flip.
+   */
+  flips: boolean;
+  /** How the centre is set before the first move: fixed, laid by the players, or empty. */
+  startingDiscs: StartingDiscs;
 };
+
+/** How a flipping game begins: nothing, the fixed four, or four the players lay themselves. */
+export type StartingDiscs = "none" | "fixed" | "laid";
 
 /**
  * Extra restrictions one colour plays under, so a stronger player can give a

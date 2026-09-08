@@ -70,12 +70,36 @@ test.describe("more variants", () => {
   });
 
   test("the rules page and game browser name what a clone is inspired by", async ({ page }) => {
-    await page.goto("/rules/dropFour");
+    await page.goto("/rules/drop-four");
     await expect(page.getByTestId("inspired-by")).toContainText("Connect Four");
-    await page.goto("/rules/freestyle");
+    await page.goto("/rules/gomoku");
     await expect(page.getByTestId("inspired-by")).toHaveCount(0);
     await page.goto("/games/gomoku");
     await page.getByTestId("open-game-browser").first().click();
     await expect(page.getByTestId("inspired-twistFive")).toContainText("Pentago");
   });
 });
+
+test.describe("the flipping games", () => {
+  test("reversi opens with four legal moves and a move turns the bracketed disc", async ({ page }) => {
+    await page.goto("/games/reversi");
+    await page.evaluate(() => window.localStorage.clear());
+    await page.goto("/games/reversi");
+    await expect(page.getByTestId("disc-count")).toHaveText(/2.*2/);
+    const legal = page.getByRole("button", { name: /empty$/ }).and(page.locator(":not([disabled])"));
+    await expect(legal).toHaveCount(4);
+    await page.getByRole("button", { name: /^D6, empty$/ }).click();
+    await expect(page.getByTestId("disc-count")).toHaveText(/4.*1/);
+    await expect(page.getByTestId("to-play")).toContainText("White");
+    // Undo turns the disc back, not only lifts the one placed.
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(page.getByTestId("disc-count")).toHaveText(/2.*2/);
+  });
+
+  test("the rules page for a flipping game speaks of discs, at its kebab address", async ({ page }) => {
+    await page.goto("/rules/anti-reversi");
+    await expect(page.getByText(/fewer discs/i).first()).toBeVisible();
+    expect((await page.request.get("/rules/antiReversi")).status()).toBe(404);
+  });
+});
+

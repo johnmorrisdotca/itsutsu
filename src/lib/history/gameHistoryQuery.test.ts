@@ -24,7 +24,7 @@ describe("toGameHistoryQuery", () => {
   });
 
   it("coerces numeric parameters from strings", () => {
-    expect(parse("?page=3&pageSize=50")).toMatchObject({ page: 3, pageSize: 50 });
+    expect(parse("?page=3&limit=50")).toMatchObject({ page: 3, pageSize: 50 });
   });
 
   it("treats a blank search as no filter rather than an empty match", () => {
@@ -36,11 +36,13 @@ describe("toGameHistoryQuery", () => {
   });
 
   it("rejects a page size beyond the cap", () => {
-    expect(parse("?pageSize=5000")).toBeNull();
+    expect(parse("?limit=5000")).toBeNull();
   });
 
   it("rejects an unknown sort column", () => {
-    expect(parse("?sortBy=winner")).toBeNull();
+    expect(parse("?sort=winner")).toBeNull();
+    expect(parse("?sort=moves&order=asc")).toMatchObject({ sortBy: "moveCount", sortDir: "asc" });
+    expect(parse("?variant=drop-four")).toMatchObject({ variant: "dropFour" });
   });
 
   it("rejects an unknown result filter", () => {
@@ -101,10 +103,10 @@ describe("buildGameOrderBy", () => {
   });
 
   it("sorts unclocked games last whichever way duration is sorted", () => {
-    expect(buildGameOrderBy(parse("?sortBy=duration&sortDir=asc")!)[0]).toEqual({
+    expect(buildGameOrderBy(parse("?sort=duration&order=asc")!)[0]).toEqual({
       durationMs: { sort: "asc", nulls: "last" },
     });
-    expect(buildGameOrderBy(parse("?sortBy=duration&sortDir=desc")!)[0]).toEqual({
+    expect(buildGameOrderBy(parse("?sort=duration&order=desc")!)[0]).toEqual({
       durationMs: { sort: "desc", nulls: "last" },
     });
   });

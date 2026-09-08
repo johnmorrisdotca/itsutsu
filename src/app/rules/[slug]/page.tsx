@@ -4,9 +4,8 @@ import { notFound } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { gamePath } from "@/lib/gomoku/slugs";
-import { RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { gamePath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
 import { hasGameImage } from "@/lib/learn/images";
@@ -14,7 +13,7 @@ import { hasGameImage } from "@/lib/learn/images";
 export const metadata = { title: "Rules" };
 
 export function generateStaticParams() {
-  return RULE_VARIANT_LIST.map((variant) => ({ variant }));
+  return RULE_VARIANT_LIST.map((variant) => ({ slug: slugFor(variant) }));
 }
 
 function Part({ title, kanji, lines }: { title: string; kanji: string; lines: string[] }) {
@@ -33,12 +32,12 @@ function Part({ title, kanji, lines }: { title: string; kanji: string; lines: st
 }
 
 /** One game's rules, in the template every game shares. */
-export default async function RulesPage({ params }: PageProps<"/rules/[variant]">) {
-  const { variant } = await params;
-  if (!(variant in RULE_VARIANTS)) notFound();
-  const page = rulesPageFor(variant as RuleVariant);
-  const guides = guidesFor(variant as RuleVariant);
-  const image = hasGameImage(variant as RuleVariant);
+export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) {
+  const variant = variantFor((await params).slug);
+  if (variant === null) notFound();
+  const page = rulesPageFor(variant);
+  const guides = guidesFor(variant);
+  const image = hasGameImage(variant);
 
   return (
     <Page width="standard" gap="gap-6">

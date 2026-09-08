@@ -1,3 +1,4 @@
+import { startingDiscs } from "./flips";
 import {
   DEFAULT_SETTINGS,
   FIRST_STONE,
@@ -91,9 +92,15 @@ export function createGame(
     [otherStone(opener)]: SEATS.two,
   } as Record<Stone, Seat>;
 
+  // A flipping game begins with the centre set; it is part of the position, not the record.
+  const board = emptyBoard(settings);
+  for (const disc of startingDiscs(settings)) {
+    board[disc.point.row * settings.size + disc.point.col] = disc.stone;
+  }
+
   return {
     settings,
-    board: emptyBoard(settings),
+    board,
     moves: [],
     opener,
     seats,

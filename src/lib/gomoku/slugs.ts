@@ -39,6 +39,10 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   trapThree: "trap-three",
   squareFour: "square-four",
   tictactoe: "tic-tac-toe",
+  reversi: "reversi",
+  classicReversi: "classic-reversi",
+  antiReversi: "anti-reversi",
+  miniReversi: "mini-reversi",
 };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(
@@ -85,6 +89,11 @@ export function recordPath(variant: string, id?: string, move?: number): string 
   const base = `/history/${slugFor(variant)}`;
   if (id === undefined) return base;
   return move === undefined ? `${base}/${id}` : `${base}/${id}/${move}`;
+}
+
+/** /rules/<slug> — a game's rules, under the same name as its board. */
+export function rulesPath(variant: string): string {
+  return `/rules/${slugFor(variant)}`;
 }
 
 /** The link that claims a seat. It carries a credential, so it is handed out, never listed. */

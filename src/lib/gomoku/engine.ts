@@ -1,3 +1,5 @@
+import { createGame } from "./rules/creation";
+import { flipLegal, playFlip, undoFlip } from "./rules/flips";
 import {
   GAME_STATUS,
   MOVE_KINDS,
@@ -80,6 +82,7 @@ export {
 export { findWinningLine } from "./rules/lines";
 export { hasHandicap, rulesFor } from "./rules/handicap";
 export { forbiddenAt, forbiddenPoints } from "./rules/forbidden";
+export { centreSquares, discCount, flipsAt, hasFlipMove, inLayingPhase } from "./rules/flips";
 export {
   canGrowBoard,
   canShrinkBoard,
@@ -126,6 +129,8 @@ export function cellAt(state: GameState, point: Point): Cell {
 export function isLegalMove(state: GameState, point: Point): boolean {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
   if (!isOnBoard(state.settings.size, point) || cellAt(state, point) !== null) return false;
+  // The flipping games: legal means "turns something", and nothing else applies.
+  if (VARIANT_SPECS[state.settings.variant].flips) return flipLegal(state, point);
   if (inMovePhase(state)) return false;
   // In a piece game a lone stone is a single, and there are only so many.
   if (VARIANT_SPECS[state.settings.variant].queue !== null && singlesLeft(state) <= 0) return false;
@@ -251,6 +256,7 @@ export function playMove(
 
   const { settings, toPlay } = state;
   const spec = VARIANT_SPECS[settings.variant];
+  if (spec.flips) return playFlip(state, point);
   // The colour of the stone: the mover's, unless the game lets them choose, or fixes it.
   const stone = spec.singleColour ? STONES.black : spec.anyColour ? (chosen ?? toPlay) : toPlay;
   const captured = capturesFrom(state.board, settings, stone, point);
@@ -351,6 +357,10 @@ export function canUndo(state: GameState): boolean {
  */
 export function undoMove(state: GameState): GameState {
   if (!canUndo(state)) return state;
+  // A flipped disc is not on the record; the flipping games rebuild instead.
+  if (VARIANT_SPECS[state.settings.variant].flips) {
+    return undoFlip(state, createGame(state.settings));
+  }
 
   const last = state.moves[state.moves.length - 1];
   const { size } = state.settings;

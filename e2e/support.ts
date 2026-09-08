@@ -46,9 +46,23 @@ export function winningSequence(): [number, number][] {
  * behind a `<details>`, so a spec has to open it before it can reach them.
  */
 export async function openAdvanced(page: Page) {
+  await openSetup(page);
   const summary = page.getByText(/^Advanced/);
-  const details = page.locator("details");
+  // The details that holds the Advanced summary, not whichever details comes first on the page.
+  const details = page.locator("details", { has: summary });
   if (!(await details.first().evaluate((node: HTMLDetailsElement) => node.open))) {
     await summary.click();
   }
+}
+
+/**
+ * Opens the play page's set-up, which folds away once a stone is down. The
+ * settings and appearance controls live inside it, so a test that changes
+ * them mid-game reveals it first, the way a player would.
+ */
+export async function openSetup(page: Page) {
+  const setup = page.getByTestId("game-setup");
+  if ((await setup.count()) === 0) return;
+  const open = await setup.evaluate((element) => (element as HTMLDetailsElement).open);
+  if (!open) await setup.locator("summary").click();
 }

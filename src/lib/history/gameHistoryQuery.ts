@@ -1,3 +1,4 @@
+import { variantFor } from "@/lib/gomoku/slugs";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
@@ -43,6 +44,33 @@ const querySchema = z.object({
   to: z.coerce.date().optional(),
 });
 
+/**
+ * What the address calls a sort, and what the table calls it. Addresses use
+ * plain words with no casing — /history?sort=played&order=desc — so that a
+ * link reads the same whoever typed it; the columns keep their own names.
+ */
+export const SORT_WORDS: Record<string, (typeof GAME_SORT_BY)[number]> = {
+  played: "playedAt",
+  moves: "moveCount",
+  size: "size",
+  duration: "duration",
+};
+
+export function sortWord(field: (typeof GAME_SORT_BY)[number]): string {
+  return Object.entries(SORT_WORDS).find(([, value]) => value === field)?.[0] ?? field;
+}
+
+function sortField(word: string | undefined): string | undefined {
+  if (word === undefined) return undefined;
+  return SORT_WORDS[word] ?? word;
+}
+
+/** A game in the address is its slug, the same as on /games and /history. */
+function variantFilter(value: string | undefined): string | undefined {
+  if (value === undefined || value === "all") return value;
+  return variantFor(value) ?? value;
+}
+
 /** Empty and whitespace-only values are "no filter", not a failed request. */
 function trimmed(value: string | undefined): string | null {
   const text = value?.trim();
@@ -54,13 +82,14 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
 
   const parsed = querySchema.safeParse({
     page: get("page"),
-    pageSize: get("pageSize"),
-    sortBy: get("sortBy"),
-    sortDir: get("sortDir"),
+    // The address speaks plain words; the field names inside are the table's.
+    pageSize: get("limit"),
+    sortBy: sortField(get("sort")),
+    sortDir: get("order"),
     search: get("search"),
     player: get("player"),
     result: get("result"),
-    variant: get("variant"),
+    variant: variantFilter(get("variant")),
     size: get("size"),
     from: get("from"),
     to: get("to"),

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { GameViewClient } from "@/components/game/GameViewClient";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { variantFor } from "@/lib/gomoku/slugs";
+import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
@@ -32,7 +32,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
         <p>
           <span className="font-medium text-ink">{copy.label}</span>{" "}
           <span className="font-mincho">{copy.kanji}</span> — {copy.tagline}{" "}
-          <Link href={`/rules/${variant}`} className="underline underline-offset-4">
+          <Link href={rulesPath(variant)} className="underline underline-offset-4">
             Rules
           </Link>
           .

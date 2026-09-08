@@ -409,6 +409,60 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "3×3.",
   },
+  reversi: {
+    label: "Reversi",
+    kanji: "リバーシ",
+    tagline: "Bracket a run of the other colour and it turns. Most discs at the end wins.",
+    origin: "The flipping game as the world plays it now: the fixed centre, the forced pass, the count. Japan set the rules down in 1973.",
+    inspiredBy: "Othello",
+    rules: [
+      "The centre starts with two discs of each colour on the diagonals.",
+      "A disc goes only where it brackets one or more of the other colour in a straight run, with one of your own at the far end. Every bracketed run turns.",
+      "A colour with nowhere to go passes; the turn stays with the other colour until both are stuck.",
+      "When neither can move, the discs are counted. More wins; equal is a draw.",
+    ],
+    board: "8×8. The corners cannot be turned once taken, which is most of the strategy.",
+  },
+  classicReversi: {
+    label: "Classic Reversi",
+    kanji: "古式リバーシ",
+    tagline: "The 1880s rule: the players lay the first four discs themselves.",
+    origin: "The English parlour game before the fixed opening: the centre four were placed by the players, in turn, so two openings were possible.",
+    rules: [
+      "The board starts empty. The first four discs are laid in the centre four squares, one a turn, without turning anything.",
+      "From the fifth disc on, a disc goes only where it brackets a run of the other colour, which turns.",
+      "A colour with nowhere to go passes.",
+      "When neither can move, the discs are counted. More wins; equal is a draw.",
+    ],
+    board: "8×8. Laying the centre yourself allows the parallel opening the fixed rule rules out.",
+  },
+  antiReversi: {
+    label: "Anti-Reversi",
+    kanji: "逆リバーシ",
+    tagline: "Everything turns as usual, but the fewer discs wins.",
+    origin: "The giveaway form. Every rule is the same; the object is upside down, so the corners become the last thing you want.",
+    rules: [
+      "The centre starts with two discs of each colour on the diagonals.",
+      "A disc goes only where it brackets a run of the other colour, which turns. You may not decline a move that is available.",
+      "A colour with nowhere to go passes.",
+      "When neither can move, the discs are counted. Fewer wins; equal is a draw.",
+    ],
+    board: "8×8. Giving the other side discs is the whole game; a corner is a liability.",
+  },
+  miniReversi: {
+    label: "Mini Reversi",
+    kanji: "小リバーシ",
+    tagline: "The flipping game on a 4×4 or 6×6 board, which can grow to 8×8 mid-game.",
+    origin: "The small boards the game is taught and studied on. 6×6 has been solved — a second-player win — which is no help at all over a real board.",
+    rules: [
+      "The centre starts with two discs of each colour on the diagonals.",
+      "A disc goes only where it brackets a run of the other colour, which turns.",
+      "A colour with nowhere to go passes.",
+      "When neither can move, the discs are counted. More wins; equal is a draw.",
+      "If the board feels small, both players may agree to grow it: the position moves to the centre of the next size up and play goes on.",
+    ],
+    board: "4×4, 6×6 or 8×8, and the smaller boards can grow.",
+  },
 };
 
 export const SECOND_STONE_EXCLUSION_DISPLAY: Record<number, { label: string; kanji: string }> = {

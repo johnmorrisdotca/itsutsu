@@ -73,6 +73,10 @@ export const RULE_VARIANTS = {
   notakto: "notakto",
   toroidalFive: "toroidalFive",
   obstacleFive: "obstacleFive",
+  reversi: "reversi",
+  classicReversi: "classicReversi",
+  antiReversi: "antiReversi",
+  miniReversi: "miniReversi",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 export const WRAP_MODES = {
@@ -123,6 +127,10 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.tictactoe,
   RULE_VARIANTS.wildTicTacToe,
   RULE_VARIANTS.notakto,
+  RULE_VARIANTS.reversi,
+  RULE_VARIANTS.classicReversi,
+  RULE_VARIANTS.antiReversi,
+  RULE_VARIANTS.miniReversi,
 ] as const satisfies readonly RuleVariant[];
 
 export const PLACEMENTS = {
@@ -173,6 +181,7 @@ export const WIN_REASONS = {
   trap: "trap",
   square: "square",
   full: "full",
+  count: "count",
 } as const satisfies Record<WinReason, WinReason>;
 
 export const OPENING_STAGES = {
@@ -241,6 +250,12 @@ const GOMOKU_OPENINGS: readonly OpeningRule[] = [
 
 const FREE_ONLY: readonly OpeningRule[] = [OPENING_RULES.free];
 
+export const STARTING_DISCS = { none: "none", fixed: "fixed", laid: "laid" } as const;
+
+/** The board a flipping game is played on, and the small ones it may grow from. */
+const REVERSI_SIZES = [8] as const;
+const MINI_REVERSI_SIZES = [4, 6, 8] as const;
+
 function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return {
     lineRule: { black: LINE_RULES.atLeast, white: LINE_RULES.atLeast },
@@ -271,6 +286,8 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     anyColour: false,
     singleColour: false,
     makerBreaker: false,
+    flips: false,
+    startingDiscs: STARTING_DISCS.none,
     ...overrides,
   };
 }
@@ -283,6 +300,11 @@ function drop(overrides: Partial<VariantSpec> = {}): VariantSpec {
     ...overrides,
     boardSizes: overrides.boardSizes ?? [7, 9, 10],
   });
+}
+
+/** A flipping game: an 8×8 board, no lines, and no reading of threats — there are none. */
+function flipping(overrides: Partial<VariantSpec> = {}): VariantSpec {
+  return small({ flips: true, analysis: false, ...overrides, boardSizes: overrides.boardSizes ?? REVERSI_SIZES });
 }
 
 /** The games that are not gomoku: a small board of their own and no opening protocol. */
@@ -401,6 +423,14 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     boardSizes: [5],
     analysis: false,
   }),
+  /*
+   * The flipping games. `winLength` is pinned to nothing in particular, since
+   * no line is ever read; what matters is the flip, the pass and the count.
+   */
+  reversi: flipping({ startingDiscs: STARTING_DISCS.fixed }),
+  classicReversi: flipping({ startingDiscs: STARTING_DISCS.laid }),
+  antiReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, misere: true }),
+  miniReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: MINI_REVERSI_SIZES }),
 };
 
 /** The board sizes a variant plays on. */
@@ -479,10 +509,11 @@ export const BOARD_SIZE_DISPLAY: Record<
   { label: string; kanji: string; note: string }
 > = {
   3: { label: "Three", kanji: "三路", note: "Tic-tac-toe" },
-  4: { label: "Four", kanji: "四路", note: "Twist Four" },
+  4: { label: "Four", kanji: "四路", note: "Twist Four, Mini Reversi" },
   5: { label: "Five", kanji: "五路", note: "Trap Three, Square Four" },
-  6: { label: "Six", kanji: "六路", note: "Twist Five" },
+  6: { label: "Six", kanji: "六路", note: "Twist Five, Mini Reversi" },
   7: { label: "Seven", kanji: "七路", note: "Drop Four" },
+  8: { label: "Eight", kanji: "八路", note: "Reversi" },
   10: { label: "Ten", kanji: "十路", note: "The big drop board" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },
   13: { label: "Medium", kanji: "中盤", note: "Shorter game" },

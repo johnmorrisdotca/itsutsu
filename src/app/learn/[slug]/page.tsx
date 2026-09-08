@@ -1,4 +1,6 @@
 import Link from "next/link";
+
+import { rulesPath } from "@/lib/gomoku/slugs";
 import { notFound } from "next/navigation";
 
 import { Page } from "@/components/layout/Page";
@@ -39,7 +41,7 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
             {guide.variants.map((variant) => (
               <Link
                 key={variant}
-                href={`/rules/${variant}`}
+                href={rulesPath(variant)}
                 className="rounded-full border border-rule px-2 py-0.5 underline-offset-2 hover:underline"
               >
                 {RULE_VARIANT_DISPLAY[variant].label}

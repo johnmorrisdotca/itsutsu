@@ -29,32 +29,35 @@ import { emptyBoard } from "../obstacles";
  * larger size's star points — which are not the ones it was played with.
  */
 
-/** The next size up, or null when the board is already the largest. */
-export function nextBoardSize(size: number): number | null {
-  const larger = BOARD_SIZES.filter((option) => option > size);
+/**
+ * The next size up, or null when the board is already the largest. A game
+ * played on boards of its own — the flipping games, on 4, 6 and 8 — grows
+ * through its own list rather than the go sizes.
+ */
+export function nextBoardSize(size: number, sizes: readonly number[] = BOARD_SIZES): number | null {
+  const larger = sizes.filter((option) => option > size);
   return larger.length > 0 ? Math.min(...larger) : null;
 }
 
 /**
  * How far the old board shifts when centred on the new one.
  *
- * Both sizes are odd, so the difference is even and the offset is exact: the
- * centre point stays the centre point, and no stone is nudged off-centre.
+ * Both sizes are odd, or both even, so the difference is even and the offset
+ * is exact: the centre stays the centre, and no stone is nudged off it.
  */
 export function growthOffset(from: number, to: number): number {
   return Math.floor((to - from) / 2);
 }
 
 export function canGrowBoard(state: GameState): boolean {
-  // A game played on a board of its own size cannot grow out of it.
-  if (VARIANT_SPECS[state.settings.variant].boardSizes !== null) return false;
+  const sizes = VARIANT_SPECS[state.settings.variant].boardSizes ?? BOARD_SIZES;
   return (
     state.settings.allowResize &&
     state.status === GAME_STATUS.playing &&
     // See the note above: obstacles are derived from size, so they would not
     // survive a replay of a grown game.
     state.settings.obstacles === OBSTACLE_LAYOUTS.none &&
-    nextBoardSize(state.settings.size) !== null
+    nextBoardSize(state.settings.size, sizes) !== null
   );
 }
 
@@ -71,7 +74,7 @@ export function growBoard(state: GameState): GameState {
   if (!canGrowBoard(state)) return state;
 
   const from = state.settings.size;
-  const to = nextBoardSize(from);
+  const to = nextBoardSize(from, VARIANT_SPECS[state.settings.variant].boardSizes ?? BOARD_SIZES);
   if (to === null) return state;
 
   const offset = growthOffset(from, to);
@@ -114,8 +117,8 @@ export function growBoard(state: GameState): GameState {
 }
 
 /** The next size down, or null when the board is already the smallest. */
-export function previousBoardSize(size: number): number | null {
-  const smaller = BOARD_SIZES.filter((option) => option < size);
+export function previousBoardSize(size: number, sizes: readonly number[] = BOARD_SIZES): number | null {
+  const smaller = sizes.filter((option) => option < size);
   return smaller.length > 0 ? Math.max(...smaller) : null;
 }
 
@@ -145,7 +148,7 @@ export function canShrinkBoard(state: GameState): boolean {
   // A game played on a board of its own size cannot shrink out of it either.
   if (VARIANT_SPECS[state.settings.variant].boardSizes !== null) return false;
 
-  const to = previousBoardSize(state.settings.size);
+  const to = previousBoardSize(state.settings.size, VARIANT_SPECS[state.settings.variant].boardSizes ?? BOARD_SIZES);
   if (to === null) return false;
 
   return (

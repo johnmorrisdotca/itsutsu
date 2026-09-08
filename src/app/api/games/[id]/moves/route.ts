@@ -45,7 +45,7 @@ export async function GET(
     const url = new URL(request.url);
     const parsed = movesQuerySchema.safeParse({
       page: url.searchParams.get("page") ?? undefined,
-      pageSize: url.searchParams.get("pageSize") ?? undefined,
+      pageSize: url.searchParams.get("limit") ?? undefined,
     });
     if (!parsed.success) return badRequest("Invalid paging parameters.");
 

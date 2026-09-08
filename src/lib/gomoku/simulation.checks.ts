@@ -2,7 +2,14 @@ import { expect } from "vitest";
 import { cellAt, forbiddenPoints, indexOf, isStone, otherStone, undoMove } from "./engine";
 import { rulesFor } from "./rules/handicap";
 import { stonesPlacedThisTurn } from "./rules/turns";
-import { bruteForceWinner, longestRunThrough, runWinsIndependently } from "./simulation.scan";
+import {
+  bruteForceWinner,
+  canFlipAnywhereByHand,
+  countByHand,
+  flipsByHand,
+  longestRunThrough,
+  runWinsIndependently,
+} from "./simulation.scan";
 import { GAME_STATUS } from "./gomoku.constants";
 import type { Cell, GameState, Point, Stone } from "./gomoku.types";
 
@@ -17,6 +24,12 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
   const where =
     `${after.settings.variant} seed ${seed}, move ${after.moves.length} ` +
     `at ${played.row},${played.col}`;
+
+  // The flipping games play by their own rules, restated by hand below.
+  if (isFlipping(after.settings.variant)) {
+    checkFlipMove(before, after, played, where);
+    return;
+  }
 
   // The previous state is untouched: the engine returns new states, never edits.
   expect(cellAt(before, played), `${where}: input state was mutated`).toBeNull();
@@ -201,6 +214,104 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
       before.toPlay,
     );
     expect(undone.moves.length).toBe(before.moves.length);
+  }
+}
+
+/** The flipping games. Restated by hand. */
+function isFlipping(variant: string): boolean {
+  return (
+    variant === "reversi" ||
+    variant === "classicReversi" ||
+    variant === "antiReversi" ||
+    variant === "miniReversi"
+  );
+}
+
+/** The four centre squares of an even board, by hand. */
+function centreByHand(size: number): number[] {
+  const half = size / 2;
+  return [
+    (half - 1) * size + half - 1,
+    (half - 1) * size + half,
+    half * size + half - 1,
+    half * size + half,
+  ];
+}
+
+/**
+ * What must hold after a disc is placed in a flipping game: the mover's disc
+ * is down; the discs that changed colour are exactly the ones the hand scan
+ * says are bracketed, and they were the other colour before; nothing was
+ * removed; the turn went to whoever can move, by the hand scan; and when the
+ * game is over the count decides it — the larger count, or the smaller in the
+ * giveaway form, or a draw when equal.
+ */
+function checkFlipMove(before: GameState, after: GameState, played: Point, where: string) {
+  const size = after.settings.size;
+  const mover = before.toPlay;
+  const playedIndex = indexOf(size, played);
+  expect(cellAt(before, played), `${where}: played on an occupied square`).toBeNull();
+  expect(after.board[playedIndex], `${where}: mover's disc missing`).toBe(mover);
+
+  const laying =
+    after.settings.variant === "classicReversi" &&
+    centreByHand(size).some((index) => before.board[index] === null);
+  const expected = laying ? [] : flipsByHand(before.board, size, mover, played);
+  if (laying) {
+    expect(centreByHand(size), `${where}: laid outside the centre`).toContain(playedIndex);
+  } else {
+    expect(expected.length, `${where}: a move that turns nothing was allowed`).toBeGreaterThan(0);
+  }
+
+  const changed = after.board.reduce<number[]>((list, cell, index) => {
+    if (cell !== before.board[index]) list.push(index);
+    return list;
+  }, []);
+  const turned = changed.filter((index) => index !== playedIndex).sort((a, b) => a - b);
+  const wanted = expected.map((point) => indexOf(size, point)).sort((a, b) => a - b);
+  expect(turned, `${where}: turned discs differ from the hand scan`).toEqual(wanted);
+  for (const index of turned) {
+    expect(before.board[index], `${where}: turned a disc that was not the other colour`).toBe(otherStone(mover));
+    expect(after.board[index], `${where}: a turned disc is not the mover's`).toBe(mover);
+  }
+  expect(after.board.filter(isStone).length, `${where}: a disc was removed`).toBe(
+    before.board.filter(isStone).length + 1,
+  );
+  expect(after.moves.length).toBe(before.moves.length + 1);
+
+  const opponentCan = canFlipAnywhereByHand(after.board, size, otherStone(mover));
+  const moverCan = canFlipAnywhereByHand(after.board, size, mover);
+  const stillLaying =
+    after.settings.variant === "classicReversi" &&
+    centreByHand(size).some((index) => after.board[index] === null);
+  if (stillLaying) {
+    expect(after.status).toBe(GAME_STATUS.playing);
+    expect(after.toPlay, `${where}: laying did not alternate`).toBe(otherStone(mover));
+  } else if (opponentCan) {
+    expect(after.status).toBe(GAME_STATUS.playing);
+    expect(after.toPlay, `${where}: turn did not pass`).toBe(otherStone(mover));
+  } else if (moverCan) {
+    expect(after.status).toBe(GAME_STATUS.playing);
+    expect(after.toPlay, `${where}: a forced pass was not applied`).toBe(mover);
+  } else {
+    const count = countByHand(after.board);
+    if (count.black === count.white) {
+      expect(after.status, `${where}: equal counts should draw`).toBe(GAME_STATUS.draw);
+    } else {
+      const more = count.black > count.white ? "black" : "white";
+      const fewer = more === "black" ? "white" : "black";
+      expect(after.status, `${where}: game should be over`).toBe(GAME_STATUS.won);
+      expect(after.winBy, `${where}: a count win should say so`).toBe("count");
+      expect(after.winner, `${where}: count went to the wrong colour`).toBe(
+        after.settings.variant === "antiReversi" ? fewer : more,
+      );
+    }
+  }
+
+  if (after.settings.allowUndo) {
+    const undone = undoMove(after);
+    expect(undone.board, `${where}: undo did not turn the discs back`).toEqual(before.board);
+    expect(undone.toPlay, `${where}: undo did not restore the turn`).toBe(before.toPlay);
   }
 }
 

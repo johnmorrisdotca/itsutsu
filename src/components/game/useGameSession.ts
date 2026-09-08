@@ -30,6 +30,7 @@ import {
   winOnTime,
 } from "@/lib/gomoku/engine";
 import {
+  BOARD_SIZES,
   GAME_STATUS,
   MOVE_KINDS,
   SEATS,
@@ -361,10 +362,12 @@ export function useGameSession(
    */
   const proposeResize = useCallback(
     (direction: ResizeDirection) => {
+      // A game played on boards of its own grows and shrinks through its own list.
+      const sizes = VARIANT_SPECS[state.settings.variant].boardSizes ?? BOARD_SIZES;
       const size =
         direction === "grow"
-          ? nextBoardSize(state.settings.size)
-          : previousBoardSize(state.settings.size);
+          ? nextBoardSize(state.settings.size, sizes)
+          : previousBoardSize(state.settings.size, sizes);
       if (size === null) return;
       setResizeProposal({ from: seatToPlay(state), direction, size });
     },

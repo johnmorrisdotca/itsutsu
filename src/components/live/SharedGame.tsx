@@ -5,7 +5,7 @@ import useSWR from "swr";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
-import { cellAt, inMovePhase, pieceMoves, rulesFor } from "@/lib/gomoku/engine";
+import { cellAt, discCount, inMovePhase, pieceMoves, rulesFor } from "@/lib/gomoku/engine";
 import { PieceTray } from "@/components/game/PieceTray";
 import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
@@ -327,7 +327,9 @@ function TurnBanner({
           ? "Draw. The board is full."
           : state.winBy === WIN_REASONS.resign
             ? `${STONE_DISPLAY[won].label} wins by resignation.`
-            : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
+            : state.winBy === WIN_REASONS.count
+              ? `${STONE_DISPLAY[won].label} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}.`
+              : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
       </p>
     );
   }

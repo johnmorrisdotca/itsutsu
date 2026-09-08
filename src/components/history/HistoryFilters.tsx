@@ -13,6 +13,7 @@ import {
 } from "@/lib/history/gameHistory.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { recordPath } from "@/lib/gomoku/slugs";
+import { sortWord } from "@/lib/history/gameHistoryQuery";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { Field, Select } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
@@ -114,12 +115,12 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
 
       <Field label="Sort">
         <Select
-          value={`${value("sortBy", "playedAt")}:${value("sortDir", "desc")}`}
+          value={`${value("sort", "played")}:${value("order", "desc")}`}
           onChange={(event) => {
             const [by, dir] = event.target.value.split(":");
             const next = new URLSearchParams(params.toString());
-            next.set("sortBy", by);
-            next.set("sortDir", dir);
+            next.set("sort", by);
+            next.set("order", dir);
             next.delete("page");
             router.replace(`${pathname}?${next.toString()}`);
           }}
@@ -127,7 +128,7 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
         >
           {GAME_SORT_BY.flatMap((by) =>
             (["desc", "asc"] as const).map((dir) => (
-              <option key={`${by}:${dir}`} value={`${by}:${dir}`}>
+              <option key={`${by}:${dir}`} value={`${sortWord(by)}:${dir}`}>
                 {GAME_SORT_DISPLAY[by].label} {dir === "desc" ? "↓" : "↑"}
               </option>
             )),

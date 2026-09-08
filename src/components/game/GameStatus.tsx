@@ -4,7 +4,7 @@ import {
   FATAL_MOVE_DISPLAY,
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
-import { inMovePhase, rulesFor, stonesLeft } from "@/lib/gomoku/engine";
+import { discCount, inMovePhase, rulesFor, stonesLeft } from "@/lib/gomoku/engine";
 import {
   GAME_STATUS,
   HANDICAP_RULES,
@@ -57,7 +57,11 @@ function ToPlay({ session }: { session: GameSession }) {
               )
             : state.winBy === WIN_REASONS.square
               ? GAME_COPY.winsBySquare(who)
-              : `${who} wins in ${state.moves.length} moves`
+              : state.winBy === WIN_REASONS.count
+                ? `${who} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}`
+                : state.winBy === WIN_REASONS.resign
+                  ? `${who} wins by resignation`
+                  : `${who} wins in ${state.moves.length} moves`
       : `${who} to play`;
 
   return (
@@ -273,6 +277,13 @@ export function GameStatus({ session }: { session: GameSession }) {
     <section aria-live="polite" className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <ToPlay session={session} />
+        {VARIANT_SPECS[session.state.settings.variant].flips ? (
+          <p className="text-sm" data-testid="disc-count">
+            <span className="font-mono tabular-nums">● {discCount(session.state.board).black}</span>
+            <span className="px-2 text-muted">·</span>
+            <span className="font-mono tabular-nums">○ {discCount(session.state.board).white}</span>
+          </p>
+        ) : null}
         <p className="text-sm text-muted">
           Move {session.state.moves.length + 1}
           {session.moveIndex < session.moveTotal
