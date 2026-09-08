@@ -44,7 +44,7 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
       </header>
       {typeof params.error === "string" ? (
         <p className="max-w-sm text-center text-sm text-shu" data-testid="join-error">
-          Google sign-in did not complete. Try again, or use an invite code.
+          Google sign-in did not complete ({params.error}). Try again, or use an invite code.
         </p>
       ) : null}
       <JoinForm
