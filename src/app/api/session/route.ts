@@ -12,7 +12,7 @@ import { getServerSession } from "next-auth";
 
 import { isOperatorLogin } from "@/lib/auth/admin";
 import { authOptions } from "@/lib/auth/google";
-import { admitMember, foldEmail, touchMember } from "@/lib/auth/members";
+import { admitMember, foldEmail, isBanned, touchMember } from "@/lib/auth/members";
 import {
   ADMIN_SESSION_DAYS,
   PLAYER_SESSION_DAYS,
@@ -116,6 +116,8 @@ export async function POST(request: Request) {
     const google = await getServerSession(authOptions);
     const email = google?.user?.email;
     if (email) {
+      // A shut account is shut whatever code is presented at the door.
+      if (await isBanned(email)) return refused();
       const member = await admitMember({
         email,
         name: google?.user?.name ?? "",

@@ -6,6 +6,7 @@ import { AdminBoardCard } from "@/components/backlog/AdminBoardCard";
 import { BacklogBoard } from "@/components/backlog/BacklogBoard";
 import { AdminEmbeds } from "@/components/auth/AdminEmbeds";
 import { AdminInvites } from "@/components/auth/AdminInvites";
+import { AdminMembers } from "@/components/auth/AdminMembers";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -42,6 +43,9 @@ export default async function AdminPage() {
         </div>
         <div className={`${PANEL_CLASS} md:col-span-2`}>
           <AdminBoardCard />
+        </div>
+        <div className={`${PANEL_CLASS} md:col-span-2`}>
+          <AdminMembers />
         </div>
       </div>
 

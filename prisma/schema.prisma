@@ -285,6 +285,13 @@ model Member {
   invitedWith String   @default("")
   createdAt   DateTime @default(now())
   lastSeenAt  DateTime @default(now())
+  /// When the operator shut this account, or null. A banned member's session
+  /// stops working on their next request, and no invite code will let them
+  /// back in; their games and their rating stay exactly as they are, because
+  /// the people they played those games against played them too.
+  bannedAt    DateTime?
+  /// Why, kept for the operator alone. Never shown to the member.
+  bannedNote  String   @default("")
   /// What other players may see, all optional: where they are, and when it is there.
   city        String   @default("")
   country     String   @default("")

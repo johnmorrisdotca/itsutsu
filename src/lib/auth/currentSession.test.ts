@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-const touchMember = vi.fn(async () => undefined);
+const touchMember = vi.fn(async () => ({ banned: false }));
 const verifySession = vi.fn();
 const get = vi.fn(() => ({ value: "token" }));
 
@@ -47,3 +47,17 @@ describe("currentSession touches presence", () => {
     await expect(currentSession()).resolves.toMatchObject({ email: "op@example.com" });
   });
 });
+
+/**
+ * A ban is a fact about the account, not about the cookie: the signed cookie
+ * still says who they are, and the next request is the one that stops working.
+ */
+describe("a shut account", () => {
+  it("has no session, however good its cookie is", async () => {
+    verifySession.mockResolvedValueOnce({ kind: "player", email: "gone@example.com" });
+    touchMember.mockResolvedValueOnce({ banned: true });
+
+    expect(await currentSession()).toBeNull();
+  });
+});
+

@@ -17,7 +17,12 @@ import { SESSION_COOKIE, verifySession, type Session } from "./session";
 export async function currentSession(): Promise<Session | null> {
   const store = await cookies();
   const session = await verifySession(store.get(SESSION_COOKIE)?.value);
-  if (session?.email) await touchMember(session.email).catch(() => undefined);
+  if (session?.email) {
+    // A signed cookie says who they are; whether they are still welcome is a
+    // fact about the account, and it is read here on every request.
+    const seen = await touchMember(session.email).catch(() => ({ banned: false }));
+    if (seen.banned) return null;
+  }
   return session;
 }
 

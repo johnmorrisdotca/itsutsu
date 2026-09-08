@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { revokeInviteCode } from "@/lib/invite/inviteStore";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
 
@@ -109,11 +110,88 @@ export async function fetchProfile(email: string): Promise<MemberProfile | null>
 const TOUCH_EVERY_MS = 60_000;
 
 /** Marks a member as here now. Cheap: one read, and a write at most once a minute. */
-export async function touchMember(email: string): Promise<void> {
+/**
+ * Marks a member as seen, and says whether they are still allowed in.
+ *
+ * Every server-rendered page asks who is here, and this is the read that
+ * answers it, so the ban is checked in the same breath rather than costing a
+ * query of its own. A banned member is "gone" from that moment: the next
+ * request they make is the one that stops working.
+ */
+export async function touchMember(email: string): Promise<{ banned: boolean }> {
   const key = foldEmail(email);
-  const row = await prisma.member.findUnique({ where: { email: key }, select: { lastSeenAt: true } });
-  if (row === null || Date.now() - row.lastSeenAt.getTime() < TOUCH_EVERY_MS) return;
-  await prisma.member.update({ where: { email: key }, data: { lastSeenAt: new Date() } });
+  const row = await prisma.member.findUnique({
+    where: { email: key },
+    select: { lastSeenAt: true, bannedAt: true },
+  });
+  if (row === null) return { banned: false };
+  if (row.bannedAt !== null) return { banned: true };
+  if (Date.now() - row.lastSeenAt.getTime() >= TOUCH_EVERY_MS) {
+    await prisma.member.update({ where: { email: key }, data: { lastSeenAt: new Date() } });
+  }
+  return { banned: false };
+}
+
+/** Whether this address is shut out, for the places that have not read the row already. */
+export async function isBanned(email: string): Promise<boolean> {
+  const row = await prisma.member.findUnique({
+    where: { email: foldEmail(email) },
+    select: { bannedAt: true },
+  });
+  return row?.bannedAt != null;
+}
+
+/** One line of the operator's list of members. */
+export type MemberSummary = Member & {
+  createdAt: string;
+  lastSeenAt: string;
+  bannedAt: string | null;
+  bannedNote: string;
+  invitedWith: string;
+};
+
+/** Every member, most recently seen first. The operator's own view; nobody else sees it. */
+export async function listMembers(limit = 200): Promise<MemberSummary[]> {
+  const rows = await prisma.member.findMany({
+    orderBy: { lastSeenAt: "desc" },
+    take: limit,
+    select: {
+      email: true,
+      name: true,
+      picture: true,
+      createdAt: true,
+      lastSeenAt: true,
+      bannedAt: true,
+      bannedNote: true,
+      invitedWith: true,
+    },
+  });
+  return rows.map((row) => ({
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+    lastSeenAt: row.lastSeenAt.toISOString(),
+    bannedAt: row.bannedAt === null ? null : row.bannedAt.toISOString(),
+  }));
+}
+
+/**
+ * Shuts an account, or opens it again.
+ *
+ * Shutting it also revokes the invite that let them in, so the same person
+ * cannot walk back through the door they came by; opening it again does not
+ * put that invite back, because a code is a thing the operator hands out and
+ * this one has been spent on a decision.
+ */
+export async function setBanned(email: string, banned: boolean, note = ""): Promise<MemberSummary | null> {
+  const key = foldEmail(email);
+  const row = await prisma.member.findUnique({ where: { email: key }, select: { invitedWith: true } });
+  if (row === null) return null;
+  await prisma.member.update({
+    where: { email: key },
+    data: banned ? { bannedAt: new Date(), bannedNote: note.trim().slice(0, 280) } : { bannedAt: null, bannedNote: "" },
+  });
+  if (banned && row.invitedWith !== "") await revokeInviteCode(row.invitedWith).catch(() => undefined);
+  return (await listMembers(1_000)).find((member) => member.email === key) ?? null;
 }
 
 export type ProfileUpdate = Partial<Pick<MemberProfile, "city" | "country" | "timeZone" | "bio" | "showOnline" | "emailNotify">>;
