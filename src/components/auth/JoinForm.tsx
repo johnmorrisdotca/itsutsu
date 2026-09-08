@@ -28,6 +28,7 @@ export function JoinForm({
   googleReady,
   pending,
   initialCode = "",
+  operator = false,
 }: {
   next: string;
   googleReady: boolean;
@@ -35,9 +36,11 @@ export function JoinForm({
   pending: { name: string; email: string } | null;
   /** A code carried in the address, from an invitation link. */
   initialCode?: string;
+  /** The operator's own door, reached by address only: /join?operator=1. */
+  operator?: boolean;
 }) {
   const router = useRouter();
-  const [mode] = useState<"invite" | "admin">("invite");
+  const mode: "invite" | "admin" = operator ? "admin" : "invite";
   const [code, setCode] = useState(initialCode);
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
@@ -107,6 +110,7 @@ export function JoinForm({
             onClick={() => void signIn("google", { callbackUrl: `/api/session/google?next=${next}` })}
             className={`${BUTTON_BASE} ${BUTTON_STRONG} w-full py-2`}
             data-testid="google-signin"
+            data-next={next}
           >
             Continue with Google
           </button>

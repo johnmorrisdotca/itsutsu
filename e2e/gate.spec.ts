@@ -122,23 +122,16 @@ test.describe("the pages that stay open", () => {
      */
     for (const hostile of ["//example.com", "/\\example.com", "https://example.com"]) {
       await page.goto(`/join?next=${encodeURIComponent(hostile)}`);
-      await page.getByTestId("toggle-mode").click();
 
-      const href = await page.getByTestId("google-signin").getAttribute("href");
-      expect(
-        decodeURIComponent(href ?? ""),
-        `${hostile} should not survive into the sign-in link`,
-      ).toContain("next=/");
-      expect(decodeURIComponent(href ?? "")).not.toContain("example.com");
+      const next = await page.getByTestId("google-signin").getAttribute("data-next");
+      expect(next, `${hostile} should not survive into the sign-in destination`).toMatch(/^\/(?![\/\\])/);
+      expect(next ?? "").not.toContain("example.com");
     }
   });
 
   test("keeps a legitimate destination through the door", async ({ page }) => {
     await page.goto("/join?next=%2Fhistory");
-    await page.getByTestId("toggle-mode").click();
-    expect(
-      decodeURIComponent((await page.getByTestId("google-signin").getAttribute("href")) ?? ""),
-    ).toContain("next=/history");
+    expect(await page.getByTestId("google-signin").getAttribute("data-next")).toBe("/history");
   });
 });
 

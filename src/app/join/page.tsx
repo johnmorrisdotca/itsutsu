@@ -52,6 +52,7 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         googleReady={isGoogleAuthConfigured()}
         pending={pending}
         initialCode={typeof params.code === "string" ? params.code.slice(0, 80) : ""}
+        operator={params.operator === "1"}
       />
       <p className="flex items-baseline gap-3 font-mono text-xs text-muted tabular-nums" data-testid="join-version">
         <span className="font-sans font-semibold text-ink-soft">{STAGE}</span>
