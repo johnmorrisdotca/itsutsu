@@ -6,6 +6,10 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { fetchDirectory, fetchLeaders } from "@/lib/rating/players";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
+import { BuddyButton } from "@/components/mine/BuddyButton";
+import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
+import { buddyEmails } from "@/lib/social/buddies";
+import { fetchHereNow, recencyOf } from "@/lib/social/presence";
 import { currentSession } from "@/lib/auth/currentSession";
 
 export const metadata = { title: "Players" };
@@ -20,7 +24,15 @@ const LEADERS = 50;
  * whoever plays as a name plays for its record, which the page says plainly.
  */
 export default async function PlayersPage() {
-  const [leaders, directory, me] = await Promise.all([fetchLeaders(LEADERS), fetchDirectory(200), currentSession()]);
+  const now = new Date();
+  const [leaders, directory, me, here] = await Promise.all([
+    fetchLeaders(LEADERS),
+    fetchDirectory(200),
+    currentSession(),
+    fetchHereNow(now),
+  ]);
+  const buddies = me?.email ? await buddyEmails(me.email) : new Set<string>();
+  const hereNow = here.filter((entry) => entry.recency === "now").length;
 
   return (
     <Page width="standard" gap="gap-6">
@@ -29,6 +41,25 @@ export default async function PlayersPage() {
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
           Players <span className="font-mincho text-sm font-normal opacity-70">対局者</span>
         </h1>
+        <div className="flex flex-col gap-2 rounded-lg border border-rule bg-ivory/60 px-3 py-2" data-testid="here-now">
+          <p className="text-sm">
+            <span className="font-semibold">{hereNow}</span> {hereNow === 1 ? "player" : "players"} here in the last five
+            minutes, <span className="font-semibold">{here.length}</span> in the last half hour.
+            <span className="ml-2 text-xs text-muted">Your time: {now.toUTCString().slice(17, 22)} UTC</span>
+          </p>
+          {here.length > 0 ? (
+            <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+              {here.map((entry) => (
+                <span key={entry.email} className="flex items-center gap-1">
+                  <RecencyMark recency={entry.recency} />
+                  {entry.name || entry.email}
+                  {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
+                </span>
+              ))}
+            </p>
+          ) : null}
+          <RecencyLegend />
+        </div>
         <p className="text-sm text-muted">
           Everyone who has come in, most recently seen first, with the record their name has
           earned. New members are marked for two weeks; challenge one, and the game is in their
@@ -44,6 +75,7 @@ export default async function PlayersPage() {
               <th className="py-1 pr-3">Rating</th>
               <th className="py-1 pr-3">Joined</th>
               <th className="py-1"></th>
+              <th className="py-1"></th>
             </tr>
           </thead>
           <tbody>
@@ -51,6 +83,7 @@ export default async function PlayersPage() {
               <tr key={entry.email} className="border-t border-rule">
                 <td className="py-1.5 pr-3">
                   <span className="flex items-center gap-2">
+                    <RecencyMark recency={recencyOf(new Date(entry.lastSeenAt), now)} />
                     {entry.picture ? (
                       // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
                       <img src={entry.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
@@ -75,6 +108,9 @@ export default async function PlayersPage() {
                   {entry.isNew ? (
                     <span className="ml-2 rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">New 新人</span>
                   ) : null}
+                </td>
+                <td className="py-1.5 text-right">
+                  {me?.email && me.email !== entry.email ? <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} /> : null}
                 </td>
                 <td className="py-1.5 text-right">
                   {me?.email && me.email !== entry.email ? <ChallengeButton email={entry.email} /> : null}

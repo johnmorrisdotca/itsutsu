@@ -3,11 +3,16 @@ import { redirect } from "next/navigation";
 
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { InviteFriends } from "@/components/mine/InviteFriends";
 import { NameForm } from "@/components/mine/NameForm";
+import { ProfileForm } from "@/components/mine/ProfileForm";
+import { BuddyButton } from "@/components/mine/BuddyButton";
+import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
+import { fetchBuddies } from "@/lib/social/buddies";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
-import { findMember } from "@/lib/auth/members";
+import { fetchProfile } from "@/lib/auth/members";
 import { safeDestination } from "@/lib/auth/redirect";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
@@ -27,7 +32,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   const me = await currentSession();
   if (!me?.email) redirect("/join?next=%2Fme");
 
-  const member = await findMember(me.email);
+  const [member, buddies] = await Promise.all([fetchProfile(me.email), fetchBuddies(me.email)]);
   const name = member?.name ?? me.name ?? "";
   const welcome = params.welcome === "1";
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
@@ -61,6 +66,56 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
           </div>
         </div>
         <NameForm initial={name} next={next} />
+      </section>
+
+      {!welcome ? (
+        <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
+          <h2 className="flex items-baseline gap-2 font-semibold">
+            Profile <span className="font-mincho text-xs font-normal opacity-70">自己紹介</span>
+          </h2>
+          <ProfileForm
+            initial={{
+              city: member?.city ?? "",
+              country: member?.country ?? "",
+              timeZone: member?.timeZone ?? "",
+              bio: member?.bio ?? "",
+              showOnline: member?.showOnline ?? true,
+              emailNotify: member?.emailNotify ?? true,
+            }}
+          />
+        </section>
+      ) : null}
+
+      <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="buddies">
+        <h2 className="flex items-baseline gap-2 font-semibold">
+          Buddies <span className="font-mincho text-xs font-normal opacity-70">仲間</span>
+          <span className="text-xs font-normal text-muted">{buddies.length}</span>
+        </h2>
+        {buddies.length === 0 ? (
+          <p className="text-sm text-muted">
+            Nobody yet. Star people on the{" "}
+            <Link href="/players" className="underline underline-offset-4">players</Link> page and they are listed
+            here, most recently seen first.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-1 text-sm">
+            {buddies.map((buddy) => (
+              <li key={buddy.email} className="flex flex-wrap items-center gap-3 border-t border-rule py-1.5 first:border-t-0">
+                <RecencyMark recency={buddy.recency} />
+                <span className="font-medium">{buddy.name || buddy.email}</span>
+                <span className="text-xs text-muted">
+                  {[buddy.city, buddy.country].filter(Boolean).join(", ")}
+                  {buddy.localTime !== null ? ` · ${buddy.localTime} there` : ""}
+                </span>
+                <span className="ml-auto flex gap-2">
+                  <ChallengeButton email={buddy.email} />
+                  <BuddyButton email={buddy.email} isBuddy />
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <RecencyLegend />
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`}>

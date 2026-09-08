@@ -238,4 +238,22 @@ model Member {
   invitedWith String   @default("")
   createdAt   DateTime @default(now())
   lastSeenAt  DateTime @default(now())
+  /// What other players may see, all optional: where they are, and when it is there.
+  city        String   @default("")
+  country     String   @default("")
+  timeZone    String   @default("")
+  bio         String   @default("")
+  /// Listed among who is here, and mailed when it is their move.
+  showOnline  Boolean  @default(true)
+  emailNotify Boolean  @default(true)
+}
+
+/// A member's buddy list: one row per pair, owner to buddy, by email.
+model Buddy {
+  owner     String
+  buddy     String
+  createdAt DateTime @default(now())
+
+  @@id([owner, buddy])
+  @@index([buddy])
 }

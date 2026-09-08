@@ -12,7 +12,7 @@ import { getServerSession } from "next-auth";
 
 import { isOperatorLogin } from "@/lib/auth/admin";
 import { authOptions } from "@/lib/auth/google";
-import { admitMember, foldEmail } from "@/lib/auth/members";
+import { admitMember, foldEmail, touchMember } from "@/lib/auth/members";
 import {
   ADMIN_SESSION_DAYS,
   PLAYER_SESSION_DAYS,
@@ -50,6 +50,8 @@ export async function GET(request: Request) {
     ?.slice(SESSION_COOKIE.length + 1);
 
   const session = await verifySession(cookie);
+  // Every page asks who is here; that is also how the site knows who is here.
+  if (session?.email) await touchMember(session.email).catch(() => undefined);
   return NextResponse.json(
     {
       signedIn: session !== null,

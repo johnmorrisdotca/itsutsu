@@ -38,6 +38,8 @@ export async function GET(request: Request) {
   const picture = google?.user?.image ?? "";
 
   if (isAdminEmail(email)) {
+    // The operator is a member too: listed, with a profile, like everyone else.
+    await admitMember({ email, name, picture });
     return grant(
       { kind: "admin", email: foldEmail(email), name, picture, exp: expiryInDays(ADMIN_SESSION_DAYS) },
       ADMIN_SESSION_DAYS,

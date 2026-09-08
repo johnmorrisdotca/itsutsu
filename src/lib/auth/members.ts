@@ -58,3 +58,36 @@ export async function renameMember(email: string, name: string): Promise<Member 
     select: { email: true, name: true, picture: true },
   });
 }
+
+/** The profile a member keeps: what others may see, and how they want to be reached. */
+export type MemberProfile = Member & {
+  city: string;
+  country: string;
+  timeZone: string;
+  bio: string;
+  showOnline: boolean;
+  emailNotify: boolean;
+  createdAt: Date;
+  lastSeenAt: Date;
+};
+
+export async function fetchProfile(email: string): Promise<MemberProfile | null> {
+  return prisma.member.findUnique({ where: { email: foldEmail(email) } });
+}
+
+/** How often "last seen" is written: once a minute is plenty for a who's-here list. */
+const TOUCH_EVERY_MS = 60_000;
+
+/** Marks a member as here now. Cheap: one read, and a write at most once a minute. */
+export async function touchMember(email: string): Promise<void> {
+  const key = foldEmail(email);
+  const row = await prisma.member.findUnique({ where: { email: key }, select: { lastSeenAt: true } });
+  if (row === null || Date.now() - row.lastSeenAt.getTime() < TOUCH_EVERY_MS) return;
+  await prisma.member.update({ where: { email: key }, data: { lastSeenAt: new Date() } });
+}
+
+export type ProfileUpdate = Partial<Pick<MemberProfile, "city" | "country" | "timeZone" | "bio" | "showOnline" | "emailNotify">>;
+
+export async function updateProfile(email: string, update: ProfileUpdate): Promise<void> {
+  await prisma.member.update({ where: { email: foldEmail(email) }, data: update });
+}
