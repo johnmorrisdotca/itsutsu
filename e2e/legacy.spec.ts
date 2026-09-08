@@ -11,10 +11,12 @@ test.describe("a legacy record's games link to what they are", () => {
     await page.goto("/players/incognito");
     const detail = page.getByTestId("legacy-detail").first();
 
-    // Go-Moku maps to Freestyle — the rule says it must be a real link.
-    const goMoku = detail.getByRole("link", { name: "Go-Moku" });
+    // Go-Moku maps to our Gomoku (internally still the "freestyle" variant) —
+    // exact, since "Pro Go-Moku" is also a link a few rows down and would
+    // otherwise match too.
+    const goMoku = detail.getByRole("link", { name: "Go-Moku", exact: true });
     await expect(goMoku).toBeVisible();
-    await expect(goMoku).toHaveAttribute("href", "/rules/freestyle");
+    await expect(goMoku).toHaveAttribute("href", "/rules/gomoku");
 
     // Backgammon has no Itsutsu equivalent — it must render, but not as a link.
     await expect(detail.getByText("Backgammon", { exact: true })).toBeVisible();
