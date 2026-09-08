@@ -1,5 +1,5 @@
 import { GAME_STATUS, STARTING_DISCS, STONES, VARIANT_SPECS, WIN_REASONS } from "../gomoku.constants";
-import type { Cell, GameSettings, GameState, Move, Point, Stone } from "../gomoku.types";
+import type { Cell, GameSettings, GameState, Move, Point, Stone, StartingDiscs } from "../gomoku.types";
 import { won } from "./mechanics";
 
 /**
@@ -39,10 +39,16 @@ export function centreSquares(size: number): Point[] {
   ];
 }
 
+/** How the centre four begin: the players' choice in the settings, else the game's rule. */
+export function openingFor(settings: GameSettings): StartingDiscs {
+  const spec = VARIANT_SPECS[settings.variant];
+  if (!spec.flips) return STARTING_DISCS.none;
+  return settings.openingDiscs ?? spec.startingDiscs;
+}
+
 /** The fixed opening: white top-left and bottom-right, black the other diagonal. */
 export function startingDiscs(settings: GameSettings): { point: Point; stone: Stone }[] {
-  const spec = VARIANT_SPECS[settings.variant];
-  if (!spec.flips || spec.startingDiscs !== STARTING_DISCS.fixed) return [];
+  if (openingFor(settings) !== STARTING_DISCS.fixed) return [];
   const [a, b, c, d] = centreSquares(settings.size);
   return [
     { point: a, stone: STONES.white },
@@ -54,8 +60,7 @@ export function startingDiscs(settings: GameSettings): { point: Point; stone: St
 
 /** Classic reversi: the first four discs are laid by the players, in the centre, with no flipping. */
 export function inLayingPhase(state: GameState): boolean {
-  const spec = VARIANT_SPECS[state.settings.variant];
-  if (!spec.flips || spec.startingDiscs !== STARTING_DISCS.laid) return false;
+  if (openingFor(state.settings) !== STARTING_DISCS.laid) return false;
   return centreSquares(state.settings.size).some(
     (point) => at(state.board, state.settings.size, point) === null,
   );

@@ -12,21 +12,28 @@ export function BoardLines({
   size,
   theme,
   quadrantSize = null,
+  cells = false,
 }: {
   size: number;
   theme: BoardThemeTokens;
   /** Draws heavier lines between quadrants of this side, for the twist games. */
   quadrantSize?: number | null;
+  /** Rules the squares around the points instead of the lines through them: Othello, drop games. */
+  cells?: boolean;
 }) {
   const dividers =
     quadrantSize !== null && quadrantSize > 0 && size % quadrantSize === 0
       ? Array.from({ length: size / quadrantSize - 1 }, (_, i) => (i + 1) * quadrantSize)
       : [];
-  const indices = Array.from({ length: size }, (_, i) => i);
-  const first = 0.5;
-  const last = size - 0.5;
+  // On the lines there are `size` rules through the points at i+0.5; in the
+  // squares there are `size + 1` rules along the edges at i.
+  const count = cells ? size + 1 : size;
+  const indices = Array.from({ length: count }, (_, i) => i);
+  const offset = cells ? 0 : 0.5;
+  const first = offset;
+  const last = size - offset;
   const widthFor = (i: number) =>
-    i === 0 || i === size - 1 ? EDGE_LINE_WIDTH : LINE_WIDTH;
+    i === 0 || i === count - 1 ? EDGE_LINE_WIDTH : LINE_WIDTH;
 
   return (
     <svg
@@ -38,9 +45,9 @@ export function BoardLines({
         <line
           key={`h${i}`}
           x1={first}
-          y1={i + 0.5}
+          y1={i + offset}
           x2={last}
-          y2={i + 0.5}
+          y2={i + offset}
           strokeWidth={widthFor(i)}
           stroke={theme.line}
         />
@@ -48,9 +55,9 @@ export function BoardLines({
       {indices.map((i) => (
         <line
           key={`v${i}`}
-          x1={i + 0.5}
+          x1={i + offset}
           y1={first}
-          x2={i + 0.5}
+          x2={i + offset}
           y2={last}
           strokeWidth={widthFor(i)}
           stroke={theme.line}
@@ -62,7 +69,7 @@ export function BoardLines({
           <line x1={first} y1={at} x2={last} y2={at} strokeWidth={EDGE_LINE_WIDTH * 1.5} stroke={theme.frame} />
         </g>
       ))}
-      {(STAR_POINTS[size] ?? []).map((point) => (
+      {(cells ? [] : (STAR_POINTS[size] ?? [])).map((point) => (
         <circle
           key={`s${point.row}-${point.col}`}
           cx={point.col + 0.5}

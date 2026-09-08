@@ -80,6 +80,7 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
           stoneSet: options.stoneSet,
           showCoordinates: options.showCoordinates,
           showMoveNumbers: false,
+          grid: "auto",
         }}
         marks={session.marks}
         onPlay={actions.play}

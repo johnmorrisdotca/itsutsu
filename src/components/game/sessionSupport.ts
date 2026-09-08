@@ -81,6 +81,8 @@ export function nextGameSettings(
   if (next.variant !== undefined && next.winLength === undefined) {
     settings.winLength = VARIANT_SPECS[next.variant].winLength ?? WIN_LENGTH;
   }
+  // A choice about the centre discs belongs to the game it was made in.
+  if (next.variant !== undefined && next.openingDiscs === undefined) delete settings.openingDiscs;
   return settings;
 }
 

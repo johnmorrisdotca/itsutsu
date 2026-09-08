@@ -8,10 +8,12 @@ import {
   OBSTACLE_LAYOUTS,
   OPENING_RULES,
   RULE_VARIANT_LIST,
+  STARTING_DISCS,
   VARIANT_SPECS,
   WIN_LENGTHS,
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
+import { openingFor } from "@/lib/gomoku/rules/flips";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { availableOpenings } from "@/lib/gomoku/engine";
@@ -49,6 +51,9 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
   const reading = locks.reading === null;
   const canChooseOpener =
     spec.allowFirstPlayerChoice && opening === OPENING_RULES.free;
+  // Rules are set before the first stone and kept until the game is over.
+  const begun = session.state.moves.length > 0;
+  const centrePlaced = openingFor(settings) === STARTING_DISCS.fixed;
 
   return (
     <section className="flex flex-col gap-4">
@@ -59,6 +64,13 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         <GameBrowserButton session={session} actions={actions} />
       </div>
 
+      {begun ? (
+        <p className="text-xs text-muted" data-testid="rules-locked">
+          {GAME_COPY.rulesLocked}
+        </p>
+      ) : null}
+
+      <fieldset disabled={begun} className="flex min-w-0 flex-col gap-4">
       <Field label="Board" hint={locks.size ?? undefined}>
         <Select
           value={size}
@@ -171,6 +183,20 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
+      {spec.flips ? (
+        <div data-testid="centre-discs">
+          <Toggle
+            label={GAME_COPY.centreDiscs.label}
+            checked={centrePlaced}
+            onChange={(next) =>
+              actions.reset({ openingDiscs: next ? STARTING_DISCS.fixed : STARTING_DISCS.laid })
+            }
+            hint={GAME_COPY.centreDiscsHint}
+          />
+        </div>
+      ) : null}
+      </fieldset>
+
       <details className="group flex flex-col gap-3">
         <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase select-none hover:text-ink">
           {GAME_COPY.advanced.label} {GAME_COPY.advanced.kanji}
@@ -179,6 +205,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </summary>
 
         <div className="mt-3 flex flex-col gap-3">
+          <fieldset disabled={begun} className="flex min-w-0 flex-col gap-3">
           <HandicapPanel session={session} actions={actions} />
 
           <Toggle
@@ -206,6 +233,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             onChange={(next) => actions.reset({ allowResize: next })}
             hint={GAME_COPY.resizeHint}
           />
+          </fieldset>
 
           <Field
             label="Clock"

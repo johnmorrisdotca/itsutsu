@@ -426,7 +426,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
   classicReversi: {
     label: "Classic Reversi",
     kanji: "古式リバーシ",
-    tagline: "The 1880s rule: the players lay the first four discs themselves.",
+    tagline: "The 1880s rule: the players lay the first four discs themselves. Any flipping game here can be set up either way.",
     origin: "The English parlour game before the fixed opening: the centre four were placed by the players, in turn, so two openings were possible.",
     rules: [
       "The board starts empty. The first four discs are laid in the centre four squares, one a turn, without turning anything.",

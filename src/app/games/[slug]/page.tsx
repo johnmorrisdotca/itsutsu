@@ -5,7 +5,8 @@ import { notFound } from "next/navigation";
 import { GameViewClient } from "@/components/game/GameViewClient";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
+import { siblingsOf } from "@/lib/gomoku/families";
+import { gamePath, rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
@@ -23,6 +24,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
+  const siblings = siblingsOf(variant);
 
   return (
     <Page width="wide">
@@ -37,6 +39,20 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           </Link>
           .
         </p>
+        {siblings !== null && siblings.games.length > 0 ? (
+          <p data-testid="family-links">
+            Also in {siblings.family.title}{" "}
+            <span className="font-mincho">{siblings.family.kanji}</span>:{" "}
+            {siblings.games.map((game, i) => (
+              <span key={game}>
+                {i > 0 ? " · " : ""}
+                <Link href={gamePath(game)} className="underline underline-offset-4">
+                  {RULE_VARIANT_DISPLAY[game].label}
+                </Link>
+              </span>
+            ))}
+          </p>
+        ) : null}
       </footer>
   </Page>
   );

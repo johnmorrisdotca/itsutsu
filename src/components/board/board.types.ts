@@ -2,6 +2,12 @@ import type { Cell, GameState, PieceCell, Point, Stone } from "@/lib/gomoku/gomo
 import type { BOARD_THEMES, STONE_SETS } from "./Board.constants";
 
 export type BoardTheme = keyof typeof BOARD_THEMES;
+
+/**
+ * Where a stone sits: on the crossings, as in go and gomoku, or inside the
+ * squares, as in Othello and the drop games. `auto` lets each game choose.
+ */
+export type GridStyle = "auto" | "lines" | "cells";
 export type StoneSet = keyof typeof STONE_SETS;
 
 /**
@@ -16,6 +22,7 @@ export type Appearance = {
   showCoordinates: boolean;
   /** Move numbers printed on the stones, as in a published game record. */
   showMoveNumbers: boolean;
+  grid: GridStyle;
 };
 
 /** The CSS custom properties a board theme sets on its container. */

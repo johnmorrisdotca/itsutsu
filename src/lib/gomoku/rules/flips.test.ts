@@ -117,3 +117,22 @@ describe("reversi", () => {
     expect(legalPoints(game)).toHaveLength(4);
   });
 });
+
+describe("the centre discs as a setting", () => {
+  it("lets reversi start empty, with the players laying the first four", () => {
+    const game = createGame({ variant: "reversi", openingDiscs: "laid" });
+    expect(game.board.every((cell) => cell === null)).toBe(true);
+    expect(legalPoints(game)).toHaveLength(4);
+  });
+
+  it("lets classic reversi start with the centre placed", () => {
+    const game = createGame({ variant: "classicReversi", openingDiscs: "fixed" });
+    expect(game.board.filter((cell) => cell !== null)).toHaveLength(4);
+    expect(legalPoints(game)).toHaveLength(4);
+  });
+
+  it("means nothing outside the flipping games", () => {
+    const game = createGame({ variant: "freestyle", openingDiscs: "fixed" });
+    expect(game.board.every((cell) => cell === null)).toBe(true);
+  });
+});

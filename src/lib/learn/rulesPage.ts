@@ -114,6 +114,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
         ? "The board starts empty. The first four discs are laid in the centre four squares, one a turn, turning nothing."
         : "The centre four squares start with two discs of each colour, on the diagonals.",
     );
+    play.push("The set-up lets a game start the other way: centre discs placed, or laid by the players.");
     play.push("A disc goes only where it brackets one or more of the other colour in a straight run — any direction — with one of your own at the far end. Every bracketed run turns to your colour.");
     play.push("A colour with nowhere to go passes, and the other colour plays again. You may not pass while you have a move.");
     play.push("When neither colour can move, the discs are counted.");

@@ -2,6 +2,7 @@ import type {
   Appearance,
   BoardMarkKind,
   BoardThemeTokens,
+  GridStyle,
   StoneSetTokens,
 } from "./board.types";
 
@@ -122,11 +123,19 @@ export const STONE_SETS = {
   },
 } as const satisfies Record<string, StoneSetTokens>;
 
+/** How each grid style is named in the set-up. */
+export const GRID_STYLES: Record<GridStyle, { label: string; kanji: string; hint: string }> = {
+  auto: { label: "As the game is played", kanji: "本式", hint: "Five-in-a-row games on the lines; Othello and the drop games in the squares." },
+  lines: { label: "On the lines", kanji: "碁盤", hint: "Stones on the crossings, as on a go board." },
+  cells: { label: "In the squares", kanji: "升目", hint: "Stones inside the squares, as on a chess or Othello board." },
+};
+
 export const DEFAULT_APPEARANCE: Appearance = {
   boardTheme: "kaya",
   stoneSet: "classic",
   showCoordinates: true,
   showMoveNumbers: false,
+  grid: "auto",
 };
 
 /** SVG stroke widths in board units (one intersection spacing = 1). */

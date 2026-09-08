@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
+import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
@@ -9,49 +10,9 @@ import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
 import { PANEL_CLASS, PANEL_LINK_CLASS } from "@/components/ui/ui.constants";
 import { gamePath, rulesPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 export const metadata = { title: "Games" };
 
-/** The games grouped the way a newcomer should meet them: one first, then families. */
-const FAMILIES: { title: string; kanji: string; blurb: string; games: RuleVariant[] }[] = [
-  {
-    title: "Five in a row",
-    kanji: "五目",
-    blurb: "The classic and its tournament forms. Start with Freestyle; the rest tighten the rules.",
-    games: ["freestyle", "standard", "renju", "omok", "caro", "connect6", "misereFive"],
-  },
-  {
-    title: "Captures",
-    kanji: "取り",
-    blurb: "Five in a row, or take enough of the other side's stones.",
-    games: ["ninuki", "sannuki"],
-  },
-  {
-    title: "Drops",
-    kanji: "落とし",
-    blurb: "Stones fall to the bottom of their column. Quick, and good on a phone.",
-    games: ["dropFour", "ringDrop", "holeDrop", "hotDrop", "clearDrop", "giveawayDrop", "edgeDrop", "wormDrop"],
-  },
-  {
-    title: "Pieces and twists",
-    kanji: "駒と回し",
-    blurb: "Our own games: lay dominoes or blocks from a shared queue, or turn the board after every stone.",
-    games: ["dominoFive", "blockFive", "twistFive", "twistFour"],
-  },
-  {
-    title: "Flips",
-    kanji: "反転",
-    blurb: "Nothing is yours until the end. Bracket a run of the other colour and it turns.",
-    games: ["reversi", "classicReversi", "antiReversi", "miniReversi"],
-  },
-  {
-    title: "Small boards",
-    kanji: "小盤",
-    blurb: "Games you can read to the end, and games where the trick is what you must not do.",
-    games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker"],
-  },
-];
 
 /**
  * The games: where a person lands after joining. One plain choice first, so
@@ -115,7 +76,7 @@ export default function LobbyPage() {
           Everything below is five in a row with one idea changed. Open a family to see
           its games; each one has a rules page and a place in the learning shelf.
         </p>
-        {FAMILIES.map((family) => (
+        {GAME_FAMILIES.map((family) => (
           <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family">
             <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3">
               <span className="flex items-baseline gap-2 font-semibold">

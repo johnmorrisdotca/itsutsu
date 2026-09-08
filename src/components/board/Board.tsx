@@ -115,6 +115,10 @@ export function Board({
   const spec = VARIANT_SPECS[state.settings.variant];
   const theme = BOARD_THEMES[appearance.boardTheme];
   const stones = STONE_SETS[appearance.stoneSet];
+  // Othello and the drop games are played in the squares; the rest on the lines.
+  const cells =
+    appearance.grid === "cells" ||
+    (appearance.grid === "auto" && (spec.flips || spec.placement !== PLACEMENTS.free));
 
   const last = lastMove(state);
   const lastIndex = last === null ? -1 : indexOf(size, last);
@@ -203,7 +207,7 @@ export function Board({
           boxShadow: `0 0 0 0.4rem ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)`,
         }}
       >
-        <BoardLines size={size} theme={theme} quadrantSize={spec.quadrantSize} />
+        <BoardLines size={size} theme={theme} quadrantSize={spec.quadrantSize} cells={cells} />
         <div
           className="absolute inset-0 grid"
           style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}

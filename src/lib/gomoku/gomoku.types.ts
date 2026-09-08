@@ -359,6 +359,11 @@ export type GameSettings = {
   capturesToWin: number;
   firstPlayer: FirstPlayer;
   obstacles: ObstacleLayout;
+  /**
+   * In the flipping games, whether the centre four discs start placed or are
+   * laid by the players. Absent, the game's own rule applies.
+   */
+  openingDiscs?: StartingDiscs;
   /** Taking a move back. Off by default in the stricter variants. */
   allowUndo: boolean;
   /** Burning a turn on a corner stone rather than playing where it matters. */
