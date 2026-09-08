@@ -72,6 +72,8 @@ export type LegacyPlayer = {
   sourceId?: string;
   joined?: string;
   lastActive?: string;
+  /** The days a week they set aside from the site, as their own profile stated it — a fact about a life, not a game setting. */
+  daysOff?: string;
   /** A line of context, sourced rather than invented — a fact worth keeping, not a guess at how someone felt. */
   note?: string;
   /** Remarks left on something this person posted at the source, kept as found. */

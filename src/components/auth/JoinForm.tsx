@@ -7,7 +7,6 @@ import { useState, type FormEvent } from "react";
 
 import {
   BUTTON_BASE,
-  BUTTON_QUIET,
   BUTTON_STRONG,
   INPUT_CLASS,
   PANEL_CLASS,
@@ -50,6 +49,10 @@ export function JoinForm({
   // who has one sees only the button; the code stays out of the way until
   // they say they need it — or until a code arrived with the link.
   const [showInviteCode, setShowInviteCode] = useState(initialCode !== "");
+  // Whether there is anything on the page for "Enter" to submit — the same
+  // condition the invite-code field itself shows under, plus the operator's
+  // door, which always has its own fields.
+  const showSubmit = mode === "admin" || !googleReady || pending !== null || showInviteCode;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -190,21 +193,23 @@ export function JoinForm({
         </p>
       ) : null}
 
-      <div className="flex items-center justify-between gap-3">
-        <button
-          type="submit"
-          disabled={busy}
-          className={`${BUTTON_BASE} ${googleReady && pending === null ? BUTTON_QUIET : BUTTON_STRONG}`}
-          data-testid="join-submit"
-        >
-          {busy ? "Checking…" : "Enter"}
-        </button>
-        {pending !== null ? (
-          <Link href="/api/auth/signout" className="text-xs text-muted underline underline-offset-4">
-            Not you? Use another account
-          </Link>
-        ) : null}
-      </div>
+      {showSubmit ? (
+        <div className="flex flex-col items-center gap-3">
+          <button
+            type="submit"
+            disabled={busy}
+            className={`${BUTTON_BASE} ${BUTTON_STRONG} w-full py-2`}
+            data-testid="join-submit"
+          >
+            {busy ? "Checking…" : "Enter"}
+          </button>
+          {pending !== null ? (
+            <Link href="/api/auth/signout" className="text-xs text-muted underline underline-offset-4">
+              Not you? Use another account
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
     </form>
   );
 }

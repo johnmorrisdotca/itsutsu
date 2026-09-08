@@ -168,6 +168,7 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
     sourceId: "66756",
     joined: "2011-06-25",
     lastActive: "2026-09-08",
+    daysOff: "Saturday and Sunday",
     note: "Reversi here is the same game as Flipversi on ItsYourTurn — one game, two sites' names for it. GoldToken's own rating averaged 1689 across every game; a different scale from Itsutsu's Elo, not converted or compared.",
     relatedSlugs: ["incognito"],
     headToHead: [
@@ -255,6 +256,7 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
     sourceId: "24612",
     joined: "2003-03-13",
     lastActive: "2020-11-10",
+    daysOff: "Saturday and Sunday",
     note: "A profile photo he posted, 27 May 2012 — his own reply to a comment on it says it was taken in Japan, a long time before.",
     comments: [
       { text: "That's a beautiful photograph!", by: "Twit-twoo", at: "2013-06-04 12:47" },
