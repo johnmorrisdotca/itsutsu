@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { HOGETSU, ORIGINS, OTHELLO_START, PENTE_CAPTURE, SOLVED } from "@/components/about/figures";
 import { gamePath } from "@/lib/gomoku/slugs";
+import { CONNECT_FOUR_SECTION, OPENINGS_SECTION, RATINGS_SECTION, SITES_SECTION } from "./about.more";
 
 /** A link to a game’s own page, from prose. */
 function Game({ variant, children }: { variant: string; children: ReactNode }) {
@@ -35,7 +36,7 @@ export type AboutSection = {
  * and hedged where the record is thin; a game that is a thousand years old
  * has a thousand years of people arguing about where it came from.
  */
-export const ABOUT_SECTIONS: AboutSection[] = [
+const BASE_SECTIONS: AboutSection[] = [
   {
     title: "Where this comes from",
     kanji: "由来",
@@ -193,28 +194,20 @@ export const ABOUT_SECTIONS: AboutSection[] = [
       </>,
     ],
   },
-  {
-    title: "Sites worth knowing",
-    kanji: "先達",
-    paragraphs: [
-      <>
-        These are the places this one learned from, and they are still there.{" "}
-        <Out href="https://www.itsyourturn.com/">ItsYourTurn</Out> has run turn-based games by email since the late 1990s
-        and is where the founder’s family played for years. <Out href="https://www.goldtoken.com/">GoldToken</Out> came
-        soon after with a larger catalogue, tournaments and a community that felt like a club.{" "}
-        <Out href="https://www.littlegolem.net/">Little Golem</Out> is the connoisseur’s turn-based site — Hex, Go,
-        gomoku and dozens of abstracts, with championships that some of the world’s strongest players enter;
-        the founder’s father played there for years.{" "}
-        <Out href="https://pente.org/">Pente.org</Out> has kept ranked Pente alive online for decades, and{" "}
-        <Out href="https://www.playok.com/">PlayOK</Out> — many still call it Kurnik — is where you go for a live game
-        of gomoku against a stranger at two in the morning.
-      </>,
-      <>
-        If you have a code, the door is <Link href="/join" className="font-medium text-ink underline underline-offset-4">here</Link>.
-        If you do not, the <Link href="/rules" className="font-medium text-ink underline underline-offset-4">rules</Link> and
-        the <Link href="/learn" className="font-medium text-ink underline underline-offset-4">learning shelf</Link> are open
-        to everyone.
-      </>,
-    ],
-  },
 ];
+
+/** The story in reading order: origins, the openings and the solved game, the heritage, Othello, the numbers, the elders. */
+export const ABOUT_SECTIONS: AboutSection[] = (() => {
+  const after = (title: string, ...added: AboutSection[]) => {
+    const at = BASE_SECTIONS.findIndex((section) => section.title === title);
+    return at === -1 ? [] : added;
+  };
+  const out: AboutSection[] = [];
+  for (const section of BASE_SECTIONS) {
+    out.push(section);
+    if (section.title === "Five stones, and where they came from") out.push(...after(section.title, OPENINGS_SECTION, CONNECT_FOUR_SECTION));
+    if (section.title === "Ladders, ratings and tournaments") out.push(...after(section.title, RATINGS_SECTION));
+  }
+  out.push(SITES_SECTION);
+  return out;
+})();
