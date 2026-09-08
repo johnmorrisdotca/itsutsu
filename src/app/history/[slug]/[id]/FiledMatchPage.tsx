@@ -65,7 +65,9 @@ function FiledMatch({ game, move, rematch }: { game: GameDetail; move: number; r
             {black} <span className="px-1 text-muted">vs</span> {white}
           </h1>
           <p className="text-sm text-muted">
-            {new Date(game.playedAt).toLocaleString()} · {game.size}×{game.size} ·{" "}
+            Started {new Date(game.playedAt).toLocaleString()}
+            {game.lastMoveAt !== null ? ` · finished ${new Date(game.lastMoveAt).toLocaleString()}` : ""} ·{" "}
+            {game.size}×{game.size} ·{" "}
             {variantLabel(game.variant)}{" "}
             · {result.label} <span className="font-mincho">{result.kanji}</span>
           </p>
