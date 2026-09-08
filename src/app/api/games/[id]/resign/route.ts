@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NO_STORE, readJson, serverError } from "@/lib/api/apiResponse";
-import { resignGame } from "@/lib/history/liveGame";
+import { resignGame } from "@/lib/history/liveGameEndings";
 import { seatCookieName } from "@/lib/history/seatCookie";
 
 const bodySchema = z.object({ token: z.string().min(1).max(128) }).partial();

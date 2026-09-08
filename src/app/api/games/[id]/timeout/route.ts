@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
-import { claimTimeout } from "@/lib/history/liveGame";
+import { claimTimeout } from "@/lib/history/liveGameEndings";
 
 const claimSchema = z.object({ token: z.string().min(1).max(128) });
 
