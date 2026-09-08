@@ -70,6 +70,31 @@ that is missing any of them fails the build rather than shipping quietly.
 TypeScript already forces the `VARIANT_SPECS` and `RULE_VARIANT_DISPLAY` rows, because
 both are `Record<RuleVariant, …>`. The gate covers what types cannot see.
 
+### Board Gate
+
+The features board at `/backlog` is where a request lives once the conversation that
+raised it is over: what was asked for, what is planned, what is being built, what is in.
+A board is only worth taking work from if every line on it says something, so the same
+checks are made in three places and stated once.
+
+- **The rules are pure and in one module.** `src/lib/backlog/backlog.ts` decides what a
+  usable request is (`draftProblems`), what may follow what (`canMove`, `movesFrom`), and
+  how a board is filtered and ordered. It returns new items and never writes to the one
+  it was given, the way the engine does. `backlogStore.ts` only reads and writes.
+- **A status move is checked, not trusted.** The row's select is built from `movesFrom`,
+  and `PATCH /api/backlog/:id` refuses anything `canMove` rejects with a 422 — so a
+  proposal cannot reach `done` without having been built, whatever calls the API.
+- **The gate runs in `pnpm test:unit`.** `src/lib/backlog/backlog.coverage.test.ts` fails
+  the build when a status cannot be left or reached, when a status or kind is missing its
+  label, kanji or blurb, or when a seeded row is not a request somebody could act on — a
+  title too short to mean anything, no detail, nobody named as having asked.
+- **Seeding is idempotent and once-only.** `BACKLOG_SEED` carries its own keys and is
+  written only into an empty board, so an item somebody dropped never comes back on the
+  next render.
+
+Whether work is *taken* from the board is the site owner's rule to make, not this file's.
+The gate only guarantees the board is worth making that rule out of.
+
 ## Stack
 
 - Next.js 16 (App Router), React 19, TypeScript 5, Tailwind v4.

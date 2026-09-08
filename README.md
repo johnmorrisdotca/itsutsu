@@ -173,6 +173,23 @@ leaders and `/players/<name>` shows a profile: rating, tier, won-lost-drawn
 overall and by game, and recent games with replays. Ladders and tournaments
 are not built; they are the next thing on the list.
 
+### The backlog
+
+`/backlog` is where a request lives once the conversation that raised it is
+over. Every feature asked for and every fault reported is a row: a title, the
+longer telling, who asked, and where it stands — **proposed** 提案 (asked for),
+**planned** 予定 (agreed), **building** 作業中, **done** 完了, or **dropped**
+見送り (considered and passed over, kept so the answer need not be given
+twice). Anyone signed in can add to it and move an item along.
+
+Which moves are allowed is a table, not a convention: a proposal cannot reach
+done without having been built, and a dropped item comes back as a proposal
+rather than as work. `src/lib/backlog/backlog.ts` holds that table and every
+other decision, purely; the row's select is built from it and
+`PATCH /api/backlog/:id` refuses anything it rejects.
+`backlog.coverage.test.ts` is the gate — see AGENTS.md, "Board Gate". The
+starter set in `backlog.seed.data.ts` is written once, into an empty board.
+
 ### Notes, messages and deadlines
 
 **Private notes** live under the record on the local board and beside a
@@ -380,6 +397,7 @@ disagree; a move list replayed through the engine cannot.
 | `src/lib/gomoku/rules/` | The variant rules the engine consults: lines, forbidden shapes, captures, turns, openings. |
 | `src/lib/clock/` | Byoyomi clocks. Pure, and driven by the wall clock rather than tick counts. |
 | `src/lib/history/` | Reading and writing game history. |
+| `src/lib/backlog/` | The features board: its rules, its copy, its starter set. Pure, apart from `backlogStore.ts`. |
 | `src/components/board/` | The board and its themes. |
 | `src/components/game/` | The local game, its session, settings and record. |
 | `src/components/live/` | Games played from two devices. |

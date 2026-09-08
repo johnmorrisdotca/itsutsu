@@ -11,6 +11,7 @@ export const NAV = [
   { href: "/rules", label: "Rules" },
   { href: "/learn", label: "Learn" },
   { href: "/players", label: "Players" },
+  { href: "/backlog", label: "Backlog", kanji: "積み残し" },
   { href: "/about", label: "About" },
 ] as const;
 

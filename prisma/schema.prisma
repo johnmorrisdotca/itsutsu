@@ -323,3 +323,68 @@ model Buddy {
   @@id([owner, buddy])
   @@index([buddy])
 }
+
+/// Where a wanted thing stands.
+///
+/// The five are the questions actually asked about a request, in order: has
+/// anyone asked for it, has it been agreed, is somebody on it, is it in, was
+/// it decided against. `dropped` is a status rather than a deletion, because
+/// "we talked about that and said no" is the answer a board most often has to
+/// give twice.
+enum BacklogStatus {
+  proposed
+  planned
+  building
+  done
+  dropped
+}
+
+/// What sort of thing was asked for. A board that mixes "add Go" with "the
+/// move scrubber skips a move" reads as noise unless every line says which
+/// of the two it is.
+enum BacklogKind {
+  feature
+  fix
+  chore
+}
+
+/// One thing somebody asked for.
+///
+/// Until this table there was no such thing as a request here: features and
+/// faults were raised in conversation and lived only there, so the answer to
+/// "what did I ask for" was whoever had scrolled back furthest. A row is the
+/// request itself — addressable, countable, and still there next week.
+model BacklogItem {
+  id  String @id @default(cuid())
+  /// A stable kebab-case name, unique across the board. It is what makes
+  /// seeding idempotent — the starter set carries its own keys, so seeding a
+  /// database that already holds them changes nothing — and it gives a commit
+  /// message or a chat something short to cite.
+  key String @unique
+
+  title  String
+  /// The longer telling: what was asked for, and anything settled since. May
+  /// be empty; a one-line request is still a request.
+  detail String @default("")
+
+  kind   BacklogKind   @default(feature)
+  status BacklogStatus @default(proposed)
+
+  /// Who asked, as free text. Requests arrive in chat, in a game, or from the
+  /// owner himself, and most have no account behind them; a name here is worth
+  /// more than a relation that would usually be null.
+  askedBy String  @default("")
+  /// The member who typed the row in, by email, when a signed-in one did.
+  addedBy String?
+
+  createdAt DateTime @default(now())
+  /// When the status last changed — deliberately not "when the row was last
+  /// written". The board is read as "what has moved", and fixing a typo in a
+  /// title is not movement, so @updatedAt would answer a different question.
+  movedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The board's own ordering: one status at a time, most recently moved first.
+  @@index([status, movedAt])
+  @@index([createdAt])
+}

@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.53.0
+- A backlog 積み残し: every feature asked for and every fault reported on one page, with what has become of each. Anyone who is in can add to it, and move an item from proposed to planned, building, done or dropped.
+
 ## 0.52.0
 - Every member has a page from the day they join, so every name the site prints leads to the person; a test now walks the lists and fails if any name is printed without a link
 - On a replay the move list hangs from the bottom of the column, level with the board
