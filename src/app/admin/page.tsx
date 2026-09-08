@@ -24,6 +24,18 @@ export const dynamic = "force-dynamic";
  * rather than a refusal, so the page gives nothing away about existing. The
  * panels check the session again on every request they make.
  */
+/** One part of the operator's page, under a heading that says what it is for. */
+function Section({ title, kanji, children }: { title: string; kanji: string; children: React.ReactNode }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+        {title} <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{kanji}</span>
+      </h2>
+      {children}
+    </section>
+  );
+}
+
 export default async function AdminPage() {
   if (!(await isAdminRequest())) notFound();
   const [items, me] = await Promise.all([fetchBoard(), currentSession()]);
@@ -34,27 +46,39 @@ export default async function AdminPage() {
       <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
         Admin <span className="font-mincho text-lg font-normal opacity-70">管理</span>
       </h1>
-      <div className="grid gap-4 md:grid-cols-2">
+      {/*
+        * Three things the operator does here, so the page says which is which:
+        * who gets in, who is in, and what is being built.
+        */}
+      <Section title="The door" kanji="門">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className={PANEL_CLASS}>
+            <AdminInvites />
+          </div>
+          <div className={PANEL_CLASS}>
+            <AdminEmbeds />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="The members" kanji="会員">
         <div className={PANEL_CLASS}>
-          <AdminInvites />
-        </div>
-        <div className={PANEL_CLASS}>
-          <AdminEmbeds />
-        </div>
-        <div className={`${PANEL_CLASS} md:col-span-2`}>
-          <AdminBoardCard />
-        </div>
-        <div className={`${PANEL_CLASS} md:col-span-2`}>
           <AdminMembers />
         </div>
-      </div>
+      </Section>
+
+      <Section title="The work" kanji="仕事">
+        <div className={PANEL_CLASS}>
+          <AdminBoardCard />
+        </div>
+      </Section>
 
       {/*
         * The board itself, not only a card pointing at it. The operator reads
         * it here more often than anywhere else, and a summary that has to be
         * clicked through is a summary of work rather than the work.
         */}
-      <section className={`${PANEL_CLASS} mt-4 flex flex-col gap-4`} data-testid="admin-backlog">
+      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="admin-backlog">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
           Backlog <span className="font-mincho text-sm font-normal opacity-70">積み残し</span>
           <Link href="/backlog" className="ml-auto text-xs font-normal text-muted underline underline-offset-4">

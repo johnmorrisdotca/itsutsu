@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.60.1
+- The Admin page is in three parts — the door, the members, the work — and a player's page is a page again, with the kept records that made up two thirds of it in a component of their own
+
 ## 0.60.0
 - The operator can shut an account: it stops on the member's next request, the invite it came in by is revoked with it, the record and the rating stay as they are, and it can be opened again. With a list of the members, and a way to take an abusive name off one without touching the account.
 
