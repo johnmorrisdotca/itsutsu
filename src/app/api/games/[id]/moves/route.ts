@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -10,6 +11,8 @@ import {
 } from "@/lib/api/apiResponse";
 import { fetchGameMovesPage } from "@/lib/history/gameHistory";
 import { appendMove } from "@/lib/history/liveGame";
+import { truncateMoves } from "@/lib/history/hotSeat";
+import { seatCookieName } from "@/lib/history/seatCookie";
 import { pieceCellsSchema } from "@/lib/history/gameSettingsSchema";
 import {
   GAME_PAGE_MAX,
@@ -63,8 +66,14 @@ export async function GET(
 const coordinate = z.number().int().min(0).max(64);
 
 /** A stone, a sliding piece, or the twist that finishes a stone. */
+/** The seat key: sent in the body by a device that scanned a link, or held in this browser's cookie. */
+async function seatToken(id: string, given: string | undefined): Promise<string> {
+  if (given !== undefined && given !== "") return given;
+  return (await cookies()).get(seatCookieName(id))?.value ?? "";
+}
+
 const playSchema = z.object({
-  token: z.string().min(1).max(128),
+  token: z.string().min(1).max(128).optional(),
   row: coordinate.optional(),
   col: coordinate.optional(),
   /** The colour to place, in the games where the mover chooses. */
@@ -119,7 +128,8 @@ export async function POST(
     if (!parsed.success) return badRequest("Invalid move.");
 
     const { id } = await ctx.params;
-    const { token, row, col, from, twist, cells, pass, stone } = parsed.data;
+    const { row, col, from, twist, cells, pass, stone } = parsed.data;
+    const token = await seatToken(id, parsed.data.token);
     const move =
       pass === true
         ? { kind: "pass" as const }
@@ -146,5 +156,47 @@ export async function POST(
   } catch (error) {
     console.error(error);
     return serverError("Could not play that move.");
+  }
+}
+
+const truncateSchema = z.object({
+  token: z.string().min(1).max(128).optional(),
+  /** How many moves to keep. Everything after them is struck from the record. */
+  keep: z.number().int().min(0).max(4096),
+});
+
+/**
+ * Takes moves back. Only a hot-seat game — one key for both chairs — may be
+ * rewound; a shared game's record is final. The body says how many moves to
+ * keep, so a retried request is harmless.
+ */
+export async function DELETE(
+  request: Request,
+  ctx: RouteContext<"/api/games/[id]/moves">,
+) {
+  try {
+    const limited = checkRateLimit(
+      `move:${getClientIp(request)}`,
+      RATE_LIMITS.playMove,
+    );
+    if (!limited.allowed) return createRateLimitResponse(limited);
+
+    const body = await readJson(request);
+    if (body === undefined) return badRequest("Expected a JSON body.");
+    const parsed = truncateSchema.safeParse(body);
+    if (!parsed.success) return badRequest("Invalid request.");
+
+    const { id } = await ctx.params;
+    const outcome = await truncateMoves(id, await seatToken(id, parsed.data.token), parsed.data.keep);
+    if (!outcome.ok) {
+      return NextResponse.json(
+        { error: REFUSAL_MESSAGE[outcome.reason], reason: outcome.reason },
+        { status: REFUSAL_STATUS[outcome.reason] ?? 400, headers: NO_STORE },
+      );
+    }
+    return NextResponse.json(outcome.game, { status: 200, headers: NO_STORE });
+  } catch (error) {
+    console.error(error);
+    return serverError("Could not take that back.");
   }
 }

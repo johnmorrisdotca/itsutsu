@@ -2,10 +2,11 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { TIME_CONTROLS, type TimeControlName } from "@/lib/clock/clock.constants";
 import type { TimeControl } from "@/lib/clock/clock.types";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { DEFAULT_SESSION_SETTINGS } from "./game.constants";
 import { emptySeatStats, emptyStats } from "./stats";
-import type { GameStats, SessionSettings } from "./game.types";
-import type { GameSnapshot } from "./gameStorage";
+import type { GameStats, MatchStart, SessionSettings } from "./game.types";
+import { loadSnapshot, snapshotToResume, type GameSnapshot } from "./gameStorage";
 
 /**
  * Reading a stored session back safely.
@@ -20,6 +21,29 @@ import type { GameSnapshot } from "./gameStorage";
  * trusted. That makes adding a field safe by construction, without discarding
  * a game in progress the way a version bump would.
  */
+/**
+ * The game to open. A match named in the address wins; the browser's own copy
+ * of that match is preferred to the server's when it is the same game — it
+ * holds the redo branch, the names and the statistics — and any other stored
+ * game is left alone. Without a match, the stored game resumes as before.
+ */
+export function restoredSnapshot(
+  persist: boolean,
+  fresh: boolean,
+  variant: RuleVariant | undefined,
+  match: MatchStart | null | undefined,
+): GameSnapshot | null {
+  if (match) {
+    const stored = loadSnapshot();
+    const same =
+      stored !== null &&
+      stored.settings.seed === match.snapshot.settings.seed &&
+      stored.settings.variant === match.snapshot.settings.variant;
+    return same ? stored : match.snapshot;
+  }
+  return persist ? snapshotToResume(fresh, variant) : null;
+}
+
 export function restoredAppearance(snapshot: GameSnapshot | null): Appearance {
   return { ...DEFAULT_APPEARANCE, ...snapshot?.appearance };
 }

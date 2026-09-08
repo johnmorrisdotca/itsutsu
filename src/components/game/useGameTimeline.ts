@@ -17,22 +17,32 @@ import { restoreTimeline, type GameSnapshot } from "./gameStorage";
 export function useGameTimeline(
   initial: Partial<GameSettings>,
   restored: GameSnapshot | null,
+  /** The move to open at, when an address names one; the latest otherwise. */
+  startAt?: number,
 ) {
   const [timeline, setTimeline] = useState(() =>
     restored !== null
       ? restoreTimeline(restored)
       : [createGame(initial, Math.random())],
   );
-  const [index, setIndex] = useState(() =>
-    restored !== null ? restored.moves.length : 0,
-  );
+  const [index, setIndex] = useState(() => {
+    const latest = timeline.length - 1;
+    return startAt !== undefined && startAt >= 0 && startAt < latest ? startAt : latest;
+  });
   const [fatalAt, setFatalAt] = useState<(FatalMove | null)[]>(() =>
     restored !== null ? restored.moves.map(() => null).concat([null]) : [null],
   );
 
+  /*
+   * How the position on show was reached. A move taken back with Undo may be
+   * played over — that is what taking it back is for — while a position
+   * reached by clicking the record is being read, and is protected.
+   */
+  const [undone, setUndone] = useState(false);
+
   const state = timeline[index];
   const atLatest = index === timeline.length - 1;
-  const reviewing = !atLatest;
+  const reviewing = !atLatest && !undone;
 
   /** Advancing truncates any redo branch, as an edit to the past should. */
   const advance = useCallback(
@@ -40,34 +50,46 @@ export function useGameTimeline(
       setTimeline((current) => [...current.slice(0, index + 1), next]);
       setFatalAt((current) => [...current.slice(0, index + 1), fatal]);
       setIndex(index + 1);
+      setUndone(false);
     },
     [index],
   );
 
   const jumpTo = useCallback(
     (target: number) => {
-      if (target >= 0 && target < timeline.length) setIndex(target);
+      if (target >= 0 && target < timeline.length) {
+        setIndex(target);
+        setUndone(false);
+      }
     },
     [timeline.length],
   );
 
-  const returnToLatest = useCallback(
-    () => setIndex(timeline.length - 1),
-    [timeline.length],
-  );
+  const returnToLatest = useCallback(() => {
+    setIndex(timeline.length - 1);
+    setUndone(false);
+  }, [timeline.length]);
 
   const undo = useCallback(() => {
-    if (index > 0 && state.settings.allowUndo) setIndex(index - 1);
+    if (index > 0 && state.settings.allowUndo) {
+      setIndex(index - 1);
+      setUndone(true);
+    }
   }, [index, state.settings.allowUndo]);
 
   const redo = useCallback(() => {
-    if (index < timeline.length - 1) setIndex(index + 1);
+    if (index < timeline.length - 1) {
+      setIndex(index + 1);
+      // Back at the latest, nothing is taken back any more.
+      if (index + 1 === timeline.length - 1) setUndone(false);
+    }
   }, [index, timeline.length]);
 
   const restart = useCallback((settings: GameSettings) => {
     setTimeline([createGame(settings, Math.random())]);
     setFatalAt([null]);
     setIndex(0);
+    setUndone(false);
   }, []);
 
   /**

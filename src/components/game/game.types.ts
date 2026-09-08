@@ -1,3 +1,4 @@
+import type { GameSnapshot } from "./gameStorage";
 import type {
   Assessment,
   Suggestion,
@@ -10,7 +11,7 @@ import type {
   GameState,
   Point,
   Seat,
-  Stone,
+  Stone, Move,
 } from "@/lib/gomoku/gomoku.types";
 import type { Appearance, BoardMark } from "@/components/board/board.types";
 import type { PieceHand } from "./usePieceHand";
@@ -117,6 +118,8 @@ export type GameSession = {
   swapBlockedReason: string | null;
   moveIndex: number;
   moveTotal: number;
+  /** Every move on the current line, including those after the position on show. */
+  record: Move[];
   /** True while an earlier position is being looked at. */
   reviewing: boolean;
   /** True when the board cannot be played on at all right now. */
@@ -196,4 +199,11 @@ export type GameActions = {
 export type GamePanelProps = {
   session: GameSession;
   actions: GameActions;
+};
+
+/** A match opened from its address: the server's copy, and the move to open at. */
+export type MatchStart = {
+  id: string;
+  snapshot: GameSnapshot;
+  at?: number;
 };

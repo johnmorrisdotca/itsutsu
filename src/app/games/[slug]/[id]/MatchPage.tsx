@@ -7,10 +7,12 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
 import { SharedGame } from "@/components/live/SharedGame";
 import { SharedRules } from "@/components/live/SharedRules";
+import { GameViewClient } from "@/components/game/GameViewClient";
 import { NotesPanel } from "@/components/game/NotesPanel";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
-import type { Stone } from "@/lib/gomoku/gomoku.types";
+import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
+import { isHotSeat } from "@/lib/history/liveGame";
 import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -54,6 +56,24 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
 
   // A match that is over lives in the record, at the record's address.
   if (game.status !== "active") redirect(recordPath(game.variant, game.id, move));
+
+  /*
+   * A hot-seat match — two people at one screen — opens on the full board,
+   * with undo and the rest, in the browser that holds its key. Anyone else
+   * who has the address may watch it.
+   */
+  const tokens = await prisma.game.findUnique({
+    where: { id },
+    select: { blackToken: true, whiteToken: true },
+  });
+  if (tokens !== null && isHotSeat(tokens) && claim !== null) {
+    return (
+      <Page width="wide">
+        <SiteHeader />
+        <GameViewClient variant={game.variant as RuleVariant} trackPath match={{ game, at: move }} />
+      </Page>
+    );
+  }
 
   return <LiveMatch game={game} token={token ?? null} seat={seat} />;
 }

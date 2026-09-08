@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type { GameDetail } from "@/lib/history/gameHistory.types";
 
 /**
  * The board, loaded on the client only.
@@ -27,10 +28,13 @@ const GameView = dynamic(
 export function GameViewClient({
   variant,
   trackPath = false,
+  match = null,
 }: {
   variant?: RuleVariant;
   /** Keep the address at /games/<slug> as the game in play changes. */
   trackPath?: boolean;
+  /** A match opened at its own address. */
+  match?: { game: GameDetail; at?: number } | null;
 }) {
-  return <GameView variant={variant} trackPath={trackPath} />;
+  return <GameView variant={variant} trackPath={trackPath} match={match} />;
 }

@@ -49,8 +49,9 @@ export async function openAdvanced(page: Page) {
   await openSetup(page);
   const summary = page.getByText(/^Advanced/);
   // The details that holds the Advanced summary, not whichever details comes first on the page.
-  const details = page.locator("details", { has: summary });
-  if (!(await details.first().evaluate((node: HTMLDetailsElement) => node.open))) {
+  // The innermost details holding the summary: the set-up wraps it, and is not it.
+  const details = page.locator("details", { has: summary }).last();
+  if (!(await details.evaluate((node: HTMLDetailsElement) => node.open))) {
     await summary.click();
   }
 }

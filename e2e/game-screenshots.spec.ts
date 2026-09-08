@@ -3,11 +3,11 @@ import { expect, test } from "@playwright/test";
 import { openSetup, playSequence } from "./support";
 
 /**
- * One screenshot per game, mid-play, into public/games/ for the rules pages.
+ * One screenshot per game, mid-play, into public/art/games/ for the rules pages.
  * Run on purpose with `pnpm screenshots:games`; it is not part of the
  * ordinary suite, because it writes files into the repo.
  */
-const OUT = "public/games";
+const OUT = "public/art/games";
 
 /** A short scripted position per game: enough stones to show what it looks like. */
 const SCENES: Record<
@@ -41,6 +41,12 @@ const SCENES: Record<
   makerBreaker: { size: 6, moves: [[2, 1], [2, 2], [3, 3], [2, 3], [1, 1], [4, 4]], colours: ["black", "black", "white", "black", "white", "white"] },
   wildTicTacToe: { size: 3, moves: [[1, 1], [0, 0], [2, 2]], colours: ["white", "black", "white"] },
   notakto: { size: 3, moves: [[1, 1], [0, 0], [2, 1]] },
+  toroidalFive: { size: 15, moves: [[0, 7], [7, 0], [14, 8], [7, 14], [1, 6], [13, 9]] },
+  obstacleFive: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6]] },
+  reversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3], [3, 2]] },
+  classicReversi: { size: 8, moves: [[3, 3], [3, 4], [4, 4], [4, 3], [2, 4], [2, 3], [2, 2]] },
+  antiReversi: { size: 8, moves: [[2, 3], [2, 4], [2, 5], [4, 2], [5, 3]] },
+  miniReversi: { size: 4, moves: [[0, 1], [0, 2], [0, 3], [3, 0]] },
 };
 
 test.describe("game screenshots", () => {

@@ -39,7 +39,11 @@ async function fetchStreak(name: string): Promise<number | null> {
  * taking a move back and playing on records the new ending too, while
  * re-rendering the same finished position does not write it twice.
  */
-export function useGameRecording(session: GameSession): WinStreaks {
+export function useGameRecording(
+  session: GameSession,
+  /** A match the server keeps: filed there, so only the streaks are read, once it has caught up. */
+  kept: { active: boolean; synced: boolean } = { active: false, synced: false },
+): WinStreaks {
   const recorded = useRef(new Set<string>());
   /*
    * Streaks are remembered against the game they were read for, so a new game
@@ -58,11 +62,24 @@ export function useGameRecording(session: GameSession): WinStreaks {
     const finished =
       state.status === GAME_STATUS.won || state.status === GAME_STATUS.draw;
     if (!finished) return;
+    if (kept.active && !kept.synced) return;
 
     if (recorded.current.has(signature)) return;
     recorded.current.add(signature);
 
     const nameFor = (stone: "black" | "white") => names[state.seats[stone]].trim();
+    const seatName = (seat: Seat) => names[seat].trim();
+    const readStreaks = async () => {
+      const [one, two] = await Promise.all([
+        fetchStreak(seatName(SEATS.one)),
+        fetchStreak(seatName(SEATS.two)),
+      ]);
+      setStreaks({ game: signature, value: { one, two } });
+    };
+    if (kept.active) {
+      void readStreaks().catch(() => recorded.current.delete(signature));
+      return;
+    }
 
     const body = {
       blackName: nameFor(STONES.black),
@@ -95,18 +112,13 @@ export function useGameRecording(session: GameSession): WinStreaks {
     })
       .then(async (response) => {
         if (!response.ok) throw new Error("not recorded");
-        const seatName = (seat: Seat) => names[seat].trim();
-        const [one, two] = await Promise.all([
-          fetchStreak(seatName(SEATS.one)),
-          fetchStreak(seatName(SEATS.two)),
-        ]);
-        setStreaks({ game: signature, value: { one, two } });
+        await readStreaks();
       })
       .catch(() => {
         // A game that could not be filed is not a reason to interrupt play.
         recorded.current.delete(signature);
       });
-  }, [names, signature, state]);
+  }, [kept.active, kept.synced, names, signature, state]);
 
   return streaks.game === signature ? streaks.value : NO_STREAKS;
 }

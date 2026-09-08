@@ -5,7 +5,10 @@ import { useEffect } from "react";
 import { Board } from "@/components/board/Board";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { gamePath } from "@/lib/gomoku/slugs";
+import type { GameDetail } from "@/lib/history/gameHistory.types";
+import { gamePath, matchPath } from "@/lib/gomoku/slugs";
+import { snapshotFromMatch } from "./matchSnapshot";
+import { useMatchMirror } from "./useMatchMirror";
 import { GameOptions, GameSidebar } from "./GamePanel";
 import { IdleModal } from "./IdleModal";
 import { useIdleWatch } from "./useIdleWatch";
@@ -16,30 +19,47 @@ import { useGameSession } from "./useGameSession";
 export function GameView({
   variant,
   trackPath = false,
+  match = null,
 }: {
   variant?: RuleVariant;
   trackPath?: boolean;
+  /** A match opened at its own address, as the server holds it. */
+  match?: { game: GameDetail; at?: number } | null;
 }) {
   // Nothing moving for a couple of minutes pauses the clock behind a modal.
   const { idle, confirm } = useIdleWatch();
   // A game asked for by name resumes if it is the stored one, else starts fresh.
   const { session, actions } = useGameSession(
     variant === undefined ? {} : { variant },
-    { persist: true, paused: idle, fresh: variant !== undefined },
+    {
+      persist: true,
+      paused: idle,
+      fresh: variant !== undefined,
+      match:
+        match === null
+          ? null
+          : { id: match.game.id, snapshot: snapshotFromMatch(match.game), at: match.at },
+    },
   );
-  const streaks = useGameRecording(session);
+  // From the first stone the game is a match on the server, and has an address.
+  const kept = useMatchMirror(session, trackPath, match?.game.id ?? null);
+  const streaks = useGameRecording(session, { active: kept.matchId !== null, synced: kept.synced });
 
   /*
    * The address follows the game. Choosing another game from the browser or
    * the settings is the same act as arriving at its page, so the bar shows
-   * /games/<slug> either way, and a refresh or a copied link keeps the game.
+   * /games/<slug> either way; once a stone is down the match has an id and
+   * the bar names the position, /games/<slug>/<id>/<move>, kept current as
+   * the record is stepped through.
    */
   const playing = session.state.settings.variant;
+  const { moveIndex } = session;
   useEffect(() => {
     if (!trackPath) return;
-    const path = gamePath(playing);
+    const path =
+      kept.matchId === null ? gamePath(playing) : matchPath(playing, kept.matchId, moveIndex);
     if (window.location.pathname !== path) window.history.replaceState(null, "", path);
-  }, [playing, trackPath]);
+  }, [kept.matchId, moveIndex, playing, trackPath]);
   const showIdle = idle && session.state.status === GAME_STATUS.playing;
 
   return (

@@ -18,7 +18,7 @@ import type { GamePanelProps } from "./game.types";
  * back here is the same mechanism as undo.
  */
 export function MoveHistory({ session, actions }: GamePanelProps) {
-  const { state, fatalMoves, moveIndex } = session;
+  const { state, fatalMoves, moveIndex, record } = session;
   const fatalNumbers = new Set(fatalMoves.map((move) => move.moveNumber));
 
   return (
@@ -48,7 +48,7 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
         {HISTORY_MODE_DISPLAY[session.settings.historyMode].description}
       </p>
 
-      {state.moves.length === 0 ? (
+      {record.length === 0 ? (
         <p className="text-xs text-muted">
           {GAME_COPY.emptyRecord}
         </p>
@@ -57,10 +57,12 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
           className="max-h-56 overflow-y-auto rounded-lg border border-rule text-sm"
           data-testid="move-history"
         >
-          {state.moves.map((move, index) => {
+          {record.map((move, index) => {
             const number = index + 1;
             const fatal = fatalNumbers.has(number);
             const current = moveIndex === number;
+            // Moves after the position on show are still there to step forward to.
+            const ahead = number > moveIndex;
 
             return (
               <li key={number}>
@@ -69,7 +71,8 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                   onClick={() => actions.jumpTo(number)}
                   className={`flex w-full items-center gap-2 px-2.5 py-1 text-left transition-colors hover:bg-shade ${
                     current ? "bg-shade font-semibold" : ""
-                  }`}
+                  } ${ahead ? "opacity-60" : ""}`}
+                  aria-current={current ? "step" : undefined}
                 >
                   <span className="w-7 shrink-0 text-right font-mono text-xs text-muted tabular-nums">
                     {number}

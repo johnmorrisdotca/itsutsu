@@ -1,5 +1,7 @@
 import "server-only";
 
+import { randomBytes } from "node:crypto";
+
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
@@ -43,7 +45,7 @@ import { toGameMove } from "./gameHistory";
 /** Prisma's code for "a unique constraint was violated". */
 const UNIQUE_VIOLATION = "P2002";
 
-const GAME_ROW = {
+export const GAME_ROW = {
   id: true,
   status: true,
   size: true,
@@ -83,7 +85,16 @@ const GAME_ROW = {
   },
 } satisfies Prisma.GameSelect;
 
-type GameRow = Prisma.GameGetPayload<{ select: typeof GAME_ROW }>;
+export type GameRow = Prisma.GameGetPayload<{ select: typeof GAME_ROW }>;
+
+/**
+ * A hot-seat game: two people at one screen, so one token holds both chairs.
+ * The server still checks every move; it simply lets that token play whichever
+ * colour is to move.
+ */
+export function isHotSeat(row: { blackToken: string; whiteToken: string }): boolean {
+  return row.blackToken === row.whiteToken;
+}
 
 /**
  * Rebuilds the position by replaying the stored moves through the engine.
@@ -92,7 +103,7 @@ type GameRow = Prisma.GameGetPayload<{ select: typeof GAME_ROW }>;
  * a shared game obeys exactly the same rules as a local one — there is no
  * second implementation of "who has won" on the server.
  */
-function replay(row: GameRow): GameState {
+export function replay(row: GameRow): GameState {
   const start = createGame({
     size: row.size,
     winLength: row.winLength,
@@ -111,25 +122,33 @@ function replay(row: GameRow): GameState {
   return timeline[timeline.length - 1];
 }
 
-/** Starts an empty game and mints a key for each seat. */
+/**
+ * Starts an empty game and mints a key for each seat. A hot-seat game gets
+ * one key for both, and keeps the seed the browser drew, so the board it has
+ * already shown is the board the record replays.
+ */
 export async function createLiveGame(
   input: LiveGameSettings & {
     blackName: string;
     whiteName: string;
     winLength: number;
     opener: Stone;
+    hotSeat?: boolean;
+    seed?: number;
   },
 ): Promise<CreatedGame> {
-  const { handicap, open, ...rest } = input;
+  const { handicap, open, hotSeat = false, seed, ...rest } = input;
+  const token = randomBytes(18).toString("base64url");
   const game = await prisma.game.create({
     data: {
       ...rest,
       handicap: storedHandicap(handicap) ?? undefined,
+      ...(hotSeat ? { blackToken: token, whiteToken: token } : {}),
       // An open game posts its white seat for anyone; the creator sits as black.
-      openSeat: open ? STONES.white : null,
-      openedAt: open ? new Date() : null,
+      openSeat: open && !hotSeat ? STONES.white : null,
+      openedAt: open && !hotSeat ? new Date() : null,
       // The server draws the seed: the two players must see the same board.
-      seed: seedFromRoll(Math.random(), SEED_RANGE),
+      seed: hotSeat && seed !== undefined ? seed : seedFromRoll(Math.random(), SEED_RANGE),
       // The first deadline runs from the moment the game exists.
       lastMoveAt: new Date(),
       status: "active",
@@ -198,10 +217,10 @@ export async function appendMove(
   if (row === null) return { ok: false, reason: "not-found" };
   if (row.status !== "active") return { ok: false, reason: "finished" };
 
-  const stone = stoneForToken(row, token);
-  if (stone === null) return { ok: false, reason: "wrong-token" };
-
   const state = replay(row);
+  // One token for both chairs plays whoever is to move.
+  const stone = isHotSeat(row) && token === row.blackToken ? state.toPlay : stoneForToken(row, token);
+  if (stone === null) return { ok: false, reason: "wrong-token" };
   if (state.toPlay !== stone) return { ok: false, reason: "not-your-turn" };
 
   /*
@@ -310,8 +329,8 @@ export async function appendMove(
 
   if (finished) {
     await recordResult(row.blackName, row.whiteName, next.winner);
-    await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
-  } else if (next.toPlay !== stone) {
+    if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
+  } else if (next.toPlay !== stone && !isHotSeat(row)) {
     await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });
   }
 

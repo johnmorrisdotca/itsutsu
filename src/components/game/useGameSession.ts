@@ -54,16 +54,13 @@ import {
   restoredSettings,
   restoredStats,
   timeControlFor,
+  restoredSnapshot,
 } from "./restoreSession";
 import { useGameTimeline } from "./useGameTimeline";
-import {
-  clearSnapshot,
-  snapshotToResume,
-  saveSnapshot,
-  toSnapshot,
-} from "./gameStorage";
+import { clearSnapshot, saveSnapshot, toSnapshot } from "./gameStorage";
 import type {
   GameActions,
+  MatchStart,
   ResizeDirection,
   ResizeProposal,
   GameSession,
@@ -85,7 +82,8 @@ export function useGameSession(
     persist = false,
     paused = false,
     fresh = false,
-  }: { persist?: boolean; paused?: boolean; fresh?: boolean } = {},
+    match = null,
+  }: { persist?: boolean; paused?: boolean; fresh?: boolean; match?: MatchStart | null } = {},
 ) {
   /*
    * Restored in the initialiser rather than an effect. The component that
@@ -93,9 +91,9 @@ export function useGameSession(
    * restored game to disagree with, and no flash of an empty board.
    */
   // `fresh` asks for this game: a stored game of the same kind still resumes.
-  const restored = persist ? snapshotToResume(fresh, initial.variant) : null;
+  const restored = restoredSnapshot(persist, fresh, initial.variant, match);
 
-  const line = useGameTimeline(initial, restored);
+  const line = useGameTimeline(initial, restored, match?.at);
   const { state, index, timeline, atLatest, reviewing } = line;
 
   const [appearance, setAppearanceState] = useState<Appearance>(() =>
@@ -449,6 +447,7 @@ export function useGameSession(
     swapBlockedReason,
     moveIndex: index,
     moveTotal: timeline.length - 1,
+    record: timeline[timeline.length - 1].moves,
     reviewing,
     boardReadOnly:
       reviewing && settings.historyMode !== HISTORY_MODES.branch,

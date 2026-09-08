@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/apiResponse";
 import {
   DEFAULT_SETTINGS,
+  SEED_RANGE,
   NO_HANDICAP,
   STONES,
   VARIANT_SPECS,
@@ -26,6 +27,7 @@ import {
   variantSchema,
 } from "@/lib/history/gameSettingsSchema";
 import { matchPath } from "@/lib/gomoku/slugs";
+import { seatCookieName } from "@/lib/history/seatCookie";
 import { createLiveGame } from "@/lib/history/liveGame";
 import {
   RATE_LIMITS,
@@ -47,7 +49,16 @@ const liveGameSchema = z.object({
   allowResign: z.boolean().default(true),
   open: z.boolean().default(false),
   opener: stoneSchema.default(STONES.black),
+  /** Two people at one screen: one seat key for both chairs, kept in this browser. */
+  hotSeat: z.boolean().default(false),
+  /** The seed the browser already dealt the board with; hot-seat games keep it. */
+  seed: z.number().int().min(0).max(SEED_RANGE).optional(),
+  /** The line length, where the game lets it vary. */
+  winLength: z.number().int().min(3).max(19).optional(),
 });
+
+/** How long a claimed seat is remembered. */
+const SEAT_COOKIE_DAYS = 30;
 
 /**
  * Starts a game two people can play from different devices.
@@ -75,13 +86,29 @@ export async function POST(request: Request) {
     const created = await createLiveGame({
       ...parsed.data,
       handicap: parsed.data.handicap ?? NO_HANDICAP,
-      winLength: VARIANT_SPECS[parsed.data.variant].winLength ?? DEFAULT_SETTINGS.winLength,
+      winLength:
+        VARIANT_SPECS[parsed.data.variant].winLength ??
+        parsed.data.winLength ??
+        DEFAULT_SETTINGS.winLength,
     });
 
-    return NextResponse.json(created, {
+    const response = NextResponse.json(created, {
       status: 201,
       headers: { ...NO_STORE, Location: matchPath(parsed.data.variant, created.id) },
     });
+    // A hot-seat game is claimed by the browser that started it, here and now.
+    if (parsed.data.hotSeat) {
+      response.cookies.set({
+        name: seatCookieName(created.id),
+        value: created.blackToken,
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: SEAT_COOKIE_DAYS * 24 * 60 * 60,
+      });
+    }
+    return response;
   } catch (error) {
     console.error(error);
     return serverError("Could not start that game.");
