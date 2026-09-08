@@ -44,6 +44,14 @@ const GAME_ALIASES: Record<string, RuleVariant> = {
   "Four In a Row": RULE_VARIANTS.dropFour,
   Stack4: RULE_VARIANTS.dropFour,
   "Stack 4x4": RULE_VARIANTS.dropFour,
+
+  // GoldToken's own Four In a Row family, matched by mechanic against ours.
+  "Cylindrical Four (Only) In a Row": RULE_VARIANTS.ringDrop,
+  "Giveaway Four in a Row": RULE_VARIANTS.giveawayDrop,
+  "Blackhole Four in a Row": RULE_VARIANTS.holeDrop,
+  "Hotspot Four in a Row": RULE_VARIANTS.hotDrop,
+  "Wormhole Four in a Row": RULE_VARIANTS.wormDrop,
+  "Zero G Four in a Row": RULE_VARIANTS.edgeDrop,
 };
 
 /** The Itsutsu variant a source site's own game name corresponds to, or null when there isn't one. */
