@@ -138,9 +138,11 @@ export async function createLiveGame(
     /** The accounts holding each seat, for a challenge sent to a named member. */
     blackMember?: string;
     whiteMember?: string;
+    /** A position to start from: the first `moves` moves of another game are copied in. */
+    from?: { id: string; moves: number };
   },
 ): Promise<CreatedGame> {
-  const { handicap, open, hotSeat = false, seed, ...rest } = input;
+  const { handicap, open, hotSeat = false, seed, from, ...rest } = input;
   const token = randomBytes(18).toString("base64url");
   const game = await prisma.game.create({
     data: {
@@ -160,6 +162,22 @@ export async function createLiveGame(
     },
     select: { id: true, blackToken: true, whiteToken: true },
   });
+  if (from !== undefined && from.moves > 0) {
+    const moves = await prisma.move.findMany({
+      where: { gameId: from.id, number: { lte: from.moves } },
+      orderBy: { number: "asc" },
+    });
+    await prisma.$transaction([
+      prisma.move.createMany({
+        data: moves.map(({ id: _id, gameId: _gameId, ...move }) => {
+          void _id;
+          void _gameId;
+          return { ...move, gameId: game.id, cells: move.cells ?? undefined };
+        }),
+      }),
+      prisma.game.update({ where: { id: game.id }, data: { moveCount: moves.length } }),
+    ]);
+  }
   return game;
 }
 
@@ -332,7 +350,7 @@ export async function appendMove(
 
   if (finished) {
     // A game at one screen is filed, never rated: the site cannot tell who was playing.
-    if (!isHotSeat(row)) await recordResult(row.blackName, row.whiteName, next.winner);
+    if (!isHotSeat(row)) await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
     if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
   } else if (next.toPlay !== stone && !isHotSeat(row)) {
     await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });
@@ -413,9 +431,11 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   await prisma.$transaction(writes);
 
   if (finished) {
-    await recordResult(row.blackName, row.whiteName, next.winner);
-    await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
-  } else {
+    if (!isHotSeat(row)) {
+      await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
+      await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
+    }
+  } else if (!isHotSeat(row)) {
     await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });
   }
 
@@ -447,8 +467,10 @@ export async function resignGame(id: string, token: string, now = new Date()): P
     where: { id },
     data: { status: "finished", result: next.winner, winner: next.winner, lastMoveAt: now },
   });
-  await recordResult(row.blackName, row.whiteName, next.winner);
-  await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
+  if (!isHotSeat(row)) {
+    await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
+    await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
+  }
 
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };

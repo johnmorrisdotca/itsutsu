@@ -15,11 +15,15 @@ export function ChallengeButton({
   variant = "freestyle",
   label = "Challenge",
   strong = false,
+  from,
 }: {
-  email: string;
+  /** The member to challenge; omitted for a fork, which finds the other seat itself. */
+  email?: string;
   variant?: string;
   label?: string;
   strong?: boolean;
+  /** Start the new game from this position in another game. */
+  from?: { id: string; move: number };
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -31,7 +35,7 @@ export function ChallengeButton({
     const response = await fetch("/api/games/live", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ challenge: email, variant }),
+      body: JSON.stringify({ challenge: email, variant, from }),
     });
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;

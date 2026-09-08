@@ -44,6 +44,14 @@ test.describe("a game at one screen is a match from its first stone", () => {
       })
       .toBe("7,7 8,8");
 
+    // A fork starts a new game at a chosen position, with the moves copied in.
+    const forked = await request.post("/api/games/live", { data: { from: { id, move: 1 } } });
+    expect(forked.status()).toBe(201);
+    const fork = (await forked.json()) as { id: string };
+    const copy = (await (await request.get(`/api/games/${fork.id}`)).json()) as { moveCount: number; moves: { row: number; col: number }[] };
+    expect(copy.moveCount).toBe(1);
+    expect(copy.moves[0]).toMatchObject({ row: 7, col: 7 });
+
     // The address is the game: opening it again finds the board, at the move named.
     await page.goto(`/games/gomoku/${id}/1`);
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();

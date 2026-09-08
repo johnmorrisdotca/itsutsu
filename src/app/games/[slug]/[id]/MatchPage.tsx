@@ -8,6 +8,7 @@ import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
 import { SharedGame } from "@/components/live/SharedGame";
 import { SharedRules } from "@/components/live/SharedRules";
 import { GameViewClient } from "@/components/game/GameViewClient";
+import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { NotesPanel } from "@/components/game/NotesPanel";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
@@ -75,17 +76,20 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     );
   }
 
-  return <LiveMatch game={game} token={token ?? null} seat={seat} />;
+  return <LiveMatch game={game} token={token ?? null} seat={seat} move={move ?? game.moveCount} />;
 }
 
 async function LiveMatch({
   game,
   token,
   seat,
+  move,
 }: {
   game: GameDetail;
   token: string | null;
   seat: Stone | null;
+  /** The position the address names, for forking a new game from it. */
+  move: number;
 }) {
   /*
    * Seat links are only handed out to someone who already holds one. A reader
@@ -137,6 +141,17 @@ async function LiveMatch({
 
         <aside className="flex w-full flex-col gap-4 lg:w-80">
           <SharedRules game={game} token={token} seat={seat} />
+          {seat !== null ? (
+            <div className={`${PANEL_CLASS} flex flex-col gap-2`}>
+              <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+                Fork <span className="font-mincho normal-case tracking-normal">分岐</span>
+              </h2>
+              <p className="text-xs text-muted">
+                Start a second game from this exact position, against the same opponent. Both games go on.
+              </p>
+              <ChallengeButton from={{ id: game.id, move }} label={`Play from move ${move}`} />
+            </div>
+          ) : null}
           {seat !== null ? (
             <div className={PANEL_CLASS}>
               <NotesPanel gameKey={`shared:${game.id}`} />

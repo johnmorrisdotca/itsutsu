@@ -22,6 +22,11 @@ const PITCH = [
     kanji: "棋譜",
     body: "A finished game is filed with its stones in order. Replay it, send a friend the exact move you mean, and see how a player's rating moves.",
   },
+  {
+    title: "Fork any position",
+    kanji: "分岐",
+    body: "A close game deserves a second try. From any move of any game, start another game at exactly that position, against the same opponent, and play both.",
+  },
 ] as const;
 
 /**
@@ -57,7 +62,7 @@ export default function Home() {
 
       <BrandStones className="opacity-80" />
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2">
         {PITCH.map((item) => (
           <div key={item.title} className={`${PANEL_CLASS} flex flex-col gap-2`}>
             <h2 className="flex items-baseline gap-2 font-semibold">

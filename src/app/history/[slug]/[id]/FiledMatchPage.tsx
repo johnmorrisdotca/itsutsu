@@ -74,6 +74,7 @@ function FiledMatch({ game, move, rematch }: { game: GameDetail; move: number; r
           {rematch !== null ? (
             <ChallengeButton email={rematch} variant={game.variant} label="Rematch 再戦" strong />
           ) : null}
+          <ChallengeButton from={{ id: game.id, move }} label={`Play from move ${move} 分岐`} />
           <Link href={recordPath(game.variant)} className="text-sm underline underline-offset-4">
             Back to the record
           </Link>
