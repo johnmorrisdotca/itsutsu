@@ -6,6 +6,12 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.50.0
+- Halma ハルマ: the race game, on 16×16, 10×10 or 8×8, with jump chains and shaded camps; the first game here that is not about lines
+
+## 0.49.2
+- The door's orphaned Enter button is fixed, and days off are recorded
+
 ## 0.49.1
 - "Post a seat" now lands on the sharing panel with the other seat already open, instead of a bare board
 
