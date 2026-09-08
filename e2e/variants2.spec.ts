@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { playAt } from "./support";
+import { openSetup, playAt } from "./support";
 
 /**
  * The second wave of games: the choose-a-colour games, the one-colour game,
@@ -9,6 +9,7 @@ import { playAt } from "./support";
 test.describe("more variants", () => {
   test("maker and breaker: the mover picks the colour and any five is the maker's", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("makerBreaker");
     await expect(page.getByTestId("board-size")).toHaveValue("6");
     await expect(page.getByTestId("board-size")).toBeDisabled();
@@ -33,6 +34,7 @@ test.describe("more variants", () => {
 
   test("notakto: every stone is black and the third in a row loses", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("notakto");
     await expect(page.getByTestId("board-size")).toHaveValue("3");
     await expect(page.getByTestId("colour-chooser")).toHaveCount(0);
@@ -47,7 +49,9 @@ test.describe("more variants", () => {
 
   test("sannuki counts captures in stones, fifteen to win", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("sannuki");
     await expect(page.getByTestId("variant-line")).toContainText("15");
     // Black flanks a white triple: x o o o x on row 4.
@@ -64,6 +68,7 @@ test.describe("more variants", () => {
 
   test("worm drop shows two wormhole mouths on a 7×7 board", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("wormDrop");
     await expect(page.getByTestId("board-size")).toHaveValue("7");
     await expect(page.getByRole("button", { name: /, wormhole$/ })).toHaveCount(2);

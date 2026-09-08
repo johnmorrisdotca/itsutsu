@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openAdvanced, playAt, playSequence } from "./support";
+import { openAdvanced, openSetup, playAt, playSequence } from "./support";
 
 test.describe("clocks", () => {
   test.beforeEach(async ({ page }) => {
@@ -16,6 +16,7 @@ test.describe("clocks", () => {
     page,
   }) => {
     await openAdvanced(page);
+    await openSetup(page);
     await page.getByTestId("time-control").selectOption("blitz");
 
     const black = page.getByTestId("clock-one");
@@ -36,6 +37,7 @@ test.describe("clocks", () => {
 
   test("the clock passes to the other player after a move", async ({ page }) => {
     await openAdvanced(page);
+    await openSetup(page);
     await page.getByTestId("time-control").selectOption("blitz");
 
     await playAt(page, 15, 7, 7);

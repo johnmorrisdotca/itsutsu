@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { playAt } from "./support";
+import { openSetup, playAt } from "./support";
 
 test.describe("surviving a refresh", () => {
   test.beforeEach(async ({ page }) => {
@@ -33,7 +33,9 @@ test.describe("surviving a refresh", () => {
 
   test("settings and appearance come back too", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
+    await openSetup(page);
     await page.getByTestId("board-theme-sumi").click();
     await playAt(page, 9, 4, 4);
 

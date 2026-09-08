@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { playAt } from "./support";
+import { openSetup, playAt } from "./support";
 
 /** The drop family and the piece games, driven from the board and the tray. */
 test.describe("drops and pieces", () => {
   test("hot drop scatters a hotspot and a hole", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("hotDrop");
     await expect(page.getByRole("button", { name: /, hotspot$/ })).toHaveCount(1);
     await expect(page.getByRole("button", { name: /, blocked$/ })).toHaveCount(1);
@@ -12,6 +13,7 @@ test.describe("drops and pieces", () => {
 
   test("giveaway drop refuses the column on top of the opponent's last stone", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("giveawayDrop");
     await playAt(page, 7, 6, 3);
     // White may not answer directly on top of D1.
@@ -21,6 +23,7 @@ test.describe("drops and pieces", () => {
 
   test("edge drop only allows stones that rest on something", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("edgeDrop");
     await expect(page.getByRole("button", { name: /^D4, empty$/ })).toBeDisabled();
     await expect(page.getByRole("button", { name: /^A4, empty$/ })).toBeEnabled();
@@ -31,6 +34,7 @@ test.describe("drops and pieces", () => {
 
   test("domino five shows the piece in hand and lays two stones at once", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("dominoFive");
     await expect(page.getByTestId("board-size")).toHaveValue("15");
 
@@ -49,6 +53,7 @@ test.describe("drops and pieces", () => {
 
   test("domino five rotates the piece before laying it", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("dominoFive");
     await page.getByTestId("rotate-piece").click();
     // Upright now: the corner on H8 covers H8 and the point below it, H7.
@@ -60,6 +65,7 @@ test.describe("drops and pieces", () => {
 
   test("block five lays four stones, or one single of your colour", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("blockFive");
     await expect(page.getByTestId("toggle-single")).toContainText("6");
 

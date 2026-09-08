@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openAdvanced, playAt, playSequence } from "./support";
+import { openAdvanced, openSetup, playAt, playSequence } from "./support";
 
 /**
  * Resizing the board is a decision the two players make together, so these
@@ -22,6 +22,7 @@ test.describe("resizing the board", () => {
   test("one player offers and nothing happens until the other agrees", async ({
     page,
   }) => {
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await page.getByLabel("Allow resizing the board").check();
     await playAt(page, 9, 4, 4);
@@ -40,6 +41,7 @@ test.describe("resizing the board", () => {
   });
 
   test("declining leaves the board alone", async ({ page }) => {
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await page.getByLabel("Allow resizing the board").check();
     await playAt(page, 9, 4, 4);
@@ -52,6 +54,7 @@ test.describe("resizing the board", () => {
   });
 
   test("a move settles the question and clears a stale offer", async ({ page }) => {
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await page.getByLabel("Allow resizing the board").check();
     await playAt(page, 9, 4, 4);
@@ -64,6 +67,7 @@ test.describe("resizing the board", () => {
   });
 
   test("nobody loses a turn by resizing", async ({ page }) => {
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await page.getByLabel("Allow resizing the board").check();
     await playAt(page, 9, 4, 4);
@@ -76,6 +80,7 @@ test.describe("resizing the board", () => {
   });
 
   test("shrinks when the outer ring is unused", async ({ page }) => {
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("13");
     await page.getByLabel("Allow resizing the board").check();
     await playSequence(page, 13, [[6, 6], [6, 7]]);
@@ -88,6 +93,7 @@ test.describe("resizing the board", () => {
   });
 
   test("refuses to shrink over a stone in the outer ring", async ({ page }) => {
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("13");
     await page.getByLabel("Allow resizing the board").check();
     // (1,1) sits inside the margin a 13 to 9 step would remove.

@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { openAdvanced, playAt, playSequence } from "./support";
+import { openAdvanced, openSetup, playAt, playSequence } from "./support";
 
 /**
  * Screenshots, not assertions.
@@ -50,12 +50,15 @@ test.describe("screenshots", () => {
     await playSequence(page, 15, [
       [7, 3], [0, 0], [7, 4], [0, 1], [7, 5], [0, 2], [7, 6], [0, 3], [7, 7],
     ]);
+    await openSetup(page);
     await page.getByLabel("Move numbers").check();
     await page.screenshot({ path: `${SHOTS}/04-won-game.png`, fullPage: true });
   });
 
   test("the mini board with obstacles", async ({ page }) => {
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
+    await openSetup(page);
     await page.getByTestId("obstacles").selectOption("hoshi");
     await playSequence(page, 9, [[4, 4], [3, 3], [5, 5], [2, 5], [3, 5]]);
     await page.screenshot({ path: `${SHOTS}/05-mini-board-obstacles.png`, fullPage: true });
@@ -85,6 +88,7 @@ test.describe("screenshots", () => {
 
   test("clocks, win chance and the early warning", async ({ page }) => {
     await openAdvanced(page);
+    await openSetup(page);
     await page.getByTestId("time-control").selectOption("rapid");
     await page.getByLabel("Show chance of winning").check();
     await page.getByLabel("Warn before a three forms").check();
@@ -137,6 +141,7 @@ test.describe("screenshots", () => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/games/gomoku");
     await playSequence(page, 15, OPENING);
+    await openSetup(page);
     await page.getByTestId("board-theme-sumi").click();
     await page.screenshot({ path: `${SHOTS}/10-dark-mode.png`, fullPage: true });
   });

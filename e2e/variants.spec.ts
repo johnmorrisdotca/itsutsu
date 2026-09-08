@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openAdvanced, playAt, playSequence } from "./support";
+import { openAdvanced, openSetup, playAt, playSequence } from "./support";
 
 /**
  * The rule variants, driven the way a player drives them: through the games
@@ -25,7 +25,9 @@ test.describe("rule variants", () => {
 
   test("renju marks black's double three as forbidden and refuses it", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("renju");
 
     // Black builds two stones along row 4 and two down column 4; white stays away.
@@ -47,6 +49,7 @@ test.describe("rule variants", () => {
 
   test("swap2 pauses after three stones for a colour choice", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("opening").selectOption("swap2");
     await expect(page.getByTestId("opening-notice")).toContainText("first three stones");
 
@@ -68,7 +71,9 @@ test.describe("rule variants", () => {
 
   test("connect6 gives two stones a turn after the first", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("connect6");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("19");
 
     await playAt(page, 19, 9, 9);
@@ -83,6 +88,7 @@ test.describe("rule variants", () => {
 
   test("a handicap forbids one colour a shape the game otherwise allows", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await openAdvanced(page);
     await page.getByTestId("handicap-stone").selectOption("black");
@@ -104,7 +110,9 @@ test.describe("rule variants", () => {
 
   test("ninuki lifts a flanked pair off the board", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("ninuki");
 
     // Black at 4,1; white at 4,2 and 4,3; black closes the trap at 4,4.

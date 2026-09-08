@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { openAdvanced, playAt } from "./support";
+import { openAdvanced, openSetup, playAt } from "./support";
 
 test.describe("game options", () => {
   test("the mini board is 9x9", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
 
     // 81 intersections, and the top-left is A9 rather than A15.
@@ -13,7 +14,9 @@ test.describe("game options", () => {
 
   test("obstacles seal the star points but leave tengen open", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
+    await openSetup(page);
     await page.getByTestId("obstacles").selectOption("hoshi");
 
     await expect(page.getByRole("button", { name: "C7, blocked" })).toBeDisabled();
@@ -30,6 +33,7 @@ test.describe("game options", () => {
 
   test("standard rules refuse to hand the first stone over", async ({ page }) => {
     await page.goto("/games/gomoku");
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("standard");
 
     await expect(page.getByTestId("first-player")).toBeDisabled();
@@ -49,6 +53,7 @@ test.describe("game options", () => {
     await page.goto("/games/gomoku");
     await playAt(page, 15, 7, 7);
 
+    await openSetup(page);
     await page.getByTestId("board-theme-sumi").click();
 
     await expect(page.getByTestId("board-theme-sumi")).toHaveAttribute(
@@ -64,6 +69,7 @@ test.describe("game options", () => {
     await playAt(page, 15, 7, 7);
     await playAt(page, 15, 7, 8);
 
+    await openSetup(page);
     await page.getByLabel("Move numbers").check();
 
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toContainText("1");

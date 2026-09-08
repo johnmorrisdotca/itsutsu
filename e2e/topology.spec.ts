@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openAdvanced } from "./support";
+import { openAdvanced, openSetup } from "./support";
 
 /**
  * The two games whose board is the rule: one with no edges, one with holes in
@@ -17,7 +17,9 @@ test.describe("Toroidal Five", () => {
     await page.evaluate(() => window.localStorage.clear());
     await page.goto("/games/gomoku");
     await openAdvanced(page);
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("toroidalFive");
+    await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
 
     // Row 4 (labelled 5 on a 9 board), columns 7, 8, 0, 1, 2 — a five only
@@ -40,6 +42,7 @@ test.describe("Obstacle Five", () => {
     await page.evaluate(() => window.localStorage.clear());
     await page.goto("/games/gomoku");
     await openAdvanced(page);
+    await openSetup(page);
     await page.getByTestId("rules").selectOption("obstacleFive");
 
     // Six squares nothing can use, and two that count as either colour.

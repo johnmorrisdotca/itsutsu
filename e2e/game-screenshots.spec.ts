@@ -1,6 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { playSequence } from "./support";
+import { openSetup, playSequence } from "./support";
 
 /**
  * One screenshot per game, mid-play, into public/games/ for the rules pages.
@@ -50,6 +50,7 @@ test.describe("game screenshots", () => {
     test(`${variant}`, async ({ page }) => {
       mkdirSync(OUT, { recursive: true });
       await page.goto("/games/gomoku");
+      await openSetup(page);
       await page.getByTestId("rules").selectOption(variant);
       // The piece games lay a piece per click; the rest a stone.
       for (const [index, [row, col]] of scene.moves.entries()) {
