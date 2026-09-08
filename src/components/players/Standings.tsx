@@ -1,3 +1,4 @@
+import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
 
 import { TIER_DISPLAY } from "@/lib/rating/elo";
@@ -7,7 +8,7 @@ import type { VariantStanding } from "@/lib/rating/variantRatings";
 /** A player's name, leading to their page. */
 export function PlayerLink({ name }: { name: string }) {
   return (
-    <Link href={`/players/${encodeURIComponent(name)}`} className="underline-offset-2 hover:underline">
+    <Link href={playerPath(name)} className="underline-offset-2 hover:underline">
       {name}
     </Link>
   );

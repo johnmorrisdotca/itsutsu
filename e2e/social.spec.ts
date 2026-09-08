@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { playerSlug } from "../src/lib/rating/playerKey";
 import { playAt } from "./support";
 
 /** Starts a server-side game and returns its id and both seat tokens. */
@@ -80,12 +81,12 @@ test.describe("notes, messages, deadlines and players", () => {
       (await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status(),
     ).toBe(200);
 
-    await page.goto(`/players/${encodeURIComponent(black)}`);
+    await page.goto(`/players/${playerSlug(black)}`);
     await expect(page.getByTestId("player-record")).toContainText("1W · 0L · 0D");
     await expect(page.getByTestId("player-rating")).toContainText("1620");
     await expect(page.getByTestId("player-by-variant")).toContainText("Gomoku");
 
-    await page.goto(`/players/${encodeURIComponent(white)}`);
+    await page.goto(`/players/${playerSlug(white)}`);
     await expect(page.getByTestId("player-record")).toContainText("0W · 1L · 0D");
     await expect(page.getByTestId("player-rating")).toContainText("1580");
 

@@ -1,3 +1,4 @@
+import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -31,7 +32,7 @@ export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null 
               <RecencyMark recency={entry.recency} />
               <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
                 {entry.name.trim() !== "" ? (
-                  <Link href={`/players/${encodeURIComponent(entry.name)}`} className="underline-offset-2 hover:underline">
+                  <Link href={playerPath(entry.name)} className="underline-offset-2 hover:underline">
                     {entry.name}
                   </Link>
                 ) : (

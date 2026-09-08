@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.56.0
+- A player's page is at /players/john-morris now, in kebab like every other address here, instead of a percent-encoded name
+- A game cannot be played or filed under a remembered player's name either, which was the other way into it
+
 ## 0.55.1
 - The last move of a finished game says when it ended, not when it was made
 

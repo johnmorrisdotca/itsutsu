@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { playerSlug } from "../src/lib/rating/playerKey";
 import { memberContext } from "./members";
 
 /**
@@ -15,7 +16,7 @@ import { memberContext } from "./members";
  * which is the same person by a nearer road.
  */
 async function everyMentionLinks(page: Page, name: string) {
-  const allowed = [`/players/${encodeURIComponent(name)}`, "/me"];
+  const allowed = [`/players/${playerSlug(name)}`, "/me"];
   const mentions = page.getByText(name, { exact: true });
   const count = await mentions.count();
   expect(count, `"${name}" is printed somewhere on ${page.url()}`).toBeGreaterThan(0);
@@ -67,7 +68,7 @@ test.describe("every name leads to the player", () => {
     await everyMentionLinks(page, opponent);
 
     // A profile names the opponent of every recent game.
-    await page.goto(`/players/${encodeURIComponent(me.name)}`);
+    await page.goto(`/players/${playerSlug(me.name)}`);
     await expect(page.getByTestId("player-record")).toContainText("1W · 0L · 0D");
     await everyMentionLinks(page, opponent);
 
@@ -85,7 +86,7 @@ test.describe("every name leads to the player", () => {
     await everyMentionLinks(page, newcomer.name);
     await page.getByTestId("here-name").filter({ hasText: newcomer.name }).first().click();
 
-    await expect(page).toHaveURL(new RegExp(`/players/${encodeURIComponent(newcomer.name).replace(/%/g, "%")}$`));
+    await expect(page).toHaveURL(new RegExp(`/players/${playerSlug(newcomer.name)}$`));
     await expect(page.getByTestId("player-profile")).toContainText(newcomer.name);
     await expect(page.getByTestId("player-no-games")).toBeVisible();
 

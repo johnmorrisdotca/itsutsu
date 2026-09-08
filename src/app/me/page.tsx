@@ -1,3 +1,4 @@
+import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -177,7 +178,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
         ) : null}
         {name !== "" ? (
           <p className="text-xs">
-            <Link href={`/players/${encodeURIComponent(name)}`} className="underline underline-offset-4">
+            <Link href={playerPath(name)} className="underline underline-offset-4">
               Your public page
             </Link>{" "}
             · <Link href="/games" className="underline underline-offset-4">Your games</Link>

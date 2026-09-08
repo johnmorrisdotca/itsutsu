@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { playerSlug } from "../src/lib/rating/playerKey";
 import { playAt, playSequence, winningSequence } from "./support";
 
 test.describe("the game record", () => {
@@ -21,7 +22,7 @@ test.describe("the game record", () => {
     await expect(rows.first()).toContainText("9 moves");
 
     // A named player's name leads to their page; the rest of the row is the replay.
-    await expect(rows.first().getByTestId("history-player")).toHaveAttribute("href", `/players/${encodeURIComponent(stamp)}`);
+    await expect(rows.first().getByTestId("history-player")).toHaveAttribute("href", `/players/${playerSlug(stamp)}`);
     await rows.first().getByRole("link", { name: /^Replay:/ }).click();
 
     // The replay opens at the final position and steps backwards.

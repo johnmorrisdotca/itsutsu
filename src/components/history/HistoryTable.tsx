@@ -1,3 +1,4 @@
+import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
 
 import { recordPath } from "@/lib/gomoku/slugs";
@@ -22,7 +23,7 @@ function PlayerName({ name, fallback, linkable }: { name: string; fallback: stri
   if (!linkable) return <>{name}</>;
   return (
     <Link
-      href={`/players/${encodeURIComponent(name)}`}
+      href={playerPath(name)}
       className="relative z-10 underline-offset-2 hover:underline"
       data-testid="history-player"
     >

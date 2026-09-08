@@ -16,7 +16,7 @@ import type { LegacyClassRecord, LegacyGame, LegacyGameRecord, LegacyPlayer } fr
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { findMemberByName } from "@/lib/auth/members";
 import { fetchPlayer } from "@/lib/rating/players";
-import { playerKey } from "@/lib/rating/playerKey";
+import { playerKey, playerKeysFromSlug, playerPath } from "@/lib/rating/playerKey";
 
 export const metadata = { title: "Player" };
 
@@ -313,21 +313,34 @@ function LegacyElsewherePanel({ legacy }: { legacy: LegacyPlayer }) {
  * from elsewhere. A live member who also has a record from before Itsutsu
  * gets both: their live profile, and that earlier record appended beneath it.
  */
-export default async function PlayerPage({ params }: PageProps<"/players/[name]">) {
-  const { name } = await params;
-  const decoded = decodeURIComponent(name);
+export default async function PlayerPage({ params }: PageProps<"/players/[slug]">) {
+  const { slug } = await params;
 
-  const legacyBySlug = findLegacyPlayer(decoded);
+  const legacyBySlug = findLegacyPlayer(slug);
   if (legacyBySlug !== null && legacyBySlug.kind !== "elsewhere") {
     return <LegacyOwnPage legacy={legacyBySlug} />;
   }
 
-  const [player, record, gifts, member] = await Promise.all([
-    fetchPlayer(decoded),
-    fetchPlayerRecord(decoded),
-    fetchTimeGiftRecord(decoded),
-    findMemberByName(decoded),
-  ]);
+  /*
+   * The address holds a folded name with hyphens for spaces, and folding
+   * cannot be undone: "anne-marie" is either one hyphenated name or two
+   * words. So both readings are looked for, and whichever finds somebody is
+   * the player this address means.
+   */
+  const looked = await Promise.all(
+    playerKeysFromSlug(slug).map(async (key) => {
+      const [player, record, member] = await Promise.all([
+        fetchPlayer(key),
+        fetchPlayerRecord(key),
+        findMemberByName(key),
+      ]);
+      return { key, player, record, member };
+    }),
+  );
+  const found =
+    looked.find((one) => one.player !== null || one.record.games > 0 || one.member !== null) ?? looked[0];
+  const { key: decoded, player, record, member } = found;
+  const gifts = await fetchTimeGiftRecord(decoded);
   // A member has a page from the day they join, before they have finished a
   // game: every list that prints their name links to it, and a link that
   // leads nowhere is worse than no page.
@@ -418,7 +431,7 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
                   {variantLabel(game.variant)} · vs{" "}
                   {game.opponent ? (
                     <Link
-                      href={`/players/${encodeURIComponent(game.opponent)}`}
+                      href={playerPath(game.opponent)}
                       className="underline-offset-2 hover:underline"
                       data-testid="player-opponent"
                     >

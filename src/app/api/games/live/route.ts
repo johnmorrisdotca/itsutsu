@@ -15,7 +15,6 @@ import {
   STONES,
   VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
-import { PLAYER_NAME_MAX } from "@/lib/history/gameHistory.constants";
 import {
   boardSizeSchema,
   handicapSchema,
@@ -25,6 +24,7 @@ import {
   stoneSchema,
   timeoutPenaltySchema,
   variantSchema,
+  playerNameSchema,
 } from "@/lib/history/gameSettingsSchema";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { seatCookieName } from "@/lib/history/seatCookie";
@@ -41,8 +41,8 @@ import {
 } from "@/lib/api/rateLimit";
 
 const liveGameSchema = z.object({
-  blackName: z.string().max(PLAYER_NAME_MAX).default(""),
-  whiteName: z.string().max(PLAYER_NAME_MAX).default(""),
+  blackName: playerNameSchema.default(""),
+  whiteName: playerNameSchema.default(""),
   size: boardSizeSchema.default(DEFAULT_SETTINGS.size),
   variant: variantSchema,
   obstacles: obstaclesSchema,

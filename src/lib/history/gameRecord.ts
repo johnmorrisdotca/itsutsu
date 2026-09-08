@@ -1,3 +1,4 @@
+import { playerNameSchema } from "@/lib/history/gameSettingsSchema";
 import "server-only";
 
 import { z } from "zod";
@@ -5,7 +6,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { fetchGameDetail } from "./gameHistory";
-import { GAME_RESULTS, PLAYER_NAME_MAX } from "./gameHistory.constants";
+import { GAME_RESULTS } from "./gameHistory.constants";
 import {
   handicapSchema,
   obstaclesSchema,
@@ -40,8 +41,8 @@ const moveSchema = z.object({
  */
 export const gameRecordSchema = z
   .object({
-    blackName: z.string().max(PLAYER_NAME_MAX).default(""),
-    whiteName: z.string().max(PLAYER_NAME_MAX).default(""),
+    blackName: playerNameSchema.default(""),
+    whiteName: playerNameSchema.default(""),
     size: z.number().int().min(5).max(25),
     winLength: z.number().int().min(3).max(9),
     variant: variantSchema,

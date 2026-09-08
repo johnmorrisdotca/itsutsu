@@ -1,3 +1,4 @@
+import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
 
 import { Page } from "@/components/layout/Page";
@@ -88,7 +89,7 @@ export default async function PlayersPage() {
                   <RecencyMark recency={entry.recency} />
                   {entry.name.trim() !== "" ? (
                     <Link
-                      href={`/players/${encodeURIComponent(entry.name)}`}
+                      href={playerPath(entry.name)}
                       className="underline-offset-2 hover:underline"
                       data-testid="here-name"
                     >
@@ -138,7 +139,7 @@ export default async function PlayersPage() {
                     ) : null}
                     {entry.name.trim() !== "" ? (
                       <Link
-                        href={`/players/${encodeURIComponent(entry.name)}`}
+                        href={playerPath(entry.name)}
                         className="underline-offset-2 hover:underline"
                         data-testid="directory-name"
                       >
@@ -208,7 +209,7 @@ export default async function PlayersPage() {
               {leaders.map((player) => (
                 <tr key={player.key} className="border-t border-rule">
                   <td className="py-1.5 pr-3">
-                    <Link href={`/players/${encodeURIComponent(player.name)}`} className="underline-offset-2 hover:underline">
+                    <Link href={playerPath(player.name)} className="underline-offset-2 hover:underline">
                       {player.name}
                     </Link>
                   </td>

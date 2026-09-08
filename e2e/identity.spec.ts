@@ -32,6 +32,25 @@ test.describe("a name is not free for the taking", () => {
     const taken = await context.request.patch("/api/me", { data: { name: played } });
     expect(taken.status()).toBe(409);
 
+    // Nor may a game be played under a remembered name, whoever starts it.
+    const asChibi = await request.post("/api/games/live", { data: { blackName: "Chibi", size: 9 } });
+    expect(asChibi.status()).toBe(422);
+    const filedAsChibi = await request.post("/api/games", {
+      data: {
+        blackName: "chibi",
+        whiteName: `Other ${stamp}`,
+        size: 15,
+        winLength: 5,
+        variant: "freestyle",
+        obstacles: "none",
+        opener: "black",
+        result: "black",
+        winner: "black",
+        moves: [],
+      },
+    });
+    expect(filedAsChibi.status()).toBe(422);
+
     // A name nobody has is still theirs to take.
     const free = await context.request.patch("/api/me", { data: { name: `Rename ${stamp} again` } });
     expect(free.status()).toBe(200);

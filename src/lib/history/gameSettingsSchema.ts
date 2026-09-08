@@ -1,3 +1,6 @@
+import { PLAYER_NAME_MAX } from "./gameHistory.constants";
+import { playerKey } from "@/lib/rating/playerKey";
+import { isReservedKey } from "@/lib/rating/reservedKeys";
 import { z } from "zod";
 
 import {
@@ -138,3 +141,18 @@ export function parseHandicap(value: unknown): Handicap {
 export function storedHandicap(handicap: Handicap): Handicap | null {
   return handicap.stone === null ? null : handicap;
 }
+
+/**
+ * A name a game may be played under.
+ *
+ * Reserved names are refused here as well as at a rename: a remembered or
+ * honorary player cannot answer for themselves, and a game filed under
+ * their name would put a stranger's record beside theirs. Anonymous — a
+ * blank name — is always allowed; it is what a game at one screen is.
+ */
+export const playerNameSchema = z
+  .string()
+  .max(PLAYER_NAME_MAX)
+  .refine((name) => !isReservedKey(playerKey(name)), {
+    message: "That name is kept for a player who is remembered here.",
+  });
