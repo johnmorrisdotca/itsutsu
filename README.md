@@ -190,6 +190,11 @@ other decision, purely; the row's select is built from it and
 `backlog.coverage.test.ts` is the gate — see AGENTS.md, "Board Gate". The
 starter set in `backlog.seed.data.ts` is written once, into an empty board.
 
+Beneath the board on the same page is the other half: **every release so far**,
+parsed from `CHANGELOG.md` at request time rather than kept a second time, with
+the edition being served marked. The operator's page carries a card with both
+counts — what is still wanted, and the latest release — and a link into it.
+
 ### Notes, messages and deadlines
 
 **Private notes** live under the record on the local board and beside a

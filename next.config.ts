@@ -12,6 +12,17 @@ const embedAllowList = process.env.EMBED_ALLOWED_ORIGINS?.trim();
 const frameAncestors = embedAllowList ? `'self' ${embedAllowList}` : "'self'";
 
 const nextConfig: NextConfig = {
+  /*
+   * The backlog page and the Admin card read CHANGELOG.md at request time, so
+   * the release history is whatever the deployed commit actually says. Next
+   * only ships the files it can see being imported, and a path read at runtime
+   * is not one of those — without this the file is missing in production and
+   * the history renders empty.
+   */
+  outputFileTracingIncludes: {
+    "/backlog": ["./CHANGELOG.md"],
+    "/admin": ["./CHANGELOG.md"],
+  },
   async headers() {
     return [
       {

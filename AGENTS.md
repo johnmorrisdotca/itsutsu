@@ -91,6 +91,13 @@ checks are made in three places and stated once.
 - **Seeding is idempotent and once-only.** `BACKLOG_SEED` carries its own keys and is
   written only into an empty board, so an item somebody dropped never comes back on the
   next render.
+- **The release history is parsed, never copied.** The same page lists every release,
+  read from `CHANGELOG.md` at request time by `releasesFile.ts` — a second list kept by
+  hand would drift within a day. `releases.test.ts` parses the real file, so a changelog
+  that stops being readable fails the build, and it refuses a changelog naming a version
+  newer than `package.json`. Pages that read the file name it in
+  `outputFileTracingIncludes` (next.config.ts), or it is missing in production. The
+  operator reaches both halves from the Admin page.
 
 Whether work is *taken* from the board is the site owner's rule to make, not this file's.
 The gate only guarantees the board is worth making that rule out of.

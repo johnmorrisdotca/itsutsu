@@ -98,4 +98,24 @@ test.describe("backlog", () => {
     await page.getByRole("link", { name: /^Backlog/ }).click();
     await expect(page).toHaveURL(/\/backlog$/);
   });
+
+  test("what has shipped is on the same page as what has not", async ({ page }) => {
+    await page.goto("/backlog");
+    const history = page.getByTestId("release-history");
+    await expect(history).toBeVisible();
+    // Read from CHANGELOG.md itself, so there is a real history here, not a placeholder.
+    expect(await history.getByTestId("release").count()).toBeGreaterThan(3);
+    // The edition being served is marked in the list.
+    await expect(history.getByTestId("releases")).toContainText("This edition");
+  });
+
+  test("the operator reaches the board from the Admin page, with both lists on the card", async ({ page }) => {
+    await page.goto("/admin");
+    const card = page.getByTestId("admin-board");
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("still wanted");
+    await expect(page.getByTestId("admin-latest-release")).toContainText(/\d+\.\d+\.\d+/);
+    await page.getByTestId("admin-backlog-link").click();
+    await expect(page).toHaveURL(/\/backlog$/);
+  });
 });

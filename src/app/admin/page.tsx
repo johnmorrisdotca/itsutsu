@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { AdminBoardCard } from "@/components/backlog/AdminBoardCard";
 import { AdminEmbeds } from "@/components/auth/AdminEmbeds";
 import { AdminInvites } from "@/components/auth/AdminInvites";
 import { Page } from "@/components/layout/Page";
@@ -28,6 +29,9 @@ export default async function AdminPage() {
         </div>
         <div className={PANEL_CLASS}>
           <AdminEmbeds />
+        </div>
+        <div className={`${PANEL_CLASS} md:col-span-2`}>
+          <AdminBoardCard />
         </div>
       </div>
     </Page>
