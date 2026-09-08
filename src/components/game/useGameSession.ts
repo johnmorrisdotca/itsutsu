@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { assess, isSwapBlocked, suggestMove } from "@/lib/gomoku/analysis";
+import { assess, isSwapBlocked } from "@/lib/gomoku/analysis";
 import { winChance } from "@/lib/gomoku/winChance";
 import {
   canSkip as engineCanSkip,
@@ -30,24 +30,22 @@ import {
 import {
   GAME_STATUS,
   MOVE_KINDS,
-  SEATS,
   STONES,
   VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings, Point, Seat, Stone } from "@/lib/gomoku/gomoku.types";
-import type { Suggestion } from "@/lib/gomoku/analysis.types";
 import type { Appearance } from "@/components/board/board.types";
 import {
   DEFAULT_SEAT_NAMES,
   DEFAULT_SESSION_SETTINGS,
   GAME_COPY,
-  HINT_POLICIES,
   HISTORY_MODES,
 } from "./game.constants";
 import { useGameClock } from "./useGameClock";
 import { usePieceHand } from "./usePieceHand";
 import { buildMarks, findFatalMove, nextGameSettings, resizeTarget } from "./sessionSupport";
 import { emptyStats, missedThreat, recordHint, recordMove } from "./stats";
+import { useGameHints } from "./useGameHints";
 import {
   restoredAppearance,
   restoredHints,
@@ -106,11 +104,13 @@ export function useGameSession(
     restored?.names ?? { ...DEFAULT_SEAT_NAMES },
   );
 
-  const [hintsLeft, setHintsLeft] = useState<Record<Seat, number>>(() =>
-    restoredHints(restored, DEFAULT_SESSION_SETTINGS.hintsPerSeat),
-  );
-  const [hint, setHint] = useState<Suggestion | null>(null);
   const [stats, setStats] = useState(() => restoredStats(restored));
+  const { hintsLeft, hint, askHint, grantHint, forgetHint, resetHints } = useGameHints({
+    start: restoredHints(restored, DEFAULT_SESSION_SETTINGS.hintsPerSeat),
+    policy: settings.hintPolicy,
+    state,
+    onTaken: useCallback((who: Seat) => setStats((current) => recordHint(current, who)), []),
+  });
   const [lostOnTime, setLostOnTime] = useState<Seat | null>(null);
   // Set on mount rather than during render, which must stay pure.
   const lastMoveAt = useRef(0);
@@ -192,11 +192,12 @@ export function useGameSession(
       if (seatToPlay(next) !== seat || next.status !== GAME_STATUS.playing) {
         clock.onMoveComplete(seat);
       }
-      // A move settles the question; a stale offer must not outlive it.
+      // A move settles the question; a stale offer or answer must not outlive it.
       setResizeProposal(null);
+      forgetHint();
       line.advance(next, fatal);
     },
-    [line, assessment, clock, state],
+    [line, assessment, clock, forgetHint, state],
   );
 
 
@@ -310,47 +311,18 @@ export function useGameSession(
 
     const gameSettings = nextGameSettings(timeline[0].settings, next);
     line.restart(gameSettings);
-    setHint(null);
     setHelpMark(null);
     setHelpRequest(null);
     setPendingBranch(null);
     setResizeProposal(null);
-    setHintsLeft({
-      one: settings.hintsPerSeat,
-      two: settings.hintsPerSeat,
-    });
+    resetHints(settings.hintsPerSeat);
     setStats(emptyStats());
     setLostOnTime(null);
     lastMoveAt.current = Date.now();
     clock.reset(timeControlFor(settings.timeControl));
-  }, [clock, line, persist, settings.hintsPerSeat, settings.timeControl, timeline]);
+  }, [clock, line, persist, resetHints, settings.hintsPerSeat, settings.timeControl, timeline]);
 
   const seat = seatToPlay(state);
-
-  const askHint = useCallback(() => {
-    if (settings.hintPolicy === HINT_POLICIES.off) return;
-    // The hint for this position is already showing: reading it again is free.
-    // A hint costs a use when it is a new answer, which is after a move.
-    if (hint !== null) return;
-    if (settings.hintPolicy === HINT_POLICIES.limited) {
-      if (hintsLeft[seat] <= 0) return;
-      setHintsLeft((current) => ({ ...current, [seat]: current[seat] - 1 }));
-    }
-    setStats((current) => recordHint(current, seat));
-    setHint(suggestMove(state));
-  }, [hint, hintsLeft, seat, settings.hintPolicy, state]);
-
-  /** Hands one of your own hints to the other seat. */
-  const grantHint = useCallback(() => {
-    if (settings.hintPolicy !== HINT_POLICIES.limited) return;
-    if (hintsLeft[seat] <= 0) return;
-    const other = seat === SEATS.one ? SEATS.two : SEATS.one;
-    setHintsLeft((current) => ({
-      ...current,
-      [seat]: current[seat] - 1,
-      [other]: current[other] + 1,
-    }));
-  }, [hintsLeft, seat, settings.hintPolicy]);
 
   /*
    * A resize changes the game both players are in, so it is offered rather
@@ -392,7 +364,7 @@ export function useGameSession(
        * is not the same as resetting it once.
        */
       if (next.hintsPerSeat !== undefined) {
-        setHintsLeft({ one: next.hintsPerSeat, two: next.hintsPerSeat });
+        resetHints(next.hintsPerSeat);
       }
       /*
        * A new time control means new clocks. Without this the clocks kept
@@ -404,7 +376,7 @@ export function useGameSession(
       }
       setSettingsState((current) => ({ ...current, ...next }));
     },
-    [clock],
+    [clock, resetHints],
   );
 
   const setName = useCallback((target: Seat, name: string) => {

@@ -19,6 +19,14 @@ test.describe("halma", () => {
     await expect(page.getByTestId("to-play")).toContainText("White");
   });
 
+  test("offers no best move, because there are no lines to read", async ({ page }) => {
+    await page.goto("/games/halma");
+    await expect(page.getByTestId("ask-hint")).toHaveCount(0);
+    // A game that does read lines still offers it.
+    await page.goto("/games/gomoku");
+    await expect(page.getByTestId("ask-hint")).toBeVisible();
+  });
+
   test("the rules page says what a jump is, at its address", async ({ page }) => {
     await page.goto("/rules/halma");
     await expect(page.getByText(/jump/i).first()).toBeVisible();

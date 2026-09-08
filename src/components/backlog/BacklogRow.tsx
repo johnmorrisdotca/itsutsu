@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { SELECT_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, SELECT_CLASS } from "@/components/ui/ui.constants";
 import { movesFrom } from "@/lib/backlog/backlog";
 import { KIND_DISPLAY, STATUS_DISPLAY } from "@/lib/backlog/backlog.constants";
 import type { BacklogStatus } from "@/lib/backlog/backlog.types";
@@ -33,10 +33,31 @@ export function StatusPill({ status }: { status: BacklogStatus }) {
  * own table, so a move the rules forbid is never offered — and the API refuses
  * it too, for anything that does not come through this page.
  */
-export function BacklogRow({ item, onMoved }: BacklogRowProps) {
+export function BacklogRow({ item, onMoved, who }: BacklogRowProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [naming, setNaming] = useState(false);
+  const [hand, setHand] = useState(item.assignedTo);
   const moves = movesFrom(item.status);
+
+  /** Says who has it, or takes the name off again. */
+  async function assign(to: string) {
+    setBusy(true);
+    setError(null);
+    const response = await fetch(`/api/backlog/${item.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assignedTo: to }),
+    });
+    setBusy(false);
+    setNaming(false);
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { error?: string };
+      setError(body.error ?? "That did not go through.");
+      return;
+    }
+    onMoved();
+  }
 
   async function move(to: string) {
     if (to === "") return;
@@ -75,7 +96,53 @@ export function BacklogRow({ item, onMoved }: BacklogRowProps) {
         <p className="text-xs text-muted">
           {item.askedBy === "" ? "Asked for" : `Asked for by ${item.askedBy}`} · added {dayStamp(item.createdAt)} · moved{" "}
           {dayStamp(item.movedAt)}
+          {item.assignedTo === "" ? "" : " · "}
+          {item.assignedTo === "" ? null : (
+            <span className="font-medium text-ink-soft" data-testid="backlog-assigned">
+              {item.assignedTo} has it
+            </span>
+          )}
         </p>
+        {naming ? (
+          <span className="flex flex-wrap items-center gap-2">
+            <input
+              className={`${INPUT_CLASS} max-w-48`}
+              value={hand}
+              autoFocus
+              maxLength={60}
+              placeholder="Who has it?"
+              aria-label={`Who has "${item.title}"?`}
+              data-testid="assign-name"
+              onChange={(event) => setHand(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void assign(hand);
+                if (event.key === "Escape") setNaming(false);
+              }}
+            />
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs`} disabled={busy} onClick={() => void assign(hand)}>
+              Save
+            </button>
+            {item.assignedTo === "" ? null : (
+              <button type="button" className="text-xs text-muted underline underline-offset-4" onClick={() => void assign("")}>
+                Nobody
+              </button>
+            )}
+          </span>
+        ) : (
+          <span>
+            <button
+              type="button"
+              className="text-xs text-muted underline underline-offset-4"
+              data-testid="assign-open"
+              onClick={() => {
+                setHand(item.assignedTo === "" ? who : item.assignedTo);
+                setNaming(true);
+              }}
+            >
+              {item.assignedTo === "" ? "Take it" : "Hand it on"}
+            </button>
+          </span>
+        )}
         {error === null ? null : <p className="text-xs text-shu">{error}</p>}
       </div>
 

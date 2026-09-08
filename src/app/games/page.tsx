@@ -20,14 +20,13 @@ import { fetchHereNow } from "@/lib/social/presence";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { fetchPlayedCounts } from "@/lib/history/gameCounts";
 import { recordPath } from "@/lib/gomoku/slugs";
-import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { gamePath, rulesPath } from "@/lib/gomoku/slugs";
+import { rulesPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export const metadata = { title: "Games" };
@@ -162,7 +161,6 @@ export default async function LobbyPage() {
                     </span>
                     <span className="flex shrink-0 items-center gap-2 text-xs">
                       <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
-                      <Link href={gamePath(variant)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-3 py-1 text-xs`}>play</Link>
                     </span>
                   </li>
                 );

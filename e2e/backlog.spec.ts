@@ -73,6 +73,19 @@ test.describe("backlog", () => {
     await expect(row.getByTestId("status-pill-done")).toBeVisible();
   });
 
+  test("an item says who has it, and the board groups what is where", async ({ page }) => {
+    await page.goto("/backlog");
+    // Ordered by status and showing more than one, the board has a heading per status.
+    await expect(page.getByTestId("backlog-group").first()).toBeVisible();
+    const item = page.getByTestId("backlog-item").first();
+    await item.getByTestId("assign-open").click();
+    await item.getByTestId("assign-name").fill("Tester");
+    await item.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByTestId("backlog-assigned").first()).toContainText("Tester has it");
+    await page.reload();
+    await expect(page.getByTestId("backlog-assigned").first()).toContainText("Tester has it");
+  });
+
   test("the API refuses a move the board's rules forbid", async ({ page, request }) => {
     const title = `A request the API will not finish ${Date.now().toString(36)}`;
     const added = await request.post("/api/backlog", {

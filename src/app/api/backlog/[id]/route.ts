@@ -4,13 +4,17 @@ import { z } from "zod";
 import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { currentSession } from "@/lib/auth/currentSession";
 import { BACKLOG_STATUS_VALUES } from "@/lib/backlog/backlog";
-import { moveItem } from "@/lib/backlog/backlogStore";
+import { ASSIGNED_TO_MAX } from "@/lib/backlog/backlog.constants";
+import { assignItem, moveItem } from "@/lib/backlog/backlogStore";
 import type { BacklogStatus } from "@/lib/backlog/backlog.types";
 
-const moveSchema = z.object({ status: z.enum(BACKLOG_STATUS_VALUES as [string, ...string[]]) });
+const patchSchema = z.union([
+  z.object({ status: z.enum(BACKLOG_STATUS_VALUES as [string, ...string[]]) }),
+  z.object({ assignedTo: z.string().max(ASSIGNED_TO_MAX) }),
+]);
 
 /**
- * Moves one item to another status.
+ * Moves one item to another status, or says who has picked it up.
  *
  * A move the board's table forbids — a proposal jumping straight to done —
  * answers 422 rather than being written, so the rule holds whatever calls it:
@@ -23,11 +27,14 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
 
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
-    const parsed = moveSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Move it to which status?");
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) return badRequest("Move it to which status, or hand it to whom?");
 
     const { id } = await ctx.params;
-    const outcome = await moveItem(id, parsed.data.status as BacklogStatus);
+    const outcome =
+      "assignedTo" in parsed.data
+        ? await assignItem(id, parsed.data.assignedTo)
+        : await moveItem(id, parsed.data.status as BacklogStatus);
     if (outcome.ok) return NextResponse.json(outcome.item, { headers: NO_STORE });
     if (outcome.reason === "missing") return notFound("No such item.");
     return unprocessable("An item cannot go straight there from where it stands.");

@@ -18,6 +18,8 @@ export type BacklogItem = {
   kind: BacklogKind;
   status: BacklogStatus;
   askedBy: string;
+  /** Who has picked it up, as free text; empty when nobody has. */
+  assignedTo: string;
   /** ISO 8601. Dates cross to the client as strings, so they are strings all the way up. */
   createdAt: string;
   movedAt: string;

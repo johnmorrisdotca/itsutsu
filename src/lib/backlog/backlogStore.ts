@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 
 import { canMove, draftProblems, normalizeDraft } from "./backlog";
+import { ASSIGNED_TO_MAX } from "./backlog.constants";
 import { BACKLOG_SEED } from "./backlog.seed.data";
 import type { BacklogDraft, BacklogItem, BacklogKind, BacklogStatus } from "./backlog.types";
 
@@ -23,6 +24,7 @@ type Row = {
   kind: string;
   status: string;
   askedBy: string;
+  assignedTo: string;
   createdAt: Date;
   movedAt: Date;
 };
@@ -37,6 +39,7 @@ function toItem(row: Row): BacklogItem {
     kind: row.kind as BacklogKind,
     status: row.status as BacklogStatus,
     askedBy: row.askedBy,
+    assignedTo: row.assignedTo,
     createdAt: row.createdAt.toISOString(),
     movedAt: row.movedAt.toISOString(),
   };
@@ -50,6 +53,7 @@ const SELECT = {
   kind: true,
   status: true,
   askedBy: true,
+  assignedTo: true,
   createdAt: true,
   movedAt: true,
 } as const;
@@ -144,4 +148,19 @@ export async function moveItem(id: string, to: BacklogStatus): Promise<MoveOutco
     select: SELECT,
   });
   return { ok: true, item: toItem(row) };
+}
+
+/**
+ * Says who has picked an item up, or nobody. Free text, trimmed, and short:
+ * it is a name to recognise, not a record to join on.
+ */
+export async function assignItem(id: string, to: string): Promise<MoveOutcome> {
+  const current = await prisma.backlogItem.findUnique({ where: { id }, select: { id: true } });
+  if (current === null) return { ok: false, reason: "missing" };
+  const item = await prisma.backlogItem.update({
+    where: { id },
+    data: { assignedTo: to.trim().slice(0, ASSIGNED_TO_MAX) },
+    select: SELECT,
+  });
+  return { ok: true, item: toItem(item) };
 }

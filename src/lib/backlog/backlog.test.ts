@@ -24,6 +24,7 @@ function item(over: Partial<BacklogItem> & { id: string }): BacklogItem {
     detail: "",
     kind: BACKLOG_KINDS.feature,
     status: BACKLOG_STATUSES.proposed,
+    assignedTo: "",
     askedBy: "John",
     createdAt: "2026-09-01T00:00:00.000Z",
     movedAt: "2026-09-01T00:00:00.000Z",

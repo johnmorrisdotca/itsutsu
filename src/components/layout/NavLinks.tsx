@@ -7,7 +7,6 @@ import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
 
 export const NAV = [
   { href: "/games", label: "Play", kanji: "遊ぶ" },
-  { href: "/history", label: "Record", kanji: "棋譜" },
   { href: "/rules", label: "Rules" },
   { href: "/learn", label: "Learn" },
   { href: "/players", label: "Players" },

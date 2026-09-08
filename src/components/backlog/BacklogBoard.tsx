@@ -62,6 +62,19 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
   const counts = useMemo(() => tally(items), [items]);
   const open = useMemo(() => openCount(items), [items]);
   const shown = useMemo(() => sortItems(filterItems(items, view), view.sort), [items, view]);
+  /*
+   * A board of thirty rows reads as a wall unless it is broken up. When the
+   * order is by status and more than one status is on show, each gets a
+   * subheading; under any other order the list stays flat, because the
+   * headings would then be lying about the order.
+   */
+  const grouped = useMemo(() => {
+    if (view.sort !== "status" || (view.status !== "all" && view.status !== "open")) return null;
+    const groups = STATUS_ORDER.map((status) => ({ status, items: shown.filter((entry) => entry.status === status) })).filter(
+      (group) => group.items.length > 0,
+    );
+    return groups.length > 1 ? groups : null;
+  }, [shown, view.sort, view.status]);
   const change = (part: Partial<BoardView>) => setView((current) => ({ ...current, ...part }));
 
   return (
@@ -162,12 +175,30 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
           <p className="py-4 text-sm text-muted" data-testid="backlog-empty">
             Nothing here under those filters.
           </p>
-        ) : (
+        ) : grouped === null ? (
           <ul className="flex flex-col" data-testid="backlog-list">
             {shown.map((entry) => (
-              <BacklogRow key={entry.id} item={entry} onMoved={() => router.refresh()} />
+              <BacklogRow key={entry.id} who={who} item={entry} onMoved={() => router.refresh()} />
             ))}
           </ul>
+        ) : (
+          <div className="flex flex-col gap-4" data-testid="backlog-list">
+            {grouped.map((group) => (
+              <div key={group.status} className="flex flex-col gap-1" data-testid="backlog-group">
+                <h3 className="flex items-baseline gap-2 pt-2 text-sm font-semibold">
+                  {STATUS_DISPLAY[group.status].label}
+                  <span className="font-mincho text-xs font-normal opacity-70">{STATUS_DISPLAY[group.status].kanji}</span>
+                  <span className="font-mono text-xs font-normal text-muted tabular-nums">{group.items.length}</span>
+                  <span className="text-xs font-normal text-muted">{STATUS_DISPLAY[group.status].blurb}</span>
+                </h3>
+                <ul className="flex flex-col">
+                  {group.items.map((entry) => (
+                    <BacklogRow key={entry.id} who={who} item={entry} onMoved={() => router.refresh()} />
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

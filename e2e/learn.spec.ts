@@ -94,14 +94,25 @@ test.describe("rules and learning", () => {
     const families = page.getByTestId("lobby-family");
     await expect(families).toHaveCount(GAME_FAMILIES.length);
     // The first family is open; the rest are folded, so the page stays short.
-    await expect(families.nth(1).getByRole("link", { name: "play", exact: true })).toBeHidden();
+    await expect(families.nth(1).getByRole("link", { name: "rules", exact: true })).toBeHidden();
     await families.filter({ hasText: "Small boards" }).locator("summary").click();
+    // The families are for looking around: a game is read about here and
+    // started above, so nothing in this list drops straight onto a board.
+    await expect(families.filter({ hasText: "Small boards" }).getByRole("link", { name: "play", exact: true })).toHaveCount(0);
     await families
       .filter({ hasText: "Small boards" })
       .locator("li", { hasText: "Notakto" })
-      .getByRole("link", { name: "play", exact: true })
+      .getByRole("link", { name: "rules", exact: true })
       .click();
-    await expect(page.getByTestId("rules")).toHaveValue("notakto");
+    await expect(page).toHaveURL(/\/rules\/notakto$/);
+  });
+
+  test("the record is reached from a game, not from the header", async ({ page }) => {
+    await page.goto("/games");
+    await expect(page.getByRole("navigation").getByRole("link", { name: /^Record/ })).toHaveCount(0);
+    // It is still one click away at the foot of every page.
+    await page.getByTestId("site-footer").getByRole("link", { name: "Record" }).click();
+    await expect(page).toHaveURL(/\/history$/);
   });
 
   test("the header reaches rules, learning and players", async ({ page }) => {

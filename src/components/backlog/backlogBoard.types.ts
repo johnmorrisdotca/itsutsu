@@ -15,6 +15,8 @@ export type BacklogBoardProps = {
 };
 
 export type BacklogRowProps = {
+  /** The reader's own name, offered first when they take an item. */
+  who: string;
   item: BacklogItem;
   /** Called once the server has accepted a move, so the page can be re-read. */
   onMoved: () => void;

@@ -379,6 +379,10 @@ model BacklogItem {
   askedBy String  @default("")
   /// The member who typed the row in, by email, when a signed-in one did.
   addedBy String?
+  /// Who has picked it up, as free text, for the same reason askedBy is free
+  /// text: the people working on this are not all accounts here. Empty means
+  /// nobody has it, which is the honest answer for most of the board.
+  assignedTo String @default("")
 
   createdAt DateTime @default(now())
   /// When the status last changed — deliberately not "when the row was last

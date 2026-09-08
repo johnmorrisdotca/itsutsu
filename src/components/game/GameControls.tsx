@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SUGGESTION_DISPLAY } from "@/lib/gomoku/analysis.constants";
 import { pointName } from "@/lib/gomoku/notation";
 import { canChooseColour, canExtendOpening, seatToPlay } from "@/lib/gomoku/engine";
-import { GAME_STATUS, SEAT_DISPLAY, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, SEAT_DISPLAY, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { Button } from "@/components/ui/Controls";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { GameBrowserButton } from "./GameBrowser";
@@ -94,6 +94,12 @@ export function GameControls({ session, actions }: GamePanelProps) {
   const [askingNew, setAskingNew] = useState(false);
   const seat = seatToPlay(state);
   const limited = settings.hintPolicy === HINT_POLICIES.limited;
+  /*
+   * Ten of the games read no lines: a race, a flip, a drop. There is no best
+   * move to offer for them, so the hints are not offered either — a button
+   * that spends something and answers nothing is worse than no button.
+   */
+  const reads = VARIANT_SPECS[state.settings.variant].analysis;
   const hintsAvailable =
     settings.hintPolicy === HINT_POLICIES.unlimited || hintsLeft[seat] > 0;
 
@@ -166,7 +172,7 @@ export function GameControls({ session, actions }: GamePanelProps) {
         </div>
       ) : null}
 
-      {settings.hintPolicy !== HINT_POLICIES.off ? (
+      {settings.hintPolicy !== HINT_POLICIES.off && reads ? (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap gap-2">
             <Button
