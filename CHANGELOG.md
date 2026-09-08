@@ -6,6 +6,15 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.50.3
+- A name in the record leads to that player's page; the replay says when the game started at move 0, so nothing jumps; a match shows when it began and, once over, when it ended, and the board learns of a resignation or a strict timeout without a reload; the arrow keys walk the record on a replay and on the board; the move list folds away; the record lists finished games only
+
+## 0.50.2
+- A name in the here-now list links to its page, as the directory already did
+
+## 0.50.1
+- Six more Four In a Row aliases, matched against GoldToken's own family
+
 ## 0.50.0
 - Halma ハルマ: the race game, on 16×16, 10×10 or 8×8, with jump chains and shaded camps; the first game here that is not about lines
 

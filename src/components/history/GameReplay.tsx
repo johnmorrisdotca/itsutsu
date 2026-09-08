@@ -89,6 +89,24 @@ export function GameReplay({
   }, [basePath, index]);
   const [showNumbers, setShowNumbers] = useState(false);
 
+  // The arrow keys walk the record, and Home and End go to either end, unless a field has focus.
+  const last = timeline.length - 1;
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target !== null && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) && target.getAttribute("type") !== "range") return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.key === "ArrowLeft") setIndex((at) => Math.max(0, at - 1));
+      else if (event.key === "ArrowRight") setIndex((at) => Math.min(last, at + 1));
+      else if (event.key === "Home") setIndex(0);
+      else if (event.key === "End") setIndex(last);
+      else return;
+      event.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [last]);
+
   const state = timeline[index];
   const current = game.moves[index - 1];
 
@@ -116,13 +134,16 @@ export function GameReplay({
                 <span className="font-mono">
                   {pointName(game.size, current)}
                 </span>
-                {current.createdAt ? (
-                  <span className="block text-xs" data-testid="move-made-at">
-                    made {new Date(current.createdAt).toLocaleString()}
-                  </span>
-                ) : null}
+                {/* The line is always there, so the slider does not jump as the times come and go. */}
+                <span className="block text-xs" data-testid="move-made-at">
+                  {current.createdAt ? `made ${new Date(current.createdAt).toLocaleString()}` : "\u00a0"}
+                </span>
               </>
-            ) : null}
+            ) : (
+              <span className="block text-xs" data-testid="replay-started-at">
+                started {new Date(game.playedAt).toLocaleString()}
+              </span>
+            )}
           </p>
           <input
             type="range"

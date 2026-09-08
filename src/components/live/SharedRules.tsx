@@ -124,6 +124,12 @@ export function SharedRules({
           The {game.openSeat} seat is posted on the games page for anyone to take.
         </p>
       ) : null}
+      <p className="text-xs text-muted" data-testid="shared-times-line">
+        Started {new Date(game.playedAt).toLocaleString()}
+        {game.status === "finished" && game.lastMoveAt !== null
+          ? ` · finished ${new Date(game.lastMoveAt).toLocaleString()}`
+          : ""}
+      </p>
       <p className="text-xs text-muted" data-testid="shared-clock-line">
         {describeClock(game.clockMode, game.moveTimeMs)}
         {!game.rated ? ". Friendly: ratings unaffected" : ""}

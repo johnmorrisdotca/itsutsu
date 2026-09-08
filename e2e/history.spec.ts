@@ -20,14 +20,26 @@ test.describe("the game record", () => {
     await expect(rows.first()).toContainText(stamp);
     await expect(rows.first()).toContainText("9 moves");
 
-    await rows.first().getByRole("link").click();
+    // A named player's name leads to their page; the rest of the row is the replay.
+    await expect(rows.first().getByTestId("history-player")).toHaveAttribute("href", `/players/${encodeURIComponent(stamp)}`);
+    await rows.first().getByRole("link", { name: /^Replay:/ }).click();
 
     // The replay opens at the final position and steps backwards.
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
+    await expect(page.getByTestId("move-made-at")).toBeVisible();
     await page.getByRole("button", { name: "Start" }).click();
     await expect(page.getByRole("button", { name: /^H8, empty$/ })).toBeVisible();
+    // At move 0 the line under the count says when the game started, so nothing jumps.
+    await expect(page.getByTestId("replay-started-at")).toContainText("started");
     await page.getByTestId("replay-forward").click();
     await expect(page.getByRole("button", { name: "D8, Black stone" })).toBeVisible();
+    // The arrow keys walk the record too.
+    await page.keyboard.press("ArrowRight");
+    await expect(page.getByRole("button", { name: "A15, White stone" })).toBeVisible();
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.getByRole("button", { name: /^A15, empty$/ })).toBeVisible();
+    await page.keyboard.press("End");
+    await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
   });
 
   test("filters narrow the record and survive a reload", async ({ page }) => {

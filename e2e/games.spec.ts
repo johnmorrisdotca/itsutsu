@@ -63,6 +63,22 @@ test.describe("the small games", () => {
     await expect(page.getByTestId("to-play")).toContainText("Player 2 wins");
   });
 
+  test("the move list folds away while playing, and the arrows step the record", async ({ page }) => {
+    await page.goto("/games/gomoku");
+    await page.evaluate(() => window.localStorage.clear());
+    await page.goto("/games/gomoku");
+    await playSequence(page, 15, [[7, 7], [7, 8]]);
+    await expect(page.getByTestId("move-history")).toBeVisible();
+    await page.getByTestId("move-history-fold").locator("summary").click();
+    await expect(page.getByTestId("move-history")).toBeHidden();
+    await page.getByTestId("move-history-fold").locator("summary").click();
+    await expect(page.getByTestId("move-history")).toBeVisible();
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.getByRole("button", { name: /^J8, empty$/ })).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.getByRole("button", { name: "J8, White stone" })).toBeVisible();
+  });
+
   test("square four places four pieces then slides them", async ({ page }) => {
     await page.goto("/games/gomoku");
     await openSetup(page);

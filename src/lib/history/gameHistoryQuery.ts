@@ -114,7 +114,8 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
 }
 
 export function buildGameWhere(query: GameHistoryQuery): Prisma.GameWhereInput {
-  const conditions: Prisma.GameWhereInput[] = [];
+  // The record is every finished game; a match still being played is in its players' lists, not here.
+  const conditions: Prisma.GameWhereInput[] = [{ status: "finished" }];
 
   if (query.search !== null) {
     conditions.push({

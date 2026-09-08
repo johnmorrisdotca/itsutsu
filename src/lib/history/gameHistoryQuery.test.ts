@@ -61,8 +61,8 @@ describe("toGameHistoryQuery", () => {
 });
 
 describe("buildGameWhere", () => {
-  it("is unfiltered when nothing is asked for", () => {
-    expect(buildGameWhere(parse("")!)).toEqual({});
+  it("lists only finished games when nothing else is asked for", () => {
+    expect(buildGameWhere(parse("")!)).toEqual({ AND: [{ status: "finished" }] });
   });
 
   it("searches both seats case-insensitively", () => {

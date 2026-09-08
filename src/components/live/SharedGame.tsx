@@ -84,7 +84,7 @@ export function SharedGame({
   });
 
   const detail = game ?? initial;
-  const state = replayGame(detail);
+  const state = settleFromRecord(replayGame(detail), detail);
 
   const played = state.moves.length;
   useEffect(() => {
@@ -235,6 +235,7 @@ export function SharedGame({
         seat={seat}
         yourTurn={yourTurn}
         finished={state.status !== GAME_STATUS.playing}
+        finishedAt={detail.status === "finished" ? detail.lastMoveAt : null}
       />
 
       {error !== null ? (
@@ -370,30 +371,53 @@ export function SharedGame({
   );
 }
 
+/**
+ * A game the server has closed without a closing move — a resignation, or a
+ * strict timeout — as the board should show it. The move list alone would
+ * leave the loser's opponent looking at "Your move" until they reloaded.
+ */
+function settleFromRecord(state: ReturnType<typeof replayGame>, detail: GameDetail): ReturnType<typeof replayGame> {
+  if (detail.status !== "finished" || state.status !== GAME_STATUS.playing) return state;
+  if (detail.result === "draw") return { ...state, status: GAME_STATUS.draw };
+  const winner = detail.winner === STONES.black || detail.winner === STONES.white ? detail.winner : null;
+  if (winner === null) return state;
+  return { ...state, status: GAME_STATUS.won, winner, winBy: null };
+}
+
 function TurnBanner({
   state,
   seat,
   yourTurn,
   finished,
+  finishedAt = null,
 }: {
   state: ReturnType<typeof replayGame>;
   seat: Stone | null;
   yourTurn: boolean;
   finished: boolean;
+  /** When the last move landed, once the game is over; shown so nobody has to go to the record for it. */
+  finishedAt?: string | null;
 }) {
   if (finished) {
     const won = state.winner;
     return (
-      <p className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${TONE_CLASS.great}`}>
+      <p className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${TONE_CLASS.great}`} data-testid="turn-banner">
         {won === null
           ? "Draw. The board is full."
           : state.winBy === WIN_REASONS.resign
             ? `${STONE_DISPLAY[won].label} wins by resignation.`
+            : state.winBy === null
+              ? `${STONE_DISPLAY[won].label} wins. The game is over.`
             : state.winBy === WIN_REASONS.count
               ? `${STONE_DISPLAY[won].label} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}.`
               : state.winBy === WIN_REASONS.camp
                 ? `${STONE_DISPLAY[won].label} wins: the far camp is full.`
                 : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
+        {finishedAt !== null ? (
+          <span className="block text-xs font-normal opacity-80" data-testid="finished-at">
+            Finished {new Date(finishedAt).toLocaleString()}
+          </span>
+        ) : null}
       </p>
     );
   }

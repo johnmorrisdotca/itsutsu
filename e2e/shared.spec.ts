@@ -111,6 +111,21 @@ test.describe("a game played from two devices", () => {
     await expect(page.getByTestId("shared-open-line")).toContainText("posted on the games page");
   });
 
+  test("a match says when it started, and when it finished once it is over", async ({ page, request }) => {
+    const game = await startGame(request);
+    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await expect(page.getByTestId("shared-times-line")).toContainText("Started");
+    await expect(page.getByTestId("shared-times-line")).not.toContainText("finished");
+    expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status()).toBe(200);
+    // The board learns of the end on its next poll, without a reload, and says when it came.
+    await expect(page.getByTestId("turn-banner")).toContainText("Black wins", { timeout: 15_000 });
+    await expect(page.getByTestId("finished-at")).toContainText("Finished");
+    // A finished match lives at its record, which says both times in its heading.
+    await page.reload();
+    await expect(page).toHaveURL(/\/history\/gomoku\//);
+    await expect(page.getByText(/Started .* · finished /).first()).toBeVisible();
+  });
+
   test("starting a shared game from the board lands on the match", async ({ page }) => {
     await page.goto("/games/gomoku");
     await page.getByTestId("start-shared-game").click();

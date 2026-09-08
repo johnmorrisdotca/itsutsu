@@ -53,8 +53,16 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
           {GAME_COPY.emptyRecord}
         </p>
       ) : (
+        <details className="group" open data-testid="move-history-fold">
+          <summary className="flex cursor-pointer list-none items-center justify-between text-xs text-muted">
+            <span>
+              {record.length} {record.length === 1 ? "move" : "moves"}
+            </span>
+            <span className="group-open:hidden">show</span>
+            <span className="hidden group-open:inline">hide</span>
+          </summary>
         <ol
-          className="max-h-56 overflow-y-auto rounded-lg border border-rule text-sm"
+          className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-rule text-sm"
           data-testid="move-history"
         >
           {record.map((move, index) => {
@@ -122,6 +130,7 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
             );
           })}
         </ol>
+        </details>
       )}
     </section>
   );

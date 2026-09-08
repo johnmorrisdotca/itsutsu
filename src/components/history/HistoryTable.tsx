@@ -13,8 +13,22 @@ function playedOn(iso: string): string {
   });
 }
 
-function nameOr(name: string, fallback: string): string {
-  return name.trim() === "" ? fallback : name;
+/**
+ * A player's name, leading to their page when there is one behind it: a name
+ * in a finished game has a record, and a blank seat has nothing to link.
+ */
+function PlayerName({ name, fallback, linkable }: { name: string; fallback: string; linkable: boolean }) {
+  if (name.trim() === "") return <>{fallback}</>;
+  if (!linkable) return <>{name}</>;
+  return (
+    <Link
+      href={`/players/${encodeURIComponent(name)}`}
+      className="relative z-10 underline-offset-2 hover:underline"
+      data-testid="history-player"
+    >
+      {name}
+    </Link>
+  );
 }
 
 /** One row per game. The whole row is the link into the replay. */
@@ -31,17 +45,22 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
     <ul className="flex flex-col gap-2" data-testid="history-list">
       {items.map((game) => {
         const result = GAME_RESULT_DISPLAY[game.result];
+        // An abandoned game earns nobody a record, so its names lead nowhere.
+        const linkable = game.result !== "abandoned";
         return (
-          <li key={game.id}>
-            <Link
-              href={recordPath(game.variant, game.id)}
-              className="grid grid-cols-2 items-center gap-3 rounded-xl border border-rule px-4 py-3 transition-colors hover:bg-shade sm:grid-cols-[1fr_auto_auto_auto]"
-            >
+          // The row is the link into the replay, stretched over the card; a name inside it is its own link, above it.
+          <li key={game.id} className="relative">
+            <div className="grid grid-cols-2 items-center gap-3 rounded-xl border border-rule px-4 py-3 transition-colors hover:bg-shade sm:grid-cols-[1fr_auto_auto_auto]">
+              <Link
+                href={recordPath(game.variant, game.id)}
+                className="absolute inset-0 rounded-xl"
+                aria-label={`Replay: ${game.blackName.trim() || SEAT_DISPLAY.one.label} vs ${game.whiteName.trim() || SEAT_DISPLAY.two.label}, ${playedOn(game.playedAt)}`}
+              />
               <span className="flex flex-col">
                 <span className="font-medium">
-                  {nameOr(game.blackName, SEAT_DISPLAY.one.label)}
+                  <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} linkable={linkable} />
                   <span className="px-2 text-muted">vs</span>
-                  {nameOr(game.whiteName, SEAT_DISPLAY.two.label)}
+                  <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={linkable} />
                 </span>
                 <span className="text-xs text-muted">{playedOn(game.playedAt)}</span>
               </span>
@@ -60,7 +79,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
                 {result.label}
                 <span className="font-mincho ml-1.5 text-muted">{result.kanji}</span>
               </span>
-            </Link>
+            </div>
           </li>
         );
       })}

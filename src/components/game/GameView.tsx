@@ -70,23 +70,32 @@ export function GameView({
    * left alone.
    */
   const holdingPiece = session.hand.piece !== null;
-  const { rotatePiece, flipPiece, toggleSingle } = actions;
+  const { rotatePiece, flipPiece, toggleSingle, jumpTo } = actions;
+  const { moveTotal } = session;
   useEffect(() => {
-    if (!holdingPiece) return;
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target !== null && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const key = event.key.toLowerCase();
-      if (key === "r" || key === "arrowright") rotatePiece();
-      else if (key === "f" || key === "arrowup") flipPiece();
-      else if (key === "s") toggleSingle();
-      else return;
+      if (holdingPiece) {
+        if (key === "r" || key === "arrowright") rotatePiece();
+        else if (key === "f" || key === "arrowup") flipPiece();
+        else if (key === "s") toggleSingle();
+        else return;
+      } else {
+        // With nothing in hand the arrows walk the record, as they do on a replay.
+        if (key === "arrowleft") jumpTo(Math.max(0, moveIndex - 1));
+        else if (key === "arrowright") jumpTo(Math.min(moveTotal, moveIndex + 1));
+        else if (key === "home") jumpTo(0);
+        else if (key === "end") jumpTo(moveTotal);
+        else return;
+      }
       event.preventDefault();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [holdingPiece, rotatePiece, flipPiece, toggleSingle]);
+  }, [holdingPiece, rotatePiece, flipPiece, toggleSingle, jumpTo, moveIndex, moveTotal]);
 
   return (
     <div className="flex w-full flex-col gap-8">
