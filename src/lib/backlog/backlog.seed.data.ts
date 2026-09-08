@@ -175,4 +175,107 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     status: BACKLOG_STATUSES.done,
     askedBy: "John",
   },
+  {
+    key: "start-a-game-redesigned-as-one-sentence",
+    title: "Start a game as one sentence, not five cards",
+    detail:
+      "The lobby offers auto-match, the waiting room, posting a seat and challenging a member as four separate cards, which is the same act said four ways. Wanted instead: one sentence over one board — play this game, at this pace, with anyone or whoever is here or a buddy — and the button says what will happen when it is pressed.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.building,
+    askedBy: "John",
+  },
+  {
+    key: "hex-on-a-hexagonal-board",
+    title: "Hex ヘックス, on a rhombus of hexagons",
+    detail:
+      "Connect your two opposite edges with an unbroken chain. A new board topology — six neighbours to a cell rather than four or eight — but no captures and no movement, so it is nearer Toroidal Five than Halma in size. A draw is impossible on a full board, which is a fact worth stating on its rules page. The swap rule we already have answers the first player's advantage.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.proposed,
+    askedBy: "John",
+  },
+  {
+    key: "a-game-that-ends-in-a-draw-by-move-count",
+    title: "A draw when nobody has won by a share of the board",
+    detail:
+      "Some games can run forever between two careful players. A per-game setting, with two presets: no winner by half the board's points, or by three quarters of them, and the game is a draw. A fraction of the board rather than a fixed number, so it needs no arithmetic per size.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.proposed,
+    askedBy: "John",
+  },
+  {
+    key: "filters-on-the-waiting-room",
+    title: "Filters on the waiting room, and a flag beside a name",
+    detail:
+      "Posted seats arrive as one list. Wanted: narrow them by the time limit, by the opponent's rating, and by what a missed deadline costs — and show each member's country as a small flag beside their name, as the older sites did.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.proposed,
+    askedBy: "John",
+  },
+  {
+    key: "how-long-finished-games-stay-in-my-list",
+    title: "Choose how long a finished game stays in your own list",
+    detail:
+      "A member's own game list keeps every finished game forever, and fills up. Wanted: a setting for how many days a finished game stays there — a fortnight, say — with the record itself keeping everything as it always has.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.proposed,
+    askedBy: "John",
+  },
+  {
+    key: "seed-members-who-play-every-variant",
+    title: "Seed ordinary members who play every game",
+    detail:
+      "Ratings, champions and the record are all empty on a new site, so nothing can be judged by looking at it. Wanted: a script that makes members of about average strength and has them play a handful of games of every variant, so the ladders and the lists have something honest in them.",
+    kind: BACKLOG_KINDS.chore,
+    status: BACKLOG_STATUSES.proposed,
+    askedBy: "John",
+  },
+  {
+    key: "gomoku-roku-needs-a-rules-source",
+    title: "Gomoku Roku, once there is a rules source for it",
+    detail:
+      "A small-press hex-board game of five in a row that John found. It places and moves stones, so it is Halma-sized rather than a spec row, and the only site with the rules blocks us from reading them. Held until a source can be read rather than guessed at.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.proposed,
+    askedBy: "John",
+  },
+  {
+    key: "grand-reversi-on-a-bigger-board",
+    title: "Grand Reversi 大リバーシ, the flipping game on ten by ten",
+    detail: "Landed in 0.48.0: the board ItsYourTurn called Flipversi 10x10, thirty-six squares larger than the usual one.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.done,
+    askedBy: "John",
+  },
+  {
+    key: "the-plain-game-is-called-gomoku",
+    title: "Call the plain game Gomoku, not Freestyle",
+    detail: "Landed in 0.51.0: the plain name belongs to the plain game, as GoldToken has it, and the exact-five form became Tournament Gomoku. Labels only; no address changed.",
+    kind: BACKLOG_KINDS.chore,
+    status: BACKLOG_STATUSES.done,
+    askedBy: "John",
+  },
+  {
+    key: "every-game-on-one-page",
+    title: "Every game and variant on one plain page",
+    detail: "Landed in 0.51.0 at /games/all: every game, family by family, with what each one is and the names the other sites gave it.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.done,
+    askedBy: "John",
+  },
+  {
+    key: "every-name-is-a-link",
+    title: "Every name the site prints leads to that player",
+    detail: "Landed in 0.52.0: a member has a page from the day they join, the lists all link to it, and a test walks them and fails if any name is printed without a link.",
+    kind: BACKLOG_KINDS.fix,
+    status: BACKLOG_STATUSES.done,
+    askedBy: "John",
+  },
+  {
+    key: "clear-the-games-from-before-sign-in",
+    title: "Clear the test games from before sign-in existed",
+    detail: "Done on 2026-09-08: six games with no names on either seat, left over from before Google sign-in, were removed from the record.",
+    kind: BACKLOG_KINDS.chore,
+    status: BACKLOG_STATUSES.done,
+    askedBy: "John",
+  },
 ];
