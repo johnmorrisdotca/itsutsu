@@ -10,6 +10,9 @@ test.describe("a visitor with no invite", () => {
   test("is sent to the door instead of the games", async ({ page }) => {
     await page.goto("/games");
     await expect(page).toHaveURL(/\/join\?next=%2Fgames/);
+    await expect(page.getByTestId("google-signin")).toBeVisible();
+    await expect(page.getByTestId("invite-code")).toHaveCount(0);
+    await page.getByTestId("show-invite-code").click();
     await expect(page.getByTestId("invite-code")).toBeVisible();
   });
 
@@ -143,6 +146,7 @@ test.describe("the account", () => {
     await expect(page.getByTestId("sign-in")).toBeVisible();
     await page.goto("/join");
     await expect(page.getByTestId("google-signin")).toBeVisible();
+    await page.getByTestId("show-invite-code").click();
     await expect(page.getByTestId("invite-code")).toBeVisible();
   });
 });

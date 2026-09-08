@@ -46,6 +46,10 @@ export function JoinForm({
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // An invite code is the door for someone with no Google account. Someone
+  // who has one sees only the button; the code stays out of the way until
+  // they say they need it — or until a code arrived with the link.
+  const [showInviteCode, setShowInviteCode] = useState(initialCode !== "");
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -97,7 +101,7 @@ export function JoinForm({
           {pending !== null
             ? `Welcome, ${pending.name || pending.email}. One more thing: the ${CODE_WORDS} words you were given. After this, Google alone lets you in.`
             : mode === "invite"
-              ? "Sign in with Google, or enter the words you were given."
+              ? "Sign in with Google. No account? The words you were given will let you in instead."
               : "Sign in as the operator."}
         </p>
       </div>
@@ -114,29 +118,41 @@ export function JoinForm({
           >
             Continue with Google
           </button>
-          <p className="text-center text-xs text-muted">
-            {mode === "invite" ? "or, with an invite code" : "or, with the operator token"}
-          </p>
+          {mode === "invite" && !showInviteCode ? (
+            <button
+              type="button"
+              onClick={() => setShowInviteCode(true)}
+              className="text-center text-xs text-muted underline underline-offset-4"
+              data-testid="show-invite-code"
+            >
+              No Google account? Use an invite code instead
+            </button>
+          ) : mode === "admin" ? (
+            <p className="text-center text-xs text-muted">or, with the operator token</p>
+          ) : null}
         </>
       ) : null}
 
       {mode === "invite" ? (
-        <label className="flex flex-col gap-1">
-          <span className="text-sm">Invite code</span>
-          <input
-            className={`${INPUT_CLASS} font-mono`}
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-            placeholder="hoshi-kuma-nami"
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            data-testid="invite-code"
-          />
-          <span className="text-xs text-muted">
-            Capitals, spaces or hyphens — any of them work.
-          </span>
-        </label>
+        (!googleReady || pending !== null || showInviteCode) && (
+          <label className="flex flex-col gap-1">
+            <span className="text-sm">Invite code</span>
+            <input
+              className={`${INPUT_CLASS} font-mono`}
+              value={code}
+              onChange={(event) => setCode(event.target.value)}
+              placeholder="hoshi-kuma-nami"
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              autoFocus={showInviteCode}
+              data-testid="invite-code"
+            />
+            <span className="text-xs text-muted">
+              Capitals, spaces or hyphens — any of them work.
+            </span>
+          </label>
+        )
       ) : (
         <>
           <label className="flex flex-col gap-1">
