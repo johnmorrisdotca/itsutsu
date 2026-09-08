@@ -14,6 +14,7 @@ import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyG
 import { findLegacyPlayer, findLinkedLegacies } from "@/lib/legacy/legacyPlayers.data";
 import type { LegacyClassRecord, LegacyGame, LegacyGameRecord, LegacyPlayer } from "@/lib/legacy/legacyPlayers.types";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
+import { findMemberByName } from "@/lib/auth/members";
 import { fetchPlayer } from "@/lib/rating/players";
 import { playerKey } from "@/lib/rating/playerKey";
 
@@ -321,8 +322,16 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
     return <LegacyOwnPage legacy={legacyBySlug} />;
   }
 
-  const [player, record, gifts] = await Promise.all([fetchPlayer(decoded), fetchPlayerRecord(decoded), fetchTimeGiftRecord(decoded)]);
-  const hasLiveData = player !== null || record.games > 0;
+  const [player, record, gifts, member] = await Promise.all([
+    fetchPlayer(decoded),
+    fetchPlayerRecord(decoded),
+    fetchTimeGiftRecord(decoded),
+    findMemberByName(decoded),
+  ]);
+  // A member has a page from the day they join, before they have finished a
+  // game: every list that prints their name links to it, and a link that
+  // leads nowhere is worse than no page.
+  const hasLiveData = player !== null || record.games > 0 || member !== null;
   // A live account with no games yet but more than one linked record is not
   // reachable today — nothing sets linkedKey yet — so only the first would
   // show here; worth widening if that combination ever becomes real.
@@ -338,7 +347,7 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
     <Page width="standard" gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
-        <h1 className="text-lg font-semibold">{player?.name ?? decoded}</h1>
+        <h1 className="text-lg font-semibold">{player?.name ?? member?.name ?? decoded}</h1>
         <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
           <div>
             <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Rating</dt>
@@ -365,6 +374,11 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
           </div>
         </dl>
         {tier !== null ? <p className="text-xs text-muted">{tier.note}</p> : null}
+        {record.games === 0 ? (
+          <p className="text-xs text-muted" data-testid="player-no-games">
+            No finished games yet. A rating appears after the first one against another member.
+          </p>
+        ) : null}
       </section>
 
       {gifts.gaveIn > 0 || gifts.receivedIn > 0 ? (
@@ -401,7 +415,18 @@ export default async function PlayerPage({ params }: PageProps<"/players/[name]"
             {record.recent.map((game) => (
               <li key={game.id} className="flex items-center justify-between gap-3 py-1.5">
                 <span>
-                  {variantLabel(game.variant)} · vs {game.opponent || "anonymous"}
+                  {variantLabel(game.variant)} · vs{" "}
+                  {game.opponent ? (
+                    <Link
+                      href={`/players/${encodeURIComponent(game.opponent)}`}
+                      className="underline-offset-2 hover:underline"
+                      data-testid="player-opponent"
+                    >
+                      {game.opponent}
+                    </Link>
+                  ) : (
+                    "anonymous"
+                  )}
                 </span>
                 <span className="flex items-center gap-3">
                   <span className="font-mono text-xs tabular-nums">{game.outcome}</span>

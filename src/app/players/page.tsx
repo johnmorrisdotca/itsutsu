@@ -86,9 +86,17 @@ export default async function PlayersPage() {
               {here.map((entry) => (
                 <span key={entry.email} className="flex items-center gap-1">
                   <RecencyMark recency={entry.recency} />
-                  <Link href={`/players/${encodeURIComponent(entry.name)}`} className="underline-offset-2 hover:underline">
-                    {entry.name || entry.email}
-                  </Link>
+                  {entry.name.trim() !== "" ? (
+                    <Link
+                      href={`/players/${encodeURIComponent(entry.name)}`}
+                      className="underline-offset-2 hover:underline"
+                      data-testid="here-name"
+                    >
+                      {entry.name}
+                    </Link>
+                  ) : (
+                    entry.email
+                  )}
                   {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
                 </span>
               ))}
@@ -128,12 +136,16 @@ export default async function PlayersPage() {
                       // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
                       <img src={entry.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
                     ) : null}
-                    {entry.profile !== null ? (
-                      <Link href={`/players/${encodeURIComponent(entry.name)}`} className="underline-offset-2 hover:underline">
-                        {entry.name || entry.email}
+                    {entry.name.trim() !== "" ? (
+                      <Link
+                        href={`/players/${encodeURIComponent(entry.name)}`}
+                        className="underline-offset-2 hover:underline"
+                        data-testid="directory-name"
+                      >
+                        {entry.name}
                       </Link>
                     ) : (
-                      entry.name || entry.email
+                      entry.email
                     )}
                   </span>
                 </td>

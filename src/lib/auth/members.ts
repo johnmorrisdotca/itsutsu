@@ -95,3 +95,18 @@ export type ProfileUpdate = Partial<Pick<MemberProfile, "city" | "country" | "ti
 export async function updateProfile(email: string, update: ProfileUpdate): Promise<void> {
   await prisma.member.update({ where: { email: foldEmail(email) }, data: update });
 }
+
+/**
+ * The member who plays under a name, however it was capitalised. A name is
+ * how the site addresses somebody, so a name typed into an address bar or
+ * printed beside a game has to find them; the address is the key underneath.
+ */
+export async function findMemberByName(name: string): Promise<Member | null> {
+  const wanted = name.trim();
+  if (wanted === "") return null;
+  const row = await prisma.member.findFirst({
+    where: { name: { equals: wanted, mode: "insensitive" } },
+    select: { email: true, name: true, picture: true },
+  });
+  return row;
+}

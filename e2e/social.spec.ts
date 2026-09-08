@@ -62,29 +62,23 @@ test.describe("notes, messages, deadlines and players", () => {
     expect(own.status()).toBe(409);
   });
 
-  test("a finished game between named players rates them and shows on their profiles", async ({ page, request }) => {
+  test("a finished shared game between named players rates them and shows on their profiles", async ({ page, request }) => {
     const stamp = Date.now().toString(36);
     const black = `Sora ${stamp}`;
     const white = `Ren ${stamp}`;
-    const moves = [
-      [7, 3, "black"], [0, 0, "white"], [7, 4, "black"], [0, 1, "white"],
-      [7, 5, "black"], [0, 2, "white"], [7, 6, "black"], [0, 3, "white"], [7, 7, "black"],
-    ].map(([row, col, stone]) => ({ row, col, stone, kind: "place" }));
-    const recorded = await request.post("/api/games", {
-      data: {
-        blackName: black,
-        whiteName: white,
-        size: 15,
-        winLength: 5,
-        variant: "freestyle",
-        obstacles: "none",
-        opener: "black",
-        result: "black",
-        winner: "black",
-        moves,
-      },
+    /*
+     * A shared game, given up by white. Only a shared game rates: a game at
+     * one screen is filed and never rated, because the site cannot tell who
+     * was really playing it.
+     */
+    const started = await request.post("/api/games/live", {
+      data: { blackName: black, whiteName: white, size: 9, variant: "freestyle" },
     });
-    expect(recorded.status()).toBe(201);
+    expect(started.status()).toBe(201);
+    const game = (await started.json()) as { id: string; whiteToken: string };
+    expect(
+      (await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status(),
+    ).toBe(200);
 
     await page.goto(`/players/${encodeURIComponent(black)}`);
     await expect(page.getByTestId("player-record")).toContainText("1W · 0L · 0D");

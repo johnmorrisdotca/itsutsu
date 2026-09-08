@@ -111,7 +111,7 @@ export function GameReplay({
   const current = game.moves[index - 1];
 
   return (
-    <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
+    <div className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch">
       <div className="w-full min-w-0 flex-1">
         <div className="mx-auto w-full max-w-[min(100%,38rem)]">
           <Board
@@ -123,6 +123,8 @@ export function GameReplay({
         </div>
       </div>
 
+      {/* The column matches the board's height on a wide screen, and the record
+          hangs from the bottom of it rather than floating under the buttons. */}
       <aside className="flex w-full flex-col gap-4 lg:w-72">
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted">
@@ -183,7 +185,9 @@ export function GameReplay({
           {showNumbers ? "Hide" : "Show"} move numbers
         </Button>
 
-        <MoveList game={game} current={index} onJump={setIndex} />
+        <div className="lg:mt-auto">
+          <MoveList game={game} current={index} onJump={setIndex} />
+        </div>
       </aside>
     </div>
   );
