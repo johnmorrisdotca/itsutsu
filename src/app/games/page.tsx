@@ -4,6 +4,10 @@ import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { InviteFriends } from "@/components/mine/InviteFriends";
+import { FamilyMark } from "@/components/games/FamilyMark";
+import { fetchPlayedCounts } from "@/lib/history/gameCounts";
+import { recordPath } from "@/lib/gomoku/slugs";
+import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
@@ -22,7 +26,8 @@ export const metadata = { title: "Games" };
  * below for whoever wants to look around.
  */
 export default async function LobbyPage() {
-  const email = await currentEmail();
+  const [email, counts] = await Promise.all([currentEmail(), fetchPlayedCounts()]);
+  const playedIn = (games: readonly string[]) => games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0);
   return (
     <Page width="standard">
       <SiteHeader />
@@ -80,13 +85,20 @@ export default async function LobbyPage() {
           Everything below is five in a row with one idea changed. Open a family to see
           its games; each one has a rules page and a place in the learning shelf.
         </p>
-        {GAME_FAMILIES.map((family) => (
-          <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family">
-            <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3">
-              <span className="flex items-baseline gap-2 font-semibold">
-                {family.title}
-                <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
-                <span className="text-xs font-normal text-muted">{family.games.length} games</span>
+        {GAME_FAMILIES.map((family, index) => (
+          <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family" open={index === 0}>
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+              <span className="flex items-center gap-3">
+                <FamilyMark family={family.title} className="size-12 shrink-0 rounded-md" />
+                <span className="flex flex-col">
+                  <span className="flex items-baseline gap-2 font-semibold">
+                    {family.title}
+                    <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
+                  </span>
+                  <span className="text-xs font-normal text-muted">
+                    {family.games.length} games · {playedIn(family.games)} played here
+                  </span>
+                </span>
               </span>
               <span className="text-xs text-muted group-open:hidden">show</span>
               <span className="hidden text-xs text-muted group-open:inline">hide</span>
@@ -95,18 +107,23 @@ export default async function LobbyPage() {
             <ul className="mt-3 grid gap-2 sm:grid-cols-2">
               {family.games.map((variant) => {
                 const copy = RULE_VARIANT_DISPLAY[variant];
+                const count = counts.get(variant);
                 return (
-                  <li key={variant} className="flex items-baseline justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm">
-                    <span className="flex flex-col">
-                      <span className="font-medium">{copy.label}</span>
+                  <li key={variant} className="flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm">
+                    <span className="flex min-w-0 flex-col">
+                      <span className="font-medium">{copy.label} <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span></span>
                       <span className="text-xs text-muted">{copy.tagline}</span>
-                      {copy.inspiredBy !== undefined ? (
+                      {count !== undefined && count.last !== null ? (
+                        <Link href={recordPath(variant, count.last.id)} className="text-[0.7rem] text-muted underline-offset-2 hover:underline">
+                          {count.played} played · last {count.last.blackName.trim() || "Black"} vs {count.last.whiteName.trim() || "White"}
+                        </Link>
+                      ) : copy.inspiredBy !== undefined ? (
                         <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
                       ) : null}
                     </span>
-                    <span className="flex shrink-0 gap-2 text-xs">
-                      <Link href={rulesPath(variant)} className="underline-offset-2 hover:underline">rules</Link>
-                      <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">play</Link>
+                    <span className="flex shrink-0 items-center gap-2 text-xs">
+                      <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
+                      <Link href={gamePath(variant)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-3 py-1 text-xs`}>play</Link>
                     </span>
                   </li>
                 );
