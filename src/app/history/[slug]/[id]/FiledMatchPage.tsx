@@ -10,6 +10,9 @@ import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
+import { ChallengeButton } from "@/components/mine/ChallengeButton";
+import { currentSession } from "@/lib/auth/currentSession";
+import { prisma } from "@/lib/prisma";
 
 /**
  * A filed game, at /history/<slug>/<id>: the replay, and with a move number on
@@ -26,10 +29,28 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
   // Still being played: it is not in the record yet.
   if (game.status === "active") redirect(matchPath(game.variant, game.id, move));
 
-  return <FiledMatch game={game} move={move ?? game.moveCount} />;
+  /*
+   * A rematch is a challenge to the other seat's account, offered to whoever
+   * held a seat here and is signed in. Colours swap: the challenger takes black.
+   */
+  const [me, members] = await Promise.all([
+    currentSession(),
+    prisma.game.findUnique({ where: { id }, select: { blackMember: true, whiteMember: true } }),
+  ]);
+  const mine = me?.email ?? null;
+  const other =
+    mine === null || members === null
+      ? null
+      : members.blackMember === mine
+        ? members.whiteMember
+        : members.whiteMember === mine
+          ? members.blackMember
+          : null;
+
+  return <FiledMatch game={game} move={move ?? game.moveCount} rematch={other} />;
 }
 
-function FiledMatch({ game, move }: { game: GameDetail; move: number }) {
+function FiledMatch({ game, move, rematch }: { game: GameDetail; move: number; rematch: string | null }) {
   const result = GAME_RESULT_DISPLAY[game.result];
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
@@ -49,9 +70,14 @@ function FiledMatch({ game, move }: { game: GameDetail; move: number }) {
             · {result.label} <span className="font-mincho">{result.kanji}</span>
           </p>
         </div>
-        <Link href={recordPath(game.variant)} className="text-sm underline underline-offset-4">
-          Back to the record
-        </Link>
+        <span className="flex items-center gap-3">
+          {rematch !== null ? (
+            <ChallengeButton email={rematch} variant={game.variant} label="Rematch 再戦" strong />
+          ) : null}
+          <Link href={recordPath(game.variant)} className="text-sm underline underline-offset-4">
+            Back to the record
+          </Link>
+        </span>
       </div>
 
       <GameReplay

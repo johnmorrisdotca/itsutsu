@@ -135,6 +135,9 @@ export async function createLiveGame(
     opener: Stone;
     hotSeat?: boolean;
     seed?: number;
+    /** The accounts holding each seat, for a challenge sent to a named member. */
+    blackMember?: string;
+    whiteMember?: string;
   },
 ): Promise<CreatedGame> {
   const { handicap, open, hotSeat = false, seed, ...rest } = input;
@@ -328,7 +331,8 @@ export async function appendMove(
   }
 
   if (finished) {
-    await recordResult(row.blackName, row.whiteName, next.winner);
+    // A game at one screen is filed, never rated: the site cannot tell who was playing.
+    if (!isHotSeat(row)) await recordResult(row.blackName, row.whiteName, next.winner);
     if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
   } else if (next.toPlay !== stone && !isHotSeat(row)) {
     await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });

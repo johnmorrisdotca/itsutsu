@@ -80,6 +80,7 @@ export function PieceTray({
           <Button onClick={onFlip} disabled={disabled || hand.layingSingle} data-testid="flip-piece">
             {GAME_COPY.flipPiece.label}
           </Button>
+          <span className="w-full text-[0.7rem] text-muted">Keys: R turns, F flips, S lays a single stone.</span>
         </div>
       </div>
 

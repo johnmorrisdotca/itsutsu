@@ -111,3 +111,31 @@ export async function recordResult(
     }),
   ]);
 }
+
+/** One row of the directory: a member, with their record if they have one. */
+export type DirectoryEntry = {
+  email: string;
+  name: string;
+  picture: string;
+  lastSeenAt: string;
+  profile: PlayerProfile | null;
+};
+
+/**
+ * Everyone who has come in, most recently seen first, with the record their
+ * name has earned. A member who has not finished a game yet is still listed —
+ * the directory is how people find each other to play.
+ */
+export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
+  const members = await prisma.member.findMany({ orderBy: { lastSeenAt: "desc" }, take: limit });
+  const keys = members.map((member) => playerKey(member.name)).filter((key) => key !== "");
+  const players = keys.length === 0 ? [] : await prisma.player.findMany({ where: { key: { in: keys } } });
+  const byKey = new Map(players.map((row) => [row.key, toProfile(row)]));
+  return members.map((member) => ({
+    email: member.email,
+    name: member.name,
+    picture: member.picture,
+    lastSeenAt: member.lastSeenAt.toISOString(),
+    profile: byKey.get(playerKey(member.name)) ?? null,
+  }));
+}

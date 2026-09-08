@@ -28,6 +28,8 @@ import {
 } from "@/lib/history/gameSettingsSchema";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { seatCookieName } from "@/lib/history/seatCookie";
+import { currentSession } from "@/lib/auth/currentSession";
+import { prisma } from "@/lib/prisma";
 import { createLiveGame } from "@/lib/history/liveGame";
 import {
   RATE_LIMITS,
@@ -55,6 +57,8 @@ const liveGameSchema = z.object({
   seed: z.number().int().min(0).max(SEED_RANGE).optional(),
   /** The line length, where the game lets it vary. */
   winLength: z.number().int().min(3).max(19).optional(),
+  /** A member to challenge: they get the white seat, the challenger black. */
+  challenge: z.string().email().optional(),
 });
 
 /** How long a claimed seat is remembered. */
@@ -83,8 +87,30 @@ export async function POST(request: Request) {
       return unprocessable("That game could not be started.", parsed.error.issues);
     }
 
+    /*
+     * A challenge binds both seats to accounts, so the game appears in the
+     * other member's list at once. It needs a signed-in challenger and a
+     * member to challenge; names default to the accounts' own.
+     */
+    let seats: { blackMember?: string; whiteMember?: string; blackName?: string; whiteName?: string } = {};
+    if (parsed.data.challenge !== undefined) {
+      const me = await currentSession();
+      if (!me?.email) return NextResponse.json({ error: "Sign in to challenge someone." }, { status: 401, headers: NO_STORE });
+      const other = await prisma.member.findUnique({ where: { email: parsed.data.challenge } });
+      if (other === null) return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
+      seats = {
+        blackMember: me.email,
+        whiteMember: other.email,
+        blackName: parsed.data.blackName || me.name || "",
+        whiteName: parsed.data.whiteName || other.name,
+      };
+    }
+
+    const { challenge: _challenge, ...settings } = parsed.data;
+    void _challenge;
     const created = await createLiveGame({
-      ...parsed.data,
+      ...settings,
+      ...seats,
       handicap: parsed.data.handicap ?? NO_HANDICAP,
       winLength:
         VARIANT_SPECS[parsed.data.variant].winLength ??

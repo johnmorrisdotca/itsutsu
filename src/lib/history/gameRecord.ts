@@ -3,7 +3,6 @@ import "server-only";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { recordResult } from "@/lib/rating/players";
 import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { fetchGameDetail } from "./gameHistory";
 import { GAME_RESULTS, PLAYER_NAME_MAX } from "./gameHistory.constants";
@@ -124,10 +123,11 @@ export async function recordGame(input: GameRecordInput): Promise<GameDetail> {
     select: { id: true },
   });
 
-  // A decisive or drawn game between two named players moves their ratings.
-  if (input.result !== "abandoned") {
-    await recordResult(input.blackName, input.whiteName, input.winner);
-  }
+  /*
+   * A game filed from one browser is a game at one screen: kept in the record,
+   * never rated, because the site cannot tell who was at the keyboard.
+   * Ratings move only through shared games, in liveGame.ts.
+   */
 
   const detail = await fetchGameDetail(created.id);
   if (detail === null) {

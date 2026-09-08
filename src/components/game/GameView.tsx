@@ -62,6 +62,30 @@ export function GameView({
   }, [kept.matchId, moveIndex, playing, trackPath]);
   const showIdle = idle && session.state.status === GAME_STATUS.playing;
 
+  /*
+   * The piece games from the keyboard: R turns the piece, F flips it, S lays
+   * a single stone instead, as the on-screen buttons do. Typing in a field is
+   * left alone.
+   */
+  const holdingPiece = session.hand.piece !== null;
+  const { rotatePiece, flipPiece, toggleSingle } = actions;
+  useEffect(() => {
+    if (!holdingPiece) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target !== null && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const key = event.key.toLowerCase();
+      if (key === "r" || key === "arrowright") rotatePiece();
+      else if (key === "f" || key === "arrowup") flipPiece();
+      else if (key === "s") toggleSingle();
+      else return;
+      event.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [holdingPiece, rotatePiece, flipPiece, toggleSingle]);
+
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
