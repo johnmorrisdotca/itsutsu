@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.55.1
+- The last move of a finished game says when it ended, not when it was made
+
 ## 0.55.0
 - A rename can no longer reach a remembered player's name, or a name with a record behind it: a rating belongs to whoever earned it
 - New game asks first when a board is under way, instead of throwing it away on a stray click

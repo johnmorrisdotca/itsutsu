@@ -136,9 +136,12 @@ export function GameReplay({
                 <span className="font-mono">
                   {pointName(game.size, current)}
                 </span>
-                {/* The line is always there, so the slider does not jump as the times come and go. */}
+                {/* The line is always there, so the slider does not jump as the times come and go.
+                    The last move is when the game ended, paired with move 0's "started" below. */}
                 <span className="block text-xs" data-testid="move-made-at">
-                  {current.createdAt ? `made ${new Date(current.createdAt).toLocaleString()}` : "\u00a0"}
+                  {current.createdAt
+                    ? `${index === game.moveCount ? "ended" : "made"} ${new Date(current.createdAt).toLocaleString()}`
+                    : "\u00a0"}
                 </span>
               </>
             ) : (
