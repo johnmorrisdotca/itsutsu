@@ -73,6 +73,8 @@ export type GameMove = {
   col: number;
   stone: string;
   kind: string;
+  /** When the move landed, as an ISO string. Moves recorded before this column existed all carry the moment it was added. */
+  createdAt: string;
   /** Where a sliding piece came from, on `move` kinds. */
   from?: { row: number; col: number };
   /** The quarter turn that finished the move, in the twist games. */

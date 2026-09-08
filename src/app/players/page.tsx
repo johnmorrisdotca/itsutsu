@@ -12,6 +12,7 @@ import { buddyEmails } from "@/lib/social/buddies";
 import { fetchHereNow, recencyOf } from "@/lib/social/presence";
 import { currentSession } from "@/lib/auth/currentSession";
 import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
+import type { LegacyKind } from "@/lib/legacy/legacyPlayers.types";
 
 export const metadata = { title: "Players" };
 
@@ -19,6 +20,35 @@ export const metadata = { title: "Players" };
 export const dynamic = "force-dynamic";
 
 const LEADERS = 50;
+
+/** One roll of legacy players sharing a kind — "Remembered" or "Honorary members". */
+function LegacyRoll({ kind, label, kanji }: { kind: LegacyKind; label: string; kanji: string }) {
+  const players = LEGACY_PLAYERS.filter((legacy) => legacy.kind === kind);
+  if (players.length === 0) return null;
+  return (
+    <div
+      className="flex flex-col gap-2 rounded-lg border border-rule-strong bg-ivory/60 px-3 py-2.5"
+      data-testid={`legacy-roll-${kind}`}
+    >
+      <span className="flex items-baseline gap-2 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
+        {label} <span className="font-mincho font-normal normal-case tracking-normal opacity-70">{kanji}</span>
+      </span>
+      <ul className="flex flex-col gap-1 text-sm">
+        {players.map((legacy) => (
+          <li key={legacy.slug}>
+            <Link href={`/players/${legacy.slug}`} className="font-medium underline-offset-4 hover:underline">
+              {legacy.name}
+            </Link>
+            <span className="text-muted">
+              {" "}
+              — never played here, but {legacy.possessive ?? "their"} record from {legacy.source} is kept.
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 /**
  * The players, by rating. There are no accounts, so a name is a player:
@@ -62,29 +92,8 @@ export default async function PlayersPage() {
           <RecencyLegend />
         </div>
 
-        {LEGACY_PLAYERS.some((legacy) => legacy.kind === "remembered") ? (
-          <div
-            className="flex flex-col gap-2 rounded-lg border border-rule-strong bg-ivory/60 px-3 py-2.5"
-            data-testid="legacy-roll"
-          >
-            <span className="flex items-baseline gap-2 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-              Remembered <span className="font-mincho font-normal normal-case tracking-normal opacity-70">偲ぶ</span>
-            </span>
-            <ul className="flex flex-col gap-1 text-sm">
-              {LEGACY_PLAYERS.filter((legacy) => legacy.kind === "remembered").map((legacy) => (
-                <li key={legacy.slug}>
-                  <Link href={`/players/${legacy.slug}`} className="font-medium underline-offset-4 hover:underline">
-                    {legacy.name}
-                  </Link>
-                  <span className="text-muted">
-                    {" "}
-                    — never played here, but {legacy.possessive ?? "their"} record from {legacy.source} is kept.
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
+        <LegacyRoll kind="remembered" label="Remembered" kanji="偲ぶ" />
+        <LegacyRoll kind="honorary" label="Honorary members" kanji="名誉会員" />
 
         <p className="text-sm text-muted">
           Everyone who has come in, most recently seen first, with the record their name has

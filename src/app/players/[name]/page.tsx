@@ -85,15 +85,20 @@ function KeptGame({ game, viewedAs }: { game: LegacyGame; viewedAs: string }) {
   );
 }
 
+const LEGACY_OWN_PAGE_COPY: Record<"remembered" | "honorary", { badge: string; tail: string }> = {
+  remembered: { badge: "Remembered", tail: "Never played on Itsutsu — this record is kept, not earned here." },
+  honorary: { badge: "Honorary member", tail: "Never played on Itsutsu — kept here as an honorary member, in her own right." },
+};
+
 /** A legacy record with its own address — nobody here plays under this name. */
 function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
-  const remembered = legacy.kind === "remembered";
+  const copy = legacy.kind === "elsewhere" ? null : LEGACY_OWN_PAGE_COPY[legacy.kind];
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="legacy-player">
         <span className="w-fit rounded-full border border-rule-strong bg-ivory px-2.5 py-0.5 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-          {remembered ? "Remembered" : "Record elsewhere"}
+          {copy?.badge ?? "Record elsewhere"}
         </span>
         <h1 className="text-lg font-semibold">{legacy.name}</h1>
         <p className="text-sm text-muted">
@@ -101,9 +106,7 @@ function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
           Played as <span className="font-medium text-ink-soft">{legacy.handle ?? legacy.name}</span> on{" "}
           <span className="font-medium text-ink-soft">{legacy.source}</span>
           {legacy.joined !== undefined && legacy.lastActive !== undefined ? `, ${legacy.joined} to ${legacy.lastActive}` : null}.{" "}
-          {remembered
-            ? "Never played on Itsutsu — this record is kept, not earned here."
-            : "From before Itsutsu — kept alongside whatever they've since earned here."}
+          {copy?.tail ?? "From before Itsutsu — kept alongside whatever they've since earned here."}
         </p>
         {legacy.note !== undefined ? <p className="border-l-2 border-rule-strong pl-3 text-sm italic text-ink-soft">{legacy.note}</p> : null}
       </section>
@@ -176,17 +179,17 @@ function LegacyElsewherePanel({ legacy }: { legacy: LegacyPlayer }) {
  * the last few games. Everything comes from the games table and the player's
  * row; nothing here is stored twice.
  *
- * A remembered player never played here at all, and gets this whole address
- * to themselves — no rating, no tier, just the record kept from elsewhere. A
- * live member who also has a record from before Itsutsu gets both: their
- * live profile, and that earlier record appended beneath it.
+ * A remembered or honorary player never played here at all, and gets this
+ * whole address to themselves — no rating, no tier, just the record kept
+ * from elsewhere. A live member who also has a record from before Itsutsu
+ * gets both: their live profile, and that earlier record appended beneath it.
  */
 export default async function PlayerPage({ params }: PageProps<"/players/[name]">) {
   const { name } = await params;
   const decoded = decodeURIComponent(name);
 
   const legacyBySlug = findLegacyPlayer(decoded);
-  if (legacyBySlug !== null && legacyBySlug.kind === "remembered") {
+  if (legacyBySlug !== null && legacyBySlug.kind !== "elsewhere") {
     return <LegacyOwnPage legacy={legacyBySlug} />;
   }
 

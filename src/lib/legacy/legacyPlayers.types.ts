@@ -22,16 +22,24 @@ export type LegacyClassRecord = {
 /**
  * A record kept from somewhere else.
  *
- * "remembered" is someone who never played on Itsutsu at all — their record
- * comes from another site and would otherwise simply vanish when that site
- * does. Their slug is permanently reserved: see RESERVED_PLAYER_KEYS in
- * rating/reservedKeys.ts.
+ * "remembered" is someone who has died and never played on Itsutsu — their
+ * record comes from another site and would otherwise simply vanish when that
+ * site does.
+ *
+ * "honorary" is someone alive who also never played here — not a member, no
+ * account, but their record is kept in its own right rather than folded into
+ * a memorial it doesn't belong in. Should they ever join for real, this is
+ * the kind that becomes "elsewhere".
  *
  * "elsewhere" is a live member here who also has a record from before
  * Itsutsu existed. Nothing about them is reserved — they play under their
  * own live name — this is just the earlier chapter, kept alongside it.
+ *
+ * "remembered" and "honorary" slugs are both permanently reserved, since
+ * neither belongs to a live account here: see RESERVED_PLAYER_KEYS in
+ * rating/reservedKeys.ts.
  */
-export type LegacyKind = "remembered" | "elsewhere";
+export type LegacyKind = "remembered" | "honorary" | "elsewhere";
 
 export type LegacyPlayer = {
   slug: string;

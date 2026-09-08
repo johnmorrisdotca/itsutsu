@@ -9,9 +9,9 @@ describe("legacy records", () => {
     expect(findLegacyPlayer("nobody")).toBeNull();
   });
 
-  it("distinguishes remembered from elsewhere", () => {
+  it("distinguishes remembered, honorary and elsewhere", () => {
     expect(findLegacyPlayer("chibi")?.kind).toBe("remembered");
-    expect(findLegacyPlayer("kyokosan")?.kind).toBe("remembered");
+    expect(findLegacyPlayer("kyokosan")?.kind).toBe("honorary");
     expect(findLegacyPlayer("incognito")?.kind).toBe("elsewhere");
   });
 

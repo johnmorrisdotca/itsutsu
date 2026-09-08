@@ -78,7 +78,7 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
   {
     slug: "kyokosan",
     name: "Kyokosan",
-    kind: "remembered",
+    kind: "honorary",
     location: "Canada",
     possessive: "her",
     source: "ItsYourTurn.com",

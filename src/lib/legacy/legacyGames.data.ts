@@ -43,10 +43,13 @@ export function keptGameName(slug: string): string {
 
 /** A kept game as the GameReplay board needs it — built from a fixed move list, not a database row. */
 export function keptGameDetail(game: LegacyGame): GameDetail {
+  // No per-move time was ever recorded for a kept game, only when it finished —
+  // so every move carries that, the same honest choice as lastMoveAt below.
   const moves: GameMove[] = game.moves.map((point, index) => ({
     number: index + 1,
     row: point.row,
     col: point.col,
+    createdAt: game.playedAt,
     stone: index % 2 === 0 ? "black" : "white",
     kind: "place",
   }));

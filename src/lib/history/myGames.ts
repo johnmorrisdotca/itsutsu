@@ -120,4 +120,5 @@ const MOVE_COLUMNS = {
   twistQuadrant: true,
   twistClockwise: true,
   cells: true,
+  createdAt: true,
 } as const;

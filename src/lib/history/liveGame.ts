@@ -81,6 +81,7 @@ export const GAME_ROW = {
       twistQuadrant: true,
       twistClockwise: true,
       cells: true,
+      createdAt: true,
     },
   },
 } satisfies Prisma.GameSelect;

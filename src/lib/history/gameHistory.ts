@@ -61,6 +61,7 @@ const MOVE_SELECT = {
   twistQuadrant: true,
   twistClockwise: true,
   cells: true,
+  createdAt: true,
 } as const;
 
 type MoveRow = Prisma.MoveGetPayload<{ select: typeof MOVE_SELECT }>;
@@ -73,6 +74,7 @@ export function toGameMove(row: MoveRow): GameMove {
     col: row.col,
     stone: row.stone,
     kind: row.kind,
+    createdAt: row.createdAt.toISOString(),
   };
   if (row.fromRow !== null && row.fromCol !== null) {
     move.from = { row: row.fromRow, col: row.fromCol };

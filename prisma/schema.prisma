@@ -124,6 +124,10 @@ model Move {
   twistClockwise Boolean?
   /// The cells a multi-cell piece covered, with their colours, on "piece" kinds.
   cells          Json?
+  /// When the move landed. Existing rows get the moment this column was
+  /// added, not their true historical time — there was nowhere to read
+  /// that from. Every move from here on is real.
+  createdAt      DateTime @default(now())
 
   @@unique([gameId, number])
   @@index([gameId, number])
