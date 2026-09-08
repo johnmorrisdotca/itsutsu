@@ -77,10 +77,10 @@ test.describe("a visitor with no invite", () => {
   });
 
   test("keeps the path when sending someone to the door", async ({ page }) => {
-    // A link like /games/connect6 means "this game". Dropping the path would
+    // A link like /games/connect-six means "this game". Dropping the path would
     // land the visitor on a different one from the one they clicked.
-    await page.goto("/games/connect6");
-    await expect(page).toHaveURL(/\/join\?next=%2Fgames%2Fconnect6/);
+    await page.goto("/games/connect-six");
+    await expect(page).toHaveURL(/\/join\?next=%2Fgames%2Fconnect-six/);
   });
 });
 
@@ -95,7 +95,7 @@ test.describe("the pages that stay open", () => {
   });
 
   test("a variant's rules page is readable too", async ({ request }) => {
-    expect((await request.get("/rules/connect6")).status()).toBe(200);
+    expect((await request.get("/rules/connect-six")).status()).toBe(200);
   });
 
   test("the screenshots those pages load are readable", async ({ request }) => {

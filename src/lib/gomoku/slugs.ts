@@ -21,7 +21,7 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   makerBreaker: "maker-breaker",
   wildTicTacToe: "wild-tic-tac-toe",
   notakto: "notakto",
-  connect6: "connect6",
+  connect6: "connect-six",
   toroidalFive: "toroidal-five",
   obstacleFive: "obstacle-five",
   dropFour: "drop-four",
