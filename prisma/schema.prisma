@@ -31,21 +31,21 @@ enum GameLifecycle {
 }
 
 model Game {
-  id        String     @id @default(cuid())
-  playedAt  DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id        String   @id @default(cuid())
+  playedAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  status    GameLifecycle @default(finished)
+  status GameLifecycle @default(finished)
 
   /// Seat keys. There is no sign-in here, so holding a seat's token *is* the
   /// claim to that seat: whoever has the link plays that colour. They are
   /// generated per game and never derived from anything guessable.
-  blackToken String    @unique @default(cuid())
-  whiteToken String    @unique @default(cuid())
+  blackToken String @unique @default(cuid())
+  whiteToken String @unique @default(cuid())
 
   /// Display names, free text. Blank means the seat was anonymous.
-  blackName String     @default("")
-  whiteName String     @default("")
+  blackName String @default("")
+  whiteName String @default("")
 
   /// The member (by email) holding each seat, when a signed-in player took it.
   /// A seat taken from a scanned link with no sign-in has none, and is known
@@ -60,34 +60,34 @@ model Game {
   obstacles String
   opener    String
   /// Opening protocol, see OpeningRule. Games recorded before it existed are "free".
-  opening   String     @default("free")
+  opening   String @default("free")
   /// A per-colour handicap, see Handicap, or null for none.
   handicap  Json?
   /// The random seed the game was created with: dead and hot squares, piece queues.
-  seed      Int        @default(0)
+  seed      Int    @default(0)
 
   /// Per-move time limit for a shared game, in milliseconds; null for none.
   moveTimeMs     Int?
   /// What running out of time costs: "turn" (graceful) or "game".
-  timeoutPenalty String     @default("turn")
+  timeoutPenalty String    @default("turn")
   /// When the last move landed, so a deadline can be computed on the server.
   lastMoveAt     DateTime?
   /// Consecutive turns each colour has forfeited to the clock. Three lose the game.
-  blackForfeits  Int        @default(0)
-  whiteForfeits  Int        @default(0)
+  blackForfeits  Int       @default(0)
+  whiteForfeits  Int       @default(0)
 
   /// Whether a seat may give the game up. The host decides when setting it up.
-  allowResign    Boolean    @default(true)
+  allowResign Boolean   @default(true)
   /// A seat anyone may take, posted on the games page: "white" while it waits,
   /// null once somebody has sat down or when the game was never open.
-  openSeat       String?
+  openSeat    String?
   /// When the open seat was posted, so the board lists the newest first.
-  openedAt       DateTime?
+  openedAt    DateTime?
 
-  result    GameResult
+  result     GameResult
   /// Set for a decisive game, null for a draw or an abandoned one.
-  winner    String?
-  moveCount Int
+  winner     String?
+  moveCount  Int
   /// Wall-clock length, when the client tracked it.
   durationMs Int?
 
@@ -105,20 +105,20 @@ model Game {
 }
 
 model Move {
-  id     String  @id @default(cuid())
+  id     String @id @default(cuid())
   gameId String
-  game   Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   /// 1-based, matching the move numbers shown on the board.
-  number Int
-  row    Int
-  col    Int
-  stone  String
+  number         Int
+  row            Int
+  col            Int
+  stone          String
   /// "place" for an ordinary stone, "skip" for a deliberately wasted turn,
   /// "move" for a piece stepping from (fromRow, fromCol) to (row, col).
-  kind   String  @default("place")
-  fromRow Int?
-  fromCol Int?
+  kind           String   @default("place")
+  fromRow        Int?
+  fromCol        Int?
   /// The quarter turn that ended this move in a twist game: which quadrant, which way.
   twistQuadrant  Int?
   twistClockwise Boolean?
@@ -137,19 +137,19 @@ model Move {
 /// used — which is what lets it be short enough to say out loud.
 model InviteCode {
   /// The normalised phrase, e.g. "hoshi-kuma-nami". Lowercase, hyphenated.
-  code      String    @id
+  code       String    @id
   /// The operator who minted it, for the question "who let them in".
-  createdBy String
-  createdAt DateTime  @default(now())
+  createdBy  String
+  createdAt  DateTime  @default(now())
   /// Null never expires.
-  expiresAt DateTime?
+  expiresAt  DateTime?
   /// Zero means unlimited.
-  maxUses   Int       @default(0)
-  uses      Int       @default(0)
+  maxUses    Int       @default(0)
+  uses       Int       @default(0)
   /// Revoking beats every other field; a revoked code is dead immediately.
-  revoked   Boolean   @default(false)
+  revoked    Boolean   @default(false)
   /// Free text so the operator can remember who it was for.
-  note      String    @default("")
+  note       String    @default("")
   lastUsedAt DateTime?
 
   @@index([createdAt])
@@ -192,6 +192,38 @@ model Player {
   updatedAt  DateTime @updatedAt
 
   @@index([rating])
+}
+
+/// One player's standing in a single game.
+///
+/// The global ladder on Player ranks every name against every other whatever
+/// they played, which puts a Renju specialist and a Notakto specialist on one
+/// list. This table keeps a separate Elo per variant so each game has its own
+/// ranking. Both are maintained: recordResult writes the global row and the
+/// variant row together.
+///
+/// Expect these to look thin for a while. Only shared games are rated — games
+/// at one screen are filed, never rated — so split across every variant, most
+/// standings sit at "unrated" until a game has been played a few times.
+model PlayerVariantRating {
+  /// The folded name, matching Player.key.
+  key        String
+  /// The RuleVariant the standing is for.
+  variant    String
+  /// The name as last typed, so a board can render without reading Player.
+  name       String   @default("")
+  rating     Int      @default(1600)
+  ratedGames Int      @default(0)
+  wins       Int      @default(0)
+  losses     Int      @default(0)
+  draws      Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@id([key, variant])
+  /// The per-game leaderboard reads this: one variant, best first.
+  @@index([variant, rating])
+  /// A player's page reads every standing they hold.
+  @@index([key])
 }
 
 /// Somebody who has been let in by name: a Google account that once redeemed

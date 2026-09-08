@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from "./elo";
+import { recordVariantResult } from "./variantRatings";
 
 /**
  * Players by name. There are no accounts, so a name is an identity: the
@@ -58,11 +59,16 @@ export async function fetchLeaders(limit: number): Promise<PlayerProfile[]> {
  * Records one finished game between two named players: win, loss and draw
  * tallies for both, and a rating exchange. A game with a blank name on
  * either side changes nothing, and a draw scores a half each.
+ *
+ * The same result moves two ladders — the global one here, and the standing
+ * for the variant it was played under — so they are written together and
+ * never drift apart.
  */
 export async function recordResult(
   blackName: string,
   whiteName: string,
   winner: "black" | "white" | null,
+  variant: string,
 ): Promise<void> {
   const blackKey = playerKey(blackName);
   const whiteKey = playerKey(whiteName);
@@ -110,6 +116,8 @@ export async function recordResult(
       },
     }),
   ]);
+
+  await recordVariantResult(blackName, whiteName, winner, variant);
 }
 
 /** One row of the directory: a member, with their record if they have one. */
