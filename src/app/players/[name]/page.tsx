@@ -162,6 +162,51 @@ function RelatedLegacy({ legacy }: { legacy: LegacyPlayer }) {
   );
 }
 
+/** This person's own record against one other legacy player, game by game. */
+function HeadToHead({ legacy }: { legacy: LegacyPlayer }) {
+  if (legacy.headToHead === undefined || legacy.headToHead.length === 0) return null;
+  return (
+    <>
+      {legacy.headToHead.map((entry) => {
+        const opponent = findLegacyPlayer(entry.opponent);
+        const won = entry.games.filter((g) => g.result === "won").length;
+        const drawn = entry.games.filter((g) => g.result === "drawn").length;
+        const lost = entry.games.filter((g) => g.result === "lost").length;
+        return (
+          <section key={entry.opponent} className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="legacy-head-to-head">
+            <h2 className="flex items-baseline justify-between gap-3 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+              Against{" "}
+              {opponent !== null ? (
+                <Link href={`/players/${opponent.slug}`} className="normal-case tracking-normal text-ink-soft underline-offset-2 hover:underline">
+                  {opponent.name}
+                </Link>
+              ) : (
+                <span className="normal-case tracking-normal text-ink-soft">{entry.opponent}</span>
+              )}
+              <span className="font-mono normal-case tracking-normal text-ink-soft">
+                {won}W · {lost}L · {drawn}D
+              </span>
+            </h2>
+            <table className="w-full text-sm" data-testid="legacy-head-to-head-log">
+              <tbody>
+                {entry.games.map((game, index) => (
+                  <tr key={`${game.date}-${index}`} className="border-t border-rule">
+                    <td className="py-1.5 pr-3 text-muted">{game.date}</td>
+                    <td className="py-1.5 pr-3">
+                      <GameName name={game.game} />
+                    </td>
+                    <td className="py-1.5 pr-3 font-mono">{game.result}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        );
+      })}
+    </>
+  );
+}
+
 const LEGACY_OWN_PAGE_COPY: Record<"remembered" | "honorary", { badge: string; tail: string }> = {
   remembered: { badge: "Remembered", tail: "Never played on Itsutsu — this record is kept, not earned here." },
   honorary: { badge: "Honorary member", tail: "Never played on Itsutsu — kept here as an honorary member, in her own right." },
@@ -188,6 +233,7 @@ function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
         {legacy.note !== undefined ? <p className="border-l-2 border-rule-strong pl-3 text-sm italic text-ink-soft">{legacy.note}</p> : null}
         <RelatedLegacy legacy={legacy} />
       </section>
+      <HeadToHead legacy={legacy} />
       {legacy.summary.map((row) => (
         <LegacyClassTable key={row.class} row={row} />
       ))}

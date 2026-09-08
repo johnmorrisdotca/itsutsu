@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.49.0
+- A record between two kept players — his against his father, 0 wins, 5 draws, 9 losses
+
 ## 0.48.0
 - Grand Reversi 大リバーシ: the flipping game on a 10×10 board, as ItsYourTurn had it
 

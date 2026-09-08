@@ -51,4 +51,27 @@ describe("legacy records", () => {
       }
     }
   });
+
+  /**
+   * A head-to-head is recorded from both sides — jmorris's record against
+   * Chibi, and Chibi's record against jmorris — and the two must be the same
+   * fourteen games with every result exactly flipped, not just eyeballed
+   * into agreement when they were typed in twice.
+   */
+  it("a head-to-head between two kept records is an exact mirror of the other side", () => {
+    const flip = { won: "lost", lost: "won", drawn: "drawn" } as const;
+    for (const player of LEGACY_PLAYERS) {
+      for (const entry of player.headToHead ?? []) {
+        const other = findLegacyPlayer(entry.opponent);
+        const otherEntry = other?.headToHead?.find((e) => e.opponent === player.slug);
+        expect(otherEntry, `${player.slug} has no matching headToHead back from ${entry.opponent}`).toBeDefined();
+        expect(otherEntry!.games, `${player.slug} vs ${entry.opponent}`).toHaveLength(entry.games.length);
+        for (let i = 0; i < entry.games.length; i += 1) {
+          expect(otherEntry!.games[i].date, `game ${i}`).toBe(entry.games[i].date);
+          expect(otherEntry!.games[i].game, `game ${i}`).toBe(entry.games[i].game);
+          expect(otherEntry!.games[i].result, `game ${i}`).toBe(flip[entry.games[i].result]);
+        }
+      }
+    }
+  });
 });

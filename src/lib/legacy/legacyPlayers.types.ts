@@ -82,6 +82,8 @@ export type LegacyPlayer = {
   linkedKey?: string;
   /** Slugs of this same person's other kept records, from other sites. */
   relatedSlugs?: string[];
+  /** Every game kept against one specific other legacy player, results as this person's own side of it. */
+  headToHead?: { opponent: string; games: { game: string; date: string; result: "won" | "lost" | "drawn" }[] }[];
 };
 
 /** A single game kept in full — moves proven legal by replay, not just a result. */

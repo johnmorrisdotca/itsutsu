@@ -170,6 +170,27 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
     lastActive: "2026-09-08",
     note: "Reversi here is the same game as Flipversi on ItsYourTurn — one game, two sites' names for it. GoldToken's own rating averaged 1689 across every game; a different scale from Itsutsu's Elo, not converted or compared.",
     relatedSlugs: ["incognito"],
+    headToHead: [
+      {
+        opponent: "chibi-goldtoken",
+        games: [
+          { game: "Nackgammon", date: "2020-04-10", result: "lost" },
+          { game: "Nackgammon", date: "2020-04-01", result: "lost" },
+          { game: "Nackgammon", date: "2020-03-28", result: "lost" },
+          { game: "Long Gammon", date: "2020-03-06", result: "lost" },
+          { game: "Long Gammon", date: "2020-03-06", result: "lost" },
+          { game: "Nackgammon", date: "2020-02-12", result: "lost" },
+          { game: "Backgammon", date: "2019-12-20", result: "lost" },
+          { game: "Backgammon", date: "2019-12-04", result: "lost" },
+          { game: "Backgammon", date: "2019-12-04", result: "lost" },
+          { game: "Backgammon", date: "2019-08-27", result: "drawn" },
+          { game: "Nackgammon (3 Point)", date: "2019-08-27", result: "drawn" },
+          { game: "Nackgammon", date: "2019-08-27", result: "drawn" },
+          { game: "Long Gammon", date: "2019-08-27", result: "drawn" },
+          { game: "Backgammon (3 Point)", date: "2019-08-27", result: "drawn" },
+        ],
+      },
+    ],
     summary: [
       {
         class: "Friendly games",
@@ -242,6 +263,29 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
       { text: "Is this you in the picture?", by: "Churchgoer", at: "2015-02-18 21:45" },
     ],
     relatedSlugs: ["chibi"],
+    // The same fourteen games as jmorris's own headToHead against this slug,
+    // from Chibi's side: a win there is a loss here, and the reverse.
+    headToHead: [
+      {
+        opponent: "jmorris",
+        games: [
+          { game: "Nackgammon", date: "2020-04-10", result: "won" },
+          { game: "Nackgammon", date: "2020-04-01", result: "won" },
+          { game: "Nackgammon", date: "2020-03-28", result: "won" },
+          { game: "Long Gammon", date: "2020-03-06", result: "won" },
+          { game: "Long Gammon", date: "2020-03-06", result: "won" },
+          { game: "Nackgammon", date: "2020-02-12", result: "won" },
+          { game: "Backgammon", date: "2019-12-20", result: "won" },
+          { game: "Backgammon", date: "2019-12-04", result: "won" },
+          { game: "Backgammon", date: "2019-12-04", result: "won" },
+          { game: "Backgammon", date: "2019-08-27", result: "drawn" },
+          { game: "Nackgammon (3 Point)", date: "2019-08-27", result: "drawn" },
+          { game: "Nackgammon", date: "2019-08-27", result: "drawn" },
+          { game: "Long Gammon", date: "2019-08-27", result: "drawn" },
+          { game: "Backgammon (3 Point)", date: "2019-08-27", result: "drawn" },
+        ],
+      },
+    ],
     summary: [
       {
         class: "Friendly games",
