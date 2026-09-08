@@ -13,9 +13,9 @@ const NAV = [
 
 function Nav() {
   return (
-    <nav className="flex items-center gap-4 text-sm">
+    <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
       {NAV.map((item) => (
-        <Link key={item.href} href={item.href} className="hover:underline underline-offset-4">
+        <Link key={item.href} href={item.href} className="whitespace-nowrap hover:underline underline-offset-4">
           {item.label}
           {"kanji" in item ? (
             <>

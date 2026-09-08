@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { gamePath } from "@/lib/gomoku/slugs";
@@ -40,69 +41,67 @@ export default async function RulesPage({ params }: PageProps<"/rules/[variant]"
   const image = hasGameImage(variant as RuleVariant);
 
   return (
-    <div className="paper flex flex-1 flex-col items-center px-4 py-8 sm:px-8">
-      <main className="flex w-full max-w-5xl flex-col gap-6">
-        <SiteHeader />
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <article className={`${PANEL_CLASS} flex min-w-0 flex-1 flex-col gap-6`} data-testid="rules-page">
-            <header className="flex flex-col gap-1">
-              <p className="text-xs text-muted">
-                <Link href="/rules" className="underline-offset-2 hover:underline">
-                  Rules
-                </Link>{" "}
-                / {page.title}
-              </p>
-              <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-                {page.title}
-                <span className="font-mincho text-base font-normal opacity-70">{page.kanji}</span>
-              </h1>
-              <p className="text-sm font-medium">{page.tagline}</p>
-              <p className="text-xs text-muted italic">{page.origin}</p>
-              {page.inspiredBy !== undefined ? (
-                <p className="text-xs text-muted" data-testid="inspired-by">
-                  Inspired by {page.inspiredBy}. The name belongs to its owner; this is our own version of the rules.
-                </p>
-              ) : null}
-            </header>
-            <Part title="Object" kanji="目的" lines={page.object} />
-            <Part title="Board" kanji="盤" lines={page.board} />
-            <Part title="Play" kanji="手順" lines={page.play} />
-            <Part title="House rules" kanji="細則" lines={page.house} />
-            <p className="text-sm">
-              <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">
-                Play {page.title} →
-              </Link>
+    <Page width="standard" gap="gap-6">
+      <SiteHeader />
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <article className={`${PANEL_CLASS} flex min-w-0 flex-1 flex-col gap-6`} data-testid="rules-page">
+          <header className="flex flex-col gap-1">
+            <p className="text-xs text-muted">
+              <Link href="/rules" className="underline-offset-2 hover:underline">
+                Rules
+              </Link>{" "}
+              / {page.title}
             </p>
-          </article>
+            <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
+              {page.title}
+              <span className="font-mincho text-base font-normal opacity-70">{page.kanji}</span>
+            </h1>
+            <p className="text-sm font-medium">{page.tagline}</p>
+            <p className="text-xs text-muted italic">{page.origin}</p>
+            {page.inspiredBy !== undefined ? (
+              <p className="text-xs text-muted" data-testid="inspired-by">
+                Inspired by {page.inspiredBy}. The name belongs to its owner; this is our own version of the rules.
+              </p>
+            ) : null}
+          </header>
+          <Part title="Object" kanji="目的" lines={page.object} />
+          <Part title="Board" kanji="盤" lines={page.board} />
+          <Part title="Play" kanji="手順" lines={page.play} />
+          <Part title="House rules" kanji="細則" lines={page.house} />
+          <p className="text-sm">
+            <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">
+              Play {page.title} →
+            </Link>
+          </p>
+        </article>
 
-          <aside className="flex w-full flex-col gap-4 lg:w-80">
-            {image ? (
-              <figure className={`${PANEL_CLASS} flex flex-col gap-2`}>
-                {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-                <img src={page.image} alt={`A game of ${page.title} in progress`} className="w-full rounded-lg" />
-                <figcaption className="text-xs text-muted">A game in progress.</figcaption>
-              </figure>
-            ) : null}
-            {guides.length > 0 ? (
-              <section className={`${PANEL_CLASS} flex flex-col gap-2`}>
-                <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-                  Learn <span className="font-mincho normal-case tracking-normal">学び</span>
-                </h2>
-                <ul className="flex flex-col gap-2 text-sm">
-                  {guides.map((guide) => (
-                    <li key={guide.slug}>
-                      <Link href={`/learn/${guide.slug}`} className="font-semibold underline-offset-2 hover:underline">
-                        {guide.title}
-                      </Link>
-                      <p className="text-xs text-muted">{guide.summary}</p>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-          </aside>
-        </div>
-      </main>
-    </div>
+        <aside className="flex w-full flex-col gap-4 lg:w-80">
+          {image ? (
+            <figure className={`${PANEL_CLASS} flex flex-col gap-2`}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
+              <img src={page.image} alt={`A game of ${page.title} in progress`} className="w-full rounded-lg" />
+              <figcaption className="text-xs text-muted">A game in progress.</figcaption>
+            </figure>
+          ) : null}
+          {guides.length > 0 ? (
+            <section className={`${PANEL_CLASS} flex flex-col gap-2`}>
+              <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+                Learn <span className="font-mincho normal-case tracking-normal">学び</span>
+              </h2>
+              <ul className="flex flex-col gap-2 text-sm">
+                {guides.map((guide) => (
+                  <li key={guide.slug}>
+                    <Link href={`/learn/${guide.slug}`} className="font-semibold underline-offset-2 hover:underline">
+                      {guide.title}
+                    </Link>
+                    <p className="text-xs text-muted">{guide.summary}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </aside>
+      </div>
+  </Page>
   );
 }

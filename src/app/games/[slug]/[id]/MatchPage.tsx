@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import QRCode from "qrcode";
 
+import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
 import { SharedGame } from "@/components/live/SharedGame";
@@ -101,39 +102,37 @@ async function LiveMatch({
   }
 
   return (
-    <div className="paper flex flex-1 flex-col items-center px-4 py-8 sm:px-8">
-      <main className="flex w-full max-w-5xl flex-col gap-6">
-        <SiteHeader />
+    <Page width="wide" gap="gap-6">
+      <SiteHeader />
 
-        <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
-          <div className="w-full min-w-0 flex-1">
-            <div className="mx-auto w-full max-w-[min(100%,36rem)]">
-              <SharedGame
-                initial={game}
-                token={token}
-                seat={seat}
-                basePath={matchPath(game.variant, game.id)}
-              />
-            </div>
+      <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
+        <div className="w-full min-w-0 flex-1">
+          <div className="mx-auto w-full max-w-[min(100%,36rem)]">
+            <SharedGame
+              initial={game}
+              token={token}
+              seat={seat}
+              basePath={matchPath(game.variant, game.id)}
+            />
           </div>
-
-          <aside className="flex w-full flex-col gap-4 lg:w-80">
-            <SharedRules game={game} token={token} seat={seat} />
-            {seat !== null ? (
-              <div className={PANEL_CLASS}>
-                <NotesPanel gameKey={`shared:${game.id}`} />
-              </div>
-            ) : null}
-            {invites.length > 0 ? (
-              <InvitePanel invites={invites} yourStone={seat} />
-            ) : (
-              <p className="rounded-2xl border border-dashed border-rule px-4 py-6 text-sm text-muted">
-                You are watching this game. Open your own seat link to play.
-              </p>
-            )}
-          </aside>
         </div>
-      </main>
-    </div>
+
+        <aside className="flex w-full flex-col gap-4 lg:w-80">
+          <SharedRules game={game} token={token} seat={seat} />
+          {seat !== null ? (
+            <div className={PANEL_CLASS}>
+              <NotesPanel gameKey={`shared:${game.id}`} />
+            </div>
+          ) : null}
+          {invites.length > 0 ? (
+            <InvitePanel invites={invites} yourStone={seat} />
+          ) : (
+            <p className="rounded-2xl border border-dashed border-rule px-4 py-6 text-sm text-muted">
+              You are watching this game. Open your own seat link to play.
+            </p>
+          )}
+        </aside>
+      </div>
+  </Page>
   );
 }

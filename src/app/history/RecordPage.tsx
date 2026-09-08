@@ -1,3 +1,4 @@
+import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { HistoryFilters } from "@/components/history/HistoryFilters";
 import { HistoryTable } from "@/components/history/HistoryTable";
@@ -40,35 +41,33 @@ export async function RecordPage({ variant, params }: { variant?: RuleVariant; p
   const copy = variant === undefined ? null : RULE_VARIANT_DISPLAY[variant];
 
   return (
-    <div className="paper flex flex-1 flex-col items-center px-4 py-8 sm:px-8">
-      <main className="flex w-full max-w-6xl flex-col gap-6">
-        <SiteHeader />
+    <Page width="wide" gap="gap-6">
+      <SiteHeader />
 
-        <div className="flex flex-col gap-1">
-          <h1 className="flex items-baseline gap-3 font-mincho text-2xl font-bold">
-            棋譜
-            {copy !== null ? (
-              <span className="font-sans text-lg font-semibold" data-testid="record-game">
-                {copy.label} <span className="font-mincho text-base font-normal opacity-70">{copy.kanji}</span>
-              </span>
-            ) : null}
-          </h1>
-          <p className="text-sm text-muted">
-            {copy === null
-              ? "Every finished game, newest first. Open one to replay it stone by stone."
-              : `Every finished game of ${copy.label}, newest first. Open one to replay it stone by stone.`}
-          </p>
-        </div>
+      <div className="flex flex-col gap-1">
+        <h1 className="flex items-baseline gap-3 font-mincho text-2xl font-bold">
+          棋譜
+          {copy !== null ? (
+            <span className="font-sans text-lg font-semibold" data-testid="record-game">
+              {copy.label} <span className="font-mincho text-base font-normal opacity-70">{copy.kanji}</span>
+            </span>
+          ) : null}
+        </h1>
+        <p className="text-sm text-muted">
+          {copy === null
+            ? "Every finished game, newest first. Open one to replay it stone by stone."
+            : `Every finished game of ${copy.label}, newest first. Open one to replay it stone by stone.`}
+        </p>
+      </div>
 
-        <HistoryFilters variant={variant ?? null} />
-        {query === null ? (
-          <p className="rounded-xl border border-rule px-4 py-3 text-sm text-muted">
-            Those filters were not valid, so this is the unfiltered record.
-          </p>
-        ) : null}
-        <HistoryTable items={page.items} />
-        <Pager pagination={page.pagination} params={flat} basePath={base} />
-      </main>
-    </div>
+      <HistoryFilters variant={variant ?? null} />
+      {query === null ? (
+        <p className="rounded-xl border border-rule px-4 py-3 text-sm text-muted">
+          Those filters were not valid, so this is the unfiltered record.
+        </p>
+      ) : null}
+      <HistoryTable items={page.items} />
+      <Pager pagination={page.pagination} params={flat} basePath={base} />
+  </Page>
   );
 }

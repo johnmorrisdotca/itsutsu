@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { GameReplay } from "@/components/history/GameReplay";
+import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, recordPath, slugFor } from "@/lib/gomoku/slugs";
@@ -34,32 +35,30 @@ function FiledMatch({ game, move }: { game: GameDetail; move: number }) {
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
 
   return (
-    <div className="paper flex flex-1 flex-col items-center px-4 py-8 sm:px-8">
-      <main className="flex w-full max-w-6xl flex-col gap-6">
-        <SiteHeader />
+    <Page width="wide" gap="gap-6">
+      <SiteHeader />
 
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-semibold">
-              {black} <span className="px-1 text-muted">vs</span> {white}
-            </h1>
-            <p className="text-sm text-muted">
-              {new Date(game.playedAt).toLocaleString()} · {game.size}×{game.size} ·{" "}
-              {variantLabel(game.variant)}{" "}
-              · {result.label} <span className="font-mincho">{result.kanji}</span>
-            </p>
-          </div>
-          <Link href={recordPath(game.variant)} className="text-sm underline underline-offset-4">
-            Back to the record
-          </Link>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold">
+            {black} <span className="px-1 text-muted">vs</span> {white}
+          </h1>
+          <p className="text-sm text-muted">
+            {new Date(game.playedAt).toLocaleString()} · {game.size}×{game.size} ·{" "}
+            {variantLabel(game.variant)}{" "}
+            · {result.label} <span className="font-mincho">{result.kanji}</span>
+          </p>
         </div>
+        <Link href={recordPath(game.variant)} className="text-sm underline underline-offset-4">
+          Back to the record
+        </Link>
+      </div>
 
-        <GameReplay
-          game={game}
-          initialIndex={move}
-          basePath={recordPath(game.variant, game.id)}
-        />
-      </main>
-    </div>
+      <GameReplay
+        game={game}
+        initialIndex={move}
+        basePath={recordPath(game.variant, game.id)}
+      />
+  </Page>
   );
 }
