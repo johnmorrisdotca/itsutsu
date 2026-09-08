@@ -210,6 +210,7 @@ export const GAME_COPY = {
   winsBySquare: (who: string) => `${who} wins with a square`,
   drawBothLines: "Draw. Both made a line at once.",
   fixedBy: (game: string) => `Fixed by ${game}.`,
+  penaltyStrict: "Loss of game, ignoring vacation days",
   rulesLocked: "The rules are fixed while a game is on. Start a new game to change them.",
   centreDiscs: { label: "Centre discs placed" },
   centreDiscsHint: "Two of each colour start in the centre, as in Othello. Off, and the players lay the first four themselves, as in the 1880s game.",

@@ -128,7 +128,7 @@ export function SharedRules({
         {describeClock(game.clockMode, game.moveTimeMs)}
         {!game.rated ? ". Friendly: ratings unaffected" : ""}
         {game.moveTimeMs !== null && game.clockMode !== "game"
-          ? `. ${game.timeoutPenalty === "game" ? GAME_COPY.penaltyGame : GAME_COPY.penaltyTurn}`
+          ? `. ${game.timeoutPenalty === "game" ? GAME_COPY.penaltyGame : game.timeoutPenalty === "game-strict" ? GAME_COPY.penaltyStrict : GAME_COPY.penaltyTurn}`
           : ""}
       </p>
 
@@ -230,7 +230,7 @@ export function SharedRules({
               >
                 {TIMEOUT_PENALTIES.map((option) => (
                   <option key={option} value={option}>
-                    {option === "turn" ? GAME_COPY.penaltyTurn : GAME_COPY.penaltyGame}
+                    {option === "turn" ? GAME_COPY.penaltyTurn : option === "game" ? GAME_COPY.penaltyGame : GAME_COPY.penaltyStrict}
                   </option>
                 ))}
               </Select>

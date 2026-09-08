@@ -85,7 +85,8 @@ export const MOVE_TIME_OPTIONS = [
   7 * 24 * 60 * 60_000,
 ] as const;
 
-export const TIMEOUT_PENALTIES = ["turn", "game"] as const;
+/** "turn": forfeit the move. "game": lose the game. "game-strict": lose the game, and vacation days do not delay it. */
+export const TIMEOUT_PENALTIES = ["turn", "game", "game-strict"] as const;
 export type TimeoutPenalty = (typeof TIMEOUT_PENALTIES)[number];
 
 /** Three missed turns in a row lose the game under the graceful penalty. */

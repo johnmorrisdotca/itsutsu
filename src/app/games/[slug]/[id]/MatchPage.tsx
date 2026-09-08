@@ -82,7 +82,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
    * account that said where it is, its country — the way the elder sites put
    * it, "against Kyokosan from Canada".
    */
-  let opponent: { name: string; country: string } | null = null;
+  let opponent: { name: string; country: string; awayUntil: string | null } | null = null;
   let muted: Stone | null = null;
   if (seat !== null && tokens !== null) {
     const otherEmail = seat === STONES.black ? tokens.whiteMember : tokens.blackMember;
@@ -91,9 +91,17 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
       muted = seat === STONES.black ? STONES.white : STONES.black;
     }
     const otherName = (seat === STONES.black ? game.whiteName : game.blackName).trim();
-    const member = otherEmail === null ? null : await prisma.member.findUnique({ where: { email: otherEmail }, select: { name: true, country: true } });
+    const member =
+      otherEmail === null
+        ? null
+        : await prisma.member.findUnique({ where: { email: otherEmail }, select: { name: true, country: true, awayFrom: true, awayUntil: true } });
     if (member !== null || otherName !== "") {
-      opponent = { name: member?.name || otherName || "the other seat", country: member?.country ?? "" };
+      const now = Date.now();
+      const away =
+        member?.awayFrom && member.awayUntil && member.awayFrom.getTime() <= now && member.awayUntil.getTime() > now
+          ? member.awayUntil.toISOString()
+          : null;
+      opponent = { name: member?.name || otherName || "the other seat", country: member?.country ?? "", awayUntil: away };
     }
   }
 
@@ -113,7 +121,7 @@ async function LiveMatch({
   seat: Stone | null;
   /** The position the address names, for forking a new game from it. */
   move: number;
-  opponent: { name: string; country: string } | null;
+  opponent: { name: string; country: string; awayUntil: string | null } | null;
   muted: Stone | null;
 }) {
   /*

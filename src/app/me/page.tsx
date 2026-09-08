@@ -83,6 +83,8 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
           </h2>
           <ProfileForm
             initial={{
+              awayFrom: member?.awayFrom ? member.awayFrom.toISOString().slice(0, 10) : "",
+              awayUntil: member?.awayUntil ? member.awayUntil.toISOString().slice(0, 10) : "",
               city: member?.city ?? "",
               country: member?.country ?? "",
               timeZone: member?.timeZone ?? "",

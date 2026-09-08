@@ -40,6 +40,7 @@ import type {
 } from "./liveGame.types";
 import { FORFEITS_TO_LOSE } from "./gameSettingsSchema";
 import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
+import { fetchAway, graceMs } from "@/lib/social/vacation";
 import { toGameMove } from "./gameHistory";
 
 /** Prisma's code for "a unique constraint was violated". */
@@ -74,6 +75,8 @@ export const GAME_ROW = {
   openedAt: true,
   blackToken: true,
   whiteToken: true,
+  blackMember: true,
+  whiteMember: true,
   moves: {
     orderBy: { number: "asc" },
     select: {
@@ -486,10 +489,16 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   const absent = state.toPlay;
   if (absent === claimant) return { ok: false, reason: "your-own-turn" };
   if (now.getTime() < deadline.getTime()) return { ok: false, reason: "not-due" };
+  // Away days delay the deadline, unless this game was set up to ignore them.
+  if (row.timeoutPenalty !== "game-strict") {
+    const away = await fetchAway(absent === STONES.black ? row.blackMember : row.whiteMember);
+    const grace = graceMs(away, row.lastMoveAt ?? deadline, deadline);
+    if (now.getTime() < deadline.getTime() + grace) return { ok: false, reason: "not-due" };
+  }
 
   const forfeits = (absent === STONES.black ? row.blackForfeits : row.whiteForfeits) + 1;
   // Out of time for the whole game is out of time: the budget cannot forfeit a turn and go on.
-  const strict = row.timeoutPenalty === "game" || row.clockMode === "game" || forfeits >= FORFEITS_TO_LOSE;
+  const strict = row.timeoutPenalty !== "turn" || row.clockMode === "game" || forfeits >= FORFEITS_TO_LOSE;
   const next = strict ? winOnTime(state, absent) : forfeitTurn(state);
   if (next === state) return { ok: false, reason: "finished" };
   const finished = next.status !== GAME_STATUS.playing;

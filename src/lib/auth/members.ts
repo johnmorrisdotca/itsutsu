@@ -67,6 +67,10 @@ export type MemberProfile = Member & {
   bio: string;
   showOnline: boolean;
   emailNotify: boolean;
+  awayFrom: Date | null;
+  awayUntil: Date | null;
+  awayDaysUsed: number;
+  awayYear: number;
   createdAt: Date;
   lastSeenAt: Date;
 };

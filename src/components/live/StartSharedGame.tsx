@@ -117,7 +117,7 @@ export function StartSharedGame({ settings }: { settings: GameSettings }) {
           >
             {TIMEOUT_PENALTIES.map((option) => (
               <option key={option} value={option}>
-                {option === "turn" ? GAME_COPY.penaltyTurn : GAME_COPY.penaltyGame}
+                {option === "turn" ? GAME_COPY.penaltyTurn : option === "game" ? GAME_COPY.penaltyGame : GAME_COPY.penaltyStrict}
               </option>
             ))}
           </Select>

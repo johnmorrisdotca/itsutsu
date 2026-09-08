@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.45.0
+- Away days: mark a range on your profile, three days a year, and deadlines in your games wait for it. A game can be set up to ignore vacation days.
+
 ## 0.44.0
 - Two clocks: time per move, or one budget each for the whole game. Give the other side more time, kept on the record and read on the players' pages. A game can be set to not affect ratings.
 

@@ -52,7 +52,7 @@ export function SharedGame({
   /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
-  opponent?: { name: string; country: string } | null;
+  opponent?: { name: string; country: string; awayUntil?: string | null } | null;
   /** A seat whose messages the viewer has chosen not to see. */
   muted?: Stone | null;
 }) {
@@ -362,6 +362,7 @@ export function SharedGame({
           You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
           <span className="font-medium text-ink">{opponent.name}</span>
           {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
+          {opponent.awayUntil ? ` Away until ${new Date(opponent.awayUntil).toLocaleDateString()}; their deadline waits.` : ""}
         </p>
       ) : null}
       <ReactionLog reactions={shown} />

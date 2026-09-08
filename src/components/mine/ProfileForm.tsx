@@ -7,6 +7,8 @@ import { Toggle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
 
 export type ProfileFields = {
+  awayFrom: string;
+  awayUntil: string;
   city: string;
   country: string;
   timeZone: string;
@@ -105,6 +107,23 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
         About you
         <textarea value={fields.bio} onChange={(e) => set({ bio: e.target.value })} maxLength={500} rows={3} className={INPUT_CLASS} />
       </label>
+      <div className="flex flex-col gap-1 text-sm">
+        <span>Away <span className="font-mincho text-xs opacity-70">休暇</span></span>
+        <div className="flex flex-wrap items-center gap-2">
+          <input type="date" value={fields.awayFrom} onChange={(e) => set({ awayFrom: e.target.value })} className={`${INPUT_CLASS} text-xs`} data-testid="away-from" />
+          <span className="text-xs text-muted">to</span>
+          <input type="date" value={fields.awayUntil} onChange={(e) => set({ awayUntil: e.target.value })} className={`${INPUT_CLASS} text-xs`} data-testid="away-until" />
+          {fields.awayFrom !== "" || fields.awayUntil !== "" ? (
+            <button type="button" onClick={() => set({ awayFrom: "", awayUntil: "" })} className="text-xs text-muted underline underline-offset-4">
+              clear
+            </button>
+          ) : null}
+        </div>
+        <span className="text-xs text-muted">
+          While you are away, deadlines in your games wait, except in games set up to ignore vacation days. Three days a
+          year, whole days.
+        </span>
+      </div>
       <Toggle
         label="Show when I am here"
         checked={fields.showOnline}

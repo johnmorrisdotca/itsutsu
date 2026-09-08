@@ -4,6 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentSession } from "@/lib/auth/currentSession";
 import { fetchProfile, renameMember, updateProfile } from "@/lib/auth/members";
+import { AWAY_DAYS_A_YEAR, setAway } from "@/lib/social/vacation";
 import { PLAYER_SESSION_DAYS, SESSION_COOKIE, sessionCookieOptions, signSession } from "@/lib/auth/session";
 import { PLAYER_NAME_MAX } from "@/lib/history/gameHistory.constants";
 
@@ -21,6 +22,9 @@ const nameSchema = z.object({
   bio: z.string().trim().max(500).optional(),
   showOnline: z.boolean().optional(),
   emailNotify: z.boolean().optional(),
+  /** ISO dates; both blank clears the range. */
+  awayFrom: z.string().max(40).nullable().optional(),
+  awayUntil: z.string().max(40).nullable().optional(),
 });
 
 /** A time zone the platform knows, or blank. Anything else is refused rather than stored. */
@@ -52,7 +56,19 @@ export async function PATCH(request: Request) {
     if ((await fetchProfile(me.email)) === null) {
       return NextResponse.json({ error: "No profile yet: sign in with Google first." }, { status: 404, headers: NO_STORE });
     }
-    const { name, ...profile } = parsed.data;
+    const { name, awayFrom, awayUntil, ...profile } = parsed.data;
+    if (awayFrom !== undefined || awayUntil !== undefined) {
+      const from = awayFrom ? new Date(awayFrom) : null;
+      const until = awayUntil ? new Date(awayUntil) : null;
+      if ((from !== null && Number.isNaN(from.getTime())) || (until !== null && Number.isNaN(until.getTime()))) return badRequest("Those are not dates.");
+      const away = await setAway(me.email, from, until);
+      if (!away.ok) {
+        return NextResponse.json(
+          { error: away.reason === "allowance" ? `Only ${AWAY_DAYS_A_YEAR} away days a year; ${away.used} used.` : "The range must end after it starts." },
+          { status: 409, headers: NO_STORE },
+        );
+      }
+    }
     if (profile.timeZone !== undefined && !knownTimeZone(profile.timeZone)) return badRequest("Unknown time zone.");
     if (Object.keys(profile).length > 0) await updateProfile(me.email, profile);
 
