@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { BrandAvatar } from "@/components/layout/BrandMarks";
+import { BrandAvatar, BrandStones } from "@/components/layout/BrandMarks";
 
 /**
  * Nothing at this address. A wrong game slug, a match that was never played,
@@ -20,6 +20,7 @@ export default function NotFound() {
           link that was not copied whole.
         </p>
       </div>
+      <BrandStones className="opacity-70" />
       <nav className="flex flex-wrap justify-center gap-4 text-sm">
         <Link href="/games" className="underline underline-offset-4">
           The games

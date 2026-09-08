@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BrandStones } from "@/components/layout/BrandMarks";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, PANEL_LINK_CLASS } from "@/components/ui/ui.constants";
 import { gamePath } from "@/lib/gomoku/slugs";
@@ -90,6 +91,8 @@ export default function LobbyPage() {
             </Link>
           </div>
         </section>
+
+        <BrandStones className="py-1 opacity-80" />
 
         <section className="flex flex-col gap-4">
           <h2 className="flex items-baseline gap-2 text-lg font-semibold">

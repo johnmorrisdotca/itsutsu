@@ -35,6 +35,14 @@ const OPEN_PATHS = [
   "/api/auth",
   "/favicon.ico",
   "/icon.svg",
+  // The home-screen icons, the manifest that names them, and the card a
+  // shared link unfurls to. A crawler holds no cookie; a locked card is a
+  // blank one.
+  "/apple-icon.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/manifest.webmanifest",
+  "/opengraph-image.png",
   "/robots.txt",
   "/rules",
   "/learn",

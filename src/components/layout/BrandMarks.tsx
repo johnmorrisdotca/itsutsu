@@ -73,3 +73,18 @@ export function BrandAvatar({ className }: MarkProps) {
     />
   );
 }
+
+/**
+ * The five stones alone, as a rule between sections. Decorative, so it says
+ * nothing to a screen reader; the heading it sits under does the talking.
+ */
+export function BrandStones({ className }: MarkProps) {
+  return (
+    <span aria-hidden="true" className={`flex justify-center ${className ?? ""}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- static brand SVGs */}
+      <img src="/brand/itsutsu-stones.svg" alt="" className="h-3 w-auto dark:hidden" />
+      {/* eslint-disable-next-line @next/next/no-img-element -- static brand SVGs */}
+      <img src="/brand/itsutsu-stones-reversed.svg" alt="" className="hidden h-3 w-auto dark:block" />
+    </span>
+  );
+}
