@@ -9,6 +9,63 @@ import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
+/**
+ * The whole game as text, the way a printed record or the elder sites give
+ * it: "1. h8 i9  2. h9 h10 …", one pair a turn. Each move is a link to its
+ * position, and the plain text can be copied in one go.
+ */
+function MoveList({ game, current, onJump }: { game: GameDetail; current: number; onJump: (index: number) => void }) {
+  const [copied, setCopied] = useState(false);
+  const names = useMemo(() => game.moves.map((move) => (move.kind === "pass" ? "pass" : pointName(game.size, move))), [game]);
+  const text = useMemo(() => {
+    const turns: string[] = [];
+    for (let i = 0; i < names.length; i += 2) {
+      turns.push(`${i / 2 + 1}. ${names[i]}${names[i + 1] !== undefined ? ` ${names[i + 1]}` : ""}`);
+    }
+    return turns.join("  ");
+  }, [names]);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  if (names.length === 0) return null;
+  return (
+    <details className="group flex flex-col gap-2" data-testid="move-list">
+      <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase select-none hover:text-ink">
+        Move list <span className="font-mincho normal-case tracking-normal">棋譜</span>
+        <span className="ml-1 opacity-60 group-open:hidden">+</span>
+        <span className="ml-1 hidden opacity-60 group-open:inline">−</span>
+      </summary>
+      <p className="mt-2 font-mono text-xs leading-relaxed break-words">
+        {names.map((name, i) => (
+          <span key={i}>
+            {i % 2 === 0 ? <span className="text-muted">{i / 2 + 1}. </span> : " "}
+            <button
+              type="button"
+              onClick={() => onJump(i + 1)}
+              className={`underline-offset-2 hover:underline ${current === i + 1 ? "font-semibold text-ink" : "text-ink-soft"}`}
+            >
+              {name}
+            </button>
+            {i % 2 === 1 ? "  " : ""}
+          </span>
+        ))}
+      </p>
+      <span>
+        <Button onClick={copy} data-testid="copy-moves">
+          {copied ? "Copied" : "Copy as text"}
+        </Button>
+      </span>
+    </details>
+  );
+}
+
 export function GameReplay({
   game,
   initialIndex,
@@ -104,6 +161,8 @@ export function GameReplay({
         <Button onClick={() => setShowNumbers(!showNumbers)} strong={showNumbers}>
           {showNumbers ? "Hide" : "Show"} move numbers
         </Button>
+
+        <MoveList game={game} current={index} onJump={setIndex} />
       </aside>
     </div>
   );
