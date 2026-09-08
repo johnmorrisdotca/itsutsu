@@ -1,11 +1,11 @@
 import type { Assessment, Suggestion } from "@/lib/gomoku/analysis.types";
 import { newlyLost } from "@/lib/gomoku/analysis";
-import { otherStone } from "@/lib/gomoku/engine";
-import { VARIANT_SPECS, WIN_LENGTH } from "@/lib/gomoku/gomoku.constants";
+import { nextBoardSize, otherStone, previousBoardSize } from "@/lib/gomoku/engine";
+import { BOARD_SIZES, VARIANT_SPECS, WIN_LENGTH } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings, GameState, Point, Seat } from "@/lib/gomoku/gomoku.types";
 import type { BoardMark } from "@/components/board/board.types";
 import { AWARENESS_LEVELS } from "./game.constants";
-import type { FatalMove, GameSession, SessionSettings } from "./game.types";
+import type { FatalMove, GameSession, ResizeDirection, SessionSettings } from "./game.types";
 
 /**
  * Pure helpers behind `useGameSession`, kept out of the hook so it stays a
@@ -91,4 +91,16 @@ export function stoneForSeat(session: GameSession, seat: Seat) {
     : session.state.seats.white === seat
       ? "white"
       : otherStone(session.state.toPlay);
+}
+
+/**
+ * The size a resize proposal would move the board to, or null at the end of
+ * the list. A game played on boards of its own grows and shrinks through its
+ * own list; the rest use the site's.
+ */
+export function resizeTarget(state: GameState, direction: ResizeDirection): number | null {
+  const sizes = VARIANT_SPECS[state.settings.variant].boardSizes ?? BOARD_SIZES;
+  return direction === "grow"
+    ? nextBoardSize(state.settings.size, sizes)
+    : previousBoardSize(state.settings.size, sizes);
 }

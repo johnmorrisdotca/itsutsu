@@ -10,8 +10,6 @@ import {
   canShrinkBoard,
   canSwapSeats,
   growBoard,
-  nextBoardSize,
-  previousBoardSize,
   shrinkBoard,
   chooseColour as engineChooseColour,
   extendOpening as engineExtendOpening,
@@ -30,7 +28,6 @@ import {
   winOnTime,
 } from "@/lib/gomoku/engine";
 import {
-  BOARD_SIZES,
   GAME_STATUS,
   MOVE_KINDS,
   SEATS,
@@ -49,7 +46,7 @@ import {
 } from "./game.constants";
 import { useGameClock } from "./useGameClock";
 import { usePieceHand } from "./usePieceHand";
-import { buildMarks, findFatalMove, nextGameSettings } from "./sessionSupport";
+import { buildMarks, findFatalMove, nextGameSettings, resizeTarget } from "./sessionSupport";
 import { emptyStats, missedThreat, recordHint, recordMove } from "./stats";
 import {
   restoredAppearance,
@@ -362,12 +359,7 @@ export function useGameSession(
    */
   const proposeResize = useCallback(
     (direction: ResizeDirection) => {
-      // A game played on boards of its own grows and shrinks through its own list.
-      const sizes = VARIANT_SPECS[state.settings.variant].boardSizes ?? BOARD_SIZES;
-      const size =
-        direction === "grow"
-          ? nextBoardSize(state.settings.size, sizes)
-          : previousBoardSize(state.settings.size, sizes);
+      const size = resizeTarget(state, direction);
       if (size === null) return;
       setResizeProposal({ from: seatToPlay(state), direction, size });
     },

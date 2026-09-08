@@ -8,6 +8,9 @@ import { fetchLeaders } from "@/lib/rating/players";
 
 export const metadata = { title: "Players" };
 
+// The table is read from the database on every request, never at build time.
+export const dynamic = "force-dynamic";
+
 const LEADERS = 50;
 
 /**
