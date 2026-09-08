@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -16,16 +17,20 @@ import { CODE_WORDS } from "@/lib/invite/inviteCode";
 /**
  * The door.
  *
- * A player types the three words they were given; the operator signs in with
- * their email and token. Both exchange what they typed for a signed cookie and
- * are never asked for it again.
+ * Google first: one button, and a member is in. A player with no account
+ * types the three words they were given instead; the operator may use an
+ * email and token. Everything ends the same way — a signed cookie — and
+ * nobody is asked twice.
  */
 export function JoinForm({
   next,
   googleReady,
+  pending,
 }: {
   next: string;
   googleReady: boolean;
+  /** A Google account at the door that is not yet a member: one code makes it one. */
+  pending: { name: string; email: string } | null;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"invite" | "admin">("invite");
@@ -79,14 +84,33 @@ export function JoinForm({
     >
       <div className="flex flex-col gap-1">
         <h1 className="font-mincho text-2xl font-bold">
-          {mode === "invite" ? "合言葉" : "管理"}
+          {pending !== null ? "ようこそ" : mode === "invite" ? "合言葉" : "管理"}
         </h1>
         <p className="text-sm text-muted">
-          {mode === "invite"
-            ? `Enter the ${CODE_WORDS} words you were given.`
-            : "Sign in as the operator."}
+          {pending !== null
+            ? `Welcome, ${pending.name || pending.email}. One more thing: the ${CODE_WORDS} words you were given. After this, Google alone lets you in.`
+            : mode === "invite"
+              ? "Sign in with Google, or enter the words you were given."
+              : "Sign in as the operator."}
         </p>
       </div>
+
+      {googleReady && pending === null ? (
+        <>
+          <a
+            href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(
+              `/api/session/google?next=${next}`,
+            )}`}
+            className={`${BUTTON_BASE} ${BUTTON_STRONG} w-full py-2`}
+            data-testid="google-signin"
+          >
+            Continue with Google
+          </a>
+          <p className="text-center text-xs text-muted">
+            {mode === "invite" ? "or, with an invite code" : "or, with the operator token"}
+          </p>
+        </>
+      ) : null}
 
       {mode === "invite" ? (
         <label className="flex flex-col gap-1">
@@ -142,43 +166,32 @@ export function JoinForm({
         </p>
       ) : null}
 
-      {mode === "admin" && googleReady ? (
-        <>
-          <a
-            href={`/api/auth/signin/google?callbackUrl=${encodeURIComponent(
-              `/api/session/google?next=${next}`,
-            )}`}
-            className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`}
-            data-testid="google-signin"
-          >
-            Continue with Google
-          </a>
-          <p className="text-center text-xs text-muted">
-            or use the operator token
-          </p>
-        </>
-      ) : null}
-
       <div className="flex items-center justify-between gap-3">
         <button
           type="submit"
           disabled={busy}
-          className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
+          className={`${BUTTON_BASE} ${googleReady && pending === null ? BUTTON_QUIET : BUTTON_STRONG}`}
           data-testid="join-submit"
         >
           {busy ? "Checking…" : "Enter"}
         </button>
-        <button
-          type="button"
-          className="text-xs text-muted underline underline-offset-4"
-          onClick={() => {
-            setMode(mode === "invite" ? "admin" : "invite");
-            setError(null);
-          }}
-          data-testid="toggle-mode"
-        >
-          {mode === "invite" ? "I'm the operator" : "I have an invite code"}
-        </button>
+        {pending === null ? (
+          <button
+            type="button"
+            className="text-xs text-muted underline underline-offset-4"
+            onClick={() => {
+              setMode(mode === "invite" ? "admin" : "invite");
+              setError(null);
+            }}
+            data-testid="toggle-mode"
+          >
+            {mode === "invite" ? "I'm the operator" : "I have an invite code"}
+          </button>
+        ) : (
+          <Link href="/api/auth/signout" className="text-xs text-muted underline underline-offset-4">
+            Not you? Use another account
+          </Link>
+        )}
       </div>
     </form>
   );

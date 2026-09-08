@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 import { matchPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
+import { currentSession } from "@/lib/auth/currentSession";
 import { seatForToken } from "@/lib/history/liveGame";
+import { bindSeat } from "@/lib/history/seats";
 import { seatCookieName } from "@/lib/history/seatCookie";
 
 /** How long a claimed seat is remembered. A shared game is played over days at most. */
@@ -28,6 +30,10 @@ export async function GET(
   }
   const seat = await seatForToken(id, token);
   if (seat === null) return new NextResponse(null, { status: 404 });
+
+  // Signed in: the seat is the account's now, on every device.
+  const session = await currentSession();
+  if (session?.email) await bindSeat(id, seat, session.email, session.name ?? "");
 
   const response = NextResponse.redirect(new URL(matchPath(game.variant, id), request.url), 303);
   response.cookies.set({

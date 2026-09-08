@@ -31,28 +31,48 @@ export type MyGames = Record<MyGameGroup, MyGame[]>;
 /**
  * Sorts a browser's seats into the queue the turn-based sites taught: the
  * games waiting on you first, then the ones you are waiting on, the ones
- * nobody has started, and the ones that are over. There is no account here,
- * so "your games" means the seats this browser holds — which is what the
- * cookies say.
+ * nobody has started, and the ones that are over. "Yours" are the seats
+ * bound to the account you are signed in to, and the seats this browser
+ * holds by cookie — a scanned link on a phone with no account.
  */
-export async function fetchMyGames(claims: Map<string, string>, now = new Date()): Promise<MyGames> {
+export async function fetchMyGames(
+  claims: Map<string, string>,
+  email: string | null = null,
+  now = new Date(),
+): Promise<MyGames> {
   const groups: MyGames = { yourMove: [], theirMove: [], unstarted: [], finished: [] };
-  if (claims.size === 0) return groups;
+  if (claims.size === 0 && email === null) return groups;
 
   const rows = await prisma.game.findMany({
-    where: { id: { in: [...claims.keys()] } },
+    where: {
+      OR: [
+        { id: { in: [...claims.keys()] } },
+        ...(email === null ? [] : [{ blackMember: email }, { whiteMember: email }]),
+      ],
+    },
     select: {
       ...SUMMARY_SELECT,
       blackToken: true,
       whiteToken: true,
+      blackMember: true,
+      whiteMember: true,
       moves: { select: MOVE_COLUMNS, orderBy: { number: "asc" } },
     },
   });
 
   for (const row of rows) {
     const token = claims.get(row.id);
+    // This browser's own seat first; the account's otherwise.
     const seat =
-      token === row.blackToken ? STONES.black : token === row.whiteToken ? STONES.white : null;
+      token === row.blackToken
+        ? STONES.black
+        : token === row.whiteToken
+          ? STONES.white
+          : email !== null && row.blackMember === email
+            ? STONES.black
+            : email !== null && row.whiteMember === email
+              ? STONES.white
+              : null;
     // A cookie that fits neither seat is stale itself; it names no game of ours.
     if (seat === null) continue;
 

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { NO_STORE, serverError } from "@/lib/api/apiResponse";
+import { currentEmail } from "@/lib/auth/currentSession";
 import { fetchMyGames } from "@/lib/history/myGames";
 import { seatClaims } from "@/lib/history/seatCookie";
 
@@ -13,7 +14,7 @@ import { seatClaims } from "@/lib/history/seatCookie";
 export async function GET() {
   try {
     const claims = seatClaims((await cookies()).getAll());
-    const games = await fetchMyGames(claims);
+    const games = await fetchMyGames(claims, await currentEmail());
     return NextResponse.json(
       { yourMove: games.yourMove.length, groups: games },
       { status: 200, headers: NO_STORE },

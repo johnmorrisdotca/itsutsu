@@ -104,7 +104,7 @@ test.describe("the pages that stay open", () => {
   });
 
   test("but nothing else opened by accident", async ({ request }) => {
-    for (const path of ["/games", "/games/gomoku", "/history", "/players"]) {
+    for (const path of ["/games", "/games/gomoku", "/history", "/players", "/admin"]) {
       const response = await request.get(path, { maxRedirects: 0 });
       expect(response.status(), `${path} should still be gated`).toBe(307);
     }
@@ -141,3 +141,16 @@ test.describe("the pages that stay open", () => {
     ).toContain("next=/history");
   });
 });
+
+test.describe("the account", () => {
+  test("a stranger is offered a way in; nobody is signed in", async ({ page, request }) => {
+    const who = await request.get("/api/session");
+    expect(await who.json()).toMatchObject({ signedIn: false, admin: false, member: false });
+    await page.goto("/");
+    await expect(page.getByTestId("sign-in")).toBeVisible();
+    await page.goto("/join");
+    await expect(page.getByTestId("google-signin")).toBeVisible();
+    await expect(page.getByTestId("invite-code")).toBeVisible();
+  });
+});
+

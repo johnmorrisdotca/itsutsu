@@ -8,7 +8,11 @@ import {
   createRateLimitResponse,
   getClientIp,
 } from "@/lib/api/rateLimit";
+import { getServerSession } from "next-auth";
+
 import { isOperatorLogin } from "@/lib/auth/admin";
+import { authOptions } from "@/lib/auth/google";
+import { admitMember, foldEmail } from "@/lib/auth/members";
 import {
   ADMIN_SESSION_DAYS,
   PLAYER_SESSION_DAYS,
@@ -51,6 +55,10 @@ export async function GET(request: Request) {
       signedIn: session !== null,
       admin: session?.kind === "admin",
       email: session?.email ?? null,
+      name: session?.name ?? null,
+      picture: session?.picture ?? null,
+      /** A member came in by Google; an invite-only visitor has no address. */
+      member: Boolean(session?.email),
     },
     { headers: { "Cache-Control": "no-store" } },
   );
@@ -97,6 +105,34 @@ export async function POST(request: Request) {
     // Every failure answers identically: a guesser learns nothing from which.
     if (!redeemed.ok) return refused();
 
+    /*
+     * A code redeemed while a Google identity is waiting at the door makes
+     * that address a member: from now on Google alone lets them in, on any
+     * device. A code redeemed with no identity behind it lets this browser
+     * in, as it always has.
+     */
+    const google = await getServerSession(authOptions);
+    const email = google?.user?.email;
+    if (email) {
+      const member = await admitMember({
+        email,
+        name: google?.user?.name ?? "",
+        picture: google?.user?.image ?? "",
+        invitedWith: redeemed.code,
+      });
+      return await grant(
+        {
+          kind: "player",
+          email: foldEmail(member.email),
+          name: member.name,
+          picture: member.picture,
+          code: redeemed.code,
+          exp: expiryInDays(PLAYER_SESSION_DAYS),
+        },
+        PLAYER_SESSION_DAYS,
+      );
+    }
+
     return await grant(
       { kind: "player", code: redeemed.code, exp: expiryInDays(PLAYER_SESSION_DAYS) },
       PLAYER_SESSION_DAYS,
@@ -107,12 +143,29 @@ export async function POST(request: Request) {
   }
 }
 
-/** Signing out. Clearing the cookie is the whole of it. */
+/**
+ * Signing out. The site's cookie goes, and so do Google's session cookies,
+ * so the next sign-in asks Google again rather than silently reusing the
+ * last account — which matters on a shared phone.
+ */
 export async function DELETE() {
   const response = new NextResponse(null, { status: 204 });
   response.cookies.set(SESSION_COOKIE, "", { ...sessionCookieOptions(0), maxAge: 0 });
+  for (const name of GOOGLE_COOKIES) {
+    response.cookies.set(name, "", { path: "/", maxAge: 0 });
+  }
   return response;
 }
+
+/** next-auth's own cookies, under both the plain and the secure-prefixed names. */
+const GOOGLE_COOKIES = [
+  "next-auth.session-token",
+  "__Secure-next-auth.session-token",
+  "next-auth.callback-url",
+  "__Secure-next-auth.callback-url",
+  "next-auth.csrf-token",
+  "__Host-next-auth.csrf-token",
+];
 
 function refused(): NextResponse {
   return NextResponse.json(

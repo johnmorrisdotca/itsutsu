@@ -5,11 +5,10 @@ import { authOptions } from "./google";
 /**
  * The Google sign-in gate.
  *
- * `isAdminEmail` is tested on its own in session.test.ts. What is tested here
- * is the wiring: that the callback actually consults the allowlist. A change
- * that returned true unconditionally would leave every allowlist test green
- * while opening the site to anyone holding a Google account, so the refusals
- * are worth asserting where they are decided.
+ * Google proves an address; the door decides membership. What is tested here
+ * is that the callback admits exactly a verified Google address and nothing
+ * else — no other provider, no unverified address, no missing profile — since
+ * everything downstream (/api/session/google) trusts what got through.
  */
 
 const original = process.env.ADMIN_EMAILS;
@@ -45,22 +44,19 @@ function signIn(args: {
 }
 
 describe("google sign-in", () => {
-  it("lets an allowlisted, verified Google account in", () => {
+  it("lets a verified Google account complete the sign-in", () => {
     expect(signIn({ provider: "google", email: "john@spxis.com", verified: true })).toBe(true);
   });
 
-  it("refuses a Google account that is not on the allowlist", () => {
-    expect(signIn({ provider: "google", email: "stranger@example.com", verified: true })).toBe(
-      false,
-    );
+  it("lets a stranger's verified account sign in too — the door decides membership, not this", () => {
+    expect(signIn({ provider: "google", email: "stranger@example.com", verified: true })).toBe(true);
   });
 
-  it("refuses everyone when no allowlist is configured", () => {
-    delete process.env.ADMIN_EMAILS;
-    expect(signIn({ provider: "google", email: "john@spxis.com", verified: true })).toBe(false);
+  it("refuses a profile with no address, which nothing downstream could admit", () => {
+    expect(signIn({ provider: "google", verified: true })).toBe(false);
   });
 
-  it("refuses an unverified address even when it is on the allowlist", () => {
+  it("refuses an unverified address", () => {
     expect(signIn({ provider: "google", email: "john@spxis.com", verified: false })).toBe(false);
   });
 

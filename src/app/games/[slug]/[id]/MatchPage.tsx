@@ -14,8 +14,9 @@ import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
-import { seatForToken } from "@/lib/history/liveGame";
 import { seatCookieName } from "@/lib/history/seatCookie";
+import { resolveSeat } from "@/lib/history/seats";
+import { currentEmail } from "@/lib/auth/currentSession";
 import { prisma } from "@/lib/prisma";
 
 /** The site's own origin, taken from the request so links work behind any host. */
@@ -47,8 +48,9 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     notFound();
   }
 
-  const token = (await cookies()).get(seatCookieName(id))?.value;
-  const seat = await seatForToken(id, token);
+  const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, await currentEmail());
+  const token = claim?.token;
+  const seat = claim?.seat ?? null;
 
   // A match that is over lives in the record, at the record's address.
   if (game.status !== "active") redirect(recordPath(game.variant, game.id, move));

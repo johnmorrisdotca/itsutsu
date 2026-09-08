@@ -1,10 +1,11 @@
 /**
  * Signed session cookies.
  *
- * There are no accounts here, so a session is not a lookup into a users table
- * — it is a small signed statement the server made about this browser: "this
- * one redeemed an invite", or "this one is the operator". Signing is what
- * makes it unforgeable; nothing secret is stored inside it.
+ * A session is not a lookup into a users table — it is a small signed
+ * statement the server made about this browser: "this one redeemed an
+ * invite", "this one is the member with this address", or "this one is the
+ * operator". Signing is what makes it unforgeable; nothing secret is stored
+ * inside it.
  *
  * Web Crypto rather than node:crypto, because the middleware that reads these
  * runs on the Edge runtime where node:crypto does not exist.
@@ -14,8 +15,15 @@ export type SessionKind = "admin" | "player";
 
 export type Session = {
   kind: SessionKind;
-  /** Set for an operator session. Matched against the ADMIN_EMAILS allowlist. */
+  /**
+   * The signed-in address. Set for an operator (matched against the
+   * ADMIN_EMAILS allowlist) and for a member who came in through Google;
+   * absent for a browser that only redeemed an invite code.
+   */
   email?: string;
+  /** What Google calls them, for the header and for a seat's default name. */
+  name?: string;
+  picture?: string;
   /** The invite that let this browser in, so a revoked code can be traced. */
   code?: string;
   /** Expiry, in seconds since the epoch. */

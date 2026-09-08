@@ -3,18 +3,18 @@ import "server-only";
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-import { isAdminEmail } from "./admin";
 
 /**
- * Google sign-in, for the operator.
+ * Google sign-in: the front door.
  *
- * This does not open the site to anyone with a Google account — that would
- * undo the invite gate entirely. It is a better-authenticated way into the
- * *operator* seat than an email and a shared token: the same ADMIN_EMAILS
- * allowlist decides who is let in, and Google decides whether they really are
- * that address.
+ * Google proves an address; it does not decide who is let in. Any verified
+ * account may complete the sign-in here, and /api/session/google then asks
+ * the only question that matters — is this address the operator, or a member
+ * who was once invited? — before it issues the cookie the gate reads. So a
+ * stranger with a Google account gets as far as the door and a request for
+ * an invite code, and no further.
  *
- * Players still arrive by invite code, which needs no account at all.
+ * An invite code alone still works, for a phone with no account on it.
  *
  * The env names mirror the sibling projects, with the same fallbacks, so a
  * secret can be copied between them without being renamed.
@@ -52,16 +52,17 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: "/join", error: "/join" },
   callbacks: {
     /*
-     * The allowlist is enforced here, at sign-in, rather than only when an
-     * operator route is reached. Someone who is not on it never gets a
-     * session at all, so there is nothing to leak and nothing to revoke.
+     * Identity only. Membership is decided at /api/session/google, where the
+     * site's own cookie is minted, so that admitting or removing somebody
+     * takes effect on their next visit rather than when a Google session
+     * happens to lapse.
      */
     signIn({ account, profile }) {
       if (account?.provider !== "google") return false;
       const email = (profile as { email?: string; email_verified?: boolean }) ?? {};
       // An unverified Google address proves nothing about who holds it.
       if (email.email_verified === false) return false;
-      return isAdminEmail(email.email);
+      return typeof email.email === "string" && email.email.length > 0;
     },
   },
   secret: secret ?? undefined,

@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { AccountMenu } from "@/components/auth/AccountMenu";
+import { AdminLink } from "@/components/auth/AdminLink";
 import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
 
 import { BrandHero, BrandWordmark } from "./BrandMarks";
@@ -28,6 +30,8 @@ function Nav() {
           {item.href === "/games" ? <YourTurnBadge /> : null}
         </Link>
       ))}
+      <AdminLink />
+      <AccountMenu />
     </nav>
   );
 }

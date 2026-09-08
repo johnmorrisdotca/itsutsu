@@ -83,3 +83,16 @@ test.describe("rules and learning", () => {
     await expect(page).toHaveURL(/\/players$/);
   });
 });
+
+test.describe("signing out", () => {
+  test("clears the session and sends the visitor to the front page", async ({ page }) => {
+    await page.goto("/games");
+    await expect(page.getByTestId("account-menu")).toBeVisible();
+    await page.getByTestId("sign-out").click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId("sign-in")).toBeVisible();
+    await page.goto("/games");
+    await expect(page).toHaveURL(/\/join/);
+  });
+});
+

@@ -1,19 +1,38 @@
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+
 import { JoinForm } from "@/components/auth/JoinForm";
 import { BrandAvatar, BrandWordmark } from "@/components/layout/BrandMarks";
+import { isAdminEmail } from "@/lib/auth/admin";
+import { currentSession } from "@/lib/auth/currentSession";
+import { authOptions, isGoogleAuthConfigured } from "@/lib/auth/google";
+import { findMember } from "@/lib/auth/members";
 import { safeDestination } from "@/lib/auth/redirect";
-import { isGoogleAuthConfigured } from "@/lib/auth/google";
 
 export const metadata = {
   title: "Join",
   robots: { index: false, follow: false },
 };
 
-/** The only page reachable without a session. */
+/**
+ * The door. Google is the front of it; an invite code is the side of it.
+ *
+ * Somebody already in is sent where they were going. Somebody Google knows
+ * but we do not — a fresh account with no invite behind it — is asked for
+ * the code, once; after that, Google alone lets them in.
+ */
 export default async function JoinPage({ searchParams }: PageProps<"/join">) {
   const params = await searchParams;
-  const next = safeDestination(
-    typeof params.next === "string" ? params.next : null,
-  );
+  const next = safeDestination(typeof params.next === "string" ? params.next : null);
+
+  if ((await currentSession()) !== null) redirect(next);
+
+  const google = await getServerSession(authOptions);
+  const email = google?.user?.email ?? null;
+  const pending =
+    email !== null && !isAdminEmail(email) && (await findMember(email)) === null
+      ? { name: google?.user?.name ?? "", email }
+      : null;
 
   return (
     <div className="paper flex flex-1 flex-col items-center justify-center gap-8 px-4 py-16">
@@ -21,7 +40,7 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         <BrandAvatar className="size-24" />
         <BrandWordmark className="h-8 w-auto" />
       </header>
-      <JoinForm next={next} googleReady={isGoogleAuthConfigured()} />
+      <JoinForm next={next} googleReady={isGoogleAuthConfigured()} pending={pending} />
     </div>
   );
 }
