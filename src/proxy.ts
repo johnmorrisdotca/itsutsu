@@ -86,6 +86,17 @@ function isEmbed(pathname: string): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  /*
+   * One host. Google sign-in is registered for the bare domain, and its state
+   * cookie must be read back by the host that set it, so a visit that starts
+   * on www. is sent to the bare domain before anything else happens.
+   */
+  const host = request.headers.get("host") ?? "";
+  if (host.startsWith("www.")) {
+    const canonical = new URL(request.url);
+    canonical.host = host.slice(4);
+    return NextResponse.redirect(canonical, 308);
+  }
   const { pathname } = request.nextUrl;
 
   if (!gateIsConfigured() || isOpenPath(pathname)) return NextResponse.next();
