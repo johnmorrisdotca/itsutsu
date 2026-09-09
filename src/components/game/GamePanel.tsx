@@ -8,7 +8,7 @@ import { GameClock } from "./GameClock";
 import { GameControls } from "./GameControls";
 import { GameReviewPanel, type WinStreaks } from "./GameReviewPanel";
 import { GameStatsPanel } from "./GameStatsPanel";
-import { WinChanceBar } from "./WinChanceBar";
+import { AdvantagePanel } from "./AdvantagePanel";
 import { GameSettingsPanel } from "./GameSettingsPanel";
 import { GameStatus } from "./GameStatus";
 import { MoveHistory } from "./MoveHistory";
@@ -37,9 +37,9 @@ export function GameSidebar({
           <GameClock session={props.session} />
         </div>
       ) : null}
-      {props.session.settings.showWinChance ? (
+      {props.session.settings.showAdvantage ? (
         <div className={PANEL_CLASS}>
-          <WinChanceBar session={props.session} />
+          <AdvantagePanel session={props.session} />
         </div>
       ) : null}
       {props.session.hand.piece !== null ? (

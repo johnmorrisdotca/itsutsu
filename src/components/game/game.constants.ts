@@ -87,7 +87,7 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   // the accidental outcome of clicking through the record.
   historyMode: HISTORY_MODES.review,
   earlyWarning: false,
-  showWinChance: false,
+  showAdvantage: false,
 };
 
 export const DEFAULT_SEAT_NAMES = { one: "", two: "" } as const;
@@ -123,8 +123,9 @@ export const GAME_COPY = {
   clock: { label: "Clock", kanji: "時計" },
   byoyomi: { label: "Byoyomi", kanji: "秒読み" },
   stats: { label: "This game", kanji: "内容" },
-  winChance: { label: "Chance of winning", kanji: "形勢" },
-  winChanceNote: "An estimate from the shape on the board, not a solved value.",
+  advantage: { label: "Who is ahead", kanji: "形勢" },
+  advantageHint:
+    "How the game stands while it is on — read by threats where the game has them, counted where it has something countable, and left unsaid where it has neither.",
   earlyWarning: { label: "Warn early", kanji: "予兆" },
   earlyWarningHint:
     "Warn each side before the other can build an open three, not just once one exists. Both players get it, so it stays fair — but it makes a game harder to win.",

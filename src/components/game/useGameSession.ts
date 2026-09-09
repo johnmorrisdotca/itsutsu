@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { assess, isSwapBlocked } from "@/lib/gomoku/analysis";
-import { winChance } from "@/lib/gomoku/winChance";
+import { readAdvantage } from "@/lib/gomoku/advantage";
 import {
   canSkip as engineCanSkip,
   canGrowBoard,
@@ -428,7 +428,7 @@ export function useGameSession(
     clocks: clock.clocks,
     lostOnTime,
     stats,
-    winChance: winChance(state, assessment),
+    advantage: readAdvantage(state, assessment),
     canUndo: index > 0 && state.settings.allowUndo,
     canRedo: index < timeline.length - 1,
     canSkip: engineCanSkip(state),

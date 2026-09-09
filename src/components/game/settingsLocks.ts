@@ -4,6 +4,8 @@ import {
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { advantageReadingFor } from "@/lib/gomoku/advantage";
+import { UNREADABLE_DISPLAY } from "@/lib/gomoku/advantage.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { lengthReason } from "@/lib/gomoku/rules/drawLimit";
 import { GAME_COPY } from "./game.constants";
@@ -28,6 +30,13 @@ export type SettingsLocks = {
   obstacles: string | null;
   allowSkip: string | null;
   reading: string | null;
+  /**
+   * Why this game cannot say who is ahead, which is a narrower question than
+   * `reading`. Plenty of games the threat reading cannot touch can still be
+   * counted — discs, pieces home, pieces left — and those must not be locked
+   * out by a rule written for line reading.
+   */
+  advantage: string | null;
   drawLimit: string | null;
 };
 
@@ -45,6 +54,16 @@ export function settingsLocks(settings: GameSettings): SettingsLocks {
     allowSkip:
       stonesMove || spec.placement === PLACEMENTS.drop ? fixed : null,
     reading: spec.analysis ? null : GAME_COPY.noReading,
+    /*
+     * Its own reason, not `reading`'s. The old control borrowed that one and
+     * so told Hex, Notakto and maker-breaker players that stones move after
+     * they are placed, which in those three games they do not. Each game now
+     * gives the reason that is true of it.
+     */
+    advantage: (() => {
+      const kind = advantageReadingFor(spec);
+      return kind.kind === "unreadable" ? UNREADABLE_DISPLAY[kind.reason].sentence : null;
+    })(),
     /*
      * Two reasons a game may not be given a length, and the player is told
      * which. Hex cannot be drawn at all — a full board always holds exactly

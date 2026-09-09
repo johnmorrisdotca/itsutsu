@@ -1,9 +1,6 @@
 import type { GameSnapshot } from "./gameStorage";
-import type {
-  Assessment,
-  Suggestion,
-  WinChance,
-} from "@/lib/gomoku/analysis.types";
+import type { Assessment, Suggestion } from "@/lib/gomoku/analysis.types";
+import type { Advantage } from "@/lib/gomoku/advantage.types";
 import type { SeatClock } from "@/lib/clock/clock.types";
 import type { TimeControlName } from "@/lib/clock/clock.constants";
 import type {
@@ -55,8 +52,8 @@ export type SessionSettings = {
    * to one side would simply be an advantage handed out.
    */
   earlyWarning: boolean;
-  /** Show a rough chance of winning for each colour. */
-  showWinChance: boolean;
+  /** Show who is ahead while the game is on, in whatever terms the game allows. */
+  showAdvantage: boolean;
 };
 
 /** What one player did over the course of a game. */
@@ -108,8 +105,11 @@ export type GameSession = {
   /** The seat whose flag fell, when a game ended on time rather than on five. */
   lostOnTime: Seat | null;
   stats: GameStats;
-  /** A rough read on who is ahead, as percentages summing to 100. */
-  winChance: WinChance;
+  /**
+   * How the game stands: a threat reading, a counted quantity, or a plain
+   * statement that this game cannot be read that way.
+   */
+  advantage: Advantage;
   canUndo: boolean;
   canRedo: boolean;
   canSkip: boolean;

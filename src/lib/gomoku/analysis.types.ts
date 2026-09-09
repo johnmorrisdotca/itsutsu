@@ -71,15 +71,6 @@ export type Assessment = {
   decided: boolean;
 };
 
-/**
- * A rough read on who is ahead, as a percentage per colour summing to 100.
- *
- * It is an estimate from threats and shape, not a solved value — the engine
- * does not search. Shown to players as a feel for the position, never as a
- * fact about it.
- */
-export type WinChance = Record<Stone, number>;
-
 export type SuggestionReason =
   | "win"
   | "blockWin"

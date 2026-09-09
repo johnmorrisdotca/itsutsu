@@ -336,11 +336,11 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           />
 
           <Toggle
-            label="Show chance of winning"
-            checked={reading && session.settings.showWinChance}
-            disabled={!reading}
-            onChange={(next) => actions.setSessionSettings({ showWinChance: next })}
-            hint={locks.reading ?? GAME_COPY.winChanceNote}
+            label={GAME_COPY.advantage.label}
+            checked={locks.advantage === null && session.settings.showAdvantage}
+            disabled={locks.advantage !== null}
+            onChange={(next) => actions.setSessionSettings({ showAdvantage: next })}
+            hint={locks.advantage ?? GAME_COPY.advantageHint}
           />
 
           {session.settings.hintPolicy === HINT_POLICIES.limited ? (
