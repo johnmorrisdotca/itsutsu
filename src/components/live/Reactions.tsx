@@ -9,6 +9,7 @@ import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameReaction } from "@/lib/history/gameHistory.types";
 import {
   MESSAGE_MAX,
+  QUICK_PHRASES,
   REACTIONS,
   REACTION_SHOW_MS,
   type ReactionEmoji,
@@ -49,6 +50,27 @@ export function ReactionBar({
             className="rounded-full border border-rule bg-ivory/70 px-2 py-1 text-lg leading-none transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {reaction.emoji}
+          </button>
+        ))}
+      </div>
+      {/*
+        Above the box rather than beside the emoji, because they belong to the
+        typing rather than to the reacting: they are the sentences somebody
+        would otherwise be writing out. One tap sends the phrase with its own
+        emoji, and anything already half-typed in the box is left alone — a
+        quick phrase must never cost somebody the message they were composing.
+      */}
+      <div className="flex flex-wrap gap-1.5" data-testid="quick-phrases">
+        {QUICK_PHRASES.map((phrase) => (
+          <button
+            key={phrase.text}
+            type="button"
+            onClick={() => onSend(phrase.emoji, lastMove, phrase.text)}
+            disabled={disabled}
+            className="rounded-full border border-rule bg-ivory/70 px-2.5 py-1 text-xs text-ink-soft transition-colors hover:bg-ivory disabled:cursor-not-allowed disabled:opacity-40"
+            data-testid="quick-phrase"
+          >
+            <span aria-hidden="true">{phrase.emoji}</span> {phrase.text}
           </button>
         ))}
       </div>

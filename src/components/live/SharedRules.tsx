@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
-  BOARD_SIZES,
+  boardSizesFor,
+  sizeForVariant,
   OPENING_RULES,
   RULE_VARIANT_LIST,
 } from "@/lib/gomoku/gomoku.constants";
@@ -21,6 +22,7 @@ import { describeClock, describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { Button, Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { describeHandicap, describeRules } from "./rulesSummary";
 
 /**
@@ -33,10 +35,18 @@ export function SharedRules({
   game,
   token,
   seat,
+  refusal,
 }: {
   game: GameDetail;
   token: string | null;
   seat: string | null;
+  /**
+   * Why this game will move no rating, when it will not. Decided on the
+   * server — the rule reads the kept-record table — and said here rather than
+   * discovered afterwards, when the ladder has not moved and there is nothing
+   * left to ask.
+   */
+  refusal: RatingRefusal | null;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -78,6 +88,12 @@ export function SharedRules({
     if (!SHARED_OPENINGS.includes(merged.opening as OpeningRule)) {
       merged.opening = OPENING_RULES.free;
     }
+    /*
+     * And a variant with a board of its own is played on it. Switching a
+     * 15×15 game to Reversi has to carry the board with it, or the request
+     * asks for a Reversi game on a board Reversi does not have.
+     */
+    merged.size = sizeForVariant(merged.variant as RuleVariant, merged.size);
     try {
       const response = await fetch(`/api/games/${game.id}/settings`, {
         method: "PUT",
@@ -137,6 +153,17 @@ export function SharedRules({
           ? `. ${game.timeoutPenalty === "game" ? GAME_COPY.penaltyGame : game.timeoutPenalty === "game-strict" ? GAME_COPY.penaltyStrict : GAME_COPY.penaltyTurn}`
           : ""}
       </p>
+      {refusal !== null ? (
+        <p
+          className="rounded-lg border border-ochre/60 bg-ochre-soft px-3 py-2 text-xs text-ink"
+          data-testid="shared-unrated-line"
+        >
+          <span className="font-semibold">{RATING_REFUSAL_DISPLAY[refusal].playing}</span>{" "}
+          <span className="font-mincho">{RATING_REFUSAL_DISPLAY[refusal].kanji}</span>
+          {". "}
+          {RATING_REFUSAL_DISPLAY[refusal].sentence}
+        </p>
+      ) : null}
 
       {editable ? (
         <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">
@@ -162,8 +189,15 @@ export function SharedRules({
               value={game.size}
               disabled={saving}
               onChange={(event) => change({ size: Number(event.target.value) })}
+              data-testid="shared-rules-size"
             >
-              {BOARD_SIZES.map((option) => (
+              {/*
+                The boards this game has, not every board the site knows. A
+                Reversi game was offering 9×9, 13×13, 15×15 and 19×19 — none of
+                which Reversi is played on — and showing 9×9 as the current
+                board of an 8×8 game, because 8 was not in the list to match.
+              */}
+              {boardSizesFor(variant).map((option) => (
                 <option key={option} value={option}>
                   {option}×{option}
                 </option>

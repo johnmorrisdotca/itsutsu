@@ -22,6 +22,8 @@ import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { Conversation } from "@/components/history/Conversation";
 import { fetchApplause, type ApplauseTally } from "@/lib/history/applause";
 import { ignoredEmails } from "@/lib/social/ignores";
+import { ratingRefusal } from "@/lib/rating/rateable";
+import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -110,6 +112,18 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
     if (address !== null && ignored.has(address)) silenced.add(stone);
   }
 
+  /*
+   * Why this game moved no rating, when it moved none.
+   *
+   * Only for a game that was played to a result: an abandoned one was never
+   * going to count, and saying so on every unfinished board would be noise
+   * over the top of an answer nobody was waiting for. A game somebody played
+   * out to the end and then could not find in their figures is the silence
+   * this fills.
+   */
+  const refusal =
+    game.rated && game.result !== "abandoned" ? ratingRefusal(game.blackName, game.whiteName) : null;
+
   // A seat held by cookie counts too: a game played from a scanned link, or at one screen.
   const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, myId);
   const seatColour = myColour ?? claim?.seat ?? null;
@@ -126,6 +140,7 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
       applause={applause}
       signedIn={mine !== null}
       silenced={silenced}
+      refusal={refusal}
     />
   );
 }
@@ -140,6 +155,7 @@ function FiledMatch({
   applause,
   signedIn,
   silenced,
+  refusal,
 }: {
   game: GameDetail;
   move: number;
@@ -148,6 +164,8 @@ function FiledMatch({
   hidden: boolean;
   /** Colours whose player this reader has ignored. */
   silenced: ReadonlySet<string>;
+  /** Why the ladder did not move for this game, when it did not. */
+  refusal: RatingRefusal | null;
   /** The viewer's own read on their play, when they held a seat; undefined for a reader. */
   verdict?: Verdict;
   applause: ApplauseTally;
@@ -192,6 +210,23 @@ function FiledMatch({
           </Link>
         </span>
       </div>
+
+      {/*
+        Above everything the game itself offers, because it answers a question
+        the page otherwise leaves a player to answer alone: they played this
+        out, and it is not in their figures.
+      */}
+      {refusal !== null ? (
+        <p
+          className="rounded-lg border border-ochre/60 bg-ochre-soft px-3 py-2 text-sm text-ink"
+          data-testid="record-unrated"
+        >
+          <span className="font-semibold">{RATING_REFUSAL_DISPLAY[refusal].filed}</span>{" "}
+          <span className="font-mincho">{RATING_REFUSAL_DISPLAY[refusal].kanji}</span>
+          {". "}
+          {RATING_REFUSAL_DISPLAY[refusal].sentence}
+        </p>
+      ) : null}
 
       {verdict !== undefined ? <SelfVerdict id={game.id} initial={verdict} /> : null}
 

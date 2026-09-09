@@ -21,9 +21,9 @@ import {
   resolvePlacement,
   twistBoard,
 } from "@/lib/gomoku/engine";
-import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
-import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
+import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
 import { recordResult } from "@/lib/rating/players";
 import { poolFor } from "@/lib/rating/pools";
@@ -157,6 +157,8 @@ export async function createLiveGame(
     data: {
       id: await freeGameId(),
       ...rest,
+      // A game with a board of its own is created on it, whatever was asked for.
+      size: sizeForVariant(rest.variant as RuleVariant, rest.size),
       clockMode,
       rated,
       blackTimeMs: budget,
@@ -218,6 +220,8 @@ export async function updateLiveGameSettings(
     where: { id },
     data: {
       ...rest,
+      // The board this variant has, not the one that was asked for.
+      size: sizeForVariant(rest.variant as RuleVariant, rest.size),
       clockMode,
       rated,
       blackTimeMs: budget,

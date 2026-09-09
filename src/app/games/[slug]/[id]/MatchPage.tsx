@@ -15,6 +15,7 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { isHotSeat } from "@/lib/history/liveGame";
 import { isIgnoring } from "@/lib/social/ignores";
+import { ratingRefusal } from "@/lib/rating/rateable";
 import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -142,6 +143,18 @@ async function LiveMatch({
   muted: Stone | null;
 }) {
   /*
+   * Whether this game will move a rating, and if it will not, why.
+   *
+   * Said here, while the game is still being played, because afterwards there
+   * is nothing to say it with: the ladder has not moved and there is no gap on
+   * a page to click on. A seat still posted on the noticeboard is left alone —
+   * it has no name on it because nobody has taken it yet, which is a game
+   * waiting rather than a game that will not count.
+   */
+  const refusal =
+    game.rated && game.openSeat === null ? ratingRefusal(game.blackName, game.whiteName) : null;
+
+  /*
    * Seat links are only handed out to someone who already holds one. A reader
    * with no claim, or the wrong one, gets a board they can watch and not
    * touch — so a shared spectator link cannot be turned into a seat.
@@ -208,7 +221,7 @@ async function LiveMatch({
         </div>
 
         <aside className="flex w-full flex-col gap-4 lg:w-80">
-          <SharedRules game={game} token={token} seat={seat} />
+          <SharedRules game={game} token={token} seat={seat} refusal={refusal} />
           {seat !== null ? (
             <div className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">

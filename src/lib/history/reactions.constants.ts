@@ -25,6 +25,30 @@ export const REACTION_EMOJI = REACTIONS.map((reaction) => reaction.emoji) as [
   ...ReactionEmoji[],
 ];
 
+/**
+ * The things people actually say over a slow game, one tap each.
+ *
+ * An emoji on its own carries a mood; a game played a move a day needs
+ * sentences — that you have seen the move, that you are not ignoring them,
+ * that you are going out and will answer tonight. The elder turn-based sites
+ * all kept a list like this, and they kept it for a reason: two people playing
+ * across a timezone and often across a language will send a phrase they can
+ * pick off a list far sooner than one they have to compose.
+ *
+ * Each carries its own emoji, so a phrase is still a reaction and the rule
+ * that a message never travels alone holds. They are deliberately short: they
+ * are read as buttons, and a button nobody can take in at a glance is slower
+ * than typing.
+ */
+export const QUICK_PHRASES = [
+  { emoji: "👋", text: "Hello, good luck" },
+  { emoji: "🍵", text: "No rush" },
+  { emoji: "🤔", text: "Need to think about this one" },
+  { emoji: "😅", text: "Sorry, misclick" },
+  { emoji: "👋", text: "Have to go — back later" },
+  { emoji: "🙇", text: "Good game, thank you" },
+] as const satisfies readonly { emoji: ReactionEmoji; text: string }[];
+
 /** How many recent reactions a game carries to its readers. */
 export const REACTIONS_KEPT = 30;
 

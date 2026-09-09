@@ -486,6 +486,22 @@ export function boardSizesFor(variant: RuleVariant): readonly number[] {
   return VARIANT_SPECS[variant].boardSizes ?? BOARD_SIZES;
 }
 
+/**
+ * The board this variant will actually be played on, given a size somebody
+ * asked for. A game with a board of its own gets that board.
+ *
+ * `normaliseSettings` has always done this when it builds a state, so the
+ * board a player sees was never wrong. What could be wrong was the row: a
+ * Reversi game could be stored at 19×19, shown as 19×19 on its page and in
+ * its record, and played on the 8×8 board Reversi actually has. Anything
+ * writing a size to the database asks here first, so the row and the board
+ * cannot disagree.
+ */
+export function sizeForVariant(variant: RuleVariant, size: number): number {
+  const sizes = VARIANT_SPECS[variant].boardSizes;
+  return sizes === null || sizes.includes(size) ? size : sizes[0];
+}
+
 export const GAME_STATUS = {
   playing: "playing",
   won: "won",
