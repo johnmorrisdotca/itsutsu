@@ -143,7 +143,20 @@ test.describe("the rules panel on a game still waiting for somebody", () => {
 
     await page.getByTestId("shared-rules-variant").selectOption("reversi");
     await expect(page.getByTestId("shared-rules")).toBeVisible();
-    await expect(page.getByTestId("shared-rules-size")).toHaveValue("8");
+    /*
+     * The board went with the game, and there is now nothing to ask: a game
+     * with one board is not offered a choice between it and itself, so the
+     * control is gone rather than showing 8×8 as its only option. The line
+     * above it carries the answer, which is what this case is really about —
+     * the row and the board agreeing.
+     *
+     * This assertion was `toHaveValue("8")` when it was written, against a
+     * control that was always there. Changed by the setup-screen work, which
+     * hides a single-option board control everywhere for the same reason the
+     * start sentence does; say so if you would rather have the control back.
+     */
+    await expect(page.getByTestId("shared-rules-line")).toContainText("8×8");
+    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
     expect(crashes, crashes.join("\n")).toEqual([]);
   });
 });
