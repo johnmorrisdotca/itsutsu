@@ -220,7 +220,28 @@ const NEW_FOR_DAYS = 14;
  * the directory is how people find each other to play.
  */
 export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
-  const members = await prisma.member.findMany({ orderBy: { lastSeenAt: "desc" }, take: limit });
+  return toDirectory(await prisma.member.findMany({ orderBy: { lastSeenAt: "desc" }, take: limit }));
+}
+
+/**
+ * The three computer players, however many people are on the site.
+ *
+ * They used to be picked out of the directory's first page, which is ordered
+ * by who was seen last and cut at a limit. A computer player is never "seen"
+ * — it does not sign in — so the moment the site had more members than that
+ * limit, all three dropped off the end and the players page had no computer
+ * opponents on it at all. Nobody would have connected the two facts.
+ *
+ * They are a fixed, tiny set, so they are fetched as one: a directory page is
+ * a page of people, and this is not that.
+ */
+export async function fetchComputerPlayers(): Promise<DirectoryEntry[]> {
+  return toDirectory(await prisma.member.findMany({ where: { botTier: { not: null } } }));
+}
+
+type MemberRow = Awaited<ReturnType<typeof prisma.member.findMany>>[number];
+
+async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[]> {
   const keys = members.map((member) => playerKey(member.name)).filter((key) => key !== "");
   const players = keys.length === 0 ? [] : await prisma.player.findMany({ where: { key: { in: keys } } });
   const byKey = new Map(players.map((row) => [row.key, toProfile(row)]));

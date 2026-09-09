@@ -8,7 +8,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
-import { fetchDirectory, fetchLeaders } from "@/lib/rating/players";
+import { fetchComputerPlayers, fetchDirectory, fetchLeaders } from "@/lib/rating/players";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
@@ -73,16 +73,23 @@ export default async function PlayersPage() {
    * would expect to find them.
    */
   await ensureBotMembers();
-  const [leaders, directory, me, here] = await Promise.all([
+  const [leaders, directory, computers, me, here] = await Promise.all([
     fetchLeaders(LEADERS),
     fetchDirectory(200),
+    fetchComputerPlayers(),
     currentSession(),
     fetchHereNow(now),
   ]);
-  // A program is a member, so it is in the directory; it is lifted out into
-  // its own section so somebody looking for a game can see the three of them
-  // together rather than picking them out of a list of people.
-  const computers = directory.filter((entry) => entry.botTier !== null);
+  /*
+   * A program is a member, so it is in the directory; it is lifted out into
+   * its own section so somebody looking for a game can see the three of them
+   * together rather than picking them out of a list of people.
+   *
+   * Fetched on their own rather than filtered out of the directory's first
+   * two hundred, which is ordered by who was seen last: a computer player is
+   * never seen, so past two hundred members all three fell off the end and
+   * this page stopped offering any computer opponent at all.
+   */
   const people = directory.filter((entry) => entry.botTier === null);
   const buddies = me?.email ? await buddyEmails(me.email) : new Set<string>();
   const ignored = me?.email ? await ignoredEmails(me.email) : new Set<string>();
