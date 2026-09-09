@@ -52,18 +52,11 @@ export default async function LobbyPage() {
   sweepOpenSeats();
 
   const claimed = [...claims.keys()];
-  const [email, mine, counts, seatGames, choices, here] = await Promise.all([
+  const [email, mine, counts, seatGames, here] = await Promise.all([
     currentEmail(),
     currentMemberId(),
     fetchPlayedCounts(),
     fetchOpenGames(claimed),
-    /*
-     * The sentence reads a different list from the board on purpose. The
-     * board shows the newest thirty seats; the sentence asks whether anybody
-     * is waiting for this game at this pace on this board, and a busy game
-     * pushed every other game's seat off the end of the newest thirty.
-     */
-    fetchSeatChoices(claimed),
     fetchHereNow(),
   ]);
   const [opponents, ignored] = await Promise.all([
@@ -107,6 +100,21 @@ export default async function LobbyPage() {
     return !ignored.has(poster);
   };
   const openSeats = seatGames.filter(theirs);
+
+  /*
+   * The sentence reads a different list from the board on purpose. The board
+   * shows the newest thirty seats; the sentence asks whether anybody is
+   * waiting for this game at this pace on this board, and a busy game pushed
+   * every other game's seat off the end of the newest thirty.
+   *
+   * Asked after the ignore list is known, and given the same test the board
+   * uses, because the seat kept for a combination has to be one the reader
+   * could actually sit at. Choosing first and filtering after put the bug
+   * back one layer down: my own seat, posted after an identical stranger's,
+   * is the newer of the two and so the one kept — then dropped for being
+   * mine, and the sentence says nobody is asking. Somebody was.
+   */
+  const choices = await fetchSeatChoices(claimed, theirs);
 
   // The sentence reads the same lists the page below it shows.
   const families: GameGroup[] = GAME_FAMILIES.map((family) => ({

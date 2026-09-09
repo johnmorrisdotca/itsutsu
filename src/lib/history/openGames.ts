@@ -50,15 +50,52 @@ export async function fetchOpenGames(except: Iterable<string> = []): Promise<Gam
  * being open the moment somebody sits down, and a computer answers one left
  * standing for a day.
  */
-export async function fetchSeatChoices(except: Iterable<string> = []): Promise<GameSummary[]> {
+export async function fetchSeatChoices(
+  except: Iterable<string> = [],
+  /**
+   * Whether this seat is one the reader could actually sit at — not their
+   * own, and not from somebody they have shut out.
+   *
+   * Passed in rather than queried here because the answer is about the
+   * reader, not about the seat, and because it has to be applied BEFORE one
+   * seat per combination is picked. Picking first and filtering after is the
+   * bug this whole function exists to prevent, arrived at one layer deeper:
+   * my own seat, posted a minute after an identical stranger's, is the newer
+   * of the two, so it is the one kept — and then removed for being mine,
+   * leaving the sentence to say nobody is asking for this. Somebody was.
+   */
+  answerable: (game: GameSummary) => boolean = () => true,
+): Promise<GameSummary[]> {
   const rows = await prisma.game.findMany({
     where: { status: "active", openSeat: { not: null }, id: { notIn: [...except] } },
-    // The distinct columns first, so the newest of each group is the one kept.
-    orderBy: [{ variant: "asc" }, { moveTimeMs: "asc" }, { size: "asc" }, { openedAt: "desc" }],
-    distinct: ["variant", "moveTimeMs", "size"],
+    orderBy: { openedAt: "desc" },
     select: SUMMARY_SELECT,
   });
-  return rows.map(toSummary);
+
+  /*
+   * Narrowed here rather than in the query, and the newest of each
+   * combination chosen here rather than by `distinct`.
+   *
+   * A query and the loop it replaces are not interchangeable, which is the
+   * lesson this function learned twice. `NOT (id IN (…))` over a column that
+   * can be null answers null in SQL, which reads as "keep the row", so a seat
+   * posted by somebody with no account slipped past a filter the JavaScript
+   * had always handled. And `distinct` needs its columns first in the
+   * ordering, which quietly sorts the answer by game and board instead of by
+   * what is newest. Order, null-handling and the position of a filter are all
+   * part of what a loop does, not decoration on its predicate.
+   *
+   * Unbounded on purpose. An open seat is a small set by its nature: it stops
+   * being open the moment somebody sits down, and a computer player answers
+   * one left standing for a day.
+   */
+  const newestOfEach = new Map<string, GameSummary>();
+  for (const row of rows.map(toSummary)) {
+    if (!answerable(row)) continue;
+    const combination = `${row.variant}|${row.moveTimeMs}|${row.size}`;
+    if (!newestOfEach.has(combination)) newestOfEach.set(combination, row);
+  }
+  return [...newestOfEach.values()];
 }
 
 export type SitOutcome =
