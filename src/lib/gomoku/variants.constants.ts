@@ -1,5 +1,4 @@
-import type { CountryCode } from "@/lib/learn/origins";
-
+import type { CountryCode } from "../learn/origins";
 import type { RuleVariant } from "./gomoku.types";
 
 /**
