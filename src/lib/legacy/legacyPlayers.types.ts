@@ -106,6 +106,21 @@ export type LegacyPlayer = {
   sources: LegacySource[];
   /** For kind "elsewhere": the folded key of the live Itsutsu name this record belongs beside. */
   linkedKey?: string;
+  /**
+   * Folded into the live account: this record keeps no address of its own.
+   *
+   * One person is one page. An "elsewhere" record is the earlier chapter of
+   * somebody who is here now, and while it had a slug of its own the site
+   * served two pages with the same name at the top — which is the very thing
+   * the one-row shape above exists to prevent, missed because it only ever
+   * guarded legacy against legacy, never legacy against a live member.
+   *
+   * Folding removes the address, not the record. Everything here still shows
+   * on the live member's page, in that site's tab, which is where somebody
+   * looking for it would go first. `note` says why and when, so the next
+   * person to read this row knows it was a decision rather than an oversight.
+   */
+  folded?: { since: string; note: string };
 };
 
 /** A single game kept in full — moves proven legal by replay, not just a result. */

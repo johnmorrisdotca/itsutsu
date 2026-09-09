@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -11,7 +11,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMemberByName } from "@/lib/auth/members";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
-import { findLegacyPlayer, findLinkedLegacies } from "@/lib/legacy/legacyPlayers.data";
+import { findLegacyPlayer, findLinkedLegacies, foldedInto } from "@/lib/legacy/legacyPlayers.data";
 import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { countText, figuresOf, recordText, winRateText } from "@/lib/rating/figures";
@@ -38,8 +38,25 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   const view = (await searchParams).view;
 
   const legacyBySlug = findLegacyPlayer(slug);
+  /*
+   * A folded record has no page of its own — one person, one page. Its
+   * contents are not gone: they are a tab on the live member's page, which is
+   * where this sends anybody who still has the old address, rather than
+   * leaving them at a second page with the same name at the top of it.
+   */
+  if (legacyBySlug !== null) {
+    const home = foldedInto(legacyBySlug);
+    if (home !== null) redirect(home);
+  }
   if (legacyBySlug !== null && legacyBySlug.kind !== "elsewhere") {
-    return <LegacyOwnPage legacy={legacyBySlug} view={view} here={await recordHere(legacyBySlug.name)} />;
+    return (
+      <LegacyOwnPage
+        legacy={legacyBySlug}
+        view={view}
+        base={`/players/${slug}`}
+        here={await recordHere(legacyBySlug.name)}
+      />
+    );
   }
 
   /*
@@ -71,7 +88,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
 
   if (!hasLiveData && linked.length === 0) notFound();
   if (!hasLiveData && linked.length > 0) {
-    return <LegacyOwnPage legacy={linked[0]} view={view} here={{ record, gifts }} />;
+    return <LegacyOwnPage legacy={linked[0]} view={view} base={`/players/${slug}`} here={{ record, gifts }} />;
   }
 
   const tier = player === null ? null : TIER_DISPLAY[player.tier];

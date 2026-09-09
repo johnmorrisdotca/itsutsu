@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { findLegacyPlayer, findLinkedLegacies, LEGACY_PLAYERS } from "./legacyPlayers.data";
+import {
+  findLegacyPlayer,
+  findLinkedLegacies,
+  foldedInto,
+  LEGACY_PLAYERS,
+} from "./legacyPlayers.data";
 
 describe("legacy records", () => {
   it("finds a record by its slug, folding case and whitespace", () => {
@@ -123,6 +128,59 @@ describe("legacy records", () => {
           expect(otherEntry!.games[i].result, `game ${i}`).toBe(flip[entry.games[i].result]);
         }
       }
+    }
+  });
+});
+
+/**
+ * Folding takes away an address, never a record.
+ *
+ * The site owner found two pages with his own name at the top and asked for
+ * one of them gone. The half that is safe to do — one person, one page — is
+ * done. The half that is not is guarded here: these rows are hand-transcribed
+ * from sites that no longer exist, so a fold that left one unreachable would
+ * not be tidying up, it would be the only copy going out with the address.
+ */
+describe("a folded record", () => {
+  it("sends its old address to the live account, not to a second page", () => {
+    const john = findLegacyPlayer("jmorris");
+    if (john === null) throw new Error("jmorris is missing");
+    expect(john.folded).toBeDefined();
+    expect(foldedInto(john)).toBe("/players/john-morris");
+  });
+
+  it("still shows every source it ever had, on the page it folded into", () => {
+    // The whole point: the address goes, the 2001-2007 record does not.
+    const [john] = findLinkedLegacies("john morris");
+    expect(john.sources.map((source) => source.site)).toEqual([
+      "ItsYourTurn.com",
+      "GoldToken.com",
+    ]);
+    expect(john.sources.flatMap((source) => source.summary ?? []).length).toBeGreaterThan(0);
+  });
+
+  it("is never folded without somewhere to fold into", () => {
+    for (const player of LEGACY_PLAYERS) {
+      if (player.folded === undefined) continue;
+      /*
+       * A folded row with no linkedKey would have no address and no host
+       * page, which takes the record off the site entirely. If somebody ever
+       * wants that, it should be a deletion they can see in a diff, not a
+       * missing field nobody notices.
+       */
+      expect(player.kind, player.slug).toBe("elsewhere");
+      expect(player.linkedKey, player.slug).toBeDefined();
+      expect(foldedInto(player), player.slug).not.toBeNull();
+      expect(player.folded.note.length, player.slug).toBeGreaterThan(20);
+    }
+  });
+
+  it("leaves a record that was never folded with its own address", () => {
+    for (const slug of ["chibi", "kyokosan"]) {
+      const player = findLegacyPlayer(slug);
+      if (player === null) throw new Error(`${slug} is missing`);
+      expect(player.folded, slug).toBeUndefined();
+      expect(foldedInto(player), slug).toBeNull();
     }
   });
 });

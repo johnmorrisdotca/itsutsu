@@ -11,8 +11,8 @@ import { seedMember } from "./members";
 test.describe("a legacy record's games link to what they are", () => {
   test("an aliased game name is a link; an unmapped one is plain text", async ({ page }) => {
     // One page per person: John's ItsYourTurn chapter, where he played as
-    // Incognito, sits on his own record rather than at a second address.
-    await page.goto("/players/jmorris");
+    // Incognito, is served at his own address now, not at a second one.
+    await page.goto("/players/john-morris");
     const detail = page.getByTestId("legacy-detail").first();
 
     // Go-Moku maps to our Gomoku (internally still the "freestyle" variant) —
@@ -29,7 +29,7 @@ test.describe("a legacy record's games link to what they are", () => {
 
   test("a head-to-head record links each game the same way", async ({ page }) => {
     // His head-to-head with his father is GoldToken's, so it is that tab.
-    await page.goto("/players/jmorris?view=goldtoken");
+    await page.goto("/players/john-morris?view=goldtoken");
     const log = page.getByTestId("legacy-head-to-head-log");
     await expect(log.getByRole("link", { name: "Long Gammon" })).toHaveCount(0);
     await expect(log.getByText("Long Gammon").first()).toBeVisible();
@@ -56,9 +56,30 @@ test.describe("a legacy record's games link to what they are", () => {
     expect(gone?.status()).toBe(404);
   });
 
+  /*
+   * The site owner found two pages with his own name at the top of them. The
+   * record was never duplicated — there is one live account and one kept
+   * record, correctly linked — but the kept record also had an address, so
+   * the site served both. The address is folded away; the record is not.
+   */
+  test("a folded record's old address leads to the person, not a second page", async ({ page }) => {
+    await page.goto("/players/jmorris");
+    await expect(page).toHaveURL(/\/players\/john-morris$/);
+
+    // And the record itself survived the fold, whole.
+    await expect(page.getByTestId("legacy-player")).toContainText("ItsYourTurn.com");
+    await expect(page.getByTestId("legacy-player")).toContainText("GoldToken.com");
+    await expect(page.getByTestId("legacy-player")).toContainText("Incognito");
+
+    // A tab click stays on his address rather than bouncing back through it.
+    await page.getByTestId("tab").filter({ hasText: "GoldToken" }).click();
+    await expect(page).toHaveURL(/\/players\/john-morris\?/);
+    await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "GoldToken.com");
+  });
+
   test("shows both of a person's handles when they differ", async ({ page }) => {
     // John was Incognito on one site and John Morris on the other.
-    await page.goto("/players/jmorris");
+    await page.goto("/players/john-morris");
     await expect(page.getByTestId("legacy-player")).toContainText("Incognito");
     await expect(page.getByTestId("legacy-player")).toContainText("John Morris");
     await expect(page.getByTestId("tab")).toHaveCount(3);

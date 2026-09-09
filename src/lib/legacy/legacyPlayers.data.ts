@@ -1,3 +1,4 @@
+import { playerPath } from "@/lib/rating/playerKey";
 import type { LegacyPlayer } from "./legacyPlayers.types";
 
 /**
@@ -228,6 +229,21 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
     slug: "jmorris",
     name: "John Morris",
     kind: "elsewhere",
+    /*
+     * Staged for removal at the site owner's request, 2026-09-09. He found
+     * two John Morris pages on his own site and asked for one of them gone.
+     *
+     * Folded rather than deleted, deliberately and for now: this row is 127
+     * lines of hand-transcribed record from ItsYourTurn and GoldToken, 2001
+     * to 2007, and it exists nowhere else — not in the database, not at the
+     * source sites, both of which it outlived. Deleting it would not merge
+     * two accounts, because there is only ever one; it would throw away the
+     * record. So the address goes now and the record stays, on his page.
+     */
+    folded: {
+      since: "2026-09-09",
+      note: "Folded into the live account john-morris. Kept here until the owner confirms the record itself should go.",
+    },
     // The live account this belongs beside. Without it the record exists at
     // its own address and never appears on the page of the person whose it
     // is, which is where anybody would look for it first.
@@ -352,6 +368,20 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
     ],
   },
 ];
+
+/**
+ * Where a folded record's address now leads: the live member's page, on the
+ * tab for the site this record came from.
+ *
+ * Null for a record that keeps its own address. A folded record without a
+ * `linkedKey` would have nowhere to send anybody and would take its contents
+ * off the site altogether, so that combination is refused by the tests rather
+ * than silently resolving to a page that is not about this person.
+ */
+export function foldedInto(player: LegacyPlayer): string | null {
+  if (player.folded === undefined || player.linkedKey === undefined) return null;
+  return playerPath(player.linkedKey);
+}
 
 export function findLegacyPlayer(slug: string): LegacyPlayer | null {
   const key = slug.trim().toLowerCase();

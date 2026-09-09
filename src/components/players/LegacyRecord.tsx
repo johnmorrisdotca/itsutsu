@@ -92,11 +92,19 @@ export function LegacyOwnPage({
   legacy,
   view,
   here,
+  base,
 }: {
   legacy: LegacyPlayer;
   view?: string | string[];
   /** What this site holds of them, which for a kept record is usually nothing. */
   here: { record: PlayerRecord; gifts: TimeGiftRecord };
+  /**
+   * The address this page is being served at, which is not always the
+   * record's own slug: a folded record is shown at the live member's address
+   * instead. Tabs are links, so they have to be built from where the reader
+   * actually is, or the first tab click bounces them through a redirect.
+   */
+  base?: string;
 }) {
   const copy = legacy.kind === "elsewhere" ? null : LEGACY_OWN_PAGE_COPY[legacy.kind];
   const sources = legacyTabs([legacy]);
@@ -117,7 +125,12 @@ export function LegacyOwnPage({
           {copy?.tail ?? "From before Itsutsu — kept alongside whatever they've since earned here."}
         </p>
       </section>
-      <Tabs tabs={tabs} active={open} base={`/players/${legacy.slug}`} label="Where this record was kept" />
+      <Tabs
+        tabs={tabs}
+        active={open}
+        base={base ?? `/players/${legacy.slug}`}
+        label="Where this record was kept"
+      />
       {shown === null ? (
         <ItsutsuRecord record={here.record} gifts={here.gifts} emptyNote={copy?.here} />
       ) : (
