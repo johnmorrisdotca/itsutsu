@@ -1,3 +1,4 @@
+import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { HistoryFilters } from "@/components/history/HistoryFilters";
@@ -51,9 +52,9 @@ export async function RecordPage({ variant, params }: { variant?: RuleVariant; p
       <div className="flex flex-col gap-1">
         <h1 className="flex items-baseline gap-3 font-mincho text-2xl font-bold">
           棋譜
-          {copy !== null ? (
+          {variant !== undefined && copy !== null ? (
             <span className="font-sans text-lg font-semibold" data-testid="record-game">
-              {copy.label} <span className="font-mincho text-base font-normal opacity-70">{copy.kanji}</span>
+              <GameName variant={variant} kanji />
             </span>
           ) : null}
         </h1>

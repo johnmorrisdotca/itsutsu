@@ -4,7 +4,7 @@ import { BOT_TIERS, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 import { isMemberId } from "@/lib/auth/memberId";
 import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { deadlineFor } from "@/lib/history/deadline";
-import { BOT_MEMBERS, BOT_MEMBER_LIST, BOT_UNCLAIMABLE } from "./bots.constants";
+import { BOT_MEMBERS, BOT_MEMBER_LIST, BOT_UNCLAIMABLE, botRowFields } from "./bots.constants";
 import { botInSeat, botTierFor, hasBotSeat, isBotId } from "./bots";
 
 /**
@@ -20,6 +20,31 @@ describe("the ladder as members", () => {
       expect(bot.bio.length).toBeGreaterThan(40);
     }
     expect(new Set(BOT_MEMBER_LIST.map((bot) => bot.id)).size).toBe(BOT_MEMBER_LIST.length);
+  });
+
+  it("describes a row the same way whether it is being made or kept up to date", () => {
+    /*
+     * The upsert writes this object into both halves, so the check is on what
+     * it decides rather than on the two halves matching — they cannot drift.
+     *
+     * showOnline is the one worth naming. The column defaults to true and
+     * "here now" is showOnline plus a stamp inside the last half hour; a
+     * computer player's stamp never moves after its row is written, so a row
+     * that kept the default would stand in the "who is here" list for half an
+     * hour and then quietly leave.
+     */
+    for (const bot of BOT_MEMBER_LIST) {
+      const fields = botRowFields(bot);
+      expect(fields.showOnline).toBe(false);
+      expect(fields.emailNotify).toBe(false);
+      expect(fields.unclaimableBecause).toBe(BOT_UNCLAIMABLE);
+      expect(fields.botTier).toBe(bot.tier);
+      expect(fields.country).toBe(bot.country);
+      // Identity is not a description: rewriting it on every sweep would be a
+      // worse thing than letting a description go stale.
+      expect(fields).not.toHaveProperty("id");
+      expect(fields).not.toHaveProperty("email");
+    }
   });
 
   it("has a reason of its own for never being claimable", () => {

@@ -1,12 +1,13 @@
 import Link from "next/link";
 
+import { GameName } from "@/components/games/GameName";
 import { PlayerName } from "@/components/players/PlayerName";
 import { recordPath } from "@/lib/gomoku/slugs";
 
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 function playedOn(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     dateStyle: "medium",
@@ -51,7 +52,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               <span className="text-sm text-muted">
                 {game.size}×{game.size}
                 <span className="px-2">·</span>
-                {variantLabel(game.variant)}
+                <GameName variant={game.variant as RuleVariant} raised />
               </span>
 
               <span className="text-sm text-muted tabular-nums">

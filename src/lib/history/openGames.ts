@@ -27,6 +27,40 @@ export async function fetchOpenGames(except: Iterable<string> = []): Promise<Gam
   return rows.map(toSummary);
 }
 
+/**
+ * One open seat for every combination somebody could ask for.
+ *
+ * The board above shows the newest thirty, which is right for a noticeboard —
+ * nobody reads past the first page of one. The sentence is asking a different
+ * question: "is anybody already waiting for exactly this", of a game, a pace
+ * and a board. Answering that off the newest thirty is the bug this exists to
+ * fix: on a day when one game is busy, every waiting seat of every other game
+ * is off the end of that list, and the sentence offers to post a second seat
+ * beside one already standing. That is the precise failure the control was
+ * built to prevent, and it fails silently — the person sees an ordinary
+ * "Post the seat" and never learns there was somebody to play.
+ *
+ * Found by the browser suite failing on two different specs on two runs, both
+ * passing alone: thirty-one of the thirty-four open seats on that database
+ * were one game, so the other games' seats were never fetched.
+ *
+ * Bounded by the combinations that exist rather than by a count, which is the
+ * whole point — `distinct` on exactly the three columns the sentence matches
+ * on, newest of each. An open seat is a small set by its nature: it stops
+ * being open the moment somebody sits down, and a computer answers one left
+ * standing for a day.
+ */
+export async function fetchSeatChoices(except: Iterable<string> = []): Promise<GameSummary[]> {
+  const rows = await prisma.game.findMany({
+    where: { status: "active", openSeat: { not: null }, id: { notIn: [...except] } },
+    // The distinct columns first, so the newest of each group is the one kept.
+    orderBy: [{ variant: "asc" }, { moveTimeMs: "asc" }, { size: "asc" }, { openedAt: "desc" }],
+    distinct: ["variant", "moveTimeMs", "size"],
+    select: SUMMARY_SELECT,
+  });
+  return rows.map(toSummary);
+}
+
 export type SitOutcome =
   | { ok: true; token: string; seat: Stone; variant: string }
   | { ok: false; reason: "not-found" | "taken" };
