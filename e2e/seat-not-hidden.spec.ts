@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { openGamesPage } from "./support";
 
 /**
  * My own seat does not hide somebody else's.
@@ -47,7 +48,14 @@ test.describe("a seat somebody else is waiting on", () => {
     });
     expect(mine.status()).toBe(201);
 
-    await page.goto("/games");
+    /*
+     * Waits for the sentence to say it is listening. Choosing before React
+     * has attached is a choice the state never hears, and this test would
+     * then fail claiming a seat was hidden when the truth is the choice of
+     * game never landed — which is exactly the misreading that helper exists
+     * to stop.
+     */
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("notakto");
     await page.getByTestId("start-game-pace").selectOption(pace);
     await page.getByTestId("start-game-with").selectOption("anyone");
