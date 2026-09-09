@@ -1,4 +1,5 @@
 import { playerPath } from "@/lib/rating/playerKey";
+import { RowActions } from "@/components/ui/Controls";
 import Link from "next/link";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -40,9 +41,11 @@ export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null 
                 )}
                 {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
               </span>
-              {me !== null && entry.email !== null ? (
-                <ChallengeButton email={entry.email} label="Challenge" />
-              ) : null}
+              <RowActions>
+                {me !== null && entry.email !== null ? (
+                  <ChallengeButton email={entry.email} label="Challenge" />
+                ) : null}
+              </RowActions>
             </li>
           ))}
         </ul>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
-import { Button } from "@/components/ui/Controls";
+import { Button, RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/members";
 
@@ -90,6 +90,7 @@ export function AdminMembers() {
                 {member.bannedNote === "" ? "" : ` · ${member.bannedNote}`}
               </span>
             </span>
+            <RowActions>
             {account === null || member.name.trim() === "" ? null : (
               <ConfirmButton
                 label="Take the name off"
@@ -126,6 +127,7 @@ export function AdminMembers() {
                 Open it again
               </Button>
             )}
+            </RowActions>
           </li>
           );
         })}

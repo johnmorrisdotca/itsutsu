@@ -1,4 +1,5 @@
 import { playerPath } from "@/lib/rating/playerKey";
+import { RowActions } from "@/components/ui/Controls";
 import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -135,12 +136,16 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   {[buddy.city, buddy.country].filter(Boolean).join(", ")}
                   {buddy.localTime !== null ? ` · ${buddy.localTime} there` : ""}
                 </span>
-                {buddy.email === null ? null : (
-                  <span className="ml-auto flex gap-2">
-                    <ChallengeButton email={buddy.email} />
-                    <BuddyButton email={buddy.email} isBuddy />
-                  </span>
-                )}
+                <span className="ml-auto">
+                  <RowActions>
+                    {buddy.email === null ? null : (
+                      <>
+                        <ChallengeButton email={buddy.email} />
+                        <BuddyButton email={buddy.email} isBuddy />
+                      </>
+                    )}
+                  </RowActions>
+                </span>
               </li>
             ))}
           </ul>

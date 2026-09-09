@@ -120,3 +120,24 @@ export function SectionTitle({
     </h2>
   );
 }
+
+/**
+ * The cell a table row's controls sit in, whether or not it has any.
+ *
+ * A row's height belongs to the table, not to what that particular row
+ * happens to offer. Your own row has nothing to befriend or ignore, a kept
+ * record has nobody to challenge, and a row that shrinks when its buttons go
+ * reads as a different kind of thing from the rows around it — which was the
+ * complaint, and would come back the next time a control learned a new
+ * condition.
+ *
+ * So the space is held rather than the absence patched: the height is that of
+ * one of these small controls, reserved whether anything is rendered into it
+ * or not. Using this is what makes a row the same height as its neighbours;
+ * there is nothing to remember per table.
+ */
+export function RowActions({ children }: { children?: ReactNode }) {
+  return (
+    <span className="flex min-h-8 items-center justify-end gap-1">{children}</span>
+  );
+}

@@ -1,4 +1,5 @@
 import { playerPath } from "@/lib/rating/playerKey";
+import { RowActions } from "@/components/ui/Controls";
 import Link from "next/link";
 
 import { Page } from "@/components/layout/Page";
@@ -164,17 +165,21 @@ export default async function PlayersPage() {
                   ) : null}
                 </td>
                 <td className="py-1.5 text-right">
-                  {me?.email && entry.email !== null && me.email !== entry.email ? (
-                    <span className="flex justify-end gap-1">
-                      <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} />
-                      <IgnoreButton email={entry.email} ignoring={ignored.has(entry.email)} />
-                    </span>
-                  ) : null}
+                  <RowActions>
+                    {me?.email && entry.email !== null && me.email !== entry.email ? (
+                      <>
+                        <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} />
+                        <IgnoreButton email={entry.email} ignoring={ignored.has(entry.email)} />
+                      </>
+                    ) : null}
+                  </RowActions>
                 </td>
                 <td className="py-1.5 text-right">
-                  {me?.email && entry.email !== null && me.email !== entry.email ? (
-                    <ChallengeButton email={entry.email} />
-                  ) : null}
+                  <RowActions>
+                    {me?.email && entry.email !== null && me.email !== entry.email ? (
+                      <ChallengeButton email={entry.email} />
+                    ) : null}
+                  </RowActions>
                 </td>
               </tr>
             ))}
