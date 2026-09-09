@@ -59,6 +59,31 @@ export function versionParts(version: string): number[] {
   });
 }
 
+/**
+ * Which listed release the running edition belongs to.
+ *
+ * The running version is often not a heading in the file, and that is the
+ * file's own rule rather than an oversight: patch-only versions are not
+ * listed, because a fix or a chore is not news a player would read. So an
+ * exact match finds nothing the moment a patch ships, and the list stops
+ * saying which edition is being served — which is the one thing a reader
+ * comes to it for.
+ *
+ * The edition being served is therefore the newest release at or below the
+ * running version: on 0.64.1 that is 0.64.0, and everything in it is running.
+ */
+export function currentRelease(
+  releases: readonly Release[],
+  version: string,
+): string | null {
+  let best: string | null = null;
+  for (const release of releases) {
+    if (compareVersions(release.version, version) > 0) continue;
+    if (best === null || compareVersions(release.version, best) > 0) best = release.version;
+  }
+  return best;
+}
+
 /** Negative when `a` is older than `b`, positive when newer, zero when the same. */
 export function compareVersions(a: string, b: string): number {
   const left = versionParts(a);

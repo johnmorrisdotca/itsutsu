@@ -1,11 +1,24 @@
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
-import type { Release } from "@/lib/backlog/releases";
+import { currentRelease, type Release } from "@/lib/backlog/releases";
 
 /** How many releases stand open before the rest are folded away. */
 const SHOWN = 12;
 
-/** One release: its number, whether it is the edition being served, and what changed. */
-function ReleaseEntry({ release, current }: { release: Release; current: boolean }) {
+/**
+ * One release: its number, whether it is the edition being served, and what
+ * changed. `running` is printed only when it differs from the release's own
+ * number — that happens whenever a patch has shipped since, and saying so is
+ * more honest than marking 0.64.0 as though nothing had followed it.
+ */
+function ReleaseEntry({
+  release,
+  current,
+  running,
+}: {
+  release: Release;
+  current: boolean;
+  running: string;
+}) {
   return (
     <li className="flex flex-col gap-0.5 border-t border-rule py-2 first:border-t-0" data-testid="release">
       <span className="flex items-baseline gap-2">
@@ -13,6 +26,11 @@ function ReleaseEntry({ release, current }: { release: Release; current: boolean
         {current ? (
           <span className="rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">
             This edition 現行
+          </span>
+        ) : null}
+        {current && running !== release.version ? (
+          <span className="font-mono text-xs text-muted" data-testid="running-version">
+            running {running}
           </span>
         ) : null}
       </span>
@@ -43,6 +61,9 @@ export function Releases({ releases, current }: { releases: Release[]; current: 
       </p>
     );
   }
+  // Not an exact match: a patch has no entry of its own, so the edition being
+  // served is the newest release at or below the running version.
+  const marked = currentRelease(releases, current);
   const recent = releases.slice(0, SHOWN);
   const older = releases.slice(SHOWN);
 
@@ -51,7 +72,12 @@ export function Releases({ releases, current }: { releases: Release[]; current: 
       <span className={SECTION_TITLE}>{releases.length} releases</span>
       <ul className="flex flex-col">
         {recent.map((release) => (
-          <ReleaseEntry key={`${release.version}-${release.notes[0]}`} release={release} current={release.version === current} />
+          <ReleaseEntry
+            key={`${release.version}-${release.notes[0]}`}
+            release={release}
+            current={release.version === marked}
+            running={current}
+          />
         ))}
       </ul>
       {older.length === 0 ? null : (
@@ -62,7 +88,8 @@ export function Releases({ releases, current }: { releases: Release[]; current: 
               <ReleaseEntry
                 key={`${release.version}-${release.notes[0]}`}
                 release={release}
-                current={release.version === current}
+                current={release.version === marked}
+                running={current}
               />
             ))}
           </ul>

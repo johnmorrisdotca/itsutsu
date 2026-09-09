@@ -37,8 +37,13 @@ test.describe("an embedded board", () => {
   test("unlocks the board and nothing else", async ({ page, request }) => {
     const token = embedToken();
 
-    // The rest of the site stays shut to it.
-    await page.goto(`/?token=${token}`);
+    // The rest of the site stays shut to it. Not the front page: that says
+    // what the site is and is open to anybody, token or none — see OPEN_PATHS
+    // in proxy.ts. These are pages the gate really does hold shut.
+    await page.goto(`/games?token=${token}`);
+    await expect(page).toHaveURL(/\/join/);
+
+    await page.goto(`/players?token=${token}`);
     await expect(page).toHaveURL(/\/join/);
 
     await page.goto(`/history?token=${token}`);

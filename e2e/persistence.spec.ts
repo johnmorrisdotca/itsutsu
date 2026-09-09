@@ -52,6 +52,8 @@ test.describe("surviving a refresh", () => {
     await page.goto("/games/gomoku");
     await playAt(page, 15, 7, 7);
     await page.getByRole("button", { name: "New game" }).click();
+    // A board under way is not thrown away on a click any more: it asks first.
+    await page.getByTestId("new-game-yes").click();
 
     await page.reload();
     await expect(page.getByRole("button", { name: /^H8, empty$/ })).toBeVisible();

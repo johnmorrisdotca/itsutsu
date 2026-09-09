@@ -15,17 +15,23 @@ import { memberContext } from "./members";
  * page, and your own name in the header leads to your own profile instead,
  * which is the same person by a nearer road.
  */
-async function everyMentionLinks(page: Page, name: string) {
+async function mentionsAllLink(page: Page, name: string): Promise<number> {
   const allowed = [`/players/${playerSlug(name)}`, "/me"];
   const mentions = page.getByText(name, { exact: true });
   const count = await mentions.count();
-  expect(count, `"${name}" is printed somewhere on ${page.url()}`).toBeGreaterThan(0);
   for (let i = 0; i < count; i += 1) {
     const href = await mentions
       .nth(i)
       .evaluate((node) => node.closest("a")?.getAttribute("href") ?? null);
     expect(allowed, `"${name}" on ${page.url()} (mention ${i + 1}) leads nowhere`).toContain(href);
   }
+  return count;
+}
+
+/** Where the name has to be printed, and every printing of it has to lead home. */
+async function everyMentionLinks(page: Page, name: string) {
+  const count = await mentionsAllLink(page, name);
+  expect(count, `"${name}" is printed somewhere on ${page.url()}`).toBeGreaterThan(0);
 }
 
 test.describe("every name leads to the player", () => {
@@ -55,17 +61,25 @@ test.describe("every name leads to the player", () => {
     await page.goto("/players");
     await expect(page.getByTestId("here-name").filter({ hasText: me.name })).toBeVisible();
     await everyMentionLinks(page, me.name);
-    await everyMentionLinks(page, opponent);
+    /*
+     * The opponent is not asserted to be printed here. The directory and the
+     * ladder on this page show the best of a capped number, and somebody with
+     * one game to their name sits below the cut on any board that has been
+     * played on for a while. What the guard is for still holds: wherever the
+     * page does print them, it has to lead to them.
+     */
+    await mentionsAllLink(page, opponent);
 
     // The record.
     await page.goto(`/history?search=${encodeURIComponent(stamp)}`);
     await everyMentionLinks(page, me.name);
     await everyMentionLinks(page, opponent);
 
-    // That game's own ladder.
+    // That game's own ladder — the top fifty, so the winner is on it and the
+    // loser may not be. Same rule as the players page above.
     await page.goto("/champions/gomoku");
     await everyMentionLinks(page, me.name);
-    await everyMentionLinks(page, opponent);
+    await mentionsAllLink(page, opponent);
 
     // A profile names the opponent of every recent game.
     await page.goto(`/players/${playerSlug(me.name)}`);

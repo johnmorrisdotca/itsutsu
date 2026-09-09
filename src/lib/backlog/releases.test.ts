@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { compareVersions, latestRelease, parseReleases, versionParts } from "./releases";
+import { compareVersions, currentRelease, latestRelease, parseReleases, versionParts } from "./releases";
 import { VERSION } from "@/lib/version";
 
 const SAMPLE = `# Changelog
@@ -84,5 +84,55 @@ describe("the site's own changelog", () => {
     expect(newest).not.toBeNull();
     // Patch-only versions go unlisted, so the newest entry may be behind — never ahead.
     expect(compareVersions(newest?.version ?? "0.0.0", VERSION)).toBeLessThanOrEqual(0);
+  });
+});
+
+/**
+ * Which release is the one running.
+ *
+ * The changelog's own rule is that patch-only versions are not listed, so the
+ * running version is often not a heading in the file. An exact match would
+ * then mark nothing, and the list would stop saying which edition is being
+ * served — which is the one thing a reader comes to it for.
+ */
+describe("the edition being served", () => {
+  const releases = [
+    { version: "0.64.0", notes: ["latest"] },
+    { version: "0.63.0", notes: ["before that"] },
+    { version: "0.55.1", notes: ["a listed patch"] },
+    { version: "0.55.0", notes: ["older"] },
+  ];
+
+  it("marks the release itself when the running version is one", () => {
+    expect(currentRelease(releases, "0.63.0")).toBe("0.63.0");
+  });
+
+  it("marks the release a patch belongs to, since a patch has no entry", () => {
+    expect(currentRelease(releases, "0.64.1")).toBe("0.64.0");
+    expect(currentRelease(releases, "0.64.9")).toBe("0.64.0");
+  });
+
+  it("does not mark a release that has not shipped yet", () => {
+    expect(currentRelease(releases, "0.63.4")).toBe("0.63.0");
+    expect(currentRelease(releases, "0.55.2")).toBe("0.55.1");
+  });
+
+  it("marks nothing when the running version is older than anything listed", () => {
+    expect(currentRelease(releases, "0.1.0")).toBeNull();
+  });
+
+  it("marks nothing at all rather than guessing, on an empty changelog", () => {
+    expect(currentRelease([], "0.64.1")).toBeNull();
+  });
+
+  it("finds the newest match whatever order the file is in", () => {
+    const shuffled = [releases[2], releases[0], releases[3], releases[1]];
+    expect(currentRelease(shuffled, "0.64.1")).toBe("0.64.0");
+  });
+
+  it("marks a release for the version actually running here", () => {
+    // The real file and the real package.json: whatever they say today, the
+    // page must be able to name the edition it is serving.
+    expect(currentRelease(parseReleases(readFileSync("CHANGELOG.md", "utf8")), VERSION)).not.toBeNull();
   });
 });

@@ -66,6 +66,9 @@ test.describe("screenshots", () => {
 
   test("every board theme", async ({ page }) => {
     await playSequence(page, 15, OPENING);
+    // The panel folds itself away once a game is under way, and a control
+    // inside a closed <details> is in the DOM but cannot be clicked.
+    await openSetup(page);
 
     for (const theme of ["kaya", "shinkaya", "washi", "sumi", "matcha"]) {
       await page.getByTestId(`board-theme-${theme}`).click();
@@ -77,6 +80,9 @@ test.describe("screenshots", () => {
 
   test("every stone set", async ({ page }) => {
     await playSequence(page, 15, OPENING);
+    // The panel folds itself away once a game is under way, and a control
+    // inside a closed <details> is in the DOM but cannot be clicked.
+    await openSetup(page);
 
     for (const set of ["classic", "jade", "sakura", "indigo", "neon"]) {
       await page.getByTestId(`stone-set-${set}`).click();

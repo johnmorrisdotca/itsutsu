@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { playerSlug } from "../src/lib/rating/playerKey";
+
 test.describe("champions", () => {
   test("every game has a line, and a rated game puts its players on that game's ladder", async ({ page, request }) => {
     const stamp = Date.now().toString(36);
@@ -21,12 +23,23 @@ test.describe("champions", () => {
 
     await page.getByTestId("champion-row-freestyle").getByRole("link", { name: /^Gomoku/ }).click();
     await expect(page).toHaveURL(/\/champions\/gomoku$/);
+    // The ladder shows the top fifty, so the winner is on it: a win puts you
+    // above everybody who has only lost. The loser may be below the cut on a
+    // busy board, which is why their standing is read from their own page
+    // rather than from a list that was never promised to hold everybody.
     const table = page.getByTestId("standings-table");
     await expect(table).toContainText(black);
-    await expect(table).toContainText(white);
-    // The winner stands above the loser.
-    const names = await table.locator("tbody tr").allInnerTexts();
-    expect(names.findIndex((row) => row.includes(black))).toBeLessThan(names.findIndex((row) => row.includes(white)));
+
+    await page.goto(`/players/${playerSlug(white)}`);
+    const byVariant = page.getByTestId("player-by-variant");
+    await expect(byVariant).toContainText("Gomoku");
+    // Rated, and the loss is against their name.
+    await expect(page.getByTestId("player-record")).toContainText("1");
+    // A loss leaves you below where you started, and the winner above.
+    const loserRating = Number((await page.getByTestId("player-rating").innerText()).trim());
+    await page.goto(`/players/${playerSlug(black)}`);
+    const winnerRating = Number((await page.getByTestId("player-rating").innerText()).trim());
+    expect(winnerRating).toBeGreaterThan(loserRating);
   });
 
   test("a game's page names its family, and a game that does not exist is not found", async ({ page }) => {

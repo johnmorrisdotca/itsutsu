@@ -65,5 +65,7 @@ export async function openSetup(page: Page) {
   const setup = page.getByTestId("game-setup");
   if ((await setup.count()) === 0) return;
   const open = await setup.evaluate((element) => (element as HTMLDetailsElement).open);
-  if (!open) await setup.locator("summary").click();
+  // The panel's own summary, not any summary inside it: the settings grew an
+  // Advanced section of their own, which is a second <details> under this one.
+  if (!open) await setup.locator("> summary").click();
 }
