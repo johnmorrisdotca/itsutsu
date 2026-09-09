@@ -1,6 +1,6 @@
 import { Diagram } from "@/components/about/Diagram";
 import { FigureTable } from "@/components/about/FigureTable";
-import { Game, Inside, Out } from "./about.links";
+import { Game, Inside } from "./about.links";
 import type { AboutSection } from "./about.constants";
 
 /**
@@ -97,59 +97,51 @@ export const GO_SECTION: AboutSection = {
   kanji: "囲碁",
   paragraphs: [
     <>
-      Everything here is drawn on a go board. The grid, the star points, the clamshell-and-slate colours, the
-      mincho face the Japanese names are set in — all of it is borrowed from a game this site does not yet let you
-      play, and it is worth saying what that game is. Go was invented in China more than two and a half thousand
-      years ago and is the oldest board game still played with its rules essentially intact: a Chinese player of
-      the fourth century BC and one of today would need a few minutes to agree the scoring and could then simply
-      play. It is <span className="font-mincho">围棋</span> <em>weiqi</em> in China, <span className="font-mincho">바둑</span>{" "}
-      <em>baduk</em> in Korea, and <span className="font-mincho">囲碁</span> <em>igo</em> in Japan, which is the
-      name that reached English.
+      Everything here is drawn on a go board — the grid, the star points, the clamshell-and-slate colours, the
+      mincho face the Japanese names are set in — all borrowed from a game this site does not yet let you play, so
+      it is worth saying what that game is. Go was invented in China more than two and a half thousand years ago
+      and is the oldest board game still played with its rules essentially intact: a Chinese player of the fourth
+      century BC and one of today would need a few minutes to agree the scoring and could then simply sit down. It
+      is <span className="font-mincho">围棋</span> <em>weiqi</em> in China, <span className="font-mincho">바둑</span>{" "}
+      <em>baduk</em> in Korea, and <span className="font-mincho">囲碁</span> <em>igo</em> in Japan, the name that
+      reached English. Its rules are shorter than the rules of five in a row. Players place a stone on any empty
+      intersection, black first; a stone or a solid group of them is captured when the last empty point touching it
+      is filled; you may not fill your own last liberty, and you may not repeat the whole board position — the{" "}
+      <em>ko</em> rule, which stops two players taking the same stone back and forth for ever. Both players pass,
+      and whoever has surrounded more of the board wins. That is all of it, and it is enough for two thousand years
+      of argument: the first picture is a capture, and the second is the whole of life and death, because a group
+      holding two separate eyes can never be filled and so can never be taken.
     </>,
     <>
-      The rules are shorter than the rules of five in a row. Players place a stone on any empty intersection,
-      black first. A stone or a solid group of stones is captured when the last empty point touching it is filled.
-      You may not play a move that leaves your own stones with no liberties, and you may not repeat the whole
-      board position — the <em>ko</em> rule, which stops two players taking the same stone back and forth for
-      ever. The game ends when both players pass, and whoever has surrounded more of the board wins. That is all
-      of it, and it is enough for two thousand years of argument.
-    </>,
-    <>
-      Its size is the famous part. A 19×19 board has 361 points, and the number of positions that can legally
-      stand on it was settled exactly by John Tromp in 2016 after years of computation: 2.08 × 10¹⁷⁰, a number
-      171 digits long. There are something like 10⁸⁰ atoms in the observable universe, so the board has about
-      ninety orders of magnitude more positions than the universe has atoms — the comparison is not a flourish,
-      it is the reason brute force never worked here when it had already finished{" "}
-      <Game variant="dropFour">Connect Four</Game> and was beating world champions at chess.
-    </>,
-    <>
-      Two of go’s inventions are the direct ancestors of things on this site. <em>Komi</em> is compensation: black
-      moves first, so white is given points at the end — six and a half, or seven and a half under Chinese rules —
-      and the half point exists for no reason other than to make a draw impossible. And the handicap lets black
-      begin with up to nine stones already placed, which means two players nine grades apart can sit down to a
-      real game rather than a formality. Every rating and tier on the{" "}
-      <Inside href="/players">players page</Inside> is chasing what the handicap system did first: a way of making
-      an uneven game worth both players’ evening.
-    </>,
-    <>
-      Go is also where computers were held off longest. Chess fell in 1997; go was expected to hold out for
-      another decade or more when, in Seoul in March 2016, DeepMind’s AlphaGo beat Lee Sedol — one of the
-      strongest players of his generation — four games to one. The moment people remember is move 37 of the second
-      game, a shoulder hit on the fifth line that no professional would have played and that commentators first
-      called a mistake; it won the game, and the word they reached for afterwards was <em>beautiful</em>. Lee took
-      the fourth game with move 78 of his own, a wedge so far outside the machine’s expectations that it never
-      recovered — the last game a human has won against a top program in an even match. He retired in 2019,
-      saying there was now an entity that could not be defeated. In 2023 a researcher did beat one again, but
-      only by playing a weakness another program had been set to go looking for, which is a different kind of
-      win and arguably proves his point rather than answering it.
-    </>,
-    <>
-      You cannot play go here yet. Territory, capture, ko and passing are a family of their own and a long piece
-      of work rather than a row in a table, and the honest thing is to say so rather than leave you hunting for a
-      link. What the site has taken from it is the furniture, the vocabulary and the manners: stones on lines,
-      names in two languages, a record that is kept, and a{" "}
-      <Out href="https://www.littlegolem.net/">place to play slowly</Out> against somebody you like.
+      Its size is the famous part. A 19×19 board has 361 points, and the number of positions that can legally stand
+      on it was settled exactly by John Tromp in 2016 after years of computation: 2.08 × 10¹⁷⁰, a number 171 digits
+      long. There are something like 10⁸⁰ atoms in the observable universe, so the board has about ninety orders of
+      magnitude more positions than the universe has atoms — which is not a flourish but the reason brute force
+      never worked here when it had already finished <Game variant="dropFour">Connect Four</Game> and was beating
+      world champions at chess. Two of go’s inventions are direct ancestors of things on this site: <em>komi</em>,
+      the points given to white for moving second — six and a half, or seven and a half under Chinese rules, the
+      half existing only to make a draw impossible — and the handicap, which lets black begin with up to nine
+      stones already placed so that two players nine grades apart can have a real game rather than a formality.
+      Every rating and tier on the <Inside href="/players">players page</Inside> is chasing what the handicap did
+      first. Go is also where computers were held off longest: chess fell in 1997, and go was expected to hold out
+      another decade when DeepMind’s AlphaGo beat Lee Sedol four games to one in Seoul in March 2016. The moment
+      people remember is move 37 of the second game, a shoulder hit on the fifth line that no professional would
+      have played and that commentators first called a mistake; it won the game, and the word they reached for
+      afterwards was <em>beautiful</em>. Lee took the fourth game with move 78 of his own — the last game a human
+      has won against a top program in an even match, though in 2023 a researcher beat one again by playing a
+      weakness another program had been set to go looking for, which is a different kind of win. You cannot play go
+      here yet: territory, capture, ko and passing are a family of their own and a long piece of work rather than a
+      row in a table, and the honest thing is to say so rather than leave you hunting for a link that is not there.
     </>,
   ],
-  figures: { 1: CAPTURE, 2: SIZES, 3: TWO_EYES },
+  // Two paragraphs, so only two slots: the diagrams share the first, the numbers sit under the second.
+  figures: {
+    0: (
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-4">
+        {CAPTURE}
+        {TWO_EYES}
+      </div>
+    ),
+    1: SIZES,
+  },
 };
