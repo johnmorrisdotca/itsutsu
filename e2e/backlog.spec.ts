@@ -123,7 +123,7 @@ test.describe("backlog", () => {
   });
 
   test("the operator reaches the board from the Admin page, with both lists on the card", async ({ page }) => {
-    await page.goto("/admin");
+    await page.goto("/admin?view=work");
     const card = page.getByTestId("admin-board");
     await expect(card).toBeVisible();
     await expect(card).toContainText("still wanted");

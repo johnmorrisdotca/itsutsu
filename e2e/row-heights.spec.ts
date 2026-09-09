@@ -49,7 +49,7 @@ test.describe("every row in a table is the same height", () => {
     // to rename, and so no buttons on their rows.
     const context = await browser.newContext({ storageState: ".auth/admin.json" });
     const page = await context.newPage();
-    await page.goto("/admin");
+    await page.goto("/admin?view=members");
 
     const rows = page.getByTestId("admin-members").locator("li");
     const count = await rows.count();

@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.78.0
+- The operator's page is three tabs, and a clock starts when the second player sits down
+
 ## 0.77.0
 - A player's page is tabs, one per site they played on, and a kept record says what its figures mean
 

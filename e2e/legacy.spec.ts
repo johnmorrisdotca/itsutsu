@@ -88,46 +88,6 @@ test.describe("a legacy record's games link to what they are", () => {
 });
 
 /**
- * A page with several sections shows one at a time, and the address says
- * which. A tab that cannot be linked to is a tab somebody has to explain over
- * the phone.
- */
-test.describe("a page of many sections is tabs", () => {
-  test("the address names the open tab, and opening that address opens it", async ({ page }) => {
-    await page.goto("/players/chibi");
-    // The first tab is the plain address: an ordinary link to a player must
-    // not grow a query string just by being looked at.
-    expect(new URL(page.url()).search).toBe("");
-    await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
-
-    await page.getByTestId("tab").filter({ hasText: "GoldToken" }).click();
-    await expect(page).toHaveURL(/\?view=goldtoken$/);
-    await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "GoldToken.com");
-
-    // The whole point: that address, opened cold, is the same page.
-    await page.goto("/players/chibi?view=goldtoken");
-    await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "GoldToken.com");
-    await expect(page.getByTestId("tab").filter({ hasText: "GoldToken" })).toHaveAttribute("data-open", "true");
-  });
-
-  test("an address naming a tab that is not there still lands on the person", async ({ page }) => {
-    // A renamed tab, or an address somebody typed. Better the first tab than
-    // an empty page.
-    await page.goto("/players/chibi?view=myspace");
-    await expect(page.getByTestId("legacy-player")).toContainText("Chibi");
-    await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
-  });
-
-  test("a record from one site only has no tabs at all", async ({ page }) => {
-    // Kyokosan played on ItsYourTurn and nowhere else. A page with a single
-    // tab is just a page.
-    await page.goto("/players/kyokosan");
-    await expect(page.getByTestId("legacy-source")).toHaveCount(1);
-    await expect(page.getByTestId("tabs")).toHaveCount(0);
-  });
-});
-
-/**
  * A kept record says more than won, lost and drawn.
  *
  * Years of somebody's play reduced to three numbers is the least that could

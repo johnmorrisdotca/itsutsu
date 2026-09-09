@@ -9,49 +9,52 @@ import { AdminInvites } from "@/components/auth/AdminInvites";
 import { AdminMembers } from "@/components/auth/AdminMembers";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
 import { fetchBoard } from "@/lib/backlog/backlogStore";
 import { isAdminRequest } from "@/lib/auth/requireAdmin";
+import { activeTab, type Tab } from "@/lib/ui/tabs";
 
 export const metadata = { title: "Admin", robots: { index: false, follow: false } };
 
 // The board is read on every request; the operator is looking at what moved today.
 export const dynamic = "force-dynamic";
 
-/**
- * The operator's page: invite codes and embed tokens. Anyone else gets a 404
- * rather than a refusal, so the page gives nothing away about existing. The
- * panels check the session again on every request they make.
+/*
+ * Three things the operator does here, so the page shows one at a time: who
+ * gets in, who is in, and what is being built. They were three headings on
+ * one page and the whole features board sat inside the third, which made it
+ * long however short the headings were.
  */
-/** One part of the operator's page, under a heading that says what it is for. */
-function Section({ title, kanji, children }: { title: string; kanji: string; children: React.ReactNode }) {
-  return (
-    <section className="flex flex-col gap-3">
-      <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        {title} <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{kanji}</span>
-      </h2>
-      {children}
-    </section>
-  );
-}
+const TABS: Tab[] = [
+  { key: "door", label: "The door", kanji: "門" },
+  { key: "members", label: "The members", kanji: "会員" },
+  { key: "work", label: "The work", kanji: "仕事" },
+];
 
-export default async function AdminPage() {
+/**
+ * The operator's page: invite codes, embed tokens, the members and the board.
+ * Anyone else gets a 404 rather than a refusal, so the page gives nothing
+ * away about existing. The panels check the session again on every request
+ * they make.
+ */
+export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   if (!(await isAdminRequest())) notFound();
-  const [items, me] = await Promise.all([fetchBoard(), currentSession()]);
+  const [items, me, asked] = await Promise.all([fetchBoard(), currentSession(), searchParams]);
   const who = me?.name ?? me?.email ?? "";
+  const open = activeTab(TABS, asked.view);
   return (
     <Page width="standard">
       <SiteHeader />
       <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
         Admin <span className="font-mincho text-lg font-normal opacity-70">管理</span>
       </h1>
-      {/*
-        * Three things the operator does here, so the page says which is which:
-        * who gets in, who is in, and what is being built.
-        */}
-      <Section title="The door" kanji="門">
-        <div className="grid gap-4 md:grid-cols-2">
+
+      <Tabs tabs={TABS} active={open} base="/admin" label="What the operator does here" />
+
+      {open === "door" ? (
+        <div className="grid gap-4 md:grid-cols-2" data-testid="admin-door">
           <div className={PANEL_CLASS}>
             <AdminInvites />
           </div>
@@ -59,34 +62,36 @@ export default async function AdminPage() {
             <AdminEmbeds />
           </div>
         </div>
-      </Section>
+      ) : null}
 
-      <Section title="The members" kanji="会員">
-        <div className={PANEL_CLASS}>
+      {open === "members" ? (
+        <div className={PANEL_CLASS} data-testid="admin-people">
           <AdminMembers />
         </div>
-      </Section>
+      ) : null}
 
-      <Section title="The work" kanji="仕事">
-        <div className={PANEL_CLASS}>
-          <AdminBoardCard />
-        </div>
-      </Section>
-
-      {/*
-        * The board itself, not only a card pointing at it. The operator reads
-        * it here more often than anywhere else, and a summary that has to be
-        * clicked through is a summary of work rather than the work.
-        */}
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="admin-backlog">
-        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          Backlog <span className="font-mincho text-sm font-normal opacity-70">積み残し</span>
-          <Link href="/backlog" className="ml-auto text-xs font-normal text-muted underline underline-offset-4">
-            On its own page
-          </Link>
-        </h2>
-        <BacklogBoard items={items} who={who} />
-      </section>
+      {open === "work" ? (
+        <>
+          <div className={PANEL_CLASS}>
+            <AdminBoardCard />
+          </div>
+          {/*
+           * The board itself, not only a card pointing at it. The operator
+           * reads it here more often than anywhere else, and a summary that
+           * has to be clicked through is a summary of work rather than the
+           * work.
+           */}
+          <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="admin-backlog">
+            <h2 className="flex items-baseline gap-2 text-lg font-semibold">
+              Backlog <span className="font-mincho text-sm font-normal opacity-70">積み残し</span>
+              <Link href="/backlog" className="ml-auto text-xs font-normal text-muted underline underline-offset-4">
+                On its own page
+              </Link>
+            </h2>
+            <BacklogBoard items={items} who={who} />
+          </section>
+        </>
+      ) : null}
     </Page>
   );
 }
