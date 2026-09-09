@@ -83,6 +83,7 @@ export const RULE_VARIANTS = {
   hex: "hex",
   checkers: "checkers",
   chineseCheckers: "chineseCheckers",
+  go: "go",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 export const WRAP_MODES = {
@@ -142,6 +143,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.hex,
   RULE_VARIANTS.checkers,
   RULE_VARIANTS.chineseCheckers,
+  RULE_VARIANTS.go,
 ] as const satisfies readonly RuleVariant[];
 
 export const PLACEMENTS = {
@@ -196,6 +198,7 @@ export const WIN_REASONS = {
   camp: "camp",
   connection: "connection",
   blocked: "blocked",
+  territory: "territory",
 } as const satisfies Record<WinReason, WinReason>;
 
 export const OPENING_STAGES = {
@@ -279,6 +282,8 @@ const HEX_SIZES = [11, 13, 19] as const;
 const CHECKERS_SIZES = [8] as const;
 /** Chinese Checkers: the standard 121-hole hexagram, embedded in its own 17×17 square. */
 const CHINESE_CHECKERS_SIZES = [17] as const;
+/** Go's own three sizes: 19×19 as it is played seriously, 13 and 9 for a shorter game. */
+const GO_SIZES = [19, 13, 9] as const;
 
 function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return {
@@ -316,6 +321,7 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     connects: false,
     checkers: false,
     chineseCheckers: false,
+    go: false,
     ...overrides,
   };
 }
@@ -477,6 +483,17 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   chineseCheckers: small({
     chineseCheckers: true,
     boardSizes: CHINESE_CHECKERS_SIZES,
+    analysis: false,
+  }),
+  /*
+   * Go: nothing here ever moves and no line ever decides anything — see
+   * rules/go.ts for the liberties, the capture, the ko rule and the count.
+   * Black always opens, as at the real board; no opening protocol applies.
+   */
+  go: small({
+    go: true,
+    boardSizes: GO_SIZES,
+    allowFirstPlayerChoice: false,
     analysis: false,
   }),
 };

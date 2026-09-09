@@ -74,6 +74,8 @@ export type Move = Point & {
   capturedWasKing?: boolean;
   /** Whether this move continued a capture chain already under way. Checkers only, for undo. */
   continuedChain?: boolean;
+  /** The ko point in force just before this move, so undo can put it back. Go only. */
+  koPointBefore?: Point | null;
 };
 
 /** The shape of a move as a record or a request carries it, without the colour. */
@@ -137,7 +139,8 @@ export type RuleVariant =
   | "hex"
   | "obstacleFive"
   | "checkers"
-  | "chineseCheckers";
+  | "chineseCheckers"
+  | "go";
 
 /**
  * Where a stone goes when played. `free`: where it was put. `drop`: it slides
@@ -191,7 +194,7 @@ export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
  * is the checkers family: the colour to move has no legal move left, whether
  * because it has no pieces or because every one of them is shut in.
  */
-export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count" | "camp" | "connection" | "blocked";
+export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count" | "camp" | "connection" | "blocked" | "territory";
 
 /**
  * Where a swap-style opening stands. `placing` and `extending` are stretches
@@ -315,6 +318,17 @@ export type VariantSpec = {
    * of eight square ones, and a star's points in place of a corner's square.
    */
   chineseCheckers: boolean;
+  /**
+   * Go: stones never move once placed. A group of one colour with no
+   * liberties left is captured whole; a move that would leave the mover's
+   * own group with none, after any capture it makes, is suicide and illegal;
+   * a move that would exactly retake the single stone a capture just lifted
+   * is forbidden for one turn — the simple ko rule. Either side may pass at
+   * any point; two passes in a row end the game, scored by area — every
+   * stone on the board plus the empty points only that colour surrounds —
+   * with a fixed komi added for white.
+   */
+  go: boolean;
 };
 
 /** How a flipping game begins: nothing, the fixed four, or four the players lay themselves. */
@@ -460,6 +474,8 @@ export type GameState = {
   kings: readonly Point[];
   /** The square of a piece mid-capture-chain that must keep jumping, in the checkers family. Null otherwise. */
   chainAt: Point | null;
+  /** The point the simple ko rule forbids retaking this move, in Go. Null otherwise. */
+  koPoint: Point | null;
   status: GameStatus;
   winner: Stone | null;
   winBy: WinReason | null;

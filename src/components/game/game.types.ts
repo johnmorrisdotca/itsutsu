@@ -113,6 +113,8 @@ export type GameSession = {
   canUndo: boolean;
   canRedo: boolean;
   canSkip: boolean;
+  /** Whether passing is on offer right now: forced in a piece game with nothing to lay, free at any point in Go. */
+  canPass: boolean;
   canSwap: boolean;
   /** Why swapping is unavailable, for the button's title. */
   swapBlockedReason: string | null;

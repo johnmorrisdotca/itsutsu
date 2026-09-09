@@ -177,6 +177,16 @@ function placementTurns(state: GameState, limit: number): BotTurn[] {
   return turns;
 }
 
+/**
+ * Every point Go may play, plus the pass that is always on offer there — not
+ * only when nothing fits, as in the piece games, but as a real choice on any
+ * turn, since ending the game is something a player decides, not something
+ * the position forces.
+ */
+function goTurns(state: GameState, limit: number): BotTurn[] {
+  return [...placementTurns(state, limit), { kind: MOVE_KINDS.pass }];
+}
+
 /** Every quarter turn a twist game could finish a stone with. */
 function quadrantTwists(size: number, quadrantSize: number) {
   const twists: { quadrant: number; clockwise: boolean }[] = [];
@@ -199,6 +209,7 @@ export function legalTurns(state: GameState, limit: number = TURN_CAP): BotTurn[
   if (state.pendingTwist) return [];
   if (inMovePhase(state)) return slideTurns(state, limit);
   if (VARIANT_SPECS[state.settings.variant].queue !== null) return queueTurns(state, limit);
+  if (VARIANT_SPECS[state.settings.variant].go) return goTurns(state, limit);
   return placementTurns(state, limit);
 }
 

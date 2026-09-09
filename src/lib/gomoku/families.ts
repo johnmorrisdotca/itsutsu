@@ -57,6 +57,12 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
     games: ["checkers"],
   },
   {
+    title: "Territory",
+    kanji: "陣地",
+    blurb: "No lines, nothing moves, and stones are captured whole. Surround more of the board than the other side.",
+    games: ["go"],
+  },
+  {
     title: "Small boards",
     kanji: "小盤",
     blurb: "Games you can read to the end, and games where the trick is what you must not do.",

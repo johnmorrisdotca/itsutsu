@@ -149,6 +149,14 @@ export function GameControls({ session, actions }: GamePanelProps) {
       <OpeningChoice session={session} actions={actions} />
       <ColourChooser session={session} actions={actions} />
 
+      {VARIANT_SPECS[state.settings.variant].go ? (
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={actions.pass} disabled={!session.canPass} title={GAME_COPY.passHint}>
+            {GAME_COPY.pass.label}
+          </Button>
+        </div>
+      ) : null}
+
       {state.settings.allowSkip || state.settings.allowSwap ? (
         <div className="flex flex-wrap gap-2">
           {state.settings.allowSkip ? (

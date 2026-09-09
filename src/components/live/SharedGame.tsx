@@ -319,6 +319,14 @@ export function SharedGame({
         />
       ) : null}
 
+      {VARIANT_SPECS[state.settings.variant].go && seat !== null ? (
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={pass} disabled={!playable} title={GAME_COPY.passHint}>
+            {GAME_COPY.pass.label}
+          </Button>
+        </div>
+      ) : null}
+
       {seat !== null && detail.allowResign && state.status === GAME_STATUS.playing ? (
         <div className="flex justify-end">
           <ResignButton id={detail.id} onDone={() => void mutate()} />

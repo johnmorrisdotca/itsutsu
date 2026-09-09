@@ -3,6 +3,7 @@ import { checkFlipMove, isFlipping } from "./simulation.flips";
 import { cellAt, forbiddenPoints, indexOf, isStone, otherStone, undoMove } from "./engine";
 import { rulesFor } from "./rules/handicap";
 import { checkConnectionMove, isConnection } from "./simulation.connections";
+import { checkGoMove, isGo } from "./simulation.go";
 import { stonesPlacedThisTurn } from "./rules/turns";
 import {
   bruteForceWinner,
@@ -47,6 +48,11 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
   // So does the connection game: no lines mean anything in it.
   if (isConnection(after.settings.variant)) {
     checkConnectionMove(before, after, played, where);
+    return;
+  }
+  // Go plays by liberties and captures, not lines; restated by hand as well.
+  if (isGo(after.settings.variant)) {
+    checkGoMove(before, after, played, where);
     return;
   }
 

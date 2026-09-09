@@ -606,6 +606,23 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "The standard 121-hole star board, ten pieces a side, playing point to point straight across it. The full board seats up to six; this site plays the two-player form, the two points furthest apart.",
   },
+  go: {
+    label: "Go",
+    kanji: "囲碁",
+    tagline: "Surround more of the board than the other colour. Capture by taking a group's last liberty.",
+    origin: "The oldest game still played in its original form: from China, at least 2,500 years old, and the subject of the earliest written game rules anywhere. It reached Japan by the 7th century, where the name most of the world knows it by — Go, short for igo — comes from.",
+    alsoKnownAs: ["Weiqi", "围棋", "Baduk", "바둑", "Igo"],
+    country: "CN",
+    wikipedia: "Go (game)",
+    rules: [
+      "Players take turns placing one stone on any empty intersection. Black always opens. Stones never move once placed.",
+      "A stone touches its orthogonal neighbours only, not the diagonals. A connected group of one colour shares its liberties — the empty points touching any stone in it — and a group with none left is captured, every stone of it, at once.",
+      "You may not play a stone that would leave your own group with no liberties, unless doing so captures an enemy group and so gives it one. A move that would exactly retake the single stone a capture just lifted is forbidden for one turn — the ko rule — so a capture cannot be instantly undone.",
+      "Either side may pass instead of playing. Two passes in a row end the game.",
+      "The board is then counted: every stone left on it, plus every empty point surrounded by one colour alone, is a point for that colour. White receives a fixed 6.5-point bonus, komi, for playing second. Higher total wins; the half point means it is never a tie.",
+    ],
+    board: "19×19 is the full game; 13×13 and 9×9 play much faster and are the usual way to learn. Star points mark the traditional handicap spots.",
+  },
 };
 
 export const SECOND_STONE_EXCLUSION_DISPLAY: Record<number, { label: string; kanji: string }> = {

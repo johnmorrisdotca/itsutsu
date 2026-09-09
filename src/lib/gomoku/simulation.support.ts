@@ -1,5 +1,6 @@
 import { expect } from "vitest";
 import {
+  canPass,
   createGame,
   emptyPoints,
   inMovePhase,
@@ -18,6 +19,7 @@ import { GAME_STATUS } from "./gomoku.constants";
 import type { GameSettings, GameState, Point } from "./gomoku.types";
 import { checkCheckersMove, isCheckers } from "./simulation.checkers";
 import { checkStarMove, isChineseCheckers } from "./simulation.chineseCheckers";
+import { checkGoPass, isGo } from "./simulation.go";
 import {
   bruteForceWinner,
   checkMove,
@@ -89,6 +91,40 @@ function playOut(settings: Partial<GameSettings>, seed: number): GameState {
       // could be cut off mid-move.
       if (after.chainAt === null) slides += 1;
       if (slides >= SLIDE_CAP) break;
+      continue;
+    }
+
+    /*
+     * Go: pass whenever nothing is legal, and now and then even when
+     * something is, so random play actually reaches the double pass that
+     * ends the game rather than only ever filling the board.
+     */
+    if (isGo(state.settings.variant)) {
+      const legal = legalPoints(state);
+      if (legal.length === 0 || random() < 0.08) {
+        expect(canPass(state), `seed ${seed}: go could not pass`).toBe(true);
+        const passed = passTurn(state);
+        expect(passed, `seed ${seed}: a pass was refused`).not.toBe(state);
+        checkGoPass(state, passed, seed);
+        state = passed;
+        guard += 1;
+        if (state.status !== GAME_STATUS.playing) break;
+        expect(guard, `seed ${seed}: go did not terminate`).toBeLessThanOrEqual(
+          state.settings.size * state.settings.size * 4 + 100,
+        );
+        continue;
+      }
+      const point = legal[Math.floor(random() * legal.length)];
+      const before = state;
+      const after = playMove(state, point);
+      expect(after, `seed ${seed}: a legal go move was refused`).not.toBe(before);
+      checkMove(before, after, point, seed);
+      state = after;
+      guard += 1;
+      if (state.status !== GAME_STATUS.playing) break;
+      expect(guard, `seed ${seed}: go did not terminate`).toBeLessThanOrEqual(
+        state.settings.size * state.settings.size * 4 + 100,
+      );
       continue;
     }
 
