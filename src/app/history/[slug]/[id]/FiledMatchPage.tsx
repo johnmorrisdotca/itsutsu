@@ -22,6 +22,9 @@ import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { Conversation } from "@/components/history/Conversation";
 import { fetchApplause, type ApplauseTally } from "@/lib/history/applause";
 import { ignoredEmails } from "@/lib/social/ignores";
+import { appearanceFor } from "@/lib/auth/members";
+import { appearanceFrom } from "@/components/board/appearance";
+import type { Appearance } from "@/components/board/board.types";
 import { ratingRefusal } from "@/lib/rating/rateable";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { prisma } from "@/lib/prisma";
@@ -124,6 +127,14 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
   const refusal =
     game.rated && game.result !== "abandoned" ? ratingRefusal(game.blackName, game.whiteName) : null;
 
+  /*
+   * The reader's own board, on the page they will spend the longest looking
+   * at one. The record drew the default and nothing else, so somebody who had
+   * chosen a board played on it and then went back through the game on a
+   * board they had never asked for.
+   */
+  const appearance = appearanceFrom(await appearanceFor(mine));
+
   // A seat held by cookie counts too: a game played from a scanned link, or at one screen.
   const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, myId);
   const seatColour = myColour ?? claim?.seat ?? null;
@@ -141,6 +152,7 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
       signedIn={mine !== null}
       silenced={silenced}
       refusal={refusal}
+      appearance={appearance}
     />
   );
 }
@@ -156,6 +168,7 @@ function FiledMatch({
   signedIn,
   silenced,
   refusal,
+  appearance,
 }: {
   game: GameDetail;
   move: number;
@@ -166,6 +179,8 @@ function FiledMatch({
   silenced: ReadonlySet<string>;
   /** Why the ladder did not move for this game, when it did not. */
   refusal: RatingRefusal | null;
+  /** How this reader likes a board dressed. */
+  appearance: Appearance;
   /** The viewer's own read on their play, when they held a seat; undefined for a reader. */
   verdict?: Verdict;
   applause: ApplauseTally;
@@ -237,6 +252,7 @@ function FiledMatch({
         game={game}
         initialIndex={move}
         basePath={recordPath(game.variant, game.id)}
+        appearance={appearance}
       />
 
       {/*
