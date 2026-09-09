@@ -94,6 +94,12 @@ export function AppearancePanel(props: GamePanelProps) {
         onChange={(next) => actions.setAppearance({ showMoveNumbers: next })}
         hint="Numbers the stones as a printed game record does."
       />
+      <Toggle
+        label="Turn the board round"
+        checked={session.appearance.flipped}
+        onChange={(next) => actions.setAppearance({ flipped: next })}
+        hint="Your own view: the far side of the board nearest you, letters and numbers with it. Nobody else's board moves."
+      />
     </section>
   );
 }

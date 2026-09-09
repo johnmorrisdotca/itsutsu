@@ -81,6 +81,8 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
           showCoordinates: options.showCoordinates,
           showMoveNumbers: false,
           grid: "auto",
+          // An embed on somebody else's page has no reader to have a preference.
+          flipped: false,
         }}
         marks={session.marks}
         onPlay={actions.play}

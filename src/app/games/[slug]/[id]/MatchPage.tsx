@@ -23,6 +23,7 @@ import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
+import { appearanceFrom } from "@/components/board/appearance";
 import { prisma } from "@/lib/prisma";
 
 /** The site's own origin, taken from the request so links work behind any host. */
@@ -155,6 +156,14 @@ async function LiveMatch({
     game.rated && game.openSeat === null ? ratingRefusal(game.blackName, game.whiteName) : null;
 
   /*
+   * The board this member likes, on the board they are actually playing on.
+   * The shared game drew the default and nothing else, so a board dressed on
+   * the account followed them into a local game and stopped at the door of a
+   * real one.
+   */
+  const appearance = appearanceFrom(await appearanceFor(await currentEmail()));
+
+  /*
    * Seat links are only handed out to someone who already holds one. A reader
    * with no claim, or the wrong one, gets a board they can watch and not
    * touch — so a shared spectator link cannot be turned into a seat.
@@ -215,6 +224,7 @@ async function LiveMatch({
               basePath={matchPath(game.variant, game.id)}
               opponent={opponent}
               muted={muted}
+              appearance={appearance}
             />
           </div>
         </div>

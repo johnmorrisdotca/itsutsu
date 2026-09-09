@@ -51,6 +51,10 @@ export function cleanAppearance(stored: unknown): Partial<Appearance> {
   const showMoveNumbers = knownFlag(row.showMoveNumbers);
   if (showMoveNumbers !== undefined) clean.showMoveNumbers = showMoveNumbers;
 
+  // Through the same validator as every other flag, not beside it.
+  const flipped = knownFlag(row.flipped);
+  if (flipped !== undefined) clean.flipped = flipped;
+
   return clean;
 }
 
@@ -69,6 +73,7 @@ export function sameAppearance(a: Appearance, b: Appearance): boolean {
     a.stoneSet === b.stoneSet &&
     a.grid === b.grid &&
     a.showCoordinates === b.showCoordinates &&
-    a.showMoveNumbers === b.showMoveNumbers
+    a.showMoveNumbers === b.showMoveNumbers &&
+    a.flipped === b.flipped
   );
 }

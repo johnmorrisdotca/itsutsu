@@ -27,6 +27,7 @@ import { columnLetter, pointName, rowNumber } from "@/lib/gomoku/notation";
 import type { Cell, GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { BOARD_THEMES, LABEL_GUTTER, STONE_SETS } from "./Board.constants";
 import { BoardLines } from "./BoardLines";
+import { layoutOrder } from "./flip";
 import { Intersection } from "./Intersection";
 import { TwistControls } from "./TwistControls";
 import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
@@ -39,7 +40,7 @@ function cellDescription(cell: Cell, forbidden: boolean): string {
   return `${STONE_DISPLAY[cell].label} stone`;
 }
 
-function ColumnLabels({ size, theme }: { size: number; theme: BoardThemeTokens }) {
+function ColumnLabels({ size, theme, flipped }: { size: number; theme: BoardThemeTokens; flipped: boolean }) {
   return (
     <div
       className="grid text-center text-[0.65rem] font-medium select-none"
@@ -49,7 +50,7 @@ function ColumnLabels({ size, theme }: { size: number; theme: BoardThemeTokens }
       }}
       aria-hidden="true"
     >
-      {Array.from({ length: size }, (_, col) => (
+      {layoutOrder(size, flipped).map((col) => (
         <span key={col} className="self-end pb-1 leading-none">
           {columnLetter(col)}
         </span>
@@ -58,7 +59,7 @@ function ColumnLabels({ size, theme }: { size: number; theme: BoardThemeTokens }
   );
 }
 
-function RowLabels({ size, theme }: { size: number; theme: BoardThemeTokens }) {
+function RowLabels({ size, theme, flipped }: { size: number; theme: BoardThemeTokens; flipped: boolean }) {
   return (
     <div
       className="grid text-right text-[0.65rem] font-medium select-none"
@@ -68,7 +69,7 @@ function RowLabels({ size, theme }: { size: number; theme: BoardThemeTokens }) {
       }}
       aria-hidden="true"
     >
-      {Array.from({ length: size }, (_, row) => (
+      {layoutOrder(size, flipped).map((row) => (
         <span key={row} className="flex items-center justify-end pr-1.5">
           {rowNumber(size, row)}
         </span>
@@ -186,6 +187,12 @@ export function Board({
   const piecing = live && footprintFor !== undefined && spec.queue !== null;
 
   const gutter = appearance.showCoordinates ? LABEL_GUTTER : "0px";
+  /*
+   * The reader's own view of the board and nothing else: the same cells in the
+   * opposite order, with the gutters turned to match. No move, coordinate or
+   * piece of game state knows about it.
+   */
+  const flipped = appearance.flipped;
 
   return (
     <div
@@ -197,12 +204,12 @@ export function Board({
     >
       <div />
       {appearance.showCoordinates ? (
-        <ColumnLabels size={size} theme={theme} />
+        <ColumnLabels size={size} theme={theme} flipped={flipped} />
       ) : (
         <div />
       )}
       {appearance.showCoordinates ? (
-        <RowLabels size={size} theme={theme} />
+        <RowLabels size={size} theme={theme} flipped={flipped} />
       ) : (
         <div />
       )}
@@ -233,7 +240,8 @@ export function Board({
             ...(rhombus ? { transform: `translateY(16.667%) skewX(${SLANT}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : {}),
           }}
         >
-          {state.board.map((cell, index) => {
+          {layoutOrder(state.board.length, flipped).map((index) => {
+            const cell = state.board[index];
             const point = pointOf(size, index);
             const landing = dropping && live ? resolvePlacement(state, point) : point;
             const landingIndex = indexOf(size, landing);
@@ -270,7 +278,7 @@ export function Board({
           })}
         </div>
         {twisting && spec.quadrantSize !== null ? (
-          <TwistControls size={size} quadrantSize={spec.quadrantSize} onTwist={onTwist} />
+          <TwistControls size={size} quadrantSize={spec.quadrantSize} onTwist={onTwist} flipped={flipped} />
         ) : null}
       </div>
     </div>
