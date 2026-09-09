@@ -88,6 +88,7 @@ export { forbiddenAt, forbiddenPoints } from "./rules/forbidden";
 export { centreSquares, discCount, flipsAt, hasFlipMove, inLayingPhase } from "./rules/flips";
 export { campOf, campSize, campSquares, piecesHome } from "./rules/camps";
 export { checkersHasCapture, isDarkSquare, isKingAt } from "./rules/checkers";
+export { STAR_RADIUS, starCampOf, starCampSize, starPiecesHome, starSize } from "./rules/chineseCheckers";
 export {
   canGrowBoard,
   canShrinkBoard,

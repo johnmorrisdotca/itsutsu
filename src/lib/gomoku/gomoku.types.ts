@@ -136,7 +136,8 @@ export type RuleVariant =
   | "halma"
   | "hex"
   | "obstacleFive"
-  | "checkers";
+  | "checkers"
+  | "chineseCheckers";
 
 /**
  * Where a stone goes when played. `free`: where it was put. `drop`: it slides
@@ -306,6 +307,14 @@ export type VariantSpec = {
    * backward as well as forward; a colour with no legal move loses.
    */
   checkers: boolean;
+  /**
+   * Chinese Checkers: a hexagram board, embedded in a square Point grid the
+   * way Hex's rhombus is, with the cells outside it sealed off as `BLOCKED`.
+   * Otherwise the same race as Halma's `camps` — step or jump-chain to fill
+   * the point opposite, nothing captured — just six hex directions in place
+   * of eight square ones, and a star's points in place of a corner's square.
+   */
+  chineseCheckers: boolean;
 };
 
 /** How a flipping game begins: nothing, the fixed four, or four the players lay themselves. */

@@ -1,5 +1,6 @@
 import { startingPieces } from "./camps";
 import { checkersStartingPieces } from "./checkers";
+import { STAR_RADIUS, starStartingPieces } from "./chineseCheckers";
 import { startingDiscs } from "./flips";
 import {
   DEFAULT_SETTINGS,
@@ -108,6 +109,12 @@ export function createGame(
   // Checkers begins with both sides' men filling their three rows, likewise part of the position.
   if (VARIANT_SPECS[settings.variant].checkers) {
     for (const piece of checkersStartingPieces(settings.size)) {
+      board[piece.point.row * settings.size + piece.point.col] = piece.stone;
+    }
+  }
+  // Chinese Checkers begins with both points full, likewise part of the position.
+  if (VARIANT_SPECS[settings.variant].chineseCheckers) {
+    for (const piece of starStartingPieces(STAR_RADIUS)) {
       board[piece.point.row * settings.size + piece.point.col] = piece.stone;
     }
   }

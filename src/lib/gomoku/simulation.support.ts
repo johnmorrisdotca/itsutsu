@@ -17,6 +17,7 @@ import {
 import { GAME_STATUS } from "./gomoku.constants";
 import type { GameSettings, GameState, Point } from "./gomoku.types";
 import { checkCheckersMove, isCheckers } from "./simulation.checkers";
+import { checkStarMove, isChineseCheckers } from "./simulation.chineseCheckers";
 import {
   bruteForceWinner,
   checkMove,
@@ -80,6 +81,7 @@ function playOut(settings: Partial<GameSettings>, seed: number): GameState {
       expect(after, `seed ${seed}: a legal slide was refused`).not.toBe(before);
       if (isRace(state.settings.variant)) checkRaceMove(before, after, from, to, seed);
       else if (isCheckers(state.settings.variant)) checkCheckersMove(before, after, from, to, seed);
+      else if (isChineseCheckers(state.settings.variant)) checkStarMove(before, after, from, to, seed);
       else checkSlide(before, after, from, to, seed);
       state = after;
       // A capture chain keeps the same player on move, so it must not count

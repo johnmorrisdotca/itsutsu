@@ -120,6 +120,14 @@ export type IntersectionProps = {
   camp?: Stone | null;
   /** Whether the piece here has been crowned, in checkers. */
   isKing?: boolean;
+  /**
+   * Draws a sealed cell as nothing at all rather than the usual knot mark:
+   * Chinese Checkers, where most of the embedding square is not part of the
+   * hexagram and marking all of it "sealed off" would say the wrong thing.
+   */
+  hideBlocked?: boolean;
+  /** Marks an empty playable cell as a hole, where nothing else draws the board's shape: Chinese Checkers. */
+  hole?: boolean;
   /** On a slanted board, undoes the slant so the stone inside is round. */
   unslant?: boolean;
   stones: StoneSetTokens;

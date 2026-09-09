@@ -13,6 +13,8 @@ import {
   pointOf,
   resolvePlacement,
   campOf,
+  STAR_RADIUS,
+  starCampOf,
 } from "@/lib/gomoku/engine";
 import {
   BLOCKED,
@@ -168,8 +170,14 @@ export function Board({
   ]);
   const twisting = live && onTwist !== undefined && canTwist(state) && spec.quadrantSize !== null;
   const dropping = spec.placement === PLACEMENTS.drop;
-  // A rhombus of hexagons, drawn as a slanted square grid.
+  // A rhombus of hexagons, drawn as a slanted square grid: Hex's own board shape.
   const rhombus = spec.connects;
+  /*
+   * Any board on the same hex lattice needs the same skew to read as hexagons
+   * rather than a sheared square grid — Hex's rhombus and Chinese Checkers'
+   * star both stand on it, even though only Hex is actually a rhombus.
+   */
+  const hexSkew = spec.connects || spec.chineseCheckers;
 
   /*
    * The piece games: the piece in hand hangs under the pointer with its
@@ -234,12 +242,13 @@ export function Board({
           cells={cells}
           rhombus={rhombus}
           checkered={spec.checkers}
+          hidden={spec.chineseCheckers}
         />
         <div
           className="absolute inset-0 grid"
           style={{
             gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
-            ...(rhombus ? { transform: `translateY(16.667%) skewX(${SLANT}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : {}),
+            ...(hexSkew ? { transform: `translateY(16.667%) skewX(${SLANT}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : {}),
           }}
         >
           {state.board.map((cell, index) => {
@@ -268,9 +277,11 @@ export function Board({
                 onHover={piecing ? setHovered : undefined}
                 moveNumber={numbers.get(index) ?? null}
                 mark={overlays.get(index) ?? null}
-                unslant={rhombus}
-                camp={spec.camps ? campOf(size, point) : null}
+                unslant={hexSkew}
+                camp={spec.camps ? campOf(size, point) : spec.chineseCheckers ? starCampOf(STAR_RADIUS, point) : null}
                 isKing={spec.checkers ? kings.has(index) : false}
+                hideBlocked={spec.chineseCheckers}
+                hole={spec.chineseCheckers && cell === null}
                 stones={stones}
                 winningColour={theme.winning}
                 readOnly={readOnly}

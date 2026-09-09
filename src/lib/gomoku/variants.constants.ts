@@ -590,6 +590,22 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "8×8, played on the dark squares only — thirty-two of the sixty-four. Twelve pieces a side, filling the first three rows.",
   },
+  chineseCheckers: {
+    label: "Chinese Checkers",
+    kanji: "ダイヤモンドゲーム",
+    tagline: "Fill the point of the star directly opposite yours, one step or jump-chain at a time.",
+    origin: "Invented in Germany in 1892 as Stern-Halma — \"star Halma\" — a six-pointed board built for the American game Halma, itself only nine years old. An American toy company sold it from 1928 under the name it is known by now, Chinese Checkers, though the game has no connection to China at all: the name was chosen to sound exotic to buyers.",
+    alsoKnownAs: ["Stern-Halma", "Hoppers", "Diamond Game"],
+    country: "DE",
+    wikipedia: "Chinese checkers",
+    rules: [
+      "Each side has ten pieces, filling one point of the star at the start: black at the top, white at the bottom.",
+      "A move is one piece: a step to a neighbouring empty cell, or a jump over an adjacent piece of either colour into the empty cell straight beyond it. A jump may go on jumping in the same move, turning corners, as long as each jump crosses a piece.",
+      "Nothing is ever captured. A piece jumped over stays exactly where it is.",
+      "The first side to fill the point directly opposite its own wins.",
+    ],
+    board: "The standard 121-hole star board, ten pieces a side, playing point to point straight across it. The full board seats up to six; this site plays the two-player form, the two points furthest apart.",
+  },
 };
 
 export const SECOND_STONE_EXCLUSION_DISPLAY: Record<number, { label: string; kanji: string }> = {

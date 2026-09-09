@@ -13,9 +13,10 @@
  */
 
 /** The countries any of these games actually come from. ISO 3166-1 alpha-2. */
-export type CountryCode = "DK" | "GB" | "JP" | "KR" | "TW" | "US" | "VN";
+export type CountryCode = "DE" | "DK" | "GB" | "JP" | "KR" | "TW" | "US" | "VN";
 
 export const COUNTRY_NAMES: Record<CountryCode, string> = {
+  DE: "Germany",
   DK: "Denmark",
   GB: "England",
   JP: "Japan",

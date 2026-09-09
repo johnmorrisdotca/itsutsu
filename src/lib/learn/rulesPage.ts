@@ -101,6 +101,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   } else if (spec.camps) {
     object.push("Be the first to fill the far corner camp with your pieces. Nothing is captured and no line counts for anything.");
     object.push("A side that keeps pieces at home to block still loses once every other square of its camp is taken.");
+  } else if (spec.chineseCheckers) {
+    object.push("Be the first to fill the point of the star directly opposite yours with your own pieces. Nothing is captured and no line counts for anything.");
+    object.push("A side that keeps pieces at home to block still loses once every other cell of the far point is taken.");
   } else if (spec.flips) {
     object.push(
       spec.misere
@@ -160,6 +163,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.checkers) {
     board.push("Played on the dark squares only, thirty-two of the sixty-four. Each side starts with twelve men filling its own three rows.");
   }
+  if (spec.chineseCheckers) {
+    board.push("A hexagram: a centre hexagon with six triangular points, 121 cells in all. Each side's ten pieces start filling one point, black at the top and white at the bottom, shaded on the board; the far point is the one to fill.");
+  }
   if (spec.queue !== null) {
     board.push(
       spec.queue === "domino"
@@ -178,6 +184,11 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     play.push("Or it may jump: over an adjacent piece of either colour, into the empty square straight beyond it. From there it may jump again, and again, turning corners as it likes, so long as each jump crosses a piece. A move may stop after any jump.");
     play.push("A piece jumped over is not taken; it stays where it is.");
     play.push("The game ends the moment a move fills the far camp.");
+  } else if (spec.chineseCheckers) {
+    play.push("A turn moves one piece. It may step to any neighbouring empty cell, in any of the six directions the board's own lattice touches.");
+    play.push("Or it may jump: over an adjacent piece of either colour, into the empty cell straight beyond it. From there it may jump again, and again, turning corners as it likes, so long as each jump crosses a piece. A move may stop after any jump.");
+    play.push("A piece jumped over is not taken; it stays where it is.");
+    play.push("The game ends the moment a move fills the point directly opposite yours.");
   } else if (spec.flips) {
     play.push(
       spec.startingDiscs === "laid"
@@ -221,7 +232,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     );
   }
   if (spec.lineClear) play.push("When the bottom row is full it disappears and every stone above drops one row.");
-  if (spec.flips || spec.camps || spec.connects || spec.checkers) {
+  if (spec.flips || spec.camps || spec.connects || spec.checkers || spec.chineseCheckers) {
     // Said above; a full board is only the usual way for both to be stuck, a race has no full board, and checkers ends with pieces gone, not the board full.
   } else if (spec.misere) {
     if (spec.placement === PLACEMENTS.drop) play.push("You may not play directly on top of the opponent's last stone while any other column has room.");
@@ -249,7 +260,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
       ? "The threat reading, hints and the chance-of-winning bar apply."
       : spec.flips
         ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only discs to count."
-        : spec.camps
+        : spec.camps || spec.chineseCheckers
           ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only distance to cover."
         : spec.connects
           ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only whether your two sides are joined."

@@ -18,6 +18,7 @@ export function BoardLines({
   cells = false,
   rhombus = false,
   checkered = false,
+  hidden = false,
 }: {
   size: number;
   theme: BoardThemeTokens;
@@ -29,7 +30,16 @@ export function BoardLines({
   rhombus?: boolean;
   /** Checkers: shades every other square, so the dark squares in play read at a glance. */
   checkered?: boolean;
+  /**
+   * Chinese Checkers: most of the square this board is embedded in is not
+   * part of the hexagram at all, so a full grid of lines across it would
+   * mark space no piece can ever stand on. Rather than draw a grid trimmed
+   * to a star's true outline, none is drawn; the pieces and the shaded
+   * points carry the board on their own.
+   */
+  hidden?: boolean;
 }) {
+  if (hidden) return null;
   const dividers =
     quadrantSize !== null && quadrantSize > 0 && size % quadrantSize === 0
       ? Array.from({ length: size / quadrantSize - 1 }, (_, i) => (i + 1) * quadrantSize)

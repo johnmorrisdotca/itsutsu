@@ -12,6 +12,7 @@ import { settleDrawLimit } from "./drawLimit";
 import { cellAtPoint, indexOf, isOnBoard, isStone, otherStone, stepFrom } from "./board";
 import { campFilled, campMoves, campSquares } from "./camps";
 import { applyCheckersMove, checkersHasAnyMove, checkersMoves } from "./checkers";
+import { STAR_RADIUS, starCampSquares, starFilled, starMoves } from "./chineseCheckers";
 import { dropTarget } from "./drop";
 import { hexConnection } from "./hex";
 import { rulesFor } from "./handicap";
@@ -82,9 +83,9 @@ export function blockedByGiveaway(state: GameState, point: Point): boolean {
 
 /** Whether the colour to move has all its pieces down and must now slide one. */
 export function inMovePhase(state: GameState): boolean {
-  const { pieces, camps, checkers } = VARIANT_SPECS[state.settings.variant];
+  const { pieces, camps, checkers, chineseCheckers } = VARIANT_SPECS[state.settings.variant];
   // In a race game, and in checkers, every piece is down from the start.
-  if (camps || checkers) return true;
+  if (camps || checkers || chineseCheckers) return true;
   return pieces !== null && countStones(state.board, state.toPlay) >= pieces;
 }
 
@@ -191,6 +192,7 @@ export function pieceMoves(state: GameState, from: Point): Point[] {
   const spec = VARIANT_SPECS[state.settings.variant];
   if (spec.camps) return campMoves(state.board, state.settings.size, from);
   if (spec.checkers) return checkersMoves(state, from);
+  if (spec.chineseCheckers) return starMoves(state.board, state.settings.size, from);
   return pieceDestinations(state.board, state.settings.size, from);
 }
 
@@ -250,6 +252,12 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
   if (spec.camps) {
     return campFilled(board, settings.size, toPlay)
       ? won(moved, toPlay, WIN_REASONS.camp, campSquares(settings.size, otherStone(toPlay)))
+      : settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });
+  }
+  // Chinese Checkers is the same race, read against a star point instead of a square corner.
+  if (spec.chineseCheckers) {
+    return starFilled(board, settings.size, STAR_RADIUS, toPlay)
+      ? won(moved, toPlay, WIN_REASONS.camp, starCampSquares(STAR_RADIUS, otherStone(toPlay)))
       : settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });
   }
   return settleStone(moved, to) ?? settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });

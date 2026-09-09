@@ -42,7 +42,7 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
     title: "Races",
     kanji: "競走",
     blurb: "No lines and nothing captured. Get every piece across the board before the other side does.",
-    games: ["halma"],
+    games: ["halma", "chineseCheckers"],
   },
   {
     title: "Connections",

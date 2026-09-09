@@ -82,6 +82,7 @@ export const RULE_VARIANTS = {
   halma: "halma",
   hex: "hex",
   checkers: "checkers",
+  chineseCheckers: "chineseCheckers",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 export const WRAP_MODES = {
@@ -140,6 +141,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.halma,
   RULE_VARIANTS.hex,
   RULE_VARIANTS.checkers,
+  RULE_VARIANTS.chineseCheckers,
 ] as const satisfies readonly RuleVariant[];
 
 export const PLACEMENTS = {
@@ -275,6 +277,8 @@ const HALMA_SIZES = [16, 10, 8] as const;
 const HEX_SIZES = [11, 13, 19] as const;
 /** Checkers: the 8×8 board draughts is played on everywhere. */
 const CHECKERS_SIZES = [8] as const;
+/** Chinese Checkers: the standard 121-hole hexagram, embedded in its own 17×17 square. */
+const CHINESE_CHECKERS_SIZES = [17] as const;
 
 function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return {
@@ -311,6 +315,7 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     camps: false,
     connects: false,
     checkers: false,
+    chineseCheckers: false,
     ...overrides,
   };
 }
@@ -464,6 +469,16 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * capture of the Ninuki family and mean nothing here.
    */
   checkers: small({ checkers: true, boardSizes: CHECKERS_SIZES, analysis: false }),
+  /*
+   * Chinese Checkers: a hexagram, not a square — see rules/chineseCheckers.ts
+   * for how it is embedded in a Point{row,col} grid at all. Otherwise a race
+   * exactly like Halma's, so it shares `camp` as its win reason.
+   */
+  chineseCheckers: small({
+    chineseCheckers: true,
+    boardSizes: CHINESE_CHECKERS_SIZES,
+    analysis: false,
+  }),
 };
 
 /** The board sizes a variant plays on. */
@@ -535,7 +550,7 @@ export const OBSTACLE_LAYOUT_DISPLAY: Record<
 export const BOARD_SIZES = [9, 13, 15, 19] as const;
 
 /** Every size any game here is played on, for the schemas at the API edge. */
-export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 19] as const;
+export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 19] as const;
 
 export const BOARD_SIZE_DISPLAY: Record<
   number,
@@ -550,6 +565,7 @@ export const BOARD_SIZE_DISPLAY: Record<
   10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi, Halma" },
   11: { label: "Eleven", kanji: "十一路", note: "Hex" },
   16: { label: "Sixteen", kanji: "十六路", note: "Halma" },
+  17: { label: "Seventeen", kanji: "十七路", note: "Chinese Checkers" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },
   13: { label: "Medium", kanji: "中盤", note: "Shorter game" },
   15: { label: "Standard", kanji: "正盤", note: "Tournament size" },
