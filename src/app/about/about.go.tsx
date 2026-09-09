@@ -122,7 +122,7 @@ export const GO_SECTION: AboutSection = {
       the points given to white for moving second — six and a half, or seven and a half under Chinese rules, the
       half existing only to make a draw impossible — and the handicap, which lets black begin with up to nine
       stones already placed so that two players nine grades apart can have a real game rather than a formality.
-      Every rating and tier on the <Inside href="/players">players page</Inside> is chasing what the handicap did
+      Every rating and tier on the <Inside href="/players?view=ladder">players page</Inside> is chasing what the handicap did
       first. Go is also where computers were held off longest: chess fell in 1997, and go was expected to hold out
       another decade when DeepMind’s AlphaGo beat Lee Sedol four games to one in Seoul in March 2016. The moment
       people remember is move 37 of the second game, a shoulder hit on the fifth line that no professional would

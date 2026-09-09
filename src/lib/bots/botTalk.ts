@@ -12,7 +12,7 @@ import { botInSeat } from "./bots";
  *
  * John played a game of draughts against Dan, said hello and thank you with
  * the buttons that sit under every board, and Dan said nothing — not at the
- * start and not at the end. The three of them are meant to be players in
+ * start and not at the end. They are meant to be players in
  * their own right: they hold a seat, they carry a rating, they have a page.
  * Silence made them feel like a mechanism instead of an opponent, and this is
  * the cheapest place to keep that from being true.

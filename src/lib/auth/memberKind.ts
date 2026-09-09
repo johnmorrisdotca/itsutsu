@@ -16,7 +16,7 @@ import { UNCLAIMABLE_REASONS } from "./memberId";
 export const MEMBER_KINDS = {
   /** Authorised by ADMIN_EMAILS, which is a deployment setting rather than a column. */
   operator: "operator",
-  /** A program that plays. Nothing carries this yet; the three computer players will. */
+  /** A program that plays: the rungs of the computer ladder, and nobody else. */
   robot: "robot",
   /** Someone who has died, whose record from elsewhere is kept here. */
   remembered: "remembered",

@@ -30,10 +30,10 @@ function grade(roll: number): BotTier {
   /*
    * Evenly, at random, rather than matched to the poster.
    *
-   * Matching would need ratings that mean something, and on a new site none of
-   * the three has any yet — so matching would only be an elaborate way of
+   * Matching would need ratings that mean something, and on a new site none
+   * of them has any yet — so matching would only be an elaborate way of
    * always choosing the same one. Spreading the games instead is what gives
-   * all three a record, which is what makes matching possible later.
+   * every rung a record, which is what makes matching possible later.
    */
   return BOT_TIER_LIST[Math.min(BOT_TIER_LIST.length - 1, Math.floor(roll * BOT_TIER_LIST.length))];
 }

@@ -226,12 +226,12 @@ export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
 }
 
 /**
- * The three computer players, however many people are on the site.
+ * Every computer player, however many people are on the site.
  *
  * They used to be picked out of the directory's first page, which is ordered
  * by who was seen last and cut at a limit. A computer player is never "seen"
  * — it does not sign in — so the moment the site had more members than that
- * limit, all three dropped off the end and the players page had no computer
+ * limit, every one of them dropped off the end and the players page had no computer
  * opponents on it at all. Nobody would have connected the two facts.
  *
  * They are a fixed, tiny set, so they are fetched as one: a directory page is

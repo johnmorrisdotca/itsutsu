@@ -21,7 +21,7 @@ import type { BotTier } from "@/lib/gomoku/opponent.types";
 const REMEMBER_MS = 5 * 60_000;
 let seededUntil = 0;
 
-/** Writes the three rows if they are not already there. Safe to call often. */
+/** Writes a row for each rung of the ladder, if it is not already there. Safe to call often. */
 export async function ensureBotMembers(now = Date.now()): Promise<void> {
   if (now < seededUntil) return;
   for (const bot of BOT_MEMBER_LIST) {

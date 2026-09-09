@@ -12,7 +12,7 @@ import { botInSeat, botTierFor, hasBotSeat, isBotId } from "./bots";
  * rest of the site has to be able to ask about them without a database.
  */
 
-describe("the three as members", () => {
+describe("the ladder as members", () => {
   it("gives each a fixed id that a member id may actually be", () => {
     for (const bot of BOT_MEMBER_LIST) {
       expect(isMemberId(bot.id), `${bot.id} is not a usable member id`).toBe(true);

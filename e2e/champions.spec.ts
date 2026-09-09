@@ -60,7 +60,10 @@ test.describe("champions", () => {
   });
 
   test("the players page leads to the champions", async ({ page }) => {
-    await page.goto("/players");
+    // The pointer sits with the site ladder, which is the thing it qualifies:
+    // a rating here is across every game, and that is not what somebody who
+    // wants the best Reversi player is asking.
+    await page.goto("/players?view=ladder");
     await page.getByTestId("champions-link").click();
     await expect(page).toHaveURL(/\/champions$/);
   });

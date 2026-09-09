@@ -65,7 +65,7 @@ export default async function ChampionsPage() {
         <p className="max-w-prose text-sm text-muted">
           The best-rated player at each game, as the standings are today. Every game keeps its own Elo,
           so being good at Notakto is a different claim from being good at Renju; the ladder on the{" "}
-          <Link href="/players" className="underline underline-offset-4">players</Link> page counts everything
+          <Link href="/players?view=ladder" className="underline underline-offset-4">players</Link> page counts everything
           together. Only games between two named members count. A game at one screen is filed and never rated.
         </p>
         <table className="w-full text-sm">
