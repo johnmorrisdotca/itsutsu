@@ -115,16 +115,15 @@ test.describe("rules and learning", () => {
     const families = page.getByTestId("lobby-family");
     await expect(families).toHaveCount(GAME_FAMILIES.length);
     // The first family is open; the rest are folded, so the page stays short.
-    await expect(families.nth(1).getByRole("link", { name: "rules", exact: true })).toBeHidden();
-    await families.filter({ hasText: "Small boards" }).locator("summary").click();
+    await expect(families.nth(1).getByTestId("game-name").first()).toBeHidden();
+    const small = families.filter({ hasText: "Small boards" });
+    await small.locator("summary").click();
     // The families are for looking around: a game is read about here and
     // started above, so nothing in this list drops straight onto a board.
-    await expect(families.filter({ hasText: "Small boards" }).getByRole("link", { name: "play", exact: true })).toHaveCount(0);
-    await families
-      .filter({ hasText: "Small boards" })
-      .locator("li", { hasText: "Notakto" })
-      .getByRole("link", { name: "rules", exact: true })
-      .click();
+    await expect(small.getByRole("link", { name: "play", exact: true })).toHaveCount(0);
+    // The game's own name is the way in, which is the standing rule; the
+    // little "rules" beside it was what that name should always have been.
+    await small.getByTestId("game-name").filter({ hasText: "Notakto" }).click();
     await expect(page).toHaveURL(/\/rules\/notakto$/);
   });
 

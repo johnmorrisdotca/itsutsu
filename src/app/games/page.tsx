@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
+import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { InviteFriends } from "@/components/mine/InviteFriends";
@@ -26,7 +27,6 @@ import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { rulesPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export const metadata = { title: "Games" };
@@ -191,7 +191,9 @@ export default async function LobbyPage() {
                 return (
                   <li key={variant} className="flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm">
                     <span className="flex min-w-0 flex-col">
-                      <span className="font-medium">{copy.label} <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span></span>
+                      <span className="font-medium">
+                        <GameName variant={variant} kanji />
+                      </span>
                       <span className="text-xs text-muted">{copy.tagline}</span>
                       {count !== undefined && count.last !== null ? (
                         <Link href={recordPath(variant, count.last.id)} className="text-[0.7rem] text-muted underline-offset-2 hover:underline">
@@ -201,9 +203,12 @@ export default async function LobbyPage() {
                         <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
                       ) : null}
                     </span>
-                    <span className="flex shrink-0 items-center gap-2 text-xs">
-                      <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
-                    </span>
+                    {/*
+                      The name is the link now, and it goes where the little
+                      "rules" beside it used to. Nothing here leads straight
+                      onto a board on purpose: this list is for looking
+                      around, and a game is started from the panel above.
+                    */}
                   </li>
                 );
               })}
