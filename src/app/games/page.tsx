@@ -12,7 +12,8 @@ import { StartGame } from "@/components/mine/StartGame";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { GameGroup, Opponent, SeatOnBoard } from "@/components/mine/startGame.types";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
-import { fetchOpenGames } from "@/lib/history/openGames";
+import { fetchOpenGames, fetchSeatChoices } from "@/lib/history/openGames";
+import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { fetchBuddies } from "@/lib/social/buddies";
@@ -50,11 +51,19 @@ export default async function LobbyPage() {
    */
   sweepOpenSeats();
 
-  const [email, mine, counts, seatGames, here] = await Promise.all([
+  const claimed = [...claims.keys()];
+  const [email, mine, counts, seatGames, choices, here] = await Promise.all([
     currentEmail(),
     currentMemberId(),
     fetchPlayedCounts(),
-    fetchOpenGames(claims.keys()),
+    fetchOpenGames(claimed),
+    /*
+     * The sentence reads a different list from the board on purpose. The
+     * board shows the newest thirty seats; the sentence asks whether anybody
+     * is waiting for this game at this pace on this board, and a busy game
+     * pushed every other game's seat off the end of the newest thirty.
+     */
+    fetchSeatChoices(claimed),
     fetchHereNow(),
   ]);
   const [buddies, ignored] = await Promise.all([
@@ -82,12 +91,13 @@ export default async function LobbyPage() {
    * keyed by member id, and asking a set of addresses whether it holds an id
    * is a question with only one answer.
    */
-  const openSeats = seatGames.filter((game) => {
+  const theirs = (game: GameSummary) => {
     const poster = game.openSeat === STONES.black ? game.whiteMemberId : game.blackMemberId;
     if (poster === null) return true;
     if (mine !== null && poster === mine) return false;
     return !ignored.has(poster);
-  });
+  };
+  const openSeats = seatGames.filter(theirs);
 
   // The sentence reads the same lists the page below it shows.
   const families: GameGroup[] = GAME_FAMILIES.map((family) => ({
@@ -99,7 +109,7 @@ export default async function LobbyPage() {
       kanji: RULE_VARIANT_DISPLAY[variant].kanji,
     })),
   }));
-  const seats: SeatOnBoard[] = openSeats.map((game) => ({
+  const seats: SeatOnBoard[] = choices.filter(theirs).map((game) => ({
     id: game.id,
     variant: game.variant,
     size: game.size,
