@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+import { BOT_MEMBERS } from "../src/lib/bots/bots.constants";
+import { BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constants";
+import { countryFrom } from "../src/lib/social/countries";
+
 import { seedMember } from "./members";
 
 /**
@@ -89,14 +93,26 @@ test.describe("where somebody is", () => {
     await expect(page.getByTestId("player-bio")).toContainText("段");
   });
 
-  test("gives the three computer players their flag as well", async ({ page }) => {
-    // John asked for this: they are players in their own right, so they get
-    // what every other player gets.
+  test("gives every computer player their flag as well", async ({ page }) => {
+    /*
+     * John asked for this: they are players in their own right, so they get
+     * what every other player gets.
+     *
+     * Read from the ladder rather than written down. This test said three
+     * players and all of them Japanese, which was true of the ladder it was
+     * written against and stopped being true the day the ladder grew a
+     * Russian rung and a Chinese one.
+     */
     await page.goto("/players");
     const rows = page.getByTestId("computer-player");
-    await expect(rows).toHaveCount(3);
-    for (let i = 0; i < 3; i += 1) {
-      await expect(rows.nth(i).getByTestId("country-mark")).toHaveAttribute("data-country", "JP");
+    await expect(rows).toHaveCount(BOT_TIER_LIST.length);
+    for (const [index, tier] of BOT_TIER_LIST.entries()) {
+      const country = countryFrom(BOT_MEMBERS[tier].country);
+      expect(country, `${tier} is from somewhere the site knows`).not.toBeNull();
+      await expect(rows.nth(index).getByTestId("country-mark")).toHaveAttribute(
+        "data-country",
+        country!.code,
+      );
     }
   });
 });
