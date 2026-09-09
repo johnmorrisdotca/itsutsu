@@ -27,8 +27,24 @@ export async function ensureBotMembers(now = Date.now()): Promise<void> {
   for (const bot of BOT_MEMBER_LIST) {
     await prisma.member.upsert({
       where: { id: bot.id },
-      // Only the things a release may change. A rating is never written here.
-      update: { name: bot.name, bio: bot.bio, botTier: bot.tier, country: bot.country },
+      /*
+       * Everything that is a fact about being a computer player, and nothing
+       * that is earned or chosen: a rating is never written here.
+       *
+       * `unclaimableBecause` belongs in that first group and had been left
+       * out of it, which matters because it is the field `memberKind` reads
+       * to decide something is a robot — so a row written before that column
+       * existed went on being badged as an ordinary member for ever. Any
+       * value a release decides has to be in the update as well as the
+       * create, or the create is the only release that ever applies.
+       */
+      update: {
+        name: bot.name,
+        bio: bot.bio,
+        botTier: bot.tier,
+        country: bot.country,
+        unclaimableBecause: UNCLAIMABLE_REASONS.computer,
+      },
       create: {
         id: bot.id,
         // No address: a computer player never signs in, and never can.

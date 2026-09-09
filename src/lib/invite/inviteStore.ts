@@ -119,12 +119,39 @@ export async function redeemInviteCode(input: string): Promise<RedeemResult> {
   return { ok: true, code };
 }
 
+/**
+ * The codes, for the operator.
+ *
+ * Every code that can still let somebody in is here, however old it is, and
+ * the limit applies only to the dead ones. It used to be the newest fifty of
+ * everything, which meant an operator who had issued fifty-one could neither
+ * see nor revoke the first — a door with no handle on it. Revoking is the
+ * only way to shut a code that never expires and has unlimited uses, so a
+ * list that hides one is the difference between being able to close the site
+ * and not.
+ *
+ * Live first is also the right order to read: what is still open is what
+ * somebody is deciding about, and the spent ones are history.
+ */
 export async function listInviteCodes(limit = 50): Promise<InviteSummary[]> {
-  const rows = await prisma.inviteCode.findMany({
+  const now = new Date();
+  const live = await prisma.inviteCode.findMany({
+    where: {
+      revoked: false,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  // Unlimited uses is maxUses 0, which no count can reach.
+  const open = live.filter((row) => row.maxUses === 0 || row.uses < row.maxUses);
+  const openCodes = new Set(open.map((row) => row.code));
+
+  const rest = await prisma.inviteCode.findMany({
+    where: { code: { notIn: [...openCodes] } },
     orderBy: { createdAt: "desc" },
     take: limit,
   });
-  return rows.map(toSummary);
+  return [...open, ...rest].map(toSummary);
 }
 
 /** Revoking is immediate and beats expiry and use count alike. */
