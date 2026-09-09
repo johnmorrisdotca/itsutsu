@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.62.0
+- Rules pages say what else a game is called: the names it is published under, and the names the play-by-mail sites gave it, in one line under the title
+
 ## 0.61.0
 - Hex ヘックス: a rhombus of hexagons, six neighbours to a cell, and the game is won by joining your own two sides. A draw is impossible, which is a fact about the board rather than a rule.
 

@@ -62,6 +62,15 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
                 Inspired by {page.inspiredBy}. The name belongs to its owner; this is our own version of the rules.
               </p>
             ) : null}
+            {/*
+              A player arrives knowing one name for a game, and it is often not
+              ours. Saying the others here is what lets them recognise it.
+            */}
+            {page.alsoKnownAs.length > 0 ? (
+              <p className="text-xs text-muted" data-testid="also-known-as">
+                Also known as {page.alsoKnownAs.join(", ")}.
+              </p>
+            ) : null}
           </header>
           <Part title="Object" kanji="目的" lines={page.object} />
           <Part title="Board" kanji="盤" lines={page.board} />

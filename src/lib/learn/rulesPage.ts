@@ -5,6 +5,7 @@ import {
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { aliasesFor } from "@/lib/legacy/gameAliases";
 import { FORBIDDEN_PATTERN_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
@@ -22,6 +23,8 @@ export type RulesPage = {
   origin: string;
   /** The game this is our version of, if it is a clone; see VariantCopy. */
   inspiredBy?: string;
+  /** Every other name this game goes by, ours excluded. Empty when it goes by only one. */
+  alsoKnownAs: string[];
   /** What you are trying to do, in one or two sentences. */
   object: string[];
   /** The board and what is on it. */
@@ -33,6 +36,40 @@ export type RulesPage = {
   /** The screenshot, if one has been taken for this game. */
   image: string;
 };
+
+/**
+ * Every other name a game answers to, from the two places names are kept.
+ *
+ * `VariantCopy.alsoKnownAs` holds the names the game is published under in
+ * the world; `gameAliases.ts` holds the names the play-by-mail sites gave it,
+ * which are there to match imported records and happen to be the same fact.
+ * Keeping one list in each place and joining them here means neither has to
+ * be maintained twice, and a player searching for either kind lands right.
+ *
+ * Our own label is dropped, and so is any repeat that differs only in how it
+ * is written. The old sites' table is a set of match keys, not prose, so it
+ * holds "Go-Moku" and "Go Moku" as separate rows on purpose; printed side by
+ * side in a sentence the pair reads like a mistake, and the first spelling
+ * wins.
+ */
+function sameName(name: string): string {
+  const folded = name.toLowerCase();
+  // A name written in another script has no letters to fold, and folding it
+  // to nothing would make every such name look like every other one.
+  return folded.replace(/[^a-z0-9]/g, "") || folded;
+}
+
+function namesFor(variant: RuleVariant, label: string): string[] {
+  const seen = new Set([sameName(label)]);
+  const names: string[] = [];
+  for (const name of [...(RULE_VARIANT_DISPLAY[variant].alsoKnownAs ?? []), ...aliasesFor(variant)]) {
+    const key = sameName(name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    names.push(name);
+  }
+  return names;
+}
 
 function lineWording(rule: string, length: number): string {
   switch (rule) {
@@ -209,6 +246,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     tagline: copy.tagline,
     origin: copy.origin,
     inspiredBy: copy.inspiredBy,
+    alsoKnownAs: namesFor(variant, copy.label),
     object,
     board,
     play,

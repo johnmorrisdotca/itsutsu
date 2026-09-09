@@ -16,6 +16,17 @@ export type VariantCopy = {
    * our own inventions. The name belongs to its owner; see RULES_ATTRIBUTION.
    */
   inspiredBy?: string;
+  /**
+   * Other names this game is really sold, published or played under, for the
+   * player who arrives knowing one of them and not ours.
+   *
+   * Only names a source could be shown for: a game's own history, or a box it
+   * was sold in. The names the play-by-mail sites used are not repeated here —
+   * they are already in `lib/legacy/gameAliases.ts`, and the rules page shows
+   * both lists as one. Absent where a game is our own invention, or where its
+   * name is simply its name.
+   */
+  alsoKnownAs?: readonly string[];
   rules: readonly string[];
   /** Board advice, e.g. the size the game is traditionally played on. */
   board: string;
@@ -27,6 +38,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "五目並べ",
     tagline: "Five or more in a row wins.",
     origin: "The game as it is played everywhere, with no restrictions at all: the plain name belongs to the plain game, and the others are this one with a rule tightened.",
+    alsoKnownAs: ["Five in a Row", "Gobang", "Go-Moku", "Gomoku Narabe"],
     rules: [
       "Players take turns placing one stone on any empty intersection.",
       "The first to line up five or more of their own stones, in any direction, wins.",
@@ -40,6 +52,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "競技五目",
     tagline: "Exactly five wins. Six or more does not.",
     origin: "The tournament form of Gomoku, as played at Gomocup: the plain game with the overline taken away.",
+    alsoKnownAs: ["Standard Gomoku"],
     rules: [
       "Players take turns placing one stone.",
       "Exactly five in a row wins. An overline (長連) of six or more is not a win — play simply continues.",
@@ -120,6 +133,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "負け五目",
     tagline: "Five in a row loses. Make your opponent complete it.",
     origin: "The traditional losing form of gomoku.",
+    alsoKnownAs: ["Misère Gomoku", "Reverse Gomoku"],
     rules: [
       "Players take turns placing one stone. Either colour may open.",
       "A player who makes five or more in a row loses.",
@@ -159,6 +173,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "黒だけ三目",
     tagline: "Only black stones. Whoever makes three in a row loses.",
     origin: "The traditional all-X misère form of tic-tac-toe, on one board.",
+    alsoKnownAs: ["No-Tac-Toe", "Neutral Tic-tac-toe"],
     rules: [
       "Every stone is black, whoever places it.",
       "A player who completes three in a row loses.",
@@ -171,6 +186,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "六子棋",
     tagline: "Two stones a turn. Six in a row wins.",
     origin: "Devised by I-Chen Wu in 2003 and played at the Computer Olympiad.",
+    alsoKnownAs: ["Liuziqi", "六子棋"],
     rules: [
       "Black opens with a single stone. From then on each player places two stones per turn.",
       "Six or more in a row wins.",
@@ -402,6 +418,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "三目並べ",
     tagline: "Three in a row on a 3×3 board.",
     origin: "The one everybody knows.",
+    alsoKnownAs: ["Noughts and Crosses", "Xs and Os", "Tick-tack-toe"],
     rules: [
       "Players take turns placing one stone.",
       "Three in a row, in any direction, wins.",
@@ -495,6 +512,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "ヘックス",
     tagline: "Join your own two sides of the board with an unbroken chain. A draw is impossible.",
     origin: "Found twice: by Piet Hein in Copenhagen in 1942, and again by John Nash at Princeton in 1948, who is said to have proved that the first player wins with perfect play without anyone finding out how. The proof that it cannot end in a draw is the same argument.",
+    alsoKnownAs: ["Nash", "John", "Con-tac-tix", "Polygon"],
     rules: [
       "The board is a rhombus of hexagons; each one touches six others. Black owns the top and bottom sides, White the left and right.",
       "Players take turns placing one stone on any empty cell. Nothing ever moves, and nothing is ever taken.",
