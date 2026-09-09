@@ -1,8 +1,7 @@
 import "server-only";
 
-import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { prisma } from "@/lib/prisma";
-import { BOT_MEMBERS, BOT_MEMBER_LIST, type BotMember } from "./bots.constants";
+import { BOT_MEMBERS, BOT_MEMBER_LIST, botRowFields, type BotMember } from "./bots.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 
 /**
@@ -28,40 +27,17 @@ export async function ensureBotMembers(now = Date.now()): Promise<void> {
     await prisma.member.upsert({
       where: { id: bot.id },
       /*
-       * Everything that is a fact about being a computer player, and nothing
-       * that is earned or chosen: a rating is never written here.
-       *
-       * `unclaimableBecause` belongs in that first group and had been left
-       * out of it, so a row written before that column existed never gained
-       * it. It is not what decides the robot badge — `memberKind` reads
-       * `botTier` for that, and an earlier version of this comment said
-       * otherwise, wrongly. What it does decide is that a computer player's
-       * page cannot be claimed by a person, which is worth being true of
-       * rows written a year ago as well as rows written today.
-       *
-       * The rule under it is the point: any value a release decides has to
-       * be in the update as well as the create, or the create is the only
-       * release that ever applies.
+       * The same description on both halves, so a value cannot be decided by
+       * a release and then only ever reach rows that release created. That
+       * had happened twice — `unclaimableBecause`, and then `showOnline` —
+       * and both times the rule was written down rather than made true.
        */
-      update: {
-        name: bot.name,
-        bio: bot.bio,
-        botTier: bot.tier,
-        country: bot.country,
-        unclaimableBecause: UNCLAIMABLE_REASONS.computer,
-      },
+      update: botRowFields(bot),
       create: {
         id: bot.id,
         // No address: a computer player never signs in, and never can.
         email: null,
-        name: bot.name,
-        bio: bot.bio,
-        botTier: bot.tier,
-        country: bot.country,
-        unclaimableBecause: UNCLAIMABLE_REASONS.computer,
-        // Not in the "who is here" list: it is always here, which is not news.
-        showOnline: false,
-        emailNotify: false,
+        ...botRowFields(bot),
       },
     });
   }

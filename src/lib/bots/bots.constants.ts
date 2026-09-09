@@ -120,6 +120,40 @@ export const BOT_MEMBER_IDS: ReadonlySet<string> = new Set(
 export const BOT_UNCLAIMABLE = "computer";
 
 /**
+ * Everything a release decides about a computer player's member row.
+ *
+ * One object, written by both halves of the upsert that keeps those rows.
+ * The rule it enforces used to be a sentence in a comment — any value a
+ * release decides has to be in the update as well as the create, or the
+ * create is the only release that ever applies — and `unclaimableBecause`
+ * had already been left out of the update once, so rows written before that
+ * column existed never gained it.
+ *
+ * `showOnline` and `emailNotify` were the two still only in the create. The
+ * column defaults to true, and "here now" is `showOnline` plus a stamp inside
+ * the last half hour: a computer player's stamp never moves after its row is
+ * written, so a row that kept the default would stand in the "who is here"
+ * list for its first half hour and then quietly leave. Nothing produced such
+ * a row today. The fix is that nothing can.
+ *
+ * Identity is not here on purpose. `id` and `email` are what the row IS, not
+ * what a release decided about it, and rewriting either on every sweep is a
+ * different and much worse thing than keeping a description up to date.
+ */
+export function botRowFields(bot: BotMember) {
+  return {
+    name: bot.name,
+    bio: bot.bio,
+    botTier: bot.tier,
+    country: bot.country,
+    unclaimableBecause: BOT_UNCLAIMABLE,
+    // Not in the "who is here" list: it is always here, which is not news.
+    showOnline: false,
+    emailNotify: false,
+  };
+}
+
+/**
  * How long a computer player may think about one move inside a request.
  *
  * Shorter than the chooser's own default, because a computer player can be sat
