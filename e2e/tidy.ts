@@ -42,3 +42,45 @@ export async function clearAbandonedSeats(): Promise<number> {
     await prisma.$disconnect();
   }
 }
+
+/**
+ * And the members those runs invented.
+ *
+ * Every spec that needs a signed-in player writes one, and none of them take
+ * it away, so a local database gains a handful per run for ever. Mine reached
+ * a thousand — and that is not merely untidy. The members page shows the two
+ * hundred most recently seen, so real rows fall off the end of it and real
+ * tests fail for reasons that have nothing to do with the code. I spent an
+ * evening triaging five such failures and called all five noise; two of them
+ * were a genuine bug that only a database this size could show.
+ *
+ * Narrow on purpose, and narrow twice over. `invitedWith` is stamped
+ * "playwright" by e2e/members.ts and by nothing else, and the address must be
+ * one of the reserved example domains, which no real person can hold. The
+ * operator signs in through the session route rather than being seeded, so
+ * they carry neither mark and can never be a candidate. A computer player is
+ * refused outright as well — belt and braces, since one has already gone
+ * missing from a listing once today.
+ *
+ * Nothing has a foreign key to Member — every reference to one is a plain
+ * string — so this cannot cascade into anybody's game, and a finished game
+ * keeps the names it was played under in its own columns either way.
+ */
+export async function clearSeededMembers(): Promise<number> {
+  process.loadEnvFile(".env");
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return 0;
+
+  const prisma = new PrismaClient();
+  try {
+    const gone = await prisma.member.deleteMany({
+      where: {
+        invitedWith: "playwright",
+        botTier: null,
+        OR: [{ email: { endsWith: "@example.com" } }, { email: { endsWith: "@example.test" } }],
+      },
+    });
+    return gone.count;
+  } finally {
+    await prisma.$disconnect();
+  }
+}

@@ -320,6 +320,13 @@ const MEMBER_SUMMARY_SELECT = {
   bannedNote: true,
   invitedWith: true,
   unclaimableBecause: true,
+  /*
+   * `memberKind` decides a member is a robot from this and from nothing else.
+   * It was not selected and not passed on, so a computer player was badged as
+   * an ordinary member on the one page that draws the badge — whatever the
+   * size of the database, and however the row was written.
+   */
+  botTier: true,
 } as const;
 
 /** How many members there are, whatever a page of them is cut to. */
@@ -393,11 +400,12 @@ type SummaryRow = {
   bannedNote: string;
   invitedWith: string;
   unclaimableBecause: string | null;
+  botTier: string | null;
 };
 
 function toSummary(rows: SummaryRow[], you: string | null): MemberSummary[] {
   const mine = you === null ? null : foldEmail(you);
-  return rows.map(({ unclaimableBecause, ...row }) => ({
+  return rows.map(({ unclaimableBecause, botTier, ...row }) => ({
     ...row,
     createdAt: row.createdAt.toISOString(),
     lastSeenAt: row.lastSeenAt.toISOString(),
@@ -405,6 +413,7 @@ function toSummary(rows: SummaryRow[], you: string | null): MemberSummary[] {
     kind: memberKind({
       email: row.email,
       unclaimableBecause,
+      botTier,
       isOperator: isAdminEmail(row.email),
       legacyKind: legacyKindOf(row.name),
     }),
