@@ -101,37 +101,57 @@ test.describe("early warning", () => {
   });
 });
 
-test.describe("chance of winning", () => {
-  test("is hidden until asked for, then splits a hundred points", async ({ page }) => {
+test.describe("who is ahead", () => {
+  test("is hidden until asked for, and then reads the position in words", async ({ page }) => {
     await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
     await page.goto("/games/gomoku");
 
-    await expect(page.getByTestId("win-chance")).toHaveCount(0);
+    await expect(page.getByTestId("advantage")).toHaveCount(0);
 
     await openAdvanced(page);
-    await page.getByLabel("Show chance of winning").check();
+    await page.getByLabel("Who is ahead").check();
 
-    const bar = page.getByTestId("win-chance").getByRole("img");
-    await expect(bar).toBeVisible();
-    await expect(bar).toHaveAttribute("aria-label", /Black \d+ percent, White \d+ percent/);
+    const panel = page.getByTestId("advantage");
+    await expect(panel).toBeVisible();
+    // Gomoku is read by threats, and a threat reading carries no number: a
+    // percentage would be a claim about a search this site does not run.
+    await expect(panel).toHaveAttribute("data-kind", "threats");
+    await expect(panel).not.toContainText("%");
+    await expect(panel).toContainText("Level");
   });
 
-  test("swings towards the side building a threat", async ({ page }) => {
+  test("gives the lead to the side building a threat", async ({ page }) => {
     await page.goto("/games/gomoku");
     await page.evaluate(() => window.localStorage.clear());
     await page.goto("/games/gomoku");
 
     await openAdvanced(page);
-    await page.getByLabel("Show chance of winning").check();
+    await page.getByLabel("Who is ahead").check();
 
     await playSequence(page, 15, [[7, 3], [0, 0], [7, 4], [0, 1], [7, 5]]);
 
-    const label = await page
-      .getByTestId("win-chance")
-      .getByRole("img")
-      .getAttribute("aria-label");
-    const black = Number(/Black (\d+)/.exec(label ?? "")?.[1]);
-    expect(black).toBeGreaterThan(60);
+    // Black has an open three and white has nothing, so the reading marks
+    // black — by name, not by a figure anybody would have to trust.
+    await expect(page.getByTestId("advantage-black")).toHaveAttribute("data-lead", "true");
+    await expect(page.getByTestId("advantage-white")).not.toHaveAttribute("data-lead", "true");
+  });
+
+  test("says plainly when a game cannot be read that way", async ({ page }) => {
+    /*
+     * The half the old bar got wrong. Reversi has no lines to read, and used
+     * to be told there was no reading in a game where stones move after they
+     * are placed — in Reversi they do not move, they turn. It is counted now.
+     */
+    await page.goto("/games/reversi");
+    await page.evaluate(() => window.localStorage.clear());
+    await page.goto("/games/reversi");
+
+    await openAdvanced(page);
+    await page.getByLabel("Who is ahead").check();
+
+    const panel = page.getByTestId("advantage");
+    await expect(panel).toHaveAttribute("data-kind", "count");
+    await expect(panel).toContainText("Discs on the board");
   });
 });

@@ -7,6 +7,8 @@ import { sitAtOpenSeat } from "@/lib/history/openGames";
 import { bindSeat, wouldAnswerTheirOwnInvitation } from "@/lib/history/seats";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { seatCookieName } from "@/lib/history/seatCookie";
+import { cookies } from "next/headers";
+import { seatForToken } from "@/lib/history/liveGame";
 import { overLimit } from "@/lib/api/rateLimit";
 
 /** How long a claimed seat is remembered — the same as a scanned seat link. */
@@ -30,6 +32,20 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      * Asked before the seat is claimed, because claiming it is the thing that
      * must not happen — afterwards there is nothing left to refuse.
      */
+    /*
+     * The same refusal, for a browser rather than an account. Somebody who
+     * never signed in has no member id to recognise, but if they are already
+     * holding a seat at this board their cookie says so — and taking the
+     * other one is the same act whether or not the site knows their name.
+     */
+    const held = (await cookies()).get(seatCookieName(id))?.value;
+    if (held !== undefined && (await seatForToken(id, held)) !== null) {
+      return NextResponse.json(
+        { error: "You already have a seat at this board.", reason: "own-seat" },
+        { status: 409, headers: NO_STORE },
+      );
+    }
+
     const mineFirst = await currentMemberId();
     if (mineFirst !== null && (await wouldAnswerTheirOwnInvitation(id, mineFirst))) {
       return NextResponse.json(

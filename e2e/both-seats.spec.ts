@@ -1,76 +1,81 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Nobody answers their own public invitation.
+ * Nobody plays both sides of a seat they posted for somebody else.
  *
- * John posted a seat for anyone to answer, then played both colours of it
- * himself — and the game sat on the noticeboard asking for an opponent the
- * whole time, so a stranger could have sat down into a game already several
- * moves old. Whoever starts a game holds both seat tokens (they must, or they
- * could not send the other one to anybody) and nothing distinguished sending
- * yourself a link, which is a deliberate two-device game, from answering a
- * seat you had posted for the world.
+ * John posted a seat for anyone to answer and then played both colours of it
+ * himself, while the game sat on the noticeboard still asking for an
+ * opponent — so a stranger could have sat down into a game already several
+ * moves old, and because the two seat names can differ the result went to the
+ * ladder as a real game between two people.
  *
- * There are two doors into that room and both are checked here: following the
- * posted seat's own link, and sitting down from the lobby, which asked only
- * whether a seat was taken and never who was taking it.
+ * There were three ways in, and the first two rules only shut the first two.
+ * A token is the whole credential, so as long as the poster was handed the
+ * token of the seat they had posted, no rule about who may sit where could
+ * stop them playing it straight from the API.
  */
 test.describe("answering your own posted seat", () => {
-  async function postSeat(request: import("@playwright/test").APIRequestContext) {
+  type Posted = { id: string; blackToken: string; whiteToken?: string };
+
+  async function postSeat(request: import("@playwright/test").APIRequestContext): Promise<Posted> {
     const started = await request.post("/api/games/live", {
-      data: { blackName: "Poster", whiteName: "", size: 9, open: true },
+      data: { variant: "freestyle", size: 9, open: true, moveTimeMs: null },
     });
     expect(started.status(), await started.text()).toBe(201);
-    return (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    return (await started.json()) as Posted;
   }
 
-  test("refuses the posted seat to the person already sitting opposite it", async ({ page }) => {
-    const game = await postSeat(page.request);
+  test("does not hand the poster the token of the seat they posted", async ({ request }) => {
+    /*
+     * The one that matters most, because it is the one no other rule can
+     * cover. A private game still returns both tokens — the person who starts
+     * it has to send one to whoever they mean to play — but a posted seat is
+     * answered by sitting down, so there is nobody to send it to.
+     */
+    const posted = await postSeat(request);
+    expect(posted.blackToken, "the poster still gets their own seat").toBeTruthy();
+    expect(posted.whiteToken, "the posted seat's token went back to the poster").toBeUndefined();
 
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
-    await expect(page.getByTestId("turn-banner")).toContainText("you are Black");
-
-    // The other seat is the one they posted. Following its link must leave
-    // them where they were rather than hand them both colours.
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
-    await expect(
-      page.getByTestId("turn-banner"),
-      "the poster took the seat they had posted for somebody else",
-    ).not.toContainText("you are White");
+    const priv = await request.post("/api/games/live", {
+      data: { variant: "freestyle", size: 9, moveTimeMs: null },
+    });
+    const both = (await priv.json()) as Posted;
+    expect(both.whiteToken, "a private game still needs a link to send").toBeTruthy();
   });
 
-  test("refuses it from the lobby too, which never asked who was sitting down", async ({ page }) => {
+  test("refuses the poster the seat from the lobby", async ({ request }) => {
+    // sitAtOpenSeat asked whether a seat was taken and never who was taking it.
+    const game = await postSeat(request);
+    const sat = await request.post(`/api/games/${game.id}/sit`, { data: {} });
+    expect(sat.status(), "the poster sat down at their own posted seat").toBe(409);
+    expect(((await sat.json()) as { reason?: string }).reason).toBe("own-seat");
+  });
+
+  test("refuses the poster the seat from its own link", async ({ page }) => {
     const game = await postSeat(page.request);
     await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
     await expect(page.getByTestId("turn-banner")).toContainText("you are Black");
 
+    // Even holding a link from somewhere, the poster is not the answer to
+    // their own invitation.
     const sat = await page.request.post(`/api/games/${game.id}/sit`, { data: {} });
-    expect(sat.status(), "sitting down at your own posted seat").toBe(409);
-    const body = (await sat.json()) as { reason?: string };
-    expect(body.reason).toBe("own-seat");
+    expect(sat.status()).toBe(409);
   });
 
   test("still lets somebody else answer it", async ({ page, browser }) => {
-    // The seat is posted for a reason: a different person must still be able
-    // to take it, or the fix has closed the game rather than the hole.
+    // Otherwise the fix has closed the game rather than the hole.
     const game = await postSeat(page.request);
     await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
 
     const other = await browser.newContext({ storageState: ".auth/player.json" });
     const theirs = await other.newPage();
-    await theirs.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
+    const sat = await theirs.request.post(`/api/games/${game.id}/sit`, { data: {} });
+    expect(sat.status(), await sat.text()).toBeLessThan(400);
+    const { path, seat } = (await sat.json()) as { path: string; seat: string };
+    expect(seat).toBe("white");
 
-    /*
-     * Before Black has played, White's own board reads "Waiting for Black" —
-     * which is also what a passer-by sees, so it proves nothing on its own.
-     * Black plays, and the seat is proved by the board becoming theirs.
-     */
+    await theirs.goto(path);
     await expect(theirs.getByTestId("turn-banner")).toContainText("Waiting for Black");
-    await page.request.post(`/api/games/${game.id}/moves`, {
-      data: { token: game.blackToken, row: 4, col: 4 },
-    });
-    await theirs.reload();
-    await expect(theirs.getByTestId("turn-banner")).toContainText("Your move");
     await other.close();
   });
 });

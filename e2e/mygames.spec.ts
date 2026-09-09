@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { PLAYER_STATE } from "./support";
+
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(request: import("@playwright/test").APIRequestContext) {
   const response = await request.post("/api/games/live", {
@@ -80,7 +82,13 @@ test.describe("open seats", () => {
     expect(created.status()).toBe(201);
     const game = (await created.json()) as { id: string; blackToken: string };
 
-    const guest = await browser.newContext({ storageState: ".auth/admin.json" });
+    /*
+     * Somebody else, and it has to be somebody else: this used to sign the
+     * guest in as the same account that posted the seat, so it read as a
+     * stranger answering an invitation while actually being the poster
+     * answering their own — which the site now refuses.
+     */
+    const guest = await browser.newContext({ storageState: PLAYER_STATE });
     const page = await guest.newPage();
     await page.goto("/games");
     const row = page.getByTestId("open-game").filter({ hasText: "Host" });

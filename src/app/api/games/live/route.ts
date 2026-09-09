@@ -184,6 +184,27 @@ export async function POST(request: Request) {
       };
     }
 
+    /*
+     * Whoever starts a game is sitting at it, and the row should say so from
+     * the first moment rather than from whenever they happen to open their
+     * own seat link.
+     *
+     * They were a stranger to their own game until then: with no member id on
+     * either seat, the rule that stops somebody answering their own posted
+     * invitation had nobody to recognise, so a poster could sit their own
+     * open seat and play both colours — and because the two seat names can
+     * differ, the result went to the ladder as a real game between two
+     * people. Binding here is what gives that rule something to compare.
+     *
+     * Only for a posted seat, which is the case that needs it. Binding every
+     * game's creator would also seat whoever started a private one from any
+     * device, which is a bigger change than this bug asks for.
+     */
+    if (parsed.data.open === true && seats.blackMemberId === undefined) {
+      const creator = await currentMemberId();
+      if (creator !== null) seats = { ...seats, blackMemberId: creator };
+    }
+
     const { challenge: _challenge, challengeId: _challengeId, from, ...settings } = parsed.data;
     void _challenge;
     void _challengeId;
@@ -211,7 +232,20 @@ export async function POST(request: Request) {
       }
     }
 
-    const response = NextResponse.json(created, {
+    /*
+     * A posted seat's token is not the poster's to hold.
+     *
+     * Both tokens go back to whoever starts a private game, because they have
+     * to send one of them to the person they mean to play. A seat posted on
+     * the noticeboard is different: it is answered by sitting down, not by a
+     * link, so there is nobody for the poster to send it to — and while they
+     * held it they could play both colours from the API whatever the seat
+     * rules said, since a token is the whole credential. Not returning it is
+     * what shuts that, rather than another rule about who may sit where.
+     */
+    const posted = merged.open === true && !hotSeat;
+    const created_body = posted ? { id: created.id, blackToken: created.blackToken } : created;
+    const response = NextResponse.json(created_body, {
       status: 201,
       headers: { ...NO_STORE, Location: matchPath(parsed.data.variant, created.id) },
     });
