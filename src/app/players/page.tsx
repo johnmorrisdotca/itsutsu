@@ -8,6 +8,8 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
+import { DirectoryFilters } from "@/components/players/DirectoryFilters";
+import { filterDirectory, readDirectoryFilter } from "@/lib/rating/directoryFilter";
 import { fetchComputerPlayers, fetchDirectory, fetchLeaders } from "@/lib/rating/players";
 import { CountryMark } from "@/components/players/CountryMark";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
@@ -62,8 +64,9 @@ function LegacyRoll({ kind, label, kanji }: { kind: LegacyKind; label: string; k
  * The players, by rating. There are no accounts, so a name is a player:
  * whoever plays as a name plays for its record, which the page says plainly.
  */
-export default async function PlayersPage() {
+export default async function PlayersPage({ searchParams }: PageProps<"/players">) {
   const now = new Date();
+  const filter = readDirectoryFilter(await searchParams);
   /*
    * The computer players' rows are written the first time anybody needs them,
    * and until today nothing on a page anybody visits needed them — so they
@@ -82,16 +85,19 @@ export default async function PlayersPage() {
     fetchHereNow(now),
   ]);
   /*
-   * A program is a member, so it is in the directory; it is lifted out into
-   * its own section so somebody looking for a game can see the three of them
-   * together rather than picking them out of a list of people.
+   * Everybody the directory could show, before it is narrowed: the people
+   * from the recent two hundred, and the computer players.
    *
-   * Fetched on their own rather than filtered out of the directory's first
-   * two hundred, which is ordered by who was seen last: a computer player is
-   * never seen, so past two hundred members all three fell off the end and
-   * this page stopped offering any computer opponent at all.
+   * The programs are fetched on their own rather than picked out of the
+   * directory, which is ordered by who was seen last — a computer player is
+   * never seen, so past two hundred members every one of them fell off the
+   * end and this page stopped offering any computer opponent at all. They
+   * are also lifted into their own section above, so somebody looking for a
+   * game sees them together rather than picking them out of a list of people.
    */
-  const people = directory.filter((entry) => entry.botTier === null);
+  const seen = new Set(directory.map((entry) => entry.id));
+  const everybody = [...directory, ...computers.filter((one) => !seen.has(one.id))];
+  const people = filterDirectory(everybody, filter, now.getTime());
   const buddies = me?.email ? await buddyEmails(me.email) : new Set<string>();
   const ignored = me?.email ? await ignoredEmails(me.email) : new Set<string>();
   const hereNow = here.filter((entry) => entry.recency === "now").length;
@@ -139,10 +145,11 @@ export default async function PlayersPage() {
         <LegacyRoll kind="honorary" label="Honorary members" kanji="名誉会員" />
 
         <p className="text-sm text-muted">
-          Everyone who has come in, most recently seen first, with the record their name has
-          earned. New members are marked for two weeks; challenge one, and the game is in their
-          list the moment you start it.
+          The members, most recently seen first, with the record their name has earned. New
+          members are marked for two weeks; challenge one, and the game is in their list the
+          moment you start it.
         </p>
+        <DirectoryFilters filter={filter} shown={people.length} total={everybody.length} />
         <table className="w-full text-sm" data-testid="directory">
           <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
             <tr>
@@ -157,6 +164,17 @@ export default async function PlayersPage() {
             </tr>
           </thead>
           <tbody>
+            {people.length === 0 ? (
+              <tr className="border-t border-rule">
+                <td colSpan={8} className="py-3 text-sm text-muted" data-testid="directory-empty">
+                  Nobody here answers to all of that.{" "}
+                  <Link href="/players" className="underline underline-offset-4" data-testid="directory-clear">
+                    Show everybody again
+                  </Link>
+                  .
+                </td>
+              </tr>
+            ) : null}
             {people.map((entry) => (
               <tr key={entry.id} className="border-t border-rule">
                 <td className="py-1.5 pr-3">
@@ -264,6 +282,6 @@ export default async function PlayersPage() {
           </table>
         )}
       </section>
-  </Page>
+    </Page>
   );
 }

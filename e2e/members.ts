@@ -59,6 +59,27 @@ export async function seedMember({
   }
 }
 
+/**
+ * Winds a seeded member's clock back, for the specs about who is still about.
+ *
+ * The directory's "seen lately" filter reads `lastSeenAt`, and `seedMember`
+ * stamps it with now — so without this every seeded member is always here and
+ * the filter has nothing to leave out. Written straight to the row because
+ * there is no request a browser could make that would make it older.
+ */
+export async function seenDaysAgo(email: string, days: number): Promise<void> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.update({
+      where: { email },
+      data: { lastSeenAt: new Date(Date.now() - days * 86_400_000) },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 /** A browser context signed in as that member, made if they do not exist yet. */
 export async function memberContext(
   browser: Browser,

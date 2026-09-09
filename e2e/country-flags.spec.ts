@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+import { BOT_MEMBERS } from "../src/lib/bots/bots.constants";
+import { BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constants";
+import { countryFrom } from "../src/lib/social/countries";
+
 import { seedMember } from "./members";
 
 /**
@@ -94,20 +98,21 @@ test.describe("where somebody is", () => {
      * John asked for this: they are players in their own right, so they get
      * what every other player gets.
      *
-     * However many of them there are, and wherever each is from. This used to
-     * name three and expect Japan of all of them, and went stale the day two
-     * more arrived from Russia and China — a test that has to be edited to
-     * add a player is a test that will be edited without being read.
+     * Read from the ladder rather than written down. This test said three
+     * players and all of them Japanese, which was true of the ladder it was
+     * written against and stopped being true the day the ladder grew a
+     * Russian rung and a Chinese one.
      */
     await page.goto("/players");
     const rows = page.getByTestId("computer-player");
-    const count = await rows.count();
-    expect(count, "the computer players are not on the page at all").toBeGreaterThan(2);
-    for (let i = 0; i < count; i += 1) {
-      const mark = rows.nth(i).getByTestId("country-mark");
-      await expect(mark, `computer player ${i + 1} has no flag`).toHaveCount(1);
-      // A real country, not the code echoed back because nothing resolved.
-      await expect(mark).not.toHaveAttribute("data-country", "");
+    await expect(rows).toHaveCount(BOT_TIER_LIST.length);
+    for (const [index, tier] of BOT_TIER_LIST.entries()) {
+      const country = countryFrom(BOT_MEMBERS[tier].country);
+      expect(country, `${tier} is from somewhere the site knows`).not.toBeNull();
+      await expect(rows.nth(index).getByTestId("country-mark")).toHaveAttribute(
+        "data-country",
+        country!.code,
+      );
     }
   });
 });
