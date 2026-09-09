@@ -12,7 +12,7 @@ import { findMemberByName } from "@/lib/auth/members";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
 import { findLegacyPlayer, findLinkedLegacies } from "@/lib/legacy/legacyPlayers.data";
-import { legacyTabs } from "@/lib/legacy/legacyTabs";
+import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { countText, figuresOf, recordText, winRateText } from "@/lib/rating/figures";
 import { playerKey, playerKeysFromSlug } from "@/lib/rating/playerKey";
@@ -21,8 +21,17 @@ import { activeTab, type Tab } from "@/lib/ui/tabs";
 
 export const metadata = { title: "Player" };
 
-/** The tab holding what somebody has done on this site. Always first, and always there. */
-const HERE: Tab = { key: "itsutsu", label: "Itsutsu", kanji: "五" };
+/**
+ * What this site itself holds of somebody, by the name they are known by.
+ *
+ * Every player page asks for it, including a kept record's — Chibi and
+ * Kyokosan are members here now, so the honest answer is a real query rather
+ * than an assumption that it is empty. Today it is empty for both.
+ */
+async function recordHere(name: string) {
+  const [record, gifts] = await Promise.all([fetchPlayerRecord(name), fetchTimeGiftRecord(name)]);
+  return { record, gifts };
+}
 
 export default async function PlayerPage({ params, searchParams }: PageProps<"/players/[slug]">) {
   const { slug } = await params;
@@ -30,7 +39,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
 
   const legacyBySlug = findLegacyPlayer(slug);
   if (legacyBySlug !== null && legacyBySlug.kind !== "elsewhere") {
-    return <LegacyOwnPage legacy={legacyBySlug} view={view} />;
+    return <LegacyOwnPage legacy={legacyBySlug} view={view} here={await recordHere(legacyBySlug.name)} />;
   }
 
   /*
@@ -61,7 +70,9 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   const linked = linkedByKey.length > 0 ? linkedByKey : hasLiveData || legacyBySlug === null ? [] : [legacyBySlug];
 
   if (!hasLiveData && linked.length === 0) notFound();
-  if (!hasLiveData && linked.length > 0) return <LegacyOwnPage legacy={linked[0]} view={view} />;
+  if (!hasLiveData && linked.length > 0) {
+    return <LegacyOwnPage legacy={linked[0]} view={view} here={{ record, gifts }} />;
+  }
 
   const tier = player === null ? null : TIER_DISPLAY[player.tier];
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
@@ -72,7 +83,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * does not draw itself at all — a page with a single tab is just a page.
    */
   const elsewhere = legacyTabs(linked);
-  const tabs: Tab[] = [HERE, ...elsewhere];
+  const tabs: Tab[] = [ITSUTSU_TAB, ...elsewhere];
   const open = activeTab(tabs, view);
   const shown = elsewhere.find((tab) => tab.key === open) ?? null;
 

@@ -2,9 +2,12 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { legacyTabs, tabFor } from "@/lib/legacy/legacyTabs";
+import type { PlayerRecord } from "@/lib/history/playerRecord";
+import type { TimeGiftRecord } from "@/lib/history/timeGifts";
+import { ITSUTSU_TAB, legacyTabs, tabFor } from "@/lib/legacy/legacyTabs";
 import type { LegacyPlayer, LegacySource } from "@/lib/legacy/legacyPlayers.types";
-import { activeTab } from "@/lib/ui/tabs";
+import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { ItsutsuRecord } from "./ItsutsuRecord";
 import { LegacySourcePanel } from "./LegacySource";
 
 /**
@@ -23,11 +26,18 @@ import { LegacySourcePanel } from "./LegacySource";
  * nobody would reach the bottom of.
  */
 
-const LEGACY_OWN_PAGE_COPY: Record<"remembered" | "honorary", { badge: string; tail: string }> = {
-  remembered: { badge: "Remembered", tail: "Never played on Itsutsu — this record is kept, not earned here." },
+const LEGACY_OWN_PAGE_COPY: Record<"remembered" | "honorary", { badge: string; tail: string; here: string }> = {
+  remembered: {
+    badge: "Remembered",
+    tail: "Never played on Itsutsu \u2014 this record is kept, not earned here.",
+    // Not "no games yet". There will not be any, and saying "yet" of somebody
+    // who has died is the wrong word in the one place it would be noticed.
+    here: "No games on Itsutsu. This record was made elsewhere, before this site existed, and is kept rather than added to.",
+  },
   honorary: {
     badge: "Honorary member",
-    tail: "Never played on Itsutsu — kept here as an honorary member, in her own right.",
+    tail: "Never played on Itsutsu \u2014 kept here as an honorary member, in her own right.",
+    here: "No games on Itsutsu. An honorary member has a record here without having played for it \u2014 should she ever take a seat, this is where those games would appear.",
   },
 };
 
@@ -68,12 +78,31 @@ export function PlayedEverywhere({ legacy, lead }: { legacy: LegacyPlayer; lead:
   );
 }
 
-/** A legacy record with its own address — nobody here plays under this name. */
-export function LegacyOwnPage({ legacy, view }: { legacy: LegacyPlayer; view?: string | string[] }) {
+/**
+ * A legacy record with its own address — nobody here plays under this name.
+ *
+ * The sites they played on come first and this site comes last, which is both
+ * the honest order for a record made elsewhere and the one that opens the
+ * page on its substance. Itsutsu is a tab even for somebody who never played
+ * here and never will: a page whose tabs depend on a count being zero looks
+ * like a different kind of page to the reader, and what this site holds of
+ * them is worth saying rather than leaving out.
+ */
+export function LegacyOwnPage({
+  legacy,
+  view,
+  here,
+}: {
+  legacy: LegacyPlayer;
+  view?: string | string[];
+  /** What this site holds of them, which for a kept record is usually nothing. */
+  here: { record: PlayerRecord; gifts: TimeGiftRecord };
+}) {
   const copy = legacy.kind === "elsewhere" ? null : LEGACY_OWN_PAGE_COPY[legacy.kind];
-  const tabs = legacyTabs([legacy]);
+  const sources = legacyTabs([legacy]);
+  const tabs: Tab[] = [...sources, ITSUTSU_TAB];
   const open = activeTab(tabs, view);
-  const shown = tabFor(tabs, open);
+  const shown = open === ITSUTSU_TAB.key ? null : tabFor(sources, open);
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
@@ -89,9 +118,11 @@ export function LegacyOwnPage({ legacy, view }: { legacy: LegacyPlayer; view?: s
         </p>
       </section>
       <Tabs tabs={tabs} active={open} base={`/players/${legacy.slug}`} label="Where this record was kept" />
-      {shown !== null ? (
+      {shown === null ? (
+        <ItsutsuRecord record={here.record} gifts={here.gifts} emptyNote={copy?.here} />
+      ) : (
         <LegacySourcePanel legacy={shown.legacy} source={shown.source} keptFor={shown.legacy.slug} />
-      ) : null}
+      )}
     </Page>
   );
 }

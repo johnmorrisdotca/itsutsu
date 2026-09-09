@@ -16,11 +16,25 @@ import { playerPath } from "@/lib/rating/playerKey";
  * from before this site gets a tab per site beside it, and the same figures
  * are worked out the same way in every one of them.
  */
-export function ItsutsuRecord({ record, gifts }: { record: PlayerRecord; gifts: TimeGiftRecord }) {
+export function ItsutsuRecord({
+  record,
+  gifts,
+  emptyNote,
+}: {
+  record: PlayerRecord;
+  gifts: TimeGiftRecord;
+  /**
+   * What an empty record means here, when it means something other than "not
+   * yet". A kept record's is never going to fill up, and telling somebody
+   * that a rating appears after their first game would be telling them to
+   * wait for a game that cannot happen.
+   */
+  emptyNote?: string;
+}) {
   if (record.games === 0) {
     return (
       <p className={`${PANEL_CLASS} text-sm text-muted`} data-testid="player-no-games">
-        No finished games yet. A rating appears after the first one against another member.
+        {emptyNote ?? "No finished games yet. A rating appears after the first one against another member."}
       </p>
     );
   }

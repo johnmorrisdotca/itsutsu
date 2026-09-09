@@ -35,12 +35,33 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
   });
 
-  test("a record from one site only has no tabs at all", async ({ page }) => {
-    // Kyokosan played on ItsYourTurn and nowhere else. A page with a single
-    // tab is just a page.
+  test("a record from one site still has this site's tab beside it", async ({ page }) => {
+    /*
+     * Kyokosan played on ItsYourTurn and nowhere else, and never here. She
+     * still has two tabs. A page whose tabs depend on a count being zero
+     * looks like a different kind of page to the reader, and what this site
+     * holds of somebody is worth saying even when it is nothing.
+     */
     await page.goto("/players/kyokosan");
-    await expect(page.getByTestId("legacy-source")).toHaveCount(1);
-    await expect(page.getByTestId("tabs")).toHaveCount(0);
+    await expect(page.getByTestId("tab")).toHaveCount(2);
+    // The record made elsewhere comes first, so the page opens on its substance.
+    await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
+
+    await page.getByTestId("tab").filter({ hasText: "Itsutsu" }).click();
+    await expect(page).toHaveURL(/\?view=itsutsu$/);
+    // And it says what an empty record means for somebody who never played
+    // here, rather than telling her to wait for a rating.
+    const empty = page.getByTestId("player-no-games");
+    await expect(empty).toContainText("No games on Itsutsu");
+    await expect(empty).not.toContainText("yet");
+  });
+
+  test("a remembered record is not told to wait for a first game", async ({ page }) => {
+    // "No finished games yet" is the wrong word about somebody who has died.
+    await page.goto("/players/chibi?view=itsutsu");
+    const empty = page.getByTestId("player-no-games");
+    await expect(empty).toContainText("kept rather than added to");
+    await expect(empty).not.toContainText("yet");
   });
 
   test("the operator's page is three tabs, one part at a time", async ({ page }) => {

@@ -15,6 +15,11 @@ import { tabHref, type Tab } from "@/lib/ui/tabs";
  * The strip scrolls sideways rather than wrapping, so a page with five
  * sections looks the same on a phone as on a desk: one row of tabs, with the
  * open one always drawn the same way.
+ *
+ * A lone tab is still drawn. It used to be suppressed as pointless, which
+ * made a page with one section a different-looking page from the same page
+ * with two — and the section that is always there is exactly the one worth
+ * naming.
  */
 export function Tabs({
   tabs,
@@ -29,7 +34,7 @@ export function Tabs({
   /** What the set of tabs is, for a reader who cannot see them. */
   label: string;
 }) {
-  if (tabs.length < 2) return null;
+  if (tabs.length === 0) return null;
   return (
     <nav aria-label={label} className="-mx-1 overflow-x-auto" data-testid="tabs">
       <ul className="flex min-w-full gap-1 border-b border-rule px-1">

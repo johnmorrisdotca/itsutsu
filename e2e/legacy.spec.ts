@@ -46,7 +46,8 @@ test.describe("a legacy record's games link to what they are", () => {
     await page.goto("/players/chibi");
     await expect(page.getByTestId("legacy-player")).toContainText("ItsYourTurn.com");
     await expect(page.getByTestId("legacy-player")).toContainText("GoldToken.com");
-    await expect(page.getByTestId("tab")).toHaveCount(2);
+    // Two sites, plus this one — every player page keeps an Itsutsu tab.
+    await expect(page.getByTestId("tab")).toHaveCount(3);
     // One at a time: the whole point of the tabs.
     await expect(page.getByTestId("legacy-source")).toHaveCount(1);
 
@@ -60,7 +61,7 @@ test.describe("a legacy record's games link to what they are", () => {
     await page.goto("/players/jmorris");
     await expect(page.getByTestId("legacy-player")).toContainText("Incognito");
     await expect(page.getByTestId("legacy-player")).toContainText("John Morris");
-    await expect(page.getByTestId("tab")).toHaveCount(2);
+    await expect(page.getByTestId("tab")).toHaveCount(3);
   });
 
   test("a member's own page shows the record they brought with them", async ({ page }) => {

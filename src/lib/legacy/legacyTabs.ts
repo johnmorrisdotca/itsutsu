@@ -11,6 +11,17 @@ import type { LegacyPlayer, LegacySource } from "./legacyPlayers.types";
 export type LegacyTab = Tab & { legacy: LegacyPlayer; source: LegacySource };
 
 /**
+ * This site's own tab, which every player has.
+ *
+ * Somebody who has never played here still has one, showing what it says:
+ * nothing yet. A page whose tabs depend on whether a count is zero is a page
+ * that looks like a different kind of page to somebody with no games, and
+ * the record of what has happened here is the one section that is always
+ * relevant.
+ */
+export const ITSUTSU_TAB: Tab = { key: "itsutsu", label: "Itsutsu", kanji: "\u4e94" };
+
+/**
  * The tabs for one or more kept records, in the order the sites are listed —
  * oldest chapter first, the way the records themselves are written.
  *
