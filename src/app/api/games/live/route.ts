@@ -131,7 +131,7 @@ export async function POST(request: Request) {
         otherId === null
           ? null
           : await prisma.member.findUnique({ where: { id: otherId }, select: { email: true } });
-      if (challenge === undefined && otherMember !== null) challenge = otherMember.email;
+      if (challenge === undefined && otherMember?.email) challenge = otherMember.email;
       if (challenge === undefined) hotSeat = true;
     }
 
@@ -143,6 +143,8 @@ export async function POST(request: Request) {
       if (mineId === null) return NextResponse.json({ error: "Sign in to challenge someone." }, { status: 401, headers: NO_STORE });
       const other = await prisma.member.findUnique({ where: { email: challenge } });
       if (other === null) return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
+      // A challenge is addressed to somebody who can answer it.
+      if (other.email === null) return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
       if (await isIgnoring(other.email, me.email)) {
         return NextResponse.json({ error: "That member is not taking games from you." }, { status: 403, headers: NO_STORE });
       }

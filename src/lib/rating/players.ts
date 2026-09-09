@@ -172,7 +172,8 @@ export async function recordResult(
 
 /** One row of the directory: a member, with their record if they have one. */
 export type DirectoryEntry = {
-  email: string;
+  /** Null for a kept record: somebody who never signed in. */
+  email: string | null;
   name: string;
   picture: string;
   lastSeenAt: string;

@@ -109,7 +109,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
             select: { email: true, name: true, country: true, awayFrom: true, awayUntil: true },
           });
     const myEmail = await currentEmail();
-    if (myEmail !== null && member !== null && (await isIgnoring(myEmail, member.email))) {
+    if (myEmail !== null && member?.email && (await isIgnoring(myEmail, member.email))) {
       muted = seat === STONES.black ? STONES.white : STONES.black;
     }
     if (member !== null || otherName !== "") {

@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { localTimeIn, recencyOf, type Recency } from "./presence";
 
 export type BuddyEntry = {
-  email: string;
+  /** Null for a kept record: somebody who never signed in. */
+  email: string | null;
   name: string;
   picture: string;
   lastSeenAt: string;

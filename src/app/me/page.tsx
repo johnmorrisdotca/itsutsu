@@ -135,10 +135,12 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   {[buddy.city, buddy.country].filter(Boolean).join(", ")}
                   {buddy.localTime !== null ? ` · ${buddy.localTime} there` : ""}
                 </span>
-                <span className="ml-auto flex gap-2">
-                  <ChallengeButton email={buddy.email} />
-                  <BuddyButton email={buddy.email} isBuddy />
-                </span>
+                {buddy.email === null ? null : (
+                  <span className="ml-auto flex gap-2">
+                    <ChallengeButton email={buddy.email} />
+                    <BuddyButton email={buddy.email} isBuddy />
+                  </span>
+                )}
               </li>
             ))}
           </ul>

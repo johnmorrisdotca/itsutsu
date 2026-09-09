@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { seedMember } from "./members";
+
 /**
  * The rule John set: if a page lists a game, it links to that game. A legacy
  * record names games from another site, so this is where the rule is easiest
@@ -54,5 +56,23 @@ test.describe("a legacy record's games link to what they are", () => {
     await expect(page.getByTestId("legacy-player")).toContainText("Incognito");
     await expect(page.getByTestId("legacy-player")).toContainText("John Morris");
     await expect(page.getByTestId("legacy-source")).toHaveCount(2);
+  });
+
+  test("a member's own page shows the record they brought with them", async ({ page }) => {
+    // The panel only belongs on a page that is somebody's: a kept record with
+    // no live account behind it gets its own page instead.
+    await seedMember({ email: "john-morris-live@example.test", name: "John Morris" });
+    /*
+     * The first place anybody looks for somebody's history is that person's
+     * own page. John's ItsYourTurn and GoldToken chapters existed at their
+     * own address and appeared nowhere he would look, because nothing had
+     * ever set the link between the kept record and the live account.
+     */
+    await page.goto("/players/john-morris");
+    const panel = page.getByTestId("legacy-elsewhere-panel");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("ItsYourTurn.com");
+    await expect(panel).toContainText("GoldToken.com");
+    await expect(panel).toContainText("Incognito");
   });
 });

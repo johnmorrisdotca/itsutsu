@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.75.0
+- A member is keyed by their opaque id, not their address, and a kept record needs no address at all
+
 ## 0.74.0
 - A game's seats hold the member's opaque id rather than their address
 

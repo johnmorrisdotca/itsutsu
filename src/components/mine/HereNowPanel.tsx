@@ -40,7 +40,9 @@ export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null 
                 )}
                 {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
               </span>
-              {me !== null ? <ChallengeButton email={entry.email} label="Challenge" /> : null}
+              {me !== null && entry.email !== null ? (
+                <ChallengeButton email={entry.email} label="Challenge" />
+              ) : null}
             </li>
           ))}
         </ul>

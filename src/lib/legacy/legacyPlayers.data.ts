@@ -228,6 +228,10 @@ export const LEGACY_PLAYERS: LegacyPlayer[] = [
     slug: "jmorris",
     name: "John Morris",
     kind: "elsewhere",
+    // The live account this belongs beside. Without it the record exists at
+    // its own address and never appears on the page of the person whose it
+    // is, which is where anybody would look for it first.
+    linkedKey: "john morris",
     location: "Canada",
     possessive: "his",
     // The same man as Incognito on ItsYourTurn — one row, two handles.

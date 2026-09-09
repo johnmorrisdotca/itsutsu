@@ -62,9 +62,14 @@ export function AdminMembers() {
       </p>
       {error !== null ? <p className="text-xs text-shu">{error}</p> : null}
       <ul className="flex flex-col gap-1.5">
-        {members.map((member) => (
+        {members.map((member) => {
+          // A kept record has no address, and the operator's controls all act
+          // on an account reached by one. Narrowed here so the three below are
+          // talking about the same known address.
+          const account = member.email;
+          return (
           <li
-            key={member.email}
+            key={member.id}
             className={`flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm ${
               member.bannedAt === null ? "border-rule" : "border-shu/40 bg-shu-soft"
             }`}
@@ -85,12 +90,12 @@ export function AdminMembers() {
                 {member.bannedNote === "" ? "" : ` · ${member.bannedNote}`}
               </span>
             </span>
-            {member.name.trim() === "" ? null : (
+            {account === null || member.name.trim() === "" ? null : (
               <ConfirmButton
                 label="Take the name off"
                 question={`Take ${member.name.trim()}'s name off? They keep the account, the games and the rating; only the name goes, and they are asked for a new one.`}
                 confirm="Take it off"
-                onConfirm={() => void change({ email: member.email, name: "" }, member.email)}
+                onConfirm={() => void change({ email: account, name: "" }, account)}
                 disabled={busy === member.email}
                 testId="take-name-off"
               />
@@ -99,19 +104,22 @@ export function AdminMembers() {
               Opening an account again asks nothing: it undoes something and
               takes nothing away. Shutting one does both, so it asks.
             */}
-            {member.bannedAt === null ? (
+            {account === null ? (
+              /* A kept record is not an account: there is nothing to shut. */
+              <span className="text-xs text-muted">Kept record</span>
+            ) : member.bannedAt === null ? (
               <ConfirmButton
                 label="Shut the account"
                 question={`Shut ${member.name.trim() || member.email}'s account? It stops working on their next request and the invite they came in by is revoked. Their games and their rating stay exactly as they are.`}
                 confirm="Shut it"
-                onConfirm={() => void change({ email: member.email, banned: true }, member.email)}
+                onConfirm={() => void change({ email: account, banned: true }, account)}
                 disabled={busy === member.email}
                 strong
                 testId="ban-member"
               />
             ) : (
               <Button
-                onClick={() => void change({ email: member.email, banned: false }, member.email)}
+                onClick={() => void change({ email: account, banned: false }, account)}
                 disabled={busy === member.email}
                 data-testid="ban-member"
               >
@@ -119,7 +127,8 @@ export function AdminMembers() {
               </Button>
             )}
           </li>
-        ))}
+          );
+        })}
       </ul>
       {members.length === 0 ? <p className={`${PANEL_CLASS} text-sm text-muted`}>Nobody has joined yet.</p> : null}
     </section>

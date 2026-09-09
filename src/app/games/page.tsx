@@ -81,11 +81,18 @@ export default async function LobbyPage() {
     who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || "Somebody",
   }));
   const hereEmails = new Set(here.map((entry) => entry.email));
+  /*
+   * Somebody you could ask for a game, which means somebody who can be
+   * reached: a kept record has a name and a history and no address, and
+   * cannot be challenged.
+   */
   const opponents: Opponent[] = [
-    ...here.filter((entry) => entry.email !== email && !ignored.has(entry.email)).map((entry) => ({ email: entry.email, name: entry.name || entry.email, here: true })),
+    ...here
+      .filter((entry) => entry.email !== null && entry.email !== email && !ignored.has(entry.email))
+      .map((entry) => ({ email: entry.email!, name: entry.name || entry.email!, here: true })),
     ...buddies
-      .filter((buddy) => !hereEmails.has(buddy.email) && !ignored.has(buddy.email))
-      .map((buddy) => ({ email: buddy.email, name: buddy.name || buddy.email, here: false })),
+      .filter((buddy) => buddy.email !== null && !hereEmails.has(buddy.email) && !ignored.has(buddy.email))
+      .map((buddy) => ({ email: buddy.email!, name: buddy.name || buddy.email!, here: false })),
   ];
   return (
     <Page width="standard">

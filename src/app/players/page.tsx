@@ -164,7 +164,7 @@ export default async function PlayersPage() {
                   ) : null}
                 </td>
                 <td className="py-1.5 text-right">
-                  {me?.email && me.email !== entry.email ? (
+                  {me?.email && entry.email !== null && me.email !== entry.email ? (
                     <span className="flex justify-end gap-1">
                       <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} />
                       <IgnoreButton email={entry.email} ignoring={ignored.has(entry.email)} />
@@ -172,7 +172,9 @@ export default async function PlayersPage() {
                   ) : null}
                 </td>
                 <td className="py-1.5 text-right">
-                  {me?.email && me.email !== entry.email ? <ChallengeButton email={entry.email} /> : null}
+                  {me?.email && entry.email !== null && me.email !== entry.email ? (
+                    <ChallengeButton email={entry.email} />
+                  ) : null}
                 </td>
               </tr>
             ))}

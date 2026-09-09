@@ -15,8 +15,31 @@ describe("legacy records", () => {
     expect(findLegacyPlayer("jmorris")?.kind).toBe("elsewhere");
   });
 
-  it("an elsewhere record only links once a live key is set", () => {
-    expect(findLinkedLegacies("jmorris")).toEqual([]);
+  /**
+   * A kept record has its own address, but the first place anybody looks for
+   * somebody's history is that person's own page. Until linkedKey was set on
+   * John's record it existed and appeared nowhere he would look.
+   */
+  it("shows a kept record on the live account it belongs to", () => {
+    const linked = findLinkedLegacies("john morris");
+    expect(linked.map((player) => player.slug)).toEqual(["jmorris"]);
+    expect(linked[0].sources.map((source) => source.site)).toEqual([
+      "ItsYourTurn.com",
+      "GoldToken.com",
+    ]);
+  });
+
+  it("links nothing to a name nobody kept a record under", () => {
+    expect(findLinkedLegacies("nobody at all")).toEqual([]);
+  });
+
+  it("gives every elsewhere record a live account to sit beside", () => {
+    // An elsewhere record is by definition a live member's earlier chapter.
+    // One without a linkedKey is a chapter nobody can find.
+    for (const player of LEGACY_PLAYERS) {
+      if (player.kind !== "elsewhere") continue;
+      expect(player.linkedKey, `${player.slug} belongs beside nobody`).toBeTruthy();
+    }
   });
 
   /**

@@ -28,7 +28,8 @@ export function recencyOf(lastSeenAt: Date, now = new Date()): Recency {
 }
 
 export type HereNow = {
-  email: string;
+  /** Null for a kept record: somebody who never signed in. */
+  email: string | null;
   name: string;
   picture: string;
   lastSeenAt: string;

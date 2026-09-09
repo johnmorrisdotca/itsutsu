@@ -10,7 +10,23 @@ import { revokeInviteCode } from "@/lib/invite/inviteStore";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
 
+/**
+ * Somebody who signs in. The address is what they sign in with, so every
+ * member reached through these functions has one — the column is nullable
+ * only because a kept record belongs to somebody who never held an account
+ * and never had an address to give.
+ */
 export type Member = { email: string; name: string; picture: string };
+
+/**
+ * Somebody the site knows about, who may never have signed in.
+ *
+ * The same shape as a Member with the address allowed to be missing, because
+ * a kept record is a person with a name and a history and no account. Every
+ * lookup that can turn one up says so in its type rather than pretending
+ * everybody has an address.
+ */
+export type NamedMember = { email: string | null; name: string; picture: string };
 
 /** Emails are compared folded; Google gives them in whatever case the user typed once. */
 export function foldEmail(email: string): string {
@@ -23,7 +39,8 @@ export async function findMember(email: string): Promise<Member | null> {
     where: { email: foldEmail(email) },
     select: { email: true, name: true, picture: true },
   });
-  return row;
+  // Found by address, so it has one.
+  return row === null ? null : { ...row, email: row.email ?? foldEmail(email) };
 }
 
 /**
@@ -72,7 +89,7 @@ export async function admitMember(
       },
       select: { email: true, name: true, picture: true },
     });
-    return { ...row, created: true };
+    return { ...row, email: row.email ?? email, created: true };
   }
   // The name is the member's to choose; Google's is only the first suggestion.
   const row = await prisma.member.update({
@@ -80,7 +97,7 @@ export async function admitMember(
     data: { picture: input.picture, lastSeenAt: new Date() },
     select: { email: true, name: true, picture: true },
   });
-  return { ...row, created: false };
+  return { ...row, email: row.email ?? email, created: false };
 }
 
 /**
@@ -114,15 +131,18 @@ export async function renameMember(email: string, name: string): Promise<Member 
       if (record !== null) return null;
     }
   }
-  return prisma.member.update({
+  const renamed = await prisma.member.update({
     where: { email: foldEmail(email) },
     data: { name },
     select: { email: true, name: true, picture: true },
   });
+  return { ...renamed, email: renamed.email ?? foldEmail(email) };
 }
 
 /** The profile a member keeps: what others may see, and how they want to be reached. */
-export type MemberProfile = Member & {
+export type MemberProfile = Omit<Member, "email"> & {
+  /** Null for a kept record: somebody who never signed in and never had one. */
+  email: string | null;
   city: string;
   country: string;
   timeZone: string;
@@ -237,7 +257,9 @@ export async function isBanned(email: string): Promise<boolean> {
 }
 
 /** One line of the operator's list of members. */
-export type MemberSummary = Member & {
+export type MemberSummary = NamedMember & {
+  /** The row's own name for itself, which every member has and no two share. */
+  id: string;
   createdAt: string;
   lastSeenAt: string;
   bannedAt: string | null;
@@ -251,6 +273,7 @@ export async function listMembers(limit = 200): Promise<MemberSummary[]> {
     orderBy: { lastSeenAt: "desc" },
     take: limit,
     select: {
+      id: true,
       email: true,
       name: true,
       picture: true,
@@ -321,7 +344,7 @@ export async function updateProfile(email: string, update: ProfileUpdate): Promi
  * how the site addresses somebody, so a name typed into an address bar or
  * printed beside a game has to find them; the address is the key underneath.
  */
-export async function findMemberByName(name: string): Promise<Member | null> {
+export async function findMemberByName(name: string): Promise<NamedMember | null> {
   const wanted = name.trim();
   if (wanted === "") return null;
   const row = await prisma.member.findFirst({
