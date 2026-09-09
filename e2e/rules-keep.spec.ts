@@ -59,6 +59,77 @@ test.describe("a rules change keeps what it was not asked about", () => {
     });
   }
 
+  test("keeps everything a change does not mention, and changes what it does", async ({ request }) => {
+    /*
+     * The payload here is exactly the one the panel's own "clear the
+     * handicap" button sends: it names the board, the game, the obstacles,
+     * the opening, the pace, the penalty and the handicap, and says nothing
+     * about the rest. Everything it says nothing about used to be put back to
+     * a default — a game created unrated, resignation off, on a whole-game
+     * clock, with a draw limit and a posted seat came back rated, resignable,
+     * per-move, unlimited and off the board, in one press.
+     */
+    const made = await request.post("/api/games/live", {
+      data: {
+        variant: "freestyle",
+        size: 9,
+        blackName: "Keeper Black",
+        whiteName: "Keeper White",
+        rated: false,
+        allowResign: false,
+        clockMode: "game",
+        moveTimeMs: 86_400_000,
+        drawLimit: "half",
+        open: true,
+      },
+    });
+    expect(made.status()).toBe(201);
+    const game = (await made.json()) as { id: string; blackToken: string };
+    mine(game.id);
+
+    const cleared = await request.put(`/api/games/${game.id}/settings`, {
+      data: {
+        token: game.blackToken,
+        size: 9,
+        variant: "freestyle",
+        obstacles: "none",
+        opening: "free",
+        moveTimeMs: 86_400_000,
+        timeoutPenalty: "turn",
+        handicap: null,
+      },
+    });
+    expect(cleared.status()).toBe(200);
+    const kept = await cleared.json();
+    expect({
+      size: kept.size,
+      rated: kept.rated,
+      allowResign: kept.allowResign,
+      clockMode: kept.clockMode,
+      drawLimit: kept.drawLimit,
+      posted: kept.openSeat !== null,
+    }).toEqual({
+      size: 9,
+      rated: false,
+      allowResign: false,
+      clockMode: "game",
+      drawLimit: "half",
+      posted: true,
+    });
+
+    // And silence is not paralysis: a change that names one really makes it.
+    const asked = await request.put(`/api/games/${game.id}/settings`, {
+      data: { token: game.blackToken, rated: true, size: 19 },
+    });
+    expect(asked.status()).toBe(200);
+    const now = await asked.json();
+    expect(now.rated).toBe(true);
+    expect(now.size).toBe(19);
+    // Still untouched, because that payload did not mention them either.
+    expect(now.allowResign).toBe(false);
+    expect(now.drawLimit).toBe("half");
+  });
+
   test("but a game whose rules fix the line still gets the line its rules fix", async ({ request }) => {
     /*
      * The Reversi lesson, in the other direction: a game the rules decide is

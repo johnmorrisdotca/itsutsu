@@ -9,56 +9,60 @@ import type { GameSummary } from "./gameHistory.types";
 import { GAME_ROW, replay } from "./liveGame";
 
 /** How many open seats the board shows. Nobody reads past the first page of a noticeboard. */
-const OPEN_GAMES_SHOWN = 30;
+export const OPEN_GAMES_SHOWN = 30;
 
 /**
- * Games with a seat anyone may take, newest first — the noticeboard the
- * turn-based sites kept, where a game could be started without knowing who
- * would answer it. A browser's own games are left off: you cannot sit
- * across from yourself.
+ * Every seat anyone may take, newest first — the noticeboard the turn-based
+ * sites kept, where a game could be started without knowing who would answer
+ * it.
+ *
+ * All of them, not a page of them, because two things read this list and they
+ * want different amounts of it: the board shows the newest thirty, and the
+ * sentence above it asks whether anybody is waiting for one particular game
+ * at one particular pace on one particular board. That second question used
+ * to be answered off the same thirty, which meant that on a day when one game
+ * was busy every other game's waiting seat was off the end and the sentence
+ * offered to post a second seat beside one already standing.
+ *
+ * Both the cap and the narrowing happen above this now, in that order, and
+ * that order is the whole lesson: a list cut to a length and then filtered
+ * has lost rows the filter would have kept.
+ *
+ * An open seat is a small set by its nature — it stops being open the moment
+ * somebody sits down, and a computer answers one left standing for a day — so
+ * fetching all of them is a cheaper thing than it sounds.
  */
-export async function fetchOpenGames(except: Iterable<string> = []): Promise<GameSummary[]> {
+export async function fetchOpenSeats(except: Iterable<string> = []): Promise<GameSummary[]> {
   const rows = await prisma.game.findMany({
     where: { status: "active", openSeat: { not: null }, id: { notIn: [...except] } },
     orderBy: [{ openedAt: "desc" }, { id: "asc" }],
-    take: OPEN_GAMES_SHOWN,
     select: SUMMARY_SELECT,
   });
   return rows.map(toSummary);
 }
 
 /**
- * One open seat for every combination somebody could ask for.
+ * One seat for each game, pace and board — the newest of each, in that order.
  *
- * The board above shows the newest thirty, which is right for a noticeboard —
- * nobody reads past the first page of one. The sentence is asking a different
- * question: "is anybody already waiting for exactly this", of a game, a pace
- * and a board. Answering that off the newest thirty is the bug this exists to
- * fix: on a day when one game is busy, every waiting seat of every other game
- * is off the end of that list, and the sentence offers to post a second seat
- * beside one already standing. That is the precise failure the control was
- * built to prevent, and it fails silently — the person sees an ordinary
- * "Post the seat" and never learns there was somebody to play.
+ * What the sentence needs, and no more: it matches on exactly those three
+ * things, so a second seat asking for the same three is a seat it can never
+ * offer. Newest of each, and newest first, because the board the sentence
+ * suggests follows whichever seat somebody is already waiting on.
  *
- * Found by the browser suite failing on two different specs on two runs, both
- * passing alone: thirty-one of the thirty-four open seats on that database
- * were one game, so the other games' seats were never fetched.
- *
- * Bounded by the combinations that exist rather than by a count, which is the
- * whole point — `distinct` on exactly the three columns the sentence matches
- * on, newest of each. An open seat is a small set by its nature: it stops
- * being open the moment somebody sits down, and a computer answers one left
- * standing for a day.
+ * Pure, and it takes the list already narrowed to seats this reader could
+ * actually sit in. That is not a detail: choosing one of each first and
+ * dropping the unusable ones afterwards loses a whole combination whenever
+ * the newest of it is the reader's own — a stranger's identical seat standing
+ * right behind it, invisible.
  */
-export async function fetchSeatChoices(except: Iterable<string> = []): Promise<GameSummary[]> {
-  const rows = await prisma.game.findMany({
-    where: { status: "active", openSeat: { not: null }, id: { notIn: [...except] } },
-    // The distinct columns first, so the newest of each group is the one kept.
-    orderBy: [{ variant: "asc" }, { moveTimeMs: "asc" }, { size: "asc" }, { openedAt: "desc" }],
-    distinct: ["variant", "moveTimeMs", "size"],
-    select: SUMMARY_SELECT,
+export function oneOfEachKind(seats: readonly GameSummary[]): GameSummary[] {
+  const seen = new Set<string>();
+  return seats.filter((seat) => {
+    const kind = `${seat.variant}/${seat.moveTimeMs}/${seat.size}`;
+    if (seen.has(kind)) return false;
+    seen.add(kind);
+    return true;
   });
-  return rows.map(toSummary);
 }
 
 export type SitOutcome =
