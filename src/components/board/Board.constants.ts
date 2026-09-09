@@ -136,6 +136,7 @@ export const DEFAULT_APPEARANCE: Appearance = {
   showCoordinates: true,
   showMoveNumbers: false,
   grid: "auto",
+  flipped: false,
 };
 
 /** SVG stroke widths in board units (one intersection spacing = 1). */

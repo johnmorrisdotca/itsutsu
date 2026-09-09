@@ -4,6 +4,8 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import type { Appearance } from "@/components/board/board.types";
+import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
 import { cellAt, discCount, inMovePhase, pieceMoves, rulesFor, otherStone } from "@/lib/gomoku/engine";
 import { PieceTray } from "@/components/game/PieceTray";
 import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
@@ -16,6 +18,7 @@ import { ResignButton } from "@/components/mine/ResignButton";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
+import { readQuiet, subscribeQuiet, writeQuiet } from "./quiet";
 import { useLiveGame } from "./useLiveGame";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
@@ -37,10 +40,17 @@ export function SharedGame({
   basePath,
   opponent = null,
   muted = null,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   initial: GameDetail;
   token: string | null;
   seat: Stone | null;
+  /**
+   * How this reader likes a board dressed, from their account. The shared
+   * board used to draw the default and nothing else, so a member's own board
+   * followed them into a local game and stopped at the door of a real one.
+   */
+  appearance?: Appearance;
   /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
@@ -55,6 +65,20 @@ export function SharedGame({
     () => readQuiet(initial.id),
     () => false,
   );
+  /*
+   * This board's own way up, when it has been given one. Unset means the
+   * account's standing preference stands, so turning every board round in the
+   * settings still turns the ones nobody has spoken about.
+   */
+  const override = useSyncExternalStore(
+    subscribeTurned,
+    () => readTurned(initial.id),
+    () => null,
+  );
+  const board: Appearance = {
+    ...appearance,
+    flipped: turnedFor(override, appearance.flipped),
+  };
   const { game: detail, mutate } = useLiveGame(initial);
   const state = settleFromRecord(replayGame(detail), detail);
 
@@ -286,9 +310,29 @@ export function SharedGame({
 
       <ReactionBubbles reactions={shown} yourStone={seat} />
 
+      {/*
+        This game's own way up. Above the board rather than buried in the
+        settings, because it is answering a question the board is asking right
+        now — you are looking at your camp from the wrong end — and it must be
+        one press away from the position that prompted it.
+      */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => writeTurned(detail.id, !board.flipped)}
+          className="rounded-full border border-rule bg-ivory/70 px-3 py-1 text-xs text-ink-soft transition-colors hover:bg-ivory"
+          aria-pressed={board.flipped}
+          title="Your own view of this board. The other player's board does not move."
+          data-testid="turn-board"
+        >
+          {board.flipped ? "Turn the board back" : "Turn the board round"}{" "}
+          <span className="font-mincho">盤反転</span>
+        </button>
+      </div>
+
       <Board
         state={state}
-        appearance={DEFAULT_APPEARANCE}
+        appearance={board}
         readOnly={!playable}
         onPlay={play}
         onTwist={twist}
@@ -440,37 +484,6 @@ function TurnBanner({
         : `Waiting for ${STONE_DISPLAY[state.toPlay].label}…`}
     </p>
   );
-}
-
-const QUIET_KEY = (id: string) => `itsutsu.mute.${id}`;
-
-function readQuiet(id: string): boolean {
-  try {
-    return window.localStorage.getItem(QUIET_KEY(id)) === "1";
-  } catch {
-    return false;
-  }
-}
-
-const QUIET_EVENT = "itsutsu:mute";
-
-function writeQuiet(id: string, quiet: boolean): void {
-  try {
-    if (quiet) window.localStorage.setItem(QUIET_KEY(id), "1");
-    else window.localStorage.removeItem(QUIET_KEY(id));
-  } catch {
-    // Not remembered, then.
-  }
-  window.dispatchEvent(new Event(QUIET_EVENT));
-}
-
-function subscribeQuiet(onChange: () => void): () => void {
-  window.addEventListener(QUIET_EVENT, onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    window.removeEventListener(QUIET_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
-  };
 }
 
 /** A budget in words: "1h 20m", "45s". */

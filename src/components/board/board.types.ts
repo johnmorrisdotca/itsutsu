@@ -23,6 +23,14 @@ export type Appearance = {
   /** Move numbers printed on the stones, as in a published game record. */
   showMoveNumbers: boolean;
   grid: GridStyle;
+  /**
+   * The board turned round, so the far side of it is nearest you. A reader's
+   * own view and nothing else: it moves no stone, changes no coordinate — A1
+   * is still A1, drawn somewhere else — and the other seat never learns of it.
+   * It belongs here for that reason rather than by convenience: nothing in
+   * this type can reach the game or the opponent.
+   */
+  flipped: boolean;
 };
 
 /** The CSS custom properties a board theme sets on its container. */
