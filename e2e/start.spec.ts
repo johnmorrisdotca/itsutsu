@@ -38,7 +38,13 @@ test.describe("starting a game is one sentence", () => {
      * with seats meant this test almost never took the posting branch.
      */
     await expect(page).toHaveURL(/\/games\/trap-three\/[a-z0-9-]+(\/0)?$/);
-    await expect(page.getByTestId("turn-banner")).toContainText("Your move");
+    /*
+     * And it says it is waiting, not that the game is under way. This used to
+     * expect "Your move", which was true and was not what was happening: a
+     * seat posted for anyone had nobody opposite it yet. John asked for the
+     * sentence to say so; the board stays playable underneath it.
+     */
+    await expect(page.getByTestId("turn-banner")).toContainText("waiting for somebody");
 
     // Tidy up after itself: an abandoned seat would meet the next run.
     await page.getByTestId("resign").click();

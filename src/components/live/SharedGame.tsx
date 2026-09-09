@@ -248,6 +248,8 @@ export function SharedGame({
         state={state}
         seat={seat}
         yourTurn={yourTurn}
+        // Posted for anyone and not yet answered: waiting, not playing.
+        awaiting={detail.openSeat !== null && state.moves.length === 0}
         finished={state.status !== GAME_STATUS.playing}
         finishedAt={detail.status === "finished" ? detail.lastMoveAt : null}
       />

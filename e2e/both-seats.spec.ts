@@ -54,7 +54,10 @@ test.describe("answering your own posted seat", () => {
   test("refuses the poster the seat from its own link", async ({ page }) => {
     const game = await postSeat(page.request);
     await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
-    await expect(page.getByTestId("turn-banner")).toContainText("you are Black");
+    // A posted seat leads with waiting rather than with whose move it is, so
+    // the seat is proved by the sharing panel being theirs to hand out.
+    await expect(page.getByTestId("turn-banner")).toHaveAttribute("data-awaiting", "true");
+    await expect(page.getByTestId("seat-invite")).toHaveAttribute("data-stone", "white");
 
     // Even holding a link from somewhere, the poster is not the answer to
     // their own invitation.

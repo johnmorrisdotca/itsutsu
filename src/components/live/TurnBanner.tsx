@@ -21,12 +21,15 @@ export function TurnBanner({
   seat,
   yourTurn,
   finished,
+  awaiting = false,
   finishedAt = null,
 }: {
   state: ReturnType<typeof replayGame>;
   seat: Stone | null;
   yourTurn: boolean;
   finished: boolean;
+  /** Posted for anyone, and nobody has answered it yet. */
+  awaiting?: boolean;
   /** When the last move landed, once the game is over; shown so nobody has to go to the record for it. */
   finishedAt?: string | null;
 }) {
@@ -54,6 +57,31 @@ export function TurnBanner({
             Finished {new Date(finishedAt).toLocaleString()}
           </span>
         ) : null}
+      </p>
+    );
+  }
+
+  /*
+   * A seat posted for anyone, before anybody has answered it.
+   *
+   * This said "Your move — you are Black", which is true and is not what is
+   * happening: John posted a seat meaning to wait, and got something that
+   * read as a game already under way against an opponent who did not exist.
+   * The board stays playable, because opening before your opponent arrives is
+   * how the elder turn-based sites worked and is a thing somebody may want to
+   * do — but it is offered rather than announced, and the sentence says what
+   * the game is actually doing.
+   */
+  if (awaiting && seat !== null) {
+    return (
+      <p
+        className={`rounded-xl border px-3 py-2.5 text-sm ${TONE_CLASS.calm}`}
+        data-testid="turn-banner"
+        data-awaiting="true"
+      >
+        <span className="font-semibold">Posted, and waiting for somebody 募集中.</span>{" "}
+        Your seat link is below — send it to somebody, or leave it on the board and you will be
+        told when it is taken. You may play your first move now if you would rather.
       </p>
     );
   }
