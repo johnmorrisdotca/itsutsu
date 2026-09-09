@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.79.0
+- The About page says what Go is, how a move is written down, and what this site's ratings actually do
+
 ## 0.78.0
 - The operator's page is three tabs, and a clock starts when the second player sits down
 
