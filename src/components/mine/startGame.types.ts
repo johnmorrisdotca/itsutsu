@@ -2,6 +2,8 @@
 export type SeatOnBoard = {
   id: string;
   variant: string;
+  /** The board it is posted on, so the sentence only offers a seat it describes. */
+  size: number;
   moveTimeMs: number | null;
   /** The member sitting in it, as they are named. */
   who: string;
@@ -19,7 +21,11 @@ export type Opponent = {
 export type GameGroup = {
   title: string;
   kanji: string;
-  games: { variant: string; label: string; kanji: string; size: number }[];
+  /*
+   * No board size here. The composer reads the boards a game has from its own
+   * spec, because it has to offer all of them rather than be handed one.
+   */
+  games: { variant: string; label: string; kanji: string }[];
 };
 
 export type StartGameProps = {

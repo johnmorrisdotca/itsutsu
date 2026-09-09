@@ -42,6 +42,8 @@ export const START_COPY = {
   lead:
     "Say what you want to play, how fast, and with whom. If somebody already wants the same, you sit down together now; if not, your seat waits on the board below and you are told when it is taken.",
   play: "Play",
+  /** Between the game and the pace, and only when the game has more than one board. */
+  on: "on",
   at: "at",
   with: "with",
   anyone: "anyone",
