@@ -19,7 +19,14 @@ const nextConfig: NextConfig = {
    * is not one of those — without this the file is missing in production and
    * the history renders empty.
    */
+  /*
+   * Every page that reads the changelog at request time has to name it here
+   * or it is simply missing from the deployed bundle — the page renders, the
+   * read fails, and the history reads as empty in production and nowhere
+   * else. See AGENTS.md, Board Gate.
+   */
   outputFileTracingIncludes: {
+    "/releases": ["./CHANGELOG.md"],
     "/backlog": ["./CHANGELOG.md"],
     "/admin": ["./CHANGELOG.md"],
   },
