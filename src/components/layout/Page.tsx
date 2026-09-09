@@ -50,8 +50,15 @@ export function Page({
         data-strippable={width === "wide" ? "" : undefined}
         className={`flex w-full flex-col ${PAGE_WIDTH[width]} ${gap}`}
       >
-        {width === "wide" ? <BareBoard /> : null}
         {children}
+        {/*
+          After the page, not before it. It sat above the masthead at first,
+          which pushed every wide page down by the height of a button to make
+          room for a control nobody was looking for at the top. Down here it
+          lands under the board's own controls, which is where somebody who
+          has just been playing will look for it.
+        */}
+        {width === "wide" ? <BareBoard /> : null}
         <SiteFooter />
       </main>
     </div>
