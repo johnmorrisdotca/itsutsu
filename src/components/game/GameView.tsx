@@ -79,15 +79,38 @@ export function GameView({
    * /games/<slug> either way; once a stone is down the match has an id and
    * the bar names the position, /games/<slug>/<id>/<move>, kept current as
    * the record is stepped through.
+   *
+   * It waits for the record to be stored before naming a move, which is the
+   * whole of a bug a player could meet: the moves are posted one at a time
+   * behind the board, and this used to name the local move number the instant
+   * the match had an id. MatchPage refuses a move number the game does not
+   * hold yet — rightly — so the bar spent that window naming a position the
+   * server had never heard of, and anybody who refreshed inside it was told
+   * their game did not exist. They had just played two stones.
+   *
+   * Holding the previous address is the honest half of the fix. The other
+   * possibility was to let MatchPage clamp a move number that is too high,
+   * and that is worse: it turns a wrong address into a silently wrong
+   * position, where an honest 404 at least says something is out of step.
    */
   const playing = session.state.settings.variant;
   const { moveIndex } = session;
   useEffect(() => {
     if (!trackPath) return;
-    const path =
-      kept.matchId === null ? gamePath(playing) : matchPath(playing, kept.matchId, moveIndex);
+    if (kept.matchId === null) {
+      if (window.location.pathname !== gamePath(playing)) {
+        window.history.replaceState(null, "", gamePath(playing));
+      }
+      return;
+    }
+    // Not yet stored: name the game rather than a position in it. Holding a
+    // stale move number instead would show a refreshing player fewer stones
+    // than they had just played, which is worse than not naming the position.
+    const path = kept.synced
+      ? matchPath(playing, kept.matchId, moveIndex)
+      : gamePath(playing);
     if (window.location.pathname !== path) window.history.replaceState(null, "", path);
-  }, [kept.matchId, moveIndex, playing, trackPath]);
+  }, [kept.matchId, kept.synced, moveIndex, playing, trackPath]);
   const showIdle = idle && session.state.status === GAME_STATUS.playing;
 
   /*
