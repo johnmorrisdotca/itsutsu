@@ -60,6 +60,44 @@ test.describe("the conversation in a finished game", () => {
     await expect(page).toHaveURL(new RegExp(`/history/gomoku/${game.id}/2$`));
   });
 
+  test("keeps a long conversation whole, not the last thirty of it", async ({ page, request }) => {
+    /*
+     * A game carries its last thirty remarks to a board being played, which is
+     * right: it is polled, and an evening's talk on every poll is a payload
+     * nobody reads twice. The record was served from the same query, so a
+     * chatty game's record began in the middle with nothing saying so — the
+     * one page the conversation is supposed to survive on.
+     *
+     * Both seats speak, because one seat may only say twenty things a minute.
+     */
+    const started = await request.post("/api/games/live", {
+      data: { blackName: `Chatty ${Date.now().toString(36)}`, whiteName: "Sumi", size: 9 },
+    });
+    const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    await request.post(`/api/games/${game.id}/moves`, { data: { token: game.blackToken, row: 4, col: 4 } });
+
+    const said = 35;
+    for (let i = 0; i < said; i += 1) {
+      const posted = await request.post(`/api/games/${game.id}/reactions`, {
+        data: {
+          token: i % 2 === 0 ? game.blackToken : game.whiteToken,
+          emoji: "👋",
+          text: `Remark ${i}`,
+          moveNumber: 1,
+        },
+      });
+      expect(posted.status(), `remark ${i}`).toBe(201);
+    }
+    await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
+
+    await page.goto(`/history/gomoku/${game.id}`);
+    const talk = page.getByTestId("conversation");
+    await expect(talk).toBeVisible();
+    // The first thing said is the half that used to go missing.
+    await expect(talk).toContainText("Remark 0");
+    await expect(talk).toContainText(`Remark ${said - 1}`);
+  });
+
   test("says nothing at all when nobody spoke", async ({ page, request }) => {
     const started = await request.post("/api/games/live", {
       data: { blackName: `Quiet ${Date.now().toString(36)}`, whiteName: "Also quiet", size: 9 },

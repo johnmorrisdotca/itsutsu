@@ -185,7 +185,23 @@ export async function fetchWholeRecord(
   return { items: rows.map(toSummary), total };
 }
 
-export async function fetchGameDetail(id: string): Promise<GameDetail | null> {
+/**
+ * `whole` keeps every word that was said, rather than the last thirty.
+ *
+ * The cap is right for a board being played: the game is polled, and a long
+ * evening's talk on every poll is a payload nobody reads twice. It is wrong
+ * for the record, which is read once and is the place the conversation is
+ * meant to survive — and it failed silently, showing the end of a
+ * conversation with no sign that there had been a beginning. A game of
+ * thirty-five remarks kept the last thirty and lost the first five.
+ *
+ * The quick phrases made this likelier rather than rarer: saying something is
+ * one tap now, so thirty is a number a real game reaches.
+ */
+export async function fetchGameDetail(
+  id: string,
+  { whole = false }: { whole?: boolean } = {},
+): Promise<GameDetail | null> {
   const game = await prisma.game.findUnique({
     where: { id },
     select: {
@@ -196,7 +212,7 @@ export async function fetchGameDetail(id: string): Promise<GameDetail | null> {
       },
       reactions: {
         orderBy: { createdAt: "desc" },
-        take: REACTIONS_KEPT,
+        ...(whole ? {} : { take: REACTIONS_KEPT }),
         select: { id: true, stone: true, emoji: true, text: true, moveNumber: true, createdAt: true },
       },
     },

@@ -37,14 +37,14 @@ test.describe("rules and learning", () => {
   test("a rules page shows the game being played, and the picture really loads", async ({ page }) => {
     /*
      * The New Game Gate requires a screenshot on every rules page, and nothing
-     * checked that one arrives. The page used to ask the filesystem whether
-     * the file was there while it was serving — which is answered by the
-     * project directory in development and by a server bundle that does not
-     * contain `public/` in production, so the figure would have been dropped
-     * from every rules page there and nowhere else.
+     * checked that one arrives. Nothing had to, while the page was deciding
+     * from a filesystem read that happens to work — but a picture that is
+     * required and never asserted is a picture that can quietly stop
+     * appearing.
      *
-     * Asserting the element is not enough for that: a broken image is still an
-     * element. This asks the browser whether it has pixels.
+     * Asserting the element is not enough: a broken image is still an element,
+     * and the failures worth catching here leave a perfectly good one. This
+     * asks the browser whether it has pixels.
      */
     await page.goto("/rules/gomoku");
     const shot = page.getByRole("img", { name: /in progress$/ });

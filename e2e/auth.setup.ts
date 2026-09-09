@@ -2,7 +2,7 @@ import { expect, request as playwrightRequest, test as setup } from "@playwright
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { ADMIN_STATE, EMBED_TOKEN_FILE, PLAYER_STATE } from "./support";
-import { clearAbandonedSeats } from "./tidy";
+import { clearAbandonedSeats, clearSeededMembers } from "./tidy";
 
 /**
  * Signs in once and saves the cookies for every other spec.
@@ -25,6 +25,8 @@ const TOKEN = process.env.ADMIN_TOKEN ?? "local-operator-token";
 setup("clear what the last run left behind", async () => {
   const gone = await clearAbandonedSeats();
   if (gone > 0) console.log(`Cleared ${gone} abandoned open seat${gone === 1 ? "" : "s"}.`);
+  const members = await clearSeededMembers();
+  if (members > 0) console.log(`Cleared ${members} member${members === 1 ? "" : "s"} a previous run invented.`);
 });
 
 setup("sign in as the operator, and mint a player invite", async ({ request, baseURL }) => {

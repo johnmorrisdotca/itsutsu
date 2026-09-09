@@ -106,13 +106,18 @@ test.describe("a game still waiting for somebody to sit down", () => {
       });
 
       /*
-       * Somebody else, because a seat posted for anyone is not one its poster
-       * may answer — and "somebody finally sits down" means somebody, not the
-       * person who put it up.
+       * Somebody ELSE answers it. This used to sit down from the same context
+       * that posted the seat, which is the poster answering their own public
+       * invitation — the thing the site now refuses outright, and a way of
+       * writing the test that quietly depended on it being allowed.
+       *
+       * A fresh name each run, so nothing here depends on what an earlier one
+       * left behind.
        */
+      const stamp = Date.now().toString(36);
       const newcomer = await memberContext(browser, baseURL ?? "http://localhost:6600", {
-        email: "seat-clock-newcomer@example.test",
-        name: "Seat Clock Newcomer",
+        email: `newcomer-${stamp}@example.com`,
+        name: `Newcomer ${stamp}`,
       });
       const sat = await newcomer.request.post(`/api/games/${game.id}/sit`);
       expect(sat.status(), "the posted seat should still be free").toBe(200);

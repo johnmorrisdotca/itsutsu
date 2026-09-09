@@ -320,6 +320,13 @@ const MEMBER_SUMMARY_SELECT = {
   bannedNote: true,
   invitedWith: true,
   unclaimableBecause: true,
+  /*
+   * `memberKind` decides a member is a robot from this and from nothing else.
+   * It was not selected and not passed on, so a computer player was badged as
+   * an ordinary member on the one page that draws the badge — whatever the
+   * size of the database, and however the row was written.
+   */
+  botTier: true,
 } as const;
 
 /** How many members there are, whatever a page of them is cut to. */
@@ -342,13 +349,43 @@ export async function memberSummaryFor(email: string): Promise<MemberSummary | n
   return row === null ? null : toSummary([row], null)[0];
 }
 
+/**
+ * The members, most recently seen first, cut at a limit — with the computer
+ * players kept whatever the cut is.
+ *
+ * A computer player is never seen, because it never signs in, so its stamp is
+ * frozen at the moment it was written and it sinks past the end of any list
+ * ordered by recency. On a site with more members than the limit all three
+ * would drop off this page silently — and this is the page that badges them
+ * as robots, which is proof enough that they belong on it. The same thing had
+ * already happened on the players directory.
+ *
+ * The limit itself is honest rather than wrong: the caller reports the true
+ * total beside what it shows, so an operator is told what was left out.
+ */
 export async function listMembers(limit = 200, you: string | null = null): Promise<MemberSummary[]> {
-  const rows = await prisma.member.findMany({
-    orderBy: { lastSeenAt: "desc" },
-    take: limit,
-    select: MEMBER_SUMMARY_SELECT,
-  });
-  return toSummary(rows, you);
+  const [recent, computers] = await Promise.all([
+    prisma.member.findMany({
+      orderBy: { lastSeenAt: "desc" },
+      take: limit,
+      select: MEMBER_SUMMARY_SELECT,
+    }),
+    prisma.member.findMany({ where: { botTier: { not: null } }, select: MEMBER_SUMMARY_SELECT }),
+  ]);
+  return toSummary(alwaysListed(recent, computers), you);
+}
+
+/**
+ * A capped listing with the rows that must survive the cap appended.
+ *
+ * Pure and named because the guarantee is otherwise untestable: on a small
+ * database the computer players are inside the limit anyway, so a test of the
+ * listing passes whether or not anything holds them there. The bug only shows
+ * past the limit, which is the one site nobody runs a test against.
+ */
+export function alwaysListed<T extends { id: string }>(capped: T[], always: T[]): T[] {
+  const shown = new Set(capped.map((row) => row.id));
+  return [...capped, ...always.filter((one) => !shown.has(one.id))];
 }
 
 /** Exactly the columns MEMBER_SUMMARY_SELECT asks for, and nothing else. */
@@ -363,11 +400,12 @@ type SummaryRow = {
   bannedNote: string;
   invitedWith: string;
   unclaimableBecause: string | null;
+  botTier: string | null;
 };
 
 function toSummary(rows: SummaryRow[], you: string | null): MemberSummary[] {
   const mine = you === null ? null : foldEmail(you);
-  return rows.map(({ unclaimableBecause, ...row }) => ({
+  return rows.map(({ unclaimableBecause, botTier, ...row }) => ({
     ...row,
     createdAt: row.createdAt.toISOString(),
     lastSeenAt: row.lastSeenAt.toISOString(),
@@ -375,6 +413,7 @@ function toSummary(rows: SummaryRow[], you: string | null): MemberSummary[] {
     kind: memberKind({
       email: row.email,
       unclaimableBecause,
+      botTier,
       isOperator: isAdminEmail(row.email),
       legacyKind: legacyKindOf(row.name),
     }),
