@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/backlog": ["./CHANGELOG.md"],
     "/admin": ["./CHANGELOG.md"],
+    /*
+     * Prisma's query engine is a native binary loaded by a runtime path
+     * lookup, not a static import, so Next's tracing misses it and a
+     * deployed function silently has no database engine at all.
+     */
+    "/*": ["./node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/**/*"],
   },
   async headers() {
     return [
