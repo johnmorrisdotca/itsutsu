@@ -45,6 +45,37 @@ test.describe("seat links", () => {
     await white.close();
   });
 
+  test("stop entirely once a stone is down, whoever is sitting opposite", async ({ browser, request }) => {
+    /*
+     * The stronger rule, and the one that covers what the per-seat one
+     * cannot. A computer player never follows a link, so its seat is never
+     * stamped and read as free for ever — John found both QR codes on screen
+     * in a game he was already playing against Kyu. More generally: once play
+     * has begun there is nobody left to invite, and a link still on screen is
+     * only a credential for somebody to read over your shoulder.
+     */
+    const started = await request.post("/api/games/live", {
+      data: { blackName: "Poster", whiteName: "", size: 9 },
+    });
+    expect(started.status()).toBe(201);
+    const game = (await started.json()) as { id: string; blackToken: string };
+
+    const black = await browser.newContext();
+    const page = await black.newPage();
+    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    // White's seat is still going out, so its link is there.
+    await expect(page.getByTestId("seat-invite")).toHaveCount(1);
+
+    const played = await request.post(`/api/games/${game.id}/moves`, {
+      data: { token: game.blackToken, row: 4, col: 4 },
+    });
+    expect(played.status()).toBe(201);
+
+    await page.reload();
+    await expect(page.getByTestId("seat-invite")).toHaveCount(0);
+    await black.close();
+  });
+
   test("a seat posted on the noticeboard keeps its link until somebody sits down", async ({
     browser,
     request,

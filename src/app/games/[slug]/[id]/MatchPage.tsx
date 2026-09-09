@@ -163,6 +163,7 @@ async function LiveMatch({
         openSeat: true,
         blackClaimedAt: true,
         whiteClaimedAt: true,
+        moveCount: true,
       },
     });
 

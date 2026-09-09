@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.87.0
+- A finished game keeps its conversation, and a seat link stops the moment play begins
+
 ## 0.86.0
 - The computer players are listed, badged and findable, and a profile shows both rating pools
 

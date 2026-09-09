@@ -58,11 +58,24 @@ export async function markSeatTaken(id: string, seat: Stone, now = new Date()): 
  * A seat nobody has taken is the only one whose link is worth showing, and
  * the only one whose link is safe to show. An open seat posted on the
  * noticeboard is by definition untaken, whatever else is on the row.
+ *
+ * A game with a stone on it is past inviting anybody, whatever the seats
+ * say. That is the stronger rule and it covers the cases the per-seat one
+ * cannot: a computer player never follows a link, so its seat is never
+ * stamped and would read as free for ever — and more generally, once play
+ * has begun there is nobody left to invite and a link on screen is only a
+ * credential somebody can read over your shoulder.
  */
 export function seatIsFree(
-  game: { openSeat?: string | null; blackClaimedAt?: Date | string | null; whiteClaimedAt?: Date | string | null },
+  game: {
+    openSeat?: string | null;
+    blackClaimedAt?: Date | string | null;
+    whiteClaimedAt?: Date | string | null;
+    moveCount?: number;
+  },
   seat: Stone,
 ): boolean {
+  if ((game.moveCount ?? 0) > 0) return false;
   if (game.openSeat === seat) return true;
   const claimed = seat === STONES.black ? game.blackClaimedAt : game.whiteClaimedAt;
   return claimed === null || claimed === undefined;
