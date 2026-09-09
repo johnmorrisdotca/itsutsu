@@ -20,7 +20,7 @@ import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
-import { resolveSeat, rulesAreSettled, seatIsFree } from "@/lib/history/seats";
+import { markSeatTaken, resolveSeat, rulesAreSettled, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
@@ -227,11 +227,31 @@ async function LiveMatch({
   });
 
   /*
+   * A seat holder opening the game is that seat's holder arriving, and until
+   * now only a seat link said so. A challenge binds both seats to accounts at
+   * the moment it is sent and neither player ever follows a link, so nothing
+   * was ever stamped for either of them — which left a challenged game's rules
+   * open to change right up to the first stone, the very window the rest of
+   * this was closing. Written once per seat, and only when it is not already
+   * written, so an ordinary view of a game costs nothing.
+   */
+  const arriving =
+    tokens !== null && seat !== null && (seat === STONES.black ? tokens.blackClaimedAt : tokens.whiteClaimedAt) === null;
+  if (arriving) await markSeatTaken(game.id, seat);
+
+  /*
    * Whether the rules are still open to change. Read from the same row as the
    * seat links, because it is the same question asked twice: a seat still
    * waiting for somebody is a game still being set up.
    */
-  const settled = tokens === null ? true : rulesAreSettled(tokens);
+  const settled =
+    tokens === null
+      ? true
+      : rulesAreSettled(
+          arriving
+            ? { ...tokens, [seat === STONES.black ? "blackClaimedAt" : "whiteClaimedAt"]: new Date() }
+            : tokens,
+        );
 
   let invites: SeatInvite[] = [];
   if (seat !== null) {

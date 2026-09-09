@@ -71,6 +71,41 @@ test.describe("when a shared game's rules settle", () => {
     await expect(page.getByTestId("rules-statement")).toBeVisible();
   });
 
+  test("settle for a challenge too, where nobody ever follows a link", async ({ browser, baseURL }) => {
+    /*
+     * The case the seat-link half cannot see. A challenge binds both seats to
+     * accounts the moment it is sent and neither player follows a link, so
+     * nothing was ever stamped for either of them — and a challenged game's
+     * rules stayed open right up to the first stone. Opening the game is that
+     * seat's holder arriving, and it says so now.
+     */
+    const stamp = Date.now().toString(36);
+    const asks = { email: `asker-${stamp}@example.com`, name: `Asker ${stamp}` };
+    const answers = { email: `asked-${stamp}@example.com`, name: `Asked ${stamp}` };
+    const one = await memberContext(browser, baseURL!, asks);
+    const two = await memberContext(browser, baseURL!, answers);
+
+    const started = await one.request.post("/api/games/live", {
+      data: { variant: "freestyle", size: 9, moveTimeMs: null, challenge: answers.email },
+    });
+    expect(started.status()).toBe(201);
+    const game = (await started.json()) as { id: string };
+
+    // The challenger opens it: still only one of them has arrived.
+    const asker = await one.newPage();
+    await asker.goto(`/games/gomoku/${game.id}`);
+    await expect(asker.getByTestId("shared-rules-size")).toBeVisible();
+
+    // The invited player opens it. Now the rules are what both have.
+    const asked = await two.newPage();
+    await asked.goto(`/games/gomoku/${game.id}`);
+    await expect(asked.getByTestId("rules-statement")).toBeVisible();
+
+    await asker.reload();
+    await expect(asker.getByTestId("shared-rules-size")).toHaveCount(0);
+    await expect(asker.getByTestId("rules-statement")).toBeVisible();
+  });
+
   test("and the server refuses the change, not just the page", async ({ request, browser, baseURL }) => {
     const game = await posted(request);
     await answered(browser, baseURL!, game.id);
