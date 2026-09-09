@@ -25,6 +25,7 @@ import {
   timeoutPenaltySchema,
   variantSchema,
   playerNameSchema,
+  drawLimitSchema,
 } from "@/lib/history/gameSettingsSchema";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { seatCookieName } from "@/lib/history/seatCookie";
@@ -46,6 +47,7 @@ const liveGameSchema = z.object({
   moveTimeMs: moveTimeSchema,
   timeoutPenalty: timeoutPenaltySchema,
   allowResign: z.boolean().default(true),
+  drawLimit: drawLimitSchema,
   clockMode: z.enum(["move", "game"]).default("move"),
   rated: z.boolean().default(true),
   open: z.boolean().default(false),

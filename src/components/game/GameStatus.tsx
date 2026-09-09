@@ -4,7 +4,7 @@ import {
   FATAL_MOVE_DISPLAY,
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
-import { campSize, discCount, inMovePhase, piecesHome, rulesFor, stonesLeft } from "@/lib/gomoku/engine";
+import { campSize, discCount, drawnByLength, inMovePhase, piecesHome, rulesFor, stonesLeft } from "@/lib/gomoku/engine";
 import {
   GAME_STATUS,
   HANDICAP_RULES,
@@ -30,9 +30,19 @@ function ToPlay({ session }: { session: GameSession }) {
   const stones = STONE_SETS[session.appearance.stoneSet];
 
   if (state.status === GAME_STATUS.draw) {
+    /*
+     * Three ways to draw, and they are not interchangeable: the board filled,
+     * both colours made a line on the same move, or the game ran to the
+     * length its players agreed to. Which one it was is the engine's to say.
+     */
+    const why = drawnByLength(state)
+      ? GAME_COPY.drawByLength
+      : state.board.includes(null)
+        ? GAME_COPY.drawBothLines
+        : "Draw. The board is full.";
     return (
       <p className="text-lg font-semibold" data-testid="to-play">
-        {state.board.includes(null) ? GAME_COPY.drawBothLines : "Draw. The board is full."}
+        {why}
       </p>
     );
   }

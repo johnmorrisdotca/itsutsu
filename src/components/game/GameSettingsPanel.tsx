@@ -2,6 +2,8 @@
 
 import {
   BOARD_SIZE_DISPLAY,
+  DRAW_LIMIT_DISPLAY,
+  DRAW_LIMIT_LIST,
   FIRST_PLAYER_DISPLAY,
   FIRST_PLAYERS,
   OBSTACLE_LAYOUT_DISPLAY,
@@ -18,6 +20,7 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { availableOpenings } from "@/lib/gomoku/engine";
 import type {
+  DrawLimit,
   FirstPlayer,
   ObstacleLayout,
   OpeningRule,
@@ -233,6 +236,31 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             onChange={(next) => actions.reset({ allowResize: next })}
             hint={GAME_COPY.resizeHint}
           />
+
+          {/*
+            How long the game may run. A share of the board rather than a
+            number of moves, so the same choice means something sensible on
+            every size and nobody has to work anything out.
+          */}
+          <Field
+            label="Length"
+            hint={locks.drawLimit ?? DRAW_LIMIT_DISPLAY[settings.drawLimit].blurb}
+          >
+            <Select
+              value={settings.drawLimit}
+              disabled={locks.drawLimit !== null}
+              onChange={(event) =>
+                actions.reset({ drawLimit: event.target.value as DrawLimit })
+              }
+              data-testid="draw-limit"
+            >
+              {DRAW_LIMIT_LIST.map((limit) => (
+                <option key={limit} value={limit}>
+                  {DRAW_LIMIT_DISPLAY[limit].label} {DRAW_LIMIT_DISPLAY[limit].kanji}
+                </option>
+              ))}
+            </Select>
+          </Field>
           </fieldset>
 
           <Field

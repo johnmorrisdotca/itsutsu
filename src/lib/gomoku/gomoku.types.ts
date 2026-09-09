@@ -357,6 +357,17 @@ export type ObstacleLayout = "none" | "hoshi";
  */
 export type Seat = "one" | "two";
 
+/**
+ * When a game nobody has won is called a draw.
+ *
+ * Some of these games can run for ever between two careful players, and a
+ * board that never fills is a game neither side can leave. The limit is a
+ * share of the board's points rather than a number of moves, so it needs no
+ * arithmetic per size: the same setting means something sensible on 9x9 and
+ * on 19x19.
+ */
+export type DrawLimit = "none" | "half" | "threeQuarters";
+
 export type GameSettings = {
   /** Board is `size` × `size` intersections. */
   size: number;
@@ -392,6 +403,11 @@ export type GameSettings = {
    * unused. Both directions need the other player to agree.
    */
   allowResize: boolean;
+  /**
+   * Calling a long game a draw. `none` plays it out, which is how every game
+   * here behaved before this existed and is still the default.
+   */
+  drawLimit: DrawLimit;
 };
 
 export type GameState = {

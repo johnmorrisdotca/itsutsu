@@ -9,6 +9,7 @@ import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { fetchGameDetail } from "./gameHistory";
 import { GAME_RESULTS } from "./gameHistory.constants";
 import {
+  drawLimitSchema,
   handicapSchema,
   obstaclesSchema,
   openingSchema,
@@ -50,6 +51,7 @@ export const gameRecordSchema = z
     obstacles: obstaclesSchema,
     opening: openingSchema,
     handicap: handicapSchema,
+    drawLimit: drawLimitSchema,
     seed: z.number().int().min(0).max(2 ** 31 - 1).default(0),
     opener: stoneSchema,
     result: z.enum(GAME_RESULTS),
@@ -102,6 +104,7 @@ export async function recordGame(input: GameRecordInput): Promise<GameDetail> {
       obstacles: input.obstacles,
       opening: input.opening,
       handicap: input.handicap ?? undefined,
+      drawLimit: input.drawLimit,
       seed: input.seed,
       opener: input.opener,
       result: input.result,

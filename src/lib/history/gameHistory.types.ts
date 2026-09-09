@@ -59,6 +59,8 @@ export type GameSummary = {
   forfeits: { black: number; white: number };
   /** Whether a seat may give the game up. */
   allowResign: boolean;
+  /** The length the game was played under, see DrawLimit. */
+  drawLimit: string;
   /** "move" or "game": whether the limit is per move or a budget for the whole game. */
   clockMode: string;
   /** Time each side has left under the whole-game clock; null under the per-move clock. */

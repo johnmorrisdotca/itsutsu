@@ -31,6 +31,7 @@ function game(
     moveCount: 20,
     durationMs: null,
   allowResign: true,
+  drawLimit: "none",
   clockMode: "move",
   blackTimeMs: null,
   whiteTimeMs: null,

@@ -73,6 +73,7 @@ export function keptGameDetail(game: LegacyGame): GameDetail {
     lastMoveAt: game.playedAt,
     forfeits: { black: 0, white: 0 },
     allowResign: true,
+    drawLimit: "none",
     clockMode: "move",
     blackTimeMs: null,
     whiteTimeMs: null,

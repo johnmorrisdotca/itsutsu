@@ -1,6 +1,7 @@
 import type {
   WrapMode,
   Blocked,
+  DrawLimit,
   FirstPlayer,
   Hot,
   PieceQueue,
@@ -546,6 +547,68 @@ export const DEFAULT_BOARD_SIZE = 15;
 
 export const DEFAULT_SWAPS_PER_SEAT = 1;
 
+/**
+ * The shares of the board a game may be called a draw at.
+ *
+ * A fraction rather than a number of moves, so one setting means the same
+ * thing on every board: half of a 9x9 is forty moves and half of a 19x19 is
+ * a hundred and eighty, and neither needs anybody to work it out. `none` is
+ * the default and is how every game here behaved before this existed.
+ */
+export const DRAW_LIMITS = {
+  none: "none",
+  half: "half",
+  threeQuarters: "threeQuarters",
+} as const satisfies Record<DrawLimit, DrawLimit>;
+
+export const DRAW_LIMIT_LIST: readonly DrawLimit[] = [
+  DRAW_LIMITS.none,
+  DRAW_LIMITS.half,
+  DRAW_LIMITS.threeQuarters,
+];
+
+/**
+ * The rule: what share of the board's points may be played before a game
+ * with no winner is a draw. Null plays it out. Kept apart from the words
+ * below the way VARIANT_SPECS is kept apart from RULE_VARIANT_DISPLAY — one
+ * of them decides what happens, the other only says it.
+ */
+/**
+ * The smallest board a length means anything on, in points.
+ *
+ * Nine by nine. Below it a game is over long before any share of the board
+ * could matter — a 3×3 has nine points and is finished in nine moves, so
+ * "half the board" is four, and cutting a game of noughts and crosses short
+ * at four moves is not a rule, it is a bug with a setting in front of it.
+ * The whole reason for a length is a board big enough that two careful
+ * players can fail to resolve it, and that starts here.
+ */
+export const DRAW_LIMIT_MIN_POINTS = 81;
+
+export const DRAW_LIMIT_SHARE: Record<DrawLimit, number | null> = {
+  none: null,
+  half: 1 / 2,
+  threeQuarters: 3 / 4,
+};
+
+export const DRAW_LIMIT_DISPLAY: Record<DrawLimit, { label: string; kanji: string; blurb: string }> = {
+  none: {
+    label: "Play it out",
+    kanji: "無制限",
+    blurb: "No limit. The game ends when somebody wins or the board fills.",
+  },
+  half: {
+    label: "Half the board",
+    kanji: "半盤",
+    blurb: "A draw once half as many moves as the board has points have been played with nobody winning.",
+  },
+  threeQuarters: {
+    label: "Three quarters",
+    kanji: "四分三",
+    blurb: "A draw once three quarters as many moves as the board has points have been played with nobody winning.",
+  },
+};
+
 export const DEFAULT_SETTINGS: GameSettings = {
   size: DEFAULT_BOARD_SIZE,
   winLength: WIN_LENGTH,
@@ -561,6 +624,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   allowSwap: false,
   allowResize: false,
   swapsPerSeat: DEFAULT_SWAPS_PER_SEAT,
+  drawLimit: DRAW_LIMITS.none,
 };
 
 /** Black opens unless the settings say otherwise. */

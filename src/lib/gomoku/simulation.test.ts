@@ -9,7 +9,7 @@ import {
   replayMoves,
 } from "./engine";
 import type { Stone } from "./gomoku.types";
-import { GAME_STATUS, RULE_VARIANTS } from "./gomoku.constants";
+import { GAME_STATUS, RULE_VARIANTS, VARIANT_SPECS } from "./gomoku.constants";
 import { rulesFor } from "./rules/handicap";
 import { bruteForceWinner, playOut } from "./simulation.support";
 
@@ -187,5 +187,102 @@ describe("the brute force scanner", () => {
     const game = createGame({ size: 9 });
     expect(bruteForceWinner(game.board, game.settings)).toBeNull();
     expect(pointOf(9, 0)).toEqual({ row: 0, col: 0 });
+  });
+});
+
+/**
+ * The length two players may agree to, restated by hand.
+ *
+ * The engine works the limit out from the settings; this counts the moves in
+ * the finished game itself and insists the two agree. An independent check
+ * rather than a second call to the same function, which is the whole point of
+ * the simulator: if the engine and this ever disagree, one of them is wrong
+ * and the seed says which game to look at.
+ */
+describe("a game given a length", () => {
+  const ALL = Object.values(RULE_VARIANTS);
+
+  /**
+   * The length this game would really be held to, worked out here rather than
+   * asked of the engine. Hex is exempt and has to be exempt: a full Hex board
+   * always holds exactly one chain from side to side, so a drawn Hex game
+   * cannot exist, and the rules page says so as a fact about the board.
+   */
+  function lengthByHand(state: { settings: { size: number; variant: string } }, share: number): number | null {
+    if (VARIANT_SPECS[state.settings.variant as keyof typeof VARIANT_SPECS].connects) return null;
+    const points = state.settings.size * state.settings.size;
+    // A board smaller than nine by nine is over before a share of it arrives,
+    // so it is given no length at all.
+    if (points < 81) return null;
+    return Math.floor(points * share);
+  }
+
+  it("never runs past the share of the board it was given", () => {
+    for (const variant of ALL) {
+      for (const [limit, share] of [["half", 1 / 2], ["threeQuarters", 3 / 4]] as const) {
+        const final = playOut({ size: 9, variant, drawLimit: limit }, 77 + variant.length);
+        const allowed = lengthByHand(final, share);
+        if (allowed === null) continue;
+        expect(
+          final.moves.length,
+          `${variant} under ${limit} played ${final.moves.length} moves, past ${allowed}`,
+        ).toBeLessThanOrEqual(allowed);
+        /*
+         * Reaching the length must end the game. Stopping short of it need
+         * not: the sliding games are called off by the simulator's own cap
+         * long before any length matters, and that is the harness, not a
+         * rule.
+         */
+        if (final.moves.length === allowed) {
+          /*
+           * Reaching the length ends the game, but not necessarily as a draw:
+           * somebody may have won on the very move that reached it, and a win
+           * beats a length. Either way it is over.
+           */
+          expect(final.status, `${variant} reached its length and kept playing`).not.toBe(
+            GAME_STATUS.playing,
+          );
+          if (final.status === GAME_STATUS.draw) {
+            expect(final.winner, `${variant} was drawn but has a winner`).toBeNull();
+          }
+        }
+      }
+    }
+  });
+
+  it("does not offer a length to a board too small to need one", () => {
+    // Tic-tac-toe on 3×3: half the board is four moves, and a game cut short
+    // after four moves is this setting misapplied, not a rule.
+    const limited = playOut({ variant: RULE_VARIANTS.tictactoe, drawLimit: "half" }, 8080);
+    const plain = playOut({ variant: RULE_VARIANTS.tictactoe }, 8080);
+    expect(limited.moves.length).toBe(plain.moves.length);
+    expect(limited.status).toBe(plain.status);
+    expect(limited.moves.length).toBeGreaterThan(4);
+  });
+
+  it("does not offer a length to a game that cannot be drawn", () => {
+    // Hex under a limit must play exactly as Hex without one.
+    for (const variant of ALL) {
+      if (!VARIANT_SPECS[variant].connects) continue;
+      const limited = playOut({ size: 9, variant, drawLimit: "half" }, 404 + variant.length);
+      const plain = playOut({ size: 9, variant }, 404 + variant.length);
+      expect(limited.moves.length).toBe(plain.moves.length);
+      expect(limited.status).toBe(plain.status);
+      expect(limited.status, `${variant} was drawn, which its board forbids`).not.toBe(
+        GAME_STATUS.draw,
+      );
+    }
+  });
+
+  it("leaves a game alone when no length was set", () => {
+    // The same seeds, unlimited: nothing about this feature may change a game
+    // nobody asked to shorten.
+    for (const variant of ALL) {
+      const unlimited = playOut({ size: 9, variant }, 77 + variant.length);
+      const explicit = playOut({ size: 9, variant, drawLimit: "none" }, 77 + variant.length);
+      expect(explicit.moves.length).toBe(unlimited.moves.length);
+      expect(explicit.status).toBe(unlimited.status);
+      expect(explicit.winner).toBe(unlimited.winner);
+    }
   });
 });

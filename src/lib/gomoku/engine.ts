@@ -1,4 +1,6 @@
 import { createGame } from "./rules/creation";
+import { settleDrawLimit } from "./rules/drawLimit";
+export { canBeDrawn, drawnByLength, movesBeforeDraw } from "./rules/drawLimit";
 import { flipLegal, playFlip, undoFlip } from "./rules/flips";
 import {
   GAME_STATUS,
@@ -211,7 +213,7 @@ export function placePiece(state: GameState, cells: readonly PieceCell[]): GameS
   if (lines.black.length > 0) return won(laid, STONES.black, WIN_REASONS.line, lines.black);
   if (lines.white.length > 0) return won(laid, STONES.white, WIN_REASONS.line, lines.white);
   if (!board.includes(null)) return { ...laid, status: GAME_STATUS.draw };
-  return { ...laid, toPlay: otherStone(toPlay) };
+  return settleDrawLimit({ ...laid, toPlay: otherStone(toPlay) });
 }
 
 /**
@@ -238,7 +240,7 @@ export function passTurn(state: GameState): GameState {
   if (previous !== undefined && previous.kind === MOVE_KINDS.pass) {
     return { ...passed, status: GAME_STATUS.draw };
   }
-  return { ...passed, toPlay: otherStone(state.toPlay) };
+  return settleDrawLimit({ ...passed, toPlay: otherStone(state.toPlay) });
 }
 
 /**
@@ -257,7 +259,12 @@ export function playMove(
 
   const { settings, toPlay } = state;
   const spec = VARIANT_SPECS[settings.variant];
-  if (spec.flips) return playFlip(state, point);
+  /*
+   * The flipping games settle themselves — a disc that turns nothing is not a
+   * legal move, and the game ends when neither colour can move — so their
+   * whole turn happens in playFlip and the length is checked on the way out.
+   */
+  if (spec.flips) return settleDrawLimit(playFlip(state, point));
   // The colour of the stone: the mover's, unless the game lets them choose, or fixes it.
   const stone = spec.singleColour ? STONES.black : spec.anyColour ? (chosen ?? toPlay) : toPlay;
   const captured = capturesFrom(state.board, settings, stone, point);
@@ -299,11 +306,11 @@ export function playMove(
   }
 
   const stays = stonesLeftInTurn(settings, after.moves, toPlay) > 0;
-  return {
+  return settleDrawLimit({
     ...after,
     toPlay: stays ? toPlay : otherStone(toPlay),
     opening: openingAfterMove(after),
-  };
+  });
 }
 
 export function canSkip(state: GameState): boolean {

@@ -8,6 +8,7 @@ import {
   WIN_REASONS,
 } from "../gomoku.constants";
 import type { Cell, GameState, Move, Point, Stone } from "../gomoku.types";
+import { settleDrawLimit } from "./drawLimit";
 import { cellAtPoint, indexOf, isOnBoard, isStone, otherStone, stepFrom } from "./board";
 import { campFilled, campMoves, campSquares } from "./camps";
 import { dropTarget } from "./drop";
@@ -176,7 +177,9 @@ export function twistBoard(state: GameState, quadrant: number, clockwise: boolea
   if (wins.white.length > 0) return won(turned, STONES.white, WIN_REASONS.line, wins.white);
   if (!board.includes(null)) return { ...turned, status: GAME_STATUS.draw };
 
-  return { ...turned, toPlay: otherStone(toPlay) };
+  // The twist is what completes the move, so this is where a twist game's
+  // length is checked rather than when the stone went down.
+  return settleDrawLimit({ ...turned, toPlay: otherStone(toPlay) });
 }
 
 /** Where a piece of the colour to move may step from `from`; empty if it may not move. */
@@ -206,9 +209,9 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
   if (VARIANT_SPECS[settings.variant].camps) {
     return campFilled(board, settings.size, toPlay)
       ? won(moved, toPlay, WIN_REASONS.camp, campSquares(settings.size, otherStone(toPlay)))
-      : { ...moved, toPlay: otherStone(toPlay) };
+      : settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });
   }
-  return settleStone(moved, to) ?? { ...moved, toPlay: otherStone(toPlay) };
+  return settleStone(moved, to) ?? settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });
 }
 
 

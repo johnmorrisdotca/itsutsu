@@ -1,5 +1,5 @@
 import { createGame, replayMoves } from "./engine";
-import { NO_HANDICAP } from "./gomoku.constants";
+import { DRAW_LIMITS, NO_HANDICAP } from "./gomoku.constants";
 import type { GameState, Handicap, MoveInput, Stone } from "./gomoku.types";
 
 /** The stored shape of a game, as both the API and the pages see it. */
@@ -12,6 +12,8 @@ type StoredGame = {
   opening?: string;
   handicap?: Handicap | null;
   seed?: number;
+  /** See DrawLimit. Games recorded before it existed carry "none", as they were played. */
+  drawLimit?: string;
   moves: MoveInput[];
 };
 
@@ -35,6 +37,7 @@ export function replayTimeline(game: StoredGame): GameState[] {
     handicap: game.handicap ?? NO_HANDICAP,
     seed: game.seed ?? 0,
     firstPlayer: game.opener as Stone,
+    drawLimit: (game.drawLimit ?? DRAW_LIMITS.none) as GameState["settings"]["drawLimit"],
     allowUndo: false,
     allowSwap: false,
   });

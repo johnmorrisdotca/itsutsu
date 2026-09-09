@@ -214,11 +214,16 @@ export const GAME_COPY = {
   winsByTrap: (who: string, loser: string) => `${who} wins. ${loser} made three in a row.`,
   winsBySquare: (who: string) => `${who} wins with a square`,
   drawBothLines: "Draw. Both made a line at once.",
+  drawByLength: "Draw. The game ran to the length it was given.",
   fixedBy: (game: string) => `Fixed by ${game}.`,
   penaltyStrict: "Loss of game, ignoring vacation days",
   rulesLocked: "The rules are fixed while a game is on. Start a new game to change them.",
   centreDiscs: { label: "Centre discs placed" },
   centreDiscsHint: "Two of each colour start in the centre, as in Othello. Off, and the players lay the first four themselves, as in the 1880s game.",
+  noDrawLimitCannotDraw:
+    "This game cannot end in a draw: a full board always joins one player's two sides. There is no length to set.",
+  noDrawLimitTooSmall:
+    "This board is too small to need a length. A game of this size is over well before any share of the board has been played.",
   noReading: "No reading in a game where stones move after they are placed.",
   idle: { label: "Are you still there?", kanji: "居る？" },
   idleDetail: "Nothing has moved for a couple of minutes, so the clock is paused.",

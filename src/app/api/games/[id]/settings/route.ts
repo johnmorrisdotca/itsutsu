@@ -17,6 +17,7 @@ import {
   sharedOpeningSchema,
   timeoutPenaltySchema,
   variantSchema,
+  drawLimitSchema,
 } from "@/lib/history/gameSettingsSchema";
 import { updateLiveGameSettings } from "@/lib/history/liveGame";
 import { overLimit } from "@/lib/api/rateLimit";
@@ -31,6 +32,7 @@ const settingsSchema = z.object({
   moveTimeMs: moveTimeSchema,
   timeoutPenalty: timeoutPenaltySchema,
   allowResign: z.boolean().default(true),
+  drawLimit: drawLimitSchema,
   clockMode: z.enum(["move", "game"]).default("move"),
   rated: z.boolean().default(true),
   open: z.boolean().default(false),

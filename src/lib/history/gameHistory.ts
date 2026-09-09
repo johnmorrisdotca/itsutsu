@@ -40,6 +40,7 @@ export const SUMMARY_SELECT = {
   blackForfeits: true,
   whiteForfeits: true,
   allowResign: true,
+  drawLimit: true,
   clockMode: true,
   blackTimeMs: true,
   whiteTimeMs: true,

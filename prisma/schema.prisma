@@ -93,6 +93,11 @@ model Game {
 
   /// Whether a seat may give the game up. The host decides when setting it up.
   allowResign Boolean   @default(true)
+  /// The length the players agreed to, see DrawLimit: "none" plays it out,
+  /// "half" and "threeQuarters" call it a draw at that share of the board's
+  /// points with nobody having won. Games recorded before it existed are
+  /// "none", which is how they were played.
+  drawLimit   String    @default("none")
   /// A seat anyone may take, posted on the games page: "white" while it waits,
   /// null once somebody has sat down or when the game was never open.
   /// Each seat's private read on its own play, given once the game is over: "up" or "down".

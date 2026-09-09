@@ -5,7 +5,15 @@ import {
 } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
+import { lengthReason } from "@/lib/gomoku/rules/drawLimit";
 import { GAME_COPY } from "./game.constants";
+
+/** Why a length is not on offer, in the player's words. */
+const LENGTH_REFUSALS: Record<string, string | null> = {
+  "cannot-draw": GAME_COPY.noDrawLimitCannotDraw,
+  "too-small": GAME_COPY.noDrawLimitTooSmall,
+  none: null,
+};
 
 /**
  * Which settings the current game has taken out of the players' hands, and
@@ -20,6 +28,7 @@ export type SettingsLocks = {
   obstacles: string | null;
   allowSkip: string | null;
   reading: string | null;
+  drawLimit: string | null;
 };
 
 export function settingsLocks(settings: GameSettings): SettingsLocks {
@@ -36,5 +45,13 @@ export function settingsLocks(settings: GameSettings): SettingsLocks {
     allowSkip:
       stonesMove || spec.placement === PLACEMENTS.drop ? fixed : null,
     reading: spec.analysis ? null : GAME_COPY.noReading,
+    /*
+     * Two reasons a game may not be given a length, and the player is told
+     * which. Hex cannot be drawn at all — a full board always holds exactly
+     * one chain from side to side. A small board is over before any share of
+     * it has been played. The engine refuses both either way; this is so the
+     * control says why rather than sitting there doing nothing.
+     */
+    drawLimit: LENGTH_REFUSALS[lengthReason(settings) ?? "none"],
   };
 }

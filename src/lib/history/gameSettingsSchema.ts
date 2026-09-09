@@ -5,6 +5,8 @@ import { z } from "zod";
 
 import {
   ALL_BOARD_SIZES,
+  DRAW_LIMITS,
+  DRAW_LIMIT_LIST,
   NO_HANDICAP,
   OBSTACLE_LAYOUTS,
   OPENING_RULES,
@@ -37,6 +39,15 @@ export const pieceCellsSchema = z
   .nullable();
 
 export const variantSchema = z.enum(RULE_VARIANT_LIST).default(RULE_VARIANTS.freestyle);
+
+/**
+ * The length a game may be given. Said once here rather than in each of the
+ * three routes that accept it, so they cannot drift apart about what a valid
+ * limit is. Anything unrecognised is refused rather than quietly played out.
+ */
+export const drawLimitSchema = z
+  .enum(DRAW_LIMIT_LIST as [string, ...string[]])
+  .default(DRAW_LIMITS.none);
 
 export const obstaclesSchema = z
   .enum([OBSTACLE_LAYOUTS.none, OBSTACLE_LAYOUTS.hoshi])

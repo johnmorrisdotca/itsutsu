@@ -1,4 +1,5 @@
 import { createGame, replayMoves } from "@/lib/gomoku/engine";
+import { DEFAULT_SETTINGS } from "@/lib/gomoku/gomoku.constants";
 import type {
   GameSettings,
   GameState,
@@ -96,7 +97,15 @@ export function loadSnapshot(): GameSnapshot | null {
     const parsed = JSON.parse(raw) as GameSnapshot;
     // Anything from an older or hand-edited shape is discarded, not migrated.
     if (parsed?.version !== 1 || !Array.isArray(parsed.moves)) return null;
-    return parsed;
+    /*
+     * Settings laid over the defaults rather than trusted whole. A game stored
+     * before a setting existed has no value for it, and a board resumed with a
+     * hole where a setting should be behaves in whatever way `undefined`
+     * happens to produce. Merging means a new setting arrives at its default
+     * in every game already in progress, which is what "off unless asked for"
+     * has to mean to be true.
+     */
+    return { ...parsed, settings: { ...DEFAULT_SETTINGS, ...parsed.settings } };
   } catch {
     return null;
   }
