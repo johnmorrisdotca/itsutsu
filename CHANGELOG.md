@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.61.0
+- Hex ヘックス: a rhombus of hexagons, six neighbours to a cell, and the game is won by joining your own two sides. A draw is impossible, which is a fact about the board rather than a rule.
+
 ## 0.60.1
 - The Admin page is in three parts — the door, the members, the work — and a player's page is a page again, with the kept records that made up two thirds of it in a component of their own
 

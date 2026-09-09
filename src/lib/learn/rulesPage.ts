@@ -52,7 +52,10 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   const sizes = boardSizesFor(variant);
 
   const object: string[] = [];
-  if (spec.camps) {
+  if (spec.connects) {
+    object.push("Join your own two sides of the board with an unbroken chain of your stones: Black the top and bottom, White the left and right.");
+    object.push("A full board always has exactly one winner, so a draw is impossible — that is a fact about the shape of the board, not a rule anybody wrote.");
+  } else if (spec.camps) {
     object.push("Be the first to fill the far corner camp with your pieces. Nothing is captured and no line counts for anything.");
     object.push("A side that keeps pieces at home to block still loses once every other square of its camp is taken.");
   } else if (spec.flips) {
@@ -102,6 +105,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   }
   if (spec.wormholes > 0) board.push("Two squares, chosen at random when the game starts, are the mouths of a wormhole. Nothing can land on a mouth, and a line that reaches one continues from the other in the same direction.");
   if (spec.pieces !== null) board.push(`Each player has ${spec.pieces} pieces.`);
+  if (spec.connects) {
+    board.push("A rhombus of hexagons, eleven a side by default. Black owns the top and bottom edges, marked dark; White owns the left and right, marked pale. The two corners between a dark edge and a pale one belong to both.");
+  }
   if (spec.camps) {
     board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
   }
@@ -114,7 +120,11 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   }
 
   const play: string[] = [];
-  if (spec.camps) {
+  if (spec.connects) {
+    play.push("Players take turns placing one stone on any empty cell. Nothing ever moves and nothing is ever taken.");
+    play.push("The board is a rhombus of hexagons, so a cell touches six others: the four beside it, and two of the corners — the ones along the board's own slant.");
+    play.push("The game ends the moment one colour's chain reaches from one of their sides to the other.");
+  } else if (spec.camps) {
     play.push("A turn moves one piece. It may step to any neighbouring empty square, in any of the eight directions.");
     play.push("Or it may jump: over an adjacent piece of either colour, into the empty square straight beyond it. From there it may jump again, and again, turning corners as it likes, so long as each jump crosses a piece. A move may stop after any jump.");
     play.push("A piece jumped over is not taken; it stays where it is.");
@@ -156,7 +166,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     );
   }
   if (spec.lineClear) play.push("When the bottom row is full it disappears and every stone above drops one row.");
-  if (spec.flips || spec.camps) {
+  if (spec.flips || spec.camps || spec.connects) {
     // Said above; a full board is only the usual way for both to be stuck, and a race has no full board.
   } else if (spec.misere) {
     if (spec.placement === PLACEMENTS.drop) play.push("You may not play directly on top of the opponent's last stone while any other column has room.");
@@ -186,6 +196,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
         ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only discs to count."
         : spec.camps
           ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only distance to cover."
+        : spec.connects
+          ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only whether your two sides are joined."
         : "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.",
   );
   house.push(copy.board);

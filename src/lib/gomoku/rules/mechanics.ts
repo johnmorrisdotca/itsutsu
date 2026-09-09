@@ -11,6 +11,7 @@ import type { Cell, GameState, Move, Point, Stone } from "../gomoku.types";
 import { cellAtPoint, indexOf, isOnBoard, isStone, otherStone, stepFrom } from "./board";
 import { campFilled, campMoves, campSquares } from "./camps";
 import { dropTarget } from "./drop";
+import { hexConnection } from "./hex";
 import { rulesFor } from "./handicap";
 import { findWinningLine, runThrough, winningLineFor } from "./lines";
 import { countStones, pieceDestinations, squareThrough } from "./pieces";
@@ -96,6 +97,12 @@ export function settleStone(state: GameState, point: Point, mover?: Stone): Game
   if (!isStone(stone)) return null;
   const spec = VARIANT_SPECS[settings.variant];
   const by = mover ?? stone;
+
+  // The connection game asks one question, and no other rule here applies.
+  if (spec.connects) {
+    const chain = hexConnection(board, settings.size, stone);
+    return chain.length > 0 ? won(state, stone, WIN_REASONS.connection, chain) : null;
+  }
 
   const winningLine = findWinningLine(board, settings, point);
   if (winningLine.length > 0) {

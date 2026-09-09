@@ -490,6 +490,20 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "16×16 is Halma as published, with nineteen pieces a side; 10×10 and 8×8 are the quick boards, with thirteen and ten. Played in the squares, like Reversi.",
   },
+  hex: {
+    label: "Hex",
+    kanji: "ヘックス",
+    tagline: "Join your own two sides of the board with an unbroken chain. A draw is impossible.",
+    origin: "Found twice: by Piet Hein in Copenhagen in 1942, and again by John Nash at Princeton in 1948, who is said to have proved that the first player wins with perfect play without anyone finding out how. The proof that it cannot end in a draw is the same argument.",
+    rules: [
+      "The board is a rhombus of hexagons; each one touches six others. Black owns the top and bottom sides, White the left and right.",
+      "Players take turns placing one stone on any empty cell. Nothing ever moves, and nothing is ever taken.",
+      "The first to join their own two sides with an unbroken chain of their stones wins.",
+      "A full board always has exactly one winner, so there are no draws: the two chains cannot both cross, and they cannot both fail.",
+      "Black has the advantage of the first stone, so the swap opening is offered: White may take Black's opening move as their own instead of answering it.",
+    ],
+    board: "11×11 is the usual size, and the one the world championship uses; 13×13 and 19×19 are played too. The corners belong to both of their sides.",
+  },
 };
 
 export const SECOND_STONE_EXCLUSION_DISPLAY: Record<number, { label: string; kanji: string }> = {

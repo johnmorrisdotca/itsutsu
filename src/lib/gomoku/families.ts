@@ -45,6 +45,12 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
     games: ["halma"],
   },
   {
+    title: "Connections",
+    kanji: "連結",
+    blurb: "No lines and nothing taken. Join your own two sides of the board before the other side joins theirs.",
+    games: ["hex"],
+  },
+  {
     title: "Small boards",
     kanji: "小盤",
     blurb: "Games you can read to the end, and games where the trick is what you must not do.",

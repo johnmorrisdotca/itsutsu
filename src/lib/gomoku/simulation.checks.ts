@@ -1,6 +1,7 @@
 import { expect } from "vitest";
 import { cellAt, forbiddenPoints, indexOf, isStone, otherStone, undoMove } from "./engine";
 import { rulesFor } from "./rules/handicap";
+import { checkConnectionMove, isConnection } from "./simulation.connections";
 import { stonesPlacedThisTurn } from "./rules/turns";
 import {
   bruteForceWinner,
@@ -28,6 +29,11 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
   // The flipping games play by their own rules, restated by hand below.
   if (isFlipping(after.settings.variant)) {
     checkFlipMove(before, after, played, where);
+    return;
+  }
+  // So does the connection game: no lines mean anything in it.
+  if (isConnection(after.settings.variant)) {
+    checkConnectionMove(before, after, played, where);
     return;
   }
 

@@ -80,6 +80,7 @@ export function Intersection({
   moveNumber,
   mark,
   camp = null,
+  unslant = false,
   stones,
   winningColour,
   readOnly,
@@ -97,6 +98,16 @@ export function Intersection({
       aria-label={label}
       className="group relative flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-default"
     >
+      {/*
+        * On the slanted board the cell is a rhombus, which is what makes the
+        * hit area right; the stone inside leans back so it is a circle again.
+        * Only the shear is undone — the board's scale is uniform and never
+        * made a circle into anything else.
+        */}
+      <span
+        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+        style={unslant ? { transform: "skewX(-26.565deg)" } : undefined}
+      >
       {camp !== null ? (
         <span
           className="pointer-events-none absolute inset-0"
@@ -127,6 +138,7 @@ export function Intersection({
         <StoneMark stone={ghost} stones={stones} ghost />
       ) : null}
       {mark !== null ? <Mark mark={mark} /> : null}
+      </span>
     </button>
   );
 }

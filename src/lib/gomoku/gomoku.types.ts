@@ -128,6 +128,7 @@ export type RuleVariant =
   | "miniReversi"
   | "grandReversi"
   | "halma"
+  | "hex"
   | "obstacleFive";
 
 /**
@@ -180,7 +181,7 @@ export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
  * How a won game was won. Null while nobody has. `trap` is the loser's doing:
  * they made the line the rules forbid. `square` is four in a 2×2.
  */
-export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count" | "camp";
+export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count" | "camp" | "connection";
 
 /**
  * Where a swap-style opening stands. `placing` and `extending` are stretches
@@ -280,6 +281,12 @@ export type VariantSpec = {
    * captures and placing mean nothing here.
    */
   camps: boolean;
+  /**
+   * The connection game. A colour wins by joining its own two sides of the
+   * board with a chain of touching stones, on a lattice where a cell touches
+   * six others rather than four or eight. No lines, no captures, no draws.
+   */
+  connects: boolean;
 };
 
 /** How a flipping game begins: nothing, the fixed four, or four the players lay themselves. */

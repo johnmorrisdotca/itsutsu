@@ -61,6 +61,8 @@ function ToPlay({ session }: { session: GameSession }) {
                 ? `${who} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}`
                 : state.winBy === WIN_REASONS.camp
                   ? `${who} wins: the far camp is full`
+                : state.winBy === WIN_REASONS.connection
+                  ? `${who} wins: ${state.winner === STONES.black ? "top and bottom are joined" : "left and right are joined"}`
                 : state.winBy === WIN_REASONS.resign
                   ? `${who} wins by resignation`
                   : `${who} wins in ${state.moves.length} moves`

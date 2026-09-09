@@ -100,6 +100,9 @@ function markByIndex(
  * The playing surface: coordinate gutters, the board with its lines, and one
  * button per intersection laid over them.
  */
+/** Half a cell per row, in degrees: the slant that turns a square grid into a hexagon lattice. */
+const SLANT = (Math.atan(0.5) * 180) / Math.PI;
+
 export function Board({
   state,
   appearance,
@@ -119,7 +122,7 @@ export function Board({
   // Othello and the drop games are played in the squares; the rest on the lines.
   const cells =
     appearance.grid === "cells" ||
-    (appearance.grid === "auto" && (spec.flips || spec.camps || spec.placement !== PLACEMENTS.free));
+    (appearance.grid === "auto" && (spec.flips || spec.camps || spec.connects || spec.placement !== PLACEMENTS.free));
 
   const last = lastMove(state);
   const lastIndex = last === null ? -1 : indexOf(size, last);
@@ -163,6 +166,8 @@ export function Board({
   ]);
   const twisting = live && onTwist !== undefined && canTwist(state) && spec.quadrantSize !== null;
   const dropping = spec.placement === PLACEMENTS.drop;
+  // A rhombus of hexagons, drawn as a slanted square grid.
+  const rhombus = spec.connects;
 
   /*
    * The piece games: the piece in hand hangs under the pointer with its
@@ -205,13 +210,28 @@ export function Board({
         className="relative aspect-square rounded-md"
         style={{
           background: theme.surface,
-          boxShadow: `0 0 0 0.4rem ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)`,
+          // A rhombus is the board here, not a square with one drawn on it, so
+          // the paper is cut to the same shape the grid is slanted into.
+          ...(rhombus
+            ? // A little wider than the rhombus itself, so a stone on an edge is not shaved.
+              { clipPath: "polygon(-2% 14%, 69% 14%, 102% 86%, 31% 86%)" }
+            : { boxShadow: `0 0 0 0.4rem ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)` }),
         }}
       >
-        <BoardLines size={size} theme={theme} quadrantSize={spec.quadrantSize} cells={cells} />
+        {/*
+          * The connection game is played on a rhombus of hexagons. A hexagon
+          * lattice is a square grid with every row shifted half a cell, so
+          * that is exactly what this does — skew the grid, squeeze it back
+          * into the square the board already occupies, and undo both on each
+          * cell so the stones stay round.
+          */}
+        <BoardLines size={size} theme={theme} quadrantSize={spec.quadrantSize} cells={cells} rhombus={rhombus} />
         <div
           className="absolute inset-0 grid"
-          style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+            ...(rhombus ? { transform: `translateY(16.667%) skewX(${SLANT}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : {}),
+          }}
         >
           {state.board.map((cell, index) => {
             const point = pointOf(size, index);
@@ -239,6 +259,7 @@ export function Board({
                 onHover={piecing ? setHovered : undefined}
                 moveNumber={numbers.get(index) ?? null}
                 mark={overlays.get(index) ?? null}
+                unslant={rhombus}
                 camp={spec.camps ? campOf(size, point) : null}
                 stones={stones}
                 winningColour={theme.winning}

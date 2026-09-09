@@ -118,6 +118,8 @@ export type IntersectionProps = {
   mark: BoardMark | null;
   /** Whose home camp this square is, in a race game; shaded so the corners read as camps. */
   camp?: Stone | null;
+  /** On a slanted board, undoes the slant so the stone inside is round. */
+  unslant?: boolean;
   stones: StoneSetTokens;
   winningColour: string;
   readOnly: boolean;

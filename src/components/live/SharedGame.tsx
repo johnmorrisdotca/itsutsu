@@ -412,6 +412,8 @@ function TurnBanner({
               ? `${STONE_DISPLAY[won].label} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}.`
               : state.winBy === WIN_REASONS.camp
                 ? `${STONE_DISPLAY[won].label} wins: the far camp is full.`
+                : state.winBy === WIN_REASONS.connection
+                  ? `${STONE_DISPLAY[won].label} wins: their two sides are joined.`
                 : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
         {finishedAt !== null ? (
           <span className="block text-xs font-normal opacity-80" data-testid="finished-at">

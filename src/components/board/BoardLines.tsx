@@ -8,11 +8,15 @@ import type { BoardThemeTokens } from "./board.types";
  * The button grid laid over it uses the same spacing, so they stay aligned at
  * any rendered size.
  */
+/** How wide a side's band is, in cells, on the connection board. */
+const BAND = 0.28;
+
 export function BoardLines({
   size,
   theme,
   quadrantSize = null,
   cells = false,
+  rhombus = false,
 }: {
   size: number;
   theme: BoardThemeTokens;
@@ -20,6 +24,8 @@ export function BoardLines({
   quadrantSize?: number | null;
   /** Rules the squares around the points instead of the lines through them: Othello, drop games. */
   cells?: boolean;
+  /** The connection game: the same grid, slanted, with a colour on each pair of sides. */
+  rhombus?: boolean;
 }) {
   const dividers =
     quadrantSize !== null && quadrantSize > 0 && size % quadrantSize === 0
@@ -40,7 +46,21 @@ export function BoardLines({
       viewBox={`0 0 ${size} ${size}`}
       className="absolute inset-0 h-full w-full"
       aria-hidden="true"
+      style={rhombus ? { transform: `translateY(16.667%) skewX(${(Math.atan(0.5) * 180) / Math.PI}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : undefined}
     >
+      {/*
+        * Each colour owns two sides, and a player has to be able to see which
+        * at a glance, so they are bands rather than lines: black along the top
+        * and bottom, white down the left and right.
+        */}
+      {rhombus ? (
+        <g>
+          <rect x={0} y={0} width={size} height={BAND} fill="#22231f" opacity={0.85} />
+          <rect x={0} y={size - BAND} width={size} height={BAND} fill="#22231f" opacity={0.85} />
+          <rect x={0} y={0} width={BAND} height={size} fill="#fffef9" opacity={0.9} />
+          <rect x={size - BAND} y={0} width={BAND} height={size} fill="#fffef9" opacity={0.9} />
+        </g>
+      ) : null}
       {indices.map((i) => (
         <line
           key={`h${i}`}

@@ -79,6 +79,7 @@ export const RULE_VARIANTS = {
   miniReversi: "miniReversi",
   grandReversi: "grandReversi",
   halma: "halma",
+  hex: "hex",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 export const WRAP_MODES = {
@@ -135,6 +136,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.miniReversi,
   RULE_VARIANTS.grandReversi,
   RULE_VARIANTS.halma,
+  RULE_VARIANTS.hex,
 ] as const satisfies readonly RuleVariant[];
 
 export const PLACEMENTS = {
@@ -187,6 +189,7 @@ export const WIN_REASONS = {
   full: "full",
   count: "count",
   camp: "camp",
+  connection: "connection",
 } as const satisfies Record<WinReason, WinReason>;
 
 export const OPENING_STAGES = {
@@ -264,6 +267,8 @@ const MINI_REVERSI_SIZES = [4, 6, 8] as const;
 const GRAND_REVERSI_SIZES = [10] as const;
 /** Halma's own board first; the small boards carry the camps the game is played with on them. */
 const HALMA_SIZES = [16, 10, 8] as const;
+/** Hex as it is played: eleven a side, with the bigger boards the federations also use. */
+const HEX_SIZES = [11, 13, 19] as const;
 
 function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return {
@@ -298,6 +303,7 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     flips: false,
     startingDiscs: STARTING_DISCS.none,
     camps: false,
+    connects: false,
     ...overrides,
   };
 }
@@ -443,6 +449,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   miniReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: MINI_REVERSI_SIZES }),
   grandReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: GRAND_REVERSI_SIZES }),
   halma: small({ camps: true, analysis: false, boardSizes: HALMA_SIZES }),
+  hex: small({ connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
 };
 
 /** The board sizes a variant plays on. */
@@ -514,7 +521,7 @@ export const OBSTACLE_LAYOUT_DISPLAY: Record<
 export const BOARD_SIZES = [9, 13, 15, 19] as const;
 
 /** Every size any game here is played on, for the schemas at the API edge. */
-export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 13, 15, 16, 19] as const;
+export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 19] as const;
 
 export const BOARD_SIZE_DISPLAY: Record<
   number,
@@ -527,6 +534,7 @@ export const BOARD_SIZE_DISPLAY: Record<
   7: { label: "Seven", kanji: "七路", note: "Drop Four" },
   8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma" },
   10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi, Halma" },
+  11: { label: "Eleven", kanji: "十一路", note: "Hex" },
   16: { label: "Sixteen", kanji: "十六路", note: "Halma" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },
   13: { label: "Medium", kanji: "中盤", note: "Shorter game" },
