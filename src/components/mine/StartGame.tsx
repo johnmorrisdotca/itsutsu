@@ -279,6 +279,16 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
           <Link href={rulesPath(variant)} className="underline underline-offset-4">
             Rules for {game.label}
           </Link>{" "}
+          ·{" "}
+          {/*
+            The way through for anything the sentence does not ask about — an
+            opening, a clock that is a budget, a friendly game. The sentence
+            stays one line for the common case; everything else settles the
+            rules in full before there is a game to change them on.
+          */}
+          <Link href={`${gamePath(variant)}/new`} className="underline underline-offset-4" data-testid="start-game-set-up">
+            set it up in full
+          </Link>{" "}
           · or browse the families below.
         </p>
       ) : null}
