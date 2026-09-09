@@ -9,6 +9,7 @@ import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
 import { fetchComputerPlayers, fetchDirectory, fetchLeaders } from "@/lib/rating/players";
+import { CountryMark } from "@/components/players/CountryMark";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
@@ -176,6 +177,8 @@ export default async function PlayersPage() {
                     ) : (
                       entry.email
                     )}
+                    {/* Where they are, which is most of why they answer at four in the morning. */}
+                    <CountryMark country={entry.country} className="text-sm" />
                   </span>
                 </td>
                 <td className="py-1.5 pr-3 font-mono tabular-nums">{entry.profile?.wins ?? 0}</td>

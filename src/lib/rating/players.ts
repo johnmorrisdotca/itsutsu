@@ -205,6 +205,8 @@ export type DirectoryEntry = {
   joinedAt: string;
   /** Joined within the last two weeks: someone to welcome. */
   isNew: boolean;
+  /** As they wrote it: free text, resolved to a flag where it can be. */
+  country: string;
   profile: PlayerProfile | null;
   /** The engine that plays this member's seats, when a program does. */
   botTier: string | null;
@@ -253,6 +255,7 @@ async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[]> {
     lastSeenAt: member.lastSeenAt.toISOString(),
     joinedAt: member.createdAt.toISOString(),
     isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
+    country: member.country,
     profile: byKey.get(playerKey(member.name)) ?? null,
     botTier: member.botTier,
     unclaimableBecause: member.unclaimableBecause,

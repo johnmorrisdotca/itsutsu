@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { CountryMark } from "@/components/players/CountryMark";
 import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
 import { LegacyOwnPage, PlayedEverywhere } from "@/components/players/LegacyRecord";
 import { LegacySourcePanel } from "@/components/players/LegacySource";
@@ -108,7 +109,19 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
     <Page width="standard" gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
-        <h1 className="text-lg font-semibold">{player?.name ?? member?.name ?? decoded}</h1>
+        <h1 className="flex items-baseline gap-2 text-lg font-semibold">
+          {player?.name ?? member?.name ?? decoded}
+          {/*
+            Where they are, said in full here because there is room for it —
+            the directory has only the flag. The profile form has promised
+            this for a long time and never showed it anywhere.
+          */}
+          <CountryMark
+            country={member?.country}
+            className="text-sm font-normal text-muted"
+            showName
+          />
+        </h1>
         {/*
           Two ratings, side by side, because there are two pools and hiding
           one behind the other is how a number stops meaning anything. The

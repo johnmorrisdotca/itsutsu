@@ -25,6 +25,12 @@ export type BotMember = {
   name: string;
   /** What its own page says about it. */
   bio: string;
+  /**
+   * Where they are from, so a flag stands beside their name like anybody
+   * else's. Japan for all three: the names are 級, 段 and 名人, and the site
+   * they play on is called five.
+   */
+  country: string;
 };
 
 export const BOT_MEMBERS: Record<BotTier, BotMember> = {
@@ -32,6 +38,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     tier: BOT_TIERS.kyu,
     id: "kyu",
     name: BOT_PROFILES.kyu.name,
+    country: "Japan",
     bio:
       "級 — a computer player, and the gentlest of the three. Kyu looks one " +
       "move ahead: it will finish a line that is already there, and it will " +
@@ -42,6 +49,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     tier: BOT_TIERS.dan,
     id: "dan",
     name: BOT_PROFILES.dan.name,
+    country: "Japan",
     bio:
       "段 — a computer player, and the middle of the three. Dan checks every " +
       "move against what you could do in reply, so it will not let you finish " +
@@ -52,6 +60,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     tier: BOT_TIERS.meijin,
     id: "meijin",
     name: BOT_PROFILES.meijin.name,
+    country: "Japan",
     bio:
       "名人 — a computer player, and the strongest of the three. Meijin reads " +
       "several moves ahead in the games where lines can be read, and answers " +

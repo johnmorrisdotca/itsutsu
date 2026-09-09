@@ -28,7 +28,7 @@ export async function ensureBotMembers(now = Date.now()): Promise<void> {
     await prisma.member.upsert({
       where: { id: bot.id },
       // Only the things a release may change. A rating is never written here.
-      update: { name: bot.name, bio: bot.bio, botTier: bot.tier },
+      update: { name: bot.name, bio: bot.bio, botTier: bot.tier, country: bot.country },
       create: {
         id: bot.id,
         // No address: a computer player never signs in, and never can.
@@ -36,6 +36,7 @@ export async function ensureBotMembers(now = Date.now()): Promise<void> {
         name: bot.name,
         bio: bot.bio,
         botTier: bot.tier,
+        country: bot.country,
         unclaimableBecause: UNCLAIMABLE_REASONS.computer,
         // Not in the "who is here" list: it is always here, which is not news.
         showOnline: false,
