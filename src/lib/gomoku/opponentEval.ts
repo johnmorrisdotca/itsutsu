@@ -11,6 +11,7 @@ import { DIRECTIONS, GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constan
 import { SHAPE_BASE } from "./analysis.constants";
 import { rulesFor } from "./engine";
 import { DECIDED_SCORE, DRAW_SCORE, EVAL_WEIGHTS } from "./opponent.constants";
+import { KOMI, scoreArea } from "./rules/go";
 import { threatAt } from "./threats";
 import { tengen } from "./obstacles";
 import type { GameState, Point, Stone, VariantSpec } from "./gomoku.types";
@@ -115,6 +116,26 @@ function flipScore(state: GameState, stone: Stone, spec: VariantSpec): number {
     sign * (discs[stone] - discs[foe]) * EVAL_WEIGHTS.disc * fullness +
     mobility * EVAL_WEIGHTS.mobility
   );
+}
+
+/**
+ * Go, by the only measure Go has: the area score, which is what the engine
+ * settles the game by.
+ *
+ * Go was falling through to the capture count, and its placements were being
+ * scored by the line reading — so the computer was being rewarded for
+ * building rows of five on a Go board and had no idea what territory was. It
+ * played a long, shapeless game because nothing it could see ever improved.
+ *
+ * Komi belongs in it: it is part of the score, and a bot that thinks an empty
+ * board is level is wrong before the first stone.
+ */
+function goScore(state: GameState, stone: Stone): number {
+  const area = scoreArea(state.board, state.settings.size);
+  const foe = otherStone(stone);
+  const mine = area[stone] + (stone === STONES.white ? KOMI : 0);
+  const theirs = area[foe] + (foe === STONES.white ? KOMI : 0);
+  return (mine - theirs) * EVAL_WEIGHTS.area;
 }
 
 /** How far a point is from the middle of the far camp it is racing towards. */
@@ -348,6 +369,7 @@ export function positionScore(state: GameState, stone: Stone): number {
   if (state.status !== GAME_STATUS.playing) return settledScore(state, stone);
   const spec = VARIANT_SPECS[state.settings.variant];
   if (spec.flips) return flipScore(state, stone, spec);
+  if (spec.go) return goScore(state, stone);
   if (spec.camps) return raceScore(state, stone);
   if (spec.connects) return connectScore(state, stone);
 

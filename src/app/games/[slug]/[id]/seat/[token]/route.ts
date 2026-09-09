@@ -4,7 +4,7 @@ import { matchPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { seatForToken } from "@/lib/history/liveGame";
-import { bindSeat, markSeatTaken } from "@/lib/history/seats";
+import { bindSeat, holdsOtherSeat, markSeatTaken } from "@/lib/history/seats";
 import { seatCookieName } from "@/lib/history/seatCookie";
 
 /** How long a claimed seat is remembered. A shared game is played over days at most. */
@@ -38,9 +38,22 @@ export async function GET(
   const seat = await seatForToken(id, token);
   if (seat === null) return new NextResponse(null, { status: 404 });
 
-  // Signed in: the seat is the account's now, on every device.
   const session = await currentSession();
   const mine = await currentMemberId();
+  /*
+   * One person, one side. Whoever starts a game holds both tokens — they have
+   * to, or they could not send the other one to anybody — and nothing stopped
+   * them from following it themselves and playing the game out against
+   * themselves while it sat on the noticeboard asking for an opponent.
+   *
+   * Refused rather than redirected somewhere clever: they already have a seat
+   * at this board, so sending them to the board is the whole of what they
+   * wanted, and it leaves the other seat for whoever it was posted for.
+   */
+  if (mine !== null && (await holdsOtherSeat(id, seat, mine))) {
+    return NextResponse.redirect(new URL(matchPath(game.variant, id), request.url), 303);
+  }
+  // Signed in: the seat is the account's now, on every device.
   if (mine !== null) await bindSeat(id, seat, mine, session?.name ?? "");
 
   /*

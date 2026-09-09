@@ -138,6 +138,20 @@ export const EVAL_WEIGHTS = {
   shape: 1,
   /** How much a point being near the middle is worth, to break ties inwards. */
   centre: 2,
+  /** Per point of the area lead in Go, which is the whole of that game's result. */
+  area: 100,
+  /**
+   * What passing is worth in Go when playing on gains nothing.
+   *
+   * Small on purpose: any move that actually takes a point of area beats it
+   * many times over, so this never buys a pass out of a live game. It decides
+   * one case only, and it is the case that matters — once every remaining
+   * legal move is inside the bot's own territory, filling those points is
+   * worth exactly nothing under area scoring, and without this the bot went
+   * on playing them until the board was full. Two passes end a game of Go;
+   * something has to prefer the pass.
+   */
+  goPass: 1,
 } as const;
 
 /**

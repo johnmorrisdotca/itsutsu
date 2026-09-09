@@ -1,6 +1,6 @@
 import { otherStone } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
-import { DECIDED_SCORE, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
+import { DECIDED_SCORE, EVAL_WEIGHTS, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
 import { pieceScore, positionScore, pointScore, readsThreats, threatScore } from "./opponentEval";
 import { applyTurn, legalTurns } from "./opponentTurns";
 import { searchTurn } from "./opponentSearch";
@@ -47,7 +47,14 @@ function baseScore(state: GameState, turn: BotTurn, after: GameState, me: Stone,
    * a laid piece or a pass has no single point to read, so those are scored by
    * the position alone.
    */
-  const readsPoints = !variant.flips && !variant.camps && !variant.connects;
+  /*
+   * Go is not a line game either. Scoring its points by shape rewarded the
+   * computer for building rows of five on a Go board, which is why it played
+   * such a long, aimless game there: the thing it was measuring had nothing
+   * to do with the thing it was playing. Its position score is the area, and
+   * the area already says what a stone was worth.
+   */
+  const readsPoints = !variant.flips && !variant.camps && !variant.connects && !variant.go;
   if (turn.kind === MOVE_KINDS.place && readsPoints) {
     const point = { row: turn.row, col: turn.col };
     const stone = turn.stone ?? me;
@@ -58,6 +65,19 @@ function baseScore(state: GameState, turn: BotTurn, after: GameState, me: Stone,
   if (turn.kind === MOVE_KINDS.piece && readsPoints) {
     score += pieceScore(state, turn.cells, me, variant);
   }
+  /*
+   * In Go, pass when playing on gains nothing.
+   *
+   * Under area scoring a stone inside your own territory is worth exactly
+   * what the empty point it fills was worth, so filling your own ground
+   * scores the same as passing — and with nothing to separate them the
+   * computer went on playing until the board was full, which is how a game
+   * of Go on 19x19 took over a minute and never looked like Go. Taking a
+   * point of anybody's ground still beats this many times over, so it never
+   * buys a pass out of a live game; it decides only the case where every
+   * remaining move is worth nothing, and there the right move is to pass.
+   */
+  if (variant.go && turn.kind === MOVE_KINDS.pass) score += EVAL_WEIGHTS.goPass;
   return score;
 }
 

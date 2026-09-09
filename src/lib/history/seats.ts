@@ -56,8 +56,12 @@ export async function markSeatTaken(id: string, seat: Stone, now = new Date()): 
  * Whether a seat is still to be given out.
  *
  * A seat nobody has taken is the only one whose link is worth showing, and
- * the only one whose link is safe to show. An open seat posted on the
- * noticeboard is by definition untaken, whatever else is on the row.
+ * the only one whose link is safe to show. A posted seat used to be treated
+ * as untaken whatever else was on the row — "by definition", the comment
+ * said — and it is not: somebody claiming a posted seat stamps it like any
+ * other, and after that the game is not waiting for anybody. Reporting it
+ * free anyway left the seat advertised on the noticeboard and its link on
+ * screen after it had been sat in.
  *
  * A game with a stone on it is past inviting anybody, whatever the seats
  * say. That is the stronger rule and it covers the cases the per-seat one
@@ -76,9 +80,34 @@ export function seatIsFree(
   seat: Stone,
 ): boolean {
   if ((game.moveCount ?? 0) > 0) return false;
-  if (game.openSeat === seat) return true;
+  // A posted seat is offered to anybody, but — like every other seat — only
+  // until somebody takes it. There is no case left where openSeat matters.
   const claimed = seat === STONES.black ? game.blackClaimedAt : game.whiteClaimedAt;
   return claimed === null || claimed === undefined;
+}
+
+/**
+ * Whether this account is already sitting at the other side of this game.
+ *
+ * A seat token is the whole credential, and the person who starts a game is
+ * handed both — they have to be, or they could not send the other one to
+ * anybody. Nothing then stopped them from following it themselves, and
+ * because a posted seat reported as free for ever, the game stayed on the
+ * noticeboard while one person played both colours of it. Somebody could
+ * have sat down into a game that was already three moves old.
+ *
+ * A game deliberately played at one screen is the exception and says so on
+ * the row: both seats share a token there, which is what hot seat means.
+ */
+export async function holdsOtherSeat(id: string, seat: Stone, memberId: string): Promise<boolean> {
+  const row = await prisma.game.findUnique({
+    where: { id },
+    select: { blackMemberId: true, whiteMemberId: true, blackToken: true, whiteToken: true },
+  });
+  if (row === null) return false;
+  if (row.blackToken === row.whiteToken) return false;
+  const other = seat === STONES.black ? row.whiteMemberId : row.blackMemberId;
+  return other !== null && other === memberId;
 }
 
 /**

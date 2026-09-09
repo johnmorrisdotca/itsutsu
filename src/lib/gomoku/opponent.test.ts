@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import { createGame, playMove } from "./engine";
-import { GAME_STATUS, RULE_VARIANTS, RULE_VARIANT_LIST, STONES, VARIANT_SPECS } from "./gomoku.constants";
+import { GAME_STATUS, MOVE_KINDS, RULE_VARIANTS, RULE_VARIANT_LIST, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { boardSizesFor } from "./gomoku.constants";
 import { seededRandom } from "./rules/random";
 import { BOT_PROFILES, BOT_TIER_LIST, BOT_TIERS, TIER_SPECS } from "./opponent.constants";
 import { chooseTurn } from "./opponent";
 import { applyTurn, legalTurns } from "./opponentTurns";
 import { readsThreats } from "./opponentEval";
+import { fromDiagram } from "./gomoku.test-support";
 import { searchTurn, searchable } from "./opponentSearch";
 import type { GameSettings, GameState, RuleVariant } from "./gomoku.types";
 import type { BotTier } from "./opponent.types";
@@ -116,14 +117,14 @@ describe("every turn it offers is a turn the rules allow", () => {
 
 describe("it can finish a game of anything on the site", () => {
   /*
-   * Go's own board is 19×19, four times the points of the 9×9 and 10×10
-   * boards every other variant here is checked on, and its chooser has no
-   * shape-based reading to lean on the way the line games do (`analysis` is
-   * off), so it weighs every one of those points by the same general score
-   * the whole game through. A full game reliably finishes — see below — just
-   * past the default 5s test timeout, so it alone gets more room; a real bug
-   * would still show up as the guard cap or an outright refusal, neither of
-   * which a longer clock hides.
+   * Go's board is 19×19, four times the points of the 9×9 and 10×10 boards
+   * every other variant here is checked on, so it gets more room than the
+   * default 5s. Scoring Go by area, rather than by a line reading that meant
+   * nothing there, and preferring a pass over a move that gains nothing, took
+   * the seed this suite plays from about 68 seconds to about five. It varies
+   * a lot by seed — some games still run to half a minute — because playing
+   * Go *well* is a separate matter from knowing when to stop, so the margin
+   * here is generous on purpose.
    */
   it.each([...RULE_VARIANT_LIST])(
     "%s",
@@ -141,7 +142,7 @@ describe("it can finish a game of anything on the site", () => {
         expect([GAME_STATUS.won, GAME_STATUS.draw]).toContain(state.status);
       }
     },
-    120_000,
+    30_000,
   );
 });
 
@@ -321,4 +322,65 @@ describe("the grades beat the grades below them", () => {
   it("Meijin beats Kyu at Reversi", () => {
     expect(series(RULE_VARIANTS.reversi, BOT_TIERS.meijin, BOT_TIERS.kyu, 6).score).toBeGreaterThan(0.5);
   });
+});
+
+/**
+ * The computer player knows when to stop in Go.
+ *
+ * It did not. Go fell through to the capture count and its placements were
+ * scored by the line reading, so the bot was being rewarded for building rows
+ * of five on a Go board — and since filling your own ground costs nothing
+ * under area scoring, nothing ever told it to stop. It played on until the
+ * board was full.
+ */
+describe("the computer player in Go", () => {
+  it("passes when there is nothing left worth playing", () => {
+    /*
+     * A 9×9 board that is entirely Black's: every point is a black stone or
+     * an empty point only black stones touch. Playing anywhere gains Black
+     * nothing at all, so the only sensible turn is the pass that ends it.
+     */
+    const state = fromDiagram(
+      [
+        ". x . . . . . . .",
+        "x x x x x x x x x",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+      ].join("\n"),
+      { toPlay: STONES.black, settings: { variant: "go", size: 9 } },
+    );
+    const turn = chooseTurn(state, BOT_TIERS.dan, () => 0.5);
+    expect(turn?.kind, "the bot should pass rather than fill its own ground").toBe(
+      MOVE_KINDS.pass,
+    );
+  });
+
+  it("still plays a stone when a stone is worth playing", () => {
+    // An empty board: every stone takes a point of area, so passing is wrong.
+    const state = createGame({ variant: "go", size: 9 });
+    const turn = chooseTurn(state, BOT_TIERS.dan, () => 0.5);
+    expect(turn?.kind, "the bot should not pass an empty board away").toBe(MOVE_KINDS.place);
+  });
+
+  it("finishes a game of Go rather than filling the board", () => {
+    const state = playOut("go", BOT_TIERS.dan, BOT_TIERS.kyu, 4321);
+    // Two passes end a game of Go; it must actually reach an end.
+    expect(state.status).not.toBe(GAME_STATUS.playing);
+    /*
+     * And it must end because both sides chose to stop, not because there was
+     * nowhere left to put a stone. That is the whole of what this fix claims:
+     * the bot still plays a long game on a big board, and playing Go *well* —
+     * knowing a hopeless invasion from a live one — is a separate matter and
+     * not attempted here. What it no longer does is play on to the last point
+     * because nothing could tell it the game was over.
+     */
+    const points = state.settings.size * state.settings.size;
+    const stones = state.board.filter((cell) => cell !== null).length;
+    expect(stones, `played ${stones} of ${points} points`).toBeLessThan(points);
+  }, 60_000);
 });
