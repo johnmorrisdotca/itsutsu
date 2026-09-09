@@ -6,18 +6,19 @@ import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
-import { cellAt, discCount, inMovePhase, pieceMoves, rulesFor, otherStone } from "@/lib/gomoku/engine";
+import { cellAt, inMovePhase, pieceMoves, rulesFor, otherStone } from "@/lib/gomoku/engine";
 import { PieceTray } from "@/components/game/PieceTray";
 import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
 import { Button } from "@/components/ui/Controls";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { usePieceHand } from "@/components/game/usePieceHand";
-import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { ResignButton } from "@/components/mine/ResignButton";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
+import { TurnBanner } from "./TurnBanner";
 import { readQuiet, subscribeQuiet, writeQuiet } from "./quiet";
 import { settleFromRecord } from "@/lib/history/settle";
 import { useLiveGame } from "./useLiveGame";
@@ -427,70 +428,6 @@ export function SharedGame({
       ) : null}
       <ReactionLog reactions={shown} />
     </div>
-  );
-}
-
-function TurnBanner({
-  state,
-  seat,
-  yourTurn,
-  finished,
-  finishedAt = null,
-}: {
-  state: ReturnType<typeof replayGame>;
-  seat: Stone | null;
-  yourTurn: boolean;
-  finished: boolean;
-  /** When the last move landed, once the game is over; shown so nobody has to go to the record for it. */
-  finishedAt?: string | null;
-}) {
-  if (finished) {
-    const won = state.winner;
-    return (
-      <p className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${TONE_CLASS.great}`} data-testid="turn-banner">
-        {won === null
-          ? "Draw. The board is full."
-          : state.winBy === WIN_REASONS.resign
-            ? `${STONE_DISPLAY[won].label} wins by resignation.`
-            : state.winBy === null
-              ? `${STONE_DISPLAY[won].label} wins. The game is over.`
-            : state.winBy === WIN_REASONS.count
-              ? `${STONE_DISPLAY[won].label} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}.`
-              : state.winBy === WIN_REASONS.camp
-                ? `${STONE_DISPLAY[won].label} wins: the far camp is full.`
-                : state.winBy === WIN_REASONS.connection
-                  ? `${STONE_DISPLAY[won].label} wins: their two sides are joined.`
-                : state.winBy === WIN_REASONS.blocked
-                  ? `${STONE_DISPLAY[won].label} wins: the other side has no move left.`
-                : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
-        {finishedAt !== null ? (
-          <span className="block text-xs font-normal opacity-80" data-testid="finished-at">
-            Finished {new Date(finishedAt).toLocaleString()}
-          </span>
-        ) : null}
-      </p>
-    );
-  }
-
-  if (seat === null) {
-    return (
-      <p className={`rounded-xl border px-3 py-2.5 text-sm ${TONE_CLASS.calm}`}>
-        You are watching. {STONE_DISPLAY[state.toPlay].label} to play.
-      </p>
-    );
-  }
-
-  return (
-    <p
-      className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${
-        yourTurn ? TONE_CLASS.good : TONE_CLASS.calm
-      }`}
-      data-testid="turn-banner"
-    >
-      {yourTurn
-        ? `Your move — you are ${STONE_DISPLAY[seat].label}.`
-        : `Waiting for ${STONE_DISPLAY[state.toPlay].label}…`}
-    </p>
   );
 }
 
