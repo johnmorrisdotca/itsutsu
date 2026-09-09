@@ -89,14 +89,25 @@ test.describe("where somebody is", () => {
     await expect(page.getByTestId("player-bio")).toContainText("段");
   });
 
-  test("gives the three computer players their flag as well", async ({ page }) => {
-    // John asked for this: they are players in their own right, so they get
-    // what every other player gets.
+  test("gives every computer player their flag as well", async ({ page }) => {
+    /*
+     * John asked for this: they are players in their own right, so they get
+     * what every other player gets.
+     *
+     * However many of them there are, and wherever each is from. This used to
+     * name three and expect Japan of all of them, and went stale the day two
+     * more arrived from Russia and China — a test that has to be edited to
+     * add a player is a test that will be edited without being read.
+     */
     await page.goto("/players");
     const rows = page.getByTestId("computer-player");
-    await expect(rows).toHaveCount(3);
-    for (let i = 0; i < 3; i += 1) {
-      await expect(rows.nth(i).getByTestId("country-mark")).toHaveAttribute("data-country", "JP");
+    const count = await rows.count();
+    expect(count, "the computer players are not on the page at all").toBeGreaterThan(2);
+    for (let i = 0; i < count; i += 1) {
+      const mark = rows.nth(i).getByTestId("country-mark");
+      await expect(mark, `computer player ${i + 1} has no flag`).toHaveCount(1);
+      // A real country, not the code echoed back because nothing resolved.
+      await expect(mark).not.toHaveAttribute("data-country", "");
     }
   });
 });

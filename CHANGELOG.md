@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.99.0
+- Five computer players, not three: разряд from Russia and 国手 from China join Kyu, Dan and Meijin
+
 ## 0.98.0
 - What you can do about somebody, on the page about them
 
