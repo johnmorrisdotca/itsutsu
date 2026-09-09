@@ -7,8 +7,11 @@ import { DEFAULT_GAME_DEFAULTS, gameDefaultsFrom, type GameDefaults } from "@/co
 
 import { prisma } from "@/lib/prisma";
 import { revokeInviteCode } from "@/lib/invite/inviteStore";
+import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
+import { isAdminEmail } from "./admin";
+import { memberKind, type MemberKind } from "./memberKind";
 
 /**
  * Somebody who signs in. The address is what they sign in with, so every
@@ -265,10 +268,40 @@ export type MemberSummary = NamedMember & {
   bannedAt: string | null;
   bannedNote: string;
   invitedWith: string;
+  /**
+   * What sort of member this is, worked out on the server.
+   *
+   * It has to be, because being the operator is membership of ADMIN_EMAILS
+   * rather than a column, and that list is an environment variable — a
+   * component that could work this out for itself would be a component that
+   * could read the allowlist.
+   */
+  kind: MemberKind;
+  /** True of exactly one row in the operator's own list: theirs. */
+  isYou: boolean;
 };
 
-/** Every member, most recently seen first. The operator's own view; nobody else sees it. */
-export async function listMembers(limit = 200): Promise<MemberSummary[]> {
+/**
+ * Which sort of kept record somebody is, where the legacy data says.
+ *
+ * Chibi and Kyokosan are member rows now, and nothing on the row itself
+ * distinguishes a man who has died from a woman who simply never joined. The
+ * record kept of them does, and it is matched by the name they are known by.
+ */
+function legacyKindOf(name: string): "remembered" | "honorary" | "elsewhere" | null {
+  const key = playerKey(name);
+  return LEGACY_PLAYERS.find((legacy) => playerKey(legacy.name) === key)?.kind ?? null;
+}
+
+/**
+ * Every member, most recently seen first. The operator's own view; nobody
+ * else sees it.
+ *
+ * `you` is the address of whoever is reading the list, so their own row can
+ * be told apart from everybody else's — the controls that make no sense
+ * pointed at yourself are the reason it is needed.
+ */
+export async function listMembers(limit = 200, you: string | null = null): Promise<MemberSummary[]> {
   const rows = await prisma.member.findMany({
     orderBy: { lastSeenAt: "desc" },
     take: limit,
@@ -282,13 +315,22 @@ export async function listMembers(limit = 200): Promise<MemberSummary[]> {
       bannedAt: true,
       bannedNote: true,
       invitedWith: true,
+      unclaimableBecause: true,
     },
   });
-  return rows.map((row) => ({
+  const mine = you === null ? null : foldEmail(you);
+  return rows.map(({ unclaimableBecause, ...row }) => ({
     ...row,
     createdAt: row.createdAt.toISOString(),
     lastSeenAt: row.lastSeenAt.toISOString(),
     bannedAt: row.bannedAt === null ? null : row.bannedAt.toISOString(),
+    kind: memberKind({
+      email: row.email,
+      unclaimableBecause,
+      isOperator: isAdminEmail(row.email),
+      legacyKind: legacyKindOf(row.name),
+    }),
+    isYou: mine !== null && row.email !== null && foldEmail(row.email) === mine,
   }));
 }
 

@@ -7,6 +7,7 @@ import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button, RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/members";
+import { MemberKindBadge } from "./MemberKindBadge";
 
 const json = async (url: string) => {
   const response = await fetch(url);
@@ -77,10 +78,21 @@ export function AdminMembers() {
             data-email={member.email}
           >
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate font-medium">
-                {member.name.trim() === "" ? <span className="text-muted">No name yet</span> : member.name}
+              {/*
+                A row is a row whatever is in it, and a badge is exactly the
+                kind of thing that would make one taller than its neighbours.
+                The name line keeps a badge's height whether or not one is
+                drawn into it — the same construction RowActions uses for the
+                controls, for the same reason.
+              */}
+              <span className="flex min-h-7 min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-medium">
+                <span className="truncate">
+                  {member.name.trim() === "" ? <span className="text-muted">No name yet</span> : member.name}
+                </span>
+                {/* What they are, then what has been done to them. Somebody can be a shut operator. */}
+                <MemberKindBadge kind={member.kind} />
                 {member.bannedAt === null ? null : (
-                  <span className="ml-2 rounded-full border border-shu/40 px-2 py-0.5 text-[0.65rem] font-semibold text-shu">
+                  <span className="shrink-0 rounded-full border border-shu/40 px-2 py-0.5 text-[0.65rem] font-semibold text-shu">
                     Shut 停止
                   </span>
                 )}
@@ -107,7 +119,19 @@ export function AdminMembers() {
             */}
             {account === null ? (
               /* A kept record is not an account: there is nothing to shut. */
-              <span className="text-xs text-muted">Kept record</span>
+              <span className="text-xs text-muted">No account</span>
+            ) : member.isYou ? (
+              /*
+               * Your own row. This used to offer to shut it, answer 200, and
+               * do nothing at all, because the operator check never read the
+               * ban. It reads it now — which is exactly why this cannot be
+               * offered: the ban is checked on every request and the only
+               * control that would undo it is behind the door it just shut.
+               * An operator is named in the deployment and unnamed there.
+               */
+              <span className="text-xs text-muted" data-testid="cannot-shut-yourself">
+                This is you
+              </span>
             ) : member.bannedAt === null ? (
               <ConfirmButton
                 label="Shut the account"
