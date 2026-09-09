@@ -4,6 +4,7 @@ import {
   OBSTACLE_LAYOUTS,
   OPENING_RULES,
   STONE_DISPLAY,
+  sizeForVariant,
 } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY, variantLabel } from "@/lib/gomoku/variants.constants";
 import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
@@ -38,9 +39,25 @@ export function describeRules(rules: RulesLike): string {
   const variant = rules.variant in RULE_VARIANT_DISPLAY
     ? RULE_VARIANT_DISPLAY[rules.variant as RuleVariant]
     : null;
+  /*
+   * The board that is drawn, not the number in the row.
+   *
+   * The engine snaps a size the variant does not offer as it builds a state,
+   * so the board a player looks at is always one the game actually has. The
+   * row is not snapped retrospectively, and rows written before anything
+   * snapped on the way in still carry impossible numbers — a Halma game
+   * stored at 9 while sixteen columns are drawn in front of it, which is
+   * exactly what John found. Saying the row's number would be describing a
+   * board nobody can see.
+   *
+   * Games written since have their size settled on the way in, so for those
+   * this changes nothing. It is here for the ones written before, and for the
+   * general rule: a label about a board should agree with the board.
+   */
+  const size = variant === null ? rules.size : sizeForVariant(rules.variant as RuleVariant, rules.size);
   const parts = [
     variant ? `${variant.label} ${variant.kanji}` : variantLabel(rules.variant),
-    `${rules.size}×${rules.size}${BOARD_SIZE_DISPLAY[rules.size] ? ` ${BOARD_SIZE_DISPLAY[rules.size].label}` : ""}`,
+    `${size}×${size}${BOARD_SIZE_DISPLAY[size] ? ` ${BOARD_SIZE_DISPLAY[size].label}` : ""}`,
   ];
   if (rules.opening !== OPENING_RULES.free && rules.opening in OPENING_DISPLAY) {
     parts.push(`${OPENING_DISPLAY[rules.opening as OpeningRule].label} opening`);
