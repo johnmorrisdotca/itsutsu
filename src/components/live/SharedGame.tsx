@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import useSWR from "swr";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -16,19 +15,11 @@ import { ResignButton } from "@/components/mine/ResignButton";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
+import { useLiveGame } from "./useLiveGame";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
-
-/** How often a waiting board asks whether the other side has moved. */
-const POLL_MS = 2500;
-
-const fetcher = async (url: string): Promise<GameDetail> => {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Could not load the game.");
-  return response.json();
-};
 
 /**
  * A game played from two devices.
@@ -63,27 +54,7 @@ export function SharedGame({
     () => readQuiet(initial.id),
     () => false,
   );
-  /*
-   * Whether to keep asking. Driven from `onSuccess` rather than SWR's
-   * function-form `refreshInterval`, which does not schedule a poll at all.
-   */
-  const [polling, setPolling] = useState(initial.status === "active");
-
-  const { data: game, mutate } = useSWR(`/api/games/${initial.id}`, fetcher, {
-    fallbackData: initial,
-    // A finished game has nothing left to poll for.
-    refreshInterval: polling ? POLL_MS : 0,
-    onSuccess: (latest) => setPolling(latest.status === "active"),
-    /*
-     * Keep polling while the tab is in the background. This is a game played
-     * over minutes on two phones — the board has to be current the moment
-     * someone looks at it, not a poll interval later.
-     */
-    refreshWhenHidden: true,
-    revalidateOnFocus: true,
-  });
-
-  const detail = game ?? initial;
+  const { game: detail, mutate } = useLiveGame(initial);
   const state = settleFromRecord(replayGame(detail), detail);
 
   const played = state.moves.length;

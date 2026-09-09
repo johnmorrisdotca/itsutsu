@@ -1,11 +1,28 @@
 import { NextResponse } from "next/server";
 
 import { NO_STORE, notFound, serverError } from "@/lib/api/apiResponse";
+import {
+  RATE_LIMITS,
+  checkRateLimit,
+  createRateLimitResponse,
+  getClientIp,
+} from "@/lib/api/rateLimit";
 import { deleteGame, fetchGameDetail } from "@/lib/history/gameHistory";
 
-/** One game, with every stone in the order it was played. */
-export async function GET(_request: Request, ctx: RouteContext<"/api/games/[id]">) {
+/**
+ * One game, with every stone in the order it was played.
+ *
+ * This is the route a live board polls, so it is the one route on the site
+ * that a single open tab calls on a timer. It answers `no-store` — a board
+ * two moves out of date is worse than no board — which means every call
+ * reaches the database, and a page left open in a loop would otherwise have
+ * no ceiling at all.
+ */
+export async function GET(request: Request, ctx: RouteContext<"/api/games/[id]">) {
   try {
+    const limited = checkRateLimit(`game:${getClientIp(request)}`, RATE_LIMITS.pollGame);
+    if (!limited.allowed) return createRateLimitResponse(limited);
+
     const { id } = await ctx.params;
     const game = await fetchGameDetail(id);
     if (game === null) return notFound("No such game.");

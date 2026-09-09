@@ -125,4 +125,11 @@ export const RATE_LIMITS = {
   adminSignIn: { windowMs: 60_000, maxRequests: 5 },
   /** Reads, including autocomplete on every keystroke. */
   read: { windowMs: 60_000, maxRequests: 240 },
+  /**
+   * A board asking whether the other side has moved: the busiest read on the
+   * site, because it is the only one a page makes on a timer. One watching
+   * tab spends twenty-four of these a minute, so the allowance is ten tabs
+   * from one address — a household on one connection, not a script.
+   */
+  pollGame: { windowMs: 60_000, maxRequests: 240 },
 } as const satisfies Record<string, RateLimitConfig>;
