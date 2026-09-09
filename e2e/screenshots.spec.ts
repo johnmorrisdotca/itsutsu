@@ -92,11 +92,18 @@ test.describe("screenshots", () => {
     }
   });
 
-  test("clocks, win chance and the early warning", async ({ page }) => {
+  test("clocks, who is ahead, and the early warning", async ({ page }) => {
+    /*
+     * "Show chance of winning" was replaced by "Who is ahead" when the
+     * percentage went, and this file was missed — the label it reached for
+     * had not existed for hours. A screenshot spec is the easiest place in
+     * the suite to leave an orphan like that, because nothing it asserts
+     * fails until the click itself cannot land.
+     */
     await openAdvanced(page);
     await openSetup(page);
     await page.getByTestId("time-control").selectOption("rapid");
-    await page.getByLabel("Show chance of winning").check();
+    await page.getByLabel("Who is ahead").check();
     await page.getByLabel("Warn before a three forms").check();
 
     await playSequence(page, 15, [[7, 3], [0, 0], [7, 4]]);
