@@ -65,6 +65,20 @@ test.describe("about", () => {
     await expect(go).toContainText("cannot play go here yet");
   });
 
+  test("the ratings section keeps our rules and another site's apart", async ({ page }) => {
+    await page.goto("/about");
+    const ratings = page.getByTestId("about-section").filter({ hasText: "Ratings, in numbers" });
+    await expect(ratings).toHaveCount(1);
+    // The rule that is ours and was never written down: no farming beginners.
+    await expect(ratings).toContainText("gains nothing at all from winning");
+    // What is quoted from elsewhere is named as theirs, not stated as ours.
+    await expect(ratings).toContainText("Pente.org");
+    const tables = ratings.getByTestId("about-table");
+    // The example ladder, and ours beside theirs.
+    await expect(tables).toHaveCount(2);
+    await expect(tables.nth(1)).toContainText("200 below your best");
+  });
+
   test("the notation section says how a move is written, and names SGF", async ({ page }) => {
     await page.goto("/about");
     const notation = page.getByTestId("about-section").filter({ hasText: "How a move is written down" });

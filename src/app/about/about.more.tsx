@@ -83,14 +83,43 @@ const LADDER = (
     rows={[
       ["Mio", 1712, 31, "Established 確定", 20, 9, 2],
       ["Kai", 1655, 24, "Established 確定", 14, 8, 2],
-      ["Hana", 1608, 9, "Provisional 暫定", 5, 4, 0],
-      ["Ren", 1560, 12, "Provisional 暫定", 4, 7, 1],
+      ["Hana", 1608, 9, "Provisional 仮", 5, 4, 0],
+      ["Ren", 1560, 12, "Provisional 仮", 4, 7, 1],
       ["Sora", "–", 2, "Unrated 未定", 1, 1, 0],
     ]}
     caption={
       <>
         What a ladder looks like here, with made-up names. Everyone starts at 1600. Fewer than four rated games shows
         a dash; the number settles over the next sixteen while K is high; after twenty it moves slowly.
+      </>
+    }
+  />
+);
+
+/**
+ * Ours beside theirs.
+ *
+ * Two columns rather than a paragraph, because the danger in writing about
+ * another site's rules is that a reader takes them for ours. A column heading
+ * settles which is which in a way prose cannot: the left is what elo.ts does,
+ * the right is what Pente.org's own FAQ says it does.
+ */
+const RATING_RULES = (
+  <Table
+    head={["", "Here", "Pente.org"]}
+    rows={[
+      ["Provisional until", "twenty rated games", "twenty games"],
+      ["K, established player", "20", "32 for one game, 64 for a set"],
+      ["K, provisional player", "40", "an average of the games so far, not a K"],
+      ["Facing a provisional opponent", "no difference", "K scaled by their games ÷ 20"],
+      ["A rating floor", "none", "200 below your best, since May 2019"],
+      ["A heavy favourite winning", "gains nothing past 400 points", "not mentioned"],
+    ]}
+    caption={
+      <>
+        The right-hand column is Pente.org’s, from their published FAQ, and is a description of their site rather
+        than of this one. The left-hand column is what the code here actually does — the same file the ladder is
+        computed from — so where the two disagree, they really do disagree.
       </>
     }
   />
@@ -143,8 +172,26 @@ export const RATINGS_SECTION: AboutSection = {
       Golem, PlayOK and ItsYourTurn each keep an Elo-style rating for every game they offer. The dash you see beside
       a new name here is the honest version of what those sites show as a question mark.
     </>,
+    <>
+      One rule here is not in the arithmetic above, and it is worth knowing before anyone goes looking for easy
+      games: a player more than four hundred points above their opponent gains nothing at all from winning. The
+      loss still counts, and so does the draw. Elo on its own already makes a heavy favourite’s win worth almost
+      nothing — at four hundred points the expected score is ten to one, so the gain rounds to a point or two —
+      but almost nothing is still something, and a number that can be raised by beating beginners is a number that
+      will be. Past that gap it simply does not move upward.
+    </>,
+    <>
+      The elder sites answered the same questions differently, and <Out href="https://www.pente.org/">Pente.org</Out>{" "}
+      publishes its workings, which is a courtesy more sites should copy. By its own FAQ, an established player
+      there moves on a K of 32 — more than half again as fast as ours — and 64 for a set of games rather than a
+      single one. Its provisional players are not handled with a larger K at all but by averaging the value of the
+      games played so far, which has the strange and candid consequence that a provisional player can lose rating
+      by winning, if the win came against somebody far enough below them. And since May 2019 it has had a floor:
+      a rating cannot fall more than two hundred points below the best that player has ever held. We have none of
+      those three.
+    </>,
   ],
-  figures: { 0: <EloCurve />, 1: LADDER },
+  figures: { 0: <EloCurve />, 1: LADDER, 4: RATING_RULES },
 };
 
 export const OPENINGS_SECTION: AboutSection = {
