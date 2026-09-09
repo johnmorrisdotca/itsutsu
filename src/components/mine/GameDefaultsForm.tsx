@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Select, Toggle } from "@/components/ui/Controls";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { DEFAULT_GAME_DEFAULTS, type GameDefaults } from "@/components/game/gameDefaults";
 import { GAME_COPY } from "@/components/game/game.constants";
@@ -56,8 +57,14 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
     }
   }
 
+  /*
+   * The same race the sentence on the games page has: these are real selects
+   * before React has attached to them, and a choice made then is lost. A spec
+   * that opened this page and chose in the same breath saved nothing and
+   * reported no error, because there was nothing wrong with what it saved.
+   */
   return (
-    <div className="flex flex-col gap-4" data-testid="game-defaults">
+    <div className="flex flex-col gap-4" data-testid="game-defaults" {...readyMark(useHydrated())}>
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">Board</span>
         <Select

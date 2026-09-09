@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
-import { openAdvanced, openSetup, playAt } from "./support";
+import { openAdvanced, openSetup, playAt, ready } from "./support";
 
 /**
  * Where a new game starts for a member.
@@ -24,6 +24,7 @@ test.describe("new games start where the member said", () => {
     const page = await context.newPage();
 
     await page.goto("/me");
+    await ready(page, "game-defaults");
     await expect(page.getByTestId("game-defaults")).toBeVisible();
     await page.getByTestId("default-size").selectOption("9");
     await page.getByTestId("save-game-defaults").click();
@@ -84,6 +85,7 @@ test.describe("new games start where the member said", () => {
     const page = await context.newPage();
 
     await page.goto("/me");
+    await ready(page, "game-defaults");
     await page.getByTestId("default-size").selectOption("19");
     await page.getByTestId("default-draw-limit").selectOption("half");
     await page.getByTestId("save-game-defaults").click();
