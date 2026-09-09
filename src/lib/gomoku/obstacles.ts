@@ -8,6 +8,7 @@ import {
 } from "./gomoku.constants";
 import type { Cell, GameSettings, Point } from "./gomoku.types";
 import { drawDistinct, seededRandom } from "./rules/random";
+import { inStar, STAR_RADIUS } from "./rules/chineseCheckers";
 
 /** The centre intersection — tengen (天元) — which never carries an obstacle. */
 export function tengen(size: number): Point {
@@ -82,5 +83,13 @@ export function emptyBoard(settings: GameSettings): Cell[] {
   for (const point of dead) board[point.row * settings.size + point.col] = BLOCKED;
   for (const point of hot) board[point.row * settings.size + point.col] = HOT;
   for (const point of worm) board[point.row * settings.size + point.col] = WORM;
+  // The hexagram: everything outside the star is sealed off, once, by shape — not drawn from the seed.
+  if (VARIANT_SPECS[settings.variant].chineseCheckers) {
+    for (let row = 0; row < settings.size; row += 1) {
+      for (let col = 0; col < settings.size; col += 1) {
+        if (!inStar(STAR_RADIUS, { row, col })) board[row * settings.size + col] = BLOCKED;
+      }
+    }
+  }
   return board;
 }

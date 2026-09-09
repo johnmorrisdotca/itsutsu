@@ -572,6 +572,40 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "11×11 is the usual size, and the one the world championship uses; 13×13 and 19×19 are played too. The corners belong to both of their sides.",
   },
+  checkers: {
+    label: "Checkers",
+    kanji: "チェッカー",
+    tagline: "Jump the other side's pieces off the board. Capturing is forced, and a king moves both ways.",
+    origin: "Descended from alquerque, a jumping-capture game played around the Mediterranean and the Middle East for centuries; a French rule-maker is said to have set it on a chessboard and added the forced capture around 1100. The English form the site plays here was written down in the 18th century and crossed the Atlantic largely unchanged, as American checkers.",
+    alsoKnownAs: ["Draughts", "English Draughts", "American Checkers"],
+    country: "GB",
+    wikipedia: "English draughts",
+    rules: [
+      "Each side has twelve men, filling the dark squares of its own three rows. Black moves first.",
+      "A man moves one square diagonally forward, onto an empty square.",
+      "Capturing is a jump over an adjacent enemy piece into the empty square beyond, and it is forced: if any of your pieces can capture, you must play one of those captures rather than a step.",
+      "A piece that captures and can capture again from where it lands keeps jumping in the same move. A man crowned partway through always stops there — only a king may carry a chain on, and only on a later move.",
+      "A man reaching the far row is crowned a king, and may then move and capture backward as well as forward.",
+      "The game is won by leaving the other side with no piece that can move: no pieces left, or every one shut in.",
+    ],
+    board: "8×8, played on the dark squares only — thirty-two of the sixty-four. Twelve pieces a side, filling the first three rows.",
+  },
+  chineseCheckers: {
+    label: "Chinese Checkers",
+    kanji: "ダイヤモンドゲーム",
+    tagline: "Fill the point of the star directly opposite yours, one step or jump-chain at a time.",
+    origin: "Invented in Germany in 1892 as Stern-Halma — \"star Halma\" — a six-pointed board built for the American game Halma, itself only nine years old. An American toy company sold it from 1928 under the name it is known by now, Chinese Checkers, though the game has no connection to China at all: the name was chosen to sound exotic to buyers.",
+    alsoKnownAs: ["Stern-Halma", "Hoppers", "Diamond Game"],
+    country: "DE",
+    wikipedia: "Chinese checkers",
+    rules: [
+      "Each side has ten pieces, filling one point of the star at the start: black at the top, white at the bottom.",
+      "A move is one piece: a step to a neighbouring empty cell, or a jump over an adjacent piece of either colour into the empty cell straight beyond it. A jump may go on jumping in the same move, turning corners, as long as each jump crosses a piece.",
+      "Nothing is ever captured. A piece jumped over stays exactly where it is.",
+      "The first side to fill the point directly opposite its own wins.",
+    ],
+    board: "The standard 121-hole star board, ten pieces a side, playing point to point straight across it. The full board seats up to six; this site plays the two-player form, the two points furthest apart.",
+  },
 };
 
 export const SECOND_STONE_EXCLUSION_DISPLAY: Record<number, { label: string; kanji: string }> = {

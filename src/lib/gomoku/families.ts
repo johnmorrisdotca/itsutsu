@@ -42,13 +42,19 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
     title: "Races",
     kanji: "競走",
     blurb: "No lines and nothing captured. Get every piece across the board before the other side does.",
-    games: ["halma"],
+    games: ["halma", "chineseCheckers"],
   },
   {
     title: "Connections",
     kanji: "連結",
     blurb: "No lines and nothing taken. Join your own two sides of the board before the other side joins theirs.",
     games: ["hex"],
+  },
+  {
+    title: "Checkers",
+    kanji: "チェッカー",
+    blurb: "No lines, no queue, no board full of stones. Jump the other side's pieces off, or be left with no move at all.",
+    games: ["checkers"],
   },
   {
     title: "Small boards",

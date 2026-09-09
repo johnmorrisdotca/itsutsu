@@ -68,6 +68,12 @@ export type Move = Point & {
   cleared?: Cell[];
   /** The cells a piece covered, with their colours, on `piece` kinds. */
   cells?: PieceCell[];
+  /** Whether the piece making this move was already a king. Checkers only, for undo. */
+  wasKing?: boolean;
+  /** Whether the piece this move captured was itself a king. Checkers only, for undo. */
+  capturedWasKing?: boolean;
+  /** Whether this move continued a capture chain already under way. Checkers only, for undo. */
+  continuedChain?: boolean;
 };
 
 /** The shape of a move as a record or a request carries it, without the colour. */
@@ -129,7 +135,9 @@ export type RuleVariant =
   | "grandReversi"
   | "halma"
   | "hex"
-  | "obstacleFive";
+  | "obstacleFive"
+  | "checkers"
+  | "chineseCheckers";
 
 /**
  * Where a stone goes when played. `free`: where it was put. `drop`: it slides
@@ -179,9 +187,11 @@ export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
 
 /**
  * How a won game was won. Null while nobody has. `trap` is the loser's doing:
- * they made the line the rules forbid. `square` is four in a 2×2.
+ * they made the line the rules forbid. `square` is four in a 2×2. `blocked`
+ * is the checkers family: the colour to move has no legal move left, whether
+ * because it has no pieces or because every one of them is shut in.
  */
-export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count" | "camp" | "connection";
+export type WinReason = "line" | "captures" | "time" | "resign" | "trap" | "square" | "full" | "count" | "camp" | "connection" | "blocked";
 
 /**
  * Where a swap-style opening stands. `placing` and `extending` are stretches
@@ -287,6 +297,24 @@ export type VariantSpec = {
    * six others rather than four or eight. No lines, no captures, no draws.
    */
   connects: boolean;
+  /**
+   * The checkers family. Pieces stand on the board from the start and move
+   * one diagonal step forward, or capture by jumping an adjacent enemy piece
+   * into the empty square beyond. Capturing is forced whenever any of a
+   * colour's pieces can, and a piece that jumps again from where it lands
+   * keeps jumping in the same move for as long as it has another to take. A
+   * man reaching the far row is crowned a king, which may move and capture
+   * backward as well as forward; a colour with no legal move loses.
+   */
+  checkers: boolean;
+  /**
+   * Chinese Checkers: a hexagram board, embedded in a square Point grid the
+   * way Hex's rhombus is, with the cells outside it sealed off as `BLOCKED`.
+   * Otherwise the same race as Halma's `camps` — step or jump-chain to fill
+   * the point opposite, nothing captured — just six hex directions in place
+   * of eight square ones, and a star's points in place of a corner's square.
+   */
+  chineseCheckers: boolean;
 };
 
 /** How a flipping game begins: nothing, the fixed four, or four the players lay themselves. */
@@ -428,6 +456,10 @@ export type GameState = {
   toPlay: Stone;
   /** True between placing a stone and turning a quadrant, in the twist games. */
   pendingTwist: boolean;
+  /** Board squares holding a crowned piece, in the checkers family. Empty everywhere else. */
+  kings: readonly Point[];
+  /** The square of a piece mid-capture-chain that must keep jumping, in the checkers family. Null otherwise. */
+  chainAt: Point | null;
   status: GameStatus;
   winner: Stone | null;
   winBy: WinReason | null;

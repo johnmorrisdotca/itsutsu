@@ -4,7 +4,18 @@ import {
   FATAL_MOVE_DISPLAY,
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
-import { campSize, discCount, drawnByLength, inMovePhase, piecesHome, rulesFor, stonesLeft } from "@/lib/gomoku/engine";
+import {
+  campSize,
+  discCount,
+  drawnByLength,
+  inMovePhase,
+  piecesHome,
+  rulesFor,
+  STAR_RADIUS,
+  starCampSize,
+  starPiecesHome,
+  stonesLeft,
+} from "@/lib/gomoku/engine";
 import {
   GAME_STATUS,
   HANDICAP_RULES,
@@ -73,6 +84,8 @@ function ToPlay({ session }: { session: GameSession }) {
                   ? `${who} wins: the far camp is full`
                 : state.winBy === WIN_REASONS.connection
                   ? `${who} wins: ${state.winner === STONES.black ? "top and bottom are joined" : "left and right are joined"}`
+                : state.winBy === WIN_REASONS.blocked
+                  ? `${who} wins: the other side has no move left`
                 : state.winBy === WIN_REASONS.resign
                   ? `${who} wins by resignation`
                   : `${who} wins in ${state.moves.length} moves`
@@ -211,10 +224,10 @@ function VariantLine({ session }: { session: GameSession }) {
     else if (inMovePhase(state)) {
       lines.push(
         session.selected === null
-          ? spec.camps
+          ? spec.camps || spec.chineseCheckers
             ? GAME_COPY.pickRacer
             : GAME_COPY.pickPiece
-          : spec.camps
+          : spec.camps || spec.chineseCheckers
             ? GAME_COPY.placeRacer
             : GAME_COPY.placePiece,
       );
@@ -305,6 +318,18 @@ export function GameStatus({ session }: { session: GameSession }) {
             <span className="px-2 text-muted">·</span>
             <span className="font-mono tabular-nums">○ {piecesHome(session.state.board, session.state.settings.size, STONES.white)}</span>
             <span className="ml-2 text-muted">of {campSize(session.state.settings.size)} home</span>
+          </p>
+        ) : null}
+        {VARIANT_SPECS[session.state.settings.variant].chineseCheckers ? (
+          <p className="text-sm" data-testid="home-count">
+            <span className="font-mono tabular-nums">
+              ● {starPiecesHome(session.state.board, session.state.settings.size, STAR_RADIUS, STONES.black)}
+            </span>
+            <span className="px-2 text-muted">·</span>
+            <span className="font-mono tabular-nums">
+              ○ {starPiecesHome(session.state.board, session.state.settings.size, STAR_RADIUS, STONES.white)}
+            </span>
+            <span className="ml-2 text-muted">of {starCampSize(STAR_RADIUS)} home</span>
           </p>
         ) : null}
         {VARIANT_SPECS[session.state.settings.variant].flips ? (

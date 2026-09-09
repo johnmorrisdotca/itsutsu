@@ -81,6 +81,8 @@ export const RULE_VARIANTS = {
   grandReversi: "grandReversi",
   halma: "halma",
   hex: "hex",
+  checkers: "checkers",
+  chineseCheckers: "chineseCheckers",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 export const WRAP_MODES = {
@@ -138,6 +140,8 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.grandReversi,
   RULE_VARIANTS.halma,
   RULE_VARIANTS.hex,
+  RULE_VARIANTS.checkers,
+  RULE_VARIANTS.chineseCheckers,
 ] as const satisfies readonly RuleVariant[];
 
 export const PLACEMENTS = {
@@ -191,6 +195,7 @@ export const WIN_REASONS = {
   count: "count",
   camp: "camp",
   connection: "connection",
+  blocked: "blocked",
 } as const satisfies Record<WinReason, WinReason>;
 
 export const OPENING_STAGES = {
@@ -270,6 +275,10 @@ const GRAND_REVERSI_SIZES = [10] as const;
 const HALMA_SIZES = [16, 10, 8] as const;
 /** Hex as it is played: eleven a side, with the bigger boards the federations also use. */
 const HEX_SIZES = [11, 13, 19] as const;
+/** Checkers: the 8×8 board draughts is played on everywhere. */
+const CHECKERS_SIZES = [8] as const;
+/** Chinese Checkers: the standard 121-hole hexagram, embedded in its own 17×17 square. */
+const CHINESE_CHECKERS_SIZES = [17] as const;
 
 function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return {
@@ -305,6 +314,8 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     startingDiscs: STARTING_DISCS.none,
     camps: false,
     connects: false,
+    checkers: false,
+    chineseCheckers: false,
     ...overrides,
   };
 }
@@ -451,6 +462,23 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   grandReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: GRAND_REVERSI_SIZES }),
   halma: small({ camps: true, analysis: false, boardSizes: HALMA_SIZES }),
   hex: small({ connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
+  /*
+   * Checkers: no lines, no captures-to-win tally of its own — the capture is
+   * the whole of the move, worked out fresh by rules/checkers.ts rather than
+   * read from `captures` or `captureSizes`, which belong to the flanking
+   * capture of the Ninuki family and mean nothing here.
+   */
+  checkers: small({ checkers: true, boardSizes: CHECKERS_SIZES, analysis: false }),
+  /*
+   * Chinese Checkers: a hexagram, not a square — see rules/chineseCheckers.ts
+   * for how it is embedded in a Point{row,col} grid at all. Otherwise a race
+   * exactly like Halma's, so it shares `camp` as its win reason.
+   */
+  chineseCheckers: small({
+    chineseCheckers: true,
+    boardSizes: CHINESE_CHECKERS_SIZES,
+    analysis: false,
+  }),
 };
 
 /** The board sizes a variant plays on. */
@@ -522,7 +550,7 @@ export const OBSTACLE_LAYOUT_DISPLAY: Record<
 export const BOARD_SIZES = [9, 13, 15, 19] as const;
 
 /** Every size any game here is played on, for the schemas at the API edge. */
-export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 19] as const;
+export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 19] as const;
 
 export const BOARD_SIZE_DISPLAY: Record<
   number,
@@ -533,10 +561,11 @@ export const BOARD_SIZE_DISPLAY: Record<
   5: { label: "Five", kanji: "五路", note: "Trap Three, Square Four" },
   6: { label: "Six", kanji: "六路", note: "Twist Five, Mini Reversi" },
   7: { label: "Seven", kanji: "七路", note: "Drop Four" },
-  8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma" },
+  8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma, Checkers" },
   10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi, Halma" },
   11: { label: "Eleven", kanji: "十一路", note: "Hex" },
   16: { label: "Sixteen", kanji: "十六路", note: "Halma" },
+  17: { label: "Seventeen", kanji: "十七路", note: "Chinese Checkers" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },
   13: { label: "Medium", kanji: "中盤", note: "Shorter game" },
   15: { label: "Standard", kanji: "正盤", note: "Tournament size" },

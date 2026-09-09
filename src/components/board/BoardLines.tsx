@@ -17,6 +17,8 @@ export function BoardLines({
   quadrantSize = null,
   cells = false,
   rhombus = false,
+  checkered = false,
+  hidden = false,
 }: {
   size: number;
   theme: BoardThemeTokens;
@@ -26,7 +28,18 @@ export function BoardLines({
   cells?: boolean;
   /** The connection game: the same grid, slanted, with a colour on each pair of sides. */
   rhombus?: boolean;
+  /** Checkers: shades every other square, so the dark squares in play read at a glance. */
+  checkered?: boolean;
+  /**
+   * Chinese Checkers: most of the square this board is embedded in is not
+   * part of the hexagram at all, so a full grid of lines across it would
+   * mark space no piece can ever stand on. Rather than draw a grid trimmed
+   * to a star's true outline, none is drawn; the pieces and the shaded
+   * points carry the board on their own.
+   */
+  hidden?: boolean;
 }) {
+  if (hidden) return null;
   const dividers =
     quadrantSize !== null && quadrantSize > 0 && size % quadrantSize === 0
       ? Array.from({ length: size / quadrantSize - 1 }, (_, i) => (i + 1) * quadrantSize)
@@ -48,6 +61,18 @@ export function BoardLines({
       aria-hidden="true"
       style={rhombus ? { transform: `translateY(16.667%) skewX(${(Math.atan(0.5) * 180) / Math.PI}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : undefined}
     >
+      {/* Checkers: the dark squares are the ones in play, shaded so they read at a glance. */}
+      {checkered ? (
+        <g aria-hidden="true">
+          {Array.from({ length: size }, (_, row) =>
+            Array.from({ length: size }, (_, col) =>
+              (row + col) % 2 === 1 ? (
+                <rect key={`d${row}-${col}`} x={col} y={row} width={1} height={1} fill={theme.frame} opacity={0.22} />
+              ) : null,
+            ),
+          )}
+        </g>
+      ) : null}
       {/*
         * Each colour owns two sides, and a player has to be able to see which
         * at a glance, so they are bands rather than lines: black along the top
