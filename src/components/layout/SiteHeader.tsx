@@ -44,7 +44,7 @@ async function Nav() {
 export async function SiteHeader({ hero = false }: { hero?: boolean }) {
   if (hero) {
     return (
-      <header className="flex flex-col items-center gap-3 border-b border-rule pb-6">
+      <header data-chrome className="flex flex-col items-center gap-3 border-b border-rule pb-6">
         <Link href="/" aria-label="Itsutsu home" className="block w-full max-w-2xl">
           <BrandHero className="w-full" />
         </Link>
@@ -55,7 +55,7 @@ export async function SiteHeader({ hero = false }: { hero?: boolean }) {
   }
 
   return (
-    <header className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
+    <header data-chrome className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
       <Link href="/" aria-label="Itsutsu home" className="block">
         <BrandWordmark className="h-9 w-auto sm:h-10" />
       </Link>

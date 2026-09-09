@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { BareBoard } from "./BareBoard";
 import { SiteFooter } from "./SiteFooter";
 
 /**
@@ -34,7 +35,22 @@ export function Page({
 }) {
   return (
     <div className="paper flex flex-1 flex-col items-center px-4 py-6 sm:px-8 sm:py-8">
-      <main className={`flex w-full flex-col ${PAGE_WIDTH[width]} ${gap}`}>
+      {/*
+        Offered on the wide pages and no others, and — the same condition, so
+        the two cannot come apart — only those pages are stripped. Wide is
+        already the answer to "a board or a table with a sidebar beside it",
+        which is exactly the set of pages there is anything to take off.
+
+        Scoping the effect matters as much as scoping the switch. The setting
+        lives on the root element so it survives a reload, but if it hid the
+        masthead everywhere, a reader who wandered onto a page without the
+        switch would have lost the navigation with no way to bring it back.
+      */}
+      <main
+        data-strippable={width === "wide" ? "" : undefined}
+        className={`flex w-full flex-col ${PAGE_WIDTH[width]} ${gap}`}
+      >
+        {width === "wide" ? <BareBoard /> : null}
         {children}
         <SiteFooter />
       </main>
