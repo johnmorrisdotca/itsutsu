@@ -103,7 +103,7 @@ test.describe("where somebody is", () => {
      * written against and stopped being true the day the ladder grew a
      * Russian rung and a Chinese one.
      */
-    await page.goto("/players");
+    await page.goto("/players?view=computers");
     const rows = page.getByTestId("computer-player");
     await expect(rows).toHaveCount(BOT_TIER_LIST.length);
     for (const [index, tier] of BOT_TIER_LIST.entries()) {

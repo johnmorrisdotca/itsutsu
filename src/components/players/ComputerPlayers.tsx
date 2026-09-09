@@ -5,7 +5,6 @@ import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { PlayerName } from "@/components/players/PlayerName";
 import { CountryMark } from "@/components/players/CountryMark";
 import { RowActions } from "@/components/ui/Controls";
-import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 import type { DirectoryEntry } from "@/lib/rating/players";
@@ -35,11 +34,12 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
   const shown = [...entries].sort(
     (a, b) => order.indexOf(a.botTier ?? "") - order.indexOf(b.botTier ?? ""),
   );
+  /*
+   * No panel and no heading of its own: this is the body of the Computers
+   * tab, and the tab has already said what it is.
+   */
   return (
-    <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="computer-players">
-      <h2 className={SECTION_TITLE}>
-        Computer players <span className="font-mincho normal-case">機械</span>
-      </h2>
+    <section className="flex flex-col gap-3" data-testid="computer-players">
       {/*
         The count is read from the list rather than written into the sentence.
         It said "three opponents, at three strengths" and went on saying it

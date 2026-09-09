@@ -64,6 +64,49 @@ test.describe("a page of many sections is tabs", () => {
     await expect(empty).not.toContainText("yet");
   });
 
+  test("the players page is four lists, one at a time", async ({ page }) => {
+    /*
+     * A directory of two hundred, a ladder of fifty, the computer players and
+     * the kept records, stacked down one page — the ladder was three screens
+     * below the fold on the day it was added.
+     */
+    await page.goto("/players");
+    await expect(page.getByTestId("tab")).toHaveCount(4);
+    await expect(page.getByTestId("directory-section")).toBeVisible();
+    // One at a time: the ladder is not also on screen below the directory.
+    await expect(page.getByTestId("ladder-section")).toHaveCount(0);
+    await expect(page.getByTestId("computer-players")).toHaveCount(0);
+    await expect(page.getByTestId("remembered-section")).toHaveCount(0);
+
+    // Who is here right now stands above the tabs on every one of them: it is
+    // the only thing on the page that answers "can I get a game this minute".
+    await expect(page.getByTestId("here-now")).toBeVisible();
+
+    await page.getByTestId("tab").filter({ hasText: "Ladder" }).click();
+    await expect(page).toHaveURL(/\?view=ladder$/);
+    await expect(page.getByTestId("ladder-section")).toBeVisible();
+    await expect(page.getByTestId("directory-section")).toHaveCount(0);
+    await expect(page.getByTestId("here-now")).toBeVisible();
+
+    await page.goto("/players?view=computers");
+    await expect(page.getByTestId("computer-players")).toBeVisible();
+    await expect(page.getByTestId("tab").filter({ hasText: "Computers" })).toHaveAttribute("data-open", "true");
+
+    await page.goto("/players?view=remembered");
+    await expect(page.getByTestId("legacy-roll-remembered")).toBeVisible();
+  });
+
+  test("a narrowed directory is still an address with no tab on it", async ({ page }) => {
+    /*
+     * The members are the first tab, so /players?who=computers is a filtered
+     * directory rather than a page that needs both a tab and a filter spelled
+     * out. Every link somebody had to the players page still works.
+     */
+    await page.goto("/players?who=everyone");
+    await expect(page.getByTestId("directory-section")).toBeVisible();
+    await expect(page.getByTestId("tab").filter({ hasText: "Members" })).toHaveAttribute("data-open", "true");
+  });
+
   test("the operator's page is three tabs, one part at a time", async ({ page }) => {
     /*
      * The door, the members and the work. It was three headings on one page

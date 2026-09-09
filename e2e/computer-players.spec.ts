@@ -13,7 +13,7 @@ import { BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constants";
  */
 test.describe("the computer players", () => {
   test("are listed together, badged, and each leads to their own page", async ({ page }) => {
-    await page.goto("/players");
+    await page.goto("/players?view=computers");
     const rows = page.getByTestId("computer-player");
     // Counted from the ladder rather than written down, so a new grade does
     // not fail a test whose subject is that they are all listed.
@@ -42,13 +42,13 @@ test.describe("the computer players", () => {
      * found: their rows are written on demand and nothing anybody visits was
      * demanding them.
      *
-     * Asserted on /players rather than on the operator's list, because that
-     * list is capped at two hundred rows ordered by who was seen most
-     * recently, and a development database has hundreds of test members newer
-     * than three players who are always here. On production, with six
+     * Asserted on the players page rather than on the operator's list,
+     * because that list is capped at two hundred rows ordered by who was seen
+     * most recently, and a development database has hundreds of test members
+     * newer than players who are always here. On production, with six
      * members, they are on both. The cap is its own ticket.
      */
-    await page.goto("/players");
+    await page.goto("/players?view=computers");
     const robots = page.getByTestId("computer-player").filter({ has: page.locator('[data-kind="robot"]') });
     await expect(robots).toHaveCount(BOT_TIER_LIST.length);
   });

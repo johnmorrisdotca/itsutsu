@@ -176,7 +176,7 @@ const BASE_SECTIONS: AboutSection[] = [
       <>
         On this site every finished game is filed in the <Inside href="/history">record</Inside>,
         and every named player has a rating and a tier on the{" "}
-        <Inside href="/players">players</Inside> page that move
+        <Inside href="/players?view=ladder">players</Inside> page that move
         with each result. Nobody is the top of a ladder yet. Somebody will be.
       </>,
     ],

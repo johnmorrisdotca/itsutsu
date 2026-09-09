@@ -90,7 +90,7 @@ test.describe("notes, messages, deadlines and players", () => {
     await expect(page.getByTestId("player-record")).toContainText("0W · 1L · 0D");
     await expect(page.getByTestId("player-rating")).toContainText("1580");
 
-    await page.goto("/players");
+    await page.goto("/players?view=ladder");
     await expect(page.getByTestId("players-table")).toContainText(black);
   });
 

@@ -1,0 +1,69 @@
+import Link from "next/link";
+
+import { TIER_DISPLAY } from "@/lib/rating/elo";
+import { fetchLeaders } from "@/lib/rating/players";
+import { playerPath } from "@/lib/rating/playerKey";
+
+/** How far down the ladder the page reads. */
+const LEADERS = 50;
+
+/**
+ * The site ladder: everybody by rating, best first.
+ *
+ * The per-game ladders live on /champions, and this says so — a rating here
+ * is across every game, which is not what somebody who wants to know the best
+ * Reversi player is asking.
+ */
+export async function Ladder() {
+  const leaders = await fetchLeaders(LEADERS);
+  return (
+    <div className="flex flex-col gap-4" data-testid="ladder-section">
+      <p className="text-sm text-muted">
+        Ratings are Elo, starting at 1600. A player is unrated for the first few games,
+        provisional while the rating settles, and established after twenty. Each game keeps a
+        ladder of its own too: see the{" "}
+        <Link href="/champions" className="underline underline-offset-4" data-testid="champions-link">
+          champions <span className="font-mincho">名人</span>
+        </Link>
+        .
+      </p>
+      {leaders.length === 0 ? (
+        <p className="text-sm text-muted" data-testid="players-empty">
+          No rated games yet. Give both players a name and finish a game.
+        </p>
+      ) : (
+        <table className="w-full text-sm" data-testid="players-table">
+          <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <tr>
+              <th className="py-1 pr-3">Player</th>
+              <th className="py-1 pr-3">Rating</th>
+              <th className="py-1 pr-3">Tier</th>
+              <th className="py-1 pr-3">W</th>
+              <th className="py-1 pr-3">L</th>
+              <th className="py-1 pr-3">D</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaders.map((player) => (
+              <tr key={player.key} className="border-t border-rule">
+                <td className="py-1.5 pr-3">
+                  <Link href={playerPath(player.name)} className="underline-offset-2 hover:underline">
+                    {player.name}
+                  </Link>
+                </td>
+                <td className="py-1.5 pr-3 font-mono tabular-nums">{player.rating}</td>
+                <td className="py-1.5 pr-3">
+                  {TIER_DISPLAY[player.tier].label}{" "}
+                  <span className="font-mincho text-muted">{TIER_DISPLAY[player.tier].kanji}</span>
+                </td>
+                <td className="py-1.5 pr-3 font-mono tabular-nums">{player.wins}</td>
+                <td className="py-1.5 pr-3 font-mono tabular-nums">{player.losses}</td>
+                <td className="py-1.5 pr-3 font-mono tabular-nums">{player.draws}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
