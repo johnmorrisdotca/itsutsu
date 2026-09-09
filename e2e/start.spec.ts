@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-import { PLAYER_STATE } from "./support";
+import { PLAYER_STATE, openGamesPage } from "./support";
 
 /** A pace nothing else in the suite asks for, so these seats meet only each other. */
 const SEVEN_DAYS = String(7 * 24 * 60 * 60_000);
 
 test.describe("starting a game is one sentence", () => {
   test("posts a seat when nobody is asking, and the seat is a real game", async ({ page }) => {
-    await page.goto("/games");
+    await openGamesPage(page);
     // A seat left open by an earlier run would be offered to sit in instead of
     // posting; take it first so this test meets an empty board, as a new day would.
     for (let guard = 0; guard < 8; guard += 1) {
@@ -18,7 +18,7 @@ test.describe("starting a game is one sentence", () => {
       await expect(page.getByTestId("turn-banner")).toBeVisible();
       await page.getByTestId("resign").click();
       await page.getByTestId("resign-yes").click();
-      await page.goto("/games");
+      await openGamesPage(page);
     }
     await page.getByTestId("start-game-variant").selectOption("trapThree");
     await page.getByTestId("start-game-pace").selectOption(SEVEN_DAYS);
@@ -53,6 +53,51 @@ test.describe("starting a game is one sentence", () => {
     await expect(page).toHaveURL(/\/history\/trap-three\//, { timeout: 15_000 });
   });
 
+  test("offers a stranger's seat even when my own is standing beside it", async ({ page, browser, request }) => {
+    /*
+     * The sentence keeps one seat per game-and-pace-and-board, because that is
+     * the only question it asks. Which one it keeps has to be decided AFTER
+     * the seats nobody can sit in are taken out, not before: my own seat,
+     * posted a minute after somebody else's identical one, was the one kept
+     * and then the one removed, and the sentence said "post the seat" with a
+     * stranger's seat standing right there.
+     *
+     * A bug I made myself, in the commit that fixed the one above it. Narrow
+     * first, then keep one of each.
+     */
+    const stamp = Date.now().toString(36);
+    const poster = `Beside ${stamp}`;
+
+    const theirs = await browser.newContext({ storageState: PLAYER_STATE });
+    const posted = await theirs.request.post("/api/games/live", {
+      data: { blackName: poster, variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
+    });
+    expect(posted.status()).toBe(201);
+
+    // And mine, posted after theirs, so it is the newer of the two.
+    const own = await request.post("/api/games/live", {
+      data: { blackName: `Mine ${stamp}`, variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
+    });
+    expect(own.status()).toBe(201);
+
+    await openGamesPage(page);
+    await page.getByTestId("start-game-variant").selectOption("trapThree");
+    await page.getByTestId("start-game-pace").selectOption(SEVEN_DAYS);
+
+    /*
+     * Somebody else's seat, and not mine, and not nothing — rather than that
+     * one particular seat. Only one seat of a kind is offered, and an earlier
+     * spec's seat of the same kind may be the one standing; asking for this
+     * one by name would be asking the suite to run in an order it does not
+     * promise.
+     */
+    const go = page.getByTestId("start-game-go");
+    await expect(go).toHaveText(/^Sit down with /);
+    await expect(go).not.toHaveText(`Sit down with Mine ${stamp}`);
+
+    await theirs.close();
+  });
+
   test("sits down at once when somebody is already asking for the same", async ({ page, browser }) => {
     const stamp = Date.now().toString(36);
     const poster = `Poster ${stamp}`;
@@ -68,7 +113,7 @@ test.describe("starting a game is one sentence", () => {
     });
     expect(posted.status()).toBe(201);
 
-    await page.goto("/games");
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("notakto");
     await page.getByTestId("start-game-pace").selectOption(SEVEN_DAYS);
 
@@ -84,7 +129,7 @@ test.describe("starting a game is one sentence", () => {
   });
 
   test("says what it will do for a game at this screen, and goes to the board", async ({ page }) => {
-    await page.goto("/games");
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("halma");
     await page.getByTestId("start-game-with").selectOption("screen");
     await expect(page.getByTestId("start-game-go")).toHaveText("Set up the board");
@@ -94,7 +139,7 @@ test.describe("starting a game is one sentence", () => {
   });
 
   test("the seats board and the room sit side by side, and both say when they are empty", async ({ page }) => {
-    await page.goto("/games");
+    await openGamesPage(page);
     await expect(page.getByTestId("open-games")).toBeVisible();
     await expect(page.getByTestId("here-panel")).toBeVisible();
     // The old five cards are gone; the sentence replaces them.

@@ -12,7 +12,7 @@ import { StartGame } from "@/components/mine/StartGame";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { GameGroup, SeatOnBoard } from "@/components/mine/startGame.types";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
-import { fetchOpenGames, fetchSeatChoices } from "@/lib/history/openGames";
+import { OPEN_GAMES_SHOWN, fetchOpenSeats, oneOfEachKind } from "@/lib/history/openGames";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -56,7 +56,7 @@ export default async function LobbyPage() {
     currentEmail(),
     currentMemberId(),
     fetchPlayedCounts(),
-    fetchOpenGames(claimed),
+    fetchOpenSeats(claimed),
     fetchHereNow(),
   ]);
   const [opponents, ignored] = await Promise.all([
@@ -65,9 +65,9 @@ export default async function LobbyPage() {
      * it. This page had a copy of it, and the copy asked the set of ignored
      * MEMBER IDS below whether it held an ADDRESS — a question with only one
      * answer, so the ignore list did nothing here at all and somebody who had
-     * been shut out was still offered a game. The comment three lines down
-     * describes catching exactly this bug for seats; the copy underneath it
-     * had the mirror image and went on having it.
+     * been shut out was still offered a game. The comment below, on `theirs`,
+     * describes catching exactly this mistake for the posted seats; the copy
+     * beside it had the mirror image of it.
      */
     fetchOpponents(email),
     // By id, because a seat is keyed by member and the list is kept by address.
@@ -99,22 +99,18 @@ export default async function LobbyPage() {
     if (mine !== null && poster === mine) return false;
     return !ignored.has(poster);
   };
-  const openSeats = seatGames.filter(theirs);
-
   /*
-   * The sentence reads a different list from the board on purpose. The board
-   * shows the newest thirty seats; the sentence asks whether anybody is
-   * waiting for this game at this pace on this board, and a busy game pushed
-   * every other game's seat off the end of the newest thirty.
-   *
-   * Asked after the ignore list is known, and given the same test the board
-   * uses, because the seat kept for a combination has to be one the reader
-   * could actually sit at. Choosing first and filtering after put the bug
-   * back one layer down: my own seat, posted after an identical stranger's,
-   * is the newer of the two and so the one kept — then dropped for being
-   * mine, and the sentence says nobody is asking. Somebody was.
+   * Narrowed first, and then cut — in that order, which is the whole of what
+   * went wrong here twice. The seats a reader cannot sit in are taken out of
+   * the list before either reader of it decides how much to take: the board
+   * shows the newest thirty of what is left, and the sentence keeps one of
+   * each kind. A list cut to thirty and then narrowed has lost seats the
+   * narrowing would have kept, and one kept per kind and then narrowed loses
+   * a whole kind whenever the one kept was the reader's own.
    */
-  const choices = await fetchSeatChoices(claimed, theirs);
+  const usable = seatGames.filter(theirs);
+  const openSeats = usable.slice(0, OPEN_GAMES_SHOWN);
+  const choices = oneOfEachKind(usable);
 
   // The sentence reads the same lists the page below it shows.
   const families: GameGroup[] = GAME_FAMILIES.map((family) => ({
@@ -126,7 +122,7 @@ export default async function LobbyPage() {
       kanji: RULE_VARIANT_DISPLAY[variant].kanji,
     })),
   }));
-  const seats: SeatOnBoard[] = choices.filter(theirs).map((game) => ({
+  const seats: SeatOnBoard[] = choices.map((game) => ({
     id: game.id,
     variant: game.variant,
     size: game.size,

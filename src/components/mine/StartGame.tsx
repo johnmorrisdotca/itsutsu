@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { Select } from "@/components/ui/Controls";
 import { DEFAULT_BOARD_SIZE, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
@@ -42,6 +42,17 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
   const [against, setAgainst] = useState<string>(signedIn ? ANYONE : SCREEN);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * False on the server and true once this is running in the browser — see
+   * `data-ready` below. The same store hook the board's own switches use,
+   * rather than an effect that sets state: there is nothing to subscribe to,
+   * only two different answers either side of hydration.
+   */
+  const ready = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const game = useMemo(
     () => families.flatMap((family) => family.games).find((entry) => entry.variant === variant),
@@ -170,7 +181,23 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
   const away = opponents.filter((one) => !one.here);
 
   return (
-    <div className="flex flex-col gap-3" data-testid="start-game">
+    /*
+     * `data-ready` is true only once this has run in the browser.
+     *
+     * The sentence is server-rendered and its selects are real, so they can be
+     * changed before React has attached anything to them — and a change made
+     * then is dropped on the floor: the state never hears it, and the next
+     * render puts the select back where it was. It looks exactly like a
+     * control that ignored you.
+     *
+     * A person cannot lose that race; a browser test opening the page and
+     * choosing in the same breath loses it whenever the page is a little
+     * slow, and then fails somewhere else entirely — "started on 9×9 when I
+     * chose 19×19", which reads as a bug in the board and is a bug in the
+     * clock. Three specs chased that today. Waiting for this marker is the
+     * one honest way to say "the page is listening now".
+     */
+    <div className="flex flex-col gap-3" data-testid="start-game" data-ready={ready ? "true" : "false"}>
       <div className="flex flex-col items-stretch gap-2 text-lg sm:flex-row sm:flex-wrap sm:items-center">
         <Word>{START_COPY.play}</Word>
         <Select

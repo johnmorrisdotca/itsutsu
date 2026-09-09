@@ -59,6 +59,9 @@ export const GAME_ROW = {
   whiteName: true,
   moveTimeMs: true,
   timeoutPenalty: true,
+  // Read as well as written now: a rules change that says nothing about the
+  // length has to be able to leave the length alone.
+  drawLimit: true,
   lastMoveAt: true,
   blackForfeits: true,
   whiteForfeits: true,
@@ -208,7 +211,7 @@ export async function createLiveGame(
 export async function updateLiveGameSettings(
   id: string,
   token: string,
-  settings: LiveGameSettings,
+  settings: Partial<LiveGameSettings>,
 ): Promise<SettingsOutcome> {
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
@@ -225,40 +228,63 @@ export async function updateLiveGameSettings(
     return { ok: false, reason: "settled" };
   }
 
-  const { handicap, open, clockMode = row.clockMode, rated = row.rated, ...rest } = settings;
+  /*
+   * A rules change changes the rules it names, and leaves the rest.
+   *
+   * Every one of these used to arrive with a default already applied, so a
+   * payload that said nothing about the clock put the game back on a per-move
+   * clock, one that said nothing about `rated` made it rated again, and one
+   * that said nothing about the board put it back to fifteen. The panel's own
+   * "clear the handicap" button sends exactly such a payload. Measured on the
+   * running site: a game created unrated, resignation off, whole-game clock,
+   * 9×9 came back from one change rated, resignation on, per-move, 15×15.
+   *
+   * A default is the right answer to "what shall this be" and the wrong
+   * answer to "what was this". The row is the answer to the second, and this
+   * function is the only place holding both.
+   */
+  const kept = <T>(asked: T | undefined, held: T): T => (asked === undefined ? held : asked);
+  const variant = kept(settings.variant, row.variant) as RuleVariant;
+  const moveTimeMs = kept(settings.moveTimeMs, row.moveTimeMs);
+  const clockMode = kept(settings.clockMode, row.clockMode);
+  const open = kept(settings.open, row.openSeat !== null);
   const now = new Date();
-  const budget = clockMode === "game" ? rest.moveTimeMs : null;
+  const budget = clockMode === "game" ? moveTimeMs : null;
   await prisma.game.update({
     where: { id },
     data: {
-      ...rest,
+      variant,
+      obstacles: kept(settings.obstacles, row.obstacles),
+      opening: kept(settings.opening, row.opening),
+      timeoutPenalty: kept(settings.timeoutPenalty, row.timeoutPenalty),
+      allowResign: kept(settings.allowResign, row.allowResign),
+      drawLimit: kept(settings.drawLimit, row.drawLimit),
+      moveTimeMs,
       // The board this variant has, not the one that was asked for.
-      size: sizeForVariant(rest.variant as RuleVariant, rest.size),
+      size: sizeForVariant(variant, kept(settings.size, row.size)),
       /*
        * And the line this variant wins on, or the one this game was already
-       * being played to.
-       *
-       * Not the caller's, and not a default. The route used to hand over
-       * `spec.winLength ?? DEFAULT_SETTINGS.winLength`, which meant a
-       * freestyle game set to six in a row silently became five the moment
-       * anybody changed the pace — a rule nobody asked to change, changed
-       * without a word, in the one window where changing the rules is
-       * allowed at all. Measured against the running site before this line
-       * existed: created at 6, read back 6, one settings call later, 5.
-       *
-       * The variant still wins where it fixes a length, which is the whole
-       * of the Reversi lesson: a game the rules decide is not a game a
-       * request may argue with.
+       * being played to. The variant wins where it fixes a length, which is
+       * the whole of the Reversi lesson: a game the rules decide is not a
+       * game a request may argue with.
        */
-      winLength: VARIANT_SPECS[rest.variant as RuleVariant].winLength ?? row.winLength,
+      winLength: VARIANT_SPECS[variant].winLength ?? row.winLength,
       clockMode,
-      rated,
+      rated: kept(settings.rated, row.rated),
       blackTimeMs: budget,
       whiteTimeMs: budget,
-      deadlineAt: rest.moveTimeMs === null ? null : new Date(now.getTime() + rest.moveTimeMs),
+      deadlineAt: moveTimeMs === null ? null : new Date(now.getTime() + moveTimeMs),
       extraMs: 0,
       lastMoveAt: now,
-      handicap: storedHandicap(handicap) ?? Prisma.JsonNull,
+      /*
+       * Naming the handicap as null is how it is cleared, so silence and null
+       * have to mean different things here: not named at all leaves whatever
+       * the game had.
+       */
+      handicap:
+        settings.handicap === undefined
+          ? undefined
+          : (storedHandicap(settings.handicap) ?? Prisma.JsonNull),
       openSeat: open ? STONES.white : null,
       openedAt: open ? (row.openedAt ?? new Date()) : null,
       seed: seedFromRoll(Math.random(), SEED_RANGE),

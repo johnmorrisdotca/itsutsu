@@ -38,6 +38,23 @@ const settingsSchema = z.object({
   open: z.boolean().default(false),
 });
 
+/**
+ * The parsed settings, narrowed to the keys the request actually carried.
+ *
+ * Zod fills an absent field with its default, so by the time a payload has
+ * been parsed there is no longer any difference between "put this back to
+ * fifteen" and "I said nothing about the board". The raw body still knows,
+ * and this is the only place that still has it. Validation is untouched;
+ * what changes is that silence now means "leave it".
+ */
+function named<T extends object>(body: unknown, settings: T): Partial<T> {
+  if (body === null || typeof body !== "object") return {};
+  const keys = new Set(Object.keys(body));
+  return Object.fromEntries(
+    Object.entries(settings).filter(([key]) => keys.has(key)),
+  ) as Partial<T>;
+}
+
 const REFUSAL_STATUS: Record<string, number> = {
   "not-found": 404,
   finished: 409,
@@ -77,15 +94,16 @@ export async function PUT(
     const { id } = await ctx.params;
     const { token, handicap, ...settings } = parsed.data;
     /*
-     * No winLength: the game keeps the line it is being played to, and a
-     * variant that fixes one still wins. Deciding it here meant deciding it
-     * without the row in hand, so the only answer available was a default —
-     * and a default overwrote whatever the game had actually been set to.
+     * Only what the body named, and no winLength at all.
+     *
+     * Every field in the schema carries a default, which is right for making
+     * a game and wrong for changing one: the parse cannot tell a caller who
+     * asked for the default from one who said nothing. The game's own values
+     * are the answer to what was not said, and only `updateLiveGameSettings`
+     * is holding the row to read them from.
      */
-    const outcome = await updateLiveGameSettings(id, token, {
-      ...settings,
-      handicap: handicap ?? NO_HANDICAP,
-    });
+    const asked = named(body, { ...settings, handicap: handicap ?? NO_HANDICAP });
+    const outcome = await updateLiveGameSettings(id, token, asked);
 
     if (!outcome.ok) {
       return NextResponse.json(

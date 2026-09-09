@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { openGamesPage } from "./support";
+
 /**
  * Settling a game before there is a game.
  *
@@ -57,7 +59,7 @@ test.describe("setting a game up before it exists", () => {
   });
 
   test("is reachable from the sentence, for the game the sentence is on", async ({ page }) => {
-    await page.goto("/games");
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("reversi");
     await page.getByTestId("start-game-set-up").click();
     await page.waitForURL(/\/games\/reversi\/new$/);
