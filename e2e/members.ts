@@ -1,6 +1,7 @@
 import type { Browser, BrowserContext } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
+import { makeMemberId } from "../src/lib/auth/memberId";
 import {
   PLAYER_SESSION_DAYS,
   SESSION_COOKIE,
@@ -36,7 +37,7 @@ export async function seedMember({ email, name }: TestMember): Promise<void> {
   try {
     await prisma.member.upsert({
       where: { email },
-      create: { email, name, picture: "", invitedWith: "playwright" },
+      create: { email, id: makeMemberId(), name, picture: "", invitedWith: "playwright" },
       update: { name, lastSeenAt: new Date() },
     });
   } finally {

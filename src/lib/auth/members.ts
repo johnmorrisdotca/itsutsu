@@ -1,5 +1,6 @@
 import "server-only";
 import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
+import { isMemberId, makeMemberId } from "./memberId";
 import { appearanceFrom } from "@/components/board/appearance";
 import type { Appearance } from "@/components/board/board.types";
 import { DEFAULT_GAME_DEFAULTS, gameDefaultsFrom, type GameDefaults } from "@/components/game/gameDefaults";
@@ -26,6 +27,30 @@ export async function findMember(email: string): Promise<Member | null> {
 }
 
 /**
+ * An id no member holds.
+ *
+ * A collision at sixteen characters is not something to worry about, but
+ * "not worth worrying about" is not "impossible", and an id is what a rating
+ * will hang off — so it is checked rather than assumed, exactly as a game id
+ * is. The same function takes a curated id and refuses it if it is taken,
+ * which is what makes the import file's chosen ids safe to accept.
+ */
+export async function freeMemberId(chosen?: string): Promise<string> {
+  if (chosen !== undefined) {
+    if (!isMemberId(chosen)) throw new Error(`Not a member id: ${chosen}`);
+    const taken = await prisma.member.findUnique({ where: { id: chosen }, select: { id: true } });
+    if (taken !== null) throw new Error(`That id is already somebody's: ${chosen}`);
+    return chosen;
+  }
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const id = makeMemberId();
+    const taken = await prisma.member.findUnique({ where: { id }, select: { id: true } });
+    if (taken === null) return id;
+  }
+  throw new Error("Could not find a free member id.");
+}
+
+/**
  * Lets an address in. The first sign-in is the registration: there is no
  * form, no password, no confirmation mail — Google has already proved the
  * address, and the invite code (or the operator) says it is welcome. Signing
@@ -38,7 +63,13 @@ export async function admitMember(
   const existing = await prisma.member.findUnique({ where: { email }, select: { email: true } });
   if (existing === null) {
     const row = await prisma.member.create({
-      data: { email, name: input.name, picture: input.picture, invitedWith: input.invitedWith ?? "" },
+      data: {
+        email,
+        id: await freeMemberId(),
+        name: input.name,
+        picture: input.picture,
+        invitedWith: input.invitedWith ?? "",
+      },
       select: { email: true, name: true, picture: true },
     });
     return { ...row, created: true };

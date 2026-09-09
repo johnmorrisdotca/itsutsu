@@ -284,6 +284,16 @@ model PlayerVariantRating {
 /// separate account to create: the first sign-in is the registration.
 model Member {
   email       String   @id
+  /// The member's own name for the database: opaque, given once, and never
+  /// derived from anything anybody typed. A rating, a record and a seat will
+  /// all hang off this rather than off a display name or an address, so a
+  /// rename moves nothing. It identifies but does not prove — knowing an id
+  /// is not being somebody; see memberId.ts.
+  id          String   @unique
+  /// Why this row may never be claimed by a real login: "kept-record" for a
+  /// history meant to stand as it is, "seed" for a made-up row that must not
+  /// be picked up by a real signup. Null means there is no reason it cannot.
+  unclaimableBecause String?
   name        String   @default("")
   picture     String   @default("")
   /// The invite code that let this member in, or blank when the operator did.
