@@ -36,6 +36,7 @@ export type NamedMember = {
   country?: string;
   city?: string;
   timeZone?: string;
+  bio?: string;
 };
 
 /** Emails are compared folded; Google gives them in whatever case the user typed once. */
@@ -398,7 +399,15 @@ export async function findMemberByName(name: string): Promise<NamedMember | null
   if (wanted === "") return null;
   const row = await prisma.member.findFirst({
     where: { name: { equals: wanted, mode: "insensitive" } },
-    select: { email: true, name: true, picture: true, country: true, city: true, timeZone: true },
+    select: {
+      email: true,
+      name: true,
+      picture: true,
+      country: true,
+      city: true,
+      timeZone: true,
+      bio: true,
+    },
   });
   return row;
 }

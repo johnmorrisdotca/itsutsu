@@ -28,7 +28,14 @@ function loadEnv() {
   loaded = true;
 }
 
-export type TestMember = { email: string; name: string; country?: string; city?: string; timeZone?: string };
+export type TestMember = {
+  email: string;
+  name: string;
+  country?: string;
+  city?: string;
+  timeZone?: string;
+  bio?: string;
+};
 
 /** Makes the member, or renames them if the address is already known. */
 export async function seedMember({
@@ -37,14 +44,15 @@ export async function seedMember({
   country = "",
   city = "",
   timeZone = "",
+  bio = "",
 }: TestMember): Promise<void> {
   loadEnv();
   const prisma = new PrismaClient();
   try {
     await prisma.member.upsert({
       where: { email },
-      create: { email, id: makeMemberId(), name, picture: "", invitedWith: "playwright", country, city, timeZone },
-      update: { name, country, city, timeZone, lastSeenAt: new Date() },
+      create: { email, id: makeMemberId(), name, picture: "", invitedWith: "playwright", country, city, timeZone, bio },
+      update: { name, country, city, timeZone, bio, lastSeenAt: new Date() },
     });
   } finally {
     await prisma.$disconnect();

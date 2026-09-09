@@ -72,6 +72,23 @@ test.describe("where somebody is", () => {
     await expect(page.getByTestId("country-mark")).toHaveCount(0);
   });
 
+  test("says what somebody says about themselves", async ({ page }) => {
+    /*
+     * Another field with a writer and no reader. The bio has been in the
+     * profile form since the form existed and appeared on no page — including
+     * the computer players', whose bios explain what each of them does and
+     * were readable only by opening the source.
+     */
+    await seedMember({ email: "flags-bio@example.test", name: "Flags Bio", bio: "I play slowly." });
+    await page.goto("/players/flags-bio");
+    await expect(page.getByTestId("player-bio")).toHaveText("I play slowly.");
+  });
+
+  test("shows a computer player's own account of itself", async ({ page }) => {
+    await page.goto("/players/dan");
+    await expect(page.getByTestId("player-bio")).toContainText("段");
+  });
+
   test("gives the three computer players their flag as well", async ({ page }) => {
     // John asked for this: they are players in their own right, so they get
     // what every other player gets.

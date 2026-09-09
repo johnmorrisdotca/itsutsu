@@ -125,6 +125,17 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         </h1>
         <Whereabouts city={member?.city} timeZone={member?.timeZone} />
         {/*
+          What somebody says about themselves. Written into the profile form
+          since the form existed and shown on no page at all — including the
+          three computer players', whose bios explain what each of them
+          actually does and were readable only in the source.
+        */}
+        {(member?.bio ?? "").trim() !== "" ? (
+          <p className="max-w-prose text-sm whitespace-pre-line text-ink-soft" data-testid="player-bio">
+            {member?.bio}
+          </p>
+        ) : null}
+        {/*
           Two ratings, side by side, because there are two pools and hiding
           one behind the other is how a number stops meaning anything. The
           ladder rating is what somebody has earned against people; the
