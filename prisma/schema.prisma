@@ -252,15 +252,34 @@ model Player {
   memberId   String?
   /// The name as last typed, for display.
   name       String
+  /// The rating earned against other people, which is what this site has
+  /// always meant by a rating: every page that shows "a rating" shows this.
+  /// It is deliberately not renamed. Games against the computer are kept in
+  /// their own pool below and never touch it.
   rating     Int      @default(1600)
   ratedGames Int      @default(0)
   wins       Int      @default(0)
   losses     Int      @default(0)
   draws      Int      @default(0)
+  /// The rating earned against the computer players, in a pool of its own.
+  ///
+  /// Two pools rather than one, because a computer opponent is always
+  /// available and always rated: with one pool every rating on the site would
+  /// drift towards wherever the three graded players happened to settle, and a
+  /// ladder of people would stop being a ladder of people. Separating them
+  /// answers that outright rather than by capping or discounting anything, and
+  /// both sides of a game against the computer move in the same pool — the
+  /// player's and the computer's own — exactly as a rated game should.
+  computerRating     Int @default(1600)
+  computerRatedGames Int @default(0)
+  computerWins       Int @default(0)
+  computerLosses     Int @default(0)
+  computerDraws      Int @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@index([rating])
+  @@index([computerRating])
   @@index([memberId])
 }
 
@@ -289,11 +308,18 @@ model PlayerVariantRating {
   wins       Int      @default(0)
   losses     Int      @default(0)
   draws      Int      @default(0)
+  /// The same two pools as on Player, per game. See Player.computerRating.
+  computerRating     Int @default(1600)
+  computerRatedGames Int @default(0)
+  computerWins       Int @default(0)
+  computerLosses     Int @default(0)
+  computerDraws      Int @default(0)
   updatedAt  DateTime @updatedAt
 
   @@id([key, variant])
   /// The per-game leaderboard reads this: one variant, best first.
   @@index([variant, rating])
+  @@index([variant, computerRating])
   /// A player's page reads every standing they hold.
   @@index([key])
   @@index([memberId])
@@ -365,6 +391,14 @@ model Member {
   /// Vacation days spent this calendar year, against a flat allowance.
   awayDaysUsed Int      @default(0)
   awayYear     Int      @default(0)
+  /// The grade a computer player plays at — see BOT_MEMBERS — or null for a
+  /// person. A computer player is a member like any other: it holds a seat,
+  /// it appears in the record, and its rating moves when somebody beats it.
+  /// What this column adds is only that it is not a person, which the clock
+  /// needs to know (a computer is never late) and the directory shows.
+  botTier      String?
+
+  @@index([botTier])
 }
 
 /// Courtesy time one seat gave the other during a game, kept so sportsmanship can be read later.

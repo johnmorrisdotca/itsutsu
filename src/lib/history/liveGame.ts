@@ -26,6 +26,8 @@ import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
 import { recordResult } from "@/lib/rating/players";
+import { poolFor } from "@/lib/rating/pools";
+import { hasBotSeat } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
 import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
 import type {
@@ -377,7 +379,7 @@ export async function appendMove(
 
   if (finished) {
     // A game at one screen is filed, never rated: the site cannot tell who was playing. Nor is a friendly.
-    if (!isHotSeat(row) && row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
+    if (!isHotSeat(row) && row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
   } else if (next.toPlay !== stone && !isHotSeat(row)) {
     await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });

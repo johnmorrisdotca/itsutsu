@@ -75,7 +75,7 @@ export function SharedGame({
    * The deadline is the server's: it comes with the game and is only shown
    * here. A once-a-second tick keeps the countdown honest between polls.
    */
-  const deadline = deadlineFor(detail);
+  const deadline = deadlineFor({ ...detail, toPlay: state.toPlay });
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (deadline === null || state.status !== GAME_STATUS.playing) return;

@@ -5,6 +5,7 @@ import { matchPath } from "@/lib/gomoku/slugs";
 import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { sitAtOpenSeat } from "@/lib/history/openGames";
 import { bindSeat } from "@/lib/history/seats";
+import { playBotTurns } from "@/lib/bots/botPlay";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { overLimit } from "@/lib/api/rateLimit";
 
@@ -35,6 +36,17 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     const session = await currentSession();
     const mine = await currentMemberId();
     if (mine !== null) await bindSeat(id, outcome.seat, mine, session?.name ?? "");
+    /*
+     * Sitting down opposite a computer that opens: it plays at once, so the
+     * board is not showing you a game waiting on a player that never waits.
+     * This is also the moment the fresh deadline stamp from `sitAtOpenSeat`
+     * would otherwise be sitting against the computer's seat.
+     */
+    try {
+      await playBotTurns(id);
+    } catch (error) {
+      console.error(error);
+    }
     const response = NextResponse.json(
       { path: matchPath(outcome.variant, id), seat: outcome.seat },
       { status: 200, headers: NO_STORE },

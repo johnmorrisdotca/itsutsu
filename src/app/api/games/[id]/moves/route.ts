@@ -11,6 +11,8 @@ import {
 } from "@/lib/api/apiResponse";
 import { fetchGameMovesPage } from "@/lib/history/gameHistory";
 import { appendMove } from "@/lib/history/liveGame";
+import { fetchGameDetail } from "@/lib/history/gameHistory";
+import { playBotTurns } from "@/lib/bots/botPlay";
 import { truncateMoves } from "@/lib/history/hotSeat";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { pieceCellsSchema } from "@/lib/history/gameSettingsSchema";
@@ -144,7 +146,25 @@ export async function POST(
       );
     }
 
-    return NextResponse.json(outcome.game, { status: 201, headers: NO_STORE });
+    /*
+     * If the other seat is a computer, it answers here rather than on the next
+     * poll: the request that played your stone comes back with the reply in
+     * it. That is the whole reason a computer never needs the deadline
+     * machinery — it has already moved by the time you see the board.
+     *
+     * A failure to answer is not a failure to move. The stone is on the record
+     * and the game is sound; the computer will be asked again on the next
+     * request that touches this game.
+     */
+    let game = outcome.game;
+    try {
+      await playBotTurns(id);
+      game = (await fetchGameDetail(id)) ?? game;
+    } catch (error) {
+      console.error(error);
+    }
+
+    return NextResponse.json(game, { status: 201, headers: NO_STORE });
   } catch (error) {
     console.error(error);
     return serverError("Could not play that move.");

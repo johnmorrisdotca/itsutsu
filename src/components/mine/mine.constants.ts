@@ -48,6 +48,7 @@ export const START_COPY = {
   atThisScreen: "someone at this screen",
   hereNow: { label: "Here now", kanji: "在室" },
   buddies: { label: "Buddies", kanji: "仲間" },
+  computer: { label: "The computer", kanji: "コンピュータ" },
   post: "Post the seat",
   sitWith: (who: string) => `Sit down with ${who}`,
   setUp: "Set up the board",
@@ -60,6 +61,14 @@ export const START_COPY = {
   otherPaceHint: (count: number, game: string) =>
     `${count === 1 ? "One seat is" : `${count} seats are`} open for ${game} at another pace — change the pace to sit down at once, or post yours and wait for this one.`,
   screenHint: "Two people, one board, right now. Kept in this browser, never rated, and the pace does not apply.",
+  /*
+   * The hint a computer opponent gets. It says the two things a person
+   * actually wants to know before choosing one: how hard it is, and that the
+   * game counts — but on its own ladder, not the one with people on it.
+   */
+  computerHint: (who: string, strength: string) =>
+    `${who} plays at once, so you are never waiting and the clock never runs against it. ` +
+    `${strength}. The game is rated, for both of you, against the computer rather than on the ladder of people.`,
   challengeHintHere: (who: string) => `The game is in ${who}'s list the moment you start it; there is nothing to accept. ${who} is here now.`,
   challengeHintAway: (who: string, pace: string) =>
     `The game is in ${who}'s list the moment you start it; there is nothing to accept. ${who} is not here at the moment, which is fine at ${pace.toLowerCase()}.`,

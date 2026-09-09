@@ -13,6 +13,7 @@ import type { GameGroup, Opponent, SeatOnBoard } from "@/components/mine/startGa
 import { boardSizesFor, DEFAULT_BOARD_SIZE, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { fetchOpenGames } from "@/lib/history/openGames";
+import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { fetchBuddies } from "@/lib/social/buddies";
 import { ignoredEmails } from "@/lib/social/ignores";
@@ -42,6 +43,14 @@ export const dynamic = "force-dynamic";
  */
 export default async function LobbyPage() {
   const claims = seatClaims((await cookies()).getAll());
+  /*
+   * A seat that has sat on this board longer than the grace period is taken by
+   * one of the computer players, so a game posted on a quiet evening is still a
+   * game by the morning. Throttled and not awaited: the listing below is what
+   * the reader came for.
+   */
+  sweepOpenSeats();
+
   const [email, counts, seatGames, here] = await Promise.all([
     currentEmail(),
     fetchPlayedCounts(),

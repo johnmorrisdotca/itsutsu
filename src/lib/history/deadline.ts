@@ -1,3 +1,4 @@
+import { isBotId } from "@/lib/bots/bots";
 import { MOVE_TIME_OPTIONS } from "./gameSettingsSchema";
 
 /**
@@ -13,8 +14,33 @@ export function deadlineFor(game: {
   deadlineAt?: Date | string | null;
   /** The seat still posted for anyone to take, or null once somebody has sat down. */
   openSeat?: string | null;
+  /** Who holds each seat, so a computer's turn can be told from a person's. */
+  blackMemberId?: string | null;
+  whiteMemberId?: string | null;
+  /** The colour to move, where the caller knows it. See the computer rule below. */
+  toPlay?: "black" | "white" | null;
 }): Date | null {
   if (game.moveTimeMs === null) return null;
+  /*
+   * A computer is never late. It answers inside the request that provoked it,
+   * so a clock running against its seat can only ever be a bug: the board
+   * would offer to claim a turn from a player that has already moved, or is
+   * about to inside the next second.
+   *
+   * Only while it is the computer's turn, though — not for the whole game, the
+   * way a posted seat is. The person on the other side plays under the clock
+   * they agreed to, and a game against the computer with no clock at all is
+   * not what anybody asked for.
+   *
+   * Here rather than in the timeout route, and here rather than in the board:
+   * this is the one function both of them go through, and a rule stated twice
+   * is a rule that ends up disagreeing with itself — the board saying
+   * "overdue" while the claim quietly refuses.
+   */
+  if (game.toPlay !== undefined && game.toPlay !== null) {
+    const mover = game.toPlay === "black" ? game.blackMemberId : game.whiteMemberId;
+    if (isBotId(mover)) return null;
+  }
   /*
    * A seat nobody is sitting in cannot be late. While a game is still posted
    * for somebody to take, there is no opponent to be waiting on and no clock

@@ -92,6 +92,13 @@ export function makeMemberId(random: () => number = Math.random): string {
 export const UNCLAIMABLE_REASONS = {
   keptRecord: "kept-record",
   seed: "seed",
+  /*
+   * A computer player. Its own reason rather than a borrowed one: "seed" would
+   * say something false — the graded players are not made-up rows waiting for
+   * real people to replace them, they are players — and any query later asking
+   * why a member cannot be claimed would have to guess which kind it had.
+   */
+  computer: "computer",
 } as const;
 
 export type UnclaimableReason = (typeof UNCLAIMABLE_REASONS)[keyof typeof UNCLAIMABLE_REASONS];
