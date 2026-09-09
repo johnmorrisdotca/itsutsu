@@ -5,6 +5,7 @@ import { z } from "zod";
 import { NO_STORE, readJson, serverError } from "@/lib/api/apiResponse";
 import { resignGame } from "@/lib/history/liveGameEndings";
 import { seatCookieName } from "@/lib/history/seatCookie";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const bodySchema = z.object({ token: z.string().min(1).max(128) }).partial();
 
@@ -29,6 +30,9 @@ const REFUSAL_MESSAGE: Record<string, string> = {
  */
 export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/resign">) {
   try {
+    const tooMany = overLimit(request, "resign");
+    if (tooMany !== null) return tooMany;
+
     const { id } = await ctx.params;
     const body = bodySchema.safeParse((await readJson(request)) ?? {});
     const token = body.success && body.data.token ? body.data.token : (await cookies()).get(seatCookieName(id))?.value;

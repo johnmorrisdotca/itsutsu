@@ -108,6 +108,29 @@ export function resetRateLimits(): void {
 }
 
 /**
+ * The whole check, as one line at the top of a handler: the 429 to return, or
+ * null to carry on.
+ *
+ * Every route that guards itself does the same three things — read the
+ * caller's address, count them under a name of its own, answer 429 if they
+ * are over — and three lines repeated across two dozen files is three lines
+ * that can be got subtly wrong in one of them, or left out of the next one
+ * somebody writes. Said once here.
+ *
+ * `scope` names the counter, so a member spending their allowance on one
+ * route still has the others: `applause:1.2.3.4` and `resign:1.2.3.4` are
+ * counted apart.
+ */
+export function overLimit(
+  request: Request,
+  scope: string,
+  config: RateLimitConfig = RATE_LIMITS.write,
+): NextResponse | null {
+  const result = checkRateLimit(`${scope}:${getClientIp(request)}`, config);
+  return result.allowed ? null : createRateLimitResponse(result);
+}
+
+/**
  * The limits, gathered so they can be read at a glance rather than hunted for
  * across route files. Writes are far tighter than reads because a write costs
  * a database row and a read does not.
@@ -125,6 +148,13 @@ export const RATE_LIMITS = {
   adminSignIn: { windowMs: 60_000, maxRequests: 5 },
   /** Reads, including autocomplete on every keystroke. */
   read: { windowMs: 60_000, maxRequests: 240 },
+  /**
+   * The ordinary write: sitting down, resigning, applauding, changing a
+   * setting, keeping a buddy. One a second sustained, which no person does
+   * and no honest client needs, and which still turns a stuck loop into a
+   * bounded nuisance rather than a bill.
+   */
+  write: { windowMs: 60_000, maxRequests: 60 },
   /**
    * A board asking whether the other side has moved: the busiest read on the
    * site, because it is the only one a page makes on a timer. One watching

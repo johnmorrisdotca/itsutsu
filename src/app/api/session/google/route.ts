@@ -13,6 +13,7 @@ import {
   sessionCookieOptions,
   signSession,
 } from "@/lib/auth/session";
+import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 
 /**
  * Where a Google sign-in becomes a session this site understands.
@@ -28,6 +29,9 @@ import {
  * OAuth callback, so removing somebody takes effect on their next visit.
  */
 export async function GET(request: Request) {
+  const tooMany = overLimit(request, "google-sign-in", RATE_LIMITS.read);
+  if (tooMany !== null) return tooMany;
+
   const url = new URL(request.url);
   const destination = safeDestination(url.searchParams.get("next"));
 

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { giveTime } from "@/lib/history/liveGameEndings";
 import { seatCookieName } from "@/lib/history/seatCookie";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const bodySchema = z.object({ token: z.string().min(1).max(128) }).partial();
 
@@ -30,6 +31,9 @@ const REFUSAL_MESSAGE: Record<string, string> = {
  */
 export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/time">) {
   try {
+    const tooMany = overLimit(request, "give-time");
+    if (tooMany !== null) return tooMany;
+
     const { id } = await ctx.params;
     const body = bodySchema.safeParse((await readJson(request)) ?? {});
     if (!body.success) return badRequest("Invalid request.");

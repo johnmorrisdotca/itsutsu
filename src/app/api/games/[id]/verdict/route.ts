@@ -8,6 +8,7 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
 import { prisma } from "@/lib/prisma";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const bodySchema = z.object({ verdict: z.enum(["up", "down"]).nullable() });
 
@@ -18,6 +19,9 @@ const bodySchema = z.object({ verdict: z.enum(["up", "down"]).nullable() });
  */
 export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/verdict">) {
   try {
+    const tooMany = overLimit(request, "verdict");
+    if (tooMany !== null) return tooMany;
+
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = bodySchema.safeParse(body);

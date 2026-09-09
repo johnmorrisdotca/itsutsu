@@ -7,6 +7,7 @@ import { fetchProfile, renameMember, updateProfile } from "@/lib/auth/members";
 import { AWAY_DAYS_A_YEAR, setAway } from "@/lib/social/vacation";
 import { PLAYER_SESSION_DAYS, SESSION_COOKIE, sessionCookieOptions, signSession } from "@/lib/auth/session";
 import { PLAYER_NAME_MAX } from "@/lib/history/gameHistory.constants";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const nameSchema = z.object({
   name: z
@@ -45,6 +46,9 @@ function knownTimeZone(zone: string): boolean {
  */
 export async function PATCH(request: Request) {
   try {
+    const tooMany = overLimit(request, "profile");
+    if (tooMany !== null) return tooMany;
+
     const me = await currentSession();
     if (!me?.email) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
 

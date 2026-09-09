@@ -6,6 +6,7 @@ import { currentSession } from "@/lib/auth/currentSession";
 import { sitAtOpenSeat } from "@/lib/history/openGames";
 import { bindSeat } from "@/lib/history/seats";
 import { seatCookieName } from "@/lib/history/seatCookie";
+import { overLimit } from "@/lib/api/rateLimit";
 
 /** How long a claimed seat is remembered — the same as a scanned seat link. */
 const SEAT_COOKIE_DAYS = 30;
@@ -15,8 +16,11 @@ const SEAT_COOKIE_DAYS = 30;
  * this browser's cookie for the match, the way a seat link would have put it
  * there, and the answer says where the board is.
  */
-export async function POST(_request: Request, ctx: RouteContext<"/api/games/[id]/sit">) {
+export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/sit">) {
   try {
+    const tooMany = overLimit(request, "sit");
+    if (tooMany !== null) return tooMany;
+
     const { id } = await ctx.params;
     const outcome = await sitAtOpenSeat(id);
     if (!outcome.ok) {

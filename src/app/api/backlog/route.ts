@@ -5,6 +5,7 @@ import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/li
 import { currentSession } from "@/lib/auth/currentSession";
 import { BACKLOG_KIND_VALUES } from "@/lib/backlog/backlog";
 import { addItem, fetchBoard } from "@/lib/backlog/backlogStore";
+import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 
 /**
  * The features board.
@@ -24,8 +25,11 @@ function signedOut() {
   return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const tooMany = overLimit(request, "backlog", RATE_LIMITS.read);
+    if (tooMany !== null) return tooMany;
+
     const me = await currentSession();
     if (me === null) return signedOut();
     return NextResponse.json({ items: await fetchBoard() }, { headers: NO_STORE });
@@ -37,6 +41,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const tooMany = overLimit(request, "backlog-add");
+    if (tooMany !== null) return tooMany;
+
     const me = await currentSession();
     if (me === null) return signedOut();
 

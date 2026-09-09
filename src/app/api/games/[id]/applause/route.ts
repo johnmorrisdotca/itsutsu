@@ -5,6 +5,7 @@ import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } 
 import { currentSession } from "@/lib/auth/currentSession";
 import { APPLAUSE_EMOJI, type ApplauseEmoji } from "@/lib/history/applause.constants";
 import { setApplause } from "@/lib/history/applause";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const applauseSchema = z.object({ emoji: z.enum(APPLAUSE_EMOJI) });
 
@@ -17,6 +18,9 @@ const applauseSchema = z.object({ emoji: z.enum(APPLAUSE_EMOJI) });
  */
 export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/applause">) {
   try {
+    const tooMany = overLimit(request, "applause");
+    if (tooMany !== null) return tooMany;
+
     const me = await currentSession();
     if (!me?.email) {
       return NextResponse.json({ error: "Sign in to leave a mark." }, { status: 401, headers: NO_STORE });

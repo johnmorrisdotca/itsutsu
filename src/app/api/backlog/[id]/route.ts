@@ -7,6 +7,7 @@ import { BACKLOG_STATUS_VALUES } from "@/lib/backlog/backlog";
 import { ASSIGNED_TO_MAX } from "@/lib/backlog/backlog.constants";
 import { assignItem, moveItem } from "@/lib/backlog/backlogStore";
 import type { BacklogStatus } from "@/lib/backlog/backlog.types";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const patchSchema = z.union([
   z.object({ status: z.enum(BACKLOG_STATUS_VALUES as [string, ...string[]]) }),
@@ -22,6 +23,9 @@ const patchSchema = z.union([
  */
 export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[id]">) {
   try {
+    const tooMany = overLimit(request, "backlog-move");
+    if (tooMany !== null) return tooMany;
+
     const me = await currentSession();
     if (me === null) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
 

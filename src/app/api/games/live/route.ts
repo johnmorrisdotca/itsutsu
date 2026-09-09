@@ -33,12 +33,7 @@ import { currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
 import { createLiveGame } from "@/lib/history/liveGame";
-import {
-  RATE_LIMITS,
-  checkRateLimit,
-  createRateLimitResponse,
-  getClientIp,
-} from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 
 const liveGameSchema = z.object({
   blackName: playerNameSchema.default(""),
@@ -79,11 +74,8 @@ const SEAT_COOKIE_DAYS = 30;
  */
 export async function POST(request: Request) {
   try {
-    const limited = checkRateLimit(
-      `live:${getClientIp(request)}`,
-      RATE_LIMITS.createGame,
-    );
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "live", RATE_LIMITS.createGame);
+    if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");

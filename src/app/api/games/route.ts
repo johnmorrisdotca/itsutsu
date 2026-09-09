@@ -10,12 +10,7 @@ import {
 import { fetchGameHistoryPage } from "@/lib/history/gameHistory";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 import { gameRecordSchema, recordGame } from "@/lib/history/gameRecord";
-import {
-  RATE_LIMITS,
-  checkRateLimit,
-  createRateLimitResponse,
-  getClientIp,
-} from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 
 /**
  * Game history.
@@ -27,11 +22,8 @@ import {
  */
 export async function GET(request: Request) {
   try {
-    const limited = checkRateLimit(
-      `games:${getClientIp(request)}`,
-      RATE_LIMITS.read,
-    );
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "games", RATE_LIMITS.read);
+    if (tooMany !== null) return tooMany;
 
     const query = toGameHistoryQuery(new URL(request.url));
     if (query === null) return badRequest("Invalid listing parameters.");
@@ -49,11 +41,8 @@ export async function GET(request: Request) {
 /** `POST` records one finished game and returns it with its move list. */
 export async function POST(request: Request) {
   try {
-    const limited = checkRateLimit(
-      `record:${getClientIp(request)}`,
-      RATE_LIMITS.recordGame,
-    );
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "record", RATE_LIMITS.recordGame);
+    if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");

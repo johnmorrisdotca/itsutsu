@@ -2,12 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { NO_STORE, serverError } from "@/lib/api/apiResponse";
-import {
-  RATE_LIMITS,
-  checkRateLimit,
-  createRateLimitResponse,
-  getClientIp,
-} from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { fetchMyGames } from "@/lib/history/myGames";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -23,8 +18,8 @@ import { seatClaims } from "@/lib/history/seatCookie";
  */
 export async function GET(request: Request) {
   try {
-    const limited = checkRateLimit(`mine:${getClientIp(request)}`, RATE_LIMITS.read);
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "mine", RATE_LIMITS.read);
+    if (tooMany !== null) return tooMany;
 
     const claims = seatClaims((await cookies()).getAll());
     const games = await fetchMyGames(claims, await currentEmail());

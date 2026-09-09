@@ -4,6 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentSession } from "@/lib/auth/currentSession";
 import { prisma } from "@/lib/prisma";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const bodySchema = z.object({ hidden: z.boolean() });
 
@@ -15,6 +16,9 @@ const bodySchema = z.object({ hidden: z.boolean() });
  */
 export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/hide">) {
   try {
+    const tooMany = overLimit(request, "hide-game");
+    if (tooMany !== null) return tooMany;
+
     const me = await currentSession();
     if (!me?.email) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
     const body = await readJson(request);

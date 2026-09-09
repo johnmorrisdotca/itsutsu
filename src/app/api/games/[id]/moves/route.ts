@@ -19,12 +19,7 @@ import {
   GAME_PAGE_SIZE_MAX,
   GAME_PAGE_SIZE_MIN,
 } from "@/lib/history/gameHistory.constants";
-import {
-  RATE_LIMITS,
-  checkRateLimit,
-  createRateLimitResponse,
-  getClientIp,
-} from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 
 /**
  * A game's moves are always ordered by move number — a replay has exactly one
@@ -115,11 +110,8 @@ export async function POST(
   ctx: RouteContext<"/api/games/[id]/moves">,
 ) {
   try {
-    const limited = checkRateLimit(
-      `move:${getClientIp(request)}`,
-      RATE_LIMITS.playMove,
-    );
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "move", RATE_LIMITS.playMove);
+    if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
@@ -175,11 +167,8 @@ export async function DELETE(
   ctx: RouteContext<"/api/games/[id]/moves">,
 ) {
   try {
-    const limited = checkRateLimit(
-      `move:${getClientIp(request)}`,
-      RATE_LIMITS.playMove,
-    );
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "move", RATE_LIMITS.playMove);
+    if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");

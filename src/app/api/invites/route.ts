@@ -4,6 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { listInviteCodes, mintInviteCode } from "@/lib/invite/inviteStore";
+import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 
 /**
  * Invite codes, for the operator only.
@@ -17,8 +18,11 @@ const mintSchema = z.object({
   expiresInDays: z.coerce.number().int().min(0).max(365).default(0),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const tooMany = overLimit(request, "invites", RATE_LIMITS.read);
+    if (tooMany !== null) return tooMany;
+
     if ((await currentAdmin()) === null) return notFound();
     return NextResponse.json(
       { items: await listInviteCodes() },
@@ -32,6 +36,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const tooMany = overLimit(request, "invite-mint");
+    if (tooMany !== null) return tooMany;
+
     const admin = await currentAdmin();
     if (admin === null) return notFound();
 

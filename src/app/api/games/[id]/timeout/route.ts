@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { claimTimeout } from "@/lib/history/liveGameEndings";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const claimSchema = z.object({ token: z.string().min(1).max(128) });
 
@@ -34,6 +35,9 @@ export async function POST(
   ctx: RouteContext<"/api/games/[id]/timeout">,
 ) {
   try {
+    const tooMany = overLimit(request, "claim-timeout");
+    if (tooMany !== null) return tooMany;
+
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = claimSchema.safeParse(body);

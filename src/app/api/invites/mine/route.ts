@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { NO_STORE, serverError } from "@/lib/api/apiResponse";
-import { RATE_LIMITS, checkRateLimit, createRateLimitResponse, getClientIp } from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentSession } from "@/lib/auth/currentSession";
 import { mintInviteCode } from "@/lib/invite/inviteStore";
 
@@ -16,8 +16,8 @@ const INVITE_USES = 1;
  */
 export async function POST(request: Request) {
   try {
-    const limited = checkRateLimit(`invite:${getClientIp(request)}`, RATE_LIMITS.createGame);
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "invite", RATE_LIMITS.createGame);
+    if (tooMany !== null) return tooMany;
 
     const me = await currentSession();
     if (!me?.email) {

@@ -48,6 +48,11 @@ export async function POST(
     if (!parsed.success) return badRequest("Invalid reaction.");
 
     const { id } = await ctx.params;
+    /*
+     * The one route that counts by seat rather than by address, so it does not
+     * use `overLimit`. Two people playing each other from the same house share
+     * an address, and one of them waving too much must not silence the other.
+     */
     const limited = checkRateLimit(`reaction:${id}:${parsed.data.token}`, REACTION_RATE_LIMIT);
     if (!limited.allowed) return createRateLimitResponse(limited);
 

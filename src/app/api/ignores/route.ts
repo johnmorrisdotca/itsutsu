@@ -4,12 +4,16 @@ import { z } from "zod";
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentSession } from "@/lib/auth/currentSession";
 import { fetchIgnored, ignore, unignore } from "@/lib/social/ignores";
+import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 
 const bodySchema = z.object({ email: z.string().email() });
 
 /** The signed-in member's ignore list: read it, add to it, take from it. */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const tooMany = overLimit(request, "ignores", RATE_LIMITS.read);
+    if (tooMany !== null) return tooMany;
+
     const me = await currentSession();
     if (!me?.email) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
     return NextResponse.json({ items: await fetchIgnored(me.email) }, { headers: NO_STORE });
@@ -32,6 +36,9 @@ async function change(request: Request, apply: (owner: string, target: string) =
 
 export async function POST(request: Request) {
   try {
+    const tooMany = overLimit(request, "ignore-add");
+    if (tooMany !== null) return tooMany;
+
     return await change(request, ignore);
   } catch (error) {
     console.error(error);
@@ -41,6 +48,9 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const tooMany = overLimit(request, "ignore-drop");
+    if (tooMany !== null) return tooMany;
+
     return await change(request, unignore);
   } catch (error) {
     console.error(error);

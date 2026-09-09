@@ -8,6 +8,7 @@ import {
   signEmbedToken,
 } from "@/lib/auth/embedToken";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
+import { overLimit } from "@/lib/api/rateLimit";
 
 /**
  * Mints a token that lets one site embed the board.
@@ -27,6 +28,9 @@ const mintSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const tooMany = overLimit(request, "embed-token");
+    if (tooMany !== null) return tooMany;
+
     if ((await currentAdmin()) === null) return notFound();
 
     const parsed = mintSchema.safeParse((await readJson(request)) ?? {});

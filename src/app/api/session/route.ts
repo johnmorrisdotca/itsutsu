@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { badRequest, readJson, serverError } from "@/lib/api/apiResponse";
-import {
-  RATE_LIMITS,
-  checkRateLimit,
-  createRateLimitResponse,
-  getClientIp,
-} from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { getServerSession } from "next-auth";
 
 import { isOperatorLogin } from "@/lib/auth/admin";
@@ -83,11 +78,8 @@ export async function POST(request: Request) {
       parsed.data.kind === "admin" ? RATE_LIMITS.adminSignIn : RATE_LIMITS.redeemCode;
     // Keyed per kind as well as per address, so the two limits stay separate
     // rather than sharing one counter with two different ceilings.
-    const result = checkRateLimit(
-      `session:${parsed.data.kind}:${getClientIp(request)}`,
-      limit,
-    );
-    if (!result.allowed) return createRateLimitResponse(result);
+    const tooMany = overLimit(request, `session:${parsed.data.kind}`, limit);
+    if (tooMany !== null) return tooMany;
 
     if (parsed.data.kind === "admin") {
       if (!isOperatorLogin(parsed.data.email, parsed.data.token)) {

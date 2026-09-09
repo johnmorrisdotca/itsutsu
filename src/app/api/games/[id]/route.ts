@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { NO_STORE, notFound, serverError } from "@/lib/api/apiResponse";
-import {
-  RATE_LIMITS,
-  checkRateLimit,
-  createRateLimitResponse,
-  getClientIp,
-} from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { deleteGame, fetchGameDetail } from "@/lib/history/gameHistory";
 
 /**
@@ -20,8 +15,8 @@ import { deleteGame, fetchGameDetail } from "@/lib/history/gameHistory";
  */
 export async function GET(request: Request, ctx: RouteContext<"/api/games/[id]">) {
   try {
-    const limited = checkRateLimit(`game:${getClientIp(request)}`, RATE_LIMITS.pollGame);
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "game", RATE_LIMITS.pollGame);
+    if (tooMany !== null) return tooMany;
 
     const { id } = await ctx.params;
     const game = await fetchGameDetail(id);

@@ -19,6 +19,7 @@ import {
   variantSchema,
 } from "@/lib/history/gameSettingsSchema";
 import { updateLiveGameSettings } from "@/lib/history/liveGame";
+import { overLimit } from "@/lib/api/rateLimit";
 
 const settingsSchema = z.object({
   token: z.string().min(1).max(128),
@@ -58,6 +59,9 @@ export async function PUT(
   ctx: RouteContext<"/api/games/[id]/settings">,
 ) {
   try {
+    const tooMany = overLimit(request, "game-settings");
+    if (tooMany !== null) return tooMany;
+
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
 

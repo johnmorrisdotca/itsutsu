@@ -9,12 +9,7 @@ import {
   PLAYER_SUGGEST_LIMIT_MAX,
   PLAYER_SUGGEST_MIN_QUERY,
 } from "@/lib/history/gameHistory.constants";
-import {
-  RATE_LIMITS,
-  checkRateLimit,
-  createRateLimitResponse,
-  getClientIp,
-} from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 
 const suggestSchema = z.object({
   q: z.string().min(PLAYER_SUGGEST_MIN_QUERY).max(PLAYER_NAME_MAX),
@@ -34,11 +29,8 @@ const suggestSchema = z.object({
  */
 export async function GET(request: Request) {
   try {
-    const limited = checkRateLimit(
-      `players:${getClientIp(request)}`,
-      RATE_LIMITS.read,
-    );
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "players", RATE_LIMITS.read);
+    if (tooMany !== null) return tooMany;
 
     const url = new URL(request.url);
     const parsed = suggestSchema.safeParse({

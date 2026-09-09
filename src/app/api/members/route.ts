@@ -4,6 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { listMembers, renameMember, setBanned } from "@/lib/auth/members";
+import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 
 /**
  * The members, for the operator alone.
@@ -11,8 +12,11 @@ import { listMembers, renameMember, setBanned } from "@/lib/auth/members";
  * A non-operator gets 404 rather than 403, as the invites route does: the
  * page gives away nothing about existing.
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const tooMany = overLimit(request, "members", RATE_LIMITS.read);
+    if (tooMany !== null) return tooMany;
+
     if ((await currentAdmin()) === null) return notFound();
     return NextResponse.json({ items: await listMembers() }, { headers: NO_STORE });
   } catch (error) {
@@ -35,6 +39,9 @@ const changeSchema = z.union([
  */
 export async function PATCH(request: Request) {
   try {
+    const tooMany = overLimit(request, "member-edit");
+    if (tooMany !== null) return tooMany;
+
     if ((await currentAdmin()) === null) return notFound();
 
     const body = await readJson(request);

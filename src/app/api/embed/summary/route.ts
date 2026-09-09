@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { badRequest, notFound, serverError } from "@/lib/api/apiResponse";
-import {
-  RATE_LIMITS,
-  checkRateLimit,
-  createRateLimitResponse,
-  getClientIp,
-} from "@/lib/api/rateLimit";
+import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import {
   EMBED_TOKEN_PARAM,
   allowsData,
@@ -38,11 +33,8 @@ export async function GET(request: Request) {
     );
     if (!allowsData(token)) return notFound();
 
-    const limited = checkRateLimit(
-      `embed-summary:${getClientIp(request)}`,
-      RATE_LIMITS.read,
-    );
-    if (!limited.allowed) return createRateLimitResponse(limited);
+    const tooMany = overLimit(request, "embed-summary", RATE_LIMITS.read);
+    if (tooMany !== null) return tooMany;
 
     const parsed = querySchema.safeParse({
       player: url.searchParams.get("player") ?? undefined,
