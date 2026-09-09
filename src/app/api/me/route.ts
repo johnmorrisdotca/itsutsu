@@ -10,6 +10,7 @@ import { PLAYER_NAME_MAX } from "@/lib/history/gameHistory.constants";
 import { isKeepFinishedDays } from "@/lib/history/retention";
 import { cleanDaysOff } from "@/lib/social/daysOff";
 import { cleanAppearance } from "@/components/board/appearance";
+import { cleanGameDefaults } from "@/components/game/gameDefaults";
 import { overLimit } from "@/lib/api/rateLimit";
 
 const nameSchema = z.object({
@@ -44,6 +45,8 @@ const nameSchema = z.object({
    * stone sets and grids exist, and a second list here would drift from it.
    */
   appearance: z.unknown().optional(),
+  /** Where a new game starts for them. Cleaned here rather than described twice. */
+  gameDefaults: z.unknown().optional(),
   /** ISO dates; both blank clears the range. */
   awayFrom: z.string().max(40).nullable().optional(),
   awayUntil: z.string().max(40).nullable().optional(),
@@ -83,11 +86,12 @@ export async function PATCH(request: Request) {
     }
     const { name, awayFrom, awayUntil, ...rest } = parsed.data;
     // Cleaned once, here, so nothing unusable ever reaches the column.
-    const { appearance, daysOff, ...plain } = rest;
+    const { appearance, gameDefaults, daysOff, ...plain } = rest;
     const profile: ProfileUpdate = {
       ...plain,
       ...(daysOff === undefined ? {} : { daysOff: cleanDaysOff(daysOff) }),
       ...(appearance === undefined ? {} : { appearance: cleanAppearance(appearance) }),
+      ...(gameDefaults === undefined ? {} : { gameDefaults: cleanGameDefaults(gameDefaults) }),
     };
     if (awayFrom !== undefined || awayUntil !== undefined) {
       const from = awayFrom ? new Date(awayFrom) : null;

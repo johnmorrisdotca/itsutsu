@@ -1,6 +1,7 @@
 "use client";
 
 import { StartSharedGame } from "@/components/live/StartSharedGame";
+import type { GameDefaults } from "./gameDefaults";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { AppearancePanel } from "./AppearancePanel";
 import { GameClock } from "./GameClock";
@@ -21,7 +22,11 @@ import type { GamePanelProps } from "./game.types";
  * controls, and the record. It sits beside the board and sticks to the top, so
  * none of it scrolls away mid-game.
  */
-export function GameSidebar({ postSeat = false, ...props }: GamePanelProps & { postSeat?: boolean }) {
+export function GameSidebar({
+  postSeat = false,
+  defaults,
+  ...props
+}: GamePanelProps & { postSeat?: boolean; defaults: GameDefaults }) {
   return (
     <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-80">
       <div className={PANEL_CLASS}>
@@ -53,7 +58,7 @@ export function GameSidebar({ postSeat = false, ...props }: GamePanelProps & { p
         <GameControls {...props} />
       </div>
       <div className={PANEL_CLASS}>
-        <StartSharedGame settings={props.session.state.settings} postSeat={postSeat} />
+        <StartSharedGame settings={props.session.state.settings} postSeat={postSeat} defaults={defaults} />
       </div>
       <div className={PANEL_CLASS}>
         <MoveHistory {...props} />

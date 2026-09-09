@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { appearanceFor } from "@/lib/auth/members";
+import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { currentEmail } from "@/lib/auth/currentSession";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -30,11 +30,19 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   // The member's own board, so a phone and a laptop set out the same one.
   const email = await currentEmail();
   const board = await appearanceFor(email);
+  // Where a new game starts for them: board size, the switches, the clock.
+  const defaults = await gameDefaultsFor(email);
 
   return (
     <Page width="wide">
       <SiteHeader />
-      <GameViewClient variant={variant} trackPath appearance={board} signedIn={email !== null} />
+      <GameViewClient
+        variant={variant}
+        trackPath
+        appearance={board}
+        signedIn={email !== null}
+        defaults={defaults}
+      />
       <footer className="flex flex-col gap-2 border-t border-rule pt-5 text-sm text-muted">
         <p>
           <span className="font-medium text-ink">{copy.label}</span>{" "}

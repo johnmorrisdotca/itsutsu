@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.69.0
+- Standing game options kept against the account: board, clocks, length, rated and the advanced switches, set once and used to start every new game
+
 ## 0.68.0
 - The board a member likes — the wood, the stones, the grid — is kept on their account, so a phone and a laptop set out the same one
 

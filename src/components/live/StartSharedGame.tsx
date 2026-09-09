@@ -8,6 +8,7 @@ import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { seatPath } from "@/lib/gomoku/slugs";
 import { Button, Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { GAME_COPY } from "@/components/game/game.constants";
+import type { GameDefaults } from "@/components/game/gameDefaults";
 import { describeMoveTime } from "@/lib/history/deadline";
 import {
   MOVE_TIME_OPTIONS,
@@ -28,18 +29,21 @@ import { describeRules } from "./rulesSummary";
 export function StartSharedGame({
   settings,
   postSeat = false,
+  defaults,
 }: {
   settings: GameSettings;
   /** Arrived to post a seat: the other seat starts open, and this panel comes into view. */
   postSeat?: boolean;
+  /** Where a new game starts for this member: the clock, and whether it counts. */
+  defaults: GameDefaults;
 }) {
   const router = useRouter();
   const panel = useRef<HTMLElement>(null);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [moveTimeMs, setMoveTimeMs] = useState<number | null>(null);
+  const [moveTimeMs, setMoveTimeMs] = useState<number | null>(defaults.moveTimeMs);
   const [clockMode, setClockMode] = useState<"move" | "game">("move");
-  const [rated, setRated] = useState(true);
+  const [rated, setRated] = useState(defaults.rated);
   const [timeoutPenalty, setTimeoutPenalty] = useState<TimeoutPenalty>("turn");
   const [allowResign, setAllowResign] = useState(true);
   const [open, setOpen] = useState(postSeat);

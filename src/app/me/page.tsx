@@ -9,6 +9,8 @@ import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { InviteFriends } from "@/components/mine/InviteFriends";
 import { NameForm } from "@/components/mine/NameForm";
 import { ProfileForm } from "@/components/mine/ProfileForm";
+import { GameDefaultsForm } from "@/components/mine/GameDefaultsForm";
+import { gameDefaultsFrom } from "@/components/game/gameDefaults";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { fetchBuddies } from "@/lib/social/buddies";
@@ -97,6 +99,16 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
               daysOff: member?.daysOff ?? [],
             }}
           />
+        </section>
+      ) : null}
+
+      {!welcome ? (
+        <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="game-defaults-panel">
+          <h2 className="flex items-baseline gap-2 font-semibold">
+            New games start here{" "}
+            <span className="font-mincho text-xs font-normal opacity-70">既定</span>
+          </h2>
+          <GameDefaultsForm initial={gameDefaultsFrom(member?.gameDefaults)} />
         </section>
       ) : null}
 

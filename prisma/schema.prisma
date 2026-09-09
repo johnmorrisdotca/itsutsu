@@ -313,6 +313,11 @@ model Member {
   /// like Appearance, but read back through cleanAppearance rather than
   /// trusted: a theme that has since been removed must not break a board.
   appearance Json?
+  /// Where a new game starts for this member — board size, the switches
+  /// under Advanced, the clock, whether it counts. A starting point only: a
+  /// game already under way is never touched by it. Shaped like GameDefaults,
+  /// and read back through cleanGameDefaults rather than trusted.
+  gameDefaults Json?
   /// Days of the week this member does not play, 0 for Sunday. Standing,
   /// unlike the away range: deadlines in games that honour vacation step
   /// over them every week and nothing is spent. All seven is refused — that

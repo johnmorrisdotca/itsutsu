@@ -2,6 +2,7 @@ import "server-only";
 import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
 import { appearanceFrom } from "@/components/board/appearance";
 import type { Appearance } from "@/components/board/board.types";
+import { DEFAULT_GAME_DEFAULTS, gameDefaultsFrom, type GameDefaults } from "@/components/game/gameDefaults";
 
 import { prisma } from "@/lib/prisma";
 import { revokeInviteCode } from "@/lib/invite/inviteStore";
@@ -107,6 +108,8 @@ export type MemberProfile = Member & {
   daysOff: number[];
   /** How they like a board dressed. Stored JSON; read it through cleanAppearance. */
   appearance: unknown;
+  /** Where a new game starts for them. Stored JSON; read it through cleanGameDefaults. */
+  gameDefaults: unknown;
   createdAt: Date;
   lastSeenAt: Date;
 };
@@ -140,6 +143,22 @@ export async function appearanceFor(email: string | null): Promise<Appearance | 
   });
   if (row?.appearance === null || row?.appearance === undefined) return null;
   return appearanceFrom(row.appearance);
+}
+
+/**
+ * Where a new game starts for this member.
+ *
+ * Unlike their board, this always answers: a game has to start somewhere,
+ * and "the ordinary starting point" is a perfectly good answer for somebody
+ * who has never said otherwise.
+ */
+export async function gameDefaultsFor(email: string | null): Promise<GameDefaults> {
+  if (email === null) return DEFAULT_GAME_DEFAULTS;
+  const row = await prisma.member.findUnique({
+    where: { email: foldEmail(email) },
+    select: { gameDefaults: true },
+  });
+  return gameDefaultsFrom(row?.gameDefaults);
 }
 
 export async function keepFinishedDaysFor(email: string | null): Promise<number> {
@@ -259,6 +278,7 @@ export type ProfileUpdate = Partial<
    * stone sets that exist.
    */
   appearance?: Partial<Appearance>;
+  gameDefaults?: Partial<GameDefaults>;
 };
 
 export async function updateProfile(email: string, update: ProfileUpdate): Promise<void> {

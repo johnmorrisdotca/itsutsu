@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import type { Appearance } from "@/components/board/board.types";
+import type { GameDefaults } from "./gameDefaults";
 
 /**
  * The board, loaded on the client only.
@@ -32,6 +33,7 @@ export function GameViewClient({
   match = null,
   appearance = null,
   signedIn = false,
+  defaults,
 }: {
   variant?: RuleVariant;
   /** Keep the address at /games/<slug> as the game in play changes. */
@@ -46,6 +48,8 @@ export function GameViewClient({
   appearance?: Appearance | null;
   /** Whether there is an account to save a board to at all. */
   signedIn?: boolean;
+  /** Where a new game starts for this member. */
+  defaults: GameDefaults;
 }) {
   return (
     <GameView
@@ -54,6 +58,7 @@ export function GameViewClient({
       match={match}
       appearance={appearance}
       signedIn={signedIn}
+      defaults={defaults}
     />
   );
 }

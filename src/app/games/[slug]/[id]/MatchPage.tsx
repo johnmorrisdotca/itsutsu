@@ -21,7 +21,7 @@ import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
 import { currentEmail } from "@/lib/auth/currentSession";
-import { appearanceFor } from "@/lib/auth/members";
+import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 
 /** The site's own origin, taken from the request so links work behind any host. */
@@ -73,6 +73,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     // The member's own board, so a phone and a laptop set out the same one.
     const mine = await currentEmail();
     const board = await appearanceFor(mine);
+    const defaults = await gameDefaultsFor(mine);
     return (
       <Page width="wide">
         <SiteHeader />
@@ -82,6 +83,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
           match={{ game, at: move }}
           appearance={board}
           signedIn={mine !== null}
+          defaults={defaults}
         />
       </Page>
     );
