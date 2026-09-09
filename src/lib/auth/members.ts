@@ -11,6 +11,7 @@ import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
 import { isAdminEmail } from "./admin";
+import { alwaysListed } from "./alwaysListed";
 import { memberKind, type MemberKind } from "./memberKind";
 
 /**
@@ -31,6 +32,10 @@ export type Member = { email: string; name: string; picture: string };
  */
 export type NamedMember = {
   email: string | null;
+  /** Their opaque id, for the things addressed by id rather than by address. */
+  id?: string;
+  /** The engine that plays their seats, when a program does. */
+  botTier?: string | null;
   name: string;
   picture: string;
   country?: string;
@@ -375,19 +380,6 @@ export async function listMembers(limit = 200, you: string | null = null): Promi
   return toSummary(alwaysListed(recent, computers), you);
 }
 
-/**
- * A capped listing with the rows that must survive the cap appended.
- *
- * Pure and named because the guarantee is otherwise untestable: on a small
- * database the computer players are inside the limit anyway, so a test of the
- * listing passes whether or not anything holds them there. The bug only shows
- * past the limit, which is the one site nobody runs a test against.
- */
-export function alwaysListed<T extends { id: string }>(capped: T[], always: T[]): T[] {
-  const shown = new Set(capped.map((row) => row.id));
-  return [...capped, ...always.filter((one) => !shown.has(one.id))];
-}
-
 /** Exactly the columns MEMBER_SUMMARY_SELECT asks for, and nothing else. */
 type SummaryRow = {
   id: string;
@@ -480,6 +472,14 @@ export async function findMemberByName(name: string): Promise<NamedMember | null
     where: { name: { equals: wanted, mode: "insensitive" } },
     select: {
       email: true,
+      /*
+       * A computer player has no address — it never signs in — so the one way
+       * to offer a game against it is by id. And knowing it is a program at
+       * all is what keeps "buddy" and "ignore" off a page where neither means
+       * anything.
+       */
+      id: true,
+      botTier: true,
       name: true,
       picture: true,
       country: true,
