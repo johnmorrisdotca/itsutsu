@@ -253,6 +253,18 @@ export const GAME_COPY = {
   penalty: { label: "Running out of time", kanji: "時間切れ" },
   penaltyTurn: "Loses the turn. Three in a row lose the game.",
   penaltyGame: "Loses the game.",
+  /*
+   * The same three, named rather than explained.
+   *
+   * A select is as wide as its longest option, and "Loses the turn. Three in
+   * a row lose the game." is a sentence rather than a name — it pushed the
+   * control past the edge of the panel it sits in. The sentence is still
+   * said, under the control where there is room for it, and the option says
+   * which of the three this is.
+   */
+  penaltyTurnShort: "Lose the turn",
+  penaltyGameShort: "Lose the game",
+  penaltyStrictShort: "Lose the game, strictly",
   penaltyHint:
     "Graceful: a missed deadline costs the turn, and the waiting player may claim it or simply keep waiting. Strict: a missed deadline is a loss.",
   allowResign: { label: "Allow resigning", kanji: "投了可" },

@@ -43,3 +43,34 @@ export function applyRulesChange(current: RulesDraft, next: Partial<RulesDraft>)
   merged.size = sizeForVariant(merged.variant as RuleVariant, merged.size);
   return merged;
 }
+
+/**
+ * A game's rules as a draft: what the form edits, and what the statement says
+ * once there is nothing left to edit. One conversion, so the two cannot come
+ * to describe the same game differently.
+ */
+export function draftFromGame(game: {
+  variant: string;
+  size: number;
+  obstacles: string;
+  opening: string;
+  moveTimeMs: number | null;
+  timeoutPenalty: string;
+  clockMode: string;
+  rated: boolean;
+  allowResign: boolean;
+  openSeat: string | null;
+}): RulesDraft {
+  return {
+    variant: game.variant,
+    size: game.size,
+    obstacles: game.obstacles,
+    opening: game.opening,
+    moveTimeMs: game.moveTimeMs,
+    timeoutPenalty: game.timeoutPenalty,
+    clockMode: game.clockMode,
+    rated: game.rated,
+    allowResign: game.allowResign,
+    open: game.openSeat !== null,
+  };
+}

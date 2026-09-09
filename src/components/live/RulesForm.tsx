@@ -15,6 +15,7 @@ import {
 import { describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
+import { penaltyMeans, penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 
 /**
@@ -164,7 +165,7 @@ export function RulesForm({
         </Select>
       </Field>
       {value.moveTimeMs !== null && value.clockMode !== "game" ? (
-        <Field label={GAME_COPY.penalty.label}>
+        <Field label={GAME_COPY.penalty.label} hint={penaltyMeans(value.timeoutPenalty)}>
           <Select
             value={value.timeoutPenalty}
             disabled={disabled}
@@ -173,11 +174,7 @@ export function RulesForm({
           >
             {TIMEOUT_PENALTIES.map((option) => (
               <option key={option} value={option}>
-                {option === "turn"
-                  ? GAME_COPY.penaltyTurn
-                  : option === "game"
-                    ? GAME_COPY.penaltyGame
-                    : GAME_COPY.penaltyStrict}
+                {penaltyName(option)}
               </option>
             ))}
           </Select>
