@@ -24,6 +24,25 @@
  */
 const ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
 
+/**
+ * How a word becomes an id when somebody wants one made of real characters.
+ *
+ * The alphabet has no 0, 1, i, l or o, and the names worth curating keep
+ * landing on exactly those — chibi has two i's, kyokosan two o's. Rather
+ * than drop the letters and lose the word, each is swapped for the character
+ * it is banned for looking like: i for j, o for q, 1 for 7, 0 for q. The
+ * word survives at a glance, and nothing ambiguous survives with it.
+ */
+const LOOK_ALIKES: Record<string, string> = { i: "j", l: "j", o: "q", "0": "q", "1": "7" };
+
+/** A word or number as id characters: lower case, look-alikes swapped, the rest dropped. */
+export function idCharacters(source: string): string {
+  return [...source.toLowerCase()]
+    .map((character) => LOOK_ALIKES[character] ?? character)
+    .filter((character) => ALPHABET.includes(character))
+    .join("");
+}
+
 export const MEMBER_ID_MIN = 3;
 export const MEMBER_ID_MAX = 32;
 

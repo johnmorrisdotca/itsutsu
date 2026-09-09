@@ -5,6 +5,7 @@ import {
   MEMBER_ID_MIN,
   UNCLAIMABLE_REASONS,
   canBeClaimed,
+  idCharacters,
   isMemberId,
   isUnclaimableReason,
   makeMemberId,
@@ -50,9 +51,9 @@ describe("an id this site draws", () => {
 });
 
 describe("an id curated by hand", () => {
-  it("accepts the two John chose", () => {
-    expect(isMemberId("chibi-1940")).toBe(true);
-    expect(isMemberId("kyokosan-1945")).toBe(true);
+  it("accepts a readable id grouped like a game address", () => {
+    expect(isMemberId("chjb-jjac-k794-q84")).toBe(true);
+    expect(isMemberId("kyqk-qsan-japa-n794-5")).toBe(true);
   });
 
   it("accepts letters the generated alphabet leaves out", () => {
@@ -119,5 +120,47 @@ describe("a row that may never be claimed", () => {
     for (const value of ["", "other", null, undefined, 1]) {
       expect(isUnclaimableReason(value)).toBe(false);
     }
+  });
+});
+
+/**
+ * Building an id out of real characters.
+ *
+ * John wanted the curated ids made from words that mean something — chibi,
+ * jack, kyokosan, japan, and a few years — rather than drawn at random. The
+ * alphabet forbids 0, 1, i, l and o, and those names land on exactly those,
+ * so each banned character is swapped for the one it is banned for looking
+ * like instead of being dropped and losing the word.
+ */
+describe("an id built from words", () => {
+  it("swaps a letter for the one it was banned for looking like", () => {
+    expect(idCharacters("chibi")).toBe("chjbj");
+    expect(idCharacters("kyokosan")).toBe("kyqkqsan");
+    expect(idCharacters("1940")).toBe("794q");
+    expect(idCharacters("1945")).toBe("7945");
+  });
+
+  it("leaves a word alone when nothing in it is banned", () => {
+    expect(idCharacters("jack")).toBe("jack");
+    expect(idCharacters("japan")).toBe("japan");
+    expect(idCharacters("84")).toBe("84");
+  });
+
+  it("folds case and drops what is neither a letter nor a digit", () => {
+    expect(idCharacters("Chibi 1940!")).toBe("chjbj794q");
+  });
+
+  it("never produces a character the alphabet forbids", () => {
+    for (const word of ["Illinois", "Toronto", "1001", "Lolo", "OLIVIA"]) {
+      expect(idCharacters(word), word).not.toMatch(/[01ilo]/);
+    }
+  });
+
+  it("makes the two ids that were chosen", () => {
+    // The kept records, as they stand in the database.
+    const chibi = `${idCharacters("chibi")}${idCharacters("jack")}${idCharacters("1940")}${idCharacters("84")}`;
+    expect(chibi).toBe("chjbjjack794q84");
+    expect(isMemberId("chjb-jjac-k794-q84")).toBe(true);
+    expect(isMemberId("kyqk-qsan-japa-n794-5")).toBe(true);
   });
 });

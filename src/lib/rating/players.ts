@@ -79,6 +79,21 @@ export async function fetchLeaders(limit: number): Promise<PlayerProfile[]> {
  * for the variant it was played under — so they are written together and
  * never drift apart.
  */
+/**
+ * The member who plays under this name, by id, or null when nobody does.
+ *
+ * Matched on the folded name, which is how every other part of this site
+ * decides that two spellings are one person. It is not how identity will
+ * work for ever — that is what the id is for — but it is how a name typed
+ * into a game finds the account it belongs to today.
+ */
+export async function memberIdForName(name: string): Promise<string | null> {
+  const key = playerKey(name);
+  if (key === "") return null;
+  const rows = await prisma.member.findMany({ select: { id: true, name: true } });
+  return rows.find((row) => playerKey(row.name) === key)?.id ?? null;
+}
+
 export async function recordResult(
   blackName: string,
   whiteName: string,
@@ -97,16 +112,28 @@ export async function recordResult(
     return;
   }
 
+  /*
+   * Whose record this is. A rating is earned by a person rather than by a
+   * spelling, so it is anchored to the member's opaque id wherever there is
+   * one to anchor it to. A name nobody holds an account under stays open —
+   * inventing an identity for every name typed into a game at one screen
+   * would be worse than leaving the question unanswered until it is asked.
+   */
+  const [blackId, whiteId] = await Promise.all([
+    memberIdForName(blackName),
+    memberIdForName(whiteName),
+  ]);
+
   const [black, white] = await Promise.all([
     prisma.player.upsert({
       where: { key: blackKey },
-      create: { key: blackKey, name: blackName.trim(), rating: RATING_START },
-      update: { name: blackName.trim() },
+      create: { key: blackKey, name: blackName.trim(), rating: RATING_START, memberId: blackId },
+      update: { name: blackName.trim(), ...(blackId === null ? {} : { memberId: blackId }) },
     }),
     prisma.player.upsert({
       where: { key: whiteKey },
-      create: { key: whiteKey, name: whiteName.trim(), rating: RATING_START },
-      update: { name: whiteName.trim() },
+      create: { key: whiteKey, name: whiteName.trim(), rating: RATING_START, memberId: whiteId },
+      update: { name: whiteName.trim(), ...(whiteId === null ? {} : { memberId: whiteId }) },
     }),
   ]);
 

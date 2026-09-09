@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from "./elo";
 import { playerKey } from "./playerKey";
+import { memberIdForName } from "./players";
 import { isReservedKey } from "./reservedKeys";
 
 /**
@@ -75,16 +76,23 @@ export async function recordVariantResult(
     return;
   }
 
+  // Anchored to the member's id where there is one, exactly as the global
+  // ladder is: one standing belongs to one person, whatever they are called.
+  const [blackId, whiteId] = await Promise.all([
+    memberIdForName(blackName),
+    memberIdForName(whiteName),
+  ]);
+
   const [black, white] = await Promise.all([
     prisma.playerVariantRating.upsert({
       where: { key_variant: { key: blackKey, variant } },
-      create: { key: blackKey, variant, name: blackName.trim(), rating: RATING_START },
-      update: { name: blackName.trim() },
+      create: { key: blackKey, variant, name: blackName.trim(), rating: RATING_START, memberId: blackId },
+      update: { name: blackName.trim(), ...(blackId === null ? {} : { memberId: blackId }) },
     }),
     prisma.playerVariantRating.upsert({
       where: { key_variant: { key: whiteKey, variant } },
-      create: { key: whiteKey, variant, name: whiteName.trim(), rating: RATING_START },
-      update: { name: whiteName.trim() },
+      create: { key: whiteKey, variant, name: whiteName.trim(), rating: RATING_START, memberId: whiteId },
+      update: { name: whiteName.trim(), ...(whiteId === null ? {} : { memberId: whiteId }) },
     }),
   ]);
 

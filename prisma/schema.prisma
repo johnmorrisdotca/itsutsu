@@ -233,6 +233,13 @@ model Reaction {
 model Player {
   /// The name as folded for matching.
   key        String   @id
+  /// The member this record belongs to, by opaque id.
+  ///
+  /// A rating is earned by a person, not by a spelling, so this is what it
+  /// hangs off; the folded name stays the primary key for now and moves in a
+  /// later step. Null where no account has ever been attached — a name typed
+  /// into a game at one screen and never claimed by anybody.
+  memberId   String?
   /// The name as last typed, for display.
   name       String
   rating     Int      @default(1600)
@@ -244,6 +251,7 @@ model Player {
   updatedAt  DateTime @updatedAt
 
   @@index([rating])
+  @@index([memberId])
 }
 
 /// One player's standing in a single game.
@@ -260,6 +268,8 @@ model Player {
 model PlayerVariantRating {
   /// The folded name, matching Player.key.
   key        String
+  /// The member this standing belongs to, by opaque id. See Player.memberId.
+  memberId   String?
   /// The RuleVariant the standing is for.
   variant    String
   /// The name as last typed, so a board can render without reading Player.
@@ -276,6 +286,7 @@ model PlayerVariantRating {
   @@index([variant, rating])
   /// A player's page reads every standing they hold.
   @@index([key])
+  @@index([memberId])
 }
 
 /// Somebody who has been let in by name: a Google account that once redeemed

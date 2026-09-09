@@ -218,7 +218,7 @@ function playedAs(legacy: LegacyPlayer, source: LegacySource) {
 }
 
 /** Everything one site holds about this person, under that site's name. */
-function LegacySourceSection({ legacy, source }: { legacy: LegacyPlayer; source: LegacySource }) {
+function LegacySourceSection({ source }: { source: LegacySource }) {
   return (
     <>
       <section className="flex flex-col gap-2" data-testid="legacy-source">
@@ -270,7 +270,7 @@ export function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
         </p>
       </section>
       {legacy.sources.map((source) => (
-        <LegacySourceSection key={source.site} legacy={legacy} source={source} />
+        <LegacySourceSection key={source.site} source={source} />
       ))}
       <KeptGames slug={legacy.slug} />
     </Page>
