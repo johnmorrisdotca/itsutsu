@@ -117,3 +117,38 @@ The gate only guarantees the board is worth making that rule out of.
 | Typecheck | `pnpm typecheck` |
 | Unit tests | `pnpm test:unit` |
 | All gates | `pnpm quality:check` |
+| End-to-end | `pnpm test:e2e` |
+
+### Running the end-to-end suite
+
+`RATE_LIMIT_RELIEF=20` must be in your `.env`. Without it the suite fails a
+dozen tests with 429s: it drives the whole site from one address and creates a
+game in most of its three hundred tests, which trips a limit meant for one
+household. The relief multiplies only the limits that exist to bound a cost —
+never the guessing paths, and never in production, both of which are tested in
+`src/lib/api/rateLimit.test.ts`.
+
+It is written here because `.env` is gitignored, so a fresh clone or a
+worktree does not get one, and the failure gives no hint of its own cause.
+Three sessions lost time to it, twice after it had already been fixed. See
+`.env.example`, which carries it with the reasoning.
+
+Three other things produce failures that look exactly like code bugs, and are
+worth ruling out in this order before believing any of them:
+
+1. **A stale dev server.** Running `pnpm build` in the same directory corrupts
+   the Turbopack cache — the symptom was every seat link on the site answering
+   404, including specs that had passed an hour earlier. Clear `.next` and
+   restart before believing anything.
+2. **Two runs against one database.** Foreground specs while a full suite runs
+   in the background: the setup deletions of one race the fixtures of the
+   other, and every failure looks real.
+3. **Database litter.** `e2e/tidy.ts` clears abandoned seats and seeded members
+   before each run, and each spec removes what it made. A local database that
+   has grown past the two-hundred-row list cuts pushes real rows off the end of
+   them and fails lobby specs on each other's leavings.
+
+The corollary matters as much as the list: do not write a failure off as
+litter without looking. On the day this was written, the failure that looked
+most like local noise was the computer players falling off the players page,
+which was real and would have reached production.
