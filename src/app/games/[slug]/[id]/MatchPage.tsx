@@ -110,7 +110,35 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
    * it, "against Kyokosan from Canada".
    */
   let opponent: { name: string; country: string; awayUntil: string | null } | null = null;
-  let muted: Stone | null = null;
+
+  /*
+   * Whose messages this reader has chosen not to hear, seat or no seat.
+   *
+   * This used to be worked out inside the block below, which only runs for
+   * somebody holding a seat — so a member who had ignored a player and then
+   * opened that player's game to watch it saw everything they said. The
+   * ignore list is a rule about who may reach you, not about which chair you
+   * are sitting in, and the record page has answered it this way for any
+   * reader since the conversation was put on it.
+   */
+  const ignoring: Stone[] = [];
+  const mine = await currentEmail();
+  if (mine !== null && tokens !== null) {
+    const seatIds = [
+      [STONES.black, tokens.blackMemberId],
+      [STONES.white, tokens.whiteMemberId],
+    ] as const;
+    const held = seatIds.map(([, id]) => id).filter((id) => id !== null);
+    const rows =
+      held.length === 0
+        ? []
+        : await prisma.member.findMany({ where: { id: { in: held } }, select: { id: true, email: true } });
+    for (const [stone, memberId] of seatIds) {
+      const address = rows.find((row) => row.id === memberId)?.email ?? null;
+      if (address !== null && (await isIgnoring(mine, address))) ignoring.push(stone);
+    }
+  }
+
   if (seat !== null && tokens !== null) {
     const otherId = seat === STONES.black ? tokens.whiteMemberId : tokens.blackMemberId;
     const otherName = (seat === STONES.black ? game.whiteName : game.blackName).trim();
@@ -121,12 +149,8 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
         ? null
         : await prisma.member.findUnique({
             where: { id: otherId },
-            select: { email: true, name: true, country: true, awayFrom: true, awayUntil: true },
+            select: { name: true, country: true, awayFrom: true, awayUntil: true },
           });
-    const myEmail = await currentEmail();
-    if (myEmail !== null && member?.email && (await isIgnoring(myEmail, member.email))) {
-      muted = seat === STONES.black ? STONES.white : STONES.black;
-    }
     if (member !== null || otherName !== "") {
       const now = new Date().getTime();
       const away =
@@ -137,7 +161,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     }
   }
 
-  return <LiveMatch game={game} token={token ?? null} seat={seat} move={move ?? game.moveCount} opponent={opponent} muted={muted} />;
+  return <LiveMatch game={game} token={token ?? null} seat={seat} move={move ?? game.moveCount} opponent={opponent} ignoring={ignoring} />;
 }
 
 async function LiveMatch({
@@ -146,7 +170,7 @@ async function LiveMatch({
   seat,
   move,
   opponent,
-  muted,
+  ignoring,
 }: {
   game: GameDetail;
   token: string | null;
@@ -154,7 +178,8 @@ async function LiveMatch({
   /** The position the address names, for forking a new game from it. */
   move: number;
   opponent: { name: string; country: string; awayUntil: string | null } | null;
-  muted: Stone | null;
+  /** Colours whose player this reader has ignored. */
+  ignoring: readonly Stone[];
 }) {
   /*
    * Whether this game will move a rating, and if it will not, why.
@@ -237,7 +262,7 @@ async function LiveMatch({
               seat={seat}
               basePath={matchPath(game.variant, game.id)}
               opponent={opponent}
-              muted={muted}
+              ignoring={ignoring}
               appearance={appearance}
             />
           </div>

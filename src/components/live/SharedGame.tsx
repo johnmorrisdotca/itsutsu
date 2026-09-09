@@ -19,6 +19,7 @@ import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
 import { readQuiet, subscribeQuiet, writeQuiet } from "./quiet";
+import { settleFromRecord } from "@/lib/history/settle";
 import { useLiveGame } from "./useLiveGame";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
@@ -39,7 +40,7 @@ export function SharedGame({
   seat,
   basePath,
   opponent = null,
-  muted = null,
+  ignoring = [],
   appearance = DEFAULT_APPEARANCE,
 }: {
   initial: GameDetail;
@@ -55,8 +56,12 @@ export function SharedGame({
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
   opponent?: { name: string; country: string; awayUntil?: string | null } | null;
-  /** A seat whose messages the viewer has chosen not to see. */
-  muted?: Stone | null;
+  /**
+   * Colours whose player this reader has ignored — for a watcher as much as
+   * for a player, since the ignore list is about who may reach you and not
+   * about which chair you are in.
+   */
+  ignoring?: readonly Stone[];
 }) {
   const [error, setError] = useState<string | null>(null);
   // Mute this opponent's messages for this game only; remembered in this browser.
@@ -222,9 +227,19 @@ export function SharedGame({
     }
   }
 
-  // An ignored seat's messages are simply not shown; nor are the other seat's while this game is muted.
-  const silenced = muted !== null ? muted : quiet && seat !== null ? otherStone(seat) : null;
-  const shown = (detail.reactions ?? []).filter((reaction) => silenced === null || reaction.stone !== silenced);
+  /*
+   * Whose messages this reader does not see: any colour whose player they have
+   * ignored, plus the other seat while this one game is muted.
+   *
+   * A set rather than a single colour, and worked out for a watcher as well as
+   * for a player. It used to be one stone, decided only for somebody holding a
+   * seat, so a member who had ignored a player and then opened that player's
+   * game as a spectator saw everything they said. Ignoring somebody has to
+   * mean ignoring them everywhere or it means nothing.
+   */
+  const silenced = new Set<string>(ignoring);
+  if (quiet && seat !== null) silenced.add(otherStone(seat));
+  const shown = (detail.reactions ?? []).filter((reaction) => !silenced.has(reaction.stone));
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -384,7 +399,13 @@ export function SharedGame({
           onSend={react}
         />
       ) : null}
-      {seat !== null && muted === null ? (
+      {/*
+        Nothing to mute by hand when they are already ignored outright. Read
+        from the ignore list rather than from `silenced`, which also holds the
+        result of this very checkbox — testing that would make the box vanish
+        the moment it was ticked.
+      */}
+      {seat !== null && !ignoring.includes(otherStone(seat)) ? (
         <label className="flex items-center gap-2 text-xs text-muted">
           <input
             type="checkbox"
@@ -407,19 +428,6 @@ export function SharedGame({
       <ReactionLog reactions={shown} />
     </div>
   );
-}
-
-/**
- * A game the server has closed without a closing move — a resignation, or a
- * strict timeout — as the board should show it. The move list alone would
- * leave the loser's opponent looking at "Your move" until they reloaded.
- */
-function settleFromRecord(state: ReturnType<typeof replayGame>, detail: GameDetail): ReturnType<typeof replayGame> {
-  if (detail.status !== "finished" || state.status !== GAME_STATUS.playing) return state;
-  if (detail.result === "draw") return { ...state, status: GAME_STATUS.draw };
-  const winner = detail.winner === STONES.black || detail.winner === STONES.white ? detail.winner : null;
-  if (winner === null) return state;
-  return { ...state, status: GAME_STATUS.won, winner, winBy: null };
 }
 
 function TurnBanner({
