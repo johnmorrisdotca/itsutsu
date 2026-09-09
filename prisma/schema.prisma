@@ -308,6 +308,11 @@ model Member {
   /// Away: deadlines in games that honour vacation days wait until this range is over.
   awayFrom     DateTime?
   awayUntil    DateTime?
+  /// Days of the week this member does not play, 0 for Sunday. Standing,
+  /// unlike the away range: deadlines in games that honour vacation step
+  /// over them every week and nothing is spent. All seven is refused — that
+  /// is not a preference, it is a game that could never end.
+  daysOff Int[] @default([])
   /// How many days a finished game stays in this member's own list, or 0 to
   /// keep them all. It hides them from that list and from nowhere else: the
   /// record keeps every game, the ratings are untouched, and each game is

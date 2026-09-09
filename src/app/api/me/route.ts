@@ -8,6 +8,7 @@ import { AWAY_DAYS_A_YEAR, setAway } from "@/lib/social/vacation";
 import { PLAYER_SESSION_DAYS, SESSION_COOKIE, sessionCookieOptions, signSession } from "@/lib/auth/session";
 import { PLAYER_NAME_MAX } from "@/lib/history/gameHistory.constants";
 import { isKeepFinishedDays } from "@/lib/history/retention";
+import { cleanDaysOff } from "@/lib/social/daysOff";
 import { overLimit } from "@/lib/api/rateLimit";
 
 const nameSchema = z.object({
@@ -30,6 +31,12 @@ const nameSchema = z.object({
     .int()
     .refine(isKeepFinishedDays, { message: "Not a length this site offers." })
     .optional(),
+  /**
+   * The days of the week they do not play. Cleaned rather than refused: an
+   * unknown number is dropped, and all seven reads as none, because taking
+   * every day off is a game that could never end rather than a preference.
+   */
+  daysOff: z.array(z.number().int()).max(7).optional(),
   /** ISO dates; both blank clears the range. */
   awayFrom: z.string().max(40).nullable().optional(),
   awayUntil: z.string().max(40).nullable().optional(),
@@ -67,7 +74,9 @@ export async function PATCH(request: Request) {
     if ((await fetchProfile(me.email)) === null) {
       return NextResponse.json({ error: "No profile yet: sign in with Google first." }, { status: 404, headers: NO_STORE });
     }
-    const { name, awayFrom, awayUntil, ...profile } = parsed.data;
+    const { name, awayFrom, awayUntil, ...rest } = parsed.data;
+    // Cleaned once, here, so nothing unusable ever reaches the column.
+    const profile = rest.daysOff === undefined ? rest : { ...rest, daysOff: cleanDaysOff(rest.daysOff) };
     if (awayFrom !== undefined || awayUntil !== undefined) {
       const from = awayFrom ? new Date(awayFrom) : null;
       const until = awayUntil ? new Date(awayUntil) : null;

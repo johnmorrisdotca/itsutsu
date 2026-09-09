@@ -101,6 +101,8 @@ export type MemberProfile = Member & {
   awayYear: number;
   /** Days a finished game stays in their own list; 0 keeps them all. */
   keepFinishedDays: number;
+  /** Days of the week they do not play, 0 for Sunday. */
+  daysOff: number[];
   createdAt: Date;
   lastSeenAt: Date;
 };
@@ -217,7 +219,14 @@ export async function setBanned(email: string, banned: boolean, note = ""): Prom
 export type ProfileUpdate = Partial<
   Pick<
     MemberProfile,
-    "city" | "country" | "timeZone" | "bio" | "showOnline" | "emailNotify" | "keepFinishedDays"
+    | "city"
+    | "country"
+    | "timeZone"
+    | "bio"
+    | "showOnline"
+    | "emailNotify"
+    | "keepFinishedDays"
+    | "daysOff"
   >
 >;
 

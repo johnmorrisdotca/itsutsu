@@ -2,6 +2,7 @@ import "server-only";
 
 import { foldEmail } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
+import { cleanDaysOff, daysOffGraceMs } from "./daysOff";
 
 /** Vacation days a member may take in a calendar year. Flat: there are no tiers here. */
 export const AWAY_DAYS_A_YEAR = 3;
@@ -31,13 +32,48 @@ export function graceMs(away: Away, since: Date, deadline: Date): number {
 }
 
 export async function fetchAway(email: string | null): Promise<Away> {
-  if (email === null) return null;
+  return (await fetchTimeOff(email)).away;
+}
+
+/** Everything that can hold a deadline back for one member, in one read. */
+export type TimeOff = { away: Away; daysOff: number[]; timeZone: string };
+
+const NO_TIME_OFF: TimeOff = { away: null, daysOff: [], timeZone: "" };
+
+/**
+ * A member's away range and their standing days off together.
+ *
+ * One read rather than two, because both are wanted at the same moment — a
+ * timeout claim — and because they answer the same question: is this player
+ * being asked to move at a time they said they would not be here.
+ */
+export async function fetchTimeOff(email: string | null): Promise<TimeOff> {
+  if (email === null) return NO_TIME_OFF;
   const row = await prisma.member.findUnique({
     where: { email: foldEmail(email) },
-    select: { awayFrom: true, awayUntil: true },
+    select: { awayFrom: true, awayUntil: true, daysOff: true, timeZone: true },
   });
-  if (row === null || row.awayFrom === null || row.awayUntil === null) return null;
-  return { from: row.awayFrom, until: row.awayUntil };
+  if (row === null) return NO_TIME_OFF;
+  return {
+    away: row.awayFrom === null || row.awayUntil === null ? null : { from: row.awayFrom, until: row.awayUntil },
+    daysOff: cleanDaysOff(row.daysOff),
+    timeZone: row.timeZone,
+  };
+}
+
+/**
+ * How much later a deadline falls for this member, counting both kinds of
+ * time off.
+ *
+ * The away range first, then the days off, because they compose in that
+ * order: a deadline pushed out of a holiday may land on a Sunday, and a
+ * player who does not play on Sundays is owed that too. The other order
+ * would step over a Sunday and then drop the deadline back into the holiday.
+ */
+export function timeOffGraceMs(off: TimeOff, since: Date, deadline: Date): number {
+  const holiday = graceMs(off.away, since, deadline);
+  const afterHoliday = new Date(deadline.getTime() + holiday);
+  return holiday + daysOffGraceMs(off.daysOff, off.timeZone, afterHoliday);
 }
 
 export type AwayOutcome = { ok: true; used: number } | { ok: false; reason: "range" | "allowance"; used: number };

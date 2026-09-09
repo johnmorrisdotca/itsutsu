@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 
 import { forfeitTurn, resign, winOnTime } from "@/lib/gomoku/engine";
 import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
-import { fetchAway, graceMs } from "@/lib/social/vacation";
+import { fetchTimeOff, timeOffGraceMs } from "@/lib/social/vacation";
 import { prisma } from "@/lib/prisma";
 import { recordResult } from "@/lib/rating/players";
 import { sendEmail } from "@/lib/notify/email";
@@ -84,8 +84,8 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   if (now.getTime() < deadline.getTime()) return { ok: false, reason: "not-due" };
   // Away days delay the deadline, unless this game was set up to ignore them.
   if (row.timeoutPenalty !== "game-strict") {
-    const away = await fetchAway(absent === STONES.black ? row.blackMember : row.whiteMember);
-    const grace = graceMs(away, row.lastMoveAt ?? deadline, deadline);
+    const off = await fetchTimeOff(absent === STONES.black ? row.blackMember : row.whiteMember);
+    const grace = timeOffGraceMs(off, row.lastMoveAt ?? deadline, deadline);
     if (now.getTime() < deadline.getTime() + grace) return { ok: false, reason: "not-due" };
   }
 

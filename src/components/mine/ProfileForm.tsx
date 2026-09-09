@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import { Toggle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
 import { KEEP_FINISHED_DAYS, KEEP_FINISHED_DISPLAY } from "@/lib/history/retention";
+import { MOST_DAYS_OFF, WEEKDAYS, WEEKDAY_DISPLAY } from "@/lib/social/daysOff";
 
 export type ProfileFields = {
   awayFrom: string;
@@ -18,6 +19,8 @@ export type ProfileFields = {
   emailNotify: boolean;
   /** Days a finished game stays in your own list; 0 keeps them all. */
   keepFinishedDays: number;
+  /** Days of the week you do not play, 0 for Sunday. */
+  daysOff: number[];
 };
 
 /** The time zones this browser knows, for the picker; the server checks the choice again. */
@@ -163,6 +166,46 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
           about how long they sit in your queue.
         </span>
       </label>
+      {/*
+        Standing, unlike the away range above it: these cost nothing from the
+        yearly allowance and hold every week, for ever.
+      */}
+      <fieldset className="flex flex-col gap-1">
+        <legend className="text-sm font-medium">Days I do not play</legend>
+        <div className="mt-1 flex flex-wrap gap-1.5" data-testid="days-off">
+          {WEEKDAYS.map((day) => {
+            const chosen = fields.daysOff.includes(day);
+            const full = !chosen && fields.daysOff.length >= MOST_DAYS_OFF;
+            return (
+              <button
+                key={day}
+                type="button"
+                disabled={full}
+                aria-pressed={chosen}
+                title={WEEKDAY_DISPLAY[day].label}
+                data-testid={`day-off-${day}`}
+                onClick={() =>
+                  set({
+                    daysOff: chosen
+                      ? fields.daysOff.filter((other) => other !== day)
+                      : [...fields.daysOff, day].sort((a, b) => a - b),
+                  })
+                }
+                className={`rounded-lg border px-2.5 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                  chosen ? "border-moss bg-moss-soft text-ink" : "border-rule hover:bg-shade"
+                }`}
+              >
+                {WEEKDAY_DISPLAY[day].short}{" "}
+                <span className="font-mincho opacity-70">{WEEKDAY_DISPLAY[day].kanji}</span>
+              </button>
+            );
+          })}
+        </div>
+        <span className="text-xs text-muted">
+          Deadlines in games that honour vacation step over these every week, and they cost nothing from your
+          away days. Somebody has to play on some day, so six is the most you can take.
+        </span>
+      </fieldset>
       <div className="flex items-center gap-3">
         <button type="submit" disabled={busy} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4`}>
           Save profile

@@ -94,6 +94,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
               showOnline: member?.showOnline ?? true,
               emailNotify: member?.emailNotify ?? true,
               keepFinishedDays: member?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT,
+              daysOff: member?.daysOff ?? [],
             }}
           />
         </section>
