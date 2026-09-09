@@ -6,6 +6,8 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
+import { ensureBotMembers } from "@/lib/bots/botMembers";
+import { ComputerPlayers } from "@/components/players/ComputerPlayers";
 import { fetchDirectory, fetchLeaders } from "@/lib/rating/players";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { BuddyButton } from "@/components/mine/BuddyButton";
@@ -61,12 +63,27 @@ function LegacyRoll({ kind, label, kanji }: { kind: LegacyKind; label: string; k
  */
 export default async function PlayersPage() {
   const now = new Date();
+  /*
+   * The computer players' rows are written the first time anybody needs them,
+   * and until today nothing on a page anybody visits needed them — so they
+   * existed in the code and not in the database, and the directory that is
+   * supposed to list them had nothing to list. Writing them here costs one
+   * throttled upsert every five minutes and means the players page is where
+   * they come into being, which is where somebody looking for an opponent
+   * would expect to find them.
+   */
+  await ensureBotMembers();
   const [leaders, directory, me, here] = await Promise.all([
     fetchLeaders(LEADERS),
     fetchDirectory(200),
     currentSession(),
     fetchHereNow(now),
   ]);
+  // A program is a member, so it is in the directory; it is lifted out into
+  // its own section so somebody looking for a game can see the three of them
+  // together rather than picking them out of a list of people.
+  const computers = directory.filter((entry) => entry.botTier !== null);
+  const people = directory.filter((entry) => entry.botTier === null);
   const buddies = me?.email ? await buddyEmails(me.email) : new Set<string>();
   const ignored = me?.email ? await ignoredEmails(me.email) : new Set<string>();
   const hereNow = here.filter((entry) => entry.recency === "now").length;
@@ -108,6 +125,8 @@ export default async function PlayersPage() {
           <RecencyLegend />
         </div>
 
+        <ComputerPlayers entries={computers} />
+
         <LegacyRoll kind="remembered" label="Remembered" kanji="偲ぶ" />
         <LegacyRoll kind="honorary" label="Honorary members" kanji="名誉会員" />
 
@@ -130,7 +149,7 @@ export default async function PlayersPage() {
             </tr>
           </thead>
           <tbody>
-            {directory.map((entry) => (
+            {people.map((entry) => (
               <tr key={entry.id} className="border-t border-rule">
                 <td className="py-1.5 pr-3">
                   <span className="flex items-center gap-2">

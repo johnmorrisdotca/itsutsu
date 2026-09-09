@@ -92,15 +92,40 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
         <h1 className="text-lg font-semibold">{player?.name ?? member?.name ?? decoded}</h1>
+        {/*
+          Two ratings, side by side, because there are two pools and hiding
+          one behind the other is how a number stops meaning anything. The
+          ladder rating is what somebody has earned against people; the
+          computer one is earned against the three programs and never touches
+          it, which is the whole point of keeping them apart.
+
+          Played and the record beside them count every finished game, of
+          either kind — including a game somebody played against themselves,
+          which is a game that happened and is not a game that counts. The
+          note under the row says so rather than leaving the arithmetic to be
+          reverse-engineered.
+        */}
         <Figures
           testId="player-figures"
           figures={[
             { label: "Rating", value: player?.rating ?? "—", testId: "player-rating" },
+            ...(player !== null && player.computer.ratedGames > 0
+              ? [{ label: "Vs computer", value: player.computer.rating, testId: "player-computer-rating" }]
+              : []),
             { label: "Played", value: countText(figures.played) },
             { label: "Won · Lost · Drawn", value: recordText(figures), testId: "player-record" },
             { label: "Win rate", value: winRateText(figures.winRate) },
           ]}
         />
+        {player !== null && player.computer.ratedGames > 0 ? (
+          <p className="text-xs text-muted" data-testid="two-pools">
+            Played and the record beside it count every finished game. The ratings are kept in two:{" "}
+            <span className="font-medium text-ink-soft">{player.ratedGames}</span> against people, and{" "}
+            <span className="font-medium text-ink-soft">{player.computer.ratedGames}</span> against the computer
+            players. A game against a program never moves where you stand among the people, and a game against
+            yourself counts as neither.
+          </p>
+        ) : null}
         {tier !== null ? (
           <p className="text-xs text-muted">
             <span className="font-medium text-ink-soft">{tier.label}</span>{" "}

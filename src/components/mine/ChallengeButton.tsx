@@ -12,6 +12,7 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.con
  */
 export function ChallengeButton({
   email,
+  memberId,
   variant = "freestyle",
   label = "Challenge",
   strong = false,
@@ -19,6 +20,11 @@ export function ChallengeButton({
 }: {
   /** The member to challenge; omitted for a fork, which finds the other seat itself. */
   email?: string;
+  /**
+   * The member to challenge, by id. The form to prefer, and the only one that
+   * works for a member with no address — a computer player never has one.
+   */
+  memberId?: string;
   variant?: string;
   label?: string;
   strong?: boolean;
@@ -35,7 +41,7 @@ export function ChallengeButton({
     const response = await fetch("/api/games/live", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ challenge: email, variant, from }),
+      body: JSON.stringify({ challenge: email, challengeId: memberId, variant, from }),
     });
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;

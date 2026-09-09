@@ -7,6 +7,7 @@ import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button, RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/members";
+import { PlayerName } from "@/components/players/PlayerName";
 import { MemberKindBadge } from "./MemberKindBadge";
 
 const json = async (url: string) => {
@@ -87,7 +88,11 @@ export function AdminMembers() {
               */}
               <span className="flex min-h-7 min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-medium">
                 <span className="truncate">
-                  {member.name.trim() === "" ? <span className="text-muted">No name yet</span> : member.name}
+                  {member.name.trim() === "" ? (
+                    <span className="text-muted">No name yet</span>
+                  ) : (
+                    <PlayerName name={member.name} fallback="" />
+                  )}
                 </span>
                 {/* What they are, then what has been done to them. Somebody can be a shut operator. */}
                 <MemberKindBadge kind={member.kind} />

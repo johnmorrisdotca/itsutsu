@@ -26,6 +26,18 @@ export type PlayerProfile = {
   wins: number;
   losses: number;
   draws: number;
+  /**
+   * The same figures for games played against the computer players, which are
+   * scored in a pool of their own so a game against a program never moves
+   * where somebody stands among the people.
+   *
+   * A computer player has nothing BUT this: it never plays a person-against-
+   * person game, so its ordinary rating sits at its starting value for ever
+   * and its wins and losses stay at nought. A page that read the ordinary
+   * figures for a bot would say it had never played, however many games it
+   * had just finished.
+   */
+  computer: { rating: number; ratedGames: number; wins: number; losses: number; draws: number };
 };
 
 function toProfile(row: {
@@ -36,8 +48,24 @@ function toProfile(row: {
   wins: number;
   losses: number;
   draws: number;
+  computerRating: number;
+  computerRatedGames: number;
+  computerWins: number;
+  computerLosses: number;
+  computerDraws: number;
 }): PlayerProfile {
-  return { ...row, tier: tierFor(row.ratedGames) };
+  const { computerRating, computerRatedGames, computerWins, computerLosses, computerDraws, ...people } = row;
+  return {
+    ...people,
+    tier: tierFor(row.ratedGames),
+    computer: {
+      rating: computerRating,
+      ratedGames: computerRatedGames,
+      wins: computerWins,
+      losses: computerLosses,
+      draws: computerDraws,
+    },
+  };
 }
 
 export async function fetchPlayer(name: string): Promise<PlayerProfile | null> {
@@ -184,6 +212,9 @@ export type DirectoryEntry = {
   /** Joined within the last two weeks: someone to welcome. */
   isNew: boolean;
   profile: PlayerProfile | null;
+  /** The engine that plays this member's seats, when a program does. */
+  botTier: string | null;
+  unclaimableBecause: string | null;
 };
 
 /** How long a member counts as new in the directory. */
@@ -208,5 +239,7 @@ export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
     joinedAt: member.createdAt.toISOString(),
     isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
     profile: byKey.get(playerKey(member.name)) ?? null,
+    botTier: member.botTier,
+    unclaimableBecause: member.unclaimableBecause,
   }));
 }
