@@ -36,7 +36,9 @@ import { prisma } from "@/lib/prisma";
  * send someone exactly this moment of the game.
  */
 export async function FiledMatchPage({ slug, id, move }: { slug: string; id: string; move?: number }) {
-  const game = await fetchGameDetail(id);
+  // The whole conversation, not the last thirty of it. This is the page it is
+  // kept on, and a record that quietly begins in the middle is not a record.
+  const game = await fetchGameDetail(id, { whole: true });
   if (game === null || slugFor(game.variant) !== slug) notFound();
   if (move !== undefined && (!Number.isInteger(move) || move < 0 || move > game.moveCount)) {
     notFound();
