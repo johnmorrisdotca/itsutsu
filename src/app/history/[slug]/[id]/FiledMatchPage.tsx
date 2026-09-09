@@ -18,8 +18,10 @@ import { SelfVerdict, type Verdict } from "@/components/history/SelfVerdict";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
 import { cookies } from "next/headers";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { Conversation } from "@/components/history/Conversation";
 import { fetchApplause, type ApplauseTally } from "@/lib/history/applause";
+import { ignoredEmails } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -41,8 +43,9 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
    * A rematch is a challenge to the other seat's account, offered to whoever
    * held a seat here and is signed in. Colours swap: the challenger takes black.
    */
-  const [me, members, applause] = await Promise.all([
+  const [me, myId, members, applause] = await Promise.all([
     currentSession(),
+    currentMemberId(),
     prisma.game.findUnique({
       where: { id },
       select: { blackMemberId: true, whiteMemberId: true, hiddenByBlack: true, hiddenByWhite: true, blackVerdict: true, whiteVerdict: true },
@@ -50,20 +53,65 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
     currentSession().then((session) => fetchApplause(id, session?.email ?? null)),
   ]);
   const mine = me?.email ?? null;
+  /*
+   * By the member's id, not by their address.
+   *
+   * A seat has carried the opaque id since seats stopped being held by an
+   * address, and this page went on comparing it against the signed-in email.
+   * Both are strings so it compiled, and it can never be true: nobody was
+   * recognised as having played their own game. No rematch was offered, the
+   * hidden flag read as false whatever the player had set, and the seat
+   * resolver was handed an address where it wanted an id.
+   */
   const myColour =
-    mine === null || members === null ? null : members.blackMemberId === mine ? "black" : members.whiteMemberId === mine ? "white" : null;
-  const hidden = myColour === "black" ? members?.hiddenByBlack ?? false : myColour === "white" ? members?.hiddenByWhite ?? false : false;
-  const other =
-    mine === null || members === null
+    myId === null || members === null
       ? null
-      : members.blackMemberId === mine
-        ? members.whiteMemberId
-        : members.whiteMemberId === mine
-          ? members.blackMemberId
+      : members.blackMemberId === myId
+        ? "black"
+        : members.whiteMemberId === myId
+          ? "white"
           : null;
+  const hidden = myColour === "black" ? members?.hiddenByBlack ?? false : myColour === "white" ? members?.hiddenByWhite ?? false : false;
+  const otherId =
+    myColour === null || members === null
+      ? null
+      : myColour === "black"
+        ? members.whiteMemberId
+        : members.blackMemberId;
+
+  /*
+   * The two seats' addresses, for the two things that are addressed rather
+   * than identified: a challenge is sent to somebody's email, and the ignore
+   * list is still kept by address. One read serves both.
+   */
+  const seatIds = [members?.blackMemberId, members?.whiteMemberId].filter((one) => one !== null && one !== undefined);
+  const seatRows =
+    seatIds.length === 0
+      ? []
+      : await prisma.member.findMany({ where: { id: { in: seatIds } }, select: { id: true, email: true } });
+  const addressOf = (memberId: string | null | undefined) =>
+    memberId === null || memberId === undefined
+      ? null
+      : seatRows.find((row) => row.id === memberId)?.email ?? null;
+  const other = addressOf(otherId);
+
+  /*
+   * Ignoring somebody stopped at the final stone: their messages were hidden
+   * in the game and printed in the record. A colour whose player this reader
+   * has ignored is left out of the conversation below.
+   */
+  const ignored = mine === null ? new Set<string>() : await ignoredEmails(mine);
+  const silenced = new Set<string>();
+  for (const [stone, memberId] of [
+    ["black", members?.blackMemberId],
+    ["white", members?.whiteMemberId],
+  ] as const) {
+    const address = addressOf(memberId);
+    if (address !== null && ignored.has(address)) silenced.add(stone);
+  }
 
   // A seat held by cookie counts too: a game played from a scanned link, or at one screen.
-  const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, mine);
+  const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, myId);
   const seatColour = myColour ?? claim?.seat ?? null;
   const verdict = (seatColour === "black" ? members?.blackVerdict : seatColour === "white" ? members?.whiteVerdict : null) as Verdict;
 
@@ -77,6 +125,7 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
       verdict={seatColour === null ? undefined : verdict}
       applause={applause}
       signedIn={mine !== null}
+      silenced={silenced}
     />
   );
 }
@@ -90,12 +139,15 @@ function FiledMatch({
   verdict,
   applause,
   signedIn,
+  silenced,
 }: {
   game: GameDetail;
   move: number;
   rematch: string | null;
   seated: boolean;
   hidden: boolean;
+  /** Colours whose player this reader has ignored. */
+  silenced: ReadonlySet<string>;
   /** The viewer's own read on their play, when they held a seat; undefined for a reader. */
   verdict?: Verdict;
   applause: ApplauseTally;
@@ -150,6 +202,17 @@ function FiledMatch({
         game={game}
         initialIndex={move}
         basePath={recordPath(game.variant, game.id)}
+      />
+
+      {/*
+        Under the board rather than beside it, and after the replay, because
+        it is read against the moves: each remark links to the position it was
+        made at, and the replay above is what it moves.
+      */}
+      <Conversation
+        game={game}
+        basePath={recordPath(game.variant, game.id)}
+        hidden={silenced}
       />
   </Page>
   );
