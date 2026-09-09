@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.90.0
+- Go 囲碁, the board turned round to face you, and a reading that says who is ahead in terms each game can actually be put in
+
 ## 0.89.0
 - Quick phrases over a slow game, the board a game is actually played on, and a game that says up front when it will not count
 
