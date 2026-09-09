@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * Ignoring somebody means ignoring them everywhere.
@@ -29,6 +33,7 @@ test.describe("ignoring somebody, in a live game", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
 
     await mine.request.post("/api/ignores", { data: { email: loud.email } });
     await theirs.request.post(`/api/games/${game.id}/moves`, {

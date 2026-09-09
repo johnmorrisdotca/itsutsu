@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * The rules settle when the other player arrives, not when somebody moves.
@@ -27,7 +31,9 @@ test.describe("when a shared game's rules settle", () => {
      * the other would be handing away the seat. Somebody answers it the way
      * anybody answers it, through /sit.
      */
-    return response.json() as Promise<{ id: string; blackToken: string }>;
+    const game = (await response.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
+    return game;
   }
 
   async function answered(
@@ -90,6 +96,7 @@ test.describe("when a shared game's rules settle", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string };
+    tidyAway(game.id);
 
     // The challenger opens it: still only one of them has arrived.
     const asker = await one.newPage();

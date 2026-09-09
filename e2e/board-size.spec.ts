@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * A shared game is played on a board it has.
@@ -17,6 +21,7 @@ test.describe("the board a game is played on", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
 
     // Through the seat link, so the panel is editable: only a seat holder sees it.
     await page.goto(`/games/reversi/${game.id}/seat/${game.blackToken}`);
@@ -37,6 +42,7 @@ test.describe("the board a game is played on", () => {
       data: { variant: "freestyle", blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 15 },
     });
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
 
     await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
@@ -50,6 +56,7 @@ test.describe("the board a game is played on", () => {
       data: { variant: "reversi", blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 8 },
     });
     const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
 
     // Straight at the API, past the panel: the page is not the only caller.
     const changed = await request.put(`/api/games/${game.id}/settings`, {
@@ -80,6 +87,7 @@ test.describe("the board a game is played on", () => {
       data: { variant: "reversi", blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 19 },
     });
     const game = (await started.json()) as { id: string };
+    tidyAway(game.id);
     const made = await (await request.get(`/api/games/${game.id}`)).json();
     expect(made.size).toBe(8);
   });

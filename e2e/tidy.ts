@@ -1,3 +1,4 @@
+import { test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
@@ -52,15 +53,53 @@ export async function clearAbandonedSeats(): Promise<number> {
  * everything else here: a database on this machine, or nothing at all.
  */
 export async function removeGame(id: string): Promise<void> {
+  await removeGames([id]);
+}
+
+/**
+ * The same, for every game one spec file made.
+ *
+ * One connection and one statement rather than one of each per game. A spec
+ * that makes four games and takes them away one at a time opens four
+ * connections to delete four rows, which is a slow way to be tidy and slow
+ * enough that somebody stops being tidy.
+ */
+export async function removeGames(ids: readonly string[]): Promise<number> {
+  if (ids.length === 0) return 0;
   process.loadEnvFile(".env");
-  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return 0;
 
   const prisma = new PrismaClient();
   try {
-    await prisma.game.deleteMany({ where: { id } });
+    const gone = await prisma.game.deleteMany({ where: { id: { in: [...ids] } } });
+    return gone.count;
   } finally {
     await prisma.$disconnect();
   }
+}
+
+/**
+ * A spec's own games, taken away when it finishes.
+ *
+ * `const mine = gamesMade();` at the top of a describe, then `mine(id)` on
+ * each game as it is created. The afterAll is registered here so that being
+ * tidy is one line rather than six, because a cleanup that takes six lines to
+ * write is one that specs quietly go without.
+ *
+ * Only what this file made. Sweeping by age or by name would eventually take
+ * away a game somebody was playing on the dev site, and a tidy-up that can do
+ * that is worse than the mess.
+ */
+export function gamesMade(): (id: string) => string {
+  const ids: string[] = [];
+  test.afterAll(async () => {
+    await removeGames(ids);
+    ids.length = 0;
+  });
+  return (id: string) => {
+    ids.push(id);
+    return id;
+  };
 }
 
 /**

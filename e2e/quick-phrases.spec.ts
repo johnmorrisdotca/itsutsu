@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * The phrases a slow game needs, one tap each.
@@ -15,7 +19,9 @@ test.describe("quick phrases", () => {
       data: { blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 9 },
     });
     expect(response.status()).toBe(201);
-    return response.json() as Promise<{ id: string; blackToken: string; whiteToken: string }>;
+    const game = (await response.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
+    return game;
   }
 
   test("one tap sends the phrase, and the other seat sees it", async ({ browser, request }) => {

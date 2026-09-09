@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * Turning the board round, for yourself.
@@ -14,7 +18,9 @@ test.describe("turning the board round", () => {
       data: { blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 9 },
     });
     expect(response.status()).toBe(201);
-    return response.json() as Promise<{ id: string; blackToken: string; whiteToken: string }>;
+    const game = (await response.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
+    return game;
   }
 
   test("turns the board, and takes the letters and numbers with it", async ({ page, request }) => {
