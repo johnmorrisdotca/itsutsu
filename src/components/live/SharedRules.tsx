@@ -10,12 +10,13 @@ import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
 import { describeClock } from "@/lib/history/deadline";
-import { GAME_COPY } from "@/components/game/game.constants";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
+import { penaltyMeans } from "./penalty";
 import { RulesForm } from "./RulesForm";
-import type { RulesDraft } from "./rulesDraft";
+import { RulesStatement } from "./RulesStatement";
+import { draftFromGame, type RulesDraft } from "./rulesDraft";
 import { describeHandicap, describeRules } from "./rulesSummary";
 
 /**
@@ -29,6 +30,7 @@ export function SharedRules({
   token,
   seat,
   refusal,
+  settled,
 }: {
   game: GameDetail;
   token: string | null;
@@ -40,11 +42,25 @@ export function SharedRules({
    * left to ask.
    */
   refusal: RatingRefusal | null;
+  /**
+   * Whether the rules are past changing: the other seat is taken, or a stone
+   * is down. Decided on the server from the seat row — see `rulesAreSettled` —
+   * because a game's rules settle when the second player arrives, and the
+   * board alone cannot see who has arrived.
+   */
+  settled: boolean;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const editable = seat !== null && token !== null && game.moveCount === 0;
+  /*
+   * A form only while there is still nobody to hold to these rules. It stayed
+   * one until the first stone, which left a window between somebody sitting
+   * down and somebody moving where one seat could change what the other had
+   * just agreed to — the door the setup screen was built to close, left open
+   * at the other end.
+   */
+  const editable = seat !== null && token !== null && !settled;
   const variant = game.variant as RuleVariant;
   const copy = RULE_VARIANT_DISPLAY[variant];
 
@@ -110,13 +126,21 @@ export function SharedRules({
           ? ` · finished ${new Date(game.lastMoveAt).toLocaleString()}`
           : ""}
       </p>
+      {/*
+        Only while the form is up. Once the statement is showing it says the
+        clock, the ratings and the cost of running out of time as labelled
+        rows, and this line was repeating all three of them word for word
+        directly above it.
+      */}
+      {editable ? (
       <p className="text-xs text-muted" data-testid="shared-clock-line">
         {describeClock(game.clockMode, game.moveTimeMs)}
         {!game.rated ? ". Friendly: ratings unaffected" : ""}
         {game.moveTimeMs !== null && game.clockMode !== "game"
-          ? `. ${game.timeoutPenalty === "game" ? GAME_COPY.penaltyGame : game.timeoutPenalty === "game-strict" ? GAME_COPY.penaltyStrict : GAME_COPY.penaltyTurn}`
+          ? `. ${penaltyMeans(game.timeoutPenalty)}`
           : ""}
       </p>
+      ) : null}
       {refusal !== null ? (
         <p
           className="rounded-lg border border-ochre/60 bg-ochre-soft px-3 py-2 text-xs text-ink"
@@ -129,27 +153,20 @@ export function SharedRules({
         </p>
       ) : null}
 
+      {/*
+        Once a stone is down the form goes and the answers stay. Everything it
+        was holding — the opening, whether resigning is allowed, what running
+        out of time costs — used to leave the page with it, which is hardest on
+        the player who was invited and never saw the settings to begin with.
+      */}
+      {!editable ? <RulesStatement rules={draftFromGame(game)} /> : null}
+
       {editable ? (
         <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">
           <p className="text-xs text-muted">
             Either player may change the rules until the first stone is down.
           </p>
-          <RulesForm
-            value={{
-              variant: game.variant,
-              size: game.size,
-              obstacles: game.obstacles,
-              opening: game.opening,
-              moveTimeMs: game.moveTimeMs,
-              timeoutPenalty: game.timeoutPenalty,
-              clockMode: game.clockMode,
-              rated: game.rated,
-              allowResign: game.allowResign,
-              open: game.openSeat !== null,
-            }}
-            onChange={(next) => void change(next)}
-            disabled={saving}
-          />
+          <RulesForm value={draftFromGame(game)} onChange={(next) => void change(next)} disabled={saving} />
           {game.handicap.stone !== null ? (
             <Button
               onClick={() =>

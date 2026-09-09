@@ -50,8 +50,13 @@ export function Field({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="flex items-center justify-between gap-3 text-sm text-ink-soft">
-        {label}
+      {/*
+        `min-w-0` on the row and on the label: without it a flex item refuses
+        to shrink below its own content, so one long option in a select takes
+        the control past the edge of the panel and the panel with it.
+      */}
+      <span className="flex min-w-0 items-center justify-between gap-3 text-sm text-ink-soft">
+        <span className="min-w-0">{label}</span>
         {children}
       </span>
       {hint !== undefined ? (

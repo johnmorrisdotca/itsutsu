@@ -16,8 +16,14 @@ export const BUTTON_QUIET =
 export const BUTTON_STRONG =
   "border-transparent bg-ink text-paper hover:bg-ink-soft";
 
+/*
+ * `min-w-0` and `max-w-full` because a select is as wide as its longest
+ * option and will otherwise push out of whatever it is sitting in. Naming an
+ * option well is the real fix — see GAME_COPY's short penalty labels — but a
+ * control should not be able to break a panel however badly it is named.
+ */
 export const SELECT_CLASS =
-  "rounded-lg border border-rule-strong/80 bg-ivory/80 px-2 py-1 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-55";
+  "min-w-0 max-w-full truncate rounded-lg border border-rule-strong/80 bg-ivory/80 px-2 py-1 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-55";
 
 export const INPUT_CLASS =
   "w-full rounded-lg border border-rule-strong/80 bg-ivory/80 px-2.5 py-1.5 text-sm text-ink outline-none placeholder:text-muted/80 focus-visible:ring-2 focus-visible:ring-moss";
