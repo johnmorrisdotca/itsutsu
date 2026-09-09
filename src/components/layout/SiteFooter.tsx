@@ -35,12 +35,22 @@ export function SiteFooter() {
           </Link>
         ))}
       </span>
-      <span className="flex flex-wrap items-baseline gap-x-3 font-mono tabular-nums" title={`Version ${stamps.semver}`}>
+      {/*
+        The edition leads to what is in it. A colophon names the edition and
+        this one can be asked what that edition brought, which is a better
+        home for the answer than a seventh word in the row opposite.
+      */}
+      <Link
+        href="/releases"
+        className="flex flex-wrap items-baseline gap-x-3 font-mono tabular-nums underline-offset-4 hover:underline"
+        title={`Version ${stamps.semver} — what has shipped`}
+        data-testid="version-link"
+      >
         <span className="font-sans font-semibold text-ink-soft">{STAGE}</span>
         <span data-testid="site-version">{stamps.semver}</span>
         <span className="opacity-70">{stamps.roman}</span>
         <span className="font-mincho opacity-70">{stamps.kanji}</span>
-      </span>
+      </Link>
     </footer>
   );
 }

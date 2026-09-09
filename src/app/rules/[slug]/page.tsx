@@ -8,7 +8,6 @@ import { gamePath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
-import { hasGameImage } from "@/lib/learn/images";
 
 export const metadata = { title: "Rules" };
 
@@ -37,7 +36,6 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
   if (variant === null) notFound();
   const page = rulesPageFor(variant);
   const guides = guidesFor(variant);
-  const image = hasGameImage(variant);
 
   return (
     <Page width="standard" gap="gap-6">
@@ -120,13 +118,19 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
         </article>
 
         <aside className="flex w-full flex-col gap-4 lg:w-80">
-          {image ? (
-            <figure className={`${PANEL_CLASS} flex flex-col gap-2`}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-              <img src={page.image} alt={`A game of ${page.title} in progress`} className="w-full rounded-lg" />
-              <figcaption className="text-xs text-muted">A game in progress.</figcaption>
-            </figure>
-          ) : null}
+          {/*
+            Always shown. Whether the file is there is settled by the New Game
+            Gate before anything ships, not by asking the filesystem while
+            serving the page — `public/` is not in the server bundle, so that
+            question answers false in production however many screenshots are
+            being served, and this figure would vanish from every rules page
+            there and nowhere else.
+          */}
+          <figure className={`${PANEL_CLASS} flex flex-col gap-2`}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
+            <img src={page.image} alt={`A game of ${page.title} in progress`} className="w-full rounded-lg" />
+            <figcaption className="text-xs text-muted">A game in progress.</figcaption>
+          </figure>
           {guides.length > 0 ? (
             <section className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">

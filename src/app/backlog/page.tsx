@@ -2,15 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BacklogBoard } from "@/components/backlog/BacklogBoard";
-import { Releases } from "@/components/backlog/Releases";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { openCount } from "@/lib/backlog/backlog";
 import { fetchBoard } from "@/lib/backlog/backlogStore";
-import { readReleases } from "@/lib/backlog/releasesFile";
-import { VERSION } from "@/lib/version";
 
 export const metadata = { title: "Backlog", robots: { index: false, follow: false } };
 
@@ -40,7 +37,7 @@ export default async function BacklogPage() {
   const me = await currentAdmin();
   if (me === null) notFound();
 
-  const [items, releases] = await Promise.all([fetchBoard(), readReleases()]);
+  const items = await fetchBoard();
   const open = openCount(items);
 
   return (
@@ -57,22 +54,15 @@ export default async function BacklogPage() {
           <Link href="/admin?view=work" className="underline underline-offset-4">
             Admin
           </Link>
-          ; this page is the two halves together, the board and everything that has already shipped.
+          . What has already shipped has{" "}
+          <Link href="/releases" className="underline underline-offset-4">
+            a page of its own
+          </Link>
+          , open to everybody — this one is only what has not.
         </p>
         <BacklogBoard items={items} who={me.name ?? ""} />
       </section>
 
-      <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="release-history">
-        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          Releases <span className="font-mincho text-sm font-normal opacity-70">更新履歴</span>
-        </h2>
-        <p className="max-w-prose text-sm text-muted">
-          What has already shipped, newest first, in a player&apos;s words. Read from the changelog itself, which is
-          written in the same commit as the work, so this list cannot fall behind the site it describes. The board above
-          is the other half: what has been asked for and has not happened yet.
-        </p>
-        <Releases releases={releases} current={VERSION} />
-      </section>
     </Page>
   );
 }

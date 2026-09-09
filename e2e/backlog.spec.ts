@@ -165,8 +165,18 @@ test.describe("backlog", () => {
     await expect(page.getByRole("navigation").getByRole("link", { name: /^Backlog/ })).toHaveCount(0);
   });
 
-  test("what has shipped is on the same page as what has not", async ({ page }) => {
+  test("what has shipped is a page of its own, and not on the board", async ({ page }) => {
+    /*
+     * These used to share a page. They are two different questions — what is
+     * coming, which is the operator's, and what arrived, which is everybody's
+     * — and the second was written for players and then kept behind a page
+     * that answers 404 to every player there is.
+     */
     await page.goto("/backlog");
+    await expect(page.getByTestId("release-history")).toHaveCount(0);
+    await page.getByRole("link", { name: "a page of its own" }).click();
+    await expect(page).toHaveURL(/\/releases$/);
+
     const history = page.getByTestId("release-history");
     await expect(history).toBeVisible();
     // Read from CHANGELOG.md itself, so there is a real history here, not a placeholder.
