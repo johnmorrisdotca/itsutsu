@@ -50,7 +50,7 @@ export type TimeoutOutcome =
   | { ok: false; reason: TimeoutRefusal };
 
 /** Why a change of rules was refused. `started` means a stone is already down. */
-export type SettingsRefusal = "not-found" | "finished" | "wrong-token" | "started";
+export type SettingsRefusal = "not-found" | "finished" | "wrong-token" | "started" | "settled";
 
 export type SettingsOutcome =
   | { ok: true; game: GameDetail }

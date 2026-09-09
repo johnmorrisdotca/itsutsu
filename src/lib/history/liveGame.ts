@@ -38,6 +38,7 @@ import type {
   SettingsOutcome,
 } from "./liveGame.types";
 import { nextDeadline } from "./deadline";
+import { rulesAreSettled } from "./seats";
 import { toGameMove } from "./gameHistory";
 
 /** Prisma's code for "a unique constraint was violated". */
@@ -70,6 +71,8 @@ export const GAME_ROW = {
   rated: true,
   openSeat: true,
   openedAt: true,
+  blackClaimedAt: true,
+  whiteClaimedAt: true,
   blackToken: true,
   whiteToken: true,
   blackMemberId: true,
@@ -212,6 +215,15 @@ export async function updateLiveGameSettings(
   if (row.status !== "active") return { ok: false, reason: "finished" };
   if (stoneForToken(row, token) === null) return { ok: false, reason: "wrong-token" };
   if (row.moves.length > 0) return { ok: false, reason: "started" };
+  /*
+   * And refused once the other seat is taken, not only once a stone is down.
+   * The page stops offering the form at the same moment, but the page is not
+   * the only caller — and this is the window the whole setup screen exists to
+   * close: rules changed after somebody agreed to them.
+   */
+  if (rulesAreSettled({ ...row, moveCount: row.moves.length })) {
+    return { ok: false, reason: "settled" };
+  }
 
   const { handicap, open, clockMode = row.clockMode, rated = row.rated, ...rest } = settings;
   const now = new Date();

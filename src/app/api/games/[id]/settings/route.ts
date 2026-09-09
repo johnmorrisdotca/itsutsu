@@ -43,6 +43,7 @@ const REFUSAL_STATUS: Record<string, number> = {
   finished: 409,
   "wrong-token": 403,
   started: 409,
+  settled: 409,
 };
 
 const REFUSAL_MESSAGE: Record<string, string> = {
@@ -50,6 +51,7 @@ const REFUSAL_MESSAGE: Record<string, string> = {
   finished: "That game is already over.",
   "wrong-token": "That link does not hold a seat in this game.",
   started: "The first stone is down, so the rules are fixed.",
+  settled: "Somebody has taken the other seat, so the rules are what they agreed to.",
 };
 
 /**

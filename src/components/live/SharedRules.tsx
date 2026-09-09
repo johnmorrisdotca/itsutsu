@@ -30,6 +30,7 @@ export function SharedRules({
   token,
   seat,
   refusal,
+  settled,
 }: {
   game: GameDetail;
   token: string | null;
@@ -41,11 +42,25 @@ export function SharedRules({
    * left to ask.
    */
   refusal: RatingRefusal | null;
+  /**
+   * Whether the rules are past changing: the other seat is taken, or a stone
+   * is down. Decided on the server from the seat row — see `rulesAreSettled` —
+   * because a game's rules settle when the second player arrives, and the
+   * board alone cannot see who has arrived.
+   */
+  settled: boolean;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const editable = seat !== null && token !== null && game.moveCount === 0;
+  /*
+   * A form only while there is still nobody to hold to these rules. It stayed
+   * one until the first stone, which left a window between somebody sitting
+   * down and somebody moving where one seat could change what the other had
+   * just agreed to — the door the setup screen was built to close, left open
+   * at the other end.
+   */
+  const editable = seat !== null && token !== null && !settled;
   const variant = game.variant as RuleVariant;
   const copy = RULE_VARIANT_DISPLAY[variant];
 

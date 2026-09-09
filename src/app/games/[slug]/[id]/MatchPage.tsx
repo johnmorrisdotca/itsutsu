@@ -20,7 +20,7 @@ import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
-import { resolveSeat, seatIsFree } from "@/lib/history/seats";
+import { resolveSeat, rulesAreSettled, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
@@ -213,20 +213,28 @@ async function LiveMatch({
    * somebody is already sitting in has no link worth giving out and every
    * reason not to have one on screen.
    */
+  const tokens = await prisma.game.findUnique({
+    where: { id: game.id },
+    select: {
+      blackToken: true,
+      whiteToken: true,
+      openSeat: true,
+      openedAt: true,
+      blackClaimedAt: true,
+      whiteClaimedAt: true,
+      moveCount: true,
+    },
+  });
+
+  /*
+   * Whether the rules are still open to change. Read from the same row as the
+   * seat links, because it is the same question asked twice: a seat still
+   * waiting for somebody is a game still being set up.
+   */
+  const settled = tokens === null ? true : rulesAreSettled(tokens);
+
   let invites: SeatInvite[] = [];
   if (seat !== null) {
-    const tokens = await prisma.game.findUnique({
-      where: { id: game.id },
-      select: {
-        blackToken: true,
-        whiteToken: true,
-        openSeat: true,
-        blackClaimedAt: true,
-        whiteClaimedAt: true,
-        moveCount: true,
-      },
-    });
-
     if (tokens !== null) {
       const base = await origin();
       const pairs: [Stone, string][] = [
@@ -269,7 +277,7 @@ async function LiveMatch({
         </div>
 
         <aside className="flex w-full flex-col gap-4 lg:w-80">
-          <SharedRules game={game} token={token} seat={seat} refusal={refusal} />
+          <SharedRules game={game} token={token} seat={seat} refusal={refusal} settled={settled} />
           {seat !== null ? (
             <div className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">

@@ -118,6 +118,49 @@ export async function wouldAnswerTheirOwnInvitation(
 }
 
 /**
+ * Whether the rules of a shared game are still open to change.
+ *
+ * They were open until the first stone, which is later than it should be. A
+ * game's rules are what the second player agreed to when they sat down, and
+ * between sitting down and playing there is a window where the other seat
+ * could still move them — a posted seat answered under one set of rules and
+ * played under another. That window is the whole reason the setup screen
+ * exists; leaving it open here would leave the door it was built to close.
+ *
+ * So the rules settle when somebody else arrives, not when somebody moves.
+ * Before that a game is still being set up: a creator who posted a seat with
+ * the wrong clock can fix it, and a challenge nobody has opened yet can still
+ * be adjusted. Once the other seat is taken they are what both people have.
+ *
+ * A stone on the board settles them too, through `seatIsFree`, for the games
+ * where nobody ever follows a link — a computer player never does.
+ */
+export function rulesAreSettled(game: {
+  openSeat?: string | null;
+  openedAt?: Date | string | null;
+  blackClaimedAt?: Date | string | null;
+  whiteClaimedAt?: Date | string | null;
+  moveCount?: number;
+}): boolean {
+  if ((game.moveCount ?? 0) > 0) return true;
+  /*
+   * A seat that was posted and is no longer posted has been answered, and
+   * that is the moment somebody agreed to these rules — whatever the poster
+   * has or has not done since.
+   *
+   * Asking only whether both seats are claimed is not enough, and the way it
+   * fails is the exact harm: a poster who never opened their own seat link
+   * has no claim stamped, so their own game reads as still waiting for
+   * somebody, and they could change the rules out from under the person who
+   * had just taken the other chair.
+   */
+  if (game.openedAt !== null && game.openedAt !== undefined && (game.openSeat ?? null) === null) {
+    return true;
+  }
+  return !seatIsFree(game, STONES.black) && !seatIsFree(game, STONES.white);
+}
+
+/**
  * Ties a seat to the account that took it, so "your games" follows the
  * account rather than the browser. A blank seat name takes the member's
  * name, since that is who is sitting there. A seat already bound to another
