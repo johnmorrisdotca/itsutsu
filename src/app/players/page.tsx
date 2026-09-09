@@ -44,7 +44,8 @@ function LegacyRoll({ kind, label, kanji }: { kind: LegacyKind; label: string; k
             </Link>
             <span className="text-muted">
               {" "}
-              — never played here, but {legacy.possessive ?? "their"} record from {legacy.source} is kept.
+              — never played here, but {legacy.possessive ?? "their"} record from{" "}
+              {legacy.sources.map((source) => source.site).join(" and ")} is kept.
             </span>
           </li>
         ))}

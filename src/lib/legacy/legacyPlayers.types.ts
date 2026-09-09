@@ -57,35 +57,55 @@ export type LegacyClassRecord = {
  */
 export type LegacyKind = "remembered" | "honorary" | "elsewhere";
 
+/**
+ * One person's record at one site.
+ *
+ * A person is one person, so they are one row here however many sites they
+ * played on: Chibi is on ItsYourTurn and on GoldToken, and John is Incognito
+ * on one and John Morris on the other. Two rows cross-referencing each other
+ * would be two pages a visitor could land on for the same man, which is what
+ * this shape exists to stop.
+ *
+ * Everything that belongs to a site rather than to the person lives here —
+ * when they joined it, what they were called on it, what they played there —
+ * because none of it is true of them in general.
+ */
+export type LegacySource = {
+  /** The site itself, as it names itself: "ItsYourTurn.com". */
+  site: string;
+  siteUrl?: string;
+  /** The site's own player id, for linking back precisely — never guessed at. */
+  siteId?: string;
+  /** What they were called here, when it is not the name they are known by. */
+  handle?: string;
+  joined?: string;
+  lastActive?: string;
+  /** The days a week they set aside, as their own profile there stated it. */
+  daysOff?: string;
+  /** A line of context, sourced rather than invented. */
+  note?: string;
+  /** Remarks left on something they posted here, kept as found. */
+  comments?: LegacyComment[];
+  /** Every class of game this site tracked, each with its own totals. */
+  summary: LegacyClassRecord[];
+  /** Every game kept against one other legacy player, as this person's own side of it. */
+  headToHead?: { opponent: string; games: { game: string; date: string; result: "won" | "lost" | "drawn" }[] }[];
+};
+
 export type LegacyPlayer = {
   slug: string;
   name: string;
   kind: LegacyKind;
-  /** The handle their record was kept under, if different from the display name. */
-  handle?: string;
   location?: string;
   /** How the roll refers to them — "his", "her" or "their". Only set from what was actually said about them; "their" otherwise. */
   possessive?: "his" | "her" | "their";
-  source: string;
-  sourceUrl?: string;
-  /** The source site's own player id, for linking back precisely — not guessed at when a site never showed it. */
-  sourceId?: string;
-  joined?: string;
-  lastActive?: string;
-  /** The days a week they set aside from the site, as their own profile stated it — a fact about a life, not a game setting. */
-  daysOff?: string;
-  /** A line of context, sourced rather than invented — a fact worth keeping, not a guess at how someone felt. */
-  note?: string;
-  /** Remarks left on something this person posted at the source, kept as found. */
-  comments?: LegacyComment[];
-  /** Every class of game the source site tracked, each with its own totals and, where recorded, its own by-game table. */
-  summary: LegacyClassRecord[];
+  /**
+   * Where their record was kept, one entry per site, newest chapter last.
+   * Never empty: a record with no source is a claim with nothing behind it.
+   */
+  sources: LegacySource[];
   /** For kind "elsewhere": the folded key of the live Itsutsu name this record belongs beside. */
   linkedKey?: string;
-  /** Slugs of this same person's other kept records, from other sites. */
-  relatedSlugs?: string[];
-  /** Every game kept against one specific other legacy player, results as this person's own side of it. */
-  headToHead?: { opponent: string; games: { game: string; date: string; result: "won" | "lost" | "drawn" }[] }[];
 };
 
 /** A single game kept in full — moves proven legal by replay, not just a result. */

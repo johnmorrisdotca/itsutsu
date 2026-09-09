@@ -17,7 +17,7 @@ export const LEGACY_GAMES: LegacyGame[] = [
     playedAt: "2005-01-07 02:38",
     source: "ItsYourTurn.com",
     black: "kyokosan",
-    white: "incognito",
+    white: "jmorris",
     winner: "white",
     moves: [
       { row: 6, col: 6 }, { row: 4, col: 6 }, { row: 5, col: 7 }, { row: 4, col: 8 },

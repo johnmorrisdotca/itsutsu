@@ -16,7 +16,7 @@ describe("reserved player keys", () => {
   });
 
   it("does not reserve an elsewhere record — a live member plays under their own name", () => {
-    expect(RESERVED_PLAYER_KEYS.has("incognito")).toBe(false);
+    expect(RESERVED_PLAYER_KEYS.has("jmorris")).toBe(false);
   });
 
   it("reserves an honorary record too — alive, but not a member here", () => {

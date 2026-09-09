@@ -7,7 +7,13 @@ import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { aliasedVariant } from "@/lib/legacy/gameAliases";
 import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyGames.data";
 import { findLegacyPlayer } from "@/lib/legacy/legacyPlayers.data";
-import type { LegacyClassRecord, LegacyGame, LegacyGameRecord, LegacyPlayer } from "@/lib/legacy/legacyPlayers.types";
+import type {
+  LegacyClassRecord,
+  LegacyGame,
+  LegacyGameRecord,
+  LegacyPlayer,
+  LegacySource,
+} from "@/lib/legacy/legacyPlayers.types";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
@@ -125,14 +131,14 @@ function KeptGame({ game, viewedAs }: { game: LegacyGame; viewedAs: string }) {
   );
 }
 
-/** Remarks left on something a legacy player posted at the source — kept exactly as found. */
-function LegacyComments({ legacy }: { legacy: LegacyPlayer }) {
-  if (legacy.comments === undefined || legacy.comments.length === 0) return null;
+/** Remarks left on something posted at one site — kept exactly as found. */
+function LegacyComments({ source }: { source: LegacySource }) {
+  if (source.comments === undefined || source.comments.length === 0) return null;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="legacy-comments">
       <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Comments</h2>
       <ul className="flex flex-col gap-3">
-        {legacy.comments.map((comment, index) => (
+        {source.comments.map((comment, index) => (
           <li key={`${comment.by}-${comment.at}-${index}`} className="flex flex-col gap-0.5 border-t border-rule pt-3 first:border-t-0 first:pt-0">
             <p className="text-sm whitespace-pre-line">{comment.text}</p>
             <p className="text-xs text-muted">
@@ -145,32 +151,12 @@ function LegacyComments({ legacy }: { legacy: LegacyPlayer }) {
   );
 }
 
-/** Other kept records for the same person, on other sites. */
-function RelatedLegacy({ legacy }: { legacy: LegacyPlayer }) {
-  if (legacy.relatedSlugs === undefined || legacy.relatedSlugs.length === 0) return null;
-  const related = legacy.relatedSlugs.map((slug) => findLegacyPlayer(slug)).filter((entry) => entry !== null);
-  if (related.length === 0) return null;
-  return (
-    <p className="text-xs text-muted">
-      Also kept:{" "}
-      {related.map((entry, index) => (
-        <span key={entry.slug}>
-          {index > 0 ? ", " : ""}
-          <Link href={`/players/${entry.slug}`} className="underline-offset-2 hover:underline">
-            {entry.name} on {entry.source}
-          </Link>
-        </span>
-      ))}
-    </p>
-  );
-}
-
 /** This person's own record against one other legacy player, game by game. */
-function HeadToHead({ legacy }: { legacy: LegacyPlayer }) {
-  if (legacy.headToHead === undefined || legacy.headToHead.length === 0) return null;
+function HeadToHead({ source }: { source: LegacySource }) {
+  if (source.headToHead === undefined || source.headToHead.length === 0) return null;
   return (
     <>
-      {legacy.headToHead.map((entry) => {
+      {source.headToHead.map((entry) => {
         const opponent = findLegacyPlayer(entry.opponent);
         const won = entry.games.filter((g) => g.result === "won").length;
         const drawn = entry.games.filter((g) => g.result === "drawn").length;
@@ -215,6 +201,46 @@ const LEGACY_OWN_PAGE_COPY: Record<"remembered" | "honorary", { badge: string; t
   honorary: { badge: "Honorary member", tail: "Never played on Itsutsu — kept here as an honorary member, in her own right." },
 };
 
+/**
+ * How a person is described where they played: the handle, the site, and the
+ * years, in one clause per site.
+ */
+function playedAs(legacy: LegacyPlayer, source: LegacySource) {
+  return (
+    <>
+      <span className="font-medium text-ink-soft">{source.handle ?? legacy.name}</span> on{" "}
+      <span className="font-medium text-ink-soft">{source.site}</span>
+      {source.joined !== undefined && source.lastActive !== undefined
+        ? `, ${source.joined} to ${source.lastActive}`
+        : null}
+    </>
+  );
+}
+
+/** Everything one site holds about this person, under that site's name. */
+function LegacySourceSection({ legacy, source }: { legacy: LegacyPlayer; source: LegacySource }) {
+  return (
+    <>
+      <section className="flex flex-col gap-2" data-testid="legacy-source">
+        <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+          {source.site}
+          {source.handle !== undefined ? (
+            <span className="text-xs font-normal normal-case tracking-normal">as {source.handle}</span>
+          ) : null}
+        </h2>
+        {source.note !== undefined ? (
+          <p className="border-l-2 border-rule-strong pl-3 text-sm italic text-ink-soft">{source.note}</p>
+        ) : null}
+      </section>
+      <HeadToHead source={source} />
+      {source.summary.map((row) => (
+        <LegacyClassTable key={`${source.site}-${row.class}`} row={row} />
+      ))}
+      <LegacyComments source={source} />
+    </>
+  );
+}
+
 /** A legacy record with its own address — nobody here plays under this name. */
 export function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
   const copy = legacy.kind === "elsewhere" ? null : LEGACY_OWN_PAGE_COPY[legacy.kind];
@@ -226,22 +252,27 @@ export function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
           {copy?.badge ?? "Record elsewhere"}
         </span>
         <h1 className="text-lg font-semibold">{legacy.name}</h1>
+        {/*
+          One person, one page, however many sites they played on: the sites
+          are named in one sentence here and then given a section each below,
+          rather than being separate records that point at one another.
+        */}
         <p className="text-sm text-muted">
           {legacy.location !== undefined ? `${legacy.location} · ` : ""}
-          Played as <span className="font-medium text-ink-soft">{legacy.handle ?? legacy.name}</span> on{" "}
-          <span className="font-medium text-ink-soft">{legacy.source}</span>
-          {legacy.joined !== undefined && legacy.lastActive !== undefined ? `, ${legacy.joined} to ${legacy.lastActive}` : null}.{" "}
-          {copy?.tail ?? "From before Itsutsu — kept alongside whatever they've since earned here."}
+          Played as{" "}
+          {legacy.sources.map((source, index) => (
+            <span key={source.site}>
+              {index > 0 ? (index === legacy.sources.length - 1 ? ", and as " : ", as ") : ""}
+              {playedAs(legacy, source)}
+            </span>
+          ))}
+          . {copy?.tail ?? "From before Itsutsu — kept alongside whatever they've since earned here."}
         </p>
-        {legacy.note !== undefined ? <p className="border-l-2 border-rule-strong pl-3 text-sm italic text-ink-soft">{legacy.note}</p> : null}
-        <RelatedLegacy legacy={legacy} />
       </section>
-      <HeadToHead legacy={legacy} />
-      {legacy.summary.map((row) => (
-        <LegacyClassTable key={row.class} row={row} />
+      {legacy.sources.map((source) => (
+        <LegacySourceSection key={source.site} legacy={legacy} source={source} />
       ))}
       <KeptGames slug={legacy.slug} />
-      <LegacyComments legacy={legacy} />
     </Page>
   );
 }
@@ -250,60 +281,47 @@ export function LegacyOwnPage({ legacy }: { legacy: LegacyPlayer }) {
 export function LegacyElsewherePanel({ legacy }: { legacy: LegacyPlayer }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="legacy-elsewhere-panel">
-      <span className="flex items-baseline gap-2">
+      <span className="flex flex-wrap items-baseline gap-2">
         <span className="w-fit rounded-full border border-rule-strong bg-ivory px-2.5 py-0.5 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
           Record elsewhere
         </span>
         <span className="text-sm text-muted">
-          Also played as <span className="font-medium text-ink-soft">{legacy.handle ?? legacy.name}</span> on{" "}
-          <span className="font-medium text-ink-soft">{legacy.source}</span>
-          {legacy.joined !== undefined && legacy.lastActive !== undefined ? `, ${legacy.joined} to ${legacy.lastActive}` : null}.
+          Also played as{" "}
+          {legacy.sources.map((source, index) => (
+            <span key={source.site}>
+              {index > 0 ? (index === legacy.sources.length - 1 ? ", and as " : ", as ") : ""}
+              {playedAs(legacy, source)}
+            </span>
+          ))}
+          .
         </span>
       </span>
-      {legacy.note !== undefined ? <p className="border-l-2 border-rule-strong pl-3 text-sm italic text-ink-soft">{legacy.note}</p> : null}
-      <table className="w-full text-sm" data-testid="legacy-summary">
-        <tbody>
-          {legacy.summary.map((row) => (
-            <tr key={row.class} className="border-t border-rule">
-              <td className="py-1.5 pr-3">{row.class}</td>
-              <td className="py-1.5 pr-3 font-mono tabular-nums">
-                {row.record.won}W · {row.record.lost}L · {row.record.drawn}D
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <details>
-        <summary className="cursor-pointer text-xs text-muted underline-offset-2 hover:underline">By game</summary>
-        <div className="mt-2 flex flex-col gap-4">
-          {legacy.summary
-            .filter((row) => row.detail !== undefined && row.detail.length > 0)
-            .map((row) => (
-              <div key={row.class} className="flex flex-col gap-1">
-                <span className="text-xs font-semibold text-muted">{row.class}</span>
-                <table className="w-full text-sm" data-testid="legacy-detail">
-                  <tbody>
-                    {row.detail?.map((game) => (
-                      <tr key={game.game} className="border-t border-rule">
-                        <td className="py-1.5 pr-3 align-top">
-                          <GameName name={game.game} />
-                          <GameLog game={game} />
-                        </td>
-                        <td className="py-1.5 pr-3 align-top font-mono tabular-nums">
-                          {game.won}W · {game.lost}L · {game.drawn}D
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ))}
+      {legacy.sources.map((source) => (
+        <div key={source.site} className="flex flex-col gap-2">
+          {legacy.sources.length > 1 ? (
+            <span className="text-xs font-semibold text-muted">{source.site}</span>
+          ) : null}
+          {source.note !== undefined ? (
+            <p className="border-l-2 border-rule-strong pl-3 text-sm italic text-ink-soft">{source.note}</p>
+          ) : null}
+          <table className="w-full text-sm" data-testid="legacy-summary">
+            <tbody>
+              {source.summary.map((row) => (
+                <tr key={row.class} className="border-t border-rule">
+                  <td className="py-1.5 pr-3">{row.class}</td>
+                  <td className="py-1.5 pr-3 font-mono tabular-nums">
+                    {row.record.won}W · {row.record.lost}L · {row.record.drawn}D
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </details>
-      <KeptGames slug={legacy.slug} />
+      ))}
     </section>
   );
 }
+
 
 /**
  * One player's profile: rating and tier, the record overall and by game, and

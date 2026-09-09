@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.72.0
+- One person is one kept record: Chibi's two site records and John's two become one page each, with a section per site
+
 ## 0.71.0
 - Nothing destructive happens on one click: resigning, claiming a missed turn, shutting an account, taking a name off and revoking an invite all ask first, in the site's own words
 
