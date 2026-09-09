@@ -102,6 +102,7 @@ export const GAME_COPY = {
   newGameNo: { label: "Never mind", kanji: "取消" },
   skip: { label: "Skip turn", kanji: "捨て石" },
   skipHint: "Spends your turn on a far corner. It still costs you a stone.",
+  passHint: "Takes your turn without playing a stone. Two passes in a row end the game.",
   swap: { label: "Swap seats", kanji: "駒交換" },
   swapHint:
     "Hand over your colour and take your opponent's stones instead. It costs you this move.",

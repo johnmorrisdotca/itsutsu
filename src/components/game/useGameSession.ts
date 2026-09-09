@@ -6,6 +6,7 @@ import { assess, isSwapBlocked } from "@/lib/gomoku/analysis";
 import { readAdvantage } from "@/lib/gomoku/advantage";
 import {
   canSkip as engineCanSkip,
+  canPass as engineCanPass,
   canGrowBoard,
   canShrinkBoard,
   canSwapSeats,
@@ -269,7 +270,7 @@ export function useGameSession(
     [commit, hand, helpRequest, placing, reviewing, selected, settings.historyMode, state],
   );
 
-  /** Passes the turn in a piece game when nothing fits. */
+  /** Passes the turn: forced in a piece game when nothing fits, offered freely at any point in Go. */
   const pass = useCallback(() => {
     if (reviewing) return;
     commit(passTurn(state));
@@ -432,6 +433,7 @@ export function useGameSession(
     canUndo: index > 0 && state.settings.allowUndo,
     canRedo: index < timeline.length - 1,
     canSkip: engineCanSkip(state),
+    canPass: !reviewing && engineCanPass(state),
     canSwap: canSwapSeats(state) && !isSwapBlocked(assessment),
     swapBlockedReason,
     moveIndex: index,

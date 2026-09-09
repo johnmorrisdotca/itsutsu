@@ -132,6 +132,7 @@ export function createGame(
     pendingTwist: false,
     kings: [],
     chainAt: null,
+    koPoint: null,
     status: GAME_STATUS.playing,
     winner: null,
     winBy: null,

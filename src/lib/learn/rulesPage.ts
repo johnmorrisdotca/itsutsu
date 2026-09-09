@@ -114,6 +114,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   } else if (spec.checkers) {
     object.push("Leave the other side with no piece that can move: jump theirs off the board until none is left, or shut in whatever remains.");
     object.push("No lines and nothing placed after the start: every piece is down from the first move, and the whole game is in how they step and jump.");
+  } else if (spec.go) {
+    object.push("Surround more of the board than the other colour. Stones never move once placed, and no line ever wins anything.");
+    object.push("A connected group of one colour with no empty point touching it anywhere is captured whole, off the board at once.");
   } else if (spec.makerBreaker) {
     object.push(`Black is the Maker and wins if any ${length} in a row of one colour appears, whoever placed it. White is the Breaker and wins if the board fills with no such line.`);
   } else if (spec.misere) {
@@ -166,6 +169,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.chineseCheckers) {
     board.push("A hexagram: a centre hexagon with six triangular points, 121 cells in all. Each side's ten pieces start filling one point, black at the top and white at the bottom, shaded on the board; the far point is the one to fill.");
   }
+  if (spec.go) {
+    board.push("Stones sit on the intersections of the lines, not in the squares between them, so the board has one more point on a side than it has squares. The star points mark the traditional handicap spots.");
+  }
   if (spec.queue !== null) {
     board.push(
       spec.queue === "domino"
@@ -210,6 +216,11 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     play.push("A piece that captures and can capture again from where it lands keeps jumping in the same move. A man crowned partway through always stops there — only a king may carry a chain on, and only on a later move.");
     play.push("A man reaching the far row is crowned a king, and may then step and capture backward as well as forward.");
     play.push("The game ends the moment a colour has no piece that can move: none left, or every one shut in.");
+  } else if (spec.go) {
+    play.push("Players take turns placing one stone on any empty intersection. Black opens; stones never move once played.");
+    play.push("A stone touches its four orthogonal neighbours, not the diagonals. Play a stone that leaves an adjacent enemy group with no liberty left anywhere and the whole group comes off the board at once.");
+    play.push("You may not play into your own group's last liberty unless the same move captures an enemy group and so opens one. You may not immediately retake the single stone a capture just lifted — the ko rule — though playing anywhere else first, even a pass, clears it.");
+    play.push("Either side may pass instead of playing. Two passes in a row end the game and it is counted: every stone on the board plus every empty point surrounded by one colour alone, with a fixed 6.5-point bonus for white.");
   } else if (spec.pieces !== null) {
     play.push(`Players first place their ${spec.pieces} pieces, one a turn. Then a turn moves one of your pieces a single step to an adjacent empty point, in any direction.`);
   } else {
@@ -232,8 +243,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     );
   }
   if (spec.lineClear) play.push("When the bottom row is full it disappears and every stone above drops one row.");
-  if (spec.flips || spec.camps || spec.connects || spec.checkers || spec.chineseCheckers) {
-    // Said above; a full board is only the usual way for both to be stuck, a race has no full board, and checkers ends with pieces gone, not the board full.
+  if (spec.flips || spec.camps || spec.connects || spec.checkers || spec.chineseCheckers || spec.go) {
+    // Said above; a full board is only the usual way for both to be stuck, a race has no full board, checkers ends with pieces gone, and Go ends on two passes, not a full board.
   } else if (spec.misere) {
     if (spec.placement === PLACEMENTS.drop) play.push("You may not play directly on top of the opponent's last stone while any other column has room.");
     play.push("A full board is a win for the player who opened.");
@@ -266,6 +277,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
           ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only whether your two sides are joined."
         : spec.checkers
           ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only pieces jumping."
+        : spec.go
+          ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only groups, liberties and territory."
         : "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.",
   );
   house.push(copy.board);

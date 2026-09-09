@@ -115,20 +115,34 @@ describe("every turn it offers is a turn the rules allow", () => {
 });
 
 describe("it can finish a game of anything on the site", () => {
-  it.each([...RULE_VARIANT_LIST])("%s", (variant) => {
-    const state = playOut(variant, BOT_TIERS.dan, BOT_TIERS.kyu, 1234);
-    /*
-     * Not every game here must *end* — the race games can be called off by the
-     * guard, as the simulator's own slide cap acknowledges — but the position
-     * must always be one the engine and the chooser agree about: either it is
-     * settled, or there was still a turn to take when we stopped counting.
-     */
-    if (state.status === GAME_STATUS.playing) {
-      expect(legalTurns(state).length, `${variant}: stopped with nothing to play`).toBeGreaterThan(0);
-    } else {
-      expect([GAME_STATUS.won, GAME_STATUS.draw]).toContain(state.status);
-    }
-  });
+  /*
+   * Go's own board is 19×19, four times the points of the 9×9 and 10×10
+   * boards every other variant here is checked on, and its chooser has no
+   * shape-based reading to lean on the way the line games do (`analysis` is
+   * off), so it weighs every one of those points by the same general score
+   * the whole game through. A full game reliably finishes — see below — just
+   * past the default 5s test timeout, so it alone gets more room; a real bug
+   * would still show up as the guard cap or an outright refusal, neither of
+   * which a longer clock hides.
+   */
+  it.each([...RULE_VARIANT_LIST])(
+    "%s",
+    (variant) => {
+      const state = playOut(variant, BOT_TIERS.dan, BOT_TIERS.kyu, 1234);
+      /*
+       * Not every game here must *end* — the race games can be called off by the
+       * guard, as the simulator's own slide cap acknowledges — but the position
+       * must always be one the engine and the chooser agree about: either it is
+       * settled, or there was still a turn to take when we stopped counting.
+       */
+      if (state.status === GAME_STATUS.playing) {
+        expect(legalTurns(state).length, `${variant}: stopped with nothing to play`).toBeGreaterThan(0);
+      } else {
+        expect([GAME_STATUS.won, GAME_STATUS.draw]).toContain(state.status);
+      }
+    },
+    120_000,
+  );
 });
 
 describe("what every grade sees", () => {

@@ -12,20 +12,11 @@ import {
   VARIANT_SPECS,
   WIN_REASONS,
 } from "./gomoku.constants";
-import {
-  indexOf,
-  isOnBoard,
-  otherStone,
-  pointOf,
-  samePoint,
-} from "./rules/board";
+import { indexOf, isOnBoard, otherStone, pointOf, samePoint } from "./rules/board";
 import { capturesFrom, removeStones, stonesIn } from "./rules/captures";
 import { forbiddenAt } from "./rules/forbidden";
-import {
-  applyOpeningChoice,
-  openingAfterMove,
-  openingAllows,
-} from "./rules/opening";
+import { areaWinner, goLegal, playGoMove } from "./rules/go";
+import { applyOpeningChoice, openingAfterMove, openingAllows } from "./rules/opening";
 import {
   blockedByGiveaway,
   clearBottomRow,
@@ -89,6 +80,7 @@ export { centreSquares, discCount, flipsAt, hasFlipMove, inLayingPhase } from ".
 export { campOf, campSize, campSquares, piecesHome } from "./rules/camps";
 export { checkersHasCapture, isDarkSquare, isKingAt } from "./rules/checkers";
 export { STAR_RADIUS, starCampOf, starCampSize, starPiecesHome, starSize } from "./rules/chineseCheckers";
+export { groupAt, KOMI, scoreArea } from "./rules/go";
 export {
   canGrowBoard,
   canShrinkBoard,
@@ -137,6 +129,8 @@ export function isLegalMove(state: GameState, point: Point): boolean {
   if (!isOnBoard(state.settings.size, point) || cellAt(state, point) !== null) return false;
   // The flipping games: legal means "turns something", and nothing else applies.
   if (VARIANT_SPECS[state.settings.variant].flips) return flipLegal(state, point);
+  // Go: legal means not suicide and not the ko point; no opening, no forbidden shape.
+  if (VARIANT_SPECS[state.settings.variant].go) return goLegal(state.board, state.settings.size, point, state.toPlay, state.koPoint);
   if (inMovePhase(state)) return false;
   // In a piece game a lone stone is a single, and there are only so many.
   if (VARIANT_SPECS[state.settings.variant].queue !== null && singlesLeft(state) <= 0) return false;
@@ -230,17 +224,27 @@ export function mustPass(state: GameState): boolean {
   return piecePlacements(state).length === 0;
 }
 
+/** Whether passing is on offer: forced in a piece game with nothing to lay, free at any point in Go. */
+export function canPass(state: GameState): boolean {
+  if (mustPass(state)) return true;
+  if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
+  return VARIANT_SPECS[state.settings.variant].go;
+}
+
 /**
- * Takes a turn without a stone. Two passes in a row end the game as a draw,
- * since neither side can move. A pass is a row in the record like any move,
- * so a replay passes at the same point.
+ * Takes a turn without a stone. Two passes end a piece game as a draw; in Go
+ * they end it by area count instead, since passing there is a real choice,
+ * not a sign nobody can move. A replay passes at the same point either way.
  */
 export function passTurn(state: GameState): GameState {
-  if (!mustPass(state)) return state;
-  const move: Move = { ...NO_POINT, stone: state.toPlay, kind: MOVE_KINDS.pass };
-  const passed: GameState = { ...state, moves: [...state.moves, move] };
+  if (!canPass(state)) return state;
+  const move: Move = { ...NO_POINT, stone: state.toPlay, kind: MOVE_KINDS.pass, koPointBefore: state.koPoint };
+  const passed: GameState = { ...state, moves: [...state.moves, move], koPoint: null };
   const previous = state.moves[state.moves.length - 1];
   if (previous !== undefined && previous.kind === MOVE_KINDS.pass) {
+    if (VARIANT_SPECS[state.settings.variant].go) {
+      return won(passed, areaWinner(passed.board, passed.settings.size), WIN_REASONS.territory, []);
+    }
     return { ...passed, status: GAME_STATUS.draw };
   }
   return settleDrawLimit({ ...passed, toPlay: otherStone(state.toPlay) });
@@ -268,6 +272,8 @@ export function playMove(
    * whole turn happens in playFlip and the length is checked on the way out.
    */
   if (spec.flips) return settleDrawLimit(playFlip(state, point));
+  // Go settles its own move: a capture, maybe a fresh ko point, and the turn passes.
+  if (spec.go) return playGoMove(state, point);
   // The colour of the stone: the mover's, unless the game lets them choose, or fixes it.
   const stone = spec.singleColour ? STONES.black : spec.anyColour ? (chosen ?? toPlay) : toPlay;
   const captured = capturesFrom(state.board, settings, stone, point);
@@ -403,12 +409,14 @@ export function undoMove(state: GameState): GameState {
     if (capturedPoint !== undefined && last.capturedWasKing) kings = [...kings, capturedPoint];
     chainAt = last.continuedChain ? from : null;
   }
+  const koPoint = last.koPointBefore ?? null; // Go: back to what it was before this move.
 
   return {
     ...state,
     board,
     kings,
     chainAt,
+    koPoint,
     pendingTwist: false,
     moves: state.moves.slice(0, -1),
     captures: {
