@@ -19,7 +19,7 @@ import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
-import { resolveSeat } from "@/lib/history/seats";
+import { resolveSeat, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
@@ -145,12 +145,25 @@ async function LiveMatch({
    * Seat links are only handed out to someone who already holds one. A reader
    * with no claim, or the wrong one, gets a board they can watch and not
    * touch — so a shared spectator link cannot be turned into a seat.
+   *
+   * And only for a seat still waiting for somebody. The token IS the
+   * credential — it plays that seat on its own, with no cookie and no account
+   * — so this used to show each player the other's, for the length of the
+   * game, which meant either of them could play the other's moves. A seat
+   * somebody is already sitting in has no link worth giving out and every
+   * reason not to have one on screen.
    */
   let invites: SeatInvite[] = [];
   if (seat !== null) {
     const tokens = await prisma.game.findUnique({
       where: { id: game.id },
-      select: { blackToken: true, whiteToken: true },
+      select: {
+        blackToken: true,
+        whiteToken: true,
+        openSeat: true,
+        blackClaimedAt: true,
+        whiteClaimedAt: true,
+      },
     });
 
     if (tokens !== null) {
@@ -161,14 +174,16 @@ async function LiveMatch({
       ];
 
       invites = await Promise.all(
-        pairs.map(async ([stone, seatToken]) => {
-          const url = `${base}${seatPath(game.variant, game.id, seatToken)}`;
-          return {
-            stone,
-            url,
-            qr: await QRCode.toDataURL(url, { width: 320, margin: 1 }),
-          };
-        }),
+        pairs
+          .filter(([stone]) => seatIsFree(tokens, stone))
+          .map(async ([stone, seatToken]) => {
+            const url = `${base}${seatPath(game.variant, game.id, seatToken)}`;
+            return {
+              stone,
+              url,
+              qr: await QRCode.toDataURL(url, { width: 320, margin: 1 }),
+            };
+          }),
       );
     }
   }
@@ -211,11 +226,11 @@ async function LiveMatch({
           ) : null}
           {invites.length > 0 ? (
             <InvitePanel invites={invites} yourStone={seat} />
-          ) : (
+          ) : seat === null ? (
             <p className="rounded-2xl border border-dashed border-rule px-4 py-6 text-sm text-muted">
               You are watching this game. Open your own seat link to play.
             </p>
-          )}
+          ) : null}
         </aside>
       </div>
   </Page>

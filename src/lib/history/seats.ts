@@ -38,6 +38,37 @@ export async function resolveSeat(
 }
 
 /**
+ * Records that a seat's link has been used, the first time it is used.
+ *
+ * Only the first use: re-opening your own link on a second device is a normal
+ * thing to do and must not move the timestamp, or "when was this seat taken"
+ * would mean "when was it last opened" and answer a different question.
+ */
+export async function markSeatTaken(id: string, seat: Stone, now = new Date()): Promise<void> {
+  const column = seat === STONES.black ? "blackClaimedAt" : "whiteClaimedAt";
+  await prisma.game.updateMany({
+    where: { id, [column]: null },
+    data: { [column]: now },
+  });
+}
+
+/**
+ * Whether a seat is still to be given out.
+ *
+ * A seat nobody has taken is the only one whose link is worth showing, and
+ * the only one whose link is safe to show. An open seat posted on the
+ * noticeboard is by definition untaken, whatever else is on the row.
+ */
+export function seatIsFree(
+  game: { openSeat?: string | null; blackClaimedAt?: Date | string | null; whiteClaimedAt?: Date | string | null },
+  seat: Stone,
+): boolean {
+  if (game.openSeat === seat) return true;
+  const claimed = seat === STONES.black ? game.blackClaimedAt : game.whiteClaimedAt;
+  return claimed === null || claimed === undefined;
+}
+
+/**
  * Ties a seat to the account that took it, so "your games" follows the
  * account rather than the browser. A blank seat name takes the member's
  * name, since that is who is sitting there. A seat already bound to another

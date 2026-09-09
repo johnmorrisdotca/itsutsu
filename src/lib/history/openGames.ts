@@ -58,6 +58,14 @@ export async function sitAtOpenSeat(id: string): Promise<SitOutcome> {
       openSeat: null,
       lastMoveAt: now,
       deadlineAt: nextDeadline(row, replay(row).toPlay, now),
+      /*
+       * Sitting down here is a seat being taken without the link ever being
+       * followed, so it has to be stamped in the same breath — otherwise the
+       * seat's link goes on being shown to everybody after somebody is
+       * sitting in it, which is the whole thing this column exists to stop.
+       * In the same conditional update, so the race is still one write.
+       */
+      [seat === STONES.black ? "blackClaimedAt" : "whiteClaimedAt"]: now,
     },
   });
   if (taken.count === 0) return { ok: false, reason: "taken" };

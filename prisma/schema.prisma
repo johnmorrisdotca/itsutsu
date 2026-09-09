@@ -45,6 +45,13 @@ model Game {
   /// generated per game and never derived from anything guessable.
   blackToken String @unique @default(cuid())
   whiteToken String @unique @default(cuid())
+  /// When each seat's link was first used, or null while the seat is still to
+  /// be given out. A seat's link is only shown while it is null: the token is
+  /// the whole credential, so a link that is still on screen after somebody
+  /// has taken the seat is that player's credential on somebody else's
+  /// display.
+  blackClaimedAt DateTime?
+  whiteClaimedAt DateTime?
 
   /// Display names, free text. Blank means the seat was anonymous.
   blackName String @default("")

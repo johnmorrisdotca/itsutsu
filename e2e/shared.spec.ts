@@ -67,12 +67,22 @@ test.describe("a game played from two devices", () => {
     expect(response?.status()).toBe(404);
   });
 
-  test("a seat link shows both invitations with QR codes", async ({ page, request }) => {
+  test("a seat link shows a QR code for the seat still waiting, and not for the one taken", async ({
+    page,
+    request,
+  }) => {
+    /*
+     * It used to show both. The token is the whole credential — it plays that
+     * seat on its own — so showing Black's link to the person who has just
+     * sat down in Black is pointless, and showing it to White is handing
+     * White the ability to play Black's moves. Only a seat nobody is sitting
+     * in has a link worth giving out. See e2e/seat-links.spec.ts.
+     */
     const game = await startGame(request);
     await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
 
-    await expect(page.getByRole("img", { name: /QR code for the Black seat/ })).toBeVisible();
     await expect(page.getByRole("img", { name: /QR code for the White seat/ })).toBeVisible();
+    await expect(page.getByRole("img", { name: /QR code for the Black seat/ })).toHaveCount(0);
   });
 
   test("someone without a token can watch but not play", async ({ page, request }) => {

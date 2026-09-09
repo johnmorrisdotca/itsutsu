@@ -32,8 +32,9 @@ export function InvitePanel({
     <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
       <SectionTitle kanji="招待">Seat links</SectionTitle>
       <p className="text-xs text-muted">
-        Send a player their own link. Whoever opens it plays that colour, so
-        keep yours to yourself.
+        Send a player their own link. Whoever opens it plays that colour, so it
+        is only shown while the seat is still waiting for somebody — once
+        they have sat down it is their credential, not an invitation.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
@@ -73,7 +74,7 @@ function SeatCard({ invite, isYours }: { invite: SeatInvite; isYours: boolean })
   )}`;
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-rule p-3">
+    <div className="flex flex-col gap-2 rounded-xl border border-rule p-3" data-testid="seat-invite" data-stone={invite.stone}>
       <p className="flex items-center gap-2 text-sm font-semibold">
         <span
           aria-hidden="true"

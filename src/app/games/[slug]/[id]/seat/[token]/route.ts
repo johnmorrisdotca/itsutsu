@@ -4,7 +4,7 @@ import { matchPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { seatForToken } from "@/lib/history/liveGame";
-import { bindSeat } from "@/lib/history/seats";
+import { bindSeat, markSeatTaken } from "@/lib/history/seats";
 import { seatCookieName } from "@/lib/history/seatCookie";
 
 /** How long a claimed seat is remembered. A shared game is played over days at most. */
@@ -35,6 +35,14 @@ export async function GET(
   const session = await currentSession();
   const mine = await currentMemberId();
   if (mine !== null) await bindSeat(id, seat, mine, session?.name ?? "");
+
+  /*
+   * Somebody is sitting here now, so the link stops being shown. The token is
+   * the whole credential — it plays this seat on its own — and a link still on
+   * screen after the seat is taken is that player's credential displayed to
+   * whoever else is looking at the board.
+   */
+  await markSeatTaken(id, seat);
 
   const response = NextResponse.redirect(new URL(matchPath(game.variant, id), request.url), 303);
   response.cookies.set({
