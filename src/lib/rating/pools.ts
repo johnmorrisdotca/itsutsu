@@ -6,7 +6,7 @@ import { RATING_START, tierFor, type RatingTier } from "./elo";
  * Games against a person move one ladder; games against a computer player move
  * another. Two pools rather than one, because a computer opponent is always
  * available and always willing to play: with a single ladder every rating on
- * the site would drift towards wherever the three graded players happened to
+ * the site would drift towards wherever the graded players happened to
  * settle, and a ladder of people would quietly stop being a ladder of people.
  *
  * This is the whole answer to that problem. Nothing is capped, discounted or

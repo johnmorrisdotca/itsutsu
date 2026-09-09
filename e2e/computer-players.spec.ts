@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constants";
 
 /**
- * The three computer players are findable.
+ * The computer players are findable.
  *
  * Their member rows are written the first time anything needs them, and until
  * this page wrote them nothing anybody visits did — so they existed in the
