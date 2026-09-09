@@ -24,6 +24,23 @@ function ago(iso: string, now: Date): string {
 }
 
 /**
+ * How many of each group the lobby prints.
+ *
+ * The games waiting on you are the reason to open this page, so they are all
+ * shown however many there are. The rest are a reminder rather than a queue,
+ * and a reminder that runs to fifty rows is a page nobody reaches the bottom
+ * of — twenty games at once is the most anybody is meant to have, and the
+ * groups that grow without anyone deciding to are held to a handful.
+ */
+const SHOWN: Record<MyGameGroup, number> = {
+  yourMove: 50,
+  theirMove: 20,
+  unstarted: 10,
+  hotSeat: 5,
+  finished: 5,
+};
+
+/**
  * The games this browser holds a seat in, as the queue the turn-based sites
  * taught: yours to move first, then the ones you are waiting on, the ones
  * nobody has started, and lately finished ones. Nothing is shown when there
@@ -61,7 +78,7 @@ export async function MyGamesList() {
       </h2>
       {MY_GAME_GROUPS.map((group) =>
         groups[group].length === 0 ? null : (
-          <Group key={group} group={group} items={groups[group].slice(0, group === "finished" ? 5 : 50)} now={now} />
+          <Group key={group} group={group} items={groups[group].slice(0, SHOWN[group])} now={now} />
         ),
       )}
     </section>

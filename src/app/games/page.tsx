@@ -98,9 +98,15 @@ export default async function LobbyPage() {
     <Page width="standard">
       <SiteHeader />
 
-      <MyGamesList />
-      <LocalGameCardClient />
-
+      {/*
+        * Starting a game comes first, and that is the fix rather than a
+        * preference. "Your games" grows without limit as somebody plays, so
+        * anything under it is pushed further down every week — John found the
+        * dropdown a full scroll below the fold, which is the same complaint
+        * that made this panel one sentence in the first place. A section whose
+        * height is fixed cannot bury anything, and a section that grows cannot
+        * bury what is above it.
+        */}
       <section className="flex flex-col gap-4" data-testid="lobby-start">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
           {START_COPY.title.label}{" "}
@@ -115,6 +121,9 @@ export default async function LobbyPage() {
           <HereNowPanel here={here} me={email} />
         </div>
       </section>
+
+      <MyGamesList />
+      <LocalGameCardClient />
 
       {email !== null ? <InviteFriends /> : null}
 
