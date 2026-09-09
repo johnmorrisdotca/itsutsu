@@ -15,7 +15,7 @@ import {
 import { describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
-import { penaltyMeans, penaltyName } from "./penalty";
+import { penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 
 /**
@@ -164,8 +164,14 @@ export function RulesForm({
           <option value="friendly">Game will NOT affect ratings</option>
         </Select>
       </Field>
+      {/*
+        The hint explains all three, because this is where somebody is choosing
+        between them and the option itself is only a name. What this game's
+        setting actually means is said in full in the statement, once there is
+        nothing left to choose.
+      */}
       {value.moveTimeMs !== null && value.clockMode !== "game" ? (
-        <Field label={GAME_COPY.penalty.label} hint={penaltyMeans(value.timeoutPenalty)}>
+        <Field label={GAME_COPY.penalty.label} hint={GAME_COPY.penaltyHint}>
           <Select
             value={value.timeoutPenalty}
             disabled={disabled}

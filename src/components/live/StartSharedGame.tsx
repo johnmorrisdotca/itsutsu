@@ -8,6 +8,7 @@ import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { seatPath } from "@/lib/gomoku/slugs";
 import { Button, Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { GAME_COPY } from "@/components/game/game.constants";
+import { penaltyName } from "./penalty";
 import type { GameDefaults } from "@/components/game/gameDefaults";
 import { describeMoveTime } from "@/lib/history/deadline";
 import {
@@ -141,7 +142,7 @@ export function StartSharedGame({
           >
             {TIMEOUT_PENALTIES.map((option) => (
               <option key={option} value={option}>
-                {option === "turn" ? GAME_COPY.penaltyTurn : option === "game" ? GAME_COPY.penaltyGame : GAME_COPY.penaltyStrict}
+                {penaltyName(option)}
               </option>
             ))}
           </Select>

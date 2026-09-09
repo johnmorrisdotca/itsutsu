@@ -65,6 +65,26 @@ test.describe("the rules once play has begun", () => {
     await expect(page.getByTestId("rules-statement")).toContainText("Opening");
   });
 
+  test("nor on the panel that turns a local game into a shared one", async ({ page }) => {
+    /*
+     * The third place these settings are offered, and the one most easily
+     * forgotten: it lives beside a local board rather than a shared one. It
+     * had the same sentence-as-an-option and so the same overflow.
+     */
+    await page.goto("/games/gomoku");
+    const penalty = page.getByTestId("shared-penalty");
+    const time = page.getByTestId("shared-move-time");
+    await expect(time).toBeVisible();
+    await time.selectOption({ index: 1 });
+    await expect(penalty).toBeVisible();
+
+    const panel = penalty.locator("xpath=ancestor::*[contains(@class,'rounded')][1]");
+    const outer = await panel.boundingBox();
+    const inner = await penalty.boundingBox();
+    expect(outer).not.toBeNull();
+    expect(inner!.x + inner!.width).toBeLessThanOrEqual(outer!.x + outer!.width + 1);
+  });
+
   test("no control is wider than the panel it sits in", async ({ page, request }) => {
     /*
      * A select is as wide as its longest option, and one of the timeout
