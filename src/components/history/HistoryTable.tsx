@@ -1,6 +1,6 @@
-import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
 
+import { PlayerName } from "@/components/players/PlayerName";
 import { recordPath } from "@/lib/gomoku/slugs";
 
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
@@ -12,24 +12,6 @@ function playedOn(iso: string): string {
     dateStyle: "medium",
     timeStyle: "short",
   });
-}
-
-/**
- * A player's name, leading to their page when there is one behind it: a name
- * in a finished game has a record, and a blank seat has nothing to link.
- */
-function PlayerName({ name, fallback, linkable }: { name: string; fallback: string; linkable: boolean }) {
-  if (name.trim() === "") return <>{fallback}</>;
-  if (!linkable) return <>{name}</>;
-  return (
-    <Link
-      href={playerPath(name)}
-      className="relative z-10 underline-offset-2 hover:underline"
-      data-testid="history-player"
-    >
-      {name}
-    </Link>
-  );
 }
 
 /** One row per game. The whole row is the link into the replay. */
@@ -59,9 +41,9 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               />
               <span className="flex flex-col">
                 <span className="font-medium">
-                  <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} linkable={linkable} />
+                  <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} linkable={linkable} className="relative z-10" testId="history-player" />
                   <span className="px-2 text-muted">vs</span>
-                  <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={linkable} />
+                  <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={linkable} className="relative z-10" testId="history-player" />
                 </span>
                 <span className="text-xs text-muted">{playedOn(game.playedAt)}</span>
               </span>

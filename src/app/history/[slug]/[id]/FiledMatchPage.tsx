@@ -5,6 +5,7 @@ import { Applause } from "@/components/history/Applause";
 import { GameReplay } from "@/components/history/GameReplay";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { PlayerName } from "@/components/players/PlayerName";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, recordPath, slugFor } from "@/lib/gomoku/slugs";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
@@ -101,8 +102,12 @@ function FiledMatch({
   signedIn: boolean;
 }) {
   const result = GAME_RESULT_DISPLAY[game.result];
-  const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
-  const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
+  /*
+   * A name here is the way to the person. An abandoned game has no result to
+   * anybody's credit and its names may be nobody's, so those stay plain — the
+   * same line the record table draws.
+   */
+  const named = game.result !== "abandoned";
 
   return (
     <Page width="wide" gap="gap-6">
@@ -111,7 +116,9 @@ function FiledMatch({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold">
-            {black} <span className="px-1 text-muted">vs</span> {white}
+            <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} linkable={named} />
+            <span className="px-1 text-muted">vs</span>
+            <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={named} />
           </h1>
           <p className="text-sm text-muted">
             Started {new Date(game.playedAt).toLocaleString()}

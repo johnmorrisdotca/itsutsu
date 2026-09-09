@@ -4,6 +4,7 @@ import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { MY_GAMES_COPY, START_COPY } from "./mine.constants";
+import { PlayerName } from "@/components/players/PlayerName";
 import { SitButton } from "./SitButton";
 
 /**
@@ -33,8 +34,10 @@ export function OpenGamesBoard({ games }: { games: GameSummary[] }) {
           >
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="truncate font-medium">
-                {(game.openSeat === "black" ? game.whiteName : game.blackName).trim() ||
-                  (game.openSeat === "black" ? SEAT_DISPLAY.two.label : SEAT_DISPLAY.one.label)}
+                <PlayerName
+                  name={game.openSeat === "black" ? game.whiteName : game.blackName}
+                  fallback={game.openSeat === "black" ? SEAT_DISPLAY.two.label : SEAT_DISPLAY.one.label}
+                />
                 <span className="px-1 text-muted">is waiting for someone to play</span>
                 {game.openSeat === "black" ? STONE_DISPLAY.black.label : STONE_DISPLAY.white.label}
               </span>

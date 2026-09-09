@@ -1,3 +1,4 @@
+import { PlayerName } from "@/components/players/PlayerName";
 import Link from "next/link";
 import { cookies } from "next/headers";
 
@@ -109,31 +110,51 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
   const href = group === "finished" ? recordPath(game.variant, game.id) : matchPath(game.variant, game.id);
+  // A hot-seat game's names are two people at one keyboard and belong to nobody.
+  const named = group !== "hotSeat";
   const running = group !== "finished";
   return (
     <li
-      className={`flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm ${
+      className={`relative flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm ${
         group === "yourMove" ? "border-moss/50 bg-moss-soft" : "border-rule"
       }`}
       data-testid="my-game"
       data-id={game.id}
       data-stale={item.stale}
     >
-      <Link href={href} className="flex min-w-0 flex-1 flex-col gap-0.5 underline-offset-4 hover:underline">
+      {/*
+        The row leads to the game and the names lead to the people, so the
+        row's link is stretched under the card and the names sit above it —
+        the same construction the record table uses, because a link inside a
+        link is not a thing a browser will render.
+      */}
+      <Link href={href} className="absolute inset-0 rounded-lg" aria-label={`${black} vs ${white}`} />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate font-medium">
-          {black} <span className="px-1 text-muted">vs</span> {white}
+          <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} linkable={named} className="relative z-10" />
+          <span className="px-1 text-muted">vs</span>
+          <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={named} className="relative z-10" />
         </span>
         <span className="text-xs text-muted">
           {variantLabel(game.variant)} · {game.size}×{game.size} · {game.moveCount} moves · you are{" "}
           {STONE_DISPLAY[seat].label} {STONE_DISPLAY[seat].kanji} · {ago(item.since, now)}
         </span>
-      </Link>
+      </span>
       {item.stale ? (
-        <span className="rounded-full border border-ochre/60 bg-ochre-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide uppercase" title={MY_GAMES_COPY.staleHint(STALE_AFTER_DAYS)}>
+        <span className="relative z-10 rounded-full border border-ochre/60 bg-ochre-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide uppercase" title={MY_GAMES_COPY.staleHint(STALE_AFTER_DAYS)}>
           {MY_GAMES_COPY.stale}
         </span>
       ) : null}
-      {running && game.allowResign ? <ResignButton id={game.id} /> : null}
+      {/*
+        Above the stretched row link, or the link swallows the click. Anything
+        added to a row from here on needs the same, which is the cost of the
+        row being a link at all.
+      */}
+      {running && game.allowResign ? (
+        <span className="relative z-10">
+          <ResignButton id={game.id} />
+        </span>
+      ) : null}
     </li>
   );
 }

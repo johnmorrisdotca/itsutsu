@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.84.0
+- Every person's name on the site leads to that person
+
 ## 0.83.0
 - Starting a game comes before the games you already have, and the page can be stripped back to the board
 
