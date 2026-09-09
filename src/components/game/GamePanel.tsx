@@ -85,7 +85,9 @@ export function GameOptions({
 }: GamePanelProps & { streaks: WinStreaks }) {
   const untouched = props.session.state.moves.length === 0;
   return (
-    <section className="flex flex-col gap-4">
+    // Furniture, for the reader who has asked for the board alone: these sit
+    // under the board rather than beside it, so `aside` does not catch them.
+    <section data-chrome className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <div className={PANEL_CLASS}>
           <PlayerNames {...props} />

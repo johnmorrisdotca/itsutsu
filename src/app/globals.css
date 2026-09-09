@@ -99,6 +99,34 @@ body {
     radial-gradient(circle at 85% 90%, rgba(0, 0, 0, 0.02) 0%, transparent 40%);
 }
 
+/*
+ * Just the board: the page stripped back to the board and the moves.
+ *
+ * Said here rather than in each component because what is being hidden — the
+ * masthead, the side matter, the footer — is furniture around the board
+ * rather than anything the board renders, and a component cannot politely
+ * decline to draw its neighbours. The attribute is set on the root element,
+ * by the switch and by a small script in the head so nothing flashes up
+ * before it is read; see components/layout/bare.ts.
+ *
+ * Furniture is marked with [data-chrome] rather than matched by tag, so a
+ * page's own <header> — the title of a rules page, of About — is left alone.
+ * It is on the masthead, the footer, and the row of panels that sits under a
+ * board rather than beside it. `aside` is matched by tag as well, on purpose:
+ * side matter is side matter wherever it is, and "no side matter" is what was
+ * asked for.
+ *
+ * Only inside [data-strippable], which Page sets on the wide pages: the ones
+ * with a board or a table and a sidebar. The setting is remembered for the
+ * whole browser, so without that scope a reader who turned it on and then
+ * wandered onto a page that does not offer the switch would have lost the
+ * navigation with no way to get it back.
+ */
+html[data-bare="true"] [data-strippable] [data-chrome],
+html[data-bare="true"] [data-strippable] aside {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
