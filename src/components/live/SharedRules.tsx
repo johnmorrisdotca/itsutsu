@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
-  BOARD_SIZES,
+  boardSizesFor,
+  sizeForVariant,
   OPENING_RULES,
   RULE_VARIANT_LIST,
 } from "@/lib/gomoku/gomoku.constants";
@@ -87,6 +88,12 @@ export function SharedRules({
     if (!SHARED_OPENINGS.includes(merged.opening as OpeningRule)) {
       merged.opening = OPENING_RULES.free;
     }
+    /*
+     * And a variant with a board of its own is played on it. Switching a
+     * 15×15 game to Reversi has to carry the board with it, or the request
+     * asks for a Reversi game on a board Reversi does not have.
+     */
+    merged.size = sizeForVariant(merged.variant as RuleVariant, merged.size);
     try {
       const response = await fetch(`/api/games/${game.id}/settings`, {
         method: "PUT",
@@ -182,8 +189,15 @@ export function SharedRules({
               value={game.size}
               disabled={saving}
               onChange={(event) => change({ size: Number(event.target.value) })}
+              data-testid="shared-rules-size"
             >
-              {BOARD_SIZES.map((option) => (
+              {/*
+                The boards this game has, not every board the site knows. A
+                Reversi game was offering 9×9, 13×13, 15×15 and 19×19 — none of
+                which Reversi is played on — and showing 9×9 as the current
+                board of an 8×8 game, because 8 was not in the list to match.
+              */}
+              {boardSizesFor(variant).map((option) => (
                 <option key={option} value={option}>
                   {option}×{option}
                 </option>
