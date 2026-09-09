@@ -92,20 +92,30 @@ jobs:
       # the committed schema here, before the new code is live. Every
       # migration is additive, which is what lets the old deployment keep
       # serving while this one is uploaded.
+      #
+      # The credentials come from this repository's own secrets rather than
+      # from `vercel pull`. Both database URLs are marked Sensitive in Vercel,
+      # and a Sensitive variable is deliberately never handed back — the pull
+      # writes a placeholder in its place, which is not a scheme Prisma
+      # recognises, so this step failed with P1013 while looking for all the
+      # world like a broken database. That is Vercel working as intended, so
+      # the fix is to give the step credentials of its own.
       - name: Apply migrations to production
+        env:
+          DATABASE_URL: ${{ secrets.MIGRATE_DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.MIGRATE_DIRECT_URL }}
         run: |
-          ENV_FILE=.vercel/.env.production.local
-          if [ ! -f "$ENV_FILE" ]; then
-            echo "::error::$ENV_FILE not found; 'vercel pull' did not write the production env."
-            exit 1
-          fi
-          set -a
-          . "$ENV_FILE"
-          set +a
           if [ -z "$DATABASE_URL" ] || [ -z "$DIRECT_URL" ]; then
-            echo "::error::DATABASE_URL or DIRECT_URL missing from the pulled production env."
+            echo "::error::MIGRATE_DATABASE_URL and MIGRATE_DIRECT_URL must be set as repository secrets. See the note above this step."
             exit 1
           fi
+          case "$DATABASE_URL" in
+            postgres://*|postgresql://*) ;;
+            *)
+              echo "::error::MIGRATE_DATABASE_URL is not a postgres:// URL. A Vercel Sensitive variable pulls as a placeholder; use the connection string from Neon."
+              exit 1
+              ;;
+          esac
           pnpm exec prisma migrate deploy
           pnpm db:drift:check && echo "Production schema matches prisma/schema.prisma."
 
