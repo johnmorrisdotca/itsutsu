@@ -44,10 +44,7 @@ test.describe("every row in a table is the same height", () => {
     await context.close();
   });
 
-  test("on the operator's members list, where a kept record has no account", async ({
-    browser,
-    baseURL,
-  }) => {
+  test("on the operator's members list, where a kept record has no account", async ({ browser }) => {
     // Chibi and Kyokosan are members with no address: nothing to shut, nothing
     // to rename, and so no buttons on their rows.
     const context = await browser.newContext({ storageState: ".auth/admin.json" });

@@ -1,28 +1,36 @@
-import Link from "next/link";
-
-import { recordPath } from "@/lib/gomoku/slugs";
 import { notFound } from "next/navigation";
+
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
+import { LegacyOwnPage, PlayedEverywhere } from "@/components/players/LegacyRecord";
+import { LegacySourcePanel } from "@/components/players/LegacySource";
+import { Figures } from "@/components/ui/Figures";
+import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
+import { findMemberByName } from "@/lib/auth/members";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
-import { LegacyElsewherePanel, LegacyOwnPage } from "@/components/players/LegacyRecord";
 import { findLegacyPlayer, findLinkedLegacies } from "@/lib/legacy/legacyPlayers.data";
+import { legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
-import { findMemberByName } from "@/lib/auth/members";
+import { countText, figuresOf, recordText, winRateText } from "@/lib/rating/figures";
+import { playerKey, playerKeysFromSlug } from "@/lib/rating/playerKey";
 import { fetchPlayer } from "@/lib/rating/players";
-import { playerKey, playerKeysFromSlug, playerPath } from "@/lib/rating/playerKey";
+import { activeTab, type Tab } from "@/lib/ui/tabs";
 
 export const metadata = { title: "Player" };
 
-export default async function PlayerPage({ params }: PageProps<"/players/[slug]">) {
+/** The tab holding what somebody has done on this site. Always first, and always there. */
+const HERE: Tab = { key: "itsutsu", label: "Itsutsu", kanji: "五" };
+
+export default async function PlayerPage({ params, searchParams }: PageProps<"/players/[slug]">) {
   const { slug } = await params;
+  const view = (await searchParams).view;
 
   const legacyBySlug = findLegacyPlayer(slug);
   if (legacyBySlug !== null && legacyBySlug.kind !== "elsewhere") {
-    return <LegacyOwnPage legacy={legacyBySlug} />;
+    return <LegacyOwnPage legacy={legacyBySlug} view={view} />;
   }
 
   /*
@@ -49,117 +57,62 @@ export default async function PlayerPage({ params }: PageProps<"/players/[slug]"
   // game: every list that prints their name links to it, and a link that
   // leads nowhere is worse than no page.
   const hasLiveData = player !== null || record.games > 0 || member !== null;
-  // A live account with no games yet but more than one linked record is not
-  // reachable today — nothing sets linkedKey yet — so only the first would
-  // show here; worth widening if that combination ever becomes real.
   const linkedByKey = findLinkedLegacies(playerKey(decoded));
   const linked = linkedByKey.length > 0 ? linkedByKey : hasLiveData || legacyBySlug === null ? [] : [legacyBySlug];
 
   if (!hasLiveData && linked.length === 0) notFound();
-  if (!hasLiveData && linked.length > 0) return <LegacyOwnPage legacy={linked[0]} />;
+  if (!hasLiveData && linked.length > 0) return <LegacyOwnPage legacy={linked[0]} view={view} />;
 
   const tier = player === null ? null : TIER_DISPLAY[player.tier];
+  const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
+
+  /*
+   * One tab for this site and one for each site somebody played on before it.
+   * Where a member has no earlier record there is only the one, and the strip
+   * does not draw itself at all — a page with a single tab is just a page.
+   */
+  const elsewhere = legacyTabs(linked);
+  const tabs: Tab[] = [HERE, ...elsewhere];
+  const open = activeTab(tabs, view);
+  const shown = elsewhere.find((tab) => tab.key === open) ?? null;
 
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
         <h1 className="text-lg font-semibold">{player?.name ?? member?.name ?? decoded}</h1>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
-          <div>
-            <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Rating</dt>
-            <dd className="font-mono text-lg tabular-nums" data-testid="player-rating">
-              {player?.rating ?? "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Tier</dt>
-            <dd>
-              {tier === null ? "Unrated" : tier.label}{" "}
-              {tier !== null ? <span className="font-mincho text-muted">{tier.kanji}</span> : null}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Record</dt>
-            <dd className="font-mono tabular-nums" data-testid="player-record">
-              {record.wins}W · {record.losses}L · {record.draws}D
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Games</dt>
-            <dd className="font-mono tabular-nums">{record.games}</dd>
-          </div>
-        </dl>
-        {tier !== null ? <p className="text-xs text-muted">{tier.note}</p> : null}
-        {record.games === 0 ? (
-          <p className="text-xs text-muted" data-testid="player-no-games">
-            No finished games yet. A rating appears after the first one against another member.
+        <Figures
+          testId="player-figures"
+          figures={[
+            { label: "Rating", value: player?.rating ?? "—", testId: "player-rating" },
+            { label: "Played", value: countText(figures.played) },
+            { label: "Won · Lost · Drawn", value: recordText(figures), testId: "player-record" },
+            { label: "Win rate", value: winRateText(figures.winRate) },
+          ]}
+        />
+        {tier !== null ? (
+          <p className="text-xs text-muted">
+            <span className="font-medium text-ink-soft">{tier.label}</span>{" "}
+            <span className="font-mincho">{tier.kanji}</span> · {tier.note}
+          </p>
+        ) : null}
+        {linked.length > 0 ? (
+          <p className="text-sm text-muted" data-testid="legacy-elsewhere">
+            {linked.map((legacy) => (
+              <PlayedEverywhere key={legacy.slug} legacy={legacy} lead="Also played as" />
+            ))}
+            . Kept from before Itsutsu, in its own tab.
           </p>
         ) : null}
       </section>
 
-      {gifts.gaveIn > 0 || gifts.receivedIn > 0 ? (
-        <p className="text-xs text-muted" data-testid="time-gifts">
-          With the clock: {gifts.gaveIn > 0 ? `gave the other side more time in ${gifts.gaveIn} game${gifts.gaveIn === 1 ? "" : "s"}` : "never needed to give time"}
-          {gifts.receivedIn > 0
-            ? `; was given time in ${gifts.receivedIn}, and went on to win ${gifts.wonAfterReceiving} and lose ${gifts.lostAfterReceiving} of those`
-            : ""}
-          .
-        </p>
-      ) : null}
-      {record.byVariant.length > 0 ? (
-        <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-          <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">By game</h2>
-          <table className="w-full text-sm" data-testid="player-by-variant">
-            <tbody>
-              {record.byVariant.map((row) => (
-                <tr key={row.variant} className="border-t border-rule">
-                  <td className="py-1.5 pr-3">{variantLabel(row.variant)}</td>
-                  <td className="py-1.5 pr-3 font-mono tabular-nums">
-                    {row.wins}W · {row.losses}L · {row.draws}D
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      ) : null}
+      <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label="Where this player's record was kept" />
 
-      {record.recent.length > 0 ? (
-        <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-          <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">Recent games</h2>
-          <ul className="flex flex-col divide-y divide-rule text-sm">
-            {record.recent.map((game) => (
-              <li key={game.id} className="flex items-center justify-between gap-3 py-1.5">
-                <span>
-                  {variantLabel(game.variant)} · vs{" "}
-                  {game.opponent ? (
-                    <Link
-                      href={playerPath(game.opponent)}
-                      className="underline-offset-2 hover:underline"
-                      data-testid="player-opponent"
-                    >
-                      {game.opponent}
-                    </Link>
-                  ) : (
-                    "anonymous"
-                  )}
-                </span>
-                <span className="flex items-center gap-3">
-                  <span className="font-mono text-xs tabular-nums">{game.outcome}</span>
-                  <Link href={recordPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline">
-                    replay
-                  </Link>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {linked.map((legacy) => (
-        <LegacyElsewherePanel key={legacy.slug} legacy={legacy} />
-      ))}
-  </Page>
+      {shown === null ? (
+        <ItsutsuRecord record={record} gifts={gifts} />
+      ) : (
+        <LegacySourcePanel legacy={shown.legacy} source={shown.source} keptFor={shown.legacy.slug} />
+      )}
+    </Page>
   );
 }
