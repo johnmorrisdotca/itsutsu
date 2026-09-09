@@ -308,6 +308,11 @@ model Member {
   /// Away: deadlines in games that honour vacation days wait until this range is over.
   awayFrom     DateTime?
   awayUntil    DateTime?
+  /// How this member likes a board dressed — the wood, the stones, the grid,
+  /// the coordinates — so a phone and a laptop show the same board. Shaped
+  /// like Appearance, but read back through cleanAppearance rather than
+  /// trusted: a theme that has since been removed must not break a board.
+  appearance Json?
   /// Days of the week this member does not play, 0 for Sunday. Standing,
   /// unlike the away range: deadlines in games that honour vacation step
   /// over them every week and nothing is spent. All seven is refused — that

@@ -81,7 +81,15 @@ export function useGameSession(
     paused = false,
     fresh = false,
     match = null,
-  }: { persist?: boolean; paused?: boolean; fresh?: boolean; match?: MatchStart | null } = {},
+    accountAppearance = null,
+  }: {
+    persist?: boolean;
+    paused?: boolean;
+    fresh?: boolean;
+    match?: MatchStart | null;
+    /** The board this member keeps on their account, when somebody is signed in. */
+    accountAppearance?: Appearance | null;
+  } = {},
 ) {
   /*
    * Restored in the initialiser rather than an effect. The component that
@@ -94,8 +102,14 @@ export function useGameSession(
   const line = useGameTimeline(initial, restored, match?.at);
   const { state, index, timeline, atLatest, reviewing } = line;
 
+  /*
+   * The account's board first, then whatever this browser last had. A member
+   * who changed the wood on their phone should find that wood here, which is
+   * the whole point of keeping it on the account; and a change made here is
+   * written back, so the two agree again immediately.
+   */
   const [appearance, setAppearanceState] = useState<Appearance>(() =>
-    restoredAppearance(restored),
+    restoredAppearance(restored, accountAppearance),
   );
   const [settings, setSettingsState] = useState<SessionSettings>(() =>
     restoredSettings(restored),

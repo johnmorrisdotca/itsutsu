@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
+import type { Appearance } from "@/components/board/board.types";
 
 /**
  * The board, loaded on the client only.
@@ -29,12 +30,30 @@ export function GameViewClient({
   variant,
   trackPath = false,
   match = null,
+  appearance = null,
+  signedIn = false,
 }: {
   variant?: RuleVariant;
   /** Keep the address at /games/<slug> as the game in play changes. */
   trackPath?: boolean;
   /** A match opened at its own address. */
   match?: { game: GameDetail; at?: number } | null;
+  /**
+   * How this member likes a board dressed, read from their account on the
+   * server. Null for a visitor with no account, who keeps their choice in
+   * this browser as they always have.
+   */
+  appearance?: Appearance | null;
+  /** Whether there is an account to save a board to at all. */
+  signedIn?: boolean;
 }) {
-  return <GameView variant={variant} trackPath={trackPath} match={match} />;
+  return (
+    <GameView
+      variant={variant}
+      trackPath={trackPath}
+      match={match}
+      appearance={appearance}
+      signedIn={signedIn}
+    />
+  );
 }

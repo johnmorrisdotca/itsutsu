@@ -44,8 +44,21 @@ export function restoredSnapshot(
   return persist ? snapshotToResume(fresh, variant) : null;
 }
 
-export function restoredAppearance(snapshot: GameSnapshot | null): Appearance {
-  return { ...DEFAULT_APPEARANCE, ...snapshot?.appearance };
+/**
+ * The board to draw: the defaults, then the member's own if they have one,
+ * then this browser's last.
+ *
+ * The account is laid on before the snapshot rather than after it, and that
+ * is deliberate — a stored snapshot in this browser was itself written from
+ * the same account, so the two normally agree, and where they do not the
+ * newer choice is the one on the account, made on whichever device they used
+ * last. The snapshot still wins for anything the account has never said.
+ */
+export function restoredAppearance(
+  snapshot: GameSnapshot | null,
+  account: Appearance | null = null,
+): Appearance {
+  return { ...DEFAULT_APPEARANCE, ...snapshot?.appearance, ...(account ?? {}) };
 }
 
 export function restoredSettings(snapshot: GameSnapshot | null): SessionSettings {

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Appearance } from "@/components/board/board.types";
+import { useSavedAppearance } from "./useSavedAppearance";
 
 import { Board } from "@/components/board/Board";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
@@ -20,11 +22,17 @@ export function GameView({
   variant,
   trackPath = false,
   match = null,
+  appearance = null,
+  signedIn = false,
 }: {
   variant?: RuleVariant;
   trackPath?: boolean;
   /** A match opened at its own address, as the server holds it. */
   match?: { game: GameDetail; at?: number } | null;
+  /** The member's own board, from their account; null when they have never chosen one. */
+  appearance?: Appearance | null;
+  /** Whether there is an account to save a board to at all. */
+  signedIn?: boolean;
 }) {
   // Nothing moving for a couple of minutes pauses the clock behind a modal.
   const { idle, confirm } = useIdleWatch();
@@ -37,12 +45,20 @@ export function GameView({
       persist: true,
       paused: idle,
       fresh: variant !== undefined,
+      accountAppearance: appearance,
       match:
         match === null
           ? null
           : { id: match.game.id, snapshot: snapshotFromMatch(match.game), at: match.at },
     },
   );
+
+  /*
+   * Signed in, the board chosen here follows them to their other devices.
+   * `signedIn` rather than "has a board": somebody who has never chosen one
+   * is exactly who should have their first choice saved.
+   */
+  useSavedAppearance(session.appearance, signedIn);
   // From the first stone the game is a match on the server, and has an address.
   const kept = useMatchMirror(session, trackPath, match?.game.id ?? null);
   const streaks = useGameRecording(session, { active: kept.matchId !== null, synced: kept.synced });

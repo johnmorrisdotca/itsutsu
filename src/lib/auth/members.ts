@@ -1,5 +1,7 @@
 import "server-only";
 import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
+import { appearanceFrom } from "@/components/board/appearance";
+import type { Appearance } from "@/components/board/board.types";
 
 import { prisma } from "@/lib/prisma";
 import { revokeInviteCode } from "@/lib/invite/inviteStore";
@@ -103,6 +105,8 @@ export type MemberProfile = Member & {
   keepFinishedDays: number;
   /** Days of the week they do not play, 0 for Sunday. */
   daysOff: number[];
+  /** How they like a board dressed. Stored JSON; read it through cleanAppearance. */
+  appearance: unknown;
   createdAt: Date;
   lastSeenAt: Date;
 };
@@ -119,6 +123,25 @@ export async function fetchProfile(email: string): Promise<MemberProfile | null>
  * — a browser holding only seat cookies — keeps everything, which is the
  * default anybody gets until they change it.
  */
+/**
+ * The board this member keeps on their account, or null when there is none.
+ *
+ * Null and "the ordinary board" are not the same answer, and the difference
+ * matters: a member who has never chosen must not have their browser's own
+ * choice overruled by a default they never asked for, and the operator — who
+ * signs in without a member row at all — must not be overruled by one either.
+ * Only a board somebody actually chose is allowed to win.
+ */
+export async function appearanceFor(email: string | null): Promise<Appearance | null> {
+  if (email === null) return null;
+  const row = await prisma.member.findUnique({
+    where: { email: foldEmail(email) },
+    select: { appearance: true },
+  });
+  if (row?.appearance === null || row?.appearance === undefined) return null;
+  return appearanceFrom(row.appearance);
+}
+
 export async function keepFinishedDaysFor(email: string | null): Promise<number> {
   if (email === null) return KEEP_FINISHED_DEFAULT;
   const row = await prisma.member.findUnique({
@@ -228,7 +251,15 @@ export type ProfileUpdate = Partial<
     | "keepFinishedDays"
     | "daysOff"
   >
->;
+> & {
+  /*
+   * Read back as unknown JSON but only ever written as a cleaned Appearance.
+   * The asymmetry is the point: what comes out of the column is whatever was
+   * in it, and what goes in has already been checked against the themes and
+   * stone sets that exist.
+   */
+  appearance?: Partial<Appearance>;
+};
 
 export async function updateProfile(email: string, update: ProfileUpdate): Promise<void> {
   await prisma.member.update({ where: { email: foldEmail(email) }, data: update });
