@@ -75,7 +75,7 @@ export async function playBotTurns(
     const tier = botInSeat(row, state.toPlay);
     if (tier === null) return;
 
-    const turn = chooseTurn(state, tier, Math.random, millis);
+    const turn = chooseTurn(state, tier, Math.random, { millis });
     if (turn === null) return;
 
     const token = state.toPlay === STONES.black ? row.blackToken : row.whiteToken;

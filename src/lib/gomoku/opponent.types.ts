@@ -86,3 +86,22 @@ export type BotProfile = {
   strength: string;
   blurb: string;
 };
+
+/**
+ * What a look-ahead may spend.
+ *
+ * Two limits, and either alone is enough to stop it. In a running game the
+ * clock is the one that binds: a move has to come back inside a request, and
+ * how many positions that buys depends on the board, the variant and what else
+ * the machine is doing. In a test it is the node count that binds, with the
+ * clock set far out of reach — because a search bounded by a clock reaches a
+ * different depth on a loaded machine than on an idle one, and a test whose
+ * answer depends on how busy the laptop is will pass all week and fail in the
+ * one run that mattered. It did exactly that, once, before this existed.
+ */
+export type SearchBudget = {
+  /** Wall clock, in milliseconds. */
+  millis?: number;
+  /** Positions visited. */
+  nodes?: number;
+};

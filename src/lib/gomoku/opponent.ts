@@ -5,7 +5,7 @@ import { pieceScore, positionScore, pointScore, readsThreats, threatScore } from
 import { applyTurn, legalTurns } from "./opponentTurns";
 import { searchTurn } from "./opponentSearch";
 import type { GameState, Stone } from "./gomoku.types";
-import type { BotTier, BotTurn, TierSpec } from "./opponent.types";
+import type { BotTier, BotTurn, SearchBudget, TierSpec } from "./opponent.types";
 
 /**
  * The computer opponent's choice of turn.
@@ -111,16 +111,16 @@ function bestOf(scored: Scored[]): Scored[] {
  * `random` is passed in rather than reached for, so a test can replay a
  * player's whole game from a seed exactly as the board's own dice are replayed.
  *
- * `millis` caps how long the strongest grade may think, and defaults to
- * `SEARCH.millis`. It is a parameter because one computer player can be sat in
- * a great many games at once: a request answering several of its seats has a
- * budget for the request, not for each move in it.
+ * `budget` caps what the strongest grade may spend looking ahead. It is a
+ * parameter because one computer player can be sat in a great many games at
+ * once: a request answering several of its seats has a budget for the request,
+ * not for each move in it. See `SearchBudget` for why it has two limits.
  */
 export function chooseTurn(
   state: GameState,
   tier: BotTier,
   random: () => number = Math.random,
-  millis?: number,
+  budget: SearchBudget = {},
 ): BotTurn | null {
   const spec = TIER_SPECS[tier];
   const me = state.toPlay;
@@ -184,7 +184,7 @@ export function chooseTurn(
    * by construction: it has everything that one has, and a plan as well.
    */
   if (spec.searchDepth > 0) {
-    const searched = searchTurn(state, spec.searchDepth, random, millis);
+    const searched = searchTurn(state, spec.searchDepth, random, budget);
     const entry =
       searched === null ? undefined : scored.find((option) => sameTurn(option.turn, searched));
     /*

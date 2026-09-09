@@ -5,7 +5,7 @@ import { boardScore, pointScore, positionScore, readsThreats, threatScore } from
 import { applyTurn } from "./opponentTurns";
 import { candidatePoints } from "./threats";
 import type { GameState, Point, Stone, VariantSpec } from "./gomoku.types";
-import type { BotTurn } from "./opponent.types";
+import type { BotTurn, SearchBudget } from "./opponent.types";
 
 /**
  * Looking ahead.
@@ -196,14 +196,17 @@ export function searchTurn(
   state: GameState,
   depth: number,
   random: () => number,
-  millis: number = SEARCH.millis,
+  limit: SearchBudget = {},
 ): BotTurn | null {
   const spec = VARIANT_SPECS[state.settings.variant];
   if (!searchable(spec)) return null;
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return null;
 
   const me = state.toPlay;
-  const budget: Budget = { nodes: SEARCH.nodes, until: Date.now() + millis };
+  const budget: Budget = {
+    nodes: limit.nodes ?? SEARCH.nodes,
+    until: Date.now() + (limit.millis ?? SEARCH.millis),
+  };
   let chosen: Point | null = null;
 
   /*
