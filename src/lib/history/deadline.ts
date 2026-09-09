@@ -11,8 +11,17 @@ export function deadlineFor(game: {
   moveTimeMs: number | null;
   lastMoveAt: Date | string | null;
   deadlineAt?: Date | string | null;
+  /** The seat still posted for anyone to take, or null once somebody has sat down. */
+  openSeat?: string | null;
 }): Date | null {
   if (game.moveTimeMs === null) return null;
+  /*
+   * A seat nobody is sitting in cannot be late. While a game is still posted
+   * for somebody to take, there is no opponent to be waiting on and no clock
+   * running against them — the board would otherwise say "White must move by"
+   * of a white who does not exist yet, and offer to claim a turn from them.
+   */
+  if (game.openSeat !== undefined && game.openSeat !== null) return null;
   if (game.deadlineAt !== undefined && game.deadlineAt !== null) {
     return typeof game.deadlineAt === "string" ? new Date(game.deadlineAt) : game.deadlineAt;
   }

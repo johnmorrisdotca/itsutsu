@@ -56,3 +56,47 @@ describe("forfeiting a turn", () => {
     expect(forfeitTurn(three)).toBe(three);
   });
 });
+
+/**
+ * A seat nobody is sitting in.
+ *
+ * A game posted for anyone to take showed "White must move by … · overdue"
+ * with a live button to claim the turn, against a White who did not exist
+ * yet. Worse than the nonsense on screen: nothing stopped the claim from
+ * succeeding and filing a result against an empty chair.
+ */
+describe("a game still waiting for somebody to sit down", () => {
+  const at = new Date("2026-09-09T12:00:00.000Z");
+
+  it("runs no clock while a seat is still posted", () => {
+    expect(
+      deadlineFor({ moveTimeMs: 60_000, lastMoveAt: at, openSeat: "white" }),
+    ).toBeNull();
+  });
+
+  it("runs no clock even when a deadline was already written down", () => {
+    // createLiveGame writes a deadline the moment the game exists, before
+    // anybody has taken the other seat.
+    expect(
+      deadlineFor({
+        moveTimeMs: 60_000,
+        lastMoveAt: at,
+        deadlineAt: new Date("2026-09-09T12:01:00.000Z"),
+        openSeat: "white",
+      }),
+    ).toBeNull();
+  });
+
+  it("starts the clock once the seat is taken", () => {
+    expect(
+      deadlineFor({ moveTimeMs: 60_000, lastMoveAt: at, openSeat: null })?.toISOString(),
+    ).toBe("2026-09-09T12:01:00.000Z");
+  });
+
+  it("leaves a game that was never posted exactly as it was", () => {
+    // Most games have no open seat at all, and nothing about them changes.
+    expect(deadlineFor({ moveTimeMs: 60_000, lastMoveAt: at })?.toISOString()).toBe(
+      "2026-09-09T12:01:00.000Z",
+    );
+  });
+});

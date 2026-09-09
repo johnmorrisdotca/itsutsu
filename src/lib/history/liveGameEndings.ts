@@ -75,6 +75,7 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   if (claimant === null) return { ok: false, reason: "wrong-token" };
 
   const deadline = deadlineFor(row);
+  // No clock, or nobody yet to be late: a posted seat is not a slow player.
   if (deadline === null) return { ok: false, reason: "no-clock" };
 
   const state = replay(row);
