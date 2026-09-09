@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { memberContext, seedMember } from "./members";
+
 /**
  * The features board.
  *
@@ -106,10 +108,11 @@ test.describe("backlog", () => {
     await expect(page.getByTestId("backlog-item").filter({ hasText: title })).toHaveAttribute("data-status", "dropped");
   });
 
-  test("the board is reachable from the site's own navigation", async ({ page }) => {
+  test("the board is not one of the site's sections any more", async ({ page }) => {
+    // It was in the top nav between Players and About. It is the operator's
+    // now, so it is reached from Admin and from nowhere else.
     await page.goto("/players");
-    await page.getByRole("link", { name: /^Backlog/ }).click();
-    await expect(page).toHaveURL(/\/backlog$/);
+    await expect(page.getByRole("navigation").getByRole("link", { name: /^Backlog/ })).toHaveCount(0);
   });
 
   test("what has shipped is on the same page as what has not", async ({ page }) => {
@@ -130,5 +133,44 @@ test.describe("backlog", () => {
     await expect(page.getByTestId("admin-latest-release")).toContainText(/\d+\.\d+\.\d+/);
     await page.getByTestId("admin-backlog-link").click();
     await expect(page).toHaveURL(/\/backlog$/);
+  });
+});
+
+/**
+ * The board is the operator's.
+ *
+ * It used to be open to every member, on the argument that a request only the
+ * operator can file goes back to living in a chat window. John decided
+ * otherwise, and the half that matters is not the missing navigation link —
+ * it is that a member's cookie reaches no further than a stranger's. A page
+ * hidden from the nav while its API still answers is a board that looks shut
+ * and is open.
+ */
+test.describe("a member who is not the operator", () => {
+  test("cannot read the board, add to it, or move a row", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const me = { email: `not-the-operator-${stamp}@example.test`, name: `Ordinary ${stamp}` };
+    await seedMember(me);
+    const context = await memberContext(browser, baseURL!, me);
+    const page = await context.newPage();
+
+    // Not found rather than refused: a 403 would confirm the board is there.
+    const visited = await page.goto("/backlog");
+    expect(visited?.status()).toBe(404);
+
+    const read = await context.request.get("/api/backlog");
+    expect(read.status()).toBe(404);
+
+    const added = await context.request.post("/api/backlog", {
+      data: { title: "A member should not be able to file this", detail: "and cannot" },
+    });
+    expect(added.status()).toBe(404);
+
+    // Moving a row is the operator's too, and it is the method the page uses,
+    // so it is the one most likely to be left open by accident.
+    const moved = await context.request.patch("/api/backlog/anything", { data: { status: "done" } });
+    expect(moved.status()).toBe(404);
+
+    await context.close();
   });
 });

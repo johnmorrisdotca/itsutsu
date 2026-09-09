@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.80.0
+- The features board is the operator's: out of the site's navigation, and shut to everybody else
+
 ## 0.79.1
 - Every player page keeps a tab for this site, whether or not there is anything in it
 

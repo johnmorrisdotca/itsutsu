@@ -5,12 +5,16 @@ import { usePathname } from "next/navigation";
 
 import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
 
+/*
+ * The site's own sections, for everybody who is in. The features board is
+ * deliberately absent: it is the operator's now, and lives as a tab of the
+ * Admin page rather than as a section of the site.
+ */
 export const NAV = [
   { href: "/games", label: "Play", kanji: "遊ぶ" },
   { href: "/rules", label: "Rules" },
   { href: "/learn", label: "Learn" },
   { href: "/players", label: "Players" },
-  { href: "/backlog", label: "Backlog", kanji: "積み残し" },
   { href: "/about", label: "About" },
 ] as const;
 
