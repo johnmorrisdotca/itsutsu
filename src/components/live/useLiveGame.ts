@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import useSWR, { type KeyedMutator } from "swr";
 
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -27,6 +27,19 @@ const POLL_MS = 2500;
  * every ask is a database read no cache can stand in front of.
  */
 const BACKGROUND_POLL_MS = 30_000;
+
+/**
+ * How long a background tab keeps asking about a game where nothing is
+ * happening, before it stops asking altogether.
+ *
+ * These are games played over days. A tab left open on one where neither side
+ * has moved for an hour is not waiting for anything, and thirty seconds is
+ * still two and a half thousand questions a day to be told the same thing.
+ * Nothing is lost by stopping: `revalidateOnFocus` fetches the moment the tab
+ * is looked at again, so the board a person comes back to is current whether
+ * it was asking or not. A move landing resets the hour.
+ */
+const IDLE_STOP_MS = 60 * 60 * 1000;
 
 const fetcher = async (url: string): Promise<GameDetail> => {
   const response = await fetch(url);
@@ -62,11 +75,41 @@ export function useLiveGame(initial: GameDetail): {
 } {
   const [polling, setPolling] = useState(initial.status === "active");
   const visible = usePageVisible();
+  const [lastMove, setLastMove] = useState(initial.lastMoveAt ?? initial.playedAt);
+  const [asleep, setAsleep] = useState(false);
+
+  /*
+   * The hour is counted by a timer, not by a clock read while rendering. A
+   * game where nothing is happening is exactly the case where nothing changes
+   * — a poll that comes back identical re-renders nothing — so a comparison
+   * made during render would never notice the hour go by. The timeout fires
+   * on its own, and a move landing changes `lastMove`, which starts it again.
+   */
+  useEffect(() => {
+    if (visible) return;
+    const remaining = IDLE_STOP_MS - (Date.now() - new Date(lastMove).getTime());
+    const timer = setTimeout(() => setAsleep(true), Math.max(0, remaining));
+    return () => clearTimeout(timer);
+  }, [visible, lastMove]);
+
+  // Being looked at is enough on its own; sleep only ever applies to a tab
+  // nobody is watching.
+  const awake = visible || !asleep;
 
   const { data, mutate } = useSWR(`/api/games/${initial.id}`, fetcher, {
     fallbackData: initial,
-    refreshInterval: polling ? (visible ? POLL_MS : BACKGROUND_POLL_MS) : 0,
-    onSuccess: (latest) => setPolling(latest.status === "active"),
+    refreshInterval: polling && awake ? (visible ? POLL_MS : BACKGROUND_POLL_MS) : 0,
+    onSuccess: (latest) => {
+      setPolling(latest.status === "active");
+      // A move landing starts the idle hour again.
+      setLastMove(latest.lastMoveAt ?? latest.playedAt);
+      /*
+       * Having just heard from the server is the definition of awake. This is
+       * also what brings a slept tab back: returning to it revalidates on
+       * focus, and that answer lands here.
+       */
+      setAsleep(false);
+    },
     /*
      * Keep polling while the tab is in the background, slowly. This is a game
      * played over minutes on two phones — the board has to be current the
