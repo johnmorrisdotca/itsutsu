@@ -10,13 +10,13 @@ import { cookies } from "next/headers";
 import { HereNowPanel } from "@/components/mine/HereNowPanel";
 import { StartGame } from "@/components/mine/StartGame";
 import { START_COPY } from "@/components/mine/mine.constants";
-import type { GameGroup, Opponent, SeatOnBoard } from "@/components/mine/startGame.types";
+import type { GameGroup, SeatOnBoard } from "@/components/mine/startGame.types";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { fetchOpenGames, fetchSeatChoices } from "@/lib/history/openGames";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatClaims } from "@/lib/history/seatCookie";
-import { fetchBuddies } from "@/lib/social/buddies";
+import { fetchOpponents } from "@/lib/social/opponents";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { fetchHereNow } from "@/lib/social/presence";
 import { FamilyMark } from "@/components/games/FamilyMark";
@@ -66,8 +66,17 @@ export default async function LobbyPage() {
     fetchSeatChoices(claimed),
     fetchHereNow(),
   ]);
-  const [buddies, ignored] = await Promise.all([
-    email === null ? Promise.resolve([]) : fetchBuddies(email),
+  const [opponents, ignored] = await Promise.all([
+    /*
+     * The same list the setup screen offers, from the one place that builds
+     * it. This page had a copy of it, and the copy asked the set of ignored
+     * MEMBER IDS below whether it held an ADDRESS — a question with only one
+     * answer, so the ignore list did nothing here at all and somebody who had
+     * been shut out was still offered a game. The comment three lines down
+     * describes catching exactly this bug for seats; the copy underneath it
+     * had the mirror image and went on having it.
+     */
+    fetchOpponents(email),
     // By id, because a seat is keyed by member and the list is kept by address.
     email === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(email),
   ]);
@@ -116,20 +125,6 @@ export default async function LobbyPage() {
     moveTimeMs: game.moveTimeMs,
     who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || "Somebody",
   }));
-  const hereEmails = new Set(here.map((entry) => entry.email));
-  /*
-   * Somebody you could ask for a game, which means somebody who can be
-   * reached: a kept record has a name and a history and no address, and
-   * cannot be challenged.
-   */
-  const opponents: Opponent[] = [
-    ...here
-      .filter((entry) => entry.email !== null && entry.email !== email && !ignored.has(entry.email))
-      .map((entry) => ({ email: entry.email!, name: entry.name || entry.email!, here: true })),
-    ...buddies
-      .filter((buddy) => buddy.email !== null && !hereEmails.has(buddy.email) && !ignored.has(buddy.email))
-      .map((buddy) => ({ email: buddy.email!, name: buddy.name || buddy.email!, here: false })),
-  ];
   return (
     <Page width="standard">
       <SiteHeader />
