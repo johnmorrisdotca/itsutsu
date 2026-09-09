@@ -29,7 +29,10 @@ function day(iso: string): string {
  * player's games too, and a rating is a fact about both of them.
  */
 export function AdminMembers() {
-  const { data, mutate } = useSWR<{ items: MemberSummary[] }>("/api/members", json);
+  const { data, mutate } = useSWR<{ items: MemberSummary[]; total?: number; shown?: number }>(
+    "/api/members",
+    json,
+  );
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,14 +54,29 @@ export function AdminMembers() {
   }
 
   const members = data?.items ?? [];
+  /*
+   * The number of members, not the number of rows on screen. The heading used
+   * to print the length of the list it had been given, which is capped — so a
+   * site with nine hundred members reported two hundred, in the one place
+   * somebody goes to find out how many there are.
+   */
+  const total = data?.total ?? members.length;
+  const capped = total > members.length;
 
   return (
     <section className="flex flex-col gap-3" data-testid="admin-members">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
         Members <span className="font-mincho text-[0.8rem] font-normal tracking-normal">会員</span>
-        <span className="font-normal tracking-normal">{members.length}</span>
+        <span className="font-normal tracking-normal" data-testid="member-total">
+          {total}
+        </span>
       </h2>
       <p className="text-xs text-muted">
+        {capped ? (
+          <span data-testid="member-capped">
+            The {members.length} seen most recently, of {total}.{" "}
+          </span>
+        ) : null}
         Shutting an account ends its session on the next request and revokes the invite it came in by. The games and the
         rating stay: the other player played those games too.
       </p>

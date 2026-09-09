@@ -3,8 +3,11 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
-import { listMembers, renameMember, setBanned } from "@/lib/auth/members";
+import { countMembers, listMembers, renameMember, setBanned } from "@/lib/auth/members";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
+
+/** How many rows the operator's list carries at once. */
+const MEMBERS_SHOWN = 200;
 
 /**
  * The members, for the operator alone.
@@ -19,8 +22,18 @@ export async function GET(request: Request) {
 
     const me = await currentAdmin();
     if (me === null) return notFound();
-    // Their own address, so their own row can be told from everybody else's.
-    return NextResponse.json({ items: await listMembers(200, me.email ?? null) }, { headers: NO_STORE });
+    /*
+     * The total as well as the page. The list is cut at two hundred, and the
+     * page was printing the length of what it had received as though it were
+     * the number of members — so an operator with nine hundred members was
+     * told, in the heading, that there were two hundred.
+     */
+    const [items, total] = await Promise.all([
+      // Their own address, so their own row can be told from everybody else's.
+      listMembers(MEMBERS_SHOWN, me.email ?? null),
+      countMembers(),
+    ]);
+    return NextResponse.json({ items, total, shown: MEMBERS_SHOWN }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
     return serverError("Could not read the members.");

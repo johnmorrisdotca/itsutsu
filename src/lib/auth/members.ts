@@ -309,23 +309,63 @@ function legacyKindOf(name: string): "remembered" | "honorary" | "elsewhere" | n
  * be told apart from everybody else's — the controls that make no sense
  * pointed at yourself are the reason it is needed.
  */
+const MEMBER_SUMMARY_SELECT = {
+  id: true,
+  email: true,
+  name: true,
+  picture: true,
+  createdAt: true,
+  lastSeenAt: true,
+  bannedAt: true,
+  bannedNote: true,
+  invitedWith: true,
+  unclaimableBecause: true,
+} as const;
+
+/** How many members there are, whatever a page of them is cut to. */
+export async function countMembers(): Promise<number> {
+  return prisma.member.count();
+}
+
+/**
+ * One member, by address, in the shape the operator's list uses.
+ *
+ * `setBanned` used to fetch a thousand members and look through them for the
+ * one it had just written, which is a table scan to answer a question it
+ * already knew the answer to — and which returned nothing at all once the
+ * site had more members than that, so shutting an account would have read as
+ * having failed while having worked.
+ */
+export async function memberSummaryFor(email: string): Promise<MemberSummary | null> {
+  const key = foldEmail(email);
+  const row = await prisma.member.findUnique({ where: { email: key }, select: MEMBER_SUMMARY_SELECT });
+  return row === null ? null : toSummary([row], null)[0];
+}
+
 export async function listMembers(limit = 200, you: string | null = null): Promise<MemberSummary[]> {
   const rows = await prisma.member.findMany({
     orderBy: { lastSeenAt: "desc" },
     take: limit,
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      picture: true,
-      createdAt: true,
-      lastSeenAt: true,
-      bannedAt: true,
-      bannedNote: true,
-      invitedWith: true,
-      unclaimableBecause: true,
-    },
+    select: MEMBER_SUMMARY_SELECT,
   });
+  return toSummary(rows, you);
+}
+
+/** Exactly the columns MEMBER_SUMMARY_SELECT asks for, and nothing else. */
+type SummaryRow = {
+  id: string;
+  email: string | null;
+  name: string;
+  picture: string;
+  createdAt: Date;
+  lastSeenAt: Date;
+  bannedAt: Date | null;
+  bannedNote: string;
+  invitedWith: string;
+  unclaimableBecause: string | null;
+};
+
+function toSummary(rows: SummaryRow[], you: string | null): MemberSummary[] {
   const mine = you === null ? null : foldEmail(you);
   return rows.map(({ unclaimableBecause, ...row }) => ({
     ...row,
@@ -359,7 +399,7 @@ export async function setBanned(email: string, banned: boolean, note = ""): Prom
     data: banned ? { bannedAt: new Date(), bannedNote: note.trim().slice(0, 280) } : { bannedAt: null, bannedNote: "" },
   });
   if (banned && row.invitedWith !== "") await revokeInviteCode(row.invitedWith).catch(() => undefined);
-  return (await listMembers(1_000)).find((member) => member.email === key) ?? null;
+  return memberSummaryFor(key);
 }
 
 export type ProfileUpdate = Partial<
