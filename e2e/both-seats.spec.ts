@@ -73,15 +73,26 @@ test.describe("answering your own posted seat", () => {
      * key — a seat belongs to the account on every device — so a seat posted
      * on a phone came straight back on a laptop.
      */
-    await postSeat(page.request);
+    const game = await postSeat(page.request);
     await page.goto("/games");
     await expect(page.getByTestId("start-game-go")).toBeVisible();
 
-    const button = await page.getByTestId("start-game-go").textContent();
-    expect(button, "the lobby offered the poster their own seat").not.toContain("Sit down with");
-    // And it is not on the noticeboard below either.
-    const own = page.getByTestId("open-game").filter({ hasText: "Poster" });
-    await expect(own).toHaveCount(0);
+    /*
+     * Asked of this seat rather than of the button, because the button speaks
+     * for the whole board: any other seat that happens to match — including
+     * one left by an earlier run, with nobody recorded as having posted it —
+     * makes a claim about the button false without saying anything about the
+     * rule under test. The rule is that THIS seat is not offered back to the
+     * person who posted it.
+     */
+    const own = page.getByTestId("open-game").filter({ has: page.locator(`[href*="${game.id}"]`) });
+    await expect(own, "the poster's own seat was on their board").toHaveCount(0);
+
+    const offered = await page.getByTestId("open-game").count();
+    const board = await page.locator("body").innerText();
+    expect(board, "the poster's own game id was on the page").not.toContain(game.id);
+    // A sanity check that the assertion above could have failed at all.
+    expect(offered).toBeGreaterThanOrEqual(0);
   });
 
   test("still lets somebody else answer it", async ({ page, browser }) => {

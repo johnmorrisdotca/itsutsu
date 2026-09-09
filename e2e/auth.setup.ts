@@ -2,6 +2,7 @@ import { expect, request as playwrightRequest, test as setup } from "@playwright
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { ADMIN_STATE, EMBED_TOKEN_FILE, PLAYER_STATE } from "./support";
+import { clearAbandonedSeats } from "./tidy";
 
 /**
  * Signs in once and saves the cookies for every other spec.
@@ -13,6 +14,18 @@ import { ADMIN_STATE, EMBED_TOKEN_FILE, PLAYER_STATE } from "./support";
  */
 const EMAIL = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
 const TOKEN = process.env.ADMIN_TOKEN ?? "local-operator-token";
+
+/*
+ * Before anything else, take down the seats an earlier run left standing.
+ * They are why the lobby specs fail on each other: a seat already waiting
+ * means "Post the seat" is never offered, and two of them under one name make
+ * a row match twice. It only ever runs against a database on this machine —
+ * see e2e/tidy.ts, where that is the whole point of the file.
+ */
+setup("clear what the last run left behind", async () => {
+  const gone = await clearAbandonedSeats();
+  if (gone > 0) console.log(`Cleared ${gone} abandoned open seat${gone === 1 ? "" : "s"}.`);
+});
 
 setup("sign in as the operator, and mint a player invite", async ({ request, baseURL }) => {
   mkdirSync(".auth", { recursive: true });

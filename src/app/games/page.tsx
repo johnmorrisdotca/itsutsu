@@ -15,7 +15,7 @@ import { fetchOpenGames } from "@/lib/history/openGames";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { fetchBuddies } from "@/lib/social/buddies";
-import { ignoredEmails } from "@/lib/social/ignores";
+import { ignoredMemberIds } from "@/lib/social/ignores";
 import { fetchHereNow } from "@/lib/social/presence";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { fetchPlayedCounts } from "@/lib/history/gameCounts";
@@ -59,7 +59,8 @@ export default async function LobbyPage() {
   ]);
   const [buddies, ignored] = await Promise.all([
     email === null ? Promise.resolve([]) : fetchBuddies(email),
-    email === null ? Promise.resolve(new Set<string>()) : ignoredEmails(email),
+    // By id, because a seat is keyed by member and the list is kept by address.
+    email === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(email),
   ]);
   const playedIn = (games: readonly string[]) => games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0);
 
@@ -76,7 +77,10 @@ export default async function LobbyPage() {
    * account on every device, so posting on a phone and reading the board on a
    * laptop offered it straight back.
    *
-   * The ignore list is a rule about who may reach you, and a seat is a way in.
+   * The ignore list is a rule about who may reach you, and a seat is a way in
+   * — and it was not working at all: the list is kept by address, a seat is
+   * keyed by member id, and asking a set of addresses whether it holds an id
+   * is a question with only one answer.
    */
   const openSeats = seatGames.filter((game) => {
     const poster = game.openSeat === STONES.black ? game.whiteMemberId : game.blackMemberId;
