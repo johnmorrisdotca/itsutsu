@@ -57,6 +57,21 @@ test.describe("turning the board round", () => {
     await expect(white.getByTestId("turn-board")).toHaveText(/Turn the board round/);
   });
 
+  test("the record shows the game the way it was being read", async ({ page, request }) => {
+    const live = await game(request);
+    await page.goto(`/games/gomoku/${live.id}/seat/${live.blackToken}`);
+    await page.waitForURL(/\/games\/gomoku\//);
+    await page.getByRole("button", { name: /^A9, empty$/ }).click();
+    await expect(page.getByRole("button", { name: "A9, Black stone" })).toBeVisible();
+    await page.getByTestId("turn-board").click();
+
+    // The same game, filed. It was being read upside down; it still is.
+    await request.post(`/api/games/${live.id}/resign`, { data: { token: live.whiteToken } });
+    await page.goto(`/history/gomoku/${live.id}`);
+    await expect(page.getByRole("button", { name: /^[A-J]\d+, / }).first()).toHaveAccessibleName(/^J1, /);
+    await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board back/);
+  });
+
   test("is remembered for that game, and not for another", async ({ page, request }) => {
     const one = await game(request);
     const two = await game(request);
