@@ -12,6 +12,7 @@ export function StoneMark({
   winningColour = "#d92d20",
   ghost = false,
   moveNumber = null,
+  isKing = false,
 }: StoneMarkProps) {
   const ink = stone === "black" ? stones.blackInk : stones.whiteInk;
 
@@ -25,7 +26,13 @@ export function StoneMark({
       ].join(" ")}
       style={{
         background: stone === "black" ? stones.black : stones.white,
-        boxShadow: isWinning ? `0 0 0 0.16em ${winningColour}` : undefined,
+        boxShadow: [
+          isWinning ? `0 0 0 0.16em ${winningColour}` : null,
+          // A king is marked with a second ring, the way a real piece is stacked two deep.
+          isKing ? `inset 0 0 0 0.12em ${ink}` : null,
+        ]
+          .filter((value) => value !== null)
+          .join(", ") || undefined,
       }}
       aria-hidden="true"
     >

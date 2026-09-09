@@ -400,6 +400,8 @@ function TurnBanner({
                 ? `${STONE_DISPLAY[won].label} wins: the far camp is full.`
                 : state.winBy === WIN_REASONS.connection
                   ? `${STONE_DISPLAY[won].label} wins: their two sides are joined.`
+                : state.winBy === WIN_REASONS.blocked
+                  ? `${STONE_DISPLAY[won].label} wins: the other side has no move left.`
                 : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
         {finishedAt !== null ? (
           <span className="block text-xs font-normal opacity-80" data-testid="finished-at">

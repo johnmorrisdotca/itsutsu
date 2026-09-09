@@ -51,6 +51,12 @@ export const GAME_FAMILIES: { title: string; kanji: string; blurb: string; games
     games: ["hex"],
   },
   {
+    title: "Checkers",
+    kanji: "チェッカー",
+    blurb: "No lines, no queue, no board full of stones. Jump the other side's pieces off, or be left with no move at all.",
+    games: ["checkers"],
+  },
+  {
     title: "Small boards",
     kanji: "小盤",
     blurb: "Games you can read to the end, and games where the trick is what you must not do.",

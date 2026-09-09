@@ -11,6 +11,7 @@ import type { Cell, GameState, Move, Point, Stone } from "../gomoku.types";
 import { settleDrawLimit } from "./drawLimit";
 import { cellAtPoint, indexOf, isOnBoard, isStone, otherStone, stepFrom } from "./board";
 import { campFilled, campMoves, campSquares } from "./camps";
+import { applyCheckersMove, checkersHasAnyMove, checkersMoves } from "./checkers";
 import { dropTarget } from "./drop";
 import { hexConnection } from "./hex";
 import { rulesFor } from "./handicap";
@@ -81,9 +82,9 @@ export function blockedByGiveaway(state: GameState, point: Point): boolean {
 
 /** Whether the colour to move has all its pieces down and must now slide one. */
 export function inMovePhase(state: GameState): boolean {
-  const { pieces, camps } = VARIANT_SPECS[state.settings.variant];
-  // In a race game every piece is down from the start.
-  if (camps) return true;
+  const { pieces, camps, checkers } = VARIANT_SPECS[state.settings.variant];
+  // In a race game, and in checkers, every piece is down from the start.
+  if (camps || checkers) return true;
   return pieces !== null && countStones(state.board, state.toPlay) >= pieces;
 }
 
@@ -187,11 +188,13 @@ export function pieceMoves(state: GameState, from: Point): Point[] {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return [];
   if (!inMovePhase(state)) return [];
   if (!isOnBoard(state.settings.size, from) || state.board[indexOf(state.settings.size, from)] !== state.toPlay) return [];
-  if (VARIANT_SPECS[state.settings.variant].camps) return campMoves(state.board, state.settings.size, from);
+  const spec = VARIANT_SPECS[state.settings.variant];
+  if (spec.camps) return campMoves(state.board, state.settings.size, from);
+  if (spec.checkers) return checkersMoves(state, from);
   return pieceDestinations(state.board, state.settings.size, from);
 }
 
-/** Slides a piece one step. Illegal slides return the state unchanged. */
+/** Slides a piece one step, or in checkers a step or a capture. Illegal moves return the state unchanged. */
 export function movePiece(state: GameState, from: Point, to: Point): GameState {
   const allowed = pieceMoves(state, from).some(
     (point) => point.row === to.row && point.col === to.col,
@@ -199,6 +202,44 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
   if (!allowed) return state;
 
   const { settings, toPlay } = state;
+  const spec = VARIANT_SPECS[settings.variant];
+
+  if (spec.checkers) {
+    const result = applyCheckersMove(state, from, to);
+    const move: Move = {
+      ...to,
+      stone: toPlay,
+      kind: MOVE_KINDS.move,
+      from,
+      wasKing: result.wasKing,
+      continuedChain: result.continuedChain,
+    };
+    if (result.captured !== null) {
+      move.captured = [result.captured];
+      move.capturedWasKing = result.capturedWasKing;
+    }
+    const captures =
+      result.captured !== null
+        ? { ...state.captures, [toPlay]: state.captures[toPlay] + 1 }
+        : state.captures;
+    const moved: GameState = {
+      ...state,
+      board: result.board,
+      kings: result.kings,
+      moves: [...state.moves, move],
+      captures,
+      chainAt: result.continues ? to : null,
+    };
+    // Mid-chain: the same piece must keep capturing before the turn can pass.
+    if (result.continues) return moved;
+
+    const other = otherStone(toPlay);
+    if (!checkersHasAnyMove(result.board, result.kings, settings.size, other)) {
+      return won(moved, toPlay, WIN_REASONS.blocked, []);
+    }
+    return settleDrawLimit({ ...moved, toPlay: other });
+  }
+
   const board = state.board.slice();
   board[indexOf(settings.size, from)] = null;
   board[indexOf(settings.size, to)] = toPlay;
@@ -206,7 +247,7 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
   const moved: GameState = { ...state, board, moves: [...state.moves, move] };
 
   // A race is decided by the far camp filling, and by nothing else on the board.
-  if (VARIANT_SPECS[settings.variant].camps) {
+  if (spec.camps) {
     return campFilled(board, settings.size, toPlay)
       ? won(moved, toPlay, WIN_REASONS.camp, campSquares(settings.size, otherStone(toPlay)))
       : settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });

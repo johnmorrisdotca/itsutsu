@@ -73,6 +73,8 @@ function ToPlay({ session }: { session: GameSession }) {
                   ? `${who} wins: the far camp is full`
                 : state.winBy === WIN_REASONS.connection
                   ? `${who} wins: ${state.winner === STONES.black ? "top and bottom are joined" : "left and right are joined"}`
+                : state.winBy === WIN_REASONS.blocked
+                  ? `${who} wins: the other side has no move left`
                 : state.winBy === WIN_REASONS.resign
                   ? `${who} wins by resignation`
                   : `${who} wins in ${state.moves.length} moves`

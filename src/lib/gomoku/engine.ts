@@ -17,6 +17,7 @@ import {
   isOnBoard,
   otherStone,
   pointOf,
+  samePoint,
 } from "./rules/board";
 import { capturesFrom, removeStones, stonesIn } from "./rules/captures";
 import { forbiddenAt } from "./rules/forbidden";
@@ -86,6 +87,7 @@ export { hasHandicap, rulesFor } from "./rules/handicap";
 export { forbiddenAt, forbiddenPoints } from "./rules/forbidden";
 export { centreSquares, discCount, flipsAt, hasFlipMove, inLayingPhase } from "./rules/flips";
 export { campOf, campSize, campSquares, piecesHome } from "./rules/camps";
+export { checkersHasCapture, isDarkSquare, isKingAt } from "./rules/checkers";
 export {
   canGrowBoard,
   canShrinkBoard,
@@ -372,7 +374,8 @@ export function undoMove(state: GameState): GameState {
 
   const last = state.moves[state.moves.length - 1];
   const { size } = state.settings;
-  const quadrantSize = VARIANT_SPECS[state.settings.variant].quadrantSize;
+  const spec = VARIANT_SPECS[state.settings.variant];
+  const quadrantSize = spec.quadrantSize;
   let board = state.board.slice();
   if (last.twist !== undefined && quadrantSize !== null) {
     board = rotateQuadrant(board, size, quadrantSize, last.twist.quadrant, !last.twist.clockwise);
@@ -388,9 +391,23 @@ export function undoMove(state: GameState): GameState {
     board[indexOf(size, point)] = otherStone(last.stone);
   }
 
+  // Checkers: put a king back where it moved from, a captured king back on the board, and reopen its chain.
+  let kings = state.kings;
+  let chainAt: Point | null = null;
+  if (spec.checkers && last.from !== undefined) {
+    const from = last.from;
+    kings = state.kings.filter((point) => !samePoint(point, last));
+    if (last.wasKing) kings = [...kings, from];
+    const capturedPoint = last.captured?.[0];
+    if (capturedPoint !== undefined && last.capturedWasKing) kings = [...kings, capturedPoint];
+    chainAt = last.continuedChain ? from : null;
+  }
+
   return {
     ...state,
     board,
+    kings,
+    chainAt,
     pendingTwist: false,
     moves: state.moves.slice(0, -1),
     captures: {

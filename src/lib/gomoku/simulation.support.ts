@@ -16,6 +16,7 @@ import {
 } from "./engine";
 import { GAME_STATUS } from "./gomoku.constants";
 import type { GameSettings, GameState, Point } from "./gomoku.types";
+import { checkCheckersMove, isCheckers } from "./simulation.checkers";
 import {
   bruteForceWinner,
   checkMove,
@@ -78,9 +79,13 @@ function playOut(settings: Partial<GameSettings>, seed: number): GameState {
       const after = movePiece(state, from, to);
       expect(after, `seed ${seed}: a legal slide was refused`).not.toBe(before);
       if (isRace(state.settings.variant)) checkRaceMove(before, after, from, to, seed);
+      else if (isCheckers(state.settings.variant)) checkCheckersMove(before, after, from, to, seed);
       else checkSlide(before, after, from, to, seed);
       state = after;
-      slides += 1;
+      // A capture chain keeps the same player on move, so it must not count
+      // against the slide cap the way an ordinary turn does, or a long chain
+      // could be cut off mid-move.
+      if (after.chainAt === null) slides += 1;
       if (slides >= SLIDE_CAP) break;
       continue;
     }

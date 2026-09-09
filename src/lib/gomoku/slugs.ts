@@ -46,6 +46,7 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   grandReversi: "grand-reversi",
   halma: "halma",
   hex: "hex",
+  checkers: "checkers",
 };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(

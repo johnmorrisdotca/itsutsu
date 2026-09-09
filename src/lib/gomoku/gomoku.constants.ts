@@ -81,6 +81,7 @@ export const RULE_VARIANTS = {
   grandReversi: "grandReversi",
   halma: "halma",
   hex: "hex",
+  checkers: "checkers",
 } as const satisfies Record<RuleVariant, RuleVariant>;
 
 export const WRAP_MODES = {
@@ -138,6 +139,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.grandReversi,
   RULE_VARIANTS.halma,
   RULE_VARIANTS.hex,
+  RULE_VARIANTS.checkers,
 ] as const satisfies readonly RuleVariant[];
 
 export const PLACEMENTS = {
@@ -191,6 +193,7 @@ export const WIN_REASONS = {
   count: "count",
   camp: "camp",
   connection: "connection",
+  blocked: "blocked",
 } as const satisfies Record<WinReason, WinReason>;
 
 export const OPENING_STAGES = {
@@ -270,6 +273,8 @@ const GRAND_REVERSI_SIZES = [10] as const;
 const HALMA_SIZES = [16, 10, 8] as const;
 /** Hex as it is played: eleven a side, with the bigger boards the federations also use. */
 const HEX_SIZES = [11, 13, 19] as const;
+/** Checkers: the 8×8 board draughts is played on everywhere. */
+const CHECKERS_SIZES = [8] as const;
 
 function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return {
@@ -305,6 +310,7 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
     startingDiscs: STARTING_DISCS.none,
     camps: false,
     connects: false,
+    checkers: false,
     ...overrides,
   };
 }
@@ -451,6 +457,13 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   grandReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: GRAND_REVERSI_SIZES }),
   halma: small({ camps: true, analysis: false, boardSizes: HALMA_SIZES }),
   hex: small({ connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
+  /*
+   * Checkers: no lines, no captures-to-win tally of its own — the capture is
+   * the whole of the move, worked out fresh by rules/checkers.ts rather than
+   * read from `captures` or `captureSizes`, which belong to the flanking
+   * capture of the Ninuki family and mean nothing here.
+   */
+  checkers: small({ checkers: true, boardSizes: CHECKERS_SIZES, analysis: false }),
 };
 
 /** The board sizes a variant plays on. */
@@ -533,7 +546,7 @@ export const BOARD_SIZE_DISPLAY: Record<
   5: { label: "Five", kanji: "五路", note: "Trap Three, Square Four" },
   6: { label: "Six", kanji: "六路", note: "Twist Five, Mini Reversi" },
   7: { label: "Seven", kanji: "七路", note: "Drop Four" },
-  8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma" },
+  8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma, Checkers" },
   10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi, Halma" },
   11: { label: "Eleven", kanji: "十一路", note: "Hex" },
   16: { label: "Sixteen", kanji: "十六路", note: "Halma" },

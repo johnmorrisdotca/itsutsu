@@ -122,7 +122,8 @@ export function Board({
   // Othello and the drop games are played in the squares; the rest on the lines.
   const cells =
     appearance.grid === "cells" ||
-    (appearance.grid === "auto" && (spec.flips || spec.camps || spec.connects || spec.placement !== PLACEMENTS.free));
+    (appearance.grid === "auto" &&
+      (spec.flips || spec.camps || spec.connects || spec.checkers || spec.placement !== PLACEMENTS.free));
 
   const last = lastMove(state);
   const lastIndex = last === null ? -1 : indexOf(size, last);
@@ -130,6 +131,7 @@ export function Board({
     state.winningLine.map((point) => indexOf(size, point)),
   );
   const numbers = numberByIndex(state, appearance.showMoveNumbers);
+  const kings = new Set(state.kings.map((point) => indexOf(size, point)));
   const live = !readOnly && state.status === GAME_STATUS.playing;
   const ghost = live ? (spec.singleColour ? "black" : (placing ?? state.toPlay)) : null;
 
@@ -225,7 +227,14 @@ export function Board({
           * into the square the board already occupies, and undo both on each
           * cell so the stones stay round.
           */}
-        <BoardLines size={size} theme={theme} quadrantSize={spec.quadrantSize} cells={cells} rhombus={rhombus} />
+        <BoardLines
+          size={size}
+          theme={theme}
+          quadrantSize={spec.quadrantSize}
+          cells={cells}
+          rhombus={rhombus}
+          checkered={spec.checkers}
+        />
         <div
           className="absolute inset-0 grid"
           style={{
@@ -261,6 +270,7 @@ export function Board({
                 mark={overlays.get(index) ?? null}
                 unslant={rhombus}
                 camp={spec.camps ? campOf(size, point) : null}
+                isKing={spec.checkers ? kings.has(index) : false}
                 stones={stones}
                 winningColour={theme.winning}
                 readOnly={readOnly}

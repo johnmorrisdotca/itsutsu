@@ -80,6 +80,7 @@ export function Intersection({
   moveNumber,
   mark,
   camp = null,
+  isKing = false,
   unslant = false,
   stones,
   winningColour,
@@ -129,6 +130,7 @@ export function Intersection({
           isWinning={isWinning}
           winningColour={winningColour}
           moveNumber={moveNumber}
+          isKing={isKing}
         />
       ) : ghostStone !== null ? (
         <span className="flex h-full w-full items-center justify-center opacity-60">

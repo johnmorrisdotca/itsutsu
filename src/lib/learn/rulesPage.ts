@@ -108,6 +108,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
         : "Finish with more discs than the other colour.",
     );
     object.push("The game ends when neither colour has a legal move — usually a full board. Equal counts are a draw.");
+  } else if (spec.checkers) {
+    object.push("Leave the other side with no piece that can move: jump theirs off the board until none is left, or shut in whatever remains.");
+    object.push("No lines and nothing placed after the start: every piece is down from the first move, and the whole game is in how they step and jump.");
   } else if (spec.makerBreaker) {
     object.push(`Black is the Maker and wins if any ${length} in a row of one colour appears, whoever placed it. White is the Breaker and wins if the board fills with no such line.`);
   } else if (spec.misere) {
@@ -154,6 +157,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.camps) {
     board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
   }
+  if (spec.checkers) {
+    board.push("Played on the dark squares only, thirty-two of the sixty-four. Each side starts with twelve men filling its own three rows.");
+  }
   if (spec.queue !== null) {
     board.push(
       spec.queue === "domino"
@@ -187,6 +193,12 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     if (spec.singles > 0) play.push(`Instead of a piece you may lay a single stone of your own colour; each player has ${spec.singles} for the game.`);
     play.push("A piece carries both colours, so it can finish a line for either side; the line's owner wins whoever laid it, and a line for each at once is a draw.");
     play.push("If nothing fits, the turn passes; two passes in a row end the game as a draw.");
+  } else if (spec.checkers) {
+    play.push("A turn moves one piece: a man steps one square diagonally forward, onto an empty square.");
+    play.push("Capturing is a jump over an adjacent enemy piece into the empty square beyond, and it is forced: if any of your pieces can capture, you must play a capture rather than a step, though you may choose which one.");
+    play.push("A piece that captures and can capture again from where it lands keeps jumping in the same move. A man crowned partway through always stops there — only a king may carry a chain on, and only on a later move.");
+    play.push("A man reaching the far row is crowned a king, and may then step and capture backward as well as forward.");
+    play.push("The game ends the moment a colour has no piece that can move: none left, or every one shut in.");
   } else if (spec.pieces !== null) {
     play.push(`Players first place their ${spec.pieces} pieces, one a turn. Then a turn moves one of your pieces a single step to an adjacent empty point, in any direction.`);
   } else {
@@ -209,8 +221,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     );
   }
   if (spec.lineClear) play.push("When the bottom row is full it disappears and every stone above drops one row.");
-  if (spec.flips || spec.camps || spec.connects) {
-    // Said above; a full board is only the usual way for both to be stuck, and a race has no full board.
+  if (spec.flips || spec.camps || spec.connects || spec.checkers) {
+    // Said above; a full board is only the usual way for both to be stuck, a race has no full board, and checkers ends with pieces gone, not the board full.
   } else if (spec.misere) {
     if (spec.placement === PLACEMENTS.drop) play.push("You may not play directly on top of the opponent's last stone while any other column has room.");
     play.push("A full board is a win for the player who opened.");
@@ -241,6 +253,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
           ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only distance to cover."
         : spec.connects
           ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only whether your two sides are joined."
+        : spec.checkers
+          ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only pieces jumping."
         : "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.",
   );
   house.push(copy.board);
