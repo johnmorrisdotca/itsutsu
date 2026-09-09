@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.95.0
+- Every release on a page of its own, open to everybody, and a rules page that shows its game
+
 ## 0.94.0
 - A flag beside every player's name, the three computer players included
 
