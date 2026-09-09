@@ -7,6 +7,7 @@ import { appendMove, GAME_ROW, replay } from "@/lib/history/liveGame";
 import type { MoveRequest } from "@/lib/history/liveGame.types";
 import { prisma } from "@/lib/prisma";
 import { botInSeat } from "./bots";
+import { farewellFromBots, greetFromBot } from "./botTalk";
 import { BOT_MOVE_MILLIS, BOT_TURNS_PER_REQUEST } from "./bots.constants";
 
 /**
@@ -66,14 +67,30 @@ export async function playBotTurns(
 ): Promise<void> {
   for (let taken = 0; taken < BOT_TURNS_PER_REQUEST; taken += 1) {
     const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
-    if (row === null || row.status !== "active") return;
+    if (row === null) return;
+    if (row.status !== "active") {
+      await farewellFromBots(id, row);
+      return;
+    }
     // A posted seat has nobody in it; a computer does not sit down by playing.
     if (row.openSeat !== null) return;
 
     const state = replay(row);
-    if (state.status !== GAME_STATUS.playing) return;
+    /*
+     * The game is over — by five, by a resignation, by a flag, or by a draw.
+     * A person thanks their opponent for all of those, so the computer does
+     * too, and this is the one place that is reached however it ended: the
+     * move that finished it calls back here for the reply that never comes.
+     */
+    if (state.status !== GAME_STATUS.playing) {
+      await farewellFromBots(id, row);
+      return;
+    }
     const tier = botInSeat(row, state.toPlay);
     if (tier === null) return;
+
+    // Hello, before the first stone it plays. Said once, and only to a person.
+    await greetFromBot(id, row, state.toPlay);
 
     const turn = chooseTurn(state, tier, Math.random, { millis });
     if (turn === null) return;

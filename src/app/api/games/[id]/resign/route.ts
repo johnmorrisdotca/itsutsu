@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+
+import { playBotTurns } from "@/lib/bots/botPlay";
 import { z } from "zod";
 
 import { NO_STORE, readJson, serverError } from "@/lib/api/apiResponse";
@@ -49,6 +51,18 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
         { error: REFUSAL_MESSAGE[outcome.reason] ?? "That could not be done.", reason: outcome.reason },
         { status: REFUSAL_STATUS[outcome.reason] ?? 400, headers: NO_STORE },
       );
+    }
+    /*
+     * A game given up is still a game that was played, and a computer sitting
+     * opposite says so. Nothing else asks the computer anything here — it has
+     * no move to make — so without this the one game where a person is most
+     * likely to want a civil word ends in silence.
+     */
+    try {
+      await playBotTurns(id);
+    } catch (error) {
+      // A courtesy is not worth failing a resignation over.
+      console.error(error);
     }
     return NextResponse.json(outcome.game, { status: 200, headers: NO_STORE });
   } catch (error) {

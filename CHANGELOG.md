@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.93.0
+- The computer players say hello before the first stone and thank you for the game
+
 ## 0.92.0
 - A finished game offers a rematch with the colours swapped, and the computer players stay on the players page
 

@@ -60,3 +60,19 @@ export const MESSAGE_MAX = 140;
 
 /** A seat may not send more than this many reactions in a minute. */
 export const REACTION_RATE_LIMIT = { windowMs: 60_000, maxRequests: 20 };
+
+/**
+ * The two a computer player says, taken from the list above rather than
+ * written again.
+ *
+ * A program says what a person can say and nothing a person cannot: picking
+ * these out of QUICK_PHRASES is what keeps that true, and means a change to
+ * the wording reaches the computer players without anybody remembering to
+ * make it twice. Only these two — a greeting and a thank you, at the two
+ * moments a person would say them. Nothing mid-game: "Need to think about
+ * this one" from something that thinks in milliseconds would be a lie.
+ */
+export const BOT_PHRASES = {
+  hello: QUICK_PHRASES[0],
+  goodGame: QUICK_PHRASES[QUICK_PHRASES.length - 1],
+} as const;
