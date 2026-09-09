@@ -1,27 +1,10 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { HOGETSU, ORIGINS, OTHELLO_START, PENTE_CAPTURE, SOLVED } from "@/components/about/figures";
-import { gamePath } from "@/lib/gomoku/slugs";
+import { GO_SECTION } from "./about.go";
+import { Game, Inside, Out } from "./about.links";
 import { CONNECT_FOUR_SECTION, OPENINGS_SECTION, RATINGS_SECTION, SITES_SECTION } from "./about.more";
-
-/** A link to a game’s own page, from prose. */
-function Game({ variant, children }: { variant: string; children: ReactNode }) {
-  return (
-    <Link href={gamePath(variant)} className="font-medium text-ink underline underline-offset-4">
-      {children}
-    </Link>
-  );
-}
-
-/** An outside site, opened in its own tab. */
-function Out({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="font-medium text-ink underline underline-offset-4">
-      {children}
-    </a>
-  );
-}
+import { NOTATION_SECTION } from "./about.notation";
 
 export type AboutSection = {
   title: string;
@@ -43,8 +26,9 @@ const BASE_SECTIONS: AboutSection[] = [
     paragraphs: [
       <>
         For years the founder of this site and his parents played across two households on the great
-        turn-based sites of the early web — Othello with his father, more than anything, and five-in-a-row,
-        Pente and Othello with his mother — on{" "}
+        turn-based sites of the early web — <Game variant="reversi">Othello</Game> with his father, more than
+        anything, and <Game variant="freestyle">five-in-a-row</Game>, <Game variant="ninuki">Pente</Game> and
+        Othello with his mother — on{" "}
         <Out href="https://www.itsyourturn.com/">ItsYourTurn</Out> and{" "}
         <Out href="https://www.goldtoken.com/">GoldToken</Out>. Not a move a day — sometimes hours a day.
         Dozens of games open at once between the same three people, each of them checking back every
@@ -94,9 +78,9 @@ const BASE_SECTIONS: AboutSection[] = [
       <>
         Renju’s capturing cousin, <Game variant="ninuki">ninuki-renju</Game>, lets a pair of stones be taken by bracketing
         them, and it crossed the Pacific in an unlikely way: in 1977 Gary Gabrel, working at a restaurant in Stillwater,
-        Oklahoma, turned it into <em>Pente</em>, which became one of the best-selling abstract games in America in the
-        early 1980s. Pente is the game the founder and his mother played most, and the capture games here are drawn
-        from the same well.
+        Oklahoma, turned it into <Game variant="ninuki"><em>Pente</em></Game>, which became one of the best-selling
+        abstract games in America in the early 1980s. Pente is the game the founder and his mother played most, and
+        the capture games here are drawn from the same well.
       </>,
       <>
         The line has kept growing. <Game variant="connect6">Connect6</Game> was invented in 2003 by Professor I-Chen Wu
@@ -115,8 +99,9 @@ const BASE_SECTIONS: AboutSection[] = [
     kanji: "和",
     paragraphs: [
       <>
-        The family is half Japanese, and the games came with the heritage. Five in a row, go, and
-        Othello were played at home long before any of them were played through a screen, and the
+        The family is half Japanese, and the games came with the heritage. <Game variant="freestyle">Five in a
+        row</Game>, go, and <Game variant="reversi">Othello</Game> were played at home long before any of them
+        were played through a screen, and the
         Japanese names beside the labels here are not decoration — they are what the games were called
         at the table. The name of the site is the number. <span className="font-mincho">五つ</span>,{" "}
         <em>itsutsu</em>, is simply “five”: the five stones in a row, and the five stones in the mark.
@@ -140,8 +125,9 @@ const BASE_SECTIONS: AboutSection[] = [
     kanji: "オセロ",
     paragraphs: [
       <>
-        Othello was the game the founder and his father played, more than any other, for hours at a stretch,
-        and got properly good at — and it is a Japanese game, which surprises people. Its ancestor, Reversi, was an English parlour game of the
+        <Game variant="reversi">Othello</Game> was the game the founder and his father played, more than any other,
+        for hours at a stretch, and got properly good at — and it is a Japanese game, which surprises people. Its
+        ancestor, <Game variant="classicReversi">Reversi</Game>, was an English parlour game of the
         1880s, claimed by two rival inventors who argued about it in the letters pages. The game as the
         world plays it now — the fixed opening of four discs in the centre, the 8×8 board, the name from
         Shakespeare’s play about a Moor and a Venetian, black and white turning on each other — was set
@@ -150,7 +136,7 @@ const BASE_SECTIONS: AboutSection[] = [
         “a minute to learn, a lifetime to master,” is a Japanese slogan too.
       </>,
       <>
-        Othello is the opposite of five in a row in one important way. In gomoku a stone is forever; in
+        Othello is the opposite of five in a row in one important way. In <Game variant="freestyle">gomoku</Game> a stone is forever; in
         Othello nothing is yours until the end, and a board that is nearly all one colour on move fifty
         can belong to the other side on move sixty. Playing both for years teaches a kind of double
         vision: to see a position as a set of lines and as a set of edges and corners at the same time.
@@ -188,16 +174,20 @@ const BASE_SECTIONS: AboutSection[] = [
         game.
       </>,
       <>
-        On this site every finished game is filed in the <Link href="/history" className="font-medium text-ink underline underline-offset-4">record</Link>,
+        On this site every finished game is filed in the <Inside href="/history">record</Inside>,
         and every named player has a rating and a tier on the{" "}
-        <Link href="/players" className="font-medium text-ink underline underline-offset-4">players</Link> page that move
+        <Inside href="/players">players</Inside> page that move
         with each result. Nobody is the top of a ladder yet. Somebody will be.
       </>,
     ],
   },
 ];
 
-/** The story in reading order: origins, the openings and the solved game, the heritage, Othello, the numbers, the elders. */
+/**
+ * The story in reading order: origins, the openings and the solved game, the
+ * heritage, the go board everything here is furnished from, Othello, the
+ * numbers, how a move is written down, and the elders.
+ */
 export const ABOUT_SECTIONS: AboutSection[] = (() => {
   const after = (title: string, ...added: AboutSection[]) => {
     const at = BASE_SECTIONS.findIndex((section) => section.title === title);
@@ -207,7 +197,9 @@ export const ABOUT_SECTIONS: AboutSection[] = (() => {
   for (const section of BASE_SECTIONS) {
     out.push(section);
     if (section.title === "Five stones, and where they came from") out.push(...after(section.title, OPENINGS_SECTION, CONNECT_FOUR_SECTION));
-    if (section.title === "Ladders, ratings and tournaments") out.push(...after(section.title, RATINGS_SECTION));
+    // Go follows the heritage: it is the board and the stones every game here is drawn on.
+    if (section.title === "The Japanese thread") out.push(...after(section.title, GO_SECTION));
+    if (section.title === "Ladders, ratings and tournaments") out.push(...after(section.title, RATINGS_SECTION, NOTATION_SECTION));
   }
   out.push(SITES_SECTION);
   return out;
