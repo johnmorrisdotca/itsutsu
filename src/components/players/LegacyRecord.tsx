@@ -1,6 +1,8 @@
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
+import { WholeRecordPanel } from "./WholeRecord";
+import { wholeRecord } from "@/lib/legacy/wholeRecord";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { PlayerRecord } from "@/lib/history/playerRecord";
 import type { TimeGiftRecord } from "@/lib/history/timeGifts";
@@ -107,6 +109,11 @@ export function LegacyOwnPage({
   base?: string;
 }) {
   const copy = legacy.kind === "elsewhere" ? null : LEGACY_OWN_PAGE_COPY[legacy.kind];
+  const whole = wholeRecord([legacy], {
+    won: here.record.wins,
+    lost: here.record.losses,
+    drawn: here.record.draws,
+  });
   const sources = legacyTabs([legacy]);
   const tabs: Tab[] = [...sources, ITSUTSU_TAB];
   const open = activeTab(tabs, view);
@@ -125,6 +132,19 @@ export function LegacyOwnPage({
           {copy?.tail ?? "From before Itsutsu — kept alongside whatever they've since earned here."}
         </p>
       </section>
+
+      {/*
+        Everything they played, added across every site and this one — beside
+        the tabs below rather than instead of them. This is the page where it
+        matters most: a kept record is nearly all of somebody's playing, and
+        the tabs alone never show the whole of it in one number.
+      */}
+      {whole.figures.played > 0 ? (
+        <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
+          <WholeRecordPanel whole={whole} />
+        </section>
+      ) : null}
+
       <Tabs
         tabs={tabs}
         active={open}

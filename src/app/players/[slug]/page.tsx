@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CountryMark } from "@/components/players/CountryMark";
+import { WholeRecordPanel } from "@/components/players/WholeRecord";
+import { wholeRecord } from "@/lib/legacy/wholeRecord";
 import { Whereabouts } from "@/components/players/Whereabouts";
 import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
 import { LegacyOwnPage, PlayedEverywhere } from "@/components/players/LegacyRecord";
@@ -120,6 +122,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
 
   const tier = player === null ? null : TIER_DISPLAY[player.tier];
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
+  const whole = wholeRecord(linked, { won: record.wins, lost: record.losses, drawn: record.draws });
 
   /*
    * One tab for this site and one for each site somebody played on before it.
@@ -218,6 +221,17 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           </p>
         ) : null}
       </section>
+
+      {/*
+        Everything they have played, wherever they played it — beside the
+        tabs rather than instead of them, so a life of playing shows as one
+        figure and still breaks down into where each part came from.
+      */}
+      {whole.figures.played > 0 ? (
+        <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
+          <WholeRecordPanel whole={whole} />
+        </section>
+      ) : null}
 
       <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label="Where this player's record was kept" />
 
