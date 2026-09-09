@@ -4,6 +4,7 @@ import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
+import { COUNTRY_NAMES, flagFor, wikipediaUrl } from "./origins";
 import { rulesPageFor } from "./rulesPage";
 
 const VARIANTS = Object.values(RULE_VARIANTS) as RuleVariant[];
@@ -88,5 +89,77 @@ describe("also known as", () => {
       expect(names.length).toBeGreaterThan(0);
       for (const name of names) expect(name).not.toContain(".");
     }
+  });
+});
+
+/**
+ * Where a game is from, and where to check us.
+ *
+ * The facts here were verified against the Wikipedia API before they were
+ * written down, which a test cannot repeat — a unit test that reached the
+ * network would fail on a train. What it can hold is the shape: that a flag
+ * is derived from the code rather than kept beside it, that every article
+ * title turns into an address that could be followed, and that a game we
+ * invented claims no country.
+ */
+describe("where a game comes from", () => {
+  it("derives the flag from the country code, so the two cannot disagree", () => {
+    expect(flagFor("JP")).toBe("🇯🇵");
+    expect(flagFor("DK")).toBe("🇩🇰");
+    expect(flagFor("VN")).toBe("🇻🇳");
+  });
+
+  it("names the country in words as well, for the title on the flag", () => {
+    expect(rulesPageFor(RULE_VARIANTS.halma).from).toEqual({
+      code: "US",
+      country: "the United States",
+      flag: "🇺🇸",
+    });
+  });
+
+  it("sends Hex to Denmark, where Piet Hein found it first", () => {
+    expect(rulesPageFor(RULE_VARIANTS.hex).from?.code).toBe("DK");
+  });
+
+  it("claims no country for a game we invented", () => {
+    expect(rulesPageFor(RULE_VARIANTS.dominoFive).from).toBeNull();
+    expect(rulesPageFor(RULE_VARIANTS.ringDrop).from).toBeNull();
+  });
+
+  it("builds a Wikipedia address from the title, underscores and all", () => {
+    expect(wikipediaUrl("Hex (board game)")).toBe(
+      "https://en.wikipedia.org/wiki/Hex_(board_game)",
+    );
+    expect(wikipediaUrl("Gomoku")).toBe("https://en.wikipedia.org/wiki/Gomoku");
+  });
+
+  it("sends the capture games to the article that explains the family", () => {
+    // Ninuki-renju and Keryo-Pente are both redirects to Pente on Wikipedia,
+    // and Pente is the page that actually explains how capturing works.
+    expect(rulesPageFor(RULE_VARIANTS.ninuki).wikipedia).toContain("/Pente");
+    expect(rulesPageFor(RULE_VARIANTS.sannuki).wikipedia).toContain("/Pente");
+  });
+
+  it("links nowhere rather than somewhere wrong", () => {
+    // Caro has no English article of its own; the flag stands without a link.
+    expect(rulesPageFor(RULE_VARIANTS.caro).wikipedia).toBeNull();
+    expect(rulesPageFor(RULE_VARIANTS.caro).from?.code).toBe("VN");
+    expect(rulesPageFor(RULE_VARIANTS.twistFour).wikipedia).toBeNull();
+  });
+
+  it.each(VARIANTS)("%s links to en.wikipedia.org or nowhere", (variant) => {
+    const url = rulesPageFor(variant).wikipedia;
+    if (url === null) return;
+    expect(url.startsWith("https://en.wikipedia.org/wiki/")).toBe(true);
+    // A title left with a space would still resolve, but every link should be
+    // built the same way, so nothing here should carry one.
+    expect(url).not.toContain(" ");
+  });
+
+  it.each(VARIANTS)("%s names a country only from the list, with a real flag", (variant) => {
+    const from = rulesPageFor(variant).from;
+    if (from === null) return;
+    expect(COUNTRY_NAMES[from.code]).toBe(from.country);
+    expect([...from.flag]).toHaveLength(2);
   });
 });

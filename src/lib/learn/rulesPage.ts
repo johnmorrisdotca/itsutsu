@@ -6,6 +6,8 @@ import {
 } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
+
+import { type Origin, originFor, wikipediaUrl } from "./origins";
 import { FORBIDDEN_PATTERN_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
@@ -25,6 +27,10 @@ export type RulesPage = {
   inspiredBy?: string;
   /** Every other name this game goes by, ours excluded. Empty when it goes by only one. */
   alsoKnownAs: string[];
+  /** The country it comes from, with its flag, or null for a game we invented. */
+  from: Origin | null;
+  /** The Wikipedia article that explains it, as a full address, or null. */
+  wikipedia: string | null;
   /** What you are trying to do, in one or two sentences. */
   object: string[];
   /** The board and what is on it. */
@@ -247,6 +253,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     origin: copy.origin,
     inspiredBy: copy.inspiredBy,
     alsoKnownAs: namesFor(variant, copy.label),
+    from: originFor(copy.country),
+    wikipedia: copy.wikipedia === undefined ? null : wikipediaUrl(copy.wikipedia),
     object,
     board,
     play,

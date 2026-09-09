@@ -1,3 +1,5 @@
+import type { CountryCode } from "@/lib/learn/origins";
+
 import type { RuleVariant } from "./gomoku.types";
 
 /**
@@ -27,6 +29,20 @@ export type VariantCopy = {
    * name is simply its name.
    */
   alsoKnownAs?: readonly string[];
+  /**
+   * The country the game is from, as an ISO 3166-1 alpha-2 code, when it has
+   * one a source could be shown for. Our own inventions and our own variants
+   * have none: there is no country that Ring Drop is from.
+   */
+  country?: CountryCode;
+  /**
+   * The English Wikipedia article that explains this game, by title, so the
+   * page can be checked against something outside this site. Some are
+   * redirects on purpose — Ninuki-renju leads to Pente, which is the article
+   * that explains the family. Every one was checked against the API before it
+   * was written here; see `origins.ts`.
+   */
+  wikipedia?: string;
   rules: readonly string[];
   /** Board advice, e.g. the size the game is traditionally played on. */
   board: string;
@@ -39,6 +55,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Five or more in a row wins.",
     origin: "The game as it is played everywhere, with no restrictions at all: the plain name belongs to the plain game, and the others are this one with a rule tightened.",
     alsoKnownAs: ["Five in a Row", "Gobang", "Go-Moku", "Gomoku Narabe"],
+    country: "JP",
+    wikipedia: "Gomoku",
     rules: [
       "Players take turns placing one stone on any empty intersection.",
       "The first to line up five or more of their own stones, in any direction, wins.",
@@ -53,6 +71,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Exactly five wins. Six or more does not.",
     origin: "The tournament form of Gomoku, as played at Gomocup: the plain game with the overline taken away.",
     alsoKnownAs: ["Standard Gomoku"],
+    country: "JP",
+    wikipedia: "Gomoku",
     rules: [
       "Players take turns placing one stone.",
       "Exactly five in a row wins. An overline (長連) of six or more is not a win — play simply continues.",
@@ -66,6 +86,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "連珠",
     tagline: "Black may not make a double three, a double four or an overline. White may.",
     origin: "The Japanese tournament game, codified by the Renju International Federation.",
+    country: "JP",
+    wikipedia: "Renju",
     rules: [
       "Black opens. Black wins with exactly five; white wins with five or more.",
       "Black may not play a stone that makes two open threes at once (三三), two fours at once (四四), or six or more in a row (長連). Those points are marked on the board and cannot be played.",
@@ -80,6 +102,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "오목",
     tagline: "The double three is forbidden for both sides. Overlines win.",
     origin: "The Korean game, played on a 15×15 or 19×19 board.",
+    country: "KR",
+    wikipedia: "Gomoku",
     rules: [
       "Players take turns placing one stone. Black opens.",
       "Neither player may make two open threes with one stone (삼삼). Those points are marked and cannot be played.",
@@ -93,6 +117,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "Cờ ca-rô",
     tagline: "Exactly five wins, and only if it is not shut in at both ends.",
     origin: "The Vietnamese game, traditionally played on squared paper.",
+    country: "VN",
     rules: [
       "Players take turns placing one stone. Black opens.",
       "Exactly five in a row wins. An overline does not.",
@@ -106,6 +131,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "二抜き連珠",
     tagline: "Five in a row wins. So does capturing five pairs.",
     origin: "The Japanese capture game, and the ancestor of the boxed capture games sold in the West.",
+    country: "JP",
+    wikipedia: "Pente",
     rules: [
       "Players take turns placing one stone.",
       "Flank exactly two enemy stones in a line, with your own stone at each end, and the pair is captured and removed. Only the stone that closes the trap captures — moving into a flanked position is safe.",
@@ -120,6 +147,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "The capture game where a flank takes a pair or a triple. Fifteen stones win.",
     inspiredBy: "Keryo-Pente",
     origin: "Our name for the three-removal form of the capture game, played in the West as a tournament variant since the 1980s.",
+    country: "US",
+    wikipedia: "Pente",
     rules: [
       "Players take turns placing one stone.",
       "Flank exactly two or exactly three enemy stones in a line, with your own stone at each end, and they are captured. Only the closing stone captures.",
@@ -148,6 +177,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Both players place either colour. One wants a five, the other wants none.",
     inspiredBy: "Order and Chaos",
     origin: "Our name for the classic order-versus-chaos game published in 1981, which mathematicians call a maker-breaker game.",
+    country: "US",
+    wikipedia: "Order and Chaos",
     rules: [
       "The first player is the Maker and wants five in a row of either colour, anywhere. The second is the Breaker and wants the board to fill with no five.",
       "Each turn you place one stone of whichever colour you like.",
@@ -174,6 +205,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Only black stones. Whoever makes three in a row loses.",
     origin: "The traditional all-X misère form of tic-tac-toe, on one board.",
     alsoKnownAs: ["No-Tac-Toe", "Neutral Tic-tac-toe"],
+    country: "US",
+    wikipedia: "Notakto",
     rules: [
       "Every stone is black, whoever places it.",
       "A player who completes three in a row loses.",
@@ -187,6 +220,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Two stones a turn. Six in a row wins.",
     origin: "Devised by I-Chen Wu in 2003 and played at the Computer Olympiad.",
     alsoKnownAs: ["Liuziqi", "六子棋"],
+    country: "TW",
+    wikipedia: "Connect6",
     rules: [
       "Black opens with a single stone. From then on each player places two stones per turn.",
       "Six or more in a row wins.",
@@ -230,6 +265,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Stones fall to the bottom of their column. Four in a row wins.",
     inspiredBy: "Connect Four",
     origin: "Our version of the upright four-in-a-row game, with a magnet under the board instead of a frame.",
+    country: "US",
+    wikipedia: "Connect Four",
     rules: [
       "Play anywhere in a column and the stone slides to the lowest empty point in it, as if the board were upright and the stones magnetic.",
       "Four in a row, in any direction, wins.",
@@ -419,6 +456,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Three in a row on a 3×3 board.",
     origin: "The one everybody knows.",
     alsoKnownAs: ["Noughts and Crosses", "Xs and Os", "Tick-tack-toe"],
+    wikipedia: "Tic-tac-toe",
     rules: [
       "Players take turns placing one stone.",
       "Three in a row, in any direction, wins.",
@@ -432,6 +470,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Bracket a run of the other colour and it turns. Most discs at the end wins.",
     origin: "The flipping game as the world plays it now: the fixed centre, the forced pass, the count. Japan set the rules down in 1973.",
     inspiredBy: "Othello",
+    country: "GB",
+    wikipedia: "Reversi",
     rules: [
       "The centre starts with two discs of each colour on the diagonals.",
       "A disc goes only where it brackets one or more of the other colour in a straight run, with one of your own at the far end. Every bracketed run turns.",
@@ -445,6 +485,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "古式リバーシ",
     tagline: "The 1880s rule: the players lay the first four discs themselves. Any flipping game here can be set up either way.",
     origin: "The English parlour game before the fixed opening: the centre four were placed by the players, in turn, so two openings were possible.",
+    country: "GB",
+    wikipedia: "Reversi",
     rules: [
       "The board starts empty. The first four discs are laid in the centre four squares, one a turn, without turning anything.",
       "From the fifth disc on, a disc goes only where it brackets a run of the other colour, which turns.",
@@ -499,6 +541,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "ハルマ",
     tagline: "A race across the board: step, or jump chains over any piece, and fill the far corner first.",
     origin: "Invented in Boston in 1883 by George Howard Monks, a surgeon, and named from the Greek for a jump. The play-by-mail sites kept it beside the line games; the family played it on ItsYourTurn.",
+    country: "US",
+    wikipedia: "Halma",
     rules: [
       "Each side starts with its pieces filling a camp in one corner: nineteen on the 16×16 board, thirteen on 10×10, ten on 8×8.",
       "A move is one piece, either a step to a neighbouring empty square in any direction, or a jump over an adjacent piece of either colour into the empty square beyond. A jump may go on jumping in the same move as long as there is a piece to cross.",
@@ -513,6 +557,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     tagline: "Join your own two sides of the board with an unbroken chain. A draw is impossible.",
     origin: "Found twice: by Piet Hein in Copenhagen in 1942, and again by John Nash at Princeton in 1948, who is said to have proved that the first player wins with perfect play without anyone finding out how. The proof that it cannot end in a draw is the same argument.",
     alsoKnownAs: ["Nash", "John", "Con-tac-tix", "Polygon"],
+    country: "DK",
+    wikipedia: "Hex (board game)",
     rules: [
       "The board is a rhombus of hexagons; each one touches six others. Black owns the top and bottom sides, White the left and right.",
       "Players take turns placing one stone on any empty cell. Nothing ever moves, and nothing is ever taken.",

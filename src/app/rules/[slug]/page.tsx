@@ -56,7 +56,26 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
               <span className="font-mincho text-base font-normal opacity-70">{page.kanji}</span>
             </h1>
             <p className="text-sm font-medium">{page.tagline}</p>
-            <p className="text-xs text-muted italic">{page.origin}</p>
+            <p className="text-xs text-muted italic">
+              {/*
+                The flag sits with the sentence about where the game is from,
+                because that is the sentence it is a picture of. Hidden from a
+                screen reader: the country is already said in the prose, and
+                an emoji read aloud in the middle of it only interrupts.
+              */}
+              {page.from !== null ? (
+                <span
+                  className="mr-1.5 not-italic"
+                  aria-hidden="true"
+                  title={`From ${page.from.country}`}
+                  data-testid="origin-flag"
+                  data-country={page.from.code}
+                >
+                  {page.from.flag}
+                </span>
+              ) : null}
+              {page.origin}
+            </p>
             {page.inspiredBy !== undefined ? (
               <p className="text-xs text-muted" data-testid="inspired-by">
                 Inspired by {page.inspiredBy}. The name belongs to its owner; this is our own version of the rules.
@@ -76,10 +95,27 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           <Part title="Board" kanji="盤" lines={page.board} />
           <Part title="Play" kanji="手順" lines={page.play} />
           <Part title="House rules" kanji="細則" lines={page.house} />
-          <p className="text-sm">
+          <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
             <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">
               Play {page.title} →
             </Link>
+            {/*
+              Somewhere outside this site that can contradict us. A rules page
+              is only worth trusting if it can be checked, and the article is
+              also where a reader goes for the history this page has no room
+              for.
+            */}
+            {page.wikipedia !== null ? (
+              <a
+                href={page.wikipedia}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-xs text-muted underline-offset-2 hover:underline"
+                data-testid="wikipedia-link"
+              >
+                Read about {page.title} on Wikipedia ↗
+              </a>
+            ) : null}
           </p>
         </article>
 
