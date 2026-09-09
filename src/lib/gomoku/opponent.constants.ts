@@ -1,11 +1,11 @@
 import type { BotProfile, BotTier, TierSpec } from "./opponent.types";
 
 /**
- * The three graded players, and how hard each one tries.
+ * The graded players, and how hard each one tries.
  *
  * They are named as players rather than as settings. A site whose opponents
  * are called "Easy", "Medium" and "Hard" has a widget with three positions;
- * a site whose opponents are called Kyu, Dan and Meijin has three members you
+ * a site whose opponents are called Kyu, Dan and Meijin has members you
  * can look up, whose ratings move when you beat them. The strength is still
  * said plainly beside the name — see `strength` — because somebody choosing
  * an opponent for the first time is owed that.
@@ -13,26 +13,47 @@ import type { BotProfile, BotTier, TierSpec } from "./opponent.types";
  * 級 / 段 / 名人 is the grading ladder the games on this site come from: the
  * kyu grades are what a learner holds, the dan grades are what a graded player
  * holds, and 名人 is the title of the strongest of all.
+ *
+ * The ladder runs past both ends of it, because this game is played seriously
+ * in more than one country and each grades its own players. разряд is what a
+ * Russian amateur holds in a sport, and renju is one there; 国手 is the title
+ * China gave the finest player in the country. Real ranks where they come
+ * from, each with its own flag beside it, rather than foreign words picked
+ * for flavour.
  */
 
 export const BOT_TIERS = {
+  razryad: "razryad",
   kyu: "kyu",
   dan: "dan",
   meijin: "meijin",
+  guoshou: "guoshou",
 } as const satisfies Record<BotTier, BotTier>;
 
 /** The tiers weakest first, which is the order a player is offered them in. */
 export const BOT_TIER_LIST: readonly BotTier[] = [
+  BOT_TIERS.razryad,
   BOT_TIERS.kyu,
   BOT_TIERS.dan,
   BOT_TIERS.meijin,
+  BOT_TIERS.guoshou,
 ];
 
 export const BOT_PROFILES: Record<BotTier, BotProfile> = {
+  razryad: {
+    tier: BOT_TIERS.razryad,
+    name: "Razryad",
+    native: "разряд",
+    strength: "Gentlest",
+    blurb:
+      "Just starting. Razryad plays a reasonable-looking move and will take a " +
+      "win it happens to see, but it misses most of them and gives away more " +
+      "than it takes. The one to play first, and the one to beat first.",
+  },
   kyu: {
     tier: BOT_TIERS.kyu,
     name: "Kyu",
-    kanji: "級",
+    native: "級",
     strength: "Easy",
     blurb:
       "Learning the shapes. Kyu takes a win when one is under its nose and " +
@@ -42,7 +63,7 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
   dan: {
     tier: BOT_TIERS.dan,
     name: "Dan",
-    kanji: "段",
+    native: "段",
     strength: "Medium",
     blurb:
       "Graded. Dan answers what is actually on the board — it will not let " +
@@ -52,12 +73,22 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
   meijin: {
     tier: BOT_TIERS.meijin,
     name: "Meijin",
-    kanji: "名人",
+    native: "名人",
     strength: "Hard",
     blurb:
       "The master. Meijin reads the threats before they land, answers a four " +
       "and a three, and never hands you a win in reply. Expect to lose the " +
       "first few.",
+  },
+  guoshou: {
+    tier: BOT_TIERS.guoshou,
+    name: "Guoshou",
+    native: "国手",
+    strength: "Strongest",
+    blurb:
+      "The nation's hand. Guoshou reads further than Meijin and weighs more " +
+      "of the board before it moves, so a threat you were saving is usually " +
+      "answered before you play it. Beating it is worth telling somebody about.",
   },
 };
 
@@ -73,6 +104,22 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
  * player with a dice roll bolted on.
  */
 export const TIER_SPECS: Record<BotTier, TierSpec> = {
+  /*
+   * Gentler than Kyu in the two ways a beginner is actually gentle: it misses
+   * the win you are about to have more often than it sees it, and it throws a
+   * turn away now and then. Not weakened by looking at fewer moves — a player
+   * who considers less of the board is not a beginner, it is a bad program.
+   */
+  razryad: {
+    depth: 1,
+    guard: 0.3,
+    blunder: 0.3,
+    noise: 1,
+    reads: false,
+    width: 50,
+    guardTop: 0,
+    searchDepth: 0,
+  },
   kyu: {
     depth: 1,
     guard: 0.6,
@@ -102,6 +149,26 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     width: 140,
     guardTop: 28,
     searchDepth: 6,
+  },
+  /*
+   * Stronger than Meijin by seeing further and weighing more, which are the
+   * only two knobs left once a grade already never blunders and never misses
+   * a threat. Two more plies and a wider net; nothing else can be turned up,
+   * because everything else is already at its limit.
+   *
+   * The budget is the same for every grade — see BOT_MOVE_MILLIS — so this is
+   * a deeper search only where there is time for one, and it falls back to
+   * what it had reached rather than to nothing.
+   */
+  guoshou: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 180,
+    guardTop: 34,
+    searchDepth: 8,
   },
 };
 

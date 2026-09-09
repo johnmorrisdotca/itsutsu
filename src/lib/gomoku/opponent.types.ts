@@ -11,11 +11,20 @@ import type { PieceCell, Point, Stone, Twist } from "./gomoku.types";
  */
 
 /**
- * The three graded players, named the way the board games they come from
- * grade people: 級 for the learner, 段 for the graded player, 名人 for the
- * master. The order here is the order of strength.
+ * The graded players, each named the way the country it comes from grades its
+ * own players. The order here is the order of strength.
+ *
+ * The middle three are the Japanese ladder these games are usually graded on:
+ * 級 for the learner, 段 for the graded player, 名人 for the master. The two
+ * at the ends come from the other countries this game is played seriously in,
+ * and are real ranks there rather than decoration.
+ *
+ * разряд is the Russian sporting classification an amateur holds — renju is
+ * an official sport in Russia and is graded by разряды — so it sits below the
+ * learner's grade. 国手, "the nation's hand", is the historic Chinese title
+ * for the finest player in the country, so it sits above the master's.
  */
-export type BotTier = "kyu" | "dan" | "meijin";
+export type BotTier = "razryad" | "kyu" | "dan" | "meijin" | "guoshou";
 
 /**
  * One whole turn, in the shapes a turn can take across these games.
@@ -81,7 +90,12 @@ export type BotProfile = {
   tier: BotTier;
   /** The name it plays under: its member name, and what the record shows. */
   name: string;
-  kanji: string;
+  /**
+   * The same name in its own script — 級, 名人, 国手, разряд. Called `native`
+   * rather than `kanji` because two of these are not kanji and a field that
+   * says otherwise would be a small lie told on every page that reads it.
+   */
+  native: string;
   /** The tier in the words a player choosing an opponent needs. */
   strength: string;
   blurb: string;

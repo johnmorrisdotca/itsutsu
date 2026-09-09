@@ -66,30 +66,58 @@ function playOut(
 }
 
 describe("the graded players", () => {
-  it("names three grades, weakest first, each with its own words", () => {
-    expect(BOT_TIER_LIST).toEqual([BOT_TIERS.kyu, BOT_TIERS.dan, BOT_TIERS.meijin]);
+  it("names every grade, weakest first, each with its own words", () => {
+    expect(BOT_TIER_LIST).toEqual([
+      BOT_TIERS.razryad,
+      BOT_TIERS.kyu,
+      BOT_TIERS.dan,
+      BOT_TIERS.meijin,
+      BOT_TIERS.guoshou,
+    ]);
     for (const tier of BOT_TIER_LIST) {
       const profile = BOT_PROFILES[tier];
       expect(profile.name.length).toBeGreaterThan(1);
-      expect(profile.kanji.length).toBeGreaterThan(0);
+      expect(profile.native.length).toBeGreaterThan(0);
       expect(profile.strength.length).toBeGreaterThan(0);
       expect(profile.blurb.length).toBeGreaterThan(40);
     }
-    // Three names, three kanji, no accidental duplicates.
-    expect(new Set(BOT_TIER_LIST.map((tier) => BOT_PROFILES[tier].name)).size).toBe(3);
-    expect(new Set(BOT_TIER_LIST.map((tier) => BOT_PROFILES[tier].kanji)).size).toBe(3);
+    // A name and a native form each, with no accidental duplicates.
+    const many = BOT_TIER_LIST.length;
+    expect(new Set(BOT_TIER_LIST.map((tier) => BOT_PROFILES[tier].name)).size).toBe(many);
+    expect(new Set(BOT_TIER_LIST.map((tier) => BOT_PROFILES[tier].native)).size).toBe(many);
   });
 
   it("gets stronger, grade by grade, in every knob that makes a player weak", () => {
-    const [kyu, dan, meijin] = BOT_TIER_LIST.map((tier) => TIER_SPECS[tier]);
-    expect(kyu.blunder).toBeGreaterThan(dan.blunder);
-    expect(dan.blunder).toBeGreaterThan(meijin.blunder);
-    expect(kyu.guard).toBeLessThan(dan.guard);
-    expect(dan.guard).toBeLessThan(meijin.guard);
-    expect(kyu.noise).toBeGreaterThan(dan.noise);
-    expect(dan.noise).toBeGreaterThan(meijin.noise);
-    expect(meijin.blunder).toBe(0);
-    expect(meijin.guard).toBe(1);
+    /*
+     * Walked in pairs rather than named one by one, so the ladder can grow
+     * without the test quietly checking only its first three rungs — which is
+     * what a destructured [kyu, dan, meijin] would have done the moment a
+     * fourth grade existed.
+     *
+     * Never weaker, and somewhere stronger: a grade may share a knob with the
+     * one below — everything is already at its limit by the top — but it has
+     * to be ahead in something, or it is the same player under a new name.
+     */
+    const specs = BOT_TIER_LIST.map((tier) => TIER_SPECS[tier]);
+    for (let i = 1; i < specs.length; i += 1) {
+      const under = specs[i - 1];
+      const over = specs[i];
+      expect(over.blunder, `${BOT_TIER_LIST[i]} blunders no more`).toBeLessThanOrEqual(under.blunder);
+      expect(over.guard, `${BOT_TIER_LIST[i]} guards no less`).toBeGreaterThanOrEqual(under.guard);
+      expect(over.noise, `${BOT_TIER_LIST[i]} is no noisier`).toBeLessThanOrEqual(under.noise);
+      expect(over.searchDepth, `${BOT_TIER_LIST[i]} sees no less far`).toBeGreaterThanOrEqual(under.searchDepth);
+      expect(over.width, `${BOT_TIER_LIST[i]} weighs no fewer`).toBeGreaterThanOrEqual(under.width);
+      const better =
+        over.blunder < under.blunder ||
+        over.guard > under.guard ||
+        over.noise < under.noise ||
+        over.searchDepth > under.searchDepth ||
+        over.width > under.width;
+      expect(better, `${BOT_TIER_LIST[i]} is stronger than ${BOT_TIER_LIST[i - 1]} somewhere`).toBe(true);
+    }
+    const top = specs[specs.length - 1];
+    expect(top.blunder).toBe(0);
+    expect(top.guard).toBe(1);
   });
 });
 
