@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
+import { memberContext } from "./members";
+
 /**
  * A seat nobody is sitting in cannot be late.
  *
@@ -71,7 +73,11 @@ test.describe("a game still waiting for somebody to sit down", () => {
    * had expired on the first day — and the poster could take the game off
    * them before they had a second to move.
    */
-  test("starts the clock when somebody finally sits down, not when the seat was posted", async ({ request }) => {
+  test("starts the clock when somebody finally sits down, not when the seat was posted", async ({
+    request,
+    browser,
+    baseURL,
+  }) => {
     const started = await request.post("/api/games/live", {
       data: {
         blackName: "Poster",
@@ -99,7 +105,18 @@ test.describe("a game still waiting for somebody to sit down", () => {
         data: { lastMoveAt: posted, deadlineAt: new Date(posted.getTime() + 86_400_000) },
       });
 
-      const sat = await request.post(`/api/games/${game.id}/sit`);
+      /*
+       * Somebody ELSE answers it. This used to sit down from the same context
+       * that posted the seat, which is the poster answering their own public
+       * invitation — the thing the site now refuses outright, and a way of
+       * writing the test that quietly depended on it being allowed.
+       */
+      const stamp = Date.now().toString(36);
+      const newcomer = await memberContext(browser, baseURL!, {
+        email: `newcomer-${stamp}@example.com`,
+        name: `Newcomer ${stamp}`,
+      });
+      const sat = await newcomer.request.post(`/api/games/${game.id}/sit`);
       expect(sat.status(), "the posted seat should still be free").toBe(200);
 
       const after = await prisma.game.findUnique({
