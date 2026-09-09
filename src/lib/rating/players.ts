@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from "./elo";
 import { recordVariantResult } from "./variantRatings";
+import { outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
 
 /**
  * Players by name. There are no accounts, so a name is an identity: the
@@ -94,11 +95,19 @@ export async function memberIdForName(name: string): Promise<string | null> {
   return rows.find((row) => playerKey(row.name) === key)?.id ?? null;
 }
 
+/**
+ * `pool` says which ladder this game moves — see `pools.ts`. It is required
+ * rather than defaulted, so that every place a game is recorded has had to
+ * decide whether it was played against a person or against the computer. A
+ * default here would quietly rate a game against Meijin on the ladder of
+ * people, which is the one thing the two pools exist to prevent.
+ */
 export async function recordResult(
   blackName: string,
   whiteName: string,
   winner: "black" | "white" | null,
   variant: string,
+  pool: RatingPool,
 ): Promise<void> {
   const blackKey = playerKey(blackName);
   const whiteKey = playerKey(whiteName);
@@ -138,36 +147,24 @@ export async function recordResult(
   ]);
 
   const blackScore: GameScore = winner === "black" ? 1 : winner === "white" ? 0 : 0.5;
-  const rated = rateGame(
-    { rating: black.rating, ratedGames: black.ratedGames },
-    { rating: white.rating, ratedGames: white.ratedGames },
-    blackScore,
-  );
+  // Both sides are read from, and written to, the same pool: that is what makes
+  // a game against the computer a symmetric rated game rather than an exhibition.
+  const before = { black: standingIn(black, pool), white: standingIn(white, pool) };
+  const rated = rateGame(before.black, before.white, blackScore);
 
   await prisma.$transaction([
     prisma.player.update({
       where: { key: blackKey },
-      data: {
-        rating: rated.first.rating,
-        ratedGames: rated.first.ratedGames,
-        wins: { increment: winner === "black" ? 1 : 0 },
-        losses: { increment: winner === "white" ? 1 : 0 },
-        draws: { increment: winner === null ? 1 : 0 },
-      },
+      // The columns are chosen by pool, so the shape is built rather than written out.
+      data: poolWrite(pool, rated.first.rating, rated.first.ratedGames, outcomeFor(winner, "black")) as never,
     }),
     prisma.player.update({
       where: { key: whiteKey },
-      data: {
-        rating: rated.second.rating,
-        ratedGames: rated.second.ratedGames,
-        wins: { increment: winner === "white" ? 1 : 0 },
-        losses: { increment: winner === "black" ? 1 : 0 },
-        draws: { increment: winner === null ? 1 : 0 },
-      },
+      data: poolWrite(pool, rated.second.rating, rated.second.ratedGames, outcomeFor(winner, "white")) as never,
     }),
   ]);
 
-  await recordVariantResult(blackName, whiteName, winner, variant);
+  await recordVariantResult(blackName, whiteName, winner, variant, pool);
 }
 
 /** One row of the directory: a member, with their record if they have one. */

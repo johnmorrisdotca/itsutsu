@@ -7,6 +7,8 @@ import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
 import { fetchTimeOff, timeOffGraceMs } from "@/lib/social/vacation";
 import { prisma } from "@/lib/prisma";
 import { recordResult } from "@/lib/rating/players";
+import { poolFor } from "@/lib/rating/pools";
+import { hasBotSeat } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
 import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
 import { fetchGameDetail } from "./gameHistory";
@@ -37,7 +39,7 @@ export async function giveTime(id: string, token: string, now = new Date()): Pro
   if (state.status !== GAME_STATUS.playing) return { ok: false, reason: "finished" };
   if (state.toPlay === giver) return { ok: false, reason: "your-own-turn" };
 
-  const deadline = deadlineFor(row);
+  const deadline = deadlineFor({ ...row, toPlay: state.toPlay });
   /*
    * No clock running is the same answer as no clock at all. The only way to
    * reach here without a deadline is a seat still posted for anyone to take,
@@ -83,13 +85,18 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   const claimant = stoneForToken(row, token);
   if (claimant === null) return { ok: false, reason: "wrong-token" };
 
-  const deadline = deadlineFor(row);
-  // No clock, or nobody yet to be late: a posted seat is not a slow player.
-  if (deadline === null) return { ok: false, reason: "no-clock" };
-
+  /*
+   * The position first, because the deadline now depends on whose turn it is:
+   * a computer's seat runs no clock while it is the computer's move.
+   */
   const state = replay(row);
   if (state.status !== GAME_STATUS.playing) return { ok: false, reason: "finished" };
   const absent = state.toPlay;
+
+  const deadline = deadlineFor({ ...row, toPlay: absent });
+  // No clock, nobody yet to be late, or a computer to move: none of them is a slow player.
+  if (deadline === null) return { ok: false, reason: "no-clock" };
+
   if (absent === claimant) return { ok: false, reason: "your-own-turn" };
   if (now.getTime() < deadline.getTime()) return { ok: false, reason: "not-due" };
   // Away days delay the deadline, unless this game was set up to ignore them.
@@ -133,7 +140,7 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
 
   if (finished) {
     if (!isHotSeat(row)) {
-      if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
+      if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
       await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
     }
   } else if (!isHotSeat(row)) {
@@ -169,7 +176,7 @@ export async function resignGame(id: string, token: string, now = new Date()): P
     data: { status: "finished", result: next.winner, winner: next.winner, lastMoveAt: now },
   });
   if (!isHotSeat(row)) {
-    if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant);
+    if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
   }
 
