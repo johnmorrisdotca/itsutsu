@@ -13,6 +13,7 @@ export const ADVANTAGE_MEASURES = {
   discs: "discs",
   home: "home",
   material: "material",
+  score: "score",
 } as const satisfies Record<AdvantageMeasure, AdvantageMeasure>;
 
 export const UNREADABLE_REASONS = {
@@ -48,6 +49,12 @@ export const MEASURE_DISPLAY: Record<
     kanji: "上がり",
     note: "A count of pieces that have reached the far camp. It says how far along the race each side is, not who will get there first — a train of pieces left behind can move faster than one that is already spread out.",
     fewerNote: "A count of pieces that have reached the far camp.",
+  },
+  score: {
+    label: "Score",
+    kanji: "目",
+    note: "The area score as the board stands, komi included for White. It counts stones and the empty regions only one colour touches — so it cannot know which groups are dead, and a stone that will be captured is still counted until it is. Early on, most of the board belongs to nobody yet.",
+    fewerNote: "The area score as the board stands, komi included for White.",
   },
   material: {
     label: "Pieces left",

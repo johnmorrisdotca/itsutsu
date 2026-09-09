@@ -10,7 +10,7 @@ import type { Stone } from "./gomoku.types";
  * count. That is exactly why these games get one and the threat reading does
  * not get a number.
  */
-export type AdvantageMeasure = "discs" | "home" | "material";
+export type AdvantageMeasure = "discs" | "home" | "material" | "score";
 
 /**
  * Why a game cannot be read at all — each one a property of that game, not an

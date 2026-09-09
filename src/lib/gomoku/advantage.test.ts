@@ -12,6 +12,7 @@ import { OUTLOOK_DISPLAY, OUTLOOKS } from "./analysis.constants";
 import { RULE_VARIANT_LIST, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { createGame } from "./engine";
 import { fromDiagram } from "./gomoku.test-support";
+import { KOMI } from "./rules/go";
 import type { Advantage } from "./advantage.types";
 
 /**
@@ -175,6 +176,46 @@ describe("the counted games", () => {
     for (const variant of ["halma", "chineseCheckers", "checkers"] as const) {
       expect(VARIANT_SPECS[variant].misere, variant).toBe(false);
     }
+  });
+
+  it("scores Go by area, with komi, and never calls an empty board level", () => {
+    /*
+     * The game where counting is the whole point, and the one place a naive
+     * reading would have been most embarrassing: without komi an untouched
+     * board reads 0-0 and level, when White is six and a half points up before
+     * a stone is played. The half point is also what stops a tie, so the lead
+     * is always answerable.
+     */
+    const reading = readAdvantage(createGame({ variant: "go" }));
+    if (reading.kind !== "count") throw new Error("expected a count");
+    expect(reading.measure).toBe(ADVANTAGE_MEASURES.score);
+    expect(reading.black).toBe(0);
+    expect(reading.white).toBe(KOMI);
+    expect(reading.lead).toBe(STONES.white);
+  });
+
+  it("gives Go's empty regions to the colour that surrounds them", () => {
+    // Black walls off the top-left corner; those empty points are Black's.
+    const state = fromDiagram(
+      [
+        ". . x . . . . . .",
+        ". . x . . . . . .",
+        "x x x . . . . . .",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+        ". . . . . . . o .",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+        ". . . . . . . . .",
+      ].join("\n"),
+      { settings: { variant: "go", size: 9 } },
+    );
+    const reading = readAdvantage(state);
+    if (reading.kind !== "count") throw new Error("expected a count");
+    // Five stones, plus the four empty points they enclose.
+    expect(reading.black).toBe(9);
+    expect(reading.white).toBe(1 + KOMI);
+    expect(reading.lead).toBe(STONES.black);
   });
 
   it("counts material in checkers, and starts it level", () => {

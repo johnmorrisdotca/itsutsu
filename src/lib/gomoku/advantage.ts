@@ -3,6 +3,7 @@ import { OUTLOOKS } from "./analysis.constants";
 import { ADVANTAGE_MEASURES, UNREADABLE_REASONS } from "./advantage.constants";
 import { STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { piecesHome } from "./rules/camps";
+import { KOMI, scoreArea } from "./rules/go";
 import { STAR_RADIUS, starPiecesHome } from "./rules/chineseCheckers";
 import type { Advantage, AdvantageMeasure, Lead, UnreadableReason } from "./advantage.types";
 import type { Assessment, Outlook } from "./analysis.types";
@@ -31,6 +32,9 @@ const OUTLOOK_ORDER: readonly Outlook[] = [
  * Grand Reversi or one somebody adds next month.
  */
 function measureFor(spec: VariantSpec): AdvantageMeasure | null {
+  // Go before everything: counting is the whole of that game, and the score
+  // the engine settles it by is the only honest thing to show.
+  if (spec.go) return ADVANTAGE_MEASURES.score;
   if (spec.flips) return ADVANTAGE_MEASURES.discs;
   if (spec.camps || spec.chineseCheckers) return ADVANTAGE_MEASURES.home;
   if (spec.checkers) return ADVANTAGE_MEASURES.material;
@@ -86,6 +90,16 @@ function countFor(
   stone: Stone,
 ): number {
   const { size, variant } = state.settings;
+  if (measure === ADVANTAGE_MEASURES.score) {
+    /*
+     * Komi is part of the score, not a footnote to it. Without it a board
+     * showing the same number each way reads as level when White is six and a
+     * half points ahead — and the half point is what stops a tie, so it is
+     * also what makes the lead always answerable.
+     */
+    const area = scoreArea(state.board, size);
+    return stone === STONES.white ? area.white + KOMI : area.black;
+  }
   if (measure === ADVANTAGE_MEASURES.home) {
     return VARIANT_SPECS[variant].chineseCheckers
       ? starPiecesHome(state.board, size, STAR_RADIUS, stone)
