@@ -8,7 +8,7 @@ import {
   serverError,
   unprocessable,
 } from "@/lib/api/apiResponse";
-import { DEFAULT_SETTINGS, NO_HANDICAP, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { DEFAULT_SETTINGS, NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
 import {
   boardSizeSchema,
   handicapSchema,
@@ -76,10 +76,15 @@ export async function PUT(
 
     const { id } = await ctx.params;
     const { token, handicap, ...settings } = parsed.data;
+    /*
+     * No winLength: the game keeps the line it is being played to, and a
+     * variant that fixes one still wins. Deciding it here meant deciding it
+     * without the row in hand, so the only answer available was a default —
+     * and a default overwrote whatever the game had actually been set to.
+     */
     const outcome = await updateLiveGameSettings(id, token, {
       ...settings,
       handicap: handicap ?? NO_HANDICAP,
-      winLength: VARIANT_SPECS[settings.variant].winLength ?? DEFAULT_SETTINGS.winLength,
     });
 
     if (!outcome.ok) {

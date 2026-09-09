@@ -21,7 +21,7 @@ import {
   resolvePlacement,
   twistBoard,
 } from "@/lib/gomoku/engine";
-import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, VARIANT_SPECS, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
@@ -208,7 +208,7 @@ export async function createLiveGame(
 export async function updateLiveGameSettings(
   id: string,
   token: string,
-  settings: LiveGameSettings & { winLength: number },
+  settings: LiveGameSettings,
 ): Promise<SettingsOutcome> {
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
@@ -234,6 +234,23 @@ export async function updateLiveGameSettings(
       ...rest,
       // The board this variant has, not the one that was asked for.
       size: sizeForVariant(rest.variant as RuleVariant, rest.size),
+      /*
+       * And the line this variant wins on, or the one this game was already
+       * being played to.
+       *
+       * Not the caller's, and not a default. The route used to hand over
+       * `spec.winLength ?? DEFAULT_SETTINGS.winLength`, which meant a
+       * freestyle game set to six in a row silently became five the moment
+       * anybody changed the pace — a rule nobody asked to change, changed
+       * without a word, in the one window where changing the rules is
+       * allowed at all. Measured against the running site before this line
+       * existed: created at 6, read back 6, one settings call later, 5.
+       *
+       * The variant still wins where it fixes a length, which is the whole
+       * of the Reversi lesson: a game the rules decide is not a game a
+       * request may argue with.
+       */
+      winLength: VARIANT_SPECS[rest.variant as RuleVariant].winLength ?? row.winLength,
       clockMode,
       rated,
       blackTimeMs: budget,
