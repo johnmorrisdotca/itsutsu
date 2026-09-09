@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { openGamesPage } from "./support";
+
 import { memberContext } from "./members";
 import { gamesMade } from "./tidy";
 
@@ -20,7 +22,7 @@ const tidyAway = gamesMade();
  */
 test.describe("choosing the board in the sentence", () => {
   test("offers a board for a game that has more than one", async ({ page }) => {
-    await page.goto("/games");
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("freestyle");
 
     const board = page.getByTestId("start-game-board");
@@ -29,14 +31,14 @@ test.describe("choosing the board in the sentence", () => {
   });
 
   test("asks nothing about a game played on one board", async ({ page }) => {
-    await page.goto("/games");
+    await openGamesPage(page);
     // Reversi is 8×8 and nothing else: there is no decision to put to anybody.
     await page.getByTestId("start-game-variant").selectOption("reversi");
     await expect(page.getByTestId("start-game-board")).toHaveCount(0);
   });
 
   test("starts the game on the board that was chosen", async ({ page, request }) => {
-    await page.goto("/games");
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("freestyle");
     await page.getByTestId("start-game-board").selectOption("19");
 
@@ -82,7 +84,7 @@ test.describe("choosing the board in the sentence", () => {
     tidyAway(((await waited.json()) as { id: string }).id);
     await waiting.close();
 
-    await page.goto("/games");
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("freestyle");
     await page.getByTestId("start-game-with").selectOption("anyone");
     await page.getByTestId("start-game-pace").selectOption("604800000");
@@ -111,7 +113,7 @@ test.describe("choosing the board in the sentence", () => {
     tidyAway(((await posted.json()) as { id: string }).id);
     await poster.close();
 
-    await page.goto("/games");
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("freestyle");
     await page.getByTestId("start-game-with").selectOption("anyone");
     await page.getByTestId("start-game-pace").selectOption("604800000");
@@ -126,7 +128,7 @@ test.describe("choosing the board in the sentence", () => {
   });
 
   test("keeps a chosen board across a game that cannot use it", async ({ page }) => {
-    await page.goto("/games");
+    await openGamesPage(page);
     await page.getByTestId("start-game-variant").selectOption("freestyle");
     await page.getByTestId("start-game-board").selectOption("19");
 
