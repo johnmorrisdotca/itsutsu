@@ -7,12 +7,21 @@ import { Select } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { gamePath, matchPath, rulesPath, seatPath } from "@/lib/gomoku/slugs";
 import Link from "next/link";
+import { BOT_MEMBER_LIST } from "@/lib/bots/bots.constants";
+import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import { PACES, START_COPY } from "./mine.constants";
 import type { StartGameProps } from "./startGame.types";
 
-/** "anyone", "screen", or "m:<email>" — what the third word of the sentence means. */
+/**
+ * "anyone", "screen", "m:<email>" for a member, or "c:<id>" for one of the
+ * computer players — what the third word of the sentence means.
+ *
+ * A computer is named by its id rather than by an address because it has none:
+ * it never signs in, and an address is only how you sign in.
+ */
 const ANYONE = "anyone";
 const SCREEN = "screen";
+const COMPUTER = "c:";
 
 /**
  * Starting a game, as one sentence: play this game, at this pace, with
@@ -40,10 +49,15 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
   const forThisGame = seats.filter((seat) => seat.variant === variant);
   const match = forThisGame.find((seat) => seat.moveTimeMs === moveTimeMs);
   const named = against.startsWith("m:") ? opponents.find((one) => one.email === against.slice(2)) : undefined;
+  const computer = against.startsWith(COMPUTER)
+    ? BOT_MEMBER_LIST.find((bot) => bot.id === against.slice(COMPUTER.length))
+    : undefined;
 
   const label =
     against === SCREEN
       ? START_COPY.setUp
+      : computer !== undefined
+        ? START_COPY.challenge(computer.name)
       : named !== undefined
         ? START_COPY.challenge(named.name)
         : match !== undefined
@@ -53,6 +67,8 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
   const hint =
     against === SCREEN
       ? START_COPY.screenHint
+      : computer !== undefined
+        ? START_COPY.computerHint(computer.name, BOT_PROFILES[computer.tier].blurb)
       : named !== undefined
         ? named.here
           ? START_COPY.challengeHintHere(named.name)
@@ -72,7 +88,7 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
     setBusy(true);
     try {
       // Somebody is already asking for exactly this: take their seat.
-      if (named === undefined && match !== undefined) {
+      if (named === undefined && computer === undefined && match !== undefined) {
         const sat = await fetch(`/api/games/${match.id}/sit`, { method: "POST" });
         if (sat.ok) {
           const { path } = (await sat.json()) as { path: string };
@@ -86,9 +102,11 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          named === undefined
-            ? { variant, size: game?.size, moveTimeMs, open: true }
-            : { variant, size: game?.size, moveTimeMs, challenge: named.email },
+          computer !== undefined
+            ? { variant, size: game?.size, moveTimeMs, challengeId: computer.id }
+            : named === undefined
+              ? { variant, size: game?.size, moveTimeMs, open: true }
+              : { variant, size: game?.size, moveTimeMs, challenge: named.email },
         ),
       });
       if (!response.ok) {
@@ -103,7 +121,9 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
        */
       const to = response.headers.get("Location");
       router.push(
-        named === undefined ? seatPath(variant, created.id, created.blackToken) : (to ?? matchPath(variant, created.id)),
+        named === undefined && computer === undefined
+          ? seatPath(variant, created.id, created.blackToken)
+          : (to ?? matchPath(variant, created.id)),
       );
     } finally {
       setBusy(false);
@@ -167,6 +187,15 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
               {away.map((one) => (
                 <option key={one.email} value={`m:${one.email}`}>
                   {one.name}
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
+          {signedIn ? (
+            <optgroup label={`${START_COPY.computer.label} ${START_COPY.computer.kanji}`}>
+              {BOT_MEMBER_LIST.map((bot) => (
+                <option key={bot.id} value={`${COMPUTER}${bot.id}`}>
+                  {bot.name} {BOT_PROFILES[bot.tier].kanji} · {BOT_PROFILES[bot.tier].strength}
                 </option>
               ))}
             </optgroup>

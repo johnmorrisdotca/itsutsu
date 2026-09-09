@@ -34,6 +34,9 @@ import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
 import { createLiveGame } from "@/lib/history/liveGame";
+import { ensureBotMembers } from "@/lib/bots/botMembers";
+import { isBotId } from "@/lib/bots/bots";
+import { playBotTurns } from "@/lib/bots/botPlay";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 
 const liveGameSchema = z.object({
@@ -60,6 +63,14 @@ const liveGameSchema = z.object({
   winLength: z.number().int().min(3).max(19).optional(),
   /** A member to challenge: they get the white seat, the challenger black. */
   challenge: z.string().email().optional(),
+  /**
+   * The same, by member id rather than by address.
+   *
+   * A member is named by their id and an address is only how they sign in, so
+   * this is the form that always works — and the only form that works for a
+   * computer player, which has no address because it never signs in.
+   */
+  challengeId: z.string().min(3).max(32).optional(),
   /** Start from a position in another game: its rules, and its first `move` moves. */
   from: z.object({ id: z.string().min(1).max(64), move: z.number().int().min(0).max(4096) }).optional(),
 });
@@ -135,17 +146,33 @@ export async function POST(request: Request) {
       if (challenge === undefined) hotSeat = true;
     }
 
+    /*
+     * A challenge to a computer player is a challenge like any other: it binds
+     * both seats, it is rated, and it appears in both records. The only thing
+     * it cannot be addressed by is an address, because a computer never signs
+     * in and so has none — which is what `challengeId` is for.
+     */
+    const challengeId = parsed.data.challengeId;
+    if (challengeId !== undefined && isBotId(challengeId)) await ensureBotMembers();
+
     let seats: { blackMemberId?: string; whiteMemberId?: string; blackName?: string; whiteName?: string } = {};
-    if (challenge !== undefined) {
+    if (challenge !== undefined || challengeId !== undefined) {
       const me = await currentSession();
       if (!me?.email) return NextResponse.json({ error: "Sign in to challenge someone." }, { status: 401, headers: NO_STORE });
       const mineId = await currentMemberId();
       if (mineId === null) return NextResponse.json({ error: "Sign in to challenge someone." }, { status: 401, headers: NO_STORE });
-      const other = await prisma.member.findUnique({ where: { email: challenge } });
+      const other =
+        challengeId !== undefined
+          ? await prisma.member.findUnique({ where: { id: challengeId } })
+          : await prisma.member.findUnique({ where: { email: challenge } });
       if (other === null) return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
-      // A challenge is addressed to somebody who can answer it.
-      if (other.email === null) return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
-      if (await isIgnoring(other.email, me.email)) {
+      // A challenge is addressed to somebody who can answer it — or to a computer, which always can.
+      const computer = isBotId(other.id);
+      if (other.email === null && !computer) {
+        return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
+      }
+      // Nobody is ignored by a computer, so there is no list to consult.
+      if (!computer && other.email !== null && (await isIgnoring(other.email, me.email))) {
         return NextResponse.json({ error: "That member is not taking games from you." }, { status: 403, headers: NO_STORE });
       }
 
@@ -157,8 +184,9 @@ export async function POST(request: Request) {
       };
     }
 
-    const { challenge: _challenge, from, ...settings } = parsed.data;
+    const { challenge: _challenge, challengeId: _challengeId, from, ...settings } = parsed.data;
     void _challenge;
+    void _challengeId;
     const merged = { ...settings, ...source, ...seats, hotSeat };
     const created = await createLiveGame({
       ...merged,
@@ -169,6 +197,19 @@ export async function POST(request: Request) {
         parsed.data.winLength ??
         DEFAULT_SETTINGS.winLength,
     });
+
+    /*
+     * A computer holding the seat that opens plays its stone now, so the board
+     * the challenger lands on is a board with a move on it rather than one
+     * waiting on a player that never waits.
+     */
+    if (challengeId !== undefined && isBotId(challengeId)) {
+      try {
+        await playBotTurns(created.id);
+      } catch (error) {
+        console.error(error);
+      }
+    }
 
     const response = NextResponse.json(created, {
       status: 201,
