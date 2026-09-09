@@ -4,7 +4,7 @@ import { NO_STORE, serverError } from "@/lib/api/apiResponse";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { sitAtOpenSeat } from "@/lib/history/openGames";
-import { bindSeat } from "@/lib/history/seats";
+import { bindSeat, wouldAnswerTheirOwnInvitation } from "@/lib/history/seats";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { overLimit } from "@/lib/api/rateLimit";
@@ -23,6 +23,20 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     if (tooMany !== null) return tooMany;
 
     const { id } = await ctx.params;
+    /*
+     * The other door into the same room. `sitAtOpenSeat` asks whether a seat
+     * is taken and never who is taking it, so the person who posted a seat
+     * could answer it from the lobby as readily as by following its link.
+     * Asked before the seat is claimed, because claiming it is the thing that
+     * must not happen — afterwards there is nothing left to refuse.
+     */
+    const mineFirst = await currentMemberId();
+    if (mineFirst !== null && (await wouldAnswerTheirOwnInvitation(id, mineFirst))) {
+      return NextResponse.json(
+        { error: "You posted this seat — it is waiting for somebody else.", reason: "own-seat" },
+        { status: 409, headers: NO_STORE },
+      );
+    }
     const outcome = await sitAtOpenSeat(id);
     if (!outcome.ok) {
       return NextResponse.json(
@@ -34,7 +48,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
       );
     }
     const session = await currentSession();
-    const mine = await currentMemberId();
+    const mine = mineFirst;
     if (mine !== null) await bindSeat(id, outcome.seat, mine, session?.name ?? "");
     /*
      * Sitting down opposite a computer that opens: it plays at once, so the

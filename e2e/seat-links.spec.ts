@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { PLAYER_STATE } from "./support";
+
 /**
  * A seat's link is only shown while that seat is still to be given out.
  *
@@ -93,13 +95,21 @@ test.describe("seat links", () => {
     await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
     await expect(page.getByTestId("seat-invite")).toHaveAttribute("data-stone", "white");
 
-    // Somebody sits down through the noticeboard, without ever following the
-    // link. That is a seat being taken too, and the link must stop.
-    const sat = await request.post(`/api/games/${game.id}/sit`);
+    /*
+     * Somebody sits down through the noticeboard, without ever following the
+     * link. That is a seat being taken too, and the link must stop.
+     *
+     * Somebody, and not the poster: a seat posted for anyone is not one its
+     * poster may answer, so this needs a second person to be a test of the
+     * noticeboard rather than of that refusal.
+     */
+    const guest = await browser.newContext({ storageState: PLAYER_STATE });
+    const sat = await guest.request.post(`/api/games/${game.id}/sit`);
     expect(sat.status()).toBeLessThan(400);
 
     await page.reload();
     await expect(page.getByTestId("seat-invite")).toHaveCount(0);
+    await guest.close();
     await black.close();
   });
 });

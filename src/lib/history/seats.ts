@@ -87,26 +87,33 @@ export function seatIsFree(
 }
 
 /**
- * Whether this account is already sitting at the other side of this game.
+ * Whether taking this seat would be answering your own public invitation.
  *
- * A seat token is the whole credential, and the person who starts a game is
- * handed both — they have to be, or they could not send the other one to
- * anybody. Nothing then stopped them from following it themselves, and
- * because a posted seat reported as free for ever, the game stayed on the
- * noticeboard while one person played both colours of it. Somebody could
- * have sat down into a game that was already three moves old.
+ * The distinction this draws is the whole of it. A seat link somebody sends
+ * *themselves* is a game played from two devices, and that is deliberate and
+ * wanted — `resolveSeat` says so in as many words, and the hot seat games
+ * depend on it. A seat *posted on the noticeboard* is an invitation to
+ * anybody, and answering your own is a different act: John did it without
+ * meaning to, played both colours, and the game sat there asking for an
+ * opponent the whole time. Somebody could have sat down into it.
  *
- * A game deliberately played at one screen is the exception and says so on
- * the row: both seats share a token there, which is what hot seat means.
+ * So only the posted seat is refused, and only to the person already sitting
+ * opposite it. Nothing else about seat links changes.
  */
-export async function holdsOtherSeat(id: string, seat: Stone, memberId: string): Promise<boolean> {
+export async function wouldAnswerTheirOwnInvitation(
+  id: string,
+  memberId: string,
+  /** The seat being claimed, where one is named. Omitted: whichever is posted. */
+  seat?: Stone,
+): Promise<boolean> {
   const row = await prisma.game.findUnique({
     where: { id },
-    select: { blackMemberId: true, whiteMemberId: true, blackToken: true, whiteToken: true },
+    select: { openSeat: true, blackMemberId: true, whiteMemberId: true },
   });
-  if (row === null) return false;
-  if (row.blackToken === row.whiteToken) return false;
-  const other = seat === STONES.black ? row.whiteMemberId : row.blackMemberId;
+  if (row === null || row.openSeat === null) return false;
+  if (seat !== undefined && row.openSeat !== seat) return false;
+  const posted = row.openSeat === STONES.black ? STONES.black : STONES.white;
+  const other = posted === STONES.black ? row.whiteMemberId : row.blackMemberId;
   return other !== null && other === memberId;
 }
 
