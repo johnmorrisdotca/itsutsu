@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { BOARD_SIZES, RULE_VARIANT_LIST, VARIANT_SPECS, boardSizesFor, sizeForVariant } from "./gomoku.constants";
+import { BOARD_SIZES, RULE_VARIANT_LIST, VARIANT_SPECS, sizeForVariant } from "./gomoku.constants";
 import { createGame } from "./engine";
 
 /**
