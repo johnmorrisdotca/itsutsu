@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { NO_STORE, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { fetchMyGames } from "@/lib/history/myGames";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
     const claims = seatClaims((await cookies()).getAll());
     const email = await currentEmail();
-    const games = await fetchMyGames(claims, email, new Date(), await keepFinishedDaysFor(email));
+    const games = await fetchMyGames(claims, await currentMemberId(), new Date(), await keepFinishedDaysFor(email));
     return NextResponse.json(
       { yourMove: games.yourMove.length, groups: games },
       { status: 200, headers: NO_STORE },

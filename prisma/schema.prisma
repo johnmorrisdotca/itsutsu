@@ -50,11 +50,14 @@ model Game {
   blackName String @default("")
   whiteName String @default("")
 
-  /// The member (by email) holding each seat, when a signed-in player took it.
-  /// A seat taken from a scanned link with no sign-in has none, and is known
-  /// only to the browser holding its token.
-  blackMember String?
-  whiteMember String?
+  /// The member holding each seat, by opaque id, when a signed-in player took
+  /// it. A seat taken from a scanned link with no sign-in has none, and is
+  /// known only to the browser holding its token.
+  ///
+  /// The id and not the address: a seat is held by a person, and an address
+  /// is neither a name nor a key here.
+  blackMemberId String?
+  whiteMemberId String?
 
   /// The settings the game was played under, mirrored from GameSettings.
   size      Int
@@ -129,8 +132,8 @@ model Game {
   @@index([size, playedAt])
   @@index([status, updatedAt])
   @@index([openSeat, openedAt])
-  @@index([blackMember])
-  @@index([whiteMember])
+  @@index([blackMemberId])
+  @@index([whiteMemberId])
 }
 
 model Move {

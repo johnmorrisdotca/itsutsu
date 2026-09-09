@@ -20,7 +20,7 @@ import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 
@@ -53,7 +53,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     notFound();
   }
 
-  const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, await currentEmail());
+  const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, await currentMemberId());
   const token = claim?.token;
   const seat = claim?.seat ?? null;
 
@@ -67,7 +67,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
    */
   const tokens = await prisma.game.findUnique({
     where: { id },
-    select: { blackToken: true, whiteToken: true, blackMember: true, whiteMember: true },
+    select: { blackToken: true, whiteToken: true, blackMemberId: true, whiteMemberId: true },
   });
   if (tokens !== null && isHotSeat(tokens) && claim !== null) {
     // The member's own board, so a phone and a laptop set out the same one.
@@ -97,16 +97,21 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
   let opponent: { name: string; country: string; awayUntil: string | null } | null = null;
   let muted: Stone | null = null;
   if (seat !== null && tokens !== null) {
-    const otherEmail = seat === STONES.black ? tokens.whiteMember : tokens.blackMember;
+    const otherId = seat === STONES.black ? tokens.whiteMemberId : tokens.blackMemberId;
+    const otherName = (seat === STONES.black ? game.whiteName : game.blackName).trim();
+    // Found by id, because that is what a seat holds now. The ignore list is
+    // still keyed by address, so theirs is read back from the row.
+    const member =
+      otherId === null
+        ? null
+        : await prisma.member.findUnique({
+            where: { id: otherId },
+            select: { email: true, name: true, country: true, awayFrom: true, awayUntil: true },
+          });
     const myEmail = await currentEmail();
-    if (myEmail !== null && otherEmail !== null && (await isIgnoring(myEmail, otherEmail))) {
+    if (myEmail !== null && member !== null && (await isIgnoring(myEmail, member.email))) {
       muted = seat === STONES.black ? STONES.white : STONES.black;
     }
-    const otherName = (seat === STONES.black ? game.whiteName : game.blackName).trim();
-    const member =
-      otherEmail === null
-        ? null
-        : await prisma.member.findUnique({ where: { email: otherEmail }, select: { name: true, country: true, awayFrom: true, awayUntil: true } });
     if (member !== null || otherName !== "") {
       const now = new Date().getTime();
       const away =

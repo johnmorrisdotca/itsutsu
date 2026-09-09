@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { prisma } from "@/lib/prisma";
 import { overLimit } from "@/lib/api/rateLimit";
 
@@ -29,11 +29,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     const { id } = await ctx.params;
     const row = await prisma.game.findUnique({
       where: { id },
-      select: { status: true, blackMember: true, whiteMember: true },
+      select: { status: true, blackMemberId: true, whiteMemberId: true },
     });
     if (row === null) return notFound();
     if (row.status !== "finished") return NextResponse.json({ error: "Only a finished game can be hidden." }, { status: 409, headers: NO_STORE });
-    const colour = row.blackMember === me.email ? "black" : row.whiteMember === me.email ? "white" : null;
+    const mine = await currentMemberId();
+    const colour = mine !== null && row.blackMemberId === mine ? "black" : mine !== null && row.whiteMemberId === mine ? "white" : null;
     if (colour === null) return NextResponse.json({ error: "You did not hold a seat in this game." }, { status: 403, headers: NO_STORE });
 
     await prisma.game.update({

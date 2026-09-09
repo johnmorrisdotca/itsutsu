@@ -83,7 +83,7 @@ test.describe("keeping finished games in your own list", () => {
     const me = { email: `keeper3-${stamp}@example.test`, name: `Duster ${stamp}` };
 
     const started = await request.post("/api/games/live", {
-      data: { blackName: me.name, whiteName: `Cloth ${stamp}`, size: 9, blackMember: me.email },
+      data: { blackName: me.name, whiteName: `Cloth ${stamp}`, size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; whiteToken: string };
@@ -99,9 +99,10 @@ test.describe("keeping finished games in your own list", () => {
     const prisma = new PrismaClient();
     try {
       const old = new Date(Date.now() - 30 * 86_400_000);
+      const mine = await prisma.member.findUnique({ where: { email: me.email }, select: { id: true } });
       await prisma.game.update({
         where: { id: game.id },
-        data: { blackMember: me.email, playedAt: old, lastMoveAt: old },
+        data: { blackMemberId: mine!.id, playedAt: old, lastMoveAt: old },
       });
     } finally {
       await prisma.$disconnect();

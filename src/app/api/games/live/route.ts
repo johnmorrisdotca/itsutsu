@@ -30,7 +30,7 @@ import {
 import { matchPath } from "@/lib/gomoku/slugs";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { parseHandicap } from "@/lib/history/gameSettingsSchema";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
 import { createLiveGame } from "@/lib/history/liveGame";
@@ -117,21 +117,30 @@ export async function POST(request: Request) {
         blackName: origin.blackName,
         whiteName: origin.whiteName,
       };
-      const me = await currentSession();
-      const other =
-        me?.email && origin.blackMember === me.email
-          ? origin.whiteMember
-          : me?.email && origin.whiteMember === me.email
-            ? origin.blackMember
+      // Forking a game keeps the two players: whoever is not me in the game
+      // being forked is who the new one is against, found by id and turned
+      // back into the address a challenge is addressed to.
+      const mine = await currentMemberId();
+      const otherId =
+        mine !== null && origin.blackMemberId === mine
+          ? origin.whiteMemberId
+          : mine !== null && origin.whiteMemberId === mine
+            ? origin.blackMemberId
             : null;
-      if (challenge === undefined && other !== null) challenge = other;
+      const otherMember =
+        otherId === null
+          ? null
+          : await prisma.member.findUnique({ where: { id: otherId }, select: { email: true } });
+      if (challenge === undefined && otherMember !== null) challenge = otherMember.email;
       if (challenge === undefined) hotSeat = true;
     }
 
-    let seats: { blackMember?: string; whiteMember?: string; blackName?: string; whiteName?: string } = {};
+    let seats: { blackMemberId?: string; whiteMemberId?: string; blackName?: string; whiteName?: string } = {};
     if (challenge !== undefined) {
       const me = await currentSession();
       if (!me?.email) return NextResponse.json({ error: "Sign in to challenge someone." }, { status: 401, headers: NO_STORE });
+      const mineId = await currentMemberId();
+      if (mineId === null) return NextResponse.json({ error: "Sign in to challenge someone." }, { status: 401, headers: NO_STORE });
       const other = await prisma.member.findUnique({ where: { email: challenge } });
       if (other === null) return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
       if (await isIgnoring(other.email, me.email)) {
@@ -139,8 +148,8 @@ export async function POST(request: Request) {
       }
 
       seats = {
-        blackMember: me.email,
-        whiteMember: other.email,
+        blackMemberId: mineId,
+        whiteMemberId: other.id,
         blackName: parsed.data.blackName || me.name || "",
         whiteName: parsed.data.whiteName || other.name,
       };

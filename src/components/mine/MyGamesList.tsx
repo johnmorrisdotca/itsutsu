@@ -5,7 +5,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, recordPath } from "@/lib/gomoku/slugs";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_GAME_GROUPS, STALE_AFTER_DAYS, fetchMyGames, type MyGame, type MyGameGroup } from "@/lib/history/myGames";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -34,7 +34,7 @@ export async function MyGamesList() {
   const email = await currentEmail();
   if (claims.size === 0 && email === null) return null;
   const now = new Date();
-  const groups = await fetchMyGames(claims, email, now, await keepFinishedDaysFor(email));
+  const groups = await fetchMyGames(claims, await currentMemberId(), now, await keepFinishedDaysFor(email));
   const total = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   if (total === 0) {
     if (email === null) return null;

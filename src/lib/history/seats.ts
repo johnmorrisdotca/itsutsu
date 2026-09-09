@@ -20,19 +20,19 @@ export type SeatClaim = { seat: Stone; token: string };
 export async function resolveSeat(
   id: string,
   cookieToken: string | undefined,
-  email: string | null,
+  memberId: string | null,
 ): Promise<SeatClaim | null> {
   const row = await prisma.game.findUnique({
     where: { id },
-    select: { blackToken: true, whiteToken: true, blackMember: true, whiteMember: true },
+    select: { blackToken: true, whiteToken: true, blackMemberId: true, whiteMemberId: true },
   });
   if (row === null) return null;
 
   if (cookieToken === row.blackToken) return { seat: STONES.black, token: row.blackToken };
   if (cookieToken === row.whiteToken) return { seat: STONES.white, token: row.whiteToken };
-  if (email !== null) {
-    if (row.blackMember === email) return { seat: STONES.black, token: row.blackToken };
-    if (row.whiteMember === email) return { seat: STONES.white, token: row.whiteToken };
+  if (memberId !== null) {
+    if (row.blackMemberId === memberId) return { seat: STONES.black, token: row.blackToken };
+    if (row.whiteMemberId === memberId) return { seat: STONES.white, token: row.whiteToken };
   }
   return null;
 }
@@ -44,18 +44,18 @@ export async function resolveSeat(
  * account is left alone: a scanned link does not transfer a seat somebody
  * else is signed in to.
  */
-export async function bindSeat(id: string, seat: Stone, email: string, name: string): Promise<void> {
+export async function bindSeat(id: string, seat: Stone, memberId: string, name: string): Promise<void> {
   const row = await prisma.game.findUnique({
     where: { id },
-    select: { blackMember: true, whiteMember: true, blackName: true, whiteName: true },
+    select: { blackMemberId: true, whiteMemberId: true, blackName: true, whiteName: true },
   });
   if (row === null) return;
-  const held = seat === STONES.black ? row.blackMember : row.whiteMember;
-  if (held !== null && held !== email) return;
+  const held = seat === STONES.black ? row.blackMemberId : row.whiteMemberId;
+  if (held !== null && held !== memberId) return;
   const current = seat === STONES.black ? row.blackName : row.whiteName;
   const nameUpdate = current.trim() === "" && name.trim() !== "" ? { [`${seat}Name`]: name.trim() } : {};
   await prisma.game.update({
     where: { id },
-    data: { [`${seat}Member`]: email, ...nameUpdate },
+    data: { [`${seat}MemberId`]: memberId, ...nameUpdate },
   });
 }

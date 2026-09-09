@@ -70,8 +70,8 @@ export const GAME_ROW = {
   openedAt: true,
   blackToken: true,
   whiteToken: true,
-  blackMember: true,
-  whiteMember: true,
+  blackMemberId: true,
+  whiteMemberId: true,
   moves: {
     orderBy: { number: "asc" },
     select: {
@@ -141,8 +141,8 @@ export async function createLiveGame(
     hotSeat?: boolean;
     seed?: number;
     /** The accounts holding each seat, for a challenge sent to a named member. */
-    blackMember?: string;
-    whiteMember?: string;
+    blackMemberId?: string;
+    whiteMemberId?: string;
     /** A position to start from: the first `moves` moves of another game are copied in. */
     from?: { id: string; moves: number };
   },

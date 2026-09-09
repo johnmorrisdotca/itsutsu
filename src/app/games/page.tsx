@@ -59,7 +59,7 @@ export default async function LobbyPage() {
    * ignore list is a rule about who may reach you, and a seat is a way in.
    */
   const openSeats = seatGames.filter((game) => {
-    const poster = game.openSeat === STONES.black ? game.whiteMember : game.blackMember;
+    const poster = game.openSeat === STONES.black ? game.whiteMemberId : game.blackMemberId;
     return poster === null || !ignored.has(poster);
   });
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { NO_STORE, serverError } from "@/lib/api/apiResponse";
 import { matchPath } from "@/lib/gomoku/slugs";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { sitAtOpenSeat } from "@/lib/history/openGames";
 import { bindSeat } from "@/lib/history/seats";
 import { seatCookieName } from "@/lib/history/seatCookie";
@@ -33,7 +33,8 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
       );
     }
     const session = await currentSession();
-    if (session?.email) await bindSeat(id, outcome.seat, session.email, session.name ?? "");
+    const mine = await currentMemberId();
+    if (mine !== null) await bindSeat(id, outcome.seat, mine, session?.name ?? "");
     const response = NextResponse.json(
       { path: matchPath(outcome.variant, id), seat: outcome.seat },
       { status: 200, headers: NO_STORE },

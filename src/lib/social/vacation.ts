@@ -31,8 +31,8 @@ export function graceMs(away: Away, since: Date, deadline: Date): number {
   return pushed < away.until.getTime() ? away.until.getTime() - deadline.getTime() : overlap;
 }
 
-export async function fetchAway(email: string | null): Promise<Away> {
-  return (await fetchTimeOff(email)).away;
+export async function fetchAway(memberId: string | null): Promise<Away> {
+  return (await fetchTimeOff(memberId)).away;
 }
 
 /** Everything that can hold a deadline back for one member, in one read. */
@@ -47,10 +47,10 @@ const NO_TIME_OFF: TimeOff = { away: null, daysOff: [], timeZone: "" };
  * timeout claim — and because they answer the same question: is this player
  * being asked to move at a time they said they would not be here.
  */
-export async function fetchTimeOff(email: string | null): Promise<TimeOff> {
-  if (email === null) return NO_TIME_OFF;
+export async function fetchTimeOff(memberId: string | null): Promise<TimeOff> {
+  if (memberId === null) return NO_TIME_OFF;
   const row = await prisma.member.findUnique({
-    where: { email: foldEmail(email) },
+    where: { id: memberId },
     select: { awayFrom: true, awayUntil: true, daysOff: true, timeZone: true },
   });
   if (row === null) return NO_TIME_OFF;

@@ -44,21 +44,21 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
     currentSession(),
     prisma.game.findUnique({
       where: { id },
-      select: { blackMember: true, whiteMember: true, hiddenByBlack: true, hiddenByWhite: true, blackVerdict: true, whiteVerdict: true },
+      select: { blackMemberId: true, whiteMemberId: true, hiddenByBlack: true, hiddenByWhite: true, blackVerdict: true, whiteVerdict: true },
     }),
     currentSession().then((session) => fetchApplause(id, session?.email ?? null)),
   ]);
   const mine = me?.email ?? null;
   const myColour =
-    mine === null || members === null ? null : members.blackMember === mine ? "black" : members.whiteMember === mine ? "white" : null;
+    mine === null || members === null ? null : members.blackMemberId === mine ? "black" : members.whiteMemberId === mine ? "white" : null;
   const hidden = myColour === "black" ? members?.hiddenByBlack ?? false : myColour === "white" ? members?.hiddenByWhite ?? false : false;
   const other =
     mine === null || members === null
       ? null
-      : members.blackMember === mine
-        ? members.whiteMember
-        : members.whiteMember === mine
-          ? members.blackMember
+      : members.blackMemberId === mine
+        ? members.whiteMemberId
+        : members.whiteMemberId === mine
+          ? members.blackMemberId
           : null;
 
   // A seat held by cookie counts too: a game played from a scanned link, or at one screen.

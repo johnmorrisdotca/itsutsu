@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
@@ -28,7 +28,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     if (!parsed.success) return badRequest("Up, down, or neither.");
 
     const { id } = await ctx.params;
-    const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, await currentEmail());
+    const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, await currentMemberId());
     if (claim === null) return NextResponse.json({ error: "You did not hold a seat in this game." }, { status: 403, headers: NO_STORE });
     const row = await prisma.game.findUnique({ where: { id }, select: { status: true } });
     if (row === null) return notFound();

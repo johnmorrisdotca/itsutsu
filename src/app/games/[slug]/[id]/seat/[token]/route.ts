@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { matchPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { seatForToken } from "@/lib/history/liveGame";
 import { bindSeat } from "@/lib/history/seats";
 import { seatCookieName } from "@/lib/history/seatCookie";
@@ -33,7 +33,8 @@ export async function GET(
 
   // Signed in: the seat is the account's now, on every device.
   const session = await currentSession();
-  if (session?.email) await bindSeat(id, seat, session.email, session.name ?? "");
+  const mine = await currentMemberId();
+  if (mine !== null) await bindSeat(id, seat, mine, session?.name ?? "");
 
   const response = NextResponse.redirect(new URL(matchPath(game.variant, id), request.url), 303);
   response.cookies.set({

@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.74.0
+- A game's seats hold the member's opaque id rather than their address
+
 ## 0.73.0
 - Ratings hang off a member's opaque id, and the kept records are members like anybody else, with ids built from the words John chose
 

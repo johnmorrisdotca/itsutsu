@@ -15,10 +15,10 @@ import { BuddyButton } from "@/components/mine/BuddyButton";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { fetchBuddies } from "@/lib/social/buddies";
 import { fetchIgnored } from "@/lib/social/ignores";
-import { fetchVerdictTally } from "@/lib/history/verdicts";
+import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { fetchProfile } from "@/lib/auth/members";
 import { safeDestination } from "@/lib/auth/redirect";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
@@ -39,11 +39,13 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   const me = await currentSession();
   if (!me?.email) redirect("/join?next=%2Fme");
 
+  const mineId = await currentMemberId();
   const [member, buddies, ignored, tally] = await Promise.all([
     fetchProfile(me.email),
     fetchBuddies(me.email),
     fetchIgnored(me.email),
-    fetchVerdictTally(me.email),
+    // Their own reads on their own games, found by the id a seat now holds.
+    mineId === null ? Promise.resolve(EMPTY_VERDICTS) : fetchVerdictTally(mineId),
   ]);
   const name = member?.name ?? me.name ?? "";
   const welcome = params.welcome === "1";

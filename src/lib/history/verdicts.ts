@@ -1,26 +1,28 @@
 import "server-only";
 
-import { foldEmail } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 
 export type VerdictTally = { answered: number; up: number; down: number; upWins: number; downWins: number };
 
+/** Nobody signed in has answered for nothing, which is not the same as a zero record. */
+export const EMPTY_VERDICTS: VerdictTally = { answered: 0, up: 0, down: 0, upWins: 0, downWins: 0 };
+
 /** How a member has judged their own play, across the games they answered for. Theirs alone. */
-export async function fetchVerdictTally(email: string): Promise<VerdictTally> {
-  const me = foldEmail(email);
+export async function fetchVerdictTally(memberId: string): Promise<VerdictTally> {
+  const me = memberId;
   const rows = await prisma.game.findMany({
     where: {
       status: "finished",
       OR: [
-        { blackMember: me, blackVerdict: { not: null } },
-        { whiteMember: me, whiteVerdict: { not: null } },
+        { blackMemberId: me, blackVerdict: { not: null } },
+        { whiteMemberId: me, whiteVerdict: { not: null } },
       ],
     },
-    select: { blackMember: true, blackVerdict: true, whiteVerdict: true, winner: true },
+    select: { blackMemberId: true, blackVerdict: true, whiteVerdict: true, winner: true },
   });
   const tally: VerdictTally = { answered: 0, up: 0, down: 0, upWins: 0, downWins: 0 };
   for (const row of rows) {
-    const black = row.blackMember === me;
+    const black = row.blackMemberId === me;
     const verdict = black ? row.blackVerdict : row.whiteVerdict;
     if (verdict !== "up" && verdict !== "down") continue;
     const won = row.winner === (black ? "black" : "white");

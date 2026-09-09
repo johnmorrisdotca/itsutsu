@@ -38,7 +38,7 @@ export type MyGames = Record<MyGameGroup, MyGame[]>;
  */
 export async function fetchMyGames(
   claims: Map<string, string>,
-  email: string | null = null,
+  memberId: string | null = null,
   now = new Date(),
   /**
    * How long this member keeps finished games in the list, in days; zero
@@ -49,21 +49,21 @@ export async function fetchMyGames(
   keepFinishedDays: number = KEEP_FINISHED_DEFAULT,
 ): Promise<MyGames> {
   const groups: MyGames = { yourMove: [], theirMove: [], unstarted: [], hotSeat: [], finished: [] };
-  if (claims.size === 0 && email === null) return groups;
+  if (claims.size === 0 && memberId === null) return groups;
 
   const rows = await prisma.game.findMany({
     where: {
       OR: [
         { id: { in: [...claims.keys()] } },
-        ...(email === null ? [] : [{ blackMember: email }, { whiteMember: email }]),
+        ...(memberId === null ? [] : [{ blackMemberId: memberId }, { whiteMemberId: memberId }]),
       ],
     },
     select: {
       ...SUMMARY_SELECT,
       blackToken: true,
       whiteToken: true,
-      blackMember: true,
-      whiteMember: true,
+      blackMemberId: true,
+      whiteMemberId: true,
       moves: { select: MOVE_COLUMNS, orderBy: { number: "asc" } },
     },
   });
@@ -76,9 +76,9 @@ export async function fetchMyGames(
         ? STONES.black
         : token === row.whiteToken
           ? STONES.white
-          : email !== null && row.blackMember === email
+          : memberId !== null && row.blackMemberId === memberId
             ? STONES.black
-            : email !== null && row.whiteMember === email
+            : memberId !== null && row.whiteMemberId === memberId
               ? STONES.white
               : null;
     // A cookie that fits neither seat is stale itself; it names no game of ours.

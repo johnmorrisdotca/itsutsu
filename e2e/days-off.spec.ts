@@ -76,7 +76,7 @@ test.describe("days I do not play", () => {
     try {
       // Black holds the seat and takes today off, wherever the server is.
       const today = new Date().getUTCDay();
-      await prisma.member.update({
+      const sleeperRow = await prisma.member.update({
         where: { email: sleeper.email },
         data: { daysOff: [today], timeZone: "UTC" },
       });
@@ -85,7 +85,7 @@ test.describe("days I do not play", () => {
       const gone = new Date(Date.now() - 3_600_000);
       await prisma.game.update({
         where: { id: game.id },
-        data: { blackMember: sleeper.email, lastMoveAt: new Date(gone.getTime() - 86_400_000), deadlineAt: gone },
+        data: { blackMemberId: sleeperRow.id, lastMoveAt: new Date(gone.getTime() - 86_400_000), deadlineAt: gone },
       });
 
       const refused = await request.post(`/api/games/${game.id}/timeout`, {

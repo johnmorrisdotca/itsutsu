@@ -84,7 +84,7 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   if (now.getTime() < deadline.getTime()) return { ok: false, reason: "not-due" };
   // Away days delay the deadline, unless this game was set up to ignore them.
   if (row.timeoutPenalty !== "game-strict") {
-    const off = await fetchTimeOff(absent === STONES.black ? row.blackMember : row.whiteMember);
+    const off = await fetchTimeOff(absent === STONES.black ? row.blackMemberId : row.whiteMemberId);
     const grace = timeOffGraceMs(off, row.lastMoveAt ?? deadline, deadline);
     if (now.getTime() < deadline.getTime() + grace) return { ok: false, reason: "not-due" };
   }

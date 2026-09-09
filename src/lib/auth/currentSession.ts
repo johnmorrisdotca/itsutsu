@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
+import { prisma } from "@/lib/prisma";
 import { touchMember } from "./members";
 import { SESSION_COOKIE, verifySession, type Session } from "./session";
 
@@ -30,4 +31,19 @@ export async function currentSession(): Promise<Session | null> {
 export async function currentEmail(): Promise<string | null> {
   const session = await currentSession();
   return session?.email ? session.email.trim().toLowerCase() : null;
+}
+
+/**
+ * The signed-in member's opaque id, or null when nobody is signed in.
+ *
+ * What a seat, a rating and a record are all anchored to. The address still
+ * identifies the row while it remains the key, but nothing outside this file
+ * and the member table should be comparing addresses to decide who somebody
+ * is.
+ */
+export async function currentMemberId(): Promise<string | null> {
+  const email = await currentEmail();
+  if (email === null) return null;
+  const row = await prisma.member.findUnique({ where: { email }, select: { id: true } });
+  return row?.id ?? null;
 }
