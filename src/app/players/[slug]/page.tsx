@@ -161,7 +161,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         {/*
           What somebody says about themselves. Written into the profile form
           since the form existed and shown on no page at all — including the
-          three computer players', whose bios explain what each of them
+          computer players', whose bios explain what each of them
           actually does and were readable only in the source.
         */}
         {(member?.bio ?? "").trim() !== "" ? (
@@ -173,7 +173,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           Two ratings, side by side, because there are two pools and hiding
           one behind the other is how a number stops meaning anything. The
           ladder rating is what somebody has earned against people; the
-          computer one is earned against the three programs and never touches
+          computer one is earned against the programs and never touches
           it, which is the whole point of keeping them apart.
 
           Played and the record beside them count every finished game, of

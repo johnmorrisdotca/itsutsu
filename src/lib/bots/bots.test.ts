@@ -8,7 +8,7 @@ import { BOT_MEMBERS, BOT_MEMBER_LIST, BOT_UNCLAIMABLE } from "./bots.constants"
 import { botInSeat, botTierFor, hasBotSeat, isBotId } from "./bots";
 
 /**
- * The three computer players as members: who they are, and the one thing the
+ * The computer players as members: who they are, and the one thing the
  * rest of the site has to be able to ask about them without a database.
  */
 
@@ -19,7 +19,7 @@ describe("the three as members", () => {
       expect(bot.name.length).toBeGreaterThan(1);
       expect(bot.bio.length).toBeGreaterThan(40);
     }
-    expect(new Set(BOT_MEMBER_LIST.map((bot) => bot.id)).size).toBe(3);
+    expect(new Set(BOT_MEMBER_LIST.map((bot) => bot.id)).size).toBe(BOT_MEMBER_LIST.length);
   });
 
   it("has a reason of its own for never being claimable", () => {

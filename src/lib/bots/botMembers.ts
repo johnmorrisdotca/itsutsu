@@ -6,7 +6,7 @@ import { BOT_MEMBERS, BOT_MEMBER_LIST, type BotMember } from "./bots.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 
 /**
- * The three computer players' member rows.
+ * The computer players' member rows.
  *
  * Written once and then left alone. Their ids are curated and fixed, so this
  * is an upsert on a known id rather than a search for a name — and it is

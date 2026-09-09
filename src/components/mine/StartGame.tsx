@@ -254,7 +254,7 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
             <optgroup label={`${START_COPY.computer.label} ${START_COPY.computer.kanji}`}>
               {BOT_MEMBER_LIST.map((bot) => (
                 <option key={bot.id} value={`${COMPUTER}${bot.id}`}>
-                  {bot.name} {BOT_PROFILES[bot.tier].kanji} · {BOT_PROFILES[bot.tier].strength}
+                  {bot.name} {BOT_PROFILES[bot.tier].native} · {BOT_PROFILES[bot.tier].strength}
                 </option>
               ))}
             </optgroup>

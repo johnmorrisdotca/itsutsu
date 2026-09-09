@@ -2,9 +2,9 @@ import { BOT_PROFILES, BOT_TIERS, BOT_TIER_LIST } from "@/lib/gomoku/opponent.co
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 
 /**
- * The three computer players, as members.
+ * The computer players, as members.
  *
- * They are not a setting on a game; they are three accounts that hold seats,
+ * They are not a setting on a game; they are accounts that hold seats,
  * appear in the record, and carry a rating that moves when you beat them. The
  * grade and how it plays live beside the engine in `opponent.constants.ts`;
  * what lives here is who they are on this site.
@@ -27,20 +27,38 @@ export type BotMember = {
   bio: string;
   /**
    * Where they are from, so a flag stands beside their name like anybody
-   * else's. Japan for all three: the names are 級, 段 and 名人, and the site
-   * they play on is called five.
+   * else's — and it has to be the country the name actually comes from.
+   *
+   * The middle three are Japanese: 級, 段 and 名人, and the site they play on
+   * is called five. The two at the ends are not, and it would be a small
+   * dishonesty to fly the same flag over them. разряд is the classification a
+   * Russian amateur holds in a sport, and renju is one there. 国手 is the
+   * Chinese title for the finest player in the country. Each is a real rank
+   * where it comes from rather than a foreign word chosen for flavour.
    */
   country: string;
 };
 
 export const BOT_MEMBERS: Record<BotTier, BotMember> = {
+  razryad: {
+    tier: BOT_TIERS.razryad,
+    id: "razryad",
+    name: BOT_PROFILES.razryad.name,
+    country: "Russia",
+    bio:
+      "разряд — a computer player, and the gentlest of the five. The word is " +
+      "the classification a Russian amateur holds in a sport, and renju is a " +
+      "sport there. Razryad sees a win about a third of the time it has one, " +
+      "and throws a turn away now and then. Games against it are rated, and " +
+      "so is its own record.",
+  },
   kyu: {
     tier: BOT_TIERS.kyu,
     id: "kyu",
     name: BOT_PROFILES.kyu.name,
     country: "Japan",
     bio:
-      "級 — a computer player, and the gentlest of the three. Kyu looks one " +
+      "級 — a computer player, and the second gentlest of the five. Kyu looks one " +
       "move ahead: it will finish a line that is already there, and it will " +
       "miss a good deal of what you are building. Games against Kyu are rated, " +
       "and so is its own record.",
@@ -51,7 +69,7 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.dan.name,
     country: "Japan",
     bio:
-      "段 — a computer player, and the middle of the three. Dan checks every " +
+      "段 — a computer player, and the middle of the five. Dan checks every " +
       "move against what you could do in reply, so it will not let you finish " +
       "a line in front of it. It does not look further than that. Games " +
       "against Dan are rated, and so is its own record.",
@@ -62,14 +80,26 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.meijin.name,
     country: "Japan",
     bio:
-      "名人 — a computer player, and the strongest of the three. Meijin reads " +
+      "名人 — a computer player, and the second strongest of the five. Meijin reads " +
       "several moves ahead in the games where lines can be read, and answers " +
       "a threat before it lands. Games against Meijin are rated, and so is " +
       "its own record.",
   },
+  guoshou: {
+    tier: BOT_TIERS.guoshou,
+    id: "guoshou",
+    name: BOT_PROFILES.guoshou.name,
+    country: "China",
+    bio:
+      "国手 — a computer player, and the strongest of the five. The word means " +
+      "the nation's hand, and is the title China gave its finest player of " +
+      "the board games five-in-a-row grew up beside. Guoshou reads further " +
+      "than Meijin and weighs more of the board before it moves. Games " +
+      "against it are rated, and so is its own record.",
+  },
 };
 
-/** The three, weakest first — the order they are offered as opponents in. */
+/** All of them, weakest first — the order they are offered as opponents in. */
 export const BOT_MEMBER_LIST: readonly BotMember[] = BOT_TIER_LIST.map(
   (tier) => BOT_MEMBERS[tier],
 );

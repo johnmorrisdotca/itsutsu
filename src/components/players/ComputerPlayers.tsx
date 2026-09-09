@@ -16,7 +16,7 @@ import type { DirectoryEntry } from "@/lib/rating/players";
  * They are members like anybody else — their own rows, their own ids, their
  * own pages — so this is a section of the directory rather than a different
  * kind of thing. It exists because a reader looking for somebody to play
- * should be able to find the three of them together and see at a glance which
+ * should be able to find them together and see at a glance which
  * is which, rather than picking them out of a list of people by their badges.
  *
  * The rating shown is the one earned against the computer players, because
@@ -28,7 +28,7 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
   if (entries.length === 0) return null;
   /*
    * Easiest first, so the ladder reads itself. The directory hands them over
-   * in the order they were last seen, which for three players who are always
+   * in the order they were last seen, which for players who are always
    * here means an order that changes with whoever moved last.
    */
   const order: readonly string[] = BOT_TIER_LIST;
@@ -40,11 +40,18 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
       <h2 className={SECTION_TITLE}>
         Computer players <span className="font-mincho normal-case">機械</span>
       </h2>
+      {/*
+        The count is read from the list rather than written into the sentence.
+        It said "three opponents, at three strengths" and went on saying it
+        while there were five, which is the kind of small untruth a page tells
+        for months because nobody thinks of a paragraph as something that can
+        go out of date.
+      */}
       <p className="max-w-prose text-xs text-muted">
-        Three opponents that will play any game on this board, at three strengths. They hold a seat like anybody else
-        and their games count: beating one moves your rating, and losing to one moves it the other way. They keep a
-        rating of their own, earned against each other and against the people who play them — kept apart from the
-        ladder, so a game against a program never changes where you stand among the people.
+        {shown.length} opponents that will play any game on this board, from the gentlest to the strongest. They hold a
+        seat like anybody else and their games count: beating one moves your rating, and losing to one moves it the
+        other way. They keep a rating of their own, earned against each other and against the people who play them —
+        kept apart from the ladder, so a game against a program never changes where you stand among the people.
       </p>
       <ul className="flex flex-col gap-1.5">
         {shown.map((entry) => (
