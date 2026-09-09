@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.102.0
+- Four lists about players, one at a time, each asking only for what it needs
+
 ## 0.101.0
 - Three questions to ask of a list of players: who, how settled, and seen lately
 
