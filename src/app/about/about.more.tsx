@@ -1,53 +1,8 @@
-import Link from "next/link";
-import type { ReactNode } from "react";
-
 import { Diagram } from "@/components/about/Diagram";
 import { EloCurve } from "@/components/about/EloCurve";
-import { gamePath } from "@/lib/gomoku/slugs";
+import { FigureTable as Table } from "@/components/about/FigureTable";
+import { Game, Inside, Out } from "./about.links";
 import type { AboutSection } from "./about.constants";
-
-function Out({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="font-medium text-ink underline underline-offset-4">
-      {children}
-    </a>
-  );
-}
-
-const TH = "px-3 py-1.5 text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase";
-const TD = "px-3 py-1.5 align-top";
-
-function Table({ head, rows, caption }: { head: string[]; rows: ReactNode[][]; caption: ReactNode }) {
-  return (
-    <figure className="flex flex-col gap-2">
-      <div className="overflow-x-auto rounded-lg border border-rule">
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              {head.map((cell, i) => (
-                <th key={i} className={TH}>
-                  {cell}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr key={i} className="border-t border-rule">
-                {row.map((cell, j) => (
-                  <td key={j} className={`${TD} ${j > 0 && typeof cell === "number" ? "font-mono tabular-nums" : ""}`}>
-                    {cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <figcaption className="text-xs leading-relaxed text-muted">{caption}</figcaption>
-    </figure>
-  );
-}
 
 /** 花月, the direct opening: white beside black, black's third stone on the diagonal. */
 const KAGETSU = (
@@ -178,8 +133,8 @@ export const RATINGS_SECTION: AboutSection = {
       newcomers. Everyone starts at 1600. A player is <em>unrated</em> until four rated games are in — the number
       exists, but the page shows a dash, because a rating computed from three games is a coin toss with decimals —{" "}
       <em>provisional</em> until twenty, and <em>established</em> after. The site keeps one rating across all games,
-      for the ladder, and one for each game you play, because a renju player and a Pente player are not the same
-      player.
+      for the ladder, and one for each game you play, because a <Game variant="renju">renju</Game> player and a{" "}
+      <Game variant="ninuki">Pente</Game> player are not the same player.
     </>,
     <>
       Most of the sites this one grew from keep a number per game type in the same spirit. FIDE and the US Chess
@@ -197,7 +152,8 @@ export const OPENINGS_SECTION: AboutSection = {
   kanji: "定石",
   paragraphs: [
     <>
-      Renju is the one game in the family with a canon of named openings, and the names are a small poem. White’s
+      <Game variant="renju">Renju</Game> is the one game in the family with a canon of named openings, and the
+      names are a small poem. White’s
       second stone goes either directly beside black’s first — a <em>direct</em> opening — or on the diagonal from it,
       an <em>indirect</em> one, and black’s third stone then lands on one of thirteen squares in each case — twenty-six openings, each named for
       a moon or a star. Two of them, <span className="font-mincho">花月</span> Kagetsu and{" "}
@@ -212,16 +168,17 @@ export const OPENINGS_SECTION: AboutSection = {
       the strongest challenges coming from Russia and Estonia, and the games are published move by move by the Renju
       International Federation. The openings that decide those games are almost all indirect ones — Hogetsu and its
       neighbours — because a direct opening that is not Kagetsu gives white too easy a game. The Learn shelf here has
-      a <Link href="/learn/renju" className="font-medium text-ink underline underline-offset-4">renju guide</Link>{" "}
-      with the shapes that come out of them, and the <Link href={gamePath("renju")} className="font-medium text-ink underline underline-offset-4">renju board</Link> plays with the same three forbidden shapes.
+      a <Inside href="/learn/renju">renju guide</Inside>{" "}
+      with the shapes that come out of them, and the <Game variant="renju">renju board</Game> plays with the same
+      three forbidden shapes.
     </>,
     <>
-      Pente has its own championship. Parker Brothers ran a national tournament in the game’s first boom in the
+      <Game variant="ninuki">Pente</Game> has its own championship. Parker Brothers ran a national tournament in the game’s first boom in the
       early 1980s, and since the turn of the century <Out href="https://pente.org/">Pente.org</Out> has crowned an
       online world champion most years, with a ladder that has been running for two decades. Pente openings are not
       named, but there is one rule with a name: in tournament play black’s second stone must be at least three
       intersections from the centre, the <em>tournament rule</em>, which does for Pente what the swap does for renju.
-      The <Link href={gamePath("ninuki")} className="font-medium text-ink underline underline-offset-4">capture games</Link> here
+      The <Game variant="ninuki">capture games</Game> here
       offer it as the <em>Pro</em> opening in their set-up: first stone in the centre, black’s second outside the
       central 5×5.
     </>,
@@ -234,7 +191,8 @@ export const CONNECT_FOUR_SECTION: AboutSection = {
   kanji: "四目落とし",
   paragraphs: [
     <>
-      Connect Four is the game in this family that a computer finished first. Milton Bradley published it in 1974; in
+      <Game variant="dropFour">Connect Four</Game> is the game in this family that a computer finished first.
+      Milton Bradley published it in 1974; in
       October 1988 James Allen announced, on a Usenet newsgroup, that the first player wins, and two weeks later
       Victor Allis proved the same thing independently in his master’s thesis at the Vrije Universiteit Amsterdam,
       with a program built from nine rules of thumb rather than a search. The board has 4,531,985,219,092 legal
@@ -251,7 +209,7 @@ export const CONNECT_FOUR_SECTION: AboutSection = {
       children in the clips are the part people remember — a child of six or seven who has learned the pattern of
       “odd threats” beats an adult who has not, every time, and the game is short enough that a crowd gathers. That
       is the whole lesson of a solved game: it is not that the answer is known, it is that the answer can be learned.
-      The <Link href={gamePath("dropFour")} className="font-medium text-ink underline underline-offset-4">drop games</Link>{" "}
+      The <Game variant="dropFour">drop games</Game>{" "}
       here begin from the standard board and wander off in eight directions, none of them solved.
     </>,
   ],
@@ -292,9 +250,9 @@ export const SITES_SECTION: AboutSection = {
       and each has a hard core that has been there for twenty years.
     </>,
     <>
-      If you have a code, the door is <Link href="/join" className="font-medium text-ink underline underline-offset-4">here</Link>.
-      If you do not, the <Link href="/rules" className="font-medium text-ink underline underline-offset-4">rules</Link> and
-      the <Link href="/learn" className="font-medium text-ink underline underline-offset-4">learning shelf</Link> are open
+      If you have a code, the door is <Inside href="/join">here</Inside>.
+      If you do not, the <Inside href="/rules">rules</Inside> and
+      the <Inside href="/learn">learning shelf</Inside> are open
       to everyone.
     </>,
   ],
