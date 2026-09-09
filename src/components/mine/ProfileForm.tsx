@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 
 import { Toggle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
+import { KEEP_FINISHED_DAYS, KEEP_FINISHED_DISPLAY } from "@/lib/history/retention";
 
 export type ProfileFields = {
   awayFrom: string;
@@ -15,6 +16,8 @@ export type ProfileFields = {
   bio: string;
   showOnline: boolean;
   emailNotify: boolean;
+  /** Days a finished game stays in your own list; 0 keeps them all. */
+  keepFinishedDays: number;
 };
 
 /** The time zones this browser knows, for the picker; the server checks the choice again. */
@@ -136,6 +139,30 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
         onChange={(next) => set({ emailNotify: next })}
         hint="One mail per turn, once mail is set up. Off, and the site never writes to you."
       />
+      {/*
+        Your own list is a working list: the games waiting on you, and the
+        ones just over. This says how long "just over" lasts. It hides them
+        from that list and from nowhere else.
+      */}
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium">Keep finished games in my list for</span>
+        <select
+          className={INPUT_CLASS}
+          value={fields.keepFinishedDays}
+          onChange={(event) => set({ keepFinishedDays: Number(event.target.value) })}
+          data-testid="keep-finished-days"
+        >
+          {KEEP_FINISHED_DAYS.map((days) => (
+            <option key={days} value={days}>
+              {KEEP_FINISHED_DISPLAY[days].label} {KEEP_FINISHED_DISPLAY[days].kanji}
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-muted">
+          The record keeps every game whatever this says, and each one stays at its own address. This is only
+          about how long they sit in your queue.
+        </span>
+      </label>
       <div className="flex items-center gap-3">
         <button type="submit" disabled={busy} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4`}>
           Save profile

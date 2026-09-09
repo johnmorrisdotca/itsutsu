@@ -7,6 +7,7 @@ import { fetchProfile, renameMember, updateProfile } from "@/lib/auth/members";
 import { AWAY_DAYS_A_YEAR, setAway } from "@/lib/social/vacation";
 import { PLAYER_SESSION_DAYS, SESSION_COOKIE, sessionCookieOptions, signSession } from "@/lib/auth/session";
 import { PLAYER_NAME_MAX } from "@/lib/history/gameHistory.constants";
+import { isKeepFinishedDays } from "@/lib/history/retention";
 import { overLimit } from "@/lib/api/rateLimit";
 
 const nameSchema = z.object({
@@ -23,6 +24,12 @@ const nameSchema = z.object({
   bio: z.string().trim().max(500).optional(),
   showOnline: z.boolean().optional(),
   emailNotify: z.boolean().optional(),
+  /** How long a finished game stays in their own list; only the offered windows. */
+  keepFinishedDays: z
+    .number()
+    .int()
+    .refine(isKeepFinishedDays, { message: "Not a length this site offers." })
+    .optional(),
   /** ISO dates; both blank clears the range. */
   awayFrom: z.string().max(40).nullable().optional(),
   awayUntil: z.string().max(40).nullable().optional(),

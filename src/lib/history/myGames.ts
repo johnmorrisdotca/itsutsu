@@ -5,6 +5,7 @@ import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { SUMMARY_SELECT, toGameMove, toSummary } from "./gameHistory";
+import { KEEP_FINISHED_DEFAULT, staysInMyList } from "./retention";
 import type { GameSummary } from "./gameHistory.types";
 
 /** A game nobody has touched for this long is flagged, so it can be dealt with. */
@@ -39,6 +40,13 @@ export async function fetchMyGames(
   claims: Map<string, string>,
   email: string | null = null,
   now = new Date(),
+  /**
+   * How long this member keeps finished games in the list, in days; zero
+   * keeps them all, which is what a browser holding only seat cookies gets.
+   * Passed in rather than read here: this runs on the route the header's
+   * badge polls, and the badge only wants the count of games waiting on you.
+   */
+  keepFinishedDays: number = KEEP_FINISHED_DEFAULT,
 ): Promise<MyGames> {
   const groups: MyGames = { yourMove: [], theirMove: [], unstarted: [], hotSeat: [], finished: [] };
   if (claims.size === 0 && email === null) return groups;
@@ -91,6 +99,13 @@ export async function fetchMyGames(
           : state.toPlay === seat
             ? "yourMove"
             : "theirMove";
+
+    /*
+     * A finished game past the member's window is left out of the list, and
+     * out of nothing else. Only the finished group: a game still waiting on
+     * somebody is never hidden, however old it has grown.
+     */
+    if (group === "finished" && !staysInMyList(since, keepFinishedDays, now)) continue;
 
     groups[group].push({
       game,

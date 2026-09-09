@@ -308,6 +308,11 @@ model Member {
   /// Away: deadlines in games that honour vacation days wait until this range is over.
   awayFrom     DateTime?
   awayUntil    DateTime?
+  /// How many days a finished game stays in this member's own list, or 0 to
+  /// keep them all. It hides them from that list and from nowhere else: the
+  /// record keeps every game, the ratings are untouched, and each game is
+  /// still at its own address.
+  keepFinishedDays Int @default(0)
   /// Vacation days spent this calendar year, against a flat allowance.
   awayDaysUsed Int      @default(0)
   awayYear     Int      @default(0)

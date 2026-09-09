@@ -1,4 +1,5 @@
 import { playerPath } from "@/lib/rating/playerKey";
+import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -92,6 +93,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
               bio: member?.bio ?? "",
               showOnline: member?.showOnline ?? true,
               emailNotify: member?.emailNotify ?? true,
+              keepFinishedDays: member?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT,
             }}
           />
         </section>

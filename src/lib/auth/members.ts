@@ -1,4 +1,5 @@
 import "server-only";
+import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
 
 import { prisma } from "@/lib/prisma";
 import { revokeInviteCode } from "@/lib/invite/inviteStore";
@@ -98,12 +99,31 @@ export type MemberProfile = Member & {
   awayUntil: Date | null;
   awayDaysUsed: number;
   awayYear: number;
+  /** Days a finished game stays in their own list; 0 keeps them all. */
+  keepFinishedDays: number;
   createdAt: Date;
   lastSeenAt: Date;
 };
 
 export async function fetchProfile(email: string): Promise<MemberProfile | null> {
   return prisma.member.findUnique({ where: { email: foldEmail(email) } });
+}
+
+/**
+ * How long this member keeps finished games in their own list, in days.
+ *
+ * One column rather than the whole profile: this is read on the route the
+ * header's badge polls, so it is worth being narrow about. Nobody signed in
+ * — a browser holding only seat cookies — keeps everything, which is the
+ * default anybody gets until they change it.
+ */
+export async function keepFinishedDaysFor(email: string | null): Promise<number> {
+  if (email === null) return KEEP_FINISHED_DEFAULT;
+  const row = await prisma.member.findUnique({
+    where: { email: foldEmail(email) },
+    select: { keepFinishedDays: true },
+  });
+  return row?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT;
 }
 
 /** How often "last seen" is written: once a minute is plenty for a who's-here list. */
@@ -194,7 +214,12 @@ export async function setBanned(email: string, banned: boolean, note = ""): Prom
   return (await listMembers(1_000)).find((member) => member.email === key) ?? null;
 }
 
-export type ProfileUpdate = Partial<Pick<MemberProfile, "city" | "country" | "timeZone" | "bio" | "showOnline" | "emailNotify">>;
+export type ProfileUpdate = Partial<
+  Pick<
+    MemberProfile,
+    "city" | "country" | "timeZone" | "bio" | "showOnline" | "emailNotify" | "keepFinishedDays"
+  >
+>;
 
 export async function updateProfile(email: string, update: ProfileUpdate): Promise<void> {
   await prisma.member.update({ where: { email: foldEmail(email) }, data: update });

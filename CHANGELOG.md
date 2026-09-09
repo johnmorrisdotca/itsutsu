@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.66.0
+- A member can say how long a finished game stays in their own list: a week, a fortnight, a month, three months, or for ever. The record keeps every game whatever it says
+
 ## 0.65.0
 - A game can be given a length: on a board of 9x9 or larger, half or three quarters of the board's points played with nobody winning is a draw
 
