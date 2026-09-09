@@ -53,7 +53,11 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "五目並べ",
     tagline: "Five or more in a row wins.",
     origin: "The game as it is played everywhere, with no restrictions at all: the plain name belongs to the plain game, and the others are this one with a rule tightened.",
-    alsoKnownAs: ["Five in a Row", "Gobang", "Go-Moku", "Gomoku Narabe"],
+    // The Chinese name was the gap here: the entry gave the game's Japanese
+    // and British names and not the one used where most of its players are.
+    // "Go-Moku" is gone because it never reached the page — it folds to the
+    // same key as our own label and was dropped before printing.
+    alsoKnownAs: ["Five in a Row", "Gobang", "Gomoku Narabe", "Wuziqi", "五子棋", "Spoil Five"],
     country: "JP",
     wikipedia: "Gomoku",
     rules: [
@@ -116,6 +120,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     kanji: "Cờ ca-rô",
     tagline: "Exactly five wins, and only if it is not shut in at both ends.",
     origin: "The Vietnamese game, traditionally played on squared paper.",
+    alsoKnownAs: ["Gomoku+"],
     country: "VN",
     rules: [
       "Players take turns placing one stone. Black opens.",

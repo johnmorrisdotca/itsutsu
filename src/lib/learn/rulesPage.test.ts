@@ -60,6 +60,40 @@ describe("also known as", () => {
     );
   });
 
+  it("names the game in Chinese as well, where most of its players are", () => {
+    // The entry gave the Japanese and British names and not the Chinese one,
+    // which is the odd gap: 五子棋 is what the game is called where it is
+    // played most. Both forms, the way Connect6 already carries Liuziqi.
+    const names = rulesPageFor(RULE_VARIANTS.freestyle).alsoKnownAs;
+    expect(names).toContain("Wuziqi");
+    expect(names).toContain("五子棋");
+    // Chad Valley sold it in Britain in the 1920s under a name of their own.
+    expect(names).toContain("Spoil Five");
+  });
+
+  it("gives the Vietnamese game the other name it is played under", () => {
+    expect(rulesPageFor(RULE_VARIANTS.caro).alsoKnownAs).toContain("Gomoku+");
+  });
+
+  /*
+   * Two absences that are answers rather than gaps, recorded so nobody
+   * "fixes" them later.
+   *
+   * Halma has no other name. Chinese Checkers is Stern-Halma, a derivative
+   * somebody else published, not this game under another title, and listing
+   * it would tell a reader something untrue.
+   *
+   * Othello is not listed against Reversi either, though it is what the
+   * modern game is sold as. The name belongs to its owner, so it is carried
+   * in `inspiredBy` and RULES_ATTRIBUTION instead — which is the same
+   * decision the file makes for Pente, Pentago and Teeko.
+   */
+  it("leaves a game alone when its name is simply its name", () => {
+    expect(rulesPageFor(RULE_VARIANTS.halma).alsoKnownAs).toEqual([]);
+    expect(rulesPageFor(RULE_VARIANTS.reversi).alsoKnownAs).not.toContain("Othello");
+    expect(rulesPageFor(RULE_VARIANTS.reversi).inspiredBy).toBe("Othello");
+  });
+
   it("keeps a name written in another script beside its romanisation", () => {
     // Folding punctuation away must not fold a CJK name to nothing and take
     // it for a duplicate of the next one.
