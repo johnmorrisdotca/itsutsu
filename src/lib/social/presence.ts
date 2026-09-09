@@ -28,6 +28,8 @@ export function recencyOf(lastSeenAt: Date, now = new Date()): Recency {
 }
 
 export type HereNow = {
+  /** The member's opaque id, and what a list of these is keyed by; see DirectoryEntry. */
+  id: string;
   /** Null for a kept record: somebody who never signed in. */
   email: string | null;
   name: string;
@@ -60,9 +62,10 @@ export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
     where: { showOnline: true, lastSeenAt: { gte: since } },
     orderBy: { lastSeenAt: "desc" },
     take: HERE_MAX,
-    select: { email: true, name: true, picture: true, lastSeenAt: true, timeZone: true },
+    select: { id: true, email: true, name: true, picture: true, lastSeenAt: true, timeZone: true },
   });
   return rows.map((row) => ({
+    id: row.id,
     email: row.email,
     name: row.name,
     picture: row.picture,

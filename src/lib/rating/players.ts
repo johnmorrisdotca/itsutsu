@@ -172,6 +172,12 @@ export async function recordResult(
 
 /** One row of the directory: a member, with their record if they have one. */
 export type DirectoryEntry = {
+  /**
+   * The member's opaque id: the one thing every member has and no two share.
+   * It is what a list of these is keyed by — the address is null for a kept
+   * record, and two of those in one list are two rows with the same key.
+   */
+  id: string;
   /** Null for a kept record: somebody who never signed in. */
   email: string | null;
   name: string;
@@ -197,6 +203,7 @@ export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
   const players = keys.length === 0 ? [] : await prisma.player.findMany({ where: { key: { in: keys } } });
   const byKey = new Map(players.map((row) => [row.key, toProfile(row)]));
   return members.map((member) => ({
+    id: member.id,
     email: member.email,
     name: member.name,
     picture: member.picture,

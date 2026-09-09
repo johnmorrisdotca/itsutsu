@@ -29,7 +29,7 @@ export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null 
       ) : (
         <ul className="flex flex-col gap-1">
           {others.map((entry) => (
-            <li key={entry.email} className="flex items-center gap-2 py-0.5 text-sm">
+            <li key={entry.id} className="flex items-center gap-2 py-0.5 text-sm">
               <RecencyMark recency={entry.recency} />
               <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
                 {entry.name.trim() !== "" ? (

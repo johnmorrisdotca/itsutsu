@@ -87,7 +87,7 @@ export default async function PlayersPage() {
           {here.length > 0 ? (
             <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
               {here.map((entry) => (
-                <span key={entry.email} className="flex items-center gap-1">
+                <span key={entry.id} className="flex items-center gap-1">
                   <RecencyMark recency={entry.recency} />
                   {entry.name.trim() !== "" ? (
                     <Link
@@ -131,7 +131,7 @@ export default async function PlayersPage() {
           </thead>
           <tbody>
             {directory.map((entry) => (
-              <tr key={entry.email} className="border-t border-rule">
+              <tr key={entry.id} className="border-t border-rule">
                 <td className="py-1.5 pr-3">
                   <span className="flex items-center gap-2">
                     <RecencyMark recency={recencyOf(new Date(entry.lastSeenAt), now)} />
