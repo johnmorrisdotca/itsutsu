@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CountryMark } from "@/components/players/CountryMark";
+import { Whereabouts } from "@/components/players/Whereabouts";
 import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
 import { LegacyOwnPage, PlayedEverywhere } from "@/components/players/LegacyRecord";
 import { LegacySourcePanel } from "@/components/players/LegacySource";
@@ -122,6 +123,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
             showName
           />
         </h1>
+        <Whereabouts city={member?.city} timeZone={member?.timeZone} />
         {/*
           Two ratings, side by side, because there are two pools and hiding
           one behind the other is how a number stops meaning anything. The

@@ -214,8 +214,8 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
         {error !== null ? <span className="text-xs text-shu">{error}</span> : null}
       </div>
       <p className="text-xs text-muted">
-        City, country and the time where you are show beside your name on the players page. Everything is optional,
-        and your address is never shown.
+        Your country shows as a flag beside your name wherever the site lists players; your city and the time
+        where you are show on your own page. Everything is optional, and your address is never shown.
       </p>
     </form>
   );

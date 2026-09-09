@@ -41,6 +41,31 @@ test.describe("where somebody is", () => {
     await expect(mark).toHaveAttribute("data-country", "");
   });
 
+  test("says the city, and what time it is there", async ({ page }) => {
+    /*
+     * The clock is the one that earns its place on a site where a game takes
+     * a week: knowing it is four in the morning where your opponent is turns
+     * a slow reply from a slight into a person who is asleep.
+     */
+    await seedMember({
+      email: "flags-tokyo@example.test",
+      name: "Flags Tokyo",
+      country: "Japan",
+      city: "Tokyo",
+      timeZone: "Asia/Tokyo",
+    });
+    await page.goto("/players/flags-tokyo");
+    await expect(page.getByTestId("whereabouts-city")).toHaveText("Tokyo");
+    await expect(page.getByTestId("whereabouts-time")).toContainText("where they are");
+    await expect(page.getByTestId("whereabouts-time")).toContainText(/\d\d:\d\d/);
+  });
+
+  test("says nothing about whereabouts for somebody who has not said", async ({ page }) => {
+    await seedMember({ email: "flags-quiet@example.test", name: "Flags Quiet" });
+    await page.goto("/players/flags-quiet");
+    await expect(page.getByTestId("whereabouts")).toHaveCount(0);
+  });
+
   test("shows nothing at all for somebody who has not said", async ({ page }) => {
     await seedMember({ email: "flags-none@example.test", name: "Flags None", country: "" });
     await page.goto("/players/flags-none");
