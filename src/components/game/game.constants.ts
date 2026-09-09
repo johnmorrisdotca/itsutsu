@@ -261,6 +261,8 @@ export const GAME_COPY = {
   claimTurn: { label: "Claim the turn", kanji: "手番請求" },
   claimGame: { label: "Claim the win", kanji: "勝ち請求" },
   claimHint: "Their time is up. Claim it, or leave the game waiting and pass the move back to them.",
+  claimTurnConfirm: "Claim their missed turn? They lose this move, and the board comes back to you.",
+  claimGameConfirm: "Claim the game on their clock? It ends here, and the result is filed against them.",
   forfeitsNote: (count: number, limit: number) => `${count} of ${limit} turns forfeited`,
 } as const;
 

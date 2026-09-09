@@ -9,6 +9,7 @@ import { PieceTray } from "@/components/game/PieceTray";
 import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
 import { Button } from "@/components/ui/Controls";
+import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { usePieceHand } from "@/components/game/usePieceHand";
 import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
 import { ResignButton } from "@/components/mine/ResignButton";
@@ -83,6 +84,8 @@ export function SharedGame({
   }, [deadline, state.status]);
   const overdue = isOverdue(deadline, new Date(now));
   const canClaim = overdue && seat !== null && !yourTurn && state.status === GAME_STATUS.playing;
+  // Whether claiming ends the game outright or only takes their turn.
+  const endsTheGame = detail.timeoutPenalty === "game" || detail.clockMode === "game";
 
   async function give() {
     setError(null);
@@ -237,9 +240,21 @@ export function SharedGame({
             ) : null}
           </span>
           {canClaim ? (
-            <Button onClick={claim} strong title={GAME_COPY.claimHint} data-testid="claim-timeout">
-              {detail.timeoutPenalty === "game" || detail.clockMode === "game" ? GAME_COPY.claimGame.label : GAME_COPY.claimTurn.label}
-            </Button>
+            /*
+              The one irreversible thing here that is done TO somebody rather
+              than by them, so it asks — and the question says which of the
+              two it is, since claiming a turn and claiming the game are not
+              the same act.
+            */
+            <ConfirmButton
+              label={endsTheGame ? GAME_COPY.claimGame.label : GAME_COPY.claimTurn.label}
+              question={endsTheGame ? GAME_COPY.claimGameConfirm : GAME_COPY.claimTurnConfirm}
+              confirm={endsTheGame ? GAME_COPY.claimGame.label : GAME_COPY.claimTurn.label}
+              onConfirm={() => void claim()}
+              strong
+              title={GAME_COPY.claimHint}
+              testId="claim-timeout"
+            />
           ) : null}
           {seat !== null && !yourTurn && state.status === GAME_STATUS.playing ? (
             <Button onClick={give} title="Add time to the other side's clock for this move. Nobody has to win on the clock." data-testid="give-time">

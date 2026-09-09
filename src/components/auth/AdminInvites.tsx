@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import useSWR from "swr";
 
 import { Button, SectionTitle } from "@/components/ui/Controls";
@@ -154,13 +155,14 @@ export function AdminInvites() {
               <span className="ml-auto text-xs text-muted tabular-nums">
                 {invite.maxUses > 0 ? `${invite.uses} of ${invite.maxUses} used` : `${invite.uses} used`}
               </span>
-              <button
-                type="button"
-                onClick={() => revoke(invite.code)}
+              <ConfirmButton
+                label="Revoke"
+                question={`Revoke ${invite.code}? It stops working immediately and cannot be brought back; anybody holding it will need a new one.`}
+                confirm="Revoke it"
+                onConfirm={() => void revoke(invite.code)}
                 className="text-xs text-shu underline underline-offset-4"
-              >
-                Revoke
-              </button>
+                testId={`revoke-${invite.code}`}
+              />
             </li>
           ))}
           {active.length > RECENT_INVITES ? (

@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.71.0
+- Nothing destructive happens on one click: resigning, claiming a missed turn, shutting an account, taking a name off and revoking an invite all ask first, in the site's own words
+
 ## 0.70.0
 - Every member has an opaque id of their own, given once and never derived from a name or an address, with one validator shared by generated and curated ids
 

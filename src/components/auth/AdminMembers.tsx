@@ -3,6 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 
+import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/members";
@@ -85,21 +86,38 @@ export function AdminMembers() {
               </span>
             </span>
             {member.name.trim() === "" ? null : (
-              <Button
-                onClick={() => void change({ email: member.email, name: "" }, member.email)}
+              <ConfirmButton
+                label="Take the name off"
+                question={`Take ${member.name.trim()}'s name off? They keep the account, the games and the rating; only the name goes, and they are asked for a new one.`}
+                confirm="Take it off"
+                onConfirm={() => void change({ email: member.email, name: "" }, member.email)}
                 disabled={busy === member.email}
+                testId="take-name-off"
+              />
+            )}
+            {/*
+              Opening an account again asks nothing: it undoes something and
+              takes nothing away. Shutting one does both, so it asks.
+            */}
+            {member.bannedAt === null ? (
+              <ConfirmButton
+                label="Shut the account"
+                question={`Shut ${member.name.trim() || member.email}'s account? It stops working on their next request and the invite they came in by is revoked. Their games and their rating stay exactly as they are.`}
+                confirm="Shut it"
+                onConfirm={() => void change({ email: member.email, banned: true }, member.email)}
+                disabled={busy === member.email}
+                strong
+                testId="ban-member"
+              />
+            ) : (
+              <Button
+                onClick={() => void change({ email: member.email, banned: false }, member.email)}
+                disabled={busy === member.email}
+                data-testid="ban-member"
               >
-                Take the name off
+                Open it again
               </Button>
             )}
-            <Button
-              onClick={() => void change({ email: member.email, banned: member.bannedAt === null }, member.email)}
-              disabled={busy === member.email}
-              strong={member.bannedAt === null}
-              data-testid="ban-member"
-            >
-              {member.bannedAt === null ? "Shut the account" : "Open it again"}
-            </Button>
           </li>
         ))}
       </ul>

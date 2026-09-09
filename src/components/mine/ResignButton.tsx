@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { MY_GAMES_COPY } from "./mine.constants";
 
 /**
@@ -15,7 +16,6 @@ export function ResignButton({ id, onDone }: { id: string; onDone?: () => void }
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   async function resign() {
-    if (!window.confirm(MY_GAMES_COPY.resignConfirm)) return;
     setBusy(true);
     try {
       const response = await fetch(`/api/games/${id}/resign`, { method: "POST" });
@@ -28,15 +28,19 @@ export function ResignButton({ id, onDone }: { id: string; onDone?: () => void }
     }
   }
   return (
-    <button
-      type="button"
-      onClick={resign}
+    <ConfirmButton
+      label={
+        <>
+          {MY_GAMES_COPY.resign.label}
+          <span className="font-mincho opacity-70">{MY_GAMES_COPY.resign.kanji}</span>
+        </>
+      }
+      question={MY_GAMES_COPY.resignConfirm}
+      confirm={MY_GAMES_COPY.resign.label}
+      onConfirm={() => void resign()}
       disabled={busy}
       className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs`}
-      data-testid="resign"
-    >
-      {MY_GAMES_COPY.resign.label}
-      <span className="font-mincho opacity-70">{MY_GAMES_COPY.resign.kanji}</span>
-    </button>
+      testId="resign"
+    />
   );
 }

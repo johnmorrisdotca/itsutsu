@@ -50,9 +50,9 @@ test.describe("your games", () => {
     await page.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
     await page.goto("/games");
 
-    page.on("dialog", (dialog) => dialog.accept());
     const row = page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
     await row.getByTestId("resign").click();
+    await row.getByTestId("resign-yes").click();
     await expect(page.getByTestId("my-games-finished").locator(row)).toBeVisible();
 
     // Black won by resignation, and the record says so.
