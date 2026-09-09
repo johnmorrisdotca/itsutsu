@@ -120,11 +120,11 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
         <aside className="flex w-full flex-col gap-4 lg:w-80">
           {/*
             Always shown. Whether the file is there is settled by the New Game
-            Gate before anything ships, not by asking the filesystem while
-            serving the page — `public/` is not in the server bundle, so that
-            question answers false in production however many screenshots are
-            being served, and this figure would vanish from every rules page
-            there and nowhere else.
+            Gate before anything ships, so there is nothing to ask while
+            serving the page — and asking meant a filesystem read whose answer
+            depends on how the deployment lays out `public/` rather than on
+            anything here. It answers correctly on the live site today; it is
+            simply not a question worth a page depending on.
           */}
           <figure className={`${PANEL_CLASS} flex flex-col gap-2`}>
             {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
