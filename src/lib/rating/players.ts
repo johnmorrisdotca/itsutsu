@@ -13,7 +13,7 @@ import { outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
  */
 
 import { playerKey } from "./playerKey";
-import { isReservedKey } from "./reservedKeys";
+import { isRateable } from "./rateable";
 
 export { playerKey };
 
@@ -111,15 +111,9 @@ export async function recordResult(
 ): Promise<void> {
   const blackKey = playerKey(blackName);
   const whiteKey = playerKey(whiteName);
-  if (
-    blackKey === "" ||
-    whiteKey === "" ||
-    blackKey === whiteKey ||
-    isReservedKey(blackKey) ||
-    isReservedKey(whiteKey)
-  ) {
-    return;
-  }
+  // The rule is `rateable.ts`, so that the pages can say what it decided
+  // rather than leaving a player to work out why nothing happened.
+  if (!isRateable(blackName, whiteName)) return;
 
   /*
    * Whose record this is. A rating is earned by a person rather than by a

@@ -21,6 +21,7 @@ import { describeClock, describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { Button, Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { describeHandicap, describeRules } from "./rulesSummary";
 
 /**
@@ -33,10 +34,18 @@ export function SharedRules({
   game,
   token,
   seat,
+  refusal,
 }: {
   game: GameDetail;
   token: string | null;
   seat: string | null;
+  /**
+   * Why this game will move no rating, when it will not. Decided on the
+   * server — the rule reads the kept-record table — and said here rather than
+   * discovered afterwards, when the ladder has not moved and there is nothing
+   * left to ask.
+   */
+  refusal: RatingRefusal | null;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -137,6 +146,17 @@ export function SharedRules({
           ? `. ${game.timeoutPenalty === "game" ? GAME_COPY.penaltyGame : game.timeoutPenalty === "game-strict" ? GAME_COPY.penaltyStrict : GAME_COPY.penaltyTurn}`
           : ""}
       </p>
+      {refusal !== null ? (
+        <p
+          className="rounded-lg border border-ochre/60 bg-ochre-soft px-3 py-2 text-xs text-ink"
+          data-testid="shared-unrated-line"
+        >
+          <span className="font-semibold">{RATING_REFUSAL_DISPLAY[refusal].playing}</span>{" "}
+          <span className="font-mincho">{RATING_REFUSAL_DISPLAY[refusal].kanji}</span>
+          {". "}
+          {RATING_REFUSAL_DISPLAY[refusal].sentence}
+        </p>
+      ) : null}
 
       {editable ? (
         <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">

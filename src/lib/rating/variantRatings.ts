@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from "./elo";
 import { playerKey } from "./playerKey";
 import { memberIdForName } from "./players";
-import { isReservedKey } from "./reservedKeys";
+import { isRateable } from "./rateable";
 import { outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
 
 /**
@@ -68,15 +68,7 @@ export async function recordVariantResult(
 ): Promise<void> {
   const blackKey = playerKey(blackName);
   const whiteKey = playerKey(whiteName);
-  if (
-    blackKey === "" ||
-    whiteKey === "" ||
-    blackKey === whiteKey ||
-    isReservedKey(blackKey) ||
-    isReservedKey(whiteKey)
-  ) {
-    return;
-  }
+  if (!isRateable(blackName, whiteName)) return;
 
   // Anchored to the member's id where there is one, exactly as the global
   // ladder is: one standing belongs to one person, whatever they are called.
