@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     // Build output anywhere, including a sibling agent's worktree under .claude/.
     "**/.next/**",
     ".claude/**",
+    /*
+     * Whatever `vercel build` leaves behind. It is generated, gitignored and
+     * never linted on CI, which is why nobody saw it — but a hand-deploy run
+     * from this checkout drops it here, and the next `pnpm lint` then reports
+     * thousands of problems in minified output and buries the real ones.
+     */
+    ".vercel/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
