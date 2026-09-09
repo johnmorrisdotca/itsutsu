@@ -34,6 +34,27 @@ test.describe("rules and learning", () => {
     await expect(page).toHaveURL(/\/rules\/halma$/);
   });
 
+  test("a rules page shows the game being played, and the picture really loads", async ({ page }) => {
+    /*
+     * The New Game Gate requires a screenshot on every rules page, and nothing
+     * checked that one arrives. The page used to ask the filesystem whether
+     * the file was there while it was serving — which is answered by the
+     * project directory in development and by a server bundle that does not
+     * contain `public/` in production, so the figure would have been dropped
+     * from every rules page there and nowhere else.
+     *
+     * Asserting the element is not enough for that: a broken image is still an
+     * element. This asks the browser whether it has pixels.
+     */
+    await page.goto("/rules/gomoku");
+    const shot = page.getByRole("img", { name: /in progress$/ });
+    await expect(shot).toBeVisible();
+    await expect(async () => {
+      const width = await shot.evaluate((img) => (img as HTMLImageElement).naturalWidth);
+      expect(width).toBeGreaterThan(0);
+    }).toPass({ timeout: 10_000 });
+  });
+
   test("renju's rules page names the forbidden shapes and links a guide", async ({ page }) => {
     await page.goto("/rules/renju");
     await expect(page.getByTestId("rules-page")).toContainText("double three");
