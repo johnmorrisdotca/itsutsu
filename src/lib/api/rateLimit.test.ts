@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { RATE_LIMITS, checkRateLimit, overLimit, resetRateLimits } from "./rateLimit";
 
@@ -97,5 +97,64 @@ describe("overLimit", () => {
     // needs a different key still shares the one counter underneath.
     for (let i = 0; i < RATE_LIMITS.write.maxRequests; i += 1) overLimit(asking(), "mixed");
     expect(checkRateLimit("mixed:1.2.3.4", RATE_LIMITS.write).allowed).toBe(false);
+  });
+});
+
+/**
+ * The relief that lets the suite run, and the limits it must never touch.
+ *
+ * The end-to-end suite drives the whole site from one address and creates a
+ * game in most of its tests, so a limit meant for one household stopped it
+ * dead — a dozen tests failing with 429s that say nothing about the code.
+ * Relieving that is right; relieving the guessing paths would quietly turn
+ * off the thing gate.spec.ts exists to prove.
+ */
+describe("the limits outside production", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("keeps a strict limit strict, whatever the environment", () => {
+    // Redeeming a code is the guessing path; gate.spec.ts guesses eight and
+    // expects to be stopped. Relief here would silently end that.
+    for (const environment of ["development", "test", "production"]) {
+      vi.stubEnv("NODE_ENV", environment);
+      const key = `strict-${environment}-${Math.random()}`;
+      const config = { windowMs: 60_000, maxRequests: 5, strict: true } as const;
+      const seen = Array.from({ length: 8 }, () => checkRateLimit(key, config).allowed);
+      expect(seen.filter(Boolean).length, environment).toBe(5);
+    }
+  });
+
+  it("gives a cost limit more room only where an environment asks", () => {
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("RATE_LIMIT_RELIEF", "10");
+    const config = { windowMs: 60_000, maxRequests: 2 };
+    const key = `cost-${Math.random()}`;
+    // Well past the written limit, and still allowed.
+    for (let i = 0; i < 10; i += 1) {
+      expect(checkRateLimit(key, config).allowed, `request ${i + 1}`).toBe(true);
+    }
+  });
+
+  it("enforces the written limit when nothing asks for relief", () => {
+    // The default, and what every other test in this file relies on.
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("RATE_LIMIT_RELIEF", "");
+    const config = { windowMs: 60_000, maxRequests: 2 };
+    const key = `cost-plain-${Math.random()}`;
+    expect(checkRateLimit(key, config).allowed).toBe(true);
+    expect(checkRateLimit(key, config).allowed).toBe(true);
+    expect(checkRateLimit(key, config).allowed, "the third must be refused").toBe(false);
+  });
+
+  it("ignores relief in production, however loudly it is asked for", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("RATE_LIMIT_RELIEF", "1000");
+    const config = { windowMs: 60_000, maxRequests: 2 };
+    const key = `cost-prod-${Math.random()}`;
+    expect(checkRateLimit(key, config).allowed).toBe(true);
+    expect(checkRateLimit(key, config).allowed).toBe(true);
+    expect(checkRateLimit(key, config).allowed, "the third must be refused").toBe(false);
   });
 });

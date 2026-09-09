@@ -13,7 +13,43 @@ import { NextResponse } from "next/server";
 type RateLimitConfig = {
   windowMs: number;
   maxRequests: number;
+  /**
+   * A limit that exists to stop an attack rather than to bound a cost, and so
+   * is never relieved outside production. See `RELIEF`.
+   */
+  strict?: boolean;
 };
+
+/**
+ * How much more room the cost limits get, where an environment asks for it.
+ *
+ * The end-to-end suite drives the whole site from one address, sequentially,
+ * and creates a game in most of its three hundred tests — so it trips a limit
+ * meant for one household and fails a dozen of them with 429s that say
+ * nothing about the code. Three sessions have now lost time triaging those.
+ *
+ * Asked for rather than assumed. An earlier version of this relieved every
+ * environment that was not production, which changed the numbers under six
+ * tests that had every right to expect the ones written down; a limiter whose
+ * behaviour depends on something nobody set is a limiter nobody can reason
+ * about. `RATE_LIMIT_RELIEF` is set in .env, for the dev server the suite
+ * drives, and nowhere else.
+ *
+ * Two things it can never do. It is ignored outright in production, so a
+ * variable that escaped into the deployment would do nothing. And it never
+ * touches a `strict` limit — the ones that exist to stop somebody guessing
+ * rather than to bound a cost — because a suite that cannot exhaust the
+ * guessing path cannot prove it closes, and gate.spec.ts proves exactly that
+ * by guessing eight codes and expecting to be stopped at five.
+ */
+function allowanceFor(config: RateLimitConfig): number {
+  if (config.strict === true) return config.maxRequests;
+  if (process.env.NODE_ENV === "production") return config.maxRequests;
+
+  const relief = Number(process.env.RATE_LIMIT_RELIEF ?? "1");
+  if (!Number.isFinite(relief) || relief < 1) return config.maxRequests;
+  return config.maxRequests * Math.floor(relief);
+}
 
 type RateLimitRecord = {
   count: number;
@@ -59,23 +95,26 @@ export function checkRateLimit(
   const now = Date.now();
   cleanupStaleEntries(now);
 
+  // The number actually enforced here, which outside production is more
+  // generous than the number written down — see RELIEF.
+  const allowance = allowanceFor(config);
   const existing = rateLimitStore.get(key);
 
   if (!existing || now >= existing.resetTime) {
     rateLimitStore.set(key, { count: 1, resetTime: now + config.windowMs });
     return {
       allowed: true,
-      limit: config.maxRequests,
-      remaining: config.maxRequests - 1,
+      limit: allowance,
+      remaining: allowance - 1,
       resetSeconds: Math.ceil(config.windowMs / 1000),
     };
   }
 
   existing.count += 1;
   return {
-    allowed: existing.count <= config.maxRequests,
-    limit: config.maxRequests,
-    remaining: Math.max(0, config.maxRequests - existing.count),
+    allowed: existing.count <= allowance,
+    limit: allowance,
+    remaining: Math.max(0, allowance - existing.count),
     resetSeconds: Math.max(1, Math.ceil((existing.resetTime - now) / 1000)),
   };
 }
@@ -143,9 +182,9 @@ export const RATE_LIMITS = {
   /** Playing a stone in a shared game — generous, it is the hot path. */
   playMove: { windowMs: 60_000, maxRequests: 120 },
   /** Redeeming an invite code. Deliberately mean: this is the guessing path. */
-  redeemCode: { windowMs: 60_000, maxRequests: 5 },
+  redeemCode: { windowMs: 60_000, maxRequests: 5, strict: true },
   /** Signing in as the operator. Meaner still. */
-  adminSignIn: { windowMs: 60_000, maxRequests: 5 },
+  adminSignIn: { windowMs: 60_000, maxRequests: 5, strict: true },
   /** Reads, including autocomplete on every keystroke. */
   read: { windowMs: 60_000, maxRequests: 240 },
   /**
