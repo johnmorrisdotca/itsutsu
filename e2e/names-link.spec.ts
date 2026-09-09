@@ -69,13 +69,21 @@ test.describe("a person's name leads to their page", () => {
     await context.close();
   });
 
-  test("a seat nobody has taken is described, not linked", async ({ page, request }) => {
+  test("a seat nobody has taken is described, not linked", async ({ page, browser, baseURL }) => {
     // The two honest exceptions: an empty chair is not a person, so it stays
     // plain rather than pointing at a page that does not exist.
-    const made = await request.post("/api/games/live", {
+    //
+    // Posted by somebody else, since a seat is not shown back to whoever put
+    // it up — posting it as this reader would leave nothing on their board.
+    const other = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+      email: "names-link-poster@example.test",
+      name: "Names Link Poster",
+    });
+    const made = await other.request.post("/api/games/live", {
       data: { blackName: "", whiteName: "", size: 9, open: true },
     });
     expect(made.status()).toBe(201);
+    await other.close();
     await page.goto("/games");
     const open = page.getByTestId("open-game").first();
     if (await open.isVisible()) {

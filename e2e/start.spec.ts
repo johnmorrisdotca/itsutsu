@@ -29,8 +29,15 @@ test.describe("starting a game is one sentence", () => {
     await expect(page.getByTestId("start-game-hint")).toContainText("first on the board");
 
     await page.getByTestId("start-game-go").click();
-    // The seat link seats whoever posted it, and lands on the board.
-    await expect(page).toHaveURL(/\/games\/trap-three\/[a-z0-9-]+\/0$/);
+    /*
+     * Posting goes through the poster's own seat link, which claims the seat
+     * and sends them to the match's address. That address carries no move
+     * number — the older assertion required one, and only ever held on the
+     * other branch of this sentence, where sitting down with somebody lands
+     * on a numbered move. It passed all this time because a database littered
+     * with seats meant this test almost never took the posting branch.
+     */
+    await expect(page).toHaveURL(/\/games\/trap-three\/[a-z0-9-]+(\/0)?$/);
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
 
     // Tidy up after itself: an abandoned seat would meet the next run.

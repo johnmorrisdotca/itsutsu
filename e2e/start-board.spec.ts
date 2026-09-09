@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { memberContext } from "./members";
+
 /**
  * The board is chosen before the game exists.
  *
@@ -55,7 +57,7 @@ test.describe("choosing the board in the sentence", () => {
     expect(made.variant).toBe("freestyle");
   });
 
-  test("opens on the board somebody is already waiting on", async ({ page, request }) => {
+  test("opens on the board somebody is already waiting on", async ({ page, browser, baseURL }) => {
     /*
      * The regression this control could easily have caused. Every seat posted
      * before it existed is on the size the old code sent, so a control that
@@ -65,9 +67,15 @@ test.describe("choosing the board in the sentence", () => {
      * one click.
      */
     const stamp = Date.now().toString(36);
-    await request.post("/api/games/live", {
+    // Somebody, and not this reader: their own seat is not offered back.
+    const waiting = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+      email: "board-waiting@example.test",
+      name: "Board Waiting",
+    });
+    await waiting.request.post("/api/games/live", {
       data: { variant: "freestyle", size: 9, blackName: `Waiting ${stamp}`, moveTimeMs: 604800000, open: true },
     });
+    await waiting.close();
 
     await page.goto("/games");
     await page.getByTestId("start-game-variant").selectOption("freestyle");
@@ -79,13 +87,23 @@ test.describe("choosing the board in the sentence", () => {
     await expect(page.getByTestId("start-game").getByRole("button").last()).toContainText(/Sit down with/);
   });
 
-  test("only offers a posted seat that is on the board being asked for", async ({ page, request }) => {
+  test("only offers a posted seat that is on the board being asked for", async ({
+    page,
+    browser,
+    baseURL,
+  }) => {
     const stamp = Date.now().toString(36);
-    // Somebody posts a 9×9 seat, at a pace nothing else here is using.
-    const posted = await request.post("/api/games/live", {
+    // Somebody posts a 9×9 seat, at a pace nothing else here is using — and
+    // it has to be somebody, since a seat is not offered back to its poster.
+    const poster = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+      email: "board-poster@example.test",
+      name: "Board Poster",
+    });
+    const posted = await poster.request.post("/api/games/live", {
       data: { variant: "freestyle", size: 9, blackName: `Poster ${stamp}`, moveTimeMs: 604800000, open: true },
     });
     expect(posted.status()).toBe(201);
+    await poster.close();
 
     await page.goto("/games");
     await page.getByTestId("start-game-variant").selectOption("freestyle");

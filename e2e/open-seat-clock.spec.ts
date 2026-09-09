@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
+import { memberContext } from "./members";
+
 /**
  * A seat nobody is sitting in cannot be late.
  *
@@ -71,7 +73,11 @@ test.describe("a game still waiting for somebody to sit down", () => {
    * had expired on the first day — and the poster could take the game off
    * them before they had a second to move.
    */
-  test("starts the clock when somebody finally sits down, not when the seat was posted", async ({ request }) => {
+  test("starts the clock when somebody finally sits down, not when the seat was posted", async ({
+    request,
+    browser,
+    baseURL,
+  }) => {
     const started = await request.post("/api/games/live", {
       data: {
         blackName: "Poster",
@@ -99,8 +105,18 @@ test.describe("a game still waiting for somebody to sit down", () => {
         data: { lastMoveAt: posted, deadlineAt: new Date(posted.getTime() + 86_400_000) },
       });
 
-      const sat = await request.post(`/api/games/${game.id}/sit`);
+      /*
+       * Somebody else, because a seat posted for anyone is not one its poster
+       * may answer — and "somebody finally sits down" means somebody, not the
+       * person who put it up.
+       */
+      const newcomer = await memberContext(browser, baseURL ?? "http://localhost:6600", {
+        email: "seat-clock-newcomer@example.test",
+        name: "Seat Clock Newcomer",
+      });
+      const sat = await newcomer.request.post(`/api/games/${game.id}/sit`);
       expect(sat.status(), "the posted seat should still be free").toBe(200);
+      await newcomer.close();
 
       const after = await prisma.game.findUnique({
         where: { id: game.id },
