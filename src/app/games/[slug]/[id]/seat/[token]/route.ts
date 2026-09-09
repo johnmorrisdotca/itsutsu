@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { matchPath, slugFor } from "@/lib/gomoku/slugs";
+import { matchPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { seatForToken } from "@/lib/history/liveGame";
@@ -25,8 +25,15 @@ export async function GET(
 ) {
   const { slug, id, token } = await ctx.params;
   const game = await fetchGameDetail(id);
-  if (game === null || slugFor(game.variant) !== slug) {
-    return new NextResponse(null, { status: 404 });
+  if (game === null) return new NextResponse(null, { status: 404 });
+  /*
+   * A seat link is printed once and then lives in somebody's messages. If the
+   * rules were changed after it was sent — which they may be, right up to the
+   * first stone — the name in it is out of date, and refusing it would strand
+   * the person who was invited. The token still has to be this game's.
+   */
+  if (slugFor(game.variant) !== slug) {
+    return NextResponse.redirect(new URL(seatPath(game.variant, id, token), request.url));
   }
   const seat = await seatForToken(id, token);
   if (seat === null) return new NextResponse(null, { status: 404 });

@@ -50,7 +50,20 @@ async function origin(): Promise<string> {
  */
 export async function MatchPage({ slug, id, move }: { slug: string; id: string; move?: number }) {
   const game = await fetchGameDetail(id);
-  if (game === null || slugFor(game.variant) !== slug) notFound();
+  if (game === null) notFound();
+  /*
+   * The address names the game as well as the match, and either player may
+   * change the game until the first stone is down. So the slug in the address
+   * goes stale the moment somebody does — and this said "there is no page at
+   * this address" about the board they were sitting at, because it had just
+   * stopped being a game of that name.
+   *
+   * The id is the identity; the slug is how the address reads. A real game
+   * reached by the name it used to go under leads to the game, at the address
+   * it goes under now — which also mends every link anybody sent out before
+   * the rules were settled.
+   */
+  if (slugFor(game.variant) !== slug) redirect(matchPath(game.variant, id, move));
   if (move !== undefined && (!Number.isInteger(move) || move < 0 || move > game.moveCount)) {
     notFound();
   }
