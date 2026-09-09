@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * The board is chosen before the game exists.
@@ -72,9 +76,10 @@ test.describe("choosing the board in the sentence", () => {
       email: "board-waiting@example.test",
       name: "Board Waiting",
     });
-    await waiting.request.post("/api/games/live", {
+    const waited = await waiting.request.post("/api/games/live", {
       data: { variant: "freestyle", size: 9, blackName: `Waiting ${stamp}`, moveTimeMs: 604800000, open: true },
     });
+    tidyAway(((await waited.json()) as { id: string }).id);
     await waiting.close();
 
     await page.goto("/games");
@@ -103,6 +108,7 @@ test.describe("choosing the board in the sentence", () => {
       data: { variant: "freestyle", size: 9, blackName: `Poster ${stamp}`, moveTimeMs: 604800000, open: true },
     });
     expect(posted.status()).toBe(201);
+    tidyAway(((await posted.json()) as { id: string }).id);
     await poster.close();
 
     await page.goto("/games");

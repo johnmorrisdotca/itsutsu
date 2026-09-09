@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * The rules of a game already being played are said, not offered.
@@ -24,7 +28,9 @@ test.describe("the rules once play has begun", () => {
       },
     });
     expect(response.status()).toBe(201);
-    return response.json() as Promise<{ id: string; blackToken: string; whiteToken: string }>;
+    const game = (await response.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
+    return game;
   }
 
   test("offers a form before the first stone, and no statement", async ({ page, request }) => {

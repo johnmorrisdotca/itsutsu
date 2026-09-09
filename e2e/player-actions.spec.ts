@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * What you can do about somebody, on the page about them.
@@ -87,6 +91,7 @@ test.describe("the actions on a player's page", () => {
       data: { blackName: them.name, whiteName: `Other ${stamp}`, size: 9 },
     });
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
     await request.post(`/api/games/${game.id}/moves`, { data: { token: game.blackToken, row: 4, col: 4 } });
     await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
 

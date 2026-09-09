@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * A game somebody plays against themselves says so.
@@ -19,7 +23,9 @@ test.describe("a game against yourself", () => {
       data: { blackName: name, whiteName: `  ${name.toUpperCase()} `, size: 9 },
     });
     expect(started.status()).toBe(201);
-    return (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
+    return game;
   }
 
   test("warns while the game is still being played", async ({ page, request }) => {
@@ -55,6 +61,7 @@ test.describe("a game against yourself", () => {
       data: { blackName: `Kaya ${stamp}`, whiteName: `Sumi ${stamp}`, size: 9 },
     });
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
 
     await page.goto(`/games/gomoku/${game.id}`);
     await expect(page.getByTestId("shared-rules")).toBeVisible();

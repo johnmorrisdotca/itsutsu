@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * What the players said, kept with the game.
@@ -15,6 +19,7 @@ test.describe("the conversation in a finished game", () => {
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
 
     await request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
@@ -74,6 +79,7 @@ test.describe("the conversation in a finished game", () => {
       data: { blackName: `Chatty ${Date.now().toString(36)}`, whiteName: "Sumi", size: 9 },
     });
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
     await request.post(`/api/games/${game.id}/moves`, { data: { token: game.blackToken, row: 4, col: 4 } });
 
     const said = 35;
@@ -103,6 +109,7 @@ test.describe("the conversation in a finished game", () => {
       data: { blackName: `Quiet ${Date.now().toString(36)}`, whiteName: "Also quiet", size: 9 },
     });
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+    tidyAway(game.id);
     await request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
     });
