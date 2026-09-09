@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { removeGame } from "./tidy";
 
 /**
  * A seat posted by somebody you ignore is not on your board.
@@ -25,8 +26,7 @@ test.describe("a seat from somebody you ignore", () => {
       data: { blackName: other.name, variant: "trapThree", size: 5, open: true, moveTimeMs: null },
     });
     expect(posted.status(), await posted.text()).toBe(201);
-
-
+    const game = (await posted.json()) as { id: string };
 
     // Before ignoring them, their seat is on the board. By name, because that
     // is what the board prints — the id is only in the link.
@@ -46,8 +46,14 @@ test.describe("a seat from somebody you ignore", () => {
         "a seat from an ignored member was still on the board",
       ).toHaveCount(0);
     } finally {
-      // Put it back, so the next spec meets the account as it found it.
+      /*
+       * Put both back, so the next spec meets the site as it found it. The
+       * seat matters as much as the ignore: a Trap Three seat left standing
+       * here changed the sentence another spec was reading, and that is
+       * precisely the litter this suite has been tripping over all day.
+       */
       await page.request.delete("/api/ignores", { data: { email: other.email } });
+      await removeGame(game.id);
       await theirs.close();
     }
   });

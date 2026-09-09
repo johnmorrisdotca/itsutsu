@@ -42,3 +42,23 @@ export async function clearAbandonedSeats(): Promise<number> {
     await prisma.$disconnect();
   }
 }
+
+/**
+ * Takes one game away again, for a spec that made a seat it does not want to
+ * leave standing.
+ *
+ * A seat left behind changes what another spec reads in the sentence, which
+ * is how this suite spent a day failing on its own leavings. Same guard as
+ * everything else here: a database on this machine, or nothing at all.
+ */
+export async function removeGame(id: string): Promise<void> {
+  process.loadEnvFile(".env");
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+
+  const prisma = new PrismaClient();
+  try {
+    await prisma.game.deleteMany({ where: { id } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
