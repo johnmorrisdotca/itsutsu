@@ -17,6 +17,7 @@ export function ChallengeButton({
   label = "Challenge",
   strong = false,
   from,
+  rematch,
 }: {
   /** The member to challenge; omitted for a fork, which finds the other seat itself. */
   email?: string;
@@ -30,6 +31,12 @@ export function ChallengeButton({
   strong?: boolean;
   /** Start the new game from this position in another game. */
   from?: { id: string; move: number };
+  /**
+   * Play that finished game again: same board, same rules, same clock, same
+   * opponent, colours swapped. Everything is taken from the game rather than
+   * sent with the request, so there is nothing here but its id.
+   */
+  rematch?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -41,7 +48,7 @@ export function ChallengeButton({
     const response = await fetch("/api/games/live", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ challenge: email, challengeId: memberId, variant, from }),
+      body: JSON.stringify({ challenge: email, challengeId: memberId, variant, from, rematch }),
     });
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;

@@ -42,8 +42,11 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
   if (game.status === "active") redirect(matchPath(game.variant, game.id, move));
 
   /*
-   * A rematch is a challenge to the other seat's account, offered to whoever
-   * held a seat here and is signed in. Colours swap: the challenger takes black.
+   * A rematch is the same game again — same board, same rules, same clock,
+   * same opponent — asked for by naming the game rather than by addressing
+   * its other player. That is the whole difference: an address is what a
+   * computer player does not have, and a game against one is where wanting
+   * another immediately is the ordinary case rather than the rare one.
    */
   const [me, myId, members, applause] = await Promise.all([
     currentSession(),
@@ -95,7 +98,12 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
     memberId === null || memberId === undefined
       ? null
       : seatRows.find((row) => row.id === memberId)?.email ?? null;
-  const other = addressOf(otherId);
+  /*
+   * Which colour this reader would play next time, or null if there is no
+   * next time to offer — they did not play, or nobody was sitting opposite.
+   * Named on the button, because the colour changes.
+   */
+  const againIn = otherId === null ? null : myColour === "black" ? "white" : myColour === "white" ? "black" : null;
 
   /*
    * Ignoring somebody stopped at the final stone: their messages were hidden
@@ -133,7 +141,7 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
     <FiledMatch
       game={game}
       move={move ?? game.moveCount}
-      rematch={other}
+      againIn={againIn}
       seated={myColour !== null}
       hidden={hidden}
       verdict={seatColour === null ? undefined : verdict}
@@ -148,7 +156,7 @@ export async function FiledMatchPage({ slug, id, move }: { slug: string; id: str
 function FiledMatch({
   game,
   move,
-  rematch,
+  againIn,
   seated,
   hidden,
   verdict,
@@ -159,7 +167,8 @@ function FiledMatch({
 }: {
   game: GameDetail;
   move: number;
-  rematch: string | null;
+  /** The colour this reader takes in a rematch, or null when there is none to offer. */
+  againIn: "black" | "white" | null;
   seated: boolean;
   hidden: boolean;
   /** Colours whose player this reader has ignored. */
@@ -200,8 +209,22 @@ function FiledMatch({
           </p>
         </div>
         <span className="flex items-center gap-3">
-          {rematch !== null ? (
-            <ChallengeButton email={rematch} variant={game.variant} label="Rematch 再戦" strong />
+          {/*
+            Offered by the game rather than by an address, which is what makes
+            it work against a computer player — those have no address, and a
+            game against one is the case where wanting another straight away is
+            the normal thing rather than the rare one.
+
+            The colour is on the button because it changes. Black moves first
+            and that is worth something, so a rematch swaps; a swap nobody
+            mentions is the kind of thing somebody notices three moves in.
+          */}
+          {againIn !== null ? (
+            <ChallengeButton
+              rematch={game.id}
+              label={`Play again as ${againIn === "black" ? "Black 黒" : "White 白"}`}
+              strong
+            />
           ) : null}
           <ChallengeButton from={{ id: game.id, move }} label={`Play from move ${move} 分岐`} />
           {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}

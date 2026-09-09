@@ -29,7 +29,7 @@ import {
 } from "@/lib/history/gameSettingsSchema";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { seatCookieName } from "@/lib/history/seatCookie";
-import { parseHandicap } from "@/lib/history/gameSettingsSchema";
+import { opponentOf, seatsForRematch, settingsToCarry } from "@/lib/history/rematch";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
@@ -57,6 +57,15 @@ const liveGameSchema = z.object({
   opener: stoneSchema.default(STONES.black),
   /** Two people at one screen: one seat key for both chairs, kept in this browser. */
   hotSeat: z.boolean().default(false),
+  /**
+   * Play that game again: the same board, the same rules and the same clock,
+   * against the same person, with the colours swapped.
+   *
+   * Asked for explicitly rather than inferred from a fork at move nought,
+   * because the two want opposite things about the seats — a fork continues a
+   * position and the position belongs to the colours that were in it.
+   */
+  rematch: z.string().min(1).max(64).optional(),
   /** The seed the browser already dealt the board with; hot-seat games keep it. */
   seed: z.number().int().min(0).max(SEED_RANGE).optional(),
   /** The line length, where the game lets it vary. */
@@ -112,19 +121,61 @@ export async function POST(request: Request) {
     let source: Record<string, unknown> = {};
     let challenge = parsed.data.challenge;
     let hotSeat = parsed.data.hotSeat;
+    let rematchSeats: { blackMemberId: string; whiteMemberId: string; blackName: string; whiteName: string } | null =
+      null;
+
+    /*
+     * Playing that game again.
+     *
+     * Everything is taken from the game being replayed rather than from the
+     * request, because a rematch is the same game and anything the caller
+     * could send instead would be a way of it quietly not being one. The
+     * opponent is found by id: the old Rematch button was addressed to an
+     * email, so it could never be offered against a computer player, and that
+     * is the case it is most wanted for.
+     */
+    if (parsed.data.rematch !== undefined) {
+      const origin = await prisma.game.findUnique({ where: { id: parsed.data.rematch } });
+      if (origin === null) return NextResponse.json({ error: "No such game." }, { status: 404, headers: NO_STORE });
+      if (origin.status === "active") return badRequest("That game is still being played.");
+
+      const me = await currentSession();
+      const mineId = await currentMemberId();
+      if (!me?.email || mineId === null) {
+        return NextResponse.json({ error: "Sign in to play again." }, { status: 401, headers: NO_STORE });
+      }
+      const theirId = opponentOf(origin, mineId);
+      if (theirId === null) {
+        // Either they were not in it, or nobody was sitting opposite them.
+        return NextResponse.json({ error: "You did not play that game." }, { status: 403, headers: NO_STORE });
+      }
+      const them = await prisma.member.findUnique({ where: { id: theirId } });
+      if (them === null) return NextResponse.json({ error: "No such member." }, { status: 404, headers: NO_STORE });
+      if (them.email !== null && (await isIgnoring(them.email, me.email))) {
+        return NextResponse.json({ error: "That member is not taking games from you." }, { status: 403, headers: NO_STORE });
+      }
+      if (isBotId(them.id)) await ensureBotMembers();
+
+      source = settingsToCarry(origin);
+      rematchSeats = seatsForRematch(
+        origin,
+        { id: mineId, name: me.name || "" },
+        { id: them.id, name: them.name },
+      );
+      if (rematchSeats === null) return NextResponse.json({ error: "You did not play that game." }, { status: 403, headers: NO_STORE });
+    }
     if (parsed.data.from !== undefined) {
       const origin = await prisma.game.findUnique({ where: { id: parsed.data.from.id } });
       if (origin === null) return NextResponse.json({ error: "No such game." }, { status: 404, headers: NO_STORE });
       if (parsed.data.from.move > origin.moveCount) return badRequest("That game has fewer moves.");
+      /*
+       * The clock comes with it now. A fork used to carry the board and the
+       * rules and then start the new game on whatever pace the defaults
+       * happened to have, so a three-day-a-move game forked into a five-minute
+       * one. Same module as the rematch, because they want the same answer.
+       */
       source = {
-        size: origin.size,
-        variant: origin.variant,
-        obstacles: origin.obstacles,
-        opening: origin.opening,
-        handicap: parseHandicap(origin.handicap),
-        seed: origin.seed,
-        opener: origin.opener,
-        winLength: origin.winLength,
+        ...settingsToCarry(origin),
         blackName: origin.blackName,
         whiteName: origin.whiteName,
       };
@@ -155,8 +206,9 @@ export async function POST(request: Request) {
     const challengeId = parsed.data.challengeId;
     if (challengeId !== undefined && isBotId(challengeId)) await ensureBotMembers();
 
-    let seats: { blackMemberId?: string; whiteMemberId?: string; blackName?: string; whiteName?: string } = {};
-    if (challenge !== undefined || challengeId !== undefined) {
+    let seats: { blackMemberId?: string; whiteMemberId?: string; blackName?: string; whiteName?: string } =
+      rematchSeats ?? {};
+    if (rematchSeats === null && (challenge !== undefined || challengeId !== undefined)) {
       const me = await currentSession();
       if (!me?.email) return NextResponse.json({ error: "Sign in to challenge someone." }, { status: 401, headers: NO_STORE });
       const mineId = await currentMemberId();
@@ -184,7 +236,8 @@ export async function POST(request: Request) {
       };
     }
 
-    const { challenge: _challenge, challengeId: _challengeId, from, ...settings } = parsed.data;
+    const { challenge: _challenge, challengeId: _challengeId, rematch: _rematch, from, ...settings } = parsed.data;
+    void _rematch;
     void _challenge;
     void _challengeId;
     const merged = { ...settings, ...source, ...seats, hotSeat };
