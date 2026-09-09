@@ -20,7 +20,7 @@ import { fetchHereNow } from "@/lib/social/presence";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { fetchPlayedCounts } from "@/lib/history/gameCounts";
 import { recordPath } from "@/lib/gomoku/slugs";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
@@ -50,8 +50,9 @@ export default async function LobbyPage() {
    */
   sweepOpenSeats();
 
-  const [email, counts, seatGames, here] = await Promise.all([
+  const [email, mine, counts, seatGames, here] = await Promise.all([
     currentEmail(),
+    currentMemberId(),
     fetchPlayedCounts(),
     fetchOpenGames(claims.keys()),
     fetchHereNow(),
@@ -63,12 +64,25 @@ export default async function LobbyPage() {
   const playedIn = (games: readonly string[]) => games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0);
 
   /*
-   * A seat posted by somebody this member ignores is not on their board: the
-   * ignore list is a rule about who may reach you, and a seat is a way in.
+   * Two seats never belong on somebody's board: their own, and one posted by
+   * a member they ignore.
+   *
+   * Their own, because you cannot sit across from yourself, and the sentence
+   * above was offering to — "Sit down with John Morris" on John's own screen,
+   * against a seat he had posted himself. The server refuses that, so the
+   * offer was one the site would then reject, which is a worse thing to show
+   * somebody than no offer at all. It had been excluded by the browser's own
+   * seat cookies, and a cookie is the wrong key: a seat belongs to the
+   * account on every device, so posting on a phone and reading the board on a
+   * laptop offered it straight back.
+   *
+   * The ignore list is a rule about who may reach you, and a seat is a way in.
    */
   const openSeats = seatGames.filter((game) => {
     const poster = game.openSeat === STONES.black ? game.whiteMemberId : game.blackMemberId;
-    return poster === null || !ignored.has(poster);
+    if (poster === null) return true;
+    if (mine !== null && poster === mine) return false;
+    return !ignored.has(poster);
   });
 
   // The sentence reads the same lists the page below it shows.

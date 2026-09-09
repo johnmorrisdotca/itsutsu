@@ -62,6 +62,28 @@ test.describe("answering your own posted seat", () => {
     expect(sat.status()).toBe(409);
   });
 
+  test("does not offer the poster their own seat on the board", async ({ page }) => {
+    /*
+     * The half the refusal did not cover, and the one John saw: the server
+     * said no, and the lobby went on saying "Sit down with John Morris" on
+     * John's own screen, against a seat he had posted himself. An offer the
+     * site will then reject is worse than no offer.
+     *
+     * It had been excluded by the browser's seat cookies, which is the wrong
+     * key — a seat belongs to the account on every device — so a seat posted
+     * on a phone came straight back on a laptop.
+     */
+    await postSeat(page.request);
+    await page.goto("/games");
+    await expect(page.getByTestId("start-game-go")).toBeVisible();
+
+    const button = await page.getByTestId("start-game-go").textContent();
+    expect(button, "the lobby offered the poster their own seat").not.toContain("Sit down with");
+    // And it is not on the noticeboard below either.
+    const own = page.getByTestId("open-game").filter({ hasText: "Poster" });
+    await expect(own).toHaveCount(0);
+  });
+
   test("still lets somebody else answer it", async ({ page, browser }) => {
     // Otherwise the fix has closed the game rather than the hole.
     const game = await postSeat(page.request);

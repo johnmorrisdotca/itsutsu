@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { PLAYER_STATE } from "./support";
+
 /** A pace nothing else in the suite asks for, so these seats meet only each other. */
 const SEVEN_DAYS = String(7 * 24 * 60 * 60_000);
 
@@ -38,10 +40,17 @@ test.describe("starting a game is one sentence", () => {
     await expect(page).toHaveURL(/\/history\/trap-three\//, { timeout: 15_000 });
   });
 
-  test("sits down at once when somebody is already asking for the same", async ({ page, request }) => {
+  test("sits down at once when somebody is already asking for the same", async ({ page, browser }) => {
     const stamp = Date.now().toString(36);
     const poster = `Poster ${stamp}`;
-    const posted = await request.post("/api/games/live", {
+    /*
+     * Somebody else has to post it. A seat is not offered back to the account
+     * that posted it — you cannot sit across from yourself — and the request
+     * fixture is signed in as the same person this page is, so posting it
+     * that way tested nothing and now tests the opposite.
+     */
+    const theirs = await browser.newContext({ storageState: PLAYER_STATE });
+    const posted = await theirs.request.post("/api/games/live", {
       data: { blackName: poster, variant: "notakto", moveTimeMs: Number(SEVEN_DAYS), open: true },
     });
     expect(posted.status()).toBe(201);
@@ -58,6 +67,7 @@ test.describe("starting a game is one sentence", () => {
     await page.getByTestId("start-game-go").click();
     await expect(page).toHaveURL(/\/games\/notakto\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("turn-banner")).toBeVisible();
+    await theirs.close();
   });
 
   test("says what it will do for a game at this screen, and goes to the board", async ({ page }) => {
