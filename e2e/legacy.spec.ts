@@ -36,9 +36,17 @@ test.describe("a legacy record's games link to what they are", () => {
     await expect(goMoku).toBeVisible();
     await expect(goMoku).toHaveAttribute("href", "/rules/gomoku");
 
-    // Backgammon has no Itsutsu equivalent — it must render, but not as a link.
+    /*
+     * Backgammon has no Itsutsu equivalent. It must render, not as a link,
+     * and visibly as a game that is not ours — on a page where every other
+     * game name leads somewhere, bare words read as a link nobody made.
+     */
     await expect(detail.getByText("Backgammon", { exact: true })).toBeVisible();
     await expect(detail.getByRole("link", { name: "Backgammon", exact: true })).toHaveCount(0);
+    const notHere = detail.getByTestId("game-not-here").filter({ hasText: "Backgammon" }).first();
+    await expect(notHere, "a game we do not have looked like a link nobody made").toBeVisible();
+    await expect(notHere).toHaveClass(/italic/);
+    await expect(notHere).toHaveAttribute("title", /not a game played here/i);
   });
 
   test("a head-to-head record links each game the same way", async ({ page }) => {

@@ -24,10 +24,34 @@ import { KeptGames } from "./KeptGames";
  * for twenty years does not fit in a scroll.
  */
 
-/** A source site's game name, linked to the Itsutsu game it actually is, when there is one. */
+/**
+ * A source site's game name, linked to the Itsutsu game it actually is.
+ *
+ * And said plainly when it is not one. A kept record lists games this site
+ * does not have and never will — Backgammon, Nackgammon, Battleboats, most of
+ * that list — and those used to render as bare words, which on a page where
+ * every other game name is a link reads as a link somebody forgot to make.
+ * The rule "every game name leads to that game" is only honest if the
+ * exceptions look like exceptions.
+ *
+ * Greyed and italic rather than struck through or marked with a symbol: it is
+ * part of somebody's history and belongs on the page at full size. The title
+ * says why for anybody who wonders, and the name itself is never altered —
+ * Nackgammon is what they played, whatever we have.
+ */
 export function GameName({ name }: { name: string }) {
   const variant = aliasedVariant(name);
-  if (variant === null) return <>{name}</>;
+  if (variant === null) {
+    return (
+      <span
+        className="text-muted italic"
+        title="Not a game played here — part of this record from elsewhere."
+        data-testid="game-not-here"
+      >
+        {name}
+      </span>
+    );
+  }
   return (
     <Link href={rulesPath(variant)} className="underline-offset-2 hover:underline">
       {name}
