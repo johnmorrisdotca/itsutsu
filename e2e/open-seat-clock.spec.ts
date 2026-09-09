@@ -63,4 +63,65 @@ test.describe("a game still waiting for somebody to sit down", () => {
       await prisma.$disconnect();
     }
   });
+
+  /**
+   * Suppressing the clock while the seat is posted is only half of it. The
+   * deadline stamped when the game was created stays on the row, so a post
+   * left up for three days used to hand whoever answered it a deadline that
+   * had expired on the first day — and the poster could take the game off
+   * them before they had a second to move.
+   */
+  test("starts the clock when somebody finally sits down, not when the seat was posted", async ({ request }) => {
+    const started = await request.post("/api/games/live", {
+      data: {
+        blackName: "Poster",
+        whiteName: "",
+        size: 9,
+        moveTimeMs: 86_400_000,
+        open: true,
+      },
+    });
+    expect(started.status()).toBe(201);
+    const game = (await started.json()) as { id: string; blackToken: string };
+
+    const moved = await request.post(`/api/games/${game.id}/moves`, {
+      data: { token: game.blackToken, row: 4, col: 4 },
+    });
+    expect(moved.status()).toBe(201);
+
+    const prisma = new PrismaClient();
+    try {
+      // A post nobody answered for three days. The deadline written when the
+      // game was created ran out two days ago.
+      const posted = new Date(Date.now() - 3 * 86_400_000);
+      await prisma.game.update({
+        where: { id: game.id },
+        data: { lastMoveAt: posted, deadlineAt: new Date(posted.getTime() + 86_400_000) },
+      });
+
+      const sat = await request.post(`/api/games/${game.id}/sit`);
+      expect(sat.status(), "the posted seat should still be free").toBe(200);
+
+      const after = await prisma.game.findUnique({
+        where: { id: game.id },
+        select: { openSeat: true, deadlineAt: true },
+      });
+      expect(after?.openSeat, "the seat is taken").toBeNull();
+      expect(
+        after?.deadlineAt?.getTime() ?? 0,
+        "the newcomer's deadline should be ahead of them, not two days behind",
+      ).toBeGreaterThan(Date.now());
+
+      // So the poster cannot take the game off somebody who has only just sat
+      // down. Refused for being early — not for want of a clock, and not for
+      // its being the poster's own turn, either of which would prove nothing.
+      const claim = await request.post(`/api/games/${game.id}/timeout`, {
+        data: { token: game.blackToken },
+      });
+      expect(claim.status()).toBe(409);
+      expect((await claim.json()).reason).toBe("not-due");
+    } finally {
+      await prisma.$disconnect();
+    }
+  });
 });

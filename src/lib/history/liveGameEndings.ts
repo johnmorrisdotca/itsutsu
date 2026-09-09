@@ -37,8 +37,17 @@ export async function giveTime(id: string, token: string, now = new Date()): Pro
   if (state.status !== GAME_STATUS.playing) return { ok: false, reason: "finished" };
   if (state.toPlay === giver) return { ok: false, reason: "your-own-turn" };
 
+  const deadline = deadlineFor(row);
+  /*
+   * No clock running is the same answer as no clock at all. The only way to
+   * reach here without a deadline is a seat still posted for anyone to take,
+   * and defaulting to `now` would write a real deadline against the empty
+   * chair — starting, by way of a courtesy, the very clock a posted seat is
+   * not supposed to be running.
+   */
+  if (deadline === null) return { ok: false, reason: "no-clock" };
+
   const gift = courtesyMs(row.clockMode, row.moveTimeMs);
-  const deadline = deadlineFor(row) ?? now;
   const receiver = state.toPlay;
   await prisma.$transaction([
     prisma.timeGift.create({ data: { gameId: id, giver, givenMs: gift } }),
