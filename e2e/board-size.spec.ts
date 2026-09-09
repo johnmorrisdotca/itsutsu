@@ -22,12 +22,14 @@ test.describe("the board a game is played on", () => {
     await page.goto(`/games/reversi/${game.id}/seat/${game.blackToken}`);
     await page.waitForURL(/\/games\/reversi\//);
 
-    const sizes = page.getByTestId("shared-rules-size");
-    await expect(sizes).toBeVisible();
-    await expect(sizes.locator("option")).toHaveText(["8×8"]);
-    // And it shows the board the game is actually on, rather than the first
-    // option of a list its own size was missing from.
-    await expect(sizes).toHaveValue("8");
+    /*
+     * Nothing to choose, so nothing is asked: Reversi is 8×8 and the control
+     * is not there at all — the same rule the start sentence follows. What
+     * matters is that the panel is not offering boards this game does not
+     * have, and still says which one it is on.
+     */
+    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
+    await expect(page.getByTestId("shared-rules-line")).toContainText("8×8");
   });
 
   test("a game that takes any board still offers the full range", async ({ page, request }) => {

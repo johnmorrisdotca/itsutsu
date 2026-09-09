@@ -3,26 +3,19 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import {
-  boardSizesFor,
-  sizeForVariant,
-  OPENING_RULES,
-  RULE_VARIANT_LIST,
-} from "@/lib/gomoku/gomoku.constants";
+import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
-import {
-  MOVE_TIME_OPTIONS,
-  SHARED_OPENINGS,
-  TIMEOUT_PENALTIES,
-} from "@/lib/history/gameSettingsSchema";
-import { describeClock, describeMoveTime } from "@/lib/history/deadline";
+
+import { describeClock } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
-import { Button, Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
+import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
+import { RulesForm } from "./RulesForm";
+import type { RulesDraft } from "./rulesDraft";
 import { describeHandicap, describeRules } from "./rulesSummary";
 
 /**
@@ -55,45 +48,16 @@ export function SharedRules({
   const variant = game.variant as RuleVariant;
   const copy = RULE_VARIANT_DISPLAY[variant];
 
-  async function change(
-    next: Partial<{
-      size: number;
-      variant: string;
-      opening: string;
-      moveTimeMs: number | null;
-      timeoutPenalty: string;
-      clockMode: string;
-      rated: boolean;
-      allowResign: boolean;
-      open: boolean;
-    }>,
-  ) {
+  /*
+   * One settled set of rules, sent whole. The form has already brought the
+   * settings that cannot disagree into line — see `applyRulesChange` — so
+   * there is nothing to merge or correct here, and no second copy of those
+   * rules to fall out of step with the one on the setup screen.
+   */
+  async function change(merged: RulesDraft) {
     if (!editable) return;
     setSaving(true);
     setError(null);
-    const merged = {
-      size: game.size,
-      variant: game.variant,
-      obstacles: game.obstacles,
-      opening: game.opening,
-      moveTimeMs: game.moveTimeMs,
-      timeoutPenalty: game.timeoutPenalty,
-      clockMode: game.clockMode,
-      rated: game.rated,
-      allowResign: game.allowResign,
-      open: game.openSeat !== null,
-      ...next,
-    };
-    // A variant that does not offer the current opening drops back to free.
-    if (!SHARED_OPENINGS.includes(merged.opening as OpeningRule)) {
-      merged.opening = OPENING_RULES.free;
-    }
-    /*
-     * And a variant with a board of its own is played on it. Switching a
-     * 15×15 game to Reversi has to carry the board with it, or the request
-     * asks for a Reversi game on a board Reversi does not have.
-     */
-    merged.size = sizeForVariant(merged.variant as RuleVariant, merged.size);
     try {
       const response = await fetch(`/api/games/${game.id}/settings`, {
         method: "PUT",
@@ -170,112 +134,22 @@ export function SharedRules({
           <p className="text-xs text-muted">
             Either player may change the rules until the first stone is down.
           </p>
-          <Field label="Rules">
-            <Select
-              value={game.variant}
-              disabled={saving}
-              onChange={(event) => change({ variant: event.target.value })}
-              data-testid="shared-rules-variant"
-            >
-              {RULE_VARIANT_LIST.map((option) => (
-                <option key={option} value={option}>
-                  {RULE_VARIANT_DISPLAY[option].label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Board">
-            <Select
-              value={game.size}
-              disabled={saving}
-              onChange={(event) => change({ size: Number(event.target.value) })}
-              data-testid="shared-rules-size"
-            >
-              {/*
-                The boards this game has, not every board the site knows. A
-                Reversi game was offering 9×9, 13×13, 15×15 and 19×19 — none of
-                which Reversi is played on — and showing 9×9 as the current
-                board of an 8×8 game, because 8 was not in the list to match.
-              */}
-              {boardSizesFor(variant).map((option) => (
-                <option key={option} value={option}>
-                  {option}×{option}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Opening">
-            <Select
-              value={game.opening}
-              disabled={saving}
-              onChange={(event) => change({ opening: event.target.value })}
-            >
-              {SHARED_OPENINGS.map((option) => (
-                <option key={option} value={option}>
-                  {OPENING_DISPLAY[option].label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Toggle
-            label={GAME_COPY.allowResign.label}
-            hint={GAME_COPY.allowResignHint}
-            checked={game.allowResign}
-            onChange={(next) => change({ allowResign: next })}
+          <RulesForm
+            value={{
+              variant: game.variant,
+              size: game.size,
+              obstacles: game.obstacles,
+              opening: game.opening,
+              moveTimeMs: game.moveTimeMs,
+              timeoutPenalty: game.timeoutPenalty,
+              clockMode: game.clockMode,
+              rated: game.rated,
+              allowResign: game.allowResign,
+              open: game.openSeat !== null,
+            }}
+            onChange={(next) => void change(next)}
             disabled={saving}
           />
-          <Toggle
-            label={GAME_COPY.openSeat.label}
-            hint={GAME_COPY.openSeatHint}
-            checked={game.openSeat !== null}
-            onChange={(next) => change({ open: next })}
-            disabled={saving}
-          />
-          <Field label={GAME_COPY.moveTime.label}>
-            <Select
-              value={game.moveTimeMs === null ? "none" : String(game.moveTimeMs)}
-              disabled={saving}
-              onChange={(event) =>
-                change({ moveTimeMs: event.target.value === "none" ? null : Number(event.target.value) })
-              }
-              data-testid="shared-rules-move-time"
-            >
-              {MOVE_TIME_OPTIONS.map((option) => (
-                <option key={option ?? "none"} value={option === null ? "none" : option}>
-                  {describeMoveTime(option)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          {game.moveTimeMs !== null ? (
-            <Field label="Clock">
-              <Select value={game.clockMode} disabled={saving} onChange={(event) => change({ clockMode: event.target.value })} data-testid="shared-rules-clock-mode">
-                <option value="move">Time is per move</option>
-                <option value="game">Time is for the whole game</option>
-              </Select>
-            </Field>
-          ) : null}
-          <Field label="Ratings">
-            <Select value={game.rated ? "rated" : "friendly"} disabled={saving} onChange={(event) => change({ rated: event.target.value === "rated" })} data-testid="shared-rules-rated">
-              <option value="rated">Game will affect ratings</option>
-              <option value="friendly">Game will NOT affect ratings</option>
-            </Select>
-          </Field>
-          {game.moveTimeMs !== null && game.clockMode !== "game" ? (
-            <Field label={GAME_COPY.penalty.label}>
-              <Select
-                value={game.timeoutPenalty}
-                disabled={saving}
-                onChange={(event) => change({ timeoutPenalty: event.target.value })}
-              >
-                {TIMEOUT_PENALTIES.map((option) => (
-                  <option key={option} value={option}>
-                    {option === "turn" ? GAME_COPY.penaltyTurn : option === "game" ? GAME_COPY.penaltyGame : GAME_COPY.penaltyStrict}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          ) : null}
           {game.handicap.stone !== null ? (
             <Button
               onClick={() =>

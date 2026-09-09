@@ -10,8 +10,7 @@ import { HereNowPanel } from "@/components/mine/HereNowPanel";
 import { StartGame } from "@/components/mine/StartGame";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { GameGroup, Opponent, SeatOnBoard } from "@/components/mine/startGame.types";
-import { boardSizesFor, DEFAULT_BOARD_SIZE, STONES } from "@/lib/gomoku/gomoku.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { fetchOpenGames } from "@/lib/history/openGames";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -80,12 +79,12 @@ export default async function LobbyPage() {
       variant,
       label: RULE_VARIANT_DISPLAY[variant].label,
       kanji: RULE_VARIANT_DISPLAY[variant].kanji,
-      size: boardSizesFor(variant as RuleVariant)[0] ?? DEFAULT_BOARD_SIZE,
     })),
   }));
   const seats: SeatOnBoard[] = openSeats.map((game) => ({
     id: game.id,
     variant: game.variant,
+    size: game.size,
     moveTimeMs: game.moveTimeMs,
     who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || "Somebody",
   }));

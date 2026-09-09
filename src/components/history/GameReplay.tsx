@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import type { Appearance } from "@/components/board/board.types";
+import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
 import { Button } from "@/components/ui/Controls";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
@@ -70,12 +72,20 @@ export function GameReplay({
   game,
   initialIndex,
   basePath,
+  appearance = DEFAULT_APPEARANCE,
 }: {
   game: GameDetail;
   /** The move to open at; the final position when not given. */
   initialIndex?: number;
   /** The match's address; a position is that with the move number appended, and it is kept in the bar as the scrubber moves. */
   basePath?: string;
+  /**
+   * How this reader likes a board dressed. The record drew the default and
+   * nothing else, so somebody who had chosen a board played on it and then
+   * went back through the game on a board they had never asked for — and it
+   * is the record they will spend the most time looking at.
+   */
+  appearance?: Appearance;
 }) {
   const timeline = useMemo(() => replayTimeline(game), [game]);
   const [index, setIndex] = useState(
@@ -88,6 +98,18 @@ export function GameReplay({
     if (window.location.pathname !== next) window.history.replaceState(null, "", next);
   }, [basePath, index]);
   const [showNumbers, setShowNumbers] = useState(false);
+  /*
+   * The same way up this game was being read while it was played. It is the
+   * same game and the same reader, so somebody who turned the board round to
+   * play from the far corner finds it that way round in the record rather than
+   * having to turn it again.
+   */
+  const override = useSyncExternalStore(
+    subscribeTurned,
+    () => readTurned(game.id),
+    () => null,
+  );
+  const turned = turnedFor(override, appearance.flipped);
 
   // The arrow keys walk the record, and Home and End go to either end, unless a field has focus.
   const last = timeline.length - 1;
@@ -116,7 +138,12 @@ export function GameReplay({
         <div className="mx-auto w-full max-w-[min(100%,38rem)]">
           <Board
             state={state}
-            appearance={{ ...DEFAULT_APPEARANCE, showMoveNumbers: showNumbers }}
+            /*
+              The reader's own board, with the move numbers this panel's own
+              button decides — that toggle belongs to reading one game and
+              overrules the standing preference for as long as it is on.
+            */
+            appearance={{ ...appearance, flipped: turned, showMoveNumbers: showNumbers }}
             readOnly
             onPlay={() => {}}
           />
@@ -184,6 +211,9 @@ export function GameReplay({
           </Button>
         </div>
 
+        <Button onClick={() => writeTurned(game.id, !turned)} strong={turned} data-testid="turn-board">
+          {turned ? "Turn the board back" : "Turn the board round"}
+        </Button>
         <Button onClick={() => setShowNumbers(!showNumbers)} strong={showNumbers}>
           {showNumbers ? "Hide" : "Show"} move numbers
         </Button>

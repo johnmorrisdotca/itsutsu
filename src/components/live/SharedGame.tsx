@@ -6,19 +6,21 @@ import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
-import { cellAt, discCount, inMovePhase, pieceMoves, rulesFor, otherStone } from "@/lib/gomoku/engine";
+import { cellAt, inMovePhase, pieceMoves, rulesFor, otherStone } from "@/lib/gomoku/engine";
 import { PieceTray } from "@/components/game/PieceTray";
 import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
 import { Button } from "@/components/ui/Controls";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { usePieceHand } from "@/components/game/usePieceHand";
-import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { ResignButton } from "@/components/mine/ResignButton";
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { ReactionEmoji } from "@/lib/history/reactions.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
+import { TurnBanner } from "./TurnBanner";
 import { readQuiet, subscribeQuiet, writeQuiet } from "./quiet";
+import { settleFromRecord } from "@/lib/history/settle";
 import { useLiveGame } from "./useLiveGame";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
@@ -39,7 +41,7 @@ export function SharedGame({
   seat,
   basePath,
   opponent = null,
-  muted = null,
+  ignoring = [],
   appearance = DEFAULT_APPEARANCE,
 }: {
   initial: GameDetail;
@@ -55,8 +57,12 @@ export function SharedGame({
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
   opponent?: { name: string; country: string; awayUntil?: string | null } | null;
-  /** A seat whose messages the viewer has chosen not to see. */
-  muted?: Stone | null;
+  /**
+   * Colours whose player this reader has ignored — for a watcher as much as
+   * for a player, since the ignore list is about who may reach you and not
+   * about which chair you are in.
+   */
+  ignoring?: readonly Stone[];
 }) {
   const [error, setError] = useState<string | null>(null);
   // Mute this opponent's messages for this game only; remembered in this browser.
@@ -222,9 +228,19 @@ export function SharedGame({
     }
   }
 
-  // An ignored seat's messages are simply not shown; nor are the other seat's while this game is muted.
-  const silenced = muted !== null ? muted : quiet && seat !== null ? otherStone(seat) : null;
-  const shown = (detail.reactions ?? []).filter((reaction) => silenced === null || reaction.stone !== silenced);
+  /*
+   * Whose messages this reader does not see: any colour whose player they have
+   * ignored, plus the other seat while this one game is muted.
+   *
+   * A set rather than a single colour, and worked out for a watcher as well as
+   * for a player. It used to be one stone, decided only for somebody holding a
+   * seat, so a member who had ignored a player and then opened that player's
+   * game as a spectator saw everything they said. Ignoring somebody has to
+   * mean ignoring them everywhere or it means nothing.
+   */
+  const silenced = new Set<string>(ignoring);
+  if (quiet && seat !== null) silenced.add(otherStone(seat));
+  const shown = (detail.reactions ?? []).filter((reaction) => !silenced.has(reaction.stone));
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -384,7 +400,13 @@ export function SharedGame({
           onSend={react}
         />
       ) : null}
-      {seat !== null && muted === null ? (
+      {/*
+        Nothing to mute by hand when they are already ignored outright. Read
+        from the ignore list rather than from `silenced`, which also holds the
+        result of this very checkbox — testing that would make the box vanish
+        the moment it was ticked.
+      */}
+      {seat !== null && !ignoring.includes(otherStone(seat)) ? (
         <label className="flex items-center gap-2 text-xs text-muted">
           <input
             type="checkbox"
@@ -406,83 +428,6 @@ export function SharedGame({
       ) : null}
       <ReactionLog reactions={shown} />
     </div>
-  );
-}
-
-/**
- * A game the server has closed without a closing move — a resignation, or a
- * strict timeout — as the board should show it. The move list alone would
- * leave the loser's opponent looking at "Your move" until they reloaded.
- */
-function settleFromRecord(state: ReturnType<typeof replayGame>, detail: GameDetail): ReturnType<typeof replayGame> {
-  if (detail.status !== "finished" || state.status !== GAME_STATUS.playing) return state;
-  if (detail.result === "draw") return { ...state, status: GAME_STATUS.draw };
-  const winner = detail.winner === STONES.black || detail.winner === STONES.white ? detail.winner : null;
-  if (winner === null) return state;
-  return { ...state, status: GAME_STATUS.won, winner, winBy: null };
-}
-
-function TurnBanner({
-  state,
-  seat,
-  yourTurn,
-  finished,
-  finishedAt = null,
-}: {
-  state: ReturnType<typeof replayGame>;
-  seat: Stone | null;
-  yourTurn: boolean;
-  finished: boolean;
-  /** When the last move landed, once the game is over; shown so nobody has to go to the record for it. */
-  finishedAt?: string | null;
-}) {
-  if (finished) {
-    const won = state.winner;
-    return (
-      <p className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${TONE_CLASS.great}`} data-testid="turn-banner">
-        {won === null
-          ? "Draw. The board is full."
-          : state.winBy === WIN_REASONS.resign
-            ? `${STONE_DISPLAY[won].label} wins by resignation.`
-            : state.winBy === null
-              ? `${STONE_DISPLAY[won].label} wins. The game is over.`
-            : state.winBy === WIN_REASONS.count
-              ? `${STONE_DISPLAY[won].label} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}.`
-              : state.winBy === WIN_REASONS.camp
-                ? `${STONE_DISPLAY[won].label} wins: the far camp is full.`
-                : state.winBy === WIN_REASONS.connection
-                  ? `${STONE_DISPLAY[won].label} wins: their two sides are joined.`
-                : state.winBy === WIN_REASONS.blocked
-                  ? `${STONE_DISPLAY[won].label} wins: the other side has no move left.`
-                : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
-        {finishedAt !== null ? (
-          <span className="block text-xs font-normal opacity-80" data-testid="finished-at">
-            Finished {new Date(finishedAt).toLocaleString()}
-          </span>
-        ) : null}
-      </p>
-    );
-  }
-
-  if (seat === null) {
-    return (
-      <p className={`rounded-xl border px-3 py-2.5 text-sm ${TONE_CLASS.calm}`}>
-        You are watching. {STONE_DISPLAY[state.toPlay].label} to play.
-      </p>
-    );
-  }
-
-  return (
-    <p
-      className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${
-        yourTurn ? TONE_CLASS.good : TONE_CLASS.calm
-      }`}
-      data-testid="turn-banner"
-    >
-      {yourTurn
-        ? `Your move — you are ${STONE_DISPLAY[seat].label}.`
-        : `Waiting for ${STONE_DISPLAY[state.toPlay].label}…`}
-    </p>
   );
 }
 

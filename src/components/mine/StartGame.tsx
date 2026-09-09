@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Select } from "@/components/ui/Controls";
+import { DEFAULT_BOARD_SIZE, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { gamePath, matchPath, rulesPath, seatPath } from "@/lib/gomoku/slugs";
 import Link from "next/link";
@@ -34,6 +36,8 @@ const COMPUTER = "c:";
 export function StartGame({ families, seats, opponents, signedIn }: StartGameProps) {
   const router = useRouter();
   const [variant, setVariant] = useState(families[0]?.games[0]?.variant ?? "freestyle");
+  /** Null until somebody picks one: the sentence follows a waiting seat instead. */
+  const [size, setSize] = useState<number | null>(null);
   const [pace, setPace] = useState<string>(String(PACES[0].value));
   const [against, setAgainst] = useState<string>(signedIn ? ANYONE : SCREEN);
   const [busy, setBusy] = useState(false);
@@ -43,11 +47,43 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
     () => families.flatMap((family) => family.games).find((entry) => entry.variant === variant),
     [families, variant],
   );
+  const sizes = boardSizesFor(variant as RuleVariant);
   const moveTimeMs = pace === "" ? null : Number(pace);
   const paceLabel = PACES.find((option) => String(option.value) === pace)?.label ?? "";
-
   const forThisGame = seats.filter((seat) => seat.variant === variant);
-  const match = forThisGame.find((seat) => seat.moveTimeMs === moveTimeMs);
+
+  /*
+   * The board, which until somebody says otherwise is whichever one a person
+   * is already waiting on.
+   *
+   * That default is the whole reason this is not a plain piece of state. The
+   * sentence exists to get two people playing, and a control that started at
+   * some fixed size would quietly stop matching the seats on the board: every
+   * game posted before this control existed is on the size the old code sent,
+   * and somebody arriving at a default of 15×15 would post a second seat
+   * beside the 9×9 one already waiting rather than sit down at it. Following
+   * the waiting seat means the common case is still one click, and the
+   * uncommon one — wanting a particular board — is a choice somebody makes on
+   * purpose and keeps.
+   *
+   * A chosen board is held across a change of game rather than reset, and
+   * where the new game does not have it — every Reversi but the mini one is
+   * 8×8 — that game's own first board stands in, so the control can never
+   * show a size it is not offering.
+   */
+  const waiting = forThisGame.find((seat) => seat.moveTimeMs === moveTimeMs && sizes.includes(seat.size));
+  const board =
+    size !== null && sizes.includes(size)
+      ? size
+      : (waiting?.size ?? (sizes.includes(DEFAULT_BOARD_SIZE) ? DEFAULT_BOARD_SIZE : sizes[0]));
+
+  /*
+   * A seat worth taking is one that matches the whole sentence, board
+   * included. Matching on the game and the pace alone would seat somebody who
+   * asked for 19×19 at a 9×9 game and say nothing about it — the sentence has
+   * to describe what you are about to get, or the control is decoration.
+   */
+  const match = forThisGame.find((seat) => seat.moveTimeMs === moveTimeMs && seat.size === board);
   const named = against.startsWith("m:") ? opponents.find((one) => one.email === against.slice(2)) : undefined;
   const computer = against.startsWith(COMPUTER)
     ? BOT_MEMBER_LIST.find((bot) => bot.id === against.slice(COMPUTER.length))
@@ -103,10 +139,10 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           computer !== undefined
-            ? { variant, size: game?.size, moveTimeMs, challengeId: computer.id }
+            ? { variant, size: board, moveTimeMs, challengeId: computer.id }
             : named === undefined
-              ? { variant, size: game?.size, moveTimeMs, open: true }
-              : { variant, size: game?.size, moveTimeMs, challenge: named.email },
+              ? { variant, size: board, moveTimeMs, open: true }
+              : { variant, size: board, moveTimeMs, challenge: named.email },
         ),
       });
       if (!response.ok) {
@@ -157,6 +193,29 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
             </optgroup>
           ))}
         </Select>
+        {/*
+          Only where there is a choice to make. Most games are played on one
+          board and have nothing to ask, so a size control on every game would
+          be a word added to the sentence for a decision that does not exist —
+          and the sentence being one line is the whole of what it is for.
+        */}
+        {sizes.length > 1 ? (
+          <>
+            <Word>{START_COPY.on}</Word>
+            <Select
+              value={board}
+              onChange={(event) => setSize(Number(event.target.value))}
+              aria-label="Board"
+              data-testid="start-game-board"
+            >
+              {sizes.map((option) => (
+                <option key={option} value={option}>
+                  {option}×{option}
+                </option>
+              ))}
+            </Select>
+          </>
+        ) : null}
         <Word>{START_COPY.at}</Word>
         <Select value={pace} onChange={(event) => setPace(event.target.value)} aria-label="Pace" data-testid="start-game-pace">
           {PACES.map((option) => (
@@ -219,6 +278,16 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
         <p className="text-xs text-muted">
           <Link href={rulesPath(variant)} className="underline underline-offset-4">
             Rules for {game.label}
+          </Link>{" "}
+          ·{" "}
+          {/*
+            The way through for anything the sentence does not ask about — an
+            opening, a clock that is a budget, a friendly game. The sentence
+            stays one line for the common case; everything else settles the
+            rules in full before there is a game to change them on.
+          */}
+          <Link href={`${gamePath(variant)}/new`} className="underline underline-offset-4" data-testid="start-game-set-up">
+            set it up in full
           </Link>{" "}
           · or browse the families below.
         </p>
