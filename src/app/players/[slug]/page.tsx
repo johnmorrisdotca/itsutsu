@@ -11,6 +11,11 @@ import { Figures } from "@/components/ui/Figures";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMemberByName } from "@/lib/auth/members";
+import { currentSession } from "@/lib/auth/currentSession";
+import { PlayerActions } from "@/components/players/PlayerActions";
+import { ChallengeButton } from "@/components/mine/ChallengeButton";
+import { fetchBuddies } from "@/lib/social/buddies";
+import { ignoredEmails } from "@/lib/social/ignores";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
 import { findLegacyPlayer, findLinkedLegacies, foldedInto } from "@/lib/legacy/legacyPlayers.data";
@@ -81,6 +86,16 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
     looked.find((one) => one.player !== null || one.record.games > 0 || one.member !== null) ?? looked[0];
   const { key: decoded, player, record, member } = found;
   const gifts = await fetchTimeGiftRecord(decoded);
+  /*
+   * Who is reading, and what they have already said about this player. The
+   * directory knows both and the page a directory row leads to did not, which
+   * is why it could offer nothing.
+   */
+  const me = await currentSession();
+  const [myBuddies, myIgnored] = await Promise.all([
+    me?.email ? fetchBuddies(me.email) : Promise.resolve([]),
+    me?.email ? ignoredEmails(me.email) : Promise.resolve(new Set<string>()),
+  ]);
   // A member has a page from the day they join, before they have finished a
   // game: every list that prints their name links to it, and a link that
   // leads nowhere is worse than no page.
@@ -92,6 +107,16 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   if (!hasLiveData && linked.length > 0) {
     return <LegacyOwnPage legacy={linked[0]} view={view} base={`/players/${slug}`} here={{ record, gifts }} />;
   }
+
+  /*
+   * Whether there is anybody here to ask. A kept record has no address and no
+   * id — Chibi never signed in — so there is nobody on the other end of an
+   * invitation, and offering one would be offering a game that cannot happen.
+   */
+  const askable =
+    Boolean(me?.email) &&
+    me?.email !== member?.email &&
+    (member?.botTier ? member.id !== undefined : Boolean(member?.email));
 
   const tier = player === null ? null : TIER_DISPLAY[player.tier];
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
@@ -124,6 +149,15 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           />
         </h1>
         <Whereabouts city={member?.city} timeZone={member?.timeZone} />
+        <PlayerActions
+          email={member?.email ?? null}
+          memberId={member?.id}
+          isBuddy={myBuddies.some((buddy) => buddy.email === member?.email)}
+          ignoring={member?.email !== null && member?.email !== undefined && myIgnored.has(member.email)}
+          isComputer={Boolean(member?.botTier)}
+          isYou={me?.email !== undefined && me.email !== null && me.email === member?.email}
+          signedIn={Boolean(me?.email)}
+        />
         {/*
           What somebody says about themselves. Written into the profile form
           since the form existed and shown on no page at all — including the
@@ -188,7 +222,30 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label="Where this player's record was kept" />
 
       {shown === null ? (
-        <ItsutsuRecord record={record} gifts={gifts} />
+        <>
+          <ItsutsuRecord record={record} gifts={gifts} />
+          {/*
+            The second way in, and the one somebody actually uses. A profile is
+            read downwards — the figures, then the games, then how each went —
+            and by the end the buttons at the top are off the screen. The
+            decision is made here, so the offer belongs here; the elder sites
+            put an invitation beside a player's games for the same reason.
+
+            Only where there is a record to have read. On a page with no games
+            the question answers itself, and the two offers sit an inch apart —
+            one offer too many, about nothing.
+          */}
+          {askable && record.games > 0 ? (
+            <p className="flex flex-wrap items-center gap-3 text-sm text-muted" data-testid="ask-after-record">
+              Seen enough?{" "}
+              {member?.botTier ? (
+                <ChallengeButton memberId={member.id} label="Play 対局" />
+              ) : (
+                <ChallengeButton email={member?.email ?? ""} label="Ask for a game 対局を申し込む" />
+              )}
+            </p>
+          ) : null}
+        </>
       ) : (
         <LegacySourcePanel legacy={shown.legacy} source={shown.source} keptFor={shown.legacy.slug} />
       )}

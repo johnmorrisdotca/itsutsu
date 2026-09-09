@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { alwaysListed } from "./members";
+import { alwaysListed } from "./alwaysListed";
 
 /**
  * A listing ordered by who was seen last and cut at a limit drops whoever was
