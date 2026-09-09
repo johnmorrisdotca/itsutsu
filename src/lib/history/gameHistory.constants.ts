@@ -49,6 +49,17 @@ export const GAME_PAGE_SIZE_MIN = 1;
 export const GAME_PAGE_SIZE_MAX = 200;
 export const GAME_PAGE_MAX = 100_000;
 
+/**
+ * How many games the plain-text listing will print at once.
+ *
+ * The listing is one string held in memory, sent whole and pasted whole, so
+ * it needs a ceiling that is not "the table". Two thousand is far above any
+ * record this site is likely to hold and still a listing a person can open
+ * without their browser stopping to think; past it the text says how many it
+ * left out rather than quietly ending.
+ */
+export const RECORD_TEXT_MAX = 2000;
+
 /** Autocomplete over player names. */
 export const PLAYER_SUGGEST_LIMIT_DEFAULT = 10;
 export const PLAYER_SUGGEST_LIMIT_MAX = 25;

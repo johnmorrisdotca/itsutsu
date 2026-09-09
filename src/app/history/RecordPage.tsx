@@ -3,10 +3,12 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { HistoryFilters } from "@/components/history/HistoryFilters";
 import { HistoryTable } from "@/components/history/HistoryTable";
 import { Pager } from "@/components/history/Pager";
+import { RecordText } from "@/components/history/RecordText";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { recordPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { fetchGameHistoryPage } from "@/lib/history/gameHistory";
+import { fetchGameHistoryPage, fetchWholeRecord } from "@/lib/history/gameHistory";
+import { recordAsText } from "@/lib/history/recordText";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 
 type Params = Record<string, string | string[] | undefined>;
@@ -29,9 +31,11 @@ export async function RecordPage({ variant, params }: { variant?: RuleVariant; p
   if (variant !== undefined) url.searchParams.set("variant", variant);
 
   const query = toGameHistoryQuery(url);
-  const page = await fetchGameHistoryPage(
-    query ?? toGameHistoryQuery(new URL(`https://itsutsu.local${base}`))!,
-  );
+  const asked = query ?? toGameHistoryQuery(new URL(`https://itsutsu.local${base}`))!;
+  const [page, whole] = await Promise.all([
+    fetchGameHistoryPage(asked),
+    fetchWholeRecord(asked),
+  ]);
 
   const flat = Object.fromEntries(
     Object.entries(params).filter(
@@ -68,6 +72,20 @@ export async function RecordPage({ variant, params }: { variant?: RuleVariant; p
       ) : null}
       <HistoryTable items={page.items} />
       <Pager pagination={page.pagination} params={flat} basePath={base} />
+      {/*
+        Every game these filters select, not just the page being looked at:
+        somebody copying the record out wants the record, and the filters are
+        how they said which part of it they meant.
+      */}
+      <RecordText
+        text={recordAsText(whole.items, {
+          heading:
+            copy === null
+              ? "Itsutsu \u2014 every finished game"
+              : `Itsutsu \u2014 every finished game of ${copy.label}`,
+          total: whole.total,
+        })}
+      />
   </Page>
   );
 }

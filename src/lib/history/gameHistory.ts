@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
-import { GAME_RESULTS } from "./gameHistory.constants";
+import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
 import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
 import { REACTIONS_KEPT } from "./reactions.constants";
 import type {
@@ -157,6 +157,31 @@ export async function fetchGameHistoryPage(
       ),
     },
   };
+}
+
+/**
+ * Every game the filters select, not one page of them, for the plain-text
+ * listing. Ordered and filtered exactly as the page is, so the text and the
+ * page can never disagree about what "the record" means.
+ *
+ * Capped: the result becomes one string in memory and one string in somebody
+ * clipboard, and neither wants the whole table. The count comes back beside
+ * the rows so the text can say what it left out rather than just stopping.
+ */
+export async function fetchWholeRecord(
+  query: GameHistoryQuery,
+): Promise<{ items: GameSummary[]; total: number }> {
+  const where = buildGameWhere(query);
+  const [total, rows] = await Promise.all([
+    prisma.game.count({ where }),
+    prisma.game.findMany({
+      where,
+      orderBy: buildGameOrderBy(query),
+      take: RECORD_TEXT_MAX,
+      select: SUMMARY_SELECT,
+    }),
+  ]);
+  return { items: rows.map(toSummary), total };
 }
 
 export async function fetchGameDetail(id: string): Promise<GameDetail | null> {
