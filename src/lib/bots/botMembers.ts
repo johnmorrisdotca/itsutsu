@@ -32,11 +32,16 @@ export async function ensureBotMembers(now = Date.now()): Promise<void> {
        * that is earned or chosen: a rating is never written here.
        *
        * `unclaimableBecause` belongs in that first group and had been left
-       * out of it, which matters because it is the field `memberKind` reads
-       * to decide something is a robot — so a row written before that column
-       * existed went on being badged as an ordinary member for ever. Any
-       * value a release decides has to be in the update as well as the
-       * create, or the create is the only release that ever applies.
+       * out of it, so a row written before that column existed never gained
+       * it. It is not what decides the robot badge — `memberKind` reads
+       * `botTier` for that, and an earlier version of this comment said
+       * otherwise, wrongly. What it does decide is that a computer player's
+       * page cannot be claimed by a person, which is worth being true of
+       * rows written a year ago as well as rows written today.
+       *
+       * The rule under it is the point: any value a release decides has to
+       * be in the update as well as the create, or the create is the only
+       * release that ever applies.
        */
       update: {
         name: bot.name,
