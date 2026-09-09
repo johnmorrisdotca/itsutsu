@@ -23,22 +23,31 @@ test.describe("champions", () => {
 
     await page.getByTestId("champion-row-freestyle").getByRole("link", { name: /^Gomoku/ }).click();
     await expect(page).toHaveURL(/\/champions\/gomoku$/);
-    // The ladder shows the top fifty, so the winner is on it: a win puts you
-    // above everybody who has only lost. The loser may be below the cut on a
-    // busy board, which is why their standing is read from their own page
-    // rather than from a list that was never promised to hold everybody.
+    /*
+     * The ladder itself is only checked for having a ladder in it. Neither of
+     * these two is looked for by name here, and that is deliberate: the page
+     * shows the top fifty, everybody with one win ties on rating and on games
+     * played, and the order among a tie is the database's to choose. Asserting
+     * a particular newcomer is among the first fifty of them is asserting
+     * something the page never promised, and it passes or fails depending on
+     * how many games somebody happened to play before this test ran.
+     */
     const table = page.getByTestId("standings-table");
-    await expect(table).toContainText(black);
+    await expect(table.locator("tbody tr").first()).toBeVisible();
 
+    // What the ladder is built from, read where it is certain: each player's
+    // own page, which holds every standing they have.
     await page.goto(`/players/${playerSlug(white)}`);
-    const byVariant = page.getByTestId("player-by-variant");
-    await expect(byVariant).toContainText("Gomoku");
-    // Rated, and the loss is against their name.
-    await expect(page.getByTestId("player-record")).toContainText("1");
-    // A loss leaves you below where you started, and the winner above.
+    await expect(page.getByTestId("player-by-variant")).toContainText("Gomoku");
+    await expect(page.getByTestId("player-record")).toContainText("0W · 1L · 0D");
     const loserRating = Number((await page.getByTestId("player-rating").innerText()).trim());
+
     await page.goto(`/players/${playerSlug(black)}`);
+    await expect(page.getByTestId("player-by-variant")).toContainText("Gomoku");
+    await expect(page.getByTestId("player-record")).toContainText("1W · 0L · 0D");
     const winnerRating = Number((await page.getByTestId("player-rating").innerText()).trim());
+
+    // Winning a rated game puts you above the person you beat.
     expect(winnerRating).toBeGreaterThan(loserRating);
   });
 

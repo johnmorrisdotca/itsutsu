@@ -118,11 +118,22 @@ export async function recordVariantResult(
   ]);
 }
 
-/** The leaderboard for one game: best first, unrated standings included. */
+/**
+ * The leaderboard for one game: best first, unrated standings included.
+ *
+ * Tied on rating and on games played, the one who played most recently
+ * stands higher, and the name settles the rest — see `fetchLeaders`. Without
+ * a total order the same page shows a different fifty each time it is loaded.
+ */
 export async function fetchVariantLeaders(variant: string, limit: number): Promise<VariantStanding[]> {
   const rows = await prisma.playerVariantRating.findMany({
     where: { variant },
-    orderBy: [{ rating: "desc" }, { ratedGames: "desc" }],
+    orderBy: [
+      { rating: "desc" },
+      { ratedGames: "desc" },
+      { updatedAt: "desc" },
+      { key: "asc" },
+    ],
     take: limit,
   });
   return rows.map(toStanding);

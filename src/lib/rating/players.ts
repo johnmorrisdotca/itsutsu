@@ -46,11 +46,25 @@ export async function fetchPlayer(name: string): Promise<PlayerProfile | null> {
   return row === null ? null : toProfile(row);
 }
 
-/** The top players by rating, established ones first. */
+/**
+ * The top players by rating, established ones first.
+ *
+ * The order among equals is settled rather than left to the database. A new
+ * site is a wall of people on the same rating with the same number of games,
+ * and an order nobody chose is an order that changes between two loads of the
+ * same page: a name moves up, another disappears off the end, and nothing
+ * happened. Among a tie the one who played most recently stands higher, and
+ * the name settles the rest, so the list is the same list twice running.
+ */
 export async function fetchLeaders(limit: number): Promise<PlayerProfile[]> {
   const rows = await prisma.player.findMany({
     where: { ratedGames: { gt: 0 } },
-    orderBy: [{ rating: "desc" }, { ratedGames: "desc" }],
+    orderBy: [
+      { rating: "desc" },
+      { ratedGames: "desc" },
+      { updatedAt: "desc" },
+      { key: "asc" },
+    ],
     take: limit,
   });
   return rows.map(toProfile);

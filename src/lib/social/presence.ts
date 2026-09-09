@@ -7,6 +7,18 @@ export type Recency = "now" | "recent" | "today" | null;
 
 export const RECENCY_MINUTES = { now: 5, recent: 15, today: 30 } as const;
 
+/**
+ * How many of them the list will name.
+ *
+ * "Who is here" is a half hour's worth of members, which is a number this
+ * site has no control over: it grows with how well the site does and with
+ * anybody who opens a lot of tabs. A page that reads every row of a table
+ * whose size is somebody else's decision is the shape of thing that costs
+ * money by accident, so it stops at a hundred — far more names than anyone
+ * reads, and a ceiling either way.
+ */
+const HERE_MAX = 100;
+
 export function recencyOf(lastSeenAt: Date, now = new Date()): Recency {
   const minutes = (now.getTime() - lastSeenAt.getTime()) / 60_000;
   if (minutes <= RECENCY_MINUTES.now) return "now";
@@ -46,6 +58,7 @@ export async function fetchHereNow(now = new Date()): Promise<HereNow[]> {
   const rows = await prisma.member.findMany({
     where: { showOnline: true, lastSeenAt: { gte: since } },
     orderBy: { lastSeenAt: "desc" },
+    take: HERE_MAX,
     select: { email: true, name: true, picture: true, lastSeenAt: true, timeZone: true },
   });
   return rows.map((row) => ({

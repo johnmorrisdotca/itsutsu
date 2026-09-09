@@ -141,8 +141,42 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   /*
-   * Everything except Next's own assets and the image optimiser. Those carry
-   * no data of their own and blocking them only breaks the join page's styling.
+   * Everything except Next's own assets, the image optimiser, and the files
+   * this gate would let through anyway.
+   *
+   * The first two carry no data of their own, and blocking them only breaks
+   * the join page's styling. The rest are the artwork, the marks, the icons
+   * and the two text files a crawler asks for — every one of them already
+   * named in OPEN_PATHS above, so running the gate over them only ever ends
+   * in `NextResponse.next()`. We were paying an invocation per file to reach
+   * that conclusion: a single visit to the front page draws six of them.
+   *
+   * The list has to be written out rather than built from OPEN_PATHS, because
+   * Next reads this matcher without running the file. `proxy.test.ts` holds
+   * the two in step: anything exempted here has to be open there, or the
+   * exemption would be a hole in the gate rather than a saving.
    */
-  matcher: ["/((?!_next/static|_next/image).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|art/|brand/|favicon\\.ico|icon\\.svg|apple-icon\\.png|icon-192\\.png|icon-512\\.png|opengraph-image\\.png|manifest\\.webmanifest|robots\\.txt).*)",
+  ],
 };
+
+/**
+ * The paths the matcher above skips, spelled as addresses rather than as a
+ * regular expression, so a test can check each one is genuinely open.
+ */
+export const MATCHER_EXEMPT = [
+  "/art/games/caro.jpg",
+  "/brand/itsutsu-stones.svg",
+  "/favicon.ico",
+  "/icon.svg",
+  "/apple-icon.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/opengraph-image.png",
+  "/manifest.webmanifest",
+  "/robots.txt",
+] as const;
+
+/** Only for that test: whether the gate would have let a path through. */
+export const wouldBeOpen = isOpenPath;
