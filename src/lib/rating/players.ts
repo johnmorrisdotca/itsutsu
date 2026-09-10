@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from "./elo";
 import { recordVariantResult } from "./variantRatings";
 import { outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
+import { legaciesForName } from "@/lib/legacy/legacyPlayers.data";
+import { wholeRecord } from "@/lib/legacy/wholeRecord";
 
 /**
  * Players by name. There are no accounts, so a name is an identity: the
@@ -208,6 +210,21 @@ export type DirectoryEntry = {
   /** As they wrote it: free text, resolved to a flag where it can be. */
   country: string;
   profile: PlayerProfile | null;
+  /**
+   * What this name played before Itsutsu, from the kept records — nought for
+   * almost everybody, and thousands for the few it is not.
+   *
+   * Carried on the row because the list is where it was missing. A kept record
+   * had a member row so the site could list them at all, and the list read the
+   * Itsutsu columns alone, so Chibi appeared as somebody who had never played
+   * a game while his own page showed fourteen thousand. The two were reading
+   * different halves of the same person.
+   *
+   * Games only. There is no rating here and there will not be one: another
+   * site's is on another scale, against other players, and was never
+   * converted.
+   */
+  elsewhere: { wins: number; losses: number; draws: number };
   /** The engine that plays this member's seats, when a program does. */
   botTier: string | null;
   unclaimableBecause: string | null;
@@ -215,6 +232,19 @@ export type DirectoryEntry = {
 
 /** How long a member counts as new in the directory. */
 const NEW_FOR_DAYS = 14;
+
+/**
+ * What one name played before this site, summed across the sites it was kept
+ * from — nought where there is nothing kept, which is almost everybody.
+ *
+ * `wholeRecord` is handed an empty "here", so what comes back is the kept
+ * part alone: this site's own games are already counted from the rating rows
+ * and adding them here would count them twice.
+ */
+function keptRecordFor(name: string): { wins: number; losses: number; draws: number } {
+  const kept = wholeRecord(legaciesForName(name), { won: 0, lost: 0, drawn: 0 });
+  return { wins: kept.figures.won, losses: kept.figures.lost, draws: kept.figures.drawn };
+}
 
 /**
  * Everyone who has come in, most recently seen first, with the record their
@@ -257,6 +287,7 @@ async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[]> {
     isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
     country: member.country,
     profile: byKey.get(playerKey(member.name)) ?? null,
+    elsewhere: keptRecordFor(member.name),
     botTier: member.botTier,
     unclaimableBecause: member.unclaimableBecause,
   }));

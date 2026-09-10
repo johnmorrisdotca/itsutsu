@@ -12,6 +12,38 @@ import { seedMember } from "./members";
  * claim.
  */
 test.describe("a combined record", () => {
+  test("says the same number in the list as on the page", async ({ page }) => {
+    /*
+     * THE COMPLAINT, IN ONE ASSERTION. Chibi's own page said 14,606 and the
+     * members table beside it said 0, because the table counted games played
+     * HERE and he played none — fourteen thousand of them were on two sites
+     * that closed before this one opened.
+     *
+     * Read off the page rather than written down, so the two are held to each
+     * other rather than both to a number in a test that would go stale.
+     */
+    await page.goto("/players/chibi");
+    const onHisPage = (await page.getByTestId("whole-played").innerText()).replace(/[^0-9]/g, "");
+    expect(Number(onHisPage)).toBeGreaterThan(4000);
+
+    await page.goto("/players?who=everyone");
+    const row = page.getByTestId("directory").locator("tr", { hasText: "Chibi" });
+    await expect(row.getByTestId("record-played")).toHaveText(new RegExp(`^${Number(onHisPage).toLocaleString("en-US")}$`));
+  });
+
+  test("never lends somebody another site's rating", async ({ page }) => {
+    /*
+     * The one column that must not follow the count. Games and wins add up;
+     * ratings do not — another site's is on another scale, against other
+     * players, and was never converted. Chibi's dash is a fact about Chibi,
+     * who never played here, and not what a lifetime view looks like.
+     */
+    await page.goto("/players?who=everyone");
+    const row = page.getByTestId("directory").locator("tr", { hasText: "Chibi" });
+    await expect(row.getByTestId("record-played")).not.toHaveText("0");
+    await expect(row.getByTestId("directory-rating")).toHaveText("–");
+  });
+
   test("adds every site up, and shows which part came from where", async ({ page }) => {
     await page.goto("/players/chibi");
     const whole = page.getByTestId("whole-record");
