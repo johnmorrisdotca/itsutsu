@@ -2,7 +2,7 @@ import { expect, request as playwrightRequest, test as setup } from "@playwright
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { ADMIN_STATE, EMBED_TOKEN_FILE, PLAYER_STATE } from "./support";
-import { clearAbandonedSeats, clearSeededMembers, clearSuiteGames } from "./tidy";
+import { clearAbandonedSeats, clearAnonymousGames, clearSeededMembers, clearSuiteGames } from "./tidy";
 
 /**
  * Signs in once and saves the cookies for every other spec.
@@ -30,6 +30,8 @@ setup("clear what the last run left behind", async () => {
    */
   const games = await clearSuiteGames();
   if (games > 0) console.log(`Cleared ${games} game${games === 1 ? "" : "s"} a previous run left unfinished.`);
+  const loose = await clearAnonymousGames();
+  if (loose > 0) console.log(`Cleared ${loose} game${loose === 1 ? "" : "s"} with nobody on either seat.`);
   const gone = await clearAbandonedSeats();
   if (gone > 0) console.log(`Cleared ${gone} abandoned open seat${gone === 1 ? "" : "s"}.`);
   const members = await clearSeededMembers();

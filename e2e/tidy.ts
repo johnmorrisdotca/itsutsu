@@ -107,6 +107,56 @@ export async function clearSuiteGames(): Promise<number> {
 }
 
 /**
+ * How long an unattributable game must have sat before this counts it left
+ * behind. Six hours: far longer than a suite run, which takes ten minutes,
+ * and long enough to survive somebody stepping away from a hot-seat game.
+ */
+const ORPHAN_STALE_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * The games with nobody on either seat, which is the harder half.
+ *
+ * Six thousand of these had accumulated: hot-seat and anonymous games the
+ * suite starts under a typed-in name, with no account on either side. They
+ * cost nothing against the twenty-game cap, which only counts members, so
+ * they are untidiness rather than breakage — but they are most of the rows in
+ * a table every listing reads, and this file already knows what a database
+ * that has grown too big does to lobby specs.
+ *
+ * **Age is genuinely all there is here, and that is worth saying out loud.**
+ * Everything else in this file refuses to sweep on age alone, and it is right
+ * to: `clearSuiteGames` has the suite's own mark on a seat and uses age only
+ * as a second test. A game with no member on either seat carries no mark to
+ * find. So this is the one exception, taken deliberately rather than by
+ * forgetting the rule, and hedged the only two ways left — a database on this
+ * machine, and a window six hours wide.
+ *
+ * What that costs, stated rather than glossed: a hot-seat game somebody set
+ * up on their own dev site and left overnight will be taken. On a local
+ * database that is a fair price for a listing that reflects reality; on any
+ * other it would not be, which is why the guard above is not optional.
+ */
+export async function clearAnonymousGames(): Promise<number> {
+  process.loadEnvFile(".env");
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return 0;
+
+  const prisma = new PrismaClient();
+  try {
+    const gone = await prisma.game.deleteMany({
+      where: {
+        status: "active",
+        blackMemberId: null,
+        whiteMemberId: null,
+        updatedAt: { lt: new Date(Date.now() - ORPHAN_STALE_MS) },
+      },
+    });
+    return gone.count;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
  * Takes one game away again, for a spec that made a seat it does not want to
  * leave standing.
  *

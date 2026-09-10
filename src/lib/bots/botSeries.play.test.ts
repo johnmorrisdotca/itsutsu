@@ -136,6 +136,18 @@ for (const m of matches) {
       return;
     }
 
+    /*
+     * Which database this is about to write to, said out loud before it does.
+     *
+     * `.env` has silently overridden an inline DATABASE_URL in this project
+     * before, and the two databases are not close in size — so one count
+     * settles what no amount of reading the command line can. Printed rather
+     * than asserted: the runner cannot know which one was intended, only the
+     * person reading it can, and it stops on nothing.
+     */
+    const already = await prisma.game.count();
+    console.log(`\nConnected to a database holding ${already} game(s). If that is not the one you meant, stop now.\n`);
+
     await ensureBotMembers();
 
 /** Calls the same turn-taker a live request does, until the game stops being active. */
@@ -187,7 +199,20 @@ for (const m of matches) {
     // rather than on the board.
     moveTimeMs: null,
     open: false,
-    rated: false,
+    /*
+     * Rated, because an unrated game is invisible to the thing this exists to
+     * fill. `liveGame.ts` only calls `recordResult` when the row says rated,
+     * so a batch of these written unrated plays out perfectly, files perfectly
+     * — and leaves the computer ladder exactly as empty as it found it. That
+     * was the first version, and it would have been a hundred and sixty games
+     * played to prove nothing.
+     *
+     * Safe because the pool is decided by the seats, not by this flag: two
+     * programs make a computer-pool game, so these move the ratings the
+     * computer ladder reads and can never touch where a person stands among
+     * people. That separation is the whole point of `poolFor`.
+     */
+    rated: true,
     // Nobody can be late and nobody will resign, so these carry the ordinary
     // answers rather than anything special.
     timeoutPenalty: "turn",

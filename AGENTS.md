@@ -29,10 +29,40 @@ So the rule, and what it costs either way:
 - **Through the site**: identical rows, plus thousands of function invocations
   and their compute time. Nothing is gained.
 
-`src/lib/bots/botSeries.play.test.ts` is the shape to copy: it imports
-`createLiveGame` and `playBotTurns` and calls them in process, with Prisma
-pointed at whichever database is intended. It writes nothing unless it is asked
-twice — `BOT_GAMES=1` to report what it would do, `BOT_GAMES_RUN=1` to do it.
+`src/lib/bots/botSeries.play.test.ts` is the runner: it imports `createLiveGame`
+and `playBotTurns` and calls them in process, with Prisma pointed at whichever
+database is intended. **`pnpm bots:play`** invokes it, and it writes nothing
+unless asked twice.
+
+```sh
+pnpm bots:play                                     # report only, writes nothing
+BOT_GAMES_RUN=1 BOT_GAMES_ALL=1 BOT_GAMES_EACH=2 pnpm bots:play
+DATABASE_URL="postgres://…" BOT_GAMES_RUN=1 BOT_GAMES_ALL=1 BOT_GAMES_EACH=2 pnpm bots:play
+```
+
+`BOT_GAMES_ALL=1` is every ladder grade against every other across three
+unalike boards; without it, only the specialists at their own game.
+`BOT_GAMES_EACH=N` is games per pairing, and colours alternate, so an even
+number is the fair one. Two per pairing is 80 games and about eighty minutes on
+one machine — the grades that search are most of the cost.
+
+It is a `.test.ts` because `@/` aliases do not resolve in a plain node script,
+and it runs under vitest for the same reason. `--disable-console-intercept` is
+in the pnpm script deliberately: without it vitest swallows every line of the
+report, and a runner that prints nothing for eighty minutes is one nobody can
+tell apart from a hung one.
+
+**The games it writes are rated.** An unrated game is invisible to the ladder
+this exists to fill — `liveGame.ts` only calls `recordResult` when the row says
+rated — so an unrated batch plays out perfectly and leaves the ladder exactly as
+empty as it found it. That is safe because the pool is decided by the seats:
+two programs make a computer-pool game, which can never touch where a person
+stands among people.
+
+Before writing anything it prints how many games the database it reached already
+holds. Read that line. Production and a development database are not close in
+size, so it settles in one number what no amount of re-reading the command line
+can.
 
 Two things worth knowing before running one:
 
