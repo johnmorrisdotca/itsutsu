@@ -5,6 +5,7 @@ import {
   VARIANT_SPECS,
 } from "../gomoku.constants";
 import type { GameSettings, GameState } from "../gomoku.types";
+import { stalled } from "./noProgress";
 
 /**
  * Calling a long game a draw.
@@ -103,7 +104,18 @@ export function reachedDrawLimit(state: GameState): boolean {
  */
 export function settleDrawLimit(state: GameState): GameState {
   if (state.pendingTwist) return state;
-  return reachedDrawLimit(state) ? { ...state, status: GAME_STATUS.draw } : state;
+  /*
+   * Two length rules, settled in one place because every caller wants both.
+   *
+   * The agreed length is a share of the board and applies to games that fill
+   * it. `stalled` is for the games that do not fill anything — pieces that
+   * move rather than land — where the board is no bound at all and the game
+   * can run for ever. See `noProgress.ts` for why one rule cannot serve both.
+   */
+  if (reachedDrawLimit(state) || stalled(state)) {
+    return { ...state, status: GAME_STATUS.draw };
+  }
+  return state;
 }
 
 /**
