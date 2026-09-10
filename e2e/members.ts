@@ -2,6 +2,7 @@ import type { Browser, BrowserContext } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { makeMemberId } from "../src/lib/auth/memberId";
+import { playerKey } from "../src/lib/rating/playerKey";
 import {
   PLAYER_SESSION_DAYS,
   SESSION_COOKIE,
@@ -152,6 +153,55 @@ export async function seedComputerStandings(
         update: figures,
       });
     }
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * Gives one member a record in the computer pool on the GLOBAL ladder.
+ *
+ * Keyed off the account rather than off a name written into the test: a
+ * rating belongs to the name somebody plays under, that name comes from their
+ * member row, and a test that guessed it would pass or fail on whatever the
+ * last run happened to leave in that column.
+ *
+ * Returns the key it used, so the caller can clear exactly what it made.
+ */
+export async function seedComputerPlayerFor(
+  email: string,
+  figures: { rating: number; games: number; wins: number; losses: number },
+): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const member = await prisma.member.findUnique({ where: { email }, select: { name: true } });
+    if (member === null) throw new Error(`No member ${email} to give a record to.`);
+    const key = playerKey(member.name);
+    const wrote = {
+      name: member.name,
+      computerRating: figures.rating,
+      computerRatedGames: figures.games,
+      computerWins: figures.wins,
+      computerLosses: figures.losses,
+      computerDraws: 0,
+    };
+    await prisma.player.upsert({ where: { key }, create: { key, ...wrote }, update: wrote });
+    return key;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** Puts that row's computer columns back to nothing. */
+export async function clearComputerPlayer(key: string): Promise<void> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    await prisma.player.updateMany({
+      where: { key },
+      data: { computerRating: 1600, computerRatedGames: 0, computerWins: 0, computerLosses: 0, computerDraws: 0 },
+    });
   } finally {
     await prisma.$disconnect();
   }

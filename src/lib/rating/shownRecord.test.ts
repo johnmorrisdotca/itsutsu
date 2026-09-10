@@ -48,14 +48,21 @@ describe("what a list prints for somebody who plays in two pools", () => {
 
   it("prefers the ladder rating, because that is what the column has always meant", () => {
     const laddered = profile({ ratedGames: 12, rating: 1720, computer: { ratedGames: 9, rating: 1400 } });
-    expect(ratingShown(laddered)).toEqual({ rating: 1720, pool: RATING_POOLS.people });
+    expect(ratingShown(laddered)).toEqual({ rating: 1720, pool: RATING_POOLS.people, tier: "provisional" });
   });
 
   it("falls back to the computer rating, and says that is what it is", () => {
     const onlyBots = profile({ computer: { ratedGames: 5, rating: 1639 } });
     // Marked, not merely shown: an unlabelled number beside a name reads as a
     // place on the ladder, and this is not one.
-    expect(ratingShown(onlyBots)).toEqual({ rating: 1639, pool: RATING_POOLS.computer });
+    expect(ratingShown(onlyBots)).toEqual({
+      rating: 1639,
+      pool: RATING_POOLS.computer,
+      // The tier travels with the rating. Taking the number from one pool and
+      // the word from the other prints "1639, unrated" — the rating earned
+      // against programs, described by a ladder they have never played on.
+      tier: "provisional",
+    });
   });
 
   it("stays silent rather than printing a rating nobody has earned", () => {
