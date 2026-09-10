@@ -3,10 +3,11 @@ import Link from "next/link";
 
 import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
 import { GameName } from "@/components/games/GameName";
+import { RATING_POOLS } from "@/lib/rating/pools";
+import { gamesPlayed, ratingShown } from "@/lib/rating/shownRecord";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { fetchPlayer } from "@/lib/rating/players";
-import { RATING_POOLS } from "@/lib/rating/pools";
 import { fetchVariantStandings } from "@/lib/rating/variantRatings";
 import { playerPath } from "@/lib/rating/playerKey";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -27,6 +28,9 @@ export async function MyRecord({ name }: { name: string }) {
     name === "" ? Promise.resolve([]) : fetchVariantStandings(name),
     mineId === null ? Promise.resolve(EMPTY_VERDICTS) : fetchVerdictTally(mineId),
   ]);
+  // The same rule the members directory follows, from the same module, so the
+  // two cannot answer differently about the same person.
+  const shown = ratingShown(profile);
 
   // No heading of its own: the tab above says "Record 戦績", and a heading a
   // line under it said the same word and the same kanji again.
@@ -39,9 +43,35 @@ export async function MyRecord({ name }: { name: string }) {
         </p>
       ) : (
         <p className="text-sm">
-          Overall: <span className="font-mono tabular-nums">{profile.tier === "unrated" ? "–" : profile.rating}</span>{" "}
+          {/*
+            Both pools, on the page somebody opens to see their own record.
+            It showed the ladder columns alone, so a member whose games had all
+            been against the computer players read "– Unrated · No games yet"
+            about themselves while their own profile page showed five games and
+            a rating. That is this morning's directory bug, on the one page
+            where a person is looking for THEIR OWN figures.
+
+            The rating is not summed and never will be — it is the ladder
+            rating, or failing that the computer one, marked. The counts are
+            both pools, and they link to all their rated games rather than to
+            one pool's, because that is the number they are under.
+          */}
+          Overall:{" "}
+          <span className="font-mono tabular-nums" data-testid="my-rating">
+            {shown === null ? "–" : shown.rating}
+            {shown?.pool === RATING_POOLS.computer ? (
+              <span
+                className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
+                title="Earned against the computer players, which are rated in a pool of their own."
+                data-testid="my-rating-computer"
+              >
+                機械
+              </span>
+            ) : null}
+          </span>{" "}
           <span className="text-muted">
-            {TIER_DISPLAY[profile.tier].label} · <RecordLine record={profile} of={{ player: name, pool: "people", rated: "yes" }} />
+            {TIER_DISPLAY[shown?.tier ?? "unrated"].label} ·{" "}
+            <RecordLine record={gamesPlayed(profile)} of={{ player: name, rated: "yes" }} />
           </span>
         </p>
       )}

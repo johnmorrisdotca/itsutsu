@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { clearAllComputerStandings, clearComputerStandings, seedComputerStandings } from "./members";
+import {
+  clearAllComputerStandings,
+  clearComputerPlayer,
+  clearComputerStandings,
+  seedComputerPlayerFor,
+  seedComputerStandings,
+} from "./members";
 
 /**
  * The ladder for games against the computer players, per game.
@@ -164,6 +170,36 @@ test.describe("the ladder against the computer players", () => {
       }
     } finally {
       await clearComputerStandings("halma", KEYS);
+    }
+  });
+
+  test("shows a member their own record when all of it was against programs", async ({ page }) => {
+    /*
+     * THE SAME BUG ON THE PAGE WHERE IT MATTERS MOST. A member's own Record
+     * tab read the ladder columns alone, so somebody whose games had all been
+     * against the computer players opened it and read "– Unrated · No games
+     * yet" about themselves, while their public page showed a rating and a
+     * record. That is the members-directory fault of this morning, on the one
+     * page a person visits to find THEIR OWN figures.
+     *
+     * Seeded on the global Player row rather than a variant one, because that
+     * is what the overall line reads.
+     */
+    const key = await seedComputerPlayerFor("john@spxis.com", {
+      rating: 1639,
+      games: 5,
+      wins: 3,
+      losses: 2,
+    });
+    try {
+      await page.goto("/me?view=record");
+      const rating = page.getByTestId("my-rating");
+      await expect(rating).toContainText("1639");
+      // Marked, because an unlabelled number there reads as a ladder place.
+      await expect(page.getByTestId("my-rating-computer")).toBeVisible();
+      await expect(page.getByTestId("my-record")).not.toContainText("No games yet");
+    } finally {
+      await clearComputerPlayer(key);
     }
   });
 

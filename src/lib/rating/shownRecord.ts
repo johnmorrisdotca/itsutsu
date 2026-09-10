@@ -1,4 +1,4 @@
-import { tierFor } from "./elo";
+import { tierFor, type RatingTier } from "./elo";
 import { RATING_POOLS, type RatingPool } from "./pools";
 import type { PlayerProfile } from "./players";
 
@@ -53,11 +53,22 @@ export function gamesPlayed(profile: PlayerProfile | null): { wins: number; loss
  * exists. A rating nobody has earned yet is not a rating of 1500; it is
  * silence, and the column prints a dash.
  */
-export function ratingShown(profile: PlayerProfile | null): { rating: number; pool: RatingPool } | null {
+export function ratingShown(
+  profile: PlayerProfile | null,
+): { rating: number; pool: RatingPool; tier: RatingTier } | null {
   if (profile === null) return null;
-  if (profile.tier !== "unrated") return { rating: profile.rating, pool: RATING_POOLS.people };
-  if (tierFor(profile.computer.ratedGames) !== "unrated") {
-    return { rating: profile.computer.rating, pool: RATING_POOLS.computer };
+  if (profile.tier !== "unrated") {
+    return { rating: profile.rating, pool: RATING_POOLS.people, tier: profile.tier };
+  }
+  const computerTier = tierFor(profile.computer.ratedGames);
+  if (computerTier !== "unrated") {
+    /*
+     * The tier travels with the rating, because a page showing one beside the
+     * other must not take them from different pools. "1639, unrated" is what
+     * that mistake looks like: the number earned against programs, the word
+     * describing a ladder they have never played on.
+     */
+    return { rating: profile.computer.rating, pool: RATING_POOLS.computer, tier: computerTier };
   }
   return null;
 }
