@@ -64,6 +64,31 @@ test.describe("where somebody is", () => {
     await expect(page.getByTestId("whereabouts-time")).toContainText(/\d\d:\d\d/);
   });
 
+  test("is chosen from a list, and comes back as what was chosen", async ({ page }) => {
+    await page.goto("/me?view=profile");
+    const country = page.getByTestId("profile-country");
+    await expect(country).toBeVisible();
+
+    await country.selectOption("NZ");
+    await page.getByTestId("profile-form").getByRole("button", { name: /save/i }).click();
+
+    await page.reload();
+    await expect(page.getByTestId("profile-country")).toHaveValue("NZ");
+  });
+
+  test("keeps words it cannot place rather than quietly dropping them", async ({ page }) => {
+    /*
+     * THE CASE A SELECT GETS WRONG. Somebody whose stored country names no
+     * country this list knows must not have it erased the next time they save
+     * anything else on this form — a control that cannot represent a value
+     * must not answer for it, so their own words stay as an option of their
+     * own.
+     */
+    await seedMember({ email: "flags-keep@example.test", name: "Flags Keep", country: "Middle Earth" });
+    await page.goto("/players/flags-keep");
+    await expect(page.getByTestId("country-mark").first()).toContainText("Middle Earth");
+  });
+
   test("says nothing about whereabouts for somebody who has not said", async ({ page }) => {
     await seedMember({ email: "flags-quiet@example.test", name: "Flags Quiet" });
     await page.goto("/players/flags-quiet");

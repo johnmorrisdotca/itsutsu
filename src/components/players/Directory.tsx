@@ -15,6 +15,7 @@ import { fetchComputerPlayers, fetchDirectory, type DirectoryEntry } from "@/lib
 import { RATING_POOLS, gamesPlayed, ratingShown } from "@/lib/rating/wholeRecord";
 import { RecordCells, RecordHeadings } from "./PlayerRecord";
 import { filterDirectory, type DirectoryFilter } from "@/lib/rating/directoryFilter";
+import { SHOW_EVERYBODY_HREF } from "@/lib/rating/rememberedFilter";
 import { ignoredEmails } from "@/lib/social/ignores";
 import { playerPath } from "@/lib/rating/playerKey";
 import { recencyOf } from "@/lib/social/presence";
@@ -117,7 +118,13 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
             <tr className="border-t border-rule">
               <td colSpan={9} className="py-3 text-sm text-muted" data-testid="directory-empty">
                 Nobody here answers to all of that.{" "}
-                <Link href="/players" className="underline underline-offset-4" data-testid="directory-clear">
+                {/*
+                  Says "everyone" out loud rather than pointing at the bare
+                  page. Now that /players means "however I last asked for it",
+                  a way back that went there would re-apply the very narrowing
+                  it offers to remove, and appear to do nothing at all.
+                */}
+                <Link href={SHOW_EVERYBODY_HREF} className="underline underline-offset-4" data-testid="directory-clear">
                   Show everybody again
                 </Link>
                 .

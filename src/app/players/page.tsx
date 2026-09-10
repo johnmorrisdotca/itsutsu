@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
 import { Directory } from "@/components/players/Directory";
 import { HereNow } from "@/components/players/HereNow";
@@ -9,7 +11,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { fetchComputerPlayers } from "@/lib/rating/players";
-import { readDirectoryFilter } from "@/lib/rating/directoryFilter";
+import { DIRECTORY_FILTER_COOKIE, filterFor } from "@/lib/rating/rememberedFilter";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
 export const metadata = { title: "Players" };
@@ -52,6 +54,12 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
   const asked = await searchParams;
   const open = activeTab(TABS, asked.view);
   /*
+   * How this reader last asked for the directory to be narrowed, if they ever
+   * did. Read here and written by `proxy.ts`, because a Server Component can
+   * read a cookie while it renders and cannot set one.
+   */
+  const remembered = (await cookies()).get(DIRECTORY_FILTER_COOKIE)?.value;
+  /*
    * The computer players' rows are written the first time anybody needs them,
    * and until this page did nothing anybody visits needed them — so they
    * existed in the code and not in the database, and the directory that is
@@ -75,7 +83,7 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
 
         <Tabs tabs={TABS} active={open} base="/players" label="Which players to look at" />
 
-        {open === "members" ? <Directory filter={readDirectoryFilter(asked)} now={now} /> : null}
+        {open === "members" ? <Directory filter={filterFor(asked, remembered)} now={now} /> : null}
         {open === "ladder" ? <Ladder /> : null}
         {open === "computers" ? <ComputerTab /> : null}
         {open === "remembered" ? (

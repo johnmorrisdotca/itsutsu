@@ -3,6 +3,13 @@ import type { NextRequest } from "next/server";
 
 import { EMBED_TOKEN_PARAM, verifyEmbedToken } from "@/lib/auth/embedToken";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
+import { readDirectoryFilter } from "@/lib/rating/directoryFilter";
+import {
+  DIRECTORY_FILTER_COOKIE,
+  REMEMBER_FOR_SECONDS,
+  addressSaysFilter,
+  rememberedValue,
+} from "@/lib/rating/rememberedFilter";
 
 /**
  * The gate.
@@ -85,6 +92,39 @@ function isEmbed(pathname: string): boolean {
   );
 }
 
+/**
+ * Carry on — and, on the players page, keep the narrowing that was asked for.
+ *
+ * It is here because a Server Component can READ a cookie while it renders and
+ * cannot SET one, and this is the only thing on the way in that can. The
+ * alternative was turning the filter bar into a form, which would cost the
+ * addressable links the bar was built to be.
+ *
+ * It decides nothing. Which filter a page shows is `filterFor`'s answer and
+ * the page asks it directly; this only puts what was asked somewhere the next
+ * visit can find it. An address that says nothing about narrowing is left
+ * alone, because silence is exactly the case a remembered answer is for and
+ * must not overwrite one.
+ */
+function carryOn(request: NextRequest): NextResponse {
+  const response = NextResponse.next();
+  if (request.nextUrl.pathname !== "/players") return response;
+
+  const asked = Object.fromEntries(request.nextUrl.searchParams);
+  if (!addressSaysFilter(asked)) return response;
+
+  response.cookies.set({
+    name: DIRECTORY_FILTER_COOKIE,
+    value: rememberedValue(readDirectoryFilter(asked)),
+    // Sent back only on requests for the page it is about.
+    path: "/players",
+    maxAge: REMEMBER_FOR_SECONDS,
+    sameSite: "lax",
+    httpOnly: true,
+  });
+  return response;
+}
+
 export async function proxy(request: NextRequest) {
   /*
    * One host. Google sign-in is registered for the bare domain, and its state
@@ -99,7 +139,7 @@ export async function proxy(request: NextRequest) {
   }
   const { pathname } = request.nextUrl;
 
-  if (!gateIsConfigured() || isOpenPath(pathname)) return NextResponse.next();
+  if (!gateIsConfigured() || isOpenPath(pathname)) return carryOn(request);
 
   /*
    * An embed carries its own credential in the URL, because a cross-site
@@ -115,7 +155,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const session = await verifySession(request.cookies.get(SESSION_COOKIE)?.value);
-  if (session !== null) return NextResponse.next();
+  if (session !== null) return carryOn(request);
 
   /*
    * An API caller gets a status it can act on; a person gets the door. Sending

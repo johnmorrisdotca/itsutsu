@@ -7,6 +7,7 @@ import { Toggle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
 import { KEEP_FINISHED_DAYS, KEEP_FINISHED_DISPLAY } from "@/lib/history/retention";
 import { MOST_DAYS_OFF, WEEKDAYS, WEEKDAY_DISPLAY } from "@/lib/social/daysOff";
+import { allCountries, countryFrom } from "@/lib/social/countries";
 
 export type ProfileFields = {
   awayFrom: string;
@@ -49,6 +50,19 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
     setSaved(false);
   };
 
+  /*
+   * What the country select should be showing.
+   *
+   * The stored field is free text and has been since before there was a list,
+   * so it holds whatever people typed — a name, a code, or something this site
+   * cannot resolve at all. A resolvable value is shown as its country; an
+   * unresolvable one is kept as an option of its own words, so choosing
+   * nothing in particular never rewrites what somebody already said.
+   */
+  const known = countryFrom(fields.country);
+  const chosenCountry = known?.code ?? fields.country;
+  const unlisted = known === null && fields.country.trim() !== "" ? fields.country : null;
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -85,7 +99,32 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Country
-          <input value={fields.country} onChange={(e) => set({ country: e.target.value })} maxLength={60} className={INPUT_CLASS} />
+          {/*
+            A list rather than a box, now that there is a list to offer. It was
+            free text because the flag was read from whatever people wrote, and
+            reading what they wrote is still what happens to every row already
+            stored — but asking somebody to type a country when the site holds
+            all 249 of them is asking them to guess our spelling.
+
+            WHAT SOMEBODY ALREADY WROTE IS KEPT, even when it names no country
+            this list knows. A select that silently drops a value it cannot
+            represent would quietly edit somebody's profile for them the next
+            time they saved anything else on this form.
+          */}
+          <select
+            value={chosenCountry}
+            onChange={(e) => set({ country: e.target.value })}
+            className={INPUT_CLASS}
+            data-testid="profile-country"
+          >
+            <option value="">Not saying</option>
+            {unlisted === null ? null : <option value={unlisted}>{unlisted}</option>}
+            {allCountries().map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.flag} {country.name}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
       <label className="flex flex-col gap-1 text-sm">
