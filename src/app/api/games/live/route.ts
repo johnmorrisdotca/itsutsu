@@ -34,6 +34,7 @@ import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
 import { createLiveGame } from "@/lib/history/liveGame";
+import { memberOverActiveLimit } from "@/lib/history/activeGames";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
 import { playBotTurns } from "@/lib/bots/botPlay";
@@ -255,6 +256,22 @@ export async function POST(request: Request) {
     if (parsed.data.open === true && seats.blackMemberId === undefined) {
       const creator = await currentMemberId();
       if (creator !== null) seats = { ...seats, blackMemberId: creator };
+    }
+
+    /*
+     * Twenty boards is already more than anybody plays in a week here, so a
+     * twenty-first is not the game that was waiting on somebody — it is the
+     * site letting a pile grow past where a person can keep up with it.
+     * Checked against both seats a creation could fill, not only whoever is
+     * asking: a challenge hands the other side a new board too, and they can
+     * be just as buried as the challenger. Refused before the game is
+     * written, the same as every other reason this route says no.
+     */
+    const atTheLimit = await memberOverActiveLimit([seats.blackMemberId, seats.whiteMemberId]);
+    if (atTheLimit !== null) {
+      return unprocessable(
+        "Twenty games at once is the limit here — finish or resign one before starting another.",
+      );
     }
 
     const { challenge: _challenge, challengeId: _challengeId, rematch: _rematch, from, ...settings } = parsed.data;
