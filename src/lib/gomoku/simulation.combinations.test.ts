@@ -31,11 +31,6 @@ import { playOut } from "./simulation.support";
  * WHAT THIS DELIBERATELY DOES NOT DO, because the simulator cannot yet judge
  * it and a test that cannot judge its subject is worse than no test:
  *
- *  - It does not play a game through a swap opening. `playOut` places stones
- *    and never makes an opening CHOICE, so a game waiting for one looks to it
- *    like a game with no legal move. The openings that need a choice are
- *    checked here only as far as "the game is waiting for a choice, not for a
- *    stone", which is true and is what a player would see.
  *  - It does not lengthen a colour's line with `longerLine`. That one does not
  *    tighten what wins, it moves the target — and on the smallest board a game
  *    offers, needing six where the game is five is a game nobody can win,
@@ -122,10 +117,9 @@ describe("every game on every board it offers", () => {
 });
 
 describe("every game under every opening it offers", () => {
-  it("plays out under the openings a player walks through alone", () => {
+  it("plays out, decisions and all", () => {
     for (const variant of EVERY_VARIANT) {
       for (const [index, opening] of VARIANT_SPECS[variant].openings.entries()) {
-        if (!NO_CHOICE.includes(opening)) continue;
         const what = `${variant} with the ${opening} opening`;
         const final = playOut({ variant, opening }, seedFor(variant, opening, index + 7));
         expect(final.settings.opening, `${what}: played under another opening`).toBe(opening);
@@ -142,13 +136,31 @@ describe("every game under every opening it offers", () => {
     }
   });
 
-  it("starts every opening that has something to decide, waiting for the decision", () => {
+  it("makes a real decision in the openings that have one", () => {
     /*
-     * As far as this can be taken without a simulator that makes choices: a
-     * swap game must begin, must know which opening it is under, and must be
-     * asking for a decision rather than sitting there finished or waiting for
-     * a stone nobody may place.
+     * The swap protocols hand colours about before the first stone, and the
+     * decision is kept on the game — a stored game is its settings, its moves
+     * AND its decisions, or a replay takes a different turning. That a
+     * decision was recorded at all is what this asks; whether the replay
+     * follows it is asked by `replays` above, on the same games.
      */
+    let decided = 0;
+    for (const variant of EVERY_VARIANT) {
+      for (const [index, opening] of VARIANT_SPECS[variant].openings.entries()) {
+        if (NO_CHOICE.includes(opening)) continue;
+        const what = `${variant} with the ${opening} opening`;
+        const final = playOut({ variant, opening }, seedFor(variant, opening, index + 7));
+        expect(
+          final.opening.choices.length,
+          `${what}: played through a swap opening without ever choosing`,
+        ).toBeGreaterThan(0);
+        decided += 1;
+      }
+    }
+    expect(decided, "no game offers an opening with a decision in it").toBeGreaterThan(0);
+  });
+
+  it("starts every opening that has something to decide, with nothing decided yet", () => {
     let checked = 0;
     for (const variant of EVERY_VARIANT) {
       for (const opening of VARIANT_SPECS[variant].openings) {
