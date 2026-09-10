@@ -178,19 +178,36 @@ export async function fetchVariantStandings(name: string): Promise<VariantStandi
    * which pool that was. Nothing is invented and nothing is hidden.
    */
   const rows = await prisma.playerVariantRating.findMany({
+    /*
+     * Standings they have actually earned, for the same reason the ladder
+     * asks: a row exists from the first finished game in EITHER pool, so
+     * without this a player who has only played the computer at a game is
+     * shown holding a standing among people at the starting rating over no
+     * games at all.
+     *
+     * What that leaves out is that they play this game at all, which their
+     * computer-pool standing would say — a gap, and a smaller fault than a
+     * figure nobody earned. It wants its own decision rather than a filter.
+     */
     where: { key, OR: [{ ratedGames: { gt: 0 } }, { computerRatedGames: { gt: 0 } }] },
     orderBy: [{ ratedGames: "desc" }, { rating: "desc" }],
   });
-  return rows.map((row) =>
-    /*
-     * The people pool wins where there is one. Somebody who has played both
-     * is a player among people who has also played the programs, and their
-     * place among people is the answer to "how are you doing at this game" —
-     * their computer rating is a second, separate figure rather than a
-     * competing one.
-     */
-    toStanding(row, row.ratedGames > 0 ? RATING_POOLS.people : RATING_POOLS.computer),
-  );
+  /*
+   * One line per STANDING rather than per row, because a row can hold two.
+   * Somebody who has played both people and programs at a game has earned two
+   * separate things, and merging them is the one operation these pools exist
+   * to forbid — so they are two lines, and the page marks which is which.
+   *
+   * Filtering to standings actually earned was right and, on its own, made a
+   * player who had only played programs vanish from their own record entirely.
+   * That was the fix taking away a false line and leaving no line at all.
+   */
+  return rows.flatMap((row) => {
+    const held: VariantStanding[] = [];
+    if (row.ratedGames > 0) held.push(toStanding(row, RATING_POOLS.people));
+    if (row.computerRatedGames > 0) held.push(toStanding(row, RATING_POOLS.computer));
+    return held;
+  });
 }
 
 /** One game's standing at a glance: who leads it, and how much play is behind that. */

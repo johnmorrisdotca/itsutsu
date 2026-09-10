@@ -191,7 +191,7 @@ describe("a count of games is the way into those games", () => {
     "src/components/players/ItsutsuRecord.tsx": "no filter exists for games time was given in",
   };
 
-  it("nobody prints a bare number of games as words", () => {
+  it("nobody prints a number of games as words, with nothing behind it", () => {
     /*
      * Attribute positions and names are skipped, or the check is noise: a
      * `key={game.id} game={…}` is not a count, and "Every game of {page.title}
@@ -201,8 +201,14 @@ describe("a count of games is the way into those games", () => {
     const bare = /(.)\{([^{}]{1,40})\}\s*(played|games?)\b/g;
     const offenders = FILES.filter((file) =>
       [...file.source.matchAll(bare)].some(
-        ([, before, expression]) =>
-          before !== "=" && !/\.(title|name|label|id)\b/.test(expression),
+        (match) =>
+          match[1] !== "=" &&
+          !/\.(title|name|label|id)\b/.test(match[2]) &&
+          // Already the way into those games, however it was written. The rule
+          // is that the number leads somewhere, not that it goes through one
+          // component — the same reading the game-name check takes.
+          !clickable(file.source, match.index) &&
+          !inside("GameCount", file.source, match.index),
       ),
     )
       .map((file) => file.path)
@@ -242,6 +248,44 @@ describe("a count of games is the way into those games", () => {
       [...new Set(missing)],
       "pass of={{ player, variant, pool, rated }} — or of={{ here: false }} and say why",
     ).toEqual([]);
+  });
+
+  it("nobody prints a bare count of games", () => {
+    /*
+     * The shape the two checks above do not see, and the one that got past
+     * them: not a record and not a table, just a number that happens to BE a
+     * pile of games. The champions table printed its Games column — the rated
+     * games each ladder is made of — as plain text for as long as that page
+     * has existed, under a guard written to stop exactly this.
+     *
+     * `{x.games}` and `{x.played}` and nothing else, because those are the two
+     * names this codebase gives a count of games. `{x.games.map(` is an array
+     * of variants rather than a count, so the closing brace is part of the
+     * pattern.
+     */
+    const counts = /\{\s*[A-Za-z_$][\w$]*\.(games|played)\s*\}/g;
+    const offenders = FILES.filter((file) =>
+      [...file.source.matchAll(counts)].some(
+        (match) =>
+          !clickable(file.source, match.index) &&
+          !inside("GameCount", file.source, match.index) &&
+          // The exception this rule already had, for the same reason: an
+          // <option> cannot hold a link. A name suggestion says how many games
+          // that name has played so you can tell two people apart, and
+          // choosing it is what you do with it.
+          !inside("option", file.source, match.index),
+      ),
+    ).map((file) => file.path);
+
+    expect(offenders, "render it through GameCount, which links it to those games").toEqual([]);
+  });
+
+  it("finds bare counts at all, so the check above is not vacuous", () => {
+    // Every count going through GameCount is the goal; a pattern that stopped
+    // matching anything would make this rule pass by seeing nothing.
+    const counts = /\{\s*[A-Za-z_$][\w$]*\.(games|played)\s*\}/g;
+    const seen = FILES.filter((file) => [...file.source.matchAll(counts)].length > 0);
+    expect(seen.length, "the pattern still matches the shape it is about").toBeGreaterThan(0);
   });
 });
 

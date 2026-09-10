@@ -86,32 +86,36 @@ export async function MyRecord({ name }: { name: string }) {
           </thead>
           <tbody>
             {standings.map((row) => (
-              <tr key={row.variant} className="border-t border-rule">
+              <tr key={`${row.variant}-${row.pool}`} className="border-t border-rule">
                 {/* The standing rule: a game's name leads to that game. */}
                 <td className="py-1 pr-3">
                   <GameName variant={row.variant as RuleVariant} />
-                </td>
-                <td className="py-1 pr-3 font-mono tabular-nums">
-                  {row.tier === "unrated" ? "–" : row.rating}
                   {/*
-                    Which ladder this rating is from, marked where it is not
-                    the ordinary one. A game somebody has only ever played
-                    against the programs used to vanish from this table
-                    altogether — "you have never played Reversi" said to
-                    somebody who has played it twenty times. Saying which pool
-                    it came from is the honest middle: a rating earned against
-                    the computer is a real figure and is not a place among
-                    people, and the mark is the difference.
+                    A game somebody has played in both pools is two lines and
+                    not one added together — that sum is the thing the pools
+                    exist to forbid. So each line says which ladder it is, and
+                    without the mark the two would read as one game listed
+                    twice with different numbers against it.
                   */}
                   {row.pool === RATING_POOLS.computer ? (
                     <span
                       className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                      title="Against the computer players, which are rated in a pool of their own. No games against people at this yet."
+                      title="Against the computer players, rated in a pool of their own."
                       data-testid="standing-pool-computer"
                     >
                       機械
                     </span>
                   ) : null}
+                </td>
+                <td className="py-1 pr-3 font-mono tabular-nums">
+                  {/*
+                    One mark per row, beside the name. It said 機械 twice for a
+                    while — once here — which is not only noise: this copy read
+                    "no games against people at this yet", and that stopped
+                    being true the moment a game could hold two lines. A player
+                    with both now has a people line AND a computer line.
+                  */}
+                  {row.tier === "unrated" ? "–" : row.rating}
                 </td>
                 <RecordCells
                   record={row}

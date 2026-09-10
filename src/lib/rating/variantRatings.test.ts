@@ -41,10 +41,11 @@ describe("championsOf", () => {
     rating,
     ratedGames,
     tier: tierFor(ratedGames),
-    pool: RATING_POOLS.people,
     wins: 0,
     losses: 0,
     draws: 0,
+    // Champions are the ladder among people; the other pool has its own table.
+    pool: RATING_POOLS.people,
   });
 
   it("crowns the first standing seen for each game and tallies the rest", () => {

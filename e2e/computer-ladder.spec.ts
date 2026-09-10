@@ -6,6 +6,9 @@ import {
   clearComputerStandings,
   seedComputerPlayerFor,
   seedComputerStandings,
+  seedPeopleStanding,
+  seedComputerStandingFor,
+  clearPeopleStanding,
 } from "./members";
 
 /**
@@ -54,11 +57,25 @@ test.describe("the ladder against the computer players", () => {
      * gentle two are ahead. The page has to say so.
      */
     await page.goto("/champions/reversi");
-    const names = page.getByTestId("computer-standings-table").locator("tbody tr td:nth-child(2)");
-    await expect(names.nth(0)).toContainText("Kyu");
-    await expect(names.nth(1)).toContainText("Dan");
-    await expect(names.nth(2)).toContainText("Meijin");
-    await expect(names.nth(3)).toContainText("Guoshou");
+    const names = await page
+      .getByTestId("computer-standings-table")
+      .locator("tbody tr td:nth-child(2)")
+      .allInnerTexts();
+    /*
+     * Their ORDER relative to each other, not their row numbers. This asserted
+     * positions nought to three and broke the moment one unrelated row joined
+     * the table — which on a shared database is a matter of when somebody else
+     * plays, not of whether this page is right. The claim was never "Kyu is
+     * first"; it was "the gentle two finish above the strong two".
+     */
+    const at = (who: string) => names.findIndex((one) => one.includes(who));
+    for (const who of ["Kyu", "Dan", "Meijin", "Guoshou"]) {
+      expect(at(who), `${who} is on the ladder`).toBeGreaterThanOrEqual(0);
+    }
+    expect(at("Kyu"), "Kyu above Meijin").toBeLessThan(at("Meijin"));
+    expect(at("Kyu"), "Kyu above Guoshou").toBeLessThan(at("Guoshou"));
+    expect(at("Dan"), "Dan above Meijin").toBeLessThan(at("Meijin"));
+    expect(at("Dan"), "Dan above Guoshou").toBeLessThan(at("Guoshou"));
   });
 
   test("says how settled each standing is, rather than presenting a dozen games as a verdict", async ({ page }) => {
@@ -120,7 +137,13 @@ test.describe("the ladder against the computer players", () => {
      * test that passes by finding nothing — the thing this suite has been
      * bitten by before.
      */
-    expect(checked, "counts actually inspected").toBe(expected);
+    /*
+     * At least what the seeded rows ought to offer. It was an equality, and
+     * that broke as soon as one unrelated row joined the table — the claim is
+     * that every link is right and that enough of them were looked at, not
+     * that this page has exactly these players on it.
+     */
+    expect(checked, "counts actually inspected").toBeGreaterThanOrEqual(expected);
   });
 
   test("keeps a computer-only record off the ladder of people entirely", async ({ page }) => {
@@ -200,6 +223,72 @@ test.describe("the ladder against the computer players", () => {
       await expect(page.getByTestId("my-record")).not.toContainText("No games yet");
     } finally {
       await clearComputerPlayer(key);
+    }
+  });
+
+  test("makes the champions page's game count a way into those games", async ({ page }) => {
+    /*
+     * The standing rule, which John has now raised three times: a count of
+     * games leads to those games. The champions table was printing the one
+     * number on the page that is literally a pile of games as plain text.
+     *
+     * Needs a ladder among PEOPLE to have a count at all, so this seeds one —
+     * the computer-pool rows elsewhere in this file deliberately give that
+     * table nothing.
+     */
+    const key = await seedPeopleStanding("halma", {
+      key: "ladder tester",
+      name: "Ladder Tester",
+      rating: 1700,
+      games: 6,
+      wins: 4,
+      losses: 2,
+    });
+    try {
+      await page.goto("/champions");
+      const count = page.getByTestId("champion-games").first();
+      await expect(count).toBeVisible();
+      const href = (await count.locator("xpath=ancestor-or-self::a").first().getAttribute("href")) ?? "";
+      expect(href, "the count is a link").not.toBe("");
+      expect(href).toContain("rated=yes");
+      expect(href).toContain("pool=people");
+    } finally {
+      await clearPeopleStanding("halma", key);
+    }
+  });
+
+  test("lists a game somebody has only played programs at, marked as that", async ({ page }) => {
+    /*
+     * CLOSING A GAP I MADE. Filtering the per-game table to standings actually
+     * earned took a computer-only player from one FALSE line to no line at
+     * all, which is a page going silent about somebody who plays here every
+     * day. John's ruling is the same as for their overall figure: show it, and
+     * mark it 機械.
+     *
+     * The mark is what stops two lines for one game reading as the same game
+     * listed twice with different numbers — and adding the two together is the
+     * one operation the pools exist to forbid.
+     */
+    const key = await seedComputerStandingFor("john@spxis.com", "reversi", {
+      rating: 1639,
+      games: 5,
+      wins: 3,
+      losses: 2,
+    });
+    try {
+      await page.goto("/me?view=record");
+      const table = page.getByTestId("me-standings");
+      await expect(table).toBeVisible();
+      const row = table.locator("tr", { hasText: "Reversi" }).first();
+      await expect(row.getByTestId("standing-pool-computer")).toBeVisible();
+      await expect(row).toContainText("1639");
+
+      // And its counts lead to that pool's games, not to a wider set.
+      const href = (await row.locator("a[href*='pool=']").first().getAttribute("href")) ?? "";
+      expect(href).toContain("pool=computer");
+      expect(href).toContain("rated=yes");
+    } finally {
+      await clearPeopleStanding("reversi", key);
     }
   });
 

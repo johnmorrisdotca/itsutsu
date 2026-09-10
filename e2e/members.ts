@@ -243,3 +243,81 @@ export async function clearComputerStandings(variant: string, keys: readonly str
     await prisma.$disconnect();
   }
 }
+
+/**
+ * A standing among PEOPLE at one game, for the cases that need a ladder to
+ * exist at all. The computer-pool helpers above deliberately leave that table
+ * empty, which is right for what they test and useless for what this tests.
+ */
+export async function seedPeopleStanding(
+  variant: string,
+  standing: { key: string; name: string; rating: number; games: number; wins: number; losses: number },
+): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const figures = {
+      name: standing.name,
+      rating: standing.rating,
+      ratedGames: standing.games,
+      wins: standing.wins,
+      losses: standing.losses,
+      draws: 0,
+    };
+    await prisma.playerVariantRating.upsert({
+      where: { key_variant: { key: standing.key, variant } },
+      create: { key: standing.key, variant, ...figures },
+      update: figures,
+    });
+    return standing.key;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** And takes it away again. */
+export async function clearPeopleStanding(variant: string, key: string): Promise<void> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    await prisma.playerVariantRating.deleteMany({ where: { variant, key } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * One member's standing at one game, in the computer pool, keyed off their
+ * account for the reason `seedComputerPlayerFor` is: the key is the name they
+ * play under, and a test that wrote its own would be testing a row nobody's
+ * page reads.
+ */
+export async function seedComputerStandingFor(
+  email: string,
+  variant: string,
+  figures: { rating: number; games: number; wins: number; losses: number },
+): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const member = await prisma.member.findUnique({ where: { email }, select: { name: true } });
+    if (member === null) throw new Error(`No member ${email} to give a standing to.`);
+    const key = playerKey(member.name);
+    const wrote = {
+      name: member.name,
+      computerRating: figures.rating,
+      computerRatedGames: figures.games,
+      computerWins: figures.wins,
+      computerLosses: figures.losses,
+      computerDraws: 0,
+    };
+    await prisma.playerVariantRating.upsert({
+      where: { key_variant: { key, variant } },
+      create: { key, variant, ...wrote },
+      update: wrote,
+    });
+    return key;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
