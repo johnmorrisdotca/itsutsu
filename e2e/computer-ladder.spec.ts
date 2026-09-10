@@ -9,6 +9,8 @@ import {
   seedPeopleStanding,
   seedComputerStandingFor,
   clearPeopleStanding,
+  seenLongAgo,
+  seenAt,
 } from "./members";
 
 /**
@@ -329,6 +331,36 @@ test.describe("the ladder against the computer players", () => {
       await expect(rows.nth(1)).toContainText("1639");
     } finally {
       await clearPeopleStanding("reversi", key);
+    }
+  });
+
+  test("keeps a remembered player on the list however busy the site gets", async ({ page }) => {
+    /*
+     * The fault the computer players already had, one kind of member over.
+     *
+     * The directory reads the two hundred most recently SEEN members, and
+     * somebody remembered here never signs in — their stamp is frozen at the
+     * moment their row was written. So they sink as the site fills and drop
+     * off the end of the very page that exists to remember them, on the day it
+     * gets busy, for a reason nobody would connect to the symptom. The
+     * programs were fetched separately for exactly this and the kept records
+     * were not.
+     *
+     * Winding the stamp back to 2001 is the cheap way to make "past the limit"
+     * true on a database with fifteen members: the ordering is by that column,
+     * so being oldest is being last.
+     */
+    const was = await seenLongAgo("Chibi");
+    try {
+      await page.goto("/players?who=everyone");
+      const directory = page.getByTestId("directory");
+      await expect(directory.getByText("Chibi", { exact: true })).toHaveCount(1);
+    } finally {
+      // Put the stamp back. It means nothing for somebody who never signs in,
+      // which is the whole point of this case — but a test that leaves a
+      // shared database changed is the litter every other case here has to
+      // work around.
+      await seenAt("Chibi", was);
     }
   });
 

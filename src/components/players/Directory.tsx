@@ -11,7 +11,7 @@ import { RecencyMark } from "@/components/mine/Recency";
 import { RowActions } from "@/components/ui/Controls";
 import { buddyEmails } from "@/lib/social/buddies";
 import { currentSession } from "@/lib/auth/currentSession";
-import { fetchComputerPlayers, fetchDirectory, type DirectoryEntry } from "@/lib/rating/players";
+import { fetchComputerPlayers, fetchDirectory, fetchKeptRecords, type DirectoryEntry } from "@/lib/rating/players";
 import { gamesPlayed, ratingShown } from "@/lib/rating/shownRecord";
 import { RECORD_SCOPES, scopeWorthAsking, type RecordScope } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "./RecordScopeBar";
@@ -154,9 +154,10 @@ export async function Directory({
   query: string;
   now: Date;
 }) {
-  const [directory, computers, me] = await Promise.all([
+  const [directory, computers, kept, me] = await Promise.all([
     fetchDirectory(RECENT),
     fetchComputerPlayers(),
+    fetchKeptRecords(),
     currentSession(),
   ]);
   /*
@@ -166,9 +167,17 @@ export async function Directory({
    * directory, which is ordered by who was seen last — a computer player is
    * never seen, so past two hundred members every one of them fell off the
    * end and this page stopped offering any computer opponent at all.
+   *
+   * The kept records are fetched on their own for exactly the same reason, and
+   * that reason was written here about the programs alone for weeks. Somebody
+   * remembered on this site never signs in either: their stamp is frozen at
+   * the moment their row was written, so they sink as the site fills and
+   * vanish off the end of the page that exists to remember them. It has not
+   * happened yet only because there are fifteen members.
    */
   const seen = new Set(directory.map((entry) => entry.id));
-  const everybody = [...directory, ...computers.filter((one) => !seen.has(one.id))];
+  const extra = [...computers, ...kept].filter((one) => !seen.has(one.id));
+  const everybody = [...directory, ...extra];
   const people = filterDirectory(everybody, filter, now.getTime());
   const buddies = me?.email ? await buddyEmails(me.email) : new Set<string>();
   const ignored = me?.email ? await ignoredEmails(me.email) : new Set<string>();

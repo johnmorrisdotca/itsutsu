@@ -321,3 +321,38 @@ export async function seedComputerStandingFor(
     await prisma.$disconnect();
   }
 }
+
+/**
+ * Winds a member's "last seen" back to before this site existed.
+ *
+ * For the cases about people the directory orders LAST: a kept record never
+ * signs in, so its stamp never moves, and the honest way to test what happens
+ * past the limit is to make one genuinely oldest rather than to seed two
+ * hundred rows.
+ */
+export async function seenLongAgo(name: string): Promise<Date | null> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const before = await prisma.member.findFirst({ where: { name }, select: { lastSeenAt: true } });
+    await prisma.member.updateMany({
+      where: { name },
+      data: { lastSeenAt: new Date("2001-07-27T00:00:00.000Z") },
+    });
+    return before?.lastSeenAt ?? null;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** Puts a stamp back where `seenLongAgo` found it. */
+export async function seenAt(name: string, when: Date | null): Promise<void> {
+  if (when === null) return;
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.updateMany({ where: { name }, data: { lastSeenAt: when } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
