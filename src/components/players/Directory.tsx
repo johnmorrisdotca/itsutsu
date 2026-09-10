@@ -9,7 +9,8 @@ import { RecencyMark } from "@/components/mine/Recency";
 import { RowActions } from "@/components/ui/Controls";
 import { buddyEmails } from "@/lib/social/buddies";
 import { currentSession } from "@/lib/auth/currentSession";
-import { fetchComputerPlayers, fetchDirectory } from "@/lib/rating/players";
+import { fetchComputerPlayers, fetchDirectory, type DirectoryEntry } from "@/lib/rating/players";
+import { RATING_POOLS, gamesPlayed, ratingShown } from "@/lib/rating/wholeRecord";
 import { filterDirectory, type DirectoryFilter } from "@/lib/rating/directoryFilter";
 import { ignoredEmails } from "@/lib/social/ignores";
 import { playerPath } from "@/lib/rating/playerKey";
@@ -17,6 +18,51 @@ import { recencyOf } from "@/lib/social/presence";
 
 /** How many of the most recently seen members the directory reads. */
 const RECENT = 200;
+
+/**
+ * The three counts and the rating, for a person who may play in either pool.
+ *
+ * This row used to read the ladder columns alone, and a person whose games had
+ * all been against the computer players came out as 0W 0L 0D with a dash for a
+ * rating — while their own page, one click away, showed five games and a
+ * rating of 1639. The columns were not wrong about the ladder; they were
+ * answering a question nobody had asked them, and saying nothing about which.
+ *
+ * So the counts are every game played here, and the rating says which pool
+ * earned it whenever it is not the ladder. The list of computer players below
+ * this one has marked its figures that way all along — it was only the people
+ * who were left unmarked, which is why it read as a contradiction rather than
+ * as a distinction.
+ */
+function DirectoryRecord({ profile }: { profile: DirectoryEntry["profile"] }) {
+  const played = gamesPlayed(profile);
+  const rating = ratingShown(profile);
+  return (
+    <>
+      <td className="py-1.5 pr-3 font-mono tabular-nums">{played.wins}</td>
+      <td className="py-1.5 pr-3 font-mono tabular-nums">{played.losses}</td>
+      <td className="py-1.5 pr-3 font-mono tabular-nums">{played.draws}</td>
+      <td className="py-1.5 pr-3 font-mono tabular-nums" data-testid="directory-rating">
+        {rating === null ? (
+          "–"
+        ) : (
+          <>
+            {rating.rating}
+            {rating.pool === RATING_POOLS.computer ? (
+              <span
+                className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
+                title="Earned against the computer players, which are rated in a pool of their own."
+                data-testid="rating-pool-computer"
+              >
+                機械
+              </span>
+            ) : null}
+          </>
+        )}
+      </td>
+    </>
+  );
+}
 
 /**
  * The members, most recently seen first, with the record each name has
@@ -99,12 +145,7 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
                   <CountryMark country={entry.country} className="text-sm" />
                 </span>
               </td>
-              <td className="py-1.5 pr-3 font-mono tabular-nums">{entry.profile?.wins ?? 0}</td>
-              <td className="py-1.5 pr-3 font-mono tabular-nums">{entry.profile?.losses ?? 0}</td>
-              <td className="py-1.5 pr-3 font-mono tabular-nums">{entry.profile?.draws ?? 0}</td>
-              <td className="py-1.5 pr-3 font-mono tabular-nums">
-                {entry.profile !== null && entry.profile.tier !== "unrated" ? entry.profile.rating : "–"}
-              </td>
+              <DirectoryRecord profile={entry.profile} />
               <td className="py-1.5 pr-3 text-xs text-muted">
                 {new Date(entry.joinedAt).toLocaleDateString()}
                 {entry.isNew ? (
