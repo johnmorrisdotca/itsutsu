@@ -14,6 +14,36 @@ export function dayStamp(iso: string): string {
   return iso.slice(0, 10);
 }
 
+/**
+ * The row's last move, in the words that fit where it landed.
+ *
+ * "Moved" is the honest word while a row is still going somewhere, and the
+ * wrong one once it has arrived: the last move a done row made was being
+ * finished, and that date is the one anybody reading a done board wants.
+ * Same field, read for what it means on this row rather than for what it is
+ * called on the column.
+ *
+ * The version is the one that was running when somebody marked the row done,
+ * which is usually the release before the one that carried the work — whoever
+ * lands a commit bumps the version in it. So the sentence says "marked done
+ * in" and not "shipped in": a small imprecision said out loud beats a tidier
+ * story that is wrong. A row finished before the column existed has no
+ * version and says none, rather than borrowing one it was never given.
+ */
+function MoveStamp({ item }: { item: BacklogItem }) {
+  const day = dayStamp(item.movedAt);
+  if (item.status !== BACKLOG_STATUSES.done) return <>moved {day}</>;
+  if (item.releasedIn === null) return <>done {day}</>;
+  return (
+    <>
+      marked done {day} in{" "}
+      <span className="font-medium text-ink-soft" data-testid="backlog-released-in">
+        {item.releasedIn}
+      </span>
+    </>
+  );
+}
+
 /** The coloured word for a status, used on a row and in the counts above the board. */
 export function StatusPill({ status }: { status: BacklogStatus }) {
   const copy = STATUS_DISPLAY[status];
@@ -130,15 +160,8 @@ export function BacklogRow({ item, onMoved, who }: BacklogRowProps) {
         </div>
         {item.detail === "" ? null : <p className="max-w-prose text-sm text-muted">{item.detail}</p>}
         <p className="text-xs text-muted">
-          {item.askedBy === "" ? "Asked for" : `Asked for by ${item.askedBy}`} · added {dayStamp(item.createdAt)}{" "}
-          {/*
-            "Moved" is the honest word while a row is still going somewhere,
-            and the wrong one once it has arrived: the last move a done row
-            made was being finished, and that date is the one anybody looking
-            at a done board actually wants. Same field, read for what it means
-            on this row rather than for what it is called on the column.
-          */}
-          · {item.status === BACKLOG_STATUSES.done ? "done" : "moved"} {dayStamp(item.movedAt)}
+          {item.askedBy === "" ? "Asked for" : `Asked for by ${item.askedBy}`} · added {dayStamp(item.createdAt)} ·{" "}
+          <MoveStamp item={item} />
           {item.assignedTo === "" ? "" : " · "}
           {item.assignedTo === "" ? null : (
             <span className="font-medium text-ink-soft" data-testid="backlog-assigned">

@@ -15,6 +15,7 @@ import {
   TITLE_MAX,
   TITLE_MIN,
 } from "./backlog.constants";
+import { VERSION } from "@/lib/version";
 import type {
   BacklogDraft,
   BacklogEffort,
@@ -124,14 +125,44 @@ export function movesFrom(status: BacklogStatus): readonly BacklogStatus[] {
 }
 
 /**
+ * The release a move stamps on a row: the version running when somebody
+ * marked it done, and nothing at all for a move anywhere else.
+ *
+ * A rule rather than a line in the store, because there are two doors into a
+ * move — this module's `moveTo`, which says what a move produces, and the
+ * store, which writes one — and a rule that lives inside one of them is a
+ * rule the other quietly does not have. That is the same fault `editItem`
+ * refuses by never writing a status.
+ *
+ * Cleared on the way out, not merely left alone. A row that has gone back to
+ * open was not released in anything, and last time's version still sitting on
+ * it would read exactly as though it had been.
+ *
+ * The stamp is the version RUNNING when the row was marked done, which is
+ * usually the release before the one that carried the work — whoever lands a
+ * commit bumps the version in it. Hence "marked done in" on the board rather
+ * than "shipped in": a small imprecision said out loud beats a bigger one
+ * implied. It is stamped rather than worked out afterwards because it cannot
+ * be worked out — see the column's own comment in the schema.
+ */
+export function releaseStampFor(to: BacklogStatus, version: string = VERSION): string | null {
+  return to === BACKLOG_STATUSES.done ? version : null;
+}
+
+/**
  * The item as it stands after a move, or null when the move is not allowed.
  * The item passed in is never touched: a board rendered from the old list and
  * one rendered from the new can be compared, and nothing further up can move
  * an item by writing to it.
  */
-export function moveTo(item: BacklogItem, to: BacklogStatus, now: Date = new Date()): BacklogItem | null {
+export function moveTo(
+  item: BacklogItem,
+  to: BacklogStatus,
+  now: Date = new Date(),
+  version: string = VERSION,
+): BacklogItem | null {
   if (!canMove(item.status, to)) return null;
-  return { ...item, status: to, movedAt: now.toISOString() };
+  return { ...item, status: to, movedAt: now.toISOString(), releasedIn: releaseStampFor(to, version) };
 }
 
 function matchesStatus(item: BacklogItem, filter: StatusFilter): boolean {

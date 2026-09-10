@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { canMove, draftProblems, normalizeDraft, statusFrom } from "./backlog";
+import { canMove, draftProblems, normalizeDraft, releaseStampFor, statusFrom } from "./backlog";
 import { ASSIGNED_TO_MAX } from "./backlog.constants";
 import { BACKLOG_SEED } from "./backlog.seed.data";
 import type { BacklogDraft, BacklogEdit, BacklogItem, BacklogKind, BacklogStatus } from "./backlog.types";
@@ -29,6 +29,7 @@ type Row = {
   assignedTo: string;
   createdAt: Date;
   movedAt: Date;
+  releasedIn: string | null;
 };
 
 /** A row as everything above the database sees it: dates as ISO strings. */
@@ -46,6 +47,7 @@ function toItem(row: Row): BacklogItem {
     assignedTo: row.assignedTo,
     createdAt: row.createdAt.toISOString(),
     movedAt: row.movedAt.toISOString(),
+    releasedIn: row.releasedIn,
   };
 }
 
@@ -62,6 +64,7 @@ const SELECT = {
   assignedTo: true,
   createdAt: true,
   movedAt: true,
+  releasedIn: true,
 } as const;
 
 /**
@@ -148,9 +151,11 @@ export async function moveItem(id: string, to: BacklogStatus): Promise<MoveOutco
   if (current === null) return { ok: false, reason: "missing" };
   if (!canMove(statusFrom(current.status), to)) return { ok: false, reason: "illegal" };
 
+  // What the stamp is and why it is cleared on the way out is `releaseStampFor`'s
+  // to say, not this function's. The store writes what the rules decide.
   const row = await prisma.backlogItem.update({
     where: { id },
-    data: { status: to, movedAt: new Date() },
+    data: { status: to, movedAt: new Date(), releasedIn: releaseStampFor(to) },
     select: SELECT,
   });
   return { ok: true, item: toItem(row) };
