@@ -217,6 +217,13 @@ export const GAME_COPY = {
   winsBySquare: (who: string) => `${who} wins with a square`,
   drawBothLines: "Draw. Both made a line at once.",
   drawByLength: "Draw. The game ran to the length it was given.",
+  /*
+   * Not "draw" first, because this is not a result. The game got nowhere for
+   * long enough that it had to be stopped, and saying so plainly is what
+   * keeps a game nobody can win visible as such rather than filed away as an
+   * ordinary drawn game.
+   */
+  drawUnfinishable: "This game could not be finished: nobody was getting anywhere.",
   fixedBy: (game: string) => `Fixed by ${game}.`,
   penaltyStrict: "Loss of game, ignoring vacation days",
   rulesLocked: "The rules are fixed while a game is on. Start a new game to change them.",
