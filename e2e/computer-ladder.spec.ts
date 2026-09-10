@@ -292,6 +292,46 @@ test.describe("the ladder against the computer players", () => {
     }
   });
 
+  test("shows one game played in both pools as two lines, marked once", async ({ page }) => {
+    /*
+     * THE CASE TWO PEOPLE'S WORK CROSSED ON, and neither had a test for it.
+     * A merge put a second 機械 in the rating cell beside the one on the name,
+     * carrying copy that read "no games against people at this yet" — which
+     * stopped being true the moment a game could hold two lines. Contradictory
+     * text, shipped by a clean merge of two correct changes.
+     *
+     * What the page must say: two lines, because these are two standings and
+     * adding them is the one thing the pools forbid; one mark, on the line
+     * that needs it; and the two ratings side by side, unsummed.
+     */
+    const key = await seedComputerStandingFor("john@spxis.com", "reversi", {
+      rating: 1639,
+      games: 5,
+      wins: 3,
+      losses: 2,
+    });
+    await seedPeopleStanding("reversi", {
+      key,
+      name: key,
+      rating: 1712,
+      games: 9,
+      wins: 6,
+      losses: 3,
+    });
+    try {
+      await page.goto("/me?view=record");
+      const rows = page.getByTestId("me-standings").locator("tr", { hasText: "Reversi" });
+      await expect(rows).toHaveCount(2);
+      // One mark, not two: the second was the contradiction.
+      await expect(page.getByTestId("standing-pool-computer")).toHaveCount(1);
+      // Both ratings, neither summed into the other.
+      await expect(rows.nth(0)).toContainText("1712");
+      await expect(rows.nth(1)).toContainText("1639");
+    } finally {
+      await clearPeopleStanding("reversi", key);
+    }
+  });
+
   test("is not drawn at all for a game nobody has played a program at", async ({ page }) => {
     // A heading over an empty table reads as a broken page rather than as an
     // answer, and most games have no such standings at all.
