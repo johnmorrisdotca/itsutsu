@@ -159,3 +159,39 @@ test.describe("a rules change keeps what it was not asked about", () => {
     expect((await changed.json()).winLength).toBe(5);
   });
 });
+
+/**
+ * And the same question of a member's own profile.
+ *
+ * The settings route reset six things it was not asked about because a schema
+ * default stood in for a value it could not see. `/api/me` is the other route
+ * on this site that takes a form's worth of fields and writes them to a row,
+ * so it is the other place that shape could live. It does not — every field
+ * there is optional with no default — and this is the test that says so, and
+ * that will notice the day somebody adds one.
+ */
+test.describe("a profile change keeps what it was not asked about", () => {
+  test("changing one field leaves the others alone", async ({ request }) => {
+    const stamp = Date.now().toString(36);
+    const before = await request.patch("/api/me", {
+      data: { city: `City ${stamp}`, country: "Japan", bio: `Bio ${stamp}`, timeZone: "Asia/Tokyo" },
+    });
+    expect(before.status()).toBe(200);
+
+    const only = await request.patch("/api/me", { data: { bio: `Second ${stamp}` } });
+    expect(only.status()).toBe(200);
+
+    /*
+     * Read from the page rather than the API: `/api/me` only takes changes,
+     * and the profile form is filled from the row, so what it shows is what
+     * was stored. Which is also the thing a person would notice.
+     */
+    const page = await request.get("/me?view=profile");
+    expect(page.status()).toBe(200);
+    const shown = await page.text();
+    expect(shown, "the field that was named should have changed").toContain(`Second ${stamp}`);
+    for (const kept of [`City ${stamp}`, "Asia/Tokyo"]) {
+      expect(shown, `a field the request never mentioned: ${kept}`).toContain(kept);
+    }
+  });
+});
