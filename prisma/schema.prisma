@@ -121,6 +121,17 @@ model Game {
   /// When the open seat was posted, so the board lists the newest first.
   openedAt    DateTime?
 
+  /// How the game ended — and, until it has, a placeholder.
+  ///
+  /// A game is born `status: active, result: abandoned`, and the result is
+  /// overwritten when it finishes. So this column says two different things:
+  /// "ended without a result" and "has not got one yet". `status` is what
+  /// tells them apart, and nothing here means anything until it says finished.
+  ///
+  /// The three states anybody actually means are `finished` with a real
+  /// result (played out), `active` (being played), and `finished` with
+  /// `abandoned` (ended without a result) — the last of which had never once
+  /// happened on production when this was written.
   result     GameResult
   /// Set for a decisive game, null for a draw or an abandoned one.
   winner     String?
