@@ -39,6 +39,27 @@ export function won(
 }
 
 /**
+ * The game is over because there is no play left in it — the board filled, or
+ * neither side has a move. Both are the same event, so both end the same way,
+ * and the two of them are stated here once rather than in each caller.
+ *
+ * Who an exhausted board favours is the variant's business: the giveaway
+ * games hand it to whoever opened, since surviving to the end without making
+ * a line is what winning is there, and the breaker game hands it to the
+ * breaker for the same reason. Every other game calls it a draw, because
+ * neither player did the thing the game asks for.
+ *
+ * `why` is the caller's, because a full board and a blocked one are not the
+ * same sentence to read afterwards even when they settle alike.
+ */
+export function noPlayLeft(state: GameState, why: GameState["winBy"]): GameState {
+  const spec = VARIANT_SPECS[state.settings.variant];
+  if (spec.misere) return won(state, state.opener, why, []);
+  if (spec.makerBreaker) return won(state, STONES.white, why, []);
+  return { ...state, status: GAME_STATUS.draw };
+}
+
+/**
  * Where a stone played at `point` actually goes: the same point, or in a
  * drop game the bottom of its column. A click anywhere in a column is a play
  * in that column.

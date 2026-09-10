@@ -22,6 +22,7 @@ import {
   clearBottomRow,
   inMovePhase,
   movePiece,
+  noPlayLeft,
   resolvePlacement,
   restoreBottomRow,
   restsOnSomething,
@@ -214,14 +215,27 @@ export function placePiece(state: GameState, cells: readonly PieceCell[]): GameS
 }
 
 /**
- * Whether the colour to move has nothing to lay: no footprint fits the piece
- * in hand and no single is left. Then the turn passes, on the record.
+ * Whether the colour to move has nothing it may play. Then the turn passes,
+ * on the record, rather than the game stopping where it stands.
+ *
+ * Gated to piece games once, so a stone game reaching the same condition fell
+ * through it: a handicap forbids shapes to one colour, and the last point on a
+ * board can be a shape that colour may not make. The board then never fills,
+ * the draw never comes, and neither can move. Passing decides nothing.
  */
 export function mustPass(state: GameState): boolean {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
-  if (VARIANT_SPECS[state.settings.variant].queue === null) return false;
-  if (singlesLeft(state) > 0 && legalPoints(state).length > 0) return false;
-  return piecePlacements(state).length === 0;
+  const spec = VARIANT_SPECS[state.settings.variant];
+  // Go passes by choice, never by compulsion: there is always a point to play.
+  if (spec.go) return false;
+  if (spec.queue !== null) {
+    if (singlesLeft(state) > 0 && legalPoints(state).length > 0) return false;
+    return piecePlacements(state).length === 0;
+  }
+  // Pieces that slide already end themselves: checkers gives it away, `blocked`.
+  if (inMovePhase(state)) return false;
+  // Whether one point is playable, not which: this is read on every render.
+  return !emptyPoints(state).some((point) => isLegalMove(state, point));
 }
 
 /** Whether passing is on offer: forced in a piece game with nothing to lay, free at any point in Go. */
@@ -245,7 +259,7 @@ export function passTurn(state: GameState): GameState {
     if (VARIANT_SPECS[state.settings.variant].go) {
       return won(passed, areaWinner(passed.board, passed.settings.size), WIN_REASONS.territory, []);
     }
-    return { ...passed, status: GAME_STATUS.draw };
+    return noPlayLeft(passed, WIN_REASONS.blocked);
   }
   return settleDrawLimit({ ...passed, toPlay: otherStone(state.toPlay) });
 }
@@ -307,12 +321,7 @@ export function playMove(
     }
   }
 
-  if (!after.board.includes(null)) {
-    // A full board: the giveaway games give it to whoever opened, the breaker game to the breaker.
-    if (spec.misere) return won(after, state.opener, WIN_REASONS.full, []);
-    if (spec.makerBreaker) return won(after, STONES.white, WIN_REASONS.full, []);
-    return { ...after, status: GAME_STATUS.draw };
-  }
+  if (!after.board.includes(null)) return noPlayLeft(after, WIN_REASONS.full);
 
   const stays = stonesLeftInTurn(settings, after.moves, toPlay) > 0;
   return settleDrawLimit({
