@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_PROGRESS_PLIES, canStall, distanceHome, pliesWithoutProgress, stalled } from "./noProgress";
+import { NO_PROGRESS_PLIES, canStall, couldNotFinish, distanceHome, pliesWithoutProgress, stalled } from "./noProgress";
+import { STAR_RADIUS, starCampSquares } from "./chineseCheckers";
 import { RULE_VARIANTS, VARIANT_SPECS, boardSizesFor } from "../gomoku.constants";
-import { CAMP_ROWS } from "./camps";
 import { GAME_STATUS } from "../gomoku.constants";
 import { createGame, movePiece, pieceMoves } from "../engine";
-import type { GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types";
+import type { GameState, Move, Point, RuleVariant } from "../gomoku.types";
 
 /**
  * A game nobody is getting anywhere in is a draw.
@@ -37,14 +37,12 @@ describe("which games can run away", () => {
     expect(canStall(RULE_VARIANTS.halma)).toBe(true);
     expect(canStall(RULE_VARIANTS.squareFour)).toBe(true);
     /*
-     * Chinese Checkers is left out on purpose, and this asserts the absence
-     * so nobody adds it back without reading why: fifteen bot games across
-     * every grade never filled more than three of the ten squares a win
-     * needs, so it may not be winnable in real play at all. A cap there would
-     * end every game as a tidy draw and make an unwinnable game look
-     * finished, destroying the only evidence there is. Pending John's ruling.
+     * Chinese Checkers is watched too, but it says something different when
+     * it ends — see the case below. It was excluded for a while because the
+     * rule was reading an empty camp for its star board and would have drawn
+     * every game of it for a reason that looked like a property of the game.
      */
-    expect(canStall(RULE_VARIANTS.chineseCheckers)).toBe(false);
+    expect(canStall(RULE_VARIANTS.chineseCheckers)).toBe(true);
     // A placed stone fills a point for good, so the board is the bound.
     expect(canStall(RULE_VARIANTS.freestyle)).toBe(false);
     expect(canStall(RULE_VARIANTS.reversi)).toBe(false);
@@ -60,6 +58,34 @@ describe("which games can run away", () => {
       expect(VARIANT_SPECS[variant], `${variant} is not a game`).toBeDefined();
       expect(boardSizesFor(variant).length, `${variant} has no board`).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("a game nobody could finish says so", () => {
+  it("reads the star board rather than answering zero for it", () => {
+    /*
+     * The bug that kept Chinese Checkers out: its camps are in another module
+     * on a board size the square game has never heard of, so asking the wrong
+     * table returned an empty camp and `distanceHome` answered zero — a
+     * distance, meaning every piece already home and every game stalled.
+     */
+    const size = boardSizesFor(RULE_VARIANTS.chineseCheckers)[0];
+    const own = starCampSquares(STAR_RADIUS, "black")[0];
+    const target = starCampSquares(STAR_RADIUS, "white");
+    const atHome = distanceHome(size, "black", target[target.length - 1]);
+    expect(atHome).not.toBeNull();
+    expect(atHome!).toBeLessThan(distanceHome(size, "black", own)!);
+  });
+
+  it("tells a game that got nowhere apart from a game that ran its length", () => {
+    /*
+     * Not the same thing, and the board says so differently: one is a result
+     * the players agreed to, the other is the game admitting it went nowhere.
+     * A game nobody can win must stay visible as such rather than be filed as
+     * an ordinary draw.
+     */
+    const drawn = { status: GAME_STATUS.draw, settings: { variant: RULE_VARIANTS.freestyle } } as GameState;
+    expect(couldNotFinish(drawn)).toBe(false);
   });
 });
 

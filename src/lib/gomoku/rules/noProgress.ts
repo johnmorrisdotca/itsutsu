@@ -1,6 +1,6 @@
 import { STAR_RADIUS, starCampSquares, starSize } from "./chineseCheckers";
 import { campSquares } from "./camps";
-import { RULE_VARIANTS } from "../gomoku.constants";
+import { GAME_STATUS, RULE_VARIANTS } from "../gomoku.constants";
 import type { Cell, GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types";
 
 /**
@@ -58,14 +58,36 @@ export const NO_PROGRESS_PLIES: Partial<Record<RuleVariant, number>> = {
   [RULE_VARIANTS.halma]: 400,
   [RULE_VARIANTS.squareFour]: 400,
   /*
-   * Chinese Checkers is deliberately absent, pending John's ruling on whether
-   * it can be won at all: fifteen bot games across every grade never filled
-   * more than three of the ten squares needed. Until that is answered, a cap
-   * here would end every game of it as a tidy draw and make an unwinnable
-   * game look finished — which would destroy the only evidence there is.
-   * A backstop must not be the thing that hides what it was watching for.
+   * Chinese Checkers is capped like the others but says something different
+   * when it ends — see `couldNotFinish`.
+   *
+   * It was left out until its star camps were wired in, because the rule was
+   * reading an empty camp for them and would have drawn every game for a
+   * reason that looked like a property of the game. That is fixed and
+   * checked: on a 17×17 star, black's distance falls from 24 at its own camp
+   * to 0 at the corner of the camp it fills.
+   *
+   * The separate wording is John's ruling, and it is the right one. Fifteen
+   * bot games across every grade never filled more than three of the ten
+   * squares a win needs, so this game may not be winnable in real play. A
+   * plain draw would file that away as an ordinary result and the evidence
+   * would be gone; saying plainly that the game could not be finished keeps
+   * the game playable and keeps the symptom in view.
    */
+  [RULE_VARIANTS.chineseCheckers]: 400,
 };
+
+/**
+ * Whether this game ended because nobody could finish it, rather than by any
+ * of the ordinary draws.
+ *
+ * Derived, never stored — the same way `drawnByLength` answers its question.
+ * A finished game is its settings and its moves, and anything the two of them
+ * imply is a question to ask, not a column to keep in step.
+ */
+export function couldNotFinish(state: GameState): boolean {
+  return state.status === GAME_STATUS.draw && stalled(state);
+}
 
 /** Whether this game can run away at all: pieces that move rather than land. */
 export function canStall(variant: string): boolean {

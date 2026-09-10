@@ -4,6 +4,7 @@ import {
   FATAL_MOVE_DISPLAY,
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
+import { couldNotFinish } from "@/lib/gomoku/rules/noProgress";
 import {
   campSize,
   discCount,
@@ -42,15 +43,24 @@ function ToPlay({ session }: { session: GameSession }) {
 
   if (state.status === GAME_STATUS.draw) {
     /*
-     * Three ways to draw, and they are not interchangeable: the board filled,
-     * both colours made a line on the same move, or the game ran to the
-     * length its players agreed to. Which one it was is the engine's to say.
+     * Four ways to draw, and they are not interchangeable: nobody could
+     * finish it, the board filled, both colours made a line on the same move,
+     * or the game ran to the length its players agreed to. Which one it was
+     * is the engine's to say.
+     *
+     * "Could not be finished" is first because it is the only one that is not
+     * a result. The others are ways a game ends properly; this one says the
+     * game got nowhere, and it is worded plainly so that a game which cannot
+     * be won stays visible as such instead of being filed as an ordinary
+     * draw.
      */
-    const why = drawnByLength(state)
-      ? GAME_COPY.drawByLength
-      : state.board.includes(null)
-        ? GAME_COPY.drawBothLines
-        : "Draw. The board is full.";
+    const why = couldNotFinish(state)
+      ? GAME_COPY.drawUnfinishable
+      : drawnByLength(state)
+        ? GAME_COPY.drawByLength
+        : state.board.includes(null)
+          ? GAME_COPY.drawBothLines
+          : "Draw. The board is full.";
     return (
       <p className="text-lg font-semibold" data-testid="to-play">
         {why}
