@@ -36,11 +36,21 @@ and rebuilds it from the migrations.
 
 ## What it does
 
-### Seven ways to play
+### Thirty-nine games, in eleven families
 
-Every game here is a line of stones at heart. The **Games** button opens a
-browser over the board with each rule set spelled out, and picking one starts
-a new game with those rules.
+The site began as one game and is now thirty-nine, grouped into families on
+`/games`: five in a row, captures, drops, pieces and twists, flips, strange
+boards, races, connections, checkers, territory and small boards. The
+**Games** button opens a browser over the board with each rule set spelled
+out, and picking one starts a new game with those rules.
+
+Every one of them is a row in `VARIANT_SPECS` that the same engine plays; none
+of them is a special case in the code. What follows is family by family.
+
+#### Lines of stones
+
+The eleven the site started from. Each is five in a row with one thing
+changed.
 
 | Game | What changes | Inspired by |
 | --- | --- | --- |
@@ -95,12 +105,11 @@ the stones are the same wherever the rules said they had to go. Shared games
 between two devices start with the free opening, because a seat token is a
 colour and a swap would move the colour between devices.
 
-### Five more games, and tic-tac-toe
+#### Small boards, drops and twists
 
-The same board and engine also play games that are not gomoku. Each is a row
-in `VARIANT_SPECS` like the others, with its own board size pinned, and the
-settings it fixes are shown greyed rather than hidden, so the rules stay
-visible.
+Games that are not gomoku, played by the same engine. Each pins its own board
+size, and the settings it fixes are shown greyed rather than hidden, so the
+rules stay visible.
 
 | Game | What it is | Rules it pins | Inspired by |
 | --- | --- | --- | --- |
@@ -136,6 +145,31 @@ replay reproduces it:
 | **Edge Drop** 縁寄せ | Gravity from all four edges: a stone must rest on an edge or against another stone. | Connect Four |
 | **Worm Drop** 穴通し落とし | Two random squares are the mouths of a wormhole: a line that reaches one continues from the other. | Connect Four |
 
+#### Games where no line is ever read
+
+Five families that keep the board and the record and nothing else. Every one
+of them still returns a new `GameState` from the same engine — what changes is
+what the engine is asked at the end of a move.
+
+| Game | What it is | Board |
+| --- | --- | --- |
+| **Reversi** リバーシ | Bracket a run of the other colour and it turns. Most discs at the end wins. Inspired by Othello. | 8×8 |
+| **Classic Reversi** 古式リバーシ | The 1880s rule: the players lay the first four discs themselves, one a turn, before any flipping starts. | 8×8 |
+| **Anti-Reversi** 逆リバーシ | Everything turns as usual, and the *fewer* discs wins. You may not decline a move that is there. | 8×8 |
+| **Mini Reversi** 小リバーシ | The flipping game small, and it may grow mid-game if both agree: the position moves to the centre of the next size up. | 4×4, 6×6, 8×8 |
+| **Grand Reversi** 大リバーシ | More middle to fight over before anyone reaches an edge. | 10×10 |
+| **Halma** ハルマ | A race: step, or jump chains over any piece, and fill the far corner first. Nothing is ever captured. | 16×16, 10×10, 8×8 |
+| **Chinese Checkers** ダイヤモンドゲーム | Ten pieces, a six-pointed star, and the point opposite yours to fill. Jumps chain and turn corners. | 17×17 star |
+| **Hex** ヘックス | Join your own two sides with an unbroken chain. A full board always has exactly one winner, so there are no draws — which is why the swap opening is offered. | 11, 13, 19 |
+| **Checkers** チェッカー | Jump the other side's pieces off the board. Capturing is forced, a man crowned partway through a chain stops there, and a king moves both ways. | 8×8 |
+| **Go** 囲碁 | Surround more of the board than the other colour. Groups share liberties, the ko rule forbids instantly retaking, two passes end it, and White takes 6.5 komi so it can never be a tie. | 19×19, 13×13, 9×9 |
+
+The games where pieces MOVE rather than land have no natural end — two kings
+shuffling is a game neither player can be made to stop — so those carry a
+no-progress rule of their own: checkers by the draughts count of forty moves
+each without a capture or a man's move, the races by whether anybody has got
+nearer home over a window of play. See `rules/noProgress.ts`.
+
 Twists and slides are part of the record: a twist is stored on the stone it
 finishes, a slide stores where the piece came from, and a replay reproduces
 both. The threat reading is switched off for the twist and sliding games,
@@ -147,7 +181,7 @@ Every game has a rules page at `/rules/<game>` in one template — Object,
 Board, Play, House rules — generated from the same spec the engine plays by,
 so the page cannot drift from the rules. Each carries a screenshot of the
 game in progress when one has been taken (`pnpm screenshots:games` writes
-them into `public/games/`) and links to the strategy guides that apply.
+them into `public/art/games/`) and links to the strategy guides that apply.
 
 `/learn` holds the guides: threats, shapes and tempo for the five-in-a-row
 family; Renju's forbidden points and openings; captures; two stones a turn;
@@ -157,9 +191,12 @@ literature uses them. Both sections are linked from the header.
 
 ### Players, ratings and records
 
-A name is a player. There are no accounts, so whoever enters a name plays
-for its record, and the site says so. Every finished game between two named
-players updates both records and exchanges rating points:
+A name is a player. Members sign in — see [Getting in](#getting-in) — but a
+rating is still earned by a NAME rather than by an account, so whoever enters
+a name plays for its record and the site says so. That is the honest limit of
+letting two people share one screen, and it is why an anonymous seat is never
+rated. Every finished game between two named players updates both records and
+exchanges rating points:
 
 | Tier | When | K |
 | --- | --- | --- |
@@ -168,10 +205,40 @@ players updates both records and exchanges rating points:
 | Established 確定 | twenty or more | 20 |
 
 Elo, starting at 1600, with a favourite by more than 400 points gaining
-nothing for a win. Anonymous seats are never rated. `/players` lists the
-leaders and `/players/<name>` shows a profile: rating, tier, won-lost-drawn
-overall and by game, and recent games with replays. Ladders and tournaments
-are not built; they are the next thing on the list.
+nothing for a win. `/players` has four tabs — the members, the ladder, the
+computer players and the kept records — and `/players/<name>` is one page per
+person, whoever they are.
+
+**Two rating pools, kept apart on purpose.** A game against a computer player
+is rated in a pool of its own, so beating a program never moves where you
+stand among people. Both are shown; neither is averaged into the other.
+
+**Records from before this site.** Some members played for years on
+ItsYourTurn and GoldToken, and some people are here only as a record kept
+under their name. Those are not a different kind of person — they are a
+different SOURCE, and a player's page counts every source they have, with a
+control to narrow it to Itsutsu alone. Games and wins add up across sites;
+ratings never do, because no two sites share a scale, so there is no combined
+rating and the page says why rather than leaving a blank. Figures copied from
+another site are marked as the snapshots they are, in a list as well as on a
+page: they were written down once and do not move.
+
+Ladders and tournaments are not built; they are the next thing on the list.
+
+### The computer players
+
+Seven of them, and they are members rather than a setting on a game: they hold
+seats, appear in the record, and carry a rating that moves when you beat them.
+Five are graded — **разряд**, **級**, **段**, **名人** and **国手**, gentlest
+to strongest — and will play anything on the site. Two are specialists who
+play one game well and nothing else: **為乃木秀正** at Reversi and
+**Meritalu** at five in a row, each named in homage to a real champion of that
+game.
+
+A computer answers a seat that has been sitting on the noticeboard longer than
+a day, so a posted game gets played whether or not anybody else is about. It
+waits first on purpose: a seat answered the instant it is posted is not a
+noticeboard, it is a button with extra steps.
 
 ### The backlog
 
@@ -388,10 +455,17 @@ finished game is filed in the record and can be replayed stone by stone.
 
 ## How it is put together
 
-The rules live in `src/lib/gomoku/engine.ts` and nowhere else. Every function
-takes a `GameState` and returns a new one, so the same engine runs the board in
-your browser, replays a stored game, and validates moves on the server. There
-is no second implementation of "who has won".
+The rules live in `src/lib/gomoku/engine.ts` and the `rules/` modules it
+delegates to, and nowhere else. Every function takes a `GameState` and returns
+a new one, so the same engine runs the board in your browser, replays a stored
+game, and validates moves on the server. There is no second implementation of
+"who has won".
+
+A variant is a row in `VARIANT_SPECS` plus its copy, and the engine reads the
+spec rather than switching on a variant's name. That is what lets thirty-nine
+games share one engine — and `variants.coverage.test.ts` fails the build for a
+game that is missing its tests, its copy, its family or its screenshot, so a
+new game cannot ship half-finished.
 
 A stored game is **a move list, never a board**. A board and a move list can
 disagree; a move list replayed through the engine cannot.
@@ -403,6 +477,11 @@ disagree; a move list replayed through the engine cannot.
 | `src/lib/clock/` | Byoyomi clocks. Pure, and driven by the wall clock rather than tick counts. |
 | `src/lib/history/` | Reading and writing game history. |
 | `src/lib/backlog/` | The features board: its rules, its copy, its starter set. Pure, apart from `backlogStore.ts`. |
+| `src/lib/rating/` | Elo, the two rating pools, and what a list prints beside a name. |
+| `src/lib/bots/` | The computer players as members: who they are, the seats they take, the moves they play. |
+| `src/lib/legacy/` | Records kept from the sites people played on before this one. |
+| `src/lib/auth/` | Members, invite codes, sessions, and the operator's roster. |
+| `src/lib/social/` | Buddies, ignores, who is here, countries and days off. |
 | `src/components/board/` | The board and its themes. |
 | `src/components/game/` | The local game, its session, settings and record. |
 | `src/components/live/` | Games played from two devices. |
@@ -701,11 +780,21 @@ One-time setup:
 | Screenshots into `screenshots/` | `pnpm screenshots` |
 | Rebuild `favicon.ico` from `icon.svg` | `pnpm favicon` |
 | All gates | `pnpm quality:check` |
+| Fix what can be fixed | `pnpm quality:fix` |
+| File size gate on its own | `pnpm loc:check` |
 | Local database | `pnpm local:db:up` / `:down` / `:reset` |
 | Migrations | `pnpm db:migrate` (dev) / `pnpm db:deploy` |
+| Prisma client / browser | `pnpm db:generate` / `pnpm db:studio` |
+| Mint an invite code | `pnpm invite` |
+| Clear the board's test litter | `pnpm backlog:cleanup-litter` |
+| Dependency audit | `pnpm security:check` |
+| Bump the version | `pnpm version:bump` |
 
 `pnpm quality:check` runs lint, the 500-line file size gate, typecheck and the
-unit tests. See `AGENTS.md` for the conventions those gates enforce.
+unit tests. See `AGENTS.md` for the conventions those gates enforce, and for
+the four things that make an end-to-end run fail for reasons that are not in
+the code — a stale dev server, two runs against one database, database litter,
+and a test that races hydration.
 
 ### What the record does not keep
 
