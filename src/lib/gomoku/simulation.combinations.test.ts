@@ -36,13 +36,10 @@ import { playOut } from "./simulation.support";
  *    like a game with no legal move. The openings that need a choice are
  *    checked here only as far as "the game is waiting for a choice, not for a
  *    stone", which is true and is what a player would see.
- *  - It does not hand a colour a handicap that changes WHAT WINS — exactLine,
- *    longerLine, openLine, overline. `runWinsIndependently`, the hand-written
- *    restatement that makes this simulator worth having, switches on the
- *    variant and knows nothing of handicaps: it reads a line of six as a win
- *    where the engine correctly refuses one, and then reports the ENGINE as
- *    wrong. Teaching it handicaps is its own piece of work, and until it is
- *    done a sweep over those flags would be a sweep that lies.
+ *  - It does not lengthen a colour's line with `longerLine`. That one does not
+ *    tighten what wins, it moves the target — and on the smallest board a game
+ *    offers, needing six where the game is five is a game nobody can win,
+ *    which tests the board rather than the handicap.
  *
  * AND ONE THING THAT MAY BE A REAL FAULT, left alone on purpose. Under that
  * heaviest handicap, Edge Drop reaches a position with a free point on the
@@ -170,16 +167,25 @@ describe("every game under every opening it offers", () => {
 
 describe("every game with a handicap laid over it", () => {
   /*
-   * Every handicap that FORBIDS A MOVE, all at once, and none that changes
-   * what wins — see the note at the top of this file. Everything that asks
-   * "may this colour…" reads `rulesFor`, which lays this over the variant's
-   * own spec, so this is where the two disagree most.
+   * Every handicap at once — the ones that forbid a move and the ones that
+   * decide a win. Everything that asks "may this colour…" reads `rulesFor`,
+   * which lays this over the variant's own spec, so this is where the two
+   * disagree most, and it is now a disagreement the independent scan can
+   * judge: `runWinsIndependently` restates the line handicaps by hand.
+   *
+   * `longerLine` is left out of the pile on purpose. It does not tighten what
+   * wins, it makes the line one longer — and on the smallest boards a game
+   * offers, six in a row where five was the game is a game that cannot be won
+   * at all, which tests the board rather than the handicap.
    */
   const heavy = (stone: Handicap["stone"]): Handicap => ({
     ...NO_HANDICAP,
     stone,
     doubleThree: true,
     doubleFour: true,
+    exactLine: true,
+    openLine: true,
+    overline: true,
   });
 
   it("still plays out, for one colour or the other", () => {
@@ -212,10 +218,14 @@ describe("every game with a handicap laid over it", () => {
       // Created rather than played: this asks what the game was set up with,
       // and a whole game of random moves to answer that is nine seconds of
       // the unit gate spent on a question the first line already answers.
-      const game = createGame({ variant, handicap: heavy(STONES.black) });
-      expect(game.settings.handicap.stone, `${variant}: the handicap changed colour`).toBe(STONES.black);
-      expect(game.settings.handicap.doubleThree, `${variant}: the handicap lost a rule`).toBe(true);
-      expect(game.settings.handicap.overline, `${variant}: the handicap gained a rule`).toBe(false);
+      const asked = heavy(STONES.black);
+      const game = createGame({ variant, handicap: asked });
+      /*
+       * The whole object, not three fields of it. Naming fields is how a test
+       * stops noticing: this one asserted `overline` was false, and went on
+       * asserting it after the handicap it was given grew an overline rule.
+       */
+      expect(game.settings.handicap, `${variant}: the handicap was not laid down as given`).toEqual(asked);
     }
   });
 });
