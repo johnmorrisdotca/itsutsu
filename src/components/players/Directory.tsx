@@ -59,9 +59,32 @@ function DirectoryRecord({ profile, elsewhere }: Pick<DirectoryEntry, "profile" 
     draws: here.draws + elsewhere.draws,
   };
   const rating = ratingShown(profile);
+  const kept = elsewhere.wins + elsewhere.losses + elsewhere.draws > 0;
   return (
     <>
-      <RecordCells record={played} />
+      <RecordCells
+        record={played}
+        note={
+          kept ? (
+            /*
+             * Marked, because part of this number does not move.
+             *
+             * A profile page says it in a paragraph beside the figure; a table
+             * row has nowhere to put one. Leaving it out because it does not
+             * fit would be misleading by omission — which is precisely the
+             * fault the paragraph was written to avoid — so the mark carries
+             * it, and the line under the table says what the mark means.
+             */
+            <span
+              className="ml-0.5 align-super text-[0.6rem] text-muted"
+              title="Includes games from another site, copied down once and not updated since."
+              data-testid="record-kept-mark"
+            >
+              ※
+            </span>
+          ) : null
+        }
+      />
       <td className="py-1.5 pr-3 font-mono tabular-nums" data-testid="directory-rating">
         {rating === null ? (
           "–"
@@ -220,6 +243,20 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
           ))}
         </tbody>
       </table>
+      {/*
+        What the mark means, said once under the table rather than repeated in
+        every row that carries it. Drawn only when a row on this screen
+        actually has one: a legend for a mark nobody can see is furniture.
+      */}
+      {people.some((entry) => entry.elsewhere.wins + entry.elsewhere.losses + entry.elsewhere.draws > 0) ? (
+        <p className="text-xs leading-snug text-muted" data-testid="directory-kept-note">
+          <span className="align-super text-[0.6rem]">※</span> Counts games from before Itsutsu, on
+          the sites named on that player&rsquo;s own page.{" "}
+          <span className="font-medium text-ink-soft">Those figures do not update</span> — they were
+          copied down by hand once and are a snapshot of that day. Only what happens here is counted
+          as it happens, and the rating column is always Itsutsu&rsquo;s alone.
+        </p>
+      ) : null}
     </div>
   );
 }

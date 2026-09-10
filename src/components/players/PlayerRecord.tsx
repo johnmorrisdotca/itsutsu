@@ -61,12 +61,31 @@ export function RecordHeadings({ trailing }: { trailing?: ReactNode }) {
  * directory's rating, a ladder's place. It goes after the shared ones so the
  * shared ones stay in the same position on every page.
  */
-export function RecordCells({ record, trailing }: { record: WonLostDrawn; trailing?: ReactNode }) {
+export function RecordCells({
+  record,
+  trailing,
+  note,
+}: {
+  record: WonLostDrawn;
+  trailing?: ReactNode;
+  /**
+   * A mark on the count itself, for a total that needs qualifying.
+   *
+   * On the count rather than the row, because what wants qualifying is the
+   * NUMBER — a figure that includes games copied from another site once and
+   * never updated since. A table row has no space for the paragraph a profile
+   * page can afford, and leaving the qualification out because it does not fit
+   * would be misleading by omission, which is the fault the paragraph exists
+   * to avoid.
+   */
+  note?: ReactNode;
+}) {
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
   return (
     <>
       <td className={CELL} data-testid="record-played">
         {countText(figures.played)}
+        {note}
       </td>
       <td className={CELL}>{record.wins}</td>
       <td className={CELL}>{record.losses}</td>

@@ -28,7 +28,36 @@ test.describe("a combined record", () => {
 
     await page.goto("/players?who=everyone");
     const row = page.getByTestId("directory").locator("tr", { hasText: "Chibi" });
-    await expect(row.getByTestId("record-played")).toHaveText(new RegExp(`^${Number(onHisPage).toLocaleString("en-US")}$`));
+    // Digits only: the cell also carries the mark saying part of the figure is
+    // a snapshot, which is content rather than noise and belongs there.
+    const inTheList = (await row.getByTestId("record-played").innerText()).replace(/[^0-9]/g, "");
+    expect(inTheList).toBe(onHisPage);
+  });
+
+  test("says a combined figure does not update, even where there is no room to say it", async ({ page }) => {
+    /*
+     * A profile page can afford a paragraph beside the figure; a table row
+     * cannot, and the first version of this shipped the combined number into
+     * the directory with no qualification at all. Leaving it out because it
+     * does not fit is misleading by omission — the exact fault the paragraph
+     * was written to avoid — so the mark carries it and the legend explains
+     * the mark.
+     */
+    await page.goto("/players?who=everyone");
+    const row = page.getByTestId("directory").locator("tr", { hasText: "Chibi" });
+    await expect(row.getByTestId("record-kept-mark")).toBeVisible();
+
+    const note = page.getByTestId("directory-kept-note");
+    await expect(note).toBeVisible();
+    await expect(note).toContainText("do not update");
+  });
+
+  test("marks only the rows whose figures actually reach back", async ({ page }) => {
+    // A mark on every row is a mark on none. Meijin has played only here, so
+    // its count needs no qualifying and must not carry one.
+    await page.goto("/players?who=everyone");
+    const bot = page.getByTestId("directory").locator("tr", { hasText: "Meijin" });
+    await expect(bot.getByTestId("record-kept-mark")).toHaveCount(0);
   });
 
   test("never lends somebody another site's rating", async ({ page }) => {
