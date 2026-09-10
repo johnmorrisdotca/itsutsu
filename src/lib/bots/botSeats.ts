@@ -5,7 +5,7 @@ import type { BotTier } from "@/lib/gomoku/opponent.types";
 import { sitAtOpenSeat } from "@/lib/history/openGames";
 import { bindSeat } from "@/lib/history/seats";
 import { prisma } from "@/lib/prisma";
-import { BOT_MEMBERS, OPEN_SEAT_GRACE_MS, OPEN_SEATS_ANSWERED_AT_ONCE } from "./bots.constants";
+import { BOT_MEMBERS, OPEN_SEAT_GRACE_MS, OPEN_SEATS_ANSWERED_AT_ONCE, OPEN_SEATS_CONSIDERED_AT_ONCE } from "./bots.constants";
 import { ensureBotMembers } from "./botMembers";
 import { hasBotSeat } from "./bots";
 import { playBotTurns } from "./botPlay";
@@ -51,23 +51,41 @@ export async function answerStaleOpenSeats(
   graceMs: number = OPEN_SEAT_GRACE_MS,
   random: () => number = Math.random,
 ): Promise<number> {
-  const stale = await prisma.game.findMany({
+  const oldest = await prisma.game.findMany({
     where: {
       status: "active",
       openSeat: { not: null },
       openedAt: { lt: new Date(now.getTime() - graceMs) },
     },
     orderBy: { openedAt: "asc" },
-    take: OPEN_SEATS_ANSWERED_AT_ONCE,
+    take: OPEN_SEATS_CONSIDERED_AT_ONCE,
     select: { id: true, blackMemberId: true, whiteMemberId: true },
   });
-  if (stale.length === 0) return 0;
+
+  /*
+   * NARROWED BEFORE THE CUT, and that is the whole of a bug worth keeping in
+   * view. A game a computer is already sitting in is not a game waiting for
+   * one — but dropping it after the list had been cut to three dropped a SLOT
+   * with it, and the ordering is oldest-first on a column that only gets
+   * older. Three such rows at the front would have starved every real waiting
+   * game behind them, quietly and for good.
+   *
+   * The predicate stays in JavaScript on purpose. It reads as though it
+   * belongs in the `where` above, and the bot ids are a fixed set that needs
+   * no lookup — but `blackMemberId` and `whiteMemberId` are NULL exactly when
+   * a seat is open, `NOT (col IN (…))` over NULL is NULL, and Postgres drops
+   * those rows. That where clause would have excluded every open seat on the
+   * site rather than the handful meant, and answered nothing at all.
+   */
+  const waiting = oldest.filter((row) => !hasBotSeat(row));
+  if (waiting.length === 0) return 0;
   await ensureBotMembers();
 
   let answered = 0;
-  for (const row of stale) {
-    // A game a computer is already sitting in is not a game waiting for one.
-    if (hasBotSeat(row)) continue;
+  for (const row of waiting) {
+    // The cap counts seats ANSWERED, not rows looked at: a seat somebody else
+    // took while we were reading is gone, not an answer we have spent.
+    if (answered >= OPEN_SEATS_ANSWERED_AT_ONCE) break;
     const bot = BOT_MEMBERS[grade(random())];
     const outcome = await sitAtOpenSeat(row.id);
     if (!outcome.ok) continue;

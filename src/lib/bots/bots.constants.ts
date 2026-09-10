@@ -189,3 +189,23 @@ export const OPEN_SEAT_GRACE_MS = 24 * 60 * 60 * 1000;
 
 /** How many stale seats one sweep will take, so a sweep is never a long request. */
 export const OPEN_SEATS_ANSWERED_AT_ONCE = 3;
+
+/**
+ * How many seats a sweep will LOOK at to find those three.
+ *
+ * Two different numbers because they bound two different things. Answering a
+ * seat means sitting down and playing the computer's move, which is the work
+ * worth capping. Reading a row and finding it unsuitable costs a row.
+ *
+ * They used to be one number, and that was a starvation waiting to happen: the
+ * sweep took the three oldest stale seats and THEN discarded any a computer
+ * was already sitting in, without replacing them. A discarded row took its
+ * slot with it. Since the ordering is oldest-first and `openedAt` only gets
+ * older, three such rows at the front would have sat there for good, and every
+ * genuinely waiting game behind them would never have been reached.
+ *
+ * Eight times the answer count, so the sweep would have to find twenty-three
+ * unsuitable rows in a row before a real one went unanswered, and the worst
+ * case is still two dozen cheap reads rather than a long request.
+ */
+export const OPEN_SEATS_CONSIDERED_AT_ONCE = OPEN_SEATS_ANSWERED_AT_ONCE * 8;
