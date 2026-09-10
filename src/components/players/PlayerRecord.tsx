@@ -78,12 +78,20 @@ function counts(record: WonLostDrawn, of: RecordOf) {
       title={what}
     />
   );
+  /*
+   * All four separated, not just the total. A row that read "4,118 played ·
+   * 2414W" disagreed with itself about how a number is written, and these
+   * records run to thousands — `countText` exists for exactly that. The cells
+   * used to print the three counts raw while the total beside them was
+   * separated, which is the sort of difference nobody chooses and everybody
+   * notices.
+   */
   return {
     figures,
     played: linked(countText(figures.played), "decided", "Every game counted here"),
-    won: linked(record.wins, "won", "The games won"),
-    lost: linked(record.losses, "lost", "The games lost"),
-    drawn: linked(record.draws, "drawn", "The games drawn"),
+    won: linked(countText(record.wins), "won", "The games won"),
+    lost: linked(countText(record.losses), "lost", "The games lost"),
+    drawn: linked(countText(record.draws), "drawn", "The games drawn"),
   };
 }
 

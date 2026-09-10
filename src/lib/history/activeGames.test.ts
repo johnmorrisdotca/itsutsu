@@ -22,7 +22,7 @@ const count = vi.fn(async ({ where }: { where: { OR: [{ blackMemberId: string },
 
 vi.mock("@/lib/prisma", () => ({ prisma: { game: { count: (args: never) => count(args) } } }));
 
-const { activeGameCount, memberOverActiveLimit } = await import("./activeGames");
+const { activeGameCount, activeGameLimit, memberOverActiveLimit } = await import("./activeGames");
 
 /** `n` active games recorded against one member, alternating which seat holds them. */
 function gamesFor(memberId: string, n: number): void {
@@ -84,5 +84,52 @@ describe("memberOverActiveLimit", () => {
     gamesFor("alice", ACTIVE_GAME_LIMIT);
     await memberOverActiveLimit(["alice", "alice"]);
     expect(count).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * The relief, which exists because the suite is one member playing four
+ * hundred games and the site is not.
+ *
+ * The two things it must never do are the point of these cases: it cannot
+ * apply in production, where a relieved cap would be no cap, and a value
+ * nobody set has to change nothing — a limit whose behaviour depends on an
+ * unset variable is a limit nobody can reason about.
+ */
+describe("the limit as it applies here and now", () => {
+  it("is the written number when nothing is set", () => {
+    vi.stubEnv("RATE_LIMIT_RELIEF", "");
+    expect(activeGameLimit()).toBe(ACTIVE_GAME_LIMIT);
+    vi.unstubAllEnvs();
+  });
+
+  it("multiplies by the relief the suite sets", () => {
+    vi.stubEnv("RATE_LIMIT_RELIEF", "20");
+    expect(activeGameLimit()).toBe(ACTIVE_GAME_LIMIT * 20);
+    vi.unstubAllEnvs();
+  });
+
+  it("ignores the relief in production, whatever escaped into the deployment", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("RATE_LIMIT_RELIEF", "1000");
+    expect(activeGameLimit()).toBe(ACTIVE_GAME_LIMIT);
+    vi.unstubAllEnvs();
+  });
+
+  it("never lowers the cap, whatever nonsense it is given", () => {
+    for (const value of ["0", "-5", "not a number"]) {
+      vi.stubEnv("RATE_LIMIT_RELIEF", value);
+      expect(activeGameLimit(), `${value} must not lower the cap`).toBe(ACTIVE_GAME_LIMIT);
+    }
+    vi.unstubAllEnvs();
+  });
+
+  it("is what the check actually reads, not a number kept beside it", async () => {
+    // The relief is worthless if `memberOverActiveLimit` still reads the raw
+    // constant — which is exactly the shape of bug that ships quietly.
+    vi.stubEnv("RATE_LIMIT_RELIEF", "20");
+    gamesFor("alice", ACTIVE_GAME_LIMIT + 5);
+    expect(await memberOverActiveLimit(["alice"])).toBeNull();
+    vi.unstubAllEnvs();
   });
 });

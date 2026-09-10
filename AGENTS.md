@@ -195,6 +195,44 @@ had noticed, including the rules page itself — the destination every game name
 on this site now points at — which reached the board and Wikipedia and had no
 way to the record or the ladder.
 
+### Back It Up Before You Migrate It
+
+**Checked, not assumed** — the numbers below were read from the project on
+2026-09-10 with `neonctl`, and are worth re-reading rather than trusting if
+they matter to a decision.
+
+The production database is Neon project `calm-boat-93104880` ("itsutsu"),
+Postgres 18 in `aws-us-east-2`, and it has exactly one branch: `main`, which is
+**not protected**. Its history retention is `86400` seconds — **twenty-four
+hours**. That is the whole of what exists today:
+
+- **Point-in-time recovery: yes, but only for a day.** Neon can restore or
+  branch from any moment in the last 24 hours. A mistake noticed on Wednesday
+  about Tuesday's migration is past the window, and there is nothing else.
+- **Snapshots: none.** No branch has ever been taken before a migration.
+- **`main` is unprotected**, so nothing at the Neon end refuses a destructive
+  operation on it.
+
+**So, before any migration against production:**
+
+1. **Take a branch first.** It is one command, it is copy-on-write so it costs
+   almost nothing, and it is the only thing that survives past 24 hours:
+   `neonctl branches create --project-id calm-boat-93104880 --org-id org-old-wave-97887412 --name before-<what>-<yyyy-mm-dd>`
+2. **Say what you are about to run, and to which database, before running it.**
+   Verify which one you are actually connected to by counting rows — an
+   inline `DATABASE_URL` is silently overridden by `.env`, which has caught
+   this project before.
+3. **Never pass the real database as `--shadow-database-url`.** Prisma drops
+   and recreates a shadow database.
+4. **If `prisma migrate dev` offers to reset, the answer is no.** "Applied to
+   the database but missing from the local migrations directory" means a
+   migration file is on a branch that has not merged yet. The fix is to merge
+   that branch. It is never to reset a database other people are using.
+
+The near-miss this is written from: a migration was applied to the shared
+database while its migration file lived only on an unmerged branch, and every
+other worktree would have been offered the reset.
+
 ### Board Gate
 
 The features board at `/backlog` is where a request lives once the conversation that

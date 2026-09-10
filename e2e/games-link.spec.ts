@@ -24,7 +24,15 @@ const EVERY_GAME = GAME_FAMILIES.flatMap((family) => family.games);
 test.describe("a game's name leads to that game", () => {
   test("on the games index, every one of them, counted from the families", async ({ page }) => {
     await page.goto("/games");
-    const names = page.getByTestId("game-name");
+    /*
+     * Counted inside the index rather than across the page. The lobby above
+     * it names a game on every open seat and on every game somebody has
+     * going, and those names are links too — the rule kept in more places, not
+     * fewer. Counting the whole page would make this test fail the day the
+     * lobby obeys the rule, which is backwards.
+     */
+    const index = page.getByTestId("lobby-family");
+    const names = index.getByTestId("game-name");
     await expect(names).toHaveCount(EVERY_GAME.length);
 
     /*
@@ -34,7 +42,7 @@ test.describe("a game's name leads to that game", () => {
      * exactly that without also asking which family a reader has opened.
      */
     for (const variant of EVERY_GAME) {
-      const named = page.locator(`[data-testid="game-name"][data-variant="${variant}"]`);
+      const named = index.locator(`[data-testid="game-name"][data-variant="${variant}"]`);
       await expect(named, `${variant} is not linked on the games index`).toHaveAttribute(
         "href",
         `/rules/${slugFor(variant)}`,
@@ -51,6 +59,21 @@ test.describe("a game's name leads to that game", () => {
     await expect(folded.getByTestId("game-name").first()).toBeHidden();
     await folded.locator("summary").click();
     await expect(folded.getByTestId("game-name").first()).toBeVisible();
+
+    /*
+     * And nothing else on this page names a game and stops there. This is what
+     * the page-wide count above used to be standing in for, said directly:
+     * every name the lobby prints is a link to that game's rules, however many
+     * open seats and running games there happen to be today.
+     */
+    const everywhere = page.getByTestId("game-name");
+    for (let i = 0; i < (await everywhere.count()); i += 1) {
+      const one = everywhere.nth(i);
+      await expect(one, "a game is named here and leads nowhere").toHaveAttribute(
+        "href",
+        /^\/rules\//,
+      );
+    }
 
     // And the first one really arrives at that game rather than at a page
     // that happens to mention it.
