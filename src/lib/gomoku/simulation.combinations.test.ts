@@ -36,21 +36,23 @@ import { playOut } from "./simulation.support";
  *    offers, needing six where the game is five is a game nobody can win,
  *    which tests the board rather than the handicap.
  *
- * AND ONE THING THAT MAY BE A REAL FAULT, left alone on purpose. Under that
- * heaviest handicap, Edge Drop reaches a position with a free point on the
- * board, a game that still says it is being played, and nothing any colour
- * may do. It reproduces exactly, so whoever takes it need not hunt:
+ * WHAT THIS SWEEP ALREADY FOUND, kept because it says what the sweep is for.
+ * Under the heaviest handicap it reached a position with a free point on the
+ * board, a game that still said it was being played, and nothing any colour
+ * could do. I could only make it happen in Edge Drop and left the rules
+ * question alone; it turned out not to be Edge Drop's at all. The same
+ * deadlock was in Gomoku, Tournament Gomoku, Renju, Caro, Misère Five and Hex
+ * at three sizes, and the cause was one gate: `mustPass` already knew what to
+ * do when nobody can move, and only offered it to the piece games, so every
+ * stone game fell past the rule that existed for exactly this. Fixed in
+ * 0.104.3 by extending `mustPass` to the stone games — a stuck turn passes,
+ * rather than losing, because a handicap exists to make a game fair and
+ * taking the game off the handicapped player on a technicality is the
+ * opposite of that. `stuck.test.ts` holds the cases.
  *
- *     playOut({ variant: "edgeDrop", handicap: { ...NO_HANDICAP,
- *       stone: "black", doubleThree: true, doubleFour: true, overline: true,
- *       exactLine: true, openLine: true, longerLine: true } }, 41_982)
- *
- *     → "no legal move with 1 empty points (edgeDrop, move 48)"
- *
- * Whether that should be a draw the engine declares, a turn it passes, or a
- * handicap it refuses to lay over a dropping game is a rules question, and
- * the New Game Gate is explicit that a game has to be able to end. It is not
- * a question to answer by quietly changing what a game does.
+ * The lesson for anything found here: one variant is where a fault SHOWED,
+ * not where it LIVES. Mine looked like a dropping-game oddity because that is
+ * the seed that happened to hit it.
  */
 
 const EVERY_VARIANT = Object.values(RULE_VARIANTS) as RuleVariant[];
