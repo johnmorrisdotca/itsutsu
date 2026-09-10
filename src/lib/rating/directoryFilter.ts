@@ -17,11 +17,7 @@ import type { RatingTier } from "./elo";
 /** How long since somebody was seen before the directory counts them away. */
 export const AWAY_AFTER_DAYS = 30;
 
-/**
- * Which kind of player. `people` is the default because it is what the page
- * did before there was a choice, and a filter should not change what somebody
- * sees until they ask it to.
- */
+/** Which kind of player a reader is asking to see. */
 export const DIRECTORY_WHO = {
   people: "people",
   computers: "computers",
@@ -31,9 +27,9 @@ export const DIRECTORY_WHO = {
 export type DirectoryWho = (typeof DIRECTORY_WHO)[keyof typeof DIRECTORY_WHO];
 
 export const DIRECTORY_WHO_LIST: readonly DirectoryWho[] = [
+  DIRECTORY_WHO.everyone,
   DIRECTORY_WHO.people,
   DIRECTORY_WHO.computers,
-  DIRECTORY_WHO.everyone,
 ];
 
 export type DirectoryFilter = {
@@ -44,8 +40,22 @@ export type DirectoryFilter = {
   active: boolean;
 };
 
+/**
+ * What the page shows before anybody touches anything.
+ *
+ * `everyone` reverses what this was, and the reversal is the point. The first
+ * default was `people`, on the reasoning that a filter should not change what
+ * the page did before there was a choice — the right instinct, the wrong
+ * outcome. It put the computer players, five opponents that are always
+ * available, behind a control nobody had reason to touch, on a site whose
+ * whole difficulty is that nobody is about. A default that hides the one thing
+ * a quiet evening needs is not a neutral default.
+ *
+ * John's call. `DIRECTORY_WHO_LIST` is ordered to match, so the bar reads as
+ * what it now is: everybody, then the two narrowings.
+ */
 export const NO_FILTER: DirectoryFilter = {
-  who: DIRECTORY_WHO.people,
+  who: DIRECTORY_WHO.everyone,
   settled: false,
   active: false,
 };
@@ -64,14 +74,14 @@ export function readDirectoryFilter(query: {
   const asked = one(query.who);
   const who = (DIRECTORY_WHO_LIST as readonly string[]).includes(asked)
     ? (asked as DirectoryWho)
-    : DIRECTORY_WHO.people;
+    : NO_FILTER.who;
   return { who, settled: one(query.settled) === "1", active: one(query.active) === "1" };
 }
 
 /** The address a filter reads as, with the defaults left off it. */
 export function directoryQuery(filter: DirectoryFilter): string {
   const params = new URLSearchParams();
-  if (filter.who !== DIRECTORY_WHO.people) params.set("who", filter.who);
+  if (filter.who !== NO_FILTER.who) params.set("who", filter.who);
   if (filter.settled) params.set("settled", "1");
   if (filter.active) params.set("active", "1");
   return params.toString();

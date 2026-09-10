@@ -23,10 +23,16 @@ const computer = (over: Partial<FilterableEntry> = {}): FilterableEntry =>
   person({ botTier: "kyu", lastSeenAt: daysAgo(400), ...over });
 
 describe("reading a filter off the address", () => {
-  it("shows people when nothing is asked for", () => {
-    // What the page did before there was a choice: a filter should not change
-    // what somebody sees until they ask it to.
+  it("shows everybody when nothing is asked for, computer players included", () => {
+    /*
+     * The default used to be `people`, so that a filter changed nothing until
+     * somebody asked it to. It hid the five computer players behind a control
+     * nobody had reason to touch, on a site whose difficulty is that nobody is
+     * about. Asserted by name and not only against NO_FILTER, so that moving
+     * the default again has to be done on purpose here too.
+     */
     expect(readDirectoryFilter({})).toEqual(NO_FILTER);
+    expect(readDirectoryFilter({}).who).toBe(DIRECTORY_WHO.everyone);
   });
 
   it("takes the three answers it knows", () => {
@@ -37,7 +43,7 @@ describe("reading a filter off the address", () => {
 
   it("falls back rather than showing nothing, for an address that makes no sense", () => {
     // A mistyped address should show the page, not an apparently deserted site.
-    expect(readDirectoryFilter({ who: "robots" }).who).toBe(DIRECTORY_WHO.people);
+    expect(readDirectoryFilter({ who: "robots" }).who).toBe(DIRECTORY_WHO.everyone);
     expect(readDirectoryFilter({ settled: "yes" }).settled).toBe(false);
   });
 

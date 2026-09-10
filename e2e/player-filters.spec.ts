@@ -33,10 +33,20 @@ test.describe("who the directory lists", () => {
     await seenDaysAgo(AWAY.email, AWAY_AFTER_DAYS + 1);
   });
 
-  test("lists people and not programs until it is asked otherwise", async ({ page }) => {
-    // The default is what the page did before there was a choice: a filter
-    // should not change what somebody sees until they ask it to.
+  test("lists everybody, computer players included, until it is asked otherwise", async ({ page }) => {
+    /*
+     * The default used to be `people`, so that a filter changed nothing until
+     * somebody asked. That hid the five computer players — the opponents that
+     * are always available — behind a control nobody had reason to touch.
+     */
     await page.goto("/players");
+    await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");
+    await expect(named(page, HERE.name)).toHaveCount(1);
+    await expect(named(page, A_ROBOT)).toHaveCount(1);
+  });
+
+  test("still lists people alone when somebody asks for that", async ({ page }) => {
+    await page.goto("/players?who=people");
     await expect(page.getByTestId("who-people")).toHaveAttribute("aria-current", "true");
     await expect(named(page, HERE.name)).toHaveCount(1);
     await expect(named(page, A_ROBOT)).toHaveCount(0);
@@ -129,7 +139,7 @@ test.describe("the bar itself", () => {
   test("does not fall over on an address that makes no sense", async ({ page }) => {
     // A mistyped address should show the page, not an apparently deserted site.
     await page.goto("/players?who=robots&settled=yes");
-    await expect(page.getByTestId("who-people")).toHaveAttribute("aria-current", "true");
+    await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");
     await expect(named(page, HERE.name)).toHaveCount(1);
   });
 });
