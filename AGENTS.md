@@ -381,6 +381,22 @@ worth ruling out in this order before believing any of them:
    out rather than failing, so it costs minutes per run. A schema change means
    restarting the server, and telling the other sessions: the server is shared,
    so one session's `prisma generate` breaks everybody's specs until it is.
+
+   **It lies in both directions, and waiting is not the remedy.** An ordinary
+   source edit is enough to cause it: restore a file, re-run at once, and watch
+   a test fail on code that is no longer there. That reads as "my fix was
+   wrong" and gets investigated, which is the harmless case. The dangerous one
+   is the reverse — deliberately re-introduce a bug to check that a test
+   catches it, and watch the test PASS. That reads as "my test is weak", and a
+   good test is a minute from being rewritten. Twenty seconds later the same
+   command failed correctly. **A false pass is most convincing at exactly the
+   moment it is least questioned**, which is when you are proving a test works.
+
+   Sleeping does not settle it — one restore went on being served stale
+   through sixty seconds of polling while the file plainly had the change.
+   `kill` the server, `rm -rf .next`, start it again and wait for the port to
+   answer: about fifteen seconds, and nothing left to argue with. Never
+   conclude anything from a run in the seconds after editing source.
 2. **Two runs against one database.** Foreground specs while a full suite runs
    in the background: the setup deletions of one race the fixtures of the
    other, and every failure looks real. Two Playwright runs also share
