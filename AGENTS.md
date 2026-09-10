@@ -381,6 +381,19 @@ worth ruling out in this order before believing any of them:
    out rather than failing, so it costs minutes per run. A schema change means
    restarting the server, and telling the other sessions: the server is shared,
    so one session's `prisma generate` breaks everybody's specs until it is.
+
+   **And it can hand you a false PASS, which is the dangerous direction.** A
+   stale server serves the old page, so a spec written against the new one goes
+   green over code that is not running. That is bad enough on its own; where it
+   really bites is the one moment nobody re-checks a pass — *deliberately
+   breaking something to prove a test catches it*. Put the bug back, watch the
+   test pass, and the obvious conclusion is "my test is weak", so the test gets
+   rewritten to catch a bug that was never there. It happened here, and was
+   caught only by re-running twenty seconds later out of doubt.
+   A false failure gets investigated. A false pass gets committed.
+   Waiting does not clear it: kill the server and clear `.next`. If a test
+   passes when you have just broken the thing it tests, restart before
+   believing either the test or yourself.
 2. **Two runs against one database.** Foreground specs while a full suite runs
    in the background: the setup deletions of one race the fixtures of the
    other, and every failure looks real. Two Playwright runs also share
