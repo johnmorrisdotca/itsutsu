@@ -1,4 +1,5 @@
-import { createGame, replayMoves } from "@/lib/gomoku/engine";
+import { createGame } from "@/lib/gomoku/engine";
+import { replayMoves } from "@/lib/gomoku/rules/record";
 import { DEFAULT_SETTINGS } from "@/lib/gomoku/gomoku.constants";
 import type {
   GameSettings,

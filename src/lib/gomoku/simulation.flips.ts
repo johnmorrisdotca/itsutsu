@@ -1,7 +1,8 @@
 import { expect } from "vitest";
 
 import { GAME_STATUS } from "./gomoku.constants";
-import { cellAt, indexOf, isStone, otherStone, undoMove } from "./engine";
+import { cellAt, indexOf, isStone, otherStone } from "./engine";
+import { undoMove } from "./rules/record";
 import type { GameState, Point } from "./gomoku.types";
 import { canFlipAnywhereByHand, countByHand, flipsByHand } from "./simulation.scan";
 import { ranOutOfLength } from "./simulation.checks";

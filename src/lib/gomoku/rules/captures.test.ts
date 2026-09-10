@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { cellAt, playMove, undoMove } from "../engine";
+import { cellAt, playMove } from "../engine";
+import { undoMove } from "./record";
 import {
   GAME_STATUS,
   RULE_VARIANTS,

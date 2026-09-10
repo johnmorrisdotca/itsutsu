@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { createGame, growBoard, isStone, legalPoints, playMove, replayMoves } from "./engine";
+import { createGame, growBoard, isStone, legalPoints, playMove } from "./engine";
+import { replayMoves } from "./rules/record";
 import { GAME_STATUS } from "./gomoku.constants";
 import { rng } from "./simulation.support";
 

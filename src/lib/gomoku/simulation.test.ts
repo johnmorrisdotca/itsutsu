@@ -1,13 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  createGame,
-  emptyPoints,
-  forbiddenPoints,
-  playMove,
-  pointOf,
-  replayMoves,
-} from "./engine";
+import { createGame, emptyPoints, forbiddenPoints, playMove, pointOf } from "./engine";
+import { replayMoves } from "./rules/record";
 import type { Stone } from "./gomoku.types";
 import { GAME_STATUS, RULE_VARIANTS, VARIANT_SPECS } from "./gomoku.constants";
 import { rulesFor } from "./rules/handicap";

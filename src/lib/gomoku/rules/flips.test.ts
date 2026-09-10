@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { createGame, discCount, isLegalMove, legalPoints, playMove, undoMove } from "../engine";
+import { createGame, discCount, isLegalMove, legalPoints, playMove } from "../engine";
+import { undoMove } from "./record";
 import { GAME_STATUS, STONES, WIN_REASONS } from "../gomoku.constants";
 import type { Cell, GameState } from "../gomoku.types";
 

@@ -1,18 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  canShrinkBoard,
-  cellAt,
-  createGame,
-  isLegalMove,
-  legalPoints,
-  mustPass,
-  passTurn,
-  placePiece,
-  playMove,
-  replayMoves,
-  singlesLeft,
-  undoMove,
-} from "../engine";
+import { canShrinkBoard, cellAt, createGame, isLegalMove, legalPoints, mustPass, passTurn, placePiece, playMove, singlesLeft } from "../engine";
+import { replayMoves, undoMove } from "./record";
 import { GAME_STATUS, RULE_VARIANTS, STONES } from "../gomoku.constants";
 import { fromDiagram } from "../gomoku.test-support";
 import type { GameState, Piece, PieceCell, Point } from "../gomoku.types";

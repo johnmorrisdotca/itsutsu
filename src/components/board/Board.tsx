@@ -2,20 +2,8 @@
 
 import { useMemo, useState } from "react";
 
-import {
-  canTwist,
-  forbiddenPoints,
-  inMovePhase,
-  indexOf,
-  lastMove,
-  legalPoints,
-  pieceMoves,
-  pointOf,
-  resolvePlacement,
-  campOf,
-  STAR_RADIUS,
-  starCampOf,
-} from "@/lib/gomoku/engine";
+import { canTwist, forbiddenPoints, inMovePhase, indexOf, legalPoints, pieceMoves, pointOf, resolvePlacement, campOf, STAR_RADIUS, starCampOf } from "@/lib/gomoku/engine";
+import { lastMove } from "@/lib/gomoku/rules/record";
 import {
   BLOCKED,
   GAME_STATUS,

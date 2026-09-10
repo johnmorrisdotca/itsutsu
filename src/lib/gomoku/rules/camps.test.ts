@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { createGame, inMovePhase, isLegalMove, legalPoints, movePiece, pieceMoves, undoMove } from "../engine";
+import { createGame, inMovePhase, isLegalMove, legalPoints, movePiece, pieceMoves } from "../engine";
+import { undoMove } from "./record";
 import { GAME_STATUS, STONES, WIN_REASONS } from "../gomoku.constants";
 import type { Cell } from "../gomoku.types";
 import { campFilled, campMoves, campOf, campSize, campSquares, piecesHome } from "./camps";

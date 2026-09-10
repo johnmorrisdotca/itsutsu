@@ -1,6 +1,7 @@
 import { expect } from "vitest";
 import { checkFlipMove, isFlipping } from "./simulation.flips";
-import { cellAt, forbiddenPoints, indexOf, isStone, otherStone, undoMove } from "./engine";
+import { cellAt, forbiddenPoints, indexOf, isStone, otherStone } from "./engine";
+import { undoMove } from "./rules/record";
 import { rulesFor } from "./rules/handicap";
 import { checkConnectionMove, isConnection } from "./simulation.connections";
 import { checkGoMove, isGo } from "./simulation.go";

@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  cellAt,
-  createGame,
-  isLegalMove,
-  legalPoints,
-  playMove,
-  replayMoves,
-  undoMove,
-} from "../engine";
+import { cellAt, createGame, isLegalMove, legalPoints, playMove } from "../engine";
+import { replayMoves, undoMove } from "./record";
 import {
   BLOCKED,
   GAME_STATUS,

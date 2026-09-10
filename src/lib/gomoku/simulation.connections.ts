@@ -1,6 +1,7 @@
 import { expect } from "vitest";
 
-import { cellAt, undoMove } from "./engine";
+import { cellAt } from "./engine";
+import { undoMove } from "./rules/record";
 import { GAME_STATUS } from "./gomoku.constants";
 import type { Cell, GameState, Point, Stone } from "./gomoku.types";
 import { otherStone } from "./rules/board";

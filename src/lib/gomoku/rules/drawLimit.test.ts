@@ -31,7 +31,7 @@ import {
   lengthReason,
   movesBeforeDraw,
   reachedDrawLimit,
-  settleDrawLimit,
+  settleDraw,
 } from "./drawLimit";
 
 /**
@@ -85,14 +85,14 @@ describe("reaching the limit", () => {
   it("says nothing about a game that has not got there", () => {
     const state = createGame(settings({ size: 9, drawLimit: DRAW_LIMITS.half }), 0);
     expect(reachedDrawLimit(state)).toBe(false);
-    expect(settleDrawLimit(state)).toBe(state);
+    expect(settleDraw(state)).toBe(state);
   });
 
   it("draws the game the move it arrives", () => {
     const state = createGame(settings({ size: 9, drawLimit: DRAW_LIMITS.half }), 0);
     const atLimit = { ...state, moves: new Array(40).fill(state.moves[0] ?? null) } as GameState;
     expect(reachedDrawLimit(atLimit)).toBe(true);
-    expect(settleDrawLimit(atLimit).status).toBe(GAME_STATUS.draw);
+    expect(settleDraw(atLimit).status).toBe(GAME_STATUS.draw);
   });
 
   it("never takes a win away from somebody who has one", () => {
@@ -104,7 +104,7 @@ describe("reaching the limit", () => {
       moves: new Array(60).fill(null),
     } as unknown as GameState;
     expect(reachedDrawLimit(won)).toBe(false);
-    expect(settleDrawLimit(won)).toBe(won);
+    expect(settleDraw(won)).toBe(won);
   });
 
   it("waits for a twist game's quarter turn before calling anything", () => {
@@ -116,7 +116,7 @@ describe("reaching the limit", () => {
       pendingTwist: true,
       moves: new Array(60).fill(null),
     } as unknown as GameState;
-    expect(settleDrawLimit(midTurn)).toBe(midTurn);
+    expect(settleDraw(midTurn)).toBe(midTurn);
   });
 });
 
@@ -203,7 +203,7 @@ describe("every game honours the length it was given", () => {
     // has quietly changed thirty-six games nobody asked it to.
     const state = createGame(settings({ variant, size: 9 }), 0.5);
     expect(movesBeforeDraw(state.settings)).toBeNull();
-    expect(settleDrawLimit(state)).toBe(state);
+    expect(settleDraw(state)).toBe(state);
   });
 });
 
@@ -254,7 +254,7 @@ describe("a game that cannot be drawn is given no length", () => {
     const state = createGame(settings({ variant, drawLimit: DRAW_LIMITS.half }), 0.5);
     const long = { ...state, moves: new Array(10_000).fill(null) } as unknown as GameState;
     expect(reachedDrawLimit(long)).toBe(false);
-    expect(settleDrawLimit(long)).toBe(long);
+    expect(settleDraw(long)).toBe(long);
   });
 
   it("every other game can be given one", () => {
@@ -300,7 +300,7 @@ describe("a board too small to need a length", () => {
     );
     const four = { ...state, moves: new Array(4).fill(null) } as unknown as GameState;
     expect(reachedDrawLimit(four)).toBe(false);
-    expect(settleDrawLimit(four)).toBe(four);
+    expect(settleDraw(four)).toBe(four);
   });
 
   it("tells the two refusals apart, because they are different things", () => {

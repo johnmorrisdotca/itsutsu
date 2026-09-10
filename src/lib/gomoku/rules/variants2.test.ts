@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  cellAt,
-  createGame,
-  isLegalMove,
-  legalPoints,
-  playMove,
-  replayMoves,
-  undoMove,
-} from "../engine";
+import { cellAt, createGame, isLegalMove, legalPoints, playMove } from "../engine";
+import { replayMoves, undoMove } from "./record";
 import { GAME_STATUS, RULE_VARIANTS, STONES, WIN_REASONS, WORM } from "../gomoku.constants";
 import { randomSquares, wormholeLinks } from "../obstacles";
 import { fromDiagram } from "../gomoku.test-support";

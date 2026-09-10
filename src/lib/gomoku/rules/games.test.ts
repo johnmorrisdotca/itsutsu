@@ -1,20 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  canGrowBoard,
-  canTwist,
-  cellAt,
-  createGame,
-  inMovePhase,
-  isLegalMove,
-  legalPoints,
-  movePiece,
-  pieceMoves,
-  playMove,
-  replayMoves,
-  resolvePlacement,
-  twistBoard,
-  undoMove,
-} from "../engine";
+import { canGrowBoard, canTwist, cellAt, createGame, inMovePhase, isLegalMove, legalPoints, movePiece, pieceMoves, playMove, resolvePlacement, twistBoard } from "../engine";
+import { replayMoves, undoMove } from "./record";
 import { GAME_STATUS, RULE_VARIANTS, STONES, WIN_REASONS } from "../gomoku.constants";
 import { fromDiagram, show } from "../gomoku.test-support";
 import type { GameState, Point } from "../gomoku.types";

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createGame, playMove, stonesLeft, undoMove } from "../engine";
+import { createGame, playMove, stonesLeft } from "../engine";
+import { undoMove } from "./record";
 import {
   GAME_STATUS,
   OPENING_RULES,

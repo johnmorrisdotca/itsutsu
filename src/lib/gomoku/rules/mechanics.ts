@@ -8,7 +8,7 @@ import {
   WIN_REASONS,
 } from "../gomoku.constants";
 import type { Cell, GameState, Move, Point, Stone } from "../gomoku.types";
-import { settleDrawLimit } from "./drawLimit";
+import { settleDraw } from "./drawLimit";
 import { cellAtPoint, indexOf, isOnBoard, isStone, otherStone, stepFrom } from "./board";
 import { campFilled, campMoves, campSquares } from "./camps";
 import { applyCheckersMove, checkersHasAnyMove, checkersMoves } from "./checkers";
@@ -202,7 +202,7 @@ export function twistBoard(state: GameState, quadrant: number, clockwise: boolea
 
   // The twist is what completes the move, so this is where a twist game's
   // length is checked rather than when the stone went down.
-  return settleDrawLimit({ ...turned, toPlay: otherStone(toPlay) });
+  return settleDraw({ ...turned, toPlay: otherStone(toPlay) });
 }
 
 /** Where a piece of the colour to move may step from `from`; empty if it may not move. */
@@ -260,7 +260,7 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
     if (!checkersHasAnyMove(result.board, result.kings, settings.size, other)) {
       return won(moved, toPlay, WIN_REASONS.blocked, []);
     }
-    return settleDrawLimit({ ...moved, toPlay: other });
+    return settleDraw({ ...moved, toPlay: other });
   }
 
   const board = state.board.slice();
@@ -273,15 +273,15 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
   if (spec.camps) {
     return campFilled(board, settings.size, toPlay)
       ? won(moved, toPlay, WIN_REASONS.camp, campSquares(settings.size, otherStone(toPlay)))
-      : settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });
+      : settleDraw({ ...moved, toPlay: otherStone(toPlay) });
   }
   // Chinese Checkers is the same race, read against a star point instead of a square corner.
   if (spec.chineseCheckers) {
     return starFilled(board, settings.size, STAR_RADIUS, toPlay)
       ? won(moved, toPlay, WIN_REASONS.camp, starCampSquares(STAR_RADIUS, otherStone(toPlay)))
-      : settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });
+      : settleDraw({ ...moved, toPlay: otherStone(toPlay) });
   }
-  return settleStone(moved, to) ?? settleDrawLimit({ ...moved, toPlay: otherStone(toPlay) });
+  return settleStone(moved, to) ?? settleDraw({ ...moved, toPlay: otherStone(toPlay) });
 }
 
 

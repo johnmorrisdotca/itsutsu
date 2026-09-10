@@ -4,30 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { assess, isSwapBlocked } from "@/lib/gomoku/analysis";
 import { readAdvantage } from "@/lib/gomoku/advantage";
-import {
-  canSkip as engineCanSkip,
-  canPass as engineCanPass,
-  canGrowBoard,
-  canShrinkBoard,
-  canSwapSeats,
-  growBoard,
-  shrinkBoard,
-  chooseColour as engineChooseColour,
-  extendOpening as engineExtendOpening,
-  cellAt,
-  inMovePhase,
-  isLegalMove,
-  movePiece,
-  passTurn,
-  pieceMoves,
-  placePiece,
-  playMove,
-  seatToPlay,
-  twistBoard,
-  skipMove,
-  swapSeats,
-  winOnTime,
-} from "@/lib/gomoku/engine";
+import { canPass as engineCanPass, canGrowBoard, canShrinkBoard, canSwapSeats, growBoard, shrinkBoard, chooseColour as engineChooseColour, extendOpening as engineExtendOpening, cellAt, inMovePhase, isLegalMove, movePiece, passTurn, pieceMoves, placePiece, playMove, seatToPlay, twistBoard, swapSeats, winOnTime } from "@/lib/gomoku/engine";
+import { canSkip as engineCanSkip, skipMove } from "@/lib/gomoku/rules/record";
 import {
   GAME_STATUS,
   MOVE_KINDS,

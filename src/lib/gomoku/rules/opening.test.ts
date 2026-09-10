@@ -1,17 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  canChooseColour,
-  canExtendOpening,
-  canSwapSeats,
-  chooseColour,
-  createGame,
-  extendOpening,
-  isLegalMove,
-  playMove,
-  replayMoves,
-  resolveOpener,
-  seatToPlay,
-} from "../engine";
+import { canChooseColour, canExtendOpening, canSwapSeats, chooseColour, createGame, extendOpening, isLegalMove, playMove, resolveOpener, seatToPlay } from "../engine";
+import { replayMoves } from "./record";
 import {
   FIRST_PLAYERS,
   OPENING_RULES,

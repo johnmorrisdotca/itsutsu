@@ -1,7 +1,7 @@
 import { MOVE_KINDS } from "../gomoku.constants";
 import type { Cell, GameState, Move, Point, Stone } from "../gomoku.types";
 import { cellAtPoint, indexOf, isOnBoard, otherStone, pointOf } from "./board";
-import { settleDrawLimit } from "./drawLimit";
+import { settleDraw } from "./drawLimit";
 
 /**
  * Go: stones never move once played, and nothing about a line ever decides
@@ -192,7 +192,7 @@ export function playGoMove(state: GameState, point: Point): GameState {
     [toPlay]: state.captures[toPlay] + result.captured.length,
   };
 
-  return settleDrawLimit({
+  return settleDraw({
     ...state,
     board: result.board,
     moves: [...state.moves, move],

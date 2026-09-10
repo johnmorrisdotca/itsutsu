@@ -102,15 +102,23 @@ export function reachedDrawLimit(state: GameState): boolean {
  * that owes a quarter turn has not finished its move, and calling that a
  * draw would leave a board mid-turn for ever.
  */
-export function settleDrawLimit(state: GameState): GameState {
+export function settleDraw(state: GameState): GameState {
   if (state.pendingTwist) return state;
   /*
-   * Two length rules, settled in one place because every caller wants both.
+   * Two rules, and they are genuinely different questions: the players agreed
+   * to at most so many moves, and nobody is getting anywhere. They are already
+   * two functions — `reachedDrawLimit` and `stalled` — which is where that
+   * distinction belongs.
    *
-   * The agreed length is a share of the board and applies to games that fill
-   * it. `stalled` is for the games that do not fill anything — pieces that
-   * move rather than land — where the board is no bound at all and the game
-   * can run for ever. See `noProgress.ts` for why one rule cannot serve both.
+   * They are applied together, and by one function rather than two, because
+   * every one of the ten callers wants both and a caller that remembered only
+   * one would silently stop applying a backstop on that path. This was very
+   * nearly split apart on the argument that no name covered both jobs; the
+   * name was the thing at fault, not the joining.
+   *
+   * The agreed length is a share of the board, for games that fill it.
+   * `stalled` is for the games that fill nothing — pieces that move rather
+   * than land — where the board bounds nothing and a game can run for ever.
    */
   if (reachedDrawLimit(state) || stalled(state)) {
     return { ...state, status: GAME_STATUS.draw };

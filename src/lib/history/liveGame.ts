@@ -6,21 +6,8 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { freeGameId } from "./gameId";
-import {
-  canTwist,
-  createGame,
-  inMovePhase,
-  isLegalMove,
-  movePiece,
-  mustPass,
-  passTurn,
-  pieceMoves,
-  placePiece,
-  playMove,
-  replayMoves,
-  resolvePlacement,
-  twistBoard,
-} from "@/lib/gomoku/engine";
+import { canTwist, createGame, inMovePhase, isLegalMove, movePiece, mustPass, passTurn, pieceMoves, placePiece, playMove, resolvePlacement, twistBoard } from "@/lib/gomoku/engine";
+import { replayMoves } from "@/lib/gomoku/rules/record";
 import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, VARIANT_SPECS, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";

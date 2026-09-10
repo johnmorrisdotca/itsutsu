@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  canUndo,
-  cellAt,
-  createGame,
-  findWinningLine,
-  isLegalMove,
-  lastMove,
-  playMove,
-  undoMove,
-} from "./engine";
+import { cellAt, createGame, findWinningLine, isLegalMove, playMove } from "./engine";
+import { canUndo, lastMove, undoMove } from "./rules/record";
 import { GAME_STATUS, RULE_VARIANTS, STONES } from "./gomoku.constants";
 import type { GameState, Point } from "./gomoku.types";
 

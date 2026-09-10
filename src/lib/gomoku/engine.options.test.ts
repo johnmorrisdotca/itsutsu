@@ -1,20 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  canSkip,
-  canSwapSeats,
-  canUndo,
-  cellAt,
-  createGame,
-  isLegalMove,
-  playMove,
-  resolveOpener,
-  seatToPlay,
-  skipMove,
-  skipTarget,
-  swapSeats,
-  undoMove,
-  winOnTime,
-} from "./engine";
+import { canSwapSeats, cellAt, createGame, isLegalMove, playMove, resolveOpener, seatToPlay, swapSeats, winOnTime } from "./engine";
+import { canSkip, canUndo, skipMove, skipTarget, undoMove } from "./rules/record";
 import {
   BLOCKED,
   FIRST_PLAYERS,

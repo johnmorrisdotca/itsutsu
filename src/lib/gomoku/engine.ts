@@ -1,5 +1,5 @@
 import { createGame } from "./rules/creation";
-import { settleDrawLimit } from "./rules/drawLimit";
+import { settleDraw } from "./rules/drawLimit";
 export { canBeDrawn, drawnByLength, movesBeforeDraw } from "./rules/drawLimit";
 import { flipLegal, playFlip, undoFlip } from "./rules/flips";
 import {
@@ -211,7 +211,7 @@ export function placePiece(state: GameState, cells: readonly PieceCell[]): GameS
   if (lines.black.length > 0) return won(laid, STONES.black, WIN_REASONS.line, lines.black);
   if (lines.white.length > 0) return won(laid, STONES.white, WIN_REASONS.line, lines.white);
   if (!board.includes(null)) return { ...laid, status: GAME_STATUS.draw };
-  return settleDrawLimit({ ...laid, toPlay: otherStone(toPlay) });
+  return settleDraw({ ...laid, toPlay: otherStone(toPlay) });
 }
 
 /**
@@ -261,7 +261,7 @@ export function passTurn(state: GameState): GameState {
     }
     return noPlayLeft(passed, WIN_REASONS.blocked);
   }
-  return settleDrawLimit({ ...passed, toPlay: otherStone(state.toPlay) });
+  return settleDraw({ ...passed, toPlay: otherStone(state.toPlay) });
 }
 
 /**
@@ -285,7 +285,7 @@ export function playMove(
    * legal move, and the game ends when neither colour can move — so their
    * whole turn happens in playFlip and the length is checked on the way out.
    */
-  if (spec.flips) return settleDrawLimit(playFlip(state, point));
+  if (spec.flips) return settleDraw(playFlip(state, point));
   // Go settles its own move: a capture, maybe a fresh ko point, and the turn passes.
   if (spec.go) return playGoMove(state, point);
   // The colour of the stone: the mover's, unless the game lets them choose, or fixes it.
@@ -324,176 +324,9 @@ export function playMove(
   if (!after.board.includes(null)) return noPlayLeft(after, WIN_REASONS.full);
 
   const stays = stonesLeftInTurn(settings, after.moves, toPlay) > 0;
-  return settleDrawLimit({
+  return settleDraw({
     ...after,
     toPlay: stays ? toPlay : otherStone(toPlay),
     opening: openingAfterMove(after),
   });
-}
-
-export function canSkip(state: GameState): boolean {
-  if (!state.settings.allowSkip || state.status !== GAME_STATUS.playing) return false;
-  if (state.pendingTwist || inMovePhase(state)) return false;
-  const target = skipTarget(state);
-  return target !== null && isLegalMove(state, target);
-}
-
-/**
- * Where a skipped turn puts its stone: the open intersection furthest from the
- * action, picked from the corner chosen by `roll`. A skip is still a stone on
- * the board — it just spends the turn somewhere that should not matter.
- */
-export function skipTarget(state: GameState, roll = 0): Point | null {
-  const open = emptyPoints(state);
-  if (open.length === 0) return null;
-
-  const last = state.settings.size - 1;
-  const corners: Point[] = [
-    { row: 0, col: 0 },
-    { row: 0, col: last },
-    { row: last, col: 0 },
-    { row: last, col: last },
-  ];
-  const corner = corners[Math.min(corners.length - 1, Math.floor(roll * 4))];
-  const distance = (point: Point) =>
-    Math.max(Math.abs(point.row - corner.row), Math.abs(point.col - corner.col));
-
-  return open.reduce((best, point) =>
-    distance(point) < distance(best) ? point : best,
-  );
-}
-
-/** Burns the turn on a corner stone. A no-op when skipping is not allowed. */
-export function skipMove(state: GameState, roll = 0): GameState {
-  if (!canSkip(state)) return state;
-  const target = skipTarget(state, roll);
-  if (target === null) return state;
-  return playMove(state, target, MOVE_KINDS.skip);
-}
-
-export function canUndo(state: GameState): boolean {
-  return state.settings.allowUndo && state.moves.length > 0;
-}
-
-/**
- * Removes the last move, putting back anything it captured, a piece where it
- * came from, and a twisted quadrant the way it was. Also reopens a finished
- * game. The opening is left as it stands: a colour choice is a decision, not
- * a stone, and is not undone by lifting one.
- */
-export function undoMove(state: GameState): GameState {
-  if (!canUndo(state)) return state;
-  // A flipped disc is not on the record; the flipping games rebuild instead.
-  if (VARIANT_SPECS[state.settings.variant].flips) {
-    return undoFlip(state, createGame(state.settings));
-  }
-
-  const last = state.moves[state.moves.length - 1];
-  const { size } = state.settings;
-  const spec = VARIANT_SPECS[state.settings.variant];
-  const quadrantSize = spec.quadrantSize;
-  let board = state.board.slice();
-  if (last.twist !== undefined && quadrantSize !== null) {
-    board = rotateQuadrant(board, size, quadrantSize, last.twist.quadrant, !last.twist.clockwise);
-  }
-  if (last.cleared !== undefined) board = restoreBottomRow(board, size, last.cleared);
-  if (last.kind === MOVE_KINDS.piece) {
-    for (const cell of last.cells ?? []) board[indexOf(size, cell)] = null;
-  } else if (last.kind !== MOVE_KINDS.pass) {
-    board[indexOf(size, last)] = null;
-  }
-  if (last.from !== undefined) board[indexOf(size, last.from)] = last.stone;
-  for (const point of last.captured ?? []) {
-    board[indexOf(size, point)] = otherStone(last.stone);
-  }
-
-  // Checkers: put a king back where it moved from, a captured king back on the board, and reopen its chain.
-  let kings = state.kings;
-  let chainAt: Point | null = null;
-  if (spec.checkers && last.from !== undefined) {
-    const from = last.from;
-    kings = state.kings.filter((point) => !samePoint(point, last));
-    if (last.wasKing) kings = [...kings, from];
-    const capturedPoint = last.captured?.[0];
-    if (capturedPoint !== undefined && last.capturedWasKing) kings = [...kings, capturedPoint];
-    chainAt = last.continuedChain ? from : null;
-  }
-  const koPoint = last.koPointBefore ?? null; // Go: back to what it was before this move.
-
-  return {
-    ...state,
-    board,
-    kings,
-    chainAt,
-    koPoint,
-    pendingTwist: false,
-    moves: state.moves.slice(0, -1),
-    captures: {
-      ...state.captures,
-      [last.stone]: state.captures[last.stone] - stonesIn(last.captured ?? []),
-    },
-    toPlay: last.by ?? last.stone,
-    status: GAME_STATUS.playing,
-    winner: null,
-    winBy: null,
-    winningLine: [],
-  };
-}
-
-export function lastMove(state: GameState): Point | null {
-  const last = state.moves[state.moves.length - 1];
-  return last === undefined || last.kind === MOVE_KINDS.pass ? null : last;
-}
-
-/**
- * Replays a record through the engine: every position it passed through,
- * including the ones a swap-opening decision produced. When the record runs
- * out of decisions while a choice is pending, the chooser is assumed to have
- * kept their colour, which is all a store without seat data can say.
- *
- * Stops at the first move that will not replay, since the record no longer
- * fits the rules from there.
- */
-export function replayMoves(
-  start: GameState,
-  moves: readonly MoveInput[],
-  choices: readonly OpeningChoice[] = [],
-): GameState[] {
-  const timeline = [start];
-  let pending = 0;
-
-  for (const move of moves) {
-    let current = timeline[timeline.length - 1];
-    if (current.opening.stage === OPENING_STAGES.choosing) {
-      const choice = choices[pending] ?? current.toPlay;
-      pending += 1;
-      current = applyOpeningChoice(current, choice);
-      if (current.opening.stage === OPENING_STAGES.choosing) break;
-      timeline.push(current);
-    }
-    const point = { row: move.row, col: move.col };
-    let next =
-      move.kind === MOVE_KINDS.pass
-        ? passTurn(current)
-        : move.cells !== undefined
-          ? placePiece(current, move.cells)
-          : move.from !== undefined
-            ? movePiece(current, { row: move.from.row, col: move.from.col }, point)
-            : playMove(
-                current,
-                point,
-                MOVE_KINDS.place,
-                move.stone === STONES.black || move.stone === STONES.white ? move.stone : null,
-              );
-    if (next === current) break;
-    timeline.push(next);
-    // A recorded twist is part of the same move, and lands in the same replay step.
-    if (move.twist !== undefined) {
-      const turned = twistBoard(next, move.twist.quadrant, move.twist.clockwise);
-      if (turned === next) break;
-      timeline.push(turned);
-      next = turned;
-    }
-  }
-  return timeline;
 }

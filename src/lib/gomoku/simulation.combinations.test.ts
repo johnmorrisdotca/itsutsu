@@ -9,7 +9,8 @@ import {
   VARIANT_SPECS,
   boardSizesFor,
 } from "./gomoku.constants";
-import { createGame, replayMoves } from "./engine";
+import { createGame } from "./engine";
+import { replayMoves } from "./rules/record";
 import type { Handicap, RuleVariant } from "./gomoku.types";
 import { playOut } from "./simulation.support";
 

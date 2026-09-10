@@ -1,4 +1,5 @@
-import { createGame, replayMoves } from "./engine";
+import { createGame } from "./engine";
+import { replayMoves } from "./rules/record";
 import { DRAW_LIMITS, NO_HANDICAP } from "./gomoku.constants";
 import type { GameState, Handicap, MoveInput, Stone } from "./gomoku.types";
 
