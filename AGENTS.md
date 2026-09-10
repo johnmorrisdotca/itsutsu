@@ -36,9 +36,21 @@ unless asked twice.
 
 ```sh
 pnpm bots:play                                     # report only, writes nothing
-BOT_GAMES_RUN=1 BOT_GAMES_ALL=1 BOT_GAMES_EACH=2 pnpm bots:play
-DATABASE_URL="postgres://…" BOT_GAMES_RUN=1 BOT_GAMES_ALL=1 BOT_GAMES_EACH=2 pnpm bots:play
+BOT_GAMES_RUN=1 BOT_GAMES_ALL=1 BOT_GAMES_EACH=2 pnpm bots:play        # your database
+BOT_GAMES_RUN=1 BOT_GAMES_ALL=1 BOT_GAMES_EACH=2 pnpm bots:play:prod   # the live site
 ```
+
+**Two commands rather than one and a flag, because the name is the warning.**
+`bots:play` writes to whatever your `.env` points at; `bots:play:prod` writes
+to the live site. Nothing about the two can be confused at a glance, and no
+argument decides which. The safety property is that forgetting something can
+only ever leave you on your own database — production is reached by asking for
+it by name, never by omission.
+
+`bots:play:prod` reads the connection string from `.env.production.local` or
+`.vercel/.env.production.local` — both gitignored, the second written by
+`vercel env pull` — so it is never pasted into a shell, a scrollback or a
+screen share. With neither file it says so and runs nothing.
 
 `BOT_GAMES_ALL=1` is every ladder grade against every other across three
 unalike boards; without it, only the specialists at their own game.

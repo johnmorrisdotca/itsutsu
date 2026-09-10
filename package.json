@@ -35,7 +35,8 @@
     "embed-token": "node --env-file=.env scripts/mint-embed-token.ts",
     "backlog:cleanup-litter": "node --env-file=.env scripts/cleanup-backlog-litter.ts",
     "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line",
-    "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept"
+    "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
+    "bots:play:prod": "node scripts/bots-play-prod.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
