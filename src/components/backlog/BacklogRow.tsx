@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, SELECT_CLASS } from "@/components/ui/ui.constants";
 import { movesFrom } from "@/lib/backlog/backlog";
-import { EFFORT_DISPLAY, KIND_DISPLAY, PRIORITY_DISPLAY, STATUS_DISPLAY } from "@/lib/backlog/backlog.constants";
+import { BACKLOG_STATUSES, EFFORT_DISPLAY, KIND_DISPLAY, PRIORITY_DISPLAY, STATUS_DISPLAY } from "@/lib/backlog/backlog.constants";
 import type { BacklogItem, BacklogStatus } from "@/lib/backlog/backlog.types";
 
 import type { BacklogRowProps } from "./backlogBoard.types";
@@ -130,8 +130,15 @@ export function BacklogRow({ item, onMoved, who }: BacklogRowProps) {
         </div>
         {item.detail === "" ? null : <p className="max-w-prose text-sm text-muted">{item.detail}</p>}
         <p className="text-xs text-muted">
-          {item.askedBy === "" ? "Asked for" : `Asked for by ${item.askedBy}`} · added {dayStamp(item.createdAt)} · moved{" "}
-          {dayStamp(item.movedAt)}
+          {item.askedBy === "" ? "Asked for" : `Asked for by ${item.askedBy}`} · added {dayStamp(item.createdAt)}{" "}
+          {/*
+            "Moved" is the honest word while a row is still going somewhere,
+            and the wrong one once it has arrived: the last move a done row
+            made was being finished, and that date is the one anybody looking
+            at a done board actually wants. Same field, read for what it means
+            on this row rather than for what it is called on the column.
+          */}
+          · {item.status === BACKLOG_STATUSES.done ? "done" : "moved"} {dayStamp(item.movedAt)}
           {item.assignedTo === "" ? "" : " · "}
           {item.assignedTo === "" ? null : (
             <span className="font-medium text-ink-soft" data-testid="backlog-assigned">
