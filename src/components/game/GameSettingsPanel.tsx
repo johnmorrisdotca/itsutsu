@@ -50,6 +50,27 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
   const spec = VARIANT_SPECS[variant];
   const openings = availableOpenings(settings);
   const locks = settingsLocks(settings);
+  /*
+   * "Fixed by Reversi." was under every setting Reversi fixes — four times on
+   * one panel, ten places in this file that could say it. Said once, above,
+   * and the rows that would have repeated it carry their own hint or none.
+   *
+   * Only that one sentence is dropped. `locks.reading` and `locks.advantage`
+   * have reasons of their own — a game whose threats cannot be read is not
+   * the same statement as a board this game fixes — and those still speak for
+   * themselves where they apply.
+   */
+  const fixedBy = GAME_COPY.fixedBy(RULE_VARIANT_DISPLAY[variant].label);
+  const said = (lock: string | null, otherwise?: string) =>
+    lock === null ? otherwise : lock === fixedBy ? undefined : lock;
+  const fixes = [
+    locks.size === null ? null : "board",
+    locks.opening === null ? null : "opening",
+    locks.winLength === null ? null : GAME_COPY.lineLength.label.toLowerCase(),
+    locks.obstacles === null ? null : "obstacles",
+    locks.allowSkip === null ? null : "skipping",
+    locks.drawLimit === null ? null : "length",
+  ].filter((one): one is string => one !== null);
   // Lines the reading cannot help with are greyed rather than hidden, so the rule is visible.
   const reading = locks.reading === null;
   const canChooseOpener =
@@ -73,8 +94,14 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </p>
       ) : null}
 
+      {fixes.length > 0 ? (
+        <p className="text-xs text-muted" data-testid="fixed-by-rules">
+          {fixedBy} It settles the {fixes.join(", ")}.
+        </p>
+      ) : null}
+
       <fieldset disabled={begun} className="flex min-w-0 flex-col gap-4">
-      <Field label="Board" hint={locks.size ?? undefined}>
+      <Field label="Board" hint={said(locks.size)}>
         <Select
           value={size}
           disabled={locks.size !== null}
@@ -107,7 +134,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
 
       <Field
         label={GAME_COPY.opening.label}
-        hint={locks.opening ?? OPENING_DISPLAY[opening].tagline}
+        hint={said(locks.opening, OPENING_DISPLAY[opening].tagline)}
       >
         <Select
           value={opening}
@@ -125,7 +152,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
-      <Field label={GAME_COPY.lineLength.label} hint={locks.winLength ?? GAME_COPY.lineLengthHint}>
+      <Field label={GAME_COPY.lineLength.label} hint={said(locks.winLength, GAME_COPY.lineLengthHint)}>
         <Select
           value={settings.winLength}
           disabled={locks.winLength !== null}
@@ -169,7 +196,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
-      <Field label="Obstacles" hint={locks.obstacles ?? OBSTACLE_LAYOUT_DISPLAY[obstacles].description}>
+      <Field label="Obstacles" hint={said(locks.obstacles, OBSTACLE_LAYOUT_DISPLAY[obstacles].description)}>
         <Select
           value={obstacles}
           disabled={locks.obstacles !== null}
@@ -222,7 +249,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             checked={locks.allowSkip === null && settings.allowSkip}
             disabled={locks.allowSkip !== null}
             onChange={(next) => actions.reset({ allowSkip: next })}
-            hint={locks.allowSkip ?? GAME_COPY.skipHint}
+            hint={said(locks.allowSkip, GAME_COPY.skipHint)}
           />
           <Toggle
             label="Allow swapping seats"
@@ -244,7 +271,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           */}
           <Field
             label="Length"
-            hint={locks.drawLimit ?? DRAW_LIMIT_DISPLAY[settings.drawLimit].blurb}
+            hint={said(locks.drawLimit, DRAW_LIMIT_DISPLAY[settings.drawLimit].blurb)}
           >
             <Select
               value={settings.drawLimit}
