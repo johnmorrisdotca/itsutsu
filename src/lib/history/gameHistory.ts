@@ -123,10 +123,27 @@ function paginate(total: number, query: { page: number; pageSize: number }): Pag
   };
 }
 
+/**
+ * The member ids of the programs, for the pool filter.
+ *
+ * Read once per request rather than joined onto every game: there are eight of
+ * them and the list changes when a new opponent is written, which is not often
+ * enough to be worth a column on ten thousand games. Nought of them is a real
+ * answer — a fresh database has no programs in it — so it is returned rather
+ * than treated as "not looked up yet".
+ */
+async function computerSeatIds(): Promise<string[]> {
+  const rows = await prisma.member.findMany({
+    where: { botTier: { not: null } },
+    select: { id: true },
+  });
+  return rows.map((row) => row.id);
+}
+
 export async function fetchGameHistoryPage(
   query: GameHistoryQuery,
 ): Promise<GameHistoryPage> {
-  const where = buildGameWhere(query);
+  const where = buildGameWhere(query, query.pool === "all" ? [] : await computerSeatIds());
 
   const [total, byResult, bySize] = await Promise.all([
     prisma.game.count({ where }),
@@ -172,7 +189,7 @@ export async function fetchGameHistoryPage(
 export async function fetchWholeRecord(
   query: GameHistoryQuery,
 ): Promise<{ items: GameSummary[]; total: number }> {
-  const where = buildGameWhere(query);
+  const where = buildGameWhere(query, query.pool === "all" ? [] : await computerSeatIds());
   const [total, rows] = await Promise.all([
     prisma.game.count({ where }),
     prisma.game.findMany({

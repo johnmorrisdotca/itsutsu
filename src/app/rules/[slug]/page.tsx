@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { gamePath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { championsPath, gamePath, recordPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
@@ -96,6 +96,28 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
             <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">
               Play {page.title} →
+            </Link>
+            {/*
+              The two ways out of a rules page that are not "start one".
+              Every game's name on this site leads here, so this page is the
+              hub the rule hangs on — and it had nothing but the board and
+              Wikipedia on it. A reader who has just learnt what Reversi is
+              wants to see it played and to see who is good at it, and both
+              were a click away and unreachable.
+            */}
+            <Link
+              href={recordPath(variant)}
+              className="text-sm underline-offset-2 hover:underline"
+              data-testid="rules-record-link"
+            >
+              Every game of {page.title} played here <span className="font-mincho">棋譜</span>
+            </Link>
+            <Link
+              href={championsPath(variant)}
+              className="text-sm underline-offset-2 hover:underline"
+              data-testid="rules-champions-link"
+            >
+              Who is best at it <span className="font-mincho">名人</span>
             </Link>
             {/*
               Somewhere outside this site that can contradict us. A rules page

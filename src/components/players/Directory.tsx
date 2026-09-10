@@ -51,7 +51,11 @@ const RECENT = 200;
  * dash is a fact about Chibi, who never played here; it is not what a lifetime
  * view looks like. Somebody with a real rating here keeps showing it.
  */
-function DirectoryRecord({ profile, elsewhere }: Pick<DirectoryEntry, "profile" | "elsewhere">) {
+function DirectoryRecord({
+  name,
+  profile,
+  elsewhere,
+}: Pick<DirectoryEntry, "profile" | "elsewhere"> & { name: string }) {
   const here = gamesPlayed(profile);
   const played = {
     wins: here.wins + elsewhere.wins,
@@ -64,6 +68,14 @@ function DirectoryRecord({ profile, elsewhere }: Pick<DirectoryEntry, "profile" 
     <>
       <RecordCells
         record={played}
+        /*
+         * Rated games here, both pools, which is what `gamesPlayed` added up.
+         * A row carrying a kept record is counting games this site never saw,
+         * so it links nowhere: there is nothing here to open, and a link that
+         * showed the Itsutsu half under a total that includes another site
+         * would be quietly wrong about which games it meant.
+         */
+        of={{ player: name, rated: "yes", here: !kept }}
         note={
           kept ? (
             /*
@@ -213,7 +225,7 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
                   />
                 </span>
               </td>
-              <DirectoryRecord profile={entry.profile} elsewhere={entry.elsewhere} />
+              <DirectoryRecord name={entry.name} profile={entry.profile} elsewhere={entry.elsewhere} />
               <td className="py-1.5 pr-3 text-xs text-muted">
                 {new Date(entry.joinedAt).toLocaleDateString()}
                 {entry.isNew ? (

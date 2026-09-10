@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { rulesPath } from "@/lib/gomoku/slugs";
+import { aliasedVariant } from "@/lib/legacy/gameAliases";
+import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /**
@@ -27,27 +28,62 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
  */
 export function GameName({
   variant,
+  name,
   kanji = false,
   raised = false,
   className = "",
 }: {
-  variant: RuleVariant;
+  /** The game, as a variant key or as its slug. */
+  variant?: string;
+  /**
+   * The name as it was written, where written words are what there is.
+   *
+   * A record kept from another site lists its own names for games — Flipversi,
+   * Keryo Pente — and `gameAliases` knows which of ours those are, so they
+   * link like any other name. The ones with no game here (Backgammon, Chess)
+   * are said plainly instead: the rule is only honest if its exceptions look
+   * like exceptions, and a link that cannot keep its promise is worse than a
+   * plain word.
+   */
+  name?: string;
   /** Show the Japanese name beside it, small, the way a heading does. */
   kanji?: boolean;
   /** Lift it above a stretched row link. */
   raised?: boolean;
   className?: string;
 }) {
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const known = knownGame(variant, name);
+  const copy = known === null ? null : RULE_VARIANT_DISPLAY[known];
+
+  if (known === null || copy === null) {
+    return (
+      <span
+        className={`text-muted italic ${className}`}
+        title="Not a game played here — this is from a record kept from elsewhere."
+        data-testid="game-not-here"
+      >
+        {name ?? variant ?? ""}
+      </span>
+    );
+  }
   return (
     <Link
-      href={rulesPath(variant)}
+      href={rulesPath(known)}
       data-testid="game-name"
-      data-variant={variant}
+      data-variant={known}
       className={`underline-offset-2 hover:underline ${raised ? "relative z-10" : ""} ${className}`}
     >
-      {copy.label}
+      {name ?? copy.label}
       {kanji ? <span className="font-mincho ml-1.5 text-xs font-normal opacity-70">{copy.kanji}</span> : null}
     </Link>
   );
+}
+
+/** Which of our games this is, whether it arrived as a key, a slug or a name. */
+function knownGame(variant: string | undefined, name: string | undefined): RuleVariant | null {
+  if (variant !== undefined) {
+    if (variant in RULE_VARIANT_DISPLAY) return variant as RuleVariant;
+    return variantFor(variant);
+  }
+  return name === undefined ? null : aliasedVariant(name);
 }

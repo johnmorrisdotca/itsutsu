@@ -1,11 +1,13 @@
 import Link from "next/link";
 
+import { GameCount } from "@/components/games/GameCount";
+import { GameName } from "@/components/games/GameName";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { recordPath } from "@/lib/gomoku/slugs";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import type { PlayerRecord } from "@/lib/history/playerRecord";
 import type { TimeGiftRecord } from "@/lib/history/timeGifts";
-import { countText, figuresOf, recordText, winRateText } from "@/lib/rating/figures";
+import { countText, figuresOf, winRateText } from "@/lib/rating/figures";
 import { playerPath } from "@/lib/rating/playerKey";
 
 /**
@@ -17,10 +19,18 @@ import { playerPath } from "@/lib/rating/playerKey";
  * are worked out the same way in every one of them.
  */
 export function ItsutsuRecord({
+  name,
   record,
   gifts,
   emptyNote,
 }: {
+  /**
+   * Whose record this is, which the record itself does not carry.
+   *
+   * Threaded in rather than looked up because every number here is a link to
+   * the games behind it, and "their games" needs a name to be their games.
+   */
+  name: string;
   record: PlayerRecord;
   gifts: TimeGiftRecord;
   /**
@@ -63,9 +73,49 @@ export function ItsutsuRecord({
                 const figures = figuresOf({ won: row.wins, lost: row.losses, drawn: row.draws });
                 return (
                   <tr key={row.variant} className="border-t border-rule">
-                    <td className="py-1.5 pr-3">{variantLabel(row.variant)}</td>
-                    <td className="py-1.5 pr-3 text-right font-mono tabular-nums">{countText(figures.played)}</td>
-                    <td className="py-1.5 pr-3 text-right font-mono tabular-nums">{recordText(figures)}</td>
+                    <td className="py-1.5 pr-3">
+                      <GameName variant={row.variant} />
+                    </td>
+                    <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
+                      <GameCount
+                        count={countText(figures.played)}
+                        variant={row.variant}
+                        player={name}
+                        outcome="decided"
+                        title={`Every game of ${variantLabel(row.variant)} ${name} has finished here`}
+                      />
+                    </td>
+                    {/*
+                      Each number goes to the games behind it. A record is three
+                      counts and three filters, and printing them as one string
+                      would make the reader take it apart again to ask the
+                      question the page has already answered.
+                    */}
+                    <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
+                      <GameCount
+                        count={figures.won}
+                        variant={row.variant}
+                        player={name}
+                        outcome="won"
+                        title={`The games of ${variantLabel(row.variant)} ${name} won`}
+                      />
+                      {" · "}
+                      <GameCount
+                        count={figures.lost}
+                        variant={row.variant}
+                        player={name}
+                        outcome="lost"
+                        title={`The games of ${variantLabel(row.variant)} ${name} lost`}
+                      />
+                      {" · "}
+                      <GameCount
+                        count={figures.drawn}
+                        variant={row.variant}
+                        player={name}
+                        outcome="drawn"
+                        title={`The games of ${variantLabel(row.variant)} ${name} drew`}
+                      />
+                    </td>
                     <td className="py-1.5 pr-3 text-right font-mono tabular-nums">{winRateText(figures.winRate)}</td>
                   </tr>
                 );
@@ -82,7 +132,7 @@ export function ItsutsuRecord({
             {record.recent.map((game) => (
               <li key={game.id} className="flex items-center justify-between gap-3 py-1.5">
                 <span>
-                  {variantLabel(game.variant)} · vs{" "}
+                  <GameName variant={game.variant} /> · vs{" "}
                   {game.opponent ? (
                     <Link
                       href={playerPath(game.opponent)}

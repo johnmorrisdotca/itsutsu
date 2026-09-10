@@ -86,6 +86,122 @@ describe("buildGameWhere", () => {
     );
   });
 
+  /*
+   * The player-relative outcome. Every count on the site links through it, so
+   * "their seven losses" opening seven games is the whole promise being kept
+   * — and the stored result names a colour, which cannot answer that alone.
+   */
+  describe("an outcome read from one player's side", () => {
+    it("reads a loss as either colour losing, depending which they were", () => {
+      const where = buildGameWhere(parse("?player=Aki&outcome=lost")!);
+      expect(where.AND).toContainEqual({
+        OR: [
+          {
+            AND: [
+              { blackName: { equals: "Aki", mode: "insensitive" } },
+              { result: "white" },
+            ],
+          },
+          {
+            AND: [
+              { whiteName: { equals: "Aki", mode: "insensitive" } },
+              { result: "black" },
+            ],
+          },
+        ],
+      });
+    });
+
+    it("reads a win the other way round", () => {
+      const where = buildGameWhere(parse("?player=Aki&outcome=won")!);
+      expect(where.AND).toContainEqual({
+        OR: [
+          {
+            AND: [
+              { blackName: { equals: "Aki", mode: "insensitive" } },
+              { result: "black" },
+            ],
+          },
+          {
+            AND: [
+              { whiteName: { equals: "Aki", mode: "insensitive" } },
+              { result: "white" },
+            ],
+          },
+        ],
+      });
+    });
+
+    it("counts a draw without needing to know who was which colour", () => {
+      expect(buildGameWhere(parse("?outcome=drawn")!).AND).toContainEqual({ result: "draw" });
+    });
+
+    /*
+     * The link behind a player's "played". Their record leaves abandoned games
+     * out, so this has to as well — a count that opens a longer list than it
+     * counted is the fault the whole idea exists to prevent.
+     */
+    it("leaves abandoned games out of what was decided", () => {
+      expect(buildGameWhere(parse("?outcome=decided")!).AND).toContainEqual({
+        result: { not: "abandoned" },
+      });
+    });
+
+    it("drops a win or a loss with nobody to read it against", () => {
+      // Unanswerable, not empty: better to leave the record as it was than to
+      // quietly return nothing and look like a player with no wins.
+      expect(buildGameWhere(parse("?outcome=won")!)).toEqual({ AND: [{ status: "finished" }] });
+    });
+  });
+
+  describe("which ladder was counting", () => {
+    it("finds the computer pool by who was sitting in the seats", () => {
+      const where = buildGameWhere(parse("?pool=computer")!, ["bot-1", "bot-2"]);
+      expect(where.AND).toContainEqual({
+        OR: [
+          { blackMemberId: { in: ["bot-1", "bot-2"] } },
+          { whiteMemberId: { in: ["bot-1", "bot-2"] } },
+        ],
+      });
+    });
+
+    it("keeps a seat nobody holds an account for in the people pool", () => {
+      // `NOT (id IN (…))` is not true of NULL, and most of the record is games
+      // played under a typed-in name with no member behind it.
+      const where = buildGameWhere(parse("?pool=people")!, ["bot-1"]);
+      expect(where.AND).toContainEqual({
+        AND: [
+          { OR: [{ blackMemberId: null }, { blackMemberId: { notIn: ["bot-1"] } }] },
+          { OR: [{ whiteMemberId: null }, { whiteMemberId: { notIn: ["bot-1"] } }] },
+        ],
+      });
+    });
+
+    it("finds no computer games when there are no computer players", () => {
+      expect(buildGameWhere(parse("?pool=computer")!, []).AND).toContainEqual({ id: { in: [] } });
+    });
+
+    it("leaves the people pool alone when there are no computer players", () => {
+      expect(buildGameWhere(parse("?pool=people")!, [])).toEqual({ AND: [{ status: "finished" }] });
+    });
+
+    it("treats no seats handed in as no computer players, which is what it is", () => {
+      /*
+       * The two readings are indistinguishable from in here — "there are no
+       * programs" and "the caller forgot" produce the same empty list — so it
+       * takes the one that is true of a fresh database. The fetchers hand the
+       * real ids in whenever a pool is asked for, so the other reading is a
+       * misuse rather than a state the site reaches.
+       */
+      expect(buildGameWhere(parse("?pool=computer")!).AND).toContainEqual({ id: { in: [] } });
+    });
+
+    it("says rated in the address and true in the query", () => {
+      expect(buildGameWhere(parse("?rated=yes")!).AND).toContainEqual({ rated: true });
+      expect(buildGameWhere(parse("?rated=no")!).AND).toContainEqual({ rated: false });
+    });
+  });
+
   it("builds a half-open range from one date", () => {
     const where = buildGameWhere(parse("?from=2026-01-01")!);
     expect(where.AND).toContainEqual({

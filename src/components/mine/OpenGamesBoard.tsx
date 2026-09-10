@@ -3,7 +3,6 @@ import Link from "next/link";
 import { CountryMark } from "@/components/players/CountryMark";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { posterOf, type OpenSeatFilter } from "@/lib/history/openSeatsFilter";
@@ -11,6 +10,7 @@ import { MY_GAMES_COPY, OPEN_SEATS_FILTER_COPY, START_COPY } from "./mine.consta
 import { OpenSeatsFilters } from "./OpenSeatsFilters";
 import { PlayerName } from "@/components/players/PlayerName";
 import { SitButton } from "./SitButton";
+import { GameName } from "@/components/games/GameName";
 
 /**
  * The noticeboard: games somebody has posted with a seat for anyone. It sits
@@ -87,7 +87,7 @@ export function OpenGamesBoard({
                   {game.openSeat === "black" ? STONE_DISPLAY.black.label : STONE_DISPLAY.white.label}
                 </span>
                 <span className="text-xs text-muted">
-                  {variantLabel(game.variant)} · {game.size}×{game.size} · {describeMoveTime(game.moveTimeMs)}
+                  <GameName variant={game.variant} raised /> · {game.size}×{game.size} · {describeMoveTime(game.moveTimeMs)}
                   {game.allowResign ? "" : " · no resigning"}
                 </span>
               </span>

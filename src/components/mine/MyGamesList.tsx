@@ -5,13 +5,13 @@ import { cookies } from "next/headers";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, recordPath } from "@/lib/gomoku/slugs";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_GAME_GROUPS, STALE_AFTER_DAYS, fetchMyGames, type MyGame, type MyGameGroup } from "@/lib/history/myGames";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { MY_GAMES_COPY } from "./mine.constants";
 import { ResignButton } from "./ResignButton";
+import { GameName } from "@/components/games/GameName";
 
 /** "3 days ago", the way a list of games reads it. */
 function ago(iso: string, now: Date): string {
@@ -136,7 +136,7 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
           <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={named} className="relative z-10" />
         </span>
         <span className="text-xs text-muted">
-          {variantLabel(game.variant)} · {game.size}×{game.size} · {game.moveCount} moves · you are{" "}
+          <GameName variant={game.variant} raised /> · {game.size}×{game.size} · {game.moveCount} moves · you are{" "}
           {STONE_DISPLAY[seat].label} {STONE_DISPLAY[seat].kanji} · {ago(item.since, now)}
         </span>
       </span>

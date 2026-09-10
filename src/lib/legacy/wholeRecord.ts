@@ -26,6 +26,15 @@ export type RecordSource = {
   url: string | null;
   /** What they were called there, when it is not the name they go by. */
   handle: string | null;
+  /**
+   * True for this site's own row, and false for every record copied down.
+   *
+   * Said here rather than worked out by comparing the site's name to a label
+   * in a component: whether there are games behind a number decides whether
+   * that number is a link, and a page guessing at it by string comparison
+   * would start linking the day somebody renames the site.
+   */
+  here: boolean;
   figures: RecordFigures;
 };
 
@@ -70,6 +79,7 @@ export function wholeRecord(
         site: source.site,
         url: source.siteUrl ?? null,
         handle: source.handle ?? null,
+        here: false,
         figures: figuresOf(record),
       });
     }
@@ -77,13 +87,13 @@ export function wholeRecord(
 
   const playedHere = here.won + here.lost + here.drawn > 0;
   if (playedHere) {
-    sources.push({ site: hereLabel, url: null, handle: null, figures: figuresOf(here) });
+    sources.push({ site: hereLabel, url: null, handle: null, here: true, figures: figuresOf(here) });
   }
 
   return {
     sources,
     figures: figuresOf(addUp(sources.map((source) => source.figures))),
     // Anything that is not this site's own count was copied down by hand.
-    kept: sources.some((source) => source.site !== hereLabel),
+    kept: sources.some((source) => !source.here),
   };
 }

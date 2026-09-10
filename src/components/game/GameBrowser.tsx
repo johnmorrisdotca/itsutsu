@@ -8,6 +8,7 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
+import { GameName } from "@/components/games/GameName";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { GAME_COPY } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
@@ -158,7 +159,14 @@ function GameBrowser({
 
           <section className="flex flex-col gap-3">
             <SectionTitle kanji={GAME_COPY.browserOpenings.kanji}>
-              {GAME_COPY.browserOpenings.label} · {RULE_VARIANT_DISPLAY[shown].label}
+              {/*
+                The heading names the game whose openings these are, so the
+                name is the way to that game's rules — the same as everywhere
+                else a game is named. It sits in a dialog over the board, which
+                is the one place a reader is most likely to want the full rules
+                and least likely to have them.
+              */}
+              {GAME_COPY.browserOpenings.label} · <GameName variant={shown} />
             </SectionTitle>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {openings.map((option) => {

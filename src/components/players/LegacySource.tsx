@@ -1,11 +1,12 @@
 import Link from "next/link";
 
 import { Figures } from "@/components/ui/Figures";
+import { PlayedFigure, RecordFigure } from "./PlayerRecord";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { rulesPath } from "@/lib/gomoku/slugs";
 import { aliasedVariant } from "@/lib/legacy/gameAliases";
 import { figuresForSource } from "@/lib/legacy/keptFigures";
-import { countText, figuresOf, recordText, winRateText } from "@/lib/rating/figures";
+import { figuresOf, winRateText } from "@/lib/rating/figures";
 import { findLegacyPlayer } from "@/lib/legacy/legacyPlayers.data";
 import type {
   LegacyClassRecord,
@@ -81,6 +82,16 @@ function GameLog({ game }: { game: LegacyGameRecord }) {
 }
 
 const NUMERIC = "py-1.5 pr-3 text-right font-mono tabular-nums";
+
+/*
+ * Nothing on this panel links, and it says so rather than simply not doing it.
+ *
+ * These are the figures from another site, copied down once. There is no game
+ * here behind any of them, so `here: false` is the whole record of this
+ * panel's relationship to the rule in AGENTS.md: not an oversight, an
+ * exception with a reason, and one the coverage test can see.
+ */
+const ELSEWHERE = { here: false } as const;
 const HEADING = "pb-1.5 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase";
 
 /** Won, lost and drawn, and what falls out of them, for one row of a table. */
@@ -88,8 +99,12 @@ function ResultCells({ record }: { record: { won: number; lost: number; drawn: n
   const figures = figuresOf(record);
   return (
     <>
-      <td className={NUMERIC}>{countText(figures.played)}</td>
-      <td className={NUMERIC}>{recordText(figures)}</td>
+      <td className={NUMERIC}>
+        <PlayedFigure record={{ wins: record.won, losses: record.lost, draws: record.drawn }} of={ELSEWHERE} />
+      </td>
+      <td className={NUMERIC}>
+        <RecordFigure record={{ wins: record.won, losses: record.lost, draws: record.drawn }} of={ELSEWHERE} />
+      </td>
       <td className={NUMERIC} data-testid="legacy-win-rate">
         {winRateText(figures.winRate)}
       </td>
@@ -264,8 +279,24 @@ export function LegacySourcePanel({
         <Figures
           testId="legacy-figures"
           figures={[
-            { label: "Played", value: countText(figures.played) },
-            { label: "Won · Lost · Drawn", value: recordText(figures) },
+            {
+              label: "Played",
+              value: (
+                <PlayedFigure
+                  record={{ wins: figures.won, losses: figures.lost, draws: figures.drawn }}
+                  of={ELSEWHERE}
+                />
+              ),
+            },
+            {
+              label: "Won · Lost · Drawn",
+              value: (
+                <RecordFigure
+                  record={{ wins: figures.won, losses: figures.lost, draws: figures.drawn }}
+                  of={ELSEWHERE}
+                />
+              ),
+            },
             { label: "Win rate", value: winRateText(figures.winRate) },
           ]}
         />

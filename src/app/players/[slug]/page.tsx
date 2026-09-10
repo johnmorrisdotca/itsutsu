@@ -25,7 +25,8 @@ import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
 import { findLegacyPlayer, foldedInto, legaciesForName } from "@/lib/legacy/legacyPlayers.data";
 import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
-import { countText, figuresOf, recordText, winRateText } from "@/lib/rating/figures";
+import { PlayedFigure, RecordFigure } from "@/components/players/PlayerRecord";
+import { figuresOf, winRateText } from "@/lib/rating/figures";
 import { playerKeysFromSlug } from "@/lib/rating/playerKey";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
@@ -115,6 +116,13 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
     me?.email !== member?.email &&
     (member?.botTier ? member.id !== undefined : Boolean(member?.email));
 
+  /*
+   * The name this page is about, decided once. It is what the heading prints
+   * and what every count under it filters the record by, and those two
+   * drifting apart would be a page whose links quietly ask about somebody
+   * else.
+   */
+  const shownName = player?.name ?? member?.name ?? keptRecord?.name ?? decoded;
   const tier = player === null ? null : TIER_DISPLAY[player.tier];
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
   const whole = wholeRecord(linked, { won: record.wins, lost: record.losses, drawn: record.draws });
@@ -155,7 +163,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          {player?.name ?? member?.name ?? keptRecord?.name ?? decoded}
+          {shownName}
           {/*
             Where they are, said in full here because there is room for it —
             the directory has only the flag. The profile form has promised
@@ -245,8 +253,32 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
             ...(player !== null && player.computer.ratedGames > 0
               ? [{ label: "Vs computer", value: player.computer.rating, testId: "player-computer-rating" }]
               : []),
-            { label: "Played", value: countText(counted.played), testId: "player-played" },
-            { label: "Won · Lost · Drawn", value: recordText(counted), testId: "player-record" },
+            /*
+              Counting everywhere means counting games this site never saw, so
+              those two figures lead nowhere; counting here means every one of
+              them is a way into the games behind it. `here` carries that,
+              rather than the page having two versions of the same row.
+            */
+            {
+              label: "Played",
+              value: (
+                <PlayedFigure
+                  record={{ wins: counted.won, losses: counted.lost, draws: counted.drawn }}
+                  of={{ player: shownName, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
+                />
+              ),
+              testId: "player-played",
+            },
+            {
+              label: "Won · Lost · Drawn",
+              value: (
+                <RecordFigure
+                  record={{ wins: counted.won, losses: counted.lost, draws: counted.drawn }}
+                  of={{ player: shownName, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
+                />
+              ),
+              testId: "player-record",
+            },
             { label: "Win rate", value: winRateText(counted.winRate) },
           ]}
         />
@@ -303,7 +335,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       */}
       {whole.figures.played > 0 ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-          <WholeRecordPanel whole={whole} showFigures={!(offered && scope === RECORD_SCOPES.everywhere)} />
+          <WholeRecordPanel
+            whole={whole}
+            name={shownName}
+            showFigures={!(offered && scope === RECORD_SCOPES.everywhere)}
+          />
         </section>
       ) : null}
 
@@ -312,6 +348,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       {shown === null ? (
         <>
           <ItsutsuRecord
+            name={shownName}
             record={record}
             gifts={gifts}
             /*

@@ -8,7 +8,6 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, recordPath, slugFor } from "@/lib/gomoku/slugs";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -28,6 +27,7 @@ import type { Appearance } from "@/components/board/board.types";
 import { ratingRefusal } from "@/lib/rating/rateable";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { prisma } from "@/lib/prisma";
+import { GameName } from "@/components/games/GameName";
 
 /**
  * A filed game, at /history/<slug>/<id>: the replay, and with a move number on
@@ -220,7 +220,7 @@ function FiledMatch({
             Started {new Date(game.playedAt).toLocaleString()}
             {game.lastMoveAt !== null ? ` · finished ${new Date(game.lastMoveAt).toLocaleString()}` : ""} ·{" "}
             {game.size}×{game.size} ·{" "}
-            {variantLabel(game.variant)}{" "}
+            <GameName variant={game.variant} />{" "}
             · {result.label} <span className="font-mincho">{result.kanji}</span>
             {!game.rated ? <span className="ml-2 rounded-full border border-rule px-2 py-0.5 text-xs">Friendly · unrated</span> : null}
           </p>

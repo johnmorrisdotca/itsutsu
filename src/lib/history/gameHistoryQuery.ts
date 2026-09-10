@@ -7,6 +7,9 @@ import {
   GAME_PAGE_SIZE_DEFAULT,
   GAME_PAGE_SIZE_MAX,
   GAME_PAGE_SIZE_MIN,
+  GAME_OUTCOME_FILTERS,
+  GAME_POOL_FILTERS,
+  GAME_RATED_FILTERS,
   GAME_RESULT_FILTERS,
   GAME_SEARCH_MAX,
   GAME_SIZE_FILTERS,
@@ -15,7 +18,7 @@ import {
   GAME_VARIANT_FILTERS,
   PLAYER_NAME_MAX,
 } from "./gameHistory.constants";
-import type { GameHistoryQuery } from "./gameHistory.types";
+import type { GameHistoryQuery, GameOutcome } from "./gameHistory.types";
 
 /**
  * Reading, filtering and ordering game history.
@@ -38,6 +41,9 @@ const querySchema = z.object({
   search: z.string().max(GAME_SEARCH_MAX).optional(),
   player: z.string().max(PLAYER_NAME_MAX).optional(),
   result: z.enum(GAME_RESULT_FILTERS).default("all"),
+  outcome: z.enum(GAME_OUTCOME_FILTERS).default("all"),
+  pool: z.enum(GAME_POOL_FILTERS).default("all"),
+  rated: z.enum(GAME_RATED_FILTERS).default("all"),
   variant: z.enum(GAME_VARIANT_FILTERS).default("all"),
   size: z.enum(GAME_SIZE_FILTERS).default("all"),
   from: z.coerce.date().optional(),
@@ -89,6 +95,9 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
     search: get("search"),
     player: get("player"),
     result: get("result"),
+    outcome: get("outcome"),
+    pool: get("pool"),
+    rated: get("rated"),
     variant: variantFilter(get("variant")),
     size: get("size"),
     from: get("from"),
@@ -106,6 +115,9 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
     search: trimmed(data.search),
     player: trimmed(data.player),
     result: data.result,
+    outcome: data.outcome,
+    pool: data.pool,
+    rated: data.rated,
     variant: data.variant,
     size: data.size === "all" ? null : Number(data.size),
     from: data.from ?? null,
@@ -113,7 +125,70 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
   };
 }
 
-export function buildGameWhere(query: GameHistoryQuery): Prisma.GameWhereInput {
+/**
+ * An outcome from one player's side of the board.
+ *
+ * The stored result names a colour, so "their losses" is two questions at
+ * once: which colour won, and which colour they were. Both are asked here, in
+ * one place, because a page that worked it out for itself would be a second
+ * definition of somebody's record — and the two would disagree the first time
+ * one of them forgot that an abandoned game is not a loss.
+ *
+ * Without a name to read it against, `won` and `lost` are unanswerable rather
+ * than empty, so they are dropped: a filter nobody can honour should leave the
+ * record as it was, not quietly return nothing.
+ */
+function outcomeWhere(outcome: GameOutcome, player: string | null): Prisma.GameWhereInput | null {
+  if (outcome === "decided") return { result: { not: "abandoned" } };
+  if (outcome === "drawn") return { result: "draw" };
+  if (player === null) return null;
+
+  const asBlack: Prisma.GameWhereInput = { blackName: { equals: player, mode: "insensitive" } };
+  const asWhite: Prisma.GameWhereInput = { whiteName: { equals: player, mode: "insensitive" } };
+  const theirs = outcome === "won" ? "black" : "white";
+  const others = outcome === "won" ? "white" : "black";
+  return {
+    OR: [
+      { AND: [asBlack, { result: theirs }] },
+      { AND: [asWhite, { result: others }] },
+    ],
+  };
+}
+
+/**
+ * Which games one of the two ladders was counting.
+ *
+ * A game is in the computer pool when either seat was a program, so the
+ * question is about who sat down rather than about the game. The ids are
+ * handed in because they come from the members table and this module is pure;
+ * without them the filter is dropped rather than guessed at, which leaves the
+ * record as it was instead of quietly answering a different question.
+ *
+ * The nulls are written out on purpose: a seat nobody holds an account for has
+ * no id, and `NOT (id IN (…))` is not true of NULL in SQL — leaving it implied
+ * would drop every game played under a typed-in name from the people pool,
+ * which is most of the record.
+ */
+function poolWhere(pool: string, computerSeats: readonly string[]): Prisma.GameWhereInput | null {
+  const ids = [...computerSeats];
+  if (pool === "computer") {
+    if (ids.length === 0) return { id: { in: [] } };
+    return { OR: [{ blackMemberId: { in: ids } }, { whiteMemberId: { in: ids } }] };
+  }
+  if (ids.length === 0) return null;
+  return {
+    AND: [
+      { OR: [{ blackMemberId: null }, { blackMemberId: { notIn: ids } }] },
+      { OR: [{ whiteMemberId: null }, { whiteMemberId: { notIn: ids } }] },
+    ],
+  };
+}
+
+export function buildGameWhere(
+  query: GameHistoryQuery,
+  /** The member ids of the programs, for the pool filter. See `poolWhere`. */
+  computerSeats: readonly string[] = [],
+): Prisma.GameWhereInput {
   // The record is every finished game; a match still being played is in its players' lists, not here.
   const conditions: Prisma.GameWhereInput[] = [{ status: "finished" }];
 
@@ -134,6 +209,15 @@ export function buildGameWhere(query: GameHistoryQuery): Prisma.GameWhereInput {
     });
   }
   if (query.result !== "all") conditions.push({ result: query.result });
+  if (query.outcome !== "all") {
+    const side = outcomeWhere(query.outcome, query.player);
+    if (side !== null) conditions.push(side);
+  }
+  if (query.pool !== "all") {
+    const side = poolWhere(query.pool, computerSeats);
+    if (side !== null) conditions.push(side);
+  }
+  if (query.rated !== "all") conditions.push({ rated: query.rated === "yes" });
   if (query.variant !== "all") conditions.push({ variant: query.variant });
   if (query.size !== null) conditions.push({ size: query.size });
 

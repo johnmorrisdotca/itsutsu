@@ -55,7 +55,14 @@ export async function Ladder() {
                   {TIER_DISPLAY[player.tier].label}{" "}
                   <span className="font-mincho text-muted">{TIER_DISPLAY[player.tier].kanji}</span>
                 </td>
-                <RecordCells record={player} />
+                {/*
+                  These four are the ladder's own counting — rated games
+                  against people — so the links say so. Sent to the record
+                  unqualified they would open every game the name ever
+                  played, which is a longer list than the number they came
+                  from and a worse answer than no link at all.
+                */}
+                <RecordCells record={player} of={{ player: player.name, pool: "people", rated: "yes" }} />
               </tr>
             ))}
           </tbody>

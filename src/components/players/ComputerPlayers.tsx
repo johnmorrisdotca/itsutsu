@@ -90,6 +90,7 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
             */}
             <RecordLine
               record={entry.profile === null ? { wins: 0, losses: 0, draws: 0 } : entry.profile.computer}
+              of={{ player: entry.name, pool: "computer", rated: "yes" }}
               trailing={entry.profile === null ? undefined : entry.profile.computer.rating}
               testId="computer-player-record"
             />

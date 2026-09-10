@@ -131,6 +131,70 @@ that is missing any of them fails the build rather than shipping quietly.
 TypeScript already forces the `VARIANT_SPECS` and `RULE_VARIANT_DISPLAY` rows, because
 both are `Record<RuleVariant, …>`. The gate covers what types cannot see.
 
+### Nothing Is A Dead End
+
+Two rules, in John's words, and one principle underneath them.
+
+- **"If you see a name of a game, it's clickable."**
+- **"If you see a W/L/T record, each number you see should be clickable —
+  when it's for this site."**
+
+The principle: **any number that refers to games links to a page showing
+exactly that set of games.** A count is a filter, not a display. "7 games of
+Reversi" is a promise that those seven can be seen; printing the 7 and stopping
+breaks it. This has been got wrong on four separate pages, which is why it is a
+gate and not a habit.
+
+**Before a page that lists games or players is done**, walk this list by eye —
+it is short, and every line on it has been missed at least once:
+
+- **Every game's name leads to that game**, through `GameName`. It goes to the
+  rules page, which is the game's own front door and carries the way on to the
+  record and the ladder. A name in a list is a reference to the game, not an
+  instruction to start one.
+- **Every count of games leads to those games**, through `GameCount`, filtered
+  to exactly what was counted — that player, that game, how it went, and which
+  ladder was counting.
+- **Every player's name leads to their page**, through `PlayerName`.
+- **Every opponent you are shown offers what you would want to do about them:**
+  invite, challenge, buddy, ignore.
+- **Every page a link lands on says what it was narrowed to**, and lets it be
+  taken off. A link that filters silently gives a reader eleven games and calls
+  it the record. `/history` says so in chips above the filter bar.
+
+**A count must link to the set it counted, not a set that contains it.** This is
+the part that is easy to get half right. A ladder's record is RATED games in ONE
+POOL; a player's own page counts every finished game either way. Linking a
+ladder's "7W" to every game with that name in it shows a longer list than the
+number came from — which is the same fault as no link at all, wearing a link.
+The filters exist so the promise can be kept exactly: `player`, `outcome`,
+`pool`, `rated`, and the game in the path.
+
+**The one exception, and it is not a loophole.** A figure from another site has
+no game here to open — an ItsYourTurn record is a number somebody copied down,
+not a row with moves in it. Those do not link, and must not: a link that cannot
+keep its promise is worse than a plain number, and the page already says these
+came from elsewhere. Say it with `of={{ here: false }}` rather than by leaving
+the link off, so the exception is a decision in the source and not an oversight
+that looks identical to one.
+
+**Enforced by `src/components/games/gameLinks.coverage.test.ts`**, which runs in
+`pnpm test:unit` and fails the build when a page prints a game's name with
+nothing behind it, prints a record as a string, or shows a table of records
+without saying whose games it is counting. It checks the RULE rather than the
+import: a name already inside a link passes, because the family line under a
+game linking its siblings to their own ladders is the rule kept, not broken.
+
+A select's `<option>` and a game named inside a sentence — a hover note, a page
+title, a line of advice — are not links and cannot be. Both are exceptions in
+the test with their reason written beside them, rather than a pattern loose
+enough to let a real one through.
+
+It earned its place the hour it was written: it found six more dead ends nobody
+had noticed, including the rules page itself — the destination every game name
+on this site now points at — which reached the board and Wikipedia and had no
+way to the record or the ladder.
+
 ### Board Gate
 
 The features board at `/backlog` is where a request lives once the conversation that

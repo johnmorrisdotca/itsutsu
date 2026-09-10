@@ -50,7 +50,10 @@ export function StandingsTable({ standings }: { standings: VariantStanding[] }) 
             <td className="py-1.5 pr-3">
               <TierMark tier={standing.tier} />
             </td>
-            <RecordCells record={standing} />
+            <RecordCells
+              record={standing}
+              of={{ player: standing.name, variant: standing.variant, pool: "people", rated: "yes" }}
+            />
           </tr>
         ))}
       </tbody>

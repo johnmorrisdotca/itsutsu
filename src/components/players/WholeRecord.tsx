@@ -1,6 +1,6 @@
 import { Figures } from "@/components/ui/Figures";
-import { RecordCells, RecordHeadings } from "./PlayerRecord";
-import { countText, recordText, winRateText } from "@/lib/rating/figures";
+import { PlayedFigure, RecordCells, RecordFigure, RecordHeadings } from "./PlayerRecord";
+import { winRateText } from "@/lib/rating/figures";
 import type { WholeRecord as Whole } from "@/lib/legacy/wholeRecord";
 
 /**
@@ -41,7 +41,16 @@ export function SnapshotWarning() {
   );
 }
 
-export function WholeRecordPanel({ whole, showFigures = true }: { whole: Whole; showFigures?: boolean }) {
+export function WholeRecordPanel({
+  whole,
+  name,
+  showFigures = true,
+}: {
+  whole: Whole;
+  /** Whose record, so this site's own row can lead to the games behind it. */
+  name?: string;
+  showFigures?: boolean;
+}) {
   if (whole.figures.played === 0) return null;
 
   return (
@@ -60,8 +69,39 @@ export function WholeRecordPanel({ whole, showFigures = true }: { whole: Whole; 
         <Figures
           testId="whole-record-figures"
           figures={[
-            { label: "Played", value: countText(whole.figures.played), testId: "whole-played" },
-            { label: "Won · Lost · Drawn", value: recordText(whole.figures), testId: "whole-record-line" },
+            {
+              label: "Played",
+              value: (
+                <PlayedFigure
+                  record={{
+                    wins: whole.figures.won,
+                    losses: whole.figures.lost,
+                    draws: whole.figures.drawn,
+                  }}
+                  of={{ player: name, here: !whole.kept }}
+                />
+              ),
+              testId: "whole-played",
+            },
+            {
+              label: "Won · Lost · Drawn",
+              /*
+                A total that includes another site has no set of games here to
+                open — it is partly a number copied down once. When this site
+                is all of it, the same three numbers do lead to the games.
+              */
+              value: (
+                <RecordFigure
+                  record={{
+                    wins: whole.figures.won,
+                    losses: whole.figures.lost,
+                    draws: whole.figures.drawn,
+                  }}
+                  of={{ player: name, here: !whole.kept }}
+                />
+              ),
+              testId: "whole-record-line",
+            },
             { label: "Win rate", value: winRateText(whole.figures.winRate), testId: "whole-win-rate" },
           ]}
         />
@@ -112,12 +152,19 @@ export function WholeRecordPanel({ whole, showFigures = true }: { whole: Whole; 
                     <span className="ml-1.5 text-muted">as {source.handle}</span>
                   ) : null}
                 </td>
+                {/*
+                  Only this site's row has games to open. The others are four
+                  numbers copied down once from a site that is still standing
+                  and still counting — true, and with nothing behind them
+                  here.
+                */}
                 <RecordCells
                   record={{
                     wins: source.figures.won,
                     losses: source.figures.lost,
                     draws: source.figures.drawn,
                   }}
+                  of={{ player: name, here: source.here }}
                 />
               </tr>
             ))}

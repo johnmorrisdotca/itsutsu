@@ -1,4 +1,6 @@
+import { GameCount } from "@/components/games/GameCount";
 import { countText, figuresOf, winRateText } from "@/lib/rating/figures";
+import type { GameOutcome, GamePoolFilter, GameRatedFilter } from "@/lib/history/gameHistory.types";
 import type { ReactNode } from "react";
 
 /**
@@ -26,9 +28,64 @@ import type { ReactNode } from "react";
  * question people ask first, then the three counts, then the rate they imply.
  * A page may add a column of its own on either side; what it may not do is
  * spell these ones differently.
+ *
+ * Every one of these numbers is a way into the games it counted — John's rule,
+ * stated twice: "if you see a W/L/T record, each number you see should be
+ * clickable". Doing it here rather than in each table is the whole reason this
+ * module was worth writing: one change, and the directory, the ladder, the
+ * standings and a player's own page all obey it at once.
  */
 
 export type WonLostDrawn = { wins: number; losses: number; draws: number };
+
+/**
+ * Whose games these are, so each count can lead to them.
+ *
+ * Optional because a record is sometimes nobody's in particular — a totals
+ * row, a figure added up across several people — and a link then has no set of
+ * games to promise. `here` is false for a record kept from another site: those
+ * numbers are true and there is nothing behind them to open.
+ */
+export type RecordOf = {
+  player?: string;
+  /** One game's record, when the table is per game. Left out for every game. */
+  variant?: string;
+  /**
+   * Which ladder counted these, when a ladder did.
+   *
+   * A rating's record is rated games in one pool, and nothing else. A table
+   * showing one has to hand both down or its numbers link to a longer list
+   * than they came from — which is the same fault as a number that leads
+   * nowhere, only harder to notice.
+   */
+  pool?: GamePoolFilter;
+  rated?: GameRatedFilter;
+  here?: boolean;
+};
+
+/** The four counts as links, in one place, so no table invents its own. */
+function counts(record: WonLostDrawn, of: RecordOf) {
+  const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
+  const linked = (count: ReactNode, outcome: GameOutcome, what: string) => (
+    <GameCount
+      count={count}
+      player={of.player}
+      variant={of.variant}
+      outcome={outcome}
+      pool={of.pool}
+      rated={of.rated}
+      here={of.here !== false && of.player !== undefined && of.player !== ""}
+      title={what}
+    />
+  );
+  return {
+    figures,
+    played: linked(countText(figures.played), "decided", "Every game counted here"),
+    won: linked(record.wins, "won", "The games won"),
+    lost: linked(record.losses, "lost", "The games lost"),
+    drawn: linked(record.draws, "drawn", "The games drawn"),
+  };
+}
 
 /** The cell classes, here rather than in each table, so columns line up between pages. */
 const CELL = "py-1.5 pr-3 font-mono tabular-nums";
@@ -63,10 +120,13 @@ export function RecordHeadings({ trailing }: { trailing?: ReactNode }) {
  */
 export function RecordCells({
   record,
+  of = {},
   trailing,
   note,
 }: {
   record: WonLostDrawn;
+  /** Whose games, so the counts lead to them. */
+  of?: RecordOf;
   trailing?: ReactNode;
   /**
    * A mark on the count itself, for a total that needs qualifying.
@@ -80,18 +140,18 @@ export function RecordCells({
    */
   note?: ReactNode;
 }) {
-  const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
+  const cells = counts(record, of);
   return (
     <>
       <td className={CELL} data-testid="record-played">
-        {countText(figures.played)}
+        {cells.played}
         {note}
       </td>
-      <td className={CELL}>{record.wins}</td>
-      <td className={CELL}>{record.losses}</td>
-      <td className={CELL}>{record.draws}</td>
+      <td className={CELL}>{cells.won}</td>
+      <td className={CELL}>{cells.lost}</td>
+      <td className={CELL}>{cells.drawn}</td>
       <td className={CELL} data-testid="record-win-rate">
-        {winRateText(figures.winRate)}
+        {winRateText(cells.figures.winRate)}
       </td>
       {trailing}
     </>
@@ -107,15 +167,19 @@ export function RecordCells({
  */
 export function RecordLine({
   record,
+  of = {},
   trailing,
   testId,
 }: {
   record: WonLostDrawn;
+  /** Whose games, so the counts lead to them. */
+  of?: RecordOf;
   /** Anything this page shows after the shared figures — a rating, usually. */
   trailing?: ReactNode;
   testId?: string;
 }) {
-  const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
+  const cells = counts(record, of);
+  const { figures } = cells;
   if (figures.played === 0) {
     return (
       <span className="font-mono text-xs tabular-nums text-muted" data-testid={testId}>
@@ -125,9 +189,31 @@ export function RecordLine({
   }
   return (
     <span className="font-mono text-xs tabular-nums text-muted" data-testid={testId}>
-      {countText(figures.played)} played · {record.wins}W {record.losses}L {record.draws}D ·{" "}
-      {winRateText(figures.winRate)}
+      {cells.played} played · {cells.won}W {cells.lost}L {cells.drawn}D · {winRateText(figures.winRate)}
       {trailing === undefined ? null : <> · {trailing}</>}
     </span>
   );
+}
+
+/**
+ * Won, lost and drawn as one figure, each number a way into those games.
+ *
+ * The linked twin of `recordText`, which returns a string and therefore
+ * cannot be clicked — that string under "Won · Lost · Drawn" at the top of
+ * every player's page is exactly what John was pointing at. The words stay
+ * identical, so nothing about the page reads differently; the numbers in them
+ * now go somewhere.
+ */
+export function RecordFigure({ record, of = {} }: { record: WonLostDrawn; of?: RecordOf }) {
+  const cells = counts(record, of);
+  return (
+    <span data-testid="record-figure">
+      {cells.won}W · {cells.lost}L · {cells.drawn}D
+    </span>
+  );
+}
+
+/** The same for a count of games played, where a page shows that on its own. */
+export function PlayedFigure({ record, of = {} }: { record: WonLostDrawn; of?: RecordOf }) {
+  return counts(record, of).played;
 }

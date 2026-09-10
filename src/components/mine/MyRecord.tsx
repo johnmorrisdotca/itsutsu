@@ -40,7 +40,7 @@ export async function MyRecord({ name }: { name: string }) {
         <p className="text-sm">
           Overall: <span className="font-mono tabular-nums">{profile.tier === "unrated" ? "–" : profile.rating}</span>{" "}
           <span className="text-muted">
-            {TIER_DISPLAY[profile.tier].label} · <RecordLine record={profile} />
+            {TIER_DISPLAY[profile.tier].label} · <RecordLine record={profile} of={{ player: name, pool: "people", rated: "yes" }} />
           </span>
         </p>
       )}
@@ -61,7 +61,10 @@ export async function MyRecord({ name }: { name: string }) {
                   <GameName variant={row.variant as RuleVariant} />
                 </td>
                 <td className="py-1 pr-3 font-mono tabular-nums">{row.tier === "unrated" ? "–" : row.rating}</td>
-                <RecordCells record={row} />
+                <RecordCells
+                  record={row}
+                  of={{ player: name, variant: row.variant, pool: "people", rated: "yes" }}
+                />
               </tr>
             ))}
           </tbody>

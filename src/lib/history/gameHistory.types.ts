@@ -1,5 +1,9 @@
 import type { Handicap } from "@/lib/gomoku/gomoku.types";
 import type {
+  GAME_OUTCOME_FILTERS,
+  GAME_OUTCOMES,
+  GAME_POOL_FILTERS,
+  GAME_RATED_FILTERS,
   GAME_RESULT_FILTERS,
   GAME_RESULTS,
   GAME_SIZE_FILTERS,
@@ -12,6 +16,10 @@ export type GameResult = (typeof GAME_RESULTS)[number];
 export type GameSortBy = (typeof GAME_SORT_BY)[number];
 export type GameSortDir = (typeof GAME_SORT_DIR)[number];
 export type GameResultFilter = (typeof GAME_RESULT_FILTERS)[number];
+export type GameOutcome = (typeof GAME_OUTCOMES)[number];
+export type GameOutcomeFilter = (typeof GAME_OUTCOME_FILTERS)[number];
+export type GamePoolFilter = (typeof GAME_POOL_FILTERS)[number];
+export type GameRatedFilter = (typeof GAME_RATED_FILTERS)[number];
 export type GameVariantFilter = (typeof GAME_VARIANT_FILTERS)[number];
 export type GameSizeFilter = (typeof GAME_SIZE_FILTERS)[number];
 
@@ -24,6 +32,12 @@ export type GameHistoryQuery = {
   search: string | null;
   player: string | null;
   result: GameResultFilter;
+  /** How the games went for `player`. Read against that name, and ignored without one. */
+  outcome: GameOutcomeFilter;
+  /** Which ladder the game belongs to, read from who was sitting in the seats. */
+  pool: GamePoolFilter;
+  /** Whether the game moved a rating. */
+  rated: GameRatedFilter;
   variant: GameVariantFilter;
   size: number | null;
   from: Date | null;
