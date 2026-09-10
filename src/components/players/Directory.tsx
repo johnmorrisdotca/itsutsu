@@ -3,6 +3,8 @@ import Link from "next/link";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { CountryMark } from "@/components/players/CountryMark";
+import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
+import { memberKind } from "@/lib/auth/memberKind";
 import { DirectoryFilters } from "@/components/players/DirectoryFilters";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
 import { RecencyMark } from "@/components/mine/Recency";
@@ -143,6 +145,27 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
                   )}
                   {/* Where they are, which is most of why they answer at four in the morning. */}
                   <CountryMark country={entry.country} className="text-sm" />
+                  {/*
+                    Which sort of member this is, drawn on the unusual rows
+                    only — the badge the operator's list has used all along,
+                    rather than a second one invented here.
+
+                    It earns its place on this list now that the default shows
+                    programs alongside people. The suite already carried the
+                    objection to that: "a program in the directory of people
+                    would be a person as far as anybody reading it is
+                    concerned." That was right, and hiding them was the wrong
+                    answer to it — a reader on a quiet evening should find the
+                    five opponents who are always here, and should never have
+                    to work out which of the names is a program.
+                  */}
+                  <MemberKindBadge
+                    kind={memberKind({
+                      email: entry.email,
+                      botTier: entry.botTier,
+                      unclaimableBecause: entry.unclaimableBecause,
+                    })}
+                  />
                 </span>
               </td>
               <DirectoryRecord profile={entry.profile} />

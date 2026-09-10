@@ -53,10 +53,26 @@ test.describe("the computer players", () => {
     await expect(robots).toHaveCount(BOT_TIER_LIST.length);
   });
 
-  test("are not mixed in with the people", async ({ page }) => {
-    // A program in the directory of people would be a person as far as anybody
-    // reading it is concerned.
+  test("are listed with everybody else, and never pass as a person", async ({ page }) => {
+    /*
+     * This used to assert the opposite — that no program appeared in the
+     * directory at all — on the reasoning that "a program in the directory of
+     * people would be a person as far as anybody reading it is concerned".
+     * The objection was right and the answer was wrong: hiding the five
+     * opponents who are always available, on a site whose difficulty is that
+     * nobody is about, cost more than it protected. So they are listed by
+     * default now, and the reading the old test was defending is guarded
+     * directly instead — by the row saying what it is.
+     */
     await page.goto("/players");
+    const directory = page.getByTestId("directory");
+    const row = directory.locator("tr", { hasText: "Meijin" });
+    await expect(row).toHaveCount(1);
+    await expect(row.locator('[data-kind="robot"]')).toBeVisible();
+  });
+
+  test("can still be left out by somebody who wants only people", async ({ page }) => {
+    await page.goto("/players?who=people");
     const directory = page.getByTestId("directory");
     await expect(directory.getByText("Meijin", { exact: true })).toHaveCount(0);
   });
