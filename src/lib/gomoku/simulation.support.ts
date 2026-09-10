@@ -15,8 +15,9 @@ import {
   singlesLeft,
   twistBoard,
 } from "./engine";
-import { GAME_STATUS } from "./gomoku.constants";
+import { GAME_STATUS, STONES } from "./gomoku.constants";
 import type { GameSettings, GameState, Point } from "./gomoku.types";
+import { canChooseColour, canExtendOpening, chooseColour, extendOpening } from "./rules/opening";
 import { checkCheckersMove, isCheckers } from "./simulation.checkers";
 import { checkStarMove, isChineseCheckers } from "./simulation.chineseCheckers";
 import { checkGoPass, isGo } from "./simulation.go";
@@ -66,6 +67,38 @@ function playOut(settings: Partial<GameSettings>, seed: number): GameState {
   while (state.status === GAME_STATUS.playing) {
     const open = emptyPoints(state);
     if (open.length === 0) break;
+
+    /*
+     * The swap openings: a seat is being asked to choose, not to play.
+     *
+     * Nothing legal is on the board while a decision is due — that is what
+     * being asked means — so a simulator that only ever places stones reads a
+     * swap game as a deadlock and blames the engine for it. That is how these
+     * openings came to be the one part of the rules nothing ever played out.
+     *
+     * Chosen at random, including the option to decline and lay two more
+     * stones where the protocol allows it, because the point is to reach the
+     * positions a protocol can produce rather than to play any of them well.
+     */
+    if (canChooseColour(state)) {
+      const before = state;
+      const takingIt = canExtendOpening(state) && random() < 0.4;
+      const after = takingIt
+        ? extendOpening(state)
+        : chooseColour(state, random() < 0.5 ? STONES.black : STONES.white);
+      expect(after, `seed ${seed}: an opening choice was refused`).not.toBe(before);
+      // A decision is kept, or a replayed game would take a different turning.
+      expect(
+        after.opening.choices.length,
+        `seed ${seed}: an opening choice went unrecorded`,
+      ).toBe(before.opening.choices.length + 1);
+      state = after;
+      guard += 1;
+      expect(guard, `seed ${seed}: the opening did not settle`).toBeLessThanOrEqual(
+        state.settings.size * state.settings.size + 1,
+      );
+      continue;
+    }
 
     /*
      * The sliding games: every piece is down, so a turn moves one. Random

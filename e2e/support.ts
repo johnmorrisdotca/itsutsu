@@ -84,5 +84,13 @@ export async function openSetup(page: Page) {
  */
 export async function openGamesPage(page: Page) {
   await page.goto("/games");
-  await expect(page.getByTestId("start-game")).toHaveAttribute("data-ready", "true");
+  await ready(page, "start-game");
+}
+
+/**
+ * Waits for one server-rendered panel to say the browser has taken it over.
+ * See `useHydrated` for what the mark means and why a panel needs one.
+ */
+export async function ready(page: Page, testId: string) {
+  await expect(page.getByTestId(testId)).toHaveAttribute("data-ready", "true");
 }

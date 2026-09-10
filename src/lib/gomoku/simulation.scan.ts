@@ -1,4 +1,4 @@
-import type { Cell, GameSettings, Point, Stone } from "./gomoku.types";
+import type { Cell, GameSettings, Handicap, Point, Stone } from "./gomoku.types";
 import { indexOf, isStone } from "./engine";
 import { rulesFor } from "./rules/handicap";
 
@@ -14,8 +14,16 @@ import { rulesFor } from "./rules/handicap";
  * published rules rather than read from VARIANT_SPECS.
  *
  * Sharing the engine's own table would make the cross-check below a tautology,
- * so these are written out by hand. `openEnds` counts how many ends of the run
- * are neither an opposing stone nor the edge of the board.
+ * so these are written out by hand. `blockedEnds` counts how many ends of the
+ * run are shut in by something — an opposing stone or an obstacle. The edge of
+ * the board is not one of those, here or in the engine: a line lying against
+ * the side is not sealed by it.
+ *
+ * `handicap` is the game's handicap, whoever it belongs to. It is read here
+ * rather than left out because a handicap can decide a win rather than refuse
+ * a move — and a check that ignores it calls a line of six a win where the
+ * engine has correctly refused one, then reports the ENGINE as the mistake.
+ * That is not a cross-check failing; that is a cross-check lying.
  */
 export function runWinsIndependently(
   variant: string,
@@ -23,7 +31,26 @@ export function runWinsIndependently(
   length: number,
   blockedEnds: number,
   winLength: number,
+  handicap?: Handicap,
 ): boolean {
+  /*
+   * The handicap first, because it can only ever refuse. Restated from what
+   * the setting means rather than from `rulesFor`, which is the engine's own
+   * derivation and would make this agree by construction:
+   *
+   *   openLine — exactly the length, and not shut in at BOTH ends. One end is
+   *     allowed, which is the same reading the engine uses and is worth
+   *     saying, because "open" ordinarily means neither.
+   *   exactLine — exactly the length; a longer run is not a win.
+   *   overline — forbidding the overline is only meaningful if a longer run
+   *     cannot win, so it means exactly the length too, as it does in renju.
+   *   longerLine — the length itself is one greater, which the caller has
+   *     already folded into `winLength`.
+   */
+  if (handicap !== undefined && handicap.stone === stone) {
+    if (handicap.openLine && !(length === winLength && blockedEnds < 2)) return false;
+    if ((handicap.exactLine || handicap.overline) && length !== winLength) return false;
+  }
   switch (variant) {
     // Exactly five; an overline is not a win for either colour.
     case "standard":
@@ -191,7 +218,14 @@ export function bruteForceWinner(board: Cell[], settings: GameSettings): Stone |
 
         const winLength = rulesFor(settings, stone).winLength;
         if (
-          runWinsIndependently(settings.variant, stone, length, blockedEnds, winLength)
+          runWinsIndependently(
+            settings.variant,
+            stone,
+            length,
+            blockedEnds,
+            winLength,
+            settings.handicap,
+          )
         ) {
           return stone;
         }

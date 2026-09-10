@@ -107,6 +107,45 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("tab").filter({ hasText: "Members" })).toHaveAttribute("data-open", "true");
   });
 
+  test("a member's own page is four parts, one at a time", async ({ page }) => {
+    /*
+     * The record, the profile, the defaults for a new game, and the people
+     * they have said something about. Six panels down one page before this,
+     * with the record — the part somebody comes back to look at rather than
+     * fills in once — at the bottom of it.
+     */
+    await page.goto("/me");
+    await expect(page.getByTestId("tab")).toHaveCount(4);
+    await expect(page.getByTestId("my-record")).toBeVisible();
+    await expect(page.getByTestId("my-profile")).toHaveCount(0);
+    await expect(page.getByTestId("my-people")).toHaveCount(0);
+
+    // The name stands above them all: it is the one thing the site asks for.
+    await expect(page.getByTestId("name-form")).toBeVisible();
+
+    await page.getByTestId("tab").filter({ hasText: "People" }).click();
+    await expect(page).toHaveURL(/\?view=people$/);
+    await expect(page.getByTestId("buddies")).toBeVisible();
+    await expect(page.getByTestId("name-form")).toBeVisible();
+    await expect(page.getByTestId("my-record")).toHaveCount(0);
+
+    await page.goto("/me?view=games");
+    await expect(page.getByTestId("game-defaults-panel")).toBeVisible();
+    await expect(page.getByTestId("tab").filter({ hasText: "New games" })).toHaveAttribute("data-open", "true");
+  });
+
+  test("a new member is asked one question, with no tabs under it", async ({ page }) => {
+    /*
+     * The welcome exists to ask for a name and nothing else. A row of tabs
+     * beneath it is the rest of the site arriving before that is answered,
+     * which is what the page was already avoiding by hiding those panels.
+     */
+    await page.goto("/me?welcome=1");
+    await expect(page.getByTestId("welcome")).toBeVisible();
+    await expect(page.getByTestId("name-form")).toBeVisible();
+    await expect(page.getByTestId("tabs")).toHaveCount(0);
+  });
+
   test("the operator's page is three tabs, one part at a time", async ({ page }) => {
     /*
      * The door, the members and the work. It was three headings on one page

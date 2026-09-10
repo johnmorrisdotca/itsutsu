@@ -20,7 +20,7 @@ test.describe("keeping finished games in your own list", () => {
       name: `Keeper ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me");
+    await page.goto("/me?view=profile");
 
     const choice = page.getByTestId("keep-finished-days");
     await expect(choice).toBeVisible();
@@ -62,7 +62,7 @@ test.describe("keeping finished games in your own list", () => {
 
     // The shortest window there is. The game was finished seconds ago, so it
     // is still inside it — the setting is about age, not about hiding.
-    await page.goto("/me");
+    await page.goto("/me?view=profile");
     await page.getByTestId("keep-finished-days").selectOption("7");
     await page.getByRole("button", { name: "Save profile" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();
@@ -112,7 +112,7 @@ test.describe("keeping finished games in your own list", () => {
     await page.goto("/games");
     await expect(page.getByTestId("my-games-finished")).toContainText(`Cloth ${stamp}`);
 
-    await page.goto("/me");
+    await page.goto("/me?view=profile");
     await page.getByTestId("keep-finished-days").selectOption("7");
     await page.getByRole("button", { name: "Save profile" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();

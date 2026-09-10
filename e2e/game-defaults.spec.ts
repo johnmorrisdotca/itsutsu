@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
-import { openAdvanced, openSetup, playAt } from "./support";
+import { openAdvanced, openSetup, playAt, ready } from "./support";
 
 /**
  * Where a new game starts for a member.
@@ -23,7 +23,8 @@ test.describe("new games start where the member said", () => {
     });
     const page = await context.newPage();
 
-    await page.goto("/me");
+    await page.goto("/me?view=games");
+    await ready(page, "game-defaults");
     await expect(page.getByTestId("game-defaults")).toBeVisible();
     await page.getByTestId("default-size").selectOption("9");
     await page.getByTestId("save-game-defaults").click();
@@ -56,7 +57,7 @@ test.describe("new games start where the member said", () => {
 
     // The member changes where new games start, in another tab.
     const settings = await context.newPage();
-    await settings.goto("/me");
+    await settings.goto("/me?view=games");
     await settings.getByTestId("default-size").selectOption("19");
     await settings.getByTestId("save-game-defaults").click();
     await expect(settings.getByText("Saved.")).toBeVisible();
@@ -83,7 +84,8 @@ test.describe("new games start where the member said", () => {
     });
     const page = await context.newPage();
 
-    await page.goto("/me");
+    await page.goto("/me?view=games");
+    await ready(page, "game-defaults");
     await page.getByTestId("default-size").selectOption("19");
     await page.getByTestId("default-draw-limit").selectOption("half");
     await page.getByTestId("save-game-defaults").click();

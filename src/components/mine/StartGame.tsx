@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState } from "react";
 
 import { Select } from "@/components/ui/Controls";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { DEFAULT_BOARD_SIZE, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
@@ -42,17 +43,8 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
   const [against, setAgainst] = useState<string>(signedIn ? ANYONE : SCREEN);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  /**
-   * False on the server and true once this is running in the browser — see
-   * `data-ready` below. The same store hook the board's own switches use,
-   * rather than an effect that sets state: there is nothing to subscribe to,
-   * only two different answers either side of hydration.
-   */
-  const ready = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+  /** False on the server, true once the browser has it — see `data-ready` below. */
+  const ready = useHydrated();
 
   const game = useMemo(
     () => families.flatMap((family) => family.games).find((entry) => entry.variant === variant),
@@ -197,7 +189,7 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
      * clock. Three specs chased that today. Waiting for this marker is the
      * one honest way to say "the page is listening now".
      */
-    <div className="flex flex-col gap-3" data-testid="start-game" data-ready={ready ? "true" : "false"}>
+    <div className="flex flex-col gap-3" data-testid="start-game" {...readyMark(ready)}>
       <div className="flex flex-col items-stretch gap-2 text-lg sm:flex-row sm:flex-wrap sm:items-center">
         <Word>{START_COPY.play}</Word>
         <Select

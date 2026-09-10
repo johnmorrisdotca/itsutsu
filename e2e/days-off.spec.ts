@@ -19,7 +19,7 @@ test.describe("days I do not play", () => {
       name: `Restful ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me");
+    await page.goto("/me?view=profile");
 
     await expect(page.getByTestId("days-off")).toBeVisible();
     // Nobody starts with a day off: deadlines work as they always have.
@@ -46,7 +46,7 @@ test.describe("days I do not play", () => {
       name: `Hermit ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/me");
+    await page.goto("/me?view=profile");
 
     for (const day of [0, 1, 2, 3, 4, 5]) await page.getByTestId(`day-off-${day}`).click();
     // Six taken; the seventh is not on offer, because a game that could never
@@ -74,15 +74,31 @@ test.describe("days I do not play", () => {
 
     const prisma = new PrismaClient();
     try {
-      // Black holds the seat and takes today off, wherever the server is.
-      const today = new Date().getUTCDay();
+      /*
+       * A deadline that fell at the start of today, and today is a day this
+       * member does not play. The clock is the one thing a test cannot wait
+       * for, so the deadline is planted rather than waited out.
+       *
+       * The start of today rather than "an hour ago", and that is the whole
+       * of a nightly flake. `daysOffGraceMs` moves a deadline to the END of
+       * the day off it landed on — so a deadline an hour old is held off for
+       * whatever is left of its day, and in the hour after midnight there is
+       * nothing left of it: the deadline sat at 23:04 yesterday, its day
+       * ended at midnight, and the claim landed. This spec failed every night
+       * for an hour and looked like a bug in days off rather than in the
+       * question it was asking.
+       *
+       * From the start of today, the end of the day off is always a day away,
+       * whatever time it is when this runs.
+       */
+      const clock = new Date();
+      const gone = new Date(
+        Date.UTC(clock.getUTCFullYear(), clock.getUTCMonth(), clock.getUTCDate()),
+      );
       const sleeperRow = await prisma.member.update({
         where: { email: sleeper.email },
-        data: { daysOff: [today], timeZone: "UTC" },
+        data: { daysOff: [gone.getUTCDay()], timeZone: "UTC" },
       });
-      // A deadline that went by an hour ago: white could claim it but for the
-      // day off. The clock is the one thing a test cannot wait for.
-      const gone = new Date(Date.now() - 3_600_000);
       await prisma.game.update({
         where: { id: game.id },
         data: { blackMemberId: sleeperRow.id, lastMoveAt: new Date(gone.getTime() - 86_400_000), deadlineAt: gone },
