@@ -116,6 +116,7 @@ export type ComputerStanding = {
   games: number;
   wins: number;
   losses: number;
+  draws: number;
 };
 
 /**
@@ -143,7 +144,7 @@ export async function seedComputerStandings(
         computerRatedGames: one.games,
         computerWins: one.wins,
         computerLosses: one.losses,
-        computerDraws: 0,
+        computerDraws: one.draws,
       };
       await prisma.playerVariantRating.upsert({
         where: { key_variant: { key: one.key, variant } },
