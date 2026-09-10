@@ -7,6 +7,7 @@ import { appendMove, GAME_ROW, replay } from "@/lib/history/liveGame";
 import type { MoveRequest } from "@/lib/history/liveGame.types";
 import { prisma } from "@/lib/prisma";
 import { botInSeat } from "./bots";
+import { settleEnded } from "@/lib/history/liveGameEndings";
 import { farewellFromBots, greetFromBot } from "./botTalk";
 import { BOT_MOVE_MILLIS, BOT_TURNS_PER_REQUEST } from "./bots.constants";
 
@@ -81,8 +82,17 @@ export async function playBotTurns(
      * A person thanks their opponent for all of those, so the computer does
      * too, and this is the one place that is reached however it ended: the
      * move that finished it calls back here for the reply that never comes.
+     *
+     * And file it, if nothing has. Almost always the move that ended the game
+     * did that already and this changes nothing. The exception is a position
+     * that ends with nobody able to move — a full Reversi board — where there
+     * is no last move to do the filing, and the row would say `active` for
+     * ever over a game the engine reads as won. One was found on production
+     * exactly like that. Filed BEFORE the farewell so the thank-you lands on a
+     * finished game and carries the move it ended on.
      */
     if (state.status !== GAME_STATUS.playing) {
+      await settleEnded(id);
       await farewellFromBots(id, row);
       return;
     }

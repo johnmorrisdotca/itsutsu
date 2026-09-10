@@ -296,4 +296,22 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
+  {
+    key: "halma-runs-to-a-thousand-moves",
+    title: "A game of Halma between two computers ran to 1,023 moves",
+    detail:
+      "Found on production on 2026-09-10 while finishing games a stopped batch had left. Kyu against Razryad on a 16\u00d716 Halma board reached 360 moves, and when asked to continue it went on to 1,023 before black finally won. It DOES end, so this is not the non-terminating case \u2014 but a game a thousand moves long is one nobody can read, replay or learn anything from, and the New Game Gate asks that a variant be a game rather than a rule. Worth measuring whether it is the board size, the opponent, or Halma itself: two programs may simply shuffle pieces when neither can be made to commit.",
+    kind: BACKLOG_KINDS.fix,
+    status: BACKLOG_STATUSES.open,
+    askedBy: "John",
+  },
+  {
+    key: "a-game-can-end-with-nobody-able-to-move",
+    title: "A game that ends with nobody able to move was never filed",
+    detail:
+      "A game normally ends on a move, and the move that ends it files it. A position that ends with the player to move having nothing to play \u2014 a full Reversi board \u2014 has no such move, so nothing recorded it: the turn loop noticed the game was over, said thank you for it, and returned. One was found on production reading `active` over a position the engine calls won by white, sixty moves in, and it would have sat in a list until the site was switched off. Fixed by `settleEnded`, but that makes THREE copies of the write that files a finished game (the move path, the timeout path, and now this). They should be one.",
+    kind: BACKLOG_KINDS.chore,
+    status: BACKLOG_STATUSES.open,
+    askedBy: "John",
+  },
 ];

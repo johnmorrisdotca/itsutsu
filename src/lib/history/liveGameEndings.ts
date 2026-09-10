@@ -158,6 +158,53 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
  * here, and a game that is lost is finished by the side that knows it. The
  * other colour wins, and the record says why.
  */
+/**
+ * Files a game the engine has already decided but nothing wrote down.
+ *
+ * A game normally ends on a move, and the move that ends it files it. There is
+ * one way to reach a finished position without one: a side with no legal turn
+ * to take. In Reversi a full board is exactly that — the last stone leaves the
+ * position decided, and the player to move has nothing to play.
+ *
+ * Until this, nobody recorded that. The turn loop noticed the game was over,
+ * said thank you for it, and returned — leaving a row that said `active` for
+ * ever over a position the engine reads as won. One was found on production
+ * that way: sixty moves of Reversi, white the winner, and a game that would
+ * have sat in somebody's list until the site was switched off.
+ *
+ * The write is deliberately the same shape as the move path's and the
+ * timeout path's, because it is the same fact being recorded. That there are
+ * now three of them is worth fixing, and is not worth fixing in the same
+ * change as the bug.
+ */
+export async function settleEnded(id: string, now = new Date()): Promise<boolean> {
+  const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
+  if (row === null || row.status !== "active" || row.openSeat !== null) return false;
+
+  const state = replay(row);
+  if (state.status === GAME_STATUS.playing) return false;
+
+  await prisma.game.update({
+    where: { id },
+    data: {
+      moveCount: state.moves.length,
+      status: "finished",
+      result: state.winner ?? "draw",
+      winner: state.winner,
+      lastMoveAt: now,
+      deadlineAt: null,
+      extraMs: 0,
+    },
+  });
+
+  // Rated exactly as any other finish is, and by the same rules: never a game
+  // at one screen, never a friendly, and always into the pool the seats decide.
+  if (!isHotSeat(row) && row.rated) {
+    await recordResult(row.blackName, row.whiteName, state.winner, row.variant, poolFor(hasBotSeat(row)));
+  }
+  return true;
+}
+
 export async function resignGame(id: string, token: string, now = new Date()): Promise<TimeoutOutcome> {
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
