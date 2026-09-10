@@ -117,6 +117,34 @@ test.describe("the ladder against the computer players", () => {
     expect(checked, "counts actually inspected").toBe(expected);
   });
 
+  test("keeps a computer-only record off the ladder of people entirely", async ({ page }) => {
+    /*
+     * THE BUG THIS PAGE UNCOVERED, asserted so it cannot come back.
+     *
+     * A PlayerVariantRating row is written the first time a name finishes a
+     * game of a variant in EITHER pool. So a player whose only games at
+     * Reversi were against a program has a row whose PEOPLE columns were never
+     * touched — a rating of 1600 over no games at all. The ladder of people
+     * listed everybody with a row, so it showed them, at a starting rating
+     * they had never played for. Reading the wrong half of a row and calling
+     * it a standing, which is the same fault the members directory had.
+     *
+     * It was invisible on this database until now for the reason the seeding
+     * helper exists: there were no computer-pool rows at all, so there was
+     * nothing in the wrong half to leak.
+     */
+    await page.goto("/champions/reversi");
+    const people = page.getByTestId("standings-table");
+    if ((await people.count()) > 0) {
+      for (const one of INVERTED) {
+        await expect(people, `${one.name} has no standing among people`).not.toContainText(one.name);
+      }
+    }
+    // And they are on the other ladder, so this is not passing by finding
+    // nothing: the rows do exist, they are simply on the right table.
+    await expect(page.getByTestId("computer-standings-table")).toContainText(INVERTED[0].name);
+  });
+
   test("is not drawn at all for a game nobody has played a program at", async ({ page }) => {
     // A heading over an empty table reads as a broken page rather than as an
     // answer, and most games have no such standings at all.
