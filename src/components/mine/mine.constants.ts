@@ -14,6 +14,14 @@ export const MY_GAMES_COPY = {
   staleHint: (days: number) => `No move for more than ${days} days. Resign it, or make a move.`,
   resign: { label: "Resign", kanji: "投了" },
   resignConfirm: "Resign this game? The other side wins and it is filed in the record.",
+  /*
+   * A board with no stones on it is called off, not resigned. Resigning means
+   * giving up something under way, and nothing is under way — so the word
+   * changes, and so does what it costs: nobody wins, nobody loses, and no
+   * rating moves.
+   */
+  cancel: { label: "Cancel", kanji: "取消" },
+  cancelConfirm: "Call off this game? Nothing has been played, so nobody wins and no rating moves.",
   localGame: { label: "Your game", kanji: "続き" },
   openBoard: { label: "Open seats", kanji: "対局募集", hint: "Games somebody has posted for anyone. Sit down and it is yours." },
   sit: { label: "Sit as White", kanji: "着席" },

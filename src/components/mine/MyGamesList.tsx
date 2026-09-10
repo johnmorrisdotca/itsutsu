@@ -150,9 +150,15 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
         added to a row from here on needs the same, which is the cost of the
         row being a link at all.
       */}
-      {running && game.allowResign ? (
+      {/*
+        Calling off an empty board is offered even where resigning is not. A
+        host who says nobody may walk away means a game in progress, and there
+        is nothing to walk away from before the first stone — leaving somebody
+        stuck with an empty board for ever would be a rule protecting nothing.
+      */}
+      {running && (game.allowResign || game.moveCount === 0) ? (
         <span className="relative z-10">
-          <ResignButton id={game.id} />
+          <ResignButton id={game.id} moves={game.moveCount} />
         </span>
       ) : null}
     </li>

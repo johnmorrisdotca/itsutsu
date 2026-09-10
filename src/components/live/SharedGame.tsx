@@ -393,9 +393,12 @@ export function SharedGame({
         </div>
       ) : null}
 
-      {seat !== null && detail.allowResign && state.status === GAME_STATUS.playing ? (
+      {/* An empty board can be called off even where resigning is refused. */}
+      {seat !== null &&
+      (detail.allowResign || state.moves.length === 0) &&
+      state.status === GAME_STATUS.playing ? (
         <div className="flex justify-end">
-          <ResignButton id={detail.id} onDone={() => void mutate()} />
+          <ResignButton id={detail.id} moves={state.moves.length} onDone={() => void mutate()} />
         </div>
       ) : null}
 

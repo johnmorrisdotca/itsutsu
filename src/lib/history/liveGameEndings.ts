@@ -205,6 +205,54 @@ export async function settleEnded(id: string, now = new Date()): Promise<boolean
   return true;
 }
 
+/**
+ * Calls off a game nothing has happened in.
+ *
+ * Resigning is the wrong word for a board with no stones on it. John put it
+ * plainly: a game with no moves offered "Resign" as its only action, and
+ * resigning implies giving something up that was under way. Nothing was.
+ *
+ * SO IT COSTS NOBODY ANYTHING. No winner, no loser, and no rating write of
+ * any kind — not a resignation quietly corrected afterwards, but a path that
+ * never calls `recordResult` at all. The game is filed as ended without a
+ * result, which is the one thing the stored result can honestly say about it.
+ *
+ * Allowed even where resigning is not. A host who says nobody may walk away
+ * means a game in progress; there is nothing to walk away from before the
+ * first stone, and leaving somebody stuck with an empty board for ever would
+ * be a rule protecting nothing.
+ */
+export async function cancelGame(id: string, token: string, now = new Date()): Promise<TimeoutOutcome> {
+  const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
+  if (row === null) return { ok: false, reason: "not-found" };
+  if (row.status !== "active") return { ok: false, reason: "finished" };
+  if (stoneForToken(row, token) === null) return { ok: false, reason: "wrong-token" };
+  /*
+   * The one thing that makes this different from a resignation, checked
+   * against the record rather than a count somebody passed in: a single stone
+   * and it is a game, and a game is resigned rather than called off.
+   */
+  if (row.moves.length > 0) return { ok: false, reason: "not-allowed" };
+
+  await prisma.game.update({
+    where: { id },
+    data: {
+      status: "finished",
+      result: "abandoned",
+      winner: null,
+      lastMoveAt: now,
+      deadlineAt: null,
+      extraMs: 0,
+    },
+  });
+  // Deliberately no recordResult. Nothing was played, so nothing is owed.
+  if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: null });
+
+  const game = await fetchGameDetail(id);
+  if (game === null) return { ok: false, reason: "not-found" };
+  return { ok: true, game };
+}
+
 export async function resignGame(id: string, token: string, now = new Date()): Promise<TimeoutOutcome> {
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
