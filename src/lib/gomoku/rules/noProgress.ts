@@ -1,7 +1,7 @@
 import { STAR_RADIUS, starCampSquares, starSize } from "./chineseCheckers";
 import { campSquares } from "./camps";
 import { GAME_STATUS, RULE_VARIANTS } from "../gomoku.constants";
-import type { Cell, GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types";
+import type { GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types";
 
 /**
  * A game nobody is getting anywhere in is a draw.
@@ -155,6 +155,20 @@ export function distanceHome(size: number, stone: Stone, point: Point): number |
 }
 
 /**
+ * The single square `distanceHome` measures to, for a colour on a board, or
+ * null where this board has no camps this rule can read.
+ *
+ * The same answer `distanceHome` works out, taken once instead of per point.
+ * `farCamp` is memoised, but the lookup still builds a key, and a loop of
+ * four hundred moves asking twice each is eight hundred throwaway strings a
+ * call in a rule the engine asks on every node of the bot's search.
+ */
+function homeCorner(size: number, stone: Stone): Point | null {
+  const far = farCamp(size, stone);
+  return far.length === 0 ? null : far[far.length - 1];
+}
+
+/**
  * Whether one move got anywhere, for a game with captures.
  *
  * Checkers takes the draughts definition exactly: a capture, or a move by a
@@ -169,34 +183,27 @@ function tookOrPromoted(move: Move): boolean {
 }
 
 /**
- * The total distance a colour's pieces stand from the camp they are filling,
- * on a given board, or null when this board has no camps this rule reads.
- */
-function totalDistance(board: Cell[], size: number, stone: Stone): number | null {
-  let sum = 0;
-  for (let index = 0; index < board.length; index += 1) {
-    if (board[index] !== stone) continue;
-    const away = distanceHome(size, stone, { row: Math.floor(index / size), col: index % size });
-    if (away === null) return null;
-    sum += away;
-  }
-  return sum;
-}
-
-/**
  * Whether a racing game has gone `window` plies with neither side ever
  * getting nearer than it stood at the start of them.
  *
- * WINDOWED, AND REWOUND RATHER THAN REPLAYED — both for the same reason,
- * which is that the first version of this was quadratic and nobody noticed
- * until a bot test timed out. It walked the whole move list from the opening
- * position on every single move, recomputing every piece's distance each
- * time; a Halma game of a few hundred plies did that a few hundred times and
- * took four hundred seconds instead of thirty.
+ * WINDOWED, AND ADDED UP RATHER THAN REPLAYED. The first version of this was
+ * quadratic: it walked the whole move list from the opening on every single
+ * move, recomputing every piece's distance each time, and a Halma game of a
+ * few hundred plies took four hundred seconds instead of thirty. The second
+ * bounded that to a window and rewound the board instead of replaying it —
+ * still far too much work, and for a reason I had not looked for. The engine
+ * settles a draw after every move, and the bot's search moves thousands of
+ * times per turn it actually plays, so this is asked on every node of the
+ * search. A cost that looks fine "once per move" is multiplied by the width
+ * of the search before it reaches a clock.
  *
- * So this reads the CURRENT board, which the state already has, and rewinds
- * the last `window` moves to see where things stood then. Bounded work, once
- * per move, however long the game runs.
+ * So nothing is rebuilt or rewound here. What the board comparison was
+ * working out the long way round is a sum: a race has no captures, so every
+ * move is one piece stepping, and how much nearer home a side stands than it
+ * did a window ago is just how far each of its steps in that window went. Add
+ * the steps up and the two boards cancel — the pieces that never moved
+ * contributed the same distance at both ends. Same answer, no board, no
+ * allocation, a window of plain arithmetic.
  *
  * It is also closer to the rule it is named after. The fifty-move rule counts
  * since the last capture or pawn move — a window on recent play, not a
@@ -207,30 +214,27 @@ function racingStalled(state: GameState, window: number): boolean {
   const { size } = state.settings;
   if (state.moves.length < window) return false;
 
-  const board = [...state.board];
-  const now: Partial<Record<Stone, number>> = {};
-  for (const stone of ["black", "white"] as Stone[]) {
-    const total = totalDistance(board, size, stone);
-    if (total === null) return false;
-    now[stone] = total;
-  }
+  const black = homeCorner(size, "black");
+  const white = homeCorner(size, "white");
+  if (black === null || white === null) return false;
 
-  // Rewind the window: a race has no captures, so a move is just a piece
-  // stepping, and putting it back is the same step the other way.
+  let blackGained = 0;
+  let whiteGained = 0;
   for (let at = state.moves.length - 1; at >= state.moves.length - window; at -= 1) {
     const move = state.moves[at];
     if (move.from === undefined) return false;
-    board[move.from.row * size + move.from.col] = board[move.row * size + move.col];
-    board[move.row * size + move.col] = null;
+    const corner = move.stone === "black" ? black : white;
+    // Negative is nearer: the step ended closer to the camp than it started.
+    const gained =
+      Math.abs(move.row - corner.row) +
+      Math.abs(move.col - corner.col) -
+      Math.abs(move.from.row - corner.row) -
+      Math.abs(move.from.col - corner.col);
+    if (move.stone === "black") blackGained += gained;
+    else whiteGained += gained;
   }
-
-  for (const stone of ["black", "white"] as Stone[]) {
-    const before = totalDistance(board, size, stone);
-    if (before === null) return false;
-    // Anybody nearer than they stood a window ago has got somewhere.
-    if ((now[stone] ?? 0) < before) return false;
-  }
-  return true;
+  // Anybody nearer than they stood a window ago has got somewhere.
+  return blackGained >= 0 && whiteGained >= 0;
 }
 
 /**
