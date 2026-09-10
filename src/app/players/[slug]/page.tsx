@@ -3,11 +3,13 @@ import { notFound, redirect } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CountryMark } from "@/components/players/CountryMark";
+import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
+import { memberKind } from "@/lib/auth/memberKind";
 import { SnapshotWarning, WholeRecordPanel } from "@/components/players/WholeRecord";
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
 import { Whereabouts } from "@/components/players/Whereabouts";
 import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
-import { LegacyOwnPage, PlayedEverywhere } from "@/components/players/LegacyRecord";
+import { KEPT_RECORD_COPY, PlayedEverywhere } from "@/components/players/LegacyRecord";
 import { LegacySourcePanel } from "@/components/players/LegacySource";
 import { Figures } from "@/components/ui/Figures";
 import { Tabs } from "@/components/ui/Tabs";
@@ -20,29 +22,17 @@ import { fetchBuddies } from "@/lib/social/buddies";
 import { ignoredEmails } from "@/lib/social/ignores";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
-import { findLegacyPlayer, findLinkedLegacies, foldedInto } from "@/lib/legacy/legacyPlayers.data";
+import { findLegacyPlayer, foldedInto, legaciesForName } from "@/lib/legacy/legacyPlayers.data";
 import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { countText, figuresOf, recordText, winRateText } from "@/lib/rating/figures";
-import { playerKey, playerKeysFromSlug } from "@/lib/rating/playerKey";
+import { playerKeysFromSlug } from "@/lib/rating/playerKey";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { fetchPlayer } from "@/lib/rating/players";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
 export const metadata = { title: "Player" };
-
-/**
- * What this site itself holds of somebody, by the name they are known by.
- *
- * Every player page asks for it, including a kept record's — Chibi and
- * Kyokosan are members here now, so the honest answer is a real query rather
- * than an assumption that it is empty. Today it is empty for both.
- */
-async function recordHere(name: string) {
-  const [record, gifts] = await Promise.all([fetchPlayerRecord(name), fetchTimeGiftRecord(name)]);
-  return { record, gifts };
-}
 
 export default async function PlayerPage({ params, searchParams }: PageProps<"/players/[slug]">) {
   const { slug } = await params;
@@ -61,17 +51,6 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
     const home = foldedInto(legacyBySlug);
     if (home !== null) redirect(home);
   }
-  if (legacyBySlug !== null && legacyBySlug.kind !== "elsewhere") {
-    return (
-      <LegacyOwnPage
-        legacy={legacyBySlug}
-        view={view}
-        base={`/players/${slug}`}
-        here={await recordHere(legacyBySlug.name)}
-      />
-    );
-  }
-
   /*
    * The address holds a folded name with hyphens for spaces, and folding
    * cannot be undone: "anne-marie" is either one hyphenated name or two
@@ -106,13 +85,25 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   // game: every list that prints their name links to it, and a link that
   // leads nowhere is worse than no page.
   const hasLiveData = player !== null || record.games > 0 || member !== null;
-  const linkedByKey = findLinkedLegacies(playerKey(decoded));
-  const linked = linkedByKey.length > 0 ? linkedByKey : hasLiveData || legacyBySlug === null ? [] : [legacyBySlug];
+  /*
+   * Every record kept under this name, however it is attached.
+   *
+   * One lookup where there were three, and that is the reshape rather than a
+   * tidy-up. A record from before this site used to arrive by two different
+   * routes — pointing at a live member, or carrying the person's own name —
+   * and each caller remembered whichever route it had been written for. The
+   * directory knew one and read Chibi as nought; this page knew both, and paid
+   * for it by being two pages.
+   */
+  const linked = legaciesForName(decoded);
+  /*
+   * A record somebody is remembered BY rather than one they brought with them.
+   * The only thing about them the page still treats differently, and only
+   * because it is true: nobody is on the other end of it.
+   */
+  const keptRecord = linked.find((one) => one.kind !== "elsewhere") ?? null;
 
   if (!hasLiveData && linked.length === 0) notFound();
-  if (!hasLiveData && linked.length > 0) {
-    return <LegacyOwnPage legacy={linked[0]} view={view} base={`/players/${slug}`} here={{ record, gifts }} />;
-  }
 
   /*
    * Whether there is anybody here to ask. A kept record has no address and no
@@ -129,12 +120,23 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   const whole = wholeRecord(linked, { won: record.wins, lost: record.losses, drawn: record.draws });
 
   /*
-   * One tab for this site and one for each site somebody played on before it.
-   * Where a member has no earlier record there is only the one, and the strip
-   * does not draw itself at all — a page with a single tab is just a page.
+   * One tab per site somebody played on, and this site is one of them.
+   *
+   * Ordered by what they have rather than by what sort of row they are. A
+   * person who has played here opens on that, because it is the live chapter
+   * and the one another member came to read; a person who never did opens on
+   * the sites where their playing actually happened, rather than on an empty
+   * table with their real record a click away.
+   *
+   * That used to be the difference between two page components — a kept record
+   * had its own, with the order reversed. It is one line of ordering, which is
+   * all it ever was.
    */
   const elsewhere = legacyTabs(linked);
-  const tabs: Tab[] = [ITSUTSU_TAB, ...elsewhere];
+  const tabs: Tab[] =
+    record.games > 0 || elsewhere.length === 0
+      ? [ITSUTSU_TAB, ...elsewhere]
+      : [...elsewhere, ITSUTSU_TAB];
   const open = activeTab(tabs, view);
   const shown = elsewhere.find((tab) => tab.key === open) ?? null;
 
@@ -153,7 +155,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          {player?.name ?? member?.name ?? decoded}
+          {player?.name ?? member?.name ?? keptRecord?.name ?? decoded}
           {/*
             Where they are, said in full here because there is room for it —
             the directory has only the flag. The profile form has promised
@@ -164,7 +166,36 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
             className="text-sm font-normal text-muted"
             showName
           />
+          {/*
+            The same badge the members list draws, rather than a second one
+            worded differently for the same fact. It was a separate badge on a
+            separate page, which is how "Remembered" and "KEPT RECORD" came to
+            be two names for one thing.
+          */}
+          <MemberKindBadge
+            kind={memberKind({
+              email: member?.email ?? null,
+              botTier: member?.botTier ?? null,
+              unclaimableBecause: member?.unclaimableBecause ?? null,
+              legacyKind: keptRecord?.kind ?? null,
+            })}
+          />
         </h1>
+        {/*
+          Where their playing happened, for somebody whose record was made
+          before this site existed. It says the handles and the years, because
+          that is how a reader checks a record they are being shown — and it
+          stays out of the tabs so that a reader on the GoldToken tab can still
+          see there is an ItsYourTurn chapter without moving.
+        */}
+        {keptRecord === null ? null : (
+          <p className="text-sm text-muted" data-testid="kept-record-note">
+            {keptRecord.location !== undefined ? `${keptRecord.location} · ` : ""}
+            <PlayedEverywhere legacy={keptRecord} lead="Played as" />.{" "}
+            {KEPT_RECORD_COPY[keptRecord.kind]?.tail ??
+              "From before Itsutsu — kept alongside whatever they have since earned here."}
+          </p>
+        )}
         <Whereabouts city={member?.city} timeZone={member?.timeZone} />
         <PlayerActions
           email={member?.email ?? null}
@@ -280,7 +311,16 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
 
       {shown === null ? (
         <>
-          <ItsutsuRecord record={record} gifts={gifts} />
+          <ItsutsuRecord
+            record={record}
+            gifts={gifts}
+            /*
+             * "No games yet" is the wrong word about somebody who has died,
+             * in the one place it would be noticed. Their own wording says
+             * this record was made elsewhere and is kept rather than added to.
+             */
+            emptyNote={keptRecord === null ? undefined : KEPT_RECORD_COPY[keptRecord.kind]?.here}
+          />
           {/*
             The second way in, and the one somebody actually uses. A profile is
             read downwards — the figures, then the games, then how each went —

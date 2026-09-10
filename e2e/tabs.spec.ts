@@ -31,7 +31,7 @@ test.describe("a page of many sections is tabs", () => {
     // A renamed tab, or an address somebody typed. Better the first tab than
     // an empty page.
     await page.goto("/players/chibi?view=myspace");
-    await expect(page.getByTestId("legacy-player")).toContainText("Chibi");
+    await expect(page.getByTestId("player-profile")).toContainText("Chibi");
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
   });
 

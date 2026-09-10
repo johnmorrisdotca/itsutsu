@@ -66,8 +66,15 @@ test.describe("a legacy record's games link to what they are", () => {
      * reader on one tab can see the other exists without moving.
      */
     await page.goto("/players/chibi");
-    await expect(page.getByTestId("legacy-player")).toContainText("ItsYourTurn.com");
-    await expect(page.getByTestId("legacy-player")).toContainText("GoldToken.com");
+    /*
+     * The same panel every player has now. There used to be a second page
+     * component for a record kept from elsewhere, with its own heading and its
+     * own badge, and this asserted against that one — so the test was pinning
+     * the split rather than the behaviour it cared about.
+     */
+    const heading = page.getByTestId("player-profile");
+    await expect(heading).toContainText("ItsYourTurn.com");
+    await expect(heading).toContainText("GoldToken.com");
     // Two sites, plus this one — every player page keeps an Itsutsu tab.
     await expect(page.getByTestId("tab")).toHaveCount(3);
     // One at a time: the whole point of the tabs.
