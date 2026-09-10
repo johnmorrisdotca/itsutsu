@@ -278,4 +278,22 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     status: BACKLOG_STATUSES.done,
     askedBy: "John",
   },
+  {
+    key: "artwork-from-real-games",
+    title: "A visual tab on each game's page, made from real games of it",
+    detail:
+      "Each game's own page gets an artwork tab or section built from actual past games of that variant \u2014 a wallpaper or mosaic of real recent board states rather than a stock image. John's framing: \"it's like a visual tab for that game... would be really cool.\" The screenshots we already generate are one staged board each; this would be the real record made visible, and it would change as the game is played. Exploratory rather than urgent.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.open,
+    askedBy: "John",
+  },
+  {
+    key: "speak-more-than-one-language",
+    title: "The site speaks more than one language",
+    detail:
+      "Full i18n \u2014 English, Spanish, Japanese, Chinese, German and the other majority languages, simple design, with wazadb.com as the model. Big enough to plan rather than start. John has settled the design question it turns on: the pattern is LOCALE + JP. The kanji stays put whatever language is chosen, and the English half beside it is the half that switches \u2014 \"Players \u5bfe\u5c40\u8005\" becomes \"Jugadores \u5bfe\u5c40\u8005\". The scope is exactly that: wherever English and kanji already sit side by side today IS the surface to translate. The kanji is his heritage and part of the site's voice, not decoration to be localised away \u2014 see the About page. One question is open and is his to answer when this is scoped: whether Chinese pairs with the kanji at all, or shows on its own. His words were \"if chinese perhaps just show CHIN\" \u2014 two Han scripts stacked may read as redundant rather than as flavour.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.open,
+    askedBy: "John",
+  },
 ];
