@@ -12,7 +12,17 @@ import { Tabs } from "@/components/ui/Tabs";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { fetchComputerPlayers } from "@/lib/rating/players";
 import { DIRECTORY_FILTER_COOKIE, filterFor } from "@/lib/rating/rememberedFilter";
+import { readRecordScope, SCOPE_PARAM } from "@/lib/rating/recordScope";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
+
+/** Everything the address already says, as a query string. */
+function addressOf(asked: Record<string, string | string[] | undefined>): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(asked)) {
+    if (typeof value === "string" && value !== "") params.set(key, value);
+  }
+  return params.toString();
+}
 
 export const metadata = { title: "Players" };
 
@@ -83,7 +93,20 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
 
         <Tabs tabs={TABS} active={open} base="/players" label="Which players to look at" />
 
-        {open === "members" ? <Directory filter={filterFor(asked, remembered)} now={now} /> : null}
+        {open === "members" ? (
+          <Directory
+            filter={filterFor(asked, remembered)}
+            scope={readRecordScope(asked[SCOPE_PARAM])}
+            /*
+              The address as it stands, so choosing how much to count keeps
+              whatever narrowing is already on it. The two questions are
+              independent and answering one must never quietly answer the
+              other — the same rule a player's own page keeps about its tabs.
+            */
+            query={addressOf(asked)}
+            now={now}
+          />
+        ) : null}
         {open === "ladder" ? <Ladder /> : null}
         {open === "computers" ? <ComputerTab /> : null}
         {open === "remembered" ? (

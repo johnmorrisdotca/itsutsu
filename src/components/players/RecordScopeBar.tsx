@@ -4,6 +4,7 @@ import {
   RECORD_SCOPES,
   RECORD_SCOPE_LIST,
   scopeHref,
+  scopeHrefFrom,
   type RecordScope,
 } from "@/lib/rating/recordScope";
 
@@ -40,22 +41,37 @@ const OFF = "border-rule bg-ivory/70 hover:border-rule-strong";
 export function RecordScopeBar({
   base,
   view,
+  query,
   scope,
+  label = "How much of this player's record to count",
 }: {
   base: string;
-  view: string | undefined;
+  view?: string;
+  /**
+   * The rest of the address, for a page that already narrows itself.
+   *
+   * The directory has three narrowings of its own, and choosing a scope must
+   * not quietly undo any of them — so its whole query comes through and only
+   * the scope is changed.
+   */
+  query?: string;
   scope: RecordScope;
+  label?: string;
 }) {
+  const href = (one: RecordScope) =>
+    query === undefined
+      ? scopeHref(base, view, one)
+      : scopeHrefFrom(base, new URLSearchParams(query), one);
   return (
     <nav
       className="flex flex-wrap items-center gap-1"
-      aria-label="How much of this player's record to count"
+      aria-label={label}
       data-testid="record-scope"
     >
       {RECORD_SCOPE_LIST.map((one) => (
         <Link
           key={one}
-          href={scopeHref(base, view, one)}
+          href={href(one)}
           aria-current={scope === one ? "true" : undefined}
           title={COPY[one].note}
           className={`${BUTTON} ${scope === one ? ON : OFF}`}

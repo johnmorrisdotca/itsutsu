@@ -52,8 +52,22 @@ export function readRecordScope(asked: string | string[] | undefined): RecordSco
 export function scopeHref(base: string, view: string | undefined, scope: RecordScope): string {
   const params = new URLSearchParams();
   if (view !== undefined && view !== "") params.set("view", view);
-  if (scope !== DEFAULT_SCOPE) params.set(SCOPE_PARAM, scope);
-  const query = params.toString();
+  return scopeHrefFrom(base, params, scope);
+}
+
+/**
+ * The same, for a page whose address already carries more than a tab.
+ *
+ * The directory has a narrowing of its own — who to list, whether a rating has
+ * settled, whether they have been seen lately — and choosing a scope must not
+ * silently undo any of it. So the existing query comes in whole and only the
+ * scope is changed, which is the same promise `scopeHref` makes about the tab.
+ */
+export function scopeHrefFrom(base: string, params: URLSearchParams, scope: RecordScope): string {
+  const next = new URLSearchParams(params);
+  next.delete(SCOPE_PARAM);
+  if (scope !== DEFAULT_SCOPE) next.set(SCOPE_PARAM, scope);
+  const query = next.toString();
   return query === "" ? base : `${base}?${query}`;
 }
 

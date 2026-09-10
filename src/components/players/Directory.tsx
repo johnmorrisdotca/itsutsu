@@ -13,6 +13,8 @@ import { buddyEmails } from "@/lib/social/buddies";
 import { currentSession } from "@/lib/auth/currentSession";
 import { fetchComputerPlayers, fetchDirectory, type DirectoryEntry } from "@/lib/rating/players";
 import { gamesPlayed, ratingShown } from "@/lib/rating/shownRecord";
+import { RECORD_SCOPES, scopeWorthAsking, type RecordScope } from "@/lib/rating/recordScope";
+import { RecordScopeBar } from "./RecordScopeBar";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RecordCells, RecordHeadings } from "./PlayerRecord";
 import { filterDirectory, type DirectoryFilter } from "@/lib/rating/directoryFilter";
@@ -56,15 +58,27 @@ function DirectoryRecord({
   name,
   profile,
   elsewhere,
-}: Pick<DirectoryEntry, "profile" | "elsewhere"> & { name: string }) {
+  scope,
+}: Pick<DirectoryEntry, "profile" | "elsewhere"> & { name: string; scope: RecordScope }) {
   const here = gamesPlayed(profile);
-  const played = {
-    wins: here.wins + elsewhere.wins,
-    losses: here.losses + elsewhere.losses,
-    draws: here.draws + elsewhere.draws,
-  };
+  /*
+   * Counting everywhere unless the reader has asked for this site alone. The
+   * table led with the lifetime figure and offered no way to narrow it, while
+   * the page one click away — a player's own — had offered exactly that choice
+   * for two releases. Same question, same two answers, and the list could only
+   * give one of them.
+   */
+  const everywhere = scope === RECORD_SCOPES.everywhere;
+  const played = everywhere
+    ? {
+        wins: here.wins + elsewhere.wins,
+        losses: here.losses + elsewhere.losses,
+        draws: here.draws + elsewhere.draws,
+      }
+    : { wins: here.wins, losses: here.losses, draws: here.draws };
   const rating = ratingShown(profile);
-  const kept = elsewhere.wins + elsewhere.losses + elsewhere.draws > 0;
+  // Only worth marking where the figure beside it actually reaches back.
+  const kept = everywhere && elsewhere.wins + elsewhere.losses + elsewhere.draws > 0;
   return (
     <>
       <RecordCells
@@ -128,7 +142,18 @@ function DirectoryRecord({
  * that needs any of this, and a page that reads the directory in order to
  * render a ladder is a page that pays for four sections to show one.
  */
-export async function Directory({ filter, now }: { filter: DirectoryFilter; now: Date }) {
+export async function Directory({
+  filter,
+  scope,
+  query,
+  now,
+}: {
+  filter: DirectoryFilter;
+  scope: RecordScope;
+  /** The address as it stands, so choosing a scope keeps the narrowing. */
+  query: string;
+  now: Date;
+}) {
   const [directory, computers, me] = await Promise.all([
     fetchDirectory(RECENT),
     fetchComputerPlayers(),
@@ -156,6 +181,21 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
         start it.
       </p>
       <DirectoryFilters filter={filter} shown={people.length} total={everybody.length} />
+      {/*
+        Drawn only where it can change an answer — the same rule a player's own
+        page keeps. With nobody on this list carrying a record from anywhere
+        else, the two scopes are the same games, and a control that cannot
+        change anything is furniture that also promises a chapter which is not
+        there.
+      */}
+      {scopeWorthAsking(people.some((one) => one.elsewhere.wins + one.elsewhere.losses + one.elsewhere.draws > 0) ? 2 : 1) ? (
+        <RecordScopeBar
+          base="/players"
+          query={query}
+          scope={scope}
+          label="How much of these records to count"
+        />
+      ) : null}
       <table className="w-full text-sm" data-testid="directory">
         <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
           <tr>
@@ -226,7 +266,12 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
                   />
                 </span>
               </td>
-              <DirectoryRecord name={entry.name} profile={entry.profile} elsewhere={entry.elsewhere} />
+              <DirectoryRecord
+                name={entry.name}
+                profile={entry.profile}
+                elsewhere={entry.elsewhere}
+                scope={scope}
+              />
               <td className="py-1.5 pr-3 text-xs text-muted">
                 {new Date(entry.joinedAt).toLocaleDateString()}
                 {entry.isNew ? (
