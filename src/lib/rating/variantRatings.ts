@@ -5,7 +5,7 @@ import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from
 import { playerKey } from "./playerKey";
 import { memberIdForName } from "./players";
 import { isRateable } from "./rateable";
-import { outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
+import { POOL_COLUMNS, RATING_POOLS, outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
 
 /**
  * Ratings per game, alongside the global ladder.
@@ -44,8 +44,9 @@ type StandingRow = {
   draws: number;
 };
 
-function toStanding(row: StandingRow): VariantStanding {
-  return { ...row, tier: tierFor(row.ratedGames) };
+function toStanding(row: StandingRow, pool: RatingPool = RATING_POOLS.people): VariantStanding {
+  const standing = standingIn(row as unknown as Record<string, unknown>, pool);
+  return { key: row.key, name: row.name, variant: row.variant, ...standing, tier: tierFor(standing.ratedGames) };
 }
 
 /** The score a result is worth to black, as Elo counts it. */
@@ -112,18 +113,32 @@ export async function recordVariantResult(
  * stands higher, and the name settles the rest — see `fetchLeaders`. Without
  * a total order the same page shows a different fifty each time it is loaded.
  */
-export async function fetchVariantLeaders(variant: string, limit: number): Promise<VariantStanding[]> {
+export async function fetchVariantLeaders(
+  variant: string,
+  limit: number,
+  pool: RatingPool = RATING_POOLS.people,
+): Promise<VariantStanding[]> {
+  const columns = POOL_COLUMNS[pool];
   const rows = await prisma.playerVariantRating.findMany({
-    where: { variant },
+    /*
+     * Somebody with a standing in THIS pool, which is not the same as somebody
+     * with a row. A row is written the first time a name finishes a game of
+     * this variant in either pool, so a player who has only ever played the
+     * computer at Reversi has a row whose people columns are untouched — a
+     * rating of 1600 over no games at all. Listing them on the ladder of
+     * people would be reading the wrong half of the row and calling it a
+     * standing, which is the fault the directory had until tonight.
+     */
+    where: { variant, [columns.ratedGames]: { gt: 0 } } as never,
     orderBy: [
-      { rating: "desc" },
-      { ratedGames: "desc" },
+      { [columns.rating]: "desc" },
+      { [columns.ratedGames]: "desc" },
       { updatedAt: "desc" },
       { key: "asc" },
-    ],
+    ] as never,
     take: limit,
   });
-  return rows.map(toStanding);
+  return rows.map((row) => toStanding(row, pool));
 }
 
 /**
@@ -137,7 +152,7 @@ export async function fetchVariantStandings(name: string): Promise<VariantStandi
     where: { key },
     orderBy: [{ ratedGames: "desc" }, { rating: "desc" }],
   });
-  return rows.map(toStanding);
+  return rows.map((row) => toStanding(row));
 }
 
 /** One game's standing at a glance: who leads it, and how much play is behind that. */
@@ -179,5 +194,5 @@ export async function fetchChampions(): Promise<Map<string, VariantChampion>> {
   const rows = await prisma.playerVariantRating.findMany({
     orderBy: [{ rating: "desc" }, { ratedGames: "desc" }],
   });
-  return championsOf(rows.map(toStanding));
+  return championsOf(rows.map((row) => toStanding(row)));
 }

@@ -9,6 +9,7 @@ import { siblingsOf } from "@/lib/gomoku/families";
 import { championsPath, gamePath, recordPath, rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchVariantLeaders } from "@/lib/rating/variantRatings";
+import { RATING_POOLS } from "@/lib/rating/pools";
 
 export const metadata = { title: "Champions" };
 
@@ -23,7 +24,10 @@ export default async function GameChampionsPage({ params }: PageProps<"/champion
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
   const siblings = siblingsOf(variant);
-  const standings = await fetchVariantLeaders(variant, LEADERS);
+  const [standings, againstComputers] = await Promise.all([
+    fetchVariantLeaders(variant, LEADERS),
+    fetchVariantLeaders(variant, LEADERS, RATING_POOLS.computer),
+  ]);
 
   return (
     <Page width="standard" gap="gap-6">
@@ -59,6 +63,40 @@ export default async function GameChampionsPage({ params }: PageProps<"/champion
         ) : (
           <StandingsTable standings={standings} />
         )}
+        {/*
+          The other ladder of this game, and it is a different question rather
+          than a smaller version of the same one. A game against a computer is
+          rated in a pool of its own, so that beating a program never moves
+          where somebody stands among people — which means these figures are
+          not comparable with the ones above and are never combined with them.
+
+          The programs appear here beside the people who played them, because
+          the pool is a property of the GAME rather than of the player: what
+          makes a game belong here is that one of the seats was a program.
+        */}
+        {againstComputers.length > 0 ? (
+          <section className="flex flex-col gap-3" data-testid="computer-standings">
+            <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+              Against the computer players{" "}
+              <span className="font-mincho text-[0.8rem] font-normal tracking-normal">機械</span>
+            </h2>
+            <p className="max-w-prose text-xs text-muted">
+              {/*
+                Said plainly because the grades invite exactly the wrong
+                reading. On this site's own measurements, Reversi's programs
+                do NOT finish in the order their names suggest — the gentler
+                two have been beating the stronger two. A page that presented
+                the grade order as a result would be reporting a plan rather
+                than what happened.
+              */}
+              A separate ladder, on this game alone, for the games where one seat was a program.
+              These ratings are not the ones above and the two are never added together. A grade
+              is a name for how a program plays, not a promise about how it does: read the
+              standing and the games behind it, which is what a ladder is for.
+            </p>
+            <StandingsTable standings={againstComputers} pool="computer" testId="computer-standings-table" />
+          </section>
+        ) : null}
         {siblings !== null && siblings.games.length > 0 ? (
           <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 pt-2 text-xs text-muted" data-testid="sibling-champions">
             <span>

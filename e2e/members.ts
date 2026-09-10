@@ -107,3 +107,62 @@ export async function memberContext(
   ]);
   return context;
 }
+
+/** One player's standing at one game, in the pool for games against a program. */
+export type ComputerStanding = {
+  key: string;
+  name: string;
+  rating: number;
+  games: number;
+  wins: number;
+  losses: number;
+};
+
+/**
+ * Writes standings into the pool for games against the computer players.
+ *
+ * Seeded rather than played, because playing enough games of Reversi against
+ * a program to move a rating is minutes of wall clock per case. What is under
+ * test is the READING — which pool a table shows, and where its counts lead —
+ * and that needs rows in the right columns rather than the games behind them.
+ *
+ * A local database has none of these at all: bot-against-bot play happens on
+ * production, so without this a case here would pass by finding nothing.
+ */
+export async function seedComputerStandings(
+  variant: string,
+  standings: readonly ComputerStanding[],
+): Promise<void> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    for (const one of standings) {
+      const figures = {
+        name: one.name,
+        computerRating: one.rating,
+        computerRatedGames: one.games,
+        computerWins: one.wins,
+        computerLosses: one.losses,
+        computerDraws: 0,
+      };
+      await prisma.playerVariantRating.upsert({
+        where: { key_variant: { key: one.key, variant } },
+        create: { key: one.key, variant, ...figures },
+        update: figures,
+      });
+    }
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** Takes those standings away again, so one run does not decide the next one's. */
+export async function clearComputerStandings(variant: string, keys: readonly string[]): Promise<void> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    await prisma.playerVariantRating.deleteMany({ where: { variant, key: { in: [...keys] } } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
