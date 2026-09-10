@@ -31,6 +31,15 @@ export type VariantStanding = {
   wins: number;
   losses: number;
   draws: number;
+  /**
+   * Which ladder these figures are from.
+   *
+   * Carried rather than assumed, because a page showing a standing has to be
+   * able to say which one it is: a rating earned against the programs is not
+   * a place among people and must never be read as one. It is also what a
+   * count needs to link to the games it counted.
+   */
+  pool: RatingPool;
 };
 
 type StandingRow = {
@@ -46,7 +55,14 @@ type StandingRow = {
 
 function toStanding(row: StandingRow, pool: RatingPool = RATING_POOLS.people): VariantStanding {
   const standing = standingIn(row as unknown as Record<string, unknown>, pool);
-  return { key: row.key, name: row.name, variant: row.variant, ...standing, tier: tierFor(standing.ratedGames) };
+  return {
+    key: row.key,
+    name: row.name,
+    variant: row.variant,
+    ...standing,
+    tier: tierFor(standing.ratedGames),
+    pool,
+  };
 }
 
 /** The score a result is worth to black, as Elo counts it. */
@@ -148,22 +164,33 @@ export async function fetchVariantLeaders(
 export async function fetchVariantStandings(name: string): Promise<VariantStanding[]> {
   const key = playerKey(name);
   if (key === "") return [];
+  /*
+   * Every game they have actually played, said under the right heading.
+   *
+   * A row exists from the first finished game in EITHER pool, so reading the
+   * people columns alone put a player who has only ever played the computer
+   * on the ladder of people at the starting rating over no games at all.
+   * Filtering that out fixed the false line and left a different fault behind:
+   * the game vanished from their page entirely, and "you have never played
+   * Reversi" is not true of somebody who has played it twenty times.
+   *
+   * So neither. A standing is shown from the pool that earned it, and says
+   * which pool that was. Nothing is invented and nothing is hidden.
+   */
   const rows = await prisma.playerVariantRating.findMany({
-    /*
-     * Standings they have actually earned, for the same reason the ladder
-     * asks: a row exists from the first finished game in EITHER pool, so
-     * without this a player who has only played the computer at a game is
-     * shown holding a standing among people at the starting rating over no
-     * games at all.
-     *
-     * What that leaves out is that they play this game at all, which their
-     * computer-pool standing would say — a gap, and a smaller fault than a
-     * figure nobody earned. It wants its own decision rather than a filter.
-     */
-    where: { key, ratedGames: { gt: 0 } },
+    where: { key, OR: [{ ratedGames: { gt: 0 } }, { computerRatedGames: { gt: 0 } }] },
     orderBy: [{ ratedGames: "desc" }, { rating: "desc" }],
   });
-  return rows.map((row) => toStanding(row));
+  return rows.map((row) =>
+    /*
+     * The people pool wins where there is one. Somebody who has played both
+     * is a player among people who has also played the programs, and their
+     * place among people is the answer to "how are you doing at this game" —
+     * their computer rating is a second, separate figure rather than a
+     * competing one.
+     */
+    toStanding(row, row.ratedGames > 0 ? RATING_POOLS.people : RATING_POOLS.computer),
+  );
 }
 
 /** One game's standing at a glance: who leads it, and how much play is behind that. */

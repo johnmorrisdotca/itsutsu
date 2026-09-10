@@ -6,6 +6,7 @@ import { GameName } from "@/components/games/GameName";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { fetchPlayer } from "@/lib/rating/players";
+import { RATING_POOLS } from "@/lib/rating/pools";
 import { fetchVariantStandings } from "@/lib/rating/variantRatings";
 import { playerPath } from "@/lib/rating/playerKey";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -60,10 +61,31 @@ export async function MyRecord({ name }: { name: string }) {
                 <td className="py-1 pr-3">
                   <GameName variant={row.variant as RuleVariant} />
                 </td>
-                <td className="py-1 pr-3 font-mono tabular-nums">{row.tier === "unrated" ? "–" : row.rating}</td>
+                <td className="py-1 pr-3 font-mono tabular-nums">
+                  {row.tier === "unrated" ? "–" : row.rating}
+                  {/*
+                    Which ladder this rating is from, marked where it is not
+                    the ordinary one. A game somebody has only ever played
+                    against the programs used to vanish from this table
+                    altogether — "you have never played Reversi" said to
+                    somebody who has played it twenty times. Saying which pool
+                    it came from is the honest middle: a rating earned against
+                    the computer is a real figure and is not a place among
+                    people, and the mark is the difference.
+                  */}
+                  {row.pool === RATING_POOLS.computer ? (
+                    <span
+                      className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
+                      title="Against the computer players, which are rated in a pool of their own. No games against people at this yet."
+                      data-testid="standing-pool-computer"
+                    >
+                      機械
+                    </span>
+                  ) : null}
+                </td>
                 <RecordCells
                   record={row}
-                  of={{ player: name, variant: row.variant, pool: "people", rated: "yes" }}
+                  of={{ player: name, variant: row.variant, pool: row.pool, rated: "yes" }}
                 />
               </tr>
             ))}

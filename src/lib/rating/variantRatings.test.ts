@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { rateGame, tierFor } from "./elo";
+import { RATING_POOLS } from "./pools";
 import { championsOf, scoreForBlack, type VariantStanding } from "./variantRatings";
 
 /**
@@ -40,6 +41,7 @@ describe("championsOf", () => {
     rating,
     ratedGames,
     tier: tierFor(ratedGames),
+    pool: RATING_POOLS.people,
     wins: 0,
     losses: 0,
     draws: 0,

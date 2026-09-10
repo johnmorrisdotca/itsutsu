@@ -1,6 +1,8 @@
 import type { Browser, BrowserContext } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
+import { isLocalDatabase } from "../src/lib/db/localDatabase";
+
 import { makeMemberId } from "../src/lib/auth/memberId";
 import {
   PLAYER_SESSION_DAYS,
@@ -152,6 +154,30 @@ export async function seedComputerStandings(
         update: figures,
       });
     }
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * Every computer standing at one game, whoever holds it.
+ *
+ * For a case that asserts a game has NO such ladder. Naming keys cannot do
+ * that: the assertion is about what the database does not contain, so it has
+ * to be true of rows this run never made — and a bot batch run against this
+ * database months ago left exactly such a row, which turned a test about the
+ * code into a test about local history.
+ *
+ * Guarded on a database on this machine, like everything else that deletes
+ * here: this takes rows it did not create, which is only ever acceptable
+ * locally.
+ */
+export async function clearAllComputerStandings(variant: string): Promise<void> {
+  loadEnv();
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+  const prisma = new PrismaClient();
+  try {
+    await prisma.playerVariantRating.deleteMany({ where: { variant } });
   } finally {
     await prisma.$disconnect();
   }

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { clearComputerStandings, seedComputerStandings } from "./members";
+import { clearAllComputerStandings, clearComputerStandings, seedComputerStandings } from "./members";
 
 /**
  * The ladder for games against the computer players, per game.
@@ -170,6 +170,13 @@ test.describe("the ladder against the computer players", () => {
   test("is not drawn at all for a game nobody has played a program at", async ({ page }) => {
     // A heading over an empty table reads as a broken page rather than as an
     // answer, and most games have no such standings at all.
+    //
+    // Cleared first, and that is the whole difference between a test about
+    // the code and a test about this database. The assertion is that a game
+    // with no computer standings draws no ladder — so it has to hold for rows
+    // this run never made, and a bot batch left a Halma row here long ago
+    // that made it fail for a reason nothing was wrong with.
+    await clearAllComputerStandings("halma");
     await page.goto("/champions/halma");
     await expect(page.getByTestId("computer-standings")).toHaveCount(0);
   });
