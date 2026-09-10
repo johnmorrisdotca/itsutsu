@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.111.0
+- Two players who know one game each: Tamenoki at Reversi, Meritalu at five in a row
+
 ## 0.110.0
 - A life of playing before the games played here, and the narrowing you asked for last time
 
