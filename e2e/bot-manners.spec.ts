@@ -30,6 +30,19 @@ test.describe("a computer player's manners", () => {
     return (game.reactions ?? []).filter((r) => r.stone === "white").map((r) => r.text ?? "");
   }
 
+  /** The same, keeping the move each thing was said at. */
+  async function whenSaid(
+    request: import("@playwright/test").APIRequestContext,
+    id: string,
+  ): Promise<{ text: string; moveNumber: number | null }[]> {
+    const game = (await (await request.get(`/api/games/${id}`)).json()) as {
+      reactions?: { stone: string; text: string | null; moveNumber: number | null }[];
+    };
+    return (game.reactions ?? [])
+      .filter((r) => r.stone === "white")
+      .map((r) => ({ text: r.text ?? "", moveNumber: r.moveNumber }));
+  }
+
   test("says hello before the first stone it plays, and only once", async ({ request }) => {
     const game = await playDan(request);
 
@@ -66,6 +79,37 @@ test.describe("a computer player's manners", () => {
     });
     expect(gone.status()).toBe(200);
     expect(await saidBy(request, game.id)).toContain(BOT_PHRASES.goodGame.text);
+  });
+
+  test("says thank you at the move it ended on, not before the first stone", async ({ request }) => {
+    /*
+     * John found this on his own game: the record groups what was said by the
+     * move it was said at, and the computer's goodbye was filed under BEFORE
+     * THE FIRST STONE — so a reader saw a program thanking them for a game
+     * that had not started, sitting above a message of their own from move 42.
+     *
+     * The greeting genuinely belongs there and stays there. Both are asserted
+     * together, because the fix is only right if it moved one and not the
+     * other.
+     */
+    const game = await playDan(request);
+    await request.post(`/api/games/${game.id}/moves`, {
+      data: { token: game.blackToken, row: 4, col: 4 },
+    });
+    await request.post(`/api/games/${game.id}/resign`, { data: { token: game.blackToken } });
+
+    const said = await whenSaid(request, game.id);
+    const hello = said.find((one) => one.text === BOT_PHRASES.hello.text);
+    const bye = said.find((one) => one.text === BOT_PHRASES.goodGame.text);
+
+    expect(hello, "the computer never said hello").toBeDefined();
+    expect(bye, "the computer never said thank you").toBeDefined();
+
+    // Before the first stone, which is what null means here.
+    expect(hello?.moveNumber, "hello belongs before the first stone").toBeNull();
+    // And at the end, which is a real move rather than nothing at all.
+    expect(bye?.moveNumber, "thank you was filed before the game started").not.toBeNull();
+    expect(bye?.moveNumber ?? 0).toBeGreaterThan(0);
   });
 
   test("says nothing at all in a game between two people", async ({ request }) => {

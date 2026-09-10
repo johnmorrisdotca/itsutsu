@@ -61,9 +61,20 @@ async function say(
   row: Seats,
   stone: Stone,
   phrase: { emoji: ReactionEmoji; text: string },
+  /**
+   * Which move it is said at, or null for before the first stone.
+   *
+   * It was always null, which is right for a greeting and was wrong for
+   * everything else: the record groups what was said by the move it was said
+   * at, so "Good game, thank you" filed itself under BEFORE THE FIRST STONE
+   * and the reader saw a computer thanking them for a game that had not
+   * started. John spotted it on his own game — the bot's goodbye sat above
+   * move 42 while his own, at move 56, sat where it belonged.
+   */
+  at: number | null,
 ): Promise<void> {
   if (await alreadySaid(id, stone, phrase.text)) return;
-  await addReaction(id, tokenFor(row, stone), phrase.emoji, null, phrase.text);
+  await addReaction(id, tokenFor(row, stone), phrase.emoji, at, phrase.text);
 }
 
 /**
@@ -77,7 +88,8 @@ export async function greetFromBot(id: string, row: Seats, stone: Stone): Promis
   if (botInSeat(row, stone) === null) return;
   const other = stone === STONES.black ? STONES.white : STONES.black;
   if (botInSeat(row, other) !== null) return;
-  await say(id, row, stone, BOT_PHRASES.hello);
+  // Null, and meant: this is said before there is a move to say it at.
+  await say(id, row, stone, BOT_PHRASES.hello, null);
 }
 
 /**
@@ -88,10 +100,22 @@ export async function greetFromBot(id: string, row: Seats, stone: Stone): Promis
  * whichever seats a computer holds, so the losing side says it too.
  */
 export async function farewellFromBots(id: string, row: Seats): Promise<void> {
+  /*
+   * The move it ended on, read from the row rather than counted from a move
+   * list a caller happened to have. `addReaction` refuses a move number past
+   * the game's own count, so the number has to come from the same column it
+   * is checked against or a farewell could be dropped without a word.
+   *
+   * A game with no moves in it keeps null: nothing happened, so before the
+   * first stone is exactly where it belongs.
+   */
+  const ended = await prisma.game.findUnique({ where: { id }, select: { moveCount: true } });
+  const at = ended !== null && ended.moveCount > 0 ? ended.moveCount : null;
+
   for (const stone of [STONES.black, STONES.white] as const) {
     if (botInSeat(row, stone) === null) continue;
     const other = stone === STONES.black ? STONES.white : STONES.black;
     if (botInSeat(row, other) !== null) continue;
-    await say(id, row, stone, BOT_PHRASES.goodGame);
+    await say(id, row, stone, BOT_PHRASES.goodGame, at);
   }
 }
