@@ -14,7 +14,7 @@ import {
   VARIANT_SPECS,
 } from "../gomoku.constants";
 import { emptyBoard } from "../obstacles";
-import type { GameSettings, GameState, OpeningRule, Seat, Stone } from "../gomoku.types";
+import type { Cell, GameSettings, GameState, OpeningRule, Point, Seat, Stone } from "../gomoku.types";
 import { otherStone } from "./board";
 import { hasHandicap } from "./handicap";
 import { initialOpening } from "./opening";
@@ -68,6 +68,33 @@ export function normaliseSettings(settings: GameSettings): GameSettings {
 }
 
 /**
+ * The board a game of these settings begins on: empty, but for the pieces a
+ * variant sets out before anybody moves.
+ *
+ * Lifted out of `createGame` so it can be asked on its own. Which way round a
+ * board should be drawn for the person looking at it is a question about where
+ * their colour starts, and the only honest answer to that is the position
+ * itself — a second list of who begins where would be wrong the first time a
+ * variant disagreed with it.
+ */
+export function startingBoard(settings: GameSettings): Cell[] {
+  const spec = VARIANT_SPECS[settings.variant];
+  const board = emptyBoard(settings);
+  const place = (piece: { point: Point; stone: Stone }) => {
+    board[piece.point.row * settings.size + piece.point.col] = piece.stone;
+  };
+  // A flipping game begins with the centre set; it is part of the position, not the record.
+  for (const disc of startingDiscs(settings)) place(disc);
+  // A race game begins with both camps full, likewise part of the position.
+  if (spec.camps) for (const piece of startingPieces(settings)) place(piece);
+  // Checkers begins with both sides' men filling their three rows, likewise.
+  if (spec.checkers) for (const piece of checkersStartingPieces(settings.size)) place(piece);
+  // Chinese Checkers begins with both points full, likewise.
+  if (spec.chineseCheckers) for (const piece of starStartingPieces(STAR_RADIUS)) place(piece);
+  return board;
+}
+
+/**
  * The colour that opens. `random` is decided by `roll`, a number in [0, 1),
  * which the caller supplies so this stays pure and testable. Variants that
  * constrain black, and every opening protocol, put black on move one.
@@ -95,29 +122,7 @@ export function createGame(
     [otherStone(opener)]: SEATS.two,
   } as Record<Stone, Seat>;
 
-  // A flipping game begins with the centre set; it is part of the position, not the record.
-  const board = emptyBoard(settings);
-  for (const disc of startingDiscs(settings)) {
-    board[disc.point.row * settings.size + disc.point.col] = disc.stone;
-  }
-  // A race game begins with both camps full, likewise part of the position.
-  if (VARIANT_SPECS[settings.variant].camps) {
-    for (const piece of startingPieces(settings)) {
-      board[piece.point.row * settings.size + piece.point.col] = piece.stone;
-    }
-  }
-  // Checkers begins with both sides' men filling their three rows, likewise part of the position.
-  if (VARIANT_SPECS[settings.variant].checkers) {
-    for (const piece of checkersStartingPieces(settings.size)) {
-      board[piece.point.row * settings.size + piece.point.col] = piece.stone;
-    }
-  }
-  // Chinese Checkers begins with both points full, likewise part of the position.
-  if (VARIANT_SPECS[settings.variant].chineseCheckers) {
-    for (const piece of starStartingPieces(STAR_RADIUS)) {
-      board[piece.point.row * settings.size + piece.point.col] = piece.stone;
-    }
-  }
+  const board = startingBoard(settings);
 
   return {
     settings,

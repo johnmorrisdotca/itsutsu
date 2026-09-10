@@ -1,5 +1,6 @@
 "use client";
 
+import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { BOARD_THEMES, GRID_STYLES, STONE_SETS } from "@/components/board/Board.constants";
 import type { BoardTheme, GridStyle, StoneSet } from "@/components/board/board.types";
 import { Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
@@ -96,7 +97,7 @@ export function AppearancePanel(props: GamePanelProps) {
       />
       <Toggle
         label="Turn the board round"
-        checked={session.appearance.flipped}
+        checked={session.appearance.flipped ?? boardStartsFlipped(session.state.settings, session.state.opener)}
         onChange={(next) => actions.setAppearance({ flipped: next })}
         hint="Your own view: the far side of the board nearest you, letters and numbers with it. Nobody else's board moves."
       />

@@ -7,6 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
 import { cellAt, inMovePhase, pieceMoves, rulesFor, otherStone } from "@/lib/gomoku/engine";
+import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
 import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
@@ -81,12 +82,15 @@ export function SharedGame({
     () => readTurned(initial.id),
     () => null,
   );
-  const board: Appearance = {
-    ...appearance,
-    flipped: turnedFor(override, appearance.flipped),
-  };
   const { game: detail, mutate } = useLiveGame(initial);
   const state = settleFromRecord(replayGame(detail), detail);
+  /*
+   * Three answers to which way up, in order of how particular they are: what
+   * this person turned this game to, then what they prefer everywhere, then —
+   * where they have said neither — their own side of the board, nearest them.
+   */
+  const turned = turnedFor(override, appearance.flipped ?? boardStartsFlipped(state.settings, seat));
+  const board: Appearance = { ...appearance, flipped: turned };
 
   const played = state.moves.length;
   useEffect(() => {
@@ -337,13 +341,13 @@ export function SharedGame({
       <div className="flex justify-end">
         <button
           type="button"
-          onClick={() => writeTurned(detail.id, !board.flipped)}
+          onClick={() => writeTurned(detail.id, !turned)}
           className="rounded-full border border-rule bg-ivory/70 px-3 py-1 text-xs text-ink-soft transition-colors hover:bg-ivory"
-          aria-pressed={board.flipped}
+          aria-pressed={turned}
           title="Your own view of this board. The other player's board does not move."
           data-testid="turn-board"
         >
-          {board.flipped ? "Turn the board back" : "Turn the board round"}{" "}
+          {turned ? "Turn the board back" : "Turn the board round"}{" "}
           <span className="font-mincho">盤反転</span>
         </button>
       </div>

@@ -30,6 +30,7 @@ import type { Cell, GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { BOARD_THEMES, LABEL_GUTTER, STONE_SETS } from "./Board.constants";
 import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
+import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { Intersection } from "./Intersection";
 import { TwistControls } from "./TwistControls";
 import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
@@ -116,6 +117,7 @@ export function Board({
   selected = null,
   footprintFor,
   placing = null,
+  viewer = null,
 }: BoardProps) {
   const [hovered, setHovered] = useState<Point | null>(null);
   const { size } = state.settings;
@@ -202,7 +204,7 @@ export function Board({
    * opposite order, with the gutters turned to match. No move, coordinate or
    * piece of game state knows about it.
    */
-  const flipped = appearance.flipped;
+  const flipped = appearance.flipped ?? boardStartsFlipped(state.settings, viewer);
 
   return (
     <div

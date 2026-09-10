@@ -29,8 +29,15 @@ export type Appearance = {
    * is still A1, drawn somewhere else — and the other seat never learns of it.
    * It belongs here for that reason rather than by convenience: nothing in
    * this type can reach the game or the opponent.
+   *
+   * Null is the third state, and the reason there is one: not chosen. A person
+   * who has never touched this gets the board drawn from their own side, and
+   * a person who has chosen keeps what they chose. Two states could not tell
+   * those apart, so one of them had to be wrong — either a choice to see it
+   * the ordinary way round was overridden every render, or the default never
+   * arrived for anybody.
    */
-  flipped: boolean;
+  flipped: boolean | null;
 };
 
 /** The CSS custom properties a board theme sets on its container. */
@@ -105,6 +112,12 @@ export type BoardProps = {
   footprintFor?: (anchor: Point) => PieceCell[] | null;
   /** The colour the next stone will be, where that is not the mover's colour. */
   placing?: Stone | null;
+  /**
+   * Whose side of the board this is being drawn for, so an untouched board can
+   * be turned round to face them. Null for a board nobody is sitting at — an
+   * embed, a replay, somebody watching — which is drawn as it is stored.
+   */
+  viewer?: Stone | null;
 };
 
 export type IntersectionProps = {

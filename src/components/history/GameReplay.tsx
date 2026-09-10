@@ -109,7 +109,8 @@ export function GameReplay({
     () => readTurned(game.id),
     () => null,
   );
-  const turned = turnedFor(override, appearance.flipped);
+  // A replay is read, not sat at: no seat, so no side to face.
+  const turned = turnedFor(override, appearance.flipped ?? false);
 
   // The arrow keys walk the record, and Home and End go to either end, unless a field has focus.
   const last = timeline.length - 1;

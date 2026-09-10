@@ -136,7 +136,8 @@ export const DEFAULT_APPEARANCE: Appearance = {
   showCoordinates: true,
   showMoveNumbers: false,
   grid: "auto",
-  flipped: false,
+  // Not "do not turn it round": nobody has said, so the seat decides.
+  flipped: null,
 };
 
 /** SVG stroke widths in board units (one intersection spacing = 1). */

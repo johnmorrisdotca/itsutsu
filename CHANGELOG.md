@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.105.0
+- A board is drawn from your own side of it, whichever seat you are in
+
 ## 0.104.0
 - A choice made before the page is listening is no longer dropped, and a seat list is narrowed before it is cut
 
