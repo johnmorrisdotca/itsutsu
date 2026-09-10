@@ -217,3 +217,45 @@ export async function clearComputerStandings(variant: string, keys: readonly str
     await prisma.$disconnect();
   }
 }
+
+/**
+ * A standing among PEOPLE at one game, for the cases that need a ladder to
+ * exist at all. The computer-pool helpers above deliberately leave that table
+ * empty, which is right for what they test and useless for what this tests.
+ */
+export async function seedPeopleStanding(
+  variant: string,
+  standing: { key: string; name: string; rating: number; games: number; wins: number; losses: number },
+): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const figures = {
+      name: standing.name,
+      rating: standing.rating,
+      ratedGames: standing.games,
+      wins: standing.wins,
+      losses: standing.losses,
+      draws: 0,
+    };
+    await prisma.playerVariantRating.upsert({
+      where: { key_variant: { key: standing.key, variant } },
+      create: { key: standing.key, variant, ...figures },
+      update: figures,
+    });
+    return standing.key;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** And takes it away again. */
+export async function clearPeopleStanding(variant: string, key: string): Promise<void> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    await prisma.playerVariantRating.deleteMany({ where: { variant, key } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}

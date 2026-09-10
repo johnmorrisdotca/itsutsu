@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -41,7 +42,25 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
             <TierMark tier={champion.leader.tier} />
           </td>
           <td className="py-1.5 pr-3 font-mono tabular-nums">{champion.players}</td>
-          <td className="py-1.5 pr-3 font-mono tabular-nums">{champion.games}</td>
+          <td className="py-1.5 pr-3 font-mono tabular-nums">
+            {/*
+              A count of games leads to those games. The standing rule, and
+              this table was printing the one number on the page that is
+              literally a pile of games as plain text.
+
+              Rated games among people, which is what the ladder beside it is
+              made of, so the address says both: a link that dropped either
+              would open a wider set than the number it sits under.
+            */}
+            <GameCount
+              count={champion.games}
+              variant={variant}
+              pool="people"
+              rated="yes"
+              title="The rated games this ladder is made of"
+              testId="champion-games"
+            />
+          </td>
         </>
       )}
     </tr>

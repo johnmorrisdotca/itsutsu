@@ -5,6 +5,8 @@ import {
   clearComputerStandings,
   seedComputerPlayerFor,
   seedComputerStandings,
+  seedPeopleStanding,
+  clearPeopleStanding,
 } from "./members";
 
 /**
@@ -199,6 +201,37 @@ test.describe("the ladder against the computer players", () => {
       await expect(page.getByTestId("my-record")).not.toContainText("No games yet");
     } finally {
       await clearComputerPlayer(key);
+    }
+  });
+
+  test("makes the champions page's game count a way into those games", async ({ page }) => {
+    /*
+     * The standing rule, which John has now raised three times: a count of
+     * games leads to those games. The champions table was printing the one
+     * number on the page that is literally a pile of games as plain text.
+     *
+     * Needs a ladder among PEOPLE to have a count at all, so this seeds one —
+     * the computer-pool rows elsewhere in this file deliberately give that
+     * table nothing.
+     */
+    const key = await seedPeopleStanding("halma", {
+      key: "ladder tester",
+      name: "Ladder Tester",
+      rating: 1700,
+      games: 6,
+      wins: 4,
+      losses: 2,
+    });
+    try {
+      await page.goto("/champions");
+      const count = page.getByTestId("champion-games").first();
+      await expect(count).toBeVisible();
+      const href = (await count.locator("xpath=ancestor-or-self::a").first().getAttribute("href")) ?? "";
+      expect(href, "the count is a link").not.toBe("");
+      expect(href).toContain("rated=yes");
+      expect(href).toContain("pool=people");
+    } finally {
+      await clearPeopleStanding("halma", key);
     }
   });
 
