@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CountryMark } from "@/components/players/CountryMark";
-import { WholeRecordPanel } from "@/components/players/WholeRecord";
+import { SnapshotWarning, WholeRecordPanel } from "@/components/players/WholeRecord";
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
 import { Whereabouts } from "@/components/players/Whereabouts";
 import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
@@ -25,6 +25,8 @@ import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { countText, figuresOf, recordText, winRateText } from "@/lib/rating/figures";
 import { playerKey, playerKeysFromSlug } from "@/lib/rating/playerKey";
+import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
+import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { fetchPlayer } from "@/lib/rating/players";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
@@ -44,7 +46,9 @@ async function recordHere(name: string) {
 
 export default async function PlayerPage({ params, searchParams }: PageProps<"/players/[slug]">) {
   const { slug } = await params;
-  const view = (await searchParams).view;
+  const asked = await searchParams;
+  const view = asked.view;
+  const scope = readRecordScope(asked[SCOPE_PARAM]);
 
   const legacyBySlug = findLegacyPlayer(slug);
   /*
@@ -134,6 +138,16 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   const open = activeTab(tabs, view);
   const shown = elsewhere.find((tab) => tab.key === open) ?? null;
 
+  /*
+   * How much the headline figures are counting, and whether asking is worth
+   * anything here. Independent of which tab is open: which chapter somebody is
+   * reading is a different question from how much the summary above it counts,
+   * and answering one by resetting the other loses their place.
+   */
+  const openTab = open === ITSUTSU_TAB.key ? undefined : open;
+  const offered = scopeWorthAsking(whole.sources.length);
+  const counted = offered && scope === RECORD_SCOPES.everywhere ? whole.figures : figures;
+
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
@@ -185,6 +199,14 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           note under the row says so rather than leaving the arithmetic to be
           reverse-engineered.
         */}
+        {/*
+          Which of somebody's playing the row below is counting. Everywhere by
+          default: four thousand games on ItsYourTurn and twenty here is a life
+          of playing, and leading with the twenty tells the smaller truth
+          first. Drawn only where there is another site to count — otherwise
+          the two answers are the same games.
+        */}
+        {offered ? <RecordScopeBar base={`/players/${slug}`} view={openTab} scope={scope} /> : null}
         <Figures
           testId="player-figures"
           figures={[
@@ -192,11 +214,32 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
             ...(player !== null && player.computer.ratedGames > 0
               ? [{ label: "Vs computer", value: player.computer.rating, testId: "player-computer-rating" }]
               : []),
-            { label: "Played", value: countText(figures.played) },
-            { label: "Won · Lost · Drawn", value: recordText(figures), testId: "player-record" },
-            { label: "Win rate", value: winRateText(figures.winRate) },
+            { label: "Played", value: countText(counted.played), testId: "player-played" },
+            { label: "Won · Lost · Drawn", value: recordText(counted), testId: "player-record" },
+            { label: "Win rate", value: winRateText(counted.winRate) },
           ]}
         />
+        {offered && scope === RECORD_SCOPES.everywhere ? (
+          <p className="text-xs text-muted" data-testid="counting-everywhere">
+            {/*
+              The ratings do NOT follow the scope and must not. Games and wins
+              add up across sites; ratings do not — another site's is on
+              another scale, against other players, and was never converted.
+              Saying so here is cheaper than letting somebody read a rating as
+              covering four thousand games it never saw.
+            */}
+            Counting every site, {whole.sources.length} of them, listed below. The ratings are
+            Itsutsu&rsquo;s own: a rating earned elsewhere is on another scale and does not add.
+          </p>
+        ) : null}
+        {/*
+          Beside the figure it is about, not below the fold. Combined is what
+          this page leads with now, so the warning that half of it was copied
+          down by hand once and does not move has to lead with it — left where
+          it was, it would have become fine print without anybody deciding to
+          make it fine print.
+        */}
+        {offered && scope === RECORD_SCOPES.everywhere && whole.kept ? <SnapshotWarning /> : null}
         {player !== null && player.computer.ratedGames > 0 ? (
           <p className="text-xs text-muted" data-testid="two-pools">
             Played and the record beside it count every finished game. The ratings are kept in two:{" "}
@@ -229,7 +272,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       */}
       {whole.figures.played > 0 ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-          <WholeRecordPanel whole={whole} />
+          <WholeRecordPanel whole={whole} showFigures={!(offered && scope === RECORD_SCOPES.everywhere)} />
         </section>
       ) : null}
 
