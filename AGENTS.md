@@ -102,6 +102,44 @@ checks are made in three places and stated once.
 Whether work is *taken* from the board is the site owner's rule to make, not this file's.
 The gate only guarantees the board is worth making that rule out of.
 
+### Nothing Answers What It Cannot Answer
+
+A gate, a name and a return value are all reports. When one of them will not
+fit, the difficulty is information: something is holding two things that do not
+belong together, or is being asked a question it cannot answer. The failure
+mode is to satisfy the report instead of hearing it — and it happens in every
+layer, so it is worth recognising by shape rather than by symptom.
+
+Four instances, all found on the same day, all shipped or nearly shipped:
+
+- **A gate trimmed rather than heard.** `engine.ts` reached the 500-line limit,
+  and the answer was to shave its comments until it went green. Twice. The
+  limit is there to catch a file doing too many jobs; removing prose removes
+  no job, only the explanation of one.
+- **A gate routed around.** The same limit stopped a one-line change, which
+  went in through another module instead. Milder, same move.
+- **A name compromised rather than split.** `settleDrawLimit` grew a second
+  rule and no name covered both. The first instinct was a vaguer name; the
+  right answer was that "the players agreed to at most N moves" and "nobody is
+  getting anywhere" are two functions.
+- **A guard returning a plausible value for "I do not know."** A distance
+  measure could not read one variant's camps and returned 0 — a perfectly
+  valid distance that also means *every piece is already home*. It would have
+  drawn every game of that variant for a reason that was never true.
+
+The last is the dangerous one, because it does not fail. **A rule that cannot
+measure must not fire: silence is the safe answer, zero is the dangerous one.**
+Where a value can mean both "this" and "nothing said", it will eventually be
+read as the wrong one — a stored `flipped: false` meant both "I chose the
+ordinary way round" and "I have never touched this", so the seat-aware default
+could not arrive for anybody until a third state existed. The board's grades
+are nullable for the same reason: a default of "normal" would be a judgement
+nobody made, written onto every row and indistinguishable from a real one.
+
+So: prefer null, undefined or a refusal over a value that happens to be in
+range. Prefer two functions over a name that covers both. And when a gate
+objects, read what it is objecting to before making it stop.
+
 ## Stack
 
 - Next.js 16 (App Router), React 19, TypeScript 5, Tailwind v4.
