@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
+import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
@@ -229,9 +230,25 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
                       </span>
                       <span className="text-xs text-muted">{copy.tagline}</span>
                       {count !== undefined && count.last !== null ? (
-                        <Link href={recordPath(variant, count.last.id)} className="text-[0.7rem] text-muted underline-offset-2 hover:underline">
-                          {count.played} played · last {count.last.blackName.trim() || "Black"} vs {count.last.whiteName.trim() || "White"}
-                        </Link>
+                        <span className="text-[0.7rem] text-muted">
+                          {/*
+                            Two links, because there were two facts wearing
+                            one. "12 played · last Kyu vs Dan" went entirely to
+                            the last game — so the twelve led to one of them,
+                            which is the count answering a different question
+                            from the one it asks. The number goes to its twelve
+                            now; the game beside it goes to that game.
+                          */}
+                          <GameCount count={count.played} variant={variant} title={`Every game of ${copy.label} played here`} />{" "}
+                          played ·{" "}
+                          <Link
+                            href={recordPath(variant, count.last.id)}
+                            className="underline-offset-2 hover:underline"
+                          >
+                            last {count.last.blackName.trim() || "Black"} vs{" "}
+                            {count.last.whiteName.trim() || "White"}
+                          </Link>
+                        </span>
                       ) : copy.inspiredBy !== undefined ? (
                         <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
                       ) : null}

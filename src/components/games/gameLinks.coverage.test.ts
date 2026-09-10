@@ -145,6 +145,82 @@ describe("a count of games is the way into those games", () => {
     ).toEqual([]);
   });
 
+  /**
+   * A number of games printed as words, with nothing behind it.
+   *
+   * The hole this closes was found by sweeping rather than by the gate: the
+   * games index printed "12 played · last Kyu vs Dan" as ONE link, to the last
+   * game. So the twelve led to one of them — the count answering a different
+   * question from the one it asks, on a page every visitor sees. It slipped
+   * through because the checks above look for a RECORD, and a lone count
+   * beside the word "played" is neither a `recordText` call nor a table.
+   *
+   * The exceptions are the interesting part, and most of them are not
+   * loopholes but a map of what this site cannot yet answer.
+   */
+  const EXCEPTIONS: Record<string, string> = {
+    // Counts of GAMES THE SITE HAS, not games anybody played. "Thirty-nine
+    // games in eight families" is a fact about the catalogue.
+    "src/app/games/all/page.tsx": "counts rule sets, not matches",
+    // The family line counts real games — and no page shows a family's games.
+    // /history filters by one game, not by a family of them. Linking it would
+    // be a promise nothing can keep, and it sits inside a <summary>, where a
+    // link would fight the toggle it is part of.
+    "src/app/games/page.tsx": "a family's games are a set no page can show, inside a <summary>",
+    // A suggestion in an autocomplete, which is the <option> case wearing
+    // different markup: choosing it IS the way to those games.
+    "src/components/game/PlayerNameInput.tsx": "a picker's own suggestion",
+    // The total of the filter the reader is already looking at. A link would
+    // lead to the page they are on.
+    "src/components/history/Pager.tsx": "the count of the page you are already on",
+    // An embed on somebody else's site. It is a picture of a record, and a
+    // link out of it goes somewhere the reader did not ask to be sent.
+    "src/components/embed/EmbedStats.tsx": "an embed on another site",
+    // Counted on another site. There is no game here to open — the one
+    // exception the rule has always had.
+    "src/components/players/LegacySource.tsx": "counted elsewhere",
+    /*
+     * These two are the honest gap rather than a decision, and they are worth
+     * leaving visible. "Games you judged" and "games you gave time in" are
+     * real sets of real games, and the record cannot be asked for either —
+     * there is no filter for a verdict or for a gift of time. The rule says a
+     * count links to its games; here the page does not exist to link to.
+     * Building those filters would close both.
+     */
+    "src/components/mine/MyRecord.tsx": "no filter exists for games you judged",
+    "src/components/players/ItsutsuRecord.tsx": "no filter exists for games time was given in",
+  };
+
+  it("nobody prints a bare number of games as words", () => {
+    /*
+     * Attribute positions and names are skipped, or the check is noise: a
+     * `key={game.id} game={…}` is not a count, and "Every game of {page.title}
+     * played here" is a game's NAME inside a link that already keeps the rule.
+     * A gate that cries wolf is one people learn to edit rather than obey.
+     */
+    const bare = /(.)\{([^{}]{1,40})\}\s*(played|games?)\b/g;
+    const offenders = FILES.filter((file) =>
+      [...file.source.matchAll(bare)].some(
+        ([, before, expression]) =>
+          before !== "=" && !/\.(title|name|label|id)\b/.test(expression),
+      ),
+    )
+      .map((file) => file.path)
+      .filter((path) => EXCEPTIONS[path] === undefined);
+
+    expect(
+      offenders,
+      "a count of games goes through GameCount — or name it above with the reason it cannot",
+    ).toEqual([]);
+  });
+
+  it("every exception is a file that still exists", () => {
+    // An exception left behind after its file is renamed is a hole nobody
+    // knows is open.
+    const known = new Set(FILES.map((file) => file.path));
+    expect(Object.keys(EXCEPTIONS).filter((path) => !known.has(path))).toEqual([]);
+  });
+
   it("every table of records says whose games it is counting", () => {
     /*
      * `of` is how a record says which set of games its numbers came from —
