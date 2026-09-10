@@ -11,31 +11,36 @@
  * played by the same code that answers a real request, and read afterwards by
  * the same history pages as anybody's game.
  *
- * UNRATED, DELIBERATELY. `rated: false` means liveGame never records a result
- * against the ladder, so none of this touches the rating pools. That is the
- * whole reason it can run without settling the question of what a computer's
- * rating should mean once computers play each other: there are nineteen real
- * games on this site, and a few dozen of these would not join the computer
- * pool so much as become it. Rating them is an additive decision to make on
- * purpose, later, if it is wanted at all.
+ * RATED, and that is the point rather than a detail. `liveGame.ts` only records
+ * a result when the row says rated, so an unrated batch plays out perfectly,
+ * files perfectly, and leaves the computer ladder exactly as empty as it found
+ * it. It is safe because the pool is decided by the SEATS: two programs make a
+ * computer-pool game, which moves the ratings the computer ladder reads and can
+ * never touch where a person stands among people.
  *
- * It writes to the real site, so it reports and changes nothing until it is
- * given --run:
+ * It writes to whatever database it is pointed at, so it reports and changes
+ * nothing until it is asked twice, and it prints how many games that database
+ * already holds before writing a single one.
  *
- * Without BOT_GAMES_ALL it plays the specialists at their own boards, which is
- * the small first batch: enough to check the records open and read properly
- * before writing the rest.
+ * A TOOL RATHER THAN A ONE-OFF. Everything about a run is an option, so
+ * answering a new question is a different command rather than a different
+ * file:
  *
- * RUN THE WAY THIS REPO RUNS ON-DEMAND BOT WORK. A plain script cannot reach
- * the app's own modules — node does not resolve the `@/` paths — so this is a
- * vitest file that does nothing at all unless it is asked for, the same shape
- * as the specialists' own match series:
+ *   pnpm bots:play                                  report only
+ *   BOT_GAMES_RUN=1 pnpm bots:play                  play them
+ *   BOT_GAMES_ALL=1                                 every pairing, not just the specialists
+ *   BOT_GAMES_EACH=4                                games per pairing; colours alternate,
+ *                                                   so an even number is the fair one
+ *   BOT_GAMES_TIERS=kyu,dan,meijin                  who plays; default is the five grades
+ *   BOT_GAMES_BOARDS=freestyle:15,reversi:8         which boards; a size may be left off
+ *                                                   and the game's own is used
+ *   DATABASE_URL=postgres://…                       which database
  *
- *   BOT_GAMES=1 pnpm test:unit src/lib/bots/botSeries.play.test.ts
- *   BOT_GAMES=1 BOT_GAMES_RUN=1 pnpm test:unit src/lib/bots/botSeries.play.test.ts
- *   BOT_GAMES=1 BOT_GAMES_RUN=1 BOT_GAMES_ALL=1 pnpm test:unit ...
+ * It is a vitest file because a plain script cannot resolve the app's own `@/`
+ * paths, and it does nothing at all unless BOT_GAMES=1 — which `pnpm bots:play`
+ * sets, along with the flag that stops vitest swallowing its output.
  *
- * The first reports what it would play. Only the second writes anything.
+ * Nothing is written without BOT_GAMES_RUN=1.
  */
 import { describe, expect, it } from "vitest";
 
@@ -44,8 +49,9 @@ import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { createLiveGame } from "@/lib/history/liveGame";
 import { prisma } from "@/lib/prisma";
-import { BOT_TIERS, TIER_SPECS } from "@/lib/gomoku/opponent.constants";
-import { DEFAULT_SETTINGS, STONES, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { BOT_ALL_TIERS, BOT_TIERS, TIER_SPECS } from "@/lib/gomoku/opponent.constants";
+import { boardSizesFor, DEFAULT_SETTINGS, STONES, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { variantFor } from "@/lib/gomoku/slugs";
 import { playsAsExpert } from "@/lib/gomoku/expert/experts";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -56,33 +62,92 @@ const all = process.env.BOT_GAMES_ALL === "1";
 /** How many games each pairing plays. Colours alternate, so an even count is fairest. */
 const each = Math.max(1, Number(process.env.BOT_GAMES_EACH ?? "1"));
 
-const LADDER: BotTier[] = [BOT_TIERS.razryad, BOT_TIERS.kyu, BOT_TIERS.dan, BOT_TIERS.meijin, BOT_TIERS.guoshou];
-
 /**
- * Which boards a pairing is played on.
+ * Which players, and which boards. Both are options; both have a default that
+ * is a considered answer rather than a placeholder.
  *
- * The specialists only mean anything at their own game — away from it they are
- * 国手 under another name, so a Tamenoki game of Halma would be the same player
- * twice. For the ladder, three unalike boards: the ladder report measured that
- * Gomoku separates the lower grades and flattens at the top, Reversi inverts,
- * and Connect Four separates cleanly. One game repeated would show one of those
- * and imply it was all of them.
+ * The default ladder is the five grades in order. The default boards are three
+ * deliberately unalike games: the ladder report measured that Gomoku separates
+ * the lower grades and flattens at the top, Reversi INVERTS — the grades that
+ * search lose — and Connect Four separates cleanly. One game repeated would
+ * show one of those three behaviours and imply it was all of them.
+ *
+ * A bad name in either list stops the run before it writes anything. Silently
+ * dropping an unrecognised tier would play a smaller series than was asked for
+ * and report it as the one that was asked for, which is the sort of answer
+ * that is worse than an error.
  */
-const LADDER_BOARDS: { variant: RuleVariant; size: number }[] = [
-  { variant: "freestyle" as RuleVariant, size: 15 },
-  { variant: "reversi" as RuleVariant, size: 8 },
-  { variant: "dropFour" as RuleVariant, size: 7 },
+const DEFAULT_LADDER: BotTier[] = [
+  BOT_TIERS.razryad,
+  BOT_TIERS.kyu,
+  BOT_TIERS.dan,
+  BOT_TIERS.meijin,
+  BOT_TIERS.guoshou,
 ];
+
+const DEFAULT_BOARDS = "freestyle:15,reversi:8,dropFour:7";
+
+/** A comma-separated option, with the empty string meaning "not given". */
+function listed(value: string | undefined): string[] {
+  return (value ?? "").split(",").map((one) => one.trim()).filter((one) => one !== "");
+}
+
+function tiersAsked(): BotTier[] {
+  const asked = listed(process.env.BOT_GAMES_TIERS);
+  if (asked.length === 0) return DEFAULT_LADDER;
+  const known = new Set<string>(BOT_ALL_TIERS);
+  const wrong = asked.filter((one) => !known.has(one));
+  if (wrong.length > 0) {
+    throw new Error(
+      `BOT_GAMES_TIERS names nobody this site plays as: ${wrong.join(", ")}. Known: ${[...known].join(", ")}`,
+    );
+  }
+  return asked as BotTier[];
+}
+
+function boardsAsked(): { variant: RuleVariant; size: number }[] {
+  return listed(process.env.BOT_GAMES_BOARDS ?? DEFAULT_BOARDS).map((one) => {
+    const [name, size] = one.split(":");
+    // A game may be named by its key or by its address slug, because both are
+    // written down elsewhere and nobody should have to know which is which.
+    const variant = (name in VARIANT_SPECS ? (name as RuleVariant) : variantFor(name));
+    if (variant === null || variant === undefined) {
+      throw new Error(`BOT_GAMES_BOARDS names a game this site does not have: ${name}`);
+    }
+    const sizes = boardSizesFor(variant);
+    if (size === undefined) return { variant, size: sizes[Math.floor(sizes.length / 2)] };
+    const wanted = Number(size);
+    if (!sizes.includes(wanted)) {
+      throw new Error(`${name} is not played on ${size}×${size}. It plays on: ${sizes.join(", ")}`);
+    }
+    return { variant, size: wanted };
+  });
+}
+
+/** Whether the tiers were named, which decides whether the specialists are assumed. */
+const TIERS_GIVEN = listed(process.env.BOT_GAMES_TIERS).length > 0;
+
+const LADDER = tiersAsked();
+const LADDER_BOARDS = boardsAsked();
 
 type Match = { variant: RuleVariant; size: number; black: BotTier; white: BotTier };
 
 function specialistMatches(): Match[] {
   const out: Match[] = [];
-  for (const specialist of [BOT_TIERS.tamenoki, BOT_TIERS.meritalu]) {
+  /*
+   * The specialists are assumed unless somebody has said who plays. Naming
+   * tiers has to mean ONLY those tiers, or "just kyu against dan" quietly
+   * plays two other players as well and the answer is about a different
+   * series from the one that was asked for.
+   */
+  const specialists = [BOT_TIERS.tamenoki, BOT_TIERS.meritalu].filter(
+    (one) => !TIERS_GIVEN || LADDER.includes(one),
+  );
+  for (const specialist of specialists) {
     const studied = TIER_SPECS[specialist].expertise;
     const board = LADDER_BOARDS.find((b) => playsAsExpert(studied, b.variant));
     if (board === undefined) continue;
-    for (const other of LADDER) {
+    for (const other of LADDER.filter((one) => one !== specialist)) {
       /*
        * Colours alternate down the run. The first move is worth something, and
        * a set of records that only ever shows the specialist as black is half
