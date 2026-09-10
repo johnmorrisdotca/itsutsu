@@ -2,6 +2,7 @@ import { RecordCells, RecordHeadings, RecordLine } from "@/components/players/Pl
 import Link from "next/link";
 
 import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
+import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { gamesPlayed, ratingShown } from "@/lib/rating/shownRecord";
@@ -128,7 +129,23 @@ export async function MyRecord({ name }: { name: string }) {
       ) : null}
       {tally.answered > 0 ? (
         <p className="text-xs text-muted" data-testid="verdict-tally">
-          Your own read: you thought you played well in {tally.up} of the {tally.answered} games you judged
+          {/*
+            Each of these leads to the games it counted. They were plain text
+            until now, and the gate that guards this rule listed them as an
+            exception with the honest reason: the record could not be asked
+            for a verdict, so there was no page for the number to lead to. It
+            can now, so there is.
+
+            The tail is still a sentence and stays one. "Won 3 of the 7 you
+            felt good about" is a count of a count — the record can say which
+            games you judged well, and cannot also say which of those you won
+            in the same breath, because winning is read from your side and
+            already spoken for by `outcome`.
+          */}
+          Your own read: you thought you played well in{" "}
+          <GameCount count={tally.up} player={name} verdict="up" title="The games you thought you played well" /> of
+          the{" "}
+          <GameCount count={tally.answered} player={name} verdict="judged" title="Every game you judged" /> games you judged
           {tally.upWins > 0 || tally.downWins > 0
             ? `, and won ${tally.upWins} of the ${tally.up} you felt good about and ${tally.downWins} of the ${tally.down} you did not`
             : ""}

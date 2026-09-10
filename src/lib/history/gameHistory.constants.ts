@@ -52,6 +52,43 @@ export function outcomeLabel(value: string): string {
 }
 
 /**
+ * What a player thought of their own play, which only they can say.
+ *
+ * Stored per seat, so it is read against the player named in the address the
+ * same way an outcome is, and means nothing without one. It exists as a filter
+ * because a page already counts these — "you thought you played well in 7 of
+ * the 12 games you judged" — and a count of games that cannot be asked for is
+ * a number the reader has to take on trust.
+ */
+export const GAME_VERDICTS = ["up", "down"] as const;
+
+/**
+ * `judged` is the odd one and earns its place the same way `decided` did: the
+ * sentence counts "the 12 games you judged", and without it that number would
+ * link to every game the name ever played. A count opening a longer list than
+ * it counted is the fault this whole idea exists to stop, and I nearly shipped
+ * it while closing a gap about exactly that.
+ */
+export const GAME_VERDICT_FILTERS = ["all", "judged", ...GAME_VERDICTS] as const;
+
+export const GAME_VERDICT_DISPLAY: Record<
+  (typeof GAME_VERDICTS)[number],
+  { label: string; kanji: string }
+> = {
+  up: { label: "Played well", kanji: "会心" },
+  down: { label: "Played badly", kanji: "不本意" },
+};
+
+/** Every game they gave a verdict on, either way. */
+export const GAME_VERDICT_ANY = "judged";
+
+/** The same lookup from an address, where the word has not been checked yet. */
+export function verdictLabel(value: string): string {
+  if (value === GAME_VERDICT_ANY) return "Judged";
+  return (GAME_VERDICT_DISPLAY as Record<string, { label: string } | undefined>)[value]?.label ?? value;
+}
+
+/**
  * Which ladder a game belongs to, and whether it moved one at all.
  *
  * Both exist so that a count can link to the games it actually counted. The

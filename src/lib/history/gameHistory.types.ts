@@ -4,6 +4,8 @@ import type {
   GAME_OUTCOMES,
   GAME_POOL_FILTERS,
   GAME_RATED_FILTERS,
+  GAME_VERDICT_FILTERS,
+  GAME_VERDICTS,
   GAME_RESULT_FILTERS,
   GAME_RESULTS,
   GAME_SIZE_FILTERS,
@@ -19,6 +21,8 @@ export type GameResultFilter = (typeof GAME_RESULT_FILTERS)[number];
 export type GameOutcome = (typeof GAME_OUTCOMES)[number];
 export type GameOutcomeFilter = (typeof GAME_OUTCOME_FILTERS)[number];
 export type GamePoolFilter = (typeof GAME_POOL_FILTERS)[number];
+export type GameVerdict = (typeof GAME_VERDICTS)[number];
+export type GameVerdictFilter = (typeof GAME_VERDICT_FILTERS)[number];
 export type GameRatedFilter = (typeof GAME_RATED_FILTERS)[number];
 export type GameVariantFilter = (typeof GAME_VARIANT_FILTERS)[number];
 export type GameSizeFilter = (typeof GAME_SIZE_FILTERS)[number];
@@ -38,6 +42,8 @@ export type GameHistoryQuery = {
   pool: GamePoolFilter;
   /** Whether the game moved a rating. */
   rated: GameRatedFilter;
+  /** What `player` thought of their own play. Read against that name, and ignored without one. */
+  verdict: GameVerdictFilter;
   variant: GameVariantFilter;
   size: number | null;
   from: Date | null;

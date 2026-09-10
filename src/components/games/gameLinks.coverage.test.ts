@@ -180,15 +180,17 @@ describe("a count of games is the way into those games", () => {
     // exception the rule has always had.
     "src/components/players/LegacySource.tsx": "counted elsewhere",
     /*
-     * These two are the honest gap rather than a decision, and they are worth
-     * leaving visible. "Games you judged" and "games you gave time in" are
-     * real sets of real games, and the record cannot be asked for either —
-     * there is no filter for a verdict or for a gift of time. The rule says a
-     * count links to its games; here the page does not exist to link to.
-     * Building those filters would close both.
+     * The gift line, and the reason it stays. `fetchTimeGiftRecord` counts
+     * every game a gift was made in, FINISHED OR NOT — a fact about somebody's
+     * conduct rather than about the record — while /history is finished games
+     * by definition. So a link would show fewer games than the number beside
+     * it, which is the fault this rule exists to stop, wearing a link. The gap
+     * is in what "the record" means, not in the filters.
+     *
+     * Its neighbour used to sit here for a weaker reason and no longer does:
+     * "the 12 games you judged" now links, because `verdict` was added.
      */
-    "src/components/mine/MyRecord.tsx": "no filter exists for games you judged",
-    "src/components/players/ItsutsuRecord.tsx": "no filter exists for games time was given in",
+    "src/components/players/ItsutsuRecord.tsx": "the gift count includes unfinished games; the record is finished ones",
   };
 
   it("nobody prints a number of games as words, with nothing behind it", () => {

@@ -1,7 +1,12 @@
 import Link from "next/link";
 
 import { recordPath } from "@/lib/gomoku/slugs";
-import type { GameOutcome, GamePoolFilter, GameRatedFilter } from "@/lib/history/gameHistory.types";
+import type {
+  GameOutcome,
+  GamePoolFilter,
+  GameRatedFilter,
+  GameVerdictFilter,
+} from "@/lib/history/gameHistory.types";
 import type { ReactNode } from "react";
 
 /**
@@ -40,6 +45,8 @@ export function gamesHref(options: {
    */
   pool?: GamePoolFilter;
   rated?: GameRatedFilter;
+  /** What that player said about their own play, or "judged" for either. */
+  verdict?: GameVerdictFilter;
 }): string {
   const base = options.variant === undefined ? "/history" : recordPath(options.variant);
   const query = new URLSearchParams();
@@ -49,6 +56,7 @@ export function gamesHref(options: {
   if (options.outcome !== undefined) query.set("outcome", options.outcome);
   if (options.pool !== undefined && options.pool !== "all") query.set("pool", options.pool);
   if (options.rated !== undefined && options.rated !== "all") query.set("rated", options.rated);
+  if (options.verdict !== undefined && options.verdict !== "all") query.set("verdict", options.verdict);
   const search = query.toString();
   return search === "" ? base : `${base}?${search}`;
 }
@@ -60,6 +68,7 @@ export function GameCount({
   outcome,
   pool,
   rated,
+  verdict,
   here = true,
   title,
   raised = false,
@@ -73,6 +82,7 @@ export function GameCount({
   outcome?: GameOutcome;
   pool?: GamePoolFilter;
   rated?: GameRatedFilter;
+  verdict?: GameVerdictFilter;
   /** False for a figure counted on another site, which has no game here to open. */
   here?: boolean;
   title?: string;
@@ -99,7 +109,7 @@ export function GameCount({
   }
   return (
     <Link
-      href={gamesHref({ variant, player, outcome, pool, rated })}
+      href={gamesHref({ variant, player, outcome, pool, rated, verdict })}
       className={`underline-offset-2 hover:underline ${raised ? "relative z-10" : ""} ${className}`}
       title={title}
       data-testid={testId ?? "game-count"}

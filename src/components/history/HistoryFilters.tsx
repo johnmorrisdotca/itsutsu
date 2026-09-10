@@ -12,6 +12,7 @@ import {
   GAME_RESULT_FILTERS,
   GAME_SIZE_FILTERS,
   outcomeLabel,
+  verdictLabel,
   GAME_SORT_BY,
   GAME_SORT_DISPLAY,
   GAME_VARIANT_FILTERS,
@@ -94,6 +95,7 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
           key: "rated",
           label: GAME_RATED_DISPLAY[value("rated")]?.label ?? value("rated"),
         },
+    value("verdict") === "" ? null : { key: "verdict", label: verdictLabel(value("verdict")) },
   ].filter((one): one is { key: string; label: string } => one !== null);
 
   return (

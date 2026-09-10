@@ -10,6 +10,8 @@ import {
   GAME_OUTCOME_FILTERS,
   GAME_POOL_FILTERS,
   GAME_RATED_FILTERS,
+  GAME_VERDICT_ANY,
+  GAME_VERDICT_FILTERS,
   GAME_RESULT_FILTERS,
   GAME_SEARCH_MAX,
   GAME_SIZE_FILTERS,
@@ -44,6 +46,7 @@ const querySchema = z.object({
   outcome: z.enum(GAME_OUTCOME_FILTERS).default("all"),
   pool: z.enum(GAME_POOL_FILTERS).default("all"),
   rated: z.enum(GAME_RATED_FILTERS).default("all"),
+  verdict: z.enum(GAME_VERDICT_FILTERS).default("all"),
   variant: z.enum(GAME_VARIANT_FILTERS).default("all"),
   size: z.enum(GAME_SIZE_FILTERS).default("all"),
   from: z.coerce.date().optional(),
@@ -98,6 +101,7 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
     outcome: get("outcome"),
     pool: get("pool"),
     rated: get("rated"),
+    verdict: get("verdict"),
     variant: variantFilter(get("variant")),
     size: get("size"),
     from: get("from"),
@@ -118,6 +122,7 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
     outcome: data.outcome,
     pool: data.pool,
     rated: data.rated,
+    verdict: data.verdict,
     variant: data.variant,
     size: data.size === "all" ? null : Number(data.size),
     from: data.from ?? null,
@@ -184,6 +189,30 @@ function poolWhere(pool: string, computerSeats: readonly string[]): Prisma.GameW
   };
 }
 
+/**
+ * What one player thought of their own play.
+ *
+ * Kept per seat, so it is the same two questions at once an outcome is: which
+ * seat they were, and what that seat said. Unanswerable without a name, and
+ * dropped rather than answered emptily for the same reason.
+ *
+ * Read by NAME, while `fetchVerdictTally` counts by member id. On the page
+ * that shows both — a member's own record — they are the same person, so the
+ * two agree. They would part company only over a game somebody played under a
+ * different name before renaming, which is the same seam every name-keyed
+ * record on this site already has.
+ */
+function verdictWhere(verdict: string, player: string | null): Prisma.GameWhereInput | null {
+  if (player === null) return null;
+  const said = verdict === GAME_VERDICT_ANY ? { not: null } : verdict;
+  return {
+    OR: [
+      { blackName: { equals: player, mode: "insensitive" }, blackVerdict: said },
+      { whiteName: { equals: player, mode: "insensitive" }, whiteVerdict: said },
+    ],
+  };
+}
+
 export function buildGameWhere(
   query: GameHistoryQuery,
   /** The member ids of the programs, for the pool filter. See `poolWhere`. */
@@ -218,6 +247,10 @@ export function buildGameWhere(
     if (side !== null) conditions.push(side);
   }
   if (query.rated !== "all") conditions.push({ rated: query.rated === "yes" });
+  if (query.verdict !== "all") {
+    const said = verdictWhere(query.verdict, query.player);
+    if (said !== null) conditions.push(said);
+  }
   if (query.variant !== "all") conditions.push({ variant: query.variant });
   if (query.size !== null) conditions.push({ size: query.size });
 

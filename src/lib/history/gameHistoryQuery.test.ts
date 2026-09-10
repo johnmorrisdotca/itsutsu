@@ -202,6 +202,40 @@ describe("buildGameWhere", () => {
     });
   });
 
+  describe("what a player said about their own play", () => {
+    it("reads a verdict from whichever seat they were in", () => {
+      const where = buildGameWhere(parse("?player=Aki&verdict=up")!);
+      expect(where.AND).toContainEqual({
+        OR: [
+          { blackName: { equals: "Aki", mode: "insensitive" }, blackVerdict: "up" },
+          { whiteName: { equals: "Aki", mode: "insensitive" }, whiteVerdict: "up" },
+        ],
+      });
+    });
+
+    /*
+     * The one the sentence actually needs. "The 12 games you judged" counts
+     * both verdicts, and without this it would have linked to every game the
+     * name ever played — a count opening a longer list than it counted, which
+     * is the fault the whole idea exists to stop.
+     */
+    it("counts a game judged either way as judged", () => {
+      const where = buildGameWhere(parse("?player=Aki&verdict=judged")!);
+      expect(where.AND).toContainEqual({
+        OR: [
+          { blackName: { equals: "Aki", mode: "insensitive" }, blackVerdict: { not: null } },
+          { whiteName: { equals: "Aki", mode: "insensitive" }, whiteVerdict: { not: null } },
+        ],
+      });
+    });
+
+    it("drops a verdict with nobody to read it against", () => {
+      // Only the person who played can have said it, so without a name there
+      // is no question here to answer.
+      expect(buildGameWhere(parse("?verdict=up")!)).toEqual({ AND: [{ status: "finished" }] });
+    });
+  });
+
   it("builds a half-open range from one date", () => {
     const where = buildGameWhere(parse("?from=2026-01-01")!);
     expect(where.AND).toContainEqual({
