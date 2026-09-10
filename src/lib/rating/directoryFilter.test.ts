@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   AWAY_AFTER_DAYS,
   DIRECTORY_WHO,
+  filterBarHref,
   NO_FILTER,
   directoryQuery,
   filterDirectory,
@@ -94,5 +95,45 @@ describe("narrowing the directory", () => {
     const asked = { who: DIRECTORY_WHO.everyone, settled: true, active: true };
     // The settled program stays; the unrated and the long-gone person do not.
     expect(filterDirectory(rows, asked, NOW)).toEqual([rows[0], rows[3]]);
+  });
+});
+
+/**
+ * The bar's own links, which are not the same as an address a person types.
+ *
+ * A bare /players means "however I last asked", so a link that leaves the
+ * default off is not asking for the default — it is asking for whatever was
+ * remembered. That made the Everyone button dead while narrowed to People:
+ * it produced /players, the cookie answered People, and nothing appeared to
+ * happen.
+ */
+describe("filterBarHref", () => {
+  it("says who even when who is the default", () => {
+    // The whole bug in one assertion: this must not be a bare /players.
+    expect(filterBarHref(NO_FILTER)).toBe(`/players?who=${DIRECTORY_WHO.everyone}`);
+  });
+
+  it("says who for a narrowing too, so every button reads the same way", () => {
+    expect(filterBarHref({ ...NO_FILTER, who: DIRECTORY_WHO.people })).toBe(
+      `/players?who=${DIRECTORY_WHO.people}`,
+    );
+  });
+
+  it("carries the other two narrowings when they are on", () => {
+    const href = filterBarHref({ who: DIRECTORY_WHO.computers, settled: true, active: true });
+    expect(href).toContain(`who=${DIRECTORY_WHO.computers}`);
+    expect(href).toContain("settled=1");
+    expect(href).toContain("active=1");
+  });
+
+  it("leaves them off when they are off, which the address then reads as off", () => {
+    /*
+     * Safe only because `who` is always present: once the address says
+     * anything about narrowing, the whole filter is read from the address, so
+     * an absent settled means off rather than remembered.
+     */
+    const href = filterBarHref({ ...NO_FILTER, settled: false, active: false });
+    expect(href).not.toContain("settled");
+    expect(href).not.toContain("active");
   });
 });

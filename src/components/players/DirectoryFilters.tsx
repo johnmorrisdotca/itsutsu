@@ -4,7 +4,7 @@ import {
   AWAY_AFTER_DAYS,
   DIRECTORY_WHO,
   DIRECTORY_WHO_LIST,
-  directoryQuery,
+  filterBarHref,
   type DirectoryFilter,
   type DirectoryWho,
 } from "@/lib/rating/directoryFilter";
@@ -41,10 +41,13 @@ export function DirectoryFilters({
   shown: number;
   total: number;
 }) {
-  const to = (next: DirectoryFilter) => {
-    const query = directoryQuery(next);
-    return query === "" ? "/players" : `/players?${query}`;
-  };
+  /*
+   * Every link here says who outright, including when who is the default.
+   * A bare /players means "however I last asked", so leaving the default off
+   * would make the Everyone button ask for the narrowing it is offering to
+   * remove — which is exactly what it did.
+   */
+  const to = (next: DirectoryFilter) => filterBarHref(next);
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-testid="directory-filters">

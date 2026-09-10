@@ -78,6 +78,30 @@ export function readDirectoryFilter(query: {
   return { who, settled: one(query.settled) === "1", active: one(query.active) === "1" };
 }
 
+/**
+ * The address the FILTER BAR writes, which always states who.
+ *
+ * Not `directoryQuery`, and the difference is a real bug rather than a
+ * nicety. A bare `/players` means "however I last asked" — the preference is
+ * remembered — so an address that leaves the default off does not say
+ * "everybody", it says "whatever you had". Clicking Everyone while narrowed to
+ * People therefore produced `/players`, which the cookie answered with People
+ * again, and the button appeared to be dead.
+ *
+ * `SHOW_EVERYBODY_HREF` already existed for exactly this trap, with the reason
+ * written beside it, and the filter bar's own buttons walked into it anyway.
+ * So the bar states `who` outright, the way `rememberedValue` already does for
+ * the cookie. Saying it is also enough for the rest: once the address says
+ * anything about narrowing, the whole of it is read from the address, so an
+ * absent `settled` or `active` correctly means off rather than remembered.
+ */
+export function filterBarHref(filter: DirectoryFilter): string {
+  const params = new URLSearchParams({ who: filter.who });
+  if (filter.settled) params.set("settled", "1");
+  if (filter.active) params.set("active", "1");
+  return `/players?${params.toString()}`;
+}
+
 /** The address a filter reads as, with the defaults left off it. */
 export function directoryQuery(filter: DirectoryFilter): string {
   const params = new URLSearchParams();
