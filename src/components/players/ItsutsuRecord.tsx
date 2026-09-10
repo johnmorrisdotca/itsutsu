@@ -2,6 +2,9 @@ import Link from "next/link";
 
 import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
+import { PlayerActions } from "./PlayerActions";
+import type { NamedMember } from "@/lib/auth/members";
+import { playerKey } from "@/lib/rating/playerKey";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { recordPath } from "@/lib/gomoku/slugs";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
@@ -21,6 +24,7 @@ import { playerPath } from "@/lib/rating/playerKey";
 export function ItsutsuRecord({
   name,
   record,
+  opponents,
   gifts,
   emptyNote,
 }: {
@@ -32,6 +36,26 @@ export function ItsutsuRecord({
    */
   name: string;
   record: PlayerRecord;
+  /**
+   * Who the opponents in Recent Games are, and what the reader may do about
+   * them.
+   *
+   * "Every opponent you are shown offers what you would want to do about
+   * them" is a rule on this repo's own checklist, and this list was the place
+   * that quietly did not keep it: it named ten people and offered a link to
+   * go and read about each of them. The decision a reader makes here is
+   * whether to play somebody, and it was made two pages away.
+   *
+   * Empty when nobody is signed in, so a page nobody can act on costs no
+   * lookup at all.
+   */
+  opponents?: {
+    members: Map<string, NamedMember>;
+    buddies: Set<string>;
+    ignored: Set<string>;
+    mine: string | null;
+    signedIn: boolean;
+  };
   gifts: TimeGiftRecord;
   /**
    * What an empty record means here, when it means something other than "not
@@ -145,11 +169,18 @@ export function ItsutsuRecord({
                     "anonymous"
                   )}
                 </span>
-                <span className="flex items-center gap-3">
+                <span className="flex flex-wrap items-center justify-end gap-3">
                   <span className="font-mono text-xs tabular-nums">{game.outcome}</span>
                   <Link href={recordPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline">
                     replay
                   </Link>
+                  {/*
+                    And what to do about the person, beside the game they were
+                    in. `PlayerActions` decides who gets what — a kept record
+                    and yourself get nothing, a program is offered a game and
+                    not a friendship — so this only has to hand it the facts.
+                  */}
+                  <OpponentActions name={game.opponent} opponents={opponents} />
                 </span>
               </li>
             ))}
@@ -170,5 +201,40 @@ export function ItsutsuRecord({
         </p>
       ) : null}
     </div>
+  );
+}
+
+/** What the reader may do about one opponent, or nothing at all. */
+function OpponentActions({
+  name,
+  opponents,
+}: {
+  name: string;
+  opponents?: {
+    members: Map<string, NamedMember>;
+    buddies: Set<string>;
+    ignored: Set<string>;
+    mine: string | null;
+    signedIn: boolean;
+  };
+}) {
+  if (opponents === undefined || !opponents.signedIn || name.trim() === "") return null;
+  const them = opponents.members.get(playerKey(name));
+  // Somebody who never signed in — a name typed into a game at one screen —
+  // is not an account to ask anything of, and an offer to play them would be
+  // an offer nobody is on the other end of.
+  if (them === undefined) return null;
+  return (
+    <PlayerActions
+      compact
+      testId="opponent-actions"
+      email={them.email}
+      memberId={them.id}
+      isBuddy={them.email !== null && opponents.buddies.has(them.email)}
+      ignoring={them.email !== null && opponents.ignored.has(them.email)}
+      isComputer={Boolean(them.botTier)}
+      isYou={them.email !== null && them.email === opponents.mine}
+      signedIn={opponents.signedIn}
+    />
   );
 }

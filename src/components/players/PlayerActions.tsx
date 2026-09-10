@@ -30,6 +30,8 @@ export function PlayerActions({
   isComputer,
   isYou,
   signedIn,
+  compact = false,
+  testId = "player-actions",
 }: {
   /** Null for a kept record and for a computer player: neither has one. */
   email: string | null;
@@ -39,21 +41,44 @@ export function PlayerActions({
   isComputer: boolean;
   isYou: boolean;
   signedIn: boolean;
+  /**
+   * For a row rather than a page heading.
+   *
+   * The same three components and the same rules — only the challenge is
+   * worded shorter, because "Ask for a game 対局を申し込む" beside every line of
+   * a ten-row list is the offer shouting over the record it is attached to.
+   * Anything more than the wording would be a second version of this to keep
+   * in step, which is what the component exists to prevent.
+   */
+  compact?: boolean;
+  /**
+   * A name of its own where these are not the page's own actions.
+   *
+   * The heading's offer and a row's offer are different objects in different
+   * places, and a page carrying eleven of one name is a page nothing can point
+   * at — a test asking for "the actions" got all eleven and could no longer
+   * say which it meant.
+   */
+  testId?: string;
 }) {
   if (isYou || !signedIn) return null;
   if (isComputer) {
     if (memberId === undefined) return null;
     return (
-      <div className="flex flex-wrap items-center gap-2" data-testid="player-actions">
-        <ChallengeButton memberId={memberId} label="Play 対局" strong />
+      <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
+        <ChallengeButton memberId={memberId} label="Play 対局" strong={!compact} />
       </div>
     );
   }
   if (email === null) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2" data-testid="player-actions">
-      <ChallengeButton email={email} label="Ask for a game 対局を申し込む" strong />
+    <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
+      <ChallengeButton
+        email={email}
+        label={compact ? "Play 対局" : "Ask for a game 対局を申し込む"}
+        strong={!compact}
+      />
       <BuddyButton email={email} isBuddy={isBuddy} />
       <IgnoreButton email={email} ignoring={ignoring} />
     </div>

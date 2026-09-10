@@ -304,6 +304,39 @@ export async function updateProfile(email: string, update: ProfileUpdate): Promi
 }
 
 /**
+ * The members behind a list of names, in one query.
+ *
+ * For a list that shows several opponents and wants to offer something about
+ * each of them. One lookup per row is ten queries to draw ten lines, and a
+ * page that costs a query per row is a page nobody adds a row to.
+ *
+ * Keyed by `playerKey`, so a caller looks up by the same rule the ratings use
+ * rather than by whatever capitalisation the game was filed under.
+ */
+export async function findMembersByNames(
+  names: readonly string[],
+): Promise<Map<string, NamedMember>> {
+  const wanted = [...new Set(names.map((one) => one.trim()).filter((one) => one !== ""))];
+  if (wanted.length === 0) return new Map();
+  const rows = await prisma.member.findMany({
+    where: { OR: wanted.map((one) => ({ name: { equals: one, mode: "insensitive" as const } })) },
+    select: {
+      email: true,
+      id: true,
+      botTier: true,
+      unclaimableBecause: true,
+      name: true,
+      picture: true,
+      country: true,
+      city: true,
+      timeZone: true,
+      bio: true,
+    },
+  });
+  return new Map(rows.map((row) => [playerKey(row.name ?? ""), row]));
+}
+
+/**
  * The member who plays under a name, however it was capitalised. A name is
  * how the site addresses somebody, so a name typed into an address bar or
  * printed beside a game has to find them; the address is the key underneath.

@@ -14,7 +14,7 @@ import { LegacySourcePanel } from "@/components/players/LegacySource";
 import { Figures } from "@/components/ui/Figures";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { findMemberByName } from "@/lib/auth/members";
+import { findMemberByName, findMembersByNames } from "@/lib/auth/members";
 import { currentSession } from "@/lib/auth/currentSession";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
@@ -123,6 +123,22 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * else.
    */
   const shownName = player?.name ?? member?.name ?? keptRecord?.name ?? decoded;
+  /*
+   * Who the recent opponents are, in one query rather than one per row, and
+   * only for a reader who could act on the answer. "Every opponent you are
+   * shown offers what you would want to do about them" is on this repo's own
+   * checklist, and this list named ten people and offered nothing about any
+   * of them.
+   */
+  const opponents = me?.email
+    ? {
+        members: await findMembersByNames(record.recent.map((one) => one.opponent)),
+        buddies: new Set(myBuddies.map((buddy) => buddy.email).filter((one): one is string => Boolean(one))),
+        ignored: myIgnored,
+        mine: me.email,
+        signedIn: true,
+      }
+    : undefined;
   const tier = player === null ? null : TIER_DISPLAY[player.tier];
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
   const whole = wholeRecord(linked, { won: record.wins, lost: record.losses, drawn: record.draws });
@@ -350,6 +366,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           <ItsutsuRecord
             name={shownName}
             record={record}
+            opponents={opponents}
             gifts={gifts}
             /*
              * "No games yet" is the wrong word about somebody who has died,
