@@ -12,9 +12,14 @@ test.describe("the small games", () => {
     await openSetup(page);
     await page.getByTestId("rules").selectOption("tictactoe");
 
-    await expect(page.getByTestId("board-size")).toBeDisabled();
-    await expect(page.getByTestId("board-size")).toHaveValue("3");
-    await expect(page.getByTestId("win-length")).toBeDisabled();
+    /*
+     * Asked of the sentence rather than of two disabled selects, which is
+     * where a fixed rule is stated now. The board itself is the proof either
+     * way: nine cells, and three in a row ends it.
+     */
+    const fixed = page.getByTestId("fixed-by-rules");
+    await expect(fixed).toContainText("3×3");
+    await expect(fixed).toContainText("3 in a row");
     await expect(page.getByRole("button", { name: /, (empty|Black|White)/ })).toHaveCount(9);
 
     await playSequence(page, 3, [[0, 0], [1, 0], [0, 1], [1, 1], [0, 2]]);
@@ -118,17 +123,44 @@ test.describe("the small games", () => {
     await expect(page.getByTestId("to-play")).toContainText("White");
   });
 
-  test("fixed rules are shown greyed rather than hidden", async ({ page }) => {
+  test("fixed rules are stated rather than drawn as controls nobody may use", async ({ page }) => {
+    /*
+     * This test used to be called "fixed rules are shown greyed rather than
+     * hidden", and asserted the board, the opening and the obstacles were
+     * disabled selects. That was a real decision — a greyed control was how a
+     * player read the rules at a glance, back when there was nowhere else to
+     * read them.
+     *
+     * There is somewhere now: the set-up folds behind a summary that states
+     * the rules. So a dead control had become the third place the same fact
+     * appeared, paying a control's height to say what a clause says and
+     * promising an interaction it would not honour.
+     *
+     * Changed on John's ruling, and this test rewritten with it on purpose
+     * rather than loosened to let the change through. What is asserted is the
+     * same guarantee it always made — NOTHING IS HIDDEN — asked of the
+     * sentence instead of the select.
+     */
     await page.goto("/games/gomoku");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("twistFour");
     await openAdvanced(page);
 
-    await expect(page.getByTestId("board-size")).toBeDisabled();
-    await expect(page.getByTestId("opening")).toBeDisabled();
-    await expect(page.getByTestId("obstacles")).toBeDisabled();
+    const fixed = page.getByTestId("fixed-by-rules");
+    await expect(fixed).toBeVisible();
+    await expect(fixed).toContainText("Fixed by Twist Four");
+    // The values themselves, not merely a note that something is fixed.
+    await expect(fixed).toContainText("×");
+    // And the controls they replace are gone, not greyed.
+    await expect(page.getByTestId("board-size")).toHaveCount(0);
+    await expect(page.getByTestId("obstacles")).toHaveCount(0);
+    /*
+     * The toggles are left as they were, and that is a line rather than an
+     * oversight: a disabled checkbox showing on or off is already about as
+     * short as the sentence would be, and "the threats here cannot be read"
+     * is a different kind of statement from "this game fixes its board".
+     */
     await expect(page.getByTestId("awareness")).toBeDisabled();
     await expect(page.getByLabel("Allow skipping a turn")).toBeDisabled();
-    await expect(page.getByText(/Fixed by Twist Four/).first()).toBeVisible();
   });
 });

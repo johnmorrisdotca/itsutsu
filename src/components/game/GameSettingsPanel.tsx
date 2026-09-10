@@ -63,13 +63,27 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
   const fixedBy = GAME_COPY.fixedBy(RULE_VARIANT_DISPLAY[variant].label);
   const said = (lock: string | null, otherwise?: string) =>
     lock === null ? otherwise : lock === fixedBy ? undefined : lock;
-  const fixes = [
-    locks.size === null ? null : "board",
-    locks.opening === null ? null : "opening",
-    locks.winLength === null ? null : GAME_COPY.lineLength.label.toLowerCase(),
-    locks.obstacles === null ? null : "obstacles",
-    locks.allowSkip === null ? null : "skipping",
-    locks.drawLimit === null ? null : "length",
+  /*
+   * A setting the game has settled is STATED, not drawn as a control that
+   * cannot be used.
+   *
+   * It used to be a disabled select showing one option, on the reasoning that
+   * a greyed control is how a player reads the rules at a glance. That was
+   * true when there was nowhere else to read them. There is now: the panel is
+   * folded behind a summary that states the rules, so a dead control is the
+   * third place the same fact appears — and it pays a control's height to say
+   * what a clause says, while promising an interaction it will not honour.
+   *
+   * John's call, made on purpose rather than slipped in under a refactor:
+   * the test that pinned the old behaviour was rewritten with it.
+   */
+  const settled = [
+    // "8×8" and not "8×8 eight": the size names are for choosing between
+    // boards, and there is no choosing here.
+    locks.size === null ? null : `${size}×${size}`,
+    locks.opening === null ? null : `${OPENING_DISPLAY[opening].label.toLowerCase()} opening`,
+    locks.winLength === null ? null : `${settings.winLength} in a row`,
+    locks.obstacles === null ? null : OBSTACLE_LAYOUT_DISPLAY[obstacles].label.toLowerCase(),
   ].filter((one): one is string => one !== null);
   // Lines the reading cannot help with are greyed rather than hidden, so the rule is visible.
   const reading = locks.reading === null;
@@ -94,13 +108,14 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </p>
       ) : null}
 
-      {fixes.length > 0 ? (
-        <p className="text-xs text-muted" data-testid="fixed-by-rules">
-          {fixedBy} It settles the {fixes.join(", ")}.
+      {settled.length > 0 ? (
+        <p className="text-sm text-ink-soft" data-testid="fixed-by-rules">
+          <span className="text-muted">{fixedBy}</span> {settled.join(" · ")}
         </p>
       ) : null}
 
       <fieldset disabled={begun} className="flex min-w-0 flex-col gap-4">
+      {locks.size === null ? (
       <Field label="Board" hint={said(locks.size)}>
         <Select
           value={size}
@@ -115,6 +130,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           ))}
         </Select>
       </Field>
+      ) : null}
 
       <Field label="Rules" hint={RULE_VARIANT_DISPLAY[variant].tagline}>
         <Select
@@ -132,6 +148,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
+      {locks.opening === null ? (
       <Field
         label={GAME_COPY.opening.label}
         hint={said(locks.opening, OPENING_DISPLAY[opening].tagline)}
@@ -151,7 +168,9 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           ))}
         </Select>
       </Field>
+      ) : null}
 
+      {locks.winLength === null ? (
       <Field label={GAME_COPY.lineLength.label} hint={said(locks.winLength, GAME_COPY.lineLengthHint)}>
         <Select
           value={settings.winLength}
@@ -171,6 +190,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           ))}
         </Select>
       </Field>
+      ) : null}
 
       <Field
         label="First stone"
@@ -196,6 +216,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
+      {locks.obstacles === null ? (
       <Field label="Obstacles" hint={said(locks.obstacles, OBSTACLE_LAYOUT_DISPLAY[obstacles].description)}>
         <Select
           value={obstacles}
@@ -212,6 +233,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           ))}
         </Select>
       </Field>
+      ) : null}
 
       {spec.flips ? (
         <div data-testid="centre-discs">
