@@ -8,6 +8,30 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+### The Gate Is `src/proxy.ts`
+
+Next 16 renamed the middleware convention, so the file that decides who gets
+into this site is `src/proxy.ts` and there is no `middleware.ts`. The docs in
+`node_modules/next/dist/docs/` say so; training data says otherwise, and code
+written from memory here half-works in a way nothing reports.
+
+That rename set a trap, and one session walked into it: knowing the convention
+as `middleware.ts`, it went to create `proxy.ts` as a NEW file for some cookie
+logic — and `proxy.ts` already existed, holding the invite gate. Writing it
+would have replaced the gate with a cookie helper. Nothing said so; it was
+caught because `proxy.test.ts` stopped typechecking.
+
+So, whatever you are about to create: **look before you write.** A file you
+believe is new, in a framework whose conventions have moved, is the one case
+where the belief and the filesystem most easily disagree — and the file most
+likely to be sitting there is the one the framework told you to name.
+
+If you do have business in that file, the rule is that the gate's decisions are
+not yours to touch. Additions belong on paths that already let the request
+through: wrap the `NextResponse.next()` a decision has already arrived at,
+never the deciding. A change that only ever runs after "yes" cannot turn a no
+into one.
+
 ## Workspace Gates
 
 ### File Size Gate
