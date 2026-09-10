@@ -31,6 +31,8 @@ export type VariantStanding = {
   wins: number;
   losses: number;
   draws: number;
+  /** Which ladder these figures are from. See `pools.ts`. */
+  pool: RatingPool;
 };
 
 type StandingRow = {
@@ -46,7 +48,14 @@ type StandingRow = {
 
 function toStanding(row: StandingRow, pool: RatingPool = RATING_POOLS.people): VariantStanding {
   const standing = standingIn(row as unknown as Record<string, unknown>, pool);
-  return { key: row.key, name: row.name, variant: row.variant, ...standing, tier: tierFor(standing.ratedGames) };
+  return {
+    key: row.key,
+    name: row.name,
+    variant: row.variant,
+    ...standing,
+    tier: tierFor(standing.ratedGames),
+    pool,
+  };
 }
 
 /** The score a result is worth to black, as Elo counts it. */
@@ -160,10 +169,25 @@ export async function fetchVariantStandings(name: string): Promise<VariantStandi
      * computer-pool standing would say — a gap, and a smaller fault than a
      * figure nobody earned. It wants its own decision rather than a filter.
      */
-    where: { key, ratedGames: { gt: 0 } },
+    where: { key, OR: [{ ratedGames: { gt: 0 } }, { computerRatedGames: { gt: 0 } }] },
     orderBy: [{ ratedGames: "desc" }, { rating: "desc" }],
   });
-  return rows.map((row) => toStanding(row));
+  /*
+   * One line per STANDING rather than per row, because a row can hold two.
+   * Somebody who has played both people and programs at a game has earned two
+   * separate things, and merging them is the one operation these pools exist
+   * to forbid — so they are two lines, and the page marks which is which.
+   *
+   * Filtering to standings actually earned was right and, on its own, made a
+   * player who had only played programs vanish from their own record entirely.
+   * That was the fix taking away a false line and leaving no line at all.
+   */
+  return rows.flatMap((row) => {
+    const held: VariantStanding[] = [];
+    if (row.ratedGames > 0) held.push(toStanding(row, RATING_POOLS.people));
+    if (row.computerRatedGames > 0) held.push(toStanding(row, RATING_POOLS.computer));
+    return held;
+  });
 }
 
 /** One game's standing at a glance: who leads it, and how much play is behind that. */

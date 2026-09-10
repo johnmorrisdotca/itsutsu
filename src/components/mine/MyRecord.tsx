@@ -86,15 +86,31 @@ export async function MyRecord({ name }: { name: string }) {
           </thead>
           <tbody>
             {standings.map((row) => (
-              <tr key={row.variant} className="border-t border-rule">
+              <tr key={`${row.variant}-${row.pool}`} className="border-t border-rule">
                 {/* The standing rule: a game's name leads to that game. */}
                 <td className="py-1 pr-3">
                   <GameName variant={row.variant as RuleVariant} />
+                  {/*
+                    A game somebody has played in both pools is two lines and
+                    not one added together — that sum is the thing the pools
+                    exist to forbid. So each line says which ladder it is, and
+                    without the mark the two would read as one game listed
+                    twice with different numbers against it.
+                  */}
+                  {row.pool === RATING_POOLS.computer ? (
+                    <span
+                      className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
+                      title="Against the computer players, rated in a pool of their own."
+                      data-testid="standing-pool-computer"
+                    >
+                      機械
+                    </span>
+                  ) : null}
                 </td>
                 <td className="py-1 pr-3 font-mono tabular-nums">{row.tier === "unrated" ? "–" : row.rating}</td>
                 <RecordCells
                   record={row}
-                  of={{ player: name, variant: row.variant, pool: "people", rated: "yes" }}
+                  of={{ player: name, variant: row.variant, pool: row.pool, rated: "yes" }}
                 />
               </tr>
             ))}

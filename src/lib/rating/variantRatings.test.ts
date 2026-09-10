@@ -43,6 +43,8 @@ describe("championsOf", () => {
     wins: 0,
     losses: 0,
     draws: 0,
+    // Champions are the ladder among people; the other pool has its own table.
+    pool: "people",
   });
 
   it("crowns the first standing seen for each game and tallies the rest", () => {

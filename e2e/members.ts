@@ -259,3 +259,39 @@ export async function clearPeopleStanding(variant: string, key: string): Promise
     await prisma.$disconnect();
   }
 }
+
+/**
+ * One member's standing at one game, in the computer pool, keyed off their
+ * account for the reason `seedComputerPlayerFor` is: the key is the name they
+ * play under, and a test that wrote its own would be testing a row nobody's
+ * page reads.
+ */
+export async function seedComputerStandingFor(
+  email: string,
+  variant: string,
+  figures: { rating: number; games: number; wins: number; losses: number },
+): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const member = await prisma.member.findUnique({ where: { email }, select: { name: true } });
+    if (member === null) throw new Error(`No member ${email} to give a standing to.`);
+    const key = playerKey(member.name);
+    const wrote = {
+      name: member.name,
+      computerRating: figures.rating,
+      computerRatedGames: figures.games,
+      computerWins: figures.wins,
+      computerLosses: figures.losses,
+      computerDraws: 0,
+    };
+    await prisma.playerVariantRating.upsert({
+      where: { key_variant: { key, variant } },
+      create: { key, variant, ...wrote },
+      update: wrote,
+    });
+    return key;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
