@@ -43,6 +43,22 @@ import { playOut } from "./simulation.support";
  *    where the engine correctly refuses one, and then reports the ENGINE as
  *    wrong. Teaching it handicaps is its own piece of work, and until it is
  *    done a sweep over those flags would be a sweep that lies.
+ *
+ * AND ONE THING THAT MAY BE A REAL FAULT, left alone on purpose. Under that
+ * heaviest handicap, Edge Drop reaches a position with a free point on the
+ * board, a game that still says it is being played, and nothing any colour
+ * may do. It reproduces exactly, so whoever takes it need not hunt:
+ *
+ *     playOut({ variant: "edgeDrop", handicap: { ...NO_HANDICAP,
+ *       stone: "black", doubleThree: true, doubleFour: true, overline: true,
+ *       exactLine: true, openLine: true, longerLine: true } }, 41_982)
+ *
+ *     → "no legal move with 1 empty points (edgeDrop, move 48)"
+ *
+ * Whether that should be a draw the engine declares, a turn it passes, or a
+ * handicap it refuses to lay over a dropping game is a rules question, and
+ * the New Game Gate is explicit that a game has to be able to end. It is not
+ * a question to answer by quietly changing what a game does.
  */
 
 const EVERY_VARIANT = Object.values(RULE_VARIANTS) as RuleVariant[];
