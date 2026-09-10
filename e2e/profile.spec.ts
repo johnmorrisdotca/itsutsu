@@ -24,7 +24,18 @@ test.describe("people", () => {
   });
 
   test("a name needs a member behind it", async ({ request }) => {
-    const response = await request.patch("/api/me", { data: { name: "Someone" } });
+    /*
+     * A name nothing else could be holding, which is the whole point of
+     * generating it. This asked for "Someone" and got 409 — correctly, because
+     * a rating record already stood under that name from a game played under
+     * it, and taking a name with a record behind it would be inheriting
+     * somebody else's rating. That is the API being right and the test being
+     * about the wrong thing: it means to check that a name needs an account
+     * behind it, not to discover who happens to hold a common name on this
+     * database today.
+     */
+    const mine = `Nobody ${Date.now().toString(36)}`;
+    const response = await request.patch("/api/me", { data: { name: mine } });
     expect([200, 404]).toContain(response.status());
   });
 });

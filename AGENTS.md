@@ -398,10 +398,28 @@ worth ruling out in this order before believing any of them:
    migration reaching `main` and the worktree rebasing, then `prisma generate`,
    then restarting its server. Four steps, and the symptom looks identical
    after each of the first three.
-3. **Database litter.** `e2e/tidy.ts` clears abandoned seats and seeded members
-   before each run, and each spec removes what it made. A local database that
-   has grown past the two-hundred-row list cuts pushes real rows off the end of
-   them and fails lobby specs on each other's leavings.
+3. **Database litter.** `e2e/tidy.ts` clears abandoned seats, seeded members,
+   the games a run left unfinished and the ones with nobody on either seat.
+   Each spec removes what it made. A local database that has grown past the
+   two-hundred-row list cuts pushes real rows off the end of them and fails
+   lobby specs on each other's leavings.
+
+   It has three faces, and all three were met in one night. Too MANY rows: the
+   suite had left **8,566 active games**, one member holding 1,925, which was
+   harmless until a twenty-games-at-once limit landed and then failed a dozen
+   specs with a message about a cap in files testing something else. Too FEW:
+   the pool leak on the ladder of people could not be seen locally at all,
+   because a development database has no computer-pool rows to leak. And rows
+   that simply OUTLIVE what made them — a `Player` row keyed to a name a game
+   was played under stays after the game is swept, so the name is taken for
+   ever and `PATCH /api/me` answers 409 to anybody asking for it. That last
+   one is the API being right; the test asking for a common name was the thing
+   that was wrong.
+
+   The rule that falls out of it: **a spec must not assert anything about a
+   name, a count or a row it did not itself create.** Generate the name, seed
+   the standing, clear the variant first. Anything else is a test about this
+   machine's history wearing a test about the code.
 
 A fourth is not a false failure but a false *pass*, which is worse, and it has
 now been found five times in one day: **a browser test that races hydration.**
