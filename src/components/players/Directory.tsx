@@ -37,13 +37,54 @@ const RECENT = 200;
  * this one has marked its figures that way all along — it was only the people
  * who were left unmarked, which is why it read as a contradiction rather than
  * as a distinction.
+ *
+ * THE COUNTS NOW REACH FURTHER BACK THAN THIS SITE, which was the same fault
+ * one step over. A kept record has a member row so the site can list them at
+ * all, and this table read the Itsutsu columns alone — so Chibi, fourteen
+ * thousand games on two sites before this one existed, appeared as somebody
+ * who had never played. His own page said 14,606 the whole time.
+ *
+ * THE RATING DOES NOT REACH BACK, and that is the one column that must not.
+ * Games and wins add up; ratings do not — another site's is on another scale,
+ * against other players, and was never converted. So the rating column always
+ * answers about Itsutsu whatever the counts beside it are counting. Chibi's
+ * dash is a fact about Chibi, who never played here; it is not what a lifetime
+ * view looks like. Somebody with a real rating here keeps showing it.
  */
-function DirectoryRecord({ profile }: { profile: DirectoryEntry["profile"] }) {
-  const played = gamesPlayed(profile);
+function DirectoryRecord({ profile, elsewhere }: Pick<DirectoryEntry, "profile" | "elsewhere">) {
+  const here = gamesPlayed(profile);
+  const played = {
+    wins: here.wins + elsewhere.wins,
+    losses: here.losses + elsewhere.losses,
+    draws: here.draws + elsewhere.draws,
+  };
   const rating = ratingShown(profile);
+  const kept = elsewhere.wins + elsewhere.losses + elsewhere.draws > 0;
   return (
     <>
-      <RecordCells record={played} />
+      <RecordCells
+        record={played}
+        note={
+          kept ? (
+            /*
+             * Marked, because part of this number does not move.
+             *
+             * A profile page says it in a paragraph beside the figure; a table
+             * row has nowhere to put one. Leaving it out because it does not
+             * fit would be misleading by omission — which is precisely the
+             * fault the paragraph was written to avoid — so the mark carries
+             * it, and the line under the table says what the mark means.
+             */
+            <span
+              className="ml-0.5 align-super text-[0.6rem] text-muted"
+              title="Includes games from another site, copied down once and not updated since."
+              data-testid="record-kept-mark"
+            >
+              ※
+            </span>
+          ) : null
+        }
+      />
       <td className="py-1.5 pr-3 font-mono tabular-nums" data-testid="directory-rating">
         {rating === null ? (
           "–"
@@ -172,7 +213,7 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
                   />
                 </span>
               </td>
-              <DirectoryRecord profile={entry.profile} />
+              <DirectoryRecord profile={entry.profile} elsewhere={entry.elsewhere} />
               <td className="py-1.5 pr-3 text-xs text-muted">
                 {new Date(entry.joinedAt).toLocaleDateString()}
                 {entry.isNew ? (
@@ -202,6 +243,20 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
           ))}
         </tbody>
       </table>
+      {/*
+        What the mark means, said once under the table rather than repeated in
+        every row that carries it. Drawn only when a row on this screen
+        actually has one: a legend for a mark nobody can see is furniture.
+      */}
+      {people.some((entry) => entry.elsewhere.wins + entry.elsewhere.losses + entry.elsewhere.draws > 0) ? (
+        <p className="text-xs leading-snug text-muted" data-testid="directory-kept-note">
+          <span className="align-super text-[0.6rem]">※</span> Counts games from before Itsutsu, on
+          the sites named on that player&rsquo;s own page.{" "}
+          <span className="font-medium text-ink-soft">Those figures do not update</span> — they were
+          copied down by hand once and are a snapshot of that day. Only what happens here is counted
+          as it happens, and the rating column is always Itsutsu&rsquo;s alone.
+        </p>
+      ) : null}
     </div>
   );
 }

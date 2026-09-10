@@ -3,7 +3,8 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
-import { countMembers, listMembers, renameMember, setBanned } from "@/lib/auth/members";
+import { renameMember } from "@/lib/auth/members";
+import { countMembers, listMembers, setBanned } from "@/lib/auth/memberRoster";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 
 /** How many rows the operator's list carries at once. */

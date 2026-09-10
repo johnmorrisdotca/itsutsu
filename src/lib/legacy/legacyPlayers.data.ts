@@ -1,4 +1,4 @@
-import { playerPath } from "@/lib/rating/playerKey";
+import { playerKey, playerPath } from "@/lib/rating/playerKey";
 import type { LegacyPlayer } from "./legacyPlayers.types";
 
 /**
@@ -395,4 +395,27 @@ export function findLegacyPlayer(slug: string): LegacyPlayer | null {
  */
 export function findLinkedLegacies(liveKey: string): LegacyPlayer[] {
   return LEGACY_PLAYERS.filter((player) => player.kind === "elsewhere" && player.linkedKey === liveKey);
+}
+
+/**
+ * Every kept record belonging to one name, whichever way it is attached.
+ *
+ * There are two ways, and a list that knows only one of them tells half the
+ * truth. An "elsewhere" record is the earlier chapter of somebody who is here
+ * now, and points at them by `linkedKey` — that is John. A "remembered" or
+ * "honorary" record IS the person: it carries their name itself, and the
+ * member row beside it exists so that the site can list them at all — that is
+ * Chibi and Kyokosan.
+ *
+ * A player's own page has always looked both ways, because it is reached by a
+ * slug and tries a legacy record first. Anything working from a MEMBER row —
+ * the directory — only ever had the first, so a kept record read as somebody
+ * who had never played a game.
+ */
+export function legaciesForName(name: string): LegacyPlayer[] {
+  const key = playerKey(name);
+  if (key === "") return [];
+  const linked = findLinkedLegacies(key);
+  const own = LEGACY_PLAYERS.filter((player) => player.kind !== "elsewhere" && playerKey(player.name) === key);
+  return [...own, ...linked];
 }

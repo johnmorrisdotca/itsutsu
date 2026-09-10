@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button, RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import type { MemberSummary } from "@/lib/auth/members";
+import type { MemberSummary } from "@/lib/auth/memberRoster";
 import { PlayerName } from "@/components/players/PlayerName";
 import { MemberKindBadge } from "./MemberKindBadge";
 
