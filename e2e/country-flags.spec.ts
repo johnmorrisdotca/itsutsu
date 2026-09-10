@@ -70,7 +70,17 @@ test.describe("where somebody is", () => {
     await expect(country).toBeVisible();
 
     await country.selectOption("NZ");
+    /*
+     * Wait for the save to land before reloading, rather than for it to be
+     * likely to have landed. Clicking and reloading straight away passed on
+     * its own and failed inside a longer run — the reload was racing the PATCH
+     * and winning about as often as not, which is the worst kind of test.
+     */
+    const saved = page.waitForResponse(
+      (response) => response.url().includes("/api/me") && response.request().method() === "PATCH",
+    );
     await page.getByTestId("profile-form").getByRole("button", { name: /save/i }).click();
+    expect((await saved).ok()).toBe(true);
 
     await page.reload();
     await expect(page.getByTestId("profile-country")).toHaveValue("NZ");

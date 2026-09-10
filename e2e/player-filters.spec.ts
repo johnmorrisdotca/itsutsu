@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { BOT_PROFILES, BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constants";
 import { AWAY_AFTER_DAYS } from "../src/lib/rating/directoryFilter";
+import { DIRECTORY_FILTER_COOKIE } from "../src/lib/rating/rememberedFilter";
 import { seedMember, seenDaysAgo } from "./members";
 
 /**
@@ -38,7 +39,14 @@ test.describe("who the directory lists", () => {
      * The default used to be `people`, so that a filter changed nothing until
      * somebody asked. That hid the five computer players — the opponents that
      * are always available — behind a control nobody had reason to touch.
+     *
+     * The cookies go first, and that is not tidiness. Since the page began
+     * remembering the last narrowing, a bare address means "however I last
+     * asked" for anybody who has ever asked — so "before anybody has said
+     * anything" is now a state a test has to establish rather than assume.
+     * Without this the case passes or fails on what ran before it.
      */
+    await page.context().clearCookies({ name: DIRECTORY_FILTER_COOKIE });
     await page.goto("/players");
     await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");
     await expect(named(page, HERE.name)).toHaveCount(1);
@@ -63,7 +71,9 @@ test.describe("who the directory lists", () => {
   });
 
   test("leaves out somebody nobody has seen for a month, and never a program", async ({ page }) => {
-    await page.goto("/players");
+    // Asked for out loud rather than left to the bare address, which now
+    // answers with whatever this browser last asked for.
+    await page.goto("/players?who=everyone");
     await expect(named(page, AWAY.name)).toHaveCount(1);
 
     await page.goto("/players?active=1");
@@ -150,5 +160,60 @@ test.describe("the bar itself", () => {
     await page.goto("/players?who=robots&settled=yes");
     await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");
     await expect(named(page, HERE.name)).toHaveCount(1);
+  });
+});
+
+/**
+ * Keeping the narrowing somebody last asked for.
+ *
+ * A filter that has to be set again every visit is a filter people set once
+ * and never again. The cookie is written on the way in — a page can read one
+ * while it renders and cannot set one — so none of this can be checked without
+ * a browser, which is why it is all here rather than in a unit test.
+ */
+test.describe("what the page remembers", () => {
+  test.beforeEach(async ({ page }) => {
+    await seedMember(HERE);
+    // Start from a known preference rather than whatever a previous case left:
+    // the cookie outlives a test, which is the whole point of it.
+    await page.goto("/players?who=everyone");
+  });
+
+  test("shows what was last asked for when the address says nothing", async ({ page }) => {
+    await page.goto("/players?who=computers");
+    await expect(named(page, A_ROBOT)).toHaveCount(1);
+
+    await page.goto("/players");
+    await expect(page.getByTestId("who-computers")).toHaveAttribute("aria-current", "true");
+    await expect(named(page, A_ROBOT)).toHaveCount(1);
+    await expect(named(page, HERE.name)).toHaveCount(0);
+  });
+
+  test("obeys an address that does say something, over what it remembers", async ({ page }) => {
+    await page.goto("/players?who=computers");
+    await page.goto("/players?who=people");
+    await expect(page.getByTestId("who-people")).toHaveAttribute("aria-current", "true");
+    await expect(named(page, HERE.name)).toHaveCount(1);
+  });
+
+  test("forgets when somebody asks for everybody again", async ({ page }) => {
+    /*
+     * THE CASE THE FEATURE BREAKS IF IT GETS WRONG. Narrowing, then asking for
+     * everybody, then coming back to a bare address must not put the narrowing
+     * back — otherwise the way out of a filter is a control that appears to do
+     * nothing.
+     */
+    await page.goto("/players?who=computers");
+    await page.goto("/players?who=everyone");
+    await page.goto("/players");
+    await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");
+    await expect(named(page, HERE.name)).toHaveCount(1);
+    await expect(named(page, A_ROBOT)).toHaveCount(1);
+  });
+
+  test("remembers the other two questions as well, not only who", async ({ page }) => {
+    await page.goto("/players?who=everyone&active=1");
+    await page.goto("/players");
+    await expect(page.getByTestId("only-active")).toHaveAttribute("aria-pressed", "true");
   });
 });
