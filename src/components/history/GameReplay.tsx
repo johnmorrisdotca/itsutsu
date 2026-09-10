@@ -112,7 +112,15 @@ export function GameReplay({
   // A replay is read, not sat at: no seat, so no side to face.
   const turned = turnedFor(override, appearance.flipped ?? false);
 
-  // The arrow keys walk the record, and Home and End go to either end, unless a field has focus.
+  /*
+   * The keys that walk a record, unless a field has focus.
+   *
+   * Left and right step; up and down jump to either end, and so do Home and
+   * End. Two ways to the same place because a laptop keyboard often has no
+   * Home key at all, and a reader who found the arrows will try the other two
+   * arrows before they think of anything else. Doing nothing is the one answer
+   * that teaches them the keyboard does not work here.
+   */
   const last = timeline.length - 1;
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -121,8 +129,8 @@ export function GameReplay({
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.key === "ArrowLeft") setIndex((at) => Math.max(0, at - 1));
       else if (event.key === "ArrowRight") setIndex((at) => Math.min(last, at + 1));
-      else if (event.key === "Home") setIndex(0);
-      else if (event.key === "End") setIndex(last);
+      else if (event.key === "Home" || event.key === "ArrowUp") setIndex(0);
+      else if (event.key === "End" || event.key === "ArrowDown") setIndex(last);
       else return;
       event.preventDefault();
     };
