@@ -47,10 +47,19 @@ argument decides which. The safety property is that forgetting something can
 only ever leave you on your own database — production is reached by asking for
 it by name, never by omission.
 
-`bots:play:prod` reads the connection string from `.env.production.local` or
-`.vercel/.env.production.local` — both gitignored, the second written by
-`vercel env pull` — so it is never pasted into a shell, a scrollback or a
-screen share. With neither file it says so and runs nothing.
+`bots:play:prod` needs nothing set up. It asks **Neon** for the connection
+string every run and hands it to one process, so it is never pasted into a
+shell, written to disk, or left in a scrollback — and there is no file to go
+stale pointing somewhere it should not. It prints the host it is about to use
+before writing anything.
+
+**Do not reach for `vercel env pull` for this.** `DATABASE_URL` is marked
+Sensitive in Vercel, so a pull writes the literal string `[SENSITIVE]` into the
+file however it is invoked. The failure is quiet and reads as a wrong flag, a
+permission problem, or a redaction by your own tooling — this cost an evening
+between two people, and one of them concluded from that placeholder that the
+environment was withholding production access. It was Vercel doing what
+sensitive variables do. Neon is where the database is, so Neon is what to ask.
 
 `BOT_GAMES_ALL=1` is every ladder grade against every other across three
 unalike boards; without it, only the specialists at their own game.
