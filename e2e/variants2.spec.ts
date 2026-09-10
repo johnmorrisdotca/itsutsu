@@ -11,8 +11,8 @@ test.describe("more variants", () => {
     await page.goto("/games/gomoku");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("makerBreaker");
-    await expect(page.getByTestId("board-size")).toHaveValue("6");
-    await expect(page.getByTestId("board-size")).toBeDisabled();
+    // A board the rules fix is stated, not offered: see games.spec.ts.
+    await expect(page.getByTestId("fixed-by-rules")).toContainText("6×6");
     await expect(page.getByTestId("colour-chooser")).toBeVisible();
     await expect(page.getByTestId("variant-line")).toContainText("Maker");
 
@@ -36,7 +36,7 @@ test.describe("more variants", () => {
     await page.goto("/games/gomoku");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("notakto");
-    await expect(page.getByTestId("board-size")).toHaveValue("3");
+    await expect(page.getByTestId("fixed-by-rules")).toContainText("3×3");
     await expect(page.getByTestId("colour-chooser")).toHaveCount(0);
     await playAt(page, 3, 0, 0);
     await playAt(page, 3, 1, 1);
@@ -70,6 +70,8 @@ test.describe("more variants", () => {
     await page.goto("/games/gomoku");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("wormDrop");
+    // Wormhole Drop does NOT fix its board — it offers several — so this is
+    // still a live control, and reading its value is still the way to ask.
     await expect(page.getByTestId("board-size")).toHaveValue("7");
     await expect(page.getByRole("button", { name: /, wormhole$/ })).toHaveCount(2);
   });

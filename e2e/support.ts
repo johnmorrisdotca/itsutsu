@@ -63,11 +63,37 @@ export async function openAdvanced(page: Page) {
  */
 export async function openSetup(page: Page) {
   const setup = page.getByTestId("game-setup");
-  if ((await setup.count()) === 0) return;
+  /*
+   * Waited for, not counted.
+   *
+   * The panel is rendered in the browser, so a spec that arrives and counts
+   * finds nothing — and this used to READ that as "this page has no set-up"
+   * and return quietly. It was harmless while the panel stood open of its own
+   * accord: losing the race cost nothing, because there was nothing to open.
+   * Folded, losing the race leaves every control in the DOM and invisible,
+   * and the spec fails several lines later on a select it cannot see.
+   *
+   * A page genuinely without a set-up is still allowed, which is what the
+   * catch is for; it just has to be told apart from a page that has not
+   * finished arriving.
+   */
+  try {
+    await setup.waitFor({ state: "attached", timeout: 5_000 });
+  } catch {
+    return;
+  }
   const open = await setup.evaluate((element) => (element as HTMLDetailsElement).open);
   // The panel's own summary, not any summary inside it: the settings grew an
   // Advanced section of their own, which is a second <details> under this one.
   if (!open) await setup.locator("> summary").click();
+  /*
+   * And say so if it did not open. This used to be a no-op — the panel stood
+   * open until somebody moved, so the click never ran and never had to work.
+   * Folded from the start, a click that misses leaves every control in the
+   * DOM and invisible, and the spec fails several lines later complaining
+   * about a select, which is a long way from where the trouble is.
+   */
+  await expect(setup, "the set-up panel would not open").toHaveJSProperty("open", true);
 }
 
 /**

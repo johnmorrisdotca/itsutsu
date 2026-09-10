@@ -50,6 +50,41 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
   const spec = VARIANT_SPECS[variant];
   const openings = availableOpenings(settings);
   const locks = settingsLocks(settings);
+  /*
+   * "Fixed by Reversi." was under every setting Reversi fixes — four times on
+   * one panel, ten places in this file that could say it. Said once, above,
+   * and the rows that would have repeated it carry their own hint or none.
+   *
+   * Only that one sentence is dropped. `locks.reading` and `locks.advantage`
+   * have reasons of their own — a game whose threats cannot be read is not
+   * the same statement as a board this game fixes — and those still speak for
+   * themselves where they apply.
+   */
+  const fixedBy = GAME_COPY.fixedBy(RULE_VARIANT_DISPLAY[variant].label);
+  const said = (lock: string | null, otherwise?: string) =>
+    lock === null ? otherwise : lock === fixedBy ? undefined : lock;
+  /*
+   * A setting the game has settled is STATED, not drawn as a control that
+   * cannot be used.
+   *
+   * It used to be a disabled select showing one option, on the reasoning that
+   * a greyed control is how a player reads the rules at a glance. That was
+   * true when there was nowhere else to read them. There is now: the panel is
+   * folded behind a summary that states the rules, so a dead control is the
+   * third place the same fact appears — and it pays a control's height to say
+   * what a clause says, while promising an interaction it will not honour.
+   *
+   * John's call, made on purpose rather than slipped in under a refactor:
+   * the test that pinned the old behaviour was rewritten with it.
+   */
+  const settled = [
+    // "8×8" and not "8×8 eight": the size names are for choosing between
+    // boards, and there is no choosing here.
+    locks.size === null ? null : `${size}×${size}`,
+    locks.opening === null ? null : `${OPENING_DISPLAY[opening].label.toLowerCase()} opening`,
+    locks.winLength === null ? null : `${settings.winLength} in a row`,
+    locks.obstacles === null ? null : OBSTACLE_LAYOUT_DISPLAY[obstacles].label.toLowerCase(),
+  ].filter((one): one is string => one !== null);
   // Lines the reading cannot help with are greyed rather than hidden, so the rule is visible.
   const reading = locks.reading === null;
   const canChooseOpener =
@@ -73,8 +108,15 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </p>
       ) : null}
 
+      {settled.length > 0 ? (
+        <p className="text-sm text-ink-soft" data-testid="fixed-by-rules">
+          <span className="text-muted">{fixedBy}</span> {settled.join(" · ")}
+        </p>
+      ) : null}
+
       <fieldset disabled={begun} className="flex min-w-0 flex-col gap-4">
-      <Field label="Board" hint={locks.size ?? undefined}>
+      {locks.size === null ? (
+      <Field label="Board" hint={said(locks.size)}>
         <Select
           value={size}
           disabled={locks.size !== null}
@@ -88,6 +130,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           ))}
         </Select>
       </Field>
+      ) : null}
 
       <Field label="Rules" hint={RULE_VARIANT_DISPLAY[variant].tagline}>
         <Select
@@ -105,9 +148,10 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
+      {locks.opening === null ? (
       <Field
         label={GAME_COPY.opening.label}
-        hint={locks.opening ?? OPENING_DISPLAY[opening].tagline}
+        hint={said(locks.opening, OPENING_DISPLAY[opening].tagline)}
       >
         <Select
           value={opening}
@@ -124,8 +168,10 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           ))}
         </Select>
       </Field>
+      ) : null}
 
-      <Field label={GAME_COPY.lineLength.label} hint={locks.winLength ?? GAME_COPY.lineLengthHint}>
+      {locks.winLength === null ? (
+      <Field label={GAME_COPY.lineLength.label} hint={said(locks.winLength, GAME_COPY.lineLengthHint)}>
         <Select
           value={settings.winLength}
           disabled={locks.winLength !== null}
@@ -144,6 +190,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           ))}
         </Select>
       </Field>
+      ) : null}
 
       <Field
         label="First stone"
@@ -169,7 +216,8 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         </Select>
       </Field>
 
-      <Field label="Obstacles" hint={locks.obstacles ?? OBSTACLE_LAYOUT_DISPLAY[obstacles].description}>
+      {locks.obstacles === null ? (
+      <Field label="Obstacles" hint={said(locks.obstacles, OBSTACLE_LAYOUT_DISPLAY[obstacles].description)}>
         <Select
           value={obstacles}
           disabled={locks.obstacles !== null}
@@ -185,6 +233,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           ))}
         </Select>
       </Field>
+      ) : null}
 
       {spec.flips ? (
         <div data-testid="centre-discs">
@@ -222,7 +271,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             checked={locks.allowSkip === null && settings.allowSkip}
             disabled={locks.allowSkip !== null}
             onChange={(next) => actions.reset({ allowSkip: next })}
-            hint={locks.allowSkip ?? GAME_COPY.skipHint}
+            hint={said(locks.allowSkip, GAME_COPY.skipHint)}
           />
           <Toggle
             label="Allow swapping seats"
@@ -244,7 +293,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           */}
           <Field
             label="Length"
-            hint={locks.drawLimit ?? DRAW_LIMIT_DISPLAY[settings.drawLimit].blurb}
+            hint={said(locks.drawLimit, DRAW_LIMIT_DISPLAY[settings.drawLimit].blurb)}
           >
             <Select
               value={settings.drawLimit}

@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+
+import { openSetup } from "./support";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "../src/lib/gomoku/gomoku.constants";
 
@@ -104,8 +106,14 @@ test.describe("rules and learning", () => {
   test("a rules page can start a game of that kind", async ({ page }) => {
     await page.goto("/rules/twist-four");
     await page.getByRole("link", { name: /Play Twist Four/ }).click();
+    await openSetup(page);
     await expect(page.getByTestId("rules")).toHaveValue("twistFour");
-    await expect(page.getByTestId("board-size")).toHaveValue("4");
+    /*
+     * Twist Four is `boardSizes: [4]`, so its board is stated rather than
+     * offered — a rule the game has settled is not drawn as a control nobody
+     * may use. The decision, and the test that guards it, are in games.spec.ts.
+     */
+    await expect(page.getByTestId("fixed-by-rules")).toContainText("4×4");
   });
 
   test("the lobby offers the ways to start a game and folds the catalogue into families", async ({ page }) => {
