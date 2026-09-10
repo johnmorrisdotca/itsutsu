@@ -32,7 +32,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Somewhere every request lives after the conversation that raised it: what was asked for, what is planned, what is being built, what is in. This page. Once it is deployed, the rule is that work comes from here.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.building,
+    status: BACKLOG_STATUSES.inProgress,
     askedBy: "John",
   },
   {
@@ -41,7 +41,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Nothing gets built off a chat message any more. A request is written here first, moved to planned, and only then picked up — so what is being worked on is always readable by anyone, not just whoever was in the conversation.",
     kind: BACKLOG_KINDS.chore,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -50,7 +50,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "A way to strip the page back to the board and the moves — no nav, no panels, no side matter — and have that choice stick, so it does not have to be set again on the next game or the next day.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -59,7 +59,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "The replay can already copy one game out as text (0.41.0). Wanted: the whole record in one plain-text listing — every game, its players, its result, its date — that can be selected, copied and kept outside the site.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -68,7 +68,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "The board is already a go board. Territory, capture, ko and passing are a family that does not exist here yet, and it is the game the site's furniture is borrowed from. Full New Game Gate: rules copy, screenshot, family, tests, simulator checks.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -77,7 +77,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Draughts on the squares: stepping, jumping, forced captures, crowning. Halma (0.50.0) proved a piece-moving game fits the engine; checkers is the next one, with capture and promotion on top.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -95,7 +95,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Distinct from the away range on the profile (0.45.0), which is a date span out of a yearly allowance. This is standing: name the days of the week you do not play, and deadlines in games that honour vacation skip them every week, without spending the allowance.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -104,7 +104,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Most of these games are sold under several names, and a player arrives knowing one of them. List the other names a game goes by on its rules page, so somebody searching for the name they know lands in the right place. lib/legacy/gameAliases.ts already holds outside names for matching imported records — that table is where the copy starts.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -113,7 +113,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Each rules page already says where a game comes from in prose. Wanted alongside it: the flag of the country it came from, and a link out to the Wikipedia article, so the page can be checked against something outside the site.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -122,7 +122,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Board size, clock, rated or not, the advanced switches — set them once on the profile and every new game starts there, instead of setting the same options on every game on every device.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -131,7 +131,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Kaya, shin-kaya, washi, sumi, matcha, the stone sets and the grid styles are chosen per game and kept in this browser's session. Wanted: the choice belongs to the member, so a phone and a laptop show the same board.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -140,7 +140,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Messages today live inside a shared game. Wanted: member to member, off the board, with the ignore list (0.40.0) applying in full — an ignored member cannot open a thread, and nothing they send is shown.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -181,7 +181,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "The lobby offers auto-match, the waiting room, posting a seat and challenging a member as four separate cards, which is the same act said four ways. Wanted instead: one sentence over one board — play this game, at this pace, with anyone or whoever is here or a buddy — and the button says what will happen when it is pressed.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.building,
+    status: BACKLOG_STATUSES.inProgress,
     askedBy: "John",
   },
   {
@@ -190,7 +190,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Connect your two opposite edges with an unbroken chain. A new board topology — six neighbours to a cell rather than four or eight — but no captures and no movement, so it is nearer Toroidal Five than Halma in size. A draw is impossible on a full board, which is a fact worth stating on its rules page. The swap rule we already have answers the first player's advantage.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -199,7 +199,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Some games can run forever between two careful players. A per-game setting, with two presets: no winner by half the board's points, or by three quarters of them, and the game is a draw. A fraction of the board rather than a fixed number, so it needs no arithmetic per size.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -208,7 +208,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Posted seats arrive as one list. Wanted: narrow them by the time limit, by the opponent's rating, and by what a missed deadline costs — and show each member's country as a small flag beside their name, as the older sites did.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -217,7 +217,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "A member's own game list keeps every finished game forever, and fills up. Wanted: a setting for how many days a finished game stays there — a fortnight, say — with the record itself keeping everything as it always has.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -226,7 +226,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "Ratings, champions and the record are all empty on a new site, so nothing can be judged by looking at it. Wanted: a script that makes members of about average strength and has them play a handful of games of every variant, so the ladders and the lists have something honest in them.",
     kind: BACKLOG_KINDS.chore,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {
@@ -235,7 +235,7 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     detail:
       "A small-press hex-board game of five in a row that John found. It places and moves stones, so it is Halma-sized rather than a spec row, and the only site with the rules blocks us from reading them. Held until a source can be read rather than guessed at.",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
   {

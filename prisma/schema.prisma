@@ -459,11 +459,24 @@ model Buddy {
 /// "we talked about that and said no" is the answer a board most often has to
 /// give twice.
 enum BacklogStatus {
+  open
+  inProgress
+  done
+  dropped
+
+  /// The three the board used to have. `proposed` and `planned` were the same
+  /// thing — asked for, nobody on it — because there is no gap here between
+  /// agreeing to something and starting it, so `planned` was empty every day
+  /// it existed. `building` is what `inProgress` says plainly.
+  ///
+  /// Kept in the type rather than dropped with the rows so that new code can
+  /// read an old row: the deploy goes out before the migration, reads the old
+  /// values through `statusFrom`, and shows them in the right column before
+  /// anything is rewritten. Removing them is a separate migration, once no row
+  /// has said one of them for long enough to be sure.
   proposed
   planned
   building
-  done
-  dropped
 }
 
 /// What sort of thing was asked for. A board that mixes "add Go" with "the
@@ -495,7 +508,7 @@ model BacklogItem {
   detail String @default("")
 
   kind   BacklogKind   @default(feature)
-  status BacklogStatus @default(proposed)
+  status BacklogStatus @default(open)
 
   /// Who asked, as free text. Requests arrive in chat, in a game, or from the
   /// owner himself, and most have no account behind them; a name here is worth

@@ -54,8 +54,8 @@ describe("every status is usable", () => {
     expect([...STATUS_ORDER].sort()).toEqual([...BACKLOG_STATUS_VALUES].sort());
   });
 
-  it("calls proposed, planned and building the open ones", () => {
-    expect([...OPEN_STATUSES].sort()).toEqual(["building", "planned", "proposed"]);
+  it("calls open and in progress the ones still wanting something", () => {
+    expect([...OPEN_STATUSES].sort()).toEqual(["inProgress", "open"]);
   });
 });
 

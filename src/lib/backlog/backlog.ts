@@ -4,6 +4,7 @@ import {
   BACKLOG_STATUSES,
   DETAIL_MAX,
   KEY_MAX,
+  LEGACY_STATUSES,
   OPEN_STATUSES,
   STATUS_MOVES,
   STATUS_ORDER,
@@ -54,6 +55,21 @@ export function isBacklogKind(value: unknown): value is BacklogKind {
 }
 
 /** True while an item still wants something from somebody. */
+/**
+ * The status a stored row actually has.
+ *
+ * Rows written before the board's vocabulary changed still say `proposed`,
+ * `planned` or `building`, and a bare cast would carry those straight through
+ * to a page that has no column for them. Reading them here means the site is
+ * right before the rows are migrated rather than because they were, and stays
+ * right if one turns up afterwards. Anything unrecognisable is open: a row
+ * nobody can account for is a row somebody should look at, not one to hide.
+ */
+export function statusFrom(stored: string): BacklogStatus {
+  if (isBacklogStatus(stored)) return stored;
+  return LEGACY_STATUSES[stored] ?? BACKLOG_STATUSES.open;
+}
+
 export function isOpen(status: BacklogStatus): boolean {
   return OPEN_STATUSES.includes(status);
 }
@@ -114,7 +130,7 @@ export function moveTo(item: BacklogItem, to: BacklogStatus, now: Date = new Dat
 
 function matchesStatus(item: BacklogItem, filter: StatusFilter): boolean {
   if (filter === "all") return true;
-  if (filter === "open") return isOpen(item.status);
+  if (filter === "unfinished") return isOpen(item.status);
   return item.status === filter;
 }
 
@@ -163,9 +179,8 @@ export function sortItems(items: readonly BacklogItem[], sort: BacklogSort): Bac
 /** How many items stand at each status. Every status is present, zero included. */
 export function tally(items: readonly BacklogItem[]): BacklogTally {
   const counts = {
-    proposed: 0,
-    planned: 0,
-    building: 0,
+    open: 0,
+    inProgress: 0,
     done: 0,
     dropped: 0,
   } satisfies BacklogTally;

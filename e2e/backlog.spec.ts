@@ -49,6 +49,9 @@ test.describe("backlog", () => {
     await expect(page.getByTestId("backlog")).toBeVisible();
     // The starter set is written on the first read of an empty board.
     await expect(page.getByTestId("backlog-list").getByTestId("backlog-item").first()).toBeVisible();
+    // Both chips exist and they are different things: the umbrella that means
+    // "not finished", and the status that means "nobody is on it".
+    await expect(page.getByTestId("filter-unfinished")).toBeVisible();
     await expect(page.getByTestId("filter-open")).toBeVisible();
 
     // Filtering to a status shows only that status.
@@ -70,7 +73,7 @@ test.describe("backlog", () => {
 
     const added = page.getByTestId("backlog-item").filter({ hasText: title });
     await expect(added).toHaveCount(1);
-    await expect(added).toHaveAttribute("data-status", "proposed");
+    await expect(added).toHaveAttribute("data-status", "open");
 
     await page.reload();
     await page.getByTestId("filter-all").click();
@@ -90,18 +93,16 @@ test.describe("backlog", () => {
     await page.goto("/backlog");
     await page.getByTestId("backlog-add-panel").locator("summary").click();
     await page.getByTestId("backlog-title").fill(title);
-    await page.getByTestId("backlog-detail").fill("Added, agreed, built and finished, in that order.");
+    await page.getByTestId("backlog-detail").fill("Added, picked up and finished, in that order.");
     await page.getByTestId("backlog-add").click();
 
     const row = page.getByTestId("backlog-item").filter({ hasText: title });
-    await expect(row).toHaveAttribute("data-status", "proposed");
-    // Done is not offered from a proposal: it has to be started first.
-    await expect(row.getByTestId("move-status").locator("option")).toHaveText(["Move…", "Planned", "Building", "Dropped"]);
+    await expect(row).toHaveAttribute("data-status", "open");
+    // Done is not offered from an open item: somebody has to pick it up first.
+    await expect(row.getByTestId("move-status").locator("option")).toHaveText(["Move…", "In progress", "Dropped"]);
 
-    await row.getByTestId("move-status").selectOption("planned");
-    await expect(row).toHaveAttribute("data-status", "planned");
-    await row.getByTestId("move-status").selectOption("building");
-    await expect(row).toHaveAttribute("data-status", "building");
+    await row.getByTestId("move-status").selectOption("inProgress");
+    await expect(row).toHaveAttribute("data-status", "inProgress");
     await row.getByTestId("move-status").selectOption("done");
     await expect(row).toHaveAttribute("data-status", "done");
     await expect(row.getByTestId("status-pill-done")).toBeVisible();
@@ -145,7 +146,7 @@ test.describe("backlog", () => {
     });
     expect(added.status()).toBe(201);
     const item = (await added.json()) as { id: string; status: string };
-    expect(item.status).toBe("proposed");
+    expect(item.status).toBe("open");
 
     const illegal = await request.patch(`/api/backlog/${item.id}`, { data: { status: "done" } });
     expect(illegal.status()).toBe(422);

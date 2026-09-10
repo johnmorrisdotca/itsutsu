@@ -7,12 +7,36 @@ import type { BacklogKind, BacklogSort, BacklogStatus } from "./backlog.types";
  */
 
 export const BACKLOG_STATUSES = {
-  proposed: "proposed",
-  planned: "planned",
-  building: "building",
+  open: "open",
+  inProgress: "inProgress",
   done: "done",
   dropped: "dropped",
 } as const satisfies Record<BacklogStatus, BacklogStatus>;
+
+/**
+ * What the board used to say, and what each of those means now.
+ *
+ * It had five statuses and two of them were the same thing. `proposed` meant
+ * asked for and `planned` meant agreed but not started — a distinction that
+ * needs a gap between deciding and starting to live in, and there is no such
+ * gap here: work is taken off the board and begun in the same motion. So
+ * `planned` was empty every day it existed, and the one column somebody
+ * looking at the board actually wanted — who is on something right now — was
+ * called `building` and read as neither.
+ *
+ * `inProgress` is a new word rather than `planned` reused. Reusing it would
+ * have made every row already on the board ambiguous: `planned` would mean
+ * "agreed, not started" before the change and "somebody has it" after, with
+ * nothing in the row to say which was meant.
+ *
+ * Kept, and read on the way in, so the site is correct before the rows are
+ * migrated rather than because they were.
+ */
+export const LEGACY_STATUSES: Record<string, BacklogStatus> = {
+  proposed: "open",
+  planned: "open",
+  building: "inProgress",
+};
 
 export const BACKLOG_KINDS = {
   feature: "feature",
@@ -22,18 +46,16 @@ export const BACKLOG_KINDS = {
 
 /** Every status, in the order the board reads them: what is moving, then what is settled. */
 export const STATUS_ORDER: readonly BacklogStatus[] = [
-  BACKLOG_STATUSES.building,
-  BACKLOG_STATUSES.planned,
-  BACKLOG_STATUSES.proposed,
+  BACKLOG_STATUSES.inProgress,
+  BACKLOG_STATUSES.open,
   BACKLOG_STATUSES.done,
   BACKLOG_STATUSES.dropped,
 ];
 
 /** The statuses that still want something from somebody. */
 export const OPEN_STATUSES: readonly BacklogStatus[] = [
-  BACKLOG_STATUSES.proposed,
-  BACKLOG_STATUSES.planned,
-  BACKLOG_STATUSES.building,
+  BACKLOG_STATUSES.open,
+  BACKLOG_STATUSES.inProgress,
 ];
 
 /**
@@ -49,16 +71,14 @@ export const OPEN_STATUSES: readonly BacklogStatus[] = [
  * checks: a status nothing leads to is a hole a row falls into.
  */
 export const STATUS_MOVES: Record<BacklogStatus, readonly BacklogStatus[]> = {
-  // Asked for, not yet agreed: agree it, start it, or say no.
-  proposed: [BACKLOG_STATUSES.planned, BACKLOG_STATUSES.building, BACKLOG_STATUSES.dropped],
-  // Agreed: start it, put it back to merely asked-for, or say no after all.
-  planned: [BACKLOG_STATUSES.building, BACKLOG_STATUSES.proposed, BACKLOG_STATUSES.dropped],
-  // Being built: finish it, put it down again, or abandon it.
-  building: [BACKLOG_STATUSES.done, BACKLOG_STATUSES.planned, BACKLOG_STATUSES.dropped],
+  // On the board and nobody on it: pick it up, or say no.
+  open: [BACKLOG_STATUSES.inProgress, BACKLOG_STATUSES.dropped],
+  // Somebody has it: finish it, put it back down, or abandon it.
+  inProgress: [BACKLOG_STATUSES.done, BACKLOG_STATUSES.open, BACKLOG_STATUSES.dropped],
   // Shipped. It can only be reopened — done is not a way out of the board.
-  done: [BACKLOG_STATUSES.building],
-  // Said no. Somebody may ask again, and then it is a proposal like any other.
-  dropped: [BACKLOG_STATUSES.proposed],
+  done: [BACKLOG_STATUSES.inProgress],
+  // Said no. Somebody may ask again, and then it is open like anything else.
+  dropped: [BACKLOG_STATUSES.open],
 };
 
 /**
@@ -70,22 +90,16 @@ export const STATUS_DISPLAY: Record<
   BacklogStatus,
   { label: string; kanji: string; blurb: string; pill: string }
 > = {
-  proposed: {
-    label: "Proposed",
-    kanji: "提案",
-    blurb: "Asked for. Nobody has said yes or no yet.",
+  open: {
+    label: "Open",
+    kanji: "未着手",
+    blurb: "On the board, and nobody is on it yet.",
     pill: "border-rule-strong/70 bg-ivory/80 text-ink-soft",
   },
-  planned: {
-    label: "Planned",
-    kanji: "予定",
-    blurb: "Agreed, and waiting its turn.",
-    pill: "border-moss/40 bg-moss-soft text-ink",
-  },
-  building: {
-    label: "Building",
+  inProgress: {
+    label: "In progress",
     kanji: "作業中",
-    blurb: "Somebody is on it now.",
+    blurb: "Somebody is on it right now.",
     pill: "border-ochre/60 bg-ochre-soft text-ink",
   },
   done: {

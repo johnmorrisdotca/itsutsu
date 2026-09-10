@@ -5,7 +5,7 @@
  * components can be read, and tested, without pulling in a database client.
  */
 
-export type BacklogStatus = "proposed" | "planned" | "building" | "done" | "dropped";
+export type BacklogStatus = "open" | "inProgress" | "done" | "dropped";
 
 export type BacklogKind = "feature" | "fix" | "chore";
 
@@ -34,7 +34,16 @@ export type BacklogDraft = {
 };
 
 /** What the board is filtered to: one status, everything, or everything unfinished. */
-export type StatusFilter = BacklogStatus | "all" | "open";
+/**
+ * What the board is showing. The statuses themselves, plus two that are not
+ * statuses: everything, and everything still wanting something.
+ *
+ * That last one used to be called "open", which stopped working the day one
+ * of the statuses became Open — a chip meaning "not finished" and a chip
+ * meaning "nobody is on it" cannot both be the same word on the same row of
+ * buttons. `unfinished` says the thing the umbrella actually means.
+ */
+export type StatusFilter = BacklogStatus | "all" | "unfinished";
 
 /** How the board is ordered. */
 export type BacklogSort = "moved" | "newest" | "oldest" | "status";

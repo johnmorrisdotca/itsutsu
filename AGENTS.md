@@ -140,6 +140,16 @@ worth ruling out in this order before believing any of them:
    the Turbopack cache — the symptom was every seat link on the site answering
    404, including specs that had passed an hour earlier. Clear `.next` and
    restart before believing anything.
+
+   The same cause has a second, less recognisable face. `prisma generate`
+   rewrites the client on disk while a running `next dev` keeps the old one in
+   memory, so every query fails against the **new** schema and names the new
+   value as though it were the invalid one — `Value 'open' not found in enum
+   'BacklogStatus'` — which reads like a bad write rather than a stale
+   process. Any page touching that model 500s, and a suite against it times
+   out rather than failing, so it costs minutes per run. A schema change means
+   restarting the server, and telling the other sessions: the server is shared,
+   so one session's `prisma generate` breaks everybody's specs until it is.
 2. **Two runs against one database.** Foreground specs while a full suite runs
    in the background: the setup deletions of one race the fixtures of the
    other, and every failure looks real.

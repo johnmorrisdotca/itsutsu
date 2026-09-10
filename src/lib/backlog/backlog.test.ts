@@ -23,7 +23,7 @@ function item(over: Partial<BacklogItem> & { id: string }): BacklogItem {
     title: `Item ${over.id}`,
     detail: "",
     kind: BACKLOG_KINDS.feature,
-    status: BACKLOG_STATUSES.proposed,
+    status: BACKLOG_STATUSES.open,
     assignedTo: "",
     askedBy: "John",
     createdAt: "2026-09-01T00:00:00.000Z",
@@ -81,28 +81,33 @@ describe("what counts as a real request", () => {
 });
 
 describe("moving between statuses", () => {
-  it("lets a proposal be agreed, started, or turned down", () => {
-    expect(canMove("proposed", "planned")).toBe(true);
-    expect(canMove("proposed", "building")).toBe(true);
-    expect(canMove("proposed", "dropped")).toBe(true);
+  it("lets an open item be picked up or turned down", () => {
+    expect(canMove("open", "inProgress")).toBe(true);
+    expect(canMove("open", "dropped")).toBe(true);
   });
 
-  it("does not let a proposal skip straight to done", () => {
-    expect(canMove("proposed", "done")).toBe(false);
-    expect(canMove("planned", "done")).toBe(false);
+  it("does not let an open item skip straight to done", () => {
+    // The point of the table: nothing reaches done without having been built.
+    expect(canMove("open", "done")).toBe(false);
   });
 
-  it("finishes only what was being built", () => {
-    expect(canMove("building", "done")).toBe(true);
+  it("finishes only what somebody was on", () => {
+    expect(canMove("inProgress", "done")).toBe(true);
+  });
+
+  it("lets somebody put a thing back down without dropping it", () => {
+    // Picking something up and finding it is not for you today is not the
+    // same as saying no to it, and the board should be able to say so.
+    expect(canMove("inProgress", "open")).toBe(true);
   });
 
   it("reopens a finished item, and nothing else", () => {
-    expect(movesFrom("done")).toEqual(["building"]);
+    expect(movesFrom("done")).toEqual(["inProgress"]);
   });
 
-  it("lets a dropped item be asked for again, as a proposal", () => {
-    expect(movesFrom("dropped")).toEqual(["proposed"]);
-    expect(canMove("dropped", "building")).toBe(false);
+  it("lets a dropped item be asked for again, and it is open like anything else", () => {
+    expect(movesFrom("dropped")).toEqual(["open"]);
+    expect(canMove("dropped", "inProgress")).toBe(false);
   });
 
   it("never moves an item to where it already is", () => {
@@ -112,23 +117,22 @@ describe("moving between statuses", () => {
   });
 
   it("returns a new item and leaves the old one exactly as it was", () => {
-    const before = item({ id: "a", status: BACKLOG_STATUSES.building });
+    const before = item({ id: "a", status: BACKLOG_STATUSES.inProgress });
     const after = moveTo(before, BACKLOG_STATUSES.done, new Date("2026-09-08T12:00:00.000Z"));
     expect(after).not.toBeNull();
     expect(after?.status).toBe("done");
     expect(after?.movedAt).toBe("2026-09-08T12:00:00.000Z");
-    expect(before.status).toBe("building");
+    expect(before.status).toBe("inProgress");
     expect(before.movedAt).toBe("2026-09-01T00:00:00.000Z");
   });
 
   it("refuses an illegal move rather than performing it quietly", () => {
-    expect(moveTo(item({ id: "a", status: BACKLOG_STATUSES.proposed }), BACKLOG_STATUSES.done)).toBeNull();
+    expect(moveTo(item({ id: "a", status: BACKLOG_STATUSES.open }), BACKLOG_STATUSES.done)).toBeNull();
   });
 
-  it("counts proposed, planned and building as still wanting something", () => {
-    expect(isOpen("proposed")).toBe(true);
-    expect(isOpen("planned")).toBe(true);
-    expect(isOpen("building")).toBe(true);
+  it("counts open and in progress as still wanting something", () => {
+    expect(isOpen("open")).toBe(true);
+    expect(isOpen("inProgress")).toBe(true);
     expect(isOpen("done")).toBe(false);
     expect(isOpen("dropped")).toBe(false);
   });
@@ -137,10 +141,10 @@ describe("moving between statuses", () => {
 describe("reading the board", () => {
   const items = [
     item({ id: "a", status: BACKLOG_STATUSES.done, createdAt: "2026-09-01T00:00:00.000Z", movedAt: "2026-09-05T00:00:00.000Z" }),
-    item({ id: "b", status: BACKLOG_STATUSES.building, createdAt: "2026-09-02T00:00:00.000Z", movedAt: "2026-09-03T00:00:00.000Z" }),
+    item({ id: "b", status: BACKLOG_STATUSES.inProgress, createdAt: "2026-09-02T00:00:00.000Z", movedAt: "2026-09-03T00:00:00.000Z" }),
     item({
       id: "c",
-      status: BACKLOG_STATUSES.proposed,
+      status: BACKLOG_STATUSES.open,
       kind: BACKLOG_KINDS.fix,
       title: "The scrubber skips a move",
       createdAt: "2026-09-03T00:00:00.000Z",
@@ -151,7 +155,20 @@ describe("reading the board", () => {
   it("filters to one status, to everything, and to everything unfinished", () => {
     expect(filterItems(items, { status: "done", kind: "all", text: "" }).map((entry) => entry.id)).toEqual(["a"]);
     expect(filterItems(items, { status: "all", kind: "all", text: "" })).toHaveLength(3);
-    expect(filterItems(items, { status: "open", kind: "all", text: "" }).map((entry) => entry.id)).toEqual(["b", "c"]);
+    // Unfinished is the umbrella: nobody is on c, somebody is on b, and both
+    // still want something.
+    expect(filterItems(items, { status: "unfinished", kind: "all", text: "" }).map((entry) => entry.id)).toEqual(["b", "c"]);
+  });
+
+  it("tells the unfinished umbrella apart from the open status", () => {
+    /*
+     * These were one word until the board's statuses were renamed, and the
+     * day Open became a status the two meanings collided: a chip for "not
+     * finished" and a chip for "nobody is on it" cannot both be `open`. The
+     * board rendered the same filter twice and the end-to-end suite caught it.
+     */
+    expect(filterItems(items, { status: "open", kind: "all", text: "" }).map((entry) => entry.id)).toEqual(["c"]);
+    expect(filterItems(items, { status: "inProgress", kind: "all", text: "" }).map((entry) => entry.id)).toEqual(["b"]);
   });
 
   it("filters by kind and by words in the title", () => {
@@ -175,12 +192,12 @@ describe("reading the board", () => {
   });
 
   it("counts every status, zeroes included, and says how many are still open", () => {
-    expect(tally(items)).toEqual({ proposed: 1, planned: 0, building: 1, done: 1, dropped: 0 });
+    expect(tally(items)).toEqual({ open: 1, inProgress: 1, done: 1, dropped: 0 });
     expect(openCount(items)).toBe(2);
   });
 
   it("counts an empty board as every status at zero", () => {
-    expect(tally([])).toEqual({ proposed: 0, planned: 0, building: 0, done: 0, dropped: 0 });
+    expect(tally([])).toEqual({ open: 0, inProgress: 0, done: 0, dropped: 0 });
     expect(openCount([])).toBe(0);
   });
 });

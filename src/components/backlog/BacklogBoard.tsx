@@ -12,7 +12,7 @@ import { AddBacklogItem } from "./AddBacklogItem";
 import { BacklogRow } from "./BacklogRow";
 import type { BacklogBoardProps, BoardView } from "./backlogBoard.types";
 
-const START: BoardView = { status: "open", kind: "all", text: "", sort: "status" };
+const START: BoardView = { status: "unfinished", kind: "all", text: "", sort: "status" };
 
 /** One filter button: the status, how many stand there, and whether it is the one being shown. */
 function FilterChip({
@@ -69,7 +69,7 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
    * headings would then be lying about the order.
    */
   const grouped = useMemo(() => {
-    if (view.sort !== "status" || (view.status !== "all" && view.status !== "open")) return null;
+    if (view.sort !== "status" || (view.status !== "all" && view.status !== "unfinished")) return null;
     const groups = STATUS_ORDER.map((status) => ({ status, items: shown.filter((entry) => entry.status === status) })).filter(
       (group) => group.items.length > 0,
     );
@@ -81,12 +81,12 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2" data-testid="backlog-filters">
         <FilterChip
-          label="Open"
+          label="Unfinished"
           kanji="未了"
           count={open}
-          current={view.status === "open"}
-          onPick={() => change({ status: "open" })}
-          testId="filter-open"
+          current={view.status === "unfinished"}
+          onPick={() => change({ status: "unfinished" })}
+          testId="filter-unfinished"
         />
         <FilterChip
           label="All"
@@ -155,7 +155,7 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
         <div className="pt-3">
           <p className="pb-2 text-xs text-muted">
             One line for what is wanted, and as much detail as you have. It lands as{" "}
-            <span className="font-medium">{STATUS_DISPLAY.proposed.label}</span> — asked for, not yet agreed.
+            <span className="font-medium">{STATUS_DISPLAY.open.label}</span> — on the board, with nobody on it yet.
           </p>
           <AddBacklogItem
             who={who}
@@ -169,7 +169,7 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
 
       <div className="flex flex-col gap-1">
         <span className={SECTION_TITLE}>
-          {view.status === "all" ? "Everything" : view.status === "open" ? "Still wanted" : STATUS_DISPLAY[view.status].label}
+          {view.status === "all" ? "Everything" : view.status === "unfinished" ? "Still wanted" : STATUS_DISPLAY[view.status].label}
         </span>
         {shown.length === 0 ? (
           <p className="py-4 text-sm text-muted" data-testid="backlog-empty">

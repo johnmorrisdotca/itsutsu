@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { canMove, draftProblems, normalizeDraft } from "./backlog";
+import { canMove, draftProblems, normalizeDraft, statusFrom } from "./backlog";
 import { ASSIGNED_TO_MAX } from "./backlog.constants";
 import { BACKLOG_SEED } from "./backlog.seed.data";
 import type { BacklogDraft, BacklogItem, BacklogKind, BacklogStatus } from "./backlog.types";
@@ -37,7 +37,7 @@ function toItem(row: Row): BacklogItem {
     title: row.title,
     detail: row.detail,
     kind: row.kind as BacklogKind,
-    status: row.status as BacklogStatus,
+    status: statusFrom(row.status),
     askedBy: row.askedBy,
     assignedTo: row.assignedTo,
     createdAt: row.createdAt.toISOString(),
@@ -140,7 +140,7 @@ export type MoveOutcome =
 export async function moveItem(id: string, to: BacklogStatus): Promise<MoveOutcome> {
   const current = await prisma.backlogItem.findUnique({ where: { id }, select: SELECT });
   if (current === null) return { ok: false, reason: "missing" };
-  if (!canMove(current.status as BacklogStatus, to)) return { ok: false, reason: "illegal" };
+  if (!canMove(statusFrom(current.status), to)) return { ok: false, reason: "illegal" };
 
   const row = await prisma.backlogItem.update({
     where: { id },
