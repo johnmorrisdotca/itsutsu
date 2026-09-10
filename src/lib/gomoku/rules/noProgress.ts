@@ -1,6 +1,6 @@
 import { STAR_RADIUS, starCampSquares, starSize } from "./chineseCheckers";
 import { campSquares } from "./camps";
-import { GAME_STATUS, RULE_VARIANTS } from "../gomoku.constants";
+import { GAME_STATUS, RULE_VARIANTS, VARIANT_SPECS } from "../gomoku.constants";
 import type { GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types";
 
 /**
@@ -27,18 +27,27 @@ import type { GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types
  */
 
 /**
- * How many plies of nobody getting anywhere ends a game, per family.
+ * How long nobody getting anywhere ends a game, and how "anywhere" is read,
+ * per family.
+ *
+ * THE MEASURE IS DATA, deliberately. `stalled` used to ask
+ * `variant !== RULE_VARIANTS.checkers` to decide which question to put, which
+ * is the engine switching on a variant's NAME — the one thing AGENTS.md says
+ * it never does — and a name in an `if` only looks harmless while there are
+ * two families. There are three. A row here names its own measure and the
+ * engine reads the row.
  *
  * MEASURED, not reasoned about. My first numbers came from imagining how long
  * a march ought to take, and one of them was low enough to end a real game of
  * Halma — an existing bot test caught it. What matters is not how long a game
- * runs but how long it runs WITHOUT anybody setting a new low, and those are
+ * runs but how long it runs WITHOUT anybody getting anywhere, and those are
  * different by an order of magnitude:
  *
- *     checkers   longest idle run 4 plies, in games of up to 72
- *     halma      longest idle run 18 plies, in games of up to 389
+ *     checkers    longest idle run 4 plies, in games of up to 72
+ *     halma       longest idle run 18 plies, in games of up to 389
+ *     squareFour  longest run of slides 232, in games of up to 240
  *
- * Both measured over bot-vs-bot play with this rule lifted, or it would have
+ * All measured over bot-vs-bot play with this rule lifted, or it would have
  * been measuring its own threshold.
  *
  * The margins are enormous on purpose. A cap that is ten times too generous
@@ -53,10 +62,43 @@ import type { GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types
  * agreeing with the game people already know is worth more here than a
  * tighter bound nobody expects.
  */
-export const NO_PROGRESS_PLIES: Partial<Record<RuleVariant, number>> = {
-  [RULE_VARIANTS.checkers]: 80,
-  [RULE_VARIANTS.halma]: 400,
-  [RULE_VARIANTS.squareFour]: 400,
+export const PROGRESS_MEASURES = {
+  /** A capture or a man's move: draughts' own definition of irreversible. */
+  taking: "taking",
+  /** Getting nearer the camp you are filling than you stood a window ago. */
+  racing: "racing",
+  /** Putting a new piece down, in a game that places a few and then slides them. */
+  placing: "placing",
+} as const;
+
+export type ProgressMeasure = (typeof PROGRESS_MEASURES)[keyof typeof PROGRESS_MEASURES];
+
+export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, { plies: number; measure: ProgressMeasure }>> = {
+  [RULE_VARIANTS.checkers]: { plies: 80, measure: PROGRESS_MEASURES.taking },
+  [RULE_VARIANTS.halma]: { plies: 400, measure: PROGRESS_MEASURES.racing },
+  /*
+   * squareFour is four pieces a side and then, as the spec puts it, "a turn
+   * moves one". It was listed here from the start with the racing measure and
+   * has been guarding NOTHING ever since: its board is 5×5, `CAMP_ROWS` has no
+   * row for 5, so `distanceHome` correctly declined to measure and the rule
+   * correctly declined to fire — while `canStall` went on answering true. A
+   * guard that reports itself present and does nothing is worse than no guard,
+   * because nobody looks at it again.
+   *
+   * MEASURED, like the others, and the measurement is why the number is so
+   * large. 150 bot games over every grade pairing and six seeds: every single
+   * one was WON, none drawn, none unfinished. So the bots never needed this —
+   * two people shuffling do, which is exactly the case no suite was ever going
+   * to catch. Slides after the last placement, in games that were won:
+   *
+   *     min 0, median 2, max 232, only three of 150 above 142
+   *
+   * 4000 is about twenty times the longest real game seen, which is the margin
+   * checkers and halma already carry. Absurd for a 5×5 board, and deliberately
+   * so: too generous costs a draw somewhat later, too tight takes a win off
+   * somebody who was about to make it.
+   */
+  [RULE_VARIANTS.squareFour]: { plies: 4000, measure: PROGRESS_MEASURES.placing },
   /*
    * Chinese Checkers is capped like the others but says something different
    * when it ends — see `couldNotFinish`.
@@ -74,7 +116,7 @@ export const NO_PROGRESS_PLIES: Partial<Record<RuleVariant, number>> = {
    * would be gone; saying plainly that the game could not be finished keeps
    * the game playable and keeps the symptom in view.
    */
-  [RULE_VARIANTS.chineseCheckers]: 400,
+  [RULE_VARIANTS.chineseCheckers]: { plies: 400, measure: PROGRESS_MEASURES.racing },
 };
 
 /**
@@ -91,7 +133,7 @@ export function couldNotFinish(state: GameState): boolean {
 
 /** Whether this game can run away at all: pieces that move rather than land. */
 export function canStall(variant: string): boolean {
-  return NO_PROGRESS_PLIES[variant as RuleVariant] !== undefined;
+  return NO_PROGRESS_RULES[variant as RuleVariant] !== undefined;
 }
 
 /**
@@ -238,15 +280,39 @@ function racingStalled(state: GameState, window: number): boolean {
 }
 
 /**
- * How many plies have been played with nobody getting anywhere, for the games
- * measured that way, or null where the question is asked differently.
+ * How long a game has gone since the last move that could not be taken back,
+ * for the families measured that way, or null where the question is asked as
+ * a window instead.
  *
- * Only Checkers answers a count: its rule is "since the last capture or man's
- * move", which is a thing you can point at in the record. The racing games
- * answer a yes or no over a window instead — see `racingStalled`.
+ * Two families answer a count, and they are the same rule with two definitions
+ * of irreversible:
+ *
+ *   TAKING (checkers)     since the last capture or man's move. Draughts'
+ *                         own rule, and both halves are one-way: a captured
+ *                         piece does not come back and a king never becomes
+ *                         a man again.
+ *
+ *   PLACING (squareFour)  since the last piece went down. Four each, then
+ *                         "a turn moves one" — and from that ply on nothing
+ *                         can change what is ACHIEVABLE, because there are
+ *                         no captures and every slide can be slid back.
+ *
+ * The placing count never resets, and that is a fact about the game rather
+ * than a fault in the measure: the position space closes when the last piece
+ * lands and stays closed. It is worth saying out loud, because a counter that
+ * only grows is the worst possible thing to compute by walking backwards. All
+ * the placements come first — the phase is monotonic and no piece is ever
+ * removed — so the count is arithmetic rather than a search, and stays O(1)
+ * however long the shuffle runs. See `racingStalled` for what walking this
+ * kind of thing on every node of the bot's search costs.
  */
 export function pliesWithoutProgress(state: GameState): number | null {
-  if (state.settings.variant !== RULE_VARIANTS.checkers) return null;
+  const measure = NO_PROGRESS_RULES[state.settings.variant as RuleVariant]?.measure;
+  if (measure === PROGRESS_MEASURES.placing) {
+    const laid = 2 * (VARIANT_SPECS[state.settings.variant].pieces ?? 0);
+    return Math.max(0, state.moves.length - laid);
+  }
+  if (measure !== PROGRESS_MEASURES.taking) return null;
   let idle = 0;
   for (let at = state.moves.length - 1; at >= 0; at -= 1) {
     if (tookOrPromoted(state.moves[at])) break;
@@ -255,12 +321,18 @@ export function pliesWithoutProgress(state: GameState): number | null {
   return idle;
 }
 
-/** Whether this game has gone nowhere for long enough to call it a draw. */
+/**
+ * Whether this game has gone nowhere for long enough to call it a draw.
+ *
+ * Which question to ask is read from the table, not from the variant's name.
+ * This used to say `variant !== RULE_VARIANTS.checkers`, which is the engine
+ * switching on a name — the thing AGENTS.md says it never does — and it was
+ * wrong as well as irregular the moment a third family wanted a count.
+ */
 export function stalled(state: GameState): boolean {
-  const variant = state.settings.variant;
-  const limit = NO_PROGRESS_PLIES[variant as RuleVariant];
-  if (limit === undefined) return false;
-  if (variant !== RULE_VARIANTS.checkers) return racingStalled(state, limit);
+  const rule = NO_PROGRESS_RULES[state.settings.variant as RuleVariant];
+  if (rule === undefined) return false;
+  if (rule.measure === PROGRESS_MEASURES.racing) return racingStalled(state, rule.plies);
   const idle = pliesWithoutProgress(state);
-  return idle !== null && idle >= limit;
+  return idle !== null && idle >= rule.plies;
 }
