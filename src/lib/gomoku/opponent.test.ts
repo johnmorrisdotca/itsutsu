@@ -4,7 +4,14 @@ import { createGame, playMove } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, RULE_VARIANTS, RULE_VARIANT_LIST, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { boardSizesFor } from "./gomoku.constants";
 import { seededRandom } from "./rules/random";
-import { BOT_PROFILES, BOT_TIER_LIST, BOT_TIERS, TIER_SPECS } from "./opponent.constants";
+import {
+  BOT_ALL_TIERS,
+  BOT_PROFILES,
+  BOT_SPECIALIST_LIST,
+  BOT_TIER_LIST,
+  BOT_TIERS,
+  TIER_SPECS,
+} from "./opponent.constants";
 import { chooseTurn } from "./opponent";
 import { applyTurn, legalTurns } from "./opponentTurns";
 import { readsThreats } from "./opponentEval";
@@ -77,7 +84,8 @@ describe("the graded players", () => {
     for (const tier of BOT_TIER_LIST) {
       const profile = BOT_PROFILES[tier];
       expect(profile.name.length).toBeGreaterThan(1);
-      expect(profile.native.length).toBeGreaterThan(0);
+      // Every grade is a rank in some language, so every grade has a script.
+      expect(profile.native?.length ?? 0).toBeGreaterThan(0);
       expect(profile.strength.length).toBeGreaterThan(0);
       expect(profile.blurb.length).toBeGreaterThan(40);
     }
@@ -85,6 +93,35 @@ describe("the graded players", () => {
     const many = BOT_TIER_LIST.length;
     expect(new Set(BOT_TIER_LIST.map((tier) => BOT_PROFILES[tier].name)).size).toBe(many);
     expect(new Set(BOT_TIER_LIST.map((tier) => BOT_PROFILES[tier].native)).size).toBe(many);
+  });
+
+  it("names the specialists as players rather than as rungs", () => {
+    /*
+     * The two are not on the ladder and must not be: neither is stronger than
+     * 国手 at the other thirty-odd games, and neither is stronger or weaker
+     * than the other at anything, because they do not play the same game.
+     */
+    expect(BOT_SPECIALIST_LIST).toEqual([BOT_TIERS.tamenoki, BOT_TIERS.meritalu]);
+    for (const tier of BOT_SPECIALIST_LIST) {
+      expect(BOT_TIER_LIST).not.toContain(tier);
+      const profile = BOT_PROFILES[tier];
+      // A person's name: two words, not a one-word rank.
+      expect(profile.name.split(" ").length).toBeGreaterThan(1);
+      expect(profile.blurb.length).toBeGreaterThan(40);
+      // What it is strongest at, rather than how strong it is in general.
+      expect(profile.strength.toLowerCase()).toContain("at");
+      expect(TIER_SPECS[tier].expertise.length).toBe(1);
+    }
+    /*
+     * A native form where there is another script to put the name in, and
+     * null where there is not. A field repeating the Latin name would mean
+     * both "here is the other script" and "there isn't one".
+     */
+    expect(BOT_PROFILES.tamenoki.native).toBe("為乃木秀正");
+    expect(BOT_PROFILES.meritalu.native).toBeNull();
+    expect(BOT_ALL_TIERS).toEqual([...BOT_TIER_LIST, ...BOT_SPECIALIST_LIST]);
+    const names = BOT_ALL_TIERS.map((tier) => BOT_PROFILES[tier].name);
+    expect(new Set(names).size).toBe(BOT_ALL_TIERS.length);
   });
 
   it("gets stronger, grade by grade, in every knob that makes a player weak", () => {

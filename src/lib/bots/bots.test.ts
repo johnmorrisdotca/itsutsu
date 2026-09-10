@@ -1,10 +1,22 @@
 import { describe, expect, it } from "vitest";
 
-import { BOT_TIERS, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
+import {
+  BOT_ALL_TIERS,
+  BOT_SPECIALIST_LIST,
+  BOT_TIERS,
+  BOT_TIER_LIST,
+} from "@/lib/gomoku/opponent.constants";
+import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import { isMemberId } from "@/lib/auth/memberId";
 import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { deadlineFor } from "@/lib/history/deadline";
-import { BOT_MEMBERS, BOT_MEMBER_LIST, BOT_UNCLAIMABLE, botRowFields } from "./bots.constants";
+import {
+  BOT_MEMBERS,
+  BOT_MEMBER_LIST,
+  BOT_UNCLAIMABLE,
+  botRowFields,
+  botsFor,
+} from "./bots.constants";
 import { botInSeat, botTierFor, hasBotSeat, isBotId } from "./bots";
 
 /**
@@ -63,6 +75,36 @@ describe("the ladder as members", () => {
     expect(isBotId(null)).toBe(false);
     expect(isBotId(undefined)).toBe(false);
     expect(botTierFor("someone-else")).toBeNull();
+  });
+
+  it("knows every one of them, specialists included", () => {
+    /*
+     * The list the rows are written from and `isBotId` is built out of has to
+     * hold everybody, not only the graded ladder. A player missing from it is
+     * a player the clock does not know is a program — so it would run a
+     * timeout against a computer, and somebody would win a game on a flag
+     * that never should have been ticking.
+     */
+    expect(BOT_MEMBER_LIST.map((bot) => bot.tier)).toEqual([...BOT_ALL_TIERS]);
+    for (const tier of BOT_SPECIALIST_LIST) {
+      const bot = BOT_MEMBERS[tier];
+      expect(isBotId(bot.id)).toBe(true);
+      expect(botTierFor(bot.id)).toBe(tier);
+      expect(bot.country.length).toBeGreaterThan(1);
+      // A specialist's page has to say what it plays and where the name comes from.
+      expect(bot.bio.length).toBeGreaterThan(120);
+    }
+  });
+
+  it("offers a specialist as an opponent at its own game and nowhere else", () => {
+    const atReversi = botsFor(RULE_VARIANTS.reversi).map((bot) => bot.tier);
+    const atFive = botsFor(RULE_VARIANTS.freestyle).map((bot) => bot.tier);
+    const atHalma = botsFor(RULE_VARIANTS.halma).map((bot) => bot.tier);
+    expect(atReversi).toContain(BOT_TIERS.tamenoki);
+    expect(atReversi).not.toContain(BOT_TIERS.meritalu);
+    expect(atFive).toContain(BOT_TIERS.meritalu);
+    expect(atFive).not.toContain(BOT_TIERS.tamenoki);
+    expect(atHalma).toEqual([...BOT_TIER_LIST]);
   });
 
   it("reads which seat a computer is sitting in", () => {

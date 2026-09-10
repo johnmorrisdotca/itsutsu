@@ -2,6 +2,7 @@ import { otherStone } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, EVAL_WEIGHTS, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
 import { pieceScore, positionScore, pointScore, readsThreats, threatScore } from "./opponentEval";
+import { masteredTurn } from "./expert/experts";
 import { applyTurn, legalTurns } from "./opponentTurns";
 import { searchTurn } from "./opponentSearch";
 import type { GameState, Stone } from "./gomoku.types";
@@ -147,6 +148,21 @@ export function chooseTurn(
   const turns = legalTurns(state, spec.width);
   if (turns.length === 0) return null;
   if (turns.length === 1) return turns[0];
+
+  /*
+   * A player who has actually studied this game plays it by what it knows,
+   * and everything below is what the rest of them do.
+   *
+   * One conditional, on a piece of data: the tier's `expertise` against the
+   * game's spec. Nothing here asks which player this is or which game it is,
+   * so a specialist meeting a flipping board added next year is covered by
+   * what that board is rather than by anybody remembering to come back here.
+   * Where it has no specialty — which is the case for all five graded
+   * players, and for a specialist at any game but its own — this answers null
+   * and the shared reading below decides, exactly as it always has.
+   */
+  const mastered = masteredTurn(state, spec, random, budget);
+  if (mastered !== null) return mastered;
 
   const scored: Scored[] = [];
   for (const turn of turns) {

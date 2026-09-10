@@ -7,7 +7,7 @@ import { PlayerName } from "@/components/players/PlayerName";
 import { CountryMark } from "@/components/players/CountryMark";
 import { RowActions } from "@/components/ui/Controls";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
-import { BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
+import { BOT_ALL_TIERS, BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.constants";
 import type { DirectoryEntry } from "@/lib/rating/players";
 
 /**
@@ -31,10 +31,19 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
    * in the order they were last seen, which for players who are always
    * here means an order that changes with whoever moved last.
    */
-  const order: readonly string[] = BOT_TIER_LIST;
+  const order: readonly string[] = BOT_ALL_TIERS;
   const shown = [...entries].sort(
     (a, b) => order.indexOf(a.botTier ?? "") - order.indexOf(b.botTier ?? ""),
   );
+  /*
+   * The two halves of the list are two different claims, so the paragraph
+   * counts them separately rather than saying one thing about all of them.
+   * "Opponents that will play any game on this board" stopped being true of
+   * everybody the day a player arrived who plays one.
+   */
+  const specialists: readonly string[] = BOT_SPECIALIST_LIST;
+  const graded = shown.filter((entry) => !specialists.includes(entry.botTier ?? ""));
+  const experts = shown.filter((entry) => specialists.includes(entry.botTier ?? ""));
   /*
    * No panel and no heading of its own: this is the body of the Computers
    * tab, and the tab has already said what it is.
@@ -49,10 +58,16 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
         go out of date.
       */}
       <p className="max-w-prose text-xs text-muted">
-        {shown.length} opponents that will play any game on this board, from the gentlest to the strongest. They hold a
-        seat like anybody else and their games count: beating one moves your rating, and losing to one moves it the
-        other way. They keep a rating of their own, earned against each other and against the people who play them —
-        kept apart from the ladder, so a game against a program never changes where you stand among the people.
+        {graded.length} opponents that will play any game on this board, from the gentlest to the strongest
+        {experts.length > 0 ? (
+          <>
+            , and {experts.length} that play one game each and are the strongest thing here at it
+          </>
+        ) : null}
+        . They hold a seat like anybody else and their games count: beating one moves your rating, and losing to one
+        moves it the other way. They keep a rating of their own, earned against each other and against the people who
+        play them — kept apart from the ladder, so a game against a program never changes where you stand among the
+        people.
       </p>
       <ul className="flex flex-col gap-1.5">
         {shown.map((entry) => (

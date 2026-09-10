@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { BOT_MEMBER_LIST } from "@/lib/bots/bots.constants";
+import { botsFor } from "@/lib/bots/bots.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
@@ -50,8 +51,14 @@ export function SetUpGame({
   const named = against.startsWith("m:")
     ? opponents.find((one) => one.email === against.slice(2))
     : undefined;
+  /*
+   * The players offered at this game, and the one that has been chosen. Looked
+   * up in that list rather than in all of them, so a specialist chosen before
+   * the game was changed does not stay chosen at a game it does not play.
+   */
+  const computers = botsFor(rules.variant as RuleVariant);
   const computer = against.startsWith(COMPUTER)
-    ? BOT_MEMBER_LIST.find((bot) => bot.id === against.slice(COMPUTER.length))
+    ? computers.find((bot) => bot.id === against.slice(COMPUTER.length))
     : undefined;
   const here = opponents.filter((one) => one.here);
   const away = opponents.filter((one) => !one.here);
@@ -132,9 +139,11 @@ export function SetUpGame({
               </optgroup>
             ) : null}
             <optgroup label="The computer 対コンピュータ">
-              {BOT_MEMBER_LIST.map((bot) => (
+              {/* A specialist is offered at its own game and nowhere else. */}
+              {computers.map((bot) => (
                 <option key={bot.id} value={`${COMPUTER}${bot.id}`}>
-                  {bot.name} {BOT_PROFILES[bot.tier].native} · {BOT_PROFILES[bot.tier].strength}
+                  {[bot.name, BOT_PROFILES[bot.tier].native].filter(Boolean).join(" ")} ·{" "}
+                  {BOT_PROFILES[bot.tier].strength}
                 </option>
               ))}
             </optgroup>
