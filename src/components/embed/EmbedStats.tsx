@@ -3,6 +3,7 @@
 import useSWR from "swr";
 
 import type { EmbedSummary } from "@/lib/embed/embedSummary";
+import { RecordFigure } from "@/components/players/PlayerRecord";
 
 /**
  * Live data from the server, beside an embedded board.
@@ -72,8 +73,15 @@ export function EmbedStats({
       {data.player !== null ? (
         <p className="text-muted" data-testid="embed-player-record">
           <span className="font-medium text-foreground">{data.player.name}</span>{" "}
-          — {data.player.won}W {data.player.lost}L {data.player.drawn}D over{" "}
-          {data.player.played}
+          {/*
+            The shared shape, even out here. This was the fourth spelling of a
+            record and escaped the guard on them by naming alone — `.won` where
+            the guard looked for `.wins`. Nothing links: an embed sits on
+            somebody else's page, and a number that navigates away from it is
+            not what the person who embedded it agreed to.
+          */}
+          — <RecordFigure record={{ wins: data.player.won, losses: data.player.lost, draws: data.player.drawn }} of={{ here: false }} />{" "}
+          over {data.player.played}
         </p>
       ) : null}
 

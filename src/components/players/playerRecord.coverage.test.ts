@@ -63,8 +63,16 @@ describe("a record is shown one way", () => {
 
   it("nobody prints the three counts as their own line of text", () => {
     // "7W · 4L · 1D" and its near neighbours, which the Computers tab had.
-    const line = /\{[^}]*\.wins\}W[^<]{0,4}\{[^}]*\.losses\}L/;
-    const template = /\$\{[^}]*\.wins\}W[^`]{0,4}\$\{[^}]*\.losses\}L/;
+    /*
+     * Both vocabularies. `figuresOf` returns won/lost/drawn and the record
+     * types carry wins/losses/draws, so the same drawing exists twice in this
+     * codebase under two sets of names — and a check that knew only one of
+     * them let a fourth spelling of the record sit on the kept-record panel
+     * for as long as that panel has existed. A guard that can be escaped by
+     * renaming a field is a guard about spelling rather than about shape.
+     */
+    const line = /\{[^}]*\.(wins|won)\}W[^<]{0,4}\{[^}]*\.(losses|lost)\}L/;
+    const template = /\$\{[^}]*\.(wins|won)\}W[^`]{0,4}\$\{[^}]*\.(losses|lost)\}L/;
     const offenders = FILES.filter(
       (file) => line.test(file.source) || template.test(file.source),
     ).map((file) => file.path);

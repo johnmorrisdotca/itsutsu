@@ -210,8 +210,18 @@ function HeadToHead({ source }: { source: LegacySource }) {
               ) : (
                 <span className="normal-case tracking-normal text-ink-soft">{entry.opponent}</span>
               )}
+              {/*
+                The shared shape, not a fourth spelling of it. This one escaped
+                the guard on record shapes only by naming: it reads `.won` and
+                `.lost` where the guard looks for `.wins` and `.losses`, which
+                is a difference in vocabulary and none at all in what is drawn.
+              */}
               <span className="font-mono normal-case tracking-normal text-ink-soft">
-                {figures.won}W · {figures.lost}L · {figures.drawn}D · {winRateText(figures.winRate)}
+                <RecordFigure
+                  record={{ wins: figures.won, losses: figures.lost, draws: figures.drawn }}
+                  of={ELSEWHERE}
+                />{" "}
+                · {winRateText(figures.winRate)}
               </span>
             </h3>
             <table className="w-full text-sm" data-testid="legacy-head-to-head-log">
