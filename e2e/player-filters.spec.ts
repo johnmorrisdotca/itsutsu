@@ -132,7 +132,16 @@ test.describe("the bar itself", () => {
     test.skip(!listed.startsWith("0 "), "a computer player has earned a settled rating on this database");
     await expect(page.getByTestId("directory-empty")).toBeVisible();
     await page.getByTestId("directory-clear").click();
-    await expect(page).toHaveURL(/\/players$/);
+    /*
+     * "Everyone", said out loud, rather than the bare page.
+     *
+     * This asked for /players and nothing else until the narrowing began to be
+     * remembered. Now the bare address means "however I last asked", so a way
+     * back that went there would re-apply the very narrowing it offers to
+     * remove, and look like a link that does nothing. The explicit answer is
+     * the one that clears.
+     */
+    await expect(page).toHaveURL(/\/players\?who=everyone$/);
     await expect(page.getByTestId("directory-empty")).toHaveCount(0);
   });
 

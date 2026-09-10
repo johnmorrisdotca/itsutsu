@@ -1,4 +1,5 @@
 import { Figures } from "@/components/ui/Figures";
+import { RecordCells, RecordHeadings } from "./PlayerRecord";
 import { countText, recordText, winRateText } from "@/lib/rating/figures";
 import type { WholeRecord as Whole } from "@/lib/legacy/wholeRecord";
 
@@ -66,37 +67,63 @@ export function WholeRecordPanel({ whole, showFigures = true }: { whole: Whole; 
         />
       ) : null}
 
-      <ul className="flex flex-col gap-1 text-xs text-muted" data-testid="whole-record-sources">
-        {whole.sources.map((source) => (
-          <li key={source.site} className="flex flex-wrap items-baseline gap-x-2">
-            <span className="font-medium text-ink-soft">
-              {/*
-                The link is how somebody checks the claim, so it goes where one
-                was written down and nowhere else. An address guessed from a
-                site name and a handle would point at the wrong person as
-                often as the right one, which is worse than no link at all.
-              */}
-              {source.url === null ? (
-                source.site
-              ) : (
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="underline underline-offset-2"
-                  data-testid="whole-record-link"
-                >
-                  {source.site}
-                </a>
-              )}
-            </span>
-            {source.handle !== null ? <span>as {source.handle}</span> : null}
-            <span className="tabular-nums">
-              {countText(source.figures.played)} · {recordText(source.figures)}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {/*
+        A table rather than a run of dots on a line. These rows exist to be
+        compared — four thousand games on one site against twenty on another —
+        and comparing is what a column does and a sentence does not. It uses
+        the same cells as every other table of records here, so a site's line
+        reads the same way a player's row does elsewhere.
+      */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs" data-testid="whole-record-sources">
+          <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <tr>
+              <th className="py-1 pr-3">Site</th>
+              <RecordHeadings />
+            </tr>
+          </thead>
+          <tbody>
+            {whole.sources.map((source) => (
+              <tr key={source.site} className="border-t border-rule">
+                <td className="py-1.5 pr-3">
+                  <span className="font-medium text-ink-soft">
+                    {/*
+                      The link is how somebody checks the claim, so it goes
+                      where one was written down and nowhere else. An address
+                      guessed from a site name and a handle would point at the
+                      wrong person as often as the right one, which is worse
+                      than no link at all.
+                    */}
+                    {source.url === null ? (
+                      source.site
+                    ) : (
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="underline underline-offset-2"
+                        data-testid="whole-record-link"
+                      >
+                        {source.site}
+                      </a>
+                    )}
+                  </span>
+                  {source.handle !== null ? (
+                    <span className="ml-1.5 text-muted">as {source.handle}</span>
+                  ) : null}
+                </td>
+                <RecordCells
+                  record={{
+                    wins: source.figures.won,
+                    losses: source.figures.lost,
+                    draws: source.figures.drawn,
+                  }}
+                />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {whole.kept && showFigures ? <SnapshotWarning /> : null}
 
