@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_PROGRESS_PLIES, canStall, couldNotFinish, distanceHome, pliesWithoutProgress, stalled } from "./noProgress";
+import { NO_PROGRESS_RULES, PROGRESS_MEASURES, canStall, couldNotFinish, distanceHome, pliesWithoutProgress, stalled } from "./noProgress";
 import { STAR_RADIUS, starCampSquares } from "./chineseCheckers";
-import { RULE_VARIANTS, VARIANT_SPECS, boardSizesFor } from "../gomoku.constants";
+import { RULE_VARIANTS, STONES, VARIANT_SPECS, boardSizesFor } from "../gomoku.constants";
 import { GAME_STATUS } from "../gomoku.constants";
 import { createGame, movePiece, pieceMoves } from "../engine";
 import type { GameState, Move, Point, RuleVariant } from "../gomoku.types";
@@ -54,9 +54,43 @@ describe("which games can run away", () => {
      * A threshold on a variant that does not exist, or one whose board this
      * rule cannot measure, is a rule that never fires and nobody notices.
      */
-    for (const variant of Object.keys(NO_PROGRESS_PLIES) as RuleVariant[]) {
+    for (const variant of Object.keys(NO_PROGRESS_RULES) as RuleVariant[]) {
       expect(VARIANT_SPECS[variant], `${variant} is not a game`).toBeDefined();
       expect(boardSizesFor(variant).length, `${variant} has no board`).toBeGreaterThan(0);
+    }
+  });
+
+  it("can actually take a reading on every board every watched game offers", () => {
+    /*
+     * THE TEST THE TABLE ABOVE NEEDED AND DID NOT HAVE, and the reason
+     * squareFour sat here for a release guarding nothing.
+     *
+     * Naming a real game on a real board is not the same as being able to
+     * MEASURE it. squareFour named both and its 5×5 board has no camp, so the
+     * racing measure read an empty camp, correctly refused to answer, and the
+     * rule correctly never fired — while `canStall` went on saying true. Every
+     * assertion anybody had written passed the whole time.
+     *
+     * So this asks the harder question: for each game, on each size it is
+     * actually offered at, can the measure it NAMES produce a reading at all?
+     * A guard that cannot answer must not claim to be a guard.
+     */
+    for (const [name, rule] of Object.entries(NO_PROGRESS_RULES)) {
+      const variant = name as RuleVariant;
+      for (const size of boardSizesFor(variant)) {
+        const where = `${variant} on ${size}×${size}`;
+        if (rule!.measure === PROGRESS_MEASURES.racing) {
+          for (const stone of [STONES.black, STONES.white]) {
+            expect(distanceHome(size, stone, { row: 0, col: 0 }), `${where}: ${stone} has no camp to measure to`).not.toBeNull();
+          }
+        } else if (rule!.measure === PROGRESS_MEASURES.placing) {
+          // The count is `moves.length - 2 * pieces`; with no `pieces` it
+          // would silently count every move ever played instead.
+          expect(VARIANT_SPECS[variant].pieces, `${where}: places no pieces, so nothing marks progress`).not.toBeNull();
+        } else {
+          expect(VARIANT_SPECS[variant].checkers, `${where}: takes nothing, so nothing marks progress`).toBe(true);
+        }
+      }
     }
   });
 });
@@ -93,7 +127,7 @@ describe("draughts, by the draughts rule", () => {
   const size = boardSizesFor(RULE_VARIANTS.checkers)[0];
 
   it("ends a game of two kings going nowhere", () => {
-    const limit = NO_PROGRESS_PLIES[RULE_VARIANTS.checkers]!;
+    const limit = NO_PROGRESS_RULES[RULE_VARIANTS.checkers]!.plies;
     expect(stalled(shuffle(RULE_VARIANTS.checkers, size, limit))).toBe(true);
     expect(stalled(shuffle(RULE_VARIANTS.checkers, size, limit - 1))).toBe(false);
   });
@@ -111,6 +145,38 @@ describe("draughts, by the draughts rule", () => {
     expect(pliesWithoutProgress(men)).toBe(0);
     const kings = shuffle(RULE_VARIANTS.checkers, size, 10, { wasKing: true });
     expect(pliesWithoutProgress(kings)).toBe(10);
+  });
+});
+
+describe("the placing games, where the last piece down closes the game off", () => {
+  const size = boardSizesFor(RULE_VARIANTS.squareFour)[0];
+  const laid = 2 * VARIANT_SPECS[RULE_VARIANTS.squareFour].pieces!;
+
+  it("counts nothing while pieces are still going down", () => {
+    // Placement IS progress: the game is still becoming what it will be.
+    expect(pliesWithoutProgress(shuffle(RULE_VARIANTS.squareFour, size, laid))).toBe(0);
+    expect(pliesWithoutProgress(shuffle(RULE_VARIANTS.squareFour, size, laid - 3))).toBe(0);
+  });
+
+  it("counts every slide after the last piece is down", () => {
+    expect(pliesWithoutProgress(shuffle(RULE_VARIANTS.squareFour, size, laid + 30))).toBe(30);
+  });
+
+  it("ends a shuffle that has gone on past the limit, and not one that has not", () => {
+    const limit = NO_PROGRESS_RULES[RULE_VARIANTS.squareFour]!.plies;
+    expect(stalled(shuffle(RULE_VARIANTS.squareFour, size, laid + limit))).toBe(true);
+    expect(stalled(shuffle(RULE_VARIANTS.squareFour, size, laid + limit - 1))).toBe(false);
+  });
+
+  it("leaves room for the longest game anybody has actually been seen to win", () => {
+    /*
+     * The measured worst case: 232 slides after the last placement, in a game
+     * that was WON. A limit at or under that would have taken the win off
+     * whoever was about to make it, which is the fault this rule must never
+     * commit — see the Halma case below, where I committed it once already.
+     */
+    const longestWon = 232;
+    expect(stalled(shuffle(RULE_VARIANTS.squareFour, size, laid + longestWon))).toBe(false);
   });
 });
 
@@ -148,10 +214,10 @@ describe("the race games, measured by distance rather than a ledger", () => {
   }
 
   it("ends a game where nobody is getting anywhere", () => {
-    const was = NO_PROGRESS_PLIES[RULE_VARIANTS.halma]!;
+    const was = NO_PROGRESS_RULES[RULE_VARIANTS.halma]!.plies;
     // A short window, so the test plays a handful of moves rather than four
     // hundred. The rule is the same one at either size.
-    NO_PROGRESS_PLIES[RULE_VARIANTS.halma] = 4;
+    NO_PROGRESS_RULES[RULE_VARIANTS.halma] = { plies: 4, measure: PROGRESS_MEASURES.racing };
     try {
       let state = halmaGame();
       /*
@@ -165,7 +231,7 @@ describe("the race games, measured by distance rather than a ledger", () => {
       }
       expect(state.status, "a game of nothing but stepping about should be drawn").toBe(GAME_STATUS.draw);
     } finally {
-      NO_PROGRESS_PLIES[RULE_VARIANTS.halma] = was;
+      NO_PROGRESS_RULES[RULE_VARIANTS.halma] = { plies: was, measure: PROGRESS_MEASURES.racing };
     }
   });
 
@@ -175,8 +241,8 @@ describe("the race games, measured by distance rather than a ledger", () => {
      * rule that ends a real game is worse than the endless game it replaces.
      * A real opening, played out, must never be called stalled.
      */
-    const was = NO_PROGRESS_PLIES[RULE_VARIANTS.halma]!;
-    NO_PROGRESS_PLIES[RULE_VARIANTS.halma] = 4;
+    const was = NO_PROGRESS_RULES[RULE_VARIANTS.halma]!.plies;
+    NO_PROGRESS_RULES[RULE_VARIANTS.halma] = { plies: 4, measure: PROGRESS_MEASURES.racing };
     try {
       let state = halmaGame();
       for (let ply = 0; ply < 12 && state.status === GAME_STATUS.playing; ply += 1) {
@@ -184,7 +250,7 @@ describe("the race games, measured by distance rather than a ledger", () => {
       }
       expect(state.status, "a game somebody is winning should still be going").toBe(GAME_STATUS.playing);
     } finally {
-      NO_PROGRESS_PLIES[RULE_VARIANTS.halma] = was;
+      NO_PROGRESS_RULES[RULE_VARIANTS.halma] = { plies: was, measure: PROGRESS_MEASURES.racing };
     }
   });
 
