@@ -1,3 +1,4 @@
+import { RecordCells, RecordHeadings } from "./PlayerRecord";
 import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
 
@@ -35,9 +36,7 @@ export function StandingsTable({ standings }: { standings: VariantStanding[] }) 
           <th className="py-1 pr-3">Player</th>
           <th className="py-1 pr-3">Rating</th>
           <th className="py-1 pr-3">Tier</th>
-          <th className="py-1 pr-3">W</th>
-          <th className="py-1 pr-3">L</th>
-          <th className="py-1 pr-3">D</th>
+          <RecordHeadings />
         </tr>
       </thead>
       <tbody>
@@ -51,9 +50,7 @@ export function StandingsTable({ standings }: { standings: VariantStanding[] }) 
             <td className="py-1.5 pr-3">
               <TierMark tier={standing.tier} />
             </td>
-            <td className="py-1.5 pr-3 font-mono tabular-nums">{standing.wins}</td>
-            <td className="py-1.5 pr-3 font-mono tabular-nums">{standing.losses}</td>
-            <td className="py-1.5 pr-3 font-mono tabular-nums">{standing.draws}</td>
+            <RecordCells record={standing} />
           </tr>
         ))}
       </tbody>

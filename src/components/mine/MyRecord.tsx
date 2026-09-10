@@ -1,3 +1,4 @@
+import { RecordCells, RecordHeadings, RecordLine } from "@/components/players/PlayerRecord";
 import Link from "next/link";
 
 import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
@@ -39,7 +40,7 @@ export async function MyRecord({ name }: { name: string }) {
         <p className="text-sm">
           Overall: <span className="font-mono tabular-nums">{profile.tier === "unrated" ? "–" : profile.rating}</span>{" "}
           <span className="text-muted">
-            {TIER_DISPLAY[profile.tier].label} · {profile.wins}W {profile.losses}L {profile.draws}D
+            {TIER_DISPLAY[profile.tier].label} · <RecordLine record={profile} />
           </span>
         </p>
       )}
@@ -49,9 +50,7 @@ export async function MyRecord({ name }: { name: string }) {
             <tr>
               <th className="py-1 pr-3">Game</th>
               <th className="py-1 pr-3">Rating</th>
-              <th className="py-1 pr-3">W</th>
-              <th className="py-1 pr-3">L</th>
-              <th className="py-1 pr-3">D</th>
+              <RecordHeadings />
             </tr>
           </thead>
           <tbody>
@@ -62,9 +61,7 @@ export async function MyRecord({ name }: { name: string }) {
                   <GameName variant={row.variant as RuleVariant} />
                 </td>
                 <td className="py-1 pr-3 font-mono tabular-nums">{row.tier === "unrated" ? "–" : row.rating}</td>
-                <td className="py-1 pr-3 font-mono tabular-nums">{row.wins}</td>
-                <td className="py-1 pr-3 font-mono tabular-nums">{row.losses}</td>
-                <td className="py-1 pr-3 font-mono tabular-nums">{row.draws}</td>
+                <RecordCells record={row} />
               </tr>
             ))}
           </tbody>

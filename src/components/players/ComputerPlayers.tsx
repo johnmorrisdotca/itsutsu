@@ -1,3 +1,4 @@
+import { RecordLine } from "./PlayerRecord";
 import Link from "next/link";
 
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
@@ -72,11 +73,11 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
               played, however many games they had just finished — which is
               exactly what the page said the first time somebody beat Kyu.
             */}
-            <span className="font-mono text-xs tabular-nums text-muted" data-testid="computer-player-record">
-              {entry.profile === null || entry.profile.computer.ratedGames === 0
-                ? "no games yet"
-                : `${entry.profile.computer.wins}W · ${entry.profile.computer.losses}L · ${entry.profile.computer.draws}D · ${entry.profile.computer.rating}`}
-            </span>
+            <RecordLine
+              record={entry.profile === null ? { wins: 0, losses: 0, draws: 0 } : entry.profile.computer}
+              trailing={entry.profile === null ? undefined : entry.profile.computer.rating}
+              testId="computer-player-record"
+            />
             <RowActions>
               <ChallengeButton memberId={entry.id} label="Play" />
             </RowActions>

@@ -1,3 +1,4 @@
+import { RecordCells, RecordHeadings } from "./PlayerRecord";
 import Link from "next/link";
 
 import { TIER_DISPLAY } from "@/lib/rating/elo";
@@ -38,9 +39,7 @@ export async function Ladder() {
               <th className="py-1 pr-3">Player</th>
               <th className="py-1 pr-3">Rating</th>
               <th className="py-1 pr-3">Tier</th>
-              <th className="py-1 pr-3">W</th>
-              <th className="py-1 pr-3">L</th>
-              <th className="py-1 pr-3">D</th>
+              <RecordHeadings />
             </tr>
           </thead>
           <tbody>
@@ -56,9 +55,7 @@ export async function Ladder() {
                   {TIER_DISPLAY[player.tier].label}{" "}
                   <span className="font-mincho text-muted">{TIER_DISPLAY[player.tier].kanji}</span>
                 </td>
-                <td className="py-1.5 pr-3 font-mono tabular-nums">{player.wins}</td>
-                <td className="py-1.5 pr-3 font-mono tabular-nums">{player.losses}</td>
-                <td className="py-1.5 pr-3 font-mono tabular-nums">{player.draws}</td>
+                <RecordCells record={player} />
               </tr>
             ))}
           </tbody>

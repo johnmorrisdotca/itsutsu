@@ -13,6 +13,7 @@ import { buddyEmails } from "@/lib/social/buddies";
 import { currentSession } from "@/lib/auth/currentSession";
 import { fetchComputerPlayers, fetchDirectory, type DirectoryEntry } from "@/lib/rating/players";
 import { RATING_POOLS, gamesPlayed, ratingShown } from "@/lib/rating/wholeRecord";
+import { RecordCells, RecordHeadings } from "./PlayerRecord";
 import { filterDirectory, type DirectoryFilter } from "@/lib/rating/directoryFilter";
 import { ignoredEmails } from "@/lib/social/ignores";
 import { playerPath } from "@/lib/rating/playerKey";
@@ -41,9 +42,7 @@ function DirectoryRecord({ profile }: { profile: DirectoryEntry["profile"] }) {
   const rating = ratingShown(profile);
   return (
     <>
-      <td className="py-1.5 pr-3 font-mono tabular-nums">{played.wins}</td>
-      <td className="py-1.5 pr-3 font-mono tabular-nums">{played.losses}</td>
-      <td className="py-1.5 pr-3 font-mono tabular-nums">{played.draws}</td>
+      <RecordCells record={played} />
       <td className="py-1.5 pr-3 font-mono tabular-nums" data-testid="directory-rating">
         {rating === null ? (
           "–"
@@ -106,9 +105,7 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
         <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
           <tr>
             <th className="py-1 pr-3">Member</th>
-            <th className="py-1 pr-3">W</th>
-            <th className="py-1 pr-3">L</th>
-            <th className="py-1 pr-3">D</th>
+            <RecordHeadings />
             <th className="py-1 pr-3">Rating</th>
             <th className="py-1 pr-3">Joined</th>
             <th className="py-1"></th>
@@ -118,7 +115,7 @@ export async function Directory({ filter, now }: { filter: DirectoryFilter; now:
         <tbody>
           {people.length === 0 ? (
             <tr className="border-t border-rule">
-              <td colSpan={8} className="py-3 text-sm text-muted" data-testid="directory-empty">
+              <td colSpan={9} className="py-3 text-sm text-muted" data-testid="directory-empty">
                 Nobody here answers to all of that.{" "}
                 <Link href="/players" className="underline underline-offset-4" data-testid="directory-clear">
                   Show everybody again
