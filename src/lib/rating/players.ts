@@ -15,6 +15,7 @@ import { wholeRecord } from "@/lib/legacy/wholeRecord";
  */
 
 import { playerKey } from "./playerKey";
+import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { isRateable } from "./rateable";
 import { ratingShown } from "./shownRecord";
 
@@ -270,6 +271,26 @@ export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
  */
 export async function fetchComputerPlayers(): Promise<DirectoryEntry[]> {
   return toDirectory(await prisma.member.findMany({ where: { botTier: { not: null } } }));
+}
+
+/**
+ * Every kept record, however many people are on the site.
+ *
+ * The same fault the computer players had, one kind of member over, and the
+ * reasoning above applies word for word: the directory is ordered by who was
+ * seen last, and somebody remembered here NEVER SIGNS IN, so their stamp is
+ * frozen at the moment their row was written. Past the directory's limit they
+ * would drop off the end and the members list would stop showing them —
+ * quietly, on the day the site got busy enough for it to matter, and for a
+ * reason nobody would connect to the symptom.
+ *
+ * Chibi and Kyokosan are two rows and there will never be many, so they are
+ * fetched as one, exactly as the programs are.
+ */
+export async function fetchKeptRecords(): Promise<DirectoryEntry[]> {
+  return toDirectory(
+    await prisma.member.findMany({ where: { unclaimableBecause: UNCLAIMABLE_REASONS.keptRecord } }),
+  );
 }
 
 /**

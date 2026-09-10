@@ -382,18 +382,28 @@ worth ruling out in this order before believing any of them:
    restarting the server, and telling the other sessions: the server is shared,
    so one session's `prisma generate` breaks everybody's specs until it is.
 
-   **And it can hand you a false PASS, which is the dangerous direction.** A
-   stale server serves the old page, so a spec written against the new one goes
-   green over code that is not running. That is bad enough on its own; where it
-   really bites is the one moment nobody re-checks a pass — *deliberately
-   breaking something to prove a test catches it*. Put the bug back, watch the
-   test pass, and the obvious conclusion is "my test is weak", so the test gets
-   rewritten to catch a bug that was never there. It happened here, and was
-   caught only by re-running twenty seconds later out of doubt.
-   A false failure gets investigated. A false pass gets committed.
-   Waiting does not clear it: kill the server and clear `.next`. If a test
-   passes when you have just broken the thing it tests, restart before
-   believing either the test or yourself.
+   **It lies in both directions, and waiting is not the remedy.** An ordinary
+   source edit is enough to cause it: restore a file, re-run at once, and watch
+   a test fail on code that is no longer there. That reads as "my fix was
+   wrong" and gets investigated, which is the harmless case.
+
+   The dangerous one is the reverse. Deliberately put a bug back to check that
+   a test catches it, and watch the test PASS — over code that is not running.
+   That reads as "my test is weak", and a good test is then a minute away from
+   being rewritten to catch a bug that was never there. **A false pass is most
+   convincing at exactly the moment it is least questioned**, which is while
+   you are proving a test works. Put another way: a false failure gets
+   investigated, a false pass gets committed.
+
+   Sleeping does not settle it — one restore went on being served stale
+   through sixty seconds of polling while the file plainly had the change.
+   `kill` the server, `rm -rf .next`, start it again and wait for the port to
+   answer: about fifteen seconds, and nothing left to argue with.
+
+   Two rules fall out, and both were broken here on the day this was written.
+   Never conclude anything from a run in the seconds after editing source. And
+   never edit source while a suite is running — the rebuild lands mid-run, and
+   every failure after it is about a tree that no longer exists.
 2. **Two runs against one database.** Foreground specs while a full suite runs
    in the background: the setup deletions of one race the fixtures of the
    other, and every failure looks real. Two Playwright runs also share
