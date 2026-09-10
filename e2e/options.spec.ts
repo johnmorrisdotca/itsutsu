@@ -26,6 +26,8 @@ test.describe("game options", () => {
 
   test("white can be given the first stone in freestyle", async ({ page }) => {
     await page.goto("/games/gomoku");
+    // The set-up folds away now, so it is opened the way a player opens it.
+    await openSetup(page);
     await page.getByTestId("first-player").selectOption("white");
 
     await expect(page.getByTestId("to-play")).toContainText("White");

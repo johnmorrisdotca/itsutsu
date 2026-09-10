@@ -3,6 +3,7 @@
 import { StartSharedGame } from "@/components/live/StartSharedGame";
 import type { GameDefaults } from "./gameDefaults";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { describeRules } from "@/components/live/rulesSummary";
 import { AppearancePanel } from "./AppearancePanel";
 import { GameClock } from "./GameClock";
 import { GameControls } from "./GameControls";
@@ -83,7 +84,11 @@ export function GameOptions({
   streaks,
   ...props
 }: GamePanelProps & { streaks: WinStreaks }) {
-  const untouched = props.session.state.moves.length === 0;
+  /*
+   * The rules in one line, so folding the set-up away does not fold away what
+   * game this is. The same sentence a shared game states beside its board.
+   */
+  const rules = describeRules(props.session.state.settings);
   return (
     // Furniture, for the reader who has asked for the board alone: these sit
     // under the board rather than beside it, so `aside` does not catch them.
@@ -99,13 +104,31 @@ export function GameOptions({
           <GameReviewPanel session={props.session} streaks={streaks} />
         </div>
       </div>
-      <details className={`${PANEL_CLASS} group`} open={untouched} data-testid="game-setup">
-        <summary className={`flex cursor-pointer list-none items-baseline justify-between gap-3 ${SECTION_TITLE}`}>
-          <span>
+      {/*
+        Folded, and folded even before the first stone.
+
+        It used to stand open until somebody moved, which is exactly when the
+        page is longest and the board smallest: a screenful of settings under
+        a board nobody has played on yet. Most of it is not even a control —
+        on a game whose rules fix its board, its line and its opening, those
+        rows are read-only text wearing the clothes of a control.
+
+        So the summary says what the rules ARE, and opening it is for changing
+        them. It is a `details` rather than a modal or a drawer on purpose:
+        the settings here change the board you are looking at — the board SIZE
+        is one of them — and a panel that covers the board to change the board
+        is a panel arguing with itself.
+      */}
+      <details className={`${PANEL_CLASS} group`} data-testid="game-setup">
+        <summary className="flex cursor-pointer list-none flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <span className={SECTION_TITLE}>
             Set up <span className="font-mincho text-[0.8rem] font-normal tracking-normal">設定</span>
           </span>
-          <span className="font-normal tracking-normal group-open:hidden">show</span>
-          <span className="hidden font-normal tracking-normal group-open:inline">hide</span>
+          <span className="order-last w-full text-xs text-muted sm:order-none sm:w-auto sm:flex-1" data-testid="setup-rules">
+            {rules}
+          </span>
+          <span className="text-xs text-muted group-open:hidden">show</span>
+          <span className="hidden text-xs text-muted group-open:inline">hide</span>
         </summary>
         {/*
          * grid-cols-1 is not decoration. sm:grid-cols-2 is repeat(2,
