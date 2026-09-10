@@ -1,4 +1,6 @@
-import { BOT_PROFILES, BOT_TIERS, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
+import { BOT_ALL_TIERS, BOT_PROFILES, BOT_TIERS } from "@/lib/gomoku/opponent.constants";
+import { tiersFor } from "@/lib/gomoku/expert/experts";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 
 /**
@@ -91,18 +93,71 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
     name: BOT_PROFILES.guoshou.name,
     country: "China",
     bio:
-      "国手 — a computer player, and the strongest of the five. The word means " +
-      "the nation's hand, and is the title China gave its finest player of " +
-      "the board games five-in-a-row grew up beside. Guoshou reads further " +
-      "than Meijin and weighs more of the board before it moves. Games " +
-      "against it are rated, and so is its own record.",
+      "国手 — a computer player, and the strongest of the graded five. The word " +
+      "means the nation's hand, and is the title China gave its finest player " +
+      "of the board games five-in-a-row grew up beside. Guoshou reads further " +
+      "than Meijin and weighs more of the board before it moves, and it will " +
+      "play anything on this site — which is the one thing the specialists " +
+      "will not. Games against it are rated, and so is its own record.",
+  },
+  /*
+   * The two specialists. Their flags follow their names the same way the
+   * grades' do: Othello is a Japanese game and its greatest player is
+   * Japanese; renju's first European world champion is Estonian, and Estonia
+   * is one of the two or three countries where the game is played seriously.
+   */
+  tamenoki: {
+    tier: BOT_TIERS.tamenoki,
+    id: "tamenoki",
+    name: BOT_PROFILES.tamenoki.name,
+    country: "Japan",
+    bio:
+      "為乃木秀正 — a computer player, and the only one here that plays one " +
+      "game. Tamenoki plays Reversi, and reads it as a Reversi player does: " +
+      "corners first, then what each side has left to play, then the front " +
+      "line, and the discs last of all — until the end, where he counts the " +
+      "last dozen squares out exactly rather than judging them. The name is " +
+      "an homage to Hideshi Tamenori, seven times world champion at Othello " +
+      "and generally reckoned the finest ever to play it. " +
+      "Games against him are rated, and so is his own record.",
+  },
+  meritalu: {
+    tier: BOT_TIERS.meritalu,
+    id: "meritalu",
+    name: BOT_PROFILES.meritalu.name,
+    country: "Estonia",
+    bio:
+      "A computer player, and the only one here that plays five in a row and " +
+      "little else. Meritalu counts threats rather than shape: the four that " +
+      "has to be answered, the open four that cannot be, and the stone that " +
+      "makes two threats at once. The name is an homage to Ando Meritee, " +
+      "four times world champion at renju and the first European to hold the " +
+      "title. Games against him are rated, and so is his own record.",
   },
 };
 
-/** All of them, weakest first — the order they are offered as opponents in. */
-export const BOT_MEMBER_LIST: readonly BotMember[] = BOT_TIER_LIST.map(
+/**
+ * All of them: the graded ladder weakest first, then the specialists.
+ *
+ * Everybody the site plays as a computer, which is what this list is for —
+ * their rows are written from it, and `isBotId` is built out of it, so a
+ * player missing here is a player the clock does not know is a program.
+ */
+export const BOT_MEMBER_LIST: readonly BotMember[] = BOT_ALL_TIERS.map(
   (tier) => BOT_MEMBERS[tier],
 );
+
+/**
+ * The computer players worth offering as an opponent at one particular game.
+ *
+ * The graded five, who play anything, plus whichever specialist has actually
+ * studied this board. Asked by the two places somebody picks an opponent and
+ * by the sweep that answers a seat nobody has taken, so that a specialist is
+ * never offered at a game it would play as a generalist.
+ */
+export function botsFor(variant: RuleVariant): readonly BotMember[] {
+  return tiersFor(variant).map((tier) => BOT_MEMBERS[tier]);
+}
 
 /** Their ids, for the constant-time lookup the clock needs. */
 export const BOT_MEMBER_IDS: ReadonlySet<string> = new Set(

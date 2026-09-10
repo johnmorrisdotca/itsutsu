@@ -1,4 +1,5 @@
 import type { PieceCell, Point, Stone, Twist } from "./gomoku.types";
+import type { ExpertKind } from "./expert/expert.types";
 
 /**
  * The computer opponent: what a turn looks like when a program takes one, and
@@ -23,8 +24,22 @@ import type { PieceCell, Point, Stone, Twist } from "./gomoku.types";
  * an official sport in Russia and is graded by разряды — so it sits below the
  * learner's grade. 国手, "the nation's hand", is the historic Chinese title
  * for the finest player in the country, so it sits above the master's.
+ *
+ * The last two are not grades at all, and are not named like grades. They are
+ * the specialists — one who plays Reversi and one who plays five in a row —
+ * and a specialist is a person rather than a rung, so each is named after the
+ * player who defined their game: an homage, close enough to say who is meant
+ * and altered enough not to be them. Neither sits on the ladder; both stand
+ * beside the top of it, at one game each.
  */
-export type BotTier = "razryad" | "kyu" | "dan" | "meijin" | "guoshou";
+export type BotTier =
+  | "razryad"
+  | "kyu"
+  | "dan"
+  | "meijin"
+  | "guoshou"
+  | "tamenoki"
+  | "meritalu";
 
 /**
  * One whole turn, in the shapes a turn can take across these games.
@@ -83,6 +98,17 @@ export type TierSpec = {
    * it.
    */
   searchDepth: number;
+  /**
+   * Which families of board this player has actually studied, if any.
+   *
+   * Empty for the five graded players, which is what makes them graded: they
+   * play every game on the site with one reading, and are separated only by
+   * how hard they try. A specialist carries one entry here, and where the game
+   * in front of it matches that entry it plays by its own reading of that game
+   * instead — see `expert/experts.ts`. Data rather than a name, so nothing in
+   * the chooser has to know who it is looking at.
+   */
+  expertise: readonly ExpertKind[];
 };
 
 /** How a graded player is named and introduced. */
@@ -91,11 +117,18 @@ export type BotProfile = {
   /** The name it plays under: its member name, and what the record shows. */
   name: string;
   /**
-   * The same name in its own script — 級, 名人, 国手, разряд. Called `native`
-   * rather than `kanji` because two of these are not kanji and a field that
-   * says otherwise would be a small lie told on every page that reads it.
+   * The same name in its own script — 級, 名人, 国手, разряд — or null where
+   * there is no other script to put it in.
+   *
+   * Called `native` rather than `kanji` because several of these are not kanji
+   * and a field that says otherwise would be a small lie told on every page
+   * that reads it. Null rather than a repeat of `name` for the same reason:
+   * an Estonian name written in Estonian is the name, and a field holding the
+   * identical string would mean both "here is the other script" and "there
+   * isn't one", which is exactly the ambiguity that has bitten this codebase
+   * before. Nothing answers what it cannot answer.
    */
-  native: string;
+  native: string | null;
   /** The tier in the words a player choosing an opponent needs. */
   strength: string;
   blurb: string;

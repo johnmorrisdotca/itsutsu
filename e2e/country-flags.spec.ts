@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { BOT_MEMBERS } from "../src/lib/bots/bots.constants";
-import { BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constants";
+import { BOT_ALL_TIERS } from "../src/lib/gomoku/opponent.constants";
 import { countryFrom } from "../src/lib/social/countries";
 
 import { seedMember } from "./members";
@@ -105,8 +105,8 @@ test.describe("where somebody is", () => {
      */
     await page.goto("/players?view=computers");
     const rows = page.getByTestId("computer-player");
-    await expect(rows).toHaveCount(BOT_TIER_LIST.length);
-    for (const [index, tier] of BOT_TIER_LIST.entries()) {
+    await expect(rows).toHaveCount(BOT_ALL_TIERS.length);
+    for (const [index, tier] of BOT_ALL_TIERS.entries()) {
       const country = countryFrom(BOT_MEMBERS[tier].country);
       expect(country, `${tier} is from somewhere the site knows`).not.toBeNull();
       await expect(rows.nth(index).getByTestId("country-mark")).toHaveAttribute(

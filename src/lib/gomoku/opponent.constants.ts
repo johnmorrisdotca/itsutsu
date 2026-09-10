@@ -1,3 +1,4 @@
+import { EXPERT_KINDS } from "./expert/expert.constants";
 import type { BotProfile, BotTier, TierSpec } from "./opponent.types";
 
 /**
@@ -28,9 +29,19 @@ export const BOT_TIERS = {
   dan: "dan",
   meijin: "meijin",
   guoshou: "guoshou",
+  tamenoki: "tamenoki",
+  meritalu: "meritalu",
 } as const satisfies Record<BotTier, BotTier>;
 
-/** The tiers weakest first, which is the order a player is offered them in. */
+/**
+ * The graded ladder, weakest first — the order a player is offered it in.
+ *
+ * The five that play every game on the site. A specialist is not on it, and
+ * putting one there would be a category error twice over: it is not stronger
+ * than 国手 at the other thirty-odd games, and the two specialists are not
+ * stronger or weaker than each other at anything, because they do not play
+ * the same game.
+ */
 export const BOT_TIER_LIST: readonly BotTier[] = [
   BOT_TIERS.razryad,
   BOT_TIERS.kyu,
@@ -38,6 +49,41 @@ export const BOT_TIER_LIST: readonly BotTier[] = [
   BOT_TIERS.meijin,
   BOT_TIERS.guoshou,
 ];
+
+/**
+ * The specialists: one game each, and the boss of it.
+ *
+ * They exist because the ladder could not be made stronger by turning its
+ * knobs any further. Measured over thirty games of Reversi, the two grades
+ * that search deepest lost eighteen to eleven against the two that hardly
+ * search at all — because a deeper search over a reading that misunderstands
+ * the game finds the moves that exploit the misunderstanding best. The answer
+ * to that is not a rebalanced ladder, which would only make 名人 worse at
+ * everything else; it is a player who knows the game.
+ *
+ * As measured — ten games an opponent, colours swapped every game, both sides
+ * on the same wall clock a request gives a computer player, in
+ * `expert/specialists.match.test.ts`. The Reversi half of that series runs on
+ * every build; the five-in-a-row half is `BOT_SERIES=1`, for a reason the test
+ * file sets out — counting positions rather than seconds hands the shared
+ * reading nine times the thinking, and counting seconds is a test of the
+ * laptop.
+ *
+ *   為乃木 at Reversi, 8×8      10-0 разряд · 10-0 級 · 10-0 段 · 10-0 名人 · 10-0 国手
+ *   Meritalu at five, 15×15     10-0 разряд · 10-0 級 ·  7-3 段 ·  8-2 名人 ·  9-1 国手
+ *
+ * The second row's shape is the diagnosis over again: the specialist beats 国手
+ * more comfortably than it beats 段. A deeper search over a reading that
+ * misunderstands the game is not a smaller error than a shallow one, it is a
+ * better-executed one.
+ */
+export const BOT_SPECIALIST_LIST: readonly BotTier[] = [
+  BOT_TIERS.tamenoki,
+  BOT_TIERS.meritalu,
+];
+
+/** Everybody the site plays as a computer: the ladder, then the specialists. */
+export const BOT_ALL_TIERS: readonly BotTier[] = [...BOT_TIER_LIST, ...BOT_SPECIALIST_LIST];
 
 export const BOT_PROFILES: Record<BotTier, BotProfile> = {
   razryad: {
@@ -84,11 +130,51 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
     tier: BOT_TIERS.guoshou,
     name: "Guoshou",
     native: "国手",
-    strength: "Strongest",
+    strength: "Strongest all-round",
     blurb:
       "The nation's hand. Guoshou reads further than Meijin and weighs more " +
       "of the board before it moves, so a threat you were saving is usually " +
-      "answered before you play it. Beating it is worth telling somebody about.",
+      "answered before you play it. Beating it is worth telling somebody " +
+      "about — and it is the strongest player here at every game but two.",
+  },
+  /*
+   * The specialists, named after the players who defined their games rather
+   * than after a rank — because a specialist is a person and not a rung.
+   *
+   * Each name is an homage: near enough to say plainly who is meant, and
+   * altered so that it is not them. Hidemasa Tamenoki is for Hideshi Tamenori,
+   * seven times champion of the world at Othello and generally reckoned the
+   * finest ever to play it. Andrus Meritalu is for Ando Meritee, four times
+   * world champion at renju and the first European to hold the title. The
+   * flags follow the names, as they do for the grades.
+   */
+  tamenoki: {
+    tier: BOT_TIERS.tamenoki,
+    name: "Hidemasa Tamenoki",
+    native: "為乃木秀正",
+    strength: "Strongest at Reversi",
+    blurb:
+      "Reversi, and almost nothing else. Tamenoki counts what a Reversi " +
+      "player counts — corners, the squares that give a corner away, how many " +
+      "replies you have left — and plays the last dozen squares out exactly " +
+      "rather than guessing at them. The disc lead you build in the middle of " +
+      "the game is the thing he is playing to take off you.",
+  },
+  meritalu: {
+    tier: BOT_TIERS.meritalu,
+    name: "Andrus Meritalu",
+    /*
+     * No other script. An Estonian name written in Estonian is the name, and
+     * a field repeating it would mean both "here is the other script" and
+     * "there isn't one". See `BotProfile.native`.
+     */
+    native: null,
+    strength: "Strongest at five in a row",
+    blurb:
+      "Five in a row, and almost nothing else. Meritalu counts threats rather " +
+      "than shape: the four you have to answer, the open four nobody can, and " +
+      "the two threats made by one stone that end the game. He will not be " +
+      "drawn with, which is the difference between him and the grades.",
   },
 };
 
@@ -119,6 +205,7 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     width: 50,
     guardTop: 0,
     searchDepth: 0,
+    expertise: [],
   },
   kyu: {
     depth: 1,
@@ -129,6 +216,7 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     width: 60,
     guardTop: 0,
     searchDepth: 0,
+    expertise: [],
   },
   dan: {
     depth: 2,
@@ -139,6 +227,7 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     width: 90,
     guardTop: 20,
     searchDepth: 0,
+    expertise: [],
   },
   meijin: {
     depth: 2,
@@ -149,6 +238,7 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     width: 140,
     guardTop: 28,
     searchDepth: 6,
+    expertise: [],
   },
   /*
    * Stronger than Meijin by seeing further and weighing more, which are the
@@ -169,6 +259,37 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     width: 180,
     guardTop: 34,
     searchDepth: 8,
+    expertise: [],
+  },
+  /*
+   * The specialists carry 国手's knobs and one thing more: a game they have
+   * actually studied. At that game the knobs hardly matter — the specialist
+   * reading decides the move, and everything here is what happens when the
+   * reading declines, which is what it does at the other thirty-odd games on
+   * the site. A specialist away from its own board is 国手 and no better,
+   * which is the honest thing for it to be.
+   */
+  tamenoki: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 180,
+    guardTop: 34,
+    searchDepth: 8,
+    expertise: [EXPERT_KINDS.flip],
+  },
+  meritalu: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 180,
+    guardTop: 34,
+    searchDepth: 8,
+    expertise: [EXPERT_KINDS.line],
   },
 };
 

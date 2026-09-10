@@ -10,7 +10,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { gamePath, matchPath, rulesPath, seatPath } from "@/lib/gomoku/slugs";
 import Link from "next/link";
-import { BOT_MEMBER_LIST } from "@/lib/bots/bots.constants";
+import { botsFor } from "@/lib/bots/bots.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import { PACES, START_COPY } from "./mine.constants";
 import type { StartGameProps } from "./startGame.types";
@@ -51,6 +51,12 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
     [families, variant],
   );
   const sizes = boardSizesFor(variant as RuleVariant);
+  /*
+   * The computer players worth offering at this game. The graded five play
+   * anything; a specialist is offered only where it is one, because away from
+   * its own board it is 国手 under a second name and a different flag.
+   */
+  const computers = botsFor(variant as RuleVariant);
   const moveTimeMs = pace === "" ? null : Number(pace);
   const paceLabel = PACES.find((option) => String(option.value) === pace)?.label ?? "";
   const forThisGame = seats.filter((seat) => seat.variant === variant);
@@ -88,8 +94,14 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
    */
   const match = forThisGame.find((seat) => seat.moveTimeMs === moveTimeMs && seat.size === board);
   const named = against.startsWith("m:") ? opponents.find((one) => one.email === against.slice(2)) : undefined;
+  /*
+   * Looked up in the players offered at *this* game rather than in all of
+   * them, so choosing a specialist and then changing the game does not leave
+   * a challenge pointing at somebody the list no longer shows. The sentence
+   * falls back to posting a seat, which it also says out loud.
+   */
   const computer = against.startsWith(COMPUTER)
-    ? BOT_MEMBER_LIST.find((bot) => bot.id === against.slice(COMPUTER.length))
+    ? computers.find((bot) => bot.id === against.slice(COMPUTER.length))
     : undefined;
 
   const label =
@@ -271,9 +283,10 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
           ) : null}
           {signedIn ? (
             <optgroup label={`${START_COPY.computer.label} ${START_COPY.computer.kanji}`}>
-              {BOT_MEMBER_LIST.map((bot) => (
+              {computers.map((bot) => (
                 <option key={bot.id} value={`${COMPUTER}${bot.id}`}>
-                  {bot.name} {BOT_PROFILES[bot.tier].native} · {BOT_PROFILES[bot.tier].strength}
+                  {[bot.name, BOT_PROFILES[bot.tier].native].filter(Boolean).join(" ")} ·{" "}
+                  {BOT_PROFILES[bot.tier].strength}
                 </option>
               ))}
             </optgroup>

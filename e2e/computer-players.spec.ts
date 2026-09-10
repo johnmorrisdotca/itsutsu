@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constants";
+import { BOT_ALL_TIERS } from "../src/lib/gomoku/opponent.constants";
 
 /**
  * The computer players are findable.
@@ -15,14 +15,14 @@ test.describe("the computer players", () => {
   test("are listed together, badged, and each leads to their own page", async ({ page }) => {
     await page.goto("/players?view=computers");
     const rows = page.getByTestId("computer-player");
-    // Counted from the ladder rather than written down, so a new grade does
-    // not fail a test whose subject is that they are all listed.
-    await expect(rows).toHaveCount(BOT_TIER_LIST.length);
+    // Counted from the list rather than written down, so a new grade or a new
+    // specialist does not fail a test whose subject is that they are listed.
+    await expect(rows).toHaveCount(BOT_ALL_TIERS.length);
 
-    // Easiest first, so the ladder reads itself rather than reordering with
-    // whichever of them moved most recently.
-    await expect(rows.nth(0)).toHaveAttribute("data-tier", BOT_TIER_LIST[0]);
-    for (const [index, tier] of BOT_TIER_LIST.entries()) {
+    // Easiest first and the specialists last, so the ladder reads itself
+    // rather than reordering with whichever of them moved most recently.
+    await expect(rows.nth(0)).toHaveAttribute("data-tier", BOT_ALL_TIERS[0]);
+    for (const [index, tier] of BOT_ALL_TIERS.entries()) {
       await expect(rows.nth(index)).toHaveAttribute("data-tier", tier);
     }
 
@@ -50,7 +50,7 @@ test.describe("the computer players", () => {
      */
     await page.goto("/players?view=computers");
     const robots = page.getByTestId("computer-player").filter({ has: page.locator('[data-kind="robot"]') });
-    await expect(robots).toHaveCount(BOT_TIER_LIST.length);
+    await expect(robots).toHaveCount(BOT_ALL_TIERS.length);
   });
 
   test("are not mixed in with the people", async ({ page }) => {

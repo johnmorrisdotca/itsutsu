@@ -1,6 +1,7 @@
 import "server-only";
 
-import { BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
+import { tiersFor } from "@/lib/gomoku/expert/experts";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import { sitAtOpenSeat } from "@/lib/history/openGames";
 import { bindSeat } from "@/lib/history/seats";
@@ -25,8 +26,8 @@ import { playBotTurns } from "./botPlay";
  * against a person should get the chance to have one.
  */
 
-/** Which grade takes an unanswered seat. */
-function grade(roll: number): BotTier {
+/** Which computer player takes an unanswered seat at this game. */
+function grade(variant: RuleVariant, roll: number): BotTier {
   /*
    * Evenly, at random, rather than matched to the poster.
    *
@@ -34,8 +35,13 @@ function grade(roll: number): BotTier {
    * of them has any yet — so matching would only be an elaborate way of
    * always choosing the same one. Spreading the games instead is what gives
    * every rung a record, which is what makes matching possible later.
+   *
+   * The draw is over the players who will sit down to *this* game — see
+   * `tiersFor` — so a specialist can answer a seat at its own board and never
+   * at anybody else's, where it would only be 国手 under another name.
    */
-  return BOT_TIER_LIST[Math.min(BOT_TIER_LIST.length - 1, Math.floor(roll * BOT_TIER_LIST.length))];
+  const playing = tiersFor(variant);
+  return playing[Math.min(playing.length - 1, Math.floor(roll * playing.length))];
 }
 
 /**
@@ -59,7 +65,7 @@ export async function answerStaleOpenSeats(
     },
     orderBy: { openedAt: "asc" },
     take: OPEN_SEATS_ANSWERED_AT_ONCE,
-    select: { id: true, blackMemberId: true, whiteMemberId: true },
+    select: { id: true, variant: true, blackMemberId: true, whiteMemberId: true },
   });
   if (stale.length === 0) return 0;
   await ensureBotMembers();
@@ -68,7 +74,7 @@ export async function answerStaleOpenSeats(
   for (const row of stale) {
     // A game a computer is already sitting in is not a game waiting for one.
     if (hasBotSeat(row)) continue;
-    const bot = BOT_MEMBERS[grade(random())];
+    const bot = BOT_MEMBERS[grade(row.variant as RuleVariant, random())];
     const outcome = await sitAtOpenSeat(row.id);
     if (!outcome.ok) continue;
     await bindSeat(row.id, outcome.seat, bot.id, bot.name);
