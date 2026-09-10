@@ -8,6 +8,43 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+### Bulk Play Runs Here, Never Through the Site
+
+Bot testing, bot-against-bot series and any bulk generation of games connect to
+the database **directly, in process, on the machine doing the work**. They must
+never drive the deployed site's API.
+
+The reasoning is money and it is not hypothetical: a client hitting real
+endpoints in a loop is what produced this project's cost spike. A single
+bot-against-bot game is sixty-odd moves, and every move through the API is a
+serverless invocation running a search on a real budget. A few dozen games is
+thousands of invocations, all of them paid for, all of them to reach an answer
+the same code produces locally for nothing.
+
+So the rule, and what it costs either way:
+
+- **Locally**: the search runs on your CPU, which is free. What reaches
+  production is the database — one row per game, one per move — which is the
+  cheapest work Neon does. Twenty games is about eight hundred small inserts.
+- **Through the site**: identical rows, plus thousands of function invocations
+  and their compute time. Nothing is gained.
+
+`src/lib/bots/botSeries.play.test.ts` is the shape to copy: it imports
+`createLiveGame` and `playBotTurns` and calls them in process, with Prisma
+pointed at whichever database is intended. It writes nothing unless it is asked
+twice — `BOT_GAMES=1` to report what it would do, `BOT_GAMES_RUN=1` to do it.
+
+Two things worth knowing before running one:
+
+- **Check which database you actually reached, do not assume.** `.env` has
+  silently overridden an inline `DATABASE_URL` here before. Count the rows
+  first: production and a development database are not close in size, so one
+  query settles it.
+- **Rehearse locally first.** The first attempt at this failed against a real
+  row because it passed the engine's `GameSettings` to a function wanting
+  `LiveGameSettings` — two types describing different things, neither a superset
+  of the other. Better to find that on a database nobody is looking at.
+
 ### The Gate Is `src/proxy.ts`
 
 Next 16 renamed the middleware convention, so the file that decides who gets

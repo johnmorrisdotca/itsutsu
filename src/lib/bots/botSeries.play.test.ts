@@ -53,6 +53,8 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 const ASKED = process.env.BOT_GAMES === "1";
 const run = process.env.BOT_GAMES_RUN === "1";
 const all = process.env.BOT_GAMES_ALL === "1";
+/** How many games each pairing plays. Colours alternate, so an even count is fairest. */
+const each = Math.max(1, Number(process.env.BOT_GAMES_EACH ?? "1"));
 
 const LADDER: BotTier[] = [BOT_TIERS.razryad, BOT_TIERS.kyu, BOT_TIERS.dan, BOT_TIERS.meijin, BOT_TIERS.guoshou];
 
@@ -81,10 +83,20 @@ function specialistMatches(): Match[] {
     const board = LADDER_BOARDS.find((b) => playsAsExpert(studied, b.variant));
     if (board === undefined) continue;
     for (const other of LADDER) {
-      // Each colour once: the first move is worth something, and a record that
-      // only ever shows the specialist as black is half an answer.
-      out.push({ ...board, black: specialist, white: other });
-      out.push({ ...board, black: other, white: specialist });
+      /*
+       * Colours alternate down the run. The first move is worth something, and
+       * a set of records that only ever shows the specialist as black is half
+       * an answer — five games as one colour would say more about who opened
+       * than about who is stronger.
+       */
+      for (let n = 0; n < each; n += 1) {
+        const specialistIsBlack = n % 2 === 0;
+        out.push({
+          ...board,
+          black: specialistIsBlack ? specialist : other,
+          white: specialistIsBlack ? other : specialist,
+        });
+      }
     }
   }
   return out;
@@ -95,7 +107,14 @@ function ladderMatches(): Match[] {
   for (const board of LADDER_BOARDS) {
     for (let i = 0; i < LADDER.length; i += 1) {
       for (let j = i + 1; j < LADDER.length; j += 1) {
-        out.push({ ...board, black: LADDER[i], white: LADDER[j] });
+        for (let n = 0; n < each; n += 1) {
+          const firstIsBlack = n % 2 === 0;
+          out.push({
+            ...board,
+            black: firstIsBlack ? LADDER[i] : LADDER[j],
+            white: firstIsBlack ? LADDER[j] : LADDER[i],
+          });
+        }
       }
     }
   }
