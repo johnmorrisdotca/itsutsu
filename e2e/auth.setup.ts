@@ -2,7 +2,7 @@ import { expect, request as playwrightRequest, test as setup } from "@playwright
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { ADMIN_STATE, EMBED_TOKEN_FILE, PLAYER_STATE } from "./support";
-import { clearAbandonedSeats, clearSeededMembers } from "./tidy";
+import { clearAbandonedSeats, clearSeededMembers, clearSuiteGames } from "./tidy";
 
 /**
  * Signs in once and saves the cookies for every other spec.
@@ -23,6 +23,13 @@ const TOKEN = process.env.ADMIN_TOKEN ?? "local-operator-token";
  * see e2e/tidy.ts, where that is the whole point of the file.
  */
 setup("clear what the last run left behind", async () => {
+  /*
+   * Games before members: a seat is a plain id with no foreign key behind it,
+   * so clearing the members first would leave their games unattributable and
+   * therefore unclearable — which is how eight thousand of them accumulated.
+   */
+  const games = await clearSuiteGames();
+  if (games > 0) console.log(`Cleared ${games} game${games === 1 ? "" : "s"} a previous run left unfinished.`);
   const gone = await clearAbandonedSeats();
   if (gone > 0) console.log(`Cleared ${gone} abandoned open seat${gone === 1 ? "" : "s"}.`);
   const members = await clearSeededMembers();

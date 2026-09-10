@@ -45,6 +45,68 @@ export async function clearAbandonedSeats(): Promise<number> {
 }
 
 /**
+ * How long a game must have sat untouched before this will consider it left
+ * behind. The suite runs in ten minutes, so it can never reach its own.
+ */
+const STALE_MS = 60 * 60 * 1000;
+
+/**
+ * The games the suite has left behind, which nothing was clearing.
+ *
+ * `clearAbandonedSeats` takes away open seats with no moves. These are the
+ * other kind, and there are far more of them: real two-seated games with
+ * stones on them that the suite started and never finished. Every run leaves
+ * a few hundred. Mine had reached **8,566 active games**, one member holding
+ * 1,925 of them.
+ *
+ * They were harmless right up until they were not. A limit landed that counts
+ * how many games one member is holding at once, and from that moment the
+ * suite failed a dozen specs with a message about a twenty-game cap — in
+ * files that had nothing to do with the cap and were testing something else
+ * entirely. Raising the cap for the suite was necessary and nowhere near
+ * enough: one member was at five times even the relieved limit.
+ *
+ * **Narrow twice over, and the second mark is the important one.** The rule
+ * this file has always kept is that sweeping by age alone would eventually
+ * take away a game somebody was playing on the dev site, and that is still
+ * true — so age is never the only test. A game is only a candidate if one of
+ * its seats belongs to a member stamped `invitedWith: "playwright"`, which
+ * e2e/members.ts writes and nothing else does. Age is the second mark, not
+ * the first: it keeps this off a game being played right now, including the
+ * suite's own while it runs.
+ *
+ * Order matters, and it is the reason this runs before `clearSeededMembers`.
+ * Nothing has a foreign key to Member, so a seat is a plain id string: clear
+ * the members first and their games become unattributable, which is how a
+ * pile like this one grows unnoticed in the first place.
+ */
+export async function clearSuiteGames(): Promise<number> {
+  process.loadEnvFile(".env");
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return 0;
+
+  const prisma = new PrismaClient();
+  try {
+    const theirs = await prisma.member.findMany({
+      where: { invitedWith: "playwright" },
+      select: { id: true },
+    });
+    if (theirs.length === 0) return 0;
+    const ids = theirs.map((one) => one.id);
+
+    const gone = await prisma.game.deleteMany({
+      where: {
+        status: "active",
+        updatedAt: { lt: new Date(Date.now() - STALE_MS) },
+        OR: [{ blackMemberId: { in: ids } }, { whiteMemberId: { in: ids } }],
+      },
+    });
+    return gone.count;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
  * Takes one game away again, for a spec that made a seat it does not want to
  * leave standing.
  *
@@ -86,9 +148,10 @@ export async function removeGames(ids: readonly string[]): Promise<number> {
  * tidy is one line rather than six, because a cleanup that takes six lines to
  * write is one that specs quietly go without.
  *
- * Only what this file made. Sweeping by age or by name would eventually take
- * away a game somebody was playing on the dev site, and a tidy-up that can do
- * that is worse than the mess.
+ * Only what this file made. Sweeping by age or by name ALONE would eventually
+ * take away a game somebody was playing on the dev site, and a tidy-up that
+ * can do that is worse than the mess — which is why `clearSuiteGames` above
+ * needs the suite's own mark on a seat before age counts for anything.
  */
 export function gamesMade(): (id: string) => string {
   const ids: string[] = [];
