@@ -12,8 +12,11 @@ import { StartGame } from "@/components/mine/StartGame";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { GameGroup, SeatOnBoard } from "@/components/mine/startGame.types";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
-import { OPEN_GAMES_SHOWN, fetchOpenSeats, oneOfEachKind } from "@/lib/history/openGames";
+import { OPEN_GAMES_SHOWN, fetchOpenSeats, fetchPosterCountries, oneOfEachKind } from "@/lib/history/openGames";
+import { SEAT_RATING, filterOpenSeats, posterOf, readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
+import { ratingsByName } from "@/lib/rating/players";
+import { playerKey } from "@/lib/rating/playerKey";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { fetchOpponents } from "@/lib/social/opponents";
@@ -41,7 +44,8 @@ export const dynamic = "force-dynamic";
  * nobody has to understand thirty games to start playing; the families sit
  * below for whoever wants to look around.
  */
-export default async function LobbyPage() {
+export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
+  const filter = readOpenSeatFilter(await searchParams);
   const claims = seatClaims((await cookies()).getAll());
   /*
    * A seat that has sat on this board longer than the grace period is taken by
@@ -109,8 +113,22 @@ export default async function LobbyPage() {
    * a whole kind whenever the one kept was the reader's own.
    */
   const usable = seatGames.filter(theirs);
-  const openSeats = usable.slice(0, OPEN_GAMES_SHOWN);
   const choices = oneOfEachKind(usable);
+
+  /*
+   * The rating a reader asked to filter posters by. Looked up once, for
+   * every name on the board, only when the filter actually asks for a
+   * rating — a filter left at "any" has nothing to gain from a query the
+   * narrowing itself never reads.
+   */
+  const ratingsByKey =
+    filter.rating === SEAT_RATING.any
+      ? new Map<string, number | null>()
+      : await ratingsByName(usable.map((game) => posterOf(game).name));
+  const narrowed = filterOpenSeats(usable, filter, (name) => ratingsByKey.get(playerKey(name)) ?? null);
+  const openSeats = narrowed.slice(0, OPEN_GAMES_SHOWN);
+  // The flag beside a name, for exactly the rows this page is about to show.
+  const countryByMemberId = await fetchPosterCountries(openSeats.map((game) => posterOf(game).memberId));
 
   // The sentence reads the same lists the page below it shows.
   const families: GameGroup[] = GAME_FAMILIES.map((family) => ({
@@ -152,7 +170,13 @@ export default async function LobbyPage() {
           <StartGame families={families} seats={seats} opponents={opponents} signedIn={email !== null} />
         </div>
         <div className="grid gap-4 md:grid-cols-[3fr_2fr]">
-          <OpenGamesBoard games={openSeats} />
+          <OpenGamesBoard
+            games={openSeats}
+            shown={narrowed.length}
+            total={usable.length}
+            filter={filter}
+            countryByMemberId={countryByMemberId}
+          />
           <HereNowPanel here={here} me={email} />
         </div>
       </section>

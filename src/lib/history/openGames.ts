@@ -115,3 +115,16 @@ export async function sitAtOpenSeat(id: string): Promise<SitOutcome> {
     token: seat === STONES.black ? row.blackToken : row.whiteToken,
   };
 }
+
+/**
+ * Where each poster on the board is, by member id — for the flag beside
+ * their name. Only ever asked for the accounts a page is about to show, and
+ * only ever finds an answer for a poster who is signed in: a name typed at
+ * one screen with nobody behind it has no row here to read a country from.
+ */
+export async function fetchPosterCountries(memberIds: readonly (string | null)[]): Promise<Map<string, string>> {
+  const ids = [...new Set(memberIds.filter((id): id is string => id !== null))];
+  if (ids.length === 0) return new Map();
+  const rows = await prisma.member.findMany({ where: { id: { in: ids } }, select: { id: true, country: true } });
+  return new Map(rows.map((row) => [row.id, row.country]));
+}

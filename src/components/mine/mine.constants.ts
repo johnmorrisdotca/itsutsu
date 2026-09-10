@@ -1,4 +1,5 @@
 import type { MyGameGroup } from "@/lib/history/myGames";
+import { RATING_SPLIT } from "@/lib/history/openSeatsFilter";
 
 export const MY_GAMES_COPY = {
   title: { label: "Your games", kanji: "対局中" },
@@ -32,6 +33,27 @@ export const PACES: readonly { value: number | null; label: string }[] = [
   { value: 7 * 24 * 60 * 60_000, label: "7 days a move" },
   { value: null, label: "no clock" },
 ];
+
+/**
+ * The noticeboard's own three questions, in the words a reader asks them:
+ * how fast, against whom, and what a missed deadline costs. The players page
+ * settled on the shape for this kind of bar; this is its copy, for the same
+ * shape asked of the open seats instead of the members.
+ */
+export const OPEN_SEATS_FILTER_COPY = {
+  paceLabel: "Pace",
+  ratingLabel: "Their rating",
+  penaltyLabel: "If a deadline is missed",
+  anyPace: "Any pace",
+  anyRating: "Any rating",
+  anyPenalty: "Any penalty",
+  under: `Under ${RATING_SPLIT}`,
+  over: `${RATING_SPLIT} and up`,
+  unrated: "Unrated",
+  unratedHint: "Fewer than four rated games, in either pool.",
+  clear: "Show every open seat",
+  empty: "Nobody is waiting at that pace, rating or penalty right now.",
+} as const;
 
 /**
  * Starting a game is one question — what, how fast, and with whom — so the

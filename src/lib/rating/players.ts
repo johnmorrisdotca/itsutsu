@@ -14,6 +14,7 @@ import { outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
 
 import { playerKey } from "./playerKey";
 import { isRateable } from "./rateable";
+import { ratingShown } from "./wholeRecord";
 
 export { playerKey };
 
@@ -239,6 +240,25 @@ export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
  */
 export async function fetchComputerPlayers(): Promise<DirectoryEntry[]> {
   return toDirectory(await prisma.member.findMany({ where: { botTier: { not: null } } }));
+}
+
+/**
+ * The rating worth showing beside a batch of names at once, keyed by the
+ * folded name each was asked by.
+ *
+ * For the noticeboard's rating filter, which asks this once for every seat
+ * on the board rather than once per row — the same reason `toDirectory`
+ * fetches every player row it needs in a single query instead of one per
+ * member. A name nobody has a settled rating for maps to null, the same
+ * "nothing to show" `ratingShown` already uses, rather than to a starting
+ * figure nobody earned.
+ */
+export async function ratingsByName(names: readonly string[]): Promise<Map<string, number | null>> {
+  const keys = [...new Set(names.map(playerKey).filter((key) => key !== ""))];
+  if (keys.length === 0) return new Map();
+  const rows = await prisma.player.findMany({ where: { key: { in: keys } } });
+  const byKey = new Map(rows.map((row) => [row.key, ratingShown(toProfile(row))?.rating ?? null]));
+  return new Map(keys.map((key) => [key, byKey.get(key) ?? null]));
 }
 
 type MemberRow = Awaited<ReturnType<typeof prisma.member.findMany>>[number];
