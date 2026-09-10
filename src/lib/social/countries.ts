@@ -81,3 +81,24 @@ export function countryFrom(written: string): MemberCountry | null {
   const display = new Intl.DisplayNames(["en"], { type: "region" });
   return { code, name: display.of(code) ?? code, flag: flagOf(code) };
 }
+
+/**
+ * Every country the site will offer, in alphabetical order.
+ *
+ * For the profile form's select. The stored field is free text and stays free
+ * text — this is a list to choose from, not a new rule about what may be in
+ * that column, and `countryFrom` still has to read whatever is already there.
+ *
+ * Built once, for the same reason `names()` is: `Intl.DisplayNames` is not
+ * free to construct and there are two hundred and forty-nine of these.
+ */
+let sorted: MemberCountry[] | null = null;
+
+export function allCountries(): MemberCountry[] {
+  if (sorted !== null) return sorted;
+  const display = new Intl.DisplayNames(["en"], { type: "region" });
+  sorted = COUNTRY_CODES.map((code) => ({ code, name: display.of(code) ?? code, flag: flagOf(code) }))
+    // By name rather than by code, because the list is read as names.
+    .sort((a, b) => a.name.localeCompare(b.name));
+  return sorted;
+}
