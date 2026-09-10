@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, SELECT_CLASS } from "@/components/ui/ui.constants";
 import { movesFrom } from "@/lib/backlog/backlog";
-import { KIND_DISPLAY, STATUS_DISPLAY } from "@/lib/backlog/backlog.constants";
-import type { BacklogStatus } from "@/lib/backlog/backlog.types";
+import { EFFORT_DISPLAY, KIND_DISPLAY, PRIORITY_DISPLAY, STATUS_DISPLAY } from "@/lib/backlog/backlog.constants";
+import type { BacklogItem, BacklogStatus } from "@/lib/backlog/backlog.types";
 
 import type { BacklogRowProps } from "./backlogBoard.types";
 
@@ -23,6 +23,41 @@ export function StatusPill({ status }: { status: BacklogStatus }) {
       data-testid={`status-pill-${status}`}
     >
       {copy.label} <span className="font-mincho font-normal opacity-75">{copy.kanji}</span>
+    </span>
+  );
+}
+
+/**
+ * How much a row matters and how much work it is, where somebody has said.
+ *
+ * Nothing is drawn for an ungraded row rather than a placeholder saying so.
+ * Ninety-odd of those would be a column of shrugs, and the absence already
+ * reads correctly: no mark means nobody has judged it.
+ */
+function GradePills({ item }: { item: BacklogItem }) {
+  if (item.priority === null && item.effort === null) return null;
+  return (
+    <span className="inline-flex items-baseline gap-1" data-testid="grade-pills">
+      {item.priority === null ? null : (
+        <span
+          className={`inline-flex items-baseline gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-semibold ${PRIORITY_DISPLAY[item.priority].pill}`}
+          title={PRIORITY_DISPLAY[item.priority].blurb}
+          data-testid={`priority-pill-${item.priority}`}
+        >
+          {PRIORITY_DISPLAY[item.priority].label}{" "}
+          <span className="font-mincho font-normal opacity-75">{PRIORITY_DISPLAY[item.priority].kanji}</span>
+        </span>
+      )}
+      {item.effort === null ? null : (
+        <span
+          className={`inline-flex items-baseline gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-semibold ${EFFORT_DISPLAY[item.effort].pill}`}
+          title={EFFORT_DISPLAY[item.effort].blurb}
+          data-testid={`effort-pill-${item.effort}`}
+        >
+          {EFFORT_DISPLAY[item.effort].label}{" "}
+          <span className="font-mincho font-normal opacity-75">{EFFORT_DISPLAY[item.effort].kanji}</span>
+        </span>
+      )}
     </span>
   );
 }
@@ -91,6 +126,7 @@ export function BacklogRow({ item, onMoved, who }: BacklogRowProps) {
             {KIND_DISPLAY[item.kind].label}{" "}
             <span className="font-mincho tracking-normal normal-case">{KIND_DISPLAY[item.kind].kanji}</span>
           </span>
+          <GradePills item={item} />
         </div>
         {item.detail === "" ? null : <p className="max-w-prose text-sm text-muted">{item.detail}</p>}
         <p className="text-xs text-muted">

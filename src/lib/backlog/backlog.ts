@@ -1,6 +1,10 @@
 import {
   ASKED_BY_MAX,
   BACKLOG_KINDS,
+  BACKLOG_EFFORTS,
+  BACKLOG_PRIORITIES,
+  EFFORT_ORDER,
+  PRIORITY_ORDER,
   BACKLOG_STATUSES,
   DETAIL_MAX,
   KEY_MAX,
@@ -13,8 +17,10 @@ import {
 } from "./backlog.constants";
 import type {
   BacklogDraft,
+  BacklogEffort,
   BacklogItem,
   BacklogKind,
+  BacklogPriority,
   BacklogSort,
   BacklogStatus,
   BacklogTally,
@@ -165,11 +171,34 @@ const BY_MOVED = (a: BacklogItem, b: BacklogItem) => b.movedAt.localeCompare(a.m
  * "By status" reads down STATUS_ORDER, so what is being built now is at the
  * top and what was dropped is at the bottom, each group newest-moved first.
  */
+/**
+ * Worth doing, and doable: down by how much it matters, then up by how much
+ * work it is. The question John is actually asking the board — what could I
+ * pick up now — is the top of this list.
+ *
+ * An ungraded row sorts last on both counts rather than in the middle. It has
+ * not been judged, and putting it among the judged ones would be pretending
+ * otherwise; a row nobody has looked at is not the same as a row somebody
+ * called ordinary.
+ */
+const BY_QUICK_WIN = (a: BacklogItem, b: BacklogItem): number => {
+  const rank = (item: BacklogItem) => ({
+    priority: item.priority === null ? PRIORITY_ORDER.length : PRIORITY_ORDER.indexOf(item.priority),
+    effort: item.effort === null ? EFFORT_ORDER.length : EFFORT_ORDER.indexOf(item.effort),
+  });
+  const left = rank(a);
+  const right = rank(b);
+  if (left.priority !== right.priority) return left.priority - right.priority;
+  if (left.effort !== right.effort) return left.effort - right.effort;
+  return BY_MOVED(a, b);
+};
+
 export function sortItems(items: readonly BacklogItem[], sort: BacklogSort): BacklogItem[] {
   const copy = [...items];
   if (sort === "newest") return copy.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   if (sort === "oldest") return copy.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   if (sort === "moved") return copy.sort(BY_MOVED);
+  if (sort === "quickWins") return copy.sort(BY_QUICK_WIN);
   return copy.sort((a, b) => {
     const rank = STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
     return rank !== 0 ? rank : BY_MOVED(a, b);
@@ -194,4 +223,6 @@ export function openCount(items: readonly BacklogItem[]): number {
 }
 
 export const BACKLOG_STATUS_VALUES: readonly BacklogStatus[] = Object.values(BACKLOG_STATUSES);
+export const BACKLOG_PRIORITY_VALUES: readonly BacklogPriority[] = Object.values(BACKLOG_PRIORITIES);
+export const BACKLOG_EFFORT_VALUES: readonly BacklogEffort[] = Object.values(BACKLOG_EFFORTS);
 export const BACKLOG_KIND_VALUES: readonly BacklogKind[] = Object.values(BACKLOG_KINDS);

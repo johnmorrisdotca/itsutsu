@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { ready } from "./support";
+
 /**
  * "Are you still there?" offers a way out as well as a way back in.
  *
@@ -16,8 +18,14 @@ test.describe("the idle question", () => {
   test("offers a way out, and the way out leaves", async ({ page }) => {
     await page.clock.install();
     await page.goto("/games/gomoku");
-    // The board being there is the page being alive: the watcher starts with it.
-    await page.waitForSelector("button[aria-label]");
+    /*
+     * Waits for the page to be listening, not merely drawn. The board is
+     * server-rendered, so waiting for an intersection proves the HTML arrived
+     * and nothing more — and the idle watch is a timer that only exists once
+     * React has attached. Winding the clock before that leaves no timer to
+     * fire, and the failure reads as "the modal never appeared".
+     */
+    await ready(page, "game-view");
 
     // Nobody touches anything for longer than the threshold.
     await page.clock.runFor("03:10");
@@ -42,7 +50,7 @@ test.describe("the idle question", () => {
     // first would be a worse bug than the one being fixed.
     await page.clock.install();
     await page.goto("/games/gomoku");
-    await page.waitForSelector("button[aria-label]");
+    await ready(page, "game-view");
     await page.clock.runFor("03:10");
     await expect(page.getByTestId("idle-modal")).toBeVisible();
     await page.getByTestId("idle-confirm").click();

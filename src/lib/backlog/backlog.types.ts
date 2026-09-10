@@ -9,6 +9,21 @@ export type BacklogStatus = "open" | "inProgress" | "done" | "dropped";
 
 export type BacklogKind = "feature" | "fix" | "chore";
 
+/**
+ * How much a thing matters, and how much work it is. Two axes rather than
+ * one, because they are independent: a valuable hard thing and a trivial easy
+ * thing score the same on a single number, and telling those apart is the
+ * whole reason for grading a board at all.
+ *
+ * Both are null until somebody grades them. That is deliberate — a default of
+ * "normal" would put a judgement nobody made onto every row, and it would be
+ * indistinguishable from one somebody did make.
+ */
+export type BacklogPriority = "high" | "normal" | "low";
+
+/** How much work, and how much can go wrong: risk lives here rather than in a third axis. */
+export type BacklogEffort = "small" | "medium" | "large";
+
 /** One row of the board, as everything above the database sees it. */
 export type BacklogItem = {
   id: string;
@@ -17,6 +32,9 @@ export type BacklogItem = {
   detail: string;
   kind: BacklogKind;
   status: BacklogStatus;
+  /** How much it matters and how much work it is, or null where nobody has said. */
+  priority: BacklogPriority | null;
+  effort: BacklogEffort | null;
   askedBy: string;
   /** Who has picked it up, as free text; empty when nobody has. */
   assignedTo: string;
@@ -46,7 +64,17 @@ export type BacklogDraft = {
 export type StatusFilter = BacklogStatus | "all" | "unfinished";
 
 /** How the board is ordered. */
-export type BacklogSort = "moved" | "newest" | "oldest" | "status";
+export type BacklogSort = "moved" | "newest" | "oldest" | "status" | "quickWins";
 
 /** How many items sit at each status, for the counts beside the filters. */
 export type BacklogTally = Record<BacklogStatus, number>;
+
+/**
+ * The fields of a row somebody may change directly. Status is deliberately
+ * absent: it moves through `canMove` or it does not move.
+ */
+export type BacklogEdit = {
+  assignedTo?: string;
+  priority?: BacklogPriority | null;
+  effort?: BacklogEffort | null;
+};

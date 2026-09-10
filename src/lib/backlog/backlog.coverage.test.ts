@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { BACKLOG_KIND_VALUES, BACKLOG_STATUS_VALUES, draftProblems, isBacklogKind, isBacklogStatus, movesFrom } from "./backlog";
+import { BACKLOG_EFFORT_VALUES, BACKLOG_KIND_VALUES, BACKLOG_PRIORITY_VALUES, BACKLOG_STATUS_VALUES, draftProblems, isBacklogKind, isBacklogStatus, movesFrom } from "./backlog";
 import {
   KEY_MAX,
   KIND_DISPLAY,
+  EFFORT_DISPLAY,
+  EFFORT_ORDER,
   OPEN_STATUSES,
+  PRIORITY_DISPLAY,
+  PRIORITY_ORDER,
   SORT_DISPLAY,
   STATUS_DISPLAY,
   STATUS_MOVES,
@@ -56,6 +60,35 @@ describe("every status is usable", () => {
 
   it("calls open and in progress the ones still wanting something", () => {
     expect([...OPEN_STATUSES].sort()).toEqual(["inProgress", "open"]);
+  });
+});
+
+describe("every grade is spelled out for a reader", () => {
+  /*
+   * Held to the same standard as a status, for the same reason: a grade with
+   * a label nobody wrote is a column of words that mean whatever the reader
+   * guesses. TypeScript forces a row per value; this checks it says something.
+   */
+  it.each(BACKLOG_PRIORITY_VALUES)("priority %s has a label, a kanji and a blurb", (priority) => {
+    const copy = PRIORITY_DISPLAY[priority];
+    expect(copy.label.length).toBeGreaterThan(2);
+    expect(copy.kanji.length).toBeGreaterThan(0);
+    expect(copy.blurb.length).toBeGreaterThan(12);
+    expect(copy.pill.length).toBeGreaterThan(0);
+  });
+
+  it.each(BACKLOG_EFFORT_VALUES)("effort %s has a label, a kanji and a blurb", (effort) => {
+    const copy = EFFORT_DISPLAY[effort];
+    expect(copy.label.length).toBeGreaterThan(2);
+    expect(copy.kanji.length).toBeGreaterThan(0);
+    expect(copy.blurb.length).toBeGreaterThan(12);
+    expect(copy.pill.length).toBeGreaterThan(0);
+  });
+
+  it("orders every grade, so a sort can read straight down it", () => {
+    // A value missing from the order would sort as ungraded and quietly sink.
+    expect([...PRIORITY_ORDER].sort()).toEqual([...BACKLOG_PRIORITY_VALUES].sort());
+    expect([...EFFORT_ORDER].sort()).toEqual([...BACKLOG_EFFORT_VALUES].sort());
   });
 });
 

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { canMove, draftProblems, normalizeDraft, statusFrom } from "./backlog";
 import { ASSIGNED_TO_MAX } from "./backlog.constants";
 import { BACKLOG_SEED } from "./backlog.seed.data";
-import type { BacklogDraft, BacklogItem, BacklogKind, BacklogStatus } from "./backlog.types";
+import type { BacklogDraft, BacklogEdit, BacklogItem, BacklogKind, BacklogStatus } from "./backlog.types";
 
 /**
  * The board, in the database.
@@ -23,6 +23,8 @@ type Row = {
   detail: string;
   kind: string;
   status: string;
+  priority: string | null;
+  effort: string | null;
   askedBy: string;
   assignedTo: string;
   createdAt: Date;
@@ -38,6 +40,8 @@ function toItem(row: Row): BacklogItem {
     detail: row.detail,
     kind: row.kind as BacklogKind,
     status: statusFrom(row.status),
+    priority: row.priority as BacklogItem["priority"],
+    effort: row.effort as BacklogItem["effort"],
     askedBy: row.askedBy,
     assignedTo: row.assignedTo,
     createdAt: row.createdAt.toISOString(),
@@ -52,6 +56,8 @@ const SELECT = {
   detail: true,
   kind: true,
   status: true,
+  priority: true,
+  effort: true,
   askedBy: true,
   assignedTo: true,
   createdAt: true,
@@ -155,12 +161,21 @@ export async function moveItem(id: string, to: BacklogStatus): Promise<MoveOutco
  * it is a name to recognise, not a record to join on.
  */
 export async function assignItem(id: string, to: string): Promise<MoveOutcome> {
+  return editItem(id, { assignedTo: to.trim().slice(0, ASSIGNED_TO_MAX) });
+}
+
+/**
+ * Writes the fields of a row that are somebody's opinion rather than the
+ * board's rules: who has it, how much it matters, how much work it is.
+ *
+ * A status is not one of them and never passes through here. Moving a row is
+ * checked against the board's table by `moveItem`, and a second door that
+ * wrote a status without asking would be the rule holding in one place and
+ * not the other.
+ */
+export async function editItem(id: string, fields: BacklogEdit): Promise<MoveOutcome> {
   const current = await prisma.backlogItem.findUnique({ where: { id }, select: { id: true } });
   if (current === null) return { ok: false, reason: "missing" };
-  const item = await prisma.backlogItem.update({
-    where: { id },
-    data: { assignedTo: to.trim().slice(0, ASSIGNED_TO_MAX) },
-    select: SELECT,
-  });
+  const item = await prisma.backlogItem.update({ where: { id }, data: fields, select: SELECT });
   return { ok: true, item: toItem(item) };
 }

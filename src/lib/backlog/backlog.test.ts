@@ -23,6 +23,9 @@ function item(over: Partial<BacklogItem> & { id: string }): BacklogItem {
     title: `Item ${over.id}`,
     detail: "",
     kind: BACKLOG_KINDS.feature,
+    // Ungraded unless a case says otherwise, which is how a real row arrives.
+    priority: null,
+    effort: null,
     status: BACKLOG_STATUSES.open,
     assignedTo: "",
     askedBy: "John",

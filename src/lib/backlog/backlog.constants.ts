@@ -1,4 +1,4 @@
-import type { BacklogKind, BacklogSort, BacklogStatus } from "./backlog.types";
+import type { BacklogEffort, BacklogKind, BacklogPriority, BacklogSort, BacklogStatus } from "./backlog.types";
 
 /**
  * The board's fixed vocabulary: its statuses, what may follow what, and the
@@ -127,6 +127,7 @@ export const SORT_DISPLAY: Record<BacklogSort, string> = {
   newest: "Newest",
   oldest: "Oldest",
   status: "By status",
+  quickWins: "Quick wins",
 };
 
 /**
@@ -142,3 +143,77 @@ export const DETAIL_MAX = 4000;
 export const ASKED_BY_MAX = 60;
 export const ASSIGNED_TO_MAX = 60;
 export const KEY_MAX = 80;
+
+export const BACKLOG_PRIORITIES = {
+  high: "high",
+  normal: "normal",
+  low: "low",
+} as const satisfies Record<BacklogPriority, BacklogPriority>;
+
+export const BACKLOG_EFFORTS = {
+  small: "small",
+  medium: "medium",
+  large: "large",
+} as const satisfies Record<BacklogEffort, BacklogEffort>;
+
+/** Most pressing first, so a sort can read straight down it. */
+export const PRIORITY_ORDER: readonly BacklogPriority[] = [
+  BACKLOG_PRIORITIES.high,
+  BACKLOG_PRIORITIES.normal,
+  BACKLOG_PRIORITIES.low,
+];
+
+/** Least work first, which is the order somebody looking for a quick win reads in. */
+export const EFFORT_ORDER: readonly BacklogEffort[] = [
+  BACKLOG_EFFORTS.small,
+  BACKLOG_EFFORTS.medium,
+  BACKLOG_EFFORTS.large,
+];
+
+export const PRIORITY_DISPLAY: Record<
+  BacklogPriority,
+  { label: string; kanji: string; blurb: string; pill: string }
+> = {
+  high: {
+    label: "High",
+    kanji: "優先",
+    blurb: "Worth doing before the rest of the board.",
+    pill: "border-ochre/60 bg-ochre-soft text-ink",
+  },
+  normal: {
+    label: "Normal",
+    kanji: "通常",
+    blurb: "Wanted, in its turn.",
+    pill: "border-rule-strong/70 bg-ivory/80 text-ink-soft",
+  },
+  low: {
+    label: "Low",
+    kanji: "後回し",
+    blurb: "Worth doing, but nothing waits on it.",
+    pill: "border-rule-strong bg-shade text-muted",
+  },
+};
+
+export const EFFORT_DISPLAY: Record<
+  BacklogEffort,
+  { label: string; kanji: string; blurb: string; pill: string }
+> = {
+  small: {
+    label: "Small",
+    kanji: "小",
+    blurb: "Contained, and nothing else has to be decided first.",
+    pill: "border-moss/40 bg-moss-soft text-ink",
+  },
+  medium: {
+    label: "Medium",
+    kanji: "中",
+    blurb: "A real piece of work, but the shape of it is known.",
+    pill: "border-rule-strong/70 bg-ivory/80 text-ink-soft",
+  },
+  large: {
+    label: "Large",
+    kanji: "大",
+    blurb: "Touches several things, or needs a decision before it can start.",
+    pill: "border-rule-strong bg-shade text-muted",
+  },
+};

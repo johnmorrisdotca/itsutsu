@@ -3,16 +3,30 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
-import { BACKLOG_STATUS_VALUES } from "@/lib/backlog/backlog";
+import { BACKLOG_EFFORT_VALUES, BACKLOG_PRIORITY_VALUES, BACKLOG_STATUS_VALUES } from "@/lib/backlog/backlog";
 import { ASSIGNED_TO_MAX } from "@/lib/backlog/backlog.constants";
-import { assignItem, moveItem } from "@/lib/backlog/backlogStore";
-import type { BacklogStatus } from "@/lib/backlog/backlog.types";
+import { editItem, moveItem } from "@/lib/backlog/backlogStore";
+import type { BacklogEdit, BacklogStatus } from "@/lib/backlog/backlog.types";
 import { overLimit } from "@/lib/api/rateLimit";
 
-const patchSchema = z.union([
-  z.object({ status: z.enum(BACKLOG_STATUS_VALUES as [string, ...string[]]) }),
-  z.object({ assignedTo: z.string().max(ASSIGNED_TO_MAX) }),
-]);
+/*
+ * A partial rather than a union of two shapes. It was one or the other, so
+ * grading a row and handing it to somebody took two calls, and adding a third
+ * field would have meant a third arm. Every field is optional and at least one
+ * must be present, so an empty body is still refused.
+ *
+ * `null` is a real value for a grade and not the same as leaving it out:
+ * omitting it changes nothing, and sending null ungrades the row. There is no
+ * other way to take a judgement back.
+ */
+const patchSchema = z
+  .object({
+    status: z.enum(BACKLOG_STATUS_VALUES as [string, ...string[]]).optional(),
+    assignedTo: z.string().max(ASSIGNED_TO_MAX).optional(),
+    priority: z.enum(BACKLOG_PRIORITY_VALUES as [string, ...string[]]).nullable().optional(),
+    effort: z.enum(BACKLOG_EFFORT_VALUES as [string, ...string[]]).nullable().optional(),
+  })
+  .refine((body) => Object.keys(body).length > 0, { message: "empty" });
 
 /**
  * Moves one item to another status, or says who has picked it up.
@@ -36,13 +50,28 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = patchSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Move it to which status, or hand it to whom?");
+    if (!parsed.success) return badRequest("Move it where, hand it to whom, or grade it how?");
 
     const { id } = await ctx.params;
+    const { status, ...fields } = parsed.data;
+
+    /*
+     * The edit first, then the move. A status that the board's table forbids
+     * answers 422 and nothing is written — so a call carrying both a grade and
+     * an illegal move leaves the row where it stands, ungraded, rather than
+     * half-applied.
+     */
+    if (status !== undefined) {
+      const moved = await moveItem(id, status as BacklogStatus);
+      if (!moved.ok) {
+        if (moved.reason === "missing") return notFound("No such item.");
+        return unprocessable("An item cannot go straight there from where it stands.");
+      }
+    }
     const outcome =
-      "assignedTo" in parsed.data
-        ? await assignItem(id, parsed.data.assignedTo)
-        : await moveItem(id, parsed.data.status as BacklogStatus);
+      Object.keys(fields).length > 0
+        ? await editItem(id, fields as BacklogEdit)
+        : await moveItem(id, status as BacklogStatus);
     if (outcome.ok) return NextResponse.json(outcome.item, { headers: NO_STORE });
     if (outcome.reason === "missing") return notFound("No such item.");
     return unprocessable("An item cannot go straight there from where it stands.");

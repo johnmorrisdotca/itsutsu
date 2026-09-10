@@ -6,6 +6,7 @@ import { useSavedAppearance } from "./useSavedAppearance";
 import { boardSettingsFrom, type GameDefaults } from "./gameDefaults";
 
 import { Board } from "@/components/board/Board";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -147,7 +148,14 @@ export function GameView({
   }, [holdingPiece, rotatePiece, flipPiece, toggleSingle, jumpTo, moveIndex, moveTotal]);
 
   return (
-    <div className="flex w-full flex-col gap-8">
+    /*
+     * Marked because the idle watch is a timer this component starts once the
+     * browser takes over, and a test that drives the clock has to wait for
+     * that. The board is server-rendered, so its intersections are on the page
+     * before React attaches — waiting for a stone to appear proves the HTML
+     * arrived, not that anything is listening yet.
+     */
+    <div className="flex w-full flex-col gap-8" data-testid="game-view" {...readyMark(useHydrated())}>
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
         <div className="w-full min-w-0 flex-1">
           <div className="mx-auto flex w-full max-w-[min(100%,46rem)] flex-col gap-3">

@@ -458,6 +458,22 @@ model Buddy {
 /// it decided against. `dropped` is a status rather than a deletion, because
 /// "we talked about that and said no" is the answer a board most often has to
 /// give twice.
+/// How much a thing matters, when somebody has said.
+enum BacklogPriority {
+  high
+  normal
+  low
+}
+
+/// How much work a thing is, and how much can go wrong doing it. Risk lives
+/// here rather than in a third column: three axes on a board nobody fills in
+/// is worse than two that get used.
+enum BacklogEffort {
+  small
+  medium
+  large
+}
+
 enum BacklogStatus {
   open
   inProgress
@@ -508,6 +524,17 @@ model BacklogItem {
   detail String @default("")
 
   kind   BacklogKind   @default(feature)
+
+  /// How much this matters and how much work it is, once somebody has judged
+  /// it. Two axes because they are independent — a valuable hard thing and a
+  /// trivial easy thing are the same number on one axis, and telling those
+  /// apart is the point of grading at all.
+  ///
+  /// Null until graded, with no default on purpose: "normal" for everything
+  /// would be a judgement nobody made, written onto every row, and unreadable
+  /// afterwards from one somebody did make.
+  priority BacklogPriority?
+  effort   BacklogEffort?
   status BacklogStatus @default(open)
 
   /// Who asked, as free text. Requests arrive in chat, in a game, or from the

@@ -152,11 +152,41 @@ worth ruling out in this order before believing any of them:
    so one session's `prisma generate` breaks everybody's specs until it is.
 2. **Two runs against one database.** Foreground specs while a full suite runs
    in the background: the setup deletions of one race the fixtures of the
-   other, and every failure looks real.
+   other, and every failure looks real. Two Playwright runs also share
+   `test-results/`, so the second one deletes the first one's traces and both
+   report ENOENT on artefacts rather than on anything you wrote. Say in the
+   shared channel before starting a full suite, and stop your own runs by task
+   id — never `pkill -f playwright`, which is machine-wide and will kill
+   another session's suite mid-run. Its exit code is a signal rather than a
+   failure, and it reads as a mystery at whatever test was in flight.
+
+   A migration is the same hazard one layer down. Applying one to the shared
+   local database puts it **ahead** of every worktree whose schema predates it:
+   rows come back carrying enum values that worktree has never heard of. No
+   restart fixes that, because nothing there is stale — the only fix is the
+   migration reaching `main` and the worktree rebasing, then `prisma generate`,
+   then restarting its server. Four steps, and the symptom looks identical
+   after each of the first three.
 3. **Database litter.** `e2e/tidy.ts` clears abandoned seats and seeded members
    before each run, and each spec removes what it made. A local database that
    has grown past the two-hundred-row list cuts pushes real rows off the end of
    them and fails lobby specs on each other's leavings.
+
+A fourth is not a false failure but a false *pass*, which is worse, and it has
+now been found five times in one day: **a browser test that races hydration.**
+A server-rendered control is a real control before React attaches, so waiting
+for an element the server also renders proves the HTML arrived and nothing
+more. A choice made in that window is dropped, and a timer started on hydration
+does not exist yet — so a spec that drives `page.clock` before then finds
+nothing to fire. Both fail somewhere else entirely: "started on 9×9 when I
+chose 19×19" is a bug about timing wearing a bug about boards, and "the modal
+never appeared" is the same thing wearing a modal.
+
+Wait on the marker, never on an element: `{...readyMark(useHydrated())}` from
+`src/lib/ui/hydrated.ts` on the component, and `ready(page, testId)` from
+`e2e/support.ts` in the spec. The fifth instance was written by somebody who
+had diagnosed the fourth, which is the argument for reaching for this first
+rather than remembering it afterwards.
 
 The corollary matters as much as the list: do not write a failure off as
 litter without looking. On the day this was written, the failure that looked
