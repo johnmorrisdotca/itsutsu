@@ -107,7 +107,15 @@ export function GameOptions({
           <span className="font-normal tracking-normal group-open:hidden">show</span>
           <span className="hidden font-normal tracking-normal group-open:inline">hide</span>
         </summary>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        {/*
+         * grid-cols-1 is not decoration. sm:grid-cols-2 is repeat(2,
+         * minmax(0, 1fr)) — two columns that are allowed to shrink. With no
+         * grid-cols-* under it, the one column a phone falls back to was an
+         * implicit auto track, which sizes to its content and never shrinks:
+         * the panel settled at 338px and stayed there, so the page was 371px
+         * wide at every width and scrolled sideways on anything narrower.
+         */}
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <GameSettingsPanel {...props} />
           <AppearancePanel {...props} />
         </div>

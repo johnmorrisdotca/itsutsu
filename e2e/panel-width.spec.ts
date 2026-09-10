@@ -65,3 +65,36 @@ test.describe("the settings panel on a phone", () => {
     }
   });
 });
+
+/**
+ * The page itself does not scroll sideways on a narrow phone.
+ *
+ * Separate from the test above, and it has to be: every select sat inside its
+ * own row at 360 and the page still scrolled 11px, because the row it sat in
+ * was the thing that was too wide. A test that measures children against their
+ * parent cannot see a parent that is wrong — it asks whether the panel is
+ * self-consistent, not whether it fits the screen.
+ *
+ * The numbers were the tell. The overflow was 51px at 320, 11px at 360 and
+ * none at 375, which is one width — 371 — reached from three directions: the
+ * set-up grid's single column was an implicit auto track, so it sized to its
+ * content once and never shrank again.
+ */
+test.describe("the whole page on a narrow phone", () => {
+  for (const width of [320, 360, 375]) {
+    test(`does not scroll sideways at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/games/gomoku");
+      // Open the set-up, because that is where the grid is: a folded panel
+      // cannot overflow, so a test that never opens it always passes.
+      await openAdvanced(page);
+      await openSetup(page);
+
+      const over = await page.evaluate(() => {
+        const doc = document.documentElement;
+        return doc.scrollWidth - doc.clientWidth;
+      });
+      expect(over, `the page scrolls ${over}px sideways at ${width}px`).toBe(0);
+    });
+  }
+});
