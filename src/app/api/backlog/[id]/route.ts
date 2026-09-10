@@ -56,25 +56,33 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
     const { status, ...fields } = parsed.data;
 
     /*
-     * The edit first, then the move. A status that the board's table forbids
-     * answers 422 and nothing is written — so a call carrying both a grade and
-     * an illegal move leaves the row where it stands, ungraded, rather than
+     * The move first, and each half at most once. An earlier version asked for
+     * the move and then, when nothing else had been sent, asked for it again —
+     * the second time from the status the row had just reached to itself,
+     * which the table rightly refuses. The row moved and the answer was 422.
+     *
+     * Order matters for the other case: a status the table forbids answers 422
+     * before any grade is written, so a call carrying both a grade and an
+     * illegal move leaves the row exactly where it stands rather than
      * half-applied.
      */
+    let item = null;
     if (status !== undefined) {
       const moved = await moveItem(id, status as BacklogStatus);
       if (!moved.ok) {
         if (moved.reason === "missing") return notFound("No such item.");
         return unprocessable("An item cannot go straight there from where it stands.");
       }
+      item = moved.item;
     }
-    const outcome =
-      Object.keys(fields).length > 0
-        ? await editItem(id, fields as BacklogEdit)
-        : await moveItem(id, status as BacklogStatus);
-    if (outcome.ok) return NextResponse.json(outcome.item, { headers: NO_STORE });
-    if (outcome.reason === "missing") return notFound("No such item.");
-    return unprocessable("An item cannot go straight there from where it stands.");
+    if (Object.keys(fields).length > 0) {
+      const edited = await editItem(id, fields as BacklogEdit);
+      if (!edited.ok) return notFound("No such item.");
+      item = edited.item;
+    }
+    // The schema refuses an empty body, so one of the two above always ran.
+    if (item === null) return badRequest("Move it where, hand it to whom, or grade it how?");
+    return NextResponse.json(item, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
     return serverError("Could not move that item.");
