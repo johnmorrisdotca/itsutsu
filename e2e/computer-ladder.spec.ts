@@ -145,6 +145,28 @@ test.describe("the ladder against the computer players", () => {
     await expect(page.getByTestId("computer-standings-table")).toContainText(INVERTED[0].name);
   });
 
+  test("gives a game no champion on the strength of games against programs", async ({ page }) => {
+    /*
+     * The same leak two functions over, and the champions page said so itself:
+     * "a variant nobody has played rated is simply absent" was a description
+     * of what was meant rather than of what happened. Every row counted, so a
+     * game whose only play was against a program got a champion at the
+     * starting rating over no games — and the players and games tallies beside
+     * the name counted those rows too.
+     */
+    await seedComputerStandings("halma", INVERTED);
+    try {
+      await page.goto("/champions");
+      const row = page.getByTestId("champion-row-halma");
+      await expect(row).toContainText("No rated games yet");
+      for (const one of INVERTED) {
+        await expect(row, `${one.name} is no champion of Halma`).not.toContainText(one.name);
+      }
+    } finally {
+      await clearComputerStandings("halma", KEYS);
+    }
+  });
+
   test("is not drawn at all for a game nobody has played a program at", async ({ page }) => {
     // A heading over an empty table reads as a broken page rather than as an
     // answer, and most games have no such standings at all.

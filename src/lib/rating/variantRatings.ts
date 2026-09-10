@@ -149,7 +149,18 @@ export async function fetchVariantStandings(name: string): Promise<VariantStandi
   const key = playerKey(name);
   if (key === "") return [];
   const rows = await prisma.playerVariantRating.findMany({
-    where: { key },
+    /*
+     * Standings they have actually earned, for the same reason the ladder
+     * asks: a row exists from the first finished game in EITHER pool, so
+     * without this a player who has only played the computer at a game is
+     * shown holding a standing among people at the starting rating over no
+     * games at all.
+     *
+     * What that leaves out is that they play this game at all, which their
+     * computer-pool standing would say — a gap, and a smaller fault than a
+     * figure nobody earned. It wants its own decision rather than a filter.
+     */
+    where: { key, ratedGames: { gt: 0 } },
     orderBy: [{ ratedGames: "desc" }, { rating: "desc" }],
   });
   return rows.map((row) => toStanding(row));
@@ -192,6 +203,13 @@ export function championsOf(standings: readonly VariantStanding[]): Map<string, 
  */
 export async function fetchChampions(): Promise<Map<string, VariantChampion>> {
   const rows = await prisma.playerVariantRating.findMany({
+    // The comment above says a variant nobody has played rated is simply
+    // absent, and until this line that was a description of what was meant
+    // rather than of what happened: every row counted, including the ones
+    // whose only games were against a program. A game whose "champion" never
+    // beat a person is not a champion, and the players and games tallies
+    // beside the name counted the same rows.
+    where: { ratedGames: { gt: 0 } },
     orderBy: [{ rating: "desc" }, { ratedGames: "desc" }],
   });
   return championsOf(rows.map((row) => toStanding(row)));
