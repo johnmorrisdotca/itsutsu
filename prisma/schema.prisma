@@ -553,6 +553,19 @@ model BacklogItem {
   /// written". The board is read as "what has moved", and fixing a typo in a
   /// title is not movement, so @updatedAt would answer a different question.
   movedAt   DateTime @default(now())
+  /// The version that was running when this row was marked done, stamped as
+  /// the move happens and cleared if it ever leaves done again.
+  ///
+  /// Stamped rather than worked out afterwards, because it cannot be worked
+  /// out. The changelog lists 126 releases and dates none of them, so there
+  /// is nothing for a date to fall between; and the releases that can be
+  /// dated at all are thirty-six that landed on one day, which day
+  /// granularity could not tell apart even if the dates were there.
+  ///
+  /// Null for every row finished before this column existed, and left that
+  /// way on purpose — a release invented for them would be a fact nobody
+  /// established, which is worse than an empty space that admits it.
+  releasedIn String?
   updatedAt DateTime @updatedAt
 
   /// The board's own ordering: one status at a time, most recently moved first.

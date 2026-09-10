@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { RATING_POOLS, gamesPlayed, ratingShown } from "./wholeRecord";
+import { gamesPlayed, ratingShown } from "./shownRecord";
+import { RATING_POOLS } from "./pools";
 import { tierFor } from "./elo";
 import type { PlayerProfile } from "./players";
 

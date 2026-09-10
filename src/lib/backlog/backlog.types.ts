@@ -41,6 +41,12 @@ export type BacklogItem = {
   /** ISO 8601. Dates cross to the client as strings, so they are strings all the way up. */
   createdAt: string;
   movedAt: string;
+  /**
+   * The version that was running when this row was marked done, or null —
+   * which is every row finished before the column existed, and every row that
+   * is not done. Not derivable after the fact: see the schema for why.
+   */
+  releasedIn: string | null;
 };
 
 /** What someone types to add an item. The key is derived, never asked for. */

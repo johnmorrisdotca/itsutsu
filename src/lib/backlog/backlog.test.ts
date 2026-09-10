@@ -10,6 +10,7 @@ import {
   movesFrom,
   normalizeDraft,
   openCount,
+  releaseStampFor,
   sortItems,
   tally,
 } from "./backlog";
@@ -23,6 +24,9 @@ function item(over: Partial<BacklogItem> & { id: string }): BacklogItem {
     title: `Item ${over.id}`,
     detail: "",
     kind: BACKLOG_KINDS.feature,
+    // Null unless a case says otherwise: only a row that has been marked done
+    // since the column existed carries a version.
+    releasedIn: null,
     // Ungraded unless a case says otherwise, which is how a real row arrives.
     priority: null,
     effort: null,
@@ -131,6 +135,30 @@ describe("moving between statuses", () => {
 
   it("refuses an illegal move rather than performing it quietly", () => {
     expect(moveTo(item({ id: "a", status: BACKLOG_STATUSES.open }), BACKLOG_STATUSES.done)).toBeNull();
+  });
+
+  it("stamps the running version on a row as it is marked done", () => {
+    expect(releaseStampFor(BACKLOG_STATUSES.done, "0.108.2")).toBe("0.108.2");
+  });
+
+  it("clears the stamp off a row that leaves done, rather than leaving last time's", () => {
+    // The case that matters: a row goes done, is reopened, and must not still
+    // claim a release. Nothing has shipped a row that is open again.
+    for (const status of Object.values(BACKLOG_STATUSES)) {
+      if (status === BACKLOG_STATUSES.done) continue;
+      expect(releaseStampFor(status, "0.108.2"), `${status} should carry no release`).toBeNull();
+    }
+  });
+
+  it("carries the same stamp through a move as the store writes to the row", () => {
+    // Two doors into a move, one rule. If these ever disagree the board says
+    // one thing on the way through and another once it is reloaded.
+    const before = item({ id: "a", status: BACKLOG_STATUSES.inProgress });
+    const done = moveTo(before, BACKLOG_STATUSES.done, new Date("2026-09-08T12:00:00.000Z"), "0.108.2");
+    expect(done?.releasedIn).toBe(releaseStampFor(BACKLOG_STATUSES.done, "0.108.2"));
+
+    const reopened = moveTo(done!, BACKLOG_STATUSES.inProgress, new Date("2026-09-09T12:00:00.000Z"), "0.109.0");
+    expect(reopened?.releasedIn).toBeNull();
   });
 
   it("counts open and in progress as still wanting something", () => {

@@ -16,7 +16,7 @@ import { wholeRecord } from "@/lib/legacy/wholeRecord";
 
 import { playerKey } from "./playerKey";
 import { isRateable } from "./rateable";
-import { ratingShown } from "./wholeRecord";
+import { ratingShown } from "./shownRecord";
 
 export { playerKey };
 

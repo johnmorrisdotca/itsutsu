@@ -1,4 +1,5 @@
 import { tierFor } from "./elo";
+import { RATING_POOLS, type RatingPool } from "./pools";
 import type { PlayerProfile } from "./players";
 
 /**
@@ -19,15 +20,6 @@ import type { PlayerProfile } from "./players";
  * that person's own page showed five games and a rating of 1639. Two lists,
  * one page, the same account, contradicting each other.
  */
-
-export const RATING_POOLS = {
-  /** Games between people, which is what the ladder is. */
-  people: "people",
-  /** Games against the computer players, scored apart from the ladder. */
-  computer: "computer",
-} as const;
-
-export type RatingPool = (typeof RATING_POOLS)[keyof typeof RATING_POOLS];
 
 /**
  * Every finished game somebody has played here, whichever pool scored it.

@@ -1,4 +1,4 @@
-import { RATING_START, tierFor, type RatingTier } from "./elo";
+import { RATING_START } from "./elo";
 
 /**
  * The two pools a rated game can move.
@@ -78,49 +78,25 @@ export const EMPTY_STANDING: PoolStanding = {
   draws: 0,
 };
 
-/**
- * The two pools read as one figure, for a page that wants to say how somebody
- * is doing without asking which opponents they chose.
+/*
+ * There is no combined rating, and that is a decision rather than a gap.
  *
- * Weighted by games played, which is the only combination that stays honest at
- * both ends: somebody with forty games against people and two against Meijin
- * reads essentially as their ladder rating, and somebody who has only ever
- * played the computer reads as their computer rating rather than as a made-up
- * average with 1600 in it. Nobody has played nothing and rated 1600 by
- * accident; with no games at all it is the starting rating, which is what it
- * has always been.
+ * There was one here — `combinedStanding`, a weighted average of the two
+ * pools, careful about both ends: forty games against people and two against
+ * Meijin read essentially as the ladder rating, and somebody who had only
+ * played the computer read as their computer rating rather than as an average
+ * with 1600 mixed into it. It was good work and nothing ever called it.
  *
- * Wins, losses and draws simply add up. They are counts of things that
- * happened, and both pools happened.
+ * John's ruling is the ladder rating alone. The pools are separate precisely
+ * so that beating a program does not move where somebody stands among people,
+ * and averaging them puts back what the split was for: a person could climb
+ * the visible number by playing nothing but Meijin. What a list shows is
+ * `ratingShown` in `shownRecord.ts` — the ladder rating, or where there is
+ * none the computer rating MARKED as such, or nothing at all.
+ *
+ * Written down rather than simply deleted, because the next person to notice
+ * that two pools could be averaged will think of it again.
  */
-export function combinedStanding(
-  people: PoolStanding,
-  computer: PoolStanding,
-): PoolStanding {
-  const games = people.ratedGames + computer.ratedGames;
-  const rating =
-    games === 0
-      ? RATING_START
-      : Math.round(
-          (people.rating * people.ratedGames + computer.rating * computer.ratedGames) / games,
-        );
-  return {
-    rating,
-    ratedGames: games,
-    wins: people.wins + computer.wins,
-    losses: people.losses + computer.losses,
-    draws: computer.draws + people.draws,
-  };
-}
-
-/**
- * How settled a combined figure is. Read from the games in both pools together,
- * because a rating made of forty games is a rating whichever ladder they were
- * played on.
- */
-export function combinedTier(people: PoolStanding, computer: PoolStanding): RatingTier {
-  return tierFor(people.ratedGames + computer.ratedGames);
-}
 
 /**
  * Which columns each pool is kept in.

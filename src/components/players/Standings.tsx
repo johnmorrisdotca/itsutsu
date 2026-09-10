@@ -27,9 +27,26 @@ export function TierMark({ tier }: { tier: RatingTier }) {
 const HEAD_CLASS = "text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase";
 
 /** One game's ladder, best first, numbered from the top. */
-export function StandingsTable({ standings }: { standings: VariantStanding[] }) {
+export function StandingsTable({
+  standings,
+  pool = "people",
+  testId = "standings-table",
+}: {
+  standings: VariantStanding[];
+  /**
+   * Which ladder these figures came from, so the counts lead to the games
+   * behind THEM and not to a wider set.
+   *
+   * A rating's record is the rated games of one pool and nothing else. A link
+   * that quietly dropped the pool would answer a different question from the
+   * number it sits under — the same fault as a figure that reads the wrong
+   * half of a row, one level down.
+   */
+  pool?: "people" | "computer";
+  testId?: string;
+}) {
   return (
-    <table className="w-full text-sm" data-testid="standings-table">
+    <table className="w-full text-sm" data-testid={testId}>
       <thead className={HEAD_CLASS}>
         <tr>
           <th className="py-1 pr-3">#</th>
@@ -52,7 +69,7 @@ export function StandingsTable({ standings }: { standings: VariantStanding[] }) 
             </td>
             <RecordCells
               record={standing}
-              of={{ player: standing.name, variant: standing.variant, pool: "people", rated: "yes" }}
+              of={{ player: standing.name, variant: standing.variant, pool, rated: "yes" }}
             />
           </tr>
         ))}
