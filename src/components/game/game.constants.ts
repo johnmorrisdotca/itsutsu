@@ -230,6 +230,14 @@ export const GAME_COPY = {
   idle: { label: "Are you still there?", kanji: "居る？" },
   idleDetail: "Nothing has moved for a couple of minutes, so the clock is paused.",
   idleConfirm: "Still here",
+  idleLeave: "I'm done for now",
+  /*
+   * Said because it is the thing that stops somebody staying out of doubt.
+   * A local game is written to this browser as it is played, so leaving
+   * costs nothing — and somebody who does not know that will sit through
+   * the question rather than risk it.
+   */
+  idleKept: "This game is kept. It will be here when you come back.",
   pass: { label: "Pass", kanji: "パス" },
   piece: { label: "Piece in hand", kanji: "手駒" },
   nextPieces: { label: "Coming next", kanji: "次" },
