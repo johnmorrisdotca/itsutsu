@@ -102,10 +102,30 @@ export function canStall(variant: string): boolean {
  * the square one has never heard of. Asking the wrong one is not an error you
  * see — it answers with an empty camp.
  */
+/*
+ * Kept, because this is asked for every piece, four times a ply, for as long
+ * as a game runs — and it builds a fresh array of points every time it is
+ * asked. On a 17x17 star that was forty array builds a ply and several
+ * hundred thousand short-lived points over a game, which made the bot's
+ * "finish a game of anything" test three times slower and timed it out in CI
+ * at 45s against a 30s budget. Local runs never saw it: 9s there, and the
+ * margin hid it.
+ *
+ * A camp is a fact about a board size and a colour. It cannot change while
+ * the process lives, the key space is a handful of sizes times two, and the
+ * array is only ever read — `distanceHome` wants its last square and its
+ * length. So it is worked out once and kept.
+ */
+const farCamps = new Map<string, Point[]>();
+
 function farCamp(size: number, stone: Stone): Point[] {
+  const key = `${size}|${stone}`;
+  const known = farCamps.get(key);
+  if (known !== undefined) return known;
   const other: Stone = stone === "black" ? "white" : "black";
-  if (size === starSize(STAR_RADIUS)) return starCampSquares(STAR_RADIUS, other);
-  return campSquares(size, other);
+  const camp = size === starSize(STAR_RADIUS) ? starCampSquares(STAR_RADIUS, other) : campSquares(size, other);
+  farCamps.set(key, camp);
+  return camp;
 }
 
 /**
