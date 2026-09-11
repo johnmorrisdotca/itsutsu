@@ -287,6 +287,9 @@ export const GAME_COPY = {
   openSeat: { label: "Open to anyone", kanji: "公開" },
   openSeatHint: "Post the other seat on the games page. Whoever answers first sits down as White.",
   mustMoveBy: "must move by",
+  /** Said on the board a move was just played on, when no other board is waiting. */
+  nothingWaiting: "That was the last board waiting on you.",
+  yourGames: "Your games",
   claimTurn: { label: "Claim the turn", kanji: "手番請求" },
   claimGame: { label: "Claim the win", kanji: "勝ち請求" },
   claimHint: "Their time is up. Claim it, or leave the game waiting and pass the move back to them.",

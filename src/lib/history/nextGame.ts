@@ -13,6 +13,9 @@
  * somebody is most likely to be wondering about. The elder correspondence
  * sites all worked this way, and John plays several games at once.
  */
+import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import type { GameStatus, Stone } from "@/lib/gomoku/gomoku.types";
+
 export type Waiting = { since: string };
 
 /** Longest-waiting first. The tie is broken so two games cannot swap places between reads. */
@@ -36,4 +39,46 @@ export function nextWaiting<T extends Waiting & { game: { id: string } }>(
     .filter((one) => one.game.id !== exclude)
     .sort(waitingFirst);
   return queue[0] ?? null;
+}
+
+/**
+ * Whether a player is carried onward from the board they have just moved on.
+ *
+ * Two boards do not send anybody anywhere, and they are different kinds of no.
+ *
+ * A move does not always end a turn — Connect6 lays two stones — so the board
+ * can still be waiting on the same person a moment after they played. Carrying
+ * them "onward" to where they already are would read as the feature being
+ * broken, and `nextWaiting` cannot see it, because from the queue's point of
+ * view that game is genuinely waiting on them.
+ *
+ * And a game that has just ENDED is the one board worth staying on. The result
+ * is what the move was for. Whisking somebody past their own win is not taking
+ * them onward; it is taking the game away from them.
+ */
+export function carriesOnwardFrom(
+  status: GameStatus,
+  toPlay: Stone,
+  seat: Stone,
+): boolean {
+  if (status !== GAME_STATUS.playing) return false;
+  return toPlay !== seat;
+}
+
+/**
+ * Whether this player is moved on at all, rather than left where they are.
+ *
+ * John asked for the advance to be the default and to be refusable: "players
+ * should NEVER have to hunt for the game that is waiting for a move... unless
+ * they choose an option in the settings."
+ *
+ * This is the seam for the second half of that, and it answers true for
+ * everybody today. The opt-out belongs on the account's own preferences, which
+ * are being built separately, so the choice has nowhere to be stored yet — and
+ * a preference read from a column that does not exist is exactly the "plausible
+ * value for a question nobody asked" AGENTS.md warns about. When the registry
+ * lands, this function grows its argument and nothing else moves.
+ */
+export function advancesAfterMove(): boolean {
+  return true;
 }

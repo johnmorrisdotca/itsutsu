@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.136.0
+- After your move, the next game waiting on you opens by itself, oldest first — no going back to a list and no hunting for whose turn it is. When that was the last one, it says so rather than leaving you on a blank page
+
 ## 0.135.0
 - Play leads to settling a game rather than to a board: the game, the board, the pace and who you are playing are all agreed before a stone can be put down, and there is a setup screen for when you have not picked a game yet
 - The board you can just start playing on is still there, under an honest name — it is how you meet a game nobody has played, and how two people at one screen play

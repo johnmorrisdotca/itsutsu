@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { nextWaiting, waitingFirst } from "./nextGame";
+import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
+import { advancesAfterMove, carriesOnwardFrom, nextWaiting, waitingFirst } from "./nextGame";
 
 /** Only the two fields the rule reads, so the cases say what they are about. */
 const at = (id: string, since: string) => ({ game: { id }, since });
@@ -35,6 +36,29 @@ describe("which game to play next", () => {
   it("orders a whole queue, not just its head", () => {
     const queue = [at("c", "2026-09-09T00:00:00Z"), at("a", "2026-09-01T00:00:00Z"), at("b", "2026-09-05T00:00:00Z")];
     expect([...queue].sort(waitingFirst).map((one) => one.game.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("stays put when the move did not end the turn", () => {
+    /*
+     * Connect6 lays two stones a turn. After the first, the board is still
+     * waiting on the same person, and being carried "onward" to the board
+     * they are already looking at is the one outcome that reads as broken.
+     */
+    expect(carriesOnwardFrom(GAME_STATUS.playing, STONES.black, STONES.black)).toBe(false);
+    expect(carriesOnwardFrom(GAME_STATUS.playing, STONES.white, STONES.black)).toBe(true);
+  });
+
+  it("stays put on a game that has just ended, whoever won it", () => {
+    // The result is what the move was for. Nobody is carried past their own win.
+    for (const ended of [GAME_STATUS.won, GAME_STATUS.draw]) {
+      expect(carriesOnwardFrom(ended, STONES.white, STONES.black)).toBe(false);
+      expect(carriesOnwardFrom(ended, STONES.black, STONES.black)).toBe(false);
+    }
+  });
+
+  it("carries everybody onward for now, and has somewhere for the choice to live", () => {
+    // True for everybody until the account preferences it will read exist.
+    expect(advancesAfterMove()).toBe(true);
   });
 
   it("leaves the list it was given alone", () => {

@@ -20,14 +20,13 @@ import {
 } from "@/lib/gomoku/engine";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
-import { describeRemaining } from "@/lib/history/deadline";
-import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
 import { shownName } from "@/lib/rating/shownName";
-import { useMatchClock } from "./useMatchClock";
+import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { MatchClock } from "./MatchClock";
 import { useMatchTalk } from "./useMatchTalk";
-import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { usePieceHand } from "@/components/game/usePieceHand";
 import {
   GAME_STATUS,
@@ -132,19 +131,8 @@ export function SharedGame({
   const choosesColour = VARIANT_SPECS[state.settings.variant].anyColour;
   const [placing, setPlacing] = useState<Stone>(STONES.black);
 
-  /*
-   * The deadline is the server's: it comes with the game and is only shown
-   * here. A once-a-second tick keeps the countdown honest between polls.
-   */
-  const { deadline, now, overdue, canClaim, endsTheGame, give, claim } = useMatchClock({
-    detail,
-    state,
-    seat,
-    yourTurn,
-    token,
-    onError: setError,
-    mutate,
-  });
+  // A move played is a board finished with, so long as the turn actually ended.
+  const { advance, notice } = useAdvanceToNextGame();
 
   /** Sends one move, of any of the three shapes, and takes the server's answer as the truth. */
   async function send(body: Record<string, unknown>) {
@@ -164,7 +152,9 @@ export function SharedGame({
       await mutate();
       return;
     }
-    await mutate((await response.json()) as GameDetail, { revalidate: false });
+    const after = (await response.json()) as GameDetail;
+    await mutate(after, { revalidate: false });
+    await advance(after, seat);
   }
 
   async function play(point: Point) {
@@ -226,8 +216,18 @@ export function SharedGame({
     mutate,
   });
 
+  /*
+   * The board is marked as hydrated because a move played here now navigates,
+   * and a click that lands before React has attached is dropped in silence —
+   * the board looks like a board the whole time. A person always waits without
+   * meaning to; a test has to be told to.
+   */
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div
+      className="flex w-full flex-col gap-4"
+      data-testid="shared-game"
+      {...readyMark(useHydrated())}
+    >
       <TurnBanner
         state={state}
         seat={seat}
@@ -237,6 +237,7 @@ export function SharedGame({
         finished={state.status !== GAME_STATUS.playing}
         finishedAt={detail.status === "finished" ? detail.lastMoveAt : null}
       />
+      {notice}
 
       {error !== null ? (
         <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.warn}`}>
@@ -244,86 +245,15 @@ export function SharedGame({
         </p>
       ) : null}
 
-      {deadline !== null && state.status === GAME_STATUS.playing ? (
-        <div
-          className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm ${
-            overdue ? TONE_CLASS.alarm : TONE_CLASS.calm
-          }`}
-          data-testid="deadline"
-        >
-          <span>
-            {STONE_DISPLAY[state.toPlay].label} {GAME_COPY.mustMoveBy}{" "}
-            <span className="font-mono tabular-nums">
-              {deadline.toLocaleTimeString()}
-            </span>
-            {" · "}
-            <span
-              className="font-mono tabular-nums"
-              data-testid="deadline-remaining"
-            >
-              {describeRemaining(deadline, new Date(now))}
-            </span>
-            {detail.timeoutPenalty === "turn" &&
-            (detail.forfeits.black > 0 || detail.forfeits.white > 0) ? (
-              <span className="ml-2 text-xs opacity-80">
-                {STONE_DISPLAY[state.toPlay].label}:{" "}
-                {GAME_COPY.forfeitsNote(
-                  detail.forfeits[state.toPlay],
-                  FORFEITS_TO_LOSE,
-                )}
-              </span>
-            ) : null}
-          </span>
-          {canClaim ? (
-            /*
-              The one irreversible thing here that is done TO somebody rather
-              than by them, so it asks — and the question says which of the
-              two it is, since claiming a turn and claiming the game are not
-              the same act.
-            */
-            <ConfirmButton
-              label={
-                endsTheGame
-                  ? GAME_COPY.claimGame.label
-                  : GAME_COPY.claimTurn.label
-              }
-              question={
-                endsTheGame
-                  ? GAME_COPY.claimGameConfirm
-                  : GAME_COPY.claimTurnConfirm
-              }
-              confirm={
-                endsTheGame
-                  ? GAME_COPY.claimGame.label
-                  : GAME_COPY.claimTurn.label
-              }
-              onConfirm={() => void claim()}
-              strong
-              title={GAME_COPY.claimHint}
-              testId="claim-timeout"
-            />
-          ) : null}
-          {seat !== null &&
-          !yourTurn &&
-          state.status === GAME_STATUS.playing ? (
-            <Button
-              onClick={give}
-              title="Add time to the other side's clock for this move. Nobody has to win on the clock."
-              data-testid="give-time"
-            >
-              Give more time
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-      {detail.clockMode === "game" && detail.moveTimeMs !== null ? (
-        <p className="text-xs text-muted" data-testid="time-budgets">
-          Time left for the whole game · {STONE_DISPLAY.black.label}{" "}
-          {describeBudget(detail.blackTimeMs ?? detail.moveTimeMs)} ·{" "}
-          {STONE_DISPLAY.white.label}{" "}
-          {describeBudget(detail.whiteTimeMs ?? detail.moveTimeMs)}
-        </p>
-      ) : null}
+      <MatchClock
+        detail={detail}
+        state={state}
+        seat={seat}
+        yourTurn={yourTurn}
+        token={token}
+        onError={setError}
+        mutate={mutate}
+      />
 
       {VARIANT_SPECS[state.settings.variant].captures ? (
         <p className="text-xs text-muted" data-testid="shared-captures">
@@ -484,9 +414,4 @@ export function SharedGame({
       <ReactionLog reactions={shown} />
     </div>
   );
-}
-
-/** A budget in words: "1h 20m", "45s". */
-function describeBudget(ms: number): string {
-  return describeRemaining(new Date(ms), new Date(0));
 }
