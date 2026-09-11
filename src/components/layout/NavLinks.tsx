@@ -20,8 +20,18 @@ export const NAV = [
    * John's call on the wording, and it is the better one: Play already means
    * going to play your games, so it points at them. Games is the catalogue,
    * which is what the word says. Neither needed a new phrase.
+   *
+   * And there is no kanji in the bar at all now. Play carried 遊ぶ while Rules,
+   * Learn, Players and About beside it carried nothing — which read as
+   * deliberate while Play stood alone and as an oddity next to Games. John,
+   * asked about the one other survivor: "fine drop them all now." So the
+   * navigation reads in one language.
+   *
+   * Only the navigation and the front door. A kanji paired with a heading
+   * elsewhere — a game's name, a section title, the rules pages — is the
+   * site's own voice and stays.
    */
-  { href: "/my-games", label: "Play", kanji: "遊ぶ" },
+  { href: "/my-games", label: "Play" },
   { href: "/games", label: "Games" },
   { href: "/rules", label: "Rules" },
   { href: "/learn", label: "Learn" },
@@ -45,13 +55,13 @@ export function NavLinks() {
               current ? "font-semibold underline decoration-moss decoration-2" : ""
             }`}
           >
+            {/*
+              No kanji here any more. Play was the last entry carrying one and
+              John asked for it to go, so the branch that drew them went with
+              it rather than sitting unused and untyped — every remaining entry
+              is one English word, Admin included.
+            */}
             {item.label}
-            {"kanji" in item ? (
-              <>
-                {" "}
-                <span className="font-mincho text-muted">{item.kanji}</span>
-              </>
-            ) : null}
             {/* The count of games waiting on you belongs beside the page that
                 holds them, not beside the one that starts new ones. */}
             {item.href === "/my-games" ? <YourTurnBadge /> : null}

@@ -48,8 +48,26 @@ export default function Home() {
           shapes that win, and keep every game you finish.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link href="/games" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2 text-base`} data-testid="enter">
-            Play <span className="font-mincho text-sm opacity-80">遊ぶ</span>
+          {/*
+            Play goes to the games you have, which is what the word means now
+            that the lobby is two pages. It pointed at the catalogue, which was
+            a bug the split left behind: the front door's main button landed
+            somewhere other than where its own word said.
+
+            No kanji on it. John's call, and right: it carried 遊ぶ while Rules
+            and Learn beside it carried nothing, which read as deliberate while
+            Play stood alone and reads as an oddity next to Games.
+          */}
+          <Link href="/my-games" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2 text-base`} data-testid="enter">
+            Play
+          </Link>
+          {/*
+            The catalogue, which was reachable only from the navigation — and
+            it is the page a first-time visitor actually wants: forty games,
+            each with its rules.
+          */}
+          <Link href="/games" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`} data-testid="enter-games">
+            Games
           </Link>
           <Link href="/rules" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`}>
             Rules

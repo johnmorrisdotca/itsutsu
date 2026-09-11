@@ -14,7 +14,13 @@ export function AdminLink({ initial }: { initial: { admin: boolean } }) {
   if (data?.admin !== true) return null;
   return (
     <Link href="/admin" className="whitespace-nowrap hover:underline underline-offset-4" data-testid="admin-link">
-      Admin <span className="font-mincho text-muted">管理</span>
+      {/*
+        No kanji in the navigation. John: "fine drop them all now" — the bar
+        reads in one language, so this reads Admin like everything beside it.
+        The Admin PAGE keeps its 管理 in its own heading, which is a different
+        thing and was not what he asked about.
+      */}
+      Admin
     </Link>
   );
 }

@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.124.0
+- The front page offers the games catalogue beside Play, Play goes to your own games rather than the catalogue, and the navigation reads in one language
+- A long request on the board shows its opening and offers the rest, rather than printing every paragraph of it
+
 ## 0.123.0
 - Play is the games you have going, oldest waiting at the top, and Games is the catalogue — two pages where one did both and grew a section every time you played
 

@@ -8,6 +8,7 @@ import { BACKLOG_STATUSES, EFFORT_DISPLAY, KIND_DISPLAY, PRIORITY_DISPLAY, STATU
 import type { BacklogItem, BacklogStatus } from "@/lib/backlog/backlog.types";
 
 import type { BacklogRowProps } from "./backlogBoard.types";
+import { DetailText } from "./DetailText";
 
 /** A day, written the same way on the server and in the browser: no locale in it to disagree about. */
 export function dayStamp(iso: string): string {
@@ -158,7 +159,7 @@ export function BacklogRow({ item, onMoved, who }: BacklogRowProps) {
           </span>
           <GradePills item={item} />
         </div>
-        {item.detail === "" ? null : <p className="max-w-prose text-sm text-muted">{item.detail}</p>}
+        <DetailText detail={item.detail} />
         <p className="text-xs text-muted">
           {item.askedBy === "" ? "Asked for" : `Asked for by ${item.askedBy}`} · added {dayStamp(item.createdAt)} ·{" "}
           <MoveStamp item={item} />
