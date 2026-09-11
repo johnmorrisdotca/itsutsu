@@ -1,0 +1,12 @@
+-- Somewhere for a preference to live, before the next one asks.
+--
+-- One nullable JSONB column on the member, not a table: appearance is read on
+-- nearly every page, and a preference kept as a row per key would cost a join
+-- on each of them. Nullable and undefaulted, so nothing is written onto any
+-- existing row -- null says "never chose anything", which is true of everyone
+-- today, and a default of {} would say the same thing less honestly.
+--
+-- The two JSON columns already here, appearance and gameDefaults, are left
+-- exactly as they are. Folding them in is a migration of real data for real
+-- members, and a separate job.
+ALTER TABLE "Member" ADD COLUMN "preferences" JSONB;

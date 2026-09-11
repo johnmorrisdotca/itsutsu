@@ -1,4 +1,6 @@
 import "server-only";
+import { cache } from "react";
+
 import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
 import { isMemberId, makeMemberId } from "./memberId";
 import { appearanceFrom } from "@/components/board/appearance";
@@ -205,6 +207,8 @@ export type MemberProfile = Omit<Member, "email"> & {
   appearance: unknown;
   /** Where a new game starts for them. Stored JSON; read it through cleanGameDefaults. */
   gameDefaults: unknown;
+  /** Their standing choices, by the registry in lib/preferences. Stored JSON; read it through cleanPreferences. */
+  preferences: unknown;
   createdAt: Date;
   lastSeenAt: Date;
 };
@@ -268,7 +272,31 @@ export async function keepFinishedDaysFor(email: string | null): Promise<number>
 /** How often "last seen" is written: once a minute is plenty for a who's-here list. */
 const TOUCH_EVERY_MS = 60_000;
 
-/** Marks a member as here now. Cheap: one read, and a write at most once a minute. */
+/**
+ * The member row behind an address, read ONCE PER REQUEST.
+ *
+ * Every server-rendered page asks who is here, and several parts of one page
+ * ask it separately — the header, the list, the page itself — each of which
+ * was a query. React's `cache` keeps the first answer for the rest of the
+ * request, so the third component to ask costs nothing. Outside a render, in
+ * a route handler, it is a plain read, as before.
+ *
+ * It carries everything a page wants from this row on the way past: whether
+ * the member is still welcome, when they were last seen, and their standing
+ * preferences. A preference is read by riding this query, never by adding
+ * one — see `preferencesFor` — because a store that cost a query per page is
+ * the thing one JSON column was chosen over a table to avoid.
+ *
+ * Keyed by the FOLDED address, so every caller asking about one member asks
+ * the same question.
+ */
+export const memberRowFor = cache(async (key: string) =>
+  prisma.member.findUnique({
+    where: { email: key },
+    select: { lastSeenAt: true, bannedAt: true, preferences: true },
+  }),
+);
+
 /**
  * Marks a member as seen, and says whether they are still allowed in.
  *
@@ -276,20 +304,21 @@ const TOUCH_EVERY_MS = 60_000;
  * answers it, so the ban is checked in the same breath rather than costing a
  * query of its own. A banned member is "gone" from that moment: the next
  * request they make is the one that stops working.
+ *
+ * Cached per request like the read underneath it, so a page that asks three
+ * times writes "seen" at most once — three callers handed the same stale
+ * stamp would otherwise each have written it.
  */
-export async function touchMember(email: string): Promise<{ banned: boolean }> {
+export const touchMember = cache(async (email: string): Promise<{ banned: boolean }> => {
   const key = foldEmail(email);
-  const row = await prisma.member.findUnique({
-    where: { email: key },
-    select: { lastSeenAt: true, bannedAt: true },
-  });
+  const row = await memberRowFor(key);
   if (row === null) return { banned: false };
   if (row.bannedAt !== null) return { banned: true };
   if (Date.now() - row.lastSeenAt.getTime() >= TOUCH_EVERY_MS) {
     await prisma.member.update({ where: { email: key }, data: { lastSeenAt: new Date() } });
   }
   return { banned: false };
-}
+});
 
 /** Whether this address is shut out, for the places that have not read the row already. */
 export async function isBanned(email: string): Promise<boolean> {

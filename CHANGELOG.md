@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.141.0
+- What you choose on the site is kept on your account rather than in this browser, so it follows you between devices. The first of them is the narrowing on the players page, which now remembers what you actually chose rather than whichever link the browser happened to look at
+
 ## 0.140.0
 - Four words you pick are your own key on somebody else's device: tap four words from the list the site offers, and you can claim your own seat on a shared tablet without anybody signing out. Order does not matter, and there is no box to type them into
 

@@ -10,13 +10,6 @@ import {
   LANG_REMEMBER_FOR_SECONDS,
 } from "@/lib/i18n/i18n.constants";
 import { readLocale } from "@/lib/i18n/locale";
-import { readDirectoryFilter } from "@/lib/rating/directoryFilter";
-import {
-  DIRECTORY_FILTER_COOKIE,
-  REMEMBER_FOR_SECONDS,
-  addressSaysFilter,
-  rememberedValue,
-} from "@/lib/rating/rememberedFilter";
 
 /**
  * The gate.
@@ -163,9 +156,8 @@ function isEmbed(pathname: string): boolean {
  * it. Null when the address says nothing about language, which is almost
  * every request.
  *
- * Here for the same reason the directory filter below is: a Server Component
- * can READ a cookie while it renders and cannot SET one, and this is the only
- * thing on the way in that can.
+ * Here because a Server Component can READ a cookie while it renders and
+ * cannot SET one, and this is the only thing on the way in that can.
  *
  * It redirects rather than carrying on, and both halves of that are
  * deliberate. Setting the cookie and carrying on would render *this* page in
@@ -191,7 +183,7 @@ function rememberLanguage(request: NextRequest): NextResponse | null {
   response.cookies.set({
     name: LANG_COOKIE,
     value: asked,
-    // Every page, unlike the filter below: a language is not about one page.
+    // Every page: a language is not about one page.
     path: "/",
     maxAge: LANG_REMEMBER_FOR_SECONDS,
     sameSite: "lax",
@@ -201,40 +193,22 @@ function rememberLanguage(request: NextRequest): NextResponse | null {
 }
 
 /**
- * Carry on — and keep what was asked for: the language, and on the players
- * page the narrowing.
+ * Carry on — and keep the language, when one was asked for on the way.
  *
- * It is here because a Server Component can READ a cookie while it renders and
- * cannot SET one, and this is the only thing on the way in that can. The
- * alternative was turning the filter bar into a form, which would cost the
- * addressable links the bar was built to be.
+ * It decides nothing: the gate has already said yes by the time it runs, and
+ * the one thing it adds is a cookie, which a Server Component can read while
+ * it renders and cannot set.
  *
- * It decides nothing. Which filter a page shows is `filterFor`'s answer and
- * the page asks it directly; this only puts what was asked somewhere the next
- * visit can find it. An address that says nothing about narrowing is left
- * alone, because silence is exactly the case a remembered answer is for and
- * must not overwrite one.
+ * The players page's narrowing was kept here too, in a cookie, until it had
+ * an account to live on. It is remembered by the page now, through the
+ * preferences registry — see `memberFilter.ts` — which is where a choice that
+ * follows a member between devices belongs. It is also somewhere a prefetch
+ * cannot reach: this file answers a prefetch like any other request, and a
+ * cookie set here for `/players?who=…` remembered whichever of the bar's
+ * links had last come into view, a narrowing nobody chose.
  */
 function carryOn(request: NextRequest): NextResponse {
-  const spoken = rememberLanguage(request);
-  if (spoken !== null) return spoken;
-
-  const response = NextResponse.next();
-  if (request.nextUrl.pathname !== "/players") return response;
-
-  const asked = Object.fromEntries(request.nextUrl.searchParams);
-  if (!addressSaysFilter(asked)) return response;
-
-  response.cookies.set({
-    name: DIRECTORY_FILTER_COOKIE,
-    value: rememberedValue(readDirectoryFilter(asked)),
-    // Sent back only on requests for the page it is about.
-    path: "/players",
-    maxAge: REMEMBER_FOR_SECONDS,
-    sameSite: "lax",
-    httpOnly: true,
-  });
-  return response;
+  return rememberLanguage(request) ?? NextResponse.next();
 }
 
 export async function proxy(request: NextRequest) {

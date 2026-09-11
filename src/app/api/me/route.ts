@@ -12,6 +12,8 @@ import { cleanDaysOff } from "@/lib/social/daysOff";
 import { cleanAppearance } from "@/components/board/appearance";
 import { cleanGameDefaults } from "@/components/game/gameDefaults";
 import { overLimit } from "@/lib/api/rateLimit";
+import { writePreferences } from "@/lib/preferences/memberPreferences";
+import { acceptPreferences } from "@/lib/preferences/preferences";
 
 const nameSchema = z.object({
   name: z
@@ -47,6 +49,14 @@ const nameSchema = z.object({
   appearance: z.unknown().optional(),
   /** Where a new game starts for them. Cleaned here rather than described twice. */
   gameDefaults: z.unknown().optional(),
+  /**
+   * Standing choices kept in the registry (lib/preferences): how the players
+   * page was last narrowed, and whatever comes next. Taken as anything and
+   * checked there rather than described twice — but unlike the two columns
+   * above, what the registry does not know is REFUSED, not dropped. A write
+   * is somebody asking, and no is an answer they should hear.
+   */
+  preferences: z.unknown().optional(),
   /** ISO dates; both blank clears the range. */
   awayFrom: z.string().max(40).nullable().optional(),
   awayUntil: z.string().max(40).nullable().optional(),
@@ -81,10 +91,18 @@ export async function PATCH(request: Request) {
     const parsed = nameSchema.safeParse(body);
     if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "That name will not do.");
 
-    if ((await fetchProfile(me.email)) === null) {
+    const member = await fetchProfile(me.email);
+    if (member === null) {
       return NextResponse.json({ error: "No profile yet: sign in with Google first." }, { status: 404, headers: NO_STORE });
     }
-    const { name, awayFrom, awayUntil, ...rest } = parsed.data;
+    const { name, awayFrom, awayUntil, preferences, ...rest } = parsed.data;
+    /*
+     * Checked before anything is written, so a change the registry refuses
+     * refuses the whole request, by name, with nothing else in the body
+     * half-applied by the time it does.
+     */
+    const kept = preferences === undefined ? null : acceptPreferences(preferences);
+    if (kept !== null && !kept.ok) return badRequest(kept.problem);
     // Cleaned once, here, so nothing unusable ever reaches the column.
     const { appearance, gameDefaults, daysOff, ...plain } = rest;
     const profile: ProfileUpdate = {
@@ -107,6 +125,8 @@ export async function PATCH(request: Request) {
     }
     if (profile.timeZone !== undefined && !knownTimeZone(profile.timeZone)) return badRequest("Unknown time zone.");
     if (Object.keys(profile).length > 0) await updateProfile(me.email, profile);
+    // Laid over what the row already holds — read once above, not again here.
+    if (kept !== null) await writePreferences(me.email, member.preferences, kept.patch);
 
     let shown = me.name ?? "";
     const response = NextResponse.json({ ok: true }, { headers: NO_STORE });

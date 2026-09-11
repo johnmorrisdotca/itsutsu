@@ -431,6 +431,16 @@ model Member {
   /// game already under way is never touched by it. Shaped like GameDefaults,
   /// and read back through cleanGameDefaults rather than trusted.
   gameDefaults Json?
+  /// Standing choices with no column of their own: how the players page was
+  /// last narrowed, and whatever is asked for next. One column rather than a
+  /// row per preference, because it is read beside appearance on nearly every
+  /// page and a join is not free. Shaped by the registry in lib/preferences
+  /// and read back through cleanPreferences rather than trusted, for the same
+  /// reason appearance is: a value written by a version that offered something
+  /// this one does not falls back for that one field and leaves the rest
+  /// alone. Null is "never chose anything". Appearance and gameDefaults stay
+  /// as they are; folding them in is a later job.
+  preferences Json?
   /// Days of the week this member does not play, 0 for Sunday. Standing,
   /// unlike the away range: deadlines in games that honour vacation step
   /// over them every week and nothing is spent. All seven is refused — that

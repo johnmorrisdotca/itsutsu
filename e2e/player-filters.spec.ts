@@ -1,9 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 import { BOT_PROFILES, BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constants";
 import { AWAY_AFTER_DAYS } from "../src/lib/rating/directoryFilter";
-import { DIRECTORY_FILTER_COOKIE } from "../src/lib/rating/rememberedFilter";
-import { seedMember, seenDaysAgo } from "./members";
+import { memberContext, seedMember, seenDaysAgo } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
 
 /*
@@ -38,8 +37,23 @@ const HERE = { email: `filter-here-${stamp}@example.test`, name: `FilterHere${st
 const AWAY = { email: `filter-away-${stamp}@example.test`, name: `FilterAway${stamp} Tester` };
 const A_ROBOT = BOT_PROFILES[BOT_TIER_LIST[0]].name;
 
-const named = (page: import("@playwright/test").Page, name: string) =>
+const named = (page: Page, name: string) =>
   page.getByTestId("directory").getByTestId("directory-name").filter({ hasText: shownName(name) });
+
+/**
+ * Puts the reader's account back to never having asked for a narrowing.
+ *
+ * Through the API, the way a member would, and null is the registry's word
+ * for "never said". A 404 is the operator on a database where they hold no
+ * member row — and then there is nothing remembered to forget, so the state
+ * this establishes already holds.
+ */
+async function forgetDirectoryFilter(page: Page): Promise<void> {
+  const response = await page.request.patch("/api/me", {
+    data: { preferences: { playersWho: null, playersSettled: null, playersActive: null } },
+  });
+  expect([200, 404], `forgetting the filter answered ${response.status()}`).toContain(response.status());
+}
 
 test.describe("who the directory lists", () => {
   test.beforeEach(async () => {
@@ -54,13 +68,14 @@ test.describe("who the directory lists", () => {
      * somebody asked. That hid the five computer players — the opponents that
      * are always available — behind a control nobody had reason to touch.
      *
-     * The cookies go first, and that is not tidiness. Since the page began
-     * remembering the last narrowing, a bare address means "however I last
-     * asked" for anybody who has ever asked — so "before anybody has said
-     * anything" is now a state a test has to establish rather than assume.
-     * Without this the case passes or fails on what ran before it.
+     * The preference is forgotten first, and that is not tidiness. Since the
+     * page began remembering the last narrowing, a bare address means
+     * "however I last asked" for anybody who has ever asked — so "before
+     * anybody has said anything" is now a state a test has to establish
+     * rather than assume. Without this the case passes or fails on what ran
+     * before it.
      */
-    await page.context().clearCookies({ name: DIRECTORY_FILTER_COOKIE });
+    await forgetDirectoryFilter(page);
     await page.goto("/players");
     await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");
     await expect(named(page, HERE.name)).toHaveCount(1);
@@ -181,19 +196,32 @@ test.describe("the bar itself", () => {
  * Keeping the narrowing somebody last asked for.
  *
  * A filter that has to be set again every visit is a filter people set once
- * and never again. The cookie is written on the way in — a page can read one
- * while it renders and cannot set one — so none of this can be checked without
- * a browser, which is why it is all here rather than in a unit test.
+ * and never again. It is kept ON THE ACCOUNT, through the preferences
+ * registry, so these run as a member with an account rather than as the
+ * operator — who may hold no member row on a development database, and then
+ * has nowhere for a preference to live. It is remembered while the page
+ * renders, so none of this can be checked without a browser, which is why it
+ * is all here rather than in a unit test.
  */
 test.describe("what the page remembers", () => {
-  test.beforeEach(async ({ page }) => {
+  const KEEPS = { email: `filter-keeps-${stamp}@example.test`, name: `FilterKeeps${stamp} Tester` };
+  let context: BrowserContext;
+  let page: Page;
+
+  test.beforeEach(async ({ browser, baseURL }) => {
     await seedMember(HERE);
-    // Start from a known preference rather than whatever a previous case left:
-    // the cookie outlives a test, which is the whole point of it.
+    context = await memberContext(browser, baseURL!, KEEPS);
+    page = await context.newPage();
+    // Start from a known preference rather than whatever a previous case
+    // left: the account outlives a test, which is the whole point of it.
     await page.goto("/players?who=everyone");
   });
 
-  test("shows what was last asked for when the address says nothing", async ({ page }) => {
+  test.afterEach(async () => {
+    await context.close();
+  });
+
+  test("shows what was last asked for when the address says nothing", async () => {
     await page.goto("/players?who=computers");
     await expect(named(page, A_ROBOT)).toHaveCount(1);
 
@@ -203,14 +231,14 @@ test.describe("what the page remembers", () => {
     await expect(named(page, HERE.name)).toHaveCount(0);
   });
 
-  test("obeys an address that does say something, over what it remembers", async ({ page }) => {
+  test("obeys an address that does say something, over what it remembers", async () => {
     await page.goto("/players?who=computers");
     await page.goto("/players?who=people");
     await expect(page.getByTestId("who-people")).toHaveAttribute("aria-current", "true");
     await expect(named(page, HERE.name)).toHaveCount(1);
   });
 
-  test("forgets when somebody asks for everybody again", async ({ page }) => {
+  test("forgets when somebody asks for everybody again", async () => {
     /*
      * THE CASE THE FEATURE BREAKS IF IT GETS WRONG. Narrowing, then asking for
      * everybody, then coming back to a bare address must not put the narrowing
@@ -225,9 +253,38 @@ test.describe("what the page remembers", () => {
     await expect(named(page, A_ROBOT)).toHaveCount(1);
   });
 
-  test("remembers the other two questions as well, not only who", async ({ page }) => {
+  test("remembers the other two questions as well, not only who", async () => {
     await page.goto("/players?who=everyone&active=1");
     await page.goto("/players");
     await expect(page.getByTestId("only-active")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("can be taken back to never having asked, through the API", async () => {
+    // Setting it, changing it and clearing it are three different tests, and
+    // this is the third: a member who forgets is shown the ordinary page.
+    await page.goto("/players?who=computers&active=1");
+    await forgetDirectoryFilter(page);
+    await page.goto("/players");
+    await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");
+    await expect(page.getByTestId("only-active")).toHaveAttribute("aria-pressed", "false");
+  });
+
+  test("follows the member to another browser, which is what an account is for", async ({ browser, baseURL }) => {
+    /*
+     * THE REASON IT IS ON THE ACCOUNT AND NOT IN A COOKIE. Somebody who
+     * narrowed the list on their phone finds it narrowed on their laptop. A
+     * second browser signed in as the same member, sharing no cookies with
+     * the first, is the laptop.
+     */
+    await page.goto("/players?who=computers");
+    const laptop = await memberContext(browser, baseURL!, KEEPS);
+    try {
+      const other = await laptop.newPage();
+      await other.goto("/players");
+      await expect(other.getByTestId("who-computers")).toHaveAttribute("aria-current", "true");
+      await expect(named(other, A_ROBOT)).toHaveCount(1);
+    } finally {
+      await laptop.close();
+    }
   });
 });

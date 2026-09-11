@@ -638,11 +638,13 @@ Three rules fall out, and they cost nothing to follow:
   setting it, changing it, and clearing it are three different tests.
 
 Worth knowing why the sibling feature was fine, because the difference is the
-diagnosis: the players filter is remembered by the same file and has no such
-bug, because it sets its cookie on `next()` WITHOUT a redirect. The query stays
-part of the address, so there is no clean address for a cache to answer stale.
-**A redirect to a cleaned-up address is what makes a client-side cache able to
-be wrong** — if you add one, drive it with a click.
+diagnosis: the players filter was remembered by the same file at the time and
+had no such bug, because it set its cookie on `next()` WITHOUT a redirect. The
+query stayed part of the address, so there was no clean address for a cache to
+answer stale. (It has since moved off the cookie onto the account — the page
+remembers it through the preferences registry, see `memberFilter.ts` — and
+still redirects nowhere.) **A redirect to a cleaned-up address is what makes a
+client-side cache able to be wrong** — if you add one, drive it with a click.
 
 ### A Merge Cannot Conflict With A File That No Longer Exists
 
