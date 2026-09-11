@@ -246,6 +246,46 @@ had noticed, including the rules page itself — the destination every game name
 on this site now points at — which reached the board and Wikipedia and had no
 way to the record or the ladder.
 
+### Show The Data, Not The Way To It
+
+The companion rule to the one above, and it pulls the other way: a count must
+lead to the games behind it, AND a page about a thing must show the thing
+rather than a link to where the thing is kept.
+
+A nav panel listing seven facets of a game is not the same as a page that
+answers what a reader came for. The ladder belongs on the game's page, not one
+click under it; the last few games belong there too. A link is the way to MORE
+of something already on the page — never the page's answer to the question it
+exists to answer.
+
+**And an empty table is data.** This is John's, and it is the half that gets
+got wrong:
+
+> "empty tables are fine! show the table. Show nothing has been played yet…
+> and that's a change to have a link saying - be the first to play!"
+
+So an empty panel **shows its headings and its shape**, says plainly that
+nobody has played this game here yet, and offers the way in as a link — BE THE
+FIRST TO PLAY. It does not hide itself, and it does not replace itself with a
+sentence apologising for the absence.
+
+Three reasons it is the better answer, because they decide how to build it:
+
+- It shows a reader the SHAPE of what this site keeps, before there is any data
+  to fill it. A hidden panel teaches nothing; an empty one teaches the form.
+- Thirty-nine of the games here have barely been played. Hiding every empty
+  table turns those into a wall of apologies; showing them turns the same
+  thirty-nine into invitations.
+- It is the same instinct as this rule rather than an exception to it. "Nobody
+  has played this yet" is a true fact about the game, and suppressing it is the
+  same failure as printing a count with nothing behind it.
+
+**One thing to get right for a signed-out reader.** Reading is open here and
+playing is gated, so "be the first to play" takes a stranger to `/join`. That
+is the intended path, not a bug — but it must read as an invitation and not a
+bait-and-switch. Word it so that somebody who follows it feels they were told
+what the site wants from them. Do not reuse the signed-in label.
+
 ### Back It Up Before You Migrate It
 
 **Checked, not assumed** — the numbers below were read from the project on
@@ -336,6 +376,20 @@ The cost is not tidiness. **The version and the changelog are how the site's
 owner knows something shipped.** A night of real fixes went out with the
 version unchanged, and from the outside that is indistinguishable from a night
 where nothing was deployed — which is exactly what he concluded, and said.
+
+**THE NUMBER IS CLAIMED AT MERGE, NOT ON THE BRANCH.** A session working in a
+worktree does not know what will land before it, so a number written into
+`package.json` on a branch is a guess about the order of other people's
+commits. Two branches guessed the same one in a single night, and the collision
+is only visible when the second merge produces a changelog with two entries
+under one version — which no gate catches, because `releases.test.ts` only
+objects to a version NEWER than `package.json`.
+
+So: **do the work on the branch and leave the version alone; take the number in
+the merge commit, when the order is a fact rather than a forecast.** The merging
+session is the one that can see what it is merging on top of. This contradicts
+nothing above — whoever LANDS a commit still bumps it, and a merge is a landing
+— it only says when the number becomes knowable.
 
 ### Nothing Answers What It Cannot Answer
 

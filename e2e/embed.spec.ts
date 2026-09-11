@@ -37,10 +37,14 @@ test.describe("an embedded board", () => {
   test("unlocks the board and nothing else", async ({ page, request }) => {
     const token = embedToken();
 
-    // The rest of the site stays shut to it. Not the front page: that says
-    // what the site is and is open to anybody, token or none — see OPEN_PATHS
-    // in proxy.ts. These are pages the gate really does hold shut.
-    await page.goto(`/games?token=${token}`);
+    // The rest of the site stays shut to it. Not the front page, and not a
+    // game's own page: those say what the site and the games ARE, and are open
+    // to anybody, token or none — see OPEN_EXACTLY and OPEN_PATTERNS in
+    // proxy.ts. These are pages the gate really does hold shut.
+    //
+    // A board it was not given is the sharpest of them: a token that unlocked
+    // ANY board would be the whole of what this test is named for going wrong.
+    await page.goto(`/games/gomoku/play?token=${token}`);
     await expect(page).toHaveURL(/\/join/);
 
     await page.goto(`/players?token=${token}`);

@@ -77,7 +77,7 @@ test.describe("the rules once play has begun", () => {
      * forgotten: it lives beside a local board rather than a shared one. It
      * had the same sentence-as-an-option and so the same overflow.
      */
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     const penalty = page.getByTestId("shared-penalty");
     const time = page.getByTestId("shared-move-time");
     await expect(time).toBeVisible();

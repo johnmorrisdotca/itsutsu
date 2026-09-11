@@ -3,12 +3,12 @@ import { openSetup, playAt } from "./support";
 
 test.describe("surviving a refresh", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
   });
 
   test("the stones are still there after reloading", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await playAt(page, 15, 7, 7);
     await playAt(page, 15, 7, 8);
 
@@ -20,7 +20,7 @@ test.describe("surviving a refresh", () => {
   });
 
   test("undo still reaches back through a restored game", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await playAt(page, 15, 7, 7);
     await playAt(page, 15, 7, 8);
     await page.reload();
@@ -32,7 +32,7 @@ test.describe("surviving a refresh", () => {
   });
 
   test("settings and appearance come back too", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await openSetup(page);
@@ -49,7 +49,7 @@ test.describe("surviving a refresh", () => {
   });
 
   test("a new game clears what was stored", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await playAt(page, 15, 7, 7);
     await page.getByRole("button", { name: "New game" }).click();
     // A board under way is not thrown away on a click any more: it asks first.

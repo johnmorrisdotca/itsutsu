@@ -7,9 +7,9 @@ import { openAdvanced, openSetup, playAt, playSequence } from "./support";
  */
 test.describe("resizing the board", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openAdvanced(page);
     await page.getByLabel("Allow resizing the board").check();
   });

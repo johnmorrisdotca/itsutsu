@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test.describe("go", () => {
   test("captures a stone the moment its last liberty is taken", async ({ page }) => {
-    await page.goto("/games/go");
+    await page.goto("/games/go/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/go");
+    await page.goto("/games/go/play");
 
     await expect(page.getByTestId("to-play")).toContainText("Black");
 
@@ -26,9 +26,9 @@ test.describe("go", () => {
   });
 
   test("either side may pass, and two in a row end the game by count, not a draw", async ({ page }) => {
-    await page.goto("/games/go");
+    await page.goto("/games/go/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/go");
+    await page.goto("/games/go/play");
 
     const pass = page.getByRole("button", { name: /^pass$/i });
     await expect(pass).toBeVisible();

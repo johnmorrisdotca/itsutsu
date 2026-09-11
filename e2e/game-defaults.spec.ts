@@ -31,7 +31,7 @@ test.describe("new games start where the member said", () => {
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // A new game of the plain game: nine by nine, without being asked.
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await expect(page.getByTestId("board-size")).toHaveValue("9");
     // And the board really is that size: H8 exists on 9×9, T19 does not.
@@ -49,7 +49,7 @@ test.describe("new games start where the member said", () => {
     const page = await context.newPage();
 
     // A game begun on the ordinary board, with a stone on it.
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await expect(page.getByTestId("board-size")).toHaveValue("15");
     await playAt(page, 15, 7, 7);
@@ -91,7 +91,7 @@ test.describe("new games start where the member said", () => {
     await page.getByTestId("save-game-defaults").click();
     await expect(page.getByText("Saved.")).toBeVisible();
 
-    await page.goto("/games/hex");
+    await page.goto("/games/hex/play");
     await openSetup(page);
     await openAdvanced(page);
     // Hex is played on its own board, and cannot be given a length at all.

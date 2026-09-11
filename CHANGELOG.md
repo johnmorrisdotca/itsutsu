@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.127.0
+- A game is one address with everything about it underneath: its rules live at the game rather than in a namespace of their own, and the games root is where you meet them
+
 ## 0.126.0
 - The site speaks Japanese as well as English: ask for it once and it is remembered, and the address goes back to being just the address
 

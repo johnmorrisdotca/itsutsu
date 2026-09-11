@@ -28,7 +28,7 @@ import { readCatalogueView, type CatalogueView } from "@/lib/gomoku/catalogueVie
 import type { CatalogueFamily } from "@/components/games/games.types";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Speaker } from "@/lib/i18n/i18n";
-import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -75,11 +75,27 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
    * production, where the database IS there; it would have quietly cost a
    * handful of queries per visitor to build a lobby nobody was going to see,
    * which is this repo's own "cost per call times call count" all over again.
+   *
+   * THE QUESTION IS "IS THERE A SESSION", NOT "IS THERE AN ADDRESS", and the
+   * difference is a person. This asked `currentEmail()`, which is null for a
+   * browser holding an INVITE session — somebody who redeemed a code and never
+   * signed in with Google, which is how everybody John invites gets in. They
+   * were shown the stranger's page: "playing one needs an invite", and a link
+   * to the door they had already come through. No lobby, no open seats, no way
+   * to start a game. The masthead beside it said "Sign out", because
+   * `SiteHeader` asks `currentSession()` — two halves of one page disagreeing
+   * about the same reader.
+   *
+   * `email === null` means both "a stranger" and "a member who joined by
+   * code", which is exactly the fault AGENTS.md calls Nothing Answers What It
+   * Cannot Answer. So the gate for the lobby is the session, and the address
+   * is carried on as `signedIn` for the parts that genuinely need a name.
    */
-  const email = await currentEmail();
-  if (email === null) {
+  const session = await currentSession();
+  if (session === null) {
     return <PublicCatalogue view={view} say={say} />;
   }
+  const email = session.email ? session.email.trim().toLowerCase() : null;
 
   const claims = seatClaims((await cookies()).getAll());
   /*
@@ -113,7 +129,8 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
      */
     fetchOpponents(email),
     // By id, because a seat is keyed by member and the list is kept by address.
-    ignoredMemberIds(email),
+    // An invite holder has no address, so there is nobody for them to ignore.
+    email === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(email),
   ]);
 
   /*
@@ -248,7 +265,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         </h2>
         <p className="max-w-prose text-sm text-muted">{START_COPY.lead}</p>
         <div className={PANEL_CLASS}>
-          <StartGame families={groups} seats={seats} opponents={opponents} signedIn />
+          <StartGame families={groups} seats={seats} opponents={opponents} signedIn={email !== null} />
         </div>
         <div className="grid gap-4 md:grid-cols-[3fr_2fr]">
           <OpenGamesBoard

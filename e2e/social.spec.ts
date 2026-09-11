@@ -17,7 +17,7 @@ async function startGame(
 
 test.describe("notes, messages, deadlines and players", () => {
   test("private notes stay in this browser, per game", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     const notes = page.getByTestId("game-notes");
     await notes.fill("Try the diagonal next time.");
     await page.reload();
@@ -106,7 +106,7 @@ test.describe("notes, messages, deadlines and players", () => {
   });
 
   test("a local game can still be played after the notes panel appears", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await playAt(page, 15, 7, 7);
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
   });

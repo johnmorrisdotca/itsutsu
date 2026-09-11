@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test.describe("checkers", () => {
   test("captures by a forced jump, and blocks a piece with no capture of its own", async ({ page }) => {
-    await page.goto("/games/checkers");
+    await page.goto("/games/checkers/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/checkers");
+    await page.goto("/games/checkers/play");
 
     // Both sides start with twelve men filling the dark squares of their own three rows.
     await expect(page.getByRole("button", { name: "B8, Black stone" })).toBeVisible();

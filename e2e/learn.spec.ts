@@ -15,6 +15,9 @@ test.describe("rules and learning", () => {
     await expect(page.getByTestId("rules-attribution")).toContainText("trademark");
 
     await page.getByRole("link", { name: /Hot Drop/ }).click();
+    // A card leads to the GAME now, not straight to its document — the rules
+    // are one segment under it, and the front door is where you pick them up.
+    await page.getByTestId("game-rules-link").click();
     const rules = page.getByTestId("rules-page");
     await expect(rules).toContainText("Object");
     await expect(rules).toContainText("Board");
@@ -184,7 +187,9 @@ test.describe("signing out", () => {
     await page.getByTestId("sign-out").click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByTestId("sign-in")).toBeVisible();
-    await page.goto("/games");
+    // And the session really is gone, proved on a path the gate still shuts.
+    // /games is open reading now, so asking for it would prove nothing.
+    await page.goto("/games/gomoku/play");
     await expect(page).toHaveURL(/\/join/);
   });
 });

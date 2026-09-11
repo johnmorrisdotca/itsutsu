@@ -7,9 +7,14 @@ import { expect, test } from "@playwright/test";
  * which is exactly what happened once already on the production alias.
  */
 test.describe("a visitor with no invite", () => {
-  test("is sent to the door instead of the games", async ({ page }) => {
-    await page.goto("/games");
-    await expect(page).toHaveURL(/\/join\?next=%2Fgames/);
+  test("is sent to the door instead of a board", async ({ page }) => {
+    /*
+     * A BOARD, not the games. The catalogue and a game's own page are open
+     * reading now — see "the pages that stay open" below — so the path that
+     * proves the gate still stands has to be one of the playing ones.
+     */
+    await page.goto("/games/gomoku/play");
+    await expect(page).toHaveURL(/\/join\?next=%2Fgames%2Fgomoku%2Fplay/);
     await expect(page.getByTestId("google-signin")).toBeVisible();
     await expect(page.getByTestId("invite-code")).toHaveCount(0);
     await page.getByTestId("show-invite-code").click();
@@ -80,10 +85,12 @@ test.describe("a visitor with no invite", () => {
   });
 
   test("keeps the path when sending someone to the door", async ({ page }) => {
-    // A link like /games/connect-six means "this game". Dropping the path would
-    // land the visitor on a different one from the one they clicked.
-    await page.goto("/games/connect-six");
-    await expect(page).toHaveURL(/\/join\?next=%2Fgames%2Fconnect-six/);
+    // A link like /games/connect-six/play means "a board of this game".
+    // Dropping the path would land the visitor on a different game from the
+    // one they clicked, or on no game at all. The game ITSELF is open now, so
+    // the path that tests this has to be one the gate still shuts.
+    await page.goto("/games/connect-six/play");
+    await expect(page).toHaveURL(/\/join\?next=%2Fgames%2Fconnect-six%2Fplay/);
   });
 });
 
@@ -196,8 +203,17 @@ test.describe("the pages that stay open", () => {
     expect((await request.get("/art/games/caro.jpg")).status()).toBe(200);
   });
 
+  /*
+   * /games and /games/<game> are DELIBERATELY open and are checked above. What
+   * this guards is the edge of that decision: opening a game must not have
+   * opened the site, and the facets of a game that are not "what the game is"
+   * must still be shut. This list held /games and /games/gomoku until the
+   * front door opened them, at which point it contradicted the test above —
+   * two answers to one question, in the one spec where that is least
+   * affordable.
+   */
   test("but nothing else opened by accident", async ({ request }) => {
-    for (const path of ["/games", "/games/gomoku", "/history", "/players", "/admin"]) {
+    for (const path of ["/history", "/players", "/admin", "/me", "/games/gomoku/play"]) {
       const response = await request.get(path, { maxRedirects: 0 });
       expect(response.status(), `${path} should still be gated`).toBe(307);
     }

@@ -61,7 +61,7 @@ test.describe("asking before something cannot be undone", () => {
       opened = dialog.message();
       void dialog.dismiss();
     });
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.getByRole("button", { name: /^H8, empty$/ }).click();
     await page.waitForTimeout(200);
     expect(opened, "a native dialog was opened").toBe("");

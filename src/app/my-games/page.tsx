@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
  *
  * So the games you are playing are a place rather than a region of a longer
  * page. Starting a NEW one is its own page too, at /games, where the games
- * themselves already live — /games/<slug> is a board and /games/all is the
+ * themselves already live — /games/<slug>/play is a board and /games is the
  * catalogue, so the games' own namespace keeping the catalogue reads right
  * and your matches getting an address of their own reads better than both
  * sharing one.

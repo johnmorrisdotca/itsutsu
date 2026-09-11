@@ -52,7 +52,7 @@ test.describe("a game played from two devices", () => {
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
 
     // The claim is in a cookie now; the bar shows the match and nothing secret.
-    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9-]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/match\/[a-z0-9-]+\/0$/);
     expect(page.url()).not.toContain(game.blackToken);
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
 
@@ -113,11 +113,11 @@ test.describe("a game played from two devices", () => {
   test("the lobby's Post a seat lands on the sharing panel with the other seat already open", async ({ page }) => {
     // The lobby posts a seat from its own sentence now; the fragment is the
     // way in for a bookmark, or for somebody sent the address directly.
-    await page.goto("/games/gomoku#post-seat");
+    await page.goto("/games/gomoku/play#post-seat");
     await expect(page.getByTestId("post-seat-note")).toBeVisible();
     await expect(page.getByLabel("Open to anyone")).toBeChecked();
     await page.getByTestId("start-shared-game").click();
-    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9-]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/match\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("shared-open-line")).toContainText("posted on the games page");
   });
 
@@ -130,18 +130,19 @@ test.describe("a game played from two devices", () => {
     // The board learns of the end on its next poll, without a reload, and says when it came.
     await expect(page.getByTestId("turn-banner")).toContainText("Black wins", { timeout: 15_000 });
     await expect(page.getByTestId("finished-at")).toContainText("Finished");
-    // A finished match lives at its record, which says both times in its heading.
+    // A finished match STAYS at its own address — it does not move to a second
+    // one — and the filed view it reloads into says both times in its heading.
     await page.reload();
-    await expect(page).toHaveURL(/\/history\/gomoku\//);
+    await expect(page).toHaveURL(/\/games\/gomoku\/match\//);
     await expect(page.getByText(/Started .* · finished /).first()).toBeVisible();
   });
 
   test("starting a shared game from the board lands on the match", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.getByTestId("start-shared-game").click();
 
     // The match, with its move count on the end: a fresh board is position 0.
-    await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9-]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/match\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
   });
 });

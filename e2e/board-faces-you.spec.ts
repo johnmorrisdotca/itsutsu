@@ -14,7 +14,7 @@ import { expect, test } from "@playwright/test";
  */
 test.describe("a board that sets men out", () => {
   test("starts with your own men nearest you", async ({ page }) => {
-    await page.goto("/games/halma");
+    await page.goto("/games/halma/play");
     const board = page.locator("button[aria-label*='black' i]").first();
     await expect(board).toBeVisible();
 
@@ -47,7 +47,7 @@ test.describe("a board that sets men out", () => {
   test("leaves a board that starts empty exactly as it was", async ({ page }) => {
     // Gomoku has no sides before anybody plays, so nothing should have moved.
     // The coordinates are the tell: turning the board turns them with it.
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     const first = page.locator("button[aria-label]").first();
     await expect(first).toBeVisible();
     await expect(first).toHaveAttribute("aria-label", /^A15/);

@@ -56,8 +56,8 @@ test.describe("choosing the board in the sentence", () => {
     await opponents.selectOption(computer);
     await page.getByTestId("start-game").getByRole("button").last().click();
 
-    await page.waitForURL(/\/games\/gomoku\/[a-z0-9-]+/, { timeout: 30_000 });
-    const id = page.url().split("/games/gomoku/")[1].split("/")[0];
+    await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9-]+/, { timeout: 30_000 });
+    const id = page.url().split("/games/gomoku/match/")[1].split("/")[0];
     const made = await (await request.get(`/api/games/${id}`)).json();
     expect(made.size).toBe(19);
     expect(made.variant).toBe("freestyle");

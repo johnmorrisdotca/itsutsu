@@ -8,7 +8,7 @@ import { openAdvanced, openSetup, playAt, playSequence } from "./support";
  */
 test.describe("the small games", () => {
   test("tic-tac-toe is three in a row on a locked 3×3 board", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("tictactoe");
 
@@ -27,7 +27,7 @@ test.describe("the small games", () => {
   });
 
   test("drop four lands a stone at the bottom of the column it was played in", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("dropFour");
     await expect(page.getByTestId("board-size")).toHaveValue("7");
@@ -40,7 +40,7 @@ test.describe("the small games", () => {
   });
 
   test("twist five owes a quarter turn after each stone", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("twistFive");
 
@@ -59,7 +59,7 @@ test.describe("the small games", () => {
   });
 
   test("trap three loses on three in a row", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("trapThree");
 
@@ -69,9 +69,9 @@ test.describe("the small games", () => {
   });
 
   test("the move list folds away while playing, and the arrows step the record", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await playSequence(page, 15, [[7, 7], [7, 8]]);
     await expect(page.getByTestId("move-history")).toBeVisible();
     await page.getByTestId("move-history-fold").locator("summary").click();
@@ -85,9 +85,9 @@ test.describe("the small games", () => {
   });
 
   test("a game under way asks before New game throws it away", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
 
     // Nothing to lose on an empty board: New game just starts one.
     await page.getByRole("button", { name: /^New game/ }).click();
@@ -105,7 +105,7 @@ test.describe("the small games", () => {
   });
 
   test("square four places four pieces then slides them", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("squareFour");
 
@@ -141,7 +141,7 @@ test.describe("the small games", () => {
      * same guarantee it always made — NOTHING IS HIDDEN — asked of the
      * sentence instead of the select.
      */
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("twistFour");
     await openAdvanced(page);

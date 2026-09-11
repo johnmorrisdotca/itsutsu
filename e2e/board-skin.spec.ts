@@ -20,7 +20,7 @@ test.describe("the board a member likes", () => {
 
     const first = await memberContext(browser, baseURL!, me);
     const page = await first.newPage();
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
 
     await openSetup(page);
     await page.getByTestId("board-theme-sumi").click();
@@ -50,7 +50,7 @@ test.describe("the board a member likes", () => {
     // decides what board they get.
     const second = await memberContext(browser, baseURL!, me);
     const elsewhere = await second.newPage();
-    await elsewhere.goto("/games/gomoku");
+    await elsewhere.goto("/games/gomoku/play");
     await openSetup(elsewhere);
     await expect(elsewhere.getByTestId("board-theme-sumi")).toHaveAttribute("aria-pressed", "true");
     await second.close();
@@ -63,7 +63,7 @@ test.describe("the board a member likes", () => {
       name: `Plain ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     // Kaya, as every board has always been set out.
     await expect(page.getByTestId("board-theme-kaya")).toHaveAttribute("aria-pressed", "true");
@@ -90,7 +90,7 @@ test.describe("the board a member likes", () => {
 
     const context = await memberContext(browser, baseURL!, me);
     const page = await context.newPage();
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     // The theme falls back; the stone set they really chose is kept.
     await expect(page.getByTestId("board-theme-kaya")).toHaveAttribute("aria-pressed", "true");

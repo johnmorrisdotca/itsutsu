@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test.describe("halma", () => {
   test("starts with both camps full and a piece jumps out over its neighbour", async ({ page }) => {
-    await page.goto("/games/halma");
+    await page.goto("/games/halma/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/halma");
+    await page.goto("/games/halma/play");
     await expect(page.getByTestId("home-count")).toContainText("0");
     await expect(page.getByTestId("variant-line")).toContainText("Pick one of your pieces");
     // Nothing is placed in a race: an open square is not playable until a piece is picked up.
@@ -20,10 +20,10 @@ test.describe("halma", () => {
   });
 
   test("offers no best move, because there are no lines to read", async ({ page }) => {
-    await page.goto("/games/halma");
+    await page.goto("/games/halma/play");
     await expect(page.getByTestId("ask-hint")).toHaveCount(0);
     // A game that does read lines still offers it.
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await expect(page.getByTestId("ask-hint")).toBeVisible();
   });
 

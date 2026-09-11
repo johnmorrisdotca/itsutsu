@@ -8,7 +8,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { DEFAULT_BOARD_SIZE, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { gamePath, matchPath, rulesPath, seatPath } from "@/lib/gomoku/slugs";
+import { gamePath, matchPath, playPath, rulesPath, seatPath } from "@/lib/gomoku/slugs";
 import Link from "next/link";
 import { botsFor } from "@/lib/bots/bots.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
@@ -134,7 +134,9 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
   async function start() {
     setError(null);
     if (against === SCREEN) {
-      router.push(gamePath(variant));
+      // The BOARD. The button says "Set up the board", and /games/<slug> is
+      // the game's front door, which has no board on it.
+      router.push(playPath(variant));
       return;
     }
     setBusy(true);

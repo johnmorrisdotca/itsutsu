@@ -17,7 +17,7 @@ import { ready } from "./support";
 test.describe("the idle question", () => {
   test("offers a way out, and the way out leaves", async ({ page }) => {
     await page.clock.install();
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     /*
      * Waits for the page to be listening, not merely drawn. The board is
      * server-rendered, so waiting for an intersection proves the HTML arrived
@@ -49,7 +49,7 @@ test.describe("the idle question", () => {
     // The original answer has to keep working: a second choice that broke the
     // first would be a worse bug than the one being fixed.
     await page.clock.install();
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await ready(page, "game-view");
     await page.clock.runFor("03:10");
     await expect(page.getByTestId("idle-modal")).toBeVisible();

@@ -60,8 +60,16 @@ test.describe("starting a game is one sentence", () => {
     // has been played, so this is calling it off rather than resigning it.
     await page.getByTestId("cancel").click();
     await page.getByTestId("cancel-yes").click();
-    // A finished game leaves the board for the record, so the seat is off the board.
-    await expect(page).toHaveURL(/\/history\/trap-three\//, { timeout: 15_000 });
+    /*
+     * Called off, proved by the page rather than by the address. A match keeps
+     * its own address when it ends now instead of moving to a second one, so
+     * waiting for the address to change would have been waiting for something
+     * that no longer happens — a check that passes by timing out into the
+     * truth is not a check. The sentence that said it was waiting stops.
+     */
+    await expect(page.getByTestId("turn-banner")).not.toContainText("waiting for somebody", {
+      timeout: 15_000,
+    });
   });
 
   test("offers a stranger's seat even when my own is standing beside it", async ({ page, browser, request }) => {
@@ -146,7 +154,7 @@ test.describe("starting a game is one sentence", () => {
     await expect(page.getByTestId("start-game-go")).toHaveText("Set up the board");
     await expect(page.getByTestId("start-game-hint")).toContainText("never rated");
     await page.getByTestId("start-game-go").click();
-    await expect(page).toHaveURL(/\/games\/halma$/);
+    await expect(page).toHaveURL(/\/games\/halma\/play$/);
   });
 
   test("the seats board and the room sit side by side, and both say when they are empty", async ({ page }) => {

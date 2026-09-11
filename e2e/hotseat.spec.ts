@@ -7,9 +7,9 @@ const MATCH = /\/games\/gomoku\/match\/([A-Za-z0-9_-]+)\/(\d+)$/;
 
 test.describe("a game at one screen is a match from its first stone", () => {
   test("gets an address, keeps it across a reload, and takes moves back on the server", async ({ page, request }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.getByRole("button", { name: "New game" }).click();
-    await expect(page).toHaveURL(/\/games\/gomoku$/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/play$/);
 
     await playAt(page, 15, 7, 7);
     await expect(page).toHaveURL(MATCH);
@@ -61,13 +61,13 @@ test.describe("a game at one screen is a match from its first stone", () => {
   });
 
   test("a game that may be resized stays in the browser and has no address", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.getByRole("button", { name: "New game" }).click();
     await openSetup(page);
     await openAdvanced(page);
     await page.getByLabel("Allow resizing the board").check();
     await playAt(page, 15, 7, 7);
     await page.waitForTimeout(800);
-    await expect(page).toHaveURL(/\/games\/gomoku$/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/play$/);
   });
 });

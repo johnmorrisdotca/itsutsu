@@ -34,8 +34,8 @@ test.describe("setting a game up before it exists", () => {
     await expect(page.getByTestId("set-up-summary")).toContainText("19×19");
 
     await page.getByTestId("set-up-start").click();
-    await page.waitForURL(/\/games\/gomoku\/[a-z0-9]{4}-[a-z0-9]{4}/, { timeout: 30_000 });
-    const id = page.url().split("/games/gomoku/")[1].split("/")[0];
+    await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9]{4}-[a-z0-9]{4}/, { timeout: 30_000 });
+    const id = page.url().split("/games/gomoku/match/")[1].split("/")[0];
     const made = await (await request.get(`/api/games/${id}`)).json();
     expect(made.size).toBe(19);
     expect(made.rated).toBe(false);

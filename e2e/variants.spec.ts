@@ -7,7 +7,7 @@ import { openAdvanced, openSetup, playAt, playSequence } from "./support";
  */
 test.describe("rule variants", () => {
   test("the games browser lists every variant and switches the rules", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.getByTestId("open-game-browser").first().click();
 
     const browser = page.getByTestId("game-browser");
@@ -24,7 +24,7 @@ test.describe("rule variants", () => {
   });
 
   test("renju marks black's double three as forbidden and refuses it", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await openSetup(page);
@@ -48,7 +48,7 @@ test.describe("rule variants", () => {
   });
 
   test("swap2 pauses after three stones for a colour choice", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("opening").selectOption("swap2");
     await expect(page.getByTestId("opening-notice")).toContainText("first three stones");
@@ -70,7 +70,7 @@ test.describe("rule variants", () => {
   });
 
   test("connect6 gives two stones a turn after the first", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("connect6");
     await openSetup(page);
@@ -87,7 +87,7 @@ test.describe("rule variants", () => {
   });
 
   test("a handicap forbids one colour a shape the game otherwise allows", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await openAdvanced(page);
@@ -109,7 +109,7 @@ test.describe("rule variants", () => {
   });
 
   test("ninuki lifts a flanked pair off the board", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await openSetup(page);

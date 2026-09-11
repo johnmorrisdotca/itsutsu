@@ -6,9 +6,9 @@ const cell = (row: number, col: number) => `${COLUMNS[col]}${11 - row}`;
 
 test.describe("hex", () => {
   test("is a rhombus where a cell touches six, and joining your two sides wins", async ({ page }) => {
-    await page.goto("/games/hex");
+    await page.goto("/games/hex/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/hex");
+    await page.goto("/games/hex/play");
 
     // Eleven a side.
     await expect(page.getByRole("button", { name: /empty$/ })).toHaveCount(121);

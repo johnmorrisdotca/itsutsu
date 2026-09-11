@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test.describe("chinese checkers", () => {
   test("starts with both points full, and a piece steps out along the hex lattice", async ({ page }) => {
-    await page.goto("/games/chinese-checkers");
+    await page.goto("/games/chinese-checkers/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/chinese-checkers");
+    await page.goto("/games/chinese-checkers/play");
 
     await expect(page.getByTestId("home-count")).toContainText("0");
     await expect(page.getByTestId("variant-line")).toContainText("Pick one of your pieces");

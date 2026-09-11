@@ -37,7 +37,7 @@ test.describe("a game given a length", () => {
 
   test("is drawn once it has run its share of the board, with room left", async ({ page }) => {
     test.slow();
-    await page.goto("/games/misere-five");
+    await page.goto("/games/misere-five/play");
 
     await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
@@ -60,7 +60,7 @@ test.describe("a game given a length", () => {
   test("is not offered for a game that cannot be drawn", async ({ page }) => {
     // Hex: a full board always joins one player's two sides, so there is no
     // position in which neither has won and no length to set.
-    await page.goto("/games/hex");
+    await page.goto("/games/hex/play");
     await openSetup(page);
     await openAdvanced(page);
     await expect(page.getByTestId("draw-limit")).toBeDisabled();
@@ -69,7 +69,7 @@ test.describe("a game given a length", () => {
   test("is not offered on a board too small to need one", async ({ page }) => {
     // Noughts and crosses is over in nine moves. Half the board is four, and
     // a game cut short after four moves is this setting misapplied.
-    await page.goto("/games/tic-tac-toe");
+    await page.goto("/games/tic-tac-toe/play");
     await openSetup(page);
     await openAdvanced(page);
     await expect(page.getByTestId("draw-limit")).toBeDisabled();

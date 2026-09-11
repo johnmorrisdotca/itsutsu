@@ -187,4 +187,27 @@ describe("the paths that stay open", () => {
     // Whatever it allows, it must refuse the rest rather than allow by default.
     expect(robots).toContain('disallow: "/"');
   });
+
+  /**
+   * Everything robots.txt invites a crawler to is a path this gate really
+   * opens.
+   *
+   * Not the converse: `/join` is open and deliberately uncrawlable, because a
+   * door is not a page to arrive at from a search result. Only one direction
+   * can go wrong silently, and it did — the file advertised `/rules` for weeks
+   * after that namespace stopped existing, and omitted `/games`, which had
+   * just been opened on purpose. A crawler was being sent to a 404 and steered
+   * away from the pages this site most wants found.
+   */
+  it("never invites a crawler to a path the gate shuts", () => {
+    const robots = readFileSync("src/app/robots.ts", "utf8");
+    const listed = robots.match(/allow: \[([^\]]*)\]/)?.[1] ?? "";
+    const allowed = [...listed.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+    expect(allowed.length, "no allow list was found to check").toBeGreaterThan(0);
+    for (const entry of allowed) {
+      // "/$" is robots.txt's way of saying the front page and nothing under it.
+      const path = entry === "/$" ? "/" : entry.replace(/\/$/, "");
+      expect(wouldBeOpen(path), `robots.txt invites crawlers to ${entry}, which the gate shuts`).toBe(true);
+    }
+  });
 });

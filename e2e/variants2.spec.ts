@@ -8,7 +8,7 @@ import { openSetup, playAt } from "./support";
  */
 test.describe("more variants", () => {
   test("maker and breaker: the mover picks the colour and any five is the maker's", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("makerBreaker");
     // A board the rules fix is stated, not offered: see games.spec.ts.
@@ -33,7 +33,7 @@ test.describe("more variants", () => {
   });
 
   test("notakto: every stone is black and the third in a row loses", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("notakto");
     await expect(page.getByTestId("fixed-by-rules")).toContainText("3×3");
@@ -48,7 +48,7 @@ test.describe("more variants", () => {
   });
 
   test("sannuki counts captures in stones, fifteen to win", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await openSetup(page);
@@ -67,7 +67,7 @@ test.describe("more variants", () => {
   });
 
   test("worm drop shows two wormhole mouths on a 7×7 board", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("wormDrop");
     // Wormhole Drop does NOT fix its board — it offers several — so this is
@@ -81,7 +81,7 @@ test.describe("more variants", () => {
     await expect(page.getByTestId("inspired-by")).toContainText("Connect Four");
     await page.goto("/games/gomoku/rules");
     await expect(page.getByTestId("inspired-by")).toHaveCount(0);
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.getByTestId("open-game-browser").first().click();
     await expect(page.getByTestId("inspired-twistFive")).toContainText("Pentago");
   });
@@ -89,9 +89,9 @@ test.describe("more variants", () => {
 
 test.describe("the flipping games", () => {
   test("reversi opens with four legal moves and a move turns the bracketed disc", async ({ page }) => {
-    await page.goto("/games/reversi");
+    await page.goto("/games/reversi/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/reversi");
+    await page.goto("/games/reversi/play");
     await expect(page.getByTestId("disc-count")).toHaveText(/2.*2/);
     const legal = page.getByRole("button", { name: /empty$/ }).and(page.locator(":not([disabled])"));
     await expect(legal).toHaveCount(4);
@@ -104,9 +104,9 @@ test.describe("the flipping games", () => {
   });
 
   test("grand reversi opens on ten by ten, with the same four moves two squares further from the edge", async ({ page }) => {
-    await page.goto("/games/grand-reversi");
+    await page.goto("/games/grand-reversi/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/grand-reversi");
+    await page.goto("/games/grand-reversi/play");
     await expect(page.getByTestId("disc-count")).toHaveText(/2.*2/);
     await expect(page.getByRole("button", { name: /empty$/ })).toHaveCount(96);
     const legal = page.getByRole("button", { name: /empty$/ }).and(page.locator(":not([disabled])"));

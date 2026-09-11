@@ -9,7 +9,9 @@ import { expect, test } from "@playwright/test";
  * after the page has settled.
  */
 test.describe("just the board", () => {
-  const board = "/games/gomoku";
+  // The board is a facet of the game, not the game: /games/<slug> is the front
+  // door and is a standard-width page, so the switch is not offered there.
+  const board = "/games/gomoku/play";
 
   test("strips the page back, and brings it back again", async ({ page }) => {
     await page.goto(board);
@@ -43,7 +45,7 @@ test.describe("just the board", () => {
     await expect(page.locator("[data-chrome]").first()).toBeHidden();
 
     // And it follows the reader to another board, not just the one it was set on.
-    await page.goto("/games/renju");
+    await page.goto("/games/renju/play");
     await expect(page.locator("[data-chrome]").first()).toBeHidden();
 
     await page.getByTestId("bare-board-toggle").click();

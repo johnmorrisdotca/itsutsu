@@ -20,7 +20,7 @@ import { openAdvanced, openSetup } from "./support";
 test.describe("the settings panel on a phone", () => {
   test("keeps every select inside its own row, at the longest option each has", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 900 });
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openAdvanced(page);
     await openSetup(page);
 
@@ -84,7 +84,7 @@ test.describe("the whole page on a narrow phone", () => {
   for (const width of [320, 360, 375]) {
     test(`does not scroll sideways at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto("/games/gomoku");
+      await page.goto("/games/gomoku/play");
       // Open the set-up, because that is where the grid is: a folded panel
       // cannot overflow, so a test that never opens it always passes.
       await openAdvanced(page);

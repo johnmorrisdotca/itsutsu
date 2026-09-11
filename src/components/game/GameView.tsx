@@ -10,7 +10,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
-import { gamePath, matchPath } from "@/lib/gomoku/slugs";
+import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { snapshotFromMatch } from "./matchSnapshot";
 import { useMatchMirror } from "./useMatchMirror";
 import { GameOptions, GameSidebar } from "./GamePanel";
@@ -41,7 +41,7 @@ export function GameView({
 }) {
   // Nothing moving for a couple of minutes pauses the clock behind a modal.
   const { idle, confirm } = useIdleWatch();
-  // /games/<slug>#post-seat: the lobby's "Post a seat" lands here wanting the sharing panel.
+  // /games/<slug>/play#post-seat: an address that lands on the sharing panel, already open.
   const [postSeat] = useState(() => typeof window !== "undefined" && window.location.hash === "#post-seat");
   // A game asked for by name resumes if it is the stored one, else starts fresh.
   /*
@@ -99,8 +99,14 @@ export function GameView({
   useEffect(() => {
     if (!trackPath) return;
     if (kept.matchId === null) {
-      if (window.location.pathname !== gamePath(playing)) {
-        window.history.replaceState(null, "", gamePath(playing));
+      /*
+       * The BOARD's address, not the game's. /games/<slug> is the game's front
+       * door and has no board on it, so naming it here would replace the
+       * address of the page the player is looking at with one that cannot
+       * show them what they are doing — and a refresh would land them on it.
+       */
+      if (window.location.pathname !== playPath(playing)) {
+        window.history.replaceState(null, "", playPath(playing));
       }
       return;
     }
@@ -109,7 +115,7 @@ export function GameView({
     // than they had just played, which is worse than not naming the position.
     const path = kept.synced
       ? matchPath(playing, kept.matchId, moveIndex)
-      : gamePath(playing);
+      : playPath(playing);
     if (window.location.pathname !== path) window.history.replaceState(null, "", path);
   }, [kept.matchId, kept.synced, moveIndex, playing, trackPath]);
   const showIdle = idle && session.state.status === GAME_STATUS.playing;

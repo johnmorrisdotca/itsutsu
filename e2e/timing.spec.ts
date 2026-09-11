@@ -3,9 +3,9 @@ import { openAdvanced, openSetup, playAt, playSequence } from "./support";
 
 test.describe("clocks", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
   });
 
   test("there is no clock unless a game asks for one", async ({ page }) => {
@@ -49,9 +49,9 @@ test.describe("clocks", () => {
 
 test.describe("game statistics", () => {
   test("count moves for each player", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
 
     await playSequence(page, 15, [[7, 7], [7, 8], [8, 8]]);
 
@@ -62,9 +62,9 @@ test.describe("game statistics", () => {
   });
 
   test("count a threat that was ignored", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
 
     // Black builds an open three; white plays far away instead of answering.
     await playSequence(page, 15, [[7, 3], [0, 0], [7, 4], [0, 1], [7, 5], [14, 14]]);
@@ -78,18 +78,18 @@ test.describe("game statistics", () => {
 
 test.describe("early warning", () => {
   test("is off by default, so two stones raise nothing", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
 
     await playSequence(page, 15, [[7, 3], [0, 0], [7, 4]]);
     await expect(page.getByTestId("building-warning")).toHaveCount(0);
   });
 
   test("warns before an open three exists once it is turned on", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
 
     await openAdvanced(page);
     await page.getByLabel("Warn before a three forms").check();
@@ -103,9 +103,9 @@ test.describe("early warning", () => {
 
 test.describe("who is ahead", () => {
   test("is hidden until asked for, and then reads the position in words", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
 
     await expect(page.getByTestId("advantage")).toHaveCount(0);
 
@@ -122,9 +122,9 @@ test.describe("who is ahead", () => {
   });
 
   test("gives the lead to the side building a threat", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
 
     await openAdvanced(page);
     await page.getByLabel("Who is ahead").check();
@@ -143,9 +143,9 @@ test.describe("who is ahead", () => {
      * to be told there was no reading in a game where stones move after they
      * are placed — in Reversi they do not move, they turn. It is counted now.
      */
-    await page.goto("/games/reversi");
+    await page.goto("/games/reversi/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/reversi");
+    await page.goto("/games/reversi/play");
 
     await openAdvanced(page);
     await page.getByLabel("Who is ahead").check();

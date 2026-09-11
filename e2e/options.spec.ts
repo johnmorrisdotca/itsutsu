@@ -3,7 +3,7 @@ import { openAdvanced, openSetup, playAt } from "./support";
 
 test.describe("game options", () => {
   test("the mini board is 9x9", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
 
@@ -13,7 +13,7 @@ test.describe("game options", () => {
   });
 
   test("obstacles seal the star points but leave tengen open", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("board-size").selectOption("9");
     await openSetup(page);
@@ -25,7 +25,7 @@ test.describe("game options", () => {
   });
 
   test("white can be given the first stone in freestyle", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     // The set-up folds away now, so it is opened the way a player opens it.
     await openSetup(page);
     await page.getByTestId("first-player").selectOption("white");
@@ -34,7 +34,7 @@ test.describe("game options", () => {
   });
 
   test("standard rules refuse to hand the first stone over", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openSetup(page);
     await page.getByTestId("rules").selectOption("standard");
 
@@ -43,7 +43,7 @@ test.describe("game options", () => {
   });
 
   test("undo can be switched off for a game where stones are final", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await openAdvanced(page);
     await page.getByLabel("Allow taking moves back").uncheck();
 
@@ -52,7 +52,7 @@ test.describe("game options", () => {
   });
 
   test("a board theme changes the surface without touching the game", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await playAt(page, 15, 7, 7);
 
     await openSetup(page);
@@ -67,7 +67,7 @@ test.describe("game options", () => {
   });
 
   test("move numbers can be printed on the stones", async ({ page }) => {
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await playAt(page, 15, 7, 7);
     await playAt(page, 15, 7, 8);
 
