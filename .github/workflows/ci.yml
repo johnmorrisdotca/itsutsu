@@ -6,6 +6,22 @@ on:
     branches:
       - main
 
+# One CI run per ref at a time, QUEUED rather than cancelled.
+#
+# The browser suite is an hour's ceiling, and until this existed every push
+# started another one with nothing to stop it — a night of ten merges had five
+# overlapping runs testing trees nobody cared about any more, all competing for
+# the same free runners.
+#
+# `cancel-in-progress: false` on purpose, and it is the opposite of what
+# vercel-deploy.yml wants. A superseded DEPLOY is worthless, so that one kills
+# its predecessor. A superseded TEST RUN is evidence: it is the only record of
+# whether the commit it was started for was sound, and on a bisect it is the
+# thing you go looking for.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   quality-and-build:
     runs-on: ubuntu-latest

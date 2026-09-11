@@ -14,10 +14,23 @@ jobs:
     # NOT free even on a public repo, and moving this to one is the single
     # way this acquires a bill.
     runs-on: ubuntu-latest
-    # The suite takes about ten minutes on a developer's machine. The ceiling
-    # is generous because a dev server compiles on demand and a cold runner
-    # has nothing cached; a job that is merely slow should report, not fail.
-    timeout-minutes: 30
+    # MEASURED, now, rather than guessed. The first run on a runner was killed
+    # at exactly 30m18s having reached [539/517] with retries — essentially
+    # the whole suite, dying inside the last project. Ten minutes locally does
+    # not transfer: a cold runner compiles every page on demand and runs the
+    # suite on ONE worker (playwright.config.ts sets `workers: 1`, because the
+    # whole suite shares one database and parallel specs corrupt each other's
+    # fixtures).
+    #
+    # A job killed by this ceiling is reported as `cancelled`, NOT `failed` —
+    # indistinguishable in `gh run list` from somebody pressing cancel, which
+    # cost a while to work out. So the ceiling is set well clear of the real
+    # figure rather than just above it.
+    #
+    # Raising the worker count is the real fix and is deliberately NOT done
+    # here: it needs its own run, and if parallel workers turn out to need a
+    # database each, that is a ticket rather than a flag.
+    timeout-minutes: 60
 
     services:
       # Postgres runs ON the runner and is thrown away with it. No Neon usage,
@@ -69,6 +82,12 @@ jobs:
       # set. RATE_LIMIT_RELIEF is not optional: without it the suite drives
       # the whole site from one address and a dozen tests fail with 429s in
       # files testing something else entirely.
+      #
+      # The two AUTH_GOOGLE_* values are throwaways and nothing ever redeems
+      # them, but they must be PRESENT: without a client id the sign-in button
+      # is not rendered at all, and `gate.spec.ts` fails looking for a control
+      # the environment cannot produce. That is the suite reporting a missing
+      # variable as a missing button, which reads like a broken page.
       - name: Write the .env the suite expects
         run: |
           cat > .env <<'ENV'
@@ -78,6 +97,8 @@ jobs:
           ADMIN_EMAILS="operator@example.test"
           ADMIN_TOKEN="ci-only-operator-token"
           NEXTAUTH_URL="http://localhost:6600"
+          AUTH_GOOGLE_ID="ci-only-not-a-real-client-id"
+          AUTH_GOOGLE_SECRET="ci-only-not-a-real-client-secret"
           RATE_LIMIT_RELIEF=20
           ENV
 

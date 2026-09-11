@@ -63,6 +63,44 @@ export async function seedMember({
 }
 
 /**
+ * The operator's own Member row, made only if it is not already there.
+ *
+ * CREATE ONLY, AND THAT IS THE WHOLE POINT — `seedMember` above upserts, and
+ * its `update` would write a name, a country and a bio over whatever it found.
+ * The operator's address on a developer's machine is a REAL account with a
+ * real name on it, so an upsert here would quietly rewrite John's own profile
+ * every time the suite ran.
+ *
+ * Why it is needed at all: signing in as the operator does NOT make anybody a
+ * member. `/api/session` with `kind: "admin"` mints a session and nothing
+ * else, and `touchMember` returns early when there is no row rather than
+ * creating one — correctly, since a member is something Google makes. So on a
+ * database where the operator's address has never signed in with Google,
+ * every route that asks `currentMemberId()` answers 401 to the operator.
+ *
+ * That never showed locally, because the shared development database has held
+ * a real Member row for the operator's address since long before this suite
+ * existed. The whole suite was leaning on a row no fixture had ever made —
+ * which is exactly what AGENTS.md means by a spec asserting something about a
+ * row it did not create. On a fresh database it cost twenty-odd failures in
+ * files testing something else entirely.
+ */
+export async function ensureMember({ email, name }: TestMember): Promise<void> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.upsert({
+      where: { email },
+      create: { email, id: makeMemberId(), name, picture: "", invitedWith: "playwright" },
+      // Deliberately empty: an existing row is somebody's, and not ours to edit.
+      update: {},
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
  * Winds a seeded member's clock back, for the specs about who is still about.
  *
  * The directory's "seen lately" filter reads `lastSeenAt`, and `seedMember`
