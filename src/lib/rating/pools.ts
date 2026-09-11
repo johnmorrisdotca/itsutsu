@@ -1,4 +1,5 @@
 import { RATING_START } from "./elo";
+import { streakIn, type Streak } from "./streak";
 
 /**
  * The two pools a rated game can move.
@@ -61,13 +62,31 @@ export function poolFor(againstComputer: boolean): RatingPool {
   return againstComputer ? RATING_POOLS.computer : RATING_POOLS.people;
 }
 
-/** One player's standing in one pool. */
-export type PoolStanding = {
+/**
+ * The counted part of a standing: everything that is one number in one column.
+ *
+ * Separate from `PoolStanding` because the streak beside them is a pair of
+ * columns and cannot be addressed by a single name — `POOL_COLUMNS` maps
+ * exactly these, and `STREAK_COLUMNS` maps the rest.
+ */
+export type PoolFigures = {
   rating: number;
   ratedGames: number;
   wins: number;
   losses: number;
   draws: number;
+};
+
+/** One player's standing in one pool: the figures, and the run they are on. */
+export type PoolStanding = PoolFigures & {
+  /**
+   * The run this pool is on, or null where nothing has been finished in it.
+   *
+   * Part of the standing rather than fetched beside it, because it is stored
+   * on the same row and read by the same query — a streak costs nothing to
+   * read, which is the whole reason it is a column. See `streak.ts`.
+   */
+  streak: Streak | null;
 };
 
 export const EMPTY_STANDING: PoolStanding = {
@@ -76,6 +95,7 @@ export const EMPTY_STANDING: PoolStanding = {
   wins: 0,
   losses: 0,
   draws: 0,
+  streak: null,
 };
 
 /*
@@ -107,6 +127,12 @@ export const EMPTY_STANDING: PoolStanding = {
  * `Player` and `PlayerVariantRating` carry them under the same names, so one
  * table serves both and there is one place to change if a third pool is ever
  * wanted.
+ *
+ * The streak is NOT here. It is two columns rather than one — a kind and a
+ * count, only ever believed together — and it has a third scope the ratings
+ * have no equivalent of, so it is kept by `STREAK_COLUMNS` in `streak.ts`
+ * instead of being bent into a table of single names. Same idea, different
+ * shape, and the name is the warning.
  */
 export const POOL_COLUMNS = {
   people: {
@@ -123,7 +149,7 @@ export const POOL_COLUMNS = {
     losses: "computerLosses",
     draws: "computerDraws",
   },
-} as const satisfies Record<RatingPool, Record<keyof PoolStanding, string>>;
+} as const satisfies Record<RatingPool, Record<keyof PoolFigures, string>>;
 
 /** One row's standing in one pool, read through the column names above. */
 export function standingIn(
@@ -139,6 +165,9 @@ export function standingIn(
     wins: read(columns.wins, 0),
     losses: read(columns.losses, 0),
     draws: read(columns.draws, 0),
+    // Null on a row that has none, which is what `streakIn` answers rather
+    // than inventing a run of nought — see the head of `streak.ts`.
+    streak: streakIn(row, pool),
   };
 }
 

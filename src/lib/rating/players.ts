@@ -3,7 +3,8 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from "./elo";
 import { recordVariantResult } from "./variantRatings";
-import { outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
+import { RATING_POOLS, outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
+import { PLAYER_STREAK_SCOPES, streakIn, streakWrite, type Streak } from "./streak";
 import { legaciesForName } from "@/lib/legacy/legacyPlayers.data";
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
 
@@ -51,7 +52,23 @@ export type PlayerProfile = {
    * figures for a bot would say it had never played, however many games it
    * had just finished.
    */
-  computer: { rating: number; ratedGames: number; wins: number; losses: number; draws: number };
+  computer: { rating: number; ratedGames: number; wins: number; losses: number; draws: number; streak: Streak | null };
+  /**
+   * The run on the ladder of people: rated games in that pool and nothing
+   * else, so it matches the wins and losses above it exactly.
+   */
+  streak: Streak | null;
+  /**
+   * The run across every rated game played here, whichever pool scored it.
+   *
+   * A THIRD NUMBER RATHER THAN THE SUM OF TWO, and it has to be. `gamesPlayed`
+   * adds the two pools' counts because a game is a game; a run cannot be added
+   * that way, because it depends on the order the two pools' games interleave
+   * in — which neither pool's own run records. So it is stored alongside them
+   * and is what the members list and a member's own headline show, since
+   * those are the figures counting both pools.
+   */
+  ratedStreak: Streak | null;
 };
 
 function toProfile(row: {
@@ -68,8 +85,31 @@ function toProfile(row: {
   computerWins: number;
   computerLosses: number;
   computerDraws: number;
+  // The streak columns, read through `streakIn` so the pair is only ever
+  // believed together. Typed loosely here because the row comes straight from
+  // Prisma and the guard is in one place rather than in this shape.
+  peopleStreakKind?: string | null;
+  peopleStreakCount?: number;
+  computerStreakKind?: string | null;
+  computerStreakCount?: number;
+  ratedStreakKind?: string | null;
+  ratedStreakCount?: number;
 }): PlayerProfile {
-  const { computerRating, computerRatedGames, computerWins, computerLosses, computerDraws, ...people } = row;
+  const {
+    computerRating,
+    computerRatedGames,
+    computerWins,
+    computerLosses,
+    computerDraws,
+    peopleStreakKind: _peopleKind,
+    peopleStreakCount: _peopleCount,
+    computerStreakKind: _computerKind,
+    computerStreakCount: _computerCount,
+    ratedStreakKind: _ratedKind,
+    ratedStreakCount: _ratedCount,
+    ...people
+  } = row;
+  const columns = row as unknown as Record<string, unknown>;
   return {
     ...people,
     tier: tierFor(row.ratedGames),
@@ -79,7 +119,10 @@ function toProfile(row: {
       wins: computerWins,
       losses: computerLosses,
       draws: computerDraws,
+      streak: streakIn(columns, RATING_POOLS.computer),
     },
+    streak: streakIn(columns, RATING_POOLS.people),
+    ratedStreak: streakIn(columns, "all"),
   };
 }
 
@@ -210,15 +253,37 @@ export async function recordResult(
   const before = { black: standingIn(black, pool), white: standingIn(white, pool) };
   const rated = rateGame(before.black, before.white, blackScore);
 
+  /*
+   * The streak is carried forward from the row already in hand — THE WRITER
+   * ALREADY KNOWS. Nothing is read back: the upsert above returned the run so
+   * far, and one more result extends it or starts a new one. A streak worked
+   * out by reading a player's games would be a query per row on every page
+   * that lists people, which is the cost this design exists to avoid.
+   *
+   * Both the pool's run and the both-pools run move at once, because they are
+   * different numbers about the same game and neither can be derived from the
+   * other later.
+   */
+  const streaks = {
+    black: streakWrite(black, outcomeFor(winner, "black"), PLAYER_STREAK_SCOPES),
+    white: streakWrite(white, outcomeFor(winner, "white"), PLAYER_STREAK_SCOPES),
+  };
+
   await prisma.$transaction([
     prisma.player.update({
       where: { key: blackKey },
       // The columns are chosen by pool, so the shape is built rather than written out.
-      data: poolWrite(pool, rated.first.rating, rated.first.ratedGames, outcomeFor(winner, "black")) as never,
+      data: {
+        ...poolWrite(pool, rated.first.rating, rated.first.ratedGames, outcomeFor(winner, "black")),
+        ...streaks.black,
+      } as never,
     }),
     prisma.player.update({
       where: { key: whiteKey },
-      data: poolWrite(pool, rated.second.rating, rated.second.ratedGames, outcomeFor(winner, "white")) as never,
+      data: {
+        ...poolWrite(pool, rated.second.rating, rated.second.ratedGames, outcomeFor(winner, "white")),
+        ...streaks.white,
+      } as never,
     }),
   ]);
 

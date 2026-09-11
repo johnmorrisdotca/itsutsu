@@ -1,4 +1,5 @@
-import { RecordCells, RecordHeadings, RecordLine } from "@/components/players/PlayerRecord";
+import { RecordLine } from "@/components/players/PlayerRecord";
+import { RecordTable } from "@/components/players/RecordTable";
 import Link from "next/link";
 
 import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
@@ -75,64 +76,78 @@ export async function MyRecord({ name }: { name: string }) {
           </span>{" "}
           <span className="text-muted">
             {TIER_DISPLAY[shown?.tier ?? "unrated"].label} ·{" "}
-            <RecordLine record={gamesPlayed(profile)} of={{ player: name, rated: "yes" }} />
+            {/*
+              The run across every rated game here, whichever pool scored it —
+              the same set of games the counts on this line are counting, and
+              stored on the row rather than worked out from the games.
+            */}
+            <RecordLine
+              record={gamesPlayed(profile)}
+              of={{ player: name, rated: "yes" }}
+              streak={profile.ratedStreak}
+            />
           </span>
         </p>
       )}
-      {standings.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm" data-testid="me-standings">
-            <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-              <tr>
-                <th className="py-1 pr-3">Game</th>
-                <th className="py-1 pr-3">Rating</th>
-                <RecordHeadings />
-              </tr>
-            </thead>
-            <tbody>
-              {standings.map((row) => (
-                <tr key={`${row.variant}-${row.pool}`} className="border-t border-rule">
-                  {/* The standing rule: a game's name leads to that game. */}
-                  <td className="py-1 pr-3">
-                    <GameThumb variant={row.variant} className="mr-2 inline-block size-6 align-middle" />
-                    <GameName variant={row.variant as RuleVariant} />
-                    {/*
-                      A game somebody has played in both pools is two lines and
-                      not one added together — that sum is the thing the pools
-                      exist to forbid. So each line says which ladder it is, and
-                      without the mark the two would read as one game listed
-                      twice with different numbers against it.
-                    */}
-                    {row.pool === RATING_POOLS.computer ? (
-                      <span
-                        className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                        title="Against the computer players, rated in a pool of their own."
-                        data-testid="standing-pool-computer"
-                      >
-                        機械
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className="py-1 pr-3 font-mono tabular-nums">
-                    {/*
-                      One mark per row, beside the name. It said 機械 twice for a
-                      while — once here — which is not only noise: this copy read
-                      "no games against people at this yet", and that stopped
-                      being true the moment a game could hold two lines. A player
-                      with both now has a people line AND a computer line.
-                    */}
-                    {row.tier === "unrated" ? "–" : row.rating}
-                  </td>
-                  <RecordCells
-                    record={row}
-                    of={{ player: name, variant: row.variant, pool: row.pool, rated: "yes" }}
-                  />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
+      {/*
+        The same table as the members list, the ladder, the computer players
+        and every per-game ladder. It had the rating second and they had it
+        seventh; now there is one order and one set of headings, and this page
+        chooses only which optional columns it wants.
+      */}
+      <RecordTable
+        subject="Game"
+        rows={standings.map((row) => ({
+          key: `${row.variant}-${row.pool}`,
+          subject: (
+            <>
+              {/* The standing rule: a game's name leads to that game. */}
+              <GameThumb variant={row.variant} className="mr-2 inline-block size-6 align-middle" />
+              <GameName variant={row.variant as RuleVariant} />
+              {/*
+                A game somebody has played in both pools is two lines and not
+                one added together — that sum is the thing the pools exist to
+                forbid. So each line says which ladder it is, and without the
+                mark the two would read as one game listed twice with different
+                numbers against it.
+
+                One mark per row, beside the NAME. It was drawn twice for a
+                while, once here and once on the rating.
+              */}
+              {row.pool === RATING_POOLS.computer ? (
+                <span
+                  className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
+                  title="Against the computer players, rated in a pool of their own."
+                  data-testid="standing-pool-computer"
+                >
+                  機械
+                </span>
+              ) : null}
+            </>
+          ),
+          record: row,
+          of: { player: name, variant: row.variant, pool: row.pool, rated: "yes" },
+          // One row is one pool of one game, so its run is that pool's run —
+          // the only streak on the row that the counts beside it account for.
+          streak: row.streak,
+          // A rating nobody has settled yet is silence, not 1600. The pool
+          // mark is on the name, so the number here needs none of its own.
+          rating: row.tier === "unrated" ? null : { rating: row.rating, pool: row.pool },
+          tier: row.tier,
+        }))}
+        columns={{ tier: true }}
+        testId="me-standings"
+        empty={
+          <>
+            No rated game of any one game yet. Rated games are shared games between two
+            members, or a game against one of the{" "}
+            <Link href="/players?view=computers" className="underline underline-offset-4">
+              computer players
+            </Link>
+            .
+          </>
+        }
+      />
       {tally.answered > 0 ? (
         <p className="text-xs text-muted" data-testid="verdict-tally">
           {/*

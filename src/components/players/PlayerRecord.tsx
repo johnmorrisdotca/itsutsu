@@ -1,5 +1,6 @@
 import { GameCount } from "@/components/games/GameCount";
 import { countText, figuresOf, winRateText } from "@/lib/rating/figures";
+import { streakLabel, streakText, type Streak } from "@/lib/rating/streak";
 import type { GameOutcome, GamePoolFilter, GameRatedFilter } from "@/lib/history/gameHistory.types";
 import type { ReactNode } from "react";
 
@@ -95,9 +96,57 @@ function counts(record: WonLostDrawn, of: RecordOf) {
   };
 }
 
-/** The cell classes, here rather than in each table, so columns line up between pages. */
-const CELL = "py-1.5 pr-3 font-mono tabular-nums";
-const HEAD = "py-1 pr-3";
+/**
+ * The cell classes, here rather than in each table, so columns line up between
+ * pages.
+ *
+ * Exported so that `RecordTable` — which draws the columns AROUND these: the
+ * rating, the tier, whatever a table switches on — uses the same two strings
+ * rather than a copy. A copied class string is how a table drifts half a line
+ * out of true and nobody can say why.
+ */
+export const CELL = "py-1.5 pr-3 font-mono tabular-nums";
+export const HEAD = "py-1 pr-3";
+
+/**
+ * The heading typography every record table shares.
+ *
+ * It was this string written out in five files and a near-miss of it in two
+ * more — `0.68rem`/`0.1em` against `0.7rem`/`0.14em`, on two tables a reader
+ * sees one after the other. One string, one look.
+ */
+export const TABLE_HEAD_CLASS =
+  "text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase";
+
+/** The table element itself, so no page invents its own width or size. */
+export const TABLE_CLASS = "w-full text-sm";
+
+/** The line between rows. */
+export const ROW_CLASS = "border-t border-rule";
+
+/**
+ * A streak, drawn the one way it is drawn.
+ *
+ * It sits with the other record cells rather than being a column a table adds
+ * for itself, because it is one of the shared figures: a page may choose
+ * whether to show a tier, and may not choose whether a run reads "W3" here
+ * and "3 wins" there.
+ *
+ * NULL PRINTS AN EM DASH AND NOTHING ELSE. Somebody with no finished games has
+ * no streak, and "W0" or "0" would be a claim about a run that never happened
+ * — see the head of `rating/streak.ts`.
+ */
+export function StreakMark({ streak }: { streak: Streak | null }) {
+  return (
+    <span
+      title={streakLabel(streak)}
+      data-testid="record-streak"
+      data-streak={streak === null ? "" : streak.kind}
+    >
+      {streakText(streak)}
+    </span>
+  );
+}
 
 /**
  * The headings for `RecordCells`, in the same order and from the same module.
@@ -114,6 +163,7 @@ export function RecordHeadings({ trailing }: { trailing?: ReactNode }) {
       <th className={HEAD}>L</th>
       <th className={HEAD}>D</th>
       <th className={HEAD}>Win rate</th>
+      <th className={HEAD}>Streak</th>
       {trailing}
     </>
   );
@@ -129,12 +179,25 @@ export function RecordHeadings({ trailing }: { trailing?: ReactNode }) {
 export function RecordCells({
   record,
   of = {},
+  streak,
   trailing,
   note,
 }: {
   record: WonLostDrawn;
   /** Whose games, so the counts lead to them. */
   of?: RecordOf;
+  /**
+   * The run these games are on, or null where there is not one.
+   *
+   * REQUIRED, AND DELIBERATELY NOT DEFAULTED. An optional streak would print
+   * an em dash for a caller that simply forgot to work one out, and an em dash
+   * reads as "this player has no streak" — a statement, and a false one.
+   * Required means every table has had to decide WHICH set of games its
+   * streak is about, which is the whole difficulty here: a ladder's run is one
+   * pool's rated games, a member's own page counts every finished game, and
+   * those are different numbers about the same person.
+   */
+  streak: Streak | null;
   trailing?: ReactNode;
   /**
    * A mark on the count itself, for a total that needs qualifying.
@@ -161,6 +224,9 @@ export function RecordCells({
       <td className={CELL} data-testid="record-win-rate">
         {winRateText(cells.figures.winRate)}
       </td>
+      <td className={CELL}>
+        <StreakMark streak={streak} />
+      </td>
       {trailing}
     </>
   );
@@ -176,12 +242,15 @@ export function RecordCells({
 export function RecordLine({
   record,
   of = {},
+  streak,
   trailing,
   testId,
 }: {
   record: WonLostDrawn;
   /** Whose games, so the counts lead to them. */
   of?: RecordOf;
+  /** The run these games are on. Required, for the reason `RecordCells` gives. */
+  streak: Streak | null;
   /** Anything this page shows after the shared figures — a rating, usually. */
   trailing?: ReactNode;
   testId?: string;
@@ -197,7 +266,8 @@ export function RecordLine({
   }
   return (
     <span className="font-mono text-xs tabular-nums text-muted" data-testid={testId}>
-      {cells.played} played · {cells.won}W {cells.lost}L {cells.drawn}D · {winRateText(figures.winRate)}
+      {cells.played} played · {cells.won}W {cells.lost}L {cells.drawn}D · {winRateText(figures.winRate)} ·{" "}
+      <StreakMark streak={streak} />
       {trailing === undefined ? null : <> · {trailing}</>}
     </span>
   );
