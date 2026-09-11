@@ -39,6 +39,7 @@ import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 const liveGameSchema = z.object({
   blackName: playerNameSchema.default(""),
@@ -279,12 +280,26 @@ export async function POST(request: Request) {
     void _challenge;
     void _challengeId;
     const merged = { ...settings, ...source, ...seats, hotSeat };
+    /*
+     * The variant the game will ACTUALLY be played under, which is not always
+     * the one the request named. A rematch and a fork take their rules from
+     * the game they came from, through `source`, and send no variant at
+     * all — so `parsed.data.variant` falls back to the schema's default of
+     * freestyle, whose winLength is null, and the line below then fell all the
+     * way through to five.
+     *
+     * That made a rematched game of noughts and crosses UNWINNABLE: three in a
+     * row on a three-by-three board, needing five in a row to win. John found
+     * it playing his daughter — he put his winning move down and nothing
+     * happened, because on that board nothing ever could.
+     */
+    const playedAs = (typeof merged.variant === "string" ? merged.variant : parsed.data.variant) as RuleVariant;
     const created = await createLiveGame({
       ...merged,
       from: from === undefined ? undefined : { id: from.id, moves: from.move },
       handicap: merged.handicap ?? NO_HANDICAP,
       winLength:
-        VARIANT_SPECS[parsed.data.variant].winLength ??
+        VARIANT_SPECS[playedAs].winLength ??
         parsed.data.winLength ??
         DEFAULT_SETTINGS.winLength,
     });

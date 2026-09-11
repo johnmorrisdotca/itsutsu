@@ -398,7 +398,12 @@ export function SharedGame({
       (detail.allowResign || state.moves.length === 0) &&
       state.status === GAME_STATUS.playing ? (
         <div className="flex justify-end">
-          <ResignButton id={detail.id} moves={state.moves.length} onDone={() => void mutate()} />
+          <ResignButton
+            id={detail.id}
+            token={token}
+            moves={state.moves.length}
+            onDone={() => void mutate()}
+          />
         </div>
       ) : null}
 
