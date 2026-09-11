@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the example, which is the one that has to be readable in a
+# fresh clone. `.env*` above had been silently swallowing it, which is why
+# AGENTS.md pointed at a file that had never once existed.
+!.env.example
 
 # vercel
 .vercel
