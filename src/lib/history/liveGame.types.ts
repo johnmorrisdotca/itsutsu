@@ -29,8 +29,16 @@ export type LiveGameSettings = {
   drawLimit?: string;
   /** "move": the limit resets each turn. "game": one budget a side for the whole game. */
   clockMode?: string;
-  /** Whether the result moves ratings. */
-  rated?: boolean;
+  /**
+   * Whether the result moves ratings. Required rather than defaulted: both
+   * callers (the live-game route and the bot-series runner) already say so
+   * explicitly, and a default here is exactly the defect this type used to
+   * share with the route's own schema — a caller that forgets the field and
+   * a caller that means "no" were the same `undefined`, so the wrong one
+   * silently got read as the other. See AGENTS.md, "A board you were only
+   * trying out creates a rated game".
+   */
+  rated: boolean;
   /** Post the white seat on the games page for anyone to take. */
   open: boolean;
 };

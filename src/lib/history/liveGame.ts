@@ -150,7 +150,7 @@ export async function createLiveGame(
     from?: { id: string; moves: number };
   },
 ): Promise<CreatedGame> {
-  const { handicap, open, hotSeat = false, seed, from, clockMode = "move", rated = true, ...rest } = input;
+  const { handicap, open, hotSeat = false, seed, from, clockMode = "move", rated, ...rest } = input;
   const token = randomBytes(18).toString("base64url");
   const startedAt = new Date();
   const budget = clockMode === "game" ? rest.moveTimeMs : null;
