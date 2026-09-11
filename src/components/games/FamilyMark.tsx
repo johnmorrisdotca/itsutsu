@@ -99,6 +99,58 @@ const MARKS: Record<string, Mark> = {
     ],
     path: "M 4.5 2 C 5.2 2 5.2 2 4.9 2 M -0.5 2 C 0.2 2 0.2 2 -0.1 2",
   },
+  /*
+   * THE LAST THREE, and they were added because eleven marks in a row is
+   * where the gap showed.
+   *
+   * Connections, Checkers and Territory had no mark of their own, so all
+   * three fell through to PLAIN — one stone in the middle of a board. On
+   * /games that is a mild shame: each sits beside its own title, several
+   * screens apart, and nothing is confusable with anything. In the family
+   * row on the set-up screen all eleven marks are side by side and three of
+   * them were the same picture, which is a worse answer than no picture at
+   * all: an icon that does not tell its family apart is a promise the row
+   * makes and does not keep.
+   *
+   * Each is the family's defining move rather than a symbol for it, which is
+   * the rule the other eight already follow.
+   */
+  Connections: {
+    // A chain of one colour reaching the left edge and the right.
+    n: 5,
+    stones: [
+      { r: 3, c: 0 },
+      { r: 2, c: 1 },
+      { r: 2, c: 2 },
+      { r: 1, c: 3 },
+      { r: 1, c: 4 },
+      { r: 3, c: 3, white: true },
+    ],
+    path: "M -0.4 3 L 0 3 M 4 1 L 4.4 1",
+  },
+  Checkers: {
+    // A piece mid-jump, and the one it takes going faint under it.
+    n: 5,
+    cells: true,
+    stones: [
+      { r: 4, c: 1 },
+      { r: 3, c: 2, white: true, faded: true },
+      { r: 4, c: 3, white: true },
+      { r: 0, c: 4 },
+    ],
+    path: "M 1.5 4.5 Q 2.1 2.4 3.5 2.5",
+  },
+  Territory: {
+    // A stone surrounded on all four sides, which is the whole game in one shape.
+    n: 5,
+    stones: [
+      { r: 2, c: 2, white: true, faded: true },
+      { r: 1, c: 2 },
+      { r: 3, c: 2 },
+      { r: 2, c: 1 },
+      { r: 2, c: 3 },
+    ],
+  },
 };
 
 const PLAIN: Mark = { n: 5, stones: [{ r: 2, c: 2 }] };

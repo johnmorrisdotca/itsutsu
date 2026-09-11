@@ -16,7 +16,7 @@ import type { Opponent } from "@/lib/social/opponents";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import { Button, Field, SectionTitle, Select } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { RulesForm } from "./RulesForm";
+import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { describeRules } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
 import { shownName } from "@/lib/rating/shownName";
@@ -236,6 +236,13 @@ export function SetUpGame({
           showOpen={false}
           showVariant={chooseGame}
           variantLabel="Game"
+          /*
+           * The screen that CHOOSES a game shows the games, rather than
+           * naming them in a dropdown. The rules panel beside a board keeps
+           * the selects — it is a narrow column next to the game it is about,
+           * and a row of board pictures there would crowd out the board.
+           */
+          chooser={RULES_CHOOSERS.pictures}
           onSizeChosen={setBoardChosen}
         />
         <Field label="Opponent">

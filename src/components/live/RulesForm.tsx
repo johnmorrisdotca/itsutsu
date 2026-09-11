@@ -15,8 +15,27 @@ import {
 import { describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
+import { BoardPicker } from "./BoardPicker";
+import { GamePicker } from "./GamePicker";
 import { penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
+
+/**
+ * How the two biggest choices are drawn. NOT which rules are offered — that
+ * is the same set on both screens and always will be, which is the whole
+ * reason this form is one component used twice.
+ *
+ * `select` is the rules panel beside a board: a narrow column next to a game
+ * already in progress, where a row of board pictures would crowd out the
+ * board it is about.
+ *
+ * `pictures` is the screen whose entire job is choosing — /games/new, where
+ * John's word for the dropdown was UGLY and the games have forty board
+ * photographs between them that were going unused.
+ */
+export const RULES_CHOOSERS = { select: "select", pictures: "pictures" } as const;
+
+export type RulesChooser = (typeof RULES_CHOOSERS)[keyof typeof RULES_CHOOSERS];
 
 /**
  * The rules of a shared game, as a form.
@@ -44,6 +63,7 @@ export function RulesForm({
    */
   showVariant = true,
   variantLabel = "Rules",
+  chooser = RULES_CHOOSERS.select,
   onSizeChosen,
 }: {
   value: RulesDraft;
@@ -61,6 +81,14 @@ export function RulesForm({
    */
   variantLabel?: string;
   /**
+   * How the game and the board are drawn — see RULES_CHOOSERS. One prop
+   * rather than two flags, because it is one decision: whether this is the
+   * screen that CHOOSES a game or the panel that AMENDS one. Everything
+   * either branch offers comes from the same tables and goes through the
+   * same `applyRulesChange`, so the two screens still cannot drift.
+   */
+  chooser?: RulesChooser;
+  /**
    * Told when somebody chooses a board themselves, so a caller that was
    * following a default can stop. A chosen board is not a default.
    */
@@ -73,20 +101,29 @@ export function RulesForm({
   return (
     <>
       {showVariant ? (
-        <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
-          <Select
+        chooser === RULES_CHOOSERS.pictures ? (
+          <GamePicker
             value={value.variant}
             disabled={disabled}
-            onChange={(event) => change({ variant: event.target.value })}
-            data-testid="shared-rules-variant"
-          >
-            {RULE_VARIANT_LIST.map((option) => (
-              <option key={option} value={option}>
-                {RULE_VARIANT_DISPLAY[option].label}
-              </option>
-            ))}
-          </Select>
-        </Field>
+            onChange={(next) => change({ variant: next })}
+            label={variantLabel}
+          />
+        ) : (
+          <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
+            <Select
+              value={value.variant}
+              disabled={disabled}
+              onChange={(event) => change({ variant: event.target.value })}
+              data-testid="shared-rules-variant"
+            >
+              {RULE_VARIANT_LIST.map((option) => (
+                <option key={option} value={option}>
+                  {RULE_VARIANT_DISPLAY[option].label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )
       ) : null}
       {/*
         The boards this game has, not every board the site knows. A Reversi
@@ -95,23 +132,35 @@ export function RulesForm({
         because 8 was not in the list for anything to match.
       */}
       {sizes.length > 1 ? (
-        <Field label="Board">
-          <Select
+        chooser === RULES_CHOOSERS.pictures ? (
+          <BoardPicker
             value={value.size}
+            sizes={sizes}
             disabled={disabled}
-            onChange={(event) => {
-              onSizeChosen?.(Number(event.target.value));
-              change({ size: Number(event.target.value) });
+            onChange={(next) => {
+              onSizeChosen?.(next);
+              change({ size: next });
             }}
-            data-testid="shared-rules-size"
-          >
-            {sizes.map((option) => (
-              <option key={option} value={option}>
-                {option}×{option}
-              </option>
-            ))}
-          </Select>
-        </Field>
+          />
+        ) : (
+          <Field label="Board">
+            <Select
+              value={value.size}
+              disabled={disabled}
+              onChange={(event) => {
+                onSizeChosen?.(Number(event.target.value));
+                change({ size: Number(event.target.value) });
+              }}
+              data-testid="shared-rules-size"
+            >
+              {sizes.map((option) => (
+                <option key={option} value={option}>
+                  {option}×{option}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )
       ) : null}
       <Field label="Opening">
         <Select
