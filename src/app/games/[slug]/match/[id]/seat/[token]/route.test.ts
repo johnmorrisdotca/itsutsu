@@ -69,16 +69,36 @@ describe("GET /games/[slug]/match/[id]/seat/[token]", () => {
 
     const response = await claim();
 
-    expect(response.status).toBe(403);
+    /*
+     * A REDIRECT TO THE MATCH, not a document written here. This route is
+     * followed by a person clicking an invitation, so the refusal has to
+     * arrive with the site around it — and a route handler cannot render a
+     * page, so it sends them to the one they were invited to and lets that
+     * page say why. It began life as hand-written HTML returned with a 403,
+     * which was the only such markup on the site.
+     */
+    expect(response.status).toBe(303);
     expect(bindSeat).not.toHaveBeenCalled();
   });
 
-  it("says how many games they actually have", async () => {
+  it("says on the address why they are being sent there", async () => {
     overActiveLimit.mockResolvedValue({ memberId: "alice", count: 20, limit: 20 });
 
     const response = await claim();
 
-    expect(await response.text()).toContain("20");
+    /*
+     * `seat=full` is the whole point of the parameter: WITHOUT it this would
+     * be a plain redirect to the board, and the reader would arrive as a
+     * spectator with nothing saying their seat had not been taken — the
+     * failure that looks exactly like success.
+     *
+     * The COUNT is deliberately not on the address. The page reads it itself,
+     * because a number carried in a query is one a reader can edit, and the
+     * page would then be quoting their own guess back at them.
+     */
+    const to = response.headers.get("location") ?? "";
+    expect(to).toContain("seat=full");
+    expect(to).toContain("/match/");
   });
 
   it("leaves the link usable, so it still works once they have finished one", async () => {

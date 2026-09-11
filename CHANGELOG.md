@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.131.0
+- A seat link you cannot take says so on the game's own page, with the site around it, and tells you how many games you are holding
+
 ## 0.130.0
 - Twenty games at once is the limit however you come by the twenty-first: answering a posted seat and following a seat link are counted too, and say how many you are holding
 

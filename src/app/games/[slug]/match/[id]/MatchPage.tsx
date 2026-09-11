@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import QRCode from "qrcode";
@@ -23,6 +24,7 @@ import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { markSeatTaken, resolveSeat, rulesAreSettled, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
+import { activeGameCount, activeGameLimit } from "@/lib/history/activeGames";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
 import { prisma } from "@/lib/prisma";
@@ -56,7 +58,26 @@ async function origin(): Promise<string> {
  * a phone, and the address that phone then shows can be read aloud, sent on
  * or screenshotted without handing the seat to anyone.
  */
-export async function MatchPage({ slug, id, move }: { slug: string; id: string; move?: number }) {
+export async function MatchPage({
+  slug,
+  id,
+  move,
+  seatFull = false,
+}: {
+  slug: string;
+  id: string;
+  move?: number;
+  /**
+   * The seat link could not seat this reader, because they are already
+   * holding the most games the site allows at once.
+   *
+   * Said on the page rather than at the link, because the claim route is a
+   * route handler and a person following an invitation deserves the site
+   * around the answer rather than a bare document. The seat is NOT stamped
+   * when this happens, so the link they were sent still works later.
+   */
+  seatFull?: boolean;
+}) {
   const game = await fetchGameDetail(id);
   if (game === null) notFound();
   /*
@@ -105,6 +126,7 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     return (
       <Page width="wide">
         <SiteHeader />
+        <SeatFullNotice shown={seatFull} />
         <GameViewClient
           variant={game.variant as RuleVariant}
           trackPath
@@ -174,7 +196,17 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
     }
   }
 
-  return <LiveMatch game={game} token={token ?? null} seat={seat} move={move ?? game.moveCount} opponent={opponent} ignoring={ignoring} />;
+  return (
+    <LiveMatch
+      game={game}
+      token={token ?? null}
+      seat={seat}
+      move={move ?? game.moveCount}
+      opponent={opponent}
+      ignoring={ignoring}
+      seatFull={seatFull}
+    />
+  );
 }
 
 async function LiveMatch({
@@ -184,6 +216,7 @@ async function LiveMatch({
   move,
   opponent,
   ignoring,
+  seatFull,
 }: {
   game: GameDetail;
   token: string | null;
@@ -191,6 +224,8 @@ async function LiveMatch({
   /** The position the address names, for forking a new game from it. */
   move: number;
   opponent: { name: string; country: string; awayUntil: string | null } | null;
+  /** Whether a seat link turned this reader away for holding too many games. */
+  seatFull: boolean;
   /** Colours whose player this reader has ignored. */
   ignoring: readonly Stone[];
 }) {
@@ -293,6 +328,7 @@ async function LiveMatch({
   return (
     <Page width="wide" gap="gap-6">
       <SiteHeader />
+      <SeatFullNotice shown={seatFull} />
 
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
         <div className="w-full min-w-0 flex-1">
@@ -337,5 +373,52 @@ async function LiveMatch({
         </aside>
       </div>
   </Page>
+  );
+}
+
+/**
+ * Why a seat link did not seat you, on the page it sent you to.
+ *
+ * It says what to do about it and that the invitation is still good, because
+ * a refusal that reads as a dead end sends somebody away from a game they
+ * were invited to.
+ */
+async function SeatFullNotice({ shown }: { shown: boolean }) {
+  if (!shown) return null;
+  /*
+   * The numbers are read HERE rather than carried on the address. The ticket
+   * asks for the count in the refusal — "since a bare refusal reads as a
+   * fault" — and a number passed through a query is one a reader can edit,
+   * so the page would be quoting them back their own guess. One extra count,
+   * only ever on this path.
+   */
+  const mine = await currentMemberId();
+  const held = mine === null ? null : await activeGameCount(mine);
+  return (
+    <p
+      className="rounded-xl border border-ochre/40 bg-ochre/10 px-4 py-3 text-sm"
+      role="status"
+      data-testid="seat-full-notice"
+    >
+      <strong className="font-semibold">Your seat is still waiting.</strong>{" "}
+      {held === null ? (
+        <>You already have as many games on the go as this site allows at once, so it was not claimed for you.</>
+      ) : (
+        <>
+          You have{" "}
+          {/*
+            The count leads to the games it counted, which is this site's rule
+            about any number that refers to games — and here it is also the
+            only useful thing to do about the refusal: the game to finish is
+            in that list.
+          */}
+          <Link href="/my-games" className="font-medium underline underline-offset-4">
+            {held} games on the go
+          </Link>
+          , and {activeGameLimit()} at once is the limit here, so it was not claimed for you.
+        </>
+      )}{" "}
+      Finish or resign one and follow the same link again — it has not been used up.
+    </p>
   );
 }
