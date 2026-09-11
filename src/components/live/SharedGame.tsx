@@ -221,6 +221,12 @@ export function SharedGame({
    * and a click that lands before React has attached is dropped in silence —
    * the board looks like a board the whole time. A person always waits without
    * meaning to; a test has to be told to.
+   *
+   * Every intersection is server-rendered, which is what makes the window real
+   * rather than theoretical: a stone placed in it is dropped on the floor and
+   * the failure surfaces somewhere else entirely. Two branches reached for this
+   * same marker independently, one from the navigation side and one from the
+   * settle side, which is the argument for it being here rather than in either.
    */
   return (
     <div

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createGame } from "@/lib/gomoku/engine";
 import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { GameDetail } from "./gameHistory.types";
-import { settleFromRecord } from "./settle";
+import { settleFromRecord, settledSinceRendered } from "./settle";
 
 /**
  * Some games end by something that is not a move — a resignation, a strict
@@ -49,5 +49,31 @@ describe("settleFromRecord", () => {
     const state = playing();
     settleFromRecord(state, record({}));
     expect(state.status).toBe(GAME_STATUS.playing);
+  });
+});
+
+/**
+ * The page around the board, when a game ends while somebody is looking at it.
+ *
+ * `MatchPage` picks the live board or the filed record from the status, ONCE,
+ * on the server. John lost a game to a computer player and was left on the live
+ * page for ever: the result banner was right — that is `settleFromRecord`
+ * above, doing its job — and there was no rematch, no heading naming the two
+ * players, and a composer for a game nobody could speak into again.
+ */
+describe("settledSinceRendered", () => {
+  it("asks for the page back when the game finishes under the reader", () => {
+    // The ordinary ending here: their winning move arrives while you watch.
+    expect(settledSinceRendered("active", "finished")).toBe(true);
+  });
+
+  it("says nothing while the game is still being played", () => {
+    expect(settledSinceRendered("active", "active")).toBe(false);
+  });
+
+  it("says nothing about a game that was already filed when the page was drawn", () => {
+    // The server rendered the record, so there is nothing to hand back — and a
+    // page that asked would ask again of every answer it ever got.
+    expect(settledSinceRendered("finished", "finished")).toBe(false);
   });
 });
