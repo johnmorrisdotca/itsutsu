@@ -55,7 +55,15 @@ const liveGameSchema = z.object({
   allowResign: z.boolean().default(true),
   drawLimit: drawLimitSchema,
   clockMode: z.enum(["move", "game"]).default("move"),
-  rated: z.boolean().default(true),
+  /*
+   * Not defaulted. A caller that says nothing here has not chosen a side,
+   * and `true` used to stand in for that silence — which is how a hot-seat
+   * scratch board reached a real ladder with neither player having asked
+   * for a rated game. Absent is resolved explicitly below, against
+   * `hotSeat`, rather than folded into the schema where the next reader
+   * would not think to look for it.
+   */
+  rated: z.boolean().optional(),
   open: z.boolean().default(false),
   opener: stoneSchema.default(STONES.black),
   /** Two people at one screen: one seat key for both chairs, kept in this browser. */
@@ -272,11 +280,32 @@ export async function POST(request: Request) {
     const atTheLimit = await memberOverActiveLimit([seats.blackMemberId, seats.whiteMemberId]);
     if (atTheLimit !== null) return unprocessable(activeLimitRefusal(atTheLimit));
 
-    const { challenge: _challenge, challengeId: _challengeId, rematch: _rematch, from, ...settings } = parsed.data;
+    const {
+      challenge: _challenge,
+      challengeId: _challengeId,
+      rematch: _rematch,
+      from,
+      rated: ratedRequested,
+      ...settings
+    } = parsed.data;
     void _rematch;
     void _challenge;
     void _challengeId;
-    const merged = { ...settings, ...source, ...seats, hotSeat };
+    /*
+     * Whether THIS game moves a rating, resolved here rather than defaulted
+     * in the schema: said outright when the caller said it, and otherwise
+     * decided by what kind of game this is. A hot-seat board is somebody
+     * trying a board out at one screen — nobody asked for a rated game — so
+     * silence there means no. Everywhere else silence keeps meaning yes,
+     * which is what a challenge and a posted seat have always meant by
+     * saying nothing: `StartGame` and `ChallengeButton` rely on exactly
+     * that and never send `hotSeat`, so nothing here changes what they
+     * create. A rematch or a fork overrides this anyway, through
+     * `source.rated` below — that game already answered the question, and
+     * is not being asked again.
+     */
+    const rated = ratedRequested ?? !hotSeat;
+    const merged = { ...settings, rated, ...source, ...seats, hotSeat };
     /*
      * The variant the game will ACTUALLY be played under, which is not always
      * the one the request named. A rematch and a fork take their rules from

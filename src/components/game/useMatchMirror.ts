@@ -32,7 +32,7 @@ function remember(entry: Remembered | null): void {
 }
 
 /** A move as the API takes it. Keys are ordered so two of the same compare equal as text. */
-type Request = Record<string, unknown>;
+export type Request = Record<string, unknown>;
 
 function requestFor(
   kind: string,
@@ -53,6 +53,43 @@ function requestFor(
 }
 
 const same = (a: Request, b: Request) => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * The request that starts this board as a match on the server, the first
+ * time a stone goes down on it.
+ *
+ * `rated: false`, said outright rather than left to whatever the route
+ * defaults an absent field to. A board somebody is only trying out is not a
+ * game either side staked a rating on, and two ordinary names typed into the
+ * boxes here do not fold together the way a blank or a repeated one does —
+ * so leaving this unsaid was how trying out a board reached a real ladder
+ * without anyone asking for a rated game.
+ */
+export function createMatchRequest(
+  settings: GameSettings,
+  seed: number,
+  variant: string,
+  opener: string,
+  blackName: string,
+  whiteName: string,
+): Request {
+  return {
+    hotSeat: true,
+    seed,
+    size: settings.size,
+    variant,
+    obstacles: settings.obstacles,
+    opening: settings.opening,
+    handicap: settings.handicap.stone === null ? undefined : settings.handicap,
+    winLength: settings.winLength,
+    opener,
+    blackName,
+    whiteName,
+    allowResign: false,
+    open: false,
+    rated: false,
+  };
+}
 
 /**
  * Whether a game can be kept as a match at all. A record holds stones; a
@@ -139,21 +176,11 @@ export function useMatchMirror(
       let id = idRef.current;
       if (id === null) {
         if (target.length === 0) return;
-        const response = await call("/api/games/live", "POST", {
-          hotSeat: true,
-          seed,
-          size: settings.size,
-          variant,
-          obstacles: settings.obstacles,
-          opening: settings.opening,
-          handicap: settings.handicap.stone === null ? undefined : settings.handicap,
-          winLength: settings.winLength,
-          opener,
-          blackName: nameOf("black"),
-          whiteName: nameOf("white"),
-          allowResign: false,
-          open: false,
-        });
+        const response = await call(
+          "/api/games/live",
+          "POST",
+          createMatchRequest(settings, seed, variant, opener, nameOf("black"), nameOf("white")),
+        );
         if (!response.ok) throw new Error("not kept");
         const created = (await response.json()) as { id: string };
         id = created.id;
