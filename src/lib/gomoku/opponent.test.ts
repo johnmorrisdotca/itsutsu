@@ -20,6 +20,26 @@ import { searchTurn, searchable } from "./opponentSearch";
 import type { GameSettings, GameState, RuleVariant } from "./gomoku.types";
 import type { BotTier } from "./opponent.types";
 
+/*
+ * THE TWO DEEPEST SEARCHES HERE GET THEIR OWN CEILING, and the number is
+ * measured rather than chosen. On a CI runner the Meijin-against-Kyu series
+ * took 25s and the game of Go 38s, against the suite's 60s default — both
+ * inside it, neither with any room. On 2026-09-11 the series passed 60s and
+ * failed a release that was green locally in nine minutes.
+ *
+ * Nothing got slower. The suite grew from 1,955 tests to 2,284 in a night, and
+ * vitest runs them in parallel on a two-core runner, so the CPU each of these
+ * gets shrank while the work did not. A wall-clock budget that depends on how
+ * many OTHER tests exist is not a budget.
+ *
+ * They are deterministic — every game is seeded — so a slow run and a fast run
+ * play the identical eight games and reach the identical score. The assertion
+ * is about STRENGTH, not speed, and a ceiling low enough to fail on a busy
+ * machine tests the machine. Three minutes is far past anything either has
+ * taken and still catches a search that has genuinely run away.
+ */
+const DEEP_SEARCH_MS = 180_000;
+
 /**
  * The computer opponent, checked the way the engine is: by playing.
  *
@@ -397,9 +417,13 @@ describe("the grades beat the grades below them", () => {
     return { score: (won + (games - won - lost) / 2) / games, won, lost, games };
   };
 
-  it("Meijin beats Kyu at Gomoku", () => {
-    expect(series(RULE_VARIANTS.freestyle, BOT_TIERS.meijin, BOT_TIERS.kyu, 8).score).toBeGreaterThanOrEqual(0.875);
-  });
+  it(
+    "Meijin beats Kyu at Gomoku",
+    () => {
+      expect(series(RULE_VARIANTS.freestyle, BOT_TIERS.meijin, BOT_TIERS.kyu, 8).score).toBeGreaterThanOrEqual(0.875);
+    },
+    DEEP_SEARCH_MS,
+  );
 
   it("Dan beats Kyu at Gomoku", () => {
     expect(series(RULE_VARIANTS.freestyle, BOT_TIERS.dan, BOT_TIERS.kyu, 8).score).toBeGreaterThan(0.5);
@@ -472,5 +496,7 @@ describe("the computer player in Go", () => {
     const points = state.settings.size * state.settings.size;
     const stones = state.board.filter((cell) => cell !== null).length;
     expect(stones, `played ${stones} of ${points} points`).toBeLessThan(points);
-  }, 60_000);
+    // 60_000 here was the suite's own default written out longhand, so it
+    // raised nothing. See DEEP_SEARCH_MS above: this is the other deep search.
+  }, DEEP_SEARCH_MS);
 });
