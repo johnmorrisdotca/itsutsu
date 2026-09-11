@@ -101,6 +101,29 @@ test.describe("the pages that stay open", () => {
     expect((await request.get("/rules/connect-six")).status()).toBe(200);
   });
 
+  test("and show nothing anybody wrote, which is what open means here", async ({ request }) => {
+    /*
+     * proxy.ts says what an open path may be, in as many words: documentation,
+     * rendering "nothing a visitor wrote", holding "no data". A panel shipped
+     * onto the rules page broke that the day it went out — real members' names,
+     * their games, and links to their pages, on an address anybody could guess.
+     *
+     * It was the same concern John had raised from the other side. He asked for
+     * his twelve-year-old's surname off the site's lists, and this handed it to
+     * strangers in a link: the page read "Hanako M." and the href beside it
+     * read /players/hanako-morris.
+     *
+     * Checked against the MARKUP rather than the rendered text, because that is
+     * where the address lived. A signed-out reader must not be able to read a
+     * member out of an open page by any route.
+     */
+    for (const path of ["/rules/tic-tac-toe", "/rules/connect-six", "/rules"]) {
+      const said = await (await request.get(path)).text();
+      expect(said, `${path} links to a player's page without a session`).not.toMatch(/\/players\//);
+      expect(said, `${path} names a member without a session`).not.toMatch(/data-testid=.player-name/);
+    }
+  });
+
   test("the screenshots those pages load are readable", async ({ request }) => {
     // public/ is not exempted by the matcher, so these had to be named.
     expect((await request.get("/art/games/caro.jpg")).status()).toBe(200);

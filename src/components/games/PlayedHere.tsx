@@ -1,6 +1,8 @@
 import { connection } from "next/server";
 import Link from "next/link";
 
+import { currentEmail } from "@/lib/auth/currentSession";
+
 import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -28,9 +30,27 @@ import { countText } from "@/lib/rating/figures";
  * `connection()` is how Next 16 says "this part waits for a request". The
  * rules themselves still prerender; only this panel is fetched when somebody
  * actually asks for the page, which is also the only time the answer is true.
+ *
+ * NOTHING AT ALL FOR SOMEBODY WITH NO SESSION, and that is the important line.
+ * `/rules` is one of the few paths open without an invite, and `proxy.ts` says
+ * in as many words what an open path may be: documentation, rendering "nothing
+ * a visitor wrote", holding "no data". This panel broke that the day it
+ * shipped — it put real members' names, their games and links to their pages
+ * on a page anybody who guessed the address could read.
+ *
+ * Which is the same concern John spent a night on from the other side. He
+ * asked for his twelve-year-old's surname off the site's lists, and this was
+ * handing it to strangers in a link: the page showed "Hanako M." and the href
+ * beside it read /players/hanako-morris.
+ *
+ * Signed in, the panel is what it was. Signed out, the rules are still the
+ * rules — which is what an open page was always for.
  */
 export async function PlayedHere({ variant, title }: { variant: string; title: string }) {
   await connection();
+
+  // Documentation for a stranger; a record for a member.
+  if ((await currentEmail()) === null) return null;
 
   const [played, counts] = await Promise.all([recentGamesOf(variant), fetchPlayedCounts()]);
   if (played.length === 0) return null;
