@@ -1,6 +1,6 @@
 {
   "name": "gomoku",
-  "version": "0.133.1",
+  "version": "0.133.2",
   "private": true,
   "scripts": {
     "version:bump": "node scripts/bump-version.mjs",
@@ -64,7 +64,7 @@
     "vitest": "^5.0.0"
   },
   "packageManager": "pnpm@10.11.0",
-  "description": "Gomoku (\u4e94\u76ee\u4e26\u3079) \u2014 five in a row on a go board.",
+  "description": "Gomoku (五目並べ) — five in a row on a go board.",
   "engines": {
     "node": ">=20.9.0"
   },

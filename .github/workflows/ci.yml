@@ -56,3 +56,13 @@ jobs:
           # The build needs a URL to generate the client; nothing connects to it.
           DATABASE_URL: postgresql://build:build@localhost:5432/build
           DIRECT_URL: postgresql://build:build@localhost:5432/build
+
+  # The browser suite, which nothing here ran until now. Every "green on CI"
+  # this project ever reported meant lint, typecheck and vitest only — so a
+  # broken click could pass every gate there was, and once did: seven e2e
+  # failures sat red through forty versions with nothing watching.
+  #
+  # It is a separate job so it runs alongside the checks above rather than
+  # after them, and costs no extra wall clock on a public repo's free runners.
+  e2e:
+    uses: ./.github/workflows/e2e.yml

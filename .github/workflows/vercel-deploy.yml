@@ -55,7 +55,39 @@ jobs:
           DATABASE_URL: postgresql://build:build@localhost:5432/build
           DIRECT_URL: postgresql://build:build@localhost:5432/build
 
+  # The browser suite. It is MEANT to gate the release, and one day soon it
+  # will — see the comment on `deploy` below for the switch and why it is not
+  # thrown yet. Today it runs and reports, alongside `verify` rather than after
+  # it, so the slower of the two sets the pace instead of their sum.
+  #
+  # The arrangement it is heading for is the point: a deploy that takes longer
+  # and cannot ship a broken click is worth more than a fast one that can.
+  # Before this existed, nothing between a commit and production had ever
+  # opened a browser.
+  e2e:
+    uses: ./.github/workflows/e2e.yml
+
   deploy:
+    # THE BROWSER GATE IS DELIBERATELY OFF. These are the two lines that turn
+    # it on, and they replace the two below:
+    #
+    #     needs: [verify, e2e]
+    #     if: needs.verify.result == 'success' && needs.e2e.result == 'success'
+    #
+    # `e2e` must come out of `needs` to be off, not merely out of the `if`. A
+    # job listed in `needs` is SKIPPED when that need fails, whatever the `if`
+    # says, unless the condition calls always() or !cancelled() — so leaving
+    # the name there and softening the condition reads like an off switch and
+    # is a gate.
+    #
+    # The `e2e` job above still runs on every push; it just cannot stop a
+    # deploy yet. That is the point of landing it this way round. The suite has
+    # never once been executed by this runner, and a job whose first ever run
+    # is also a release gate can only announce itself by blocking every deploy
+    # there is — leaving us to read a red run with no way to tell a real bug
+    # from a cold runner. It reports first and gates second.
+    #
+    # Switch the lines once it has passed here on its own, and delete this.
     needs: verify
     if: needs.verify.result == 'success'
     runs-on: ubuntu-latest
