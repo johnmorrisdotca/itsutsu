@@ -1,13 +1,16 @@
-import type { Cell, GameState, PieceCell, Point, Stone } from "@/lib/gomoku/gomoku.types";
+import type { BoardGrid, Cell, GameState, PieceCell, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import type { BOARD_THEMES, STONE_SETS } from "./Board.constants";
 
 export type BoardTheme = keyof typeof BOARD_THEMES;
 
 /**
- * Where a stone sits: on the crossings, as in go and gomoku, or inside the
- * squares, as in Othello and the drop games. `auto` lets each game choose.
+ * How the reader wants every board drawn. `auto` is the traditional view:
+ * each game the way that game is drawn, which its own spec declares
+ * (`VariantSpec.grid`) and nothing here guesses. `lines` is the Itsutsu view,
+ * every game on the crossings as on a go board; `cells` is its mirror, every
+ * game in the squares. A reader's choice and nothing more — it moves no point.
  */
-export type GridStyle = "auto" | "lines" | "cells";
+export type GridStyle = "auto" | BoardGrid;
 export type StoneSet = keyof typeof STONE_SETS;
 
 /**

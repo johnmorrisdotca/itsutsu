@@ -4,6 +4,10 @@
  * single state value and the rules can be tested without a browser.
  */
 
+import type { BoardGrid, ForbiddenPattern, LineRule, Placement, StartingDiscs, WrapMode } from "./spec.types";
+
+export type { BoardGrid, ForbiddenPattern, LineRule, Placement, StartingDiscs, WrapMode } from "./spec.types";
+
 export type Stone = "black" | "white";
 
 /** An intersection the rules have taken out of play. See `obstacles.ts`. */
@@ -143,13 +147,6 @@ export type RuleVariant =
   | "go";
 
 /**
- * Where a stone goes when played. `free`: where it was put. `drop`: it slides
- * to the lowest empty cell of its column, as if the board were upright and
- * the stones were magnetic.
- */
-export type Placement = "free" | "drop" | "edge";
-
-/**
  * How the first stones go down. Everything after the opening is the variant's
  * business; these only shape the start, to blunt black's first-move advantage.
  *
@@ -175,18 +172,6 @@ export type OpeningRule =
   | "rif"
   | "sakata"
   | "tarannikov";
-
-/**
- * What a completed line has to look like to win.
- *
- * `atLeast`: `winLength` or longer.
- * `exact`: precisely `winLength`; an overline is not a win.
- * `exactOpen`: precisely `winLength`, and not shut in at both ends.
- */
-export type LineRule = "atLeast" | "exact" | "exactOpen";
-
-/** Shapes a colour may be forbidden from making. See `rules/forbidden.ts`. */
-export type ForbiddenPattern = "doubleThree" | "doubleFour" | "overline";
 
 /**
  * How a won game was won. Null while nobody has. `trap` is the loser's doing:
@@ -218,9 +203,6 @@ export type OpeningState = {
  * One rule set, as data. The engine consults this and never the variant's
  * name, so adding a variant is a matter of adding a row.
  */
-/** Which edges of the board join up: a plane, a cylinder, or a torus. */
-export type WrapMode = "none" | "columns" | "both";
-
 export type VariantSpec = {
   /** Per colour, because renju lets white win with an overline and not black. */
   lineRule: Record<Stone, LineRule>;
@@ -246,6 +228,8 @@ export type VariantSpec = {
   squareWins: boolean;
   /** Board sizes this game is played on, or null for the standard list. */
   boardSizes: readonly number[] | null;
+  /** Where its stones sit when it is drawn its own way — see `BoardGrid`. Declared, never inferred. */
+  grid: BoardGrid;
   /** Whether the threat reading means anything; off where stones move after placing. */
   analysis: boolean;
   /**
@@ -330,9 +314,6 @@ export type VariantSpec = {
    */
   go: boolean;
 };
-
-/** How a flipping game begins: nothing, the fixed four, or four the players lay themselves. */
-export type StartingDiscs = "none" | "fixed" | "laid";
 
 /**
  * Extra restrictions one colour plays under, so a stronger player can give a

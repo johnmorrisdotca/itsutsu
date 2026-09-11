@@ -1,6 +1,7 @@
 import type {
   WrapMode,
   Blocked,
+  BoardGrid,
   DrawLimit,
   FirstPlayer,
   Hot,
@@ -152,6 +153,12 @@ export const PLACEMENTS = {
   edge: "edge",
 } as const satisfies Record<Placement, Placement>;
 
+/** Where a game's stones sit when it is drawn its own way: on the crossings, or in the squares. */
+export const BOARD_GRIDS = {
+  lines: "lines",
+  cells: "cells",
+} as const satisfies Record<BoardGrid, BoardGrid>;
+
 export const OPENING_RULES = {
   free: "free",
   pro: "pro",
@@ -285,7 +292,14 @@ const CHINESE_CHECKERS_SIZES = [17] as const;
 /** Go's own three sizes: 19×19 as it is played seriously, 13 and 9 for a shorter game. */
 const GO_SIZES = [19, 13, 9] as const;
 
-function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
+/**
+ * What a row may set, less the one thing no builder supplies for it: where
+ * its stones sit is declared by every game and never defaulted, so a new game
+ * that leaves it out does not compile rather than getting a guess.
+ */
+type SpecOverrides = Partial<VariantSpec> & Pick<VariantSpec, "grid">;
+
+function plain(overrides: SpecOverrides): VariantSpec {
   return {
     lineRule: { black: LINE_RULES.atLeast, white: LINE_RULES.atLeast },
     forbidden: { black: NO_PATTERNS, white: NO_PATTERNS },
@@ -326,23 +340,24 @@ function plain(overrides: Partial<VariantSpec> = {}): VariantSpec {
   };
 }
 
-/** The drop family: gravity columns, four in a row, a 7×7 or 9×9 board. */
+/** The drop family: gravity columns, four in a row, a 7×7 or 9×9 board. A piece falls into a slot, so the whole family is drawn in the squares. */
 function drop(overrides: Partial<VariantSpec> = {}): VariantSpec {
   return small({
     winLength: 4,
     placement: PLACEMENTS.drop,
+    grid: BOARD_GRIDS.cells,
     ...overrides,
     boardSizes: overrides.boardSizes ?? [7, 9, 10],
   });
 }
 
-/** A flipping game: an 8×8 board, no lines, and no reading of threats — there are none. */
+/** A flipping game: an 8×8 board of squares, as Othello's is, and no reading of threats — there are none. */
 function flipping(overrides: Partial<VariantSpec> = {}): VariantSpec {
-  return small({ flips: true, analysis: false, ...overrides, boardSizes: overrides.boardSizes ?? REVERSI_SIZES });
+  return small({ flips: true, analysis: false, grid: BOARD_GRIDS.cells, ...overrides, boardSizes: overrides.boardSizes ?? REVERSI_SIZES });
 }
 
 /** The games that are not gomoku: a small board of their own and no opening protocol. */
-function small(overrides: Partial<VariantSpec> & { boardSizes: readonly number[] }): VariantSpec {
+function small(overrides: SpecOverrides & { boardSizes: readonly number[] }): VariantSpec {
   return plain({ allowFirstPlayerChoice: true, openings: FREE_ONLY, ...overrides });
 }
 
@@ -351,11 +366,13 @@ function small(overrides: Partial<VariantSpec> & { boardSizes: readonly number[]
  * so a new variant is a new row here plus its copy in `variants.constants.ts`.
  */
 export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
-  freestyle: plain({ winLength: null, allowFirstPlayerChoice: true }),
+  freestyle: plain({ grid: BOARD_GRIDS.lines, winLength: null, allowFirstPlayerChoice: true }),
   standard: plain({
+    grid: BOARD_GRIDS.lines,
     lineRule: { black: LINE_RULES.exact, white: LINE_RULES.exact },
   }),
   renju: plain({
+    grid: BOARD_GRIDS.lines,
     // White's overline counts as five; black's is forbidden.
     lineRule: { black: LINE_RULES.exact, white: LINE_RULES.atLeast },
     forbidden: { black: RENJU_PATTERNS, white: NO_PATTERNS },
@@ -368,27 +385,37 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
       OPENING_RULES.longPro,
     ],
   }),
-  omok: plain({ forbidden: { black: OMOK_PATTERNS, white: OMOK_PATTERNS } }),
+  omok: plain({ grid: BOARD_GRIDS.lines, forbidden: { black: OMOK_PATTERNS, white: OMOK_PATTERNS } }),
+  /*
+   * The one five-in-a-row game drawn in the squares. Caro is played on
+   * squared paper with the marks written inside the squares, and its name is
+   * the French carreau — the squares themselves.
+   */
   caro: plain({
+    grid: BOARD_GRIDS.cells,
     lineRule: { black: LINE_RULES.exactOpen, white: LINE_RULES.exactOpen },
   }),
-  ninuki: plain({ captures: true, capturesToWin: 10, allowFirstPlayerChoice: true }),
+  ninuki: plain({ grid: BOARD_GRIDS.lines, captures: true, capturesToWin: 10, allowFirstPlayerChoice: true }),
   sannuki: plain({
+    grid: BOARD_GRIDS.lines,
     captures: true,
     captureSizes: [2, 3],
     capturesToWin: 15,
     allowFirstPlayerChoice: true,
   }),
-  misereFive: plain({ misere: true, allowFirstPlayerChoice: true, openings: FREE_ONLY }),
+  misereFive: plain({ grid: BOARD_GRIDS.lines, misere: true, allowFirstPlayerChoice: true, openings: FREE_ONLY }),
+  // Tic-tac-toe's family: noughts and crosses IN the squares, however much the rules share with gomoku.
   makerBreaker: small({
+    grid: BOARD_GRIDS.cells,
     anyColour: true,
     makerBreaker: true,
     boardSizes: [6],
     allowFirstPlayerChoice: false,
     analysis: false,
   }),
-  wildTicTacToe: small({ winLength: 3, anyColour: true, boardSizes: [3], analysis: false }),
+  wildTicTacToe: small({ grid: BOARD_GRIDS.cells, winLength: 3, anyColour: true, boardSizes: [3], analysis: false }),
   notakto: small({
+    grid: BOARD_GRIDS.cells,
     winLength: 3,
     singleColour: true,
     misere: true,
@@ -397,18 +424,21 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     analysis: false,
   }),
   connect6: plain({
+    grid: BOARD_GRIDS.lines,
     stonesPerTurn: 2,
     winLength: 6,
     allowFirstPlayerChoice: true,
     openings: [OPENING_RULES.free],
   }),
-  tictactoe: small({ winLength: 3, boardSizes: [3] }),
-  trapThree: small({ winLength: 4, loseLength: 3, boardSizes: [5] }),
+  tictactoe: small({ grid: BOARD_GRIDS.cells, winLength: 3, boardSizes: [3] }),
+  // Squava: a 5×5 board of squares, played in them.
+  trapThree: small({ grid: BOARD_GRIDS.cells, winLength: 4, loseLength: 3, boardSizes: [5] }),
   /*
    * A torus: both pairs of edges join, so every intersection is a middle one
    * and no line can be shut down by running out of board.
    */
   toroidalFive: plain({
+    grid: BOARD_GRIDS.lines,
     winLength: null,
     allowFirstPlayerChoice: true,
     wrap: WRAP_MODES.both,
@@ -419,6 +449,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * drop family uses, on a board where the stones stay where they are put.
    */
   obstacleFive: plain({
+    grid: BOARD_GRIDS.lines,
     winLength: null,
     allowFirstPlayerChoice: true,
     openings: FREE_ONLY,
@@ -431,9 +462,11 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   hotDrop: drop({ hotSquares: 1, deadSquares: 1 }),
   clearDrop: drop({ lineClear: true }),
   giveawayDrop: drop({ misere: true }),
-  edgeDrop: small({ winLength: 4, placement: PLACEMENTS.edge, boardSizes: [7, 9, 10] }),
+  edgeDrop: small({ grid: BOARD_GRIDS.cells, winLength: 4, placement: PLACEMENTS.edge, boardSizes: [7, 9, 10] }),
   wormDrop: drop({ wormholes: 2 }),
+  // The piece games are this site's own, laid on go boards in stones rather than tiles, so they keep the house lines.
   dominoFive: plain({
+    grid: BOARD_GRIDS.lines,
     queue: PIECE_QUEUES.domino,
     allowFirstPlayerChoice: true,
     openings: FREE_ONLY,
@@ -441,6 +474,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     analysis: false,
   }),
   blockFive: plain({
+    grid: BOARD_GRIDS.lines,
     queue: PIECE_QUEUES.tetro,
     singles: 6,
     allowFirstPlayerChoice: true,
@@ -448,9 +482,12 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     boardSizes: [13, 15, 19],
     analysis: false,
   }),
-  twistFive: small({ winLength: 5, quadrantSize: 3, boardSizes: [6], analysis: false }),
-  twistFour: small({ winLength: 4, quadrantSize: 2, boardSizes: [4], analysis: false }),
+  // The twist games: marbles in the holes of turning quadrants, as the published game has them.
+  twistFive: small({ grid: BOARD_GRIDS.cells, winLength: 5, quadrantSize: 3, boardSizes: [6], analysis: false }),
+  twistFour: small({ grid: BOARD_GRIDS.cells, winLength: 4, quadrantSize: 2, boardSizes: [4], analysis: false }),
+  // Teeko's board is twenty-five points joined by lines, and the pieces stand on the points.
   squareFour: small({
+    grid: BOARD_GRIDS.lines,
     winLength: 4,
     pieces: 4,
     squareWins: true,
@@ -466,21 +503,24 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   antiReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, misere: true }),
   miniReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: MINI_REVERSI_SIZES }),
   grandReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: GRAND_REVERSI_SIZES }),
-  halma: small({ camps: true, analysis: false, boardSizes: HALMA_SIZES }),
-  hex: small({ connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
+  halma: small({ grid: BOARD_GRIDS.cells, camps: true, analysis: false, boardSizes: HALMA_SIZES }),
+  // A stone fills its hexagon: a cell, not a crossing.
+  hex: small({ grid: BOARD_GRIDS.cells, connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
   /*
    * Checkers: no lines, no captures-to-win tally of its own — the capture is
    * the whole of the move, worked out fresh by rules/checkers.ts rather than
    * read from `captures` or `captureSizes`, which belong to the flanking
    * capture of the Ninuki family and mean nothing here.
    */
-  checkers: small({ checkers: true, boardSizes: CHECKERS_SIZES, analysis: false }),
+  checkers: small({ grid: BOARD_GRIDS.cells, checkers: true, boardSizes: CHECKERS_SIZES, analysis: false }),
   /*
    * Chinese Checkers: a hexagram, not a square — see rules/chineseCheckers.ts
    * for how it is embedded in a Point{row,col} grid at all. Otherwise a race
    * exactly like Halma's, so it shares `camp` as its win reason.
    */
   chineseCheckers: small({
+    // Marbles in holes at the points of a lattice. No grid is drawn at all — BoardLines hides it — but the points are what they are.
+    grid: BOARD_GRIDS.lines,
     chineseCheckers: true,
     boardSizes: CHINESE_CHECKERS_SIZES,
     analysis: false,
@@ -491,6 +531,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * Black always opens, as at the real board; no opening protocol applies.
    */
   go: small({
+    grid: BOARD_GRIDS.lines,
     go: true,
     boardSizes: GO_SIZES,
     allowFirstPlayerChoice: false,

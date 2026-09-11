@@ -170,6 +170,11 @@ that is missing any of them fails the build rather than shipping quietly.
 - **It has a screenshot.** `public/art/games/<variant>.jpg`, from `pnpm screenshots:games`.
   The rules page, the games index and the family cards all show it. Regenerate after any
   change to board or branding.
+- **It says where its stones sit.** `grid` on its `VARIANT_SPECS` row: `lines` for a game
+  drawn on the crossings, as gomoku and go are; `cells` for one drawn in the squares, as
+  tic-tac-toe, Othello and checkers are. Declared, never inferred — tic-tac-toe and gomoku
+  share their mechanics and are not drawn alike — and a row without it does not compile.
+  The traditional view reads it, so a guess here is a wrong picture on every page.
 - **It has full copy.** `RULE_VARIANT_DISPLAY` needs a label, a kanji name, a tagline, an
   origin, board advice, and at least three rule bullets; `rulesPageFor` must fill every
   section. If the game is our version of a published game, set `inspiredBy` — see

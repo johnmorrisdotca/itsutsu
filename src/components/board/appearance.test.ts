@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { BOARD_GRIDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { DEFAULT_APPEARANCE } from "./Board.constants";
-import { appearanceFrom, cleanAppearance, sameAppearance } from "./appearance";
+import { appearanceFrom, cleanAppearance, gridFor, sameAppearance } from "./appearance";
 
 /**
  * How a board is dressed, as it crosses the database.
@@ -83,5 +84,37 @@ describe("noticing a real change", () => {
     expect(
       sameAppearance(DEFAULT_APPEARANCE, { ...DEFAULT_APPEARANCE, showMoveNumbers: !DEFAULT_APPEARANCE.showMoveNumbers }),
     ).toBe(false);
+  });
+});
+
+describe("where the stones sit", () => {
+  /*
+   * The traditional view reads the game's own row and works nothing out.
+   * Tic-tac-toe is the case that used to go wrong: in its mechanics it is
+   * gomoku on a small board, so an answer inferred from the rules put it on
+   * the lines — and it is drawn in the squares by everybody who has ever
+   * played it.
+   */
+  it("draws each game the way that game is drawn", () => {
+    expect(gridFor(DEFAULT_APPEARANCE, VARIANT_SPECS.tictactoe)).toBe(BOARD_GRIDS.cells);
+    expect(gridFor(DEFAULT_APPEARANCE, VARIANT_SPECS.freestyle)).toBe(BOARD_GRIDS.lines);
+    expect(gridFor(DEFAULT_APPEARANCE, VARIANT_SPECS.reversi)).toBe(BOARD_GRIDS.cells);
+    expect(gridFor(DEFAULT_APPEARANCE, VARIANT_SPECS.go)).toBe(BOARD_GRIDS.lines);
+  });
+
+  it("is the traditional view unless the member has chosen otherwise", () => {
+    expect(DEFAULT_APPEARANCE.grid).toBe("auto");
+  });
+
+  it("puts every game on the crossings in the Itsutsu view, tic-tac-toe included", () => {
+    const itsutsu = { ...DEFAULT_APPEARANCE, grid: BOARD_GRIDS.lines };
+    expect(gridFor(itsutsu, VARIANT_SPECS.tictactoe)).toBe(BOARD_GRIDS.lines);
+    expect(gridFor(itsutsu, VARIANT_SPECS.checkers)).toBe(BOARD_GRIDS.lines);
+  });
+
+  it("puts every game in the squares in the squares view, gomoku included", () => {
+    const squares = { ...DEFAULT_APPEARANCE, grid: BOARD_GRIDS.cells };
+    expect(gridFor(squares, VARIANT_SPECS.freestyle)).toBe(BOARD_GRIDS.cells);
+    expect(gridFor(squares, VARIANT_SPECS.go)).toBe(BOARD_GRIDS.cells);
   });
 });
