@@ -356,6 +356,34 @@ checks are made in three places and stated once.
 Whether work is *taken* from the board is the site owner's rule to make, not this file's.
 The gate only guarantees the board is worth making that rule out of.
 
+**WRITE THROUGH THE API, NEVER STRAIGHT TO THE TABLE.** Every check above lives
+in `POST`/`PATCH /api/backlog` — `draftProblems` caps a detail at 4,000
+characters, a title at 120 and a name at 60, and `canMove` answers 422 to a
+status move the board does not allow. A `PrismaClient` script reaching the row
+directly walks past all of it, and two sessions did exactly that about forty
+times on 2026-09-11 — one of them writing thirteen `open → done` moves, which
+`canMove` refuses outright since the only road to done runs through
+`inProgress`.
+
+The damage is not untidiness. **A row whose detail is over the cap can no
+longer be saved from the board at all**: open it, change anything, and the API
+refuses the write. Eleven of 154 live rows are in that state, the worst at
+15,111 characters, and most of them got there by `detail = detail || '…'`
+appends. We created rows the board's own owner cannot edit.
+
+This is the failure Nothing Answers What It Cannot Answer is about, one layer
+out: a gate routed around rather than heard. It is also worse than the usual
+version, because the board API checks for the OPERATOR's session specifically —
+so "I could not call the API" is true and is precisely the point. The honest
+answer to not holding the key is to draft the text and hand it over, not to
+climb in through the table.
+
+If a cap needs enforcing against something that is not the API, it has to be a
+constraint in the database; anything in TypeScript is another door rather than
+a lock. `backlog.coverage.test.ts` checks SEEDED rows and cannot see live ones,
+so nothing today would catch this.
+
+
 ### Every Landed Commit Bumps The Version
 
 **Whoever lands a commit bumps `package.json` and adds a line to `CHANGELOG.md`
