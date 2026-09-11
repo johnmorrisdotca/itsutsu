@@ -14,7 +14,7 @@ import { shownName } from "../src/lib/rating/shownName";
 const SEVEN_DAYS = String(7 * 24 * 60 * 60_000);
 
 test.describe("starting a game is one sentence", () => {
-  test("posts a seat when nobody is asking, and the seat is a real game", async ({ page }) => {
+  test("posts a seat when nobody is asking, and the seat is a real game", async ({ page, request }) => {
     await openGamesPage(page);
     // A seat left open by an earlier run would be offered to sit in instead of
     // posting; take it first so this test meets an empty board, as a new day would.
@@ -61,15 +61,25 @@ test.describe("starting a game is one sentence", () => {
     await page.getByTestId("cancel").click();
     await page.getByTestId("cancel-yes").click();
     /*
-     * Called off, proved by the page rather than by the address. A match keeps
-     * its own address when it ends now instead of moving to a second one, so
-     * waiting for the address to change would have been waiting for something
-     * that no longer happens — a check that passes by timing out into the
-     * truth is not a check. The sentence that said it was waiting stops.
+     * Called off, proved on the SERVER. A match keeps its own address when it
+     * ends now instead of moving to a second one, so waiting for the address
+     * to change would be waiting for something that no longer happens.
+     *
+     * And not by the banner either, which was the first replacement and was
+     * wrong in a way worth writing down: the banner does not change its words
+     * when a game ends, it STOPS BEING RENDERED — so `not.toContainText` on it
+     * fails with "element(s) not found" at exactly the moment the thing it is
+     * checking for has come true. An assertion that cannot pass when the code
+     * is right is worse than no assertion.
      */
-    await expect(page.getByTestId("turn-banner")).not.toContainText("waiting for somebody", {
-      timeout: 15_000,
-    });
+    const called = page.url().match(/\/match\/([a-z0-9-]+)/)![1];
+    await expect
+      .poll(
+        async () =>
+          ((await (await request.get(`/api/games/${called}`)).json()) as { status: string }).status,
+        { timeout: 15_000 },
+      )
+      .not.toBe("active");
   });
 
   test("offers a stranger's seat even when my own is standing beside it", async ({ page, browser, request }) => {

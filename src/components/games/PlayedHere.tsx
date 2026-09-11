@@ -2,9 +2,15 @@ import { connection } from "next/server";
 import Link from "next/link";
 
 import { currentSession } from "@/lib/auth/currentSession";
+import { findMembersByNames, type NamedMember } from "@/lib/auth/members";
+import { PlayerActions } from "@/components/players/PlayerActions";
+import { playerKey } from "@/lib/rating/playerKey";
+import { buddyEmails } from "@/lib/social/buddies";
+import { ignoredEmails } from "@/lib/social/ignores";
 
 import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
+import { PlayerLink } from "@/components/players/Standings";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
@@ -58,9 +64,49 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
    * the playing half once, by the ladder panel beside this one, rather than
    * twice by two panels saying the same thing.
    */
-  if ((await currentSession()) === null) return null;
+  const session = await currentSession();
+  if (session === null) return null;
+  const mine = session.email ? session.email.trim().toLowerCase() : null;
 
   const [played, counts] = await Promise.all([recentGamesOf(variant), fetchPlayedCounts()]);
+
+  /*
+   * THE PEOPLE, AS PEOPLE — and it is an acceptance criterion rather than a
+   * flourish. `a-games-page-is-the-games-front-door` lists seven things a
+   * reader must be able to do from here, one of them "BEING ABLE TO CHALLENGE
+   * ANY OF THE PEOPLE WHO PLAYED IT", and says the ticket is not done "until a
+   * reader can do all seven from the game's page without being sent somewhere
+   * else to finish the errand".
+   *
+   * It lives HERE rather than on the ladder beside it, and that is a decision.
+   * The ladder is a side-view now — rank, player, rating, in a 288px column,
+   * because John asked for one in those words — and a column of actions does
+   * not belong in it. This panel is in the wide column and is literally the
+   * people who played this game, which is what the criterion names. Both asks
+   * are kept rather than one traded against the other.
+   *
+   * One row per PERSON, not per game: the same two people playing five games
+   * is one decision a reader makes about each of them, not ten.
+   */
+  const names = [...new Set(played.flatMap((game) => [game.blackName, game.whiteName]))].filter(
+    (name) => name.trim() !== "",
+  );
+  const [members, buddies, ignored] = await Promise.all([
+    names.length === 0
+      ? Promise.resolve(new Map<string, NamedMember>())
+      : (findMembersByNames(names) as Promise<Map<string, NamedMember>>),
+    mine === null ? Promise.resolve(new Set<string>()) : buddyEmails(mine),
+    mine === null ? Promise.resolve(new Set<string>()) : ignoredEmails(mine),
+  ]);
+  /*
+   * Only names with an account behind them. A name typed into a game at one
+   * screen is not somebody to ask anything of, and an offer to play them would
+   * be an offer with nobody on the other end — the same rule `ItsutsuRecord`
+   * keeps about its own opponents.
+   */
+  const people = names
+    .map((name) => ({ name, member: members.get(playerKey(name)) }))
+    .filter((one): one is { name: string; member: NamedMember } => one.member !== undefined);
   /*
    * NOT HIDDEN WHEN EMPTY. This used to `return null` here, which is the thing
    * John objected to: "empty tables are fine! show the table. Show nothing has
@@ -119,6 +165,37 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
           </li>
         ))}
       </ul>
+
+      {people.length > 0 ? (
+        <div className="flex flex-col gap-1.5 border-t border-rule pt-2" data-testid="played-here-people">
+          <h3 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            Anyone for a game <span className="font-mincho normal-case tracking-normal">対局募集</span>
+          </h3>
+          <ul className="flex flex-col gap-1 text-sm">
+            {people.map(({ name, member }) => (
+              <li key={member.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                {/*
+                  `PlayerLink` rather than `PlayerName`: these names all have a
+                  member row behind them by the filter above, so there is no
+                  empty seat to describe and no fallback to invent.
+                */}
+                <PlayerLink name={name} />
+                <PlayerActions
+                  compact
+                  testId="played-here-actions"
+                  email={member.email}
+                  memberId={member.id}
+                  isBuddy={member.email !== null && buddies.has(member.email)}
+                  ignoring={member.email !== null && ignored.has(member.email)}
+                  isComputer={Boolean(member.botTier)}
+                  isYou={member.email !== null && member.email === mine}
+                  signedIn={mine !== null}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }

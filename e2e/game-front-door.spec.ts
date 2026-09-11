@@ -109,34 +109,58 @@ test.describe("a game's page answers the whole errand", () => {
     );
 
     /*
-     * Either a ladder or an honest sentence saying there is not one yet —
-     * never nothing, and never a figure nobody earned. Which of the two shows
-     * depends on rows this spec did not create, so it accepts both and checks
-     * that whichever came is a real answer.
+     * THE TABLE IS ALWAYS DRAWN NOW, full or empty. It used to be replaced by
+     * a sentence when nobody had a standing, and John overruled that: "empty
+     * tables are fine! show the table. Show nothing has been played yet... and
+     * that's a change to have a link saying - be the first to play!" So the
+     * headings are the thing to assert, and what is under them is what varies.
      */
-    const table = ladder.getByTestId("standings-table");
-    if ((await table.count()) > 0) {
-      await expect(ladder.getByTestId("game-champion"), "one name answers 'who is best'").toBeVisible();
-      /*
-       * Nothing is a dead end. Every link inside a panel of people and counts
-       * goes to those people or to exactly those games — and "those games" is
-       * an address under the game now, which is what changed here.
-       */
-      const links = ladder.locator("a");
-      for (let i = 0; i < (await links.count()); i += 1) {
-        await expect(links.nth(i)).toHaveAttribute("href", /^\/(games|players)\//);
-      }
-      /*
-       * 5. Being able to challenge the people who played it. Offered through
-       * the same component the directory uses, so a seat with nobody behind it
-       * — a name with no member row — correctly offers nothing at all.
-       */
-      const counted = await ladder.getByTestId("ladder-actions").count();
-      expect(counted, "the ladder is a list of opponents, and offers what you would do about them")
-        .toBeGreaterThanOrEqual(0);
-    } else {
-      await expect(ladder.getByTestId("game-ladder-empty")).toBeVisible();
+    const table = ladder.getByTestId("ladder-side-view");
+    await expect(table).toBeVisible();
+    await expect(table.locator("th")).toHaveText(["#", "Player", "Rating"]);
+
+    /*
+     * Nothing is a dead end. Every link inside a panel of people and counts
+     * goes to those people or to exactly those games — and "those games" is
+     * an address under the game now, which is what changed here.
+     */
+    const links = ladder.locator("a");
+    for (let i = 0; i < (await links.count()); i += 1) {
+      await expect(links.nth(i)).toHaveAttribute("href", /^\/(games|players)\//);
     }
+
+    // Which of these two shows depends on rows this spec did not create, so it
+    // accepts either and checks that whichever came is a real answer.
+    if ((await ladder.getByTestId("ladder-side-view-empty").count()) > 0) {
+      await expect(ladder.getByTestId("ladder-be-first"), "an empty ladder offers the way in").toBeVisible();
+    } else {
+      await expect(ladder.getByTestId("game-champion"), "one name answers 'who is best'").toBeVisible();
+    }
+  });
+
+  test("offers a game to the people who played it", async ({ page }) => {
+    await page.goto(GAME);
+
+    /*
+     * 5 of the seven, and the ticket is exact about it: "BEING ABLE TO
+     * CHALLENGE ANY OF THE PEOPLE WHO PLAYED IT… the ticket is not done until
+     * a reader can do all seven from the game's page without being sent
+     * somewhere else to finish the errand."
+     *
+     * ON PLAYED HERE, NOT ON THE LADDER, and that is a decision rather than an
+     * accident. The ladder beside it is a side-view — rank, player, rating, in
+     * a 288px column — because John asked for one in those words, and a column
+     * of actions does not belong in it. Played here is in the wide column and
+     * is literally the people who played this game, which is what the
+     * criterion names. Both of his asks are kept; neither is traded away.
+     *
+     * A count rather than a fixed number: who has played gomoku here depends
+     * on rows this spec did not create, and a name with no member row behind
+     * it correctly offers nothing at all.
+     */
+    const people = page.getByTestId("played-here-people");
+    if ((await people.count()) === 0) return;
+    await expect(people.getByTestId("played-here-actions").first()).toBeVisible();
   });
 });
 
@@ -170,7 +194,17 @@ test.describe("a reader with no invite gets the game, and nothing about people",
     await expect(page.getByTestId("game-front-door"), "the game stays open").toBeVisible();
     await expect(page.getByTestId("game-object"), "and what it is").toBeVisible();
     await expect(page.getByTestId("game-family"), "and its family").toBeVisible();
-    await expect(page.getByTestId("game-ladder"), "the ladder is the site's data, and is not").toHaveCount(0);
+    /*
+     * THE PANEL IS THERE AND NAMES NOBODY. Hiding it outright was the first
+     * answer and it teaches a stranger nothing; drawing an EMPTY table would
+     * be worse than nothing, because it would say nobody has played gomoku
+     * when people have. So it says what the panel is and shows the door.
+     */
+    const ladder = page.getByTestId("game-ladder");
+    await expect(ladder).toBeVisible();
+    await expect(ladder.getByTestId("ladder-side-view"), "no member is named").toHaveCount(0);
+    await expect(ladder.getByTestId("game-ladder-shut")).toContainText("needs an invite");
+    await expect(ladder.getByTestId("ladder-join")).toHaveAttribute("href", "/join");
     await expect(page.getByTestId("rules-played-here"), "nor the games people played").toHaveCount(0);
   });
 

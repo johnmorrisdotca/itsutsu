@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.129.0
+- Changing the language back works: choosing English after Japanese now takes effect on the click, rather than needing the site's data cleared
+- The people who played a game are offered a game on that game's own page
+
 ## 0.128.0
 - The ladder is beside a game rather than below it: the top 25 in the side column, with the whole table one click away
 - A game nobody has played shows its table anyway, says so, and offers to let you be the first

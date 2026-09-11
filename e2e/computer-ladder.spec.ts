@@ -364,17 +364,29 @@ test.describe("the ladder against the computer players", () => {
     }
   });
 
-  test("is not drawn at all for a game nobody has played a program at", async ({ page }) => {
-    // A heading over an empty table reads as a broken page rather than as an
-    // answer, and most games have no such standings at all.
-    //
-    // Cleared first, and that is the whole difference between a test about
-    // the code and a test about this database. The assertion is that a game
-    // with no computer standings draws no ladder — so it has to hold for rows
-    // this run never made, and a bot batch left a Halma row here long ago
-    // that made it fail for a reason nothing was wrong with.
+  test("is drawn as an empty table for a game nobody has played a program at", async ({ page }) => {
+    /*
+     * THIS TEST USED TO ASSERT THE OPPOSITE, and its reason was that "a
+     * heading over an empty table reads as a broken page rather than as an
+     * answer". John overruled exactly that: "empty tables are fine! show the
+     * table. Show nothing has been played yet... and that's a change to have
+     * a link saying - be the first to play!"
+     *
+     * And the ladder against the programs is the sharpest case for it. A
+     * reader cannot learn that this site keeps a SEPARATE pool for games
+     * against a computer — that beating a program never moves where you stand
+     * among people — from a section that is not on the page. Hidden until
+     * somebody happens to have played one, it teaches that to nobody.
+     *
+     * Cleared first, and that is the whole difference between a test about
+     * the code and a test about this database: the assertion has to hold for
+     * rows this run never made, and a bot batch left a Halma row here long
+     * ago that made this fail for a reason nothing was wrong with.
+     */
     await clearAllComputerStandings("halma");
     await page.goto("/games/halma/standings");
-    await expect(page.getByTestId("computer-standings")).toHaveCount(0);
+    await expect(page.getByTestId("computer-standings")).toBeVisible();
+    await expect(page.getByTestId("computer-standings-table")).toBeVisible();
+    await expect(page.getByTestId("computer-standings-empty")).toContainText("against a program");
   });
 });
