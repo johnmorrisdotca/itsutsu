@@ -31,14 +31,29 @@ async function mentionsAllLink(page: Page, name: string): Promise<number> {
    * full name in the text would find nothing, and looking for the short name
    * in the address would pass while the link was broken.
    */
-  const allowed = [`/players/${playerSlug(name)}`, "/me"];
+  /*
+   * A PLAYER ADDRESS, NOT A PARTICULAR SPELLING OF ONE. This used to require
+   * `/players/<slug of the name>` exactly, and that assertion aged out the day
+   * a person's link started being built from their opaque id — which was done
+   * for this test's own reason, one step further on. A name in the address was
+   * how "Hanako M." on screen kept a whole surname in the markup underneath.
+   *
+   * So the rule is unchanged and the check follows it rather than a format:
+   * every printed name sits in a link to a person. WHICH person is proved by
+   * the cases below, which click through and read the page — a stronger claim
+   * than string-matching an address ever made, and the one the rule is
+   * actually about.
+   */
   const mentions = page.getByText(shownName(name), { exact: true });
   const count = await mentions.count();
   for (let i = 0; i < count; i += 1) {
     const href = await mentions
       .nth(i)
       .evaluate((node) => node.closest("a")?.getAttribute("href") ?? null);
-    expect(allowed, `"${name}" on ${page.url()} (mention ${i + 1}) leads nowhere`).toContain(href);
+    expect(
+      href === "/me" || /^\/players\/[^/]+$/.test(href ?? ""),
+      `"${name}" on ${page.url()} (mention ${i + 1}) leads nowhere — href was ${href}`,
+    ).toBe(true);
   }
   return count;
 }
@@ -120,7 +135,12 @@ test.describe("every name leads to the player", () => {
     await everyMentionLinks(page, newcomer.name);
     await page.getByTestId("here-name").filter({ hasText: shownName(newcomer.name) }).first().click();
 
-    await expect(page).toHaveURL(new RegExp(`/players/${playerSlug(newcomer.name)}$`));
+    /*
+     * The address is their id now, so WHICH person it opened is proved by the
+     * page rather than by the URL — which is the better proof anyway, and the
+     * thing the old assertion was standing in for.
+     */
+    await expect(page).toHaveURL(/\/players\/[^/]+$/);
     await expect(page.getByTestId("player-profile")).toContainText(shownName(newcomer.name));
     await expect(page.getByTestId("player-no-games")).toBeVisible();
 

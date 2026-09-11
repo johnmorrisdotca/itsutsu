@@ -128,7 +128,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
       */}
       {leader === undefined ? null : (
         <p className="text-sm" data-testid="game-champion">
-          <span className="text-muted">Champion:</span> <PlayerLink name={leader.name} />{" "}
+          <span className="text-muted">Champion:</span> <PlayerLink name={leader.name} memberId={leader.memberId} />{" "}
           <span className="font-mono text-muted tabular-nums">{leader.rating}</span>
         </p>
       )}

@@ -110,7 +110,7 @@ export function AdminMembers() {
                   {member.name.trim() === "" ? (
                     <span className="text-muted">No name yet</span>
                   ) : (
-                    <PlayerName name={member.name} fallback="" whole />
+                    <PlayerName name={member.name} memberId={member.id} fallback="" whole />
                   )}
                 </span>
                 {/* What they are, then what has been done to them. Somebody can be a shut operator. */}

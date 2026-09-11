@@ -24,6 +24,16 @@ import { POOL_COLUMNS, RATING_POOLS, outcomeFor, poolWrite, standingIn, type Rat
 export type VariantStanding = {
   key: string;
   name: string;
+  /**
+   * The member this record belongs to, or null for one with nobody behind it.
+   *
+   * Carried so that a link to this person can be built from their ID rather
+   * than from their name. A link built from the name put a member's whole
+   * surname in the markup under a screen showing only "Hanako M." — see
+   * `playerPath`.
+   */
+  memberId: string | null;
+
   variant: string;
   rating: number;
   ratedGames: number;
@@ -45,6 +55,8 @@ export type VariantStanding = {
 type StandingRow = {
   key: string;
   name: string;
+  /** Whose standing this is, so a link to them can be built from their id. */
+  memberId: string | null;
   variant: string;
   rating: number;
   ratedGames: number;
@@ -58,6 +70,7 @@ function toStanding(row: StandingRow, pool: RatingPool = RATING_POOLS.people): V
   return {
     key: row.key,
     name: row.name,
+    memberId: row.memberId,
     variant: row.variant,
     ...standing,
     tier: tierFor(standing.ratedGames),

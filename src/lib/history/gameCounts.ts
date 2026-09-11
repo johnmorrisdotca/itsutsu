@@ -37,6 +37,9 @@ export type RecentGame = {
   id: string;
   blackName: string;
   whiteName: string;
+  /** Whose seats these were, so a name can link to the person rather than the spelling. */
+  blackMemberId: string | null;
+  whiteMemberId: string | null;
   result: string;
   moveCount: number;
   playedAt: string;
@@ -59,7 +62,7 @@ export async function recentGamesOf(variant: string, limit = 5): Promise<RecentG
     where: { variant, status: "finished" },
     orderBy: { playedAt: "desc" },
     take: limit,
-    select: { id: true, blackName: true, whiteName: true, result: true, moveCount: true, playedAt: true },
+    select: { id: true, blackName: true, whiteName: true, blackMemberId: true, whiteMemberId: true, result: true, moveCount: true, playedAt: true },
   });
   return rows.map((row) => ({ ...row, playedAt: row.playedAt.toISOString() }));
 }

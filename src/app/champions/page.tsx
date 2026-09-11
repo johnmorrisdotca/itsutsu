@@ -36,7 +36,7 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
       ) : (
         <>
           <td className="py-1.5 pr-3">
-            <PlayerLink name={champion.leader.name} />
+            <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} />
           </td>
           <td className="py-1.5 pr-3 font-mono tabular-nums">{champion.leader.rating}</td>
           <td className="py-1.5 pr-3">

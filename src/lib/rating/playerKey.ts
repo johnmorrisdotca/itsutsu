@@ -12,8 +12,32 @@ export function playerSlug(name: string): string {
   return playerKey(name).replace(/\s+/g, "-");
 }
 
-/** /players/<slug> — a player's page, under the name they play as. */
-export function playerPath(name: string): string {
+/**
+ * /players/<id> for a member, /players/<slug> for a record with nobody behind
+ * it. **The id is the point of this function.**
+ *
+ * A link used to be built from the name, and that quietly defeated the whole
+ * of `shownName`. The screen printed "Hanako M." and the href underneath it
+ * read /players/hanako-morris, so a twelve-year-old's surname sat in the
+ * markup of every page that named her — including pages a stranger may read.
+ * John, on the same day he asked for first names only: "links can still be
+ * full name but maybe links to people might need to be the guids?"
+ *
+ * The rule it enforces, in the words of the ticket that settled it: **a name
+ * shown publicly must be the name the site means to show, in the links as
+ * well as in the text.**
+ *
+ * NOT A SHORTENED NAME IN THE ADDRESS, which was the cheaper idea and is
+ * wrong: "Hanako Morris" and "Hanako Mori" both shorten to "Hanako M.", so an
+ * address built from the shown name is an address that can mean two people.
+ * An opaque id says nothing and collides with nobody.
+ *
+ * A record with no member keeps its name in the address, because the name is
+ * all it has — a kept record from another site, or a name typed into a game
+ * at one screen. `/players/[slug]` resolves both.
+ */
+export function playerPath(name: string, memberId?: string | null): string {
+  if (memberId != null && memberId !== "") return `/players/${memberId}`;
   return `/players/${playerSlug(name)}`;
 }
 

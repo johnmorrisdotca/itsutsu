@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.133.0
+- A link to a person carries their id, not their name, so a member's surname is no longer in the markup of every page that names them
+
 ## 0.132.0
 - Changing your display name no longer erases your record: your games, your rating and your standings follow you, and every ladder shows the name you chose
 

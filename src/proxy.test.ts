@@ -132,31 +132,40 @@ describe("the paths that stay open", () => {
   });
 
   /**
-   * A GAP, NOT A DECISION, and it is written as a test so it cannot be
-   * forgotten.
+   * THE BLOCKER IS GONE; THE DECISION HAS NOT BEEN TAKEN YET.
    *
    * A game's record and its ladder are READING, and by the rule above they
-   * belong open. They are shut because both print members' names through
-   * `PlayerName`, which shows "Hanako M." and links to /players/hanako-morris
-   * — the whole name is in the markup, which is the leak that was fixed in
-   * production by taking members off open pages. `shownName` says plainly that
-   * the address half is a decision still to be made.
+   * belong open. They were shut for a concrete reason rather than a cautious
+   * one: both print members' names through `PlayerName`, which showed
+   * "Hanako M." while the href under it read /players/hanako-morris. The whole
+   * name was in the markup, which is the leak that was fixed in production by
+   * taking members off open pages in the first place.
    *
-   * WHEN THAT IS FIXED: add `history|standings` to `OPEN_PATTERNS` and delete
-   * this test. Until then it is here so that opening them looks like a choice
-   * rather than an oversight.
+   * **That is fixed.** `playerPath` builds `/players/<id>` for anybody with a
+   * member behind them, and `playerLinks.coverage.test.ts` fails the build for
+   * a caller that links to a person without their id. So nothing about a
+   * name's address holds these two shut any more.
+   *
+   * They stay shut here because OPENING them is a change to `proxy.ts` and
+   * belongs to `what-a-visitor-with-no-invite-may-see`, landed on its own with
+   * its own suite rather than ridden in on an address change. This test is now
+   * the note that says so: it asserts they are still shut, and records WHY
+   * that is a pending decision rather than a live leak.
+   *
+   * WHEN THAT TICKET IS TAKEN: add `history|standings` to `OPEN_PATTERNS` and
+   * delete this test.
    */
-  it("keeps a game's record and ladder shut while a name's address is its whole name", () => {
+  it("keeps a game's record and ladder shut until opening them is decided on purpose", () => {
     for (const path of ["/games/hex/history", "/games/hex/standings"]) {
-      expect(wouldBeOpen(path), `${path} names members, and a name's link is their full name`).toBe(
-        false,
-      );
+      expect(wouldBeOpen(path), `${path} is still shut, pending a deliberate decision`).toBe(false);
     }
+    /*
+     * And the reason they WERE shut is genuinely gone — asserted rather than
+     * claimed, because "the blocker is fixed" is exactly the sort of sentence
+     * that stays in a comment long after it stopped being true.
+     */
     const shown = readFileSync("src/components/players/PlayerName.tsx", "utf8");
-    expect(
-      shown,
-      "if PlayerName no longer links the whole name, this test is the thing that is out of date",
-    ).toContain("playerPath(whole)");
+    expect(shown, "a person's link must be built from their id").toContain("playerPath(whole, memberId)");
   });
 
   it("is not opened by an address that merely looks like one of the open ones", () => {

@@ -48,7 +48,7 @@ export async function Ladder() {
             {leaders.map((player) => (
               <tr key={player.key} className="border-t border-rule">
                 <td className="py-1.5 pr-3">
-                  <Link href={playerPath(player.name)} className="underline-offset-2 hover:underline">
+                  <Link href={playerPath(player.name, player.memberId)} className="underline-offset-2 hover:underline">
                     {shownName(player.name)}
                   </Link>
                 </td>

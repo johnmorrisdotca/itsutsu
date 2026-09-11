@@ -156,7 +156,7 @@ export async function MyRecord({ name }: { name: string }) {
       ) : null}
       {name !== "" ? (
         <p className="text-xs">
-          <Link href={playerPath(name)} className="underline underline-offset-4">
+          <Link href={playerPath(name, mineId)} className="underline underline-offset-4">
             Your public page
           </Link>{" "}
           · <Link href="/my-games" className="underline underline-offset-4">Your games</Link>

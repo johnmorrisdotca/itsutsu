@@ -14,7 +14,7 @@ import { LegacySourcePanel } from "@/components/players/LegacySource";
 import { Figures } from "@/components/ui/Figures";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { findMemberByName, findMembersByNames } from "@/lib/auth/members";
+import { findMemberById, findMemberByName, findMembersByNames } from "@/lib/auth/members";
 import { currentSession } from "@/lib/auth/currentSession";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
@@ -27,7 +27,7 @@ import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { PlayedFigure, RecordFigure } from "@/components/players/PlayerRecord";
 import { figuresOf, winRateText } from "@/lib/rating/figures";
-import { playerKeysFromSlug } from "@/lib/rating/playerKey";
+import { playerKey, playerKeysFromSlug } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
@@ -59,7 +59,30 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * words. So both readings are looked for, and whichever finds somebody is
    * the player this address means.
    */
-  const looked = await Promise.all(
+  /*
+   * AN ID FIRST, A NAME AFTER. Every link to a person now builds
+   * `/players/<id>` — see `playerPath` — because a link built from the name
+   * put a member's whole surname in the markup of every page that named them,
+   * under a screen that was carefully showing only "Hanako M.".
+   *
+   * The name reading stays underneath and is not a fallback in the apologetic
+   * sense: a kept record from another site, or a name typed into a game at one
+   * screen, has no member and its address is its name. Both are real addresses
+   * and this resolves either.
+   */
+  const byId = await findMemberById(slug);
+  const looked = byId !== null
+    ? [
+        await (async () => {
+          const key = playerKey(byId.name);
+          const [player, record] = await Promise.all([
+            fetchPlayer(key, byId.id ?? null),
+            fetchPlayerRecord(key, byId.id ?? null),
+          ]);
+          return { key, player, record, member: byId };
+        })(),
+      ]
+    : await Promise.all(
     playerKeysFromSlug(slug).map(async (key) => {
       /*
        * The MEMBER is looked up first and the record is then asked for as
@@ -77,6 +100,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       return { key, player, record, member };
     }),
   );
+
   const found =
     looked.find((one) => one.player !== null || one.record.games > 0 || one.member !== null) ?? looked[0];
   const { key: decoded, player, record, member } = found;

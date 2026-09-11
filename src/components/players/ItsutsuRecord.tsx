@@ -160,7 +160,10 @@ export function ItsutsuRecord({
                   <GameName variant={game.variant} /> · vs{" "}
                   {game.opponent ? (
                     <Link
-                      href={playerPath(game.opponent)}
+                      href={playerPath(
+                        game.opponent,
+                        opponents?.members.get(playerKey(game.opponent))?.id,
+                      )}
                       className="underline-offset-2 hover:underline"
                       data-testid="player-opponent"
                     >

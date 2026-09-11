@@ -34,7 +34,7 @@ export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null 
               <RecencyMark recency={entry.recency} />
               <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
                 {entry.name.trim() !== "" ? (
-                  <Link href={playerPath(entry.name)} className="underline-offset-2 hover:underline">
+                  <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline">
                     {shownName(entry.name)}
                   </Link>
                 ) : (

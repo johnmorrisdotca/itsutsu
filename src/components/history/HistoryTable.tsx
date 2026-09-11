@@ -43,9 +43,9 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               />
               <span className="flex flex-col">
                 <span className="font-medium">
-                  <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} linkable={linkable} className="relative z-10" testId="history-player" />
+                  <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={linkable} className="relative z-10" testId="history-player" />
                   <span className="px-2 text-muted">vs</span>
-                  <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={linkable} className="relative z-10" testId="history-player" />
+                  <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={linkable} className="relative z-10" testId="history-player" />
                 </span>
                 <span className="text-xs text-muted">{playedOn(game.playedAt)}</span>
               </span>

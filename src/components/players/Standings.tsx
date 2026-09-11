@@ -10,9 +10,9 @@ import type { ReactNode } from "react";
 import { shownName } from "@/lib/rating/shownName";
 
 /** A player's name, leading to their page. */
-export function PlayerLink({ name }: { name: string }) {
+export function PlayerLink({ name, memberId }: { name: string; memberId?: string | null }) {
   return (
-    <Link href={playerPath(name)} className="underline-offset-2 hover:underline">
+    <Link href={playerPath(name, memberId)} className="underline-offset-2 hover:underline">
       {shownName(name)}
     </Link>
   );
@@ -81,7 +81,7 @@ export function StandingsTable({
           <tr key={standing.key} className="border-t border-rule">
             <td className="py-1.5 pr-3 font-mono text-muted tabular-nums">{index + 1}</td>
             <td className="py-1.5 pr-3">
-              <PlayerLink name={standing.name} />
+              <PlayerLink name={standing.name} memberId={standing.memberId} />
             </td>
             <td className="py-1.5 pr-3 font-mono tabular-nums">{standing.rating}</td>
             <td className="py-1.5 pr-3">
@@ -157,7 +157,7 @@ export function LadderSideView({
               <tr key={standing.key} className="border-t border-rule">
                 <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
                 <td className="min-w-0 truncate py-1.5 pr-2">
-                  <PlayerLink name={standing.name} />
+                  <PlayerLink name={standing.name} memberId={standing.memberId} />
                 </td>
                 <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
               </tr>

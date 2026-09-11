@@ -245,7 +245,7 @@ export async function Directory({
                     <img src={entry.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
                   ) : null}
                   {entry.name.trim() !== "" ? (
-                    <Link href={playerPath(entry.name)} className="underline-offset-2 hover:underline" data-testid="directory-name">
+                    <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline" data-testid="directory-name">
                       {shownName(entry.name)}
                     </Link>
                   ) : (

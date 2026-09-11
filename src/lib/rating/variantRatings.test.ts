@@ -37,6 +37,7 @@ describe("championsOf", () => {
   const standing = (variant: string, name: string, rating: number, ratedGames: number): VariantStanding => ({
     key: name.toLowerCase(),
     name,
+    memberId: null,
     variant,
     rating,
     ratedGames,

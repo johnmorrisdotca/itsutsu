@@ -78,7 +78,7 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
             data-tier={entry.botTier}
           >
             <span className="flex min-h-7 min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
-              <PlayerName name={entry.name} fallback="" className="font-medium" testId="computer-player-name" />
+              <PlayerName name={entry.name} memberId={entry.id} fallback="" className="font-medium" testId="computer-player-name" />
               <CountryMark country={entry.country} className="ml-1.5 text-sm" />
               <MemberKindBadge kind={MEMBER_KINDS.robot} />
             </span>

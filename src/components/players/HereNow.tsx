@@ -30,7 +30,7 @@ export async function HereNow({ now }: { now: Date }) {
             <span key={entry.id} className="flex items-center gap-1">
               <RecencyMark recency={entry.recency} />
               {entry.name.trim() !== "" ? (
-                <Link href={playerPath(entry.name)} className="underline-offset-2 hover:underline" data-testid="here-name">
+                <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline" data-testid="here-name">
                   {shownName(entry.name)}
                 </Link>
               ) : (

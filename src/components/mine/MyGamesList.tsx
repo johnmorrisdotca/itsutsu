@@ -135,9 +135,9 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
       <Link href={href} className="absolute inset-0 rounded-lg" aria-label={`${black} vs ${white}`} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate font-medium">
-          <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} linkable={named} className="relative z-10" />
+          <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className="relative z-10" />
           <span className="px-1 text-muted">vs</span>
-          <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={named} className="relative z-10" />
+          <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className="relative z-10" />
         </span>
         <span className="text-xs text-muted">
           <GameName variant={game.variant} raised /> · {game.size}×{game.size} · {game.moveCount} moves · you are{" "}

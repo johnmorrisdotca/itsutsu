@@ -366,6 +366,35 @@ export async function findMembersByNames(
  * how the site addresses somebody, so a name typed into an address bar or
  * printed beside a game has to find them; the address is the key underneath.
  */
+/**
+ * A member by their opaque id, for an address that carries one.
+ *
+ * `/players/<id>` is what every link to a person builds now, so this is the
+ * first question that address asks. It answers null for anything that is not
+ * an id — a name-slug, a stray string — and the page falls back to reading
+ * the address as a name, which is what a kept record's address still is.
+ */
+export async function findMemberById(id: string): Promise<NamedMember | null> {
+  const wanted = id.trim();
+  if (wanted === "") return null;
+  const row = await prisma.member.findUnique({
+    where: { id: wanted },
+    select: {
+      email: true,
+      id: true,
+      botTier: true,
+      unclaimableBecause: true,
+      name: true,
+      picture: true,
+      country: true,
+      city: true,
+      timeZone: true,
+      bio: true,
+    },
+  });
+  return row;
+}
+
 export async function findMemberByName(name: string): Promise<NamedMember | null> {
   const wanted = name.trim();
   if (wanted === "") return null;

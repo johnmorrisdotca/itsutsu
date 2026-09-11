@@ -152,9 +152,9 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
         {played.map((game) => (
           <li key={game.id} className="flex items-baseline justify-between gap-2 py-1.5">
             <span className="min-w-0 truncate">
-              <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} />
+              <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} />
               <span className="px-1 text-muted">vs</span>
-              <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} />
+              <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} />
             </span>
             <Link
               href={matchPath(variant, game.id)}

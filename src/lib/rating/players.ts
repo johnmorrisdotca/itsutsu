@@ -24,6 +24,16 @@ export { playerKey };
 export type PlayerProfile = {
   key: string;
   name: string;
+  /**
+   * The member this record belongs to, or null for one with nobody behind it.
+   *
+   * Carried so that a link to this person can be built from their ID rather
+   * than from their name. A link built from the name put a member's whole
+   * surname in the markup under a screen showing only "Hanako M." — see
+   * `playerPath`.
+   */
+  memberId: string | null;
+
   rating: number;
   ratedGames: number;
   tier: RatingTier;
@@ -47,6 +57,7 @@ export type PlayerProfile = {
 function toProfile(row: {
   key: string;
   name: string;
+  memberId: string | null;
   rating: number;
   ratedGames: number;
   wins: number;

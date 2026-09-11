@@ -219,9 +219,9 @@ function FiledMatch({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold">
-            <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} linkable={named} />
+            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} />
             <span className="px-1 text-muted">vs</span>
-            <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} linkable={named} />
+            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} />
           </h1>
           <p className="text-sm text-muted">
             Started {new Date(game.playedAt).toLocaleString()}
