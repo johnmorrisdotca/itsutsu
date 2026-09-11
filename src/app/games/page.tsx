@@ -4,7 +4,6 @@ import Link from "next/link";
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
-import { InviteFriends } from "@/components/mine/InviteFriends";
 import { cookies } from "next/headers";
 
 import { HereNowPanel } from "@/components/mine/HereNowPanel";
@@ -275,10 +274,14 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
       {/*
         The games you have going are their own page now, at /play. This one
         is for starting another, and for meeting the games themselves: the
-        sentence, the open seats, the room, and the whole catalogue underneath.
-      */}
-      <InviteFriends />
+        open seats, the room, and the whole catalogue underneath.
 
+        Inviting somebody to the SITE is not one of those things, and the
+        panel that did it lived here and on /me both. It is an account
+        errand — a one-use code and a QR for a phone across the table —
+        and it was costing this page vertical space above the games
+        themselves. It stays on /me, beside the people you already know.
+      */}
       <BrandStones className="py-1 opacity-80" />
 
       {/*
