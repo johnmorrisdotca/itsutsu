@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 
-import { describe, expect, it } from "vitest";
+import { NextRequest } from "next/server";
+import { afterEach, describe, expect, it } from "vitest";
 
-import { MATCHER_EXEMPT, config, wouldBeOpen } from "./proxy";
+import { MATCHER_EXEMPT, config, isBoardApiPath, proxy, wouldBeOpen } from "./proxy";
 
 /**
  * The gate, and the one shortcut through it.
@@ -218,5 +219,71 @@ describe("the paths that stay open", () => {
       const path = entry === "/$" ? "/" : entry.replace(/\/$/, "");
       expect(wouldBeOpen(path), `robots.txt invites crawlers to ${entry}, which the gate shuts`).toBe(true);
     }
+  });
+});
+
+describe("isBoardApiPath", () => {
+  it("is the two backlog routes, and nothing that merely starts the same way", () => {
+    expect(isBoardApiPath("/api/backlog")).toBe(true);
+    expect(isBoardApiPath("/api/backlog/abc123")).toBe(true);
+    expect(isBoardApiPath("/api/backlogging")).toBe(false);
+    expect(isBoardApiPath("/api/games")).toBe(false);
+  });
+});
+
+/**
+ * Board convergence ITS-02: an agent's terminal has no browser to hold a
+ * session cookie in, so it carries BOARD_TOKEN in a header instead. These
+ * exercise `proxy()` itself, not just the path list, because the whole
+ * point is a request that never had a session reaching the route at all —
+ * `wouldBeOpen`/`isBoardApiPath` alone cannot show that the token is
+ * actually checked.
+ */
+describe("the board token, through the gate itself", () => {
+  const ENV = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...ENV };
+  });
+
+  function backlogRequest(path: string, headers: Record<string, string> = {}): NextRequest {
+    return new NextRequest(`https://itsutsu.com${path}`, { headers });
+  }
+
+  it("lets the right bearer token through with no session at all", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer right-token" }));
+    // NextResponse.next() carries no redirect and answers as an ordinary 200.
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.status).toBe(200);
+  });
+
+  it("falls through to the ordinary API refusal for a wrong token", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer wrong" }));
+    expect(response.status).toBe(401);
+  });
+
+  it("falls through with no Authorization header at all", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(backlogRequest("/api/backlog"));
+    expect(response.status).toBe(401);
+  });
+
+  it("never opens anything but the board routes, whatever the token", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(backlogRequest("/api/games", { Authorization: "Bearer right-token" }));
+    expect(response.status).toBe(401);
+  });
+
+  it("opens nothing when BOARD_TOKEN is not set, whatever the request carries", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    delete process.env.BOARD_TOKEN;
+    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer anything" }));
+    expect(response.status).toBe(401);
   });
 });

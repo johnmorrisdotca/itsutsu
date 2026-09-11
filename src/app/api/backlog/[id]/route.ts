@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NO_STORE, badRequest, conflict, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
-import { currentAdmin } from "@/lib/auth/requireAdmin";
 import {
   BACKLOG_EFFORT_VALUES,
   BACKLOG_KIND_VALUES,
@@ -10,6 +9,7 @@ import {
   BACKLOG_STATUS_VALUES,
 } from "@/lib/backlog/backlog";
 import { CLAIMED_BY_MAX } from "@/lib/backlog/backlog.constants";
+import { boardActor } from "@/lib/backlog/boardActor";
 import { changeItem } from "@/lib/backlog/backlogStore";
 import type { BacklogChange } from "@/lib/backlog/backlog.types";
 import { overLimit } from "@/lib/api/rateLimit";
@@ -61,10 +61,11 @@ const patchSchema = z
  * A move to In progress is a claim, and a live claim somebody else holds
  * answers 409 rather than taking over: BOARD_RULES.md invariant 4, and the
  * reason two sessions built the same thing twice before this ticket. The
- * operator IS the actor — there is no separate "assign to" any more, taking
- * a row and moving it to In progress are the same act.
+ * actor making the move IS the claim — there is no separate "assign to" any
+ * more, taking a row and moving it to In progress are the same act, whether
+ * the actor is the operator's browser or a terminal holding the board token.
  *
- * The board is the operator's, so changing a row is the operator's too. A
+ * The board is the operator's, or an agent's holding the board token. A
  * member's cookie reaches no further here than it does on the board itself:
  * 404, the same answer the address gives them.
  */
@@ -73,8 +74,8 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
     const tooMany = overLimit(request, "backlog-move");
     if (tooMany !== null) return tooMany;
 
-    const me = await currentAdmin();
-    if (me === null) return NextResponse.json({ error: "No such thing." }, { status: 404, headers: NO_STORE });
+    const who = await boardActor(request);
+    if (who === null) return NextResponse.json({ error: "No such thing." }, { status: 404, headers: NO_STORE });
 
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
@@ -82,9 +83,9 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
     if (!parsed.success) return badRequest("Move it where, say what, or grade it how?");
 
     const { id } = await ctx.params;
-    const actor = (me.name ?? me.email ?? "operator").trim().slice(0, CLAIMED_BY_MAX);
+    const actor = who.name.trim().slice(0, CLAIMED_BY_MAX) || "operator";
     // The enums are checked above; the lengths and the move are the store's to refuse.
-    const outcome = await changeItem(id, parsed.data as BacklogChange, actor || "operator");
+    const outcome = await changeItem(id, parsed.data as BacklogChange, actor);
     if (!outcome.ok) {
       if (outcome.reason === "missing") return notFound("No such item.");
       if (outcome.reason === "held") return conflict(`Held by ${outcome.heldBy}. Ask them to release it.`);

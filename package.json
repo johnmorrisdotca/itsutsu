@@ -34,6 +34,7 @@
     "preflight:prod": "pnpm quality:check && pnpm security:check && pnpm build",
     "invite": "node --env-file=.env scripts/mint-invite.ts",
     "embed-token": "node --env-file=.env scripts/mint-embed-token.ts",
+    "task": "node --env-file=.env scripts/tasks.ts",
     "backlog:cleanup-litter": "node --env-file=.env scripts/cleanup-backlog-litter.ts",
     "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line && node scripts/make-game-thumbs.mjs",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",

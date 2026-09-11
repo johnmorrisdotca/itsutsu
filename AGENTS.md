@@ -120,6 +120,20 @@ through: wrap the `NextResponse.next()` a decision has already arrived at,
 never the deciding. A change that only ever runs after "yes" cannot turn a no
 into one.
 
+**The one sanctioned exception is a narrow, its-own-secret credential for a
+specific path, not a session** — the embed token for `/embed` and `/api/embed/`,
+and, since board convergence ITS-02, the board token for `/api/backlog` and
+`/api/backlog/[id]`. Both exist because the caller has no browser to hold a
+session cookie in, both are checked by their own dedicated function
+(`verifyEmbedToken`, `constantTimeEqual` against `BOARD_TOKEN`), both grant
+nothing beyond letting the request continue to the route — which re-checks
+the same secret itself, plus whatever the gate does not know about (the
+embed's `data` scope, the board's `X-Board-Actor`) — and neither ever
+removes a way through that already existed; a wrong or missing credential
+falls through to the ordinary session check exactly as before. A THIRD one
+of these needs the same shape and the same reasoning stated beside it, not
+a shortcut that skips the dedicated check or grants more than "continue".
+
 ## Workspace Gates
 
 ### File Size Gate
@@ -387,10 +401,34 @@ appends. We created rows the board's own owner cannot edit.
 
 This is the failure Nothing Answers What It Cannot Answer is about, one layer
 out: a gate routed around rather than heard. It is also worse than the usual
-version, because the board API checks for the OPERATOR's session specifically —
-so "I could not call the API" is true and is precisely the point. The honest
-answer to not holding the key is to draft the text and hand it over, not to
-climb in through the table.
+version, because the board API checks for the OPERATOR's session specifically
+— so "I could not call the API" was true, and until board convergence ITS-02
+it was precisely the point: there was no other door.
+
+**There is one now.** `pnpm task` talks to the same API the page does, with
+a board token (`BOARD_TOKEN`, separate from `ADMIN_TOKEN` and never able to
+open a browser session — see `.env.example`) and an actor name, so every cap
+and every move rule in this section applies to it exactly as it applies to a
+click. The CLI is the API: there is nothing it can do that walks past a rule
+above.
+
+```
+pnpm task                              what is open and who holds it
+pnpm task add "<title>" [--detail "…"] [--kind feature|fix|chore] [--by "<who>"]
+pnpm task claim <key> --by "<who>"     open -> inProgress
+pnpm task release <key> --by "<who>"   inProgress -> open
+pnpm task drop <key> --by "<who>"      -> dropped
+pnpm task reopen <key> --by "<who>"    dropped -> open
+pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none
+pnpm task edit <key> [--title "…"] [--detail "…"]   the text, through the API's own door
+```
+
+In progress is a claim with a six-hour lease (board convergence ITS-01), not
+only a status: `claim` on a row somebody else holds is refused with their
+name, and cannot be taken over inside the lease. A hold nobody has renewed
+past six hours is free again, and `pnpm task`'s list prints it as STALE
+first — before WAITING — because somebody started it, and a reader should
+know that before starting again.
 
 If a cap needs enforcing against something that is not the API, it has to be a
 constraint in the database; anything in TypeScript is another door rather than
