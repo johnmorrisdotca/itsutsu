@@ -39,7 +39,7 @@ test.describe("a seat link that cannot seat you", () => {
     // And it leads to the games it counted, which is this site's rule about
     // any number that refers to games. It is also the only useful thing to do
     // about the refusal: the game to finish is in that list.
-    await expect(notice.locator("a").first()).toHaveAttribute("href", "/my-games");
+    await expect(notice.locator("a").first()).toHaveAttribute("href", "/play");
 
     // The site is around it, which is what the hand-written document lacked.
     await expect(page.locator("[data-chrome]").first()).toBeVisible();

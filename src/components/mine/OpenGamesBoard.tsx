@@ -12,6 +12,7 @@ import { OpenSeatsFilters } from "./OpenSeatsFilters";
 import { PlayerName } from "@/components/players/PlayerName";
 import { SitButton } from "./SitButton";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 
 /**
  * The noticeboard: games somebody has posted with a seat for anyone. It sits
@@ -75,7 +76,9 @@ export function OpenGamesBoard({
               className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-rule px-3 py-2 text-sm"
               data-testid="open-game"
             >
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              {/* Which game the seat is in, at a glance — the same board /play shows. */}
+              <GameThumb variant={game.variant} />
+              <span className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
                 <span className="truncate font-medium">
                   <PlayerName
                     name={poster.name}

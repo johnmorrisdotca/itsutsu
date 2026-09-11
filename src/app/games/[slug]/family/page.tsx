@@ -6,7 +6,8 @@ import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { CardArrow } from "@/components/ui/CardArrow";
+import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { familyOf } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { gamePath, slugFor, variantFor } from "@/lib/gomoku/slugs";
@@ -74,19 +75,30 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
         {family.games.map((game) => {
           const sibling = RULE_VARIANT_DISPLAY[game];
           return (
+            /*
+              The same card the catalogue draws, and the same rule: the whole
+              card leads to the game, through its name stretched over it, with
+              the arrow saying so. See the families view in GameCatalogue.tsx
+              for the reasoning, and STRETCHED_CARD for the mechanism.
+            */
             <li
               key={game}
-              className={`${PANEL_CLASS} flex flex-col gap-1 ${game === variant ? "border-rule-strong" : ""}`}
+              className={`${PANEL_CLASS} ${STRETCHED_CARD} flex items-center justify-between gap-3 ${
+                game === variant ? "border-rule-strong" : ""
+              }`}
               data-testid={`family-game-${game}`}
             >
-              <span className="flex items-baseline gap-2 font-semibold">
-                <GameName variant={game} kanji />
-                {game === variant ? <span className="text-xs font-normal text-muted">— the one you came from</span> : null}
+              <span className="flex min-w-0 flex-col gap-1">
+                <span className="flex items-baseline gap-2 font-semibold">
+                  <GameName variant={game} kanji stretched />
+                  {game === variant ? <span className="text-xs font-normal text-muted">— the one you came from</span> : null}
+                </span>
+                <span className="text-sm text-muted">{sibling.tagline}</span>
+                {sibling.inspiredBy !== undefined ? (
+                  <span className="text-xs text-muted italic">Inspired by {sibling.inspiredBy}</span>
+                ) : null}
               </span>
-              <span className="text-sm text-muted">{sibling.tagline}</span>
-              {sibling.inspiredBy !== undefined ? (
-                <span className="text-xs text-muted italic">Inspired by {sibling.inspiredBy}</span>
-              ) : null}
+              <CardArrow />
             </li>
           );
         })}

@@ -11,7 +11,8 @@ import { ignoredEmails } from "@/lib/social/ignores";
 import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PlayerLink } from "@/components/players/Standings";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { CardArrow } from "@/components/ui/CardArrow";
+import { PANEL_CLASS, RAISED_LINK, STRETCHED_LINK, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { fetchPlayedCounts, recentGamesOf } from "@/lib/history/gameCounts";
@@ -150,18 +151,30 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
       ) : null}
       <ul className="flex flex-col divide-y divide-rule text-sm">
         {played.map((game) => (
-          <li key={game.id} className="flex items-baseline justify-between gap-2 py-1.5">
+          /*
+            THE ROW IS THE GAME. It read as one — two names and a count of
+            moves — and opened only on the small grey "5 moves" at its far
+            end, which is the family-card fault on the page beside the family
+            cards. The moves link is stretched over the row and the arrow
+            says so; the names lead to the PEOPLE, so they are raised above
+            the face. See STRETCHED_LINK in ui.constants.ts.
+          */
+          <li key={game.id} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md py-1.5`}>
             <span className="min-w-0 truncate">
-              <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} />
+              <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} className={RAISED_LINK} />
               <span className="px-1 text-muted">vs</span>
-              <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} />
+              <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} className={RAISED_LINK} />
             </span>
-            <Link
-              href={matchPath(variant, game.id)}
-              className="shrink-0 text-xs text-muted underline-offset-2 hover:underline"
-            >
-              {game.moveCount} moves
-            </Link>
+            <span className="flex shrink-0 items-center gap-2">
+              <Link
+                href={matchPath(variant, game.id)}
+                data-card-link=""
+                className={`${STRETCHED_LINK} text-xs text-muted underline-offset-2 hover:underline`}
+              >
+                {game.moveCount} moves
+              </Link>
+              <CardArrow className="size-6" />
+            </span>
           </li>
         ))}
       </ul>

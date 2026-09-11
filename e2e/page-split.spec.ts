@@ -7,11 +7,11 @@ import { expect, test } from "@playwright/test";
  * whole catalogue of forty games — and grew a section every time somebody
  * played, so everything under the queue sank a little further every week.
  *
- * Now: /my-games is the games you are playing, /games is starting another.
+ * Now: /play is the games you are playing, /games is starting another.
  */
 test.describe("my games and new game are separate places", () => {
   test("the queue is on My games, and not on New game", async ({ page }) => {
-    await page.goto("/my-games");
+    await page.goto("/play");
     await expect(page.getByRole("heading", { name: /My games/ })).toBeVisible();
 
     await page.goto("/games");
@@ -39,12 +39,12 @@ test.describe("my games and new game are separate places", () => {
     const badge = page.getByTestId("your-turn-badge");
     if ((await badge.count()) > 0) {
       const href = await badge.evaluate((node) => node.closest("a")?.getAttribute("href") ?? null);
-      expect(href, "the waiting count hangs off the wrong page").toBe("/my-games");
+      expect(href, "the waiting count hangs off the wrong page").toBe("/play");
     }
   });
 
   test("each page offers the other, so neither is a dead end", async ({ page }) => {
-    await page.goto("/my-games");
+    await page.goto("/play");
     await expect(page.getByTestId("to-new-game")).toHaveAttribute("href", "/games");
   });
 });

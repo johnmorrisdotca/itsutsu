@@ -69,7 +69,7 @@ export function useAdvanceToNextGame() {
   const notice = nowhereToGo ? (
     <p className="text-xs text-muted" data-testid="nothing-waiting">
       {GAME_COPY.nothingWaiting}{" "}
-      <Link href="/my-games" className="underline underline-offset-4">
+      <Link href="/play" className="underline underline-offset-4">
         {GAME_COPY.yourGames}
       </Link>
     </p>

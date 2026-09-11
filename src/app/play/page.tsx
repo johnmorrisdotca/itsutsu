@@ -27,6 +27,14 @@ export const dynamic = "force-dynamic";
  * catalogue, so the games' own namespace keeping the catalogue reads right
  * and your matches getting an address of their own reads better than both
  * sharing one.
+ *
+ * AT /play, WHICH WAS /my-games. John: "why is it called My-games? really
+ * hate that dash... why not just /play?" The stronger reason than the dash
+ * is that the navigation already said Play and pointed here, so the label
+ * and the address disagreed, and the label was the one that was right: on
+ * a correspondence site, "play" means the games waiting on you. No redirect
+ * from the old address, by this site's standing rule that an address is
+ * right rather than forgiving — a bookmark to /my-games is a 404 now.
  */
 export default function MyGamesPage() {
   return (

@@ -6,6 +6,11 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.137.0
+- Every list that names a game shows its board, so you can tell Reversi from Go at a glance rather than by reading
+- A game's card is the thing you click, all of it, and every row that opens something says so with an arrow
+- Your games live at /play, which is the word the navigation bar has always used. A bookmark to /my-games no longer works
+
 ## 0.136.0
 - After your move, the next game waiting on you opens by itself, oldest first — no going back to a list and no hunting for whose turn it is. When that was the last one, it says so rather than leaving you on a blank page
 

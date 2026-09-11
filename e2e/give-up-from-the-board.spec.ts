@@ -10,7 +10,7 @@ import { playAt } from "./support";
  * confirming the game doesn't end. BUG."
  *
  * THE COVERAGE GAP THIS CLOSES. `mygames.spec.ts` has "a game can be resigned
- * from the queue, and is then filed" — from /my-games, a list, where the
+ * from the queue, and is then filed" — from /play, a list, where the
  * button's `router.refresh()` redraws the very list it sits in. Nothing
  * exercised the other place the same button appears, which is the board in
  * `SharedGame` — the place a player actually reaches for it, and the place

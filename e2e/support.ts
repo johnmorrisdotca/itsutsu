@@ -134,11 +134,11 @@ export async function openSetUpPage(page: Page, slug?: string) {
 /**
  * The page holding the games somebody has going.
  *
- * Its own page now, split out of the lobby: /games starts a game, /my-games
+ * Its own page now, split out of the lobby: /games starts a game, /play
  * lists the ones you are playing. A spec that wants a queue wants this one.
  */
 export async function openMyGamesPage(page: Page) {
-  await page.goto("/my-games");
+  await page.goto("/play");
 }
 
 /**

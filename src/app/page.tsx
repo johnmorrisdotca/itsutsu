@@ -58,7 +58,7 @@ export default function Home() {
             and Learn beside it carried nothing, which read as deliberate while
             Play stood alone and reads as an oddity next to Games.
           */}
-          <Link href="/my-games" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2 text-base`} data-testid="enter">
+          <Link href="/play" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2 text-base`} data-testid="enter">
             Play
           </Link>
           {/*

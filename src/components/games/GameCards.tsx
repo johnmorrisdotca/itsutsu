@@ -6,7 +6,8 @@ import Link from "next/link";
 import { gamePath } from "@/lib/gomoku/slugs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { PANEL_LINK_CLASS } from "@/components/ui/ui.constants";
+import { CardArrow } from "@/components/ui/CardArrow";
+import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { CARD_LETTERS, GAME_CARD_KINDS } from "./games.constants";
 import type { GameCard } from "./games.types";
 
@@ -95,14 +96,26 @@ export function GameCards({ cards }: { cards: GameCard[] }) {
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="game-cards">
         {shown.map((copy) => (
           <li key={copy.variant}>
-            <Link href={gamePath(copy.variant)} className={`${PANEL_LINK_CLASS} flex h-full flex-col gap-1`}>
-              <span className="flex items-baseline gap-2 font-semibold">
-                <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
+            {/*
+              The card IS the link here, so it carries the mark itself and the
+              arrow answers to it — the same sign the family cards show, so a
+              card opens the same way whichever view a reader is in.
+            */}
+            <Link
+              href={gamePath(copy.variant)}
+              data-card-link=""
+              className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`}
+            >
+              <span className="flex min-w-0 flex-col gap-1">
+                <span className="flex items-baseline gap-2 font-semibold">
+                  <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
+                </span>
+                <span className="text-xs text-muted">{copy.tagline}</span>
+                {copy.inspiredBy !== undefined ? (
+                  <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
+                ) : null}
               </span>
-              <span className="text-xs text-muted">{copy.tagline}</span>
-              {copy.inspiredBy !== undefined ? (
-                <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
-              ) : null}
+              <CardArrow />
             </Link>
           </li>
         ))}

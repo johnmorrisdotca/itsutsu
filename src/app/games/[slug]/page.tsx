@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { GameFamily } from "@/components/games/GameFamily";
 import { GameLadder } from "@/components/games/GameLadder";
 import { PlayedHere } from "@/components/games/PlayedHere";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { CardArrow } from "@/components/ui/CardArrow";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import {
   backgroundPath,
@@ -210,24 +211,26 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               reachable only by knowing an address. A reader who came for one
               of these can see the other six.
             */}
-            <Link href={rulesPath(variant)} className="underline-offset-2 hover:underline">
-              Rules <span className="font-mincho opacity-70">規則</span>
-            </Link>
-            <Link href={historyPath(variant)} className="underline-offset-2 hover:underline" data-testid="facet-history">
-              Every game played here <span className="font-mincho opacity-70">棋譜</span>
-            </Link>
-            <Link href={myGamePath(variant)} className="underline-offset-2 hover:underline" data-testid="facet-me">
-              Your own games of it <span className="font-mincho opacity-70">自分の棋譜</span>
-            </Link>
-            <Link href={standingsPath(variant)} className="underline-offset-2 hover:underline" data-testid="facet-standings">
-              Standings <span className="font-mincho opacity-70">名人</span>
-            </Link>
-            <Link href={familyPath(variant)} className="underline-offset-2 hover:underline" data-testid="facet-family">
-              Its family <span className="font-mincho opacity-70">同族</span>
-            </Link>
-            <Link href={backgroundPath(variant)} className="underline-offset-2 hover:underline" data-testid="facet-background">
-              Background <span className="font-mincho opacity-70">背景</span>
-            </Link>
+            <div className="-mx-2 flex flex-col">
+              <Facet href={rulesPath(variant)}>
+                Rules <span className="font-mincho opacity-70">規則</span>
+              </Facet>
+              <Facet href={historyPath(variant)} testId="facet-history">
+                Every game played here <span className="font-mincho opacity-70">棋譜</span>
+              </Facet>
+              <Facet href={myGamePath(variant)} testId="facet-me">
+                Your own games of it <span className="font-mincho opacity-70">自分の棋譜</span>
+              </Facet>
+              <Facet href={standingsPath(variant)} testId="facet-standings">
+                Standings <span className="font-mincho opacity-70">名人</span>
+              </Facet>
+              <Facet href={familyPath(variant)} testId="facet-family">
+                Its family <span className="font-mincho opacity-70">同族</span>
+              </Facet>
+              <Facet href={backgroundPath(variant)} testId="facet-background">
+                Background <span className="font-mincho opacity-70">背景</span>
+              </Facet>
+            </div>
           </nav>
 
           {page.wikipedia !== null ? (
@@ -250,5 +253,27 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
         </aside>
       </div>
   </Page>
+  );
+}
+
+/**
+ * One facet in the "All of it" panel: a whole row that opens, wearing the
+ * arrow every row that opens carries. Six words in a column said nothing
+ * about being anything but words; a row that shades under the pointer with a
+ * chevron at its end is a list of places, which is what this is. The Link is
+ * the row, so it carries the mark itself — see STRETCHED_HOST in
+ * ui.constants.ts.
+ */
+function Facet({ href, children, testId }: { href: string; children: ReactNode; testId?: string }) {
+  return (
+    <Link
+      href={href}
+      data-card-link=""
+      className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md px-2 py-1 underline-offset-2 hover:underline`}
+      data-testid={testId}
+    >
+      <span>{children}</span>
+      <CardArrow className="size-6" />
+    </Link>
   );
 }

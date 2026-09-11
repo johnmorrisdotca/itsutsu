@@ -4,6 +4,7 @@ import {
   VARIANT_SPECS,
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
+import { gameArtPath } from "@/lib/gomoku/artwork";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
 
@@ -297,6 +298,6 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     board,
     play,
     house,
-    image: `/art/games/${variant}.jpg`,
+    image: gameArtPath(variant),
   };
 }

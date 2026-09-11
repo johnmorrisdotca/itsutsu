@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
+import { gameArtPath, gameThumbPath } from "@/lib/gomoku/artwork";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /**
@@ -19,5 +20,15 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
  * looking locally.
  */
 export function hasGameImage(variant: RuleVariant): boolean {
-  return existsSync(join(process.cwd(), "public", "art", "games", `${variant}.jpg`));
+  return existsSync(join(process.cwd(), "public", gameArtPath(variant)));
+}
+
+/**
+ * Whether the small board a list draws beside the game's name exists — cut
+ * from the screenshot by `pnpm art:thumbs`. The same gate asks it, for the
+ * same reason: a row with a broken picture in it is a gate violation, not a
+ * thing to paper over with a fallback.
+ */
+export function hasGameThumb(variant: RuleVariant): boolean {
+  return existsSync(join(process.cwd(), "public", gameThumbPath(variant)));
 }

@@ -1,6 +1,6 @@
 {
   "name": "gomoku",
-  "version": "0.136.0",
+  "version": "0.137.0",
   "private": true,
   "scripts": {
     "version:bump": "node scripts/bump-version.mjs",
@@ -28,13 +28,14 @@
     "screenshots": "playwright test e2e/screenshots.spec.ts --reporter=line",
     "favicon": "node scripts/make-favicon.mjs",
     "brand:rasters": "node scripts/make-brand-rasters.mjs",
+    "art:thumbs": "node scripts/make-game-thumbs.mjs",
     "security:check": "pnpm audit --prod --audit-level high",
     "db:drift:check": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code --script",
     "preflight:prod": "pnpm quality:check && pnpm security:check && pnpm build",
     "invite": "node --env-file=.env scripts/mint-invite.ts",
     "embed-token": "node --env-file=.env scripts/mint-embed-token.ts",
     "backlog:cleanup-litter": "node --env-file=.env scripts/cleanup-backlog-litter.ts",
-    "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line",
+    "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line && node scripts/make-game-thumbs.mjs",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
     "bots:play:prod": "node scripts/bots-play-prod.mjs"
   },

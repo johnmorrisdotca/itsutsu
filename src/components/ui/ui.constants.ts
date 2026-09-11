@@ -34,6 +34,74 @@ export const PANEL_CLASS =
 /** A panel that is a link: the border firms up under the pointer. */
 export const PANEL_LINK_CLASS = `${PANEL_CLASS} transition-colors hover:border-rule-strong`;
 
+/*
+ * A CARD IS A TARGET, NOT A LABEL WITH A TARGET IN IT.
+ *
+ * John, on the family cards: "Mousing over a game should show us a button to
+ * click… right now we're forced to click the name." A bordered box with a
+ * name, a kanji and a tagline reads as one object, and an object that only
+ * answers on a few words of text is a card that looks like a target and is
+ * not one.
+ *
+ * Three classes make one mechanism, and they are kept together because each
+ * is useless without the others:
+ *
+ *  STRETCHED_LINK  goes on the card's own link — usually the game's name,
+ *                  which is already the way to the game — and spreads it over
+ *                  the whole card with a pseudo-element. The name stays the ONE
+ *                  link to that destination: one tab stop, one thing a screen
+ *                  reader announces, and no second <a> to the same place. The
+ *                  link also carries `data-card-link`, which is what the card
+ *                  and the arrow answer to.
+ *  RAISED_LINK     goes on every link inside the card that leads somewhere
+ *                  ELSE — a count, a last game, a player — or the stretched
+ *                  face swallows the click. GameName and GameCount take it as
+ *                  `raised`. This is the cost of a card being a link at all,
+ *                  and the record list has paid it since it was written.
+ *  STRETCHED_HOST  goes on the card, or on the whole-card <Link> where the
+ *                  card IS the link. Positioned so the face can spread, and
+ *                  ringed on focus by `card-focus` (globals.css), which looks
+ *                  for that one marked link and no other. `group/card` is
+ *                  NAMED because the families accordion already has a bare
+ *                  `group` on its <details>, and an unnamed group inside it
+ *                  would light every card whenever any was. STRETCHED_CARD
+ *                  and STRETCHED_ROW are the host with its hover look: a
+ *                  bordered card firms its border, a row in a list shades.
+ *
+ * `outline-none` on both: the ring is drawn on the card, because the card is
+ * what the reader is choosing, and a second ring around the name's text would
+ * be two indicators for one focus.
+ *
+ * NEVER a link inside a link. An <a> inside an <a> is invalid HTML and a
+ * browser splits it wherever it likes, which is why this is a pseudo-element
+ * and a stacking order rather than nesting.
+ */
+export const STRETCHED_LINK = "outline-none after:absolute after:inset-0";
+
+export const RAISED_LINK = "relative z-10";
+
+export const STRETCHED_HOST =
+  "group/card relative outline-none transition-colors card-focus:ring-2 card-focus:ring-moss";
+
+/** A bordered card: the border firms under the pointer, the way PANEL_LINK_CLASS does. */
+export const STRETCHED_CARD = `${STRETCHED_HOST} card-hover:border-rule-strong card-focus:border-rule-strong`;
+
+/**
+ * A row in a list, with no border of its own worth firming: it shades under
+ * the pointer instead, the way the record's rows always have. A row whose
+ * border or fill already says something — a green "your move" row — takes
+ * STRETCHED_HOST alone, so hovering never paints over what it is saying.
+ */
+export const STRETCHED_ROW = `${STRETCHED_HOST} card-hover:bg-shade`;
+
+/*
+ * The round chevron on a card that opens — see CardArrow.tsx for what it is
+ * for and why it is drawn at rest. Named-group variants, so it answers to the
+ * card it sits in and to nothing around it.
+ */
+export const CARD_ARROW_CLASS =
+  "pointer-events-none inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-rule-strong text-ink-soft opacity-50 transition group-card-hover/card:border-ink group-card-hover/card:bg-ink group-card-hover/card:text-paper group-card-hover/card:opacity-100 group-card-focus/card:border-ink group-card-focus/card:bg-ink group-card-focus/card:text-paper group-card-focus/card:opacity-100";
+
 export const SECTION_TITLE =
   "text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted";
 

@@ -273,7 +273,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
       </section>
 
       {/*
-        The games you have going are their own page now, at /my-games. This one
+        The games you have going are their own page now, at /play. This one
         is for starting another, and for meeting the games themselves: the
         sentence, the open seats, the room, and the whole catalogue underneath.
       */}

@@ -3,7 +3,8 @@ import { PlayerName } from "@/components/players/PlayerName";
 import Link from "next/link";
 import { cookies } from "next/headers";
 
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { CardArrow } from "@/components/ui/CardArrow";
+import { PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
@@ -13,6 +14,7 @@ import { seatClaims } from "@/lib/history/seatCookie";
 import { MY_GAMES_COPY } from "./mine.constants";
 import { ResignButton } from "./ResignButton";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 
 /** "3 days ago", the way a list of games reads it. */
 function ago(iso: string, now: Date): string {
@@ -119,7 +121,12 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
   const running = group !== "finished";
   return (
     <li
-      className={`relative flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm ${
+      /*
+        STRETCHED_HOST rather than STRETCHED_ROW: a "your move" row is green
+        because it is waiting on you, and a hover shade would paint over the
+        one thing the row is saying. The arrow filling is the hover here.
+      */
+      className={`${STRETCHED_HOST} flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm ${
         group === "yourMove" ? "border-moss/50 bg-moss-soft" : "border-rule"
       }`}
       data-testid="my-game"
@@ -130,14 +137,28 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
         The row leads to the game and the names lead to the people, so the
         row's link is stretched under the card and the names sit above it —
         the same construction the record table uses, because a link inside a
-        link is not a thing a browser will render.
+        link is not a thing a browser will render. The arrow at the far end is
+        the sign that the row opens: John's "you play your move, then the next
+        game opens up" starts with seeing which rows are doors.
       */}
-      <Link href={href} className="absolute inset-0 rounded-lg" aria-label={`${black} vs ${white}`} />
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`${black} vs ${white}`} />
+      {/*
+        The board, so the queue can be scanned rather than read. John: "it's
+        all just text. very ugly and hard to scan." A Reversi board and a
+        Gomoku board are different at a glance and the words were not. Under
+        the row's link, in flow, so it is part of the target and not a stop.
+      */}
+      <GameThumb variant={game.variant} />
+      {/*
+        `basis-56`: on a phone the words keep fourteen rems and the controls
+        wrap under them, rather than the words wrapping four deep beside a
+        Resign button. At a desk the row is one line either way.
+      */}
+      <span className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
         <span className="truncate font-medium">
-          <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className="relative z-10" />
+          <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className={RAISED_LINK} />
           <span className="px-1 text-muted">vs</span>
-          <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className="relative z-10" />
+          <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} />
         </span>
         <span className="text-xs text-muted">
           <GameName variant={game.variant} raised /> · {game.size}×{game.size} · {game.moveCount} moves · you are{" "}
@@ -161,10 +182,12 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
         stuck with an empty board for ever would be a rule protecting nothing.
       */}
       {running && (game.allowResign || game.moveCount === 0) ? (
-        <span className="relative z-10">
+        <span className={RAISED_LINK}>
           <ResignButton id={game.id} moves={game.moveCount} />
         </span>
       ) : null}
+      {/* `ml-auto` only matters once the controls have wrapped: the arrow keeps the row's far end. */}
+      <CardArrow className="ml-auto" />
     </li>
   );
 }

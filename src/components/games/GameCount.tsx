@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { RAISED_LINK } from "@/components/ui/ui.constants";
 import { historyPath } from "@/lib/gomoku/slugs";
 import type {
   GameOutcome,
@@ -110,7 +111,7 @@ export function GameCount({
   return (
     <Link
       href={gamesHref({ variant, player, outcome, pool, rated, verdict })}
-      className={`underline-offset-2 hover:underline ${raised ? "relative z-10" : ""} ${className}`}
+      className={`underline-offset-2 hover:underline ${raised ? RAISED_LINK : ""} ${className}`}
       title={title}
       data-testid={testId ?? "game-count"}
     >

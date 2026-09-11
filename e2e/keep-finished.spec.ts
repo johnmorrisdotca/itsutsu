@@ -118,7 +118,7 @@ test.describe("keeping finished games in your own list", () => {
     }
 
     // Keeping everything: it is in the list.
-    await page.goto("/my-games");
+    await page.goto("/play");
     await expect(page.getByTestId("my-games-finished")).toContainText(shownName(`Cloth${stamp} Tester`));
 
     await page.goto("/me?view=profile");
@@ -127,7 +127,7 @@ test.describe("keeping finished games in your own list", () => {
     await expect(page.getByText("Saved.")).toBeVisible();
 
     // A month old, a week's window: gone from the queue.
-    await page.goto("/my-games");
+    await page.goto("/play");
     await expect(page.getByTestId("my-games-finished")).toHaveCount(0);
 
     // And still in the record, which keeps everything.

@@ -29,14 +29,14 @@ test.describe("your games", () => {
       page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
 
     // Nobody has moved: not started, for both.
-    await blackPage.goto("/my-games");
+    await blackPage.goto("/play");
     await expect(blackPage.getByTestId("my-games-unstarted").locator(row(blackPage))).toBeVisible();
 
     // Black plays; now it is white's move, and white's badge counts it.
     await request.post(`/api/games/${game.id}/moves`, { data: { token: game.blackToken, row: 4, col: 4 } });
-    await blackPage.goto("/my-games");
+    await blackPage.goto("/play");
     await expect(blackPage.getByTestId("my-games-theirMove").locator(row(blackPage))).toBeVisible();
-    await whitePage.goto("/my-games");
+    await whitePage.goto("/play");
     await expect(whitePage.getByTestId("my-games-yourMove").locator(row(whitePage))).toBeVisible();
     await expect(whitePage.getByTestId("your-turn-badge")).not.toHaveText("0");
 
@@ -50,7 +50,7 @@ test.describe("your games", () => {
     const white = await browser.newContext({ storageState: ".auth/admin.json" });
     const page = await white.newPage();
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
-    await page.goto("/my-games");
+    await page.goto("/play");
 
     const row = page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
     await row.getByTestId("resign").click();

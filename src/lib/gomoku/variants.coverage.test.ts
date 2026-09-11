@@ -7,7 +7,7 @@ import { GAME_FAMILIES, siblingsOf } from "./families";
 import { RULE_VARIANTS } from "./gomoku.constants";
 import type { RuleVariant } from "./gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "./variants.constants";
-import { hasGameImage } from "@/lib/learn/images";
+import { hasGameImage, hasGameThumb } from "@/lib/learn/images";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 
 /**
@@ -51,6 +51,17 @@ describe("every game is finished, not just playable", () => {
 
   it.each(VARIANTS)("%s has a screenshot in public/art/games", (variant) => {
     expect(hasGameImage(variant)).toBe(true);
+  });
+
+  it.each(VARIANTS)("%s has a thumbnail in public/art/games/thumbs", (variant) => {
+    /*
+     * The small board every list draws beside the game's name — /play, the
+     * lobby's open seats, the record — cut from the screenshot by
+     * `pnpm art:thumbs`, which `pnpm screenshots:games` runs last. A game
+     * without one shows a broken picture in every row that names it, which
+     * is exactly the kind of thing a gate exists to refuse.
+     */
+    expect(hasGameThumb(variant)).toBe(true);
   });
 
   it.each(VARIANTS)("%s belongs to a family, so an index page can show it", (variant) => {

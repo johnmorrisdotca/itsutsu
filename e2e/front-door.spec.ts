@@ -15,7 +15,7 @@ import { expect, test } from "@playwright/test";
 test.describe("the front door", () => {
   test("Play goes to your games, not to the catalogue", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByTestId("enter")).toHaveAttribute("href", "/my-games");
+    await expect(page.getByTestId("enter")).toHaveAttribute("href", "/play");
   });
 
   test("offers the catalogue as well, which is what a first visit wants", async ({ page }) => {

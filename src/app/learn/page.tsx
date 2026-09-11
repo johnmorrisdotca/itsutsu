@@ -3,7 +3,8 @@ import Link from "next/link";
 
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { CardArrow } from "@/components/ui/CardArrow";
+import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { GUIDES } from "@/lib/learn/strategy";
@@ -41,18 +42,23 @@ export default async function LearnIndexPage() {
       <ul className="grid gap-3 sm:grid-cols-2" data-testid="learn-index">
         {GUIDES.map((guide) => (
           <li key={guide.slug}>
+            {/* A whole-card link, with the arrow every card that opens carries. */}
             <Link
               href={`/learn/${guide.slug}`}
-              className={`${PANEL_CLASS} flex h-full flex-col gap-2 transition-colors hover:border-rule-strong`}
+              data-card-link=""
+              className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`}
             >
-              <span className="flex items-baseline gap-2 font-semibold">
-                {guide.title}
-                <span className="font-mincho text-xs font-normal opacity-70">{guide.kanji}</span>
+              <span className="flex min-w-0 flex-col gap-2">
+                <span className="flex items-baseline gap-2 font-semibold">
+                  {guide.title}
+                  <span className="font-mincho text-xs font-normal opacity-70">{guide.kanji}</span>
+                </span>
+                <span className="text-xs text-muted">{guide.summary}</span>
+                <span className="text-[0.65rem] text-muted">
+                  {guide.variants.map((variant) => RULE_VARIANT_DISPLAY[variant].label).join(" · ")}
+                </span>
               </span>
-              <span className="text-xs text-muted">{guide.summary}</span>
-              <span className="text-[0.65rem] text-muted">
-                {guide.variants.map((variant) => RULE_VARIANT_DISPLAY[variant].label).join(" · ")}
-              </span>
+              <CardArrow />
             </Link>
           </li>
         ))}

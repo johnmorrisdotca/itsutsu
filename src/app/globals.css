@@ -59,6 +59,33 @@
   --font-mincho: var(--font-mincho);
 }
 
+/*
+ * A CARD WHOSE WHOLE FACE OPENS SOMETHING, WITH OTHER LINKS INSIDE IT.
+ *
+ * The face is the card's own link spread over it by a pseudo-element
+ * (STRETCHED_LINK in ui.constants.ts), and the links that lead elsewhere are
+ * raised above it. A card lights up — border, ring, the round chevron — for
+ * THAT link and no other: a count inside the card leads to the record, and a
+ * card that brightened for it would be promising the wrong destination. So
+ * these ask for the link marked `data-card-link`, whether the card is that
+ * link (a whole-card <Link>) or holds it (a name stretched over a row).
+ *
+ * `card-hover` is wrapped in (hover: hover) the way Tailwind's own `hover:` is,
+ * so a tap on an iPad never leaves a card stuck in its hovered look.
+ */
+@custom-variant card-hover {
+  @media (hover: hover) {
+    &:is([data-card-link]:hover, :has([data-card-link]:hover)) {
+      @slot;
+    }
+  }
+}
+@custom-variant card-focus {
+  &:is([data-card-link]:focus-visible, :has([data-card-link]:focus-visible)) {
+    @slot;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #22231f;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { RAISED_LINK, STRETCHED_LINK } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { aliasedVariant } from "@/lib/legacy/gameAliases";
 import { gamePath, variantFor } from "@/lib/gomoku/slugs";
@@ -37,12 +38,21 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
  * `raised` is for a row that is itself one big stretched link: the record list
  * lays a link over the whole card, and a link inside it has to sit above that
  * one to be clickable at all. `PlayerName` does the same thing beside it.
+ *
+ * `stretched` is the other side of that: THIS name is the card's link, spread
+ * over the whole card so the card is the target and not just these words. The
+ * name stays the one link to the game — one tab stop, one thing a screen
+ * reader announces — and everything else in the card that leads somewhere is
+ * `raised` above it. See STRETCHED_LINK in ui.constants.ts. One or the other,
+ * never both: raised makes the link its own positioning box, and a face
+ * stretched from that box would cover the name and nothing else.
  */
 export function GameName({
   variant,
   name,
   kanji = false,
   raised = false,
+  stretched = false,
   className = "",
 }: {
   /** The game, as a variant key or as its slug. */
@@ -62,6 +72,8 @@ export function GameName({
   kanji?: boolean;
   /** Lift it above a stretched row link. */
   raised?: boolean;
+  /** Spread it over the card it sits in, so the whole card leads to the game. */
+  stretched?: boolean;
   className?: string;
 }) {
   const say = useSpeaker();
@@ -85,7 +97,11 @@ export function GameName({
       href={gamePath(known)}
       data-testid="game-name"
       data-variant={known}
-      className={`underline-offset-2 hover:underline ${raised ? "relative z-10" : ""} ${className}`}
+      // The mark the card and its arrow answer to; see `card-hover` in globals.css.
+      data-card-link={stretched ? "" : undefined}
+      className={`underline-offset-2 hover:underline ${raised ? RAISED_LINK : ""} ${
+        stretched ? STRETCHED_LINK : ""
+      } ${className}`}
     >
       {/*
         Every game's Japanese name has been sitting in `copy.kanji` since the

@@ -47,7 +47,7 @@ test.describe("a person's name leads to their page", () => {
 
     // The game shows in "your games" once this browser holds a seat in it.
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
-    await page.goto("/my-games");
+    await page.goto("/play");
     const mine = page.getByTestId("my-game").filter({ hasText: shownName(me.name) }).first();
     await expect(mine).toBeVisible();
     await expect(mine.getByTestId("player-name").first()).toHaveAttribute("href", /\/players\//);

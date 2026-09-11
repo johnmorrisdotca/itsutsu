@@ -21,7 +21,7 @@ import type { PhraseKey } from "@/lib/i18n/i18n.constants";
  * the bar. It only leaves that one word untranslated until somebody writes it.
  */
 const NAV_PHRASE: Readonly<Record<string, PhraseKey>> = {
-  "/my-games": "nav.play",
+  "/play": "nav.play",
   "/games": "nav.games",
   "/players": "nav.players",
   "/about": "nav.about",
@@ -53,7 +53,7 @@ export const NAV = [
    * elsewhere — a game's name, a section title, the rules pages — is the
    * site's own voice and stays.
    */
-  { href: "/my-games", label: "Play" },
+  { href: "/play", label: "Play" },
   { href: "/games", label: "Games" },
   /*
    * RULES AND LEARN ARE GONE FROM HERE, AND NEITHER IS GONE FROM THE SITE.
@@ -113,7 +113,7 @@ export function NavLinks() {
             {NAV_PHRASE[item.href] === undefined ? item.label : say.say(NAV_PHRASE[item.href])}
             {/* The count of games waiting on you belongs beside the page that
                 holds them, not beside the one that starts new ones. */}
-            {item.href === "/my-games" ? <YourTurnBadge /> : null}
+            {item.href === "/play" ? <YourTurnBadge /> : null}
           </Link>
         );
       })}

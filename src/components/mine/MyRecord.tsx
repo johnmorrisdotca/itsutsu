@@ -4,6 +4,7 @@ import Link from "next/link";
 import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
 import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { gamesPlayed, ratingShown } from "@/lib/rating/shownRecord";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
@@ -92,6 +93,7 @@ export async function MyRecord({ name }: { name: string }) {
               <tr key={`${row.variant}-${row.pool}`} className="border-t border-rule">
                 {/* The standing rule: a game's name leads to that game. */}
                 <td className="py-1 pr-3">
+                  <GameThumb variant={row.variant} className="mr-2 inline-block size-6 align-middle" />
                   <GameName variant={row.variant as RuleVariant} />
                   {/*
                     A game somebody has played in both pools is two lines and
@@ -159,7 +161,7 @@ export async function MyRecord({ name }: { name: string }) {
           <Link href={playerPath(name, mineId)} className="underline underline-offset-4">
             Your public page
           </Link>{" "}
-          · <Link href="/my-games" className="underline underline-offset-4">Your games</Link>
+          · <Link href="/play" className="underline underline-offset-4">Your games</Link>
         </p>
       ) : null}
     </div>

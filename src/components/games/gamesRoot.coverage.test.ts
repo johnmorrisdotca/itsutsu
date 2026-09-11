@@ -136,7 +136,7 @@ describe("the rows that came out, and the shape of what is left", () => {
     const source = read(NAV);
     expect(source, "Rules is a facet of a game now").not.toContain('href: "/rules"');
     expect(source, "Learn is offered from /games").not.toContain('href: "/learn"');
-    for (const href of ["/my-games", "/games", "/players", "/about"]) {
+    for (const href of ["/play", "/games", "/players", "/about"]) {
       expect(source, `${href} stays in the bar`).toContain(`href: "${href}"`);
     }
   });

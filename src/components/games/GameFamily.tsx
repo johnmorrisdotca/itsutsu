@@ -1,6 +1,7 @@
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameName } from "@/components/games/GameName";
-import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { CardArrow } from "@/components/ui/CardArrow";
+import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { siblingsOf } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
@@ -44,10 +45,17 @@ export function GameFamily({ variant }: { variant: RuleVariant }) {
           <span className="text-xs text-muted">{family.blurb}</span>
         </span>
       </div>
-      <ul className="flex flex-col gap-1 text-sm">
+      {/*
+        Each row is the way into that game, not only the words of its name:
+        the name is stretched over the row and the arrow says so, the same
+        sign the catalogue's cards carry. Out to the panel's edge and back
+        in, so the shaded row under the pointer is a row and not a word.
+      */}
+      <ul className="-mx-2 flex flex-col text-sm">
         {siblings.games.map((game) => (
-          <li key={game}>
-            <GameName variant={game} kanji />
+          <li key={game} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md px-2 py-1`}>
+            <GameName variant={game} kanji stretched />
+            <CardArrow className="size-6" />
           </li>
         ))}
       </ul>

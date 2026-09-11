@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerLink, TierMark } from "@/components/players/Standings";
@@ -25,9 +26,13 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
   return (
     <tr className="border-t border-rule" data-testid={`champion-row-${variant}`}>
       <td className="py-1.5 pr-3">
-        <Link href={standingsPath(variant)} className="font-medium underline-offset-2 hover:underline">
-          <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
-        </Link>
+        <span className="flex items-center gap-2">
+          {/* Forty rows of names scan by their boards; a table cell gets the small size. */}
+          <GameThumb variant={variant} className="size-6" />
+          <Link href={standingsPath(variant)} className="font-medium underline-offset-2 hover:underline">
+            <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
+          </Link>
+        </span>
       </td>
       {champion === undefined ? (
         <td className="py-1.5 pr-3 text-xs text-muted" colSpan={5}>

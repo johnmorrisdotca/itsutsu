@@ -6,7 +6,8 @@ import { GameCards } from "@/components/games/GameCards";
 import { GameCount } from "@/components/games/GameCount";
 import { GameList } from "@/components/games/GameList";
 import { GameName } from "@/components/games/GameName";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { CardArrow } from "@/components/ui/CardArrow";
+import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import {
   CATALOGUE_VIEWS,
   CATALOGUE_VIEW_DISPLAY,
@@ -140,13 +141,31 @@ function Families({ families, signedIn }: { families: CatalogueFamily[]; signedI
           <p className="mt-2 text-sm text-muted">{family.blurb}</p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {family.games.map((game) => (
+              /*
+                THE WHOLE CARD IS THE WAY INTO THE GAME. John, looking at this
+                box: "Mousing over a game should show us a button to click…
+                right now we're forced to click the name." The box read as one
+                object and answered on two words of it.
+
+                The name is still the one link to the game, and it is spread
+                over the card (`stretched`) rather than a second link being
+                laid under it — so a keyboard reader gets one stop for one
+                destination and a screen reader hears one link, not two. The
+                count and the last game lead ELSEWHERE, so they are `raised`
+                above the face; anything added to this card that leads
+                somewhere needs the same, or the face swallows the click. The
+                arrow at the right is the sign that the card opens, and it is
+                drawn at rest so a finger on an iPad — where nothing hovers —
+                is told the same thing a pointer is. See ui.constants.ts.
+              */
               <li
                 key={game.variant}
-                className="flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm"
+                className={`${STRETCHED_CARD} flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm`}
+                data-testid="family-game"
               >
                 <span className="flex min-w-0 flex-col">
                   <span className="font-medium">
-                    <GameName variant={game.variant} kanji />
+                    <GameName variant={game.variant} kanji stretched />
                   </span>
                   <span className="text-xs text-muted">{game.tagline}</span>
                   {signedIn && game.played !== undefined && game.played > 0 && game.last !== undefined ? (
@@ -160,11 +179,12 @@ function Families({ families, signedIn }: { families: CatalogueFamily[]; signedI
                         count={game.played}
                         variant={game.variant}
                         title={`Every game of ${game.label} played here`}
+                        raised
                       />{" "}
                       played ·{" "}
                       <Link
                         href={matchPath(game.variant, game.last.id)}
-                        className="underline-offset-2 hover:underline"
+                        className={`${RAISED_LINK} underline-offset-2 hover:underline`}
                       >
                         last {game.last.blackName.trim() || "Black"} vs {game.last.whiteName.trim() || "White"}
                       </Link>
@@ -173,6 +193,7 @@ function Families({ families, signedIn }: { families: CatalogueFamily[]; signedI
                     <span className="text-[0.7rem] text-muted italic">Inspired by {game.inspiredBy}</span>
                   ) : null}
                 </span>
+                <CardArrow />
               </li>
             ))}
           </ul>
