@@ -314,4 +314,40 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
+  {
+    key: "a-game-being-watched-shows-its-moves",
+    title: "Viewing a game shows the board and no list of the moves",
+    detail:
+      "John, twice: \"WHERE ARE THE GAMES PLAYED WHEN VIEWING A GAME??? I reported this yesterday.\" He is right, and there was no ticket \u2014 that is the miss. A local practice game draws a move list in its sidebar (GameView \u2192 GameSidebar \u2192 MoveHistory); the two places a REAL game is read do not. A live match (MatchPage \u2192 SharedGame) keeps only a count of moves, and a finished game (FiledMatchPage \u2192 GameReplay) has a position scrubber but no move log. So the one mode nobody plays seriously is the only one that shows what was played.",
+    kind: BACKLOG_KINDS.fix,
+    status: BACKLOG_STATUSES.open,
+    askedBy: "John",
+  },
+  {
+    key: "show-first-names-not-full-names",
+    title: "Show a player's first name, not their full name",
+    detail:
+      "John's twelve-year-old daughter signed up and the site prints \"Hanako Morris\" on the board, in the record and in every list. A child's full name should not be on a page anybody can reach. His steer: show first names, let the link still carry the full name, and consider addressing people by id rather than by name in an address. That last part needs deciding rather than assuming \u2014 every player address on this site is currently a name, the ratings are keyed by name, and a switch to ids touches all of it. Worth John settling how far it goes before anybody builds it.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.open,
+    askedBy: "John",
+  },
+  {
+    key: "take-me-to-my-next-game",
+    title: "After a move, take me to the next game that is waiting",
+    detail:
+      "John, playing several games at once: \"IYT does this \u2014 you play your move, then the next game opens up, or you get a link to click to your next game. We do not. Not very good discoverability. Just that icon up top, not as good.\" The count beside Play is the only signal, and it asks the reader to go looking. The elder sites move you along instead, which is what makes a dozen correspondence games playable in one sitting.",
+    kind: BACKLOG_KINDS.feature,
+    status: BACKLOG_STATUSES.open,
+    askedBy: "John",
+  },
+  {
+    key: "fork-is-not-a-rematch",
+    title: "Fork is offered like a rematch, and reads as one",
+    detail:
+      "John: \"No rematch button after a loss. We see a start from 1 or start from N button \u2014 that's really useless and really a special usecase for a long game, more of an advanced feature, shouldn't be so prominent. People think it's a rematch button.\" The live match page gives Fork a whole titled panel in the sidebar of a game still being played, which is where he saw it. A finished game does offer \"Play again\" beside the fork, so the missing-rematch half could not be reproduced from the data \u2014 both seats carry member ids, which is what that offer depends on. Worth asking him which screen he was on before building anything.",
+    kind: BACKLOG_KINDS.fix,
+    status: BACKLOG_STATUSES.open,
+    askedBy: "John",
+  },
 ];
