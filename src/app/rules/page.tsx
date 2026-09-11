@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -17,7 +18,7 @@ export default function RulesIndexPage() {
       <SiteHeader />
       <section className="flex flex-col gap-2">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          Rules <span className="font-mincho text-sm font-normal opacity-70">規則</span>
+          <Paired en="Rules" kanji="規則" kanjiClassName="text-sm font-normal opacity-70" />
         </h1>
         <p className="max-w-prose text-sm text-muted">
           Every game here is a line of stones at heart. Each page follows the same shape,

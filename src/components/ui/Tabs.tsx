@@ -1,7 +1,33 @@
+"use client";
+
 import Link from "next/link";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import type { Paired } from "@/lib/i18n/i18n.types";
 
 import { FOCUS_RING } from "./ui.constants";
 import { tabHref, type Tab } from "@/lib/ui/tabs";
+
+/**
+ * A tab's name, in the reader's script.
+ *
+ * A tab's label and its kanji are the same word twice, so `pairName` is
+ * exactly the right question to have asked: a Japanese reader gets the kanji
+ * as the tab's name and nothing after it, an English reader gets the pair
+ * exactly as before. A tab with no kanji stays English for everybody, which
+ * is the honest answer until somebody writes one.
+ */
+function TabName({ shown }: { shown: Paired }) {
+  return (
+    <>
+      {shown.text}
+      {shown.kanji !== null ? (
+        <span className="font-mincho text-xs text-muted">{shown.kanji}</span>
+      ) : null}
+    </>
+  );
+}
 
 /**
  * One page's sections, one at a time.
@@ -34,6 +60,7 @@ export function Tabs({
   /** What the set of tabs is, for a reader who cannot see them. */
   label: string;
 }) {
+  const say = useSpeaker();
   if (tabs.length === 0) return null;
   return (
     <nav aria-label={label} className="-mx-1 overflow-x-auto" data-testid="tabs">
@@ -55,10 +82,7 @@ export function Tabs({
                     : "border-transparent text-muted hover:border-rule-strong hover:text-ink-soft"
                 }`}
               >
-                {tab.label}
-                {tab.kanji !== undefined ? (
-                  <span className="font-mincho text-xs text-muted">{tab.kanji}</span>
-                ) : null}
+                <TabName shown={say.pairName(tab.label, tab.kanji ?? "")} />
               </Link>
             </li>
           );

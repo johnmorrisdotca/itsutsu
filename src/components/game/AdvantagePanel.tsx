@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import {
   LEAD_DISPLAY,
   MEASURE_DISPLAY,
@@ -42,8 +43,7 @@ export function AdvantagePanel({ session }: { session: GameSession }) {
 function SideName({ stone }: { stone: Stone }) {
   return (
     <span>
-      {STONE_DISPLAY[stone].label}{" "}
-      <span className="font-mincho text-muted">{STONE_DISPLAY[stone].kanji}</span>
+      <Paired en={STONE_DISPLAY[stone].label} kanji={STONE_DISPLAY[stone].kanji} kanjiClassName="text-muted" />
     </span>
   );
 }
@@ -96,21 +96,19 @@ function Threats({ advantage }: { advantage: Extract<Advantage, { kind: "threats
     <>
       {heading !== null ? (
         <p className="text-sm font-semibold text-ink">
-          {heading.label} <span className="font-mincho text-muted">{heading.kanji}</span>
+          <Paired en={heading.label} kanji={heading.kanji} kanjiClassName="text-muted" />
         </p>
       ) : null}
       <Sides
         lead={lead}
         black={
           <>
-            {OUTLOOK_SIDE_DISPLAY[outlook[STONES.black]].label}{" "}
-            <span className="font-mincho">{OUTLOOK_SIDE_DISPLAY[outlook[STONES.black]].kanji}</span>
+            <Paired en={OUTLOOK_SIDE_DISPLAY[outlook[STONES.black]].label} kanji={OUTLOOK_SIDE_DISPLAY[outlook[STONES.black]].kanji} kanjiClassName="" />
           </>
         }
         white={
           <>
-            {OUTLOOK_SIDE_DISPLAY[outlook[STONES.white]].label}{" "}
-            <span className="font-mincho">{OUTLOOK_SIDE_DISPLAY[outlook[STONES.white]].kanji}</span>
+            <Paired en={OUTLOOK_SIDE_DISPLAY[outlook[STONES.white]].label} kanji={OUTLOOK_SIDE_DISPLAY[outlook[STONES.white]].kanji} kanjiClassName="" />
           </>
         }
       />
@@ -129,7 +127,7 @@ function Count({ advantage }: { advantage: Extract<Advantage, { kind: "count" }>
   return (
     <>
       <p className="text-sm font-semibold text-ink">
-        {copy.label} <span className="font-mincho text-muted">{copy.kanji}</span>
+        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-muted" />
       </p>
       <Sides
         lead={advantage.lead}

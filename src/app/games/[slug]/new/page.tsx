@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -62,7 +63,7 @@ export default async function SetUpPage({ params }: PageProps<"/games/[slug]/new
       <SiteHeader />
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">
-          {copy.label} <span className="font-mincho text-lg font-normal opacity-70">{copy.kanji}</span>
+          <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-lg font-normal opacity-70" />
         </h1>
         <p className="max-w-prose text-sm text-muted">
           {copy.tagline}{" "}

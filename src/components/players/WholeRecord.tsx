@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { Figures } from "@/components/ui/Figures";
 import { PlayedFigure, RecordCells, RecordFigure, RecordHeadings } from "./PlayerRecord";
 import { winRateText } from "@/lib/rating/figures";
@@ -56,7 +57,7 @@ export function WholeRecordPanel({
   return (
     <section className="flex flex-col gap-3" data-testid="whole-record">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        Everything played <span className="font-mincho text-[0.8rem] font-normal tracking-normal">通算</span>
+        <Paired en="Everything played" kanji="通算" kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
       </h2>
 
       {/*

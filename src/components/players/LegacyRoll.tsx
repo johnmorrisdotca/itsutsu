@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
@@ -17,7 +18,7 @@ export function LegacyRoll({ kind, label, kanji }: { kind: LegacyKind; label: st
       data-testid={`legacy-roll-${kind}`}
     >
       <span className="flex items-baseline gap-2 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-        {label} <span className="font-mincho font-normal normal-case tracking-normal opacity-70">{kanji}</span>
+        <Paired en={label} kanji={kanji} kanjiClassName="font-normal normal-case tracking-normal opacity-70" />
       </span>
       <ul className="flex flex-col gap-1 text-sm">
         {players.map((legacy) => (

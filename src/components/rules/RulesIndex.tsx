@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { rulesPath } from "@/lib/gomoku/slugs";
@@ -98,7 +99,7 @@ export function RulesIndex({ cards }: { cards: RulesCard[] }) {
             }`}
             data-testid={`kind-${option.kind}`}
           >
-            {option.label} <span className="font-mincho opacity-70">{option.kanji}</span>
+            <Paired en={option.label} kanji={option.kanji} kanjiClassName="opacity-70" />
           </button>
         ))}
       </nav>
@@ -112,8 +113,7 @@ export function RulesIndex({ cards }: { cards: RulesCard[] }) {
           <li key={copy.variant}>
             <Link href={rulesPath(copy.variant)} className={`${PANEL_LINK_CLASS} flex h-full flex-col gap-1`}>
               <span className="flex items-baseline gap-2 font-semibold">
-                {copy.label}
-                <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span>
+                <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
               </span>
               <span className="text-xs text-muted">{copy.tagline}</span>
               {copy.inspiredBy !== undefined ? (

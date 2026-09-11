@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { Fragment } from "react";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
@@ -19,7 +20,7 @@ export default function AboutPage() {
 
       <header className="flex flex-col gap-2">
         <h1 className="flex items-baseline gap-3 text-2xl font-semibold">
-          About <span className="font-mincho text-lg font-normal opacity-70">五つについて</span>
+          <Paired en="About" kanji="五つについて" kanjiClassName="text-lg font-normal opacity-70" />
         </h1>
         <p className="text-sm text-muted">
           A tribute to the sites a family played on, and to a game a thousand years old.
@@ -30,8 +31,7 @@ export default function AboutPage() {
         <section key={section.title} className="flex flex-col gap-4" data-testid="about-section">
           {index > 0 ? <BrandStones className="mb-2 opacity-70" /> : null}
           <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-            {section.title}
-            <span className="font-mincho text-sm font-normal opacity-70">{section.kanji}</span>
+            <Paired en={section.title} kanji={section.kanji} kanjiClassName="text-sm font-normal opacity-70" />
           </h2>
           {section.paragraphs.map((paragraph, i) => (
             <Fragment key={i}>

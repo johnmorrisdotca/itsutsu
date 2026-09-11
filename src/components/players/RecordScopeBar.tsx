@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import {
@@ -77,7 +78,7 @@ export function RecordScopeBar({
           className={`${BUTTON} ${scope === one ? ON : OFF}`}
           data-testid={`scope-${one}`}
         >
-          {COPY[one].label} <span className="font-mincho opacity-70">{COPY[one].kanji}</span>
+          <Paired en={COPY[one].label} kanji={COPY[one].kanji} kanjiClassName="opacity-70" />
         </Link>
       ))}
     </nav>

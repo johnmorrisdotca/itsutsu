@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -93,8 +94,7 @@ export function ResignButton({
       <ConfirmButton
         label={
           <>
-            {copy.label}
-            <span className="font-mincho opacity-70">{copy.kanji}</span>
+            <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="opacity-70" />
           </>
         }
         question={

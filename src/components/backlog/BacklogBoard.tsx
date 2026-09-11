@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -186,8 +187,7 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
             {grouped.map((group) => (
               <div key={group.status} className="flex flex-col gap-1" data-testid="backlog-group">
                 <h3 className="flex items-baseline gap-2 pt-2 text-sm font-semibold">
-                  {STATUS_DISPLAY[group.status].label}
-                  <span className="font-mincho text-xs font-normal opacity-70">{STATUS_DISPLAY[group.status].kanji}</span>
+                  <Paired en={STATUS_DISPLAY[group.status].label} kanji={STATUS_DISPLAY[group.status].kanji} kanjiClassName="text-xs font-normal opacity-70" />
                   <span className="font-mono text-xs font-normal text-muted tabular-nums">{group.items.length}</span>
                   <span className="text-xs font-normal text-muted">{STATUS_DISPLAY[group.status].blurb}</span>
                 </h3>

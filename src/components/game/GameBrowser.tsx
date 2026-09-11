@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useEffect, useRef, useState } from "react";
 
 import { availableOpenings } from "@/lib/gomoku/engine";
@@ -24,8 +25,7 @@ export function GameBrowserButton(props: GamePanelProps) {
   return (
     <>
       <Button onClick={() => setOpen(true)} data-testid="open-game-browser">
-        {GAME_COPY.browser.label}
-        <span className="font-mincho text-xs opacity-70">{GAME_COPY.browser.kanji}</span>
+        <Paired en={GAME_COPY.browser.label} kanji={GAME_COPY.browser.kanji} kanjiClassName="text-xs opacity-70" />
       </Button>
       {open ? <GameBrowser {...props} onClose={() => setOpen(false)} /> : null}
     </>
@@ -115,10 +115,7 @@ function GameBrowser({
                   >
                     <h3 className="flex items-baseline justify-between gap-2">
                       <span className="flex items-baseline gap-2 text-base font-semibold">
-                        {copy.label}
-                        <span className="font-mincho text-sm font-normal opacity-70">
-                          {copy.kanji}
-                        </span>
+                        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-sm font-normal opacity-70" />
                       </span>
                       {current ? (
                         <span className="rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-moss uppercase">
@@ -178,10 +175,7 @@ function GameBrowser({
                     className="flex flex-col gap-2 rounded-xl border border-rule bg-ivory/60 p-3"
                   >
                     <h4 className="flex items-baseline gap-2 text-sm font-semibold">
-                      {copy.label}
-                      <span className="font-mincho text-xs font-normal opacity-70">
-                        {copy.kanji}
-                      </span>
+                      <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
                     </h4>
                     <p className="text-xs font-medium">{copy.tagline}</p>
                     <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-ink-soft">

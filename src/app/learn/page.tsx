@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { Page } from "@/components/layout/Page";
@@ -15,7 +16,7 @@ export default function LearnIndexPage() {
       <SiteHeader />
       <section className="flex flex-col gap-2">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          Learn <span className="font-mincho text-sm font-normal opacity-70">学び</span>
+          <Paired en="Learn" kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
         </h1>
         <p className="max-w-prose text-sm text-muted">
           How to think about each game: the shapes that win, the moves that force, and

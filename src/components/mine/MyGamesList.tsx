@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { PlayerName } from "@/components/players/PlayerName";
 import Link from "next/link";
 import { cookies } from "next/headers";
@@ -59,8 +60,7 @@ export async function MyGamesList() {
     return (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-empty">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          {MY_GAMES_COPY.title.label}
-          <span className="font-mincho text-sm font-normal opacity-70">{MY_GAMES_COPY.title.kanji}</span>
+          <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
         <p className="text-sm text-muted">
           Nothing waiting on you yet. Challenge someone from the{" "}
@@ -74,8 +74,7 @@ export async function MyGamesList() {
   return (
     <section className="flex flex-col gap-4" data-testid="my-games">
       <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-        {MY_GAMES_COPY.title.label}
-        <span className="font-mincho text-sm font-normal opacity-70">{MY_GAMES_COPY.title.kanji}</span>
+        <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
       {MY_GAME_GROUPS.map((group) =>
         groups[group].length === 0 ? null : (
@@ -91,8 +90,7 @@ function Group({ group, items, now }: { group: MyGameGroup; items: MyGame[]; now
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid={`my-games-${group}`}>
       <h3 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        {copy.label}
-        <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{copy.kanji}</span>
+        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         <span className="font-normal tracking-normal">{items.length}</span>
       </h3>
       <p className="text-xs text-muted">{copy.hint}</p>

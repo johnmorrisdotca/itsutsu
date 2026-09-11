@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { MEMBER_KINDS, MEMBER_KIND_DISPLAY, worthShowing, type MemberKind } from "@/lib/auth/memberKind";
 
 /**
@@ -30,8 +31,7 @@ export function MemberKindBadge({ kind }: { kind: MemberKind }) {
       data-kind={kind}
       className={`inline-flex shrink-0 items-baseline gap-1 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold tracking-[0.06em] uppercase ${TONE[kind]}`}
     >
-      {copy.label}
-      <span className="font-mincho text-[0.7rem] font-normal normal-case tracking-normal opacity-70">{copy.kanji}</span>
+      <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.7rem] font-normal normal-case tracking-normal opacity-70" />
     </span>
   );
 }

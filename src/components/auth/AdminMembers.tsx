@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -66,7 +67,7 @@ export function AdminMembers() {
   return (
     <section className="flex flex-col gap-3" data-testid="admin-members">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        Members <span className="font-mincho text-[0.8rem] font-normal tracking-normal">会員</span>
+        <Paired en="Members" kanji="会員" kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         <span className="font-normal tracking-normal" data-testid="member-total">
           {total}
         </span>

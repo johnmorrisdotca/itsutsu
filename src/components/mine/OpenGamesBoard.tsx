@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { CountryMark } from "@/components/players/CountryMark";
@@ -45,8 +46,7 @@ export function OpenGamesBoard({
   return (
     <section id="open-seats" className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="open-games">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        {copy.label}
-        <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{copy.kanji}</span>
+        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         {games.length > 0 ? <span className="font-normal tracking-normal">{games.length}</span> : null}
       </h2>
       {total > 0 ? <OpenSeatsFilters filter={filter} shown={shown} total={total} /> : null}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useState } from "react";
 
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
@@ -84,8 +85,7 @@ function SeatCard({ invite, isYours }: { invite: SeatInvite; isYours: boolean })
               : "border border-rule-strong bg-ivory"
           }`}
         />
-        {display.label}
-        <span className="font-mincho text-muted">{display.kanji}</span>
+        <Paired en={display.label} kanji={display.kanji} kanjiClassName="text-muted" />
         {isYours ? (
           <span className="ml-auto rounded-full border border-rule px-2 py-0.5 text-[0.65rem] font-medium">
             You

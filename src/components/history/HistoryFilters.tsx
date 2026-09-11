@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
@@ -33,6 +34,7 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const say = useSpeaker();
 
   /*
    * The game is not a filter but a collection: /history/<slug> is one game's
@@ -105,7 +107,7 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
           className="flex flex-wrap items-center gap-2 text-xs"
           data-testid="history-narrowed"
         >
-          <span className="text-muted">Narrowed to</span>
+          <span className="text-muted">{say.say("filter.narrowedTo")}</span>
           {narrowings.map((one) => (
             <button
               key={one.key}
@@ -127,11 +129,11 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
       ) : null}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <label className="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
-          <span className="text-sm text-ink-soft">Player</span>
+          <span className="text-sm text-ink-soft">{say.say("filter.player")}</span>
           <input
             type="search"
             className={INPUT_CLASS}
-            placeholder="Search names"
+            placeholder={say.say("filter.searchNames")}
             defaultValue={value("search")}
             onChange={(event) => update("search", event.target.value)}
             data-testid="history-search"
@@ -146,7 +148,7 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
         own rephrasing.
       */}
         {player === "" ? (
-          <Field label="Result">
+          <Field label={say.say("filter.result")}>
             <Select
               value={value("result", "all")}
               onChange={(event) => update("result", event.target.value)}
@@ -154,7 +156,7 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
             >
               {GAME_RESULT_FILTERS.map((option) => (
                 <option key={option} value={option}>
-                  {option === "all" ? "Any" : GAME_RESULT_DISPLAY[option].label}
+                  {option === "all" ? say.say("filter.any") : GAME_RESULT_DISPLAY[option].label}
                 </option>
               ))}
             </Select>
@@ -169,7 +171,7 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
               {GAME_OUTCOME_FILTERS.map((option) => (
                 <option key={option} value={option}>
                   {option === "all"
-                    ? "Any"
+                    ? say.say("filter.any")
                     : GAME_OUTCOME_DISPLAY[option].label}
                 </option>
               ))}
@@ -177,20 +179,20 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
           </Field>
         )}
 
-        <Field label="Board">
+        <Field label={say.say("filter.board")}>
           <Select
             value={value("size", "all")}
             onChange={(event) => update("size", event.target.value)}
           >
             {GAME_SIZE_FILTERS.map((option) => (
               <option key={option} value={option}>
-                {option === "all" ? "Any" : `${option}×${option}`}
+                {option === "all" ? say.say("filter.any") : `${option}×${option}`}
               </option>
             ))}
           </Select>
         </Field>
 
-        <Field label="Rules">
+        <Field label={say.say("filter.rules")}>
           <Select
             value={variant ?? "all"}
             onChange={(event) => chooseGame(event.target.value)}
@@ -198,13 +200,13 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
           >
             {GAME_VARIANT_FILTERS.map((option) => (
               <option key={option} value={option}>
-                {option === "all" ? "Any" : variantLabel(option)}
+                {option === "all" ? say.say("filter.any") : variantLabel(option)}
               </option>
             ))}
           </Select>
         </Field>
 
-        <Field label="Sort">
+        <Field label={say.say("filter.sort")}>
           <Select
             value={`${value("sort", "played")}:${value("order", "desc")}`}
             onChange={(event) => {

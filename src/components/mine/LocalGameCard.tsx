@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -25,8 +26,7 @@ export function LocalGameCard() {
     <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="local-game">
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-          {MY_GAMES_COPY.localGame.label}{" "}
-          <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{MY_GAMES_COPY.localGame.kanji}</span>
+          <Paired en={MY_GAMES_COPY.localGame.label} kanji={MY_GAMES_COPY.localGame.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         </span>
         <span className="text-sm font-medium">
           <GameName variant={snapshot.settings.variant} /> · {snapshot.settings.size}×{snapshot.settings.size} ·{" "}

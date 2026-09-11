@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { redirect } from "next/navigation";
 
 import { GameDefaultsForm } from "@/components/mine/GameDefaultsForm";
@@ -71,7 +72,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
       {welcome ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-2 border-moss/50 bg-moss-soft`} data-testid="welcome">
           <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-            Welcome <span className="font-mincho text-sm font-normal opacity-70">ようこそ</span>
+            <Paired en="Welcome" kanji="ようこそ" kanjiClassName="text-sm font-normal opacity-70" />
           </h1>
           <p className="text-sm text-ink-soft">
             You are in. One question before the board: what should the other players call you? Google&apos;s name is

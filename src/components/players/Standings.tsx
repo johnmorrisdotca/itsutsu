@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { RecordCells, RecordHeadings } from "./PlayerRecord";
 import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
@@ -21,7 +22,7 @@ export function PlayerLink({ name }: { name: string }) {
 export function TierMark({ tier }: { tier: RatingTier }) {
   return (
     <>
-      {TIER_DISPLAY[tier].label} <span className="font-mincho text-muted">{TIER_DISPLAY[tier].kanji}</span>
+      <Paired en={TIER_DISPLAY[tier].label} kanji={TIER_DISPLAY[tier].kanji} kanjiClassName="text-muted" />
     </>
   );
 }
