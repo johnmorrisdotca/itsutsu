@@ -6,7 +6,8 @@ import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
-import { Button } from "@/components/ui/Controls";
+import { Button, SectionTitle } from "@/components/ui/Controls";
+import { PlayedMoves } from "./PlayedMoves";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -218,6 +219,27 @@ export function GameReplay({
           >
             End
           </Button>
+        </div>
+
+        {/*
+          The record itself, which this page did not have. A scrubber says
+          WHERE you are and the list says WHAT was played — John asked twice
+          where the moves had gone, and the answer was that only a practice
+          game ever showed them.
+
+          Each one is a position to go to, because on a finished game that is
+          what a move is: the whole point of reading a record is stopping at
+          the move you wanted to look at.
+        */}
+        <div className="flex flex-col gap-2">
+          <SectionTitle kanji="棋譜">Moves</SectionTitle>
+          <PlayedMoves
+            size={game.size}
+            moves={game.moves}
+            at={index}
+            onJump={(number) => setIndex(number)}
+            emptyNote="No stones were played in this game."
+          />
         </div>
 
         <Button onClick={() => writeTurned(game.id, !turned)} strong={turned} data-testid="turn-board">

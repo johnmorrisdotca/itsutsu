@@ -5,19 +5,37 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
-import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
-import { cellAt, inMovePhase, pieceMoves, rulesFor, otherStone } from "@/lib/gomoku/engine";
+import {
+  readTurned,
+  subscribeTurned,
+  turnedFor,
+  writeTurned,
+} from "@/components/board/turned";
+import {
+  cellAt,
+  inMovePhase,
+  pieceMoves,
+  rulesFor,
+  otherStone,
+} from "@/lib/gomoku/engine";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
-import { deadlineFor, describeRemaining, isOverdue } from "@/lib/history/deadline";
+import { describeRemaining } from "@/lib/history/deadline";
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
-import { Button } from "@/components/ui/Controls";
+import { Button, SectionTitle } from "@/components/ui/Controls";
+import { PlayedMoves } from "@/components/history/PlayedMoves";
+import { useMatchClock } from "./useMatchClock";
+import { useMatchTalk } from "./useMatchTalk";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { usePieceHand } from "@/components/game/usePieceHand";
-import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import {
+  GAME_STATUS,
+  STONES,
+  STONE_DISPLAY,
+  VARIANT_SPECS,
+} from "@/lib/gomoku/gomoku.constants";
 import { ResignButton } from "@/components/mine/ResignButton";
 import { GAME_COPY } from "@/components/game/game.constants";
-import type { ReactionEmoji } from "@/lib/history/reactions.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
 import { TurnBanner } from "./TurnBanner";
 import { readQuiet, subscribeQuiet, writeQuiet } from "./quiet";
@@ -57,7 +75,11 @@ export function SharedGame({
   /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
-  opponent?: { name: string; country: string; awayUntil?: string | null } | null;
+  opponent?: {
+    name: string;
+    country: string;
+    awayUntil?: string | null;
+  } | null;
   /**
    * Colours whose player this reader has ignored — for a watcher as much as
    * for a player, since the ignore list is about who may reach you and not
@@ -89,14 +111,18 @@ export function SharedGame({
    * this person turned this game to, then what they prefer everywhere, then —
    * where they have said neither — their own side of the board, nearest them.
    */
-  const turned = turnedFor(override, appearance.flipped ?? boardStartsFlipped(state.settings, seat));
+  const turned = turnedFor(
+    override,
+    appearance.flipped ?? boardStartsFlipped(state.settings, seat),
+  );
   const board: Appearance = { ...appearance, flipped: turned };
 
   const played = state.moves.length;
   useEffect(() => {
     if (basePath === undefined) return;
     const next = `${basePath}/${played}`;
-    if (window.location.pathname !== next) window.history.replaceState(null, "", next);
+    if (window.location.pathname !== next)
+      window.history.replaceState(null, "", next);
   }, [basePath, played]);
   const yourTurn = seat !== null && state.toPlay === seat;
   const playable = yourTurn && state.status === GAME_STATUS.playing;
@@ -109,49 +135,15 @@ export function SharedGame({
    * The deadline is the server's: it comes with the game and is only shown
    * here. A once-a-second tick keeps the countdown honest between polls.
    */
-  const deadline = deadlineFor({ ...detail, toPlay: state.toPlay });
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (deadline === null || state.status !== GAME_STATUS.playing) return;
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, [deadline, state.status]);
-  const overdue = isOverdue(deadline, new Date(now));
-  const canClaim = overdue && seat !== null && !yourTurn && state.status === GAME_STATUS.playing;
-  // Whether claiming ends the game outright or only takes their turn.
-  const endsTheGame = detail.timeoutPenalty === "game" || detail.clockMode === "game";
-
-  async function give() {
-    setError(null);
-    const response = await fetch(`/api/games/${detail.id}/time`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    });
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? "Time could not be given.");
-      return;
-    }
-    await mutate((await response.json()) as GameDetail, { revalidate: false });
-  }
-
-  async function claim() {
-    if (token === null) return;
-    setError(null);
-    const response = await fetch(`/api/games/${detail.id}/timeout`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    });
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? "That could not be claimed.");
-      await mutate();
-      return;
-    }
-    await mutate((await response.json()) as GameDetail, { revalidate: false });
-  }
+  const { deadline, now, overdue, canClaim, endsTheGame, give, claim } = useMatchClock({
+    detail,
+    state,
+    seat,
+    yourTurn,
+    token,
+    onError: setError,
+    mutate,
+  });
 
   /** Sends one move, of any of the three shapes, and takes the server's answer as the truth. */
   async function send(body: Record<string, unknown>) {
@@ -164,9 +156,9 @@ export function SharedGame({
     });
 
     if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null;
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
       setError(payload?.error ?? "That move could not be played.");
       await mutate();
       return;
@@ -186,7 +178,9 @@ export function SharedGame({
     if (inMovePhase(state)) {
       const lands =
         selected !== null &&
-        pieceMoves(state, selected).some((to) => to.row === point.row && to.col === point.col);
+        pieceMoves(state, selected).some(
+          (to) => to.row === point.row && to.col === point.col,
+        );
       if (lands && selected !== null) {
         const from = selected;
         setSelected(null);
@@ -195,7 +189,9 @@ export function SharedGame({
       }
       if (cellAt(state, point) === state.toPlay) {
         setSelected(
-          selected !== null && selected.row === point.row && selected.col === point.col
+          selected !== null &&
+            selected.row === point.row &&
+            selected.col === point.col
             ? null
             : point,
         );
@@ -220,31 +216,14 @@ export function SharedGame({
   }
 
   /** Sends an emoji to the other player. Refusals are quiet: it is only a wave. */
-  async function react(emoji: ReactionEmoji, moveNumber: number | null, text: string | null) {
-    if (token === null) return;
-    const response = await fetch(`/api/games/${detail.id}/reactions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, emoji, moveNumber, text }),
-    });
-    if (response.ok) {
-      await mutate((await response.json()) as GameDetail, { revalidate: false });
-    }
-  }
-
-  /*
-   * Whose messages this reader does not see: any colour whose player they have
-   * ignored, plus the other seat while this one game is muted.
-   *
-   * A set rather than a single colour, and worked out for a watcher as well as
-   * for a player. It used to be one stone, decided only for somebody holding a
-   * seat, so a member who had ignored a player and then opened that player's
-   * game as a spectator saw everything they said. Ignoring somebody has to
-   * mean ignoring them everywhere or it means nothing.
-   */
-  const silenced = new Set<string>(ignoring);
-  if (quiet && seat !== null) silenced.add(otherStone(seat));
-  const shown = (detail.reactions ?? []).filter((reaction) => !silenced.has(reaction.stone));
+  const { shown, say: react } = useMatchTalk({
+    detail,
+    seat,
+    token,
+    ignoring,
+    quiet,
+    mutate,
+  });
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -273,15 +252,24 @@ export function SharedGame({
         >
           <span>
             {STONE_DISPLAY[state.toPlay].label} {GAME_COPY.mustMoveBy}{" "}
-            <span className="font-mono tabular-nums">{deadline.toLocaleTimeString()}</span>
+            <span className="font-mono tabular-nums">
+              {deadline.toLocaleTimeString()}
+            </span>
             {" · "}
-            <span className="font-mono tabular-nums" data-testid="deadline-remaining">
+            <span
+              className="font-mono tabular-nums"
+              data-testid="deadline-remaining"
+            >
               {describeRemaining(deadline, new Date(now))}
             </span>
-            {detail.timeoutPenalty === "turn" && (detail.forfeits.black > 0 || detail.forfeits.white > 0) ? (
+            {detail.timeoutPenalty === "turn" &&
+            (detail.forfeits.black > 0 || detail.forfeits.white > 0) ? (
               <span className="ml-2 text-xs opacity-80">
                 {STONE_DISPLAY[state.toPlay].label}:{" "}
-                {GAME_COPY.forfeitsNote(detail.forfeits[state.toPlay], FORFEITS_TO_LOSE)}
+                {GAME_COPY.forfeitsNote(
+                  detail.forfeits[state.toPlay],
+                  FORFEITS_TO_LOSE,
+                )}
               </span>
             ) : null}
           </span>
@@ -293,17 +281,35 @@ export function SharedGame({
               the same act.
             */
             <ConfirmButton
-              label={endsTheGame ? GAME_COPY.claimGame.label : GAME_COPY.claimTurn.label}
-              question={endsTheGame ? GAME_COPY.claimGameConfirm : GAME_COPY.claimTurnConfirm}
-              confirm={endsTheGame ? GAME_COPY.claimGame.label : GAME_COPY.claimTurn.label}
+              label={
+                endsTheGame
+                  ? GAME_COPY.claimGame.label
+                  : GAME_COPY.claimTurn.label
+              }
+              question={
+                endsTheGame
+                  ? GAME_COPY.claimGameConfirm
+                  : GAME_COPY.claimTurnConfirm
+              }
+              confirm={
+                endsTheGame
+                  ? GAME_COPY.claimGame.label
+                  : GAME_COPY.claimTurn.label
+              }
               onConfirm={() => void claim()}
               strong
               title={GAME_COPY.claimHint}
               testId="claim-timeout"
             />
           ) : null}
-          {seat !== null && !yourTurn && state.status === GAME_STATUS.playing ? (
-            <Button onClick={give} title="Add time to the other side's clock for this move. Nobody has to win on the clock." data-testid="give-time">
+          {seat !== null &&
+          !yourTurn &&
+          state.status === GAME_STATUS.playing ? (
+            <Button
+              onClick={give}
+              title="Add time to the other side's clock for this move. Nobody has to win on the clock."
+              data-testid="give-time"
+            >
               Give more time
             </Button>
           ) : null}
@@ -311,15 +317,18 @@ export function SharedGame({
       ) : null}
       {detail.clockMode === "game" && detail.moveTimeMs !== null ? (
         <p className="text-xs text-muted" data-testid="time-budgets">
-          Time left for the whole game · {STONE_DISPLAY.black.label} {describeBudget(detail.blackTimeMs ?? detail.moveTimeMs)} ·{" "}
-          {STONE_DISPLAY.white.label} {describeBudget(detail.whiteTimeMs ?? detail.moveTimeMs)}
+          Time left for the whole game · {STONE_DISPLAY.black.label}{" "}
+          {describeBudget(detail.blackTimeMs ?? detail.moveTimeMs)} ·{" "}
+          {STONE_DISPLAY.white.label}{" "}
+          {describeBudget(detail.whiteTimeMs ?? detail.moveTimeMs)}
         </p>
       ) : null}
 
       {VARIANT_SPECS[state.settings.variant].captures ? (
         <p className="text-xs text-muted" data-testid="shared-captures">
-          {GAME_COPY.captures.label} · {STONE_DISPLAY.black.label} {state.captures.black} ·{" "}
-          {STONE_DISPLAY.white.label} {state.captures.white} ·{" "}
+          {GAME_COPY.captures.label} · {STONE_DISPLAY.black.label}{" "}
+          {state.captures.black} · {STONE_DISPLAY.white.label}{" "}
+          {state.captures.white} ·{" "}
           {GAME_COPY.capturesToWin(state.settings.capturesToWin)}
         </p>
       ) : null}
@@ -364,10 +373,17 @@ export function SharedGame({
       />
 
       {choosesColour && playable ? (
-        <div className="flex flex-wrap items-center gap-2" data-testid="colour-chooser">
+        <div
+          className="flex flex-wrap items-center gap-2"
+          data-testid="colour-chooser"
+        >
           <span className="text-xs text-muted">{GAME_COPY.placeAs}</span>
           {Object.values(STONES).map((stone) => (
-            <Button key={stone} onClick={() => setPlacing(stone)} strong={placing === stone}>
+            <Button
+              key={stone}
+              onClick={() => setPlacing(stone)}
+              strong={placing === stone}
+            >
               {STONE_DISPLAY[stone].label}
             </Button>
           ))}
@@ -387,11 +403,33 @@ export function SharedGame({
 
       {VARIANT_SPECS[state.settings.variant].go && seat !== null ? (
         <div className="flex flex-wrap gap-2">
-          <Button onClick={pass} disabled={!playable} title={GAME_COPY.passHint}>
+          <Button
+            onClick={pass}
+            disabled={!playable}
+            title={GAME_COPY.passHint}
+          >
             {GAME_COPY.pass.label}
           </Button>
         </div>
       ) : null}
+
+      {/*
+        What has been played, in a game that is still being played.
+        
+        No scrubber here — this board is live and shows the position as it
+        stands — so the list is a record rather than a way to move about. It
+        was missing entirely: a match showed a board and a move count, and
+        John asked twice where the moves had gone.
+      */}
+      <div className="flex flex-col gap-2">
+        <SectionTitle kanji="棋譜">Moves</SectionTitle>
+        <PlayedMoves
+          size={detail.size}
+          moves={detail.moves}
+          emptyNote="Nothing played yet."
+          testId="live-moves"
+        />
+      </div>
 
       {/* An empty board can be called off even where resigning is refused. */}
       {seat !== null &&
@@ -437,7 +475,9 @@ export function SharedGame({
           You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
           <span className="font-medium text-ink">{opponent.name}</span>
           {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
-          {opponent.awayUntil ? ` Away until ${new Date(opponent.awayUntil).toLocaleDateString()}; their deadline waits.` : ""}
+          {opponent.awayUntil
+            ? ` Away until ${new Date(opponent.awayUntil).toLocaleDateString()}; their deadline waits.`
+            : ""}
         </p>
       ) : null}
       <ReactionLog reactions={shown} />
