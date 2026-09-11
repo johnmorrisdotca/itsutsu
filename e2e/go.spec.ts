@@ -39,7 +39,7 @@ test.describe("go", () => {
   });
 
   test("the rules page says what a liberty, a capture and the ko rule are, at its address", async ({ page }) => {
-    await page.goto("/rules/go");
+    await page.goto("/games/go/rules");
     await expect(page.getByText(/liberti/i).first()).toBeVisible();
     await expect(page.getByText(/\bko\b/i).first()).toBeVisible();
   });

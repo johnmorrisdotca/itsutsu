@@ -31,7 +31,7 @@ test.describe("a game against yourself", () => {
   test("warns while the game is still being played", async ({ page, request }) => {
     const game = await selfGame(request);
 
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     const notice = page.getByTestId("shared-unrated-line");
     await expect(notice).toBeVisible();
     // Future tense: there is still an evening to save.
@@ -48,7 +48,7 @@ test.describe("a game against yourself", () => {
       (await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status(),
     ).toBe(200);
 
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     const notice = page.getByTestId("record-unrated");
     await expect(notice).toBeVisible();
     // Past tense: this is the answer to "where did my game go?".
@@ -63,7 +63,7 @@ test.describe("a game against yourself", () => {
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
     tidyAway(game.id);
 
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("shared-rules")).toBeVisible();
     // The panel is there; the warning is not. A rated game is not nagged at.
     await expect(page.getByTestId("shared-unrated-line")).toHaveCount(0);
@@ -72,7 +72,7 @@ test.describe("a game against yourself", () => {
       data: { token: game.blackToken, row: 4, col: 4 },
     });
     await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("record-unrated")).toHaveCount(0);
   });
 });

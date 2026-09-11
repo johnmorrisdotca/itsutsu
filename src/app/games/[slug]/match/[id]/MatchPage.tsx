@@ -8,6 +8,7 @@ import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
 import { SharedGame } from "@/components/live/SharedGame";
 import { SharedRules } from "@/components/live/SharedRules";
 import { GameViewClient } from "@/components/game/GameViewClient";
+import { FiledMatchPage } from "./FiledMatchPage";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { NotesPanel } from "@/components/game/NotesPanel";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -16,7 +17,7 @@ import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { isHotSeat } from "@/lib/history/liveGame";
 import { isIgnoring } from "@/lib/social/ignores";
 import { ratingRefusal } from "@/lib/rating/rateable";
-import { matchPath, recordPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
+import { matchPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
@@ -35,13 +36,20 @@ async function origin(): Promise<string> {
 }
 
 /**
- * A match being played, at /games/<slug>/<id>.
+ * A match, at /games/<slug>/match/<id>.
  *
- * The board is the shared one, moving as the other side moves, and a move
- * number on the end names a position — /games/gomoku/<id>/12 is the board
- * after the twelfth stone — kept current in the bar as play goes on. Once the
- * game is over it belongs to the record, and this address hands over to
- * /history/<id>, where the same position is replayed.
+ * ONE ADDRESS, WHATEVER THE MATCH IS DOING. The board is the shared one while
+ * it is being played, moving as the other side moves; once it is over the same
+ * address is the replay. A move number on the end names a position —
+ * /games/gomoku/match/<id>/12 is the board after the twelfth stone — and that
+ * is true in both states.
+ *
+ * It used to be two addresses, /games/<slug>/<id> and /history/<slug>/<id>,
+ * each redirecting to the other at the moment the last stone landed. So every
+ * link anybody had sent out changed meaning the day the game finished, and the
+ * page a reader arrived at was decided by a redirect rather than by the
+ * address they held. A match is one thing; it now has one address, and this
+ * function is where the two presentations of it are chosen between.
  *
  * A seat is claimed through /seat/<token>, which puts the credential in a
  * cookie and leaves it out of the address. So a seat link can be scanned from
@@ -72,8 +80,13 @@ export async function MatchPage({ slug, id, move }: { slug: string; id: string; 
   const token = claim?.token;
   const seat = claim?.seat ?? null;
 
-  // A match that is over lives in the record, at the record's address.
-  if (game.status !== "active") redirect(recordPath(game.variant, game.id, move));
+  /*
+   * A match that is over is the same match, at the same address, read
+   * differently: the replay, the conversation, the applause, the rematch. It
+   * was a redirect to a second address until the two were folded into one, and
+   * a redirect is what made a link to a game stop working the day it finished.
+   */
+  if (game.status !== "active") return <FiledMatchPage id={id} move={move} />;
 
   /*
    * A hot-seat match — two people at one screen — opens on the full board,

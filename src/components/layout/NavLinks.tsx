@@ -23,8 +23,6 @@ import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 const NAV_PHRASE: Readonly<Record<string, PhraseKey>> = {
   "/my-games": "nav.play",
   "/games": "nav.games",
-  "/rules": "nav.rules",
-  "/learn": "nav.learn",
   "/players": "nav.players",
   "/about": "nav.about",
 };
@@ -57,8 +55,29 @@ export const NAV = [
    */
   { href: "/my-games", label: "Play" },
   { href: "/games", label: "Games" },
-  { href: "/rules", label: "Rules" },
-  { href: "/learn", label: "Learn" },
+  /*
+   * RULES AND LEARN ARE GONE FROM HERE, AND NEITHER IS GONE FROM THE SITE.
+   *
+   * Rules pointed at an index of forty rules pages. There is no such index any
+   * more, because a game's rules belong to the game: they are at
+   * /games/<slug>/rules, reached from the game, which every name on this site
+   * leads to. A row in the bar for "the rules of some game or other" was
+   * asking a reader to pick a game from a page about rules, when what they
+   * always had in mind was a game.
+   *
+   * Learn left for a different reason. It is a shelf of guides most readers
+   * want exactly once — after meeting a game, wanting to get better at it —
+   * and it was costing a word of chrome on every page of the site to serve
+   * that. It is offered from /games now, in a section of its own, which is
+   * where somebody has just met a game. Its lessons keep their addresses:
+   * /learn/<slug> is untouched, and a game's rules page still names the guides
+   * that cover it.
+   *
+   * Both rows came out AFTER `gamesRoot.coverage.test.ts` was written and
+   * watched to fail. That file now fails the build if either route in
+   * disappears, so "it is still reachable" is a test rather than the opinion
+   * of whoever did the removing.
+   */
   { href: "/players", label: "Players" },
   { href: "/about", label: "About" },
 ] as const;

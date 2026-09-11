@@ -34,7 +34,7 @@ test.describe("a legacy record's games link to what they are", () => {
     // otherwise match too.
     const goMoku = detail.getByRole("link", { name: "Go-Moku", exact: true });
     await expect(goMoku).toBeVisible();
-    await expect(goMoku).toHaveAttribute("href", "/rules/gomoku");
+    await expect(goMoku).toHaveAttribute("href", "/games/gomoku/rules");
 
     /*
      * Backgammon has no Itsutsu equivalent. It must render, not as a link,

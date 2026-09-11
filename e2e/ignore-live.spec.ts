@@ -52,7 +52,7 @@ test.describe("ignoring somebody, in a live game", () => {
   test("their opponent does not hear them", async ({ browser, baseURL }) => {
     const { game, mine } = await noisyGame(browser, baseURL!);
     const page = await mine.newPage();
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("shared-rules")).toBeVisible();
     await expect(page.getByText("Loud and unwelcome")).toHaveCount(0);
   });
@@ -65,7 +65,7 @@ test.describe("ignoring somebody, in a live game", () => {
     await theirs.request.post("/api/ignores", { data: { email: loud.email } });
 
     const page = await theirs.newPage();
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("shared-rules")).toBeVisible();
     // No seat here, and it makes no difference: they asked not to hear them.
     await expect(page.getByText("Loud and unwelcome")).toHaveCount(0);
@@ -78,7 +78,7 @@ test.describe("ignoring somebody, in a live game", () => {
     const theirs = await memberContext(browser, baseURL!, bystander);
 
     const page = await theirs.newPage();
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     // The negative case that keeps the others honest: nothing is hidden from
     // everybody, only from the people who asked.
     await expect(page.getByText("Loud and unwelcome").first()).toBeVisible({ timeout: 10_000 });

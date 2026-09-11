@@ -7,7 +7,7 @@ import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { recordPath } from "@/lib/gomoku/slugs";
+import { matchPath } from "@/lib/gomoku/slugs";
 import { fetchPlayedCounts, recentGamesOf } from "@/lib/history/gameCounts";
 import { countText } from "@/lib/rating/figures";
 
@@ -82,7 +82,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
               <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} />
             </span>
             <Link
-              href={recordPath(variant, game.id)}
+              href={matchPath(variant, game.id)}
               className="shrink-0 text-xs text-muted underline-offset-2 hover:underline"
             >
               {game.moveCount} moves

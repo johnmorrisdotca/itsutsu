@@ -297,9 +297,24 @@ export const SITES_SECTION: AboutSection = {
       and each has a hard core that has been there for twenty years.
     </>,
     <>
+      {/*
+        This sentence names what is ACTUALLY open, and it had to change when
+        the rules moved. It used to say the rules and the learning shelf both
+        were, and that was true: /rules was in `OPEN_PATHS`. A game's rules now
+        live at /games/<slug>/rules, and /games is not open — so naming them
+        here would be the page telling a visitor they can read something the
+        gate will turn them away from.
+
+        Whether the rules SHOULD stay publicly readable at their new address is
+        John's to decide and is open at the time of writing; `proxy.ts` states
+        the purpose of an open path plainly enough that the question is a real
+        one. If the answer is yes, adding "/games" to `OPEN_PATHS` would open
+        the whole catalogue with it, so the rules go back into this sentence
+        only along with whatever narrower change is made. Until then it says
+        less rather than something untrue.
+      */}
       If you have a code, the door is <Inside href="/join">here</Inside>.
-      If you do not, the <Inside href="/rules">rules</Inside> and
-      the <Inside href="/learn">learning shelf</Inside> are open
+      If you do not, the <Inside href="/learn">learning shelf</Inside> is open
       to everyone.
     </>,
   ],

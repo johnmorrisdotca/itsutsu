@@ -37,7 +37,7 @@ test.describe("checkers", () => {
   });
 
   test("the rules page says what capturing and crowning are, at its address", async ({ page }) => {
-    await page.goto("/rules/checkers");
+    await page.goto("/games/checkers/rules");
     await expect(page.getByText(/forced/i).first()).toBeVisible();
     await expect(page.getByText(/crowned/i).first()).toBeVisible();
   });

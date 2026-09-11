@@ -35,8 +35,8 @@ test.describe("the rules once play has begun", () => {
 
   test("offers a form before the first stone, and no statement", async ({ page, request }) => {
     const live = await game(request);
-    await page.goto(`/games/gomoku/${live.id}/seat/${live.blackToken}`);
-    await page.waitForURL(/\/games\/gomoku\//);
+    await page.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
+    await page.waitForURL(/\/games\/gomoku\/match\//);
     await expect(page.getByTestId("shared-rules-opening")).toBeVisible();
     await expect(page.getByTestId("rules-statement")).toHaveCount(0);
   });
@@ -47,8 +47,8 @@ test.describe("the rules once play has begun", () => {
       data: { token: live.blackToken, row: 4, col: 4 },
     });
 
-    await page.goto(`/games/gomoku/${live.id}/seat/${live.whiteToken}`);
-    await page.waitForURL(/\/games\/gomoku\//);
+    await page.goto(`/games/gomoku/match/${live.id}/seat/${live.whiteToken}`);
+    await page.waitForURL(/\/games\/gomoku\/match\//);
 
     const said = page.getByTestId("rules-statement");
     await expect(said).toBeVisible();
@@ -67,7 +67,7 @@ test.describe("the rules once play has begun", () => {
     await request.post(`/api/games/${live.id}/moves`, {
       data: { token: live.blackToken, row: 4, col: 4 },
     });
-    await page.goto(`/games/gomoku/${live.id}`);
+    await page.goto(`/games/gomoku/match/${live.id}`);
     await expect(page.getByTestId("rules-statement")).toContainText("Opening");
   });
 
@@ -98,8 +98,8 @@ test.describe("the rules once play has begun", () => {
      * the panel. Measured rather than eyeballed.
      */
     const live = await game(request);
-    await page.goto(`/games/gomoku/${live.id}/seat/${live.blackToken}`);
-    await page.waitForURL(/\/games\/gomoku\//);
+    await page.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
+    await page.waitForURL(/\/games\/gomoku\/match\//);
 
     const panel = page.getByTestId("shared-rules");
     const box = await panel.boundingBox();

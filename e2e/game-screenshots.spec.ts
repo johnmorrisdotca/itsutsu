@@ -93,7 +93,7 @@ test.describe("game screenshots", () => {
   for (const [variant, scene] of Object.entries(SCENES)) {
     test(`${variant}`, async ({ page }) => {
       mkdirSync(OUT, { recursive: true });
-      await page.goto("/games/gomoku");
+      await page.goto("/games/gomoku/play");
       await openSetup(page);
       await page.getByTestId("rules").selectOption(variant);
       // The piece games lay a piece per click; the rest a stone.

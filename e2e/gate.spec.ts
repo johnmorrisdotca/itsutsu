@@ -91,8 +91,22 @@ test.describe("the pages that stay open", () => {
   // Everything here is about what somebody with no invite can reach.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("rules and learning are readable without an invite", async ({ page }) => {
-    for (const path of ["/rules", "/learn", "/about"]) {
+  test("the games, the rules and the learning are readable without an invite", async ({ page }) => {
+    /*
+     * READING IS OPEN, PLAYING IS GATED — John's rule, and what these are.
+     * /rules and /rules/<game> used to be the open pair; a game is one address
+     * with its facets underneath now, so the catalogue, a game, and what that
+     * game IS are what a stranger may read.
+     */
+    for (const path of [
+      "/games",
+      "/games?view=list",
+      "/games/gomoku",
+      "/games/gomoku/family",
+      "/games/gomoku/background",
+      "/learn",
+      "/about",
+    ]) {
       await page.goto(path);
       await expect(page, `${path} should not send you to the door`).not.toHaveURL(
         /\/join/,
@@ -101,7 +115,7 @@ test.describe("the pages that stay open", () => {
   });
 
   test("a variant's rules page is readable too", async ({ request }) => {
-    expect((await request.get("/rules/connect-six")).status()).toBe(200);
+    expect((await request.get("/games/connect-six/rules")).status()).toBe(200);
   });
 
   test("and show nothing anybody wrote, which is what open means here", async ({ request }) => {
@@ -120,10 +134,42 @@ test.describe("the pages that stay open", () => {
      * where the address lived. A signed-out reader must not be able to read a
      * member out of an open page by any route.
      */
-    for (const path of ["/rules/tic-tac-toe", "/rules/connect-six", "/rules"]) {
+    for (const path of [
+      "/games/tic-tac-toe/rules",
+      "/games/connect-six/rules",
+      "/games",
+      "/games?view=list",
+      // The GAME'S OWN PAGE, which is the one that grew. It is open now and it
+      // mounts the ladder and the played-games panel — both of which ask who is
+      // reading and draw nothing for a stranger. That is the whole reason this
+      // check had to follow the front door rather than stay on the rules page.
+      "/games/gomoku",
+      "/games/gomoku/family",
+    ]) {
       const said = await (await request.get(path)).text();
       expect(said, `${path} links to a player's page without a session`).not.toMatch(/\/players\//);
       expect(said, `${path} names a member without a session`).not.toMatch(/data-testid=.player-name/);
+    }
+  });
+
+  /**
+   * The playing half, shut. A stranger may read about a game and may not open
+   * a board, take a seat, or look at somebody's match.
+   *
+   * Signed out, and that is not decoration: written as a signed-in test this
+   * would answer 200 quite correctly and prove nothing at all about the gate.
+   */
+  test("the playing half of a game still needs an invite", async ({ page }) => {
+    for (const path of [
+      "/games/gomoku/play",
+      "/games/gomoku/new",
+      "/games/gomoku/me",
+      "/games/gomoku/match/nosuchgame",
+      "/games/gomoku/history",
+      "/games/gomoku/standings",
+    ]) {
+      await page.goto(path);
+      await expect(page, `${path} should send you to the door`).toHaveURL(/\/join/);
     }
   });
 

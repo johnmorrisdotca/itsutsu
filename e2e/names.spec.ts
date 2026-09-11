@@ -97,7 +97,7 @@ test.describe("every name leads to the player", () => {
 
     // That game's own ladder — the top fifty, so the winner is on it and the
     // loser may not be. Same rule as the players page above.
-    await page.goto("/champions/gomoku");
+    await page.goto("/games/gomoku/standings");
     await everyMentionLinks(page, me.name);
     await mentionsAllLink(page, opponent);
 

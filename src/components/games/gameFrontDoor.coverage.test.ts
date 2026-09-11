@@ -5,24 +5,26 @@ import { describe, expect, it } from "vitest";
 /**
  * A game's page is the front door, and this is what keeps it one.
  *
- * John, standing on /rules/connect-six, listed what a game's page owes a
- * reader: the rules, who is best at it, the standings, his own record at it,
+ * John, standing on the old /rules/connect-six, listed what a game's page owes
+ * a reader: the rules, who is best at it, the standings, his own record at it,
  * a way to challenge the people who played it, the games already played, and
  * a way to start one. "That should all be done through the Game page."
  *
- * The front door is the RULES page, and that is a fact about the code rather
- * than a preference. `GameName` sends every game name on this site to
- * `rulesPath`, and `gameLinks.coverage.test.ts` fails the build when a page
- * names a game any other way — so every list, every record row and every
- * family card lands here whether or not anybody designed it that way. A
- * second, better-built hub that nothing points at is not a second front door;
- * it is a room with no corridor to it, which is exactly what /champions/<slug>
- * had become.
+ * THE FRONT DOOR IS NOW THE GAME'S OWN PAGE, at /games/<slug>, and that is
+ * what this file had to be re-pointed at. It used to be the RULES page, and
+ * for a good reason at the time: `GameName` sent every game name on this site
+ * to `rulesPath`, so every list, every record row and every family card landed
+ * there whether or not anybody designed it that way, and the panels below were
+ * brought to it because that was where the readers already were.
  *
- * These check the corridors, because the corridors are what went missing.
+ * That was the right fix under the old addresses and the wrong shape — a
+ * document doing a hub's job. A game is one address with its facets underneath
+ * now, `GameName` points at the game, and the panels moved one segment up with
+ * the readers. The corridors are what these check, because the corridors are
+ * what went missing.
  */
 
-const RULES_PAGE = "src/app/rules/[slug]/page.tsx";
+const GAME_PAGE = "src/app/games/[slug]/page.tsx";
 const LADDER = "src/components/games/GameLadder.tsx";
 const FAMILY = "src/components/games/GameFamily.tsx";
 const FOOTER = "src/components/layout/SiteFooter.tsx";
@@ -33,23 +35,29 @@ describe("a game's own page answers what was asked of it", () => {
   it("carries the ladder", () => {
     // Who is best at it, where everybody stands, and the reader's own record:
     // three of the seven, all of them in this one panel.
-    expect(read(RULES_PAGE), "the rules page must mount GameLadder").toContain("<GameLadder");
+    expect(read(GAME_PAGE), "the game's page must mount GameLadder").toContain("<GameLadder");
   });
 
   it("carries the family, so a game that is not for you is not a dead end", () => {
     /*
      * "Decide that this game isn't one I want to play, but the Variant it
-     * mentions is." The code for this existed on /games/<slug> and on
-     * /champions/<slug> and on neither of the pages a game's name leads to.
+     * mentions is." The code for this once existed on the board page and on
+     * the ladder page and on neither of the pages a game's name led to.
      */
-    expect(read(RULES_PAGE), "the rules page must mount GameFamily").toContain("<GameFamily");
+    expect(read(GAME_PAGE), "the game's page must mount GameFamily").toContain("<GameFamily");
     expect(read(FAMILY), "a sibling leads to that sibling's own page").toContain("GameName");
   });
 
   it("carries the games already played, and starting a new one", () => {
-    const source = read(RULES_PAGE);
+    const source = read(GAME_PAGE);
     expect(source, "the played-games panel from 0.122.0, reused where it stands").toContain("<PlayedHere");
-    expect(source, "and the way onto a board").toContain("gamePath(variant)");
+    /*
+     * `playPath` rather than `gamePath`, and the change is the whole move in
+     * one line. /games/<slug> WAS a board, so "the way onto a board" and "the
+     * game's address" were the same string; the board is at /games/<slug>/play
+     * now and the game's address is the page this test is about.
+     */
+    expect(source, "and the way onto a board").toContain("playPath(variant)");
   });
 
   it("offers a game to the people it lists", () => {
@@ -65,12 +73,12 @@ describe("a game's own page answers what was asked of it", () => {
 describe("the ladder does not break the build it sits in", () => {
   it("reads the database only at request time", () => {
     /*
-     * THE LANDMINE, and it has gone off once already: /rules/[slug] declares
+     * THE LANDMINE, and it has gone off once already: the game's page declares
      * `generateStaticParams` and no `export const dynamic`, so its shell is
      * prerendered — and a database read in a prerendered page asks at build
      * time a question only a running site can answer. The build died on
      * /rules/drop-four with "Can't reach database server" and nothing
-     * deployed at all.
+     * deployed at all. The address moved; the landmine did not.
      *
      * `connection()` is Next 16's request-time boundary: the docs say
      * "prerendering stops here", and everything after it runs per request.
@@ -81,7 +89,7 @@ describe("the ladder does not break the build it sits in", () => {
      * failure rather than a test failure — nothing local tells you, since the
      * database IS reachable while you build on your own machine.
      */
-    expect(read(RULES_PAGE), "the shell of this page is still prerendered").toContain(
+    expect(read(GAME_PAGE), "the shell of this page is still prerendered").toContain(
       "generateStaticParams",
     );
     expect(read(LADDER), "so the ladder must wait for a request").toContain("await connection()");
@@ -89,10 +97,17 @@ describe("the ladder does not break the build it sits in", () => {
 
   it("shows nothing about people to a reader with no invite", () => {
     /*
-     * `/rules` is an OPEN PATH in `proxy.ts`, and the reason written there is
-     * exact: those pages "render nothing a visitor wrote, hold no data". A
-     * ladder is members' names, their ratings and their records. Moving it
-     * onto the rules page must not quietly move the gate with it.
+     * A GAME'S PAGE IS OPEN WITHOUT AN INVITE, and that is exactly why this
+     * check matters more than it did. John's rule is that reading is open and
+     * playing is gated, so /games/<slug> is now reachable by anybody — while
+     * a ladder is members' names, their ratings and their records, which is
+     * the site's data rather than its documentation.
+     *
+     * `PlayerName` prints "Hanako M." and links to /players/hanako-morris, so
+     * the whole name is still in the markup: a ladder drawn for a stranger
+     * would publish a surname. The panel asks who is reading and shows a
+     * reader with no session nothing at all, which is what keeps the front
+     * door open and the people behind it private.
      */
     const source = read(LADDER);
     expect(source, "the ladder asks who is reading").toContain("currentEmail()");
@@ -114,22 +129,24 @@ describe("the ladders are reachable without the footer", () => {
    * is a test, and it fails if the ladder ever leaves a game's page.
    */
   it("a game's own page leads to that game's whole ladder", () => {
-    expect(read(LADDER), "the panel links through to /champions/<slug>").toContain("championsPath(variant)");
-    expect(read(RULES_PAGE), "and the panel is on the page every game name leads to").toContain(
+    expect(read(LADDER), "the panel links through to /games/<slug>/standings").toContain(
+      "standingsPath(variant)",
+    );
+    expect(read(GAME_PAGE), "and the panel is on the page every game name leads to").toContain(
       "<GameLadder",
     );
   });
 
   it("the champions index is linked from somewhere that is not the footer", () => {
     /*
-     * The site-wide ladder on /players carries it, and /games/all lists every
-     * game's. Neither is the colophon, so the row at the foot of every page is
-     * not load-bearing and can come out.
+     * The site-wide ladder on /players carries it, and the catalogue's plain
+     * list leads to every game's own standings. Neither is the colophon, so
+     * the row at the foot of every page is not load-bearing and can come out.
      */
     const elsewhere = [
       "src/components/players/Ladder.tsx",
-      "src/app/games/all/page.tsx",
-    ].filter((path) => /\/champions|championsPath/.test(read(path)));
+      "src/components/games/GameList.tsx",
+    ].filter((path) => /\/champions|standingsPath/.test(read(path)));
     expect(elsewhere.length, "something other than the footer must lead to the ladders").toBeGreaterThan(0);
   });
 

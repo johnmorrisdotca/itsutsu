@@ -21,8 +21,8 @@ test.describe("your games", () => {
     const white = await browser.newContext({ storageState: ".auth/admin.json" });
     const blackPage = await black.newPage();
     const whitePage = await white.newPage();
-    await blackPage.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
-    await whitePage.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
+    await blackPage.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+    await whitePage.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
     // The row for this game, wherever it is listed: other games may be listed too.
     const row = (page: import("@playwright/test").Page) =>
@@ -49,7 +49,7 @@ test.describe("your games", () => {
     await request.post(`/api/games/${game.id}/moves`, { data: { token: game.blackToken, row: 4, col: 4 } });
     const white = await browser.newContext({ storageState: ".auth/admin.json" });
     const page = await white.newPage();
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
     await page.goto("/my-games");
 
     const row = page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
@@ -60,8 +60,8 @@ test.describe("your games", () => {
     // Black won by resignation, and the record says so.
     const detail = await request.get(`/api/games/${game.id}`);
     expect((await detail.json()).winner).toBe("black");
-    await page.goto(`/games/gomoku/${game.id}`);
-    await expect(page).toHaveURL(new RegExp(`/history/gomoku/${game.id}`));
+    await page.goto(`/games/gomoku/match/${game.id}`);
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${game.id}`));
     await white.close();
   });
 
@@ -94,7 +94,7 @@ test.describe("open seats", () => {
     const row = page.getByTestId("open-game").filter({ hasText: "Host" });
     await expect(row).toBeVisible();
     await row.getByTestId("sit").click();
-    await expect(page).toHaveURL(new RegExp(`/games/gomoku/${game.id}`));
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${game.id}`));
     await expect(page.getByTestId("turn-banner")).toContainText("Waiting");
 
     // The seat is gone from the board, and a second taker is refused.

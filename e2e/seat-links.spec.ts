@@ -26,7 +26,7 @@ test.describe("seat links", () => {
     // Black takes their own seat by following their link, as the creator does.
     const black = await browser.newContext();
     const blackPage = await black.newPage();
-    await blackPage.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await blackPage.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await expect(blackPage.getByTestId("seat-invite")).toHaveCount(1);
     // Black's own link is gone the moment black sits down; white's remains,
     // because white's seat is the one still waiting for somebody.
@@ -35,7 +35,7 @@ test.describe("seat links", () => {
     // White answers it.
     const white = await browser.newContext();
     const whitePage = await white.newPage();
-    await whitePage.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
+    await whitePage.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
     // Now nobody's link is on anybody's screen. This is the whole point: the
     // opponent must not be able to read your credential off the board.
@@ -64,7 +64,7 @@ test.describe("seat links", () => {
 
     const black = await browser.newContext();
     const page = await black.newPage();
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     // White's seat is still going out, so its link is there.
     await expect(page.getByTestId("seat-invite")).toHaveCount(1);
 
@@ -92,7 +92,7 @@ test.describe("seat links", () => {
 
     const black = await browser.newContext();
     const page = await black.newPage();
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await expect(page.getByTestId("seat-invite")).toHaveAttribute("data-stone", "white");
 
     /*

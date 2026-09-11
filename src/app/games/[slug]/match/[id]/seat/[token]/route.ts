@@ -21,7 +21,7 @@ const SEAT_COOKIE_DAYS = 30;
  */
 export async function GET(
   request: Request,
-  ctx: RouteContext<"/games/[slug]/[id]/seat/[token]">,
+  ctx: RouteContext<"/games/[slug]/match/[id]/seat/[token]">,
 ) {
   const { slug, id, token } = await ctx.params;
   const game = await fetchGameDetail(id);

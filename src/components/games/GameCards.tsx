@@ -3,33 +3,12 @@
 import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
-import { rulesPath } from "@/lib/gomoku/slugs";
+import { gamePath } from "@/lib/gomoku/slugs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { PANEL_LINK_CLASS } from "@/components/ui/ui.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-
-const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-
-/** What a game is won by: a line of this many, or turning discs. Derived from its spec. */
-export type RulesKind = "3" | "4" | "5" | "6" | "flips";
-
-export const RULES_KINDS: { kind: RulesKind; label: string; kanji: string }[] = [
-  { kind: "3", label: "Three in a row", kanji: "三目" },
-  { kind: "4", label: "Four in a row", kanji: "四目" },
-  { kind: "5", label: "Five in a row", kanji: "五目" },
-  { kind: "6", label: "Six in a row", kanji: "六目" },
-  { kind: "flips", label: "Flips", kanji: "反転" },
-];
-
-export type RulesCard = {
-  variant: RuleVariant;
-  label: string;
-  kanji: string;
-  tagline: string;
-  inspiredBy?: string;
-  kind: RulesKind;
-};
+import { CARD_LETTERS, GAME_CARD_KINDS } from "./games.constants";
+import type { GameCard } from "./games.types";
 
 /** The letter a name files under: its first letter, accents folded, so Misère sits at M. */
 function initial(label: string): string {
@@ -39,11 +18,16 @@ function initial(label: string): string {
 /**
  * Every game, one card each, with two bars to narrow them: A–Z by first
  * letter, and by what wins — three, four, five or six in a row, or flips.
- * Both live in the query — /rules?letter=T&kind=4 — so a narrowed list can be
- * linked; a choice nothing matches is shown but cannot be pressed, which
- * tells the reader the shape of the list before they touch it.
+ * Both live in the query — /games?view=cards&letter=T&kind=4 — so a narrowed
+ * list can be linked; a choice nothing matches is shown but cannot be
+ * pressed, which tells the reader the shape of the list before they touch it.
+ *
+ * This was the /rules index, and it is the same component doing the same job
+ * one address along. The only thing that changed is where a card leads: to the
+ * GAME, which is what a card with a game's name on it is a reference to, and
+ * which now carries the rules as well as everything else about it.
  */
-export function RulesIndex({ cards }: { cards: RulesCard[] }) {
+export function GameCards({ cards }: { cards: GameCard[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -74,7 +58,7 @@ export function RulesIndex({ cards }: { cards: RulesCard[] }) {
         data-testid="letter-filter"
       >
         <LetterButton letter="All" active={chosen === ""} disabled={false} onClick={() => choose("")} />
-        {LETTERS.map((letter) => (
+        {CARD_LETTERS.map((letter) => (
           <LetterButton
             key={letter}
             letter={letter}
@@ -87,7 +71,7 @@ export function RulesIndex({ cards }: { cards: RulesCard[] }) {
 
       <nav className="flex flex-wrap gap-1" aria-label="Games by what wins" data-testid="kind-filter">
         <LetterButton letter="Any" active={kind === ""} disabled={false} onClick={() => chooseKind("")} />
-        {RULES_KINDS.map((option) => (
+        {GAME_CARD_KINDS.map((option) => (
           <button
             key={option.kind}
             type="button"
@@ -108,10 +92,10 @@ export function RulesIndex({ cards }: { cards: RulesCard[] }) {
         <p className="text-sm text-muted">No game matches.</p>
       ) : null}
 
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="rules-index">
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="game-cards">
         {shown.map((copy) => (
           <li key={copy.variant}>
-            <Link href={rulesPath(copy.variant)} className={`${PANEL_LINK_CLASS} flex h-full flex-col gap-1`}>
+            <Link href={gamePath(copy.variant)} className={`${PANEL_LINK_CLASS} flex h-full flex-col gap-1`}>
               <span className="flex items-baseline gap-2 font-semibold">
                 <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
               </span>

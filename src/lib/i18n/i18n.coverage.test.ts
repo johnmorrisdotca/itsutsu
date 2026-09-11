@@ -1,10 +1,9 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { DICTIONARIES, OFFERED_LOCALES, languageOptions, speaks } from "./dictionaries";
 import { placeholdersIn, speaker } from "./i18n";
 import { DEFAULT_LOCALE, LOCALES, LOCALE_LIST, PHRASES, PHRASE_KEYS } from "./i18n.constants";
+import { renderedSource, withoutComments } from "./rendered";
 
 /**
  * The language gate.
@@ -131,23 +130,41 @@ describe("the English catalogue", () => {
    * looking exactly like phrases that were still in use.
    *
    * Read as a string literal, because that is how every call site names one.
+   *
+   * AND WITH THE COMMENTS TAKEN OUT, which is the difference between this
+   * proving something and appearing to. It read the raw source until the
+   * address restructure, and the comment written to explain why Rules and
+   * Every game had left the colophon named `nav.rules` and `nav.everyGame` in
+   * prose — so the two keys it was supposed to catch were certified as in use
+   * by the very note saying they were not. Tested deliberately before it was
+   * changed: a probe naming two dead keys in a comment turned a red run green.
+   *
+   * It is the same failure the Japanese gate beside it already knew about and
+   * already stripped comments for, which is why `withoutComments` is now a
+   * module both of them share rather than a helper one of them happened to
+   * have.
    */
   it("says nothing the site never says", () => {
-    const files: string[] = [];
-    const walk = (dir: string) => {
-      for (const entry of readdirSync(dir)) {
-        const path = join(dir, entry);
-        if (statSync(path).isDirectory()) {
-          if (!path.includes(join("lib", "i18n"))) walk(path);
-        } else if (/\.tsx?$/.test(entry)) {
-          files.push(path);
-        }
-      }
-    };
-    walk("src");
-    const source = files.map((path) => readFileSync(path, "utf8")).join("\n");
+    const source = renderedSource();
     const unused = PHRASE_KEYS.filter((key) => !source.includes(`"${key}"`));
     expect(unused, "these phrases are in the catalogue and on no page").toEqual([]);
+  });
+
+  /*
+   * The check above, checked. A gate that reads what a reader sees is only
+   * worth having if it can still tell the two apart, and this is the case it
+   * got wrong: a key named in a comment and nowhere else.
+   */
+  it("is not satisfied by a phrase key that only appears in a comment", () => {
+    const key = PHRASE_KEYS[0] as string;
+    for (const mention of [`// "${key}"`, `/* "${key}" */`]) {
+      expect(
+        withoutComments(mention).includes(`"${key}"`),
+        "a key named only in a comment must not count as rendered",
+      ).toBe(false);
+    }
+    // And a real call site still counts, or the gate would fail on everything.
+    expect(withoutComments(`say.say("${key}")`)).toContain(`"${key}"`);
   });
 
   it("names every phrase in kebab-free dotted sections", () => {

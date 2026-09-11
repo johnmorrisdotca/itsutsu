@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { recordPath } from "@/lib/gomoku/slugs";
+import { historyPath } from "@/lib/gomoku/slugs";
 import type {
   GameOutcome,
   GamePoolFilter,
@@ -48,7 +48,7 @@ export function gamesHref(options: {
   /** What that player said about their own play, or "judged" for either. */
   verdict?: GameVerdictFilter;
 }): string {
-  const base = options.variant === undefined ? "/history" : recordPath(options.variant);
+  const base = options.variant === undefined ? "/history" : historyPath(options.variant);
   const query = new URLSearchParams();
   if (options.player !== undefined && options.player.trim() !== "") {
     query.set("player", options.player.trim());

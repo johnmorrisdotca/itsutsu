@@ -6,7 +6,7 @@ import { PlayerActions } from "./PlayerActions";
 import type { NamedMember } from "@/lib/auth/members";
 import { playerKey } from "@/lib/rating/playerKey";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { recordPath } from "@/lib/gomoku/slugs";
+import { matchPath } from "@/lib/gomoku/slugs";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import type { PlayerRecord } from "@/lib/history/playerRecord";
 import type { TimeGiftRecord } from "@/lib/history/timeGifts";
@@ -172,7 +172,7 @@ export function ItsutsuRecord({
                 </span>
                 <span className="flex flex-wrap items-center justify-end gap-3">
                   <span className="font-mono text-xs tabular-nums">{game.outcome}</span>
-                  <Link href={recordPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline">
+                  <Link href={matchPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline">
                     replay
                   </Link>
                   {/*

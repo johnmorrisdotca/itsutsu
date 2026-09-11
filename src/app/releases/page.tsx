@@ -41,15 +41,11 @@ export default async function ReleasesPage() {
         </p>
         <Releases releases={releases} current={VERSION} />
         <p className="text-xs text-muted">
-          The games themselves are on{" "}
-          <Link href="/games/all" className="underline underline-offset-4">
+          Every game is on{" "}
+          <Link href="/games" className="underline underline-offset-4">
             one page
           </Link>
-          , and how each is played is under{" "}
-          <Link href="/rules" className="underline underline-offset-4">
-            Rules
-          </Link>
-          .
+          , and how each is played is under the game itself.
         </p>
       </section>
     </Page>

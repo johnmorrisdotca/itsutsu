@@ -17,8 +17,8 @@ test.describe("reactions between the two players", () => {
     const game = await startGame(request);
     const black = await (await browser.newContext()).newPage();
     const white = await (await browser.newContext()).newPage();
-    await black.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
-    await white.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
+    await black.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+    await white.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
     await black.getByRole("button", { name: /^E5, empty$/ }).click();
     // White reacts to the move once its own poll has shown it.
@@ -40,7 +40,7 @@ test.describe("reactions between the two players", () => {
     request,
   }) => {
     const game = await startGame(request);
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("reaction-bar")).toHaveCount(0);
 
     const refused = await request.post(`/api/games/${game.id}/reactions`, {

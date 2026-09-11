@@ -20,7 +20,7 @@ test.describe("applause on a finished game", () => {
       name: `Clapper ${stamp}`,
     });
     const page = await context.newPage();
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("applause")).toContainText("No applause yet");
 
     await page.getByTestId("applause-well-played").click();

@@ -7,20 +7,29 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { StandingsTable } from "@/components/players/Standings";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { siblingsOf } from "@/lib/gomoku/families";
-import { championsPath, gamePath, recordPath, rulesPath, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, historyPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchVariantLeaders } from "@/lib/rating/variantRatings";
 import { RATING_POOLS } from "@/lib/rating/pools";
 
-export const metadata = { title: "Champions" };
+export const metadata = { title: "Standings 名人" };
 
 // The ladder is read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
 
 const LEADERS = 50;
 
-/** One game's own ladder: everyone with a standing in it, best first. */
-export default async function GameChampionsPage({ params }: PageProps<"/champions/[slug]">) {
+/**
+ * One game's own ladder, at /games/<slug>/standings: everyone with a standing
+ * in it, best first.
+ *
+ * It used to be /champions/<slug>, a namespace of its own that only a word in
+ * the colophon led to — a page answering half a reader's errand about a game,
+ * sitting where nobody stood when they wanted it. It is a facet of the game
+ * now, one segment under the game's own address, and the panel on the game's
+ * front door leads here for the whole of it.
+ */
+export default async function GameChampionsPage({ params }: PageProps<"/games/[slug]/standings">) {
   const variant = variantFor((await params).slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
@@ -36,10 +45,11 @@ export default async function GameChampionsPage({ params }: PageProps<"/champion
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="game-champions">
         <header className="flex flex-col gap-1">
           <p className="text-xs text-muted">
-            <Link href="/champions" className="underline-offset-2 hover:underline">
-              Champions
+            {/* Up to the game, which is what this is a facet of. */}
+            <Link href={gamePath(variant)} className="underline-offset-2 hover:underline">
+              {copy.label}
             </Link>{" "}
-            / {copy.label}
+            / Standings
           </p>
           <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
             <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-base font-normal opacity-70" />
@@ -47,8 +57,8 @@ export default async function GameChampionsPage({ params }: PageProps<"/champion
           <p className="text-sm font-medium">{copy.tagline}</p>
           <p className="flex flex-wrap gap-x-3 text-xs">
             <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
-            <Link href={recordPath(variant)} className="text-muted underline-offset-2 hover:underline">record</Link>
-            <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">play</Link>
+            <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">record</Link>
+            <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">the game</Link>
           </p>
         </header>
         <p className="max-w-prose text-sm text-muted">
@@ -104,7 +114,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/champion
               <span className="font-mincho opacity-70">{siblings.family.kanji}</span>:
             </span>
             {siblings.games.map((game) => (
-              <Link key={game} href={championsPath(game)} className="underline-offset-2 hover:underline">
+              <Link key={game} href={standingsPath(game)} className="underline-offset-2 hover:underline">
                 {RULE_VARIANT_DISPLAY[game].label}
               </Link>
             ))}

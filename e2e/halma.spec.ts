@@ -28,7 +28,7 @@ test.describe("halma", () => {
   });
 
   test("the rules page says what a jump is, at its address", async ({ page }) => {
-    await page.goto("/rules/halma");
+    await page.goto("/games/halma/rules");
     await expect(page.getByText(/jump/i).first()).toBeVisible();
     await expect(page.getByText(/far corner camp/i).first()).toBeVisible();
   });

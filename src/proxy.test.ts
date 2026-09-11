@@ -37,8 +37,7 @@ describe("the matcher's exemptions", () => {
       "/api/games",
       "/api/backlog",
       "/join",
-      "/rules",
-      "/rules/hex",
+      "/games/hex/rules",
     ]) {
       expect(matcher.test(path), `${path} must still reach the gate`).toBe(true);
     }
@@ -85,19 +84,99 @@ describe("the matcher's exemptions", () => {
 
 describe("the paths that stay open", () => {
   it("opens the front page, the door and the documentation", () => {
-    for (const path of ["/", "/join", "/about", "/rules", "/rules/hex", "/learn"]) {
+    /*
+     * /rules and /rules/hex used to be on this line. A game is one address
+     * with its facets underneath now, so what a stranger may read is the
+     * catalogue, a game, and what that game IS.
+     */
+    for (const path of [
+      "/",
+      "/join",
+      "/about",
+      "/learn",
+      "/games",
+      "/games/hex",
+      "/games/hex/rules",
+      "/games/hex/family",
+      "/games/hex/background",
+    ]) {
       expect(wouldBeOpen(path), `${path} should be readable without an invite`).toBe(true);
     }
   });
 
   it("holds everything else shut", () => {
-    for (const path of ["/games", "/history", "/players", "/admin", "/backlog", "/me", "/api/games"]) {
+    for (const path of ["/history", "/players", "/admin", "/backlog", "/me", "/api/games"]) {
       expect(wouldBeOpen(path), `${path} should need a session`).toBe(false);
     }
   });
 
+  /**
+   * READING IS OPEN, PLAYING IS GATED — and this is where the line falls under
+   * a game. It is the assertion a prefix entry for "/games" would have wiped
+   * out in one word, because that list matches by prefix and every one of
+   * these begins the same way.
+   */
+  it("keeps the playing half of a game shut", () => {
+    for (const path of [
+      "/games/hex/play",
+      "/games/hex/new",
+      "/games/hex/match/abc",
+      "/games/hex/match/abc/12",
+      "/games/hex/match/abc/seat/tok",
+      "/games/hex/me",
+    ]) {
+      expect(wouldBeOpen(path), `${path} is playing, or is about the reader, and needs a session`).toBe(
+        false,
+      );
+    }
+  });
+
+  /**
+   * A GAP, NOT A DECISION, and it is written as a test so it cannot be
+   * forgotten.
+   *
+   * A game's record and its ladder are READING, and by the rule above they
+   * belong open. They are shut because both print members' names through
+   * `PlayerName`, which shows "Hanako M." and links to /players/hanako-morris
+   * — the whole name is in the markup, which is the leak that was fixed in
+   * production by taking members off open pages. `shownName` says plainly that
+   * the address half is a decision still to be made.
+   *
+   * WHEN THAT IS FIXED: add `history|standings` to `OPEN_PATTERNS` and delete
+   * this test. Until then it is here so that opening them looks like a choice
+   * rather than an oversight.
+   */
+  it("keeps a game's record and ladder shut while a name's address is its whole name", () => {
+    for (const path of ["/games/hex/history", "/games/hex/standings"]) {
+      expect(wouldBeOpen(path), `${path} names members, and a name's link is their full name`).toBe(
+        false,
+      );
+    }
+    const shown = readFileSync("src/components/players/PlayerName.tsx", "utf8");
+    expect(
+      shown,
+      "if PlayerName no longer links the whole name, this test is the thing that is out of date",
+    ).toContain("playerPath(whole)");
+  });
+
+  it("is not opened by an address that merely looks like one of the open ones", () => {
+    /*
+     * The pattern is anchored at both ends and allows exactly one segment for
+     * the game, so nothing rides in on it by being longer or by starting the
+     * same way.
+     */
+    for (const path of [
+      "/games/hex/rules/secret",
+      "/games/hex/match/rules",
+      "/gamesy/hex/rules",
+      "/games/hex/family/anything",
+    ]) {
+      expect(wouldBeOpen(path), `${path} must not ride in on the rules pattern`).toBe(false);
+    }
+  });
+
   it("is not opened by a name that merely starts with an open one", () => {
-    for (const path of ["/joinery", "/rulesy", "/aboutus", "/learners"]) {
+    for (const path of ["/joinery", "/gamesy", "/aboutus", "/learners"]) {
       expect(wouldBeOpen(path), `${path} must not ride in on a prefix`).toBe(false);
     }
   });

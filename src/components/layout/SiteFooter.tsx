@@ -30,12 +30,36 @@ import { LanguagePicker } from "./LanguagePicker";
  * is reachable now" is a test rather than the opinion of whoever did the
  * removing, which is how something quietly becomes unreachable.
  */
+/*
+ * Rules and Every game went the same way, for the same reason, under the same
+ * condition.
+ *
+ * Rules pointed at an index of rules pages, and there is no such index now: a
+ * game's rules are a facet of the game, at /games/<slug>/rules, and the way to
+ * them is the game. Every game pointed at /games/all, which was a second index
+ * of the same forty games laid out as text — it is a VIEW of /games now,
+ * /games?view=list, reached from a switch on the page itself, because how a
+ * list is arranged is a filter rather than a different collection.
+ *
+ * So what is left is four: the catalogue, the record, the people, and the
+ * colophon's own page about the site. Each is a section rather than a document
+ * about one, which is what the foot of a page is for.
+ *
+ * `gamesRoot.coverage.test.ts` was written and watched to fail BEFORE these
+ * two rows came out, the same way this file's Champions row was handled. It
+ * fails the build if /games stops leading to the games, if the catalogue stops
+ * offering the plain list, or if a game's page stops leading to its rules.
+ *
+ * Two phrases went with them, and that is the cascade rather than a side
+ * effect: a key nothing renders still lands on the Japanese review sheet as a
+ * row somebody is asked to read. `nav.rules` survives — it names the rules of
+ * a game now — and `nav.everyGame` does not, because nothing says it.
+ */
 const LINKS: readonly { href: string; phrase: PhraseKey }[] = [
-  { href: "/about", phrase: "nav.about" },
-  { href: "/rules", phrase: "nav.rules" },
+  { href: "/games", phrase: "nav.games" },
   { href: "/history", phrase: "nav.record" },
   { href: "/players", phrase: "nav.players" },
-  { href: "/games/all", phrase: "nav.everyGame" },
+  { href: "/about", phrase: "nav.about" },
 ];
 
 /**

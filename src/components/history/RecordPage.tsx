@@ -1,12 +1,12 @@
 import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { HistoryFilters } from "@/components/history/HistoryFilters";
-import { HistoryTable } from "@/components/history/HistoryTable";
-import { Pager } from "@/components/history/Pager";
-import { RecordText } from "@/components/history/RecordText";
+import { HistoryFilters } from "./HistoryFilters";
+import { HistoryTable } from "./HistoryTable";
+import { Pager } from "./Pager";
+import { RecordText } from "./RecordText";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { recordPath } from "@/lib/gomoku/slugs";
+import { historyPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchGameHistoryPage, fetchWholeRecord } from "@/lib/history/gameHistory";
 import { recordAsText } from "@/lib/history/recordText";
@@ -15,16 +15,32 @@ import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 type Params = Record<string, string | string[] | undefined>;
 
 /**
- * The record, at /history — or one game's record, at /history/<slug>.
+ * The record: every finished game at /history, or one game's at
+ * /games/<slug>/history, or the reader's own at /games/<slug>/me.
  *
  * Which game is in the path, because a game's record is a collection of its
- * own with an address of its own. The rest — result, size, player, sort, the
- * page — are filters on that collection and live in the query, so a filtered
- * view can still be linked, bookmarked and reloaded. The server reads them
- * the same way the API does, through `toGameHistoryQuery`.
+ * own with an address of its own — a facet of the game rather than a namespace
+ * beside it. The rest — result, size, player, sort, the page — are filters on
+ * that collection and live in the query, so a filtered view can still be
+ * linked, bookmarked and reloaded. The server reads them the same way the API
+ * does, through `toGameHistoryQuery`.
+ *
+ * `at` is for a collection that is narrower than "this game": /games/<slug>/me
+ * is one game's record with a player already fixed, and its pager, its filter
+ * bar and its links have to stay on that address rather than widening to
+ * everybody's.
  */
-export async function RecordPage({ variant, params }: { variant?: RuleVariant; params: Params }) {
-  const base = variant === undefined ? "/history" : recordPath(variant);
+export async function RecordPage({
+  variant,
+  params,
+  at,
+}: {
+  variant?: RuleVariant;
+  params: Params;
+  /** The address this collection lives at, when it is not the game's whole record. */
+  at?: string;
+}) {
+  const base = at ?? (variant === undefined ? "/history" : historyPath(variant));
   const url = new URL(`https://itsutsu.local${base}`);
   for (const [key, value] of Object.entries(params)) {
     if (typeof value === "string" && key !== "variant") url.searchParams.set(key, value);

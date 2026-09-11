@@ -45,7 +45,7 @@ test.describe("the ladder against the computer players", () => {
   });
 
   test("stands on its own, beside the ladder of people rather than mixed into it", async ({ page }) => {
-    await page.goto("/champions/reversi");
+    await page.goto("/games/reversi/standings");
     const section = page.getByTestId("computer-standings");
     await expect(section).toBeVisible();
     // Said in words, because two ratings on one page invite being compared.
@@ -58,7 +58,7 @@ test.describe("the ladder against the computer players", () => {
      * and Meijin and Guoshou the strong two, and on the measured results the
      * gentle two are ahead. The page has to say so.
      */
-    await page.goto("/champions/reversi");
+    await page.goto("/games/reversi/standings");
     const names = await page
       .getByTestId("computer-standings-table")
       .locator("tbody tr td:nth-child(2)")
@@ -84,7 +84,7 @@ test.describe("the ladder against the computer players", () => {
     // Eleven to fourteen games is provisional, and the row says so. A ladder
     // that looked identical at twelve games and at two hundred would be
     // claiming more than it knows.
-    await page.goto("/champions/reversi");
+    await page.goto("/games/reversi/standings");
     const rows = page.getByTestId("computer-standings-table").locator("tbody tr");
     await expect(rows.first()).toContainText("Provisional");
   });
@@ -104,7 +104,7 @@ test.describe("the ladder against the computer players", () => {
      * only reading the actual addresses can catch — the peer asked for it by
      * name, and my first version of this test did assert on `.first()` alone.
      */
-    await page.goto("/champions/reversi");
+    await page.goto("/games/reversi/standings");
     const links = page.getByTestId("computer-standings-table").locator("tbody tr a[href]");
     const count = await links.count();
     /*
@@ -128,7 +128,7 @@ test.describe("the ladder against the computer players", () => {
       const href = (await links.nth(at).getAttribute("href")) ?? "";
       // The player's own name links to their page and is not a count.
       if (href.startsWith("/players/")) continue;
-      expect(href, `link ${at} of ${count}`).toContain("/history/reversi");
+      expect(href, `link ${at} of ${count}`).toContain("/games/reversi/history");
       expect(href, `link ${at} of ${count} must name the pool`).toContain("pool=computer");
       expect(href, `link ${at} of ${count} must exclude unrated games`).toContain("rated=yes");
       checked += 1;
@@ -164,7 +164,7 @@ test.describe("the ladder against the computer players", () => {
      * helper exists: there were no computer-pool rows at all, so there was
      * nothing in the wrong half to leak.
      */
-    await page.goto("/champions/reversi");
+    await page.goto("/games/reversi/standings");
     const people = page.getByTestId("standings-table");
     if ((await people.count()) > 0) {
       for (const one of INVERTED) {
@@ -374,7 +374,7 @@ test.describe("the ladder against the computer players", () => {
     // this run never made, and a bot batch left a Halma row here long ago
     // that made it fail for a reason nothing was wrong with.
     await clearAllComputerStandings("halma");
-    await page.goto("/champions/halma");
+    await page.goto("/games/halma/standings");
     await expect(page.getByTestId("computer-standings")).toHaveCount(0);
   });
 });

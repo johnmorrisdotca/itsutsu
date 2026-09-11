@@ -24,7 +24,7 @@ test.describe("the board a game is played on", () => {
     tidyAway(game.id);
 
     // Through the seat link, so the panel is editable: only a seat holder sees it.
-    await page.goto(`/games/reversi/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/reversi/match/${game.id}/seat/${game.blackToken}`);
     await page.waitForURL(/\/games\/reversi\//);
 
     /*
@@ -44,7 +44,7 @@ test.describe("the board a game is played on", () => {
     const game = (await started.json()) as { id: string; blackToken: string };
     tidyAway(game.id);
 
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
     const sizes = page.getByTestId("shared-rules-size");
     await expect(sizes.locator("option")).toHaveText(["9×9", "13×13", "15×15", "19×19"]);

@@ -22,7 +22,7 @@ test.describe("a seat posted for anyone", () => {
     const game = (await started.json()) as { id: string; blackToken: string };
 
     try {
-      await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+      await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
       const banner = page.getByTestId("turn-banner");
       await expect(banner).toHaveAttribute("data-awaiting", "true");
       await expect(banner).toContainText("waiting for somebody");
@@ -56,7 +56,7 @@ test.describe("a seat posted for anyone", () => {
       expect(sat.status(), await sat.text()).toBeLessThan(400);
       await other.close();
 
-      await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+      await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
       const banner = page.getByTestId("turn-banner");
       await expect(banner).not.toHaveAttribute("data-awaiting", "true");
       await expect(banner).toContainText("Your move");

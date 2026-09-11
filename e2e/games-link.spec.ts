@@ -45,7 +45,7 @@ test.describe("a game's name leads to that game", () => {
       const named = index.locator(`[data-testid="game-name"][data-variant="${variant}"]`);
       await expect(named, `${variant} is not linked on the games index`).toHaveAttribute(
         "href",
-        `/rules/${slugFor(variant)}`,
+        `/games/${slugFor(variant)}`,
       );
     }
 
@@ -71,7 +71,7 @@ test.describe("a game's name leads to that game", () => {
       const one = everywhere.nth(i);
       await expect(one, "a game is named here and leads nowhere").toHaveAttribute(
         "href",
-        /^\/rules\//,
+        /^\/games\//,
       );
     }
 
@@ -80,7 +80,7 @@ test.describe("a game's name leads to that game", () => {
     const first = names.first();
     const variant = await first.getAttribute("data-variant");
     await first.click();
-    await expect(page).toHaveURL(new RegExp(`/rules/${slugFor(variant ?? "")}$`));
+    await expect(page).toHaveURL(new RegExp(`/games/${slugFor(variant ?? "")}$`));
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       RULE_VARIANT_DISPLAY[variant as keyof typeof RULE_VARIANT_DISPLAY].label,
     );
@@ -102,15 +102,19 @@ test.describe("a game's name leads to that game", () => {
     await expect(named).toHaveCount(1);
     const variant = await named.getAttribute("data-variant");
     await named.click();
-    await expect(page).toHaveURL(new RegExp(`/rules/${slugFor(variant ?? "")}$`));
+    await expect(page).toHaveURL(new RegExp(`/games/${slugFor(variant ?? "")}$`));
   });
 
-  test("a rules page shows the games people have played of it", async ({ page, request }) => {
+  test("a game's page shows the games people have played of it", async ({ page, request }) => {
     /*
-     * John, standing on /rules/tic-tac-toe: "where are the played games????"
-     * There were four of them, filed, one click away and invisible — the page
-     * had a staged screenshot and the real games were a small text link below
-     * four blocks of rules.
+     * John, standing on what was then /rules/tic-tac-toe: "where are the played
+     * games????" There were four of them, filed, one click away and invisible —
+     * the page had a staged screenshot and the real games were a small text
+     * link below four blocks of rules.
+     *
+     * The panel is on the GAME'S page now rather than on its rules. That is the
+     * same answer at a better address: the rules are a document, and where the
+     * games went is a question about the game.
      */
     const made = await request.post("/api/games/live", {
       data: {
@@ -130,22 +134,26 @@ test.describe("a game's name leads to that game", () => {
       });
     }
 
-    await page.goto("/rules/tic-tac-toe");
+    await page.goto("/games/tic-tac-toe");
     const panel = page.getByTestId("rules-played-here");
-    await expect(panel, "a rules page shows no games of the game it explains").toBeVisible();
-    // And every line of it leads somewhere: the count to all of them, a game
-    // to its own replay.
+    await expect(panel, "a game's page shows no games of itself").toBeVisible();
+    /*
+     * And every line of it leads somewhere: the count to all of them, a game
+     * to its own replay, a name to that person. All three live under /games or
+     * /players now — a match no longer changes address when it finishes.
+     */
     const links = panel.locator("a");
     expect(await links.count()).toBeGreaterThan(0);
     for (let i = 0; i < (await links.count()); i += 1) {
-      await expect(links.nth(i)).toHaveAttribute("href", /\/(history|players)\//);
+      await expect(links.nth(i)).toHaveAttribute("href", /^\/(games|players)\//);
     }
   });
 
   test("on a game's own record page, in the heading", async ({ page }) => {
-    await page.goto("/history/gomoku");
+    await page.goto("/games/gomoku/history");
     const named = page.getByTestId("record-game").getByTestId("game-name");
-    await expect(named).toHaveAttribute("href", "/rules/gomoku");
+    // To the GAME, which is where every name on this site leads.
+    await expect(named).toHaveAttribute("href", "/games/gomoku");
   });
 
   test("in the prose that names one, not only in lists", async ({ page }) => {
@@ -153,7 +161,7 @@ test.describe("a game's name leads to that game", () => {
     // sentence is as much a name as a name in a table.
     await page.goto("/champions");
     const named = page.getByRole("paragraph").getByTestId("game-name");
-    await expect(named.first()).toHaveAttribute("href", /^\/rules\//);
+    await expect(named.first()).toHaveAttribute("href", /^\/games\//);
   });
 
   test("but a game named inside another link is left as words", async ({ page }) => {
@@ -170,6 +178,6 @@ test.describe("a game's name leads to that game", () => {
     await card.click();
     await expect(page).toHaveURL(/\/learn\/.+/);
     const covered = page.getByRole("link").filter({ hasText: RULE_VARIANT_DISPLAY.freestyle.label });
-    await expect(covered.first()).toHaveAttribute("href", /^\/rules\//);
+    await expect(covered.first()).toHaveAttribute("href", /^\/games\//);
   });
 });

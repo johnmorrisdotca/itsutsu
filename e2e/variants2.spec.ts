@@ -77,9 +77,9 @@ test.describe("more variants", () => {
   });
 
   test("the rules page and game browser name what a clone is inspired by", async ({ page }) => {
-    await page.goto("/rules/drop-four");
+    await page.goto("/games/drop-four/rules");
     await expect(page.getByTestId("inspired-by")).toContainText("Connect Four");
-    await page.goto("/rules/gomoku");
+    await page.goto("/games/gomoku/rules");
     await expect(page.getByTestId("inspired-by")).toHaveCount(0);
     await page.goto("/games/gomoku");
     await page.getByTestId("open-game-browser").first().click();
@@ -117,9 +117,9 @@ test.describe("the flipping games", () => {
   });
 
   test("the rules page for a flipping game speaks of discs, at its kebab address", async ({ page }) => {
-    await page.goto("/rules/anti-reversi");
+    await page.goto("/games/anti-reversi/rules");
     await expect(page.getByText(/fewer discs/i).first()).toBeVisible();
-    expect((await page.request.get("/rules/antiReversi")).status()).toBe(404);
+    expect((await page.request.get("/games/antiReversi/rules")).status()).toBe(404);
   });
 });
 

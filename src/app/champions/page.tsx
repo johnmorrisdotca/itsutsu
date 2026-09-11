@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerLink, TierMark } from "@/components/players/Standings";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
-import { championsPath } from "@/lib/gomoku/slugs";
+import { standingsPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchChampions, type VariantChampion } from "@/lib/rating/variantRatings";
 
@@ -25,7 +25,7 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
   return (
     <tr className="border-t border-rule" data-testid={`champion-row-${variant}`}>
       <td className="py-1.5 pr-3">
-        <Link href={championsPath(variant)} className="font-medium underline-offset-2 hover:underline">
+        <Link href={standingsPath(variant)} className="font-medium underline-offset-2 hover:underline">
           <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
         </Link>
       </td>

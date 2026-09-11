@@ -1,5 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { JA_DRAFTED } from "./dictionaries/ja.drafted.constants";
@@ -7,6 +6,7 @@ import { JA_ALREADY_SAID } from "./dictionaries/ja.site.constants";
 import { placeholdersIn } from "./i18n";
 import { PHRASES, PHRASE_KEYS } from "./i18n.constants";
 import { japaneseReview } from "./japaneseReview";
+import { renderedSource, withoutComments } from "./rendered";
 
 /**
  * The Japanese gate.
@@ -30,79 +30,14 @@ import { japaneseReview } from "./japaneseReview";
 const REVIEW_FILE = "docs/japanese-review.md";
 
 /**
- * A file with its comments taken out, so what is left is what a reader could
- * actually be shown.
- *
- * This is not tidiness, it is the difference between the gate below proving
- * something and merely appearing to. The navigation's kanji was removed in
- * 0.124.0, and every surviving mention of 遊ぶ in this repo is now a comment
- * explaining that it was removed. A plain search of the source finds three of
- * them and concludes the word is still on the site — a gate passing on a
- * premise that stopped being true, which is the failure it exists to catch.
- *
- * String literals are kept, because that is where the kanji lives, and are
- * skipped over rather than scanned so that a `//` inside one cannot start a
- * comment. JSX text is not a literal and is never inside one, so it stays.
+ * What a reader could actually be shown — the site's source with its comments
+ * taken out. It lives in `rendered.ts` now, because the phrase-key gate in
+ * `i18n.coverage.test.ts` needed exactly the same thing and did not have it:
+ * it read the raw source and could be satisfied by a key named in a comment.
+ * The tests below are still here, because this is the file whose argument
+ * depends on it.
  */
-function withoutComments(source: string): string {
-  let out = "";
-  let index = 0;
-  const quotes = new Set(["'", '"', "`"]);
-  while (index < source.length) {
-    const here = source[index] as string;
-    const next = source[index + 1];
-    if (here === "/" && next === "/") {
-      while (index < source.length && source[index] !== "\n") index += 1;
-      continue;
-    }
-    if (here === "/" && next === "*") {
-      index += 2;
-      while (index < source.length && !(source[index] === "*" && source[index + 1] === "/")) {
-        index += 1;
-      }
-      index += 2;
-      continue;
-    }
-    if (quotes.has(here)) {
-      const quote = here;
-      out += here;
-      index += 1;
-      while (index < source.length && source[index] !== quote) {
-        if (source[index] === "\\") {
-          out += source[index];
-          index += 1;
-        }
-        if (index < source.length) {
-          out += source[index];
-          index += 1;
-        }
-      }
-      out += quote;
-      index += 1;
-      continue;
-    }
-    out += here;
-    index += 1;
-  }
-  return out;
-}
-
-/** Every `.ts`/`.tsx` under `src/` outside this library, comments removed. */
-const RENDERED_SOURCE = (() => {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir)) {
-      const path = join(dir, entry);
-      if (statSync(path).isDirectory()) {
-        if (!path.includes(join("lib", "i18n"))) walk(path);
-      } else if (/\.tsx?$/.test(entry)) {
-        files.push(path);
-      }
-    }
-  };
-  walk("src");
-  return files.map((path) => withoutComments(readFileSync(path, "utf8"))).join("\n");
-})();
+const RENDERED_SOURCE = renderedSource();
 
 describe("the comment stripper the gate below leans on", () => {
   it("takes out both kinds of comment", () => {

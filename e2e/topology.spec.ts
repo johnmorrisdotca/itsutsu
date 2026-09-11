@@ -7,7 +7,7 @@ import { openAdvanced, openSetup } from "./support";
  */
 test.describe("Toroidal Five", () => {
   test("is offered, and its rules page explains the joined edges", async ({ page }) => {
-    await page.goto("/rules/toroidal-five");
+    await page.goto("/games/toroidal-five/rules");
     await expect(page.getByRole("heading", { name: /Toroidal Five/ })).toBeVisible();
     await expect(page.getByText(/joins its opposite|top to bottom/i).first()).toBeVisible();
   });
@@ -51,7 +51,7 @@ test.describe("Obstacle Five", () => {
   });
 
   test("its rules page names both kinds of square", async ({ page }) => {
-    await page.goto("/rules/obstacle-five");
+    await page.goto("/games/obstacle-five/rules");
     await expect(page.getByText(/dead/i).first()).toBeVisible();
     await expect(page.getByText(/hotspot/i).first()).toBeVisible();
   });

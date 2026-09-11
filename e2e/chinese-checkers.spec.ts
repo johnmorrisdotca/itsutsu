@@ -22,7 +22,7 @@ test.describe("chinese checkers", () => {
   });
 
   test("the rules page says what the star and the far point are, at its address", async ({ page }) => {
-    await page.goto("/rules/chinese-checkers");
+    await page.goto("/games/chinese-checkers/rules");
     await expect(page.getByText(/hexagram/i).first()).toBeVisible();
     await expect(page.getByText(/point/i).first()).toBeVisible();
   });

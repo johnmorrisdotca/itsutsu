@@ -51,8 +51,8 @@ test.describe("when a shared game's rules settle", () => {
 
   test("stay open while the seat is still waiting for somebody", async ({ page, request }) => {
     const game = await posted(request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
-    await page.waitForURL(/\/games\/gomoku\//);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+    await page.waitForURL(/\/games\/gomoku\/match\//);
     // Nobody has answered, so a creator can still fix a clock they got wrong.
     await expect(page.getByTestId("shared-rules-size")).toBeVisible();
     await expect(page.getByTestId("rules-statement")).toHaveCount(0);
@@ -65,8 +65,8 @@ test.describe("when a shared game's rules settle", () => {
     baseURL,
   }) => {
     const game = await posted(request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
-    await page.waitForURL(/\/games\/gomoku\//);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+    await page.waitForURL(/\/games\/gomoku\/match\//);
     await expect(page.getByTestId("shared-rules-size")).toBeVisible();
 
     await answered(browser, baseURL!, game.id);
@@ -100,12 +100,12 @@ test.describe("when a shared game's rules settle", () => {
 
     // The challenger opens it: still only one of them has arrived.
     const asker = await one.newPage();
-    await asker.goto(`/games/gomoku/${game.id}`);
+    await asker.goto(`/games/gomoku/match/${game.id}`);
     await expect(asker.getByTestId("shared-rules-size")).toBeVisible();
 
     // The invited player opens it. Now the rules are what both have.
     const asked = await two.newPage();
-    await asked.goto(`/games/gomoku/${game.id}`);
+    await asked.goto(`/games/gomoku/match/${game.id}`);
     await expect(asked.getByTestId("rules-statement")).toBeVisible();
 
     await asker.reload();

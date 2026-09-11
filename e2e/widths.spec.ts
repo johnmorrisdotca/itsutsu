@@ -4,8 +4,25 @@ import { expect, test } from "@playwright/test";
  * Every reading page sits on the same column. The board pages are wider on
  * purpose — a board wants the room — and are checked against each other.
  */
-const STANDARD = ["/", "/games", "/history", "/rules", "/learn", "/players", "/champions", "/games/all", "/about", "/me"];
-const WIDE = ["/games/gomoku"];
+const STANDARD = [
+  "/",
+  "/games",
+  "/games?view=list",
+  "/games?view=cards",
+  "/games/gomoku",
+  "/games/gomoku/rules",
+  "/games/gomoku/family",
+  "/games/gomoku/standings",
+  "/history",
+  "/learn",
+  "/players",
+  "/champions",
+  "/about",
+  "/me",
+];
+// The board wants the room. It is /games/<slug>/play now — /games/<slug>
+// itself is the game's page, and reads on the same column as the rest.
+const WIDE = ["/games/gomoku/play"];
 
 async function mainWidth(page: import("@playwright/test").Page, path: string): Promise<number> {
   await page.goto(path);

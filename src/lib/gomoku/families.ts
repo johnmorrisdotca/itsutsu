@@ -76,3 +76,15 @@ export function siblingsOf(variant: RuleVariant): { family: (typeof GAME_FAMILIE
   if (family === undefined) return null;
   return { family, games: family.games.filter((game) => game !== variant) };
 }
+
+/**
+ * The family a variant belongs to, whole — the game itself included.
+ *
+ * Deliberately not `siblingsOf`, which leaves the game out because it exists
+ * to say "also try". A family PAGE is about the family, and a list of a
+ * family's games that omits the one you are standing in is a list that is
+ * wrong about the family. Two questions, two functions.
+ */
+export function familyOf(variant: RuleVariant): (typeof GAME_FAMILIES)[number] | null {
+  return GAME_FAMILIES.find((entry) => entry.games.includes(variant)) ?? null;
+}
