@@ -54,10 +54,13 @@ export const PICK_CARD = `${PICK_BASE} ${PICK_RESTING} ${PICK_CHOSEN}`;
  *
  * `min-h-12` is 48px, comfortably past the 44px minimum rather than at it:
  * this screen is used on an iPad, and "the buttons are too small" is a
- * complaint John has made about two other screens.
+ * complaint John has made about two other screens. The padding is tight
+ * around that height on purpose — eleven chips have to reach a second line
+ * rather than a third, and every line they take comes off the bottom of the
+ * screen where the Start button is.
  */
 export const PICK_CHIP =
-  "flex min-h-12 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors" +
+  "flex min-h-12 items-center gap-1.5 rounded-lg border px-2 py-1 text-xs transition-colors" +
   " outline-none focus-visible:ring-2 focus-visible:ring-moss";
 
 export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
@@ -75,13 +78,29 @@ export const PICK_CHIP_SHUT =
  * declared in the template are drawn whether or not anything sits in them,
  * so the row is as tall for Checkers (one game) as for Drops (eight).
  *
- * Eight is the largest family, and each shape holds exactly that: 2×4 on a
- * phone, 3×3 from a tablet, 4×2 on a desk.
+ * Eight is the largest family, and each shape holds exactly that: 2×4 up to
+ * a tablet, 3×3 on a laptop, 4×2 on a desk.
+ *
+ * THE ROW HEIGHT IS THE THUMBNAIL'S. 3rem is the 40px board plus the card's
+ * own padding and nothing else, so every pixel of this control's height is a
+ * picture of a board. The first draft carried a line of what-it-is under each
+ * name and was half again as tall; what that bought was a tagline nobody was
+ * reading for a game they had not chosen, and what it cost was the Start
+ * button, which went off the bottom of an iPad.
+ *
+ * THE NAME IS NEVER THE THING THAT GETS CUT. Three columns on a tablet left
+ * 131px for "Tournament Gomoku 競技五目" — enough for the name and not for
+ * the kanji. Because `Paired` puts the kanji last and the label truncates
+ * from the end, the squeeze falls on the kanji and the name always survives:
+ * "Tournament Gomoku 競技…". That is the right way round. A picture with an
+ * unreadable name beside it is not "board images with text" — and the
+ * complaint being answered here was a control you had to read carefully to
+ * tell one game from another.
  */
 export const PICK_GRID =
-  "grid grid-cols-2 grid-rows-[repeat(4,4.5rem)] gap-2" +
-  " md:grid-cols-3 md:grid-rows-[repeat(3,4.5rem)]" +
-  " lg:grid-cols-4 lg:grid-rows-[repeat(2,4.5rem)]";
+  "grid grid-cols-2 grid-rows-[repeat(4,3rem)] gap-2" +
+  " md:grid-cols-3 md:grid-rows-[repeat(3,3rem)]" +
+  " xl:grid-cols-4 xl:grid-rows-[repeat(2,3rem)]";
 
 /** The boards a game is played on, side by side rather than stacked. */
 export const PICK_BLOCKS = "flex flex-wrap gap-2";

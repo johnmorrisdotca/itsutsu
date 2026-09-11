@@ -21,12 +21,23 @@
  * that this one is checked. Drawing it into the accessible name would be the
  * same fact said twice.
  */
-export function PickMark({ className = "" }: { className?: string }) {
+export function PickMark({
+  className = "",
+}: {
+  /**
+   * Where it sits and how big — `size-5` on a card in a grid, `size-6` on a
+   * board block. Its own size is NOT in the base below: two `size-*` classes
+   * on one element is a race between two rules of equal weight, decided by
+   * whichever Tailwind happened to emit last, which is not a thing to build
+   * a control out of.
+   */
+  className?: string;
+}) {
   return (
     <span
       aria-hidden="true"
       className={
-        "pointer-events-none inline-flex size-6 shrink-0 items-center justify-center rounded-full" +
+        "pointer-events-none inline-flex shrink-0 items-center justify-center rounded-full" +
         " border border-rule-strong text-transparent opacity-0 transition" +
         " peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper peer-checked:opacity-100" +
         ` ${className}`

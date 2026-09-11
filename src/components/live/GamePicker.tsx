@@ -127,7 +127,16 @@ export function GamePicker({
               data-open={showing ? "true" : "false"}
             >
               <FamilyMark family={entry.title} className="size-6 shrink-0 rounded-sm" />
-              <Paired en={entry.title} kanji={entry.kanji} kanjiClassName="opacity-70" />
+              {/*
+                The kanji goes below a laptop, and only for a reader of
+                English. Eleven chips carrying both scripts wrap to three
+                lines on an iPad and six on a phone, and those lines come
+                straight off the bottom of the screen where the Start button
+                is. For a Japanese reader `Paired` returns the kanji as the
+                whole label rather than as an extra, so this never hides
+                their only copy of the name.
+              */}
+              <Paired en={entry.title} kanji={entry.kanji} kanjiClassName="hidden opacity-70 lg:inline" />
               {/*
                 Where the chosen game lives, for a reader who has wandered off
                 to look at another family. Without it, browsing away leaves a
@@ -161,7 +170,7 @@ export function GamePicker({
           return (
             <label
               key={game}
-              className={`${PICK_CARD} gap-2 p-1.5`}
+              className={`${PICK_CARD} gap-2 p-1`}
               data-testid="set-up-variant"
               data-variant={game}
               data-chosen={game === value ? "true" : "false"}
@@ -175,19 +184,23 @@ export function GamePicker({
                 onChange={() => onChange(game)}
                 className="peer sr-only"
               />
-              <GameThumb variant={game} className="size-12 sm:size-14" />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-medium">
-                  <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
-                </span>
-                {/*
-                  What the game IS, which is the half of "with text" a name on
-                  its own does not give. Hidden on the narrowest screens, where
-                  two cards to a row leaves it no width to be read in.
-                */}
-                <span className="hidden truncate text-xs text-muted sm:block">{copy.tagline}</span>
+              <GameThumb variant={game} className="size-10" />
+              {/*
+                THE BOARD AND THE NAME, and not the tagline.
+
+                A line of what-it-is under every name read well and cost forty
+                pixels a row — a hundred and sixty on the tallest family,
+                which is most of the difference between a Start button you can
+                see and one you have to go looking for. It is not lost: the
+                tagline of the game actually chosen is printed under the
+                picker, which is the one a reader is deciding about. The
+                picture does the rest of the work, and doing that work is why
+                John asked for pictures.
+              */}
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
               </span>
-              <PickMark className="mr-0.5" />
+              <PickMark className="mr-0.5 size-5" />
             </label>
           );
         })}

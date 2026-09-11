@@ -72,7 +72,7 @@ export function BoardPicker({
               */}
               <span
                 aria-hidden="true"
-                className="size-12 shrink-0 rounded-md border border-rule-strong bg-ivory sm:size-14"
+                className="size-12 shrink-0 rounded-md border border-rule-strong bg-ivory"
                 style={{
                   backgroundImage:
                     "linear-gradient(to right, var(--rule-strong) 1px, transparent 1px)," +
@@ -93,7 +93,7 @@ export function BoardPicker({
                   <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="opacity-70" />
                 </span>
               ) : null}
-              <PickMark className="absolute top-1.5 right-1.5" />
+              <PickMark className="absolute top-1.5 right-1.5 size-6" />
             </label>
           );
         })}
