@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { ready } from "./support";
+
 
 /**
  * Settling a game before there is a game.
@@ -28,6 +30,18 @@ test.describe("setting a game up before it exists", () => {
 
   test("says what it is about to make, and then makes exactly that", async ({ page, request }) => {
     await page.goto("/games/gomoku/new");
+    /*
+     * WAIT FOR THE MARKER BEFORE CHOOSING ANYTHING. The selects are
+     * server-rendered, so they are real controls before React attaches — and a
+     * choice made in that window is dropped in silence while the page goes on
+     * looking exactly right. This failed on CI as `19×19` chosen and
+     * `9×9 Mini` summarised, which is AGENTS.md's own example of the fault: a
+     * bug about timing wearing a bug about boards.
+     *
+     * It passed locally for months because a warm dev server hydrates faster
+     * than the next line arrives. A cold runner does not.
+     */
+    await ready(page, "set-up-game");
     await page.getByTestId("shared-rules-size").selectOption("19");
     await page.getByTestId("shared-rules-rated").selectOption("friendly");
     await expect(page.getByTestId("set-up-summary")).toContainText("19×19");

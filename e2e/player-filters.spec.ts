@@ -134,7 +134,19 @@ test.describe("the bar itself", () => {
   });
 
   test("is made of addresses, so a narrowed list can be sent to somebody", async ({ page }) => {
-    await page.goto("/players");
+    /*
+     * SAY WHAT THE WORLD IS BEFORE ASSERTING WHAT A LINK SAYS. A bare
+     * `/players` means "however I last asked", and since the narrowing moved
+     * off its cookie and onto the account it is remembered in the DATABASE —
+     * so an earlier case in this file visiting `/players?settled=1` leaves
+     * `settled` on for every case after it, and every link the bar writes then
+     * carries `&settled=1`.
+     *
+     * That is the preference working, not failing: a cookie was reset by each
+     * context, and an account is not. The spec was inheriting state it had not
+     * created — so it now states the whole filter first and owns its world.
+     */
+    await page.goto("/players?who=everyone&settled=0&active=0");
     await page.getByTestId("who-computers").click();
     await expect(page).toHaveURL(/\/players\?who=computers$/);
 
