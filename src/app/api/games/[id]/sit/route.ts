@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { sitAtOpenSeat } from "@/lib/history/openGames";
@@ -10,6 +10,7 @@ import { seatCookieName } from "@/lib/history/seatCookie";
 import { cookies } from "next/headers";
 import { seatForToken } from "@/lib/history/liveGame";
 import { overLimit } from "@/lib/api/rateLimit";
+import { activeLimitRefusal, memberOverActiveLimit } from "@/lib/history/activeGames";
 
 /** How long a claimed seat is remembered — the same as a scanned seat link. */
 const SEAT_COOKIE_DAYS = 30;
@@ -53,6 +54,25 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
         { status: 409, headers: NO_STORE },
       );
     }
+    /*
+     * Twenty boards is the limit however you came by the twenty-first, and
+     * answering a posted seat is a way of coming by one. The cap used to be
+     * checked only where a game is STARTED, which made it a property of that
+     * button rather than of the site: a member holding twenty could sit down
+     * at other people's open seats without ever meeting it, and open seats
+     * are the pile most likely to grow, since answering one is the cheapest
+     * thing here to do.
+     *
+     * Asked before `sitAtOpenSeat`, which claims the seat and stamps the
+     * deadline in a single conditional write. After that there is nothing
+     * left to refuse — the seat is off the noticeboard and the refusal would
+     * be delivered to the person now sitting in it.
+     */
+    if (mineFirst !== null) {
+      const atTheLimit = await memberOverActiveLimit([mineFirst]);
+      if (atTheLimit !== null) return unprocessable(activeLimitRefusal(atTheLimit));
+    }
+
     const outcome = await sitAtOpenSeat(id);
     if (!outcome.ok) {
       return NextResponse.json(

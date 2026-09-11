@@ -34,7 +34,7 @@ import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
 import { createLiveGame } from "@/lib/history/liveGame";
-import { memberOverActiveLimit } from "@/lib/history/activeGames";
+import { activeLimitRefusal, memberOverActiveLimit } from "@/lib/history/activeGames";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
 import { playBotTurns } from "@/lib/bots/botPlay";
@@ -270,11 +270,7 @@ export async function POST(request: Request) {
      * written, the same as every other reason this route says no.
      */
     const atTheLimit = await memberOverActiveLimit([seats.blackMemberId, seats.whiteMemberId]);
-    if (atTheLimit !== null) {
-      return unprocessable(
-        "Twenty games at once is the limit here — finish or resign one before starting another.",
-      );
-    }
+    if (atTheLimit !== null) return unprocessable(activeLimitRefusal(atTheLimit));
 
     const { challenge: _challenge, challengeId: _challengeId, rematch: _rematch, from, ...settings } = parsed.data;
     void _rematch;

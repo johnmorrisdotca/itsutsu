@@ -22,7 +22,9 @@ const count = vi.fn(async ({ where }: { where: { OR: [{ blackMemberId: string },
 
 vi.mock("@/lib/prisma", () => ({ prisma: { game: { count: (args: never) => count(args) } } }));
 
-const { activeGameCount, activeGameLimit, memberOverActiveLimit } = await import("./activeGames");
+const { activeGameCount, activeGameLimit, activeLimitRefusal, memberOverActiveLimit } = await import(
+  "./activeGames"
+);
 
 /** `n` active games recorded against one member, alternating which seat holds them. */
 function gamesFor(memberId: string, n: number): void {
@@ -54,7 +56,7 @@ describe("memberOverActiveLimit", () => {
 
   it("finds a member exactly at the limit", async () => {
     gamesFor("alice", ACTIVE_GAME_LIMIT);
-    expect(await memberOverActiveLimit(["alice", "bob"])).toBe("alice");
+    expect(await memberOverActiveLimit(["alice", "bob"])).toMatchObject({ memberId: "alice" });
   });
 
   it("checks the other seat too, not only the first", async () => {
@@ -65,7 +67,7 @@ describe("memberOverActiveLimit", () => {
      * order that matters.
      */
     gamesFor("bob", ACTIVE_GAME_LIMIT + 5);
-    expect(await memberOverActiveLimit(["alice", "bob"])).toBe("bob");
+    expect(await memberOverActiveLimit(["alice", "bob"])).toMatchObject({ memberId: "bob" });
   });
 
   it("leaves a computer player out of it, however many games it is carrying", async () => {
@@ -131,5 +133,56 @@ describe("the limit as it applies here and now", () => {
     gamesFor("alice", ACTIVE_GAME_LIMIT + 5);
     expect(await memberOverActiveLimit(["alice"])).toBeNull();
     vi.unstubAllEnvs();
+  });
+});
+
+/**
+ * The refusal, which now has to say the member's own number.
+ *
+ * "Twenty games at once is the limit here" was the whole of it, and a bare
+ * refusal reads as a fault: somebody told only the rule cannot tell a cap
+ * they have met from a site that has miscounted, and the only way to check
+ * was to go and count boards. Their own total is what answers that, so the
+ * count is carried out of the check rather than fetched again beside it.
+ */
+describe("what the member is told", () => {
+  it("carries the count and the limit out with the answer", async () => {
+    gamesFor("alice", ACTIVE_GAME_LIMIT);
+    expect(await memberOverActiveLimit(["alice"])).toEqual({
+      memberId: "alice",
+      count: ACTIVE_GAME_LIMIT,
+      limit: ACTIVE_GAME_LIMIT,
+    });
+  });
+
+  it("counts what they are actually holding, not the limit they tripped", async () => {
+    /*
+     * A member can be past the limit rather than exactly on it — games are
+     * only ever counted at a door, so nothing stops the total drifting above
+     * it. Saying "you have 20" to somebody holding 23 is the bare refusal
+     * again with a number painted on.
+     */
+    gamesFor("alice", ACTIVE_GAME_LIMIT + 3);
+    const over = await memberOverActiveLimit(["alice"]);
+    expect(over?.count).toBe(ACTIVE_GAME_LIMIT + 3);
+    expect(activeLimitRefusal(over!)).toContain(String(ACTIVE_GAME_LIMIT + 3));
+  });
+
+  it("says their number and the limit, and what to do about it", () => {
+    const message = activeLimitRefusal({ memberId: "alice", count: 20, limit: 20 });
+    expect(message).toContain("You have 20 games");
+    expect(message).toMatch(/finish or resign/i);
+  });
+
+  it("quotes the limit it was actually checked against, not the word twenty", () => {
+    /*
+     * The suite relieves the cap, so the number in force is not always 20. A
+     * message naming a constant the check is not using is a message that is
+     * wrong exactly when somebody is trying to work out why they were
+     * refused.
+     */
+    const message = activeLimitRefusal({ memberId: "alice", count: 400, limit: 400 });
+    expect(message).toContain("400");
+    expect(message).not.toMatch(/twenty/i);
   });
 });
