@@ -1,5 +1,6 @@
 import {
   ASKED_BY_MAX,
+  ASSIGNED_TO_MAX,
   BACKLOG_KINDS,
   BACKLOG_EFFORTS,
   BACKLOG_PRIORITIES,
@@ -18,6 +19,7 @@ import {
 import { VERSION } from "@/lib/version";
 import type {
   BacklogDraft,
+  BacklogEdit,
   BacklogEffort,
   BacklogItem,
   BacklogKind,
@@ -59,6 +61,14 @@ export function isBacklogStatus(value: unknown): value is BacklogStatus {
 
 export function isBacklogKind(value: unknown): value is BacklogKind {
   return typeof value === "string" && value in BACKLOG_KINDS;
+}
+
+export function isBacklogPriority(value: unknown): value is BacklogPriority {
+  return typeof value === "string" && value in BACKLOG_PRIORITIES;
+}
+
+export function isBacklogEffort(value: unknown): value is BacklogEffort {
+  return typeof value === "string" && value in BACKLOG_EFFORTS;
 }
 
 /** True while an item still wants something from somebody. */
@@ -114,9 +124,57 @@ export function normalizeDraft(draft: BacklogDraft, now: Date = new Date()): Bac
   };
 }
 
+/**
+ * The draft an item would be once its text is revised: what the request said
+ * where the revision is silent, and the revision where it speaks.
+ *
+ * Judged by `draftProblems` exactly as a new request is, so a row can no more
+ * be edited past the caps than it could have been added past them. The key is
+ * not part of this on purpose — it was derived once, when the row was added,
+ * and a commit message or a seed may already be holding it.
+ */
+export function revisedDraft(
+  item: Pick<BacklogItem, "title" | "detail" | "kind" | "askedBy">,
+  changes: Partial<BacklogDraft>,
+): BacklogDraft {
+  return {
+    title: changes.title ?? item.title,
+    detail: changes.detail ?? item.detail,
+    kind: changes.kind ?? item.kind,
+    askedBy: changes.askedBy ?? item.askedBy,
+  };
+}
+
+/**
+ * What is wrong with an edit to the fields that are somebody's opinion rather
+ * than the board's rules — who has it, how much it matters, how much work it
+ * is. Empty means it may be written.
+ *
+ * The same gate the route's schema keeps, stated where the other rules are,
+ * so an in-process caller that never met the route is refused the same way.
+ */
+export function editProblems(edit: BacklogEdit): string[] {
+  const problems: string[] = [];
+  if (edit.assignedTo !== undefined && edit.assignedTo.trim().length > ASSIGNED_TO_MAX) {
+    problems.push(`A name is at most ${ASSIGNED_TO_MAX} characters.`);
+  }
+  if (edit.priority !== undefined && edit.priority !== null && !isBacklogPriority(edit.priority)) {
+    problems.push("Grade how much it matters as high, normal or low.");
+  }
+  if (edit.effort !== undefined && edit.effort !== null && !isBacklogEffort(edit.effort)) {
+    problems.push("Grade the work as small, medium or large.");
+  }
+  return problems;
+}
+
 /** Whether an item at `from` may be moved to `to`. */
 export function canMove(from: BacklogStatus, to: BacklogStatus): boolean {
   return STATUS_MOVES[from].includes(to);
+}
+
+/** `canMove`, in words a person can act on: empty when the move is allowed. */
+export function moveProblems(from: BacklogStatus, to: BacklogStatus): string[] {
+  return canMove(from, to) ? [] : ["An item cannot go straight there from where it stands."];
 }
 
 /** The statuses an item may be moved to from where it stands. */
