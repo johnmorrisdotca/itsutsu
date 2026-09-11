@@ -5,6 +5,7 @@ import Link from "next/link";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import type { RatingTier } from "@/lib/rating/elo";
 import type { VariantStanding } from "@/lib/rating/variantRatings";
+import type { ReactNode } from "react";
 import { shownName } from "@/lib/rating/shownName";
 
 /** A player's name, leading to their page. */
@@ -31,6 +32,8 @@ const HEAD_CLASS = "text-left text-[0.7rem] font-semibold tracking-[0.14em] text
 export function StandingsTable({
   standings,
   pool = "people",
+  actions,
+  actionsLabel = "",
   testId = "standings-table",
 }: {
   standings: VariantStanding[];
@@ -44,6 +47,21 @@ export function StandingsTable({
    * half of a row, one level down.
    */
   pool?: "people" | "computer";
+  /**
+   * What the reader may do about each of these people.
+   *
+   * A column rather than a second table, because "every opponent you are
+   * shown offers what you would want to do about them" is about the list a
+   * reader is actually looking at — and a ladder is a list of opponents
+   * wearing a ranking. A game's own page shows this; /champions does not,
+   * which is a decision that page can make for itself rather than a second
+   * component to keep in step with this one.
+   *
+   * Absent by default, so a page that has no reader to act on the answer
+   * pays for no column at all.
+   */
+  actions?: (standing: VariantStanding) => ReactNode;
+  actionsLabel?: string;
   testId?: string;
 }) {
   return (
@@ -54,7 +72,7 @@ export function StandingsTable({
           <th className="py-1 pr-3">Player</th>
           <th className="py-1 pr-3">Rating</th>
           <th className="py-1 pr-3">Tier</th>
-          <RecordHeadings />
+          <RecordHeadings trailing={actions === undefined ? undefined : <th className="py-1 pr-3">{actionsLabel}</th>} />
         </tr>
       </thead>
       <tbody>
@@ -71,6 +89,7 @@ export function StandingsTable({
             <RecordCells
               record={standing}
               of={{ player: standing.name, variant: standing.variant, pool, rated: "yes" }}
+              trailing={actions === undefined ? undefined : <td className="py-1.5 pr-3">{actions(standing)}</td>}
             />
           </tr>
         ))}
