@@ -35,39 +35,41 @@ export async function Ladder() {
           No rated games yet. Give both players a name and finish a game.
         </p>
       ) : (
-        <table className="w-full text-sm" data-testid="players-table">
-          <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-            <tr>
-              <th className="py-1 pr-3">Player</th>
-              <th className="py-1 pr-3">Rating</th>
-              <th className="py-1 pr-3">Tier</th>
-              <RecordHeadings />
-            </tr>
-          </thead>
-          <tbody>
-            {leaders.map((player) => (
-              <tr key={player.key} className="border-t border-rule">
-                <td className="py-1.5 pr-3">
-                  <Link href={playerPath(player.name, player.memberId)} className="underline-offset-2 hover:underline">
-                    {shownName(player.name)}
-                  </Link>
-                </td>
-                <td className="py-1.5 pr-3 font-mono tabular-nums">{player.rating}</td>
-                <td className="py-1.5 pr-3">
-                  <Paired en={TIER_DISPLAY[player.tier].label} kanji={TIER_DISPLAY[player.tier].kanji} kanjiClassName="text-muted" />
-                </td>
-                {/*
-                  These four are the ladder's own counting — rated games
-                  against people — so the links say so. Sent to the record
-                  unqualified they would open every game the name ever
-                  played, which is a longer list than the number they came
-                  from and a worse answer than no link at all.
-                */}
-                <RecordCells record={player} of={{ player: player.name, pool: "people", rated: "yes" }} />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm" data-testid="players-table">
+            <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+              <tr>
+                <th className="py-1 pr-3">Player</th>
+                <th className="py-1 pr-3">Rating</th>
+                <th className="py-1 pr-3">Tier</th>
+                <RecordHeadings />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {leaders.map((player) => (
+                <tr key={player.key} className="border-t border-rule">
+                  <td className="py-1.5 pr-3">
+                    <Link href={playerPath(player.name, player.memberId)} className="underline-offset-2 hover:underline">
+                      {shownName(player.name)}
+                    </Link>
+                  </td>
+                  <td className="py-1.5 pr-3 font-mono tabular-nums">{player.rating}</td>
+                  <td className="py-1.5 pr-3">
+                    <Paired en={TIER_DISPLAY[player.tier].label} kanji={TIER_DISPLAY[player.tier].kanji} kanjiClassName="text-muted" />
+                  </td>
+                  {/*
+                    These four are the ladder's own counting — rated games
+                    against people — so the links say so. Sent to the record
+                    unqualified they would open every game the name ever
+                    played, which is a longer list than the number they came
+                    from and a worse answer than no link at all.
+                  */}
+                  <RecordCells record={player} of={{ player: player.name, pool: "people", rated: "yes" }} />
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

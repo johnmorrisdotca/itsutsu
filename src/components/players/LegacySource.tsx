@@ -122,35 +122,37 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
       <h3 className={SECTION_TITLE}>{row.class}</h3>
-      <table className="w-full text-sm" data-testid={detail.length > 0 ? "legacy-detail" : "legacy-class"}>
-        <thead>
-          <tr className="text-left">
-            <th className={HEADING}>Game</th>
-            <th className={`${HEADING} text-right`}>Played</th>
-            <th className={`${HEADING} text-right`}>Won · Lost · Drawn</th>
-            <th className={`${HEADING} text-right`}>Win rate</th>
-          </tr>
-        </thead>
-        <tbody>
-          {detail.map((game) => (
-            <tr key={game.game} className="border-t border-rule">
-              <td className="py-1.5 pr-3 align-top">
-                <GameName name={game.game} />
-                <GameLog game={game} />
-              </td>
-              <ResultCells record={game} />
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm" data-testid={detail.length > 0 ? "legacy-detail" : "legacy-class"}>
+          <thead>
+            <tr className="text-left">
+              <th className={HEADING}>Game</th>
+              <th className={`${HEADING} text-right`}>Played</th>
+              <th className={`${HEADING} text-right`}>Won · Lost · Drawn</th>
+              <th className={`${HEADING} text-right`}>Win rate</th>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr className="border-t-2 border-rule-strong font-medium">
-            <td className="py-1.5 pr-3" data-testid="legacy-class-total">
-              {detail.length > 0 ? "All of it" : row.class}
-            </td>
-            <ResultCells record={row.record} />
-          </tr>
-        </tfoot>
-      </table>
+          </thead>
+          <tbody>
+            {detail.map((game) => (
+              <tr key={game.game} className="border-t border-rule">
+                <td className="py-1.5 pr-3 align-top">
+                  <GameName name={game.game} />
+                  <GameLog game={game} />
+                </td>
+                <ResultCells record={game} />
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t-2 border-rule-strong font-medium">
+              <td className="py-1.5 pr-3" data-testid="legacy-class-total">
+                {detail.length > 0 ? "All of it" : row.class}
+              </td>
+              <ResultCells record={row.record} />
+            </tr>
+          </tfoot>
+        </table>
+      </div>
       {detail.length > 0 && !row.detailComplete ? (
         <p className="text-xs text-muted">
           The breakdown is as far as it was recorded — the source site may hold more than what is copied down here. The
@@ -224,19 +226,21 @@ function HeadToHead({ source }: { source: LegacySource }) {
                 · {winRateText(figures.winRate)}
               </span>
             </h3>
-            <table className="w-full text-sm" data-testid="legacy-head-to-head-log">
-              <tbody>
-                {entry.games.map((game, index) => (
-                  <tr key={`${game.date}-${index}`} className="border-t border-rule">
-                    <td className="py-1.5 pr-3 text-muted">{game.date}</td>
-                    <td className="py-1.5 pr-3">
-                      <GameName name={game.game} />
-                    </td>
-                    <td className="py-1.5 pr-3 font-mono">{game.result}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm" data-testid="legacy-head-to-head-log">
+                <tbody>
+                  {entry.games.map((game, index) => (
+                    <tr key={`${game.date}-${index}`} className="border-t border-rule">
+                      <td className="py-1.5 pr-3 text-muted">{game.date}</td>
+                      <td className="py-1.5 pr-3">
+                        <GameName name={game.game} />
+                      </td>
+                      <td className="py-1.5 pr-3 font-mono">{game.result}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         );
       })}

@@ -78,75 +78,77 @@ export function ItsutsuRecord({
       {record.byVariant.length > 0 ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
           <h3 className={SECTION_TITLE}>By game</h3>
-          <table className="w-full text-sm" data-testid="player-by-variant">
-            <thead>
-              <tr className="text-left">
-                <th className="pb-1.5 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">Game</th>
-                <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-                  Played
-                </th>
-                <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-                  Won · Lost · Drawn
-                </th>
-                <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-                  Win rate
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {record.byVariant.map((row) => {
-                const figures = figuresOf({ won: row.wins, lost: row.losses, drawn: row.draws });
-                return (
-                  <tr key={row.variant} className="border-t border-rule">
-                    <td className="py-1.5 pr-3">
-                      <GameName variant={row.variant} />
-                    </td>
-                    <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
-                      <GameCount
-                        count={countText(figures.played)}
-                        variant={row.variant}
-                        player={name}
-                        outcome="decided"
-                        title={`Every game of ${variantLabel(row.variant)} ${name} has finished here`}
-                      />
-                    </td>
-                    {/*
-                      Each number goes to the games behind it. A record is three
-                      counts and three filters, and printing them as one string
-                      would make the reader take it apart again to ask the
-                      question the page has already answered.
-                    */}
-                    <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
-                      <GameCount
-                        count={figures.won}
-                        variant={row.variant}
-                        player={name}
-                        outcome="won"
-                        title={`The games of ${variantLabel(row.variant)} ${name} won`}
-                      />
-                      {" · "}
-                      <GameCount
-                        count={figures.lost}
-                        variant={row.variant}
-                        player={name}
-                        outcome="lost"
-                        title={`The games of ${variantLabel(row.variant)} ${name} lost`}
-                      />
-                      {" · "}
-                      <GameCount
-                        count={figures.drawn}
-                        variant={row.variant}
-                        player={name}
-                        outcome="drawn"
-                        title={`The games of ${variantLabel(row.variant)} ${name} drew`}
-                      />
-                    </td>
-                    <td className="py-1.5 pr-3 text-right font-mono tabular-nums">{winRateText(figures.winRate)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm" data-testid="player-by-variant">
+              <thead>
+                <tr className="text-left">
+                  <th className="pb-1.5 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">Game</th>
+                  <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
+                    Played
+                  </th>
+                  <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
+                    Won · Lost · Drawn
+                  </th>
+                  <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
+                    Win rate
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {record.byVariant.map((row) => {
+                  const figures = figuresOf({ won: row.wins, lost: row.losses, drawn: row.draws });
+                  return (
+                    <tr key={row.variant} className="border-t border-rule">
+                      <td className="py-1.5 pr-3">
+                        <GameName variant={row.variant} />
+                      </td>
+                      <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
+                        <GameCount
+                          count={countText(figures.played)}
+                          variant={row.variant}
+                          player={name}
+                          outcome="decided"
+                          title={`Every game of ${variantLabel(row.variant)} ${name} has finished here`}
+                        />
+                      </td>
+                      {/*
+                        Each number goes to the games behind it. A record is three
+                        counts and three filters, and printing them as one string
+                        would make the reader take it apart again to ask the
+                        question the page has already answered.
+                      */}
+                      <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
+                        <GameCount
+                          count={figures.won}
+                          variant={row.variant}
+                          player={name}
+                          outcome="won"
+                          title={`The games of ${variantLabel(row.variant)} ${name} won`}
+                        />
+                        {" · "}
+                        <GameCount
+                          count={figures.lost}
+                          variant={row.variant}
+                          player={name}
+                          outcome="lost"
+                          title={`The games of ${variantLabel(row.variant)} ${name} lost`}
+                        />
+                        {" · "}
+                        <GameCount
+                          count={figures.drawn}
+                          variant={row.variant}
+                          player={name}
+                          outcome="drawn"
+                          title={`The games of ${variantLabel(row.variant)} ${name} drew`}
+                        />
+                      </td>
+                      <td className="py-1.5 pr-3 text-right font-mono tabular-nums">{winRateText(figures.winRate)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : null}
 

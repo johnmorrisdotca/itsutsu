@@ -80,56 +80,58 @@ export async function MyRecord({ name }: { name: string }) {
         </p>
       )}
       {standings.length > 0 ? (
-        <table className="w-full text-sm" data-testid="me-standings">
-          <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-            <tr>
-              <th className="py-1 pr-3">Game</th>
-              <th className="py-1 pr-3">Rating</th>
-              <RecordHeadings />
-            </tr>
-          </thead>
-          <tbody>
-            {standings.map((row) => (
-              <tr key={`${row.variant}-${row.pool}`} className="border-t border-rule">
-                {/* The standing rule: a game's name leads to that game. */}
-                <td className="py-1 pr-3">
-                  <GameThumb variant={row.variant} className="mr-2 inline-block size-6 align-middle" />
-                  <GameName variant={row.variant as RuleVariant} />
-                  {/*
-                    A game somebody has played in both pools is two lines and
-                    not one added together — that sum is the thing the pools
-                    exist to forbid. So each line says which ladder it is, and
-                    without the mark the two would read as one game listed
-                    twice with different numbers against it.
-                  */}
-                  {row.pool === RATING_POOLS.computer ? (
-                    <span
-                      className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                      title="Against the computer players, rated in a pool of their own."
-                      data-testid="standing-pool-computer"
-                    >
-                      機械
-                    </span>
-                  ) : null}
-                </td>
-                <td className="py-1 pr-3 font-mono tabular-nums">
-                  {/*
-                    One mark per row, beside the name. It said 機械 twice for a
-                    while — once here — which is not only noise: this copy read
-                    "no games against people at this yet", and that stopped
-                    being true the moment a game could hold two lines. A player
-                    with both now has a people line AND a computer line.
-                  */}
-                  {row.tier === "unrated" ? "–" : row.rating}
-                </td>
-                <RecordCells
-                  record={row}
-                  of={{ player: name, variant: row.variant, pool: row.pool, rated: "yes" }}
-                />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm" data-testid="me-standings">
+            <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+              <tr>
+                <th className="py-1 pr-3">Game</th>
+                <th className="py-1 pr-3">Rating</th>
+                <RecordHeadings />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {standings.map((row) => (
+                <tr key={`${row.variant}-${row.pool}`} className="border-t border-rule">
+                  {/* The standing rule: a game's name leads to that game. */}
+                  <td className="py-1 pr-3">
+                    <GameThumb variant={row.variant} className="mr-2 inline-block size-6 align-middle" />
+                    <GameName variant={row.variant as RuleVariant} />
+                    {/*
+                      A game somebody has played in both pools is two lines and
+                      not one added together — that sum is the thing the pools
+                      exist to forbid. So each line says which ladder it is, and
+                      without the mark the two would read as one game listed
+                      twice with different numbers against it.
+                    */}
+                    {row.pool === RATING_POOLS.computer ? (
+                      <span
+                        className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
+                        title="Against the computer players, rated in a pool of their own."
+                        data-testid="standing-pool-computer"
+                      >
+                        機械
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="py-1 pr-3 font-mono tabular-nums">
+                    {/*
+                      One mark per row, beside the name. It said 機械 twice for a
+                      while — once here — which is not only noise: this copy read
+                      "no games against people at this yet", and that stopped
+                      being true the moment a game could hold two lines. A player
+                      with both now has a people line AND a computer line.
+                    */}
+                    {row.tier === "unrated" ? "–" : row.rating}
+                  </td>
+                  <RecordCells
+                    record={row}
+                    of={{ player: name, variant: row.variant, pool: row.pool, rated: "yes" }}
+                  />
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : null}
       {tally.answered > 0 ? (
         <p className="text-xs text-muted" data-testid="verdict-tally">

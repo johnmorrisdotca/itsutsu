@@ -206,111 +206,113 @@ export async function Directory({
           label="How much of these records to count"
         />
       ) : null}
-      <table className="w-full text-sm" data-testid="directory">
-        <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-          <tr>
-            <th className="py-1 pr-3">Member</th>
-            <RecordHeadings />
-            <th className="py-1 pr-3">Rating</th>
-            <th className="py-1 pr-3">Joined</th>
-            <th className="py-1"></th>
-            <th className="py-1"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {people.length === 0 ? (
-            <tr className="border-t border-rule">
-              <td colSpan={9} className="py-3 text-sm text-muted" data-testid="directory-empty">
-                Nobody here answers to all of that.{" "}
-                {/*
-                  Says "everyone" out loud rather than pointing at the bare
-                  page. Now that /players means "however I last asked for it",
-                  a way back that went there would re-apply the very narrowing
-                  it offers to remove, and appear to do nothing at all.
-                */}
-                <Link href={SHOW_EVERYBODY_HREF} className="underline underline-offset-4" data-testid="directory-clear">
-                  Show everybody again
-                </Link>
-                .
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm" data-testid="directory">
+          <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+            <tr>
+              <th className="py-1 pr-3">Member</th>
+              <RecordHeadings />
+              <th className="py-1 pr-3">Rating</th>
+              <th className="py-1 pr-3">Joined</th>
+              <th className="py-1"></th>
+              <th className="py-1"></th>
             </tr>
-          ) : null}
-          {people.map((entry) => (
-            <tr key={entry.id} className="border-t border-rule">
-              <td className="py-1.5 pr-3">
-                <span className="flex items-center gap-2">
-                  <RecencyMark recency={recencyOf(new Date(entry.lastSeenAt), now)} />
-                  {entry.picture ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
-                    <img src={entry.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
-                  ) : null}
-                  {entry.name.trim() !== "" ? (
-                    <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline" data-testid="directory-name">
-                      {shownName(entry.name)}
-                    </Link>
-                  ) : (
-                    entry.email
-                  )}
-                  {/* Where they are, which is most of why they answer at four in the morning. */}
-                  <CountryMark country={entry.country} className="text-sm" />
+          </thead>
+          <tbody>
+            {people.length === 0 ? (
+              <tr className="border-t border-rule">
+                <td colSpan={9} className="py-3 text-sm text-muted" data-testid="directory-empty">
+                  Nobody here answers to all of that.{" "}
                   {/*
-                    Which sort of member this is, drawn on the unusual rows
-                    only — the badge the operator's list has used all along,
-                    rather than a second one invented here.
-
-                    It earns its place on this list now that the default shows
-                    programs alongside people. The suite already carried the
-                    objection to that: "a program in the directory of people
-                    would be a person as far as anybody reading it is
-                    concerned." That was right, and hiding them was the wrong
-                    answer to it — a reader on a quiet evening should find the
-                    five opponents who are always here, and should never have
-                    to work out which of the names is a program.
+                    Says "everyone" out loud rather than pointing at the bare
+                    page. Now that /players means "however I last asked for it",
+                    a way back that went there would re-apply the very narrowing
+                    it offers to remove, and appear to do nothing at all.
                   */}
-                  <MemberKindBadge
-                    kind={memberKind({
-                      email: entry.email,
-                      botTier: entry.botTier,
-                      unclaimableBecause: entry.unclaimableBecause,
-                    })}
-                  />
-                </span>
-              </td>
-              <DirectoryRecord
-                name={entry.name}
-                profile={entry.profile}
-                elsewhere={entry.elsewhere}
-                scope={scope}
-              />
-              <td className="py-1.5 pr-3 text-xs text-muted">
-                {new Date(entry.joinedAt).toLocaleDateString()}
-                {entry.isNew ? (
-                  <span className="ml-2 rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">
-                    New 新人
+                  <Link href={SHOW_EVERYBODY_HREF} className="underline underline-offset-4" data-testid="directory-clear">
+                    Show everybody again
+                  </Link>
+                  .
+                </td>
+              </tr>
+            ) : null}
+            {people.map((entry) => (
+              <tr key={entry.id} className="border-t border-rule">
+                <td className="py-1.5 pr-3">
+                  <span className="flex items-center gap-2">
+                    <RecencyMark recency={recencyOf(new Date(entry.lastSeenAt), now)} />
+                    {entry.picture ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
+                      <img src={entry.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
+                    ) : null}
+                    {entry.name.trim() !== "" ? (
+                      <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline" data-testid="directory-name">
+                        {shownName(entry.name)}
+                      </Link>
+                    ) : (
+                      entry.email
+                    )}
+                    {/* Where they are, which is most of why they answer at four in the morning. */}
+                    <CountryMark country={entry.country} className="text-sm" />
+                    {/*
+                      Which sort of member this is, drawn on the unusual rows
+                      only — the badge the operator's list has used all along,
+                      rather than a second one invented here.
+  
+                      It earns its place on this list now that the default shows
+                      programs alongside people. The suite already carried the
+                      objection to that: "a program in the directory of people
+                      would be a person as far as anybody reading it is
+                      concerned." That was right, and hiding them was the wrong
+                      answer to it — a reader on a quiet evening should find the
+                      five opponents who are always here, and should never have
+                      to work out which of the names is a program.
+                    */}
+                    <MemberKindBadge
+                      kind={memberKind({
+                        email: entry.email,
+                        botTier: entry.botTier,
+                        unclaimableBecause: entry.unclaimableBecause,
+                      })}
+                    />
                   </span>
-                ) : null}
-              </td>
-              <td className="py-1.5 text-right">
-                <RowActions>
-                  {me?.email && entry.email !== null && me.email !== entry.email ? (
-                    <>
-                      <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} />
-                      <IgnoreButton email={entry.email} ignoring={ignored.has(entry.email)} />
-                    </>
+                </td>
+                <DirectoryRecord
+                  name={entry.name}
+                  profile={entry.profile}
+                  elsewhere={entry.elsewhere}
+                  scope={scope}
+                />
+                <td className="py-1.5 pr-3 text-xs text-muted">
+                  {new Date(entry.joinedAt).toLocaleDateString()}
+                  {entry.isNew ? (
+                    <span className="ml-2 rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">
+                      New 新人
+                    </span>
                   ) : null}
-                </RowActions>
-              </td>
-              <td className="py-1.5 text-right">
-                <RowActions>
-                  {me?.email && entry.email !== null && me.email !== entry.email ? (
-                    <ChallengeButton email={entry.email} />
-                  ) : null}
-                </RowActions>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                </td>
+                <td className="py-1.5 text-right">
+                  <RowActions>
+                    {me?.email && entry.email !== null && me.email !== entry.email ? (
+                      <>
+                        <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} />
+                        <IgnoreButton email={entry.email} ignoring={ignored.has(entry.email)} />
+                      </>
+                    ) : null}
+                  </RowActions>
+                </td>
+                <td className="py-1.5 text-right">
+                  <RowActions>
+                    {me?.email && entry.email !== null && me.email !== entry.email ? (
+                      <ChallengeButton email={entry.email} />
+                    ) : null}
+                  </RowActions>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {/*
         What the mark means, said once under the table rather than repeated in
         every row that carries it. Drawn only when a row on this screen

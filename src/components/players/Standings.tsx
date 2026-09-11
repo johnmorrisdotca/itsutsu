@@ -66,36 +66,38 @@ export function StandingsTable({
   testId?: string;
 }) {
   return (
-    <table className="w-full text-sm" data-testid={testId}>
-      <thead className={HEAD_CLASS}>
-        <tr>
-          <th className="py-1 pr-3">#</th>
-          <th className="py-1 pr-3">Player</th>
-          <th className="py-1 pr-3">Rating</th>
-          <th className="py-1 pr-3">Tier</th>
-          <RecordHeadings trailing={actions === undefined ? undefined : <th className="py-1 pr-3">{actionsLabel}</th>} />
-        </tr>
-      </thead>
-      <tbody>
-        {standings.map((standing, index) => (
-          <tr key={standing.key} className="border-t border-rule">
-            <td className="py-1.5 pr-3 font-mono text-muted tabular-nums">{index + 1}</td>
-            <td className="py-1.5 pr-3">
-              <PlayerLink name={standing.name} memberId={standing.memberId} />
-            </td>
-            <td className="py-1.5 pr-3 font-mono tabular-nums">{standing.rating}</td>
-            <td className="py-1.5 pr-3">
-              <TierMark tier={standing.tier} />
-            </td>
-            <RecordCells
-              record={standing}
-              of={{ player: standing.name, variant: standing.variant, pool, rated: "yes" }}
-              trailing={actions === undefined ? undefined : <td className="py-1.5 pr-3">{actions(standing)}</td>}
-            />
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm" data-testid={testId}>
+        <thead className={HEAD_CLASS}>
+          <tr>
+            <th className="py-1 pr-3">#</th>
+            <th className="py-1 pr-3">Player</th>
+            <th className="py-1 pr-3">Rating</th>
+            <th className="py-1 pr-3">Tier</th>
+            <RecordHeadings trailing={actions === undefined ? undefined : <th className="py-1 pr-3">{actionsLabel}</th>} />
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {standings.map((standing, index) => (
+            <tr key={standing.key} className="border-t border-rule">
+              <td className="py-1.5 pr-3 font-mono text-muted tabular-nums">{index + 1}</td>
+              <td className="py-1.5 pr-3">
+                <PlayerLink name={standing.name} memberId={standing.memberId} />
+              </td>
+              <td className="py-1.5 pr-3 font-mono tabular-nums">{standing.rating}</td>
+              <td className="py-1.5 pr-3">
+                <TierMark tier={standing.tier} />
+              </td>
+              <RecordCells
+                record={standing}
+                of={{ player: standing.name, variant: standing.variant, pool, rated: "yes" }}
+                trailing={actions === undefined ? undefined : <td className="py-1.5 pr-3">{actions(standing)}</td>}
+              />
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -137,34 +139,36 @@ export function LadderSideView({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <table className="w-full text-sm" data-testid={testId}>
-        <thead className={HEAD_CLASS}>
-          <tr>
-            <th className="py-1 pr-2">#</th>
-            <th className="py-1 pr-2">Player</th>
-            <th className="py-1 text-right">Rating</th>
-          </tr>
-        </thead>
-        <tbody>
-          {standings.length === 0 ? (
-            <tr className="border-t border-rule">
-              <td colSpan={3} className="py-2 text-sm text-muted" data-testid="ladder-side-view-empty">
-                {emptyNote}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm" data-testid={testId}>
+          <thead className={HEAD_CLASS}>
+            <tr>
+              <th className="py-1 pr-2">#</th>
+              <th className="py-1 pr-2">Player</th>
+              <th className="py-1 text-right">Rating</th>
             </tr>
-          ) : (
-            standings.map((standing, index) => (
-              <tr key={standing.key} className="border-t border-rule">
-                <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
-                <td className="min-w-0 truncate py-1.5 pr-2">
-                  <PlayerLink name={standing.name} memberId={standing.memberId} />
+          </thead>
+          <tbody>
+            {standings.length === 0 ? (
+              <tr className="border-t border-rule">
+                <td colSpan={3} className="py-2 text-sm text-muted" data-testid="ladder-side-view-empty">
+                  {emptyNote}
                 </td>
-                <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              standings.map((standing, index) => (
+                <tr key={standing.key} className="border-t border-rule">
+                  <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
+                  <td className="min-w-0 truncate py-1.5 pr-2">
+                    <PlayerLink name={standing.name} memberId={standing.memberId} />
+                  </td>
+                  <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
       {invitation}
     </div>
   );

@@ -116,10 +116,27 @@ test.describe("asking for a game", () => {
     await expect(page.getByTestId("open-games")).toBeVisible();
     await expect(page.getByTestId("here-panel")).toBeVisible();
 
-    // The sentence that used to stand above them is gone, and a way in stands
-    // there instead. Asserted after something present, so "the sentence is
-    // gone" cannot be satisfied by a page that has not rendered.
+    /*
+     * BOTH WAYS IN STAND HERE, and this case used to assert the opposite.
+     *
+     * 0.135.0 removed the one-line sentence and this line was written to hold
+     * it removed — `toHaveCount(0)` on `start-game`. John asked for it back in
+     * 0.143.0 ("we need that one line version back"), so the requirement
+     * changed under a correct test rather than the test being wrong.
+     *
+     * What he had objected to was landing on a board with nothing agreed, and
+     * the sentence being the ONLY way in. Neither is true now: it settles the
+     * game, the board, the pace and the opponent, its "set up the board" path
+     * goes to the game's front door, and `/games/new` stands beside it for
+     * everything the sentence does not ask. So the thing to assert is that
+     * BOTH are offered — a page with only one of them is the bug, in either
+     * direction.
+     *
+     * Still asserted after something already present, which is the half of
+     * this worth keeping from the original: an absence, or a presence, checked
+     * before a page has rendered is a statement about timing.
+     */
     await expect(page.getByTestId("lobby-set-up")).toBeVisible();
-    await expect(page.getByTestId("start-game")).toHaveCount(0);
+    await expect(page.getByTestId("start-game")).toBeVisible();
   });
 });
