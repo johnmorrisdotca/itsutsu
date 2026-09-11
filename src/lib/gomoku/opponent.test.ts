@@ -211,6 +211,31 @@ describe("it can finish a game of anything on the site", () => {
   );
 });
 
+describe("the race games are played towards the camp", () => {
+  /*
+   * "It finished" and "it played well" are two claims, and for a long time
+   * only the first was made of Chinese Checkers. The computer scored it
+   * through the square board's camp table, which has no row for the 17-wide
+   * star, so every grade found every move worth the same and wandered until
+   * the no-progress rule called the game off — twelve games across every
+   * grade, none won, at most two of ten pieces home. The note beside that
+   * rule concluded the game might be unwinnable. It was the player.
+   *
+   * So the assertion is a WIN, from the same seeded loop the "finish a game
+   * of anything" suite plays, and it would fail on a computer that merely
+   * finishes.
+   */
+  it("wins a game of Chinese Checkers rather than being called off", () => {
+    const state = playOut(RULE_VARIANTS.chineseCheckers, BOT_TIERS.dan, BOT_TIERS.kyu, 1234);
+    expect(state.status).toBe(GAME_STATUS.won);
+  }, 30_000);
+
+  it("wins a game of Halma the same way", () => {
+    const state = playOut(RULE_VARIANTS.halma, BOT_TIERS.dan, BOT_TIERS.kyu, 1234);
+    expect(state.status).toBe(GAME_STATUS.won);
+  }, 30_000);
+});
+
 describe("what every grade sees", () => {
   it("takes five in a row when it is there to be taken", () => {
     // Black four in a row on row 4; white idling in the four corners, where it

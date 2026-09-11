@@ -1,3 +1,4 @@
+import { racesForCamp } from "./rules/farCamp";
 import { otherStone } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, EVAL_WEIGHTS, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
@@ -55,7 +56,7 @@ function baseScore(state: GameState, turn: BotTurn, after: GameState, me: Stone,
    * to do with the thing it was playing. Its position score is the area, and
    * the area already says what a stone was worth.
    */
-  const readsPoints = !variant.flips && !variant.camps && !variant.connects && !variant.go;
+  const readsPoints = !variant.flips && !racesForCamp(variant) && !variant.connects && !variant.go;
   if (turn.kind === MOVE_KINDS.place && readsPoints) {
     const point = { row: turn.row, col: turn.col };
     const stone = turn.stone ?? me;

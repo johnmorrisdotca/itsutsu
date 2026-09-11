@@ -1,3 +1,4 @@
+import { racesForCamp } from "./rules/farCamp";
 import { isLegalMove } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, DRAW_SCORE, SEARCH } from "./opponent.constants";
@@ -45,7 +46,7 @@ export function searchable(spec: VariantSpec): boolean {
   return (
     readsThreats(spec) &&
     !spec.flips &&
-    !spec.camps &&
+    !racesForCamp(spec) &&
     !spec.connects &&
     spec.queue === null &&
     spec.quadrantSize === null &&
