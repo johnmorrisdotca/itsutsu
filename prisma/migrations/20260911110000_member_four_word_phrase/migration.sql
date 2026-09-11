@@ -1,0 +1,30 @@
+-- A member may hold a four-word phrase as a second credential.
+--
+-- Two nullable columns and nothing else. That is the entire storage cost of
+-- the feature: a hash of the phrase, and when it was set. The WORDS are not
+-- stored, and neither is any record of which candidate words the picker
+-- offered — those are drawn per request and travel in a signed ticket that is
+-- never written down.
+--
+-- PURELY ADDITIVE, AND THAT IS THE POINT RATHER THAN A CONVENIENCE. Gaining a
+-- credential must not touch identity: the same member id, the same games, the
+-- same ladder standing. There is no backfill here, no UPDATE, no re-keying and
+-- no second row for anybody — a member who sets a phrase tomorrow is the same
+-- row they were today, with one more column filled in.
+--
+-- The reason that is spelled out: the bug fixed in 0.132.0 orphaned five games
+-- and a rating because a person's record was found by their NAME and she
+-- renamed herself. A "migration" that moved members about to give them a
+-- credential would be the same fault a third time. So there is nothing to move.
+--
+-- NULL MEANS NO PHRASE, and nothing else. No default, because a default here
+-- would be a credential nobody chose, written onto every row and unreadable
+-- afterwards from one somebody actually set. An account with neither column
+-- filled is an ordinary account that signs in with Google, which is every
+-- account on the site the day this lands.
+--
+-- Safe to deploy before the code that reads it: an older release simply never
+-- selects these columns.
+-- AlterTable
+ALTER TABLE "Member" ADD COLUMN     "phraseHash" TEXT,
+ADD COLUMN     "phraseSetAt" TIMESTAMP(3);
