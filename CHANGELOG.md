@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.143.0
+- The one-line way to start a game is back on the games page, beside the setup screen rather than instead of it: say it in a sentence when you know what you want, or settle everything properly when you do not
+
 ## 0.142.0
 - Work on the board is claimed rather than assigned, with a six-hour lease: a row says who has it and since when, and goes stale on its own rather than sitting on somebody's name for ever
 - The people building this site can finally write to the board through its own door, so a request you make is a row you can see, rather than something written past every check the board has

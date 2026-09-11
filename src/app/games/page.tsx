@@ -8,15 +8,18 @@ import { InviteFriends } from "@/components/mine/InviteFriends";
 import { cookies } from "next/headers";
 
 import { HereNowPanel } from "@/components/mine/HereNowPanel";
+import { StartGame } from "@/components/mine/StartGame";
 import { START_COPY } from "@/components/mine/mine.constants";
+import type { GameGroup, SeatOnBoard } from "@/components/mine/startGame.types";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
-import { OPEN_GAMES_SHOWN, fetchOpenSeats, fetchPosterCountries } from "@/lib/history/openGames";
+import { OPEN_GAMES_SHOWN, fetchOpenSeats, fetchPosterCountries, oneOfEachKind } from "@/lib/history/openGames";
 import { SEAT_RATING, filterOpenSeats, posterOf, readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { ratingsByName } from "@/lib/rating/players";
 import { playerKey } from "@/lib/rating/playerKey";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatClaims } from "@/lib/history/seatCookie";
+import { fetchOpponents } from "@/lib/social/opponents";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { fetchHereNow } from "@/lib/social/presence";
 import { fetchPlayedCounts } from "@/lib/history/gameCounts";
@@ -114,18 +117,23 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
     fetchOpenSeats(claimed),
     fetchHereNow(),
   ]);
-  /*
-   * Who this reader has shut out, by id, because a seat is keyed by member
-   * and the list is kept by address. An invite holder has no address, so
-   * there is nobody for them to ignore.
-   *
-   * The list of possible OPPONENTS went with the sentence: it belonged to a
-   * form that is not on this page any more, and the setup screen builds it
-   * from the one place that builds it. This page used to keep a copy, and the
-   * copy asked this set of member ids whether it held an ADDRESS — a question
-   * with only one answer, so the ignore list did nothing here at all.
-   */
-  const ignored = email === null ? new Set<string>() : await ignoredMemberIds(email);
+  const [opponents, ignored] = await Promise.all([
+    /*
+     * The same list the setup screen offers, FROM THE ONE PLACE THAT BUILDS
+     * IT. This page used to keep its own copy, and the copy asked the set of
+     * ignored MEMBER IDS below whether it held an ADDRESS — a question with
+     * only one answer, so the ignore list did nothing here at all and somebody
+     * who had been shut out was still offered a game. The sentence came back
+     * in 0.143.0; the copy did not, and must not.
+     */
+    fetchOpponents(email),
+    /*
+     * Who this reader has shut out, by id, because a seat is keyed by member
+     * and the list is kept by address. An invite holder has no address, so
+     * there is nobody for them to ignore.
+     */
+    email === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(email),
+  ]);
 
   /*
    * Two seats never belong on somebody's board: their own, and one posted by
@@ -161,6 +169,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
    * a whole kind whenever the one kept was the reader's own.
    */
   const usable = seatGames.filter(theirs);
+  const choices = oneOfEachKind(usable);
 
   /*
    * The rating a reader asked to filter posters by. Looked up once, for
@@ -177,6 +186,16 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
   // The flag beside a name, for exactly the rows this page is about to show.
   const countryByMemberId = await fetchPosterCountries(openSeats.map((game) => posterOf(game).memberId));
 
+  // The sentence reads the same lists the page below it shows.
+  const groups: GameGroup[] = GAME_FAMILIES.map((family) => ({
+    title: family.title,
+    kanji: family.kanji,
+    games: family.games.map((variant) => ({
+      variant,
+      label: RULE_VARIANT_DISPLAY[variant].label,
+      kanji: RULE_VARIANT_DISPLAY[variant].kanji,
+    })),
+  }));
   /*
    * The catalogue's own view of the same families, with what has been played
    * of each. Built here because this is where the counts are read; the
@@ -200,6 +219,14 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         last: count?.last ?? undefined,
       };
     }),
+  }));
+
+  const seats: SeatOnBoard[] = choices.map((game) => ({
+    id: game.id,
+    variant: game.variant,
+    size: game.size,
+    moveTimeMs: game.moveTimeMs,
+    who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || "Somebody",
   }));
 
   return (
@@ -242,16 +269,26 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         </h2>
         <p className="max-w-prose text-sm text-muted">{START_COPY.lead}</p>
         {/*
-          A way in rather than a form. This was a sentence with dropdowns in
-          it, which settled some of a game and left the rest to be discovered
-          at a board that already looked like a game — John's words for it were
-          "very bad design", and he was right: a thing you are still deciding
-          should not be sitting on a board that has already started.
+          THE ONE-LINE SENTENCE, BACK BESIDE THE DOOR RATHER THAN INSTEAD OF
+          IT. John: "we need that one line version back."
 
-          So the lobby offers the door and /games/new is the room. Everything a
-          game will be played under is settled there, and nothing is written
-          until it is all decided.
+          0.135.0 removed it, and that was half right. What he had objected to
+          was landing on a board with nothing agreed — "very bad design" — and
+          the sentence being the ONLY way in. It was not the sentence itself:
+          it settles the game, the board, the pace and who it is against, and
+          its "set up the board" path now goes to the game's own front door
+          rather than a live board, so the thing he objected to is gone from
+          it either way.
+
+          So there are two ways in and each says which it is. The sentence is
+          the quick one for somebody who knows what they want; /games/new is
+          the room where everything is settled, including the things the
+          sentence does not ask — rated or friendly, the opening, the draw
+          limit. Neither is a lesser version of the other.
         */}
+        <div className={PANEL_CLASS}>
+          <StartGame families={groups} seats={seats} opponents={opponents} signedIn={email !== null} />
+        </div>
         <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="lobby-start-ways">
           <Link href="/games/new" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="lobby-set-up">
             Play 対局
