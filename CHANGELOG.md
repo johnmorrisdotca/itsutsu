@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.130.0
+- Twenty games at once is the limit however you come by the twenty-first: answering a posted seat and following a seat link are counted too, and say how many you are holding
+
 ## 0.129.0
 - Changing the language back works: choosing English after Japanese now takes effect on the click, rather than needing the site's data cleared
 - The people who played a game are offered a game on that game's own page

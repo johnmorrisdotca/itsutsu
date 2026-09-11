@@ -1,6 +1,6 @@
 {
   "name": "gomoku",
-  "version": "0.129.1",
+  "version": "0.130.0",
   "private": true,
   "scripts": {
     "version:bump": "node scripts/bump-version.mjs",
