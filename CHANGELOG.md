@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.144.0
+- The boards played in the squares — tic-tac-toe, Othello, Checkers, Connect Four — are framed by their own wood the way a Go board is, instead of running flush to the edge and reading as a crop of a board rather than a board
+
 ## 0.143.0
 - The one-line way to start a game is back on the games page, beside the setup screen rather than instead of it: say it in a sentence when you know what you want, or settle everything properly when you do not
 
