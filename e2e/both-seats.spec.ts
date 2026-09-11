@@ -77,8 +77,13 @@ test.describe("answering your own posted seat", () => {
      * on a phone came straight back on a laptop.
      */
     const game = await postSeat(page.request);
+    /*
+     * The one-line sentence this used to read has gone; the seats board on the
+     * lobby is what says what is on offer now, and it is the surface the rule
+     * is about. Waited for before anything is denied of it.
+     */
     await page.goto("/games");
-    await expect(page.getByTestId("start-game-go")).toBeVisible();
+    await expect(page.getByTestId("open-games")).toBeVisible();
 
     /*
      * Asked of this seat rather than of the button, because the button speaks

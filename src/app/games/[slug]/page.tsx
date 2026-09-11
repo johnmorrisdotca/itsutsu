@@ -112,16 +112,31 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           ) : null}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             {/*
-              Two ways onto a board, because they are two different intentions
-              and the site has always had both: a board in this browser now,
-              and a game set up against somebody. Neither is what a game's NAME
-              means, which is why the name leads here and not to either of them.
+              Two different intentions, and the site has always had both — but
+              they were the wrong way round. The loud one was "Play", which
+              lands straight on a board, and a board is a game the moment a
+              stone goes down: the mirror writes it as a hot-seat game without
+              anybody settling anything. So somebody wanting a game against a
+              person pressed the loud button and arrived somewhere that had
+              already started.
+
+              The fault was never that the wrong button was loud. It was that
+              the word Play was attached to the thing that does not start a
+              game, and a quieter lie is still a lie. So Play now leads where
+              the word means: to setting a game up, and then to a game.
+
+              The board keeps its place and gets an honest name. It is how you
+              meet one of the games nobody has played yet, and how two people
+              at one screen play, and both of those are worth having — they
+              were only ever mislabelled. Naming them makes the old argument
+              here true rather than refuted: two ways onto a board IS fine,
+              once the two say which they are.
             */}
-            <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="game-play">
+            <Link href={setUpPath(variant)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="game-set-up">
               Play {page.title} →
             </Link>
-            <Link href={setUpPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-4 py-2`} data-testid="game-set-up">
-              Set one up 対局設定
+            <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-4 py-2`} data-testid="game-play">
+              Try the board 試し打ち
             </Link>
           </div>
         </div>

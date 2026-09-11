@@ -15,9 +15,22 @@ test.describe("the game record", () => {
     await playSequence(page, 15, winningSequence());
     await expect(page.getByText(/wins in 9 moves/)).toBeVisible();
 
+    /*
+     * A board is written to the server by a mirror running in the background,
+     * so the game is filed a moment AFTER the winning stone is drawn. Alone
+     * that moment is imperceptible; under a full suite the machine is busy and
+     * it can outlast the default patience — which is how this passed on its
+     * own and failed in the suite, pointing at the record page rather than at
+     * the mirror.
+     *
+     * Waited for longer, not asserted more loosely: the claim is still that
+     * exactly one game is filed under this name. See the row about a game
+     * refreshed a second after a move, which is the same mirror seen from the
+     * other side.
+     */
     await page.goto(`/history?search=${stamp}`);
     const rows = page.getByTestId("history-list").getByRole("listitem");
-    await expect(rows).toHaveCount(1);
+    await expect(rows).toHaveCount(1, { timeout: 30_000 });
     await expect(rows.first()).toContainText(stamp);
     await expect(rows.first()).toContainText("9 moves");
 

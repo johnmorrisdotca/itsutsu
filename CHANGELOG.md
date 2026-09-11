@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.135.0
+- Play leads to settling a game rather than to a board: the game, the board, the pace and who you are playing are all agreed before a stone can be put down, and there is a setup screen for when you have not picked a game yet
+- The board you can just start playing on is still there, under an honest name — it is how you meet a game nobody has played, and how two people at one screen play
+
 ## 0.134.0
 - The computer players can play Chinese Checkers: every grade now races for the far camp and wins one, where before every game against one wandered and was called off unfinished
 

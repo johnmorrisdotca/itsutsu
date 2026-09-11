@@ -12,6 +12,7 @@ import { gameDefaultsFor } from "@/lib/auth/members";
 import { boardSizesFor, OPENING_RULES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +38,11 @@ export default async function SetUpPage({ params }: PageProps<"/games/[slug]/new
   if (variant === null) notFound();
 
   const email = await currentEmail();
-  const [defaults, opponents] = await Promise.all([gameDefaultsFor(email), fetchOpponents(email)]);
+  const [defaults, opponents, seats] = await Promise.all([
+    gameDefaultsFor(email),
+    fetchOpponents(email),
+    seatsToSitAt(),
+  ]);
   const copy = RULE_VARIANT_DISPLAY[variant];
 
   /*
@@ -73,7 +78,7 @@ export default async function SetUpPage({ params }: PageProps<"/games/[slug]/new
           .
         </p>
       </div>
-      <SetUpGame initial={initial} opponents={opponents} signedIn={email !== null} />
+      <SetUpGame initial={initial} opponents={opponents} seats={seats} signedIn={email !== null} />
     </Page>
   );
 }
