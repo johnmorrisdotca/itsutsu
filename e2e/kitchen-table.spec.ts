@@ -89,10 +89,22 @@ test.describe("four words are how you get back to your games", () => {
       data: { variant: "freestyle", size: 9, moveTimeMs: null },
     });
     expect(started.status(), await started.text()).toBe(201);
-    const game = (await started.json()) as { id: string };
+    const game = (await started.json()) as { id: string; blackToken: string };
     tidyAway(game.id);
 
     const johnPage = await johnContext.newPage();
+    /*
+     * He takes black first, which the comment above assumed and nothing did.
+     * Creating a game through the API binds NEITHER seat — a seat is bound by
+     * a challenge or by somebody following its link — so both were free, and
+     * the panel rightly refuses to sit anybody down until it is told which
+     * chair they mean. The button stayed disabled for two minutes and the
+     * spec read it as the phrase being rejected.
+     *
+     * Following his own seat link is what a person does, and it leaves white
+     * as the only free seat, which is the situation this test is about.
+     */
+    await johnPage.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await johnPage.goto(`/games/gomoku/match/${game.id}`);
     await expect(johnPage.getByTestId("sit-as-closed")).toHaveAttribute("data-ready", "true");
 
@@ -145,10 +157,22 @@ test.describe("four words are how you get back to your games", () => {
     const started = await johnContext.request.post("/api/games/live", {
       data: { variant: "freestyle", size: 9, moveTimeMs: null },
     });
-    const game = (await started.json()) as { id: string };
+    const game = (await started.json()) as { id: string; blackToken: string };
     tidyAway(game.id);
 
     const johnPage = await johnContext.newPage();
+    /*
+     * He takes black first, which the comment above assumed and nothing did.
+     * Creating a game through the API binds NEITHER seat — a seat is bound by
+     * a challenge or by somebody following its link — so both were free, and
+     * the panel rightly refuses to sit anybody down until it is told which
+     * chair they mean. The button stayed disabled for two minutes and the
+     * spec read it as the phrase being rejected.
+     *
+     * Following his own seat link is what a person does, and it leaves white
+     * as the only free seat, which is the situation this test is about.
+     */
+    await johnPage.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await johnPage.goto(`/games/gomoku/match/${game.id}`);
     await johnPage.getByTestId("sit-as-open").click();
     await expect(johnPage.getByTestId("sit-as-panel")).toBeVisible();
