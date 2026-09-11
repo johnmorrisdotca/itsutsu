@@ -1,21 +1,17 @@
 import { connection } from "next/server";
 import Link from "next/link";
 
-import { PlayerActions } from "@/components/players/PlayerActions";
-import { PlayerLink, StandingsTable } from "@/components/players/Standings";
+import { LadderSideView, PlayerLink } from "@/components/players/Standings";
 import { RecordLine } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { currentEmail } from "@/lib/auth/currentSession";
-import { findMember, findMembersByNames, type NamedMember } from "@/lib/auth/members";
-import { standingsPath } from "@/lib/gomoku/slugs";
+import { currentSession } from "@/lib/auth/currentSession";
+import { findMember } from "@/lib/auth/members";
+import { playPath, standingsPath } from "@/lib/gomoku/slugs";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
-import { playerKey } from "@/lib/rating/playerKey";
 import { fetchVariantLeaders } from "@/lib/rating/variantRatings";
-import { buddyEmails } from "@/lib/social/buddies";
-import { ignoredEmails } from "@/lib/social/ignores";
 
 /**
- * Where everybody stands at one game, on that game's own page.
+ * Where everybody stands at one game, in the side column of that game's page.
  *
  * Four of the seven things John asked a game's page to do, and they are four
  * because he listed them separately rather than because they are four
@@ -23,63 +19,84 @@ import { ignoredEmails } from "@/lib/social/ignores";
  * stands, and whether any of these people would give them a game. Each is the
  * same ladder read from a different seat, so they are one panel.
  *
- * ALL OF THIS ALREADY EXISTED, at /champions/<slug>, and nothing led there but
- * a word in the footer. The page every game name on this site points at — the
- * rules page, which `GameName` sends every list, every record row and every
- * family card to — had a text link to it and no ladder on it. So the site had
- * two candidates for a game's front door: one already largely right and
- * unreachable, the other reachable from everywhere and stopping short.
+ * A SIDE-VIEW, NOT THE TABLE. This began as the whole standings table in the
+ * middle of the page, then as that table crammed into a 288px column, and John
+ * named the mistake in both: "it should be a side-view so not the real view you
+ * see in a full page obviously... less columns". So this is rank, player,
+ * rating, twenty-five deep, and `/games/<slug>/standings` holds the records,
+ * the tiers, the ladder against the programs and what a reader may do about any
+ * of them. A sidebar leaderboard is a well-worn shape; the job here was to use
+ * it rather than re-derive it.
  *
- * The front door is the rules page, because that is where the links already
- * go. This brings the ladder to the door rather than moving the door.
- * /champions/<slug> keeps the FULL fifty and the separate ladder against the
- * programs, and is linked from the head of this panel: a slice here, the whole
- * set one click on, which is the promise `GameCount` already makes about every
- * number on this site.
+ * AND IT DRAWS ITS TABLE EVEN WHEN NOBODY HAS PLAYED. That is John's rule and
+ * it is the opposite of what this panel used to do — it printed a sentence of
+ * apology where the headings should have been. "empty tables are fine! show
+ * the table. Show nothing has been played yet... and that's a change to have a
+ * link saying - be the first to play!" Thirty-nine of the games here have
+ * barely been touched; shown this way each of them is an invitation instead of
+ * a regret. See Show The Data, Not The Way To It in AGENTS.md.
  *
- * `connection()` for the same reason `PlayedHere` has it. Every rules page is
- * prerendered, and a database read in one asks at build time a question only a
- * running site can answer — the build died on /rules/drop-four once already
- * and nothing deployed at all.
+ * `connection()` because a game's page is PRERENDERED — all forty of them, and
+ * rightly, since what a game is does not depend on who is asking. A database
+ * read out in the page itself asks at build time a question only a running site
+ * can answer: it killed the build on the old /rules/drop-four and nothing
+ * deployed at all. This panel is fetched when somebody actually asks for the
+ * page, which is also the only moment its answer is true.
  */
 
-/** How much of the ladder a game's own page shows before sending you to all of it. */
-const SHOWN = 10;
+/** How much of the ladder the side-view shows before sending you to all of it. */
+const SHOWN = 25;
 
 export async function GameLadder({ variant, title }: { variant: string; title: string }) {
   await connection();
 
   /*
-   * NOTHING ABOUT PEOPLE FOR A READER WITH NO INVITE, and this is the gate's
-   * decision rather than a new one of mine.
+   * WHO IS ASKING — the session, not the address.
    *
-   * `/rules` is one of the few open paths in `proxy.ts`, and the reason
-   * written there is exact: the rules and learning pages "are documentation:
-   * they render nothing a visitor wrote, hold no data, and are the pages you
-   * would want someone to be able to read and link to before deciding to ask
-   * for an invite". A ladder is the opposite of all three — it is members'
-   * names, their ratings and their records, and it is the site's data rather
-   * than its documentation.
+   * `/games/<slug>` is open without an invite, and `proxy.ts` is exact about
+   * what an open page may hold: pages that "render nothing a visitor wrote"
+   * and hold "no data". A ladder is the opposite of both — it is members'
+   * names, their ratings and their records. So a stranger is told what this
+   * panel is and shown the door, which is the honest version of the rule: an
+   * empty table would say nobody has played this game, and people have.
    *
-   * So the front door has two halves. What a game IS, which anybody may read
-   * and link to, and who plays it, which is for members. Moving the ladder
-   * onto the rules page must not quietly move the gate with it, and a check
-   * here rather than in `proxy.ts` is the right place for the same reason the
-   * gate file says: additions belong after a decision has arrived at yes,
-   * never inside the deciding.
-   *
-   * Read before anything else, so an anonymous request costs no query at all.
+   * It is the SESSION that decides, and that distinction is a person. Asking
+   * `currentEmail()` here turned away everybody who joined with an invite code
+   * and never signed in with Google — which is how everybody John invites gets
+   * in. Read first, so an anonymous request costs no query at all.
    */
-  const mine = await currentEmail();
-  if (mine === null) return null;
+  const session = await currentSession();
+  if (session === null) {
+    return (
+      <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-ladder">
+        <Heading />
+        <p className="text-sm text-muted" data-testid="game-ladder-shut">
+          Reading about {title} is open to anybody. Who is winning at it is the playing half of
+          this site, and that needs an invite.
+        </p>
+        {/*
+          The same words the catalogue uses for the same door, so a reader who
+          has already met it recognises it rather than wondering whether this
+          is a different one.
+        */}
+        <p className="text-sm">
+          <Link href="/join" className="font-semibold underline-offset-2 hover:underline" data-testid="ladder-join">
+            I have an invite →
+          </Link>
+        </p>
+      </section>
+    );
+  }
 
-  const [standings, me] = await Promise.all([fetchVariantLeaders(variant, SHOWN), findMember(mine)]);
-
-  /* What the reader may do about the people on this ladder, for the names actually shown. */
-  const [members, buddies, ignored] = await Promise.all([
-    findMembersByNames(standings.map((one) => one.name)) as Promise<Map<string, NamedMember>>,
-    buddyEmails(mine),
-    ignoredEmails(mine),
+  /*
+   * An invite holder has no address, and several things below are about a
+   * named person rather than about a reader: their own record, and which of
+   * these names is theirs. Those are skipped rather than guessed at.
+   */
+  const mine = session.email ? session.email.trim().toLowerCase() : null;
+  const [standings, me] = await Promise.all([
+    fetchVariantLeaders(variant, SHOWN),
+    mine === null ? Promise.resolve(null) : findMember(mine),
   ]);
 
   /*
@@ -99,60 +116,38 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="game-ladder">
-      <h2 className={`${SECTION_TITLE} flex items-baseline justify-between gap-2`}>
-        <span>
-          Who is best at it <span className="font-mincho normal-case tracking-normal">名人</span>
-        </span>
-        <Link
-          href={standingsPath(variant)}
-          className="text-xs font-normal tracking-normal normal-case underline-offset-2 hover:underline"
-          data-testid="game-ladder-all"
-        >
-          The whole ladder →
-        </Link>
-      </h2>
+      <Heading />
 
-      {leader === undefined ? (
-        <p className="text-sm text-muted" data-testid="game-ladder-empty">
-          Nobody holds a standing at {title} yet. Finish a rated game against another member and the
-          first one appears here.
+      {/*
+        Said in a sentence as well as shown in a table, because "who's the best
+        at that game" is a question with one name for an answer, and a reader
+        should not have to read a ranking to get it.
+      */}
+      {leader === undefined ? null : (
+        <p className="text-sm" data-testid="game-champion">
+          <span className="text-muted">Champion:</span> <PlayerLink name={leader.name} />{" "}
+          <span className="font-mono text-muted tabular-nums">{leader.rating}</span>
         </p>
-      ) : (
-        <>
-          {/*
-            Said in a sentence as well as shown in a table, because "who's the
-            best at that game" is a question with one name for an answer, and a
-            reader should not have to read a ranking to get it.
-          */}
-          <p className="text-sm" data-testid="game-champion">
-            <span className="text-muted">Champion:</span> <PlayerLink name={leader.name} />{" "}
-            <span className="font-mono tabular-nums text-muted">{leader.rating}</span>
-          </p>
-          <div className="overflow-x-auto">
-            <StandingsTable
-              standings={standings}
-              actions={(standing) => {
-                const member = members.get(playerKey(standing.name));
-                const email = member?.email ?? null;
-                return (
-                  <PlayerActions
-                    email={email}
-                    memberId={member?.id}
-                    isBuddy={email !== null && buddies.has(email)}
-                    ignoring={email !== null && ignored.has(email)}
-                    isComputer={Boolean(member?.botTier)}
-                    isYou={email !== null && email === mine}
-                    signedIn
-                    compact
-                    testId="ladder-actions"
-                  />
-                );
-              }}
-              actionsLabel="Ask"
-            />
-          </div>
-        </>
       )}
+
+      <LadderSideView
+        standings={standings}
+        emptyNote={`Nobody holds a standing at ${title} yet. A standing comes from a rated game between two members.`}
+        invitation={
+          leader !== undefined ? undefined : (
+            <p className="text-sm">
+              <Link
+                href={playPath(variant)}
+                className="font-semibold underline-offset-2 hover:underline"
+                data-testid="ladder-be-first"
+              >
+                Be the first to play {title} →
+              </Link>
+            </p>
+          )
+        }
+      />
+      <WholeLadder variant={variant} />
 
       {/*
         Where the reader stands at this game, under the ladder they are
@@ -162,14 +157,49 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
         the games it counted.
       */}
       {me !== null && yours !== null ? (
-        <p
-          className="flex flex-wrap items-baseline gap-x-2 border-t border-rule pt-2 text-sm"
+        <div
+          className="flex flex-col gap-1 border-t border-rule pt-2 text-sm"
           data-testid="your-game-record"
         >
           <span className="text-muted">Your record at {title}:</span>
           <RecordLine record={yours} of={{ player: me.name, variant }} testId="your-game-record-line" />
-        </p>
+        </div>
       ) : null}
     </section>
+  );
+}
+
+/** The panel's name. */
+function Heading() {
+  return (
+    <h2 className={SECTION_TITLE}>
+      Who is best at it <span className="font-mincho normal-case tracking-normal">名人</span>
+    </h2>
+  );
+}
+
+/**
+ * The way on to the whole of it: the records, the tiers, the ladder against
+ * the programs, and what a reader may do about any of these people.
+ *
+ * UNDER the table rather than beside the heading, which is both the shape a
+ * reader expects of a leaderboard and the only one that fits: a 288px column
+ * broke "Who is best at it 名人" across two lines to make room for it.
+ *
+ * It is here whether or not the ladder has anybody on it. A side-view that led
+ * nowhere would be the dead end this site has a gate against, and an empty one
+ * that led nowhere would be a dead end with nothing in it.
+ */
+function WholeLadder({ variant }: { variant: string }) {
+  return (
+    <p className="text-xs">
+      <Link
+        href={standingsPath(variant)}
+        className="text-muted underline-offset-2 hover:underline"
+        data-testid="game-ladder-all"
+      >
+        The whole ladder →
+      </Link>
+    </p>
   );
 }

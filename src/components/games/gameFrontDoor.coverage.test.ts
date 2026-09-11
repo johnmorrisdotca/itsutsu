@@ -27,6 +27,7 @@ import { describe, expect, it } from "vitest";
 const GAME_PAGE = "src/app/games/[slug]/page.tsx";
 const LADDER = "src/components/games/GameLadder.tsx";
 const FAMILY = "src/components/games/GameFamily.tsx";
+const STANDINGS = "src/app/games/[slug]/standings/page.tsx";
 const FOOTER = "src/components/layout/SiteFooter.tsx";
 
 const read = (path: string) => readFileSync(path, "utf8");
@@ -60,13 +61,29 @@ describe("a game's own page answers what was asked of it", () => {
     expect(source, "and the way onto a board").toContain("playPath(variant)");
   });
 
-  it("offers a game to the people it lists", () => {
+  it("offers a game to the people it lists, where it lists them in full", () => {
     /*
      * "Every opponent you are shown offers what you would want to do about
      * them" — this repo's own checklist. A ladder is a list of opponents
      * wearing a ranking, and it named ten people and offered nothing.
+     *
+     * THE OFFER MOVED WITH THE TABLE, which is the part worth pinning. The
+     * panel on a game's page is a SIDE-VIEW now — rank, player, rating, in a
+     * column 288px wide — because John said so in as many words: "it should be
+     * a side-view so not the real view you see in a full page obviously... less
+     * columns". A column of actions does not belong in that, so it lives on the
+     * whole ladder, which the side-view links to.
+     *
+     * Both halves are checked, because either one alone is the failure: the
+     * actions with nothing leading to them is a page nobody reaches, and the
+     * side-view with no destination is the dead end this site has a gate
+     * against. What must NOT happen is the affordance quietly disappearing
+     * because a narrow column could not hold it.
      */
-    expect(read(LADDER), "through the same component the directory uses").toContain("PlayerActions");
+    expect(read(STANDINGS), "through the same component the directory uses").toContain("PlayerActions");
+    expect(read(LADDER), "and the side-view leads to where they are offered").toContain(
+      "standingsPath(variant)",
+    );
   });
 });
 
@@ -105,15 +122,30 @@ describe("the ladder does not break the build it sits in", () => {
      *
      * `PlayerName` prints "Hanako M." and links to /players/hanako-morris, so
      * the whole name is still in the markup: a ladder drawn for a stranger
-     * would publish a surname. The panel asks who is reading and shows a
-     * reader with no session nothing at all, which is what keeps the front
-     * door open and the people behind it private.
+     * would publish a surname. So the panel asks who is reading, and names
+     * nobody to a reader with no session.
+     *
+     * IT ASKS FOR THE SESSION, NOT THE ADDRESS, and this check used to pin the
+     * opposite — it required the literal line `if (mine === null) return null;`
+     * where `mine` came from `currentEmail()`. That is null for a browser
+     * holding an INVITE, which is how everybody John invites gets in, so the
+     * panel was hidden from members while the test called it privacy. A test
+     * that pins an implementation pins its bugs too; this one states the rule.
+     *
+     * What a stranger gets instead of the table is a sentence and the door.
+     * An empty table would be the dishonest version of John's empty-table rule:
+     * it would say nobody has played this game, when people have.
      */
     const source = read(LADDER);
-    expect(source, "the ladder asks who is reading").toContain("currentEmail()");
-    expect(source, "and shows nothing at all to a reader with no session").toMatch(
-      /if \(mine === null\) return null;/,
+    expect(source, "the ladder asks who is reading").toContain("currentSession()");
+    expect(source, "and decides on the session rather than on an address").toMatch(
+      /if \(session === null\)/,
     );
+    expect(source, "naming nobody to a stranger, and saying why").toContain("game-ladder-shut");
+    expect(
+      source.slice(0, source.indexOf("if (session === null)")),
+      "and it asks before it reads anything about anybody",
+    ).not.toContain("fetchVariantLeaders(");
   });
 });
 

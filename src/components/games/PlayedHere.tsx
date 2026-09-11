@@ -1,13 +1,13 @@
 import { connection } from "next/server";
 import Link from "next/link";
 
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentSession } from "@/lib/auth/currentSession";
 
 import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { matchPath } from "@/lib/gomoku/slugs";
+import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { fetchPlayedCounts, recentGamesOf } from "@/lib/history/gameCounts";
 import { countText } from "@/lib/rating/figures";
 
@@ -49,11 +49,26 @@ import { countText } from "@/lib/rating/figures";
 export async function PlayedHere({ variant, title }: { variant: string; title: string }) {
   await connection();
 
-  // Documentation for a stranger; a record for a member.
-  if ((await currentEmail()) === null) return null;
+  /*
+   * Documentation for a stranger; a record for anybody who is in.
+   *
+   * The SESSION decides, not the address: `currentEmail()` is null for a
+   * browser holding an invite, and using it here hid the record from everybody
+   * who joined with a code rather than with Google. A stranger is told about
+   * the playing half once, by the ladder panel beside this one, rather than
+   * twice by two panels saying the same thing.
+   */
+  if ((await currentSession()) === null) return null;
 
   const [played, counts] = await Promise.all([recentGamesOf(variant), fetchPlayedCounts()]);
-  if (played.length === 0) return null;
+  /*
+   * NOT HIDDEN WHEN EMPTY. This used to `return null` here, which is the thing
+   * John objected to: "empty tables are fine! show the table. Show nothing has
+   * been played yet... and that's a change to have a link saying - be the first
+   * to play!" A reader learns the shape of what the site keeps, and a game
+   * nobody has played becomes an invitation instead of a silence. See Show The
+   * Data, Not The Way To It in AGENTS.md.
+   */
   const total = counts.get(variant)?.played ?? played.length;
 
   return (
@@ -73,6 +88,20 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
           title={`Every game of ${title} played here`}
         />
       </h2>
+      {played.length === 0 ? (
+        <div className="flex flex-col gap-2 text-sm" data-testid="played-here-empty">
+          <p className="text-muted">No games of {title} have been played here yet.</p>
+          <p>
+            <Link
+              href={playPath(variant)}
+              className="font-semibold underline-offset-2 hover:underline"
+              data-testid="played-here-be-first"
+            >
+              Be the first to play {title} →
+            </Link>
+          </p>
+        </div>
+      ) : null}
       <ul className="flex flex-col divide-y divide-rule text-sm">
         {played.map((game) => (
           <li key={game.id} className="flex items-baseline justify-between gap-2 py-1.5">

@@ -98,3 +98,74 @@ export function StandingsTable({
     </table>
   );
 }
+
+/**
+ * The same ladder as a SIDE-VIEW: rank, player, rating, and nothing else.
+ *
+ * Not the full table squeezed into a narrow column — a reduced form of it,
+ * which is how a leaderboard beside a page works everywhere and what John
+ * asked for when the first attempt reached for a wider column instead:
+ * "it should be a side-view so not the real view you see in a full page
+ * obviously... less columns". The record columns, the tier and whatever else
+ * belongs to the whole ladder live at /games/<game>/standings, where there is
+ * room to read them.
+ *
+ * THE EMPTY TABLE IS THE POINT, not the case to look past. John: "empty tables
+ * are fine! show the table. Show nothing has been played yet... and that's a
+ * change to have a link saying - be the first to play!" So the headings are
+ * drawn whether or not there is a row under them — a reader learns the shape
+ * of what this site keeps before there is any data to fill it, and a game
+ * nobody has touched becomes an invitation rather than an apology. See Show
+ * The Data, Not The Way To It in AGENTS.md.
+ *
+ * `invitation` is a node rather than a string because what it says depends on
+ * who is reading: somebody who can play is offered the board, and a stranger
+ * has to be told that the door is a door before being sent to it.
+ */
+export function LadderSideView({
+  standings,
+  emptyNote,
+  invitation,
+  testId = "ladder-side-view",
+}: {
+  standings: VariantStanding[];
+  /** What no rows MEANS here, in a sentence, under the headings. */
+  emptyNote: string;
+  /** The way in, for a ladder with nothing on it yet. */
+  invitation?: ReactNode;
+  testId?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <table className="w-full text-sm" data-testid={testId}>
+        <thead className={HEAD_CLASS}>
+          <tr>
+            <th className="py-1 pr-2">#</th>
+            <th className="py-1 pr-2">Player</th>
+            <th className="py-1 text-right">Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          {standings.length === 0 ? (
+            <tr className="border-t border-rule">
+              <td colSpan={3} className="py-2 text-sm text-muted" data-testid="ladder-side-view-empty">
+                {emptyNote}
+              </td>
+            </tr>
+          ) : (
+            standings.map((standing, index) => (
+              <tr key={standing.key} className="border-t border-rule">
+                <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
+                <td className="min-w-0 truncate py-1.5 pr-2">
+                  <PlayerLink name={standing.name} />
+                </td>
+                <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+      {invitation}
+    </div>
+  );
+}

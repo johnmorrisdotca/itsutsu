@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.128.0
+- The ladder is beside a game rather than below it: the top 25 in the side column, with the whole table one click away
+- A game nobody has played shows its table anyway, says so, and offers to let you be the first
+
 ## 0.127.0
 - A game is one address with everything about it underneath: its rules live at the game rather than in a namespace of their own, and the games root is where you meet them
 

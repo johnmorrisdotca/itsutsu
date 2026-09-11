@@ -160,18 +160,25 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             <PlayedHere variant={variant} title={page.title} />
           </Suspense>
 
+        </div>
+
+        <aside className="flex w-full flex-col gap-4 lg:w-72">
           {/*
             The ladder: who is best at it, where everybody stands, where the
-            reader stands, and a game offered to any of them. Four of the seven
-            errands, one panel, and it leads on to the whole of it at
+            reader stands, and the way on to the whole of it at
             /games/<slug>/standings.
+
+            IN THE SIDE COLUMN, which is the ticket John raised about it — it
+            sat under the rules and the record, below the fold, on the one page
+            whose job is to answer an errand without a click. A leaderboard
+            belongs beside the page, in the reduced form a side column can
+            carry; `GameLadder` shows rank, player and rating, and the full
+            table is one link away.
           */}
           <Suspense fallback={null}>
             <GameLadder variant={variant} title={page.title} />
           </Suspense>
-        </div>
 
-        <aside className="flex w-full flex-col gap-4 lg:w-72">
           {/*
             Pure, so no Suspense and no request-time boundary: a family is a
             table in `families.ts` and is the same for everybody. It prerenders
