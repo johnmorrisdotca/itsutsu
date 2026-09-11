@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { playerSlug } from "../src/lib/rating/playerKey";
 import { playAt } from "./support";
+import { shownName } from "../src/lib/rating/shownName";
 
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(
@@ -65,8 +66,13 @@ test.describe("notes, messages, deadlines and players", () => {
 
   test("a finished shared game between named players rates them and shows on their profiles", async ({ page, request }) => {
     const stamp = Date.now().toString(36);
-    const black = `Sora ${stamp}`;
-    const white = `Ren ${stamp}`;
+    /*
+     * Unique in the FIRST word, because that is what the site prints now — a
+     * surname is not on display, so a fixture made unique with one could no
+     * longer find itself in a list.
+     */
+    const black = `Sora${stamp} Tester`;
+    const white = `Ren${stamp} Tester`;
     /*
      * A shared game, given up by white. Only a shared game rates: a game at
      * one screen is filed and never rated, because the site cannot tell who
@@ -91,7 +97,12 @@ test.describe("notes, messages, deadlines and players", () => {
     await expect(page.getByTestId("player-rating")).toContainText("1580");
 
     await page.goto("/players?view=ladder");
-    await expect(page.getByTestId("players-table")).toContainText(black);
+    /*
+     * By the name the ladder PRINTS, which is the first one. The address still
+     * carries the whole of it — that is what playerSlug uses above — but a list
+     * shows a person by their first name now.
+     */
+    await expect(page.getByTestId("players-table")).toContainText(shownName(black));
   });
 
   test("a local game can still be played after the notes panel appears", async ({ page }) => {

@@ -2,6 +2,14 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
 import { removeGame } from "./tidy";
+import { shownName } from "../src/lib/rating/shownName";
+
+/*
+ * Names are matched by what the site PRINTS, through the same function the
+ * site prints them with — a first name and an initial. Spelling the displayed
+ * form out here instead would be a second copy of the rule, and the two would
+ * disagree the first time it changed.
+ */
 
 /**
  * A seat posted by somebody you ignore is not on your board.
@@ -30,7 +38,7 @@ test.describe("a seat from somebody you ignore", () => {
 
     // Before ignoring them, their seat is on the board. By name, because that
     // is what the board prints — the id is only in the link.
-    const theirSeat = page.getByTestId("open-game").filter({ hasText: other.name });
+    const theirSeat = page.getByTestId("open-game").filter({ hasText: shownName(other.name) });
     await page.goto("/games");
     // At least one: an earlier run may have left one of theirs standing too,
     // and the rule is about all of them, not about a particular seat.
@@ -42,7 +50,7 @@ test.describe("a seat from somebody you ignore", () => {
     try {
       await page.goto("/games");
       await expect(
-        page.getByTestId("open-game").filter({ hasText: other.name }),
+        page.getByTestId("open-game").filter({ hasText: shownName(other.name) }),
         "a seat from an ignored member was still on the board",
       ).toHaveCount(0);
     } finally {

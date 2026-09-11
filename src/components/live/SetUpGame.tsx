@@ -14,6 +14,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RulesForm } from "./RulesForm";
 import { describeRules } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
+import { shownName } from "@/lib/rating/shownName";
 
 /** What the opponent choice means; the same words the start sentence uses. */
 const ANYONE = "anyone";
@@ -124,7 +125,7 @@ export function SetUpGame({
               <optgroup label="Here now 在室">
                 {here.map((one) => (
                   <option key={one.email} value={`m:${one.email}`}>
-                    {one.name}
+                    {shownName(one.name)}
                   </option>
                 ))}
               </optgroup>
@@ -133,7 +134,7 @@ export function SetUpGame({
               <optgroup label="Players you know 知人">
                 {away.map((one) => (
                   <option key={one.email} value={`m:${one.email}`}>
-                    {one.name}
+                    {shownName(one.name)}
                   </option>
                 ))}
               </optgroup>

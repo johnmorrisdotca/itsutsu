@@ -2,6 +2,14 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { playerSlug } from "../src/lib/rating/playerKey";
 import { memberContext } from "./members";
+import { shownName } from "../src/lib/rating/shownName";
+
+/*
+ * Names are matched by what the site PRINTS, through the same function the
+ * site prints them with — a first name and an initial. Spelling the displayed
+ * form out here instead would be a second copy of the rule, and the two would
+ * disagree the first time it changed.
+ */
 
 /**
  * A name is a person, so wherever the site prints one it has to lead to them.
@@ -16,8 +24,15 @@ import { memberContext } from "./members";
  * which is the same person by a nearer road.
  */
 async function mentionsAllLink(page: Page, name: string): Promise<number> {
+  /*
+   * Found by what is PRINTED and required to lead to who they ARE. That gap
+   * is the whole of the first-names change: a list shows "Hanako M." and the
+   * link under it still goes to the page for the whole name. Looking for the
+   * full name in the text would find nothing, and looking for the short name
+   * in the address would pass while the link was broken.
+   */
   const allowed = [`/players/${playerSlug(name)}`, "/me"];
-  const mentions = page.getByText(name, { exact: true });
+  const mentions = page.getByText(shownName(name), { exact: true });
   const count = await mentions.count();
   for (let i = 0; i < count; i += 1) {
     const href = await mentions
@@ -41,8 +56,13 @@ test.describe("every name leads to the player", () => {
     request,
   }) => {
     const stamp = Date.now().toString(36);
-    const me = { email: `sweep-${stamp}@example.test`, name: `Sweep ${stamp}` };
-    const opponent = `Foil ${stamp}`;
+    /*
+     * The unique part is the FIRST word, because the first name is what the
+     * site now prints — a surname is not on display, so a fixture that made
+     * itself unique with one could no longer find itself.
+     */
+    const me = { email: `sweep-${stamp}@example.test`, name: `Sweep${stamp} Tester` };
+    const opponent = `Foil${stamp} Tester`;
 
     // A shared game, resigned, so both names have a record and a standing.
     const started = await request.post("/api/games/live", {
@@ -59,7 +79,7 @@ test.describe("every name leads to the player", () => {
 
     // The players page: here now, the directory, and the ladder.
     await page.goto("/players");
-    await expect(page.getByTestId("here-name").filter({ hasText: me.name })).toBeVisible();
+    await expect(page.getByTestId("here-name").filter({ hasText: shownName(me.name) })).toBeVisible();
     await everyMentionLinks(page, me.name);
     /*
      * The opponent is not asserted to be printed here. The directory and the
@@ -91,17 +111,17 @@ test.describe("every name leads to the player", () => {
 
   test("a member has a page from the day they join, before any game", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
-    const newcomer = { email: `newcomer-${stamp}@example.test`, name: `Newcomer ${stamp}` };
+    const newcomer = { email: `newcomer-${stamp}@example.test`, name: `Newcomer${stamp} Tester` };
     const context = await memberContext(browser, baseURL!, newcomer);
     const page = await context.newPage();
 
     // The link the directory and the here list print must lead to a page, not a 404.
     await page.goto("/players");
     await everyMentionLinks(page, newcomer.name);
-    await page.getByTestId("here-name").filter({ hasText: newcomer.name }).first().click();
+    await page.getByTestId("here-name").filter({ hasText: shownName(newcomer.name) }).first().click();
 
     await expect(page).toHaveURL(new RegExp(`/players/${playerSlug(newcomer.name)}$`));
-    await expect(page.getByTestId("player-profile")).toContainText(newcomer.name);
+    await expect(page.getByTestId("player-profile")).toContainText(shownName(newcomer.name));
     await expect(page.getByTestId("player-no-games")).toBeVisible();
 
     await context.close();

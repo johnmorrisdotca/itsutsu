@@ -5,12 +5,13 @@ import Link from "next/link";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import type { RatingTier } from "@/lib/rating/elo";
 import type { VariantStanding } from "@/lib/rating/variantRatings";
+import { shownName } from "@/lib/rating/shownName";
 
 /** A player's name, leading to their page. */
 export function PlayerLink({ name }: { name: string }) {
   return (
     <Link href={playerPath(name)} className="underline-offset-2 hover:underline">
-      {name}
+      {shownName(name)}
     </Link>
   );
 }

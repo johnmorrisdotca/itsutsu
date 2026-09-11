@@ -28,6 +28,7 @@ import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { PlayedFigure, RecordFigure } from "@/components/players/PlayerRecord";
 import { figuresOf, winRateText } from "@/lib/rating/figures";
 import { playerKeysFromSlug } from "@/lib/rating/playerKey";
+import { shownName } from "@/lib/rating/shownName";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { fetchPlayer } from "@/lib/rating/players";
@@ -122,7 +123,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * drifting apart would be a page whose links quietly ask about somebody
    * else.
    */
-  const shownName = player?.name ?? member?.name ?? keptRecord?.name ?? decoded;
+  const wholeName = player?.name ?? member?.name ?? keptRecord?.name ?? decoded;
   /*
    * Who the recent opponents are, in one query rather than one per row, and
    * only for a reader who could act on the answer. "Every opponent you are
@@ -179,7 +180,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          {shownName}
+          {shownName(wholeName)}
           {/*
             Where they are, said in full here because there is room for it —
             the directory has only the flag. The profile form has promised
@@ -280,7 +281,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
               value: (
                 <PlayedFigure
                   record={{ wins: counted.won, losses: counted.lost, draws: counted.drawn }}
-                  of={{ player: shownName, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
+                  of={{ player: wholeName, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
                 />
               ),
               testId: "player-played",
@@ -290,7 +291,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
               value: (
                 <RecordFigure
                   record={{ wins: counted.won, losses: counted.lost, draws: counted.drawn }}
-                  of={{ player: shownName, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
+                  of={{ player: wholeName, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
                 />
               ),
               testId: "player-record",
@@ -353,7 +354,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
           <WholeRecordPanel
             whole={whole}
-            name={shownName}
+            name={wholeName}
             showFigures={!(offered && scope === RECORD_SCOPES.everywhere)}
           />
         </section>
@@ -364,7 +365,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       {shown === null ? (
         <>
           <ItsutsuRecord
-            name={shownName}
+            name={wholeName}
             record={record}
             opponents={opponents}
             gifts={gifts}

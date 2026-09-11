@@ -12,6 +12,7 @@ import type { PlayerRecord } from "@/lib/history/playerRecord";
 import type { TimeGiftRecord } from "@/lib/history/timeGifts";
 import { countText, figuresOf, winRateText } from "@/lib/rating/figures";
 import { playerPath } from "@/lib/rating/playerKey";
+import { shownName } from "@/lib/rating/shownName";
 
 /**
  * What somebody has done here: the games by kind, the last few of them, and
@@ -163,7 +164,7 @@ export function ItsutsuRecord({
                       className="underline-offset-2 hover:underline"
                       data-testid="player-opponent"
                     >
-                      {game.opponent}
+                      {shownName(game.opponent)}
                     </Link>
                   ) : (
                     "anonymous"

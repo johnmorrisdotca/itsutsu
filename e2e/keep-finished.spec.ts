@@ -3,6 +3,14 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext } from "./members";
+import { shownName } from "../src/lib/rating/shownName";
+
+/*
+ * Names are matched by what the site PRINTS, through the same function the
+ * site prints them with — a first name and an initial. Spelling the displayed
+ * form out here instead would be a second copy of the rule, and the two would
+ * disagree the first time it changed.
+ */
 
 /**
  * How long a finished game stays in your own list.
@@ -69,7 +77,7 @@ test.describe("keeping finished games in your own list", () => {
 
     // Still in the record, which keeps everything however the queue is set.
     await page.goto(`/history?search=${encodeURIComponent(stamp)}`);
-    await expect(page.getByTestId("history-list")).toContainText(me.name);
+    await expect(page.getByTestId("history-list")).toContainText(shownName(me.name));
 
     await context.close();
   });
@@ -80,10 +88,11 @@ test.describe("keeping finished games in your own list", () => {
     request,
   }) => {
     const stamp = Date.now().toString(36);
-    const me = { email: `keeper3-${stamp}@example.test`, name: `Duster ${stamp}` };
+    // Unique in the first word, which is the part a list prints.
+    const me = { email: `keeper3-${stamp}@example.test`, name: `Duster${stamp} Tester` };
 
     const started = await request.post("/api/games/live", {
-      data: { blackName: me.name, whiteName: `Cloth ${stamp}`, size: 9 },
+      data: { blackName: me.name, whiteName: `Cloth${stamp} Tester`, size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; whiteToken: string };
@@ -110,7 +119,7 @@ test.describe("keeping finished games in your own list", () => {
 
     // Keeping everything: it is in the list.
     await page.goto("/games");
-    await expect(page.getByTestId("my-games-finished")).toContainText(`Cloth ${stamp}`);
+    await expect(page.getByTestId("my-games-finished")).toContainText(shownName(`Cloth${stamp} Tester`));
 
     await page.goto("/me?view=profile");
     await page.getByTestId("keep-finished-days").selectOption("7");
@@ -123,7 +132,7 @@ test.describe("keeping finished games in your own list", () => {
 
     // And still in the record, which keeps everything.
     await page.goto(`/history?search=${encodeURIComponent(stamp)}`);
-    await expect(page.getByTestId("history-list")).toContainText(me.name);
+    await expect(page.getByTestId("history-list")).toContainText(shownName(me.name));
 
     await context.close();
   });

@@ -7,6 +7,7 @@ import type { HereNow } from "@/lib/social/presence";
 import { ChallengeButton } from "./ChallengeButton";
 import { START_COPY } from "./mine.constants";
 import { RecencyLegend, RecencyMark } from "./Recency";
+import { shownName } from "@/lib/rating/shownName";
 
 /**
  * Who is in the room, beside the seats they might take. The players page
@@ -34,7 +35,7 @@ export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null 
               <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
                 {entry.name.trim() !== "" ? (
                   <Link href={playerPath(entry.name)} className="underline-offset-2 hover:underline">
-                    {entry.name}
+                    {shownName(entry.name)}
                   </Link>
                 ) : (
                   entry.email

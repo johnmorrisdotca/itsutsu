@@ -14,6 +14,7 @@ import { botsFor } from "@/lib/bots/bots.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import { PACES, START_COPY } from "./mine.constants";
 import type { StartGameProps } from "./startGame.types";
+import { shownName } from "@/lib/rating/shownName";
 
 /**
  * "anyone", "screen", "m:<email>" for a member, or "c:<id>" for one of the
@@ -267,7 +268,7 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
             <optgroup label={`${START_COPY.hereNow.label} ${START_COPY.hereNow.kanji}`}>
               {here.map((one) => (
                 <option key={one.email} value={`m:${one.email}`}>
-                  {one.name}
+                  {shownName(one.name)}
                 </option>
               ))}
             </optgroup>
@@ -276,7 +277,7 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
             <optgroup label={`${START_COPY.buddies.label} ${START_COPY.buddies.kanji}`}>
               {away.map((one) => (
                 <option key={one.email} value={`m:${one.email}`}>
-                  {one.name}
+                  {shownName(one.name)}
                 </option>
               ))}
             </optgroup>

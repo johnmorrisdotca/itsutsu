@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
+import { shownName } from "../src/lib/rating/shownName";
+
+/*
+ * Names are matched by what the site PRINTS, through the same function the
+ * site prints them with — a first name and an initial. Spelling the displayed
+ * form out here instead would be a second copy of the rule, and the two would
+ * disagree the first time it changed.
+ */
 
 /**
  * Every person's name on the site leads to that person.
@@ -18,8 +26,13 @@ import { memberContext, seedMember } from "./members";
 test.describe("a person's name leads to their page", () => {
   test("on a finished game's header, and on the games somebody has going", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
-    const me = { email: `named-${stamp}@example.test`, name: `Named ${stamp}` };
-    const them = { email: `foe-${stamp}@example.test`, name: `Foe ${stamp}` };
+    /*
+     * The unique part is the FIRST word, because the first name is what the
+     * site now prints — a surname is not on display, so a fixture that made
+     * itself unique with one could no longer find itself.
+     */
+    const me = { email: `named-${stamp}@example.test`, name: `Named${stamp} Tester` };
+    const them = { email: `foe-${stamp}@example.test`, name: `Foe${stamp} Tester` };
     await seedMember(me);
     await seedMember(them);
 
@@ -35,7 +48,7 @@ test.describe("a person's name leads to their page", () => {
     // The game shows in "your games" once this browser holds a seat in it.
     await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
     await page.goto("/games");
-    const mine = page.getByTestId("my-game").filter({ hasText: me.name }).first();
+    const mine = page.getByTestId("my-game").filter({ hasText: shownName(me.name) }).first();
     await expect(mine).toBeVisible();
     await expect(mine.getByTestId("player-name").first()).toHaveAttribute("href", /\/players\//);
 
@@ -56,7 +69,7 @@ test.describe("a person's name leads to their page", () => {
 
     await page.goto(`/history/gomoku/${game.id}`);
     const header = page.getByRole("heading", { level: 1 });
-    await expect(header).toContainText(me.name);
+    await expect(header).toContainText(shownName(me.name));
     // Both names in the header are links, which is what John reported missing.
     const named = header.getByTestId("player-name");
     await expect(named).toHaveCount(2);
@@ -64,7 +77,7 @@ test.describe("a person's name leads to their page", () => {
 
     // And following one really arrives at that person.
     await named.first().click();
-    await expect(page.getByTestId("player-profile")).toContainText(me.name);
+    await expect(page.getByTestId("player-profile")).toContainText(shownName(me.name));
 
     await context.close();
   });

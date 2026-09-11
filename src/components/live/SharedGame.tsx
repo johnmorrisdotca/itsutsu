@@ -24,6 +24,7 @@ import { describeRemaining } from "@/lib/history/deadline";
 import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
+import { shownName } from "@/lib/rating/shownName";
 import { useMatchClock } from "./useMatchClock";
 import { useMatchTalk } from "./useMatchTalk";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
@@ -473,7 +474,7 @@ export function SharedGame({
       {opponent !== null && seat !== null ? (
         <p className="text-xs text-muted" data-testid="opponent-line">
           You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
-          <span className="font-medium text-ink">{opponent.name}</span>
+          <span className="font-medium text-ink">{shownName(opponent.name)}</span>
           {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
           {opponent.awayUntil
             ? ` Away until ${new Date(opponent.awayUntil).toLocaleDateString()}; their deadline waits.`

@@ -22,6 +22,7 @@ import { SHOW_EVERYBODY_HREF } from "@/lib/rating/rememberedFilter";
 import { ignoredEmails } from "@/lib/social/ignores";
 import { playerPath } from "@/lib/rating/playerKey";
 import { recencyOf } from "@/lib/social/presence";
+import { shownName } from "@/lib/rating/shownName";
 
 /** How many of the most recently seen members the directory reads. */
 const RECENT = 200;
@@ -245,7 +246,7 @@ export async function Directory({
                   ) : null}
                   {entry.name.trim() !== "" ? (
                     <Link href={playerPath(entry.name)} className="underline-offset-2 hover:underline" data-testid="directory-name">
-                      {entry.name}
+                      {shownName(entry.name)}
                     </Link>
                   ) : (
                     entry.email

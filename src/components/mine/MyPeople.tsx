@@ -8,6 +8,7 @@ import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { RowActions } from "@/components/ui/Controls";
 import { fetchBuddies } from "@/lib/social/buddies";
 import { fetchIgnored } from "@/lib/social/ignores";
+import { shownName } from "@/lib/rating/shownName";
 
 /**
  * The people a member has said something about: the ones they play, the ones
@@ -77,7 +78,7 @@ export async function MyPeople({ email }: { email: string }) {
           <ul className="flex flex-col gap-1 text-sm">
             {ignored.map((entry) => (
               <li key={entry.email} className="flex items-center gap-3">
-                <span>{entry.name}</span>
+                <span>{shownName(entry.name)}</span>
                 <span className="ml-auto"><IgnoreButton email={entry.email} ignoring /></span>
               </li>
             ))}

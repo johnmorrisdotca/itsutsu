@@ -4,6 +4,7 @@ import Link from "next/link";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { fetchLeaders } from "@/lib/rating/players";
 import { playerPath } from "@/lib/rating/playerKey";
+import { shownName } from "@/lib/rating/shownName";
 
 /** How far down the ladder the page reads. */
 const LEADERS = 50;
@@ -47,7 +48,7 @@ export async function Ladder() {
               <tr key={player.key} className="border-t border-rule">
                 <td className="py-1.5 pr-3">
                   <Link href={playerPath(player.name)} className="underline-offset-2 hover:underline">
-                    {player.name}
+                    {shownName(player.name)}
                   </Link>
                 </td>
                 <td className="py-1.5 pr-3 font-mono tabular-nums">{player.rating}</td>

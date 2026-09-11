@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
+import { shownName } from "../src/lib/rating/shownName";
+
+/*
+ * Names are matched by what the site PRINTS, through the same function the
+ * site prints them with — a first name and an initial. Spelling the displayed
+ * form out here instead would be a second copy of the rule, and the two would
+ * disagree the first time it changed.
+ */
 
 /**
  * Somebody you have shut out is not offered back to you as an opponent.
@@ -36,19 +44,19 @@ test.describe("the opponent chooser obeys the ignore list", () => {
 
     const chooser = page.getByTestId("start-game-with");
     await page.goto("/games");
-    await expect(chooser).toContainText(them.name);
+    await expect(chooser).toContainText(shownName(them.name));
 
     // And on the setup screen, which reads the same list.
     await page.goto("/games/gomoku/new");
-    await expect(page.getByTestId("set-up-with")).toContainText(them.name);
+    await expect(page.getByTestId("set-up-with")).toContainText(shownName(them.name));
 
     const shut = await mine.request.post("/api/ignores", { data: { email: them.email } });
     expect(shut.status()).toBeLessThan(300);
 
     await page.goto("/games");
-    await expect(chooser).not.toContainText(them.name);
+    await expect(chooser).not.toContainText(shownName(them.name));
     await page.goto("/games/gomoku/new");
-    await expect(page.getByTestId("set-up-with")).not.toContainText(them.name);
+    await expect(page.getByTestId("set-up-with")).not.toContainText(shownName(them.name));
 
     await mine.close();
   });

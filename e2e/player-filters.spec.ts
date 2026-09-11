@@ -4,6 +4,14 @@ import { BOT_PROFILES, BOT_TIER_LIST } from "../src/lib/gomoku/opponent.constant
 import { AWAY_AFTER_DAYS } from "../src/lib/rating/directoryFilter";
 import { DIRECTORY_FILTER_COOKIE } from "../src/lib/rating/rememberedFilter";
 import { seedMember, seenDaysAgo } from "./members";
+import { shownName } from "../src/lib/rating/shownName";
+
+/*
+ * Names are matched by what the site PRINTS, through the same function the
+ * site prints them with — a first name and an initial. Spelling the displayed
+ * form out here instead would be a second copy of the rule, and the two would
+ * disagree the first time it changed.
+ */
 
 /**
  * Narrowing the directory.
@@ -20,12 +28,18 @@ import { seedMember, seenDaysAgo } from "./members";
  */
 
 const stamp = Date.now().toString(36);
-const HERE = { email: `filter-here-${stamp}@example.test`, name: `Filter Here ${stamp}` };
-const AWAY = { email: `filter-away-${stamp}@example.test`, name: `Filter Away ${stamp}` };
+/*
+ * Unique in the FIRST word, because that is the part the site prints. Named
+ * "Filter Here <stamp>" and "Filter Away <stamp>", both showed as "Filter M."
+ * — the stamp was in the half that is now an initial — and a test looking for
+ * one of them found two.
+ */
+const HERE = { email: `filter-here-${stamp}@example.test`, name: `FilterHere${stamp} Tester` };
+const AWAY = { email: `filter-away-${stamp}@example.test`, name: `FilterAway${stamp} Tester` };
 const A_ROBOT = BOT_PROFILES[BOT_TIER_LIST[0]].name;
 
 const named = (page: import("@playwright/test").Page, name: string) =>
-  page.getByTestId("directory").getByTestId("directory-name").filter({ hasText: name });
+  page.getByTestId("directory").getByTestId("directory-name").filter({ hasText: shownName(name) });
 
 test.describe("who the directory lists", () => {
   test.beforeEach(async () => {

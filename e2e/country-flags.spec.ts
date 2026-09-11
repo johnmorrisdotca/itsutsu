@@ -5,6 +5,7 @@ import { BOT_ALL_TIERS } from "../src/lib/gomoku/opponent.constants";
 import { countryFrom } from "../src/lib/social/countries";
 
 import { seedMember } from "./members";
+import { shownName } from "../src/lib/rating/shownName";
 
 /**
  * The flag beside somebody's name.
@@ -28,7 +29,8 @@ test.describe("where somebody is", () => {
   test("is on the players directory too, as the flag alone", async ({ page }) => {
     await seedMember({ email: "flags-ca@example.test", name: "Flags Ca", country: "Canada" });
     await page.goto("/players");
-    const row = page.locator("tr", { hasText: "Flags Ca" }).first();
+    // By the name the row PRINTS — "Flags Ca" is shown as "Flags C." now.
+    const row = page.locator("tr", { hasText: shownName("Flags Ca") }).first();
     await expect(row.getByTestId("country-mark")).toHaveAttribute("data-country", "CA");
   });
 

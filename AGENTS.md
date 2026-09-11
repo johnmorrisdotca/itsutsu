@@ -316,6 +316,27 @@ checks are made in three places and stated once.
 Whether work is *taken* from the board is the site owner's rule to make, not this file's.
 The gate only guarantees the board is worth making that rule out of.
 
+### Every Landed Commit Bumps The Version
+
+**Whoever lands a commit bumps `package.json` and adds a line to `CHANGELOG.md`
+in the same commit**, and says so to the other sessions first, so two of them
+never claim the same number. A **minor** is something a player would notice — a
+game, an opening, a page, a capability. A **patch** is a fix, a rewording, a
+refactor or a chore.
+
+This is written here because it was already written in the changelog's own
+preamble, and that is a file you only open if you are already thinking about
+releases. Fifteen commits landed in one night without a bump for exactly that
+reason: nothing in the instructions being followed said to, and nothing failed.
+`releases.test.ts` only refuses a changelog naming a version NEWER than
+`package.json` — shipping work that the changelog never mentions passes every
+gate there is.
+
+The cost is not tidiness. **The version and the changelog are how the site's
+owner knows something shipped.** A night of real fixes went out with the
+version unchanged, and from the outside that is indistinguishable from a night
+where nothing was deployed — which is exactly what he concluded, and said.
+
 ### Nothing Answers What It Cannot Answer
 
 A gate, a name and a return value are all reports. When one of them will not

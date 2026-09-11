@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 import { PLAYER_STATE, openGamesPage } from "./support";
+import { shownName } from "../src/lib/rating/shownName";
+
+/*
+ * Names are matched by what the site PRINTS, through the same function the
+ * site prints them with — a first name and an initial. Spelling the displayed
+ * form out here instead would be a second copy of the rule, and the two would
+ * disagree the first time it changed.
+ */
 
 /** A pace nothing else in the suite asks for, so these seats meet only each other. */
 const SEVEN_DAYS = String(7 * 24 * 60 * 60_000);
@@ -121,7 +129,7 @@ test.describe("starting a game is one sentence", () => {
     await page.getByTestId("start-game-pace").selectOption(SEVEN_DAYS);
 
     // The seat is on the board, and the sentence offers to take it rather than post another.
-    await expect(page.getByTestId("open-games")).toContainText(poster);
+    await expect(page.getByTestId("open-games")).toContainText(shownName(poster));
     await expect(page.getByTestId("start-game-go")).toHaveText(`Sit down with ${poster}`);
     await expect(page.getByTestId("start-game-hint")).toContainText("asking for exactly this");
 

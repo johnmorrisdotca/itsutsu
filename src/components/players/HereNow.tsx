@@ -3,6 +3,7 @@ import Link from "next/link";
 import { playerPath } from "@/lib/rating/playerKey";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { fetchHereNow } from "@/lib/social/presence";
+import { shownName } from "@/lib/rating/shownName";
 
 /**
  * Who is about, right now.
@@ -30,7 +31,7 @@ export async function HereNow({ now }: { now: Date }) {
               <RecencyMark recency={entry.recency} />
               {entry.name.trim() !== "" ? (
                 <Link href={playerPath(entry.name)} className="underline-offset-2 hover:underline" data-testid="here-name">
-                  {entry.name}
+                  {shownName(entry.name)}
                 </Link>
               ) : (
                 entry.email
