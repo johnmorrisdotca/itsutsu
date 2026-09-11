@@ -679,3 +679,205 @@ What to do, and it is cheap:
   address — the one a link, a seat token or a redirect actually produces —
   rather than importing the module. "It is in the tree" and "it runs" are two
   claims, and a resurrected file satisfies the first only.
+
+### Two More Ways A Clean Merge Is Wrong
+
+The section above is about a file. Both of these are about everything AROUND
+the file, they produce no conflict marker either, and both happened on
+2026-09-11 in the space of three merges.
+
+**A rename leaves dead links in files the rename never touched.** `/my-games`
+became `/play`, and the branch that did it updated every caller it knew about.
+Two were missed: one in a file nobody had listed, and one in a branch that had
+merged **twenty minutes earlier** and could not have known. That second one is
+the nasty shape — it was written against a tree where the old address existed,
+it was correct when written, it was correct when merged, and it was dead by the
+next commit.
+
+No ordering constraint can catch that, because the file did not exist in the
+queue when the queue was written. **The only thing that finds it is grepping
+the OLD name across the whole tree after the rename lands**, which by
+definition cannot be the list of files the rename touched.
+
+**A generated artefact whose source another branch rewrites.** One branch cut a
+96-pixel thumbnail for every game out of `public/art/games/<variant>.jpg`. The
+next branch replaced eight of those pictures. The merge was perfectly clean —
+**git does not know one file is made of the other** — so eight lists would have
+shown the old board beside the new one, in the same release that introduced
+both. Nothing failed; nothing could.
+
+So, when a merge brings in a file that something else is DERIVED from, re-run
+the derivation rather than reading the diff. Here that is `pnpm art:thumbs`,
+and it takes seconds. The general question to ask of any merge: **what in this
+tree was made out of a file this branch just changed?**
+
+### A Tolerant Assertion Enumerates What It TOLERATES
+
+A test that accepts more than one answer must list the answers it accepts,
+never the ones it rejects — because the answer you forget to exclude is always
+"nothing happened at all".
+
+`e2e/seat-token-privacy.spec.ts` guards a creation that may legitimately fail:
+
+```ts
+if (made.status() !== 201) {
+  expect([400, 404, 422]).toContain(made.status());
+  return;
+}
+```
+
+On a fresh database that call answered **401**, which is not in the list, so the
+spec failed loudly and the whole investigation below started. Had it been
+written the other way round — `expect(status).not.toBe(500)`, or with 401 added
+to be accommodating — the security regression test for 0.133.1 would have
+reported green on a runner where it had **never once created a game**.
+
+The same rule in one line: a green test must be a statement about the code, and
+"I could not get far enough to look" is not one.
+
+### A Fixture Must Make The Row It Signs In As
+
+The browser suite signs in as the operator, and the operator **was never a
+member**. `/api/session` with `kind: "admin"` mints a session and nothing else;
+a member is something Google makes, and `touchMember` returns early when there
+is no row rather than inventing one. So every route asking `currentMemberId()`
+answers 401 to the operator — challenging somebody, taking a seat, reading your
+own record, being badged on your own row.
+
+It was true from the day the suite was written and never showed once, because
+the default `ADMIN_EMAILS` is the site owner's own address and the shared
+development database has held his real Member row for months. **The suite was
+leaning on a row no fixture had ever made.** The first fresh database it met
+turned that into twenty-odd failures, in files testing something else entirely,
+none of which named the cause.
+
+This is the database-litter rule from the other end. That one says a spec must
+not assert anything about a row it did not create. This says the same thing
+about the row it *authenticates as*, which is easy to miss precisely because
+nothing asserts anything about it — it is scenery, until it is absent.
+
+**And the trap in fixing it.** The obvious remedy is the `seedMember` helper
+that already exists. It upserts, and its `update` writes a name, a country and
+a bio over whatever it finds — so on a developer's machine it would have
+quietly rewritten the owner's own profile on every run. `ensureMember` is
+create-only, with a deliberately empty `update`, for that reason. **A fixture
+that repairs a missing row must not also edit a present one.**
+
+### A Killed Job Reports As Cancelled, Not Failed
+
+`timeout-minutes` firing shows up as `cancelled` in `gh run list`, which is
+indistinguishable from a person pressing the button. The first run of the
+browser suite on a runner died at 30m18s having reached [539/517] with retries
+— essentially the whole suite — and read as though somebody had stopped it.
+
+The companion, one layer up: **`concurrency: cancel-in-progress` on the deploy
+workflow means a push kills the deploy under it.** That is right in the middle
+of a queue, where each push supersedes the last and costs nothing. It is
+dangerous at the END of one: push, something cancels it, nothing follows, and
+the site stays a version behind while every job reads green-or-cancelled rather
+than failed.
+
+**So after the last push of a session, check the live version rather than the
+run.** `curl -s https://itsutsu.com/games | grep -oE '0\.[0-9]+\.[0-9]+' | sort -u | head -1`
+reads it out of the page and needs no credential.
+
+The same distinction decides the two concurrency groups, which are deliberately
+opposite. `vercel-deploy.yml` cancels in progress, because **a superseded
+deploy is worthless**. `ci.yml` queues instead, because **a superseded test run
+is evidence** — it is the only record of whether the commit it was started for
+was sound, and it is the thing a bisect goes looking for.
+
+### An Absence Is Only Meaningful After A Presence Has Been Waited For
+
+`toHaveCount(0)` passes the instant it is asked. So does `not.toContainText`.
+Neither can tell "this is not offered" from "I asked before the page had
+answered", and the second one is always true for a moment on every page.
+
+This is the hydration race again, but it needs naming separately because the
+remedy people reach for does not cover it. A spec waiting on a marker before
+asserting something is PRESENT is the well-known case. A spec asserting
+something is ABSENT often waits on nothing at all, because there is nothing
+obvious to wait for — and it goes green immediately, for ever, whatever the
+page does.
+
+**So: wait for something that IS on the page before asserting that something
+else is not.** Usually a sibling — the form the control would have been in,
+the list the row would have been in. Then the absence is a statement about a
+rendered page rather than about the speed of the request.
+
+Three instances found in one night, all green, all saying nothing:
+
+- `e2e/opponent-actions.spec.ts` counted `computer-player-name` immediately
+  after `page.goto` in two tests — in a file whose own header warns about
+  "a skip that read as 'this player has no opponents' and meant 'I asked
+  before the page had answered', which is the quietest way for a test to say
+  nothing at all". The author fixed the count below and missed the two above.
+- A new spec asserted the variant chooser is not offered where the address
+  already names the game. It would have been green whether or not the chooser
+  was there.
+- Ten specs skip on database CONTENTS — "no computer players on this
+  database", "no finished games on this database" — and report green when they
+  skip. On a richer database they run; on a leaner one they assert nothing.
+  A skip is an absence too.
+
+**And the corollary, which is the reason this is a section rather than a
+footnote:** `ready()` appears in 2 of 102 spec files. Five hydration races
+were found in a single day against that adoption. **A documented remedy
+nobody applies is worse than an undocumented problem, because it lets
+everybody believe the problem is handled.** The finding is the 2%, not the
+races. Do not add a remedy to this file and consider the matter closed; go
+and apply it, or say plainly that it is not applied.
+
+### One Session Owns The Browser, And Verifies Rather Than Relays
+
+The database is the lock, not the port. Every worktree shares
+`localhost:55434` and every Playwright run shares `test-results/`, so two runs
+on two different `WEB_PORT`s collide exactly as badly as two on one. The
+setup deletions of one race the fixtures of the other and every failure looks
+real, which is the expensive part: the collision is cheap, the hours spent
+believing its failures are not.
+
+Three double-assignments happened in one night — a ticket, a fix, and the
+browser — and all three had the same shape: **two people with authority
+answering the same question minutes apart, neither knowing the other had.**
+More care does not fix that. One owner does.
+
+So one session owns the browser and hands it on; everybody else asks that
+session, including when it is urgent, and including when somebody else has
+just said it is free. A second-hand "it is free" is how the third one
+happened.
+
+**And the holder is established by looking, not by asking.** `ps aux | grep
+playwright` answers in one line who is actually running, from which checkout.
+A relayed release is a claim about the past; the process table is the present.
+
+### A Spec Should Bring Its Own World
+
+The rule already exists above — a spec must not assert anything about a name,
+a count or a row it did not itself create. This is here because **three
+sessions rediscovered it independently in one night, from three directions**,
+which makes it a gate problem rather than a documentation problem:
+
+- A spec asserted it landed on the second game IT had created. It landed on a
+  real waiting game eight moves old, left behind by the full-suite run. **The
+  feature was working correctly the whole time** — the queue is drawn from
+  seat cookies AND the account, the suite plays as one member, so a spec
+  signed in as that member inherits every unfinished board four hundred other
+  tests left behind.
+- Ten specs across six files skip on database CONTENTS — "no computer players
+  on this database", "no finished games on this database" — and report green
+  when they skip. On a rich database they run; on a lean one they assert
+  nothing and nobody is told.
+- A `toHaveCount(0)` that could not tell "not offered" from "asked too early".
+
+**The dangerous fix in the first case was to loosen the assertion until it
+passed.** That ships a feature whose test cannot tell working from broken, and
+it looks like diligence while doing it. The remedy that worked instead was
+cheap: the spec claims its own seats as a browser holding an invite and no
+account, so its queue holds exactly the games it created and nothing else.
+
+**What this costs us to ignore:** a full suite of 472 passing specs was run on
+a clean checkout on 2026-09-11 and reported green with no retries. That number
+is honest, and it is a statement about THAT DATABASE as much as about the
+code. It does not travel. Neither does any green that rests on rows a previous
+run happened to leave behind.
