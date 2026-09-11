@@ -88,6 +88,9 @@ test.describe("a visitor with no invite", () => {
 });
 
 test.describe("the pages that stay open", () => {
+  // Everything here is about what somebody with no invite can reach.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test("rules and learning are readable without an invite", async ({ page }) => {
     for (const path of ["/rules", "/learn", "/about"]) {
       await page.goto(path);
@@ -121,6 +124,24 @@ test.describe("the pages that stay open", () => {
       const said = await (await request.get(path)).text();
       expect(said, `${path} links to a player's page without a session`).not.toMatch(/\/players\//);
       expect(said, `${path} names a member without a session`).not.toMatch(/data-testid=.player-name/);
+    }
+  });
+
+  test("asking for a language cannot open a page the gate shuts", async ({ request }) => {
+    /*
+     * The language is remembered by the gate file, because a Server Component
+     * can read a cookie and not set one — so something that runs on the way in
+     * had to do it. AGENTS.md is exact about what that may be: an addition
+     * wraps the `next()` a decision has already ARRIVED at, never the
+     * deciding. This is that rule as a test rather than as a comment.
+     *
+     * Signed out on purpose. Run as the operator these all answer 200 quite
+     * correctly, which is how a check like this passes while proving nothing.
+     */
+    for (const path of ["/players?lang=ja", "/history?lang=ja", "/me?lang=ja"]) {
+      const response = await request.get(path, { maxRedirects: 0 });
+      const to = response.headers()["location"] ?? "";
+      expect(`${response.status()} ${to}`, `${path} let a stranger past the door`).toContain("/join");
     }
   });
 
