@@ -33,13 +33,16 @@ import {
  */
 
 /**
- * Paths that stay reachable without a session.
+ * Paths that stay reachable without a session, BY PREFIX.
  *
  * Two kinds. The sign-in routes, because a door nobody can reach is not a
- * door. And the rules and learning pages, which are documentation: they render
- * nothing a visitor wrote, hold no data, and are the pages you would want
- * someone to be able to read and link to before deciding to ask for an invite.
- * Everything else, including /players and the whole API, stays shut.
+ * door. And the learning pages, which are documentation: they render nothing a
+ * visitor wrote, hold no data, and are the pages you would want someone to be
+ * able to read and link to before deciding to ask for an invite. Everything
+ * else, including /players and the whole API, stays shut.
+ *
+ * A prefix here opens EVERYTHING BENEATH IT, which is why /games is not in
+ * this list. See `OPEN_EXACTLY` and `OPEN_PATTERNS` below.
  */
 const OPEN_PATHS = [
   "/join",
@@ -58,7 +61,6 @@ const OPEN_PATHS = [
   "/manifest.webmanifest",
   "/opengraph-image.png",
   "/robots.txt",
-  "/rules",
   "/learn",
   "/about",
   // The screenshots those pages load. Files under public/ are not Next's own
@@ -80,9 +82,66 @@ function gateIsConfigured(): boolean {
   return Boolean(secret && secret.length >= 16);
 }
 
+/**
+ * READING IS OPEN, PLAYING IS GATED — John's rule, in his words: "strangers
+ * should be able to browse the site, the games, the rules etc... see some
+ * stuff... they need to register to play."
+ *
+ * These are matched WHOLE rather than by prefix, and that is the entire point
+ * of the list existing. A prefix entry for "/games" opens everything beneath
+ * it — every match, every seat-claim link, a reader's own record — and the
+ * half of this site that lives under /games is the half that does things.
+ * Browsing a game and taking a seat at one are the same first segment.
+ */
+const OPEN_EXACTLY = [
+  /*
+   * /games — the catalogue. It is what the /rules index was, and more: every
+   * game's name, kanji and tagline, in three arrangements.
+   *
+   * The LOBBY on that page is not part of what a stranger sees. Open seats,
+   * who is here, the form that starts a game — those are members doing things,
+   * and the page itself leaves every one of them out when nobody is signed in.
+   * That check is in the page rather than here, which is this file's own rule:
+   * an addition belongs after a decision has arrived at yes, never inside the
+   * deciding.
+   */
+  "/games",
+];
+
+/**
+ * The facets of a game a stranger may read, and the ones they may not.
+ *
+ * Open: the game itself, its rules, its family, its background. All four are
+ * tables in this repository — what the game IS — and none of them holds
+ * anything a member wrote.
+ *
+ * NOT OPEN, and each for its own reason:
+ *
+ *  - `/play`, `/new`, `/match/...` — playing. A board, a setup form, a game
+ *    between two people with every control the site has on it, and the
+ *    seat-claim route underneath that BINDS a seat to whoever follows it.
+ *    Watching a match is reading, but the page a watcher lands on is the same
+ *    page a player uses, and a seat link is a write. That is the edge, and it
+ *    is decided in favour of the rule rather than against it.
+ *  - `/me` — the reader's own games, which has nothing to say to a stranger.
+ *  - `/history` and `/standings` — AND THIS ONE IS A GAP RATHER THAN A
+ *    DECISION. They are reading, they belong open by the rule above, and they
+ *    cannot go open yet: both print members' names through `PlayerName`, which
+ *    SHOWS "Hanako M." and links to /players/hanako-morris. The whole name is
+ *    in the markup. That is the leak that was fixed in production by taking
+ *    members off open pages, and `shownName` says in as many words that the
+ *    address half is a decision still to be made. Opening these would put a
+ *    twelve-year-old's surname on a page with no invite in front of it. When
+ *    `playerPath` stops carrying the whole name, they belong in the pattern
+ *    below and nothing else needs to change.
+ */
+const OPEN_PATTERNS = [/^\/games\/[^/]+(?:\/(?:rules|family|background))?$/];
+
 function isOpenPath(pathname: string): boolean {
   // The front page says what the site is; it shows no game and needs no key.
   if (pathname === "/") return true;
+  if (OPEN_EXACTLY.includes(pathname)) return true;
+  if (OPEN_PATTERNS.some((pattern) => pattern.test(pathname))) return true;
   return OPEN_PATHS.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );

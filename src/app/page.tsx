@@ -69,9 +69,6 @@ export default function Home() {
           <Link href="/games" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`} data-testid="enter-games">
             Games
           </Link>
-          <Link href="/rules" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`}>
-            Rules
-          </Link>
           <Link href="/learn" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`}>
             Learn
           </Link>

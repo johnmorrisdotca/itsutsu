@@ -25,7 +25,7 @@ test.describe("turning the board round", () => {
 
   test("turns the board, and takes the letters and numbers with it", async ({ page, request }) => {
     const live = await game(request);
-    await page.goto(`/games/gomoku/${live.id}/seat/${live.blackToken}`);
+    await page.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
 
     // A stone somewhere off-centre, so a half turn is visible rather than symmetric.
@@ -47,8 +47,8 @@ test.describe("turning the board round", () => {
     const live = await game(request);
     const black = await (await browser.newContext()).newPage();
     const white = await (await browser.newContext()).newPage();
-    await black.goto(`/games/gomoku/${live.id}/seat/${live.blackToken}`);
-    await white.goto(`/games/gomoku/${live.id}/seat/${live.whiteToken}`);
+    await black.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
+    await white.goto(`/games/gomoku/match/${live.id}/seat/${live.whiteToken}`);
 
     await black.getByTestId("turn-board").click();
     await expect(black.getByRole("button", { name: /^[A-J]\d+, / }).first()).toHaveAccessibleName(
@@ -65,7 +65,7 @@ test.describe("turning the board round", () => {
 
   test("the record shows the game the way it was being read", async ({ page, request }) => {
     const live = await game(request);
-    await page.goto(`/games/gomoku/${live.id}/seat/${live.blackToken}`);
+    await page.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
     await page.getByRole("button", { name: /^A9, empty$/ }).click();
     await expect(page.getByRole("button", { name: "A9, Black stone" })).toBeVisible();
@@ -73,7 +73,7 @@ test.describe("turning the board round", () => {
 
     // The same game, filed. It was being read upside down; it still is.
     await request.post(`/api/games/${live.id}/resign`, { data: { token: live.whiteToken } });
-    await page.goto(`/history/gomoku/${live.id}`);
+    await page.goto(`/games/gomoku/match/${live.id}`);
     await expect(page.getByRole("button", { name: /^[A-J]\d+, / }).first()).toHaveAccessibleName(/^J1, /);
     await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board back/);
   });
@@ -82,7 +82,7 @@ test.describe("turning the board round", () => {
     const one = await game(request);
     const two = await game(request);
 
-    await page.goto(`/games/gomoku/${one.id}/seat/${one.blackToken}`);
+    await page.goto(`/games/gomoku/match/${one.id}/seat/${one.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
     await page.getByTestId("turn-board").click();
     await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board back/);
@@ -92,7 +92,7 @@ test.describe("turning the board round", () => {
     await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board back/);
 
     // A different game is a different sitting, and is left alone.
-    await page.goto(`/games/gomoku/${two.id}/seat/${two.blackToken}`);
+    await page.goto(`/games/gomoku/match/${two.id}/seat/${two.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
     await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board round/);
   });

@@ -7,7 +7,7 @@ import { RecordLine } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { findMember, findMembersByNames, type NamedMember } from "@/lib/auth/members";
-import { championsPath } from "@/lib/gomoku/slugs";
+import { standingsPath } from "@/lib/gomoku/slugs";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { playerKey } from "@/lib/rating/playerKey";
 import { fetchVariantLeaders } from "@/lib/rating/variantRatings";
@@ -104,7 +104,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
           Who is best at it <span className="font-mincho normal-case tracking-normal">名人</span>
         </span>
         <Link
-          href={championsPath(variant)}
+          href={standingsPath(variant)}
           className="text-xs font-normal tracking-normal normal-case underline-offset-2 hover:underline"
           data-testid="game-ladder-all"
         >

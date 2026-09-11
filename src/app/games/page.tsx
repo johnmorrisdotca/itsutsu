@@ -2,8 +2,6 @@ import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
-import { GameCount } from "@/components/games/GameCount";
-import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { InviteFriends } from "@/components/mine/InviteFriends";
@@ -24,40 +22,80 @@ import { seatClaims } from "@/lib/history/seatCookie";
 import { fetchOpponents } from "@/lib/social/opponents";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { fetchHereNow } from "@/lib/social/presence";
-import { FamilyMark } from "@/components/games/FamilyMark";
 import { fetchPlayedCounts } from "@/lib/history/gameCounts";
-import { recordPath } from "@/lib/gomoku/slugs";
+import { GameCatalogue } from "@/components/games/GameCatalogue";
+import { readCatalogueView, type CatalogueView } from "@/lib/gomoku/catalogueView";
+import type { CatalogueFamily } from "@/components/games/games.types";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-export const metadata = { title: "New game 新規" };
+export const metadata = { title: "Games 種目" };
 
 // Read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
 
 
 /**
- * The games: where a person lands after joining. One plain choice first, so
- * nobody has to understand thirty games to start playing; the families sit
- * below for whoever wants to look around.
+ * THE GAMES. /games, and the one index of them there is.
+ *
+ * It was three. This page listed them by family, /rules listed them as cards
+ * with an A–Z, and /games/all listed them as text — three indexes of one
+ * collection, each reachable from somewhere the other two were not. They are
+ * three VIEWS now, chosen in the query, because how a list is laid out is a
+ * filter and not an identity.
+ *
+ * One plain choice still comes first, so nobody has to understand forty games
+ * to start playing; the catalogue sits below for whoever wants to look around.
  */
 export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
-  const filter = readOpenSeatFilter(await searchParams);
+  const asked = await searchParams;
+  const filter = readOpenSeatFilter(asked);
+  // How the catalogue below is laid out. A filter, so it lives in the query.
+  const view = readCatalogueView(asked);
+  const say = await currentSpeaker();
+
+  /**
+   * WHO IS ASKING, BEFORE ANYTHING ELSE IS ASKED.
+   *
+   * This page is open without an invite, and everything below this line is a
+   * database read for the lobby — the posted seats, who is here, what has been
+   * played. A stranger is shown none of it, so a stranger must not pay for any
+   * of it: the catalogue they came for is tables in this repository and needs
+   * no query at all.
+   *
+   * MEASURED RATHER THAN REASONED. The reads were in one `Promise.all` with
+   * `currentEmail()` and ran whatever the answer was, and a signed-out request
+   * to /games answered 500 against a database that was not there — on the one
+   * page a stranger is most likely to open. It would not have failed in
+   * production, where the database IS there; it would have quietly cost a
+   * handful of queries per visitor to build a lobby nobody was going to see,
+   * which is this repo's own "cost per call times call count" all over again.
+   */
+  const email = await currentEmail();
+  if (email === null) {
+    return <PublicCatalogue view={view} say={say} />;
+  }
+
   const claims = seatClaims((await cookies()).getAll());
   /*
    * A seat that has sat on this board longer than the grace period is taken by
    * one of the computer players, so a game posted on a quiet evening is still a
    * game by the morning. Throttled and not awaited: the listing below is what
    * the reader came for.
+   *
+   * Below the check above, deliberately. It takes seats on behalf of the
+   * computer players — it WRITES — and an anonymous page view is the last
+   * thing that should set that going.
    */
   sweepOpenSeats();
 
   const claimed = [...claims.keys()];
-  const [email, mine, counts, seatGames, here] = await Promise.all([
-    currentEmail(),
+  const [mine, counts, seatGames, here] = await Promise.all([
     currentMemberId(),
     fetchPlayedCounts(),
     fetchOpenSeats(claimed),
@@ -75,9 +113,8 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
      */
     fetchOpponents(email),
     // By id, because a seat is keyed by member and the list is kept by address.
-    email === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(email),
+    ignoredMemberIds(email),
   ]);
-  const playedIn = (games: readonly string[]) => games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0);
 
   /*
    * Two seats never belong on somebody's board: their own, and one posted by
@@ -131,7 +168,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
   const countryByMemberId = await fetchPosterCountries(openSeats.map((game) => posterOf(game).memberId));
 
   // The sentence reads the same lists the page below it shows.
-  const families: GameGroup[] = GAME_FAMILIES.map((family) => ({
+  const groups: GameGroup[] = GAME_FAMILIES.map((family) => ({
     title: family.title,
     kanji: family.kanji,
     games: family.games.map((variant) => ({
@@ -139,6 +176,30 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
       label: RULE_VARIANT_DISPLAY[variant].label,
       kanji: RULE_VARIANT_DISPLAY[variant].kanji,
     })),
+  }));
+  /*
+   * The catalogue's own view of the same families, with what has been played
+   * of each. Built here because this is where the counts are read; the
+   * component below is handed rows and asks the database nothing.
+   */
+  const families: CatalogueFamily[] = GAME_FAMILIES.map((family) => ({
+    title: family.title,
+    kanji: family.kanji,
+    blurb: family.blurb,
+    played: family.games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0),
+    games: family.games.map((variant) => {
+      const copy = RULE_VARIANT_DISPLAY[variant];
+      const count = counts.get(variant);
+      return {
+        variant,
+        label: copy.label,
+        kanji: copy.kanji,
+        tagline: copy.tagline,
+        inspiredBy: copy.inspiredBy,
+        played: count?.played,
+        last: count?.last ?? undefined,
+      };
+    }),
   }));
   const seats: SeatOnBoard[] = choices.map((game) => ({
     id: game.id,
@@ -160,13 +221,34 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         * height is fixed cannot bury anything, and a section that grows cannot
         * bury what is above it.
         */}
+      {/*
+        THE LOBBY IS FOR MEMBERS; THE CATALOGUE BELOW IS FOR ANYBODY.
+
+        This page became open without an invite when a game stopped having a
+        /rules page of its own — it is what the /rules index was, and John's
+        rule is that reading is open and playing is gated: "strangers should be
+        able to browse the site, the games, the rules etc... they need to
+        register to play."
+
+        Everything in this section is the playing half. Posted seats are
+        members offering games and carry their names; who is here is members;
+        the form starts a game. None of it is anything a stranger can act on,
+        and all of it names people. So it is not drawn for them at all, rather
+        than drawn and then refused — an offer the site would turn down is a
+        worse thing to show somebody than no offer.
+
+        Decided HERE and not in `proxy.ts`, which is that file's own rule:
+        an addition belongs after the gate has already said yes, never inside
+        the deciding. A section that only ever renders for a member cannot turn
+        a no into a yes.
+      */}
       <section className="flex flex-col gap-4" data-testid="lobby-start">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
           <Paired en={START_COPY.title.label} kanji={START_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
         <p className="max-w-prose text-sm text-muted">{START_COPY.lead}</p>
         <div className={PANEL_CLASS}>
-          <StartGame families={families} seats={seats} opponents={opponents} signedIn={email !== null} />
+          <StartGame families={groups} seats={seats} opponents={opponents} signedIn />
         </div>
         <div className="grid gap-4 md:grid-cols-[3fr_2fr]">
           <OpenGamesBoard
@@ -182,91 +264,164 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
 
       {/*
         The games you have going are their own page now, at /my-games. This one
-        is for starting another: the sentence, the open seats, the room, and
-        the catalogue underneath. It used to be all of that AND your queue,
-        which grew a section every time somebody played — so everything below
-        the queue sank a little further every week.
+        is for starting another, and for meeting the games themselves: the
+        sentence, the open seats, the room, and the whole catalogue underneath.
       */}
-      {email !== null ? <InviteFriends /> : null}
+      <InviteFriends />
 
       <BrandStones className="py-1 opacity-80" />
 
+      {/*
+        LEARN IS OFFERED HERE, PROMINENTLY, AND THAT IS WHY IT LEFT THE
+        NAVIGATION. A word in the bar was five words of chrome on every page of
+        the site for a shelf most readers want exactly once — when they have
+        met a game and want to get better at it. This is where they have just
+        met one.
+
+        Written before the bar was shortened, not after: `gamesRoot.coverage`
+        fails the build if this section stops leading to /learn, so "it is
+        reachable now" is a test rather than the opinion of whoever removed the
+        link.
+      */}
+      <section className={`${PANEL_CLASS} flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2`} data-testid="games-learn">
+        <span className="flex min-w-0 flex-col gap-1">
+          <span className="flex items-baseline gap-2 text-base font-semibold">
+            <Paired en="Learn how to play them" kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
+          </span>
+          <span className="max-w-prose text-sm text-muted">
+            The shapes that win, the moves that force, and the mistakes everyone makes once.
+            Each guide names the games it applies to.
+          </span>
+        </span>
+        <Link
+          href="/learn"
+          className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`}
+          data-testid="games-learn-link"
+        >
+          The learning shelf →
+        </Link>
+      </section>
+
       <section className="flex flex-col gap-4">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          <Paired en="More games" kanji="遊び方" kanjiClassName="text-sm font-normal opacity-70" />
+          {/*
+            `nav.everyGame` names this heading now. It used to name the page at
+            /games/all, which has become the plain-list VIEW below — so the
+            phrase did not die with the page, it moved down to the section
+            whose list it was always describing.
+          */}
+          <Paired en={say.say("nav.everyGame")} kanji="全種目" kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
         <p className="max-w-prose text-sm text-muted">
-          Everything below is five in a row with one idea changed. Open a family to see
-          its games; each one has a rules page and a place in the learning shelf. The whole list, as
-          plain text, is on{" "}
-          <Link href="/games/all" className="underline underline-offset-4">one page</Link>.
+          {/*
+            The count lives on the plain list rather than here, and that is the
+            gate's doing rather than a preference: a number beside the word
+            "games" has to lead to those games, and a count of RULE SETS has
+            nowhere to lead. The list view states it with the exception written
+            against it, once, where it is a fact about the catalogue and not a
+            promise this sentence cannot keep.
+          */}
+          Almost every game here is five in a row with one idea changed. Every name below leads to
+          that game — its rules, its record, its standings and a board — and the three ways of
+          looking at the list are the same games arranged differently.
         </p>
-        {GAME_FAMILIES.map((family, index) => (
-          <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family" open={index === 0}>
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-              <span className="flex items-center gap-3">
-                <FamilyMark family={family.title} className="size-12 shrink-0 rounded-md" />
-                <span className="flex flex-col">
-                  <span className="flex items-baseline gap-2 font-semibold">
-                    {family.title}
-                    <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
-                  </span>
-                  <span className="text-xs font-normal text-muted">
-                    {family.games.length} {family.games.length === 1 ? "game" : "games"} · {playedIn(family.games)} played here
-                  </span>
-                </span>
-              </span>
-              <span className="text-xs text-muted group-open:hidden">show</span>
-              <span className="hidden text-xs text-muted group-open:inline">hide</span>
-            </summary>
-            <p className="mt-2 text-sm text-muted">{family.blurb}</p>
-            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-              {family.games.map((variant) => {
-                const copy = RULE_VARIANT_DISPLAY[variant];
-                const count = counts.get(variant);
-                return (
-                  <li key={variant} className="flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm">
-                    <span className="flex min-w-0 flex-col">
-                      <span className="font-medium">
-                        <GameName variant={variant} kanji />
-                      </span>
-                      <span className="text-xs text-muted">{copy.tagline}</span>
-                      {count !== undefined && count.last !== null ? (
-                        <span className="text-[0.7rem] text-muted">
-                          {/*
-                            Two links, because there were two facts wearing
-                            one. "12 played · last Kyu vs Dan" went entirely to
-                            the last game — so the twelve led to one of them,
-                            which is the count answering a different question
-                            from the one it asks. The number goes to its twelve
-                            now; the game beside it goes to that game.
-                          */}
-                          <GameCount count={count.played} variant={variant} title={`Every game of ${copy.label} played here`} />{" "}
-                          played ·{" "}
-                          <Link
-                            href={recordPath(variant, count.last.id)}
-                            className="underline-offset-2 hover:underline"
-                          >
-                            last {count.last.blackName.trim() || "Black"} vs{" "}
-                            {count.last.whiteName.trim() || "White"}
-                          </Link>
-                        </span>
-                      ) : copy.inspiredBy !== undefined ? (
-                        <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
-                      ) : null}
-                    </span>
-                    {/*
-                      The name is the link now, and it goes where the little
-                      "rules" beside it used to. Nothing here leads straight
-                      onto a board on purpose: this list is for looking
-                      around, and a game is started from the panel above.
-                    */}
-                  </li>
-                );
-              })}
-            </ul>
-          </details>
-        ))}
+        <GameCatalogue view={view} families={families} signedIn />
+      </section>
+  </Page>
+  );
+}
+
+/**
+ * /games for somebody with no invite: the catalogue, and nothing that needs a
+ * database.
+ *
+ * A SEPARATE COMPONENT RATHER THAN A HANDFUL OF CONDITIONS, because the
+ * property worth having is one somebody can check by reading: there is no
+ * query in here. Written as `{signedIn ? … : null}` around each panel above,
+ * the reads would still have happened — they are awaited before any of it is
+ * drawn — and the page would have gone on costing a stranger the whole lobby
+ * to render none of it.
+ *
+ * The families carry no counts and no last game, which is not an omission. A
+ * count of matches is members' activity and the last game names two of them,
+ * and both would be a database read on a page that now has no reason to make
+ * one. What a stranger came for is which games exist and what they are, and
+ * that is a table in this repository.
+ */
+function PublicCatalogue({ view, say }: { view: CatalogueView; say: Speaker }) {
+  const families: CatalogueFamily[] = GAME_FAMILIES.map((family) => ({
+    title: family.title,
+    kanji: family.kanji,
+    blurb: family.blurb,
+    // Nought here means "not counted", and it is never printed: the family
+    // line and the last game are both drawn only for a member.
+    played: 0,
+    games: family.games.map((variant) => {
+      const copy = RULE_VARIANT_DISPLAY[variant];
+      return {
+        variant,
+        label: copy.label,
+        kanji: copy.kanji,
+        tagline: copy.tagline,
+        inspiredBy: copy.inspiredBy,
+      };
+    }),
+  }));
+
+  return (
+    <Page width="standard">
+      <SiteHeader />
+
+      {/*
+        What a stranger gets where a member gets the lobby: the one sentence
+        that says how this place works, and the door. Not a greyed-out copy of
+        the panel they cannot use — an offer the site would refuse is a worse
+        thing to show somebody than no offer at all.
+      */}
+      <section
+        className={`${PANEL_CLASS} flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2`}
+        data-testid="games-join"
+      >
+        <span className="max-w-prose text-sm text-muted">
+          Every game here is free to read about — the rules, what it is, where it came from, and
+          the family it belongs to. Playing one needs an invite.
+        </span>
+        <Link href="/join" className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`}>
+          I have an invite →
+        </Link>
+      </section>
+
+      <BrandStones className="py-1 opacity-80" />
+
+      {/* Open too, and the best thing to read next if a game has caught them. */}
+      <section
+        className={`${PANEL_CLASS} flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2`}
+        data-testid="games-learn"
+      >
+        <span className="flex min-w-0 flex-col gap-1">
+          <span className="flex items-baseline gap-2 text-base font-semibold">
+            <Paired en="Learn how to play them" kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
+          </span>
+          <span className="max-w-prose text-sm text-muted">
+            The shapes that win, the moves that force, and the mistakes everyone makes once.
+            Each guide names the games it applies to.
+          </span>
+        </span>
+        <Link href="/learn" className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`} data-testid="games-learn-link">
+          The learning shelf →
+        </Link>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="flex items-baseline gap-2 text-lg font-semibold">
+          <Paired en={say.say("nav.everyGame")} kanji="全種目" kanjiClassName="text-sm font-normal opacity-70" />
+        </h2>
+        <p className="max-w-prose text-sm text-muted">
+          Almost every game here is five in a row with one idea changed. Every name below leads to
+          that game, and the three ways of looking at the list are the same games arranged
+          differently.
+        </p>
+        <GameCatalogue view={view} families={families} signedIn={false} />
       </section>
   </Page>
   );

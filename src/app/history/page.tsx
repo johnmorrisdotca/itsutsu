@@ -1,4 +1,4 @@
-import { RecordPage } from "./RecordPage";
+import { RecordPage } from "@/components/history/RecordPage";
 
 export const metadata = {
   title: "Record 棋譜",

@@ -25,8 +25,8 @@ test.describe("a game played from two devices", () => {
     const blackPage = await black.newPage();
     const whitePage = await white.newPage();
 
-    await blackPage.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
-    await whitePage.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
+    await blackPage.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+    await whitePage.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
     await expect(blackPage.getByTestId("turn-banner")).toContainText("Your move");
     await expect(whitePage.getByTestId("turn-banner")).toContainText("Waiting");
@@ -49,7 +49,7 @@ test.describe("a game played from two devices", () => {
     request,
   }) => {
     const game = await startGame(request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
 
     // The claim is in a cookie now; the bar shows the match and nothing secret.
     await expect(page).toHaveURL(/\/games\/gomoku\/[a-z0-9-]+\/0$/);
@@ -57,13 +57,13 @@ test.describe("a game played from two devices", () => {
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
 
     // And it holds across a plain visit to the match.
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
   });
 
   test("a seat link with a token that fits no seat is not a page", async ({ page, request }) => {
     const game = await startGame(request);
-    const response = await page.goto(`/games/gomoku/${game.id}/seat/not-a-token`);
+    const response = await page.goto(`/games/gomoku/match/${game.id}/seat/not-a-token`);
     expect(response?.status()).toBe(404);
   });
 
@@ -79,7 +79,7 @@ test.describe("a game played from two devices", () => {
      * in has a link worth giving out. See e2e/seat-links.spec.ts.
      */
     const game = await startGame(request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
 
     await expect(page.getByRole("img", { name: /QR code for the White seat/ })).toBeVisible();
     await expect(page.getByRole("img", { name: /QR code for the Black seat/ })).toHaveCount(0);
@@ -87,7 +87,7 @@ test.describe("a game played from two devices", () => {
 
   test("someone without a token can watch but not play", async ({ page, request }) => {
     const game = await startGame(request);
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
 
     await expect(page.getByText(/You are watching\./).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /^E5, empty$/ })).toBeDisabled();
@@ -123,7 +123,7 @@ test.describe("a game played from two devices", () => {
 
   test("a match says when it started, and when it finished once it is over", async ({ page, request }) => {
     const game = await startGame(request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await expect(page.getByTestId("shared-times-line")).toContainText("Started");
     await expect(page.getByTestId("shared-times-line")).not.toContainText("finished");
     expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status()).toBe(200);

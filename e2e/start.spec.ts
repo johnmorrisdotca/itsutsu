@@ -47,7 +47,7 @@ test.describe("starting a game is one sentence", () => {
      * on a numbered move. It passed all this time because a database littered
      * with seats meant this test almost never took the posting branch.
      */
-    await expect(page).toHaveURL(/\/games\/trap-three\/[a-z0-9-]+(\/0)?$/);
+    await expect(page).toHaveURL(/\/games\/trap-three\/match\/[a-z0-9-]+(\/0)?$/);
     /*
      * And it says it is waiting, not that the game is under way. This used to
      * expect "Your move", which was true and was not what was happening: a
@@ -134,7 +134,7 @@ test.describe("starting a game is one sentence", () => {
     await expect(page.getByTestId("start-game-hint")).toContainText("asking for exactly this");
 
     await page.getByTestId("start-game-go").click();
-    await expect(page).toHaveURL(/\/games\/notakto\/[a-z0-9-]+\/0$/);
+    await expect(page).toHaveURL(/\/games\/notakto\/match\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("turn-banner")).toBeVisible();
     await theirs.close();
   });

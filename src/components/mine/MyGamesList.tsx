@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { matchPath, recordPath } from "@/lib/gomoku/slugs";
+import { matchPath } from "@/lib/gomoku/slugs";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_GAME_GROUPS, STALE_AFTER_DAYS, fetchMyGames, type MyGame, type MyGameGroup } from "@/lib/history/myGames";
@@ -107,7 +107,13 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
   const { game, seat, group } = item;
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
-  const href = group === "finished" ? recordPath(game.variant, game.id) : matchPath(game.variant, game.id);
+  /*
+   * One address either way. A match kept its identity when it finished and the
+   * link to it did not: a finished game went to /history/<slug>/<id> and a
+   * live one to /games/<slug>/<id>, so the same match had two hrefs depending
+   * on when you looked.
+   */
+  const href = matchPath(game.variant, game.id);
   // A hot-seat game's names are two people at one keyboard and belong to nobody.
   const named = group !== "hotSeat";
   const running = group !== "finished";

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { GameName } from "@/components/games/GameName";
 import { PlayerName } from "@/components/players/PlayerName";
-import { recordPath } from "@/lib/gomoku/slugs";
+import { matchPath } from "@/lib/gomoku/slugs";
 
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
@@ -37,7 +37,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
           <li key={game.id} className="relative">
             <div className="grid grid-cols-2 items-center gap-3 rounded-xl border border-rule px-4 py-3 transition-colors hover:bg-shade sm:grid-cols-[1fr_auto_auto_auto]">
               <Link
-                href={recordPath(game.variant, game.id)}
+                href={matchPath(game.variant, game.id)}
                 className="absolute inset-0 rounded-xl"
                 aria-label={`Replay: ${game.blackName.trim() || SEAT_DISPLAY.one.label} vs ${game.whiteName.trim() || SEAT_DISPLAY.two.label}, ${playedOn(game.playedAt)}`}
               />

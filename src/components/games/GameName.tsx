@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { aliasedVariant } from "@/lib/legacy/gameAliases";
-import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, variantFor } from "@/lib/gomoku/slugs";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /**
@@ -18,12 +18,21 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
  * small "rules" beside it, and the record list named the game of every match
  * and led nowhere at all.
  *
- * To the rules page rather than to the board. A name in a list or a sentence
- * is a reference to the game, not an instruction to start one, and the rules
- * page is where a game says what it is and offers to be played. The About
- * page's own `Game` helper goes straight to the board on purpose — a reader
- * who meets Pente mid-sentence is being invited to play it — and that is
- * still a link to that game, which is what the rule asks for.
+ * To the GAME'S OWN PAGE rather than to a board. A name in a list or a
+ * sentence is a reference to the game, not an instruction to start one, and
+ * /games/<slug> is where a game says what it is, what has been played of it,
+ * who is best at it, what family it is in, and offers a board. The About
+ * page's own `Game` helper goes straight to a board on purpose — a reader who
+ * meets Pente mid-sentence is being invited to play it — and that is still a
+ * link to that game, which is what the rule asks for.
+ *
+ * It used to be `rulesPath`, and changing it is the hinge of the whole address
+ * move rather than a detail of it. Because every name goes through here, this
+ * one line decides which page the site's front door IS: the rules page became
+ * the de-facto hub purely by being where the links pointed, and grew a ladder
+ * and a record panel to cope with an errand it was never meant to answer. The
+ * links point at the game now, so the game is the hub and the rules are a
+ * document again.
  *
  * `raised` is for a row that is itself one big stretched link: the record list
  * lays a link over the whole card, and a link inside it has to sit above that
@@ -73,7 +82,7 @@ export function GameName({
   const shown = say.pairName(copy.label, copy.kanji);
   return (
     <Link
-      href={rulesPath(known)}
+      href={gamePath(known)}
       data-testid="game-name"
       data-variant={known}
       className={`underline-offset-2 hover:underline ${raised ? "relative z-10" : ""} ${className}`}

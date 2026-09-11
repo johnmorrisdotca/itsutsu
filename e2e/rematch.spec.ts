@@ -53,7 +53,7 @@ test.describe("a finished game offers to be played again", () => {
       expect(played.status()).toBe(201);
     }
 
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
 
     /*
      * The colour is named on the button, and it is the other one: this member
@@ -64,7 +64,7 @@ test.describe("a finished game offers to be played again", () => {
     await expect(again).toBeVisible();
 
     await again.click();
-    await page.waitForURL(/\/games\/gomoku\/[^/]+$/);
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/);
 
     // The new game really is the old one's game.
     const id = page.url().split("/").pop()!;
@@ -107,7 +107,7 @@ test.describe("a finished game offers to be played again", () => {
     }
 
     // A reader who was not in it has nobody to play again.
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByRole("button", { name: /Play again as/ })).toHaveCount(0);
   });
 

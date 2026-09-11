@@ -53,7 +53,7 @@ test.describe("answering your own posted seat", () => {
 
   test("refuses the poster the seat from its own link", async ({ page }) => {
     const game = await postSeat(page.request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     // A posted seat leads with waiting rather than with whose move it is, so
     // the seat is proved by the sharing panel being theirs to hand out.
     await expect(page.getByTestId("turn-banner")).toHaveAttribute("data-awaiting", "true");
@@ -101,7 +101,7 @@ test.describe("answering your own posted seat", () => {
   test("still lets somebody else answer it", async ({ page, browser }) => {
     // Otherwise the fix has closed the game rather than the hole.
     const game = await postSeat(page.request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
 
     const other = await browser.newContext({ storageState: ".auth/player.json" });
     const theirs = await other.newPage();

@@ -1,6 +1,6 @@
 import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { Applause } from "@/components/history/Applause";
 import { GameReplay } from "@/components/history/GameReplay";
@@ -8,7 +8,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { matchPath, recordPath, slugFor } from "@/lib/gomoku/slugs";
+import { historyPath, matchPath } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -31,21 +31,27 @@ import { prisma } from "@/lib/prisma";
 import { GameName } from "@/components/games/GameName";
 
 /**
- * A filed game, at /history/<slug>/<id>: the replay, and with a move number on
- * the end, /history/<slug>/<id>/12, the position after the twelfth stone. The scrubber
- * keeps the address on the position it shows, so the bar can be copied to
- * send someone exactly this moment of the game.
+ * A match that has been filed: the replay, at the address the match has always
+ * had — /games/<slug>/match/<id>, and with a move number on the end,
+ * /games/<slug>/match/<id>/12, the position after the twelfth stone. The
+ * scrubber keeps the address on the position it shows, so the bar can be
+ * copied to send someone exactly this moment of the game.
+ *
+ * Rendered by `MatchPage` rather than routed to. It used to be a second
+ * address under /history that the live board redirected to the moment a game
+ * ended — so it checked the slug and the status for itself and sent a reader
+ * back if either was wrong. Both are now settled by the caller before this is
+ * reached, and the status check in particular MUST NOT come back: redirecting
+ * to the match's address from inside the match's address is a loop.
  */
-export async function FiledMatchPage({ slug, id, move }: { slug: string; id: string; move?: number }) {
+export async function FiledMatchPage({ id, move }: { id: string; move?: number }) {
   // The whole conversation, not the last thirty of it. This is the page it is
   // kept on, and a record that quietly begins in the middle is not a record.
   const game = await fetchGameDetail(id, { whole: true });
-  if (game === null || slugFor(game.variant) !== slug) notFound();
+  if (game === null) notFound();
   if (move !== undefined && (!Number.isInteger(move) || move < 0 || move > game.moveCount)) {
     notFound();
   }
-  // Still being played: it is not in the record yet.
-  if (game.status === "active") redirect(matchPath(game.variant, game.id, move));
 
   /*
    * A rematch is the same game again — same board, same rules, same clock,
@@ -246,7 +252,7 @@ function FiledMatch({
           ) : null}
           <ChallengeButton from={{ id: game.id, move }} label={`Play from move ${move} 分岐`} />
           {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}
-          <Link href={recordPath(game.variant)} className="text-sm underline underline-offset-4">
+          <Link href={historyPath(game.variant)} className="text-sm underline underline-offset-4">
             Back to the record
           </Link>
         </span>
@@ -277,7 +283,7 @@ function FiledMatch({
       <GameReplay
         game={game}
         initialIndex={move}
-        basePath={recordPath(game.variant, game.id)}
+        basePath={matchPath(game.variant, game.id)}
         appearance={appearance}
       />
 
@@ -288,7 +294,7 @@ function FiledMatch({
       */}
       <Conversation
         game={game}
-        basePath={recordPath(game.variant, game.id)}
+        basePath={matchPath(game.variant, game.id)}
         hidden={silenced}
       />
   </Page>

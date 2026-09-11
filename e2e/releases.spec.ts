@@ -39,7 +39,7 @@ test.describe("what has shipped", () => {
   test("is where the edition stamp at the foot of every page leads", async ({ page }) => {
     // The colophon names the edition; asking it what that edition brought is
     // a better home for the answer than another word in the row of links.
-    await page.goto("/games/all");
+    await page.goto("/games?view=list");
     await page.getByTestId("version-link").click();
     await expect(page).toHaveURL(/\/releases$/);
     await expect(page.getByTestId("release-history")).toBeVisible();

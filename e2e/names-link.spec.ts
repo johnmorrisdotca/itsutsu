@@ -46,7 +46,7 @@ test.describe("a person's name leads to their page", () => {
     const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
 
     // The game shows in "your games" once this browser holds a seat in it.
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await page.goto("/my-games");
     const mine = page.getByTestId("my-game").filter({ hasText: shownName(me.name) }).first();
     await expect(mine).toBeVisible();
@@ -67,7 +67,7 @@ test.describe("a person's name leads to their page", () => {
       expect(played.status()).toBe(201);
     }
 
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     const header = page.getByRole("heading", { level: 1 });
     await expect(header).toContainText(shownName(me.name));
     // Both names in the header are links, which is what John reported missing.

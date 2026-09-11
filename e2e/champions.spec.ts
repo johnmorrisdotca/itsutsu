@@ -22,7 +22,8 @@ test.describe("champions", () => {
     await expect(page.getByTestId("champion-row-freestyle")).not.toContainText("No rated games yet");
 
     await page.getByTestId("champion-row-freestyle").getByRole("link", { name: /^Gomoku/ }).click();
-    await expect(page).toHaveURL(/\/champions\/gomoku$/);
+    // A game's own ladder is a facet of the game: /games/<slug>/standings.
+    await expect(page).toHaveURL(/\/games\/gomoku\/standings$/);
     /*
      * The ladder itself is only checked for having a ladder in it. Neither of
      * these two is looked for by name here, and that is deliberate: the page
@@ -52,10 +53,10 @@ test.describe("champions", () => {
   });
 
   test("a game's page names its family, and a game that does not exist is not found", async ({ page }) => {
-    await page.goto("/champions/toroidal-five");
+    await page.goto("/games/toroidal-five/standings");
     await expect(page.getByTestId("game-champions")).toBeVisible();
     await expect(page.getByTestId("sibling-champions")).toContainText("Obstacle");
-    const missing = await page.goto("/champions/no-such-game");
+    const missing = await page.goto("/games/no-such-game/standings");
     expect(missing?.status()).toBe(404);
   });
 

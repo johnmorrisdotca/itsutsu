@@ -159,14 +159,27 @@ describe("a count of games is the way into those games", () => {
    * loopholes but a map of what this site cannot yet answer.
    */
   const EXCEPTIONS: Record<string, string> = {
-    // Counts of GAMES THE SITE HAS, not games anybody played. "Thirty-nine
-    // games in eight families" is a fact about the catalogue.
-    "src/app/games/all/page.tsx": "counts rule sets, not matches",
-    // The family line counts real games — and no page shows a family's games.
-    // /history filters by one game, not by a family of them. Linking it would
-    // be a promise nothing can keep, and it sits inside a <summary>, where a
-    // link would fight the toggle it is part of.
-    "src/app/games/page.tsx": "a family's games are a set no page can show, inside a <summary>",
+    // Counts of GAMES THE SITE HAS, not games anybody played. "Forty games in
+    // ten families" is a fact about the catalogue. This was the exception for
+    // /games/all, which is now the plain-list VIEW of /games and lives here.
+    "src/components/games/GameList.tsx": "counts rule sets, not matches",
+    /*
+     * Two counts, and they are the two the catalogue cannot link.
+     *
+     * "Eight games" in a family heading is rule sets, as above. And the family
+     * line beside it counts REAL games — every match played of anything in
+     * that family — which no page can show: /history filters by ONE game, not
+     * by a family of them, so a link would open a different set from the
+     * number it sits under. That is the fault this rule exists to stop,
+     * wearing a link. It is also inside a <summary>, where a link fights the
+     * toggle it is part of.
+     *
+     * The gap is in what the record can be asked, not in this page. A family
+     * has its own page now, at /games/<slug>/family, and it lists the family's
+     * GAMES — a different thing from the family's matches, and it does not
+     * close this.
+     */
+    "src/components/games/GameCatalogue.tsx": "rule sets, and a family's matches are a set no page can show",
     // A suggestion in an autocomplete, which is the <option> case wearing
     // different markup: choosing it IS the way to those games.
     "src/components/game/PlayerNameInput.tsx": "a picker's own suggestion",
@@ -264,7 +277,27 @@ describe("a count of games is the way into those games", () => {
      * names this codebase gives a count of games. `{x.games.map(` is an array
      * of variants rather than a count, so the closing brace is part of the
      * pattern.
+     *
+     * IT NOW HAS ONE NAMED EXCEPTION, and adding it was the honest move rather
+     * than the convenient one. The catalogue's family line — every match played
+     * of anything in a family — has always been a count this site cannot link,
+     * for the reason written against it in EXCEPTIONS above: /history filters
+     * by ONE game and there is no page that shows a family's matches. It
+     * escaped this check for as long as it existed only because it was written
+     * `{playedIn(family.games)}`, a call rather than a field, which this
+     * pattern does not see. Moving the sum into the row that carries it made
+     * the same number read `{family.played}` and the check fired — correctly,
+     * on a count that was always in its scope.
+     *
+     * So the choice was to rename the field until the regex looked away, or to
+     * say out loud that this one cannot link and why. A gate routed around is
+     * one of the four failures AGENTS.md names by shape; an exception with its
+     * reason beside it is a rule that can be argued with.
      */
+    const BARE_EXCEPTIONS: Record<string, string> = {
+      "src/components/games/GameCatalogue.tsx":
+        "a family's matches: /history filters by one game, so no page can show the set this counts",
+    };
     const counts = /\{\s*[A-Za-z_$][\w$]*\.(games|played)\s*\}/g;
     const offenders = FILES.filter((file) =>
       [...file.source.matchAll(counts)].some(
@@ -277,7 +310,9 @@ describe("a count of games is the way into those games", () => {
           // choosing it is what you do with it.
           !inside("option", file.source, match.index),
       ),
-    ).map((file) => file.path);
+    )
+      .map((file) => file.path)
+      .filter((path) => BARE_EXCEPTIONS[path] === undefined);
 
     expect(offenders, "render it through GameCount, which links it to those games").toEqual([]);
   });
@@ -294,7 +329,14 @@ describe("a count of games is the way into those games", () => {
 describe("the components the rules are kept in", () => {
   it("GameName links, and says plainly when a game is not ours", () => {
     const source = readFileSync("src/components/games/GameName.tsx", "utf8");
-    expect(source).toContain("rulesPath");
+    /*
+     * To the GAME, at /games/<slug>. It was `rulesPath` while the rules page
+     * was the front door, and moving this assertion is the point rather than
+     * an accommodation: this gate decides where every game's name on the site
+     * leads, so it has to name the destination that is actually the front
+     * door. A game is one address with its rules underneath it now.
+     */
+    expect(source).toContain("gamePath");
     // The exception has to look like an exception, or the rule is a lie.
     expect(source).toContain("game-not-here");
   });

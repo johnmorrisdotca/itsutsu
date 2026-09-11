@@ -1,22 +1,23 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { gamePath, recordPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
-import { Suspense } from "react";
+import { gamePath, historyPath, playPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 
-import { GameFamily } from "@/components/games/GameFamily";
-import { GameLadder } from "@/components/games/GameLadder";
-import { PlayedHere } from "@/components/games/PlayedHere";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
 
-export const metadata = { title: "Rules" };
+export async function generateMetadata({ params }: PageProps<"/games/[slug]/rules">): Promise<Metadata> {
+  const variant = variantFor((await params).slug);
+  return { title: variant === null ? "Rules 規則" : `${RULE_VARIANT_DISPLAY[variant].label} · Rules 規則` };
+}
 
 export function generateStaticParams() {
   return RULE_VARIANT_LIST.map((variant) => ({ slug: slugFor(variant) }));
@@ -46,8 +47,26 @@ function Part({ heading, lines }: { heading: Paired; lines: string[] }) {
   );
 }
 
-/** One game's rules, in the template every game shares. */
-export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) {
+/**
+ * One game's rules, at /games/<slug>/rules, in the template every game shares.
+ *
+ * A FACET RATHER THAN A NAMESPACE. These pages were /rules/<slug>, with an
+ * index of their own at /rules, and the rules page was doubling as the game's
+ * front door — every game's name on this site led here, so the ladder, the
+ * record and the family had all been piled onto it because there was nowhere
+ * else a reader could reach them from. The game has its own address now, one
+ * segment up, and it carries all of that. This page is what it was named for:
+ * the document.
+ *
+ * Still prerendered, and it still must be. Nothing here reads the database,
+ * and that is the property to keep: `generateStaticParams` with no `export
+ * const dynamic` means the whole page is built ahead of time, and a database
+ * read in one asks at build time a question only a running site can answer.
+ * The build died on /rules/drop-four for exactly that and nothing deployed at
+ * all. The panels that need a database are on the game's front door, each
+ * behind its own `connection()`.
+ */
+export default async function RulesPage({ params }: PageProps<"/games/[slug]/rules">) {
   const variant = variantFor((await params).slug);
   if (variant === null) notFound();
   const page = rulesPageFor(variant);
@@ -69,10 +88,34 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
         <article className={`${PANEL_CLASS} flex min-w-0 flex-1 flex-col gap-6`} data-testid="rules-page">
           <header className="flex flex-col gap-1">
             <p className="text-xs text-muted">
-              <Link href="/rules" className="underline-offset-2 hover:underline">
-                {say.say("nav.rules")}
+              {/*
+                THREE STEPS, AND THE FIRST ONE IS WHY.
+
+                Up to the GAME, not across to an index of rules: there is no
+                index of rules any more, a game's rules belong to the game, and
+                the way to another game's rules is through that game. The trail
+                reads Games / name / Rules because that is what the address
+                says, and this is where the word "Rules" goes on being said,
+                which is why taking the bar's entry out did not leave its
+                phrase with nothing to name.
+
+                AND THE CATALOGUE COMES FIRST BECAUSE OF WHO ELSE READS THIS
+                PAGE. This address is open without an invite and the game's own
+                page beside it is not — the hub carries the ladder and the
+                standings, which are members' names and figures. So for a
+                stranger, the middle step of this trail is a door and the first
+                one is the only way onward the site can actually honour. A page
+                that is public must have a public way out of it, or it is a
+                room with one exit that is locked.
+              */}
+              <Link href="/games" className="underline-offset-2 hover:underline" data-testid="rules-to-games">
+                {say.say("nav.games")}
               </Link>{" "}
-              / {name.text}
+              /{" "}
+              <Link href={gamePath(variant)} className="underline-offset-2 hover:underline" data-testid="rules-up">
+                {name.text}
+              </Link>{" "}
+              / {say.say("nav.rules")}
             </p>
             <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
               {name.text}
@@ -121,25 +164,17 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           <Part heading={say.pair("rules.play", "手順")} lines={page.play} />
           <Part heading={say.pair("rules.house", "細則")} lines={page.house} />
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
-            <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">
+<Link href={playPath(variant)} className="font-semibold underline-offset-2 hover:underline">
               {say.say("rules.playThis", { game: name.text })}
             </Link>
             {/*
-              The way out of a rules page that is not "start one".
-              Every game's name on this site leads here, so this page is the
-              hub the rule hangs on — and it had nothing but the board and
-              Wikipedia on it.
-
-              "Who is best at it" used to be a second link beside this one,
-              pointing at /champions/<slug>. It is gone because the ladder is
-              now ON this page, a panel below, and that panel carries its own
-              way through to the whole of it. Two links a thumb apart with the
-              same words, one of them answering in place and the other sending
-              you elsewhere to be answered, is the confusion this work exists
-              to end rather than a second helping of it.
+              The ways out that are not "start one". Short here, because the
+              game's own page carries every one of them in full one segment up.
+              This is the document; a document that tries to be the hub as well
+              is how /rules/<slug> ended up with a ladder bolted to it.
             */}
             <Link
-              href={recordPath(variant)}
+              href={historyPath(variant)}
               className="text-sm underline-offset-2 hover:underline"
               data-testid="rules-record-link"
             >
@@ -172,8 +207,7 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
             Gate before anything ships, so there is nothing to ask while
             serving the page — and asking meant a filesystem read whose answer
             depends on how the deployment lays out `public/` rather than on
-            anything here. It answers correctly on the live site today; it is
-            simply not a question worth a page depending on.
+            anything here.
           */}
           <figure className={`${PANEL_CLASS} flex flex-col gap-2`}>
             {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
@@ -184,23 +218,8 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
             />
             <figcaption className="text-xs text-muted">{say.say("rules.inProgress")}</figcaption>
           </figure>
-          {/*
-            Deferred to request time, in a component of its own. Every rules
-            page is prerendered at build time, and reading the database in one
-            asks at build time a question only a running site can answer — the
-            build died on /rules/drop-four and nothing deployed at all.
-          */}
-          <Suspense fallback={null}>
-            <PlayedHere variant={variant} title={page.title} />
-          </Suspense>
-          {/*
-            Pure, so no Suspense and no request-time boundary: a family is a
-            table in `families.ts` and is the same for everybody. It prerenders
-            with the rules, which is what a page's static half is for.
-          */}
-          <GameFamily variant={variant} />
           {guides.length > 0 ? (
-            <section className={`${PANEL_CLASS} flex flex-col gap-2`}>
+            <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="rules-learn">
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
                 {learn.text}{" "}
                 {learn.kanji !== null ? (
@@ -221,19 +240,6 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           ) : null}
         </aside>
       </div>
-
-      {/*
-        The ladder, on the page every game's name leads to.
-
-        Full width and below the rules, because it is a table of people rather
-        than a note in a margin, and because of the order a reader arrives in:
-        what the game is, then who plays it. `Suspense` and the `connection()`
-        inside it for the same reason `PlayedHere` has both — the rules above
-        prerender, and only this waits for a request.
-      */}
-      <Suspense fallback={null}>
-        <GameLadder variant={variant} title={page.title} />
-      </Suspense>
   </Page>
   );
 }

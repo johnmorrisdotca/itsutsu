@@ -57,7 +57,7 @@ function watchForCrashes(page: Page): string[] {
  * read-only and there are no controls to break.
  */
 async function openGame(page: Page, game: Started) {
-  await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+  await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
   await expect(page.getByTestId("shared-rules")).toBeVisible();
   await expect(page.getByTestId("shared-rules-size")).toBeVisible();
 }

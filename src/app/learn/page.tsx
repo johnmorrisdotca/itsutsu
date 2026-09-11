@@ -5,18 +5,33 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { GUIDES } from "@/lib/learn/strategy";
 
 export const metadata = { title: "Learn" };
 
-/** The strategy guides, one card each, with the games they cover. */
-export default function LearnIndexPage() {
+/**
+ * The strategy guides, one card each, with the games they cover.
+ *
+ * This page's own address did not move when Learn left the navigation. Only
+ * the way in did: it is offered from /games now, where a reader has just met a
+ * game, rather than costing a word of chrome on every page of the site.
+ */
+export default async function LearnIndexPage() {
+  /*
+   * `nav.learn` names this heading now rather than a row in the bar. The
+   * phrase went looking for a home when the bar lost its Learn entry — the
+   * dead-phrase gate said so, correctly — and this is where the word is
+   * actually said, so it is where the key belongs. The heading was printing
+   * "Learn" untranslated to every reader until it got one.
+   */
+  const say = await currentSpeaker();
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
       <section className="flex flex-col gap-2">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          <Paired en="Learn" kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
+          <Paired en={say.say("nav.learn")} kanji="学び" kanjiClassName="text-sm font-normal opacity-70" />
         </h1>
         <p className="max-w-prose text-sm text-muted">
           How to think about each game: the shapes that win, the moves that force, and

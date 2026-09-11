@@ -41,7 +41,7 @@ async function playedGame(request: import("@playwright/test").APIRequestContext)
 test.describe("the moves of a game are listed where the game is read", () => {
   test("on a game still being played", async ({ page, request }) => {
     const game = await playedGame(request);
-    await page.goto(`/games/tic-tac-toe/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/tic-tac-toe/match/${game.id}/seat/${game.blackToken}`);
 
     const list = page.getByTestId("live-moves");
     await expect(list, "a match showed a board and a move count and no moves").toBeVisible();
@@ -58,7 +58,7 @@ test.describe("the moves of a game are listed where the game is read", () => {
       data: { token: game.blackToken, row: 0, col: 2 },
     });
 
-    await page.goto(`/history/tic-tac-toe/${game.id}`);
+    await page.goto(`/games/tic-tac-toe/match/${game.id}`);
     const list = page.getByTestId("played-moves");
     await expect(list).toBeVisible();
     await expect(list.getByTestId("played-move")).toHaveCount(5);

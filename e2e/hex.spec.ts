@@ -27,7 +27,7 @@ test.describe("hex", () => {
   });
 
   test("its rules page says a draw is impossible, and it offers the swap", async ({ page }) => {
-    await page.goto("/rules/hex");
+    await page.goto("/games/hex/rules");
     await expect(page.getByTestId("rules-page")).toContainText("draw is impossible");
     await expect(page.getByTestId("rules-page")).toContainText("six");
     await expect(page.getByTestId("rules-page")).toContainText("Swap");

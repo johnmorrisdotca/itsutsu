@@ -19,7 +19,7 @@ import {
   GAME_VARIANT_FILTERS,
 } from "@/lib/history/gameHistory.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { recordPath } from "@/lib/gomoku/slugs";
+import { historyPath } from "@/lib/gomoku/slugs";
 import { sortWord } from "@/lib/history/gameHistoryQuery";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { Field, Select } from "@/components/ui/Controls";
@@ -37,15 +37,15 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
   const say = useSpeaker();
 
   /*
-   * The game is not a filter but a collection: /history/<slug> is one game's
-   * record, with its own address, so choosing a game goes there, and the
-   * other filters come along in the query.
+   * The game is not a filter but a collection: /games/<slug>/history is one
+   * game's record, a facet of that game with its own address, so choosing a
+   * game goes there, and the other filters come along in the query.
    */
   const chooseGame = useCallback(
     (next: string) => {
       const query = new URLSearchParams(params.toString());
       query.delete("page");
-      const base = next === "all" ? "/history" : recordPath(next);
+      const base = next === "all" ? "/history" : historyPath(next);
       const search = query.toString();
       router.replace(search === "" ? base : `${base}?${search}`);
     },

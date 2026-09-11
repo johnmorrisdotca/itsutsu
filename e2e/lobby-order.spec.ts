@@ -30,7 +30,7 @@ test.describe("the lobby", () => {
       });
       expect(made.status()).toBe(201);
       const game = (await made.json()) as { id: string; blackToken: string };
-      await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+      await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     }
 
     await page.setViewportSize({ width: 1280, height: 800 });

@@ -22,9 +22,9 @@ const OPENING: [number, number][] = [
 test.describe("screenshots", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await page.evaluate(() => window.localStorage.clear());
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
   });
 
   test("the board in play", async ({ page }) => {
@@ -138,7 +138,7 @@ test.describe("screenshots", () => {
       data: { token: game.blackToken, row: 7, col: 7 },
     });
 
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
     await page.screenshot({ path: `${SHOTS}/08-shared-game.png`, fullPage: true });
   });
 
@@ -152,7 +152,7 @@ test.describe("screenshots", () => {
 
   test("dark mode", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
-    await page.goto("/games/gomoku");
+    await page.goto("/games/gomoku/play");
     await playSequence(page, 15, OPENING);
     await openSetup(page);
     await page.getByTestId("board-theme-sumi").click();

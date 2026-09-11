@@ -28,8 +28,8 @@ test.describe("quick phrases", () => {
     const game = await seatedGame(request);
     const black = await (await browser.newContext()).newPage();
     const white = await (await browser.newContext()).newPage();
-    await black.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
-    await white.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
+    await black.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+    await white.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
     await expect(black.getByTestId("quick-phrases")).toBeVisible();
     await black.getByTestId("quick-phrase").filter({ hasText: "Hello, good luck" }).click();
@@ -42,7 +42,7 @@ test.describe("quick phrases", () => {
 
   test("does not cost you a message you were already typing", async ({ page, request }) => {
     const game = await seatedGame(request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
 
     const box = page.getByTestId("reaction-text");
     await box.fill("half a thought");
@@ -56,14 +56,14 @@ test.describe("quick phrases", () => {
 
   test("is kept on the record, against the move it was sent at", async ({ page, request }) => {
     const game = await seatedGame(request);
-    await page.goto(`/games/gomoku/${game.id}/seat/${game.blackToken}`);
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await page.getByRole("button", { name: /^E5, empty$/ }).click();
     await expect(page.getByRole("button", { name: "E5, Black stone" })).toBeVisible();
     await page.getByTestId("quick-phrase").filter({ hasText: "Good game, thank you" }).click();
     await expect(page.getByTestId("reaction-mine")).toContainText("Good game, thank you");
 
     await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     const talk = page.getByTestId("conversation");
     await expect(talk).toBeVisible();
     await expect(talk).toContainText("Good game, thank you");
@@ -72,7 +72,7 @@ test.describe("quick phrases", () => {
 
   test("a spectator is offered none of them", async ({ page, request }) => {
     const game = await seatedGame(request);
-    await page.goto(`/games/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     // Same rule as the emoji bar: only a seat holder may say anything.
     await expect(page.getByTestId("quick-phrases")).toHaveCount(0);
   });

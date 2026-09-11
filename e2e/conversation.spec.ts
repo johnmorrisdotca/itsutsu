@@ -42,7 +42,7 @@ test.describe("the conversation in a finished game", () => {
   test("keeps what was said, against the move it was said at", async ({ page, request }) => {
     const game = await playedAndTalked(request);
 
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     const talk = page.getByTestId("conversation");
     await expect(talk).toBeVisible();
 
@@ -58,11 +58,11 @@ test.describe("the conversation in a finished game", () => {
   test("a remark leads to the position it was made at", async ({ page, request }) => {
     const game = await playedAndTalked(request);
 
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     // The point of grouping by move rather than by the clock: the board goes
     // to what somebody was reacting to.
     await page.getByTestId("conversation").getByTestId("conversation-move").nth(1).click();
-    await expect(page).toHaveURL(new RegExp(`/history/gomoku/${game.id}/2$`));
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${game.id}/2$`));
   });
 
   test("keeps a long conversation whole, not the last thirty of it", async ({ page, request }) => {
@@ -96,7 +96,7 @@ test.describe("the conversation in a finished game", () => {
     }
     await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
 
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     const talk = page.getByTestId("conversation");
     await expect(talk).toBeVisible();
     // The first thing said is the half that used to go missing.
@@ -115,7 +115,7 @@ test.describe("the conversation in a finished game", () => {
     });
     await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
 
-    await page.goto(`/history/gomoku/${game.id}`);
+    await page.goto(`/games/gomoku/match/${game.id}`);
     // An empty panel headed "What they said" would be worse than no panel.
     await expect(page.getByTestId("conversation")).toHaveCount(0);
   });

@@ -22,11 +22,11 @@ import type { PhraseKey } from "../i18n.constants";
  */
 export const JA_ALREADY_SAID: Partial<Record<PhraseKey, { text: string; where: string }>> = {
   "nav.about": { text: "五つについて", where: "the About page's own heading" },
-  "nav.rules": { text: "規則", where: "the Rules index heading" },
+  "nav.rules": { text: "規則", where: "the Rules trail and heading on a game's rules page" },
   "nav.record": { text: "棋譜", where: "the Record page's title" },
   "nav.players": { text: "対局者", where: "the Players page heading" },
-  "nav.everyGame": { text: "全種目", where: "the Every game page heading" },
-  "nav.learn": { text: "学び", where: "the Learn heading, on its own page and in the rules sidebar" },
+  "nav.everyGame": { text: "全種目", where: "the Every game heading on /games, over the catalogue" },
+  "nav.learn": { text: "学び", where: "the Learn heading on its own page" },
   /*
    * The navigation lost its 管理 in 0.124.0 and the Admin page's own heading
    * kept it, which is what keeps this entry on this side of the line: the
@@ -36,11 +36,11 @@ export const JA_ALREADY_SAID: Partial<Record<PhraseKey, { text: string; where: s
   "nav.admin": { text: "管理", where: "the Admin page's own heading, the join form, and the operator badge" },
 
   "filter.board": { text: "盤", where: "the Board section of every rules page" },
-  "filter.rules": { text: "規則", where: "the Rules index heading" },
+  "filter.rules": { text: "規則", where: "the Rules field in the record's filter bar" },
 
   "rules.object": { text: "目的", where: "the Object section of every rules page" },
   "rules.board": { text: "盤", where: "the Board section of every rules page" },
   "rules.play": { text: "手順", where: "the Play section of every rules page" },
   "rules.house": { text: "細則", where: "the House rules section of every rules page" },
-  "rules.learn": { text: "学び", where: "the Learn heading, on its own page and in the rules sidebar" },
+  "rules.learn": { text: "学び", where: "the Learn panel in a game's rules sidebar" },
 };
