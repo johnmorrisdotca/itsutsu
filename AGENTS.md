@@ -560,3 +560,78 @@ The corollary matters as much as the list: do not write a failure off as
 litter without looking. On the day this was written, the failure that looked
 most like local noise was the computer players falling off the players page,
 which was real and would have reached production.
+
+### A Test That Does What A User Would Not Do
+
+The hydration race above is one instance of a wider shape, and the shape is
+worth naming because it produces PASSING tests over broken sites.
+
+**A test that reaches its subject by a route no reader takes proves nothing
+about the route they do take.** The language picker is the clearest case this
+project has had. Choosing a language was verified thoroughly: `?lang=es` sets
+the cookie, `Accept-Language: ja` renders Japanese, an unknown tag falls back,
+a POST is never redirected. Every one of those was true. Every one of them
+reached the feature by typing an address or sending a header — and a reader
+reaches it by CLICKING, which nobody had done in a browser.
+
+Clicking was the whole bug. `next/link` made the switch a client-side
+navigation, the proxy set the cookie and redirected to the clean address, and
+the App Router answered that address out of its own cache — rendered before
+the language changed. The cookie was right, the server would have rendered the
+new language, and the reader was shown the old one. Reading the code said it
+worked, because the code did work; what did not was the path through it.
+
+Three rules fall out, and they cost nothing to follow:
+
+- **Drive the control, not the mechanism.** If a reader clicks it, a test
+  clicks it. A test that sets the cookie the click would have set has tested
+  the cookie.
+- **Never reload to make an assertion pass.** A reload throws away exactly the
+  client state these bugs live in, so it converts a broken feature into a
+  green test. `e2e/language.spec.ts` reloads nowhere on purpose, and says so.
+- **Test the way back, not just the way there.** The review went TO a language
+  every time and came BACK from one never. A one-directional test finds
+  one-directional bugs, and "I can't get out of it" is a whole class of fault
+  that only the return trip sees. The same applies to any remembered answer:
+  setting it, changing it, and clearing it are three different tests.
+
+Worth knowing why the sibling feature was fine, because the difference is the
+diagnosis: the players filter is remembered by the same file and has no such
+bug, because it sets its cookie on `next()` WITHOUT a redirect. The query stays
+part of the address, so there is no clean address for a cache to answer stale.
+**A redirect to a cleaned-up address is what makes a client-side cache able to
+be wrong** — if you add one, drive it with a click.
+
+### A Merge Cannot Conflict With A File That No Longer Exists
+
+It re-creates it. Silently, with no conflict marker, because from git's point
+of view nothing is contested: one side deleted a file, the other side changed
+it, and "changed" wins by default on a branch that never saw the delete.
+
+**So a branch that predates a move re-creates every file that move deleted.**
+This is not theoretical. On 2026-09-11 the address restructure moved the
+seat-claim route from `src/app/games/[slug]/[id]/seat/[token]/route.ts` to
+`.../match/[id]/seat/[token]/route.ts`. A branch cut before it added the
+active-game cap to the OLD path. Merged as it stood, the site would have had
+two seat-claim routes: a live one under `/match/` with no cap on it, and a
+resurrected one at a dead address carrying the cap somebody had just written.
+The check would have been present in the tree, tested, green, and never once
+executed by a real request.
+
+That is worse than either forgetting it or breaking the build, and it is the
+same family as the entry above: **a test that reaches its subject by a route no
+reader takes**. A route handler's unit tests import the module directly, so
+they pass on a resurrected file exactly as they would on a live one. Nothing in
+the suite can tell you which of the two a seat link actually reaches.
+
+What to do, and it is cheap:
+
+- **Rebase a branch onto main before finishing it, not after** — especially any
+  branch touching `src/app/`, where this codebase moves addresses.
+- **After merging a branch older than a move, list the files it added or
+  changed and check each path still exists on main.** `git diff --name-status`
+  against the merge base says it in one line.
+- **Then prove the code is REACHED, not merely present.** Drive the real
+  address — the one a link, a seat token or a redirect actually produces —
+  rather than importing the module. "It is in the tree" and "it runs" are two
+  claims, and a resurrected file satisfies the first only.
