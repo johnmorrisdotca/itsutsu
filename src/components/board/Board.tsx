@@ -6,6 +6,7 @@ import { canTwist, forbiddenPoints, inMovePhase, indexOf, legalPoints, pieceMove
 import { lastMove } from "@/lib/gomoku/rules/record";
 import {
   BLOCKED,
+  BOARD_GRIDS,
   GAME_STATUS,
   HOT,
   WORM,
@@ -16,6 +17,7 @@ import {
 import { columnLetter, pointName, rowNumber } from "@/lib/gomoku/notation";
 import type { Cell, GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { BOARD_THEMES, LABEL_GUTTER, STONE_SETS } from "./Board.constants";
+import { gridFor } from "./appearance";
 import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
@@ -112,11 +114,8 @@ export function Board({
   const spec = VARIANT_SPECS[state.settings.variant];
   const theme = BOARD_THEMES[appearance.boardTheme];
   const stones = STONE_SETS[appearance.stoneSet];
-  // Othello and the drop games are played in the squares; the rest on the lines.
-  const cells =
-    appearance.grid === "cells" ||
-    (appearance.grid === "auto" &&
-      (spec.flips || spec.camps || spec.connects || spec.checkers || spec.placement !== PLACEMENTS.free));
+  // In the squares or on the crossings: the game's own custom, from its spec, unless the reader chose one look for all.
+  const cells = gridFor(appearance, spec) === BOARD_GRIDS.cells;
 
   const last = lastMove(state);
   const lastIndex = last === null ? -1 : indexOf(size, last);

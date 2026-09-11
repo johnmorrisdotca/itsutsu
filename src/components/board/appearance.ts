@@ -1,4 +1,5 @@
 import { BOARD_THEMES, DEFAULT_APPEARANCE, GRID_STYLES, STONE_SETS } from "./Board.constants";
+import type { BoardGrid, VariantSpec } from "@/lib/gomoku/gomoku.types";
 import type { Appearance } from "./board.types";
 
 /**
@@ -76,4 +77,18 @@ export function sameAppearance(a: Appearance, b: Appearance): boolean {
     a.showMoveNumbers === b.showMoveNumbers &&
     a.flipped === b.flipped
   );
+}
+
+/**
+ * The grid a board is drawn on: the game's own, as its spec declares, unless
+ * the reader has asked for one look for every game.
+ *
+ * Read, never worked out. This used to be inferred from the rules — flips,
+ * camps, gravity — and tic-tac-toe fell through to the lines, because in its
+ * mechanics it is gomoku on a small board. How a game is drawn is a fact about
+ * the game's custom rather than a consequence of its rules, and the only thing
+ * that can know it is the game's own row.
+ */
+export function gridFor(appearance: Appearance, spec: VariantSpec): BoardGrid {
+  return appearance.grid === "auto" ? spec.grid : appearance.grid;
 }

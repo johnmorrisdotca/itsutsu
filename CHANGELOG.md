@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.138.0
+- Each game is drawn the way that game is actually drawn: tic-tac-toe, Othello and checkers in the squares, gomoku and Go on the crossings, rather than every game sharing one board
+
 ## 0.137.0
 - Every list that names a game shows its board, so you can tell Reversi from Go at a glance rather than by reading
 - A game's card is the thing you click, all of it, and every row that opens something says so with an arrow

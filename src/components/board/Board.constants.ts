@@ -123,11 +123,17 @@ export const STONE_SETS = {
   },
 } as const satisfies Record<string, StoneSetTokens>;
 
-/** How each grid style is named in the set-up. */
+/**
+ * The three views, in John's words. The traditional view draws each game the
+ * way that game is drawn — the default, and what an account that never chose
+ * gets. The Itsutsu view puts every game on the crossings of a go board, the
+ * house style; the squares view is its mirror. `auto` is the stored key for
+ * the first, kept so a choice already saved still reads.
+ */
 export const GRID_STYLES: Record<GridStyle, { label: string; kanji: string; hint: string }> = {
-  auto: { label: "As the game is played", kanji: "本式", hint: "Five-in-a-row games on the lines; Othello and the drop games in the squares." },
-  lines: { label: "On the lines", kanji: "碁盤", hint: "Stones on the crossings, as on a go board." },
-  cells: { label: "In the squares", kanji: "升目", hint: "Stones inside the squares, as on a chess or Othello board." },
+  auto: { label: "Traditional view", kanji: "伝統", hint: "Each game drawn the way it is played: gomoku and go on the lines, tic-tac-toe and Othello in the squares." },
+  lines: { label: "Itsutsu view", kanji: "碁盤", hint: "Every game on the crossings, as on a go board — the house style, tic-tac-toe included." },
+  cells: { label: "Squares view", kanji: "升目", hint: "Every game inside the squares, as on a chessboard — gomoku included." },
 };
 
 export const DEFAULT_APPEARANCE: Appearance = {

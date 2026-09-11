@@ -93,9 +93,23 @@ test.describe("game screenshots", () => {
   for (const [variant, scene] of Object.entries(SCENES)) {
     test(`${variant}`, async ({ page }) => {
       mkdirSync(OUT, { recursive: true });
+      // Dressing the board for its picture must not redress the account the picture is taken from.
+      await page.route("**/api/me", (route) => (route.request().method() === "PATCH" ? route.abort() : route.continue()));
       await page.goto("/games/gomoku/play");
       await openSetup(page);
       await page.getByTestId("rules").selectOption(variant);
+      /*
+       * The board as a member who never chose one sees it: kaya, slate and
+       * shell, the traditional view, no move numbers. This browser is the
+       * operator, and the operator's account keeps whatever board was chosen
+       * for an evening's play — without this, that board is in every picture,
+       * and eight of them came out dark before anybody noticed.
+       */
+      await page.getByTestId("board-theme-kaya").click();
+      await page.getByTestId("stone-set-classic").click();
+      await page.getByTestId("grid-style").selectOption("auto");
+      const numbers = page.getByRole("checkbox", { name: "Move numbers" });
+      if (await numbers.isChecked()) await numbers.click();
       // The piece games lay a piece per click; the rest a stone.
       for (const [index, [row, col]] of scene.moves.entries()) {
         const colour = scene.colours?.[index];
