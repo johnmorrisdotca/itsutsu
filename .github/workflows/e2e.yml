@@ -1,0 +1,125 @@
+name: End-to-end
+
+# Called by ci.yml and by vercel-deploy.yml, which gates its deploy on it.
+# One definition with two callers, so the suite that guards a release and the
+# suite that guards a pull request can never quietly drift apart.
+on:
+  workflow_call:
+
+jobs:
+  playwright:
+    # MUST STAY ON A STANDARD RUNNER. GitHub Actions is free on standard
+    # GitHub-hosted runners for public repositories, and this repository is
+    # public — so this whole job costs nothing. The larger runner tiers are
+    # NOT free even on a public repo, and moving this to one is the single
+    # way this acquires a bill.
+    runs-on: ubuntu-latest
+    # The suite takes about ten minutes on a developer's machine. The ceiling
+    # is generous because a dev server compiles on demand and a cold runner
+    # has nothing cached; a job that is merely slow should report, not fail.
+    timeout-minutes: 30
+
+    services:
+      # Postgres runs ON the runner and is thrown away with it. No Neon usage,
+      # and nothing here touches the real database.
+      #
+      # That is not only a matter of the URL below being right. `tidy.ts`
+      # DELETES rows, and it asks `isLocalDatabase()` first, which answers true
+      # only for localhost, 127.0.0.1 and ::1 — and false for anything it
+      # cannot parse, because a guard that treats "I do not understand this"
+      # as "go ahead" is not a guard. A service container answers on localhost.
+      # Production is a Neon hostname. So the deleting code in this suite
+      # CANNOT be pointed at production from here, whatever is exported.
+      db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: gomoku
+          POSTGRES_PASSWORD: gomoku
+          POSTGRES_DB: gomoku
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gomoku -d gomoku"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.11.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # The suite reads `.env` directly — `process.loadEnvFile(".env")` in
+      # e2e/tidy.ts, e2e/members.ts and one spec — and throws if it is absent,
+      # so job-level environment variables alone are not enough. Every value
+      # here is a throwaway against the container above; no real credential
+      # goes near this job.
+      #
+      # See .env.example, which explains each of these and why the relief is
+      # set. RATE_LIMIT_RELIEF is not optional: without it the suite drives
+      # the whole site from one address and a dozen tests fail with 429s in
+      # files testing something else entirely.
+      - name: Write the .env the suite expects
+        run: |
+          cat > .env <<'ENV'
+          DATABASE_URL="postgresql://gomoku:gomoku@localhost:5432/gomoku"
+          DIRECT_URL="postgresql://gomoku:gomoku@localhost:5432/gomoku"
+          AUTH_SECRET="ci-only-not-a-real-secret"
+          ADMIN_EMAILS="operator@example.test"
+          ADMIN_TOKEN="ci-only-operator-token"
+          NEXTAUTH_URL="http://localhost:6600"
+          RATE_LIMIT_RELIEF=20
+          ENV
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `migrate deploy` applies the committed migrations and never generates
+      # one, so a schema that has drifted from its migrations fails here rather
+      # than being papered over.
+      - name: Bring the throwaway database up to the committed schema
+        run: pnpm exec prisma migrate deploy
+
+      # Chromium only: playwright.config.ts defines two projects and both use
+      # Desktop Chrome.
+      - name: Install Playwright's browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Playwright starts the dev server itself — see `webServer` in
+      # playwright.config.ts — and `reuseExistingServer` finds nothing to reuse
+      # on a fresh runner, so it gets a clean one on port 6600.
+      #
+      # IT MUST BE THE DEV SERVER. Swapping this for `pnpm build && pnpm start`
+      # to make the run faster is the obvious optimisation and it breaks the
+      # suite: `next start` sets NODE_ENV=production, and BOTH reliefs are
+      # deliberately ignored in production — `allowanceFor()` in
+      # src/lib/api/rateLimit.ts and `activeGameLimit()` in
+      # src/lib/history/activeGames.ts each return the unrelieved number as
+      # their first act. The suite would then drive the whole site from one
+      # address against household-scale limits and fail a dozen specs with
+      # 429s, in files testing something else entirely, with nothing naming
+      # the cause. That is the single most expensive wrong turn available here.
+      - name: Run the end-to-end suite
+        run: pnpm test:e2e
+
+      # Only on failure, and only for a fortnight: the traces are what make a
+      # red run diagnosable without reproducing it locally, and they are large.
+      - name: Keep the report when it fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
