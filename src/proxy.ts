@@ -70,15 +70,85 @@ const OPEN_PATHS = [
 ];
 
 /**
- * When no secret is configured the gate cannot verify anything, and a locked
- * door nobody holds a key to is worse than an open one for local development.
- * A deployment that means to be private must set AUTH_SECRET; the /join page
- * says so plainly when it is missing.
+ * Whether the gate has a key to verify anything with.
+ *
+ * Missing or too short, AUTH_SECRET means `signingKey()` (session.ts,
+ * signing.ts) returns null both for signing and for verifying — so no
+ * session can be minted OR checked, for the operator any more than for a
+ * stranger. That is a fact about the whole deployment, not about the one
+ * request in hand, which is why the two callers below treat it so
+ * differently: see `refuseUnconfigured` and its one call inside `proxy`.
  */
 function gateIsConfigured(): boolean {
   const secret = process.env.AUTH_SECRET?.trim();
   return Boolean(secret && secret.length >= 16);
 }
+
+/**
+ * Whether this is one of the environments with nothing to protect and nobody
+ * protected — the only ones where a gate with no key may carry on regardless.
+ *
+ * NAMED RATHER THAN NEGATED, and that is the whole of it. The obvious way to
+ * write the caller is `if (NODE_ENV === "production") refuse`, which reads
+ * identically and behaves differently: every other value falls through to the
+ * bypass, including `NODE_ENV` unset, misspelled, or set by some runtime that
+ * does not use the word. The dangerous case is exactly the one nobody thought
+ * about, and it resolves OPEN.
+ *
+ * So the two environments that may be relaxed are listed, and everything else
+ * — production, anything unrecognised, nothing at all — refuses. This
+ * repository already states the principle for `isLocalDatabase`, which answers
+ * false for anything it cannot parse: a guard that treats "I do not
+ * understand this" as "go ahead" is not a guard.
+ *
+ * `test` is here because vitest sets it and the suite has no secret to offer;
+ * `development` because a fresh clone with no .env should still run locally.
+ */
+function isUnprotectedEnvironment(): boolean {
+  const where = process.env.NODE_ENV;
+  return where === "development" || where === "test";
+}
+
+/**
+ * What a request gets when `gateIsConfigured()` is false and the deployment
+ * is production — see the comment above the one call to this, inside
+ * `proxy`, for why that combination refuses rather than the old bypass.
+ *
+ * It says as little as it safely can. Enough for the operator to act on:
+ * check the environment configuration and redeploy. Nothing about WHICH
+ * variable, which is the one thing a stranger reading the same response
+ * must not be handed. 503, not 401 or a redirect to /join — signing in is
+ * not the way out of this (`grant()` in api/session/route.ts already
+ * refuses to hand out a session nothing can verify), so nothing here should
+ * look like an invitation to try.
+ */
+function refuseUnconfigured(pathname: string): NextResponse {
+  const headers = { "Cache-Control": "no-store" };
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json(
+      { error: "This deployment is not configured correctly." },
+      { status: 503, headers },
+    );
+  }
+  return new NextResponse(NOT_CONFIGURED_HTML, {
+    status: 503,
+    headers: { ...headers, "Content-Type": "text/html; charset=utf-8" },
+  });
+}
+
+const NOT_CONFIGURED_HTML = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="robots" content="noindex" />
+<title>Not configured</title>
+</head>
+<body style="font-family: system-ui, sans-serif; max-width: 32rem; margin: 4rem auto; padding: 0 1.5rem; line-height: 1.6;">
+<h1 style="font-size: 1.25rem;">This deployment is not configured</h1>
+<p>Something this site needs in order to run safely is missing or wrong. If
+you are the operator: check the environment configuration and redeploy.</p>
+</body>
+</html>`;
 
 /**
  * READING IS OPEN, PLAYING IS GATED — John's rule, in his words: "strangers
@@ -238,7 +308,7 @@ export async function proxy(request: NextRequest) {
   }
   const { pathname } = request.nextUrl;
 
-  if (!gateIsConfigured() || isOpenPath(pathname)) return carryOn(request);
+  if (isOpenPath(pathname)) return carryOn(request);
 
   /*
    * An embed carries its own credential in the URL, because a cross-site
@@ -273,6 +343,38 @@ export async function proxy(request: NextRequest) {
     if (expected.length > 0 && token.length > 0 && constantTimeEqual(expected, token)) {
       return NextResponse.next();
     }
+  }
+
+  /*
+   * THE TICKET THIS BLOCK IS FOR: a gate with no key cannot verify a
+   * session — not a stranger's, not the operator's, `signingKey()` returns
+   * null either way — so treating that as "let everyone through", which
+   * this used to do unconditionally at the top of the function, meant
+   * losing AUTH_SECRET turned the whole site into the open web: every page
+   * behind the invite gate, and every API route that trusts the gate rather
+   * than re-checking itself (most of them do; see AGENTS.md), would answer
+   * a stranger exactly as it answers a member.
+   *
+   * PRODUCTION refuses instead. That is safe to turn on precisely because
+   * recovering from it never has to pass back through this gate: the fix is
+   * setting AUTH_SECRET correctly in Vercel and redeploying, which happens
+   * outside the site entirely and needs no session, no admin token and no
+   * request this function will ever see. Nothing here can lock the
+   * operator out further than the missing secret already has.
+   *
+   * DEVELOPMENT keeps the old bypass, unchanged, on purpose: a fresh clone
+   * with no .env should still run locally with nobody to protect and nobody
+   * protected, and generating a secret before `pnpm dev` even starts was
+   * never the point of AUTH_SECRET.
+   *
+   * Only ever a narrowing: `isOpenPath`, `isEmbed` and `isBoardApi` above are
+   * untouched and still run first, so a request that already had a way
+   * through keeps it. This adds no new one — it takes away the one bypass
+   * that should never have been unconditional.
+   */
+  if (!gateIsConfigured()) {
+    if (!isUnprotectedEnvironment()) return refuseUnconfigured(pathname);
+    return carryOn(request);
   }
 
   const session = await verifySession(request.cookies.get(SESSION_COOKIE)?.value);
