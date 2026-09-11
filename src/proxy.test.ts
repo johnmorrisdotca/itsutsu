@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 
 import { NextRequest } from "next/server";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { EMBED_TOKEN_PARAM, signEmbedToken } from "@/lib/auth/embedToken";
 
 import { MATCHER_EXEMPT, config, isBoardApiPath, proxy, wouldBeOpen } from "./proxy";
 
@@ -312,5 +314,136 @@ describe("the board token, through the gate itself", () => {
     delete process.env.BOARD_TOKEN;
     const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer anything" }));
     expect(response.status).toBe(401);
+  });
+});
+
+/**
+ * The security fault this file exists to close: the gate used to bypass
+ * every check — pages and API routes alike — whenever AUTH_SECRET was
+ * missing or too short, in production as well as in development.
+ * `signingKey()` (session.ts, signing.ts) cannot mint or verify a session
+ * either way, so that bypass was never "let the operator in while nobody
+ * else can get a session" — it was "let everybody in, unauthenticated,
+ * including whoever finds the variable gone."
+ *
+ * Production now refuses instead (503, saying nothing about which variable
+ * is wrong); development is exactly as it was, since a bypass with no
+ * stranger to protect was never the bug.
+ */
+describe("the gate with no working key", () => {
+  const ENV = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...ENV };
+    vi.unstubAllEnvs();
+  });
+
+  function pageRequest(path = "/history"): NextRequest {
+    return new NextRequest(`https://itsutsu.com${path}`);
+  }
+
+  function apiRequest(path = "/api/games"): NextRequest {
+    return new NextRequest(`https://itsutsu.com${path}`);
+  }
+
+  it("refuses a page in production when AUTH_SECRET is missing, rather than letting it through", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.AUTH_SECRET;
+    const response = await proxy(pageRequest());
+    expect(response.status).toBe(503);
+    // Not a redirect to /join: signing in is not the way out of this, and
+    // must not be made to look like it is.
+    expect(response.headers.get("location")).toBeNull();
+    const body = await response.text();
+    expect(body).not.toContain("AUTH_SECRET");
+  });
+
+  it("refuses an API route in production when AUTH_SECRET is missing, rather than letting it through", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.AUTH_SECRET;
+    const response = await proxy(apiRequest());
+    expect(response.status).toBe(503);
+    const body: unknown = await response.json();
+    expect(JSON.stringify(body)).not.toContain("AUTH_SECRET");
+  });
+
+  it("refuses in production when AUTH_SECRET is set but too short", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.AUTH_SECRET = "short";
+    const response = await proxy(pageRequest());
+    expect(response.status).toBe(503);
+  });
+
+  it("keeps the old bypass in development when AUTH_SECRET is missing", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    delete process.env.AUTH_SECRET;
+    const response = await proxy(pageRequest());
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("keeps the old bypass in development when AUTH_SECRET is set but too short", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    process.env.AUTH_SECRET = "short";
+    const response = await proxy(pageRequest());
+    expect(response.status).toBe(200);
+  });
+
+  it("does not refuse in production once AUTH_SECRET is present and correct — it falls through to the ordinary gate", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    const response = await proxy(pageRequest());
+    // No session cookie: the ORDINARY refusal (send them to /join), not the
+    // new one — proof this change only ever narrows what used to be an
+    // unconditional bypass, and never touches the configured case.
+    expect(response.status).not.toBe(503);
+    expect(response.headers.get("location")).toContain("/join");
+  });
+
+  it("still answers the API's ordinary 401 in production once AUTH_SECRET is present and correct", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    const response = await proxy(apiRequest());
+    expect(response.status).toBe(401);
+  });
+});
+
+/**
+ * The two existing token exceptions do not go through `gateIsConfigured()`
+ * at all — the board token is compared against its own separate env var,
+ * and both checks run before the new "is the gate configured" branch this
+ * ticket adds. Pinned here, in production specifically, because that is the
+ * one environment where the new branch exists to run.
+ */
+describe("the two token exceptions survive the fail-closed change, in production", () => {
+  const ENV = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...ENV };
+    vi.unstubAllEnvs();
+  });
+
+  it("still lets a valid embed token through with no session", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    const token = await signEmbedToken("proxy.test.ts");
+    expect(token).not.toBeNull();
+    const response = await proxy(
+      new NextRequest(`https://itsutsu.com/embed?${EMBED_TOKEN_PARAM}=${token}`),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("still lets the right board token through with no session", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(
+      new NextRequest("https://itsutsu.com/api/backlog", {
+        headers: { Authorization: "Bearer right-token" },
+      }),
+    );
+    expect(response.status).toBe(200);
   });
 });
