@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { memberContext, seedMember } from "./members";
+import { memberContext, seatTokensFor, seedMember } from "./members";
 
 /**
  * Playing that game again.
@@ -36,7 +36,15 @@ test.describe("a finished game offers to be played again", () => {
       },
     });
     expect(made.status()).toBe(201);
-    const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
+    const created = (await made.json()) as { id: string; blackToken: string };
+    /*
+     * The white token is NOT in that response any more, and must not be: this
+     * is a challenge, so white is bound to the other member, and handing it
+     * over is what let a challenger resign on their opponent's behalf. The
+     * spec reads it from the row it made — a fixture, not something a player
+     * can do. See `seatTokensFor`.
+     */
+    const game = { id: created.id, ...(await seatTokensFor(created.id)) };
 
     // Play it out. Black is the challenger, which is this member.
     const moves: [number, number][] = [

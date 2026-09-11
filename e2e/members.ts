@@ -356,3 +356,36 @@ export async function seenAt(name: string, when: Date | null): Promise<void> {
     await prisma.$disconnect();
   }
 }
+
+/**
+ * Both seat tokens for a game, read straight from the database.
+ *
+ * A FIXTURE, NOT A CAPABILITY, and the distinction is the point. Since 0.133.1
+ * the API returns only the caller's own seat token: a challenge binds the
+ * other seat to another member, and handing the challenger that token let them
+ * resign on their opponent's behalf and write a rated loss onto a permanent
+ * public record.
+ *
+ * A test that needs to play BOTH sides of a challenge therefore cannot get the
+ * second token the way it used to, and should not — a spec that obtains it
+ * through the API would be asserting the bug. It reads the row instead, which
+ * is something the test owns and the site cannot do.
+ *
+ * If you find yourself reaching for this in a spec that is about what a PLAYER
+ * can do, stop: the answer there is to claim the seat through its link, which
+ * is how a real second player gets one.
+ */
+export async function seatTokensFor(id: string): Promise<{ blackToken: string; whiteToken: string }> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const row = await prisma.game.findUnique({
+      where: { id },
+      select: { blackToken: true, whiteToken: true },
+    });
+    if (row === null) throw new Error(`no game ${id} to read seat tokens from`);
+    return { blackToken: row.blackToken ?? "", whiteToken: row.whiteToken ?? "" };
+  } finally {
+    await prisma.$disconnect();
+  }
+}

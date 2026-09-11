@@ -315,18 +315,67 @@ export async function POST(request: Request) {
     }
 
     /*
-     * A posted seat's token is not the poster's to hold.
+     * A SEAT THAT IS SOMEBODY ELSE'S IS NOT YOURS TO HOLD THE TOKEN FOR.
      *
-     * Both tokens go back to whoever starts a private game, because they have
-     * to send one of them to the person they mean to play. A seat posted on
-     * the noticeboard is different: it is answered by sitting down, not by a
-     * link, so there is nobody for the poster to send it to — and while they
-     * held it they could play both colours from the API whatever the seat
-     * rules said, since a token is the whole credential. Not returning it is
-     * what shuts that, rather than another rule about who may sit where.
+     * A token is the whole credential. `stoneForToken` is what every
+     * seat-bound endpoint identifies a player by — resigning, moving, giving
+     * time, claiming a timeout, changing the rules — so whoever holds a seat's
+     * token can act AS that seat, whatever any rule about membership says.
+     *
+     * This condition used to read `merged.open === true && !hotSeat`, which
+     * named the noticeboard case rather than the rule, and the two are not the
+     * same set. A CHALLENGE binds white to another member's id and is rated by
+     * default, and it fell outside "posted" — so the challenger was handed
+     * their opponent's token and could resign on their behalf, crediting
+     * themselves a rated win and writing a loss that person never played onto
+     * a permanent public record. A rematch and a fork against a known opponent
+     * did the same.
+     *
+     * So the rule, stated as the rule: **a seat bound to somebody other than
+     * the caller never has its token returned.** Both tokens still go back
+     * when both seats are the caller's to give — a private game they must send
+     * a link for, or a hot-seat board where one browser plays both colours.
+     *
+     * Nothing on the client is narrowed by this: `StartGame`, `SetUpGame` and
+     * `StartSharedGame` read `blackToken` only. Do not widen the return "for
+     * symmetry" — the asymmetry is the point.
      */
-    const posted = merged.open === true && !hotSeat;
-    const created_body = posted ? { id: created.id, blackToken: created.blackToken } : created;
+    const caller = await currentMemberId();
+    /*
+     * TWO WAYS A SEAT IS NOT YOURS TO HOLD, and the first draft of this fix
+     * caught only the second — which broke the first. `both-seats.spec.ts`
+     * failed on it immediately, which is what that spec is for.
+     *
+     *  - POSTED on the noticeboard. Nobody is bound to it; it is answered by
+     *    sitting down, so there is nobody for the poster to send a link to.
+     *  - BOUND TO SOMEBODY ELSE by a challenge, a rematch or a fork.
+     *
+     * The unbound seat of a PRIVATE game is the case that must still come
+     * back: it is unbound for the opposite reason — the caller has to send a
+     * link to whoever they mean to play, and cannot without the token.
+     *
+     * So "unbound" alone answers nothing, because it means both "for whoever
+     * sits down" and "for whoever I invite". `open` is what tells them apart.
+     */
+    const posted = merged.open === true;
+    const bound = [seats.blackMemberId, seats.whiteMemberId].filter(
+      (id): id is string => id !== undefined && id !== null,
+    );
+    const someoneElsesSeat = !hotSeat && (posted || bound.some((id) => id !== caller));
+    /*
+     * THEIR OWN SEAT, WHICHEVER COLOUR IT IS — not "the black one".
+     *
+     * A REMATCH SWAPS THE COLOURS (`seatsForRematch`: "They had black, so now
+     * I do"), so the caller is white about half the time. Returning
+     * `blackToken` for every withheld case would have handed them their
+     * opponent's token in exactly those games — the same bug this is fixing,
+     * pointed the other way, and harder to notice because it only appears on
+     * the second game between two people.
+     */
+    const mySeat =
+      seats.whiteMemberId !== undefined && seats.whiteMemberId === caller ? "white" : "black";
+    const myToken = mySeat === "white" ? created.whiteToken : created.blackToken;
+    const created_body = someoneElsesSeat ? { id: created.id, [`${mySeat}Token`]: myToken } : created;
     const response = NextResponse.json(created_body, {
       status: 201,
       headers: { ...NO_STORE, Location: matchPath(parsed.data.variant, created.id) },
