@@ -242,16 +242,45 @@ export async function changeItem(
 
   const staleBefore = new Date(now.getTime() - LEASE_MS);
   const moved = await prisma.backlogItem.updateMany({
-    where: moveWhere(id, item.status, actor, staleBefore),
+    /*
+     * THE STORED STATUS, NOT THE READ ONE. `toItem` folds the board's older
+     * vocabulary as it reads — `proposed` becomes `open`, `building` becomes
+     * `inProgress` — so `item.status` is what the row MEANS and
+     * `current.status` is what the row SAYS. This `where` is matched by the
+     * database against the column, so it has to be the latter.
+     *
+     * Getting that wrong made every legacy row unmovable: 14 rows on
+     * production, including 6 the release sweep needed, refused every move
+     * with `status = 'open'` matching a column holding `'proposed'`. It only
+     * showed against production, because the development database had been
+     * migrated to the new words and had no legacy row left to catch it.
+     */
+    where: moveWhere(id, current.status as BacklogStatus, actor, staleBefore),
     data: { ...moveData(status, actor, now), ...textData, ...gradeData },
   });
 
   if (moved.count === 0) {
-    // The row matched neither this actor's own claim nor a free or lapsed
-    // one, or it stopped existing under us. Re-read to say which.
-    const holder = await prisma.backlogItem.findUnique({ where: { id }, select: { claimedBy: true } });
-    if (holder === null) return { ok: false, reason: "missing" };
-    return { ok: false, reason: "held", heldBy: holder.claimedBy ?? "somebody" };
+    /*
+     * Nothing matched. Re-read to say WHICH of the two reasons it was, rather
+     * than reporting the commoner one and being wrong the rest of the time:
+     * a live claim somebody else holds, or the row having moved out from
+     * under this change since it was read.
+     *
+     * "held by somebody" was the single answer here, and it is a guess
+     * wearing a fact — the fault above surfaced as fourteen rows claiming to
+     * be held when not one of them was claimed at all, which is what sent the
+     * first diagnosis to the lease instead of the `where`.
+     */
+    const fresh = await prisma.backlogItem.findUnique({ where: { id }, select: { claimedBy: true, status: true } });
+    if (fresh === null) return { ok: false, reason: "missing" };
+    if (fresh.claimedBy !== null && fresh.claimedBy !== "") {
+      return { ok: false, reason: "held", heldBy: fresh.claimedBy };
+    }
+    return {
+      ok: false,
+      reason: "illegal",
+      problems: [`This row is "${fresh.status}" now, not "${current.status}" — read it again and try the move from there.`],
+    };
   }
 
   const row = await prisma.backlogItem.findUniqueOrThrow({ where: { id }, select: SELECT });

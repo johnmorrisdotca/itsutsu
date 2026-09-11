@@ -297,3 +297,52 @@ describe("a live claim", () => {
     expect(rows[0].claimedAt).not.toBeNull();
   });
 });
+
+describe("a row still filed under the board's older words", () => {
+  /*
+   * `toItem` folds the old vocabulary as it reads — `proposed` is `open` and
+   * `building` is `inProgress` — so a row MEANS one thing and SAYS another.
+   * The conditional write is matched by the database against the column, so
+   * it has to carry what the row says.
+   *
+   * It carried what the row meant, and every legacy row became unmovable:
+   * 14 on production, refusing every move because `status = 'open'` was being
+   * matched against a column holding `'proposed'`. Nothing caught it because
+   * the development database had been migrated to the new words and had no
+   * legacy row left in it — the fault could only exist where the old rows
+   * were, which is the one database no test had ever run against.
+   */
+  it("can still be moved, though it is stored under a word the board no longer writes", async () => {
+    rows = [row({ status: "building" })];
+
+    const outcome = await moveItem("a", BACKLOG_STATUSES.done, "John");
+
+    expect(outcome.ok, "a row filed as building could not be moved at all").toBe(true);
+    expect(rows[0].status).toBe(BACKLOG_STATUSES.done);
+  });
+
+  it("goes on to done from proposed by way of in progress, as open would", async () => {
+    rows = [row({ status: "proposed" })];
+
+    expect((await moveItem("a", BACKLOG_STATUSES.inProgress, "John")).ok).toBe(true);
+    expect((await moveItem("a", BACKLOG_STATUSES.done, "John")).ok).toBe(true);
+    expect(rows[0].releasedIn, "a closed row carries the release it was closed in").not.toBeNull();
+  });
+
+  it("says the status moved under it rather than blaming a hold nobody has", async () => {
+    /*
+     * The second half of the same fault. Every one of those refusals came
+     * back as "held by somebody" — on rows with `claimedBy` null — which sent
+     * the first diagnosis to the lease instead of the `where`. A reason that
+     * stands for two different facts is worth less than no reason.
+     */
+    rows = [row({ status: "open", claimedBy: null })];
+    const stale = { ...rows[0] };
+    // Move it out from under the change, the way another session would.
+    const outcome = await changeItem(stale.id, { status: BACKLOG_STATUSES.done }, "John");
+
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) return;
+    expect(outcome.reason, "open cannot reach done directly; that is the table talking").toBe("illegal");
+  });
+});
