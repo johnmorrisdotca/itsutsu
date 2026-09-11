@@ -1,6 +1,5 @@
 import {
   ASKED_BY_MAX,
-  ASSIGNED_TO_MAX,
   BACKLOG_KINDS,
   BACKLOG_EFFORTS,
   BACKLOG_PRIORITIES,
@@ -147,17 +146,18 @@ export function revisedDraft(
 
 /**
  * What is wrong with an edit to the fields that are somebody's opinion rather
- * than the board's rules — who has it, how much it matters, how much work it
- * is. Empty means it may be written.
+ * than the board's rules — how much it matters, how much work it is. Empty
+ * means it may be written.
+ *
+ * Who has it is deliberately not here: a claim is not an opinion typed into a
+ * field, it is what a move to In progress writes, from the actor making the
+ * move. See `moveData`.
  *
  * The same gate the route's schema keeps, stated where the other rules are,
  * so an in-process caller that never met the route is refused the same way.
  */
 export function editProblems(edit: BacklogEdit): string[] {
   const problems: string[] = [];
-  if (edit.assignedTo !== undefined && edit.assignedTo.trim().length > ASSIGNED_TO_MAX) {
-    problems.push(`A name is at most ${ASSIGNED_TO_MAX} characters.`);
-  }
   if (edit.priority !== undefined && edit.priority !== null && !isBacklogPriority(edit.priority)) {
     problems.push("Grade how much it matters as high, normal or low.");
   }
@@ -208,24 +208,111 @@ export function releaseStampFor(to: BacklogStatus, version: string = VERSION): s
 }
 
 /**
+ * In progress is not a status on its own; it is a claim, and a claim can go
+ * stale. These three are copied verbatim from BOARD_RULES.md's reference
+ * shapes — UmaKuma's `src/lib/ticketClaims.ts` keeps the originals, this
+ * board copies them — so both boards agree on what "held" means down to the
+ * millisecond.
+ */
+
+/** How long a hold lasts without being renewed. See BOARD_RULES.md invariant 3. */
+export const LEASE_MS = 6 * 60 * 60 * 1000;
+
+/** Whether a hold has gone stale and the row is free again. */
+export function leaseExpired(claimedAt: Date | string | null | undefined, nowMs: number = Date.now()): boolean {
+  if (!claimedAt) return true;
+  const held = claimedAt instanceof Date ? claimedAt.getTime() : Date.parse(claimedAt);
+  return !Number.isFinite(held) || nowMs - held > LEASE_MS;
+}
+
+/**
+ * Whether somebody is actually holding this row right now, the lease
+ * honoured. Every count of "in progress" and every "held by" label reads
+ * this, never the status column alone — a lapsed hold is stale, not waiting.
+ */
+export function heldNow(
+  row: { claimedBy: string | null; claimedAt?: Date | string | null },
+  nowMs: number = Date.now(),
+): boolean {
+  return typeof row.claimedBy === "string" && row.claimedBy.trim().length > 0 && !leaseExpired(row.claimedAt ?? null, nowMs);
+}
+
+/**
+ * The columns a move writes, and it is never the status alone.
+ *
+ * In progress is not a status; it is a claim. `claimedBy` and `claimedAt` are
+ * the one place work-in-progress is recorded, so a status written on its own
+ * is two fields that can disagree — a row `inProgress` with nobody holding
+ * it, or a holder left on a row the page calls waiting. Same shape the store
+ * writes and `moveTo` previews, so the two doors into a move agree.
+ *
+ * `releasedIn` still comes from `releaseStampFor` here, for now: this ticket
+ * only changes who may hold a row, not who may mark one done. Board
+ * convergence ITS-04 moves `done` behind the release tool and this function
+ * stops setting it.
+ */
+export function moveData(
+  to: BacklogStatus,
+  actor: string,
+  now: Date,
+): { status: BacklogStatus; claimedBy: string | null; claimedAt: Date | null; movedAt: Date; releasedIn: string | null } {
+  const claim = to === BACKLOG_STATUSES.inProgress ? { claimedBy: actor, claimedAt: now } : { claimedBy: null, claimedAt: null };
+  return { status: to, ...claim, movedAt: now, releasedIn: releaseStampFor(to) };
+}
+
+/**
+ * The condition a move is written under, so the database decides who wins
+ * rather than whoever read the row first.
+ *
+ * The status has to still be the one the move was planned from — two
+ * sessions do not both get to move a row only one of them read. And a live
+ * hold belongs to whoever has it: a mover may take a row nobody holds, one
+ * they hold themselves, or one whose hold has lapsed, and is otherwise
+ * refused with the holder's name. `staleBefore` is the lease boundary,
+ * passed in so the rule is testable without a clock. See BOARD_RULES.md
+ * invariant 4 — this is the `where` every moving write carries.
+ */
+export function moveWhere(
+  id: string,
+  from: BacklogStatus,
+  actor: string,
+  staleBefore: Date,
+): { id: string; status: BacklogStatus; OR: Array<{ claimedBy: null } | { claimedBy: string } | { claimedAt: { lt: Date } }> } {
+  return {
+    id,
+    status: from,
+    OR: [{ claimedBy: null }, { claimedBy: actor }, { claimedAt: { lt: staleBefore } }],
+  };
+}
+
+/**
  * The item as it stands after a move, or null when the move is not allowed.
  * The item passed in is never touched: a board rendered from the old list and
  * one rendered from the new can be compared, and nothing further up can move
  * an item by writing to it.
+ *
+ * Returns the same claim fields `moveData` writes, so a preview shown before
+ * the request goes to the server cannot say something the store would not.
  */
 export function moveTo(
   item: BacklogItem,
   to: BacklogStatus,
+  actor: string,
   now: Date = new Date(),
   version: string = VERSION,
 ): BacklogItem | null {
   if (!canMove(item.status, to)) return null;
-  return { ...item, status: to, movedAt: now.toISOString(), releasedIn: releaseStampFor(to, version) };
+  const claim =
+    to === BACKLOG_STATUSES.inProgress
+      ? { claimedBy: actor, claimedAt: now.toISOString() }
+      : { claimedBy: null, claimedAt: null };
+  return { ...item, status: to, movedAt: now.toISOString(), releasedIn: releaseStampFor(to, version), ...claim };
 }
 
 function matchesStatus(item: BacklogItem, filter: StatusFilter): boolean {
   if (filter === "all") return true;
   if (filter === "unfinished") return isOpen(item.status);
+  if (filter === "stale") return item.status === BACKLOG_STATUSES.inProgress && !heldNow(item);
   return item.status === filter;
 }
 
@@ -294,15 +381,32 @@ export function sortItems(items: readonly BacklogItem[], sort: BacklogSort): Bac
   });
 }
 
-/** How many items stand at each status. Every status is present, zero included. */
-export function tally(items: readonly BacklogItem[]): BacklogTally {
+/**
+ * How many items stand at each status. Every status is present, zero
+ * included.
+ *
+ * `inProgress` here means `heldNow`, not merely "the status column says so":
+ * a row whose claim has lapsed is not somebody working on it, and counting it
+ * as in progress is the same lie `heldNow` exists to stop UmaKuma's board
+ * telling. It is counted into `stale` instead — still open, still on the
+ * board, but not held by anybody right now.
+ */
+export function tally(items: readonly BacklogItem[], nowMs: number = Date.now()): BacklogTally {
   const counts = {
     open: 0,
     inProgress: 0,
     done: 0,
     dropped: 0,
+    stale: 0,
   } satisfies BacklogTally;
-  for (const item of items) counts[item.status] += 1;
+  for (const item of items) {
+    if (item.status === BACKLOG_STATUSES.inProgress) {
+      if (heldNow(item, nowMs)) counts.inProgress += 1;
+      else counts.stale += 1;
+    } else {
+      counts[item.status] += 1;
+    }
+  }
   return counts;
 }
 

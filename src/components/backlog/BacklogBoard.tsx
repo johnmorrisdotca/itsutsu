@@ -108,6 +108,15 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
             testId={`filter-${status}`}
           />
         ))}
+        {counts.stale === 0 ? null : (
+          <FilterChip
+            label="Stale"
+            count={counts.stale}
+            current={view.status === "stale"}
+            onPick={() => change({ status: "stale" })}
+            testId="filter-stale"
+          />
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -170,7 +179,13 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
 
       <div className="flex flex-col gap-1">
         <span className={SECTION_TITLE}>
-          {view.status === "all" ? "Everything" : view.status === "unfinished" ? "Still wanted" : STATUS_DISPLAY[view.status].label}
+          {view.status === "all"
+            ? "Everything"
+            : view.status === "unfinished"
+              ? "Still wanted"
+              : view.status === "stale"
+                ? "Stale"
+                : STATUS_DISPLAY[view.status].label}
         </span>
         {shown.length === 0 ? (
           <p className="py-4 text-sm text-muted" data-testid="backlog-empty">
@@ -179,7 +194,7 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
         ) : grouped === null ? (
           <ul className="flex flex-col" data-testid="backlog-list">
             {shown.map((entry) => (
-              <BacklogRow key={entry.id} who={who} item={entry} onMoved={() => router.refresh()} />
+              <BacklogRow key={entry.id} item={entry} onMoved={() => router.refresh()} />
             ))}
           </ul>
         ) : (
@@ -193,7 +208,7 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
                 </h3>
                 <ul className="flex flex-col">
                   {group.items.map((entry) => (
-                    <BacklogRow key={entry.id} who={who} item={entry} onMoved={() => router.refresh()} />
+                    <BacklogRow key={entry.id} item={entry} onMoved={() => router.refresh()} />
                   ))}
                 </ul>
               </div>

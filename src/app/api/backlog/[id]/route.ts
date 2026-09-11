@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { NO_STORE, badRequest, conflict, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import {
   BACKLOG_EFFORT_VALUES,
@@ -9,6 +9,7 @@ import {
   BACKLOG_PRIORITY_VALUES,
   BACKLOG_STATUS_VALUES,
 } from "@/lib/backlog/backlog";
+import { CLAIMED_BY_MAX } from "@/lib/backlog/backlog.constants";
 import { changeItem } from "@/lib/backlog/backlogStore";
 import type { BacklogChange } from "@/lib/backlog/backlog.types";
 import { overLimit } from "@/lib/api/rateLimit";
@@ -28,6 +29,10 @@ import { overLimit } from "@/lib/api/rateLimit";
  * all, and the way that got taken instead was a script writing to the table.
  * The lengths are not repeated here: the store asks the same `draftProblems`
  * the add route and the form ask, and answers 422 in its words.
+ *
+ * Who holds a row is not a field a caller sends. In progress is a claim, and
+ * a claim is written by the store from the actor this route already knows —
+ * see `changeItem` and BOARD_RULES.md invariant 2.
  */
 const patchSchema = z
   .object({
@@ -36,15 +41,14 @@ const patchSchema = z
     detail: z.string().optional(),
     kind: z.enum(BACKLOG_KIND_VALUES as [string, ...string[]]).optional(),
     askedBy: z.string().optional(),
-    assignedTo: z.string().optional(),
     priority: z.enum(BACKLOG_PRIORITY_VALUES as [string, ...string[]]).nullable().optional(),
     effort: z.enum(BACKLOG_EFFORT_VALUES as [string, ...string[]]).nullable().optional(),
   })
   .refine((body) => Object.keys(body).length > 0, { message: "empty" });
 
 /**
- * Moves one item to another status, revises what it says, grades it, or says
- * who has picked it up — any of those, in one write.
+ * Moves one item to another status, revises what it says, or grades it — any
+ * of those, in one write.
  *
  * A move the board's table forbids — a proposal jumping straight to done —
  * answers 422 rather than being written, so the rule holds whatever calls it:
@@ -53,6 +57,12 @@ const patchSchema = z
  * store asks every rule the change touches before it writes, and a request
  * carrying a legal grade and an illegal move leaves the row exactly where it
  * stands rather than half-applied.
+ *
+ * A move to In progress is a claim, and a live claim somebody else holds
+ * answers 409 rather than taking over: BOARD_RULES.md invariant 4, and the
+ * reason two sessions built the same thing twice before this ticket. The
+ * operator IS the actor — there is no separate "assign to" any more, taking
+ * a row and moving it to In progress are the same act.
  *
  * The board is the operator's, so changing a row is the operator's too. A
  * member's cookie reaches no further here than it does on the board itself:
@@ -69,13 +79,15 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = patchSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Move it where, say what, hand it to whom, or grade it how?");
+    if (!parsed.success) return badRequest("Move it where, say what, or grade it how?");
 
     const { id } = await ctx.params;
+    const actor = (me.name ?? me.email ?? "operator").trim().slice(0, CLAIMED_BY_MAX);
     // The enums are checked above; the lengths and the move are the store's to refuse.
-    const outcome = await changeItem(id, parsed.data as BacklogChange);
+    const outcome = await changeItem(id, parsed.data as BacklogChange, actor || "operator");
     if (!outcome.ok) {
       if (outcome.reason === "missing") return notFound("No such item.");
+      if (outcome.reason === "held") return conflict(`Held by ${outcome.heldBy}. Ask them to release it.`);
       return unprocessable(outcome.problems[0], outcome.problems);
     }
     return NextResponse.json(outcome.item, { headers: NO_STORE });

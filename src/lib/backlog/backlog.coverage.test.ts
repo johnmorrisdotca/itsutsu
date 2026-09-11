@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { BACKLOG_EFFORT_VALUES, BACKLOG_KIND_VALUES, BACKLOG_PRIORITY_VALUES, BACKLOG_STATUS_VALUES, draftProblems, isBacklogKind, isBacklogStatus, movesFrom } from "./backlog";
+import { BACKLOG_EFFORT_VALUES, BACKLOG_KIND_VALUES, BACKLOG_PRIORITY_VALUES, BACKLOG_STATUS_VALUES, LEASE_MS, draftProblems, isBacklogKind, isBacklogStatus, movesFrom } from "./backlog";
 import {
+  CLAIMED_BY_MAX,
   KEY_MAX,
   KIND_DISPLAY,
   EFFORT_DISPLAY,
@@ -35,6 +36,20 @@ import { BACKLOG_SEED } from "./backlog.seed.data";
  */
 
 const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+describe("the claim contract in BOARD_RULES.md", () => {
+  // These two numbers are the ones BOARD_RULES.md invariant 3 and 6 name.
+  // Itsutsu and UmaKuma both copy them verbatim; a change here is a change to
+  // the contract file in both repositories, in the same pass, not a value
+  // tuned for this board alone.
+  it("holds a claim for exactly six hours", () => {
+    expect(LEASE_MS).toBe(6 * 60 * 60 * 1000);
+  });
+
+  it("caps a claimant's name at 80, matching the database column", () => {
+    expect(CLAIMED_BY_MAX).toBe(80);
+  });
+});
 
 describe("every status is usable", () => {
   it.each(BACKLOG_STATUS_VALUES)("%s can be left for somewhere else", (status) => {

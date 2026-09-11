@@ -36,8 +36,15 @@ export type BacklogItem = {
   priority: BacklogPriority | null;
   effort: BacklogEffort | null;
   askedBy: string;
-  /** Who has picked it up, as free text; empty when nobody has. */
-  assignedTo: string;
+  /**
+   * Who holds this, as free text, and when the hold was written. In progress
+   * is not a status on its own, it is this pair inside the lease — see
+   * `heldNow` and `LEASE_MS`. Both null together means nobody has it; a mover
+   * always writes them together, never one without the other.
+   */
+  claimedBy: string | null;
+  /** ISO 8601, or null exactly when claimedBy is null. */
+  claimedAt: string | null;
   /** ISO 8601. Dates cross to the client as strings, so they are strings all the way up. */
   createdAt: string;
   movedAt: string;
@@ -47,6 +54,13 @@ export type BacklogItem = {
    * is not done. Not derivable after the fact: see the schema for why.
    */
   releasedIn: string | null;
+  /**
+   * The instant of the release that carried this, or null for every row
+   * finished before this column existed and every row that is not done.
+   * Written by the release tool only (board-convergence ITS-04); until then
+   * nothing sets it.
+   */
+  releasedAt: string | null;
 };
 
 /** What someone types to add an item. The key is derived, never asked for. */
@@ -66,21 +80,34 @@ export type BacklogDraft = {
  * of the statuses became Open — a chip meaning "not finished" and a chip
  * meaning "nobody is on it" cannot both be the same word on the same row of
  * buttons. `unfinished` says the thing the umbrella actually means.
+ *
+ * `stale` is not a status either — a stale row is still, honestly,
+ * `inProgress` in the status column. It is a claim nobody has renewed inside
+ * the lease, so it is filtered apart from the rows somebody is actually
+ * holding right now.
  */
-export type StatusFilter = BacklogStatus | "all" | "unfinished";
+export type StatusFilter = BacklogStatus | "all" | "unfinished" | "stale";
 
 /** How the board is ordered. */
 export type BacklogSort = "moved" | "newest" | "oldest" | "status" | "quickWins";
 
-/** How many items sit at each status, for the counts beside the filters. */
-export type BacklogTally = Record<BacklogStatus, number>;
+/**
+ * How many items sit at each status, for the counts beside the filters.
+ *
+ * `inProgress` counts only rows `heldNow` — a lapsed claim is not somebody
+ * working. `stale` is the rest of what the status column alone would have
+ * called in progress: a row nobody has renewed inside the lease. The two
+ * never overlap and together account for every `inProgress` row.
+ */
+export type BacklogTally = Record<BacklogStatus, number> & { stale: number };
 
 /**
  * The fields of a row somebody may change directly. Status is deliberately
- * absent: it moves through `canMove` or it does not move.
+ * absent: it moves through `canMove` or it does not move. Who holds a row is
+ * absent for the same reason — it moves through a claim, written by the store
+ * from the actor making the move, never sent as a field to set directly.
  */
 export type BacklogEdit = {
-  assignedTo?: string;
   priority?: BacklogPriority | null;
   effort?: BacklogEffort | null;
 };
