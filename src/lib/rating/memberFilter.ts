@@ -16,15 +16,19 @@ import { addressSaysFilter, filterAsPreferences, filterFor } from "./rememberedF
  * message — which is what the cookie took it for, and what the tests that
  * drive this by address rely on.
  *
+ * NO QUERY OF ITS OWN. The read rides the one every server-rendered page
+ * already makes to say who is here — `memberRowFor`, kept for the rest of
+ * the request — so a bare visit costs the page nothing it was not paying. A
+ * visit that asks for a narrowing writes once, by primary key, and only when
+ * the answer differs from what is kept: re-following a link already chosen
+ * writes nothing.
+ *
  * REMEMBERED WHILE THE PAGE RENDERS, NOT IN THE PROXY. The gate file cannot
  * reach the database without carrying Prisma on every request to the site.
  * And it answers a prefetch like any other request, so a cookie set there
  * remembered whichever of the bar's links had last come into view — a
  * narrowing nobody chose. A page body is only rendered when the page is
- * actually asked for, so a choice kept here is one somebody made. The same
- * page already touches the member row on every render to say who is here;
- * this is one more small write on the visits that ask for something, and
- * nothing on the visits that do not.
+ * actually asked for, so a choice kept here is one somebody made.
  *
  * A preference that cannot be kept — a database that would not take the
  * write — is logged and does not break the page: what was asked for is still

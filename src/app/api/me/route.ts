@@ -12,7 +12,7 @@ import { cleanDaysOff } from "@/lib/social/daysOff";
 import { cleanAppearance } from "@/components/board/appearance";
 import { cleanGameDefaults } from "@/components/game/gameDefaults";
 import { overLimit } from "@/lib/api/rateLimit";
-import { rememberPreferences } from "@/lib/preferences/memberPreferences";
+import { writePreferences } from "@/lib/preferences/memberPreferences";
 import { acceptPreferences } from "@/lib/preferences/preferences";
 
 const nameSchema = z.object({
@@ -91,7 +91,8 @@ export async function PATCH(request: Request) {
     const parsed = nameSchema.safeParse(body);
     if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "That name will not do.");
 
-    if ((await fetchProfile(me.email)) === null) {
+    const member = await fetchProfile(me.email);
+    if (member === null) {
       return NextResponse.json({ error: "No profile yet: sign in with Google first." }, { status: 404, headers: NO_STORE });
     }
     const { name, awayFrom, awayUntil, preferences, ...rest } = parsed.data;
@@ -124,8 +125,8 @@ export async function PATCH(request: Request) {
     }
     if (profile.timeZone !== undefined && !knownTimeZone(profile.timeZone)) return badRequest("Unknown time zone.");
     if (Object.keys(profile).length > 0) await updateProfile(me.email, profile);
-    // Laid over what is already kept, never written on its own: see rememberPreferences.
-    if (kept !== null) await rememberPreferences(me.email, kept.patch);
+    // Laid over what the row already holds — read once above, not again here.
+    if (kept !== null) await writePreferences(me.email, member.preferences, kept.patch);
 
     let shown = me.name ?? "";
     const response = NextResponse.json({ ok: true }, { headers: NO_STORE });

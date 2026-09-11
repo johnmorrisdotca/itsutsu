@@ -2,20 +2,28 @@ import "server-only";
 
 import type { Prisma } from "@prisma/client";
 
-import { foldEmail } from "@/lib/auth/members";
+import { foldEmail, memberRowFor } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 
 import { DEFAULT_PREFERENCES } from "./preferences.constants";
-import { mergePreferences, preferencesFrom } from "./preferences";
+import { mergePreferences, preferencesFrom, sameStored } from "./preferences";
 import type { PreferencePatch, Preferences } from "./preferences.types";
 
 /**
- * Where the registry keeps its answers: one JSON column on the member.
+ * Where the registry keeps its answers: one JSON column on the member, and
+ * NO QUERY OF ITS OWN.
  *
- * One column rather than a row per preference. Appearance is read on nearly
- * every page, and a member/key/value table would put a join on each of them
- * for a store whose whole contents fit in a sentence. Nothing outside this
- * file knows which it is; the registry is the design, and this is the detail.
+ * One column rather than a row per preference, because appearance is read on
+ * nearly every page and a member/key/value table would put a join on each of
+ * them for a store whose whole contents fit in a sentence. And the column is
+ * read by riding `memberRowFor` — the read every server-rendered page already
+ * makes to say who is here, kept for the rest of the request — so a page that
+ * asks for a preference pays nothing it was not paying. John's rule, now a
+ * rule rather than a preference: nothing here adds a query to a page that did
+ * not have one.
+ *
+ * Nothing outside this file knows which it is; the registry is the design,
+ * and this is the detail.
  */
 
 /**
@@ -28,33 +36,43 @@ import type { PreferencePatch, Preferences } from "./preferences.types";
  */
 export async function preferencesFor(email: string | null): Promise<Preferences> {
   if (email === null) return { ...DEFAULT_PREFERENCES };
-  const row = await prisma.member.findUnique({
-    where: { email: foldEmail(email) },
-    select: { preferences: true },
-  });
+  const row = await memberRowFor(foldEmail(email));
   return preferencesFrom(row?.preferences);
 }
 
 /**
- * Keeps a change on the member's account, laid over what is already there.
+ * Lays a change over what the row holds and writes it back: one update by
+ * primary key, or none when nothing would change.
  *
- * Read, merge, write, rather than a replacement: the column holds every
- * preference at once, and a page that knows about one of them must not erase
- * the others by writing only its own. Two devices changing different
- * preferences in the same instant could lose one — a choice somebody can
- * make again, which is not worth a lock.
+ * The row's current value comes from whoever already has it — a page from the
+ * read it makes anyway, the API from the profile it has just fetched — so
+ * remembering never reads on its own account. Read, merge, write rather than a
+ * replacement, because the column holds every preference at once and a page
+ * that knows about one of them must not erase the others by writing only its
+ * own. Two devices changing different preferences in the same instant could
+ * lose one: a choice somebody can make again, which is not worth a lock.
+ */
+export async function writePreferences(email: string, stored: unknown, patch: PreferencePatch): Promise<void> {
+  const merged = mergePreferences(stored, patch);
+  // Re-following a link already chosen says nothing new, and costs nothing.
+  if (sameStored(stored, merged)) return;
+  await prisma.member.update({
+    where: { email: foldEmail(email) },
+    // What came out of the column goes back into it, with the change laid over.
+    data: { preferences: merged as Prisma.InputJsonObject },
+  });
+}
+
+/**
+ * Keeps a change on the member's account, from a page that has read their
+ * row this request already.
  *
  * Nobody to keep it for — an address with no member row, which the operator
  * can be on a development database — and nothing is written. The page still
  * obeys what was asked; it only cannot remember it.
  */
 export async function rememberPreferences(email: string, patch: PreferencePatch): Promise<void> {
-  const key = foldEmail(email);
-  const row = await prisma.member.findUnique({ where: { email: key }, select: { preferences: true } });
+  const row = await memberRowFor(foldEmail(email));
   if (row === null) return;
-  await prisma.member.update({
-    where: { email: key },
-    // What came out of the column goes back into it, with the change laid over.
-    data: { preferences: mergePreferences(row.preferences, patch) as Prisma.InputJsonObject },
-  });
+  await writePreferences(email, row.preferences, patch);
 }

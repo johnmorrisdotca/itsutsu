@@ -92,8 +92,9 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
             /*
               How this reader last asked for the directory to be narrowed,
               kept on their account — and, when the address asks for a
-              narrowing, kept now. Asked for here rather than above, so only
-              the tab that shows it pays for the read.
+              narrowing, kept now. It rides the member read this page makes
+              anyway, so it costs no query; asked for inside the tab that
+              shows it, so a visit to another tab remembers nothing.
             */
             filter={await directoryFilterFor(asked)}
             scope={readRecordScope(asked[SCOPE_PARAM])}

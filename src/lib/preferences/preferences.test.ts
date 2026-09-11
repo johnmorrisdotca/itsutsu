@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DIRECTORY_WHO } from "@/lib/rating/directoryFilter";
 
 import { DEFAULT_PREFERENCES, PREFERENCE_NAMES, PREFERENCE_SPECS } from "./preferences.constants";
-import { acceptPreferences, cleanPreferences, mergePreferences, preferencesFrom } from "./preferences";
+import { acceptPreferences, cleanPreferences, mergePreferences, preferencesFrom, sameStored } from "./preferences";
 
 /**
  * A registry, not a bag.
@@ -196,5 +196,29 @@ describe("laying a change over what is stored", () => {
     mergePreferences(stored, patch);
     expect(stored).toEqual({ playersWho: DIRECTORY_WHO.people });
     expect(patch).toEqual({ playersWho: null });
+  });
+});
+
+describe("noticing whether a write would change anything", () => {
+  // The same link followed twice must not cost a write: John's rule is that
+  // nothing here adds a query to a page that did not have one.
+  it("says nothing changed when the change is what is already kept", () => {
+    const stored = { playersWho: DIRECTORY_WHO.people, playersActive: true };
+    expect(sameStored(stored, mergePreferences(stored, { playersWho: DIRECTORY_WHO.people }))).toBe(true);
+    expect(sameStored(stored, mergePreferences(stored, {}))).toBe(true);
+  });
+
+  it("notices a changed value, a forgotten key and a new key", () => {
+    const stored = { playersWho: DIRECTORY_WHO.people };
+    expect(sameStored(stored, mergePreferences(stored, { playersWho: DIRECTORY_WHO.computers }))).toBe(false);
+    expect(sameStored(stored, mergePreferences(stored, { playersWho: null }))).toBe(false);
+    expect(sameStored(stored, mergePreferences(stored, { playersActive: true }))).toBe(false);
+  });
+
+  it("treats forgetting what was never kept as nothing to say", () => {
+    for (const stored of [null, undefined, 7, []]) {
+      expect(sameStored(stored, mergePreferences(stored, { playersWho: null })), String(stored)).toBe(true);
+      expect(sameStored(stored, mergePreferences(stored, { playersWho: DIRECTORY_WHO.people })), String(stored)).toBe(false);
+    }
   });
 });

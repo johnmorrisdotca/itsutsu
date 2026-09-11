@@ -112,3 +112,18 @@ export function mergePreferences(stored: unknown, patch: PreferencePatch): Recor
   }
   return merged;
 }
+
+/**
+ * Whether writing `merged` back would leave the column as it is.
+ *
+ * So that saying again what is already kept — the same link followed twice,
+ * a bar revisited — costs no write at all. `merged` is built by spreading the
+ * stored row first, so the same keys come out in the same order and a plain
+ * comparison of the two as JSON is exact. A column holding nothing usable is
+ * "the same" as an empty change: forgetting what was never kept has nothing
+ * to say either.
+ */
+export function sameStored(stored: unknown, merged: Record<string, unknown>): boolean {
+  if (!isRow(stored)) return Object.keys(merged).length === 0;
+  return JSON.stringify(stored) === JSON.stringify(merged);
+}
