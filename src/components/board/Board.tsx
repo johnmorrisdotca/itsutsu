@@ -22,6 +22,7 @@ import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { Intersection } from "./Intersection";
+import { labelTracks, playingAreaInset } from "./margin";
 import { TwistControls } from "./TwistControls";
 import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
 
@@ -33,18 +34,32 @@ function cellDescription(cell: Cell, forbidden: boolean): string {
   return `${STONE_DISPLAY[cell].label} stone`;
 }
 
-function ColumnLabels({ size, theme, flipped }: { size: number; theme: BoardThemeTokens; flipped: boolean }) {
+/**
+ * The coordinate strips sit outside the board's own box, so the rim that
+ * insets the playing area cannot inset them too — they carry it themselves,
+ * as an empty track at each end, and each label is placed on the track its
+ * row or column landed on rather than left to fall into the first one.
+ */
+type LabelStripProps = {
+  size: number;
+  theme: BoardThemeTokens;
+  flipped: boolean;
+  /** The board's rim, as a fraction of its width; zero on a board drawn on the lines. */
+  inset: number;
+};
+
+function ColumnLabels({ size, theme, flipped, inset }: LabelStripProps) {
   return (
     <div
       className="grid text-center text-[0.65rem] font-medium select-none"
       style={{
-        gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+        gridTemplateColumns: labelTracks(size, inset),
         color: theme.coordinate,
       }}
       aria-hidden="true"
     >
-      {layoutOrder(size, flipped).map((col) => (
-        <span key={col} className="self-end pb-1 leading-none">
+      {layoutOrder(size, flipped).map((col, slot) => (
+        <span key={col} className="self-end pb-1 leading-none" style={{ gridColumnStart: slot + 2 }}>
           {columnLetter(col)}
         </span>
       ))}
@@ -52,18 +67,18 @@ function ColumnLabels({ size, theme, flipped }: { size: number; theme: BoardThem
   );
 }
 
-function RowLabels({ size, theme, flipped }: { size: number; theme: BoardThemeTokens; flipped: boolean }) {
+function RowLabels({ size, theme, flipped, inset }: LabelStripProps) {
   return (
     <div
       className="grid text-right text-[0.65rem] font-medium select-none"
       style={{
-        gridTemplateRows: `repeat(${size}, minmax(0, 1fr))`,
+        gridTemplateRows: labelTracks(size, inset),
         color: theme.coordinate,
       }}
       aria-hidden="true"
     >
-      {layoutOrder(size, flipped).map((row) => (
-        <span key={row} className="flex items-center justify-end pr-1.5">
+      {layoutOrder(size, flipped).map((row, slot) => (
+        <span key={row} className="flex items-center justify-end pr-1.5" style={{ gridRowStart: slot + 2 }}>
           {rowNumber(size, row)}
         </span>
       ))}
@@ -168,6 +183,16 @@ export function Board({
    * star both stand on it, even though only Hex is actually a rhombus.
    */
   const hexSkew = spec.connects || spec.chineseCheckers;
+  /*
+   * The rim of bare surface around the playing area — see margin.ts. A board
+   * on the lines already leaves half a cell, so this is what a board in the
+   * squares needs to read as the same kind of object rather than a crop.
+   *
+   * Not the rhombus: a rhombus is the board there, cut to its own shape, and
+   * a rectangular margin inside a shape the paper does not have would be a
+   * border round nothing. It keeps its clip.
+   */
+  const inset = playingAreaInset(size, cells && !rhombus);
 
   /*
    * The piece games: the piece in hand hangs under the pointer with its
@@ -203,12 +228,12 @@ export function Board({
     >
       <div />
       {appearance.showCoordinates ? (
-        <ColumnLabels size={size} theme={theme} flipped={flipped} />
+        <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} />
       ) : (
         <div />
       )}
       {appearance.showCoordinates ? (
-        <RowLabels size={size} theme={theme} flipped={flipped} />
+        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} />
       ) : (
         <div />
       )}
@@ -225,71 +250,83 @@ export function Board({
         }}
       >
         {/*
-          * The connection game is played on a rhombus of hexagons. A hexagon
-          * lattice is a square grid with every row shifted half a cell, so
-          * that is exactly what this does — skew the grid, squeeze it back
-          * into the square the board already occupies, and undo both on each
-          * cell so the stones stay round.
+          * The playing area, inset from the board's edge by its rim.
+          *
+          * The grid is drawn in an SVG and the stones are laid out in a CSS
+          * grid, in two separate boxes that are kept exactly over each other.
+          * So the rim goes HERE, on the one box they both fill, and never on
+          * either of them: inset the lines alone and every stone would sit
+          * off its square. Anything that has to line up with a cell — the
+          * twist arrows included — belongs inside this.
           */}
-        <BoardLines
-          size={size}
-          theme={theme}
-          quadrantSize={spec.quadrantSize}
-          cells={cells}
-          rhombus={rhombus}
-          checkered={spec.checkers}
-          hidden={spec.chineseCheckers}
-        />
-        <div
-          className="absolute inset-0 grid"
-          style={{
-            gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
-            ...(hexSkew ? { transform: `translateY(16.667%) skewX(${SLANT}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : {}),
-          }}
-        >
-          {layoutOrder(state.board.length, flipped).map((index) => {
-            const cell = state.board[index];
-            const point = pointOf(size, index);
-            const landing = dropping && live ? resolvePlacement(state, point) : point;
-            const landingIndex = indexOf(size, landing);
-            const playable = legal === null || legal.has(index);
-            // In a drop game any empty cell of a column with room plays that column.
-            const routed = dropping && cell === null && legal !== null && legal.has(landingIndex);
-            const ownPiece = sliding && cell === state.toPlay;
-            const target = destinations.has(index);
-            const inFootprint = footprint.has(index);
-            // In a piece game a corner can be laid wherever the piece fits.
-            const cornerFits = piecing && cell === null && footprintFor?.(point) !== null && !legal?.has(index);
-            return (
-              <Intersection
-                key={index}
-                point={point}
-                cell={cell}
-                label={`${pointName(size, point)}, ${cellDescription(cell, forbidden.has(index))}`}
-                isLast={index === lastIndex}
-                isWinning={winningIndices.has(index)}
-                ghost={(playable || target) && !piecing ? ghost : null}
-                ghostStone={inFootprint ? (footprint.get(index) ?? null) : null}
-                clickable={routed || ownPiece || target || (piecing && (cornerFits || playable))}
-                onHover={piecing ? setHovered : undefined}
-                moveNumber={numbers.get(index) ?? null}
-                mark={overlays.get(index) ?? null}
-                unslant={hexSkew}
-                camp={spec.camps ? campOf(size, point) : spec.chineseCheckers ? starCampOf(STAR_RADIUS, point) : null}
-                isKing={spec.checkers ? kings.has(index) : false}
-                hideBlocked={spec.chineseCheckers}
-                hole={spec.chineseCheckers && cell === null}
-                stones={stones}
-                winningColour={theme.winning}
-                readOnly={readOnly}
-                onPlay={onPlay}
-              />
-            );
-          })}
+          <div className="absolute" style={{ inset: `${inset * 100}%` }}>
+          {/*
+            * The connection game is played on a rhombus of hexagons. A hexagon
+            * lattice is a square grid with every row shifted half a cell, so
+            * that is exactly what this does — skew the grid, squeeze it back
+            * into the square the board already occupies, and undo both on each
+            * cell so the stones stay round.
+            */}
+          <BoardLines
+            size={size}
+            theme={theme}
+            quadrantSize={spec.quadrantSize}
+            cells={cells}
+            rhombus={rhombus}
+            checkered={spec.checkers}
+            hidden={spec.chineseCheckers}
+          />
+          <div
+            className="absolute inset-0 grid"
+            style={{
+              gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+              ...(hexSkew ? { transform: `translateY(16.667%) skewX(${SLANT}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : {}),
+            }}
+          >
+            {layoutOrder(state.board.length, flipped).map((index) => {
+              const cell = state.board[index];
+              const point = pointOf(size, index);
+              const landing = dropping && live ? resolvePlacement(state, point) : point;
+              const landingIndex = indexOf(size, landing);
+              const playable = legal === null || legal.has(index);
+              // In a drop game any empty cell of a column with room plays that column.
+              const routed = dropping && cell === null && legal !== null && legal.has(landingIndex);
+              const ownPiece = sliding && cell === state.toPlay;
+              const target = destinations.has(index);
+              const inFootprint = footprint.has(index);
+              // In a piece game a corner can be laid wherever the piece fits.
+              const cornerFits = piecing && cell === null && footprintFor?.(point) !== null && !legal?.has(index);
+              return (
+                <Intersection
+                  key={index}
+                  point={point}
+                  cell={cell}
+                  label={`${pointName(size, point)}, ${cellDescription(cell, forbidden.has(index))}`}
+                  isLast={index === lastIndex}
+                  isWinning={winningIndices.has(index)}
+                  ghost={(playable || target) && !piecing ? ghost : null}
+                  ghostStone={inFootprint ? (footprint.get(index) ?? null) : null}
+                  clickable={routed || ownPiece || target || (piecing && (cornerFits || playable))}
+                  onHover={piecing ? setHovered : undefined}
+                  moveNumber={numbers.get(index) ?? null}
+                  mark={overlays.get(index) ?? null}
+                  unslant={hexSkew}
+                  camp={spec.camps ? campOf(size, point) : spec.chineseCheckers ? starCampOf(STAR_RADIUS, point) : null}
+                  isKing={spec.checkers ? kings.has(index) : false}
+                  hideBlocked={spec.chineseCheckers}
+                  hole={spec.chineseCheckers && cell === null}
+                  stones={stones}
+                  winningColour={theme.winning}
+                  readOnly={readOnly}
+                  onPlay={onPlay}
+                />
+              );
+            })}
+          </div>
+          {twisting && spec.quadrantSize !== null ? (
+            <TwistControls size={size} quadrantSize={spec.quadrantSize} onTwist={onTwist} flipped={flipped} />
+          ) : null}
         </div>
-        {twisting && spec.quadrantSize !== null ? (
-          <TwistControls size={size} quadrantSize={spec.quadrantSize} onTwist={onTwist} flipped={flipped} />
-        ) : null}
       </div>
     </div>
   );
