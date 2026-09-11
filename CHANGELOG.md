@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.125.0
+- A game's own page is where the whole errand is done: its rules, who is best at it, the standings, your own record, the games already played, a game offered to anyone on the ladder, and the other games in its family
+
 ## 0.123.0
 - Play is the games you have going, oldest waiting at the top, and Games is the catalogue — two pages where one did both and grew a section every time you played
 

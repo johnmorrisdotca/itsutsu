@@ -4,9 +4,11 @@ import { notFound } from "next/navigation";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { championsPath, gamePath, recordPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { gamePath, recordPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 import { Suspense } from "react";
 
+import { GameFamily } from "@/components/games/GameFamily";
+import { GameLadder } from "@/components/games/GameLadder";
 import { PlayedHere } from "@/components/games/PlayedHere";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
@@ -101,12 +103,18 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
               Play {page.title} →
             </Link>
             {/*
-              The two ways out of a rules page that are not "start one".
+              The way out of a rules page that is not "start one".
               Every game's name on this site leads here, so this page is the
               hub the rule hangs on — and it had nothing but the board and
-              Wikipedia on it. A reader who has just learnt what Reversi is
-              wants to see it played and to see who is good at it, and both
-              were a click away and unreachable.
+              Wikipedia on it.
+
+              "Who is best at it" used to be a second link beside this one,
+              pointing at /champions/<slug>. It is gone because the ladder is
+              now ON this page, a panel below, and that panel carries its own
+              way through to the whole of it. Two links a thumb apart with the
+              same words, one of them answering in place and the other sending
+              you elsewhere to be answered, is the confusion this work exists
+              to end rather than a second helping of it.
             */}
             <Link
               href={recordPath(variant)}
@@ -114,13 +122,6 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
               data-testid="rules-record-link"
             >
               Every game of {page.title} played here <span className="font-mincho">棋譜</span>
-            </Link>
-            <Link
-              href={championsPath(variant)}
-              className="text-sm underline-offset-2 hover:underline"
-              data-testid="rules-champions-link"
-            >
-              Who is best at it <span className="font-mincho">名人</span>
             </Link>
             {/*
               Somewhere outside this site that can contradict us. A rules page
@@ -165,6 +166,12 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           <Suspense fallback={null}>
             <PlayedHere variant={variant} title={page.title} />
           </Suspense>
+          {/*
+            Pure, so no Suspense and no request-time boundary: a family is a
+            table in `families.ts` and is the same for everybody. It prerenders
+            with the rules, which is what a page's static half is for.
+          */}
+          <GameFamily variant={variant} />
           {guides.length > 0 ? (
             <section className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
@@ -184,6 +191,19 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           ) : null}
         </aside>
       </div>
+
+      {/*
+        The ladder, on the page every game's name leads to.
+
+        Full width and below the rules, because it is a table of people rather
+        than a note in a margin, and because of the order a reader arrives in:
+        what the game is, then who plays it. `Suspense` and the `connection()`
+        inside it for the same reason `PlayedHere` has both — the rules above
+        prerender, and only this waits for a request.
+      */}
+      <Suspense fallback={null}>
+        <GameLadder variant={variant} title={page.title} />
+      </Suspense>
   </Page>
   );
 }
