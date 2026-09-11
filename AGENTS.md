@@ -919,3 +919,32 @@ a clean checkout on 2026-09-11 and reported green with no retries. That number
 is honest, and it is a statement about THAT DATABASE as much as about the
 code. It does not travel. Neither does any green that rests on rows a previous
 run happened to leave behind.
+
+### A Scratch File In The Shared Checkout Is Somebody Else's Commit
+
+Two sessions ran `git add -A` in `/Users/john/Projects/gomoku` while a
+one-off runner was sitting untracked in `src/`, and both swept it into their
+branches. It had been deleted an hour earlier and never committed by the
+session that wrote it — and it came back twice, at two different merges, as a
+file in `src/**` that `pnpm test:unit` then ran.
+
+Nothing conflicts, nothing warns, and the author who deleted it has no reason
+to look for it again. It is the same family as the entry above — a thing you
+removed reappearing through somebody else's tree — with the difference that
+here **the file was never yours to delete from their branch**, because it was
+in their working directory the moment they staged everything.
+
+So:
+
+- **Temporary files go in the session's scratchpad**, never in the repository,
+  even when it is inconvenient. The one case that makes it inconvenient is a
+  runner that needs `@/` aliases and `server-only`, which only resolve under
+  vitest from inside the project — put it in `src/`, run it, and **delete it
+  in the same breath**, before anything else can stage it.
+- **`git add -A` in a shared checkout stages other people's work in progress.**
+  Prefer naming the paths you mean. If you do stage everything, read the list
+  before committing: a file you have never heard of is somebody else's.
+- **After merging a branch, check for files it added that you did not expect** —
+  `git diff --name-status` against the merge base, the same sweep the entry
+  above already asks for, reading it for additions as well as for paths that
+  have moved.
