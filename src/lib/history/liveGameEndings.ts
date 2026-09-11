@@ -14,6 +14,7 @@ import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
 import { fetchGameDetail } from "./gameHistory";
 import { FORFEITS_TO_LOSE } from "./gameSettingsSchema";
 import { GAME_ROW, isHotSeat, replay, stoneForToken } from "./liveGame";
+import { settledTurn } from "./settledTurn";
 import type { TimeoutOutcome } from "./liveGame.types";
 
 /**
@@ -129,6 +130,9 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
         status: finished ? "finished" : "active",
         result: next.winner ?? (finished ? "draw" : "abandoned"),
         winner: next.winner,
+        // A forfeited turn passes the move to the other side without anybody
+        // having played one, so the stored turn has to move with it.
+        ...settledTurn(next),
         lastMoveAt: now,
         deadlineAt: finished ? null : nextDeadline(row, next.toPlay, now),
         extraMs: 0,
@@ -191,6 +195,9 @@ export async function settleEnded(id: string, now = new Date()): Promise<boolean
       status: "finished",
       result: state.winner ?? "draw",
       winner: state.winner,
+      // The one place the engine's verdict and the row's status had drifted
+      // apart is the place this function exists for, so it writes both.
+      ...settledTurn(state),
       lastMoveAt: now,
       deadlineAt: null,
       extraMs: 0,
@@ -234,6 +241,13 @@ export async function cancelGame(id: string, token: string, now = new Date()): P
    */
   if (row.moves.length > 0) return { ok: false, reason: "not-allowed" };
 
+  /*
+   * And deliberately nothing about the settled turn. The engine never ended
+   * this game — an empty board is a position it would go on playing — so
+   * there is no verdict of its to write down, and inventing one would be the
+   * same lie the pair exists to avoid. `status` is what says this game is
+   * over, and `status` is what a reader asks first.
+   */
   await prisma.game.update({
     where: { id },
     data: {
@@ -268,7 +282,14 @@ export async function resignGame(id: string, token: string, now = new Date()): P
 
   await prisma.game.update({
     where: { id },
-    data: { status: "finished", result: next.winner, winner: next.winner, lastMoveAt: now },
+    data: {
+      status: "finished",
+      result: next.winner,
+      winner: next.winner,
+      // Resigned is ended, and nobody is to move in an ended game.
+      ...settledTurn(next),
+      lastMoveAt: now,
+    },
   });
   if (!isHotSeat(row)) {
     if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
