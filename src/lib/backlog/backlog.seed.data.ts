@@ -350,4 +350,13 @@ export const BACKLOG_SEED: readonly BacklogSeedItem[] = [
     status: BACKLOG_STATUSES.open,
     askedBy: "John",
   },
+  {
+    key: "a-game-is-checked-before-it-is-written",
+    title: "Refuse a game nobody could win, at the one place games are made",
+    detail:
+      "John, after his winning move did nothing: \"Should there not be checks when a game starts about this sort of thing? seems buggy.\" Threading the variant correctly through the lobby, a challenge, a rematch, a fork and the bot batch is a thing to get right repeatedly; a check where games are written is a thing to get right once. Done in `createLiveGame` \u2014 a game must use its variant's declared win length, and a length somebody chose must fit the board \u2014 with a gate asserting every variant on every board it offers describes a winnable game. Filed as the record of the decision: the guard is the pattern to reach for when the next rule turns out to be threaded rather than checked, and the remaining question is which OTHER settings deserve the same treatment (a clock nobody can meet, a handicap that decides the game in the opening).",
+    kind: BACKLOG_KINDS.chore,
+    status: BACKLOG_STATUSES.done,
+    askedBy: "John",
+  },
 ];
