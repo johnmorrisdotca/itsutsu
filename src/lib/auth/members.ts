@@ -153,9 +153,34 @@ export async function renameMember(email: string, name: string): Promise<Member 
   const renamed = await prisma.member.update({
     where: { email: foldEmail(email) },
     data: { name },
-    select: { email: true, name: true, picture: true },
+    select: { id: true, email: true, name: true, picture: true },
   });
-  return { ...renamed, email: renamed.email ?? foldEmail(email) };
+
+  /*
+   * THE NEW NAME REACHES THE RATING ROWS, and this is the half that was
+   * missing rather than a tidy-up.
+   *
+   * `Player` and `PlayerVariantRating` each keep a `name` for display, so a
+   * ladder can be drawn without reading the member table. Renaming updated
+   * neither. John's twelve-year-old was told that changing her display name
+   * was the remedy for her full name being public; she changed it, and every
+   * ladder on the site went on printing the old one. The advice was right and
+   * the code did not keep it.
+   *
+   * BY MEMBER ID, never by key. The key is the folded name she was earning
+   * under and it stays put — it is how the historic rows are found, and moving
+   * a primary key would orphan the very record this is protecting. What moves
+   * is what a reader sees.
+   *
+   * Not awaited as part of the rename's answer being correct: the member row
+   * is the fact, and these two are copies of a word off it.
+   */
+  await Promise.all([
+    prisma.player.updateMany({ where: { memberId: renamed.id }, data: { name } }),
+    prisma.playerVariantRating.updateMany({ where: { memberId: renamed.id }, data: { name } }),
+  ]);
+
+  return { email: renamed.email ?? foldEmail(email), name: renamed.name, picture: renamed.picture };
 }
 
 /** The profile a member keeps: what others may see, and how they want to be reached. */

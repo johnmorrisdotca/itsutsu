@@ -61,10 +61,18 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    */
   const looked = await Promise.all(
     playerKeysFromSlug(slug).map(async (key) => {
-      const [player, record, member] = await Promise.all([
-        fetchPlayer(key),
-        fetchPlayerRecord(key),
-        findMemberByName(key),
+      /*
+       * The MEMBER is looked up first and the record is then asked for as
+       * theirs. A rating and a record are keyed by the folded name they were
+       * earned under, and that name does not move when somebody renames — so
+       * asking by today's name alone answered zero for a member with seven
+       * games. The member is findable by their current name; everything else
+       * hangs off their id from here.
+       */
+      const member = await findMemberByName(key);
+      const [player, record] = await Promise.all([
+        fetchPlayer(key, member?.id ?? null),
+        fetchPlayerRecord(key, member?.id ?? null),
       ]);
       return { key, player, record, member };
     }),

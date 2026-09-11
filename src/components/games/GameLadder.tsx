@@ -4,7 +4,7 @@ import Link from "next/link";
 import { LadderSideView, PlayerLink } from "@/components/players/Standings";
 import { RecordLine } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { findMember } from "@/lib/auth/members";
 import { playPath, standingsPath } from "@/lib/gomoku/slugs";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
@@ -94,9 +94,12 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
    * these names is theirs. Those are skipped rather than guessed at.
    */
   const mine = session.email ? session.email.trim().toLowerCase() : null;
-  const [standings, me] = await Promise.all([
+  const [standings, me, myId] = await Promise.all([
     fetchVariantLeaders(variant, SHOWN),
     mine === null ? Promise.resolve(null) : findMember(mine),
+    // The id, because a record is found by the person rather than by the name
+    // they happen to go by today — see `fetchPlayerRecord`.
+    mine === null ? Promise.resolve(null) : currentMemberId(),
   ]);
 
   /*
@@ -110,7 +113,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
   const yours =
     me === null
       ? null
-      : ((await fetchPlayerRecord(me.name)).byVariant.find((row) => row.variant === variant) ?? null);
+      : ((await fetchPlayerRecord(me.name, myId)).byVariant.find((row) => row.variant === variant) ?? null);
 
   const leader = standings[0];
 

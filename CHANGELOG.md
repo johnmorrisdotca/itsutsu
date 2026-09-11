@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.132.0
+- Changing your display name no longer erases your record: your games, your rating and your standings follow you, and every ladder shows the name you chose
+
 ## 0.131.0
 - A seat link you cannot take says so on the game's own page, with the site around it, and tells you how many games you are holding
 

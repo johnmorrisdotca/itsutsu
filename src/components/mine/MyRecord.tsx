@@ -25,8 +25,10 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 export async function MyRecord({ name }: { name: string }) {
   const mineId = await currentMemberId();
   const [profile, standings, tally] = await Promise.all([
-    name === "" ? Promise.resolve(null) : fetchPlayer(name),
-    name === "" ? Promise.resolve([]) : fetchVariantStandings(name),
+    // By id where there is one: a rating is keyed by the name it was earned
+    // under, and that key stays put when somebody renames.
+    name === "" && mineId === null ? Promise.resolve(null) : fetchPlayer(name, mineId),
+    name === "" && mineId === null ? Promise.resolve([]) : fetchVariantStandings(name, mineId),
     mineId === null ? Promise.resolve(EMPTY_VERDICTS) : fetchVerdictTally(mineId),
   ]);
   // The same rule the members directory follows, from the same module, so the

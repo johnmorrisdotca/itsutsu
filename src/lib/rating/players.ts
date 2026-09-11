@@ -72,7 +72,28 @@ function toProfile(row: {
   };
 }
 
-export async function fetchPlayer(name: string): Promise<PlayerProfile | null> {
+export async function fetchPlayer(name: string, memberId?: string | null): Promise<PlayerProfile | null> {
+  /*
+   * THE MEMBER FIRST, THE NAME AFTER, and the order is the whole fix.
+   *
+   * `key` is the folded name a record was earned under, and it does not move
+   * when somebody renames. So a rating looked up by today's name finds
+   * nothing and the page prints zeros — one column away from the row holding
+   * the answer. That is what happened to a twelve-year-old who renamed on
+   * this site's own advice: seven games played, "0 games" on her page.
+   *
+   * `memberId` is on the row already and indexed; the migration that put it
+   * there (0.73.0, 0.75.0) stopped before the lookups followed. This is the
+   * lookups following.
+   *
+   * The name remains the answer for a record with NO member behind it — a
+   * name typed into a game at one screen, or a record kept from another site
+   * — which is most of what this table holds and must keep working.
+   */
+  if (memberId != null && memberId !== "") {
+    const owned = await prisma.player.findFirst({ where: { memberId } });
+    if (owned !== null) return toProfile(owned);
+  }
   const key = playerKey(name);
   if (key === "") return null;
   const row = await prisma.player.findUnique({ where: { key } });
@@ -315,9 +336,29 @@ export async function ratingsByName(names: readonly string[]): Promise<Map<strin
 type MemberRow = Awaited<ReturnType<typeof prisma.member.findMany>>[number];
 
 async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[]> {
+  /*
+   * FOUND BY THE MEMBER, WITH THE NAME AS THE FALLBACK — and this is the
+   * function that printed the zeros John saw.
+   *
+   * The directory asked for each member's record under `playerKey(member.name)`,
+   * their name TODAY. A rating is keyed by the name it was EARNED under, and
+   * that key does not move when somebody renames, so a renamed member read as
+   * "0 games played" on the page that lists everybody. Their row was one
+   * column away the whole time: `memberId` is on it and indexed.
+   *
+   * Both lookups, one query each, because the name is still the only handle
+   * on a record with nobody behind it — a kept record from another site, or a
+   * name typed into a game at one screen. The member's own row wins where
+   * both answer.
+   */
+  const ids = members.map((member) => member.id).filter((id) => id !== "");
   const keys = members.map((member) => playerKey(member.name)).filter((key) => key !== "");
-  const players = keys.length === 0 ? [] : await prisma.player.findMany({ where: { key: { in: keys } } });
-  const byKey = new Map(players.map((row) => [row.key, toProfile(row)]));
+  const [owned, named] = await Promise.all([
+    ids.length === 0 ? [] : prisma.player.findMany({ where: { memberId: { in: ids } } }),
+    keys.length === 0 ? [] : prisma.player.findMany({ where: { key: { in: keys } } }),
+  ]);
+  const byMember = new Map(owned.map((row) => [row.memberId, toProfile(row)]));
+  const byKey = new Map(named.map((row) => [row.key, toProfile(row)]));
   return members.map((member) => ({
     id: member.id,
     email: member.email,
@@ -327,7 +368,7 @@ async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[]> {
     joinedAt: member.createdAt.toISOString(),
     isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
     country: member.country,
-    profile: byKey.get(playerKey(member.name)) ?? null,
+    profile: byMember.get(member.id) ?? byKey.get(playerKey(member.name)) ?? null,
     elsewhere: keptRecordFor(member.name),
     botTier: member.botTier,
     unclaimableBecause: member.unclaimableBecause,

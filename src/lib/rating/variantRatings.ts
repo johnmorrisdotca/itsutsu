@@ -161,9 +161,13 @@ export async function fetchVariantLeaders(
  * Every standing one player holds, their most played game first — what a
  * player's page and the directory show under their global rating.
  */
-export async function fetchVariantStandings(name: string): Promise<VariantStanding[]> {
+export async function fetchVariantStandings(
+  name: string,
+  memberId?: string | null,
+): Promise<VariantStanding[]> {
   const key = playerKey(name);
-  if (key === "") return [];
+  const mine = memberId != null && memberId !== "" ? memberId : null;
+  if (key === "" && mine === null) return [];
   /*
    * Every game they have actually played, said under the right heading.
    *
@@ -189,7 +193,17 @@ export async function fetchVariantStandings(name: string): Promise<VariantStandi
      * computer-pool standing would say — a gap, and a smaller fault than a
      * figure nobody earned. It wants its own decision rather than a filter.
      */
-    where: { key, OR: [{ ratedGames: { gt: 0 } }, { computerRatedGames: { gt: 0 } }] },
+    /*
+     * Found by the member where there is one, and by the folded name where
+     * there is not. A standing is keyed by the name it was earned under, and
+     * that key does not move when somebody renames — so a member who changed
+     * their display name lost every per-game standing off their own page. See
+     * `fetchPlayerRecord`, which had the same fault for the same reason.
+     */
+    where: {
+      ...(mine === null ? { key } : { OR: [{ memberId: mine }, ...(key === "" ? [] : [{ key }])] }),
+      AND: [{ OR: [{ ratedGames: { gt: 0 } }, { computerRatedGames: { gt: 0 } }] }],
+    },
     orderBy: [{ ratedGames: "desc" }, { rating: "desc" }],
   });
   /*
