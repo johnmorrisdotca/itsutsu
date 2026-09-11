@@ -6,6 +6,30 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.120.0
+- A game you are playing, and a game already filed, both show the moves that got them there — click one on a filed game to jump straight to that position
+
+## 0.119.0
+- A game whose win condition its own board could never reach is refused when it is created, not left to sit unwinnable
+
+## 0.118.0
+- A game with no stones played on it is called off, not resigned — no score moves, no farewell said
+
+## 0.117.0
+- An opponent shown in your record now offers what you would do about them: challenge, buddy, or ignore
+
+## 0.116.0
+- The members list can be asked how much of each record — against people, against programs, or both — it is counting
+
+## 0.115.0
+- A ladder for games against the computer players, standing apart from the ladder of people
+
+## 0.114.0
+- Every game's name, and every count of games shown anywhere on the site, now leads to exactly what it is counting
+
+## 0.113.0
+- A limit on how many games one member can have running at once, and the waiting room can be filtered down to the seat you are looking for
+
 ## 0.112.0
 - A record from elsewhere is a source, not a kind of person
 
