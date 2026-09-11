@@ -356,6 +356,30 @@ model Member {
   /// history meant to stand as it is, "seed" for a made-up row that must not
   /// be picked up by a real signup. Null means there is no reason it cannot.
   unclaimableBecause String?
+  /// The member's four-word phrase, hashed. Null for an account that has not
+  /// set one, which is most of them.
+  ///
+  /// A SECOND CREDENTIAL ON THE SAME ACCOUNT, alongside `email`, and the two
+  /// are independent: either may be added at any time, in any order, and an
+  /// account must keep at least one. That is what lets somebody with no
+  /// address hold an account, and lets a member who has already played gain a
+  /// phrase without anything about their row moving — same id, same games,
+  /// same standing. See `lib/phrase/credentials.ts`, which is the whole rule.
+  ///
+  /// IT IS A PASSWORD. It proves who somebody is on a device where somebody
+  /// else is signed in, and on a device where nobody is, so it is stored the
+  /// way a password is: scrypt, salted per row, and never recoverable. The
+  /// words themselves are NOT stored, no API returns this column, and nothing
+  /// logs it. Which four words were offered by the picker is not stored either
+  /// — those are drawn per request and exist only in a signed ticket.
+  phraseHash  String?
+  /// When the phrase was last set, or null when there has never been one.
+  ///
+  /// The only thing the member is shown about their own phrase, because it is
+  /// the only thing that can be shown: a properly hashed phrase cannot be
+  /// displayed again. "Set on the 3rd of March" is what turns a column nobody
+  /// can read into something a person can act on.
+  phraseSetAt DateTime?
   name        String   @default("")
   picture     String   @default("")
   /// The invite code that let this member in, or blank when the operator did.

@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InvitePanel, type SeatInvite } from "@/components/live/InvitePanel";
 import { SharedGame } from "@/components/live/SharedGame";
 import { SharedRules } from "@/components/live/SharedRules";
+import { SitAsPanel } from "@/components/live/SitAsPanel";
 import { GameViewClient } from "@/components/game/GameViewClient";
 import { FiledMatchPage } from "./FiledMatchPage";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
@@ -288,6 +289,16 @@ async function LiveMatch({
   if (arriving) await markSeatTaken(game.id, seat);
 
   /*
+   * Seats still waiting for somebody, regardless of whether THIS reader holds
+   * one — unlike `invites` below, which only exists for a reader already
+   * seated. This is what lets `SitAsPanel` offer the kitchen-table way in: a
+   * free seat can be claimed with four words by anybody looking at this
+   * screen, seated or not, on a device signed in as somebody else entirely.
+   */
+  const freeSeats: Stone[] =
+    tokens === null ? [] : [STONES.black, STONES.white].filter((stone) => seatIsFree(tokens, stone));
+
+  /*
    * Whether the rules are still open to change. Read from the same row as the
    * seat links, because it is the same question asked twice: a seat still
    * waiting for somebody is a game still being set up.
@@ -363,9 +374,17 @@ async function LiveMatch({
               <NotesPanel gameKey={`shared:${game.id}`} />
             </div>
           ) : null}
+          {/*
+            Two independent ways into a free seat, and either may show at
+            once: a link to scan on a device of its own, and four words to
+            tap on this one. `SitAsPanel` asks nothing about who is signed in
+            here — that is the whole point of it — so it shows for any reader
+            while a seat is waiting, whether or not they already hold one.
+          */}
+          {freeSeats.length > 0 ? <SitAsPanel gameId={game.id} freeSeats={freeSeats} /> : null}
           {invites.length > 0 ? (
             <InvitePanel invites={invites} yourStone={seat} />
-          ) : seat === null ? (
+          ) : seat === null && freeSeats.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-rule px-4 py-6 text-sm text-muted">
               You are watching this game. Open your own seat link to play.
             </p>

@@ -8,12 +8,14 @@ import { MyRecord } from "@/components/mine/MyRecord";
 import { NameForm } from "@/components/mine/NameForm";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { Page } from "@/components/layout/Page";
+import { PhraseSetup } from "@/components/mine/PhraseSetup";
 import { ProfileForm } from "@/components/mine/ProfileForm";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { fetchProfile } from "@/lib/auth/members";
 import { gameDefaultsFrom } from "@/components/game/gameDefaults";
+import { phraseStatus } from "@/lib/phrase/phraseStore";
 import { safeDestination } from "@/lib/auth/redirect";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
@@ -64,6 +66,26 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
   const welcome = params.welcome === "1";
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
   const open = activeTab(TABS, params.view);
+
+  /*
+   * Read only for the tab that shows it — the same rule the record and the
+   * game defaults already follow above. Mapped to the API's own shape rather
+   * than the store's (`setAt` as a date, `mayRemovePhrase`), so the client
+   * component reads exactly what it would get back from `GET /api/me/phrase`.
+   *
+   * By id, from `currentMemberId`, and not from `member` above: `MemberProfile`
+   * is read by email and does not carry the id, and a phrase is a credential on
+   * a specific row — the one thing this must never be tempted to look up by
+   * name or address instead.
+   */
+  const myId = open === "profile" ? await currentMemberId() : null;
+  const phraseFacts = myId !== null ? await phraseStatus(myId) : null;
+  const phraseInitial = {
+    set: phraseFacts?.set ?? false,
+    setAt: phraseFacts?.setAt?.toISOString() ?? null,
+    hasEmail: phraseFacts?.hasEmail ?? true,
+    mayRemove: phraseFacts?.mayRemovePhrase ?? false,
+  };
 
   return (
     <Page width="standard" gap="gap-6">
@@ -122,6 +144,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   daysOff: member?.daysOff ?? [],
                 }}
               />
+              {myId !== null ? <PhraseSetup initial={phraseInitial} /> : null}
             </div>
           ) : null}
 

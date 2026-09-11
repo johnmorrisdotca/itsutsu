@@ -90,6 +90,22 @@ describe("overLimit", () => {
   it("keeps the sign-in limits mean, because that is the guessing path", () => {
     expect(RATE_LIMITS.redeemCode.maxRequests).toBeLessThanOrEqual(5);
     expect(RATE_LIMITS.adminSignIn.maxRequests).toBeLessThanOrEqual(5);
+    // Offering four words to prove who you are is the same kind of path.
+    expect(RATE_LIMITS.phraseEntry.maxRequests).toBeLessThanOrEqual(5);
+  });
+
+  /*
+   * The two phrase limits exist for opposite reasons, and the `strict` flag is
+   * what says which is which. Entry must stay mean in every environment or the
+   * suite's relief would make a thirty-six-bit credential guessable; drawing
+   * candidates bounds a bill and nothing else, so it is relieved like any other
+   * cost limit. Asserted because the two sit next to each other and a copied
+   * `strict` would quietly stop a child rerolling.
+   */
+  it("marks the phrase entry path strict and the picker not", () => {
+    expect(RATE_LIMITS.phraseEntry.strict).toBe(true);
+    expect("strict" in RATE_LIMITS.phraseDraw).toBe(false);
+    expect(RATE_LIMITS.phraseDraw.maxRequests).toBeGreaterThanOrEqual(60);
   });
 
   it("counts the same whichever way a route asks", () => {

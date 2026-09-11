@@ -185,6 +185,32 @@ export const RATE_LIMITS = {
   redeemCode: { windowMs: 60_000, maxRequests: 5, strict: true },
   /** Signing in as the operator. Meaner still. */
   adminSignIn: { windowMs: 60_000, maxRequests: 5, strict: true },
+  /**
+   * Offering a member's four words to prove who they are — claiming a seat with
+   * them, or signing in with them.
+   *
+   * THE GUESSING PATH, and it is what makes the phrase safe at all. Four words
+   * from EFF's short list is about thirty-six bits: far past what anybody
+   * guesses five times a minute, and nowhere near enough to survive an
+   * unlimited attempt rate. `strict`, so the end-to-end suite's relief never
+   * loosens it — a suite that cannot exhaust this path cannot prove it closes.
+   */
+  phraseEntry: { windowMs: 60_000, maxRequests: 5, strict: true },
+  /**
+   * Asking the picker for four more words.
+   *
+   * NOT A SECURITY LIMIT, and it must not be mistaken for one. Rerolling costs
+   * nothing in strength — an attacker never learns which words were offered, or
+   * how many times somebody looked, so the search space is the whole list
+   * however long they took choosing. A child should be able to tap "show me
+   * four more" until she recognises a word, which is the entire reason the short
+   * list was safe to choose.
+   *
+   * So this bounds a COST and not an attack: each reroll is a serverless
+   * invocation, and a stuck client in a loop is a bill. Two a second is faster
+   * than anybody taps.
+   */
+  phraseDraw: { windowMs: 60_000, maxRequests: 120 },
   /** Reads, including autocomplete on every keystroke. */
   read: { windowMs: 60_000, maxRequests: 240 },
   /**
