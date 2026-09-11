@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.145.0
+- The tables of players scroll themselves on a phone rather than dragging the whole page sideways: the members list, the ladders, the records and the kept results from elsewhere all stay inside their own width, so the navigation and the footer stop sliding with them
+
 ## 0.144.0
 - The boards played in the squares — tic-tac-toe, Othello, Checkers, Connect Four — are framed by their own wood the way a Go board is, instead of running flush to the edge and reading as a crop of a board rather than a board
 
