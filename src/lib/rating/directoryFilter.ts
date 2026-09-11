@@ -90,8 +90,8 @@ export function readDirectoryFilter(query: {
  *
  * `SHOW_EVERYBODY_HREF` already existed for exactly this trap, with the reason
  * written beside it, and the filter bar's own buttons walked into it anyway.
- * So the bar states `who` outright, the way `rememberedValue` already does for
- * the cookie. Saying it is also enough for the rest: once the address says
+ * So the bar states `who` outright, the way `filterAsPreferences` does for
+ * the account. Saying it is also enough for the rest: once the address says
  * anything about narrowing, the whole of it is read from the address, so an
  * absent `settled` or `active` correctly means off rather than remembered.
  */

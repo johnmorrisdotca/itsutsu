@@ -1,15 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { DIRECTORY_WHO, NO_FILTER } from "./directoryFilter";
+import { DEFAULT_PREFERENCES } from "@/lib/preferences/preferences.constants";
+import { preferencesFrom } from "@/lib/preferences/preferences";
+
+import { DIRECTORY_WHO, NO_FILTER, type DirectoryFilter } from "./directoryFilter";
 import {
   SHOW_EVERYBODY_HREF,
   addressSaysFilter,
+  filterAsPreferences,
   filterFor,
-  filterFromRemembered,
-  rememberedValue,
+  rememberedFilter,
 } from "./rememberedFilter";
 
-const narrowed = { ...NO_FILTER, who: DIRECTORY_WHO.people, active: true };
+const narrowed: DirectoryFilter = { ...NO_FILTER, who: DIRECTORY_WHO.people, active: true };
+
+/** What the account holds after a filter has been asked for and kept. */
+const kept = (filter: DirectoryFilter) => preferencesFrom(filterAsPreferences(filter));
 
 describe("remembering how somebody likes the players page narrowed", () => {
   it("tells an address that asked from one that said nothing", () => {
@@ -24,35 +30,38 @@ describe("remembering how somebody likes the players page narrowed", () => {
   });
 
   it("obeys the address over anything remembered", () => {
-    expect(filterFor({ who: "computers" }, rememberedValue(narrowed)).who).toBe(DIRECTORY_WHO.computers);
+    expect(filterFor({ who: "computers" }, kept(narrowed)).who).toBe(DIRECTORY_WHO.computers);
   });
 
   it("falls back to what was last asked for when the address says nothing", () => {
-    expect(filterFor({}, rememberedValue(narrowed))).toEqual(narrowed);
+    expect(filterFor({}, kept(narrowed))).toEqual(narrowed);
   });
 
-  it("falls back to the default when nothing has been asked for at all", () => {
-    expect(filterFor({}, undefined)).toEqual(NO_FILTER);
-    expect(filterFor({}, "")).toEqual(NO_FILTER);
+  it("falls back to the ordinary page when nothing has ever been kept", () => {
+    /*
+     * The registry's fallbacks ARE the page's defaults, declared once: a
+     * member who never chose and a member whose choices could not be read
+     * both get the page everybody starts with.
+     */
+    expect(filterFor({}, DEFAULT_PREFERENCES)).toEqual(NO_FILTER);
+    expect(rememberedFilter(preferencesFrom(null))).toEqual(NO_FILTER);
   });
 
   it("keeps a remembered default as something rather than as nothing", () => {
-    /*
-     * The empty string has to go on meaning "no preference", so a remembered
-     * default must still be a value. Otherwise wanting everybody would be
-     * indistinguishable from never having said, and the two behave differently
-     * the moment anything else is remembered.
-     */
-    expect(rememberedValue(NO_FILTER)).not.toBe("");
-    expect(filterFromRemembered(rememberedValue(NO_FILTER))).toEqual(NO_FILTER);
+    // Asking for everyone must REPLACE a remembered People, or the way out of
+    // a narrowing is a control that appears to do nothing.
+    const patch = filterAsPreferences(NO_FILTER);
+    expect(patch.playersWho).toBe(DIRECTORY_WHO.everyone);
+    expect(patch.playersSettled).toBe(false);
+    expect(patch.playersActive).toBe(false);
   });
 
   it("survives a value written by a version that offered something this one does not", () => {
-    // Read through the same reader the address uses, so nonsense falls back
-    // rather than narrowing somebody's page to nothing.
-    expect(filterFromRemembered("who=robots")).toEqual({ ...NO_FILTER, who: NO_FILTER.who });
-    expect(filterFromRemembered("nonsense")).toBeNull();
-    expect(filterFromRemembered("   ")).toBeNull();
+    // A `who` this version has never heard of falls back on its own; the
+    // "seen lately" the member also asked for is left standing. That is the
+    // registry keeping the promise the cookie's reader used to keep.
+    const stored = { playersWho: "robots", playersActive: true };
+    expect(rememberedFilter(preferencesFrom(stored))).toEqual({ ...NO_FILTER, active: true });
   });
 
   it("reads back exactly what it wrote, for every combination", () => {
@@ -60,7 +69,7 @@ describe("remembering how somebody likes the players page narrowed", () => {
       for (const settled of [false, true]) {
         for (const active of [false, true]) {
           const filter = { who, settled, active };
-          expect(filterFromRemembered(rememberedValue(filter)), `${who}/${settled}/${active}`).toEqual(filter);
+          expect(rememberedFilter(kept(filter)), `${who}/${settled}/${active}`).toEqual(filter);
         }
       }
     }
@@ -76,6 +85,8 @@ describe("remembering how somebody likes the players page narrowed", () => {
     expect(SHOW_EVERYBODY_HREF).not.toBe("/players");
     const asked = Object.fromEntries(new URLSearchParams(SHOW_EVERYBODY_HREF.split("?")[1]));
     expect(addressSaysFilter(asked)).toBe(true);
-    expect(filterFor(asked, rememberedValue(narrowed))).toEqual(NO_FILTER);
+    expect(filterFor(asked, kept(narrowed))).toEqual(NO_FILTER);
+    // And what that visit keeps is everyone, so the next bare visit agrees.
+    expect(rememberedFilter(kept(filterFor(asked, kept(narrowed))))).toEqual(NO_FILTER);
   });
 });

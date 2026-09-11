@@ -1,5 +1,4 @@
 import { Paired } from "@/components/i18n/Paired";
-import { cookies } from "next/headers";
 
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
 import { Directory } from "@/components/players/Directory";
@@ -11,8 +10,8 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
+import { directoryFilterFor } from "@/lib/rating/memberFilter";
 import { fetchComputerPlayers } from "@/lib/rating/players";
-import { DIRECTORY_FILTER_COOKIE, filterFor } from "@/lib/rating/rememberedFilter";
 import { readRecordScope, SCOPE_PARAM } from "@/lib/rating/recordScope";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
@@ -65,12 +64,6 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
   const asked = await searchParams;
   const open = activeTab(TABS, asked.view);
   /*
-   * How this reader last asked for the directory to be narrowed, if they ever
-   * did. Read here and written by `proxy.ts`, because a Server Component can
-   * read a cookie while it renders and cannot set one.
-   */
-  const remembered = (await cookies()).get(DIRECTORY_FILTER_COOKIE)?.value;
-  /*
    * The computer players' rows are written the first time anybody needs them,
    * and until this page did nothing anybody visits needed them — so they
    * existed in the code and not in the database, and the directory that is
@@ -96,7 +89,13 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
 
         {open === "members" ? (
           <Directory
-            filter={filterFor(asked, remembered)}
+            /*
+              How this reader last asked for the directory to be narrowed,
+              kept on their account — and, when the address asks for a
+              narrowing, kept now. Asked for here rather than above, so only
+              the tab that shows it pays for the read.
+            */
+            filter={await directoryFilterFor(asked)}
             scope={readRecordScope(asked[SCOPE_PARAM])}
             /*
               The address as it stands, so choosing how much to count keeps

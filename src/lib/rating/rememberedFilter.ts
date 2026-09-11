@@ -1,3 +1,5 @@
+import type { PreferencePatch, Preferences } from "@/lib/preferences/preferences.types";
+
 import { NO_FILTER, readDirectoryFilter, type DirectoryFilter } from "./directoryFilter";
 
 /**
@@ -7,22 +9,17 @@ import { NO_FILTER, readDirectoryFilter, type DirectoryFilter } from "./director
  * once and never again. So the last narrowing somebody actually asked for is
  * kept, and a bare `/players` shows it.
  *
- * IN A COOKIE, WHICH IS PER DEVICE, and that is a known trade rather than an
- * oversight. The right home is a column on the member — it would follow them
- * between a phone and a laptop, the way the board's appearance already does —
- * and the two JSON columns that exist are documented for other jobs, so using
- * one would make its own comment false. John's call: the cookie now, a real
- * `preferences` column when a migration window opens. This module is the seam
- * for that: what is remembered and what it means live here, and only where it
- * is kept would change.
+ * ON THE ACCOUNT, through the preferences registry, so it follows a member
+ * between a phone and a laptop the way the board's appearance does. It
+ * shipped on a cookie first, per device, because the two JSON columns that
+ * existed were documented for other jobs and there was nowhere honest for it
+ * to go. This module was the seam for the move, and only where it is kept has
+ * changed.
  *
- * Pure, so all of it can be checked without a browser or a database.
+ * Pure, so all of it can be checked without a browser or a database. Which
+ * reader is asking, and the reading and writing of their account, is
+ * `memberFilter.ts`.
  */
-
-export const DIRECTORY_FILTER_COOKIE = "players-filter";
-
-/** A year. Long enough to be a preference; short enough to lapse if somebody stops coming. */
-export const REMEMBER_FOR_SECONDS = 365 * 24 * 60 * 60;
 
 /**
  * Whether the address itself said anything about narrowing.
@@ -36,50 +33,45 @@ export function addressSaysFilter(query: Record<string, string | string[] | unde
 }
 
 /**
- * What to keep for a filter somebody asked for.
+ * The filter a member's preferences hold, one question each.
  *
- * `who` is written even when it is the default, unlike the address, where the
- * default is left off to keep an ordinary page a bare address. Here the empty
- * string has to keep meaning "nothing remembered", so a remembered default
- * must still be something. It is also what makes "show everybody again" work:
- * that link asks for everyone explicitly, which is remembered as everyone, so
- * the next bare visit is not narrowed again by a stale preference.
+ * Three preferences rather than one, so that a `who` this version no longer
+ * offers falls back on its own and leaves the other two standing. The registry
+ * has already done that by the time this runs, which is why there is no null
+ * here: a preference always answers, with the ordinary answer where nothing
+ * usable was kept.
  */
-export function rememberedValue(filter: DirectoryFilter): string {
-  const params = new URLSearchParams({ who: filter.who });
-  if (filter.settled) params.set("settled", "1");
-  if (filter.active) params.set("active", "1");
-  return params.toString();
+export function rememberedFilter(preferences: Preferences): DirectoryFilter {
+  return {
+    who: preferences.playersWho,
+    settled: preferences.playersSettled,
+    active: preferences.playersActive,
+  };
 }
 
 /**
- * The filter a kept value means, or null where it means nothing usable.
+ * What to keep for a filter somebody asked for.
  *
- * Null rather than the default, because the caller has to be able to tell "no
- * preference" from "a preference that happens to match the default" — one is
- * a question to fall back on, the other is an answer.
- *
- * Read through the same reader the address uses, so a value written by a
- * version that offered something this one does not falls back the same way a
- * mistyped address does, instead of narrowing somebody's page to nothing.
+ * All three, the defaults included, unlike the address, where a default is
+ * left off to keep an ordinary page a bare address. Asking for everyone has to
+ * REPLACE a remembered People: it is what makes "show everybody again" work,
+ * and a write that only kept narrowings would leave the old one standing.
  */
-export function filterFromRemembered(stored: string | undefined): DirectoryFilter | null {
-  if (stored === undefined || stored.trim() === "") return null;
-  const asked = Object.fromEntries(new URLSearchParams(stored));
-  if (!addressSaysFilter(asked)) return null;
-  return readDirectoryFilter(asked);
+export function filterAsPreferences(filter: DirectoryFilter): PreferencePatch {
+  return { playersWho: filter.who, playersSettled: filter.settled, playersActive: filter.active };
 }
 
 /**
  * The filter a page should use: what the address asked for, or failing that
- * what this reader last asked for, or failing that the default.
+ * what this reader last asked for — which is the ordinary page when they
+ * never have.
  */
 export function filterFor(
   query: Record<string, string | string[] | undefined>,
-  stored: string | undefined,
+  preferences: Preferences,
 ): DirectoryFilter {
   if (addressSaysFilter(query)) return readDirectoryFilter(query);
-  return filterFromRemembered(stored) ?? NO_FILTER;
+  return rememberedFilter(preferences);
 }
 
 /**

@@ -8,11 +8,11 @@ import { expect, test } from "@playwright/test";
  * offering to remove.
  *
  * A bare /players means "however I last asked", because the narrowing is
- * remembered in a cookie. The bar wrote its links with the default left off,
- * the way an address politely does, so Everyone came out as /players — and the
- * cookie answered People. `SHOW_EVERYBODY_HREF` existed for precisely this
- * trap, with the reason written beside it, and the bar's own buttons walked
- * into it anyway.
+ * remembered — in a cookie then, on the account now. The bar wrote its links
+ * with the default left off, the way an address politely does, so Everyone
+ * came out as /players — and the memory answered People. `SHOW_EVERYBODY_HREF`
+ * existed for precisely this trap, with the reason written beside it, and the
+ * bar's own buttons walked into it anyway.
  *
  * So the test is not "the button works". It is that choosing Everyone AFTER
  * choosing People shows everybody, which is the sequence that failed.
