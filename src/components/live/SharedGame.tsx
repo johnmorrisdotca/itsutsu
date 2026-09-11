@@ -25,6 +25,7 @@ import { FORFEITS_TO_LOSE } from "@/lib/history/gameSettingsSchema";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
 import { shownName } from "@/lib/rating/shownName";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { useMatchClock } from "./useMatchClock";
 import { useMatchTalk } from "./useMatchTalk";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
@@ -227,7 +228,13 @@ export function SharedGame({
   });
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    /*
+     * Marked so a browser test can wait for the moment the board is listening
+     * rather than merely drawn. Every intersection is server-rendered, so a
+     * stone placed before React attaches is dropped on the floor and the
+     * failure surfaces somewhere else entirely — see `useHydrated`.
+     */
+    <div className="flex w-full flex-col gap-4" data-testid="shared-game" {...readyMark(useHydrated())}>
       <TurnBanner
         state={state}
         seat={seat}

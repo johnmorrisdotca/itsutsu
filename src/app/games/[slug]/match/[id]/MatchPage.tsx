@@ -412,7 +412,7 @@ async function SeatFullNotice({ shown }: { shown: boolean }) {
             only useful thing to do about the refusal: the game to finish is
             in that list.
           */}
-          <Link href="/my-games" className="font-medium underline underline-offset-4">
+          <Link href="/play" className="font-medium underline underline-offset-4">
             {held} games on the go
           </Link>
           , and {activeGameLimit()} at once is the limit here, so it was not claimed for you.

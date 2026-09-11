@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import useSWR, { type KeyedMutator } from "swr";
 
+import { settledSinceRendered } from "@/lib/history/settle";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
 /**
@@ -79,6 +81,30 @@ export function useLiveGame(initial: GameDetail): {
   const [asleep, setAsleep] = useState(false);
 
   /*
+   * Handing the page back to the server when the game ends under the reader.
+   *
+   * The board settles itself — `settleFromRecord` — so the result banner is
+   * right without this. What is NOT right is everything around the board: the
+   * server chose the live presentation when the page was rendered, and a match
+   * that has finished wants the filed one, with the rematch, the two names and
+   * the applause on it. See `settledSinceRendered` for how the two came apart.
+   *
+   * `router.refresh()` re-renders the server components in place and keeps
+   * client state, so nothing flickers and nothing is lost. It fires at most
+   * once per mount, the moment the game reads as settled — one request at the
+   * end of a game, on a page that has just stopped polling.
+   *
+   * Watched as a STATE rather than hung off the poll's `onSuccess`, because a
+   * poll is only one of the ways the ending arrives. Playing the winning move
+   * yourself puts the finished game straight into the cache with
+   * `mutate(…, { revalidate: false })`, which no fetch callback ever sees; so
+   * would a resignation or a flag claimed on time. Asking what the status IS
+   * covers every route to it, including the ones added later.
+   */
+  const router = useRouter();
+  const handedBack = useRef(false);
+
+  /*
    * The hour is counted by a timer, not by a clock read while rendering. A
    * game where nothing is happening is exactly the case where nothing changes
    * — a poll that comes back identical re-renders nothing — so a comparison
@@ -123,5 +149,13 @@ export function useLiveGame(initial: GameDetail): {
     revalidateOnFocus: true,
   });
 
-  return { game: data ?? initial, mutate };
+  const game = data ?? initial;
+  useEffect(() => {
+    if (handedBack.current) return;
+    if (!settledSinceRendered(initial.status, game.status)) return;
+    handedBack.current = true;
+    router.refresh();
+  }, [initial.status, game.status, router]);
+
+  return { game, mutate };
 }
