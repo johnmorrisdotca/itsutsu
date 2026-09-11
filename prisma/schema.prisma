@@ -136,6 +136,23 @@ model Game {
   /// Set for a decisive game, null for a draw or an abandoned one.
   winner     String?
   moveCount  Int
+
+  /// The engine's verdict on the position, written by whoever last settled it:
+  /// "playing", "won" or "draw" — see GAME_STATUS. NULL means nothing has ever
+  /// written one, which is NOT the same as "it is over": a reader seeing null
+  /// replays the moves, as every reader did before these columns existed.
+  ///
+  /// It is a second status rather than a reading of `status` because the two
+  /// answer different questions. `status` is what the row was filed as;
+  /// this is what the engine makes of the stones. They disagree exactly where
+  /// it matters — a Reversi board that filled up ends the game with nobody
+  /// having written anything down, and `settleEnded` exists for that.
+  settledStatus String?
+  /// The colour to move in that settled position, or null where nobody is to
+  /// move. Only ever read alongside `settledStatus`: on its own, null says
+  /// both "the game is over" and "nobody has looked", which is the one thing
+  /// it must never be asked. Written only by `settledTurn`.
+  settledToPlay String?
   /// Wall-clock length, when the client tracked it.
   durationMs Int?
 

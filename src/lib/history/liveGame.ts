@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { freeGameId } from "./gameId";
 import { canTwist, createGame, inMovePhase, isLegalMove, movePiece, mustPass, passTurn, pieceMoves, placePiece, playMove, resolvePlacement, twistBoard } from "@/lib/gomoku/engine";
 import { replayMoves } from "@/lib/gomoku/rules/record";
-import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, VARIANT_SPECS, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
@@ -23,11 +23,18 @@ import type {
   LiveGameSettings,
   MoveOutcome,
   MoveRequest,
-  SettingsOutcome,
 } from "./liveGame.types";
 import { nextDeadline } from "./deadline";
-import { rulesAreSettled } from "./seats";
+import { UNSETTLED, settledTurn } from "./settledTurn";
 import { toGameMove } from "./gameHistory";
+
+/*
+ * Changing a game's rules moved to `liveGameSettings.ts`, which imports from
+ * here. Deliberately NOT re-exported from this file: that would make the two
+ * modules import each other, and a cycle to save one caller an import line is
+ * a worse trade than the line. This file keeps creation and the moves
+ * themselves, as `liveGameEndings.ts` has always said it does.
+ */
 
 /** Prisma's code for "a unique constraint was violated". */
 const UNIQUE_VIOLATION = "P2002";
@@ -205,103 +212,24 @@ export async function createLiveGame(
           return { ...move, gameId: game.id, cells: move.cells ?? undefined };
         }),
       }),
-      prisma.game.update({ where: { id: game.id }, data: { moveCount: moves.length } }),
+      /*
+       * And says nothing about whose turn it is. A fork copies move ROWS
+       * across without ever building a position out of them, so nothing here
+       * holds a settled state — and the new game's rules need not be the old
+       * one's, so the fact the source row stored is not this game's fact. Null
+       * is the honest answer and sends the reader to a replay; a colour copied
+       * from somewhere would be a turn nobody had worked out.
+       *
+       * Written out rather than left to the column default, so that a default
+       * added to the schema one day cannot quietly become a forked game's
+       * answer.
+       */
+      prisma.game.update({ where: { id: game.id }, data: { moveCount: moves.length, ...UNSETTLED } }),
     ]);
   }
   return game;
 }
 
-/**
- * Changes a shared game's rules. Only a seat holder may, and only while the
- * board is empty: once a stone is down the rules are part of the record.
- */
-export async function updateLiveGameSettings(
-  id: string,
-  token: string,
-  settings: Partial<LiveGameSettings>,
-): Promise<SettingsOutcome> {
-  const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
-  if (row === null) return { ok: false, reason: "not-found" };
-  if (row.status !== "active") return { ok: false, reason: "finished" };
-  if (stoneForToken(row, token) === null) return { ok: false, reason: "wrong-token" };
-  if (row.moves.length > 0) return { ok: false, reason: "started" };
-  /*
-   * And refused once the other seat is taken, not only once a stone is down.
-   * The page stops offering the form at the same moment, but the page is not
-   * the only caller — and this is the window the whole setup screen exists to
-   * close: rules changed after somebody agreed to them.
-   */
-  if (rulesAreSettled({ ...row, moveCount: row.moves.length })) {
-    return { ok: false, reason: "settled" };
-  }
-
-  /*
-   * A rules change changes the rules it names, and leaves the rest.
-   *
-   * Every one of these used to arrive with a default already applied, so a
-   * payload that said nothing about the clock put the game back on a per-move
-   * clock, one that said nothing about `rated` made it rated again, and one
-   * that said nothing about the board put it back to fifteen. The panel's own
-   * "clear the handicap" button sends exactly such a payload. Measured on the
-   * running site: a game created unrated, resignation off, whole-game clock,
-   * 9×9 came back from one change rated, resignation on, per-move, 15×15.
-   *
-   * A default is the right answer to "what shall this be" and the wrong
-   * answer to "what was this". The row is the answer to the second, and this
-   * function is the only place holding both.
-   */
-  const kept = <T>(asked: T | undefined, held: T): T => (asked === undefined ? held : asked);
-  const variant = kept(settings.variant, row.variant) as RuleVariant;
-  const moveTimeMs = kept(settings.moveTimeMs, row.moveTimeMs);
-  const clockMode = kept(settings.clockMode, row.clockMode);
-  const open = kept(settings.open, row.openSeat !== null);
-  const now = new Date();
-  const budget = clockMode === "game" ? moveTimeMs : null;
-  await prisma.game.update({
-    where: { id },
-    data: {
-      variant,
-      obstacles: kept(settings.obstacles, row.obstacles),
-      opening: kept(settings.opening, row.opening),
-      timeoutPenalty: kept(settings.timeoutPenalty, row.timeoutPenalty),
-      allowResign: kept(settings.allowResign, row.allowResign),
-      drawLimit: kept(settings.drawLimit, row.drawLimit),
-      moveTimeMs,
-      // The board this variant has, not the one that was asked for.
-      size: sizeForVariant(variant, kept(settings.size, row.size)),
-      /*
-       * And the line this variant wins on, or the one this game was already
-       * being played to. The variant wins where it fixes a length, which is
-       * the whole of the Reversi lesson: a game the rules decide is not a
-       * game a request may argue with.
-       */
-      winLength: VARIANT_SPECS[variant].winLength ?? row.winLength,
-      clockMode,
-      rated: kept(settings.rated, row.rated),
-      blackTimeMs: budget,
-      whiteTimeMs: budget,
-      deadlineAt: moveTimeMs === null ? null : new Date(now.getTime() + moveTimeMs),
-      extraMs: 0,
-      lastMoveAt: now,
-      /*
-       * Naming the handicap as null is how it is cleared, so silence and null
-       * have to mean different things here: not named at all leaves whatever
-       * the game had.
-       */
-      handicap:
-        settings.handicap === undefined
-          ? undefined
-          : (storedHandicap(settings.handicap) ?? Prisma.JsonNull),
-      openSeat: open ? STONES.white : null,
-      openedAt: open ? (row.openedAt ?? new Date()) : null,
-      seed: seedFromRoll(Math.random(), SEED_RANGE),
-    },
-  });
-
-  const game = await fetchGameDetail(id);
-  if (game === null) return { ok: false, reason: "not-found" };
-  return { ok: true, game };
-}
 
 
 /** The seat a token holds, or null when the token belongs to neither. */
@@ -424,6 +352,14 @@ export async function appendMove(
           status: finished ? "finished" : "active",
           result: next.winner ?? (finished ? "draw" : "abandoned"),
           winner: next.winner,
+          /*
+           * Whose turn it is now, written by the only party that knows without
+           * work: `next` is the position this move settled into. A list of
+           * games used to replay every move of every game in it to learn the
+           * same fact — see `settledTurn` — and it is written in this same
+           * transaction as the move, so the two can never disagree.
+           */
+          ...settledTurn(next),
           lastMoveAt: now,
           ...clock,
           deadlineAt: finished ? null : nextDeadline({ ...row, ...clock }, next.toPlay, now),

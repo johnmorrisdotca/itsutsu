@@ -19,7 +19,7 @@ import {
   variantSchema,
   drawLimitSchema,
 } from "@/lib/history/gameSettingsSchema";
-import { updateLiveGameSettings } from "@/lib/history/liveGame";
+import { updateLiveGameSettings } from "@/lib/history/liveGameSettings";
 import { overLimit } from "@/lib/api/rateLimit";
 
 const settingsSchema = z.object({

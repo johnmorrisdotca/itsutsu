@@ -1,13 +1,16 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
+
 import { replayGame } from "@/lib/gomoku/replay";
 import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
-import type { Stone } from "@/lib/gomoku/gomoku.types";
+import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { SUMMARY_SELECT, toGameMove, toSummary } from "./gameHistory";
 import { waitingFirst } from "./nextGame";
 import { KEEP_FINISHED_DEFAULT, staysInMyList } from "./retention";
-import type { GameSummary } from "./gameHistory.types";
+import { type SettledPosition, settledPosition } from "./settledTurn";
+import type { GameMove, GameSummary } from "./gameHistory.types";
 
 /** A game nobody has touched for this long is flagged, so it can be dealt with. */
 export const STALE_AFTER_DAYS = 14;
@@ -65,9 +68,12 @@ export async function fetchMyGames(
       whiteToken: true,
       blackMemberId: true,
       whiteMemberId: true,
-      moves: { select: MOVE_COLUMNS, orderBy: { number: "asc" } },
+      settledStatus: true,
+      settledToPlay: true,
     },
   });
+
+  const replayed = await replaysFor(rows);
 
   for (const row of rows) {
     const token = claims.get(row.id);
@@ -86,8 +92,7 @@ export async function fetchMyGames(
     if (seat === null) continue;
 
     const game = toSummary(row);
-    const state = replayGame({ ...game, moves: row.moves.map(toGameMove) });
-    const running = game.status === "active" && state.status === GAME_STATUS.playing;
+    const { running, toPlay } = positionOf(row, replayed);
     const since = game.lastMoveAt ?? game.playedAt;
     // One token for both chairs: a game at one screen, always waiting on this browser.
     const hotSeat = row.blackToken === row.whiteToken;
@@ -97,7 +102,7 @@ export async function fetchMyGames(
         ? "hotSeat"
         : game.moveCount === 0
           ? "unstarted"
-          : state.toPlay === seat
+          : toPlay === seat
             ? "yourMove"
             : "theirMove";
 
@@ -112,7 +117,7 @@ export async function fetchMyGames(
       game,
       seat,
       group,
-      toPlay: running ? state.toPlay : null,
+      toPlay,
       since,
       stale: running && now.getTime() - new Date(since).getTime() > STALE_AFTER_DAYS * 86_400_000,
     });
@@ -133,6 +138,73 @@ export async function fetchMyGames(
     else groups[group].sort((a, b) => b.since.localeCompare(a.since));
   }
   return groups;
+}
+
+/** Everything about a row this list needs beyond the summary it prints. */
+type SeatRow = Prisma.GameGetPayload<{ select: typeof SUMMARY_SELECT }> & {
+  settledStatus: string | null;
+  settledToPlay: string | null;
+};
+
+/**
+ * Whether a game is still running and whose move it is, without reading a
+ * stone unless there is no other way.
+ *
+ * Three answers, in the order that keeps the reads down:
+ *
+ *  1. A row filed as anything but `active` is over, whatever the stones say.
+ *     That was already the rule — `running` has always been `status ===
+ *     "active" && …` — so the engine's verdict could never change the answer
+ *     for these, and most of a long-standing list is these.
+ *  2. An active row whose writer left a settled turn behind is answered from
+ *     it. See `settledTurn`: the side that applied the move wrote it down.
+ *  3. An active row that has none is replayed, exactly as every row was
+ *     before. Null means nobody has written one, never "nobody is to move",
+ *     and a replay can always answer.
+ */
+function positionOf(row: SeatRow, replayed: Map<string, GameState>): SettledPosition {
+  if (row.status !== "active") return { running: false, toPlay: null };
+  const stored = settledPosition(row);
+  if (stored !== null) return stored;
+  const state = replayed.get(row.id);
+  // A game whose moves could not be read is not one to guess about.
+  if (state === undefined) return { running: false, toPlay: null };
+  return {
+    running: state.status === GAME_STATUS.playing,
+    toPlay: state.status === GAME_STATUS.playing ? state.toPlay : null,
+  };
+}
+
+/**
+ * Replays only the games that cannot answer for themselves — the second query,
+ * and on a list where every row has been written since these columns existed,
+ * no query at all.
+ *
+ * One `findMany` for all of them rather than one each: the games needing it are
+ * known before any of them is replayed, so there is no reason to go back to the
+ * database once per game and every reason not to.
+ */
+async function replaysFor(rows: SeatRow[]): Promise<Map<string, GameState>> {
+  const wanted = rows.filter((row) => row.status === "active" && settledPosition(row) === null);
+  const replayed = new Map<string, GameState>();
+  if (wanted.length === 0) return replayed;
+
+  const moves = await prisma.move.findMany({
+    where: { gameId: { in: wanted.map((row) => row.id) } },
+    select: { ...MOVE_COLUMNS, gameId: true },
+    orderBy: { number: "asc" },
+  });
+  const byGame = new Map<string, GameMove[]>();
+  for (const move of moves) {
+    const { gameId, ...columns } = move;
+    const list = byGame.get(gameId);
+    if (list === undefined) byGame.set(gameId, [toGameMove(columns)]);
+    else list.push(toGameMove(columns));
+  }
+  for (const row of wanted) {
+    replayed.set(row.id, replayGame({ ...toSummary(row), moves: byGame.get(row.id) ?? [] }));
+  }
+  return replayed;
 }
 
 const MOVE_COLUMNS = {

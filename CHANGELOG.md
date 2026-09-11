@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.139.0
+- Your games list draws quickly however much has been played on the site: a game now remembers whose turn it is rather than having every move replayed to work it out
+
 ## 0.138.0
 - Each game is drawn the way that game is actually drawn: tic-tac-toe, Othello and checkers in the squares, gomoku and Go on the crossings, rather than every game sharing one board
 
