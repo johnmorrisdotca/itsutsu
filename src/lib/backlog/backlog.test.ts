@@ -3,7 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   canMove,
   draftProblems,
+  editProblems,
   filterItems,
+  moveProblems,
+  revisedDraft,
   isOpen,
   keyFromTitle,
   moveTo,
@@ -14,7 +17,7 @@ import {
   sortItems,
   tally,
 } from "./backlog";
-import { BACKLOG_KINDS, BACKLOG_STATUSES, TITLE_MAX, TITLE_MIN } from "./backlog.constants";
+import { ASSIGNED_TO_MAX, BACKLOG_KINDS, BACKLOG_STATUSES, DETAIL_MAX, TITLE_MAX, TITLE_MIN } from "./backlog.constants";
 import type { BacklogDraft, BacklogItem } from "./backlog.types";
 
 /** An item at a status, with dates far enough apart to sort unambiguously. */
@@ -87,6 +90,44 @@ describe("what counts as a real request", () => {
   });
 });
 
+describe("revising what a row says", () => {
+  it("keeps what the revision is silent about and takes what it says", () => {
+    const before = item({ id: "a", detail: "why", askedBy: "John" });
+    expect(revisedDraft(before, { title: "A clearer title for it" })).toEqual({
+      title: "A clearer title for it",
+      detail: "why",
+      kind: BACKLOG_KINDS.feature,
+      askedBy: "John",
+    });
+  });
+
+  it("is judged by the same rules as a new request", () => {
+    const before = item({ id: "a", title: "A request that says something" });
+    expect(draftProblems(revisedDraft(before, { detail: "x".repeat(DETAIL_MAX + 1) }))).toHaveLength(1);
+    expect(draftProblems(revisedDraft(before, { title: "todo" }))).toHaveLength(1);
+    expect(draftProblems(revisedDraft(before, { detail: "x".repeat(DETAIL_MAX) }))).toEqual([]);
+  });
+});
+
+describe("what may be written about a row directly", () => {
+  it("accepts a short name and a grade the board has", () => {
+    expect(editProblems({ assignedTo: "Sora", priority: "high", effort: null })).toEqual([]);
+  });
+
+  it("refuses a name longer than a name", () => {
+    expect(editProblems({ assignedTo: "x".repeat(ASSIGNED_TO_MAX + 1) })).toHaveLength(1);
+  });
+
+  it("refuses a grade the board does not have", () => {
+    expect(editProblems({ priority: "urgent" as never })).toHaveLength(1);
+    expect(editProblems({ effort: "huge" as never })).toHaveLength(1);
+  });
+
+  it("says nothing about a field that was not sent", () => {
+    expect(editProblems({})).toEqual([]);
+  });
+});
+
 describe("moving between statuses", () => {
   it("lets an open item be picked up or turned down", () => {
     expect(canMove("open", "inProgress")).toBe(true);
@@ -96,6 +137,11 @@ describe("moving between statuses", () => {
   it("does not let an open item skip straight to done", () => {
     // The point of the table: nothing reaches done without having been built.
     expect(canMove("open", "done")).toBe(false);
+  });
+
+  it("says so in words when it refuses, and says nothing when it allows", () => {
+    expect(moveProblems("open", "done")).toHaveLength(1);
+    expect(moveProblems("open", "inProgress")).toEqual([]);
   });
 
   it("finishes only what somebody was on", () => {

@@ -2,10 +2,24 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { canMove, draftProblems, normalizeDraft, releaseStampFor, statusFrom } from "./backlog";
-import { ASSIGNED_TO_MAX } from "./backlog.constants";
+import {
+  draftProblems,
+  editProblems,
+  moveProblems,
+  normalizeDraft,
+  releaseStampFor,
+  revisedDraft,
+  statusFrom,
+} from "./backlog";
 import { BACKLOG_SEED } from "./backlog.seed.data";
-import type { BacklogDraft, BacklogEdit, BacklogItem, BacklogKind, BacklogStatus } from "./backlog.types";
+import type {
+  BacklogChange,
+  BacklogDraft,
+  BacklogEdit,
+  BacklogItem,
+  BacklogKind,
+  BacklogStatus,
+} from "./backlog.types";
 
 /**
  * The board, in the database.
@@ -14,6 +28,16 @@ import type { BacklogDraft, BacklogEdit, BacklogItem, BacklogKind, BacklogStatus
  * draft is a real request — lives in backlog.ts and is pure. This file only
  * reads and writes, so the rules cannot end up stated twice with the two
  * statements disagreeing.
+ *
+ * AND EVERY WRITE ASKS THE RULES FIRST. The route used to be the only place
+ * the caps and the move table were consulted, so anything reaching the store
+ * from inside the process — a script, a runner, a test — could write a row
+ * the board's own form would have refused. Rows over the detail cap were
+ * written exactly that way, and a row past the cap is a row nothing above the
+ * database can bring back under it. Now `changeItem` is the one door for
+ * changing a row and `addItem` the one door for adding one, and each refuses
+ * before it writes. A cap that has to hold against something that is not
+ * this process at all is the database's to keep, not this file's.
  */
 
 type Row = {
@@ -139,48 +163,82 @@ export async function addItem(draft: BacklogDraft, addedBy: string | null): Prom
 
 export type MoveOutcome =
   | { ok: true; item: BacklogItem }
-  | { ok: false; reason: "missing" | "illegal" };
+  | { ok: false; reason: "missing" }
+  /** Refused by the board's rules, with the reasons in words a person can act on. */
+  | { ok: false; reason: "illegal"; problems: string[] };
 
 /**
- * Moves an item to another status, if the board's table of moves allows it.
- * `movedAt` is set here and nowhere else — it is what "what has moved this
- * week" is read from, so an edit to a title must not disturb it.
+ * Changes one row — a move, a revision of its text, a grade, a name — in a
+ * single write, after every rule the change touches has been asked.
+ *
+ * Refused whole or written whole. A request carrying a legal grade and an
+ * illegal move used to be applied in two halves, and the half that could be
+ * written was; now nothing is written until all of it may be. The rules are
+ * asked in the same module the form and the route ask them in:
+ *
+ *  - a status, against the table of moves (`moveProblems`);
+ *  - a title, a detail, a kind or a name, against what makes a usable request
+ *    (`draftProblems`, over the row as it would stand afterwards);
+ *  - an assignee or a grade, against `editProblems`.
+ *
+ * `movedAt` and the release stamp move only with the status — an edit to a
+ * title is not movement, and "what has moved this week" is read from it. The
+ * key never changes: it was derived once and may already be cited somewhere.
  */
-export async function moveItem(id: string, to: BacklogStatus): Promise<MoveOutcome> {
+export async function changeItem(id: string, change: BacklogChange): Promise<MoveOutcome> {
   const current = await prisma.backlogItem.findUnique({ where: { id }, select: SELECT });
   if (current === null) return { ok: false, reason: "missing" };
-  if (!canMove(statusFrom(current.status), to)) return { ok: false, reason: "illegal" };
+  const item = toItem(current);
 
-  // What the stamp is and why it is cleared on the way out is `releaseStampFor`'s
-  // to say, not this function's. The store writes what the rules decide.
+  const { status, title, detail, kind, askedBy, ...edit } = change;
+  const text: Partial<BacklogDraft> = { title, detail, kind, askedBy };
+  const revising = Object.values(text).some((value) => value !== undefined);
+  const revised = revising ? normalizeDraft(revisedDraft(item, text)) : null;
+
+  const problems = [
+    ...(status === undefined ? [] : moveProblems(item.status, status)),
+    ...(revised === null ? [] : draftProblems(revised)),
+    ...editProblems(edit),
+  ];
+  if (problems.length > 0) return { ok: false, reason: "illegal", problems };
+
   const row = await prisma.backlogItem.update({
     where: { id },
-    data: { status: to, movedAt: new Date(), releasedIn: releaseStampFor(to) },
+    data: {
+      ...(status === undefined ? {} : { status, movedAt: new Date(), releasedIn: releaseStampFor(status) }),
+      ...(revised === null
+        ? {}
+        : { title: revised.title, detail: revised.detail, kind: revised.kind, askedBy: revised.askedBy }),
+      ...(edit.assignedTo === undefined ? {} : { assignedTo: edit.assignedTo.trim() }),
+      ...(edit.priority === undefined ? {} : { priority: edit.priority }),
+      ...(edit.effort === undefined ? {} : { effort: edit.effort }),
+    },
     select: SELECT,
   });
   return { ok: true, item: toItem(row) };
 }
 
+/** Moves an item to another status, if the board's table of moves allows it. */
+export async function moveItem(id: string, to: BacklogStatus): Promise<MoveOutcome> {
+  return changeItem(id, { status: to });
+}
+
 /**
  * Says who has picked an item up, or nobody. Free text, trimmed, and short:
- * it is a name to recognise, not a record to join on.
+ * it is a name to recognise, not a record to join on — and one too long to be
+ * that is refused rather than cut, the same answer the route gives.
  */
 export async function assignItem(id: string, to: string): Promise<MoveOutcome> {
-  return editItem(id, { assignedTo: to.trim().slice(0, ASSIGNED_TO_MAX) });
+  return changeItem(id, { assignedTo: to });
 }
 
 /**
  * Writes the fields of a row that are somebody's opinion rather than the
  * board's rules: who has it, how much it matters, how much work it is.
  *
- * A status is not one of them and never passes through here. Moving a row is
- * checked against the board's table by `moveItem`, and a second door that
- * wrote a status without asking would be the rule holding in one place and
- * not the other.
+ * A status is not one of them and never passes through here; it is a move,
+ * and a move is `changeItem` with a status on it.
  */
 export async function editItem(id: string, fields: BacklogEdit): Promise<MoveOutcome> {
-  const current = await prisma.backlogItem.findUnique({ where: { id }, select: { id: true } });
-  if (current === null) return { ok: false, reason: "missing" };
-  const item = await prisma.backlogItem.update({ where: { id }, data: fields, select: SELECT });
-  return { ok: true, item: toItem(item) };
+  return changeItem(id, fields);
 }

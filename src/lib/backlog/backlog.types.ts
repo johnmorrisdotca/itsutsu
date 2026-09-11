@@ -84,3 +84,15 @@ export type BacklogEdit = {
   priority?: BacklogPriority | null;
   effort?: BacklogEffort | null;
 };
+
+/**
+ * Everything a row may be changed to in one request: a move, a revision of
+ * its text, a grade, a name. One shape rather than three, so that a caller
+ * carrying a legal grade and an illegal move is refused whole, before either
+ * half is written. Every field is optional; the store decides which rule each
+ * one answers to.
+ */
+export type BacklogChange = BacklogEdit &
+  Partial<BacklogDraft> & {
+    status?: BacklogStatus;
+  };
