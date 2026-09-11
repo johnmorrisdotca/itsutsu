@@ -13,6 +13,7 @@ import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
 import { recordResult } from "@/lib/rating/players";
+import { UnwinnableGame, unwinnableBecause } from "./winnableGame";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
@@ -146,6 +147,25 @@ export async function createLiveGame(
   const token = randomBytes(18).toString("base64url");
   const startedAt = new Date();
   const budget = clockMode === "game" ? rest.moveTimeMs : null;
+
+  /*
+   * Refuse a game nobody could win, before it is written.
+   *
+   * The choke point, on purpose: every path that makes a game comes through
+   * here, so one check covers the lobby, a challenge, a rematch, a fork, the
+   * bot batch, and whatever is written next. A rematch once stored a
+   * three-by-three board needing five in a row and nothing objected — John
+   * played six moves before finding that his winning move did nothing.
+   *
+   * Against the size that will actually be STORED rather than the one asked
+   * for. A game with a board of its own is created on that board whatever the
+   * request said, and a check that read the request would refuse games this
+   * very function was about to correct.
+   */
+  const board = sizeForVariant(rest.variant as RuleVariant, rest.size);
+  const cannot = unwinnableBecause({ variant: rest.variant, size: board, winLength: rest.winLength });
+  if (cannot !== null) throw new UnwinnableGame(cannot);
+
   const game = await prisma.game.create({
     data: {
       id: await freeGameId(),

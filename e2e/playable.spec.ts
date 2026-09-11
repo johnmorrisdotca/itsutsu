@@ -94,6 +94,28 @@ test.describe("a game can be played to its end", () => {
     expect(rules.winLength, "a 3×3 board asking for five in a row is unwinnable").toBe(3);
   });
 
+  test("a game nobody could win is refused rather than written", async ({ request }) => {
+    /*
+     * John's question after the bug: "Should there not be checks when a game
+     * starts about this sort of thing?" This is that check, asked of the
+     * door rather than of the function — a game that cannot be won is
+     * refused with a reason, not written and discovered six moves later.
+     */
+    const refused = await request.post("/api/games/live", {
+      data: {
+        variant: "freestyle",
+        size: 9,
+        winLength: 19,
+        blackName: "Aki",
+        whiteName: "Bo",
+        opener: "black",
+        rated: false,
+      },
+    });
+    expect(refused.status(), "19 in a row on a 9×9 board was accepted").toBe(422);
+    expect(await refused.text()).toContain("will not fit");
+  });
+
   test("a game can be resigned by the person sitting in it", async ({ request }) => {
     const game = await start(request, { variant: "tictactoe", size: 3 });
     await play(request, game, "black", 1, 1);

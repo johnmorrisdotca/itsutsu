@@ -40,6 +40,7 @@ import { isBotId } from "@/lib/bots/bots";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { UnwinnableGame } from "@/lib/history/winnableGame";
 
 const liveGameSchema = z.object({
   blackName: playerNameSchema.default(""),
@@ -348,6 +349,12 @@ export async function POST(request: Request) {
     }
     return response;
   } catch (error) {
+    /*
+     * A game that could not be won is the caller's mistake to hear about, not
+     * a crash to bury in a log. `createLiveGame` refuses it rather than
+     * writing it, and this says why in the words the guard used.
+     */
+    if (error instanceof UnwinnableGame) return unprocessable(error.message);
     console.error(error);
     return serverError("Could not start that game.");
   }

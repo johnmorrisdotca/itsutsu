@@ -16,8 +16,10 @@ test.describe("starting a game is one sentence", () => {
       if ((await page.getByTestId("start-game-go").textContent()) === "Post the seat") break;
       await page.getByTestId("start-game-go").click();
       await expect(page.getByTestId("turn-banner")).toBeVisible();
-      await page.getByTestId("resign").click();
-      await page.getByTestId("resign-yes").click();
+      // A posted seat has no stones on it, so it is CALLED OFF rather than
+      // resigned — there is nothing to give up, and nobody wins.
+      await page.getByTestId("cancel").click();
+      await page.getByTestId("cancel-yes").click();
       await openGamesPage(page);
     }
     await page.getByTestId("start-game-variant").selectOption("trapThree");
@@ -46,9 +48,10 @@ test.describe("starting a game is one sentence", () => {
      */
     await expect(page.getByTestId("turn-banner")).toContainText("waiting for somebody");
 
-    // Tidy up after itself: an abandoned seat would meet the next run.
-    await page.getByTestId("resign").click();
-    await page.getByTestId("resign-yes").click();
+    // Tidy up after itself: an abandoned seat would meet the next run. Nothing
+    // has been played, so this is calling it off rather than resigning it.
+    await page.getByTestId("cancel").click();
+    await page.getByTestId("cancel-yes").click();
     // A finished game leaves the board for the record, so the seat is off the board.
     await expect(page).toHaveURL(/\/history\/trap-three\//, { timeout: 15_000 });
   });
