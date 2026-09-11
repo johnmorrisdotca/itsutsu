@@ -324,6 +324,15 @@ The near-miss this is written from: a migration was applied to the shared
 database while its migration file lived only on an unmerged branch, and every
 other worktree would have been offered the reset.
 
+### Plans In The Repository
+
+**A multi-ticket plan lives in `docs/plans/<plan>/`, one file per ticket, and
+a board row that says `Plan: docs/plans/…` is implemented from that file.**
+Read the plan, its folder's `README.md` and `BOARD_RULES.md` in full before
+starting. The first is `docs/plans/board-convergence/`, which brings this
+board and UmaKuma's to one contract; its README says which rows exist and
+in what order to take them.
+
 ### Board Gate
 
 The features board at `/backlog` is where a request lives once the conversation that
