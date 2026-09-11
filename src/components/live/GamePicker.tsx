@@ -38,6 +38,22 @@ const STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown:
  * which it is on arrival because the open family is the chosen game's own.
  * The dropdown took two. Nothing here is slower than what it replaces.
  *
+ * THE NAMES HERE ARE NOT LINKS, and that is the rule kept rather than broken.
+ * "If you see a name of a game, it's clickable" has one exception already
+ * written down for it — a select's `<option>`, and the autocomplete suggestion
+ * that is "the `<option>` case wearing different markup": choosing it IS the
+ * way to that game, which is the same promise kept another way. A radio in a
+ * picker is that case again. An <a> inside the <label> would also swallow the
+ * click that chooses, so a link here would cost the control to keep a promise
+ * the control already keeps. The way to READ about a game is on this page as
+ * well — "Every game there is", above the panel.
+ *
+ * Worth knowing: `gameLinks.coverage.test.ts` never sees this either way. It
+ * looks for a label printed into a text position, and this one goes through
+ * `<Paired en={copy.label}>` as a prop — as it does on the /games cards. That
+ * is the gate's scope rather than a hole opened here, but it is the reason
+ * this paragraph exists instead of a green test.
+ *
  * WHY THE PICTURES ARE THE THUMBNAILS. `public/art/games/thumbs/<variant>.jpg`
  * is 96px and three to five kilobytes, cut once by `pnpm art:thumbs` from the
  * board screenshot every game already has. The full boards are 712px and

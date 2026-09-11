@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { ready } from "./support";
+import { chooseBoard, ready } from "./support";
 
 
 /**
@@ -18,9 +18,18 @@ test.describe("setting a game up before it exists", () => {
     const count = (before.games ?? before).length ?? 0;
 
     await page.goto("/games/gomoku/new");
-    await expect(page.getByTestId("set-up-game")).toBeVisible();
+    /*
+     * On the MARK, not on the panel being visible. The controls are
+     * server-rendered and are real controls before React attaches, so a
+     * choice made in that window is dropped — which used to be harmless
+     * here, because a select snaps back and this test only counts games.
+     * The board is radios now and `chooseBoard` checks that the one it
+     * pressed came on, so the race would fail loudly rather than quietly.
+     * Loudly is better, and waiting is better than either.
+     */
+    await ready(page, "set-up-game");
     // Move every control there is. Nothing has been created by any of it.
-    await page.getByTestId("shared-rules-size").selectOption("19");
+    await chooseBoard(page, 19);
     await page.getByTestId("shared-rules-rated").selectOption("friendly");
     await page.getByTestId("shared-rules-move-time").selectOption({ index: 1 });
 
@@ -42,7 +51,7 @@ test.describe("setting a game up before it exists", () => {
      * than the next line arrives. A cold runner does not.
      */
     await ready(page, "set-up-game");
-    await page.getByTestId("shared-rules-size").selectOption("19");
+    await chooseBoard(page, 19);
     await page.getByTestId("shared-rules-rated").selectOption("friendly");
     await expect(page.getByTestId("set-up-summary")).toContainText("19×19");
 

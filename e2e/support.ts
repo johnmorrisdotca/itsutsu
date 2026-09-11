@@ -132,6 +132,50 @@ export async function openSetUpPage(page: Page, slug?: string) {
 }
 
 /**
+ * Chooses a game on the set-up screen, the way a reader does.
+ *
+ * The dropdown here became two rows — all eleven families along the top,
+ * the open family's games underneath — so choosing is browsing to the
+ * family and then picking the game. This walks the families until the game
+ * appears, which is exactly the act it is standing in for, rather than
+ * reaching past the control to the state behind it. See GamePicker.tsx.
+ *
+ * Nothing is clicked when the game is already on screen, so the common
+ * case is one click and the spec is not pretending to browse.
+ */
+export async function chooseGame(page: Page, variant: string) {
+  const card = page.locator(`[data-testid="set-up-variant"][data-variant="${variant}"]`);
+  if ((await card.count()) === 0) {
+    const families = page.getByTestId("set-up-family");
+    const many = await families.count();
+    for (let at = 0; at < many; at += 1) {
+      await families.nth(at).click();
+      if ((await card.count()) > 0) break;
+    }
+  }
+  await card.click();
+  await expect(card).toHaveAttribute("data-chosen", "true");
+}
+
+/** Chooses a board on the set-up screen. The blocks are radios; this presses one. */
+export async function chooseBoard(page: Page, size: number | string) {
+  const block = page.locator(`[data-testid="set-up-size"][data-size="${size}"]`);
+  await block.click();
+  await expect(block).toHaveAttribute("data-chosen", "true");
+}
+
+/**
+ * The board the set-up screen is currently on.
+ *
+ * A locator rather than a value, so a spec asserts against something that
+ * is ON the page — `toHaveCount(0)` on this says no board is chosen, which
+ * is a different claim from "the picker is absent" and both get made.
+ */
+export function chosenBoard(page: Page) {
+  return page.locator('[data-testid="set-up-size"][data-chosen="true"]');
+}
+
+/**
  * The page holding the games somebody has going.
  *
  * Its own page now, split out of the lobby: /games starts a game, /play

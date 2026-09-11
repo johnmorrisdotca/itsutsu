@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { openSetUpPage } from "./support";
+import { chooseBoard, chooseGame, chosenBoard, openSetUpPage } from "./support";
 import { memberContext } from "./members";
 import { gamesMade } from "./tidy";
 
@@ -21,7 +21,7 @@ const WEEK = 604800000;
 
 async function setUp(page: import("@playwright/test").Page, variant: string) {
   await openSetUpPage(page);
-  await page.getByTestId("shared-rules-variant").selectOption(variant);
+  await chooseGame(page, variant);
 }
 
 test.describe("choosing the board before the game exists", () => {
@@ -29,7 +29,8 @@ test.describe("choosing the board before the game exists", () => {
     await setUp(page, "freestyle");
     const board = page.getByTestId("shared-rules-size");
     await expect(board).toBeVisible();
-    await expect(board.locator("option")).toHaveText(["9×9", "13×13", "15×15", "19×19"]);
+    // Big blocks with the numbers on them, in the order the boards grow.
+    await expect(page.getByTestId("set-up-size")).toHaveText([/^9×9/, /^13×13/, /^15×15/, /^19×19/]);
   });
 
   test("asks nothing about a game played on one board", async ({ page }) => {
@@ -43,7 +44,7 @@ test.describe("choosing the board before the game exists", () => {
 
   test("starts the game on the board that was chosen", async ({ page, request }) => {
     await setUp(page, "freestyle");
-    await page.getByTestId("shared-rules-size").selectOption("19");
+    await chooseBoard(page, 19);
 
     /*
      * Against a computer, so a game is certainly made and made on this board.
@@ -96,7 +97,7 @@ test.describe("choosing the board before the game exists", () => {
     await page.getByTestId("shared-rules-move-time").selectOption(String(WEEK));
 
     // Nobody has touched the board, and it has found them.
-    await expect(page.getByTestId("shared-rules-size")).toHaveValue("9");
+    await expect(chosenBoard(page)).toHaveAttribute("data-size", "9");
     await expect(page.getByTestId("set-up-start")).toContainText(/Sit down with/);
   });
 
@@ -120,25 +121,25 @@ test.describe("choosing the board before the game exists", () => {
     await page.getByTestId("shared-rules-move-time").selectOption(String(WEEK));
 
     // Asking for their board offers their seat…
-    await page.getByTestId("shared-rules-size").selectOption("9");
+    await chooseBoard(page, 9);
     await expect(page.getByTestId("set-up-start")).toContainText(/Sit down with/);
 
     // …and asking for a different one does not pretend it will do.
-    await page.getByTestId("shared-rules-size").selectOption("19");
+    await chooseBoard(page, 19);
     await expect(page.getByTestId("set-up-start")).not.toContainText(/Sit down with/);
   });
 
   test("keeps a chosen board across a game that cannot use it", async ({ page }) => {
     await setUp(page, "freestyle");
-    await page.getByTestId("shared-rules-size").selectOption("19");
+    await chooseBoard(page, 19);
 
     // Through a game with one fixed board, and back again.
-    await page.getByTestId("shared-rules-variant").selectOption("reversi");
+    await chooseGame(page, "reversi");
     await expect(page.getByTestId("set-up-with")).toBeVisible();
     await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
-    await page.getByTestId("shared-rules-variant").selectOption("freestyle");
+    await chooseGame(page, "freestyle");
 
     // Still 19×19: looking at another game does not quietly lose the choice.
-    await expect(page.getByTestId("shared-rules-size")).toHaveValue("19");
+    await expect(chosenBoard(page)).toHaveAttribute("data-size", "19");
   });
 });
