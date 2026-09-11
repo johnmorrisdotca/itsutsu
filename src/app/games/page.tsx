@@ -28,13 +28,11 @@ import { fetchPlayedCounts } from "@/lib/history/gameCounts";
 import { recordPath } from "@/lib/gomoku/slugs";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
-import { MyGamesList } from "@/components/mine/MyGamesList";
 import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-export const metadata = { title: "Games" };
+export const metadata = { title: "New game 新規" };
 
 // Read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
@@ -182,9 +180,13 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         </div>
       </section>
 
-      <MyGamesList />
-      <LocalGameCardClient />
-
+      {/*
+        The games you have going are their own page now, at /my-games. This one
+        is for starting another: the sentence, the open seats, the room, and
+        the catalogue underneath. It used to be all of that AND your queue,
+        which grew a section every time somebody played — so everything below
+        the queue sank a little further every week.
+      */}
       {email !== null ? <InviteFriends /> : null}
 
       <BrandStones className="py-1 opacity-80" />

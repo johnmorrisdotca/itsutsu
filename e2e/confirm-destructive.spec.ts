@@ -26,7 +26,7 @@ test.describe("asking before something cannot be undone", () => {
     const context = await browser.newContext({ storageState: ".auth/admin.json" });
     const page = await context.newPage();
     await page.goto(`/games/gomoku/${game.id}/seat/${game.whiteToken}`);
-    await page.goto("/games");
+    await page.goto("/my-games");
 
     const row = page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
     await row.getByTestId("resign").click();

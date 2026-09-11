@@ -5,6 +5,7 @@ import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { SUMMARY_SELECT, toGameMove, toSummary } from "./gameHistory";
+import { waitingFirst } from "./nextGame";
 import { KEEP_FINISHED_DEFAULT, staysInMyList } from "./retention";
 import type { GameSummary } from "./gameHistory.types";
 
@@ -117,9 +118,19 @@ export async function fetchMyGames(
     });
   }
 
-  // Newest activity first within each group; the queue is read top down.
+  /*
+   * Newest activity first within each group — except the games waiting on YOU,
+   * which read oldest first.
+   *
+   * They are not the same kind of list. The others are history, where the last
+   * thing that happened is the interesting one. The games waiting on you are a
+   * debt, and the one that has been waiting longest is the one somebody is
+   * most likely to be wondering about — which is how every elder
+   * correspondence site ordered them, and why.
+   */
   for (const group of MY_GAME_GROUPS) {
-    groups[group].sort((a, b) => b.since.localeCompare(a.since));
+    if (group === "yourMove") groups[group].sort(waitingFirst);
+    else groups[group].sort((a, b) => b.since.localeCompare(a.since));
   }
   return groups;
 }

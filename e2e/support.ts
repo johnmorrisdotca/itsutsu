@@ -114,6 +114,16 @@ export async function openGamesPage(page: Page) {
 }
 
 /**
+ * The page holding the games somebody has going.
+ *
+ * Its own page now, split out of the lobby: /games starts a game, /my-games
+ * lists the ones you are playing. A spec that wants a queue wants this one.
+ */
+export async function openMyGamesPage(page: Page) {
+  await page.goto("/my-games");
+}
+
+/**
  * Waits for one server-rendered panel to say the browser has taken it over.
  * See `useHydrated` for what the mark means and why a panel needs one.
  */

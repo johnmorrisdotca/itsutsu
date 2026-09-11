@@ -11,7 +11,18 @@ import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
  * Admin page rather than as a section of the site.
  */
 export const NAV = [
-  { href: "/games", label: "Play", kanji: "遊ぶ" },
+  /*
+   * Two entries where there was one, and Play keeps its word. It used to mean
+   * both "the games I have going" and "start another", on a page that did both
+   * and grew a section every time somebody played — so everything under the
+   * queue sank a little further every week.
+   *
+   * John's call on the wording, and it is the better one: Play already means
+   * going to play your games, so it points at them. Games is the catalogue,
+   * which is what the word says. Neither needed a new phrase.
+   */
+  { href: "/my-games", label: "Play", kanji: "遊ぶ" },
+  { href: "/games", label: "Games" },
   { href: "/rules", label: "Rules" },
   { href: "/learn", label: "Learn" },
   { href: "/players", label: "Players" },
@@ -41,7 +52,9 @@ export function NavLinks() {
                 <span className="font-mincho text-muted">{item.kanji}</span>
               </>
             ) : null}
-            {item.href === "/games" ? <YourTurnBadge /> : null}
+            {/* The count of games waiting on you belongs beside the page that
+                holds them, not beside the one that starts new ones. */}
+            {item.href === "/my-games" ? <YourTurnBadge /> : null}
           </Link>
         );
       })}
