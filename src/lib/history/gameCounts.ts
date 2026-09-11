@@ -31,3 +31,35 @@ export async function fetchPlayedCounts(): Promise<Map<string, PlayedCount>> {
   }
   return result;
 }
+
+/** One line of a game, for a page that lists a few of them beside the rules. */
+export type RecentGame = {
+  id: string;
+  blackName: string;
+  whiteName: string;
+  result: string;
+  moveCount: number;
+  playedAt: string;
+};
+
+/**
+ * The last few games of one kind, for the page that explains that kind.
+ *
+ * A rules page had a staged screenshot and a line of prose, and the games
+ * people had actually played were a small text link below four blocks of
+ * rules. John, on that page: "where are the played games????" — and there
+ * were four of them, filed, one click away and invisible.
+ *
+ * Finished games only. A game still being played belongs to the two people
+ * playing it; a rules page is somewhere to read about the game, and an
+ * unfinished board is not a thing to read.
+ */
+export async function recentGamesOf(variant: string, limit = 5): Promise<RecentGame[]> {
+  const rows = await prisma.game.findMany({
+    where: { variant, status: "finished" },
+    orderBy: { playedAt: "desc" },
+    take: limit,
+    select: { id: true, blackName: true, whiteName: true, result: true, moveCount: true, playedAt: true },
+  });
+  return rows.map((row) => ({ ...row, playedAt: row.playedAt.toISOString() }));
+}

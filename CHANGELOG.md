@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.122.0
+- A game's rules page shows the games people have actually played of it, with the count leading to all of them and each game to its own replay
+
 ## 0.121.0
 - A member is shown by their first name and an initial — Hanako M. — on every board, list, ladder and picker. The link still leads to them, the computer players keep their whole names, and the operator's own list still shows who is who
 

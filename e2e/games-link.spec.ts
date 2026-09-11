@@ -105,6 +105,43 @@ test.describe("a game's name leads to that game", () => {
     await expect(page).toHaveURL(new RegExp(`/rules/${slugFor(variant ?? "")}$`));
   });
 
+  test("a rules page shows the games people have played of it", async ({ page, request }) => {
+    /*
+     * John, standing on /rules/tic-tac-toe: "where are the played games????"
+     * There were four of them, filed, one click away and invisible — the page
+     * had a staged screenshot and the real games were a small text link below
+     * four blocks of rules.
+     */
+    const made = await request.post("/api/games/live", {
+      data: {
+        variant: "tictactoe",
+        size: 3,
+        blackName: "Aki",
+        whiteName: "Bo",
+        opener: "black",
+        rated: false,
+      },
+    });
+    expect(made.status(), await made.text()).toBe(201);
+    const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
+    for (const [i, [row, col]] of ([[0, 0], [1, 1], [0, 1], [2, 2], [0, 2]] as [number, number][]).entries()) {
+      await request.post(`/api/games/${game.id}/moves`, {
+        data: { token: i % 2 === 0 ? game.blackToken : game.whiteToken, row, col },
+      });
+    }
+
+    await page.goto("/rules/tic-tac-toe");
+    const panel = page.getByTestId("rules-played-here");
+    await expect(panel, "a rules page shows no games of the game it explains").toBeVisible();
+    // And every line of it leads somewhere: the count to all of them, a game
+    // to its own replay.
+    const links = panel.locator("a");
+    expect(await links.count()).toBeGreaterThan(0);
+    for (let i = 0; i < (await links.count()); i += 1) {
+      await expect(links.nth(i)).toHaveAttribute("href", /\/(history|players)\//);
+    }
+  });
+
   test("on a game's own record page, in the heading", async ({ page }) => {
     await page.goto("/history/gomoku");
     const named = page.getByTestId("record-game").getByTestId("game-name");

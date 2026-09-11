@@ -5,6 +5,11 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { championsPath, gamePath, recordPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { GameCount } from "@/components/games/GameCount";
+import { PlayerName } from "@/components/players/PlayerName";
+import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { countText } from "@/lib/rating/figures";
+import { fetchPlayedCounts, recentGamesOf } from "@/lib/history/gameCounts";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
@@ -36,6 +41,13 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
   if (variant === null) notFound();
   const page = rulesPageFor(variant);
   const guides = guidesFor(variant);
+  /*
+   * What has actually been played of this game. Read here rather than left to
+   * a link, because a page about a game that people have played should show
+   * that they have.
+   */
+  const [played, counts] = await Promise.all([recentGamesOf(variant), fetchPlayedCounts()]);
+  const playedTotal = counts.get(variant)?.played ?? played.length;
 
   return (
     <Page width="standard" gap="gap-6">
@@ -153,6 +165,49 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
             <img src={page.image} alt={`A game of ${page.title} in progress`} className="w-full rounded-lg" />
             <figcaption className="text-xs text-muted">A game in progress.</figcaption>
           </figure>
+          {/*
+            The games people have actually played, on the page that explains
+            the game. This had a staged screenshot and a line of prose, and the
+            real games were a small text link below four blocks of rules —
+            John, standing on this page: "where are the played games????"
+            There were four of them, filed, one click away and invisible.
+
+            The count leads to all of them and each line leads to its own
+            replay, which is the site's own rule about a number that refers to
+            games.
+          */}
+          {played.length > 0 ? (
+            <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="rules-played-here">
+              <h2 className="flex items-baseline justify-between gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
+                <span>
+                  Played here <span className="font-mincho normal-case tracking-normal">棋譜</span>
+                </span>
+                <GameCount
+                  count={countText(playedTotal)}
+                  variant={variant}
+                  className="normal-case tracking-normal"
+                  title={`Every game of ${page.title} played here`}
+                />
+              </h2>
+              <ul className="flex flex-col divide-y divide-rule text-sm">
+                {played.map((game) => (
+                  <li key={game.id} className="flex items-baseline justify-between gap-2 py-1.5">
+                    <span className="min-w-0 truncate">
+                      <PlayerName name={game.blackName} fallback={SEAT_DISPLAY.one.label} />
+                      <span className="px-1 text-muted">vs</span>
+                      <PlayerName name={game.whiteName} fallback={SEAT_DISPLAY.two.label} />
+                    </span>
+                    <Link
+                      href={recordPath(variant, game.id)}
+                      className="shrink-0 text-xs text-muted underline-offset-2 hover:underline"
+                    >
+                      {game.moveCount} moves
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
           {guides.length > 0 ? (
             <section className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
