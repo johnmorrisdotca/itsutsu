@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
@@ -20,12 +21,13 @@ export function AccountMenu({ initial }: { initial: Who }) {
   const router = useRouter();
   // The server already knows who is here; the first paint uses that, so nothing flashes in.
   const { data, mutate } = useSWR("/api/session", fetcher, { fallbackData: initial });
+  const say = useSpeaker();
 
   if (data === undefined) return null;
   if (data === null || !data.signedIn) {
     return (
       <Link href="/join" className="whitespace-nowrap font-medium hover:underline underline-offset-4" data-testid="sign-in">
-        Sign in
+        {say.say("account.signIn")}
       </Link>
     );
   }
@@ -55,7 +57,7 @@ export function AccountMenu({ initial }: { initial: Who }) {
         className="text-muted underline-offset-4 hover:underline"
         data-testid="sign-out"
       >
-        Sign out
+        {say.say("account.signOut")}
       </button>
     </span>
   );

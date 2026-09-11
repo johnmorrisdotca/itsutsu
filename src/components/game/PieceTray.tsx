@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { Piece, PieceCell } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
@@ -109,7 +110,7 @@ export function PieceTray({
       {hand.next.length > 0 ? (
         <div className="flex flex-col gap-1.5">
           <p className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-            {GAME_COPY.nextPieces.label} <span className="font-mincho normal-case tracking-normal">{GAME_COPY.nextPieces.kanji}</span>
+            <Paired en={GAME_COPY.nextPieces.label} kanji={GAME_COPY.nextPieces.kanji} kanjiClassName="normal-case tracking-normal" />
           </p>
           <div className="flex flex-wrap items-start gap-3" data-testid="next-pieces">
             {hand.next.map((piece: Piece, index) => (

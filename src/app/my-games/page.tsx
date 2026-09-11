@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
@@ -35,7 +36,7 @@ export default function MyGamesPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-            My games <span className="font-mincho text-sm font-normal opacity-70">対局</span>
+            <Paired en="My games" kanji="対局" kanjiClassName="text-sm font-normal opacity-70" />
           </h1>
           <p className="max-w-prose text-sm text-muted">
             Yours to move first, oldest waiting at the top — the one that has been sitting

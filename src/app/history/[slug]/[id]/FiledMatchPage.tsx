@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -221,7 +222,7 @@ function FiledMatch({
             {game.lastMoveAt !== null ? ` · finished ${new Date(game.lastMoveAt).toLocaleString()}` : ""} ·{" "}
             {game.size}×{game.size} ·{" "}
             <GameName variant={game.variant} />{" "}
-            · {result.label} <span className="font-mincho">{result.kanji}</span>
+            · <Paired en={result.label} kanji={result.kanji} kanjiClassName="" />
             {!game.rated ? <span className="ml-2 rounded-full border border-rule px-2 py-0.5 text-xs">Friendly · unrated</span> : null}
           </p>
         </div>

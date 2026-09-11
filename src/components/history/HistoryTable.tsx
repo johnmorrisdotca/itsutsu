@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { GameName } from "@/components/games/GameName";
@@ -60,8 +61,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               </span>
 
               <span className="justify-self-end rounded-full border border-rule px-2.5 py-0.5 text-xs font-medium">
-                {result.label}
-                <span className="font-mincho ml-1.5 text-muted">{result.kanji}</span>
+                <Paired en={result.label} kanji={result.kanji} kanjiClassName="ml-1.5 text-muted" />
               </span>
             </div>
           </li>

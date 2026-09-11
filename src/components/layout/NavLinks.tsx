@@ -3,7 +3,31 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+
+/**
+ * What each section is called, for a reader who is not reading English.
+ *
+ * Keyed by address rather than written into `NAV` itself. That was originally
+ * to keep out of the way of the change that stripped the kanji from this bar,
+ * and it earned its keep — that change rewrote every row of `NAV` and deleted
+ * the branch that drew the kanji, and merged against this table without
+ * touching it.
+ *
+ * It is worth keeping for the reason rather than the history: an address with
+ * no phrase here keeps its English label, so adding a section can never break
+ * the bar. It only leaves that one word untranslated until somebody writes it.
+ */
+const NAV_PHRASE: Readonly<Record<string, PhraseKey>> = {
+  "/my-games": "nav.play",
+  "/games": "nav.games",
+  "/rules": "nav.rules",
+  "/learn": "nav.learn",
+  "/players": "nav.players",
+  "/about": "nav.about",
+};
 
 /*
  * The site's own sections, for everybody who is in. The features board is
@@ -42,6 +66,7 @@ export const NAV = [
 /** The site's sections, with the one the reader is in underlined. */
 export function NavLinks() {
   const pathname = usePathname();
+  const say = useSpeaker();
   return (
     <>
       {NAV.map((item) => {
@@ -59,9 +84,14 @@ export function NavLinks() {
               No kanji here any more. Play was the last entry carrying one and
               John asked for it to go, so the branch that drew them went with
               it rather than sitting unused and untyped — every remaining entry
-              is one English word, Admin included.
+              is one word, Admin included.
+
+              One word each, in the reader's own language: a Japanese reader
+              gets 遊ぶ where an English reader gets Play. That is the same
+              decision, not a reversal of it — what he took out of the bar was
+              two scripts at once, and there is still only ever one here.
             */}
-            {item.label}
+            {NAV_PHRASE[item.href] === undefined ? item.label : say.say(NAV_PHRASE[item.href])}
             {/* The count of games waiting on you belongs beside the page that
                 holds them, not beside the one that starts new ones. */}
             {item.href === "/my-games" ? <YourTurnBadge /> : null}

@@ -2,6 +2,8 @@
 
 import type { ReactNode, SelectHTMLAttributes } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import {
   BUTTON_BASE,
   BUTTON_QUIET,
@@ -107,6 +109,19 @@ export function Toggle({
   );
 }
 
+/**
+ * The heading over a panel, in the LOCALE + JP pattern.
+ *
+ * Nineteen panels across the site use this, which is why it is the single
+ * most valuable place on the site to know the reader's language: a Japanese
+ * reader gets nineteen headings in Japanese from one change, and every one of
+ * them is a word John already wrote. The kanji beside the English *is* the
+ * Japanese, so there is no translation here and nothing to review.
+ *
+ * English is untouched, deliberately: the kanji stays beside it, because the
+ * sprinkle of Japanese on the English site is a thing the site wants, not a
+ * side effect of not having got round to removing it.
+ */
 export function SectionTitle({
   children,
   kanji,
@@ -114,6 +129,19 @@ export function SectionTitle({
   children: ReactNode;
   kanji?: string;
 }) {
+  const say = useSpeaker();
+  /*
+   * `children` is a node, not a string, so it cannot be swapped for the kanji
+   * the way a label can — the heading asks the reader's language instead, and
+   * draws the kanji on its own.
+   */
+  if (!say.pairsWithKanji && kanji !== undefined && kanji !== "") {
+    return (
+      <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
+        <span className="font-mincho normal-case tracking-normal">{kanji}</span>
+      </h2>
+    );
+  }
   return (
     <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
       {children}

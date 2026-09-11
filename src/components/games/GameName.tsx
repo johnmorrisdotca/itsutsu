@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { aliasedVariant } from "@/lib/legacy/gameAliases";
 import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
@@ -52,6 +55,7 @@ export function GameName({
   raised?: boolean;
   className?: string;
 }) {
+  const say = useSpeaker();
   const known = knownGame(variant, name);
   const copy = known === null ? null : RULE_VARIANT_DISPLAY[known];
 
@@ -66,6 +70,7 @@ export function GameName({
       </span>
     );
   }
+  const shown = say.pairName(copy.label, copy.kanji);
   return (
     <Link
       href={rulesPath(known)}
@@ -73,8 +78,20 @@ export function GameName({
       data-variant={known}
       className={`underline-offset-2 hover:underline ${raised ? "relative z-10" : ""} ${className}`}
     >
-      {name ?? copy.label}
-      {kanji ? <span className="font-mincho ml-1.5 text-xs font-normal opacity-70">{copy.kanji}</span> : null}
+      {/*
+        Every game's Japanese name has been sitting in `copy.kanji` since the
+        day the game was added, beside its English one. For a Japanese reader
+        that IS the name, so thirty-nine games are named in Japanese here with
+        no translation written and none needed.
+
+        `name` wins when it is given, because that is a name somebody actually
+        wrote down — a record kept from another site lists its own — and it is
+        not ours to replace with a game's Japanese.
+      */}
+      {name ?? shown.text}
+      {kanji && shown.kanji !== null ? (
+        <span className="font-mincho ml-1.5 text-xs font-normal opacity-70">{shown.kanji}</span>
+      ) : null}
     </Link>
   );
 }

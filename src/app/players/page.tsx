@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { cookies } from "next/headers";
 
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
@@ -84,7 +85,7 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          Players <span className="font-mincho text-sm font-normal opacity-70">対局者</span>
+          <Paired en="Players" kanji="対局者" kanjiClassName="text-sm font-normal opacity-70" />
         </h1>
 
         {/* Above the tabs, not behind one: it is the only thing here that answers

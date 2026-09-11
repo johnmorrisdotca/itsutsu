@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { RecordCells, RecordHeadings } from "./PlayerRecord";
 import Link from "next/link";
 
@@ -53,8 +54,7 @@ export async function Ladder() {
                 </td>
                 <td className="py-1.5 pr-3 font-mono tabular-nums">{player.rating}</td>
                 <td className="py-1.5 pr-3">
-                  {TIER_DISPLAY[player.tier].label}{" "}
-                  <span className="font-mincho text-muted">{TIER_DISPLAY[player.tier].kanji}</span>
+                  <Paired en={TIER_DISPLAY[player.tier].label} kanji={TIER_DISPLAY[player.tier].kanji} kanjiClassName="text-muted" />
                 </td>
                 {/*
                   These four are the ladder's own counting — rated games

@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { Page } from "@/components/layout/Page";
@@ -24,7 +25,7 @@ export default function EveryGamePage() {
       <SiteHeader />
       <header className="flex flex-col gap-2">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          Every game <span className="font-mincho text-sm font-normal opacity-70">全種目</span>
+          <Paired en="Every game" kanji="全種目" kanjiClassName="text-sm font-normal opacity-70" />
         </h1>
         <p className="max-w-prose text-sm text-muted">
           {RULE_VARIANT_LIST.length} games in {GAME_FAMILIES.length} families, in the order the{" "}
@@ -36,7 +37,7 @@ export default function EveryGamePage() {
         {GAME_FAMILIES.map((family) => (
           <section key={family.title} className="flex flex-col gap-3" data-testid="every-game-family">
             <h2 className="flex items-baseline gap-2 border-b border-rule pb-1 text-base font-semibold">
-              {family.title} <span className="font-mincho text-sm font-normal opacity-70">{family.kanji}</span>
+              <Paired en={family.title} kanji={family.kanji} kanjiClassName="text-sm font-normal opacity-70" />
               <span className="ml-auto text-xs font-normal text-muted">
                 {family.games.length} {family.games.length === 1 ? "game" : "games"}
               </span>
@@ -50,9 +51,8 @@ export default function EveryGamePage() {
                   <div key={variant} className="grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr]" data-testid={`every-game-${variant}`}>
                     <dt className="font-medium">
                       <Link href={rulesPath(variant)} className="underline-offset-2 hover:underline">
-                        {copy.label}
-                      </Link>{" "}
-                      <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span>
+                        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
+                      </Link>
                     </dt>
                     <dd className="flex flex-col gap-0.5 text-sm">
                       <span>{copy.tagline}</span>

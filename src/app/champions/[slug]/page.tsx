@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -41,8 +42,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/champion
             / {copy.label}
           </p>
           <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-            {copy.label}
-            <span className="font-mincho text-base font-normal opacity-70">{copy.kanji}</span>
+            <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-base font-normal opacity-70" />
           </h1>
           <p className="text-sm font-medium">{copy.tagline}</p>
           <p className="flex flex-wrap gap-x-3 text-xs">

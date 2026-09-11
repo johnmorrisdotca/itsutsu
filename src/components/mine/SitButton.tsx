@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -31,8 +32,7 @@ export function SitButton({ id }: { id: string }) {
     <span className="flex items-center gap-2">
       {note !== null ? <span className="text-xs text-shu">{note}</span> : null}
       <button type="button" onClick={sit} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-2 py-1 text-xs`} data-testid="sit">
-        {MY_GAMES_COPY.sit.label}
-        <span className="font-mincho opacity-80">{MY_GAMES_COPY.sit.kanji}</span>
+        <Paired en={MY_GAMES_COPY.sit.label} kanji={MY_GAMES_COPY.sit.kanji} kanjiClassName="opacity-80" />
       </button>
     </span>
   );

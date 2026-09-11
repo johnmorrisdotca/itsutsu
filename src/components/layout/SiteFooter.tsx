@@ -1,6 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { languageOptions } from "@/lib/i18n/dictionaries";
+import { LANG_PARAM, type PhraseKey } from "@/lib/i18n/i18n.constants";
 import { STAGE, versionStamps } from "@/lib/version";
+
+import { LanguagePicker } from "./LanguagePicker";
 
 /*
  * Champions is not here any more, and its absence is the point.
@@ -24,13 +30,13 @@ import { STAGE, versionStamps } from "@/lib/version";
  * is reachable now" is a test rather than the opinion of whoever did the
  * removing, which is how something quietly becomes unreachable.
  */
-const LINKS = [
-  { href: "/about", label: "About" },
-  { href: "/rules", label: "Rules" },
-  { href: "/history", label: "Record" },
-  { href: "/players", label: "Players" },
-  { href: "/games/all", label: "Every game" },
-] as const;
+const LINKS: readonly { href: string; phrase: PhraseKey }[] = [
+  { href: "/about", phrase: "nav.about" },
+  { href: "/rules", phrase: "nav.rules" },
+  { href: "/history", phrase: "nav.record" },
+  { href: "/players", phrase: "nav.players" },
+  { href: "/games/all", phrase: "nav.everyGame" },
+];
 
 /**
  * The colophon, at the foot of every page: the way a Japanese book ends with
@@ -38,8 +44,9 @@ const LINKS = [
  * numeral systems — the site's own, the Roman, and the everyday Japanese —
  * small and quiet, because it is a stamp, not a banner.
  */
-export function SiteFooter() {
+export async function SiteFooter() {
   const stamps = versionStamps();
+  const say = await currentSpeaker();
   return (
     <footer
       data-chrome
@@ -52,9 +59,23 @@ export function SiteFooter() {
         </span>
         {LINKS.map((link) => (
           <Link key={link.href} href={link.href} className="underline-offset-4 hover:underline">
-            {link.label}
+            {say.say(link.phrase)}
           </Link>
         ))}
+        {/*
+          The colophon is where a book says what edition and what language it
+          is, so it is where this site does too. Suspended because the picker
+          reads the query to carry it across, the way the rules index suspends
+          its filter for the same reason.
+        */}
+        <Suspense fallback={null}>
+          <LanguagePicker
+            options={languageOptions()}
+            current={say.locale}
+            param={LANG_PARAM}
+            label={say.say("site.language")}
+          />
+        </Suspense>
       </span>
       {/*
         The edition leads to what is in it. A colophon names the edition and

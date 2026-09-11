@@ -3,6 +3,13 @@ import type { NextRequest } from "next/server";
 
 import { EMBED_TOKEN_PARAM, verifyEmbedToken } from "@/lib/auth/embedToken";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
+import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
+import {
+  LANG_COOKIE,
+  LANG_PARAM,
+  LANG_REMEMBER_FOR_SECONDS,
+} from "@/lib/i18n/i18n.constants";
+import { readLocale } from "@/lib/i18n/locale";
 import { readDirectoryFilter } from "@/lib/rating/directoryFilter";
 import {
   DIRECTORY_FILTER_COOKIE,
@@ -93,7 +100,50 @@ function isEmbed(pathname: string): boolean {
 }
 
 /**
- * Carry on — and, on the players page, keep the narrowing that was asked for.
+ * A language asked for in the address, remembered and then taken back out of
+ * it. Null when the address says nothing about language, which is almost
+ * every request.
+ *
+ * Here for the same reason the directory filter below is: a Server Component
+ * can READ a cookie while it renders and cannot SET one, and this is the only
+ * thing on the way in that can.
+ *
+ * It redirects rather than carrying on, and both halves of that are
+ * deliberate. Setting the cookie and carrying on would render *this* page in
+ * the old language — the cookie only reaches the request after it — so the
+ * page you changed the language on would be the one page that did not change,
+ * which reads as broken. And the language is not part of what a page is: an
+ * address with `?lang=es` stuck to it would get copied, shared and bookmarked,
+ * and would then overrule the language of whoever opened it.
+ *
+ * It cannot turn a yes into a no. It only ever runs after the gate has
+ * already said yes, the redirect goes to the same path with one parameter
+ * removed, and that request is decided again from scratch exactly as it would
+ * have been. GET only, so a form post is never answered with a redirect.
+ */
+function rememberLanguage(request: NextRequest): NextResponse | null {
+  if (request.method !== "GET") return null;
+  const asked = readLocale(request.nextUrl.searchParams.get(LANG_PARAM));
+  if (asked === null || !OFFERED_LOCALES.includes(asked)) return null;
+
+  const clean = new URL(request.url);
+  clean.searchParams.delete(LANG_PARAM);
+  const response = NextResponse.redirect(clean);
+  response.cookies.set({
+    name: LANG_COOKIE,
+    value: asked,
+    // Every page, unlike the filter below: a language is not about one page.
+    path: "/",
+    maxAge: LANG_REMEMBER_FOR_SECONDS,
+    sameSite: "lax",
+    httpOnly: true,
+  });
+  return response;
+}
+
+/**
+ * Carry on — and keep what was asked for: the language, and on the players
+ * page the narrowing.
  *
  * It is here because a Server Component can READ a cookie while it renders and
  * cannot SET one, and this is the only thing on the way in that can. The
@@ -107,6 +157,9 @@ function isEmbed(pathname: string): boolean {
  * must not overwrite one.
  */
 function carryOn(request: NextRequest): NextResponse {
+  const spoken = rememberLanguage(request);
+  if (spoken !== null) return spoken;
+
   const response = NextResponse.next();
   if (request.nextUrl.pathname !== "/players") return response;
 

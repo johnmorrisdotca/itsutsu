@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { GameCount } from "@/components/games/GameCount";
@@ -25,7 +26,7 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
     <tr className="border-t border-rule" data-testid={`champion-row-${variant}`}>
       <td className="py-1.5 pr-3">
         <Link href={championsPath(variant)} className="font-medium underline-offset-2 hover:underline">
-          {copy.label} <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span>
+          <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
         </Link>
       </td>
       {champion === undefined ? (
@@ -80,7 +81,7 @@ export default async function ChampionsPage() {
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="champions">
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">
-          Champions <span className="font-mincho text-sm font-normal opacity-70">名人</span>
+          <Paired en="Champions" kanji="名人" kanjiClassName="text-sm font-normal opacity-70" />
         </h1>
         <p className="max-w-prose text-sm text-muted">
           The best-rated player at each game, as the standings are today. Every game keeps its own Elo,
@@ -104,7 +105,7 @@ export default async function ChampionsPage() {
             <tbody key={family.title} data-testid="champions-family">
               <tr>
                 <th colSpan={6} className="pt-5 pb-1 text-left text-base font-semibold">
-                  {family.title} <span className="font-mincho text-sm font-normal opacity-70">{family.kanji}</span>
+                  <Paired en={family.title} kanji={family.kanji} kanjiClassName="text-sm font-normal opacity-70" />
                 </th>
               </tr>
               {family.games.map((variant) => (

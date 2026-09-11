@@ -11,6 +11,8 @@ import { GameFamily } from "@/components/games/GameFamily";
 import { GameLadder } from "@/components/games/GameLadder";
 import { PlayedHere } from "@/components/games/PlayedHere";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { guidesFor } from "@/lib/learn/strategy";
 
@@ -20,11 +22,20 @@ export function generateStaticParams() {
   return RULE_VARIANT_LIST.map((variant) => ({ slug: slugFor(variant) }));
 }
 
-function Part({ title, kanji, lines }: { title: string; kanji: string; lines: string[] }) {
+/**
+ * One section of the template, headed in the LOCALE + JP pattern: the word
+ * switches with the reader's language and the kanji beside it does not —
+ * unless the reader's own language is written in that script, in which case
+ * there is no second copy to show. `pair` decides that; this only draws it.
+ */
+function Part({ heading, lines }: { heading: Paired; lines: string[] }) {
   return (
     <section className="flex flex-col gap-2">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        {title} <span className="font-mincho text-xs normal-case tracking-normal">{kanji}</span>
+        {heading.text}
+        {heading.kanji !== null ? (
+          <span className="font-mincho text-xs normal-case tracking-normal">{heading.kanji}</span>
+        ) : null}
       </h2>
       <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
         {lines.map((line) => (
@@ -41,6 +52,15 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
   if (variant === null) notFound();
   const page = rulesPageFor(variant);
   const guides = guidesFor(variant);
+  const say = await currentSpeaker();
+  /*
+   * The game's own name. It has no dictionary entry and wants none — a name
+   * is not translated — but the site already carries its Japanese in the
+   * kanji beside it, so a Japanese reader is shown that and nothing after it.
+   */
+  const name = say.pairName(page.title, page.kanji);
+  const played = say.pair("rules.everyGamePlayed", "棋譜", { game: name.text });
+  const learn = say.pair("rules.learn", "学び");
 
   return (
     <Page width="standard" gap="gap-6">
@@ -50,13 +70,15 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           <header className="flex flex-col gap-1">
             <p className="text-xs text-muted">
               <Link href="/rules" className="underline-offset-2 hover:underline">
-                Rules
+                {say.say("nav.rules")}
               </Link>{" "}
-              / {page.title}
+              / {name.text}
             </p>
             <h1 className="flex items-baseline gap-2 text-2xl font-semibold">
-              {page.title}
-              <span className="font-mincho text-base font-normal opacity-70">{page.kanji}</span>
+              {name.text}
+              {name.kanji !== null ? (
+                <span className="font-mincho text-base font-normal opacity-70">{name.kanji}</span>
+              ) : null}
             </h1>
             <p className="text-sm font-medium">{page.tagline}</p>
             <p className="text-xs text-muted italic">
@@ -70,7 +92,7 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
                 <span
                   className="mr-1.5 not-italic"
                   aria-hidden="true"
-                  title={`From ${page.from.country}`}
+                  title={say.say("rules.from", { country: page.from.country })}
                   data-testid="origin-flag"
                   data-country={page.from.code}
                 >
@@ -81,7 +103,7 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
             </p>
             {page.inspiredBy !== undefined ? (
               <p className="text-xs text-muted" data-testid="inspired-by">
-                Inspired by {page.inspiredBy}. The name belongs to its owner; this is our own version of the rules.
+                {say.say("rules.inspiredBy", { name: page.inspiredBy })}
               </p>
             ) : null}
             {/*
@@ -90,17 +112,17 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
             */}
             {page.alsoKnownAs.length > 0 ? (
               <p className="text-xs text-muted" data-testid="also-known-as">
-                Also known as {page.alsoKnownAs.join(", ")}.
+                {say.say("rules.alsoKnownAs", { names: page.alsoKnownAs.join(", ") })}
               </p>
             ) : null}
           </header>
-          <Part title="Object" kanji="目的" lines={page.object} />
-          <Part title="Board" kanji="盤" lines={page.board} />
-          <Part title="Play" kanji="手順" lines={page.play} />
-          <Part title="House rules" kanji="細則" lines={page.house} />
+          <Part heading={say.pair("rules.object", "目的")} lines={page.object} />
+          <Part heading={say.pair("rules.board", "盤")} lines={page.board} />
+          <Part heading={say.pair("rules.play", "手順")} lines={page.play} />
+          <Part heading={say.pair("rules.house", "細則")} lines={page.house} />
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
             <Link href={gamePath(variant)} className="font-semibold underline-offset-2 hover:underline">
-              Play {page.title} →
+              {say.say("rules.playThis", { game: name.text })}
             </Link>
             {/*
               The way out of a rules page that is not "start one".
@@ -121,7 +143,8 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
               className="text-sm underline-offset-2 hover:underline"
               data-testid="rules-record-link"
             >
-              Every game of {page.title} played here <span className="font-mincho">棋譜</span>
+              {played.text}{" "}
+              {played.kanji !== null ? <span className="font-mincho">{played.kanji}</span> : null}
             </Link>
             {/*
               Somewhere outside this site that can contradict us. A rules page
@@ -137,7 +160,7 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
                 className="text-xs text-muted underline-offset-2 hover:underline"
                 data-testid="wikipedia-link"
               >
-                Read about {page.title} on Wikipedia ↗
+                {say.say("rules.wikipedia", { game: name.text })}
               </a>
             ) : null}
           </p>
@@ -154,8 +177,12 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           */}
           <figure className={`${PANEL_CLASS} flex flex-col gap-2`}>
             {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-            <img src={page.image} alt={`A game of ${page.title} in progress`} className="w-full rounded-lg" />
-            <figcaption className="text-xs text-muted">A game in progress.</figcaption>
+            <img
+              src={page.image}
+              alt={say.say("rules.imageAlt", { game: name.text })}
+              className="w-full rounded-lg"
+            />
+            <figcaption className="text-xs text-muted">{say.say("rules.inProgress")}</figcaption>
           </figure>
           {/*
             Deferred to request time, in a component of its own. Every rules
@@ -175,7 +202,10 @@ export default async function RulesPage({ params }: PageProps<"/rules/[slug]">) 
           {guides.length > 0 ? (
             <section className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-                Learn <span className="font-mincho normal-case tracking-normal">学び</span>
+                {learn.text}{" "}
+                {learn.kanji !== null ? (
+                  <span className="font-mincho normal-case tracking-normal">{learn.kanji}</span>
+                ) : null}
               </h2>
               <ul className="flex flex-col gap-2 text-sm">
                 {guides.map((guide) => (

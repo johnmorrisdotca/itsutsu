@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { playerPath } from "@/lib/rating/playerKey";
 import { RowActions } from "@/components/ui/Controls";
 import Link from "next/link";
@@ -19,8 +20,7 @@ export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="here-panel">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        {START_COPY.hereNow.label}
-        <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{START_COPY.hereNow.kanji}</span>
+        <Paired en={START_COPY.hereNow.label} kanji={START_COPY.hereNow.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         {others.length > 0 ? <span className="font-normal tracking-normal">{others.length}</span> : null}
       </h2>
       {others.length === 0 ? (

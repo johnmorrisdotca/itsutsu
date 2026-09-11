@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
@@ -40,8 +41,7 @@ export function Applause({
   return (
     <section className="flex flex-col gap-2" data-testid="applause">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-        {APPLAUSE_COPY.title.label}
-        <span className="font-mincho text-[0.8rem] font-normal tracking-normal">{APPLAUSE_COPY.title.kanji}</span>
+        <Paired en={APPLAUSE_COPY.title.label} kanji={APPLAUSE_COPY.title.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         {tally.total > 0 ? <span className="font-normal tracking-normal">{tally.total}</span> : null}
       </h2>
       <div className="flex flex-wrap items-center gap-2">

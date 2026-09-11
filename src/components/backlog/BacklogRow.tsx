@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, SELECT_CLASS } from "@/components/ui/ui.constants";
@@ -53,7 +54,7 @@ export function StatusPill({ status }: { status: BacklogStatus }) {
       className={`inline-flex items-baseline gap-1 rounded-full border px-2 py-0.5 text-[0.68rem] font-semibold ${copy.pill}`}
       data-testid={`status-pill-${status}`}
     >
-      {copy.label} <span className="font-mincho font-normal opacity-75">{copy.kanji}</span>
+      <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="font-normal opacity-75" />
     </span>
   );
 }
@@ -75,8 +76,7 @@ function GradePills({ item }: { item: BacklogItem }) {
           title={PRIORITY_DISPLAY[item.priority].blurb}
           data-testid={`priority-pill-${item.priority}`}
         >
-          {PRIORITY_DISPLAY[item.priority].label}{" "}
-          <span className="font-mincho font-normal opacity-75">{PRIORITY_DISPLAY[item.priority].kanji}</span>
+          <Paired en={PRIORITY_DISPLAY[item.priority].label} kanji={PRIORITY_DISPLAY[item.priority].kanji} kanjiClassName="font-normal opacity-75" />
         </span>
       )}
       {item.effort === null ? null : (
@@ -85,8 +85,7 @@ function GradePills({ item }: { item: BacklogItem }) {
           title={EFFORT_DISPLAY[item.effort].blurb}
           data-testid={`effort-pill-${item.effort}`}
         >
-          {EFFORT_DISPLAY[item.effort].label}{" "}
-          <span className="font-mincho font-normal opacity-75">{EFFORT_DISPLAY[item.effort].kanji}</span>
+          <Paired en={EFFORT_DISPLAY[item.effort].label} kanji={EFFORT_DISPLAY[item.effort].kanji} kanjiClassName="font-normal opacity-75" />
         </span>
       )}
     </span>
@@ -154,8 +153,7 @@ export function BacklogRow({ item, onMoved, who }: BacklogRowProps) {
         <div className="flex flex-wrap items-baseline gap-2">
           <span className="font-medium">{item.title}</span>
           <span className="text-[0.68rem] tracking-[0.1em] text-muted uppercase">
-            {KIND_DISPLAY[item.kind].label}{" "}
-            <span className="font-mincho tracking-normal normal-case">{KIND_DISPLAY[item.kind].kanji}</span>
+            <Paired en={KIND_DISPLAY[item.kind].label} kanji={KIND_DISPLAY[item.kind].kanji} kanjiClassName="tracking-normal normal-case" />
           </span>
           <GradePills item={item} />
         </div>

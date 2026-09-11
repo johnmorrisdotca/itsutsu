@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import {
@@ -60,7 +61,7 @@ export function DirectoryFilters({
             className={`${BUTTON} ${filter.who === who ? ON : OFF}`}
             data-testid={`who-${who}`}
           >
-            {WHO_DISPLAY[who].label} <span className="font-mincho opacity-70">{WHO_DISPLAY[who].kanji}</span>
+            <Paired en={WHO_DISPLAY[who].label} kanji={WHO_DISPLAY[who].kanji} kanjiClassName="opacity-70" />
           </Link>
         ))}
       </nav>

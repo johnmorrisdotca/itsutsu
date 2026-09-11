@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
@@ -161,8 +162,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
         */}
       <section className="flex flex-col gap-4" data-testid="lobby-start">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          {START_COPY.title.label}{" "}
-          <span className="font-mincho text-sm font-normal opacity-70">{START_COPY.title.kanji}</span>
+          <Paired en={START_COPY.title.label} kanji={START_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
         <p className="max-w-prose text-sm text-muted">{START_COPY.lead}</p>
         <div className={PANEL_CLASS}>
@@ -193,7 +193,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
 
       <section className="flex flex-col gap-4">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
-          More games <span className="font-mincho text-sm font-normal opacity-70">遊び方</span>
+          <Paired en="More games" kanji="遊び方" kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
         <p className="max-w-prose text-sm text-muted">
           Everything below is five in a row with one idea changed. Open a family to see
