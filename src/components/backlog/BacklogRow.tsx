@@ -52,8 +52,18 @@ function MoveStamp({ item }: { item: BacklogItem }) {
  * rather than as somebody still working it. Computed at render from
  * `Date.now()`, not on a timer: the board re-reads after every move, and
  * nothing here needs to tick on its own between two of those.
+ *
+ * Gated on the row's current status, not only on `claimedBy` being set.
+ * ITS-01's migration preserves a finished row's old assignee in `claimedBy`
+ * rather than dropping it, so a done or dropped row can carry one too — and
+ * without this guard it would print "held by" or "stale" beside a row whose
+ * own status pill already says Done, which is a row contradicting itself.
+ * Held and stale are both facts about work someone is or was doing right
+ * now; a released claim on a finished row is history, shown nowhere on the
+ * board today.
  */
 function HoldLine({ item }: { item: BacklogItem }) {
+  if (item.status !== BACKLOG_STATUSES.inProgress) return null;
   if (item.claimedBy === null) return null;
   if (heldNow(item)) {
     return (
