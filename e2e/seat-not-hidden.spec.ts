@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+import { openSetUpPage } from "./support";
+
 import { memberContext } from "./members";
-import { openGamesPage } from "./support";
 
 /**
  * My own seat does not hide somebody else's.
@@ -49,22 +50,22 @@ test.describe("a seat somebody else is waiting on", () => {
     expect(mine.status()).toBe(201);
 
     /*
-     * Waits for the sentence to say it is listening. Choosing before React
-     * has attached is a choice the state never hears, and this test would
-     * then fail claiming a seat was hidden when the truth is the choice of
-     * game never landed — which is exactly the misreading that helper exists
-     * to stop.
+     * Asked of the screen that settles a game, which is where asking for one
+     * now happens. Choosing before React has attached is a choice the state
+     * never hears, and this test would then fail claiming a seat was hidden
+     * when the truth is that the choice of game never landed — so the form is
+     * waited for before anything is chosen on it.
      */
-    await openGamesPage(page);
-    await page.getByTestId("start-game-variant").selectOption("notakto");
-    await page.getByTestId("start-game-pace").selectOption(pace);
-    await page.getByTestId("start-game-with").selectOption("anyone");
+    await openSetUpPage(page);
+    await page.getByTestId("shared-rules-variant").selectOption("notakto");
+    await page.getByTestId("shared-rules-move-time").selectOption(pace);
+    await page.getByTestId("set-up-with").selectOption("anyone");
 
     // Theirs is still there to sit at, and it is theirs I am offered.
     await expect(
-      page.getByTestId("start-game-go"),
+      page.getByTestId("set-up-start"),
       "my own seat hid a stranger's identical one",
     ).toContainText("Sit down with");
-    await expect(page.getByTestId("start-game-hint")).toContainText(`Waiting ${stamp}`);
+    await expect(page.getByTestId("set-up-match")).toContainText(`Waiting ${stamp}`);
   });
 });

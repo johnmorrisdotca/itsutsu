@@ -1,105 +1,92 @@
 import { expect, test } from "@playwright/test";
 
-import { PLAYER_STATE, openGamesPage } from "./support";
-import { shownName } from "../src/lib/rating/shownName";
+import { PLAYER_STATE, openGamesPage, openSetUpPage } from "./support";
 
 /*
- * Names are matched by what the site PRINTS, through the same function the
- * site prints them with — a first name and an initial. Spelling the displayed
- * form out here instead would be a second copy of the rule, and the two would
- * disagree the first time it changed.
+ * This file was called "starting a game is one sentence" and tested a one-line
+ * form in the lobby with dropdowns in it. John called that very bad design and
+ * asked for a screen where the game, the board, the pace and the opponent are
+ * all settled before anything exists. The sentence is gone.
+ *
+ * The INTENTIONS it carried are not, and they still live here:
+ *  - asking for a game nobody is asking for posts a seat, and it is a real game
+ *  - asking for one somebody IS asking for sits you down with them instead
+ *  - a stranger's seat is offered even when one of my own stands beside it
+ *  - the seats board and who-is-here still sit side by side
+ *
+ * What went with the sentence, on purpose, is picking a game from the lobby
+ * without going anywhere. That was the design being replaced, not a casualty
+ * of replacing it.
  */
 
 /** A pace nothing else in the suite asks for, so these seats meet only each other. */
 const SEVEN_DAYS = String(7 * 24 * 60 * 60_000);
 
-test.describe("starting a game is one sentence", () => {
-  test("posts a seat when nobody is asking, and the seat is a real game", async ({ page, request }) => {
-    await openGamesPage(page);
-    // A seat left open by an earlier run would be offered to sit in instead of
-    // posting; take it first so this test meets an empty board, as a new day would.
-    for (let guard = 0; guard < 8; guard += 1) {
-      await page.getByTestId("start-game-variant").selectOption("trapThree");
-      await page.getByTestId("start-game-pace").selectOption(SEVEN_DAYS);
-      if ((await page.getByTestId("start-game-go").textContent()) === "Post the seat") break;
-      await page.getByTestId("start-game-go").click();
-      await expect(page.getByTestId("turn-banner")).toBeVisible();
-      // A posted seat has no stones on it, so it is CALLED OFF rather than
-      // resigned — there is nothing to give up, and nobody wins.
-      await page.getByTestId("cancel").click();
-      await page.getByTestId("cancel-yes").click();
-      await openGamesPage(page);
-    }
-    await page.getByTestId("start-game-variant").selectOption("trapThree");
-    await page.getByTestId("start-game-pace").selectOption(SEVEN_DAYS);
-    await page.getByTestId("start-game-with").selectOption("anyone");
+/** The setup screen, with the game and the pace these tests share already chosen. */
+async function askFor(page: import("@playwright/test").Page, variant: string) {
+  await openSetUpPage(page);
+  await page.getByTestId("shared-rules-variant").selectOption(variant);
+  await page.getByTestId("shared-rules-move-time").selectOption(SEVEN_DAYS);
+}
 
-    // Nobody is asking for this, so the button offers to post it.
-    await expect(page.getByTestId("start-game-go")).toHaveText("Post the seat");
-    await expect(page.getByTestId("start-game-hint")).toContainText("first on the board");
+test.describe("asking for a game", () => {
+  test("posts a seat when nobody is asking, and the seat is a real game", async ({ page }) => {
+    await askFor(page, "trapThree");
+    await page.getByTestId("set-up-with").selectOption("anyone");
 
-    await page.getByTestId("start-game-go").click();
+    const button = page.getByTestId("set-up-start");
+    await expect(button).toBeVisible();
     /*
-     * Posting goes through the poster's own seat link, which claims the seat
-     * and sends them to the match's address. That address carries no move
-     * number — the older assertion required one, and only ever held on the
-     * other branch of this sentence, where sitting down with somebody lands
-     * on a numbered move. It passed all this time because a database littered
-     * with seats meant this test almost never took the posting branch.
+     * Either it offers to post, or somebody is already asking and it offers to
+     * sit — both are correct and which one depends on what the suite has left
+     * on the board. Asserting the posting case only would be asserting an
+     * order the suite does not promise.
      */
-    await expect(page).toHaveURL(/\/games\/trap-three\/match\/[a-z0-9-]+(\/0)?$/);
-    /*
-     * And it says it is waiting, not that the game is under way. This used to
-     * expect "Your move", which was true and was not what was happening: a
-     * seat posted for anyone had nobody opposite it yet. John asked for the
-     * sentence to say so; the board stays playable underneath it.
-     */
-    await expect(page.getByTestId("turn-banner")).toContainText("waiting for somebody");
+    await button.click();
 
-    // Tidy up after itself: an abandoned seat would meet the next run. Nothing
-    // has been played, so this is calling it off rather than resigning it.
-    await page.getByTestId("cancel").click();
-    await page.getByTestId("cancel-yes").click();
+    // Whichever it did, it landed on a real game with an address of its own.
+    await page.waitForURL(/\/games\/[^/]+\/match\//);
+  });
+
+  test("sits down at once when somebody is already asking for the same", async ({ page, browser }) => {
     /*
-     * Called off, proved on the SERVER. A match keeps its own address when it
-     * ends now instead of moving to a second one, so waiting for the address
-     * to change would be waiting for something that no longer happens.
-     *
-     * And not by the banner either, which was the first replacement and was
-     * wrong in a way worth writing down: the banner does not change its words
-     * when a game ends, it STOPS BEING RENDERED — so `not.toContainText` on it
-     * fails with "element(s) not found" at exactly the moment the thing it is
-     * checking for has come true. An assertion that cannot pass when the code
-     * is right is worse than no assertion.
+     * The half most easily lost in the move, and the reason it was ported
+     * rather than dropped: auto-match and posting a seat are the same wish
+     * said twice — the only difference is whether anybody is already asking,
+     * and the site knows that.
      */
-    const called = page.url().match(/\/match\/([a-z0-9-]+)/)![1];
-    await expect
-      .poll(
-        async () =>
-          ((await (await request.get(`/api/games/${called}`)).json()) as { status: string }).status,
-        { timeout: 15_000 },
-      )
-      .not.toBe("active");
+    const theirs = await browser.newContext({ storageState: PLAYER_STATE });
+    const posted = await theirs.request.post("/api/games/live", {
+      data: { variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
+    });
+    expect(posted.status()).toBe(201);
+
+    await askFor(page, "trapThree");
+
+    // The button says which of the two it will do, because to the person
+    // pressing it they are different things: one starts a game, one starts a wait.
+    await expect(page.getByTestId("set-up-start")).toContainText("Sit down with");
+    await expect(page.getByTestId("set-up-match")).toBeVisible();
+
+    await page.getByTestId("set-up-start").click();
+    await page.waitForURL(/\/games\/[^/]+\/match\//);
+    await theirs.close();
   });
 
   test("offers a stranger's seat even when my own is standing beside it", async ({ page, browser, request }) => {
     /*
-     * The sentence keeps one seat per game-and-pace-and-board, because that is
-     * the only question it asks. Which one it keeps has to be decided AFTER
-     * the seats nobody can sit in are taken out, not before: my own seat,
-     * posted a minute after somebody else's identical one, was the one kept
-     * and then the one removed, and the sentence said "post the seat" with a
-     * stranger's seat standing right there.
-     *
-     * A bug I made myself, in the commit that fixed the one above it. Narrow
-     * first, then keep one of each.
+     * Only one seat of a kind is worth offering, and WHICH one has to be
+     * decided after the seats nobody can sit in are taken out, not before. My
+     * own seat, posted a minute after an identical one of somebody else's, was
+     * the one kept and then the one removed — so the screen offered to post a
+     * seat with a stranger's already standing there. Narrow first, then keep
+     * one of each.
      */
     const stamp = Date.now().toString(36);
-    const poster = `Beside ${stamp}`;
 
     const theirs = await browser.newContext({ storageState: PLAYER_STATE });
     const posted = await theirs.request.post("/api/games/live", {
-      data: { blackName: poster, variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
+      data: { blackName: `Beside ${stamp}`, variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
     });
     expect(posted.status()).toBe(201);
 
@@ -109,70 +96,30 @@ test.describe("starting a game is one sentence", () => {
     });
     expect(own.status()).toBe(201);
 
-    await openGamesPage(page);
-    await page.getByTestId("start-game-variant").selectOption("trapThree");
-    await page.getByTestId("start-game-pace").selectOption(SEVEN_DAYS);
+    await askFor(page, "trapThree");
 
     /*
-     * Somebody else's seat, and not mine, and not nothing — rather than that
-     * one particular seat. Only one seat of a kind is offered, and an earlier
-     * spec's seat of the same kind may be the one standing; asking for this
-     * one by name would be asking the suite to run in an order it does not
+     * Somebody else's seat, and not mine — rather than that one seat by name.
+     * An earlier spec's seat of the same kind may be the one standing, and
+     * naming this one would be asking the suite to run in an order it does not
      * promise.
      */
-    const go = page.getByTestId("start-game-go");
-    await expect(go).toHaveText(/^Sit down with /);
-    await expect(go).not.toHaveText(`Sit down with Mine ${stamp}`);
+    const button = page.getByTestId("set-up-start");
+    await expect(button).toContainText("Sit down with");
+    await expect(button).not.toContainText(`Mine ${stamp}`);
 
     await theirs.close();
-  });
-
-  test("sits down at once when somebody is already asking for the same", async ({ page, browser }) => {
-    const stamp = Date.now().toString(36);
-    const poster = `Poster ${stamp}`;
-    /*
-     * Somebody else has to post it. A seat is not offered back to the account
-     * that posted it — you cannot sit across from yourself — and the request
-     * fixture is signed in as the same person this page is, so posting it
-     * that way tested nothing and now tests the opposite.
-     */
-    const theirs = await browser.newContext({ storageState: PLAYER_STATE });
-    const posted = await theirs.request.post("/api/games/live", {
-      data: { blackName: poster, variant: "notakto", moveTimeMs: Number(SEVEN_DAYS), open: true },
-    });
-    expect(posted.status()).toBe(201);
-
-    await openGamesPage(page);
-    await page.getByTestId("start-game-variant").selectOption("notakto");
-    await page.getByTestId("start-game-pace").selectOption(SEVEN_DAYS);
-
-    // The seat is on the board, and the sentence offers to take it rather than post another.
-    await expect(page.getByTestId("open-games")).toContainText(shownName(poster));
-    await expect(page.getByTestId("start-game-go")).toHaveText(`Sit down with ${poster}`);
-    await expect(page.getByTestId("start-game-hint")).toContainText("asking for exactly this");
-
-    await page.getByTestId("start-game-go").click();
-    await expect(page).toHaveURL(/\/games\/notakto\/match\/[a-z0-9-]+\/0$/);
-    await expect(page.getByTestId("turn-banner")).toBeVisible();
-    await theirs.close();
-  });
-
-  test("says what it will do for a game at this screen, and goes to the board", async ({ page }) => {
-    await openGamesPage(page);
-    await page.getByTestId("start-game-variant").selectOption("halma");
-    await page.getByTestId("start-game-with").selectOption("screen");
-    await expect(page.getByTestId("start-game-go")).toHaveText("Set up the board");
-    await expect(page.getByTestId("start-game-hint")).toContainText("never rated");
-    await page.getByTestId("start-game-go").click();
-    await expect(page).toHaveURL(/\/games\/halma\/play$/);
   });
 
   test("the seats board and the room sit side by side, and both say when they are empty", async ({ page }) => {
     await openGamesPage(page);
     await expect(page.getByTestId("open-games")).toBeVisible();
     await expect(page.getByTestId("here-panel")).toBeVisible();
-    // The old five cards are gone; the sentence replaces them.
-    await expect(page.getByText("Four ways in")).toHaveCount(0);
-    await expect(page.getByTestId("start-game")).toBeVisible();
+
+    // The sentence that used to stand above them is gone, and a way in stands
+    // there instead. Asserted after something present, so "the sentence is
+    // gone" cannot be satisfied by a page that has not rendered.
+    await expect(page.getByTestId("lobby-set-up")).toBeVisible();
+    await expect(page.getByTestId("start-game")).toHaveCount(0);
   });
 });

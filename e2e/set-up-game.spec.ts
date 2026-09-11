@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-import { openGamesPage } from "./support";
 
 /**
  * Settling a game before there is a game.
@@ -58,10 +57,15 @@ test.describe("setting a game up before it exists", () => {
     await expect(page.getByTestId("set-up-summary")).toContainText("8×8");
   });
 
-  test("is reachable from the sentence, for the game the sentence is on", async ({ page }) => {
-    await openGamesPage(page);
-    await page.getByTestId("start-game-variant").selectOption("reversi");
-    await page.getByTestId("start-game-set-up").click();
+  test("is reachable from the game's own page, for that game", async ({ page }) => {
+    /*
+     * It used to be reached from the one-line sentence in the lobby, by
+     * picking a game in it first. The sentence has gone: a game's own page
+     * leads here, and the loud button on it says Play, because pressing Play
+     * should lead to starting a game.
+     */
+    await page.goto("/games/reversi");
+    await page.getByTestId("game-set-up").click();
     await page.waitForURL(/\/games\/reversi\/new$/);
     await expect(page.getByTestId("set-up-summary")).toContainText("Reversi");
   });

@@ -97,20 +97,38 @@ export async function openSetup(page: Page) {
 }
 
 /**
- * Opens the games page and waits until its sentence is listening.
+ * Opens the lobby.
  *
- * The sentence is server-rendered, so its selects are real controls before
- * React has attached anything to them — and a choice made in that window is
- * dropped: the state never hears it, and the next render puts the select
- * back. A person cannot lose that race. A test that opens the page and
- * chooses in the same breath loses it whenever the page is a little slow, and
- * then fails somewhere else entirely — "started on 9×9 when I chose 19×19",
- * which reads as a bug in the board and is a bug in the clock. Three specs
- * chased that before the page grew somewhere to say it was ready.
+ * It waits for nothing, because there is nothing on it to wait for any more:
+ * the one-line sentence with the selects in it has gone, and what stands in
+ * its place is a link, which works before any script does.
+ *
+ * The RACE has not gone, it has moved — to the screen that settles a game.
+ * See `openSetUpPage`, which is where that comment now lives, because that is
+ * where the controls now live.
  */
 export async function openGamesPage(page: Page) {
   await page.goto("/games");
-  await ready(page, "start-game");
+}
+
+/**
+ * Opens the screen that settles a game and waits until it is listening.
+ *
+ * Its selects are server-rendered, so they are real controls before React has
+ * attached anything to them — and a choice made in that window is dropped: the
+ * state never hears it, and the next render puts the select back. A person
+ * cannot lose that race. A test that opens the page and chooses in the same
+ * breath loses it whenever the page is a little slow, and then fails somewhere
+ * else entirely — "started on 9×9 when I chose 19×19", which reads as a bug in
+ * the board and is a bug in the clock. Three specs chased that before the page
+ * grew somewhere to say it was ready; do not let the fourth be this one.
+ *
+ * `slug` names a game where the address already does; leave it out for the
+ * screen where the game is still to be chosen.
+ */
+export async function openSetUpPage(page: Page, slug?: string) {
+  await page.goto(slug === undefined ? "/games/new" : `/games/${slug}/new`);
+  await ready(page, "set-up-game");
 }
 
 /**

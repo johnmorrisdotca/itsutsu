@@ -43,12 +43,28 @@ export function RulesForm({
    * which is the whole thing that screen exists to stop.
    */
   showVariant = true,
+  variantLabel = "Rules",
+  onSizeChosen,
 }: {
   value: RulesDraft;
   onChange: (next: RulesDraft) => void;
   disabled?: boolean;
   showOpen?: boolean;
   showVariant?: boolean;
+  /**
+   * What to call the chooser at the top.
+   *
+   * "Rules" is right where a game has already been chosen and this is the set
+   * of rules it is played under. It is wrong where the chooser IS the game —
+   * on the screen whose whole job is picking one, "Rules" reads as sub-settings
+   * and the first thing you do reads as the last.
+   */
+  variantLabel?: string;
+  /**
+   * Told when somebody chooses a board themselves, so a caller that was
+   * following a default can stop. A chosen board is not a default.
+   */
+  onSizeChosen?: (size: number) => void;
 }) {
   const change = (next: Partial<RulesDraft>) => onChange(applyRulesChange(value, next));
   const variant = value.variant as RuleVariant;
@@ -57,7 +73,7 @@ export function RulesForm({
   return (
     <>
       {showVariant ? (
-        <Field label="Rules" hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
+        <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
           <Select
             value={value.variant}
             disabled={disabled}
@@ -83,7 +99,10 @@ export function RulesForm({
           <Select
             value={value.size}
             disabled={disabled}
-            onChange={(event) => change({ size: Number(event.target.value) })}
+            onChange={(event) => {
+              onSizeChosen?.(Number(event.target.value));
+              change({ size: Number(event.target.value) });
+            }}
             data-testid="shared-rules-size"
           >
             {sizes.map((option) => (
