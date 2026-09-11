@@ -3,8 +3,8 @@
 import { Paired } from "@/components/i18n/Paired";
 import { useState } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, SELECT_CLASS } from "@/components/ui/ui.constants";
-import { movesFrom } from "@/lib/backlog/backlog";
+import { SELECT_CLASS } from "@/components/ui/ui.constants";
+import { heldNow, movesFrom } from "@/lib/backlog/backlog";
 import { BACKLOG_STATUSES, EFFORT_DISPLAY, KIND_DISPLAY, PRIORITY_DISPLAY, STATUS_DISPLAY } from "@/lib/backlog/backlog.constants";
 import type { BacklogItem, BacklogStatus } from "@/lib/backlog/backlog.types";
 
@@ -41,6 +41,45 @@ function MoveStamp({ item }: { item: BacklogItem }) {
       marked done {day} in{" "}
       <span className="font-medium text-ink-soft" data-testid="backlog-released-in">
         {item.releasedIn}
+      </span>
+    </>
+  );
+}
+
+/**
+ * Who holds this row, if anybody, read from the claim rather than the status
+ * column — so a hold nobody has renewed inside the lease reads as stale
+ * rather than as somebody still working it. Computed at render from
+ * `Date.now()`, not on a timer: the board re-reads after every move, and
+ * nothing here needs to tick on its own between two of those.
+ *
+ * Gated on the row's current status, not only on `claimedBy` being set.
+ * ITS-01's migration preserves a finished row's old assignee in `claimedBy`
+ * rather than dropping it, so a done or dropped row can carry one too — and
+ * without this guard it would print "held by" or "stale" beside a row whose
+ * own status pill already says Done, which is a row contradicting itself.
+ * Held and stale are both facts about work someone is or was doing right
+ * now; a released claim on a finished row is history, shown nowhere on the
+ * board today.
+ */
+function HoldLine({ item }: { item: BacklogItem }) {
+  if (item.status !== BACKLOG_STATUSES.inProgress) return null;
+  if (item.claimedBy === null) return null;
+  if (heldNow(item)) {
+    return (
+      <>
+        {" · "}
+        <span className="font-medium text-ink-soft" data-testid="backlog-held">
+          held by {item.claimedBy}
+        </span>
+      </>
+    );
+  }
+  return (
+    <>
+      {" · "}
+      <span className="font-medium text-muted" data-testid="backlog-stale">
+        stale · {item.claimedBy} since {dayStamp(item.claimedAt ?? item.movedAt)}
       </span>
     </>
   );
@@ -97,32 +136,16 @@ function GradePills({ item }: { item: BacklogItem }) {
  * the only moves it may make from there. The select is built from the board's
  * own table, so a move the rules forbid is never offered — and the API refuses
  * it too, for anything that does not come through this page.
+ *
+ * There is no separate "take it" any more. Choosing In progress from the move
+ * select IS taking it: the API writes the operator's own name into the claim
+ * the moment the move lands, and a row somebody else is already holding
+ * answers 409, shown in the error line below rather than applied quietly.
  */
-export function BacklogRow({ item, onMoved, who }: BacklogRowProps) {
+export function BacklogRow({ item, onMoved }: BacklogRowProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [naming, setNaming] = useState(false);
-  const [hand, setHand] = useState(item.assignedTo);
   const moves = movesFrom(item.status);
-
-  /** Says who has it, or takes the name off again. */
-  async function assign(to: string) {
-    setBusy(true);
-    setError(null);
-    const response = await fetch(`/api/backlog/${item.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assignedTo: to }),
-    });
-    setBusy(false);
-    setNaming(false);
-    if (!response.ok) {
-      const body = (await response.json().catch(() => ({}))) as { error?: string };
-      setError(body.error ?? "That did not go through.");
-      return;
-    }
-    onMoved();
-  }
 
   async function move(to: string) {
     if (to === "") return;
@@ -161,53 +184,8 @@ export function BacklogRow({ item, onMoved, who }: BacklogRowProps) {
         <p className="text-xs text-muted">
           {item.askedBy === "" ? "Asked for" : `Asked for by ${item.askedBy}`} · added {dayStamp(item.createdAt)} ·{" "}
           <MoveStamp item={item} />
-          {item.assignedTo === "" ? "" : " · "}
-          {item.assignedTo === "" ? null : (
-            <span className="font-medium text-ink-soft" data-testid="backlog-assigned">
-              {item.assignedTo} has it
-            </span>
-          )}
+          <HoldLine item={item} />
         </p>
-        {naming ? (
-          <span className="flex flex-wrap items-center gap-2">
-            <input
-              className={`${INPUT_CLASS} max-w-48`}
-              value={hand}
-              autoFocus
-              maxLength={60}
-              placeholder="Who has it?"
-              aria-label={`Who has "${item.title}"?`}
-              data-testid="assign-name"
-              onChange={(event) => setHand(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") void assign(hand);
-                if (event.key === "Escape") setNaming(false);
-              }}
-            />
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs`} disabled={busy} onClick={() => void assign(hand)}>
-              Save
-            </button>
-            {item.assignedTo === "" ? null : (
-              <button type="button" className="text-xs text-muted underline underline-offset-4" onClick={() => void assign("")}>
-                Nobody
-              </button>
-            )}
-          </span>
-        ) : (
-          <span>
-            <button
-              type="button"
-              className="text-xs text-muted underline underline-offset-4"
-              data-testid="assign-open"
-              onClick={() => {
-                setHand(item.assignedTo === "" ? who : item.assignedTo);
-                setNaming(true);
-              }}
-            >
-              {item.assignedTo === "" ? "Take it" : "Hand it on"}
-            </button>
-          </span>
-        )}
         {error === null ? null : <p className="text-xs text-shu">{error}</p>}
       </div>
 

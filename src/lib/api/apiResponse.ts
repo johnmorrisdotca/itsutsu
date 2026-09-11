@@ -24,6 +24,11 @@ export function notFound(message = "Not found."): NextResponse<ApiError> {
   return NextResponse.json({ error: message }, { status: 404 });
 }
 
+/** Somebody else's live claim is in the way — retryable once it is released or lapses. */
+export function conflict(message: string): NextResponse<ApiError> {
+  return NextResponse.json({ error: message }, { status: 409 });
+}
+
 export function serverError(message = "Something went wrong."): NextResponse<ApiError> {
   return NextResponse.json({ error: message }, { status: 500 });
 }

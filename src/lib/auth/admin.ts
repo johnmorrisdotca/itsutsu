@@ -1,3 +1,5 @@
+import { constantTimeEqual } from "./constantTimeEqual";
+
 /**
  * Who counts as the operator.
  *
@@ -34,11 +36,6 @@ export function isOperatorLogin(email: string, token: string): boolean {
   if (!isAdminEmail(email)) return false;
 
   const expected = process.env.ADMIN_TOKEN?.trim() ?? "";
-  if (expected.length === 0 || token.length !== expected.length) return false;
-
-  let difference = 0;
-  for (let index = 0; index < expected.length; index += 1) {
-    difference |= expected.charCodeAt(index) ^ token.charCodeAt(index);
-  }
-  return difference === 0;
+  if (expected.length === 0) return false;
+  return constantTimeEqual(expected, token);
 }

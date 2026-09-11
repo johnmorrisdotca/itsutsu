@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 
-import { describe, expect, it } from "vitest";
+import { NextRequest } from "next/server";
+import { afterEach, describe, expect, it } from "vitest";
 
-import { MATCHER_EXEMPT, config, wouldBeOpen } from "./proxy";
+import { MATCHER_EXEMPT, config, isBoardApiPath, proxy, wouldBeOpen } from "./proxy";
 
 /**
  * The gate, and the one shortcut through it.
@@ -218,5 +219,98 @@ describe("the paths that stay open", () => {
       const path = entry === "/$" ? "/" : entry.replace(/\/$/, "");
       expect(wouldBeOpen(path), `robots.txt invites crawlers to ${entry}, which the gate shuts`).toBe(true);
     }
+  });
+});
+
+describe("isBoardApiPath", () => {
+  it("is the two backlog routes, and nothing that merely starts the same way", () => {
+    expect(isBoardApiPath("/api/backlog")).toBe(true);
+    expect(isBoardApiPath("/api/backlog/abc123")).toBe(true);
+    expect(isBoardApiPath("/api/backlogging")).toBe(false);
+    expect(isBoardApiPath("/api/games")).toBe(false);
+  });
+
+  it("cannot be walked out of the board routes with an encoded separator", () => {
+    /*
+     * THESE TWO MATCH, AND ARE SAFE FOR A REASON OUTSIDE THIS FILE — which is
+     * exactly why they are pinned here rather than left to be re-derived.
+     *
+     * A dot-dot spelled plainly, or percent-encoded as %2e%2e, is normalised
+     * by the URL parser BEFORE the gate is asked, so `/api/backlog/../games/
+     * live` arrives as `/api/games/live` and never matches at all. An encoded
+     * SLASH is not: `%2f` stays inside its segment, so these two reach this
+     * check still spelled `/api/backlog/...` and it answers true.
+     *
+     * That is only safe because Next routes on the same un-decoded pathname —
+     * verified against the live site, where `/games/..%2fapi%2fgames%2flive`
+     * answers 404 rather than the 401 that `/api/games/live` itself gives. So
+     * the request lands somewhere under the backlog directory or nowhere, and
+     * the token cannot carry it to another route.
+     *
+     * If a Next upgrade ever decodes `%2f` before matching, that stops being
+     * true and this becomes a hole in the gate rather than a door in it. This
+     * case will not catch that by itself — nothing in a unit test can — but it
+     * records the assumption at the place that depends on it.
+     */
+    expect(isBoardApiPath("/api/backlog/..%2fgames%2flive")).toBe(true);
+    expect(isBoardApiPath("/api/backlog/games/live")).toBe(true);
+    expect(isBoardApiPath("/api/games/live")).toBe(false);
+  });
+});
+
+/**
+ * Board convergence ITS-02: an agent's terminal has no browser to hold a
+ * session cookie in, so it carries BOARD_TOKEN in a header instead. These
+ * exercise `proxy()` itself, not just the path list, because the whole
+ * point is a request that never had a session reaching the route at all —
+ * `wouldBeOpen`/`isBoardApiPath` alone cannot show that the token is
+ * actually checked.
+ */
+describe("the board token, through the gate itself", () => {
+  const ENV = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...ENV };
+  });
+
+  function backlogRequest(path: string, headers: Record<string, string> = {}): NextRequest {
+    return new NextRequest(`https://itsutsu.com${path}`, { headers });
+  }
+
+  it("lets the right bearer token through with no session at all", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer right-token" }));
+    // NextResponse.next() carries no redirect and answers as an ordinary 200.
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.status).toBe(200);
+  });
+
+  it("falls through to the ordinary API refusal for a wrong token", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer wrong" }));
+    expect(response.status).toBe(401);
+  });
+
+  it("falls through with no Authorization header at all", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(backlogRequest("/api/backlog"));
+    expect(response.status).toBe(401);
+  });
+
+  it("never opens anything but the board routes, whatever the token", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    process.env.BOARD_TOKEN = "right-token";
+    const response = await proxy(backlogRequest("/api/games", { Authorization: "Bearer right-token" }));
+    expect(response.status).toBe(401);
+  });
+
+  it("opens nothing when BOARD_TOKEN is not set, whatever the request carries", async () => {
+    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
+    delete process.env.BOARD_TOKEN;
+    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer anything" }));
+    expect(response.status).toBe(401);
   });
 });

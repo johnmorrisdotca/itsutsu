@@ -20,6 +20,14 @@ import { memberContext, seedMember } from "./members";
  * when the file finishes.
  */
 
+/**
+ * Who a move written by the signed-in operator's session claims a row for.
+ * Mirrors `e2e/auth.setup.ts`'s own computation of the address it signs in
+ * as — the admin sign-in this suite uses has no Google name behind it, so
+ * the route's `me.name ?? me.email` falls all the way to the email.
+ */
+const OPERATOR_NAME = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
+
 /** Titles this file has created, deleted at the end whatever happened. */
 const created: string[] = [];
 
@@ -151,11 +159,17 @@ test.describe("backlog", () => {
    * assignee for days because of it, and an assignee set by a person was one
    * test run away from being overwritten. A test may have an item to itself,
    * so it makes one.
+   *
+   * Board convergence ITS-01 replaced assigning with claiming: there is no
+   * "take it" button any more, and no field a test — or anybody else — could
+   * steal. Choosing In progress from the move select IS taking the row, and
+   * the API writes the signed-in operator's own name into the claim the
+   * moment the move lands.
    */
-  test("an item says who has it, and the board groups what is where", async ({ page, request }) => {
+  test("moving a row to In progress claims it, and the board groups what is where", async ({ page, request }) => {
     const title = newTitle("A request somebody has picked up");
     const added = await request.post("/api/backlog", {
-      data: { title, detail: "Made by this test, assigned by this test.", kind: "chore", askedBy: "Playwright" },
+      data: { title, detail: "Made by this test, picked up by this test.", kind: "chore", askedBy: "Playwright" },
     });
     expect(added.status()).toBe(201);
 
@@ -165,14 +179,12 @@ test.describe("backlog", () => {
 
     const item = page.getByTestId("backlog-item").filter({ hasText: title });
     await expect(item).toHaveCount(1);
-    await item.getByTestId("assign-open").click();
-    await item.getByTestId("assign-name").fill("Tester");
-    await item.getByRole("button", { name: "Save" }).click();
-    await expect(item.getByTestId("backlog-assigned")).toContainText("Tester has it");
+    await item.getByTestId("move-status").selectOption("inProgress");
+    await expect(item.getByTestId("backlog-held")).toContainText(`held by ${OPERATOR_NAME}`);
 
     await page.reload();
     const again = page.getByTestId("backlog-item").filter({ hasText: title });
-    await expect(again.getByTestId("backlog-assigned")).toContainText("Tester has it");
+    await expect(again.getByTestId("backlog-held")).toContainText(`held by ${OPERATOR_NAME}`);
   });
 
   test("the API refuses a move the board's rules forbid", async ({ page, request }) => {

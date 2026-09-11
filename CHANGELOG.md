@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.142.0
+- Work on the board is claimed rather than assigned, with a six-hour lease: a row says who has it and since when, and goes stale on its own rather than sitting on somebody's name for ever
+- The people building this site can finally write to the board through its own door, so a request you make is a row you can see, rather than something written past every check the board has
+
 ## 0.141.0
 - What you choose on the site is kept on your account rather than in this browser, so it follows you between devices. The first of them is the narrowing on the players page, which now remembers what you actually chose rather than whichever link the browser happened to look at
 

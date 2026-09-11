@@ -72,7 +72,7 @@ describe("rows that shipped and never left in progress", () => {
       [back, "open"],
     ] as const) {
       for (const one of rows) {
-        const outcome = await moveItem(one.id, to);
+        const outcome = await moveItem(one.id, to, "settleBoard sweep");
         console.log(`  ${one.title} → ${to}: ${outcome.ok ? "moved" : `refused — ${outcome.reason}`}`);
         expect(outcome.ok).toBe(true);
       }
