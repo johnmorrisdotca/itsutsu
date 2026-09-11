@@ -18,7 +18,23 @@ test.describe("the opponents in a record", () => {
     // they are the one opponent every database is guaranteed to have.
     await page.goto("/players?view=computers");
     const first = page.getByTestId("computer-player-name").first();
-    test.skip((await first.count()) === 0, "no computer players on this database");
+    /*
+     * ASSERTED, not skipped. This used to be `test.skip(count === 0, "no
+     * computer players on this database")`, and that guard could only ever
+     * fire on the one condition it must never swallow.
+     *
+     * The page awaits `ensureBotMembers()` before it renders, whichever tab
+     * is open, so a database with no computer players in it is not a database
+     * this page can produce — it writes them itself. An empty list here is
+     * therefore never "this machine is a bit bare"; it is the computer
+     * players having fallen off the players page, which AGENTS.md records as
+     * a REAL bug that reached review and would have reached production, and
+     * which was very nearly dismissed as local noise.
+     *
+     * A skip reports green. So the guard was arranged to stay silent for
+     * exactly the fault this file is best placed to catch.
+     */
+    await expect(first).toBeVisible();
     await first.click();
 
     const recent = page.getByTestId("player-by-variant");
@@ -41,7 +57,8 @@ test.describe("the opponents in a record", () => {
   test("still lead to the person, which was the only thing they used to do", async ({ page }) => {
     await page.goto("/players?view=computers");
     const first = page.getByTestId("computer-player-name").first();
-    test.skip((await first.count()) === 0, "no computer players on this database");
+    // Asserted rather than skipped, for the reason given in the case above.
+    await expect(first).toBeVisible();
     await first.click();
 
     /*
