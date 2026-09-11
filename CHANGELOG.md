@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.134.0
+- The computer players can play Chinese Checkers: every grade now races for the far camp and wins one, where before every game against one wandered and was called off unfinished
+
 ## 0.133.0
 - A link to a person carries their id, not their name, so a member's surname is no longer in the markup of every page that names them
 

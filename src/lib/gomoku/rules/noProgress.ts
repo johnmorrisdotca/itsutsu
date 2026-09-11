@@ -1,5 +1,4 @@
-import { STAR_RADIUS, starCampSquares, starSize } from "./chineseCheckers";
-import { campSquares } from "./camps";
+import { farCampSquares } from "./farCamp";
 import { GAME_STATUS, RULE_VARIANTS, VARIANT_SPECS } from "../gomoku.constants";
 import type { GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types";
 
@@ -109,12 +108,16 @@ export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, { plies: number; mea
    * checked: on a 17×17 star, black's distance falls from 24 at its own camp
    * to 0 at the corner of the camp it fills.
    *
-   * The separate wording is John's ruling, and it is the right one. Fifteen
-   * bot games across every grade never filled more than three of the ten
-   * squares a win needs, so this game may not be winnable in real play. A
-   * plain draw would file that away as an ordinary result and the evidence
-   * would be gone; saying plainly that the game could not be finished keeps
-   * the game playable and keeps the symptom in view.
+   * The separate wording is John's ruling, and it is the right one — and the
+   * reason it was right is a lesson. Fifteen bot games across every grade
+   * never filled more than three of the ten squares a win needs, and the note
+   * here concluded the GAME might not be winnable. It was the players: the
+   * bot's race score was reading the square camp table for the star board,
+   * the same fault this rule had just been cured of, so every grade was
+   * wandering blind — see rules/farCamp.ts, which both now read. A plain draw
+   * would have filed those games as ordinary results and the evidence would
+   * be gone; saying that the game could not be finished kept the symptom in
+   * view long enough for somebody to ask why.
    */
   [RULE_VARIANTS.chineseCheckers]: { plies: 400, measure: PROGRESS_MEASURES.racing },
 };
@@ -137,40 +140,6 @@ export function canStall(variant: string): boolean {
 }
 
 /**
- * The camp a colour is trying to fill, in whichever geometry its game uses.
- *
- * Halma lays its camps out in the corners of a square board; Chinese Checkers
- * lays them at the points of a star, from a different module, on a board size
- * the square one has never heard of. Asking the wrong one is not an error you
- * see — it answers with an empty camp.
- */
-/*
- * Kept, because this is asked for every piece, four times a ply, for as long
- * as a game runs — and it builds a fresh array of points every time it is
- * asked. On a 17x17 star that was forty array builds a ply and several
- * hundred thousand short-lived points over a game, which made the bot's
- * "finish a game of anything" test three times slower and timed it out in CI
- * at 45s against a 30s budget. Local runs never saw it: 9s there, and the
- * margin hid it.
- *
- * A camp is a fact about a board size and a colour. It cannot change while
- * the process lives, the key space is a handful of sizes times two, and the
- * array is only ever read — `distanceHome` wants its last square and its
- * length. So it is worked out once and kept.
- */
-const farCamps = new Map<string, Point[]>();
-
-function farCamp(size: number, stone: Stone): Point[] {
-  const key = `${size}|${stone}`;
-  const known = farCamps.get(key);
-  if (known !== undefined) return known;
-  const other: Stone = stone === "black" ? "white" : "black";
-  const camp = size === starSize(STAR_RADIUS) ? starCampSquares(STAR_RADIUS, other) : campSquares(size, other);
-  farCamps.set(key, camp);
-  return camp;
-}
-
-/**
  * How far a point is from the camp a colour is trying to fill, or null when
  * this board has no camps this rule can read.
  *
@@ -190,7 +159,7 @@ function farCamp(size: number, stone: Stone): Point[] {
  * still getting somewhere while it fills the depth of it.
  */
 export function distanceHome(size: number, stone: Stone, point: Point): number | null {
-  const far = farCamp(size, stone);
+  const far = farCampSquares(size, stone);
   if (far.length === 0) return null;
   const corner = far[far.length - 1];
   return Math.abs(point.row - corner.row) + Math.abs(point.col - corner.col);
@@ -201,12 +170,12 @@ export function distanceHome(size: number, stone: Stone, point: Point): number |
  * null where this board has no camps this rule can read.
  *
  * The same answer `distanceHome` works out, taken once instead of per point.
- * `farCamp` is memoised, but the lookup still builds a key, and a loop of
+ * `farCampSquares` is memoised, but the lookup still builds a key, and a loop of
  * four hundred moves asking twice each is eight hundred throwaway strings a
  * call in a rule the engine asks on every node of the bot's search.
  */
 function homeCorner(size: number, stone: Stone): Point | null {
-  const far = farCamp(size, stone);
+  const far = farCampSquares(size, stone);
   return far.length === 0 ? null : far[far.length - 1];
 }
 

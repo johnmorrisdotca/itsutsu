@@ -1,6 +1,5 @@
 import { shapeScore } from "./analysis";
 import {
-  campSquares,
   discCount,
   isStone,
   otherStone,
@@ -10,6 +9,7 @@ import {
 import { DIRECTIONS, GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { SHAPE_BASE } from "./analysis.constants";
 import { rulesFor } from "./engine";
+import { farCampSquares, racesForCamp } from "./rules/farCamp";
 import { DECIDED_SCORE, DRAW_SCORE, EVAL_WEIGHTS } from "./opponent.constants";
 import { KOMI, scoreArea } from "./rules/go";
 import { threatAt } from "./threats";
@@ -138,15 +138,38 @@ function goScore(state: GameState, stone: Stone): number {
   return (mine - theirs) * EVAL_WEIGHTS.area;
 }
 
-/** How far a point is from the middle of the far camp it is racing towards. */
-function campDistance(size: number, stone: Stone, point: Point): number {
-  const far = campSquares(size, otherStone(stone));
-  let nearest = size * 2;
+/**
+ * How far a point is from the nearest square of the far camp it is racing
+ * towards.
+ *
+ * The camp comes from `farCampSquares`, which knows the star board as well as
+ * the square ones. This used to ask the square table directly, which has no
+ * row for the 17-wide star, so on Chinese Checkers every piece scored as
+ * equally far from home wherever it stood and every grade played blind.
+ *
+ * Null for a board with no camp to measure to, never a distance. A number
+ * here would be read as one — that is exactly how the draw rule once took
+ * every piece to be home — so the caller is made to notice instead.
+ */
+function campDistance(size: number, stone: Stone, point: Point): number | null {
+  const far = farCampSquares(size, stone);
+  if (far.length === 0) return null;
+  let nearest = Infinity;
   for (const square of far) {
     const gap = Math.abs(square.row - point.row) + Math.abs(square.col - point.col);
     if (gap < nearest) nearest = gap;
   }
   return nearest;
+}
+
+/**
+ * A race is being scored on a board whose camps neither camp module knows.
+ * That is a programming error — every board a race game is offered at is
+ * checked in farCamp.test.ts — and the honest answer is to say so, not to
+ * play on with a made-up distance.
+ */
+function unreadableCamp(size: number): never {
+  throw new Error(`No camp to race for on a ${size}×${size} board.`);
 }
 
 /**
@@ -165,11 +188,11 @@ function raceScore(state: GameState, stone: Stone): number {
     if (!isStone(cell)) return;
     const point = pointOf(size, index);
     if (cell === stone) {
-      const gap = campDistance(size, stone, point);
+      const gap = campDistance(size, stone, point) ?? unreadableCamp(size);
       mine += gap;
       if (gap === 0) home += 1;
     } else if (cell === foe) {
-      const gap = campDistance(size, foe, point);
+      const gap = campDistance(size, foe, point) ?? unreadableCamp(size);
       theirs += gap;
       if (gap === 0) away += 1;
     }
@@ -370,7 +393,7 @@ export function positionScore(state: GameState, stone: Stone): number {
   const spec = VARIANT_SPECS[state.settings.variant];
   if (spec.flips) return flipScore(state, stone, spec);
   if (spec.go) return goScore(state, stone);
-  if (spec.camps) return raceScore(state, stone);
+  if (racesForCamp(spec)) return raceScore(state, stone);
   if (spec.connects) return connectScore(state, stone);
 
   const foe = otherStone(stone);
