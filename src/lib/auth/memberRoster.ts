@@ -5,6 +5,7 @@ import { revokeInviteCode } from "@/lib/invite/inviteStore";
 import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isAdminEmail } from "./admin";
+import { canBeClaimed } from "./memberId";
 import { alwaysListed } from "./alwaysListed";
 import { foldEmail, type NamedMember } from "./members";
 import { memberKind, type MemberKind } from "./memberKind";
@@ -44,6 +45,31 @@ export type MemberSummary = NamedMember & {
   kind: MemberKind;
   /** True of exactly one row in the operator's own list: theirs. */
   isYou: boolean;
+  /**
+   * When four words were last set on this account, or null for never.
+   *
+   * A DATE AND NEVER THE HASH, the same one fact `/api/me/phrase` gives the
+   * member themselves — see `Member.phraseHash`, which no endpoint returns.
+   * It is here because the operator's Words modal has to be able to say "this
+   * member already has four words, set on the 3rd of March" BEFORE it asks to
+   * replace them, and a link that fetched a status per row to find that out
+   * would be a query per row on a page that shows two hundred of them. It is
+   * one more column on the select the list already makes.
+   *
+   * The route is still the authority: a member who set their own words since
+   * this list was drawn is caught by the 409 there, not by this.
+   */
+  phraseSetAt: string | null;
+  /**
+   * Whether four words could be set on this row at all.
+   *
+   * `canBeClaimed` and nothing else: a phrase is a way IN, so giving one to a
+   * row that may never be claimed by a login — a kept record, a seeded row, a
+   * computer player — would hand out a credential for an account that is not
+   * anybody's. Answered here rather than in the component for the reason
+   * `kind` is: the rule lives in one place and every list reads the same one.
+   */
+  mayHavePhrase: boolean;
 };
 
 /**
@@ -77,6 +103,12 @@ const MEMBER_SUMMARY_SELECT = {
   bannedNote: true,
   invitedWith: true,
   unclaimableBecause: true,
+  /*
+   * The DATE the words were set, never the hash — see `MemberSummary.phraseSetAt`
+   * for why the operator's list carries it and why one more column here is the
+   * whole cost of it.
+   */
+  phraseSetAt: true,
   /*
    * `memberKind` decides a member is a robot from this and from nothing else.
    * It was not selected and not passed on, so a computer player was badged as
@@ -144,16 +176,19 @@ type SummaryRow = {
   bannedNote: string;
   invitedWith: string;
   unclaimableBecause: string | null;
+  phraseSetAt: Date | null;
   botTier: string | null;
 };
 
 function toSummary(rows: SummaryRow[], you: string | null): MemberSummary[] {
   const mine = you === null ? null : foldEmail(you);
-  return rows.map(({ unclaimableBecause, botTier, ...row }) => ({
+  return rows.map(({ unclaimableBecause, botTier, phraseSetAt, ...row }) => ({
     ...row,
     createdAt: row.createdAt.toISOString(),
     lastSeenAt: row.lastSeenAt.toISOString(),
     bannedAt: row.bannedAt === null ? null : row.bannedAt.toISOString(),
+    phraseSetAt: phraseSetAt === null ? null : phraseSetAt.toISOString(),
+    mayHavePhrase: canBeClaimed(unclaimableBecause),
     kind: memberKind({
       email: row.email,
       unclaimableBecause,

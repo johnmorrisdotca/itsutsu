@@ -146,18 +146,21 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("tabs")).toHaveCount(0);
   });
 
-  test("the operator's page is three tabs, one part at a time", async ({ page }) => {
+  test("the operator's page is four tabs, one part at a time", async ({ page }) => {
     /*
-     * The door, the members and the work. It was three headings on one page
-     * with the whole features board inside the third, which made it long
-     * however short the headings were.
+     * The door, the members, the bots and the work. It was three headings on
+     * one page with the whole features board inside the third, which made it
+     * long however short the headings were — and the programs were in the
+     * members list among the people, which is a different kind of row to
+     * anybody who runs a site.
      */
     await page.goto("/admin");
-    await expect(page.getByTestId("tab")).toHaveCount(3);
+    await expect(page.getByTestId("tab")).toHaveCount(4);
     await expect(page.getByTestId("admin-door")).toBeVisible();
     // One at a time: the board is not also on screen behind the invites.
     await expect(page.getByTestId("admin-backlog")).toHaveCount(0);
     await expect(page.getByTestId("admin-people")).toHaveCount(0);
+    await expect(page.getByTestId("admin-machines")).toHaveCount(0);
 
     await page.getByTestId("tab").filter({ hasText: "The work" }).click();
     await expect(page).toHaveURL(/\?view=work$/);
@@ -167,5 +170,12 @@ test.describe("a page of many sections is tabs", () => {
     await page.goto("/admin?view=members");
     await expect(page.getByTestId("admin-people")).toBeVisible();
     await expect(page.getByTestId("tab").filter({ hasText: "The members" })).toHaveAttribute("data-open", "true");
+    // And the programs are not in it: they are one tab along.
+    await expect(page.getByTestId("admin-machines")).toHaveCount(0);
+
+    await page.getByTestId("tab").filter({ hasText: "The bots" }).click();
+    await expect(page).toHaveURL(/\?view=bots$/);
+    await expect(page.getByTestId("admin-bots-table")).toBeVisible();
+    await expect(page.getByTestId("admin-people")).toHaveCount(0);
   });
 });

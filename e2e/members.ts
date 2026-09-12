@@ -38,6 +38,17 @@ export type TestMember = {
   city?: string;
   timeZone?: string;
   bio?: string;
+  /**
+   * Why this row may never be claimed by a login — "kept-record", "seed",
+   * "computer" — or left off for an ordinary account, which is nearly always.
+   *
+   * Here so that a spec about what may NOT be done to such a row can make one
+   * of its own. The rows that really carry this are the two remembered players
+   * and the seven programs, and every one of them is somebody else's: a spec
+   * asserting anything about those is a spec about this database's history. See
+   * AGENTS.md, "A Spec Should Bring Its Own World".
+   */
+  unclaimableBecause?: string;
 };
 
 /** Makes the member, or renames them if the address is already known. */
@@ -48,15 +59,68 @@ export async function seedMember({
   city = "",
   timeZone = "",
   bio = "",
+  unclaimableBecause,
 }: TestMember): Promise<void> {
   loadEnv();
   const prisma = new PrismaClient();
   try {
     await prisma.member.upsert({
       where: { email },
-      create: { email, id: makeMemberId(), name, picture: "", invitedWith: "playwright", country, city, timeZone, bio },
-      update: { name, country, city, timeZone, bio, lastSeenAt: new Date() },
+      create: {
+        email,
+        id: makeMemberId(),
+        name,
+        picture: "",
+        invitedWith: "playwright",
+        country,
+        city,
+        timeZone,
+        bio,
+        unclaimableBecause,
+      },
+      update: { name, country, city, timeZone, bio, unclaimableBecause, lastSeenAt: new Date() },
     });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * Takes one member this spec made away again, by address.
+ *
+ * NAMED, AND NOT `clearSeededMembers`. That one sweeps every row the suite has
+ * ever invented, which is right in the setup fixture and wrong inside a spec:
+ * a spec that deleted other rows would be deciding what another spec's world
+ * contains. Guarded on a database on this machine, like everything else here
+ * that deletes.
+ */
+export async function removeMember(email: string): Promise<void> {
+  loadEnv();
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.deleteMany({ where: { email } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * Whether a member's four words are set, and when — read from the row.
+ *
+ * The one thing about a phrase that can be known: it is hashed, and no API
+ * returns the hash. A spec needs this because "the operator set her words"
+ * has to be proved against the STORE and not only against a sentence the
+ * screen prints — the whole claim of the operator's route is that it writes
+ * through the same `setPhrase` the member's own tab does.
+ */
+export async function phraseSetOn(email: string): Promise<Date | null> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const row = await prisma.member.findUnique({ where: { email }, select: { phraseHash: true, phraseSetAt: true } });
+    if (row === null) throw new Error(`no member ${email}: seed them first`);
+    return row.phraseHash === null || row.phraseHash === "" ? null : row.phraseSetAt;
   } finally {
     await prisma.$disconnect();
   }

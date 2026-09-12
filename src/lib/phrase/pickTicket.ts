@@ -149,9 +149,16 @@ export async function sealTicket(state: PickState): Promise<string | null> {
  * did not write for THIS member, or cannot make sense of.
  *
  * The member check is not a formality. Without it one member's ticket would
- * drive another member's pick, which is a way to set somebody else's password —
- * and a parent setting a child's phrase is the one thing John ruled out by
- * name, because a credential an adult can set stops proving it is her.
+ * drive another member's pick, which is a way to set somebody else's password.
+ * A MEMBER still cannot: the routes under `/api/me/phrase` pass the caller's
+ * own id, so the ticket and the caller are the same person there.
+ *
+ * The OPERATOR now can, and that is a reversal of what this comment used to
+ * say. Setting a child's words at the kitchen table is what John asked for, so
+ * `/api/admin/members/[id]/phrase` passes the id in its path and
+ * proves `currentAdmin()` instead of a member session. Nothing about this check
+ * changed to allow it: the ticket is still bound to exactly one member, and who
+ * may name a member other than themselves is a question for the route.
  *
  * Every word is re-checked against the list on the way back in. The signature
  * already says we wrote it, so this is belt and braces — but a list that
