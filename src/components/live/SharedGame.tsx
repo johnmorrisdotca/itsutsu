@@ -131,8 +131,9 @@ export function SharedGame({
   const choosesColour = VARIANT_SPECS[state.settings.variant].anyColour;
   const [placing, setPlacing] = useState<Stone>(STONES.black);
 
-  // A move played is a board finished with, so long as the turn actually ended.
-  const { advance, notice } = useAdvanceToNextGame();
+  // A move played is a board finished with, so long as the turn actually ended
+  // — and so long as nothing is being asked over the top of it.
+  const { advance, notice, whileAsking } = useAdvanceToNextGame();
 
   /** Sends one move, of any of the three shapes, and takes the server's answer as the truth. */
   async function send(body: Record<string, unknown>) {
@@ -378,6 +379,16 @@ export function SharedGame({
             token={token}
             moves={state.moves.length}
             onDone={() => void mutate()}
+            /*
+              NOTHING MOVES WHILE THIS IS ASKING. A move carries a player to
+              their next waiting game a moment after it lands, and somebody who
+              plays a stone and reaches straight for Resign opened this question
+              inside that moment — then watched the board and the question go
+              together. Waved away, the held advance goes ahead; answered, it is
+              dropped, because a game that has just ended is the board to be
+              looking at.
+            */
+            onAsking={whileAsking}
           />
         </div>
       ) : null}
