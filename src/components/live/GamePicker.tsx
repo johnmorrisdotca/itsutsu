@@ -5,10 +5,11 @@ import { useRef, useState, type KeyboardEvent } from "react";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameThumb } from "@/components/games/GameThumb";
 import { Paired } from "@/components/i18n/Paired";
-import { GAME_FAMILIES, familyOf } from "@/lib/gomoku/families";
+import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
+import { familyShown } from "./picker";
 import { PickMark } from "./PickMark";
 import { PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_GRID } from "./picker.constants";
 
@@ -77,17 +78,13 @@ export function GamePicker({
 }) {
   /*
    * The family being browsed, which is the chosen game's own until somebody
-   * looks elsewhere.
-   *
-   * Derived from the value with an override rather than copied into state and
-   * kept in step with an effect. A family the reader has opened is a decision
-   * and stays put; until they make one there is nothing to remember, and the
-   * answer is simply where the chosen game lives.
+   * looks elsewhere. The rule is `familyShown` — pure, in its own module and
+   * tested there, because it is the one thing here that can be wrong without
+   * showing: a screen that arrives with a game already chosen must open on
+   * that game's family rather than on the first.
    */
-  const home = familyOf(value as RuleVariant)?.title ?? GAME_FAMILIES[0].title;
   const [browsing, setBrowsing] = useState<string | null>(null);
-  const open = GAME_FAMILIES.some((entry) => entry.title === browsing) ? browsing : home;
-  const family = GAME_FAMILIES.find((entry) => entry.title === open) ?? GAME_FAMILIES[0];
+  const family = familyShown(value, browsing);
   const tagline = RULE_VARIANT_DISPLAY[value as RuleVariant]?.tagline;
 
   /*
