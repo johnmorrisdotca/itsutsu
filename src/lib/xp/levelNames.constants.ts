@@ -114,4 +114,15 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 78, name: "Easter Egg", note: "Adventure, 1979: Warren Robinett hid his name in a room Atari never knew about, and every secret since is named for it." },
   { level: 79, name: "S-Rank", note: "The grade above A, from Devil May Cry to Resident Evil: not just finished, finished with style." },
   { level: 80, name: "Breath of the Wild", note: "Nintendo, 2017: a plateau, a paraglider, and a whole kingdom that let you go anywhere you could see." },
+  // 81-90: the legends.
+  { level: 81, name: "Elden Ring", note: "FromSoftware, 2022: the Lands Between, a horse called Torrent, and the Souls formula set loose in an open world." },
+  { level: 82, name: "Baldur's Gate 3", note: "Larian, 2023: a tabletop game's freedom on a screen, and a year of awards swept by a studio that answered to nobody." },
+  { level: 83, name: "No-Hit Run", note: "A whole game, boss to boss, without taking a single point of damage; one slip and it is back to the start." },
+  { level: 84, name: "Golden Age", kanji: "黄金時代", note: "1978 to 1983, when the arcade was the centre of the world and a quarter bought a shot at immortality." },
+  { level: 85, name: "Evo Moment 37", note: "2004: Daigo parries all fifteen hits of Chun-Li's super on one pixel of health, and a room stands up screaming." },
+  { level: 86, name: "Kill Screen", note: "Pac-Man level 256: the board falls apart, because nobody at Namco believed anyone would ever get this far." },
+  { level: 87, name: "God Mode", note: "IDDQD, Doom, 1993: the cheat that made you invincible, and the name for anyone who plays as if they had typed it." },
+  { level: 88, name: "Grand Master", note: "Tetris: The Grand Master, 1998: the grade at the very top, earned with the blocks turned invisible for the final stretch." },
+  { level: 89, name: "Frame Perfect", note: "An input on the one frame in sixty that works: the difference between a good player and the best one alive." },
+  { level: 90, name: "Ocarina of Time", note: "Nintendo, 1998: Z-targeting, the Temple of Time, and the highest score any critic has ever given a game." },
 ];
