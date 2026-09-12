@@ -325,9 +325,34 @@ describe("what recording one costs", () => {
 
     expect(reads).toBe(1);
     expect(transactions).toBe(1);
+    /*
+     * THE RUN AND THE TALLY, IN THE ONE UPDATE. They are two facts about the
+     * same finished game — the count and the run over the games it belongs to —
+     * and the directory prints them in adjacent cells, so a write that could
+     * land one without the other is a row contradicting itself where a reader
+     * can see it. The tally is spelled as an INCREMENT rather than a value, so
+     * two games finishing in the same instant both add one; the run cannot say
+     * that, and `playedRun.ts` says why.
+     */
     expect(updates).toEqual([
-      { id: "a", data: { playedStreakKind: "win", playedStreakCount: 3 } },
-      { id: "b", data: { playedStreakKind: "loss", playedStreakCount: 1 } },
+      {
+        id: "a",
+        data: {
+          playedStreakKind: "win",
+          playedStreakCount: 3,
+          played: { increment: 1 },
+          won: { increment: 1 },
+        },
+      },
+      {
+        id: "b",
+        data: {
+          playedStreakKind: "loss",
+          playedStreakCount: 1,
+          played: { increment: 1 },
+          lost: { increment: 1 },
+        },
+      },
     ]);
   });
 
@@ -336,7 +361,17 @@ describe("what recording one costs", () => {
 
     await recordPlayed(game("a", null, "white"));
 
-    expect(updates).toEqual([{ id: "a", data: { playedStreakKind: "loss", playedStreakCount: 1 } }]);
+    expect(updates).toEqual([
+      {
+        id: "a",
+        data: {
+          playedStreakKind: "loss",
+          playedStreakCount: 1,
+          played: { increment: 1 },
+          lost: { increment: 1 },
+        },
+      },
+    ]);
   });
 
   it("writes one row for a game against yourself", async () => {
@@ -344,7 +379,19 @@ describe("what recording one costs", () => {
 
     await recordPlayed(game("solo", "solo", "black"));
 
-    expect(updates).toEqual([{ id: "solo", data: { playedStreakKind: "win", playedStreakCount: 1 } }]);
+    // ONE row and ONE game: the tally adds one, not two, for the same reason
+    // the run does — both seats carry the one id and it is counted from black.
+    expect(updates).toEqual([
+      {
+        id: "solo",
+        data: {
+          playedStreakKind: "win",
+          playedStreakCount: 1,
+          played: { increment: 1 },
+          won: { increment: 1 },
+        },
+      },
+    ]);
   });
 
   it("costs nothing at all for a game neither seat was bound to", async () => {

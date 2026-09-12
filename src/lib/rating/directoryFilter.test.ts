@@ -136,4 +136,53 @@ describe("filterBarHref", () => {
     expect(href).not.toContain("settled");
     expect(href).not.toContain("active");
   });
+
+  /*
+   * ONE CONTROL MUST NOT UNDO ANOTHER, which this bar did the day the directory
+   * learned to sort.
+   *
+   * It built a fresh query of who/settled/active and nothing else. That was
+   * harmless while those three were the whole of what /players could say, and it
+   * became a silent reversal the moment there was an order to lose: press
+   * Played, then press People, and the list goes back to who was seen last with
+   * nothing saying so. It is the same fault `sortHref` is careful about from the
+   * other side, and the same one `scopeHrefFrom` was given the whole query for.
+   *
+   * Every one of the four cases above still passes with no query at all, which
+   * is why none of them could have caught it.
+   */
+  it("keeps the order a heading was just pressed for", () => {
+    const href = filterBarHref(
+      { ...NO_FILTER, who: DIRECTORY_WHO.people },
+      "view=members&sort=played%3Adesc",
+    );
+    expect(href).toContain("sort=played%3Adesc");
+    expect(href).toContain("view=members");
+    expect(href).toContain(`who=${DIRECTORY_WHO.people}`);
+  });
+
+  it("replaces the narrowing already on the address rather than saying it twice", () => {
+    const href = filterBarHref(
+      { ...NO_FILTER, who: DIRECTORY_WHO.computers, active: true },
+      `who=${DIRECTORY_WHO.people}&settled=1`,
+    );
+    const asked = new URLSearchParams(href.split("?")[1]);
+    expect(asked.getAll("who")).toEqual([DIRECTORY_WHO.computers]);
+    expect(asked.get("settled")).toBe(null);
+    expect(asked.get("active")).toBe("1");
+  });
+
+  it("drops the cursor, because a page of the old narrowing is not a page of this one", () => {
+    /*
+     * The same reasoning `sortHref` gives for dropping it: a cursor is a
+     * position in the list as it was, and carrying it into a different
+     * narrowing opens the middle of a list and calls it the top. A reader who
+     * pressed People on page four would land on rows that were never page one
+     * of anything.
+     */
+    const href = filterBarHref({ ...NO_FILTER }, "cursor=abc123&page=4&sort=name%3Aasc");
+    expect(href).not.toContain("cursor");
+    expect(href).not.toContain("page=");
+    expect(href).toContain("sort=name%3Aasc");
+  });
 });

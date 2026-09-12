@@ -11,7 +11,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { directoryFilterFor } from "@/lib/rating/memberFilter";
-import { fetchComputerPlayers } from "@/lib/rating/players";
+import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { readRecordScope, SCOPE_PARAM } from "@/lib/rating/recordScope";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 

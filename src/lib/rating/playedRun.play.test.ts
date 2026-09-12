@@ -15,6 +15,14 @@
  *
  *   - both members' stored run moved, by the result each of them got;
  *   - `fetchPlayedTallies` counts exactly the games that run counts;
+ *   - THE FOUR STORED COUNTS SAY THE SAME THING AS `fetchPlayedTallies`, on the
+ *     same rows, after the same games. `Member.played`, `.won`, `.lost` and
+ *     `.drawn` are what the members directory now SORTS and PAGES by, so a
+ *     column that drifted from the function would put a member in the wrong
+ *     place in an order and show the right number in the cell — the one failure
+ *     shape that cannot be seen by looking at the row. They are written in the
+ *     same update as the run, at the same four endings, which is why this file
+ *     is where they are checked rather than a second runner beside it;
  *   - and NO rating row was written, which is what makes the game unrated
  *     rather than merely labelled so. That is the assertion that fails if
  *     somebody ever "tidies" this call inside the `row.rated` test.
@@ -45,6 +53,38 @@ const ASKED = process.env.PLAYED_RUN_CHECK === "1";
 function fresh(what: string): { id: string; name: string } {
   const tag = Math.random().toString(36).slice(2, 10);
   return { id: `played-run-${what}-${tag}`, name: `PlayedRun ${what} ${tag}` };
+}
+
+/**
+ * The four stored counts, and what `fetchPlayedTallies` makes of the same
+ * games — asked of the real column and the real function rather than reasoned
+ * about.
+ *
+ * Returned together so that every assertion below compares them in one
+ * `toEqual`: two separate expectations would let one of them be quietly
+ * dropped, and the whole claim here is that the pair agree.
+ */
+async function tallyAndColumns(ids: string[]) {
+  const tallies = await fetchPlayedTallies(ids);
+  const rows = await prisma.member.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, played: true, won: true, lost: true, drawn: true },
+  });
+  const columns = new Map(rows.map((row) => [row.id, row]));
+  return ids.map((id) => {
+    const tally = tallies.get(id) ?? { wins: 0, losses: 0, draws: 0 };
+    const column = columns.get(id);
+    return {
+      id,
+      counted: { ...tally, played: tally.wins + tally.losses + tally.draws },
+      stored: {
+        wins: column?.won ?? -1,
+        losses: column?.lost ?? -1,
+        draws: column?.drawn ?? -1,
+        played: column?.played ?? -1,
+      },
+    };
+  });
 }
 
 const black = fresh("black");
@@ -128,6 +168,18 @@ describe("a friendly game moves the run over every game played", () => {
       expect(tallies.get(white.id)).toEqual({ wins: 0, losses: 1, draws: 0 });
 
       /*
+       * AND THE STORED COLUMNS SAY THE SAME. This is the pair the directory
+       * depends on: the cell is drawn from the column and the ORDER is decided
+       * by it, so the two have to be one set of games. Compared as whole
+       * objects, and the counted half is asserted against a written-out figure
+       * as well — otherwise a bug that zeroed both halves would pass.
+       */
+      const pair = await tallyAndColumns([black.id, white.id]);
+      for (const row of pair) expect(row.stored, `${row.id}'s columns`).toEqual(row.counted);
+      expect(pair[0].stored).toEqual({ wins: 1, losses: 0, draws: 0, played: 1 });
+      expect(pair[1].stored).toEqual({ wins: 0, losses: 1, draws: 0, played: 1 });
+
+      /*
        * NOTHING WAS RATED. If this ever finds a Player row, the game was rated
        * after all and the run above proves nothing about a friendly — which is
        * the only failure this file exists to catch.
@@ -187,6 +239,15 @@ describe("a friendly game moves the run over every game played", () => {
       const tallies = await fetchPlayedTallies([black.id, white.id]);
       expect(tallies.get(black.id)).toEqual({ wins: 2, losses: 0, draws: 0 });
       expect(tallies.get(white.id)).toEqual({ wins: 0, losses: 2, draws: 0 });
+
+      // The columns again, and from TWO rather than from one: an increment that
+      // only ever fired on the first game of a member's life would have passed
+      // the case above and would put every established player in the wrong
+      // place in every order the directory offers.
+      const pair = await tallyAndColumns([black.id, white.id]);
+      for (const row of pair) expect(row.stored, `${row.id}'s columns`).toEqual(row.counted);
+      expect(pair[0].stored).toEqual({ wins: 2, losses: 0, draws: 0, played: 2 });
+      expect(pair[1].stored).toEqual({ wins: 0, losses: 2, draws: 0, played: 2 });
     },
     120_000,
   );

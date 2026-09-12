@@ -148,6 +148,47 @@ function winnerOf(winner: string | null): "black" | "white" | null | undefined {
 /** One member's half of one decided game. */
 export type PlayedSide = { memberId: string; outcome: StreakOutcome };
 
+/** Which stored tally column one outcome adds to. */
+const TALLY_COLUMN: Record<StreakOutcome, "won" | "lost" | "drawn"> = {
+  win: "won",
+  loss: "lost",
+  draw: "drawn",
+};
+
+/**
+ * WHAT ONE RESULT ADDS TO THE FOUR NUMBERS KEPT ON THE MEMBER'S ROW.
+ *
+ * `Member.played`, `.won`, `.lost` and `.drawn` are the same figures
+ * `fetchPlayedTallies` counts out of the games table, kept beside the run they
+ * are printed next to — because the members directory has to ORDER by them, and
+ * an order has to be decided before a page is chosen. See the columns in
+ * `schema.prisma` and the migration that filled them, both of which argue it at
+ * length.
+ *
+ * AN INCREMENT AND NOT A WRITTEN VALUE, which is what makes it safe to put in
+ * the same transaction as the streak: two games for one member finishing in the
+ * same instant both add one, and neither needs to have read the other's answer.
+ * The run beside it cannot say that — `streakWrite` extends a value it read —
+ * and inherits `recordResult`'s race with it. So of the two facts this write
+ * carries, the tally is the one that cannot drift.
+ *
+ * `played` IS WRITTEN RATHER THAN DERIVED, and it is the sum of the other three
+ * by construction: every call here adds one to `played` and one to exactly one
+ * of the others. It is a column so that "who has played most" is an indexed
+ * ORDER BY on one column instead of `won + lost + drawn`, which no index can
+ * answer. `playedTally.test.ts` checks the invariant rather than trusting it.
+ *
+ * ONE PLACE, FOR ALL FOUR ENDINGS. `recordPlayed` is called from a move, a
+ * claimed timeout, a position with no legal turn and a resignation, and this
+ * rides that call — so no ending has to remember the tally separately, and
+ * `liveGameEndings.ts` and `liveGame.ts` are untouched by it.
+ */
+export function playedTallyWrite(
+  outcome: StreakOutcome,
+): Record<string, { increment: number }> {
+  return { played: { increment: 1 }, [TALLY_COLUMN[outcome]]: { increment: 1 } };
+}
+
 /**
  * Whose run this game moves, and which way — the whole definition, as a pure
  * function so it can be checked against `fetchPlayedTallies` without a
@@ -220,7 +261,20 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
       MEMBER_STREAK_SCOPES,
     );
     runs.set(side.memberId, streakIn(write, "played"));
-    return [prisma.member.update({ where: { id: side.memberId }, data: write as never })];
+    /*
+     * The run and the tally in ONE update, inside the one transaction. They are
+     * two facts about the same game — the count and the run over the games it
+     * belongs to — and the directory prints them in adjacent cells, so a write
+     * that could land one without the other is a row contradicting itself in a
+     * way a reader can see. That was the argument for the fourth streak scope
+     * in the first place; it applies to the numbers beside it.
+     */
+    return [
+      prisma.member.update({
+        where: { id: side.memberId },
+        data: { ...write, ...playedTallyWrite(side.outcome) } as never,
+      }),
+    ];
   });
   if (writes.length === 0) return;
   await prisma.$transaction(writes);

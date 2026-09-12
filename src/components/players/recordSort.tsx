@@ -43,6 +43,22 @@ import { HEAD } from "./PlayerRecord";
  * is made rather than invisible where it is seen.
  */
 export type RecordSortSlots = {
+  /**
+   * The SUBJECT heading — "Member", "Player", "Game" — which is a sort on
+   * exactly one table and plain text on every other.
+   *
+   * The members directory presses it to sort by name, which is the order a
+   * directory of six hundred people wants most and the one nothing here has
+   * ever offered. Nobody else can: the ladder's rows are keyed by a folded name
+   * and a table of GAMES has no name to order by at all, so leaving the slot out
+   * is what keeps their headings exactly as they were.
+   *
+   * It is here rather than a prop of its own because the subject column is a
+   * column like the others from a sorting point of view, and a second mechanism
+   * for one heading is how this file ended up being written: five tables, four
+   * column orders.
+   */
+  subject?: string;
   played?: string;
   won?: string;
   lost?: string;

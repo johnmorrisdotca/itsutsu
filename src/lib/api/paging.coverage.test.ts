@@ -8,6 +8,7 @@ import { GAME_SORT_SPEC } from "@/lib/history/gameHistory.sort";
 import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
 import { XP_BOARD_SORT_SPEC } from "@/lib/xp/xpBoard.sort";
 import { XP_LEDGER_SORT } from "@/lib/xp/xpHistory.sort";
+import { DIRECTORY_SORT_SPEC } from "@/lib/rating/directory.sort";
 
 /**
  * THE GATE OVER EVERY SORTABLE LIST ON THE SITE.
@@ -46,6 +47,21 @@ const SPECS: { of: string; spec: SortSpec<string> }[] = [
    * XpEvent's.
    */
   { of: "the XP leaderboard", spec: XP_BOARD_SORT_SPEC as SortSpec<string> },
+  /*
+   * The members directory on /players, and the last list on the site to join
+   * this convention. It was declined once, with the reason written into the
+   * source where its headings are drawn: its rows were a composite of four
+   * reads and its played/won/lost/drawn came from the GAMES table, so there was
+   * no `orderBy` a heading could reach. Those are columns on `Member` now — see
+   * the migration — which is what made the declaration possible.
+   *
+   * SEVEN COLUMNS AND SEVEN INDEXES, which is unlike its neighbours: the
+   * ladder's spec leans on `Player` holding nine rows and says so. `Member` is
+   * the table every page of this site reads, and the directory's DEFAULT order
+   * (`lastSeenAt`) had been a scan and a sort of the whole of it since the page
+   * existed, so the index rule is kept literally here rather than waived.
+   */
+  { of: "the members directory", spec: DIRECTORY_SORT_SPEC as SortSpec<string> },
 ];
 
 /**
@@ -110,6 +126,9 @@ describe("every sort declaration", () => {
     const have = indexesInSchema();
     expect(have.has("Game_playedAt_idx")).toBe(true);
     expect(have.has("Player_rating_idx")).toBe(true);
+    // The directory's default order, added with the tally columns it sorts by.
+    expect(have.has("Member_lastSeenAt_idx")).toBe(true);
+    expect(have.has("Member_played_idx")).toBe(true);
     expect(have.has("Game_moveCount_idx")).toBe(false);
     expect(have.has("Game_durationMs_idx")).toBe(false);
   });
@@ -127,6 +146,6 @@ describe("every sort declaration", () => {
    * reminder to add the line rather than a reason to loosen it.
    */
   it("is the whole list of them", () => {
-    expect(SPECS).toHaveLength(4);
+    expect(SPECS).toHaveLength(5);
   });
 });
