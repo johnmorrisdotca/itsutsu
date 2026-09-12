@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 
 import { XP_EVENT_SPECS } from "./xp.constants";
 
@@ -26,12 +28,18 @@ import { XP_EVENT_SPECS } from "./xp.constants";
  */
 
 type Event = { memberId: string; type: string; points: number; subject: string; dayKey: string };
+/** One finished game the fake database holds, for the rivalry read. */
+type Past = { id: string; variant: string; blackMemberId: string; whiteMemberId: string; winner: string };
 
 let events: Event[] = [];
+let past: Past[] = [];
+/** `owner\0buddy`, both addresses, as the Buddy table's unique key really is. */
+let buddies: Set<string> = new Set();
 const members = new Map<
   string,
   {
     id: string;
+    email: string | null;
     botTier: string | null;
     timeZone: string;
     xp: number;
@@ -47,6 +55,36 @@ function keyOf(row: { memberId: string; type: string; subject: string }): string
 }
 
 const prismaFake = {
+  buddy: {
+    findUnique: async ({ where }: { where: { owner_buddy: { owner: string; buddy: string } } }) =>
+      buddies.has(`${where.owner_buddy.owner}\0${where.owner_buddy.buddy}`)
+        ? { owner: where.owner_buddy.owner }
+        : null,
+  },
+  game: {
+    /*
+     * The rivalry read behind `revengeWin`, restated here as the OR the live
+     * query uses: a finished game of this variant that this member lost to that
+     * member, and never this game.
+     */
+    findFirst: async ({ where }: { where: Record<string, unknown> }) => {
+      const clauses = (where.OR ?? []) as { blackMemberId: string; whiteMemberId: string; winner: string }[];
+      const not = (where.id as { not?: string } | undefined)?.not;
+      return (
+        past.find(
+          (row) =>
+            row.id !== not &&
+            row.variant === where.variant &&
+            clauses.some(
+              (clause) =>
+                clause.blackMemberId === row.blackMemberId &&
+                clause.whiteMemberId === row.whiteMemberId &&
+                clause.winner === row.winner,
+            ),
+        ) ?? null
+      );
+    },
+  },
   member: {
     findUnique: async ({ where }: { where: { id: string } }) => members.get(where.id) ?? null,
     findMany: async ({ where }: { where: { id: { in: string[] } } }) =>
@@ -103,16 +141,20 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaFake }));
 
 const { recordPlayed } = await import("@/lib/rating/playedRun");
 
-function member(id: string, extra: { botTier?: string | null } = {}) {
+function member(
+  id: string,
+  extra: { botTier?: string | null; email?: string; run?: { kind: string; count: number } } = {},
+) {
   members.set(id, {
     id,
+    email: extra.email ?? null,
     botTier: extra.botTier ?? null,
     timeZone: "",
     xp: 0,
     xpFlash: null,
     xpLastAt: null,
-    playedStreakKind: null,
-    playedStreakCount: 0,
+    playedStreakKind: extra.run?.kind ?? null,
+    playedStreakCount: extra.run?.count ?? 0,
   });
 }
 
@@ -147,6 +189,8 @@ function paid(memberId: string, type: string): number {
 
 beforeEach(() => {
   events = [];
+  past = [];
+  buddies = new Set();
   members.clear();
   nextId = 0;
 });
@@ -164,6 +208,8 @@ describe("a finished game, paid once", () => {
       "firstOfVariant reversi",
       "firstOfFamily flips",
       "gameWon one",
+      "wonVsPerson one",
+      "firstWinAtVariant reversi",
     ]);
     expect(ledger("loser")).toEqual([
       "gameFinished one",
@@ -243,6 +289,182 @@ describe("a different subject is a different award", () => {
 
     expect(paid("reader", "firstOfFamily")).toBe(1);
     expect(paid("reader", "firstOfVariant")).toBe(flips?.games.length);
+  });
+});
+
+describe("winning, through the writer", () => {
+  it("pays the person, the buddy, and the first win at that game", async () => {
+    member("me", { email: "me@example.test" });
+    member("pal", { email: "PAL@example.test" });
+    // The buddy list is keyed by folded addresses, so the row is written folded
+    // and the read has to fold too — a member who signed in as PAL@ is the same
+    // person as pal@.
+    buddies.add("me@example.test\0pal@example.test");
+
+    await recordPlayed(finished({ black: "me", white: "pal", winner: "black", id: "beat-pal" }));
+
+    expect(ledger("me")).toEqual([
+      "gameFinished beat-pal",
+      "firstGameEver ",
+      "firstOfVariant reversi",
+      "firstOfFamily flips",
+      "gameWon beat-pal",
+      "wonVsPerson beat-pal",
+      "wonVsBuddy beat-pal",
+      "firstWinAtVariant reversi",
+    ]);
+  });
+
+  it("says nothing about a buddy who is not on the list", async () => {
+    member("me", { email: "me@example.test" });
+    member("stranger", { email: "them@example.test" });
+
+    await recordPlayed(finished({ black: "me", white: "stranger", winner: "black" }));
+
+    expect(ledger("me")).toContain("wonVsPerson " + events[0].subject);
+    expect(paid("me", "wonVsBuddy")).toBe(0);
+  });
+
+  it("pays the turn-around once, keyed on the rivalry and the game", async () => {
+    member("me", { email: "me@example.test" });
+    member("rival", { email: "rival@example.test" });
+    // They beat me at Reversi last week: I held white, they held black and won.
+    past = [{ id: "old", variant: "reversi", blackMemberId: "rival", whiteMemberId: "me", winner: "black" }];
+
+    await recordPlayed(finished({ black: "me", white: "rival", winner: "black", id: "turned" }));
+    await recordPlayed(finished({ black: "rival", white: "me", winner: "white", id: "again" }));
+
+    expect(paid("me", "revengeWin")).toBe(1);
+    expect(ledger("me")).toContain("revengeWin rival:reversi");
+    // And the loser of those two got nothing for a turn-around they did not make.
+    expect(paid("rival", "revengeWin")).toBe(0);
+  });
+
+  it("pays a turn-around at each game separately", async () => {
+    member("me", { email: "me@example.test" });
+    member("rival", { email: "rival@example.test" });
+    past = [
+      { id: "o1", variant: "reversi", blackMemberId: "rival", whiteMemberId: "me", winner: "black" },
+      { id: "o2", variant: "hex", blackMemberId: "rival", whiteMemberId: "me", winner: "black" },
+    ];
+
+    await recordPlayed(finished({ black: "me", white: "rival", winner: "black", variant: RULE_VARIANTS.reversi }));
+    await recordPlayed(finished({ black: "me", white: "rival", winner: "black", variant: RULE_VARIANTS.hex }));
+
+    expect(paid("me", "revengeWin")).toBe(2);
+  });
+
+  it("reads two things, and only for a win over a person", async () => {
+    /*
+     * WHAT A FINISHED GAME COSTS BEYOND THE WRITES IT ALREADY MADE, counted
+     * rather than claimed. The buddy list and the rivalry are the two facts a
+     * finished game does not already know, and they are the price of exactly two
+     * awards — so a draw pays nothing for them, and neither does a win over a
+     * program, whose grade is answered by a pure function.
+     */
+    member("me", { email: "me@example.test" });
+    member("them", { email: "them@example.test" });
+    member(BOT_MEMBERS.kyu.id, { botTier: "kyu" });
+    let reads = 0;
+    const buddyRead = prismaFake.buddy.findUnique;
+    const rivalryRead = prismaFake.game.findFirst;
+    prismaFake.buddy.findUnique = async (args) => {
+      reads += 1;
+      return buddyRead(args);
+    };
+    prismaFake.game.findFirst = async (args) => {
+      reads += 1;
+      return rivalryRead(args);
+    };
+
+    await recordPlayed(finished({ black: "me", white: "them", winner: null, id: "drawn" }));
+    const afterDraw = reads;
+    await recordPlayed(finished({ black: "me", white: BOT_MEMBERS.kyu.id, winner: "black", id: "bot" }));
+    const afterBot = reads;
+    await recordPlayed(finished({ black: "me", white: "them", winner: "black", id: "won" }));
+
+    prismaFake.buddy.findUnique = buddyRead;
+    prismaFake.game.findFirst = rivalryRead;
+    // Two seats, neither of which won: nothing to ask about the other one.
+    expect(afterDraw).toBe(0);
+    expect(afterBot).toBe(0);
+    // One buddy read and one rivalry read, for the one side that beat a person.
+    expect(reads).toBe(2);
+  });
+});
+
+describe("a run of wins, through the writer", () => {
+  it("pays the milestone off the run the writer is already keeping", async () => {
+    // The run comes out of the very columns `recordPlayed` writes, so the
+    // milestone and the column cannot disagree. Two wins in hand, and this one
+    // is the third.
+    member("hot", { run: { kind: "win", count: 2 } });
+
+    await recordPlayed(finished({ black: "hot", white: null, winner: "black", id: "third" }));
+
+    expect(ledger("hot")).toContain("winStreak3 third");
+    expect(members.get("hot")?.playedStreakCount).toBe(3);
+  });
+
+  it("pays a later run again, because it is keyed on the game", async () => {
+    member("hot", { run: { kind: "win", count: 2 } });
+
+    await recordPlayed(finished({ black: "hot", white: null, winner: "black", id: "one" }));
+    // A loss ends it, then three more wins.
+    await recordPlayed(finished({ black: "hot", white: null, winner: "white", id: "two" }));
+    for (const id of ["three", "four", "five"]) {
+      await recordPlayed(finished({ black: "hot", white: null, winner: "black", id }));
+    }
+
+    expect(paid("hot", "winStreak3")).toBe(2);
+  });
+
+  it("pays nothing at four", async () => {
+    member("warm", { run: { kind: "win", count: 3 } });
+
+    await recordPlayed(finished({ black: "warm", white: null, winner: "black" }));
+
+    expect(paid("warm", "winStreak3")).toBe(0);
+    expect(paid("warm", "winStreak5")).toBe(0);
+  });
+});
+
+describe("the computer ladder, through the writer", () => {
+  it("pays each grade once and the lot when the fifth falls", async () => {
+    member("climber");
+    for (const tier of BOT_TIER_LIST) {
+      member(BOT_MEMBERS[tier].id, { botTier: tier });
+      // Twice each: the second win over a grade already beaten pays nothing.
+      for (const round of [1, 2]) {
+        await recordPlayed(
+          finished({
+            black: "climber",
+            white: BOT_MEMBERS[tier].id,
+            winner: "black",
+            id: `${tier}-${round}`,
+          }),
+        );
+      }
+    }
+
+    expect(paid("climber", "gradeBeaten")).toBe(BOT_TIER_LIST.length);
+    expect(paid("climber", "everyGradeBeaten")).toBe(1);
+    // A grade is not a person, however many games it plays.
+    expect(paid("climber", "wonVsPerson")).toBe(0);
+  });
+
+  it("does not count the specialists towards the five", async () => {
+    member("hunter");
+    for (const tier of BOT_SPECIALIST_LIST) {
+      member(BOT_MEMBERS[tier].id, { botTier: tier });
+      await recordPlayed(
+        finished({ black: "hunter", white: BOT_MEMBERS[tier].id, winner: "black", id: `${tier}-1` }),
+      );
+    }
+
+    expect(paid("hunter", "specialistBeaten")).toBe(BOT_SPECIALIST_LIST.length);
+    expect(paid("hunter", "gradeBeaten")).toBe(0);
+    expect(paid("hunter", "everyGradeBeaten")).toBe(0);
   });
 });
 

@@ -45,7 +45,10 @@ type Row = {
 
 /** Every finished, non-abandoned game the fake database holds, oldest first. */
 let stored: Row[] = [];
-const memberRows = new Map<string, { id: string; playedStreakKind: string | null; playedStreakCount: number }>();
+const memberRows = new Map<
+  string,
+  { id: string; email: string | null; playedStreakKind: string | null; playedStreakCount: number }
+>();
 const updates: { id: string; data: Record<string, unknown> }[] = [];
 let reads = 0;
 let transactions = 0;
@@ -54,6 +57,13 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     game: {
       findMany: async () => stored,
+      /* The rivalry read behind `revengeWin`: nobody here has beaten anybody
+         before. It is answered rather than left missing so this file exercises
+         the same path the live one does instead of the read's failure path. */
+      findFirst: async () => null,
+    },
+    buddy: {
+      findUnique: async () => null,
     },
     member: {
       findMany: async ({ where }: { where: { id: { in: string[] } } }) => {
@@ -131,6 +141,10 @@ function game(
 function member(id: string, streak: Streak | null = null) {
   memberRows.set(id, {
     id,
+    /* Read for the XP ledger, which needs an address to ask the buddy list
+       about. Null here, so nothing in this file pays `wonVsBuddy` — what that
+       award comes to is asserted in `src/lib/xp/xpGameServer.test.ts`. */
+    email: null,
     playedStreakKind: streak?.kind ?? null,
     playedStreakCount: streak?.count ?? 0,
   });
@@ -367,8 +381,16 @@ describe("the XP a decided game asks for", () => {
     expect(asked).toEqual([
       {
         memberId: "a",
-        types: ["gameFinished", "firstGameEver", "firstOfVariant", "firstOfFamily", "gameWon"],
-        subjects: ["k3m9-p2qx", "", "reversi", "flips", "k3m9-p2qx"],
+        types: [
+          "gameFinished",
+          "firstGameEver",
+          "firstOfVariant",
+          "firstOfFamily",
+          "gameWon",
+          "wonVsPerson",
+          "firstWinAtVariant",
+        ],
+        subjects: ["k3m9-p2qx", "", "reversi", "flips", "k3m9-p2qx", "k3m9-p2qx", "reversi"],
       },
       {
         memberId: "b",
@@ -433,7 +455,11 @@ describe("the XP a decided game asks for", () => {
       "firstOfVariant",
       "firstOfFamily",
       "gameWon",
+      "firstWinAtVariant",
     ]);
+    // And nothing about the other seat, because the other seat is him. A win
+    // over yourself is a win over nobody.
+    expect(asked[0].types).not.toContain("wonVsPerson");
   });
 
   it("asks nothing about a row whose result it cannot read", async () => {

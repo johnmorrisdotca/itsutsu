@@ -2,7 +2,13 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { awardFinishedGameXp } from "@/lib/xp/xpGameServer";
-import { MEMBER_STREAK_SCOPES, streakWrite, type StreakOutcome } from "./streak";
+import {
+  MEMBER_STREAK_SCOPES,
+  streakIn,
+  streakWrite,
+  type Streak,
+  type StreakOutcome,
+} from "./streak";
 import { outcomeFor } from "./pools";
 
 /**
@@ -180,9 +186,20 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
 
   const rows = await prisma.member.findMany({
     where: { id: { in: sides.map((side) => side.memberId) } },
-    select: { id: true, playedStreakKind: true, playedStreakCount: true },
+    /* `email` rides this read for the XP ledger: the buddy list is keyed by
+       address and this function is keyed by id, so `wonVsBuddy` would need a
+       query of its own to turn one into the other. It is a column on a row being
+       read anyway. */
+    select: { id: true, email: true, playedStreakKind: true, playedStreakCount: true },
   });
   const byId = new Map(rows.map((row) => [row.id, row]));
+
+  /* The run each seat's result made, kept as it is computed. `streakWrite` is
+     the one implementation of "one more result" and this reads the answer back
+     out of the very object being written — so the milestone a run reaches and
+     the run itself cannot disagree, which two calls to `extendStreak` would
+     eventually manage. */
+  const runs = new Map<string, Streak | null>();
 
   const writes = sides.flatMap((side) => {
     const row = byId.get(side.memberId);
@@ -190,21 +207,18 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
     // carry forward and nothing that would show it. Silence rather than an
     // upsert inventing a member.
     if (row === undefined) return [];
-    return [
-      prisma.member.update({
-        where: { id: side.memberId },
-        data: streakWrite(
-          row as unknown as Record<string, unknown>,
-          side.outcome,
-          MEMBER_STREAK_SCOPES,
-        ) as never,
-      }),
-    ];
+    const write = streakWrite(
+      row as unknown as Record<string, unknown>,
+      side.outcome,
+      MEMBER_STREAK_SCOPES,
+    );
+    runs.set(side.memberId, streakIn(write, "played"));
+    return [prisma.member.update({ where: { id: side.memberId }, data: write as never })];
   });
   if (writes.length === 0) return;
   await prisma.$transaction(writes);
 
-  await awardGameXp(game, sides);
+  await awardGameXp(game, sides, { byId, runs });
 }
 
 /**
@@ -235,9 +249,27 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
  * has for a finished game is derived from those and from the run this write is
  * already carrying forward.
  */
-async function awardGameXp(game: DecidedGame, sides: readonly PlayedSide[]): Promise<void> {
+async function awardGameXp(
+  game: DecidedGame,
+  sides: readonly PlayedSide[],
+  read: {
+    byId: ReadonlyMap<string, { email: string | null }>;
+    runs: ReadonlyMap<string, Streak | null>;
+  },
+): Promise<void> {
   await awardFinishedGameXp(
-    { id: game.id, variant: game.variant, moveCount: game.moveCount },
-    sides.map((side) => ({ memberId: side.memberId, facts: { outcome: side.outcome } })),
+    {
+      id: game.id,
+      variant: game.variant,
+      moveCount: game.moveCount,
+      blackMemberId: game.blackMemberId,
+      whiteMemberId: game.whiteMemberId,
+    },
+    sides.map((side) => ({
+      memberId: side.memberId,
+      email: read.byId.get(side.memberId)?.email ?? null,
+      outcome: side.outcome,
+      run: read.runs.get(side.memberId) ?? null,
+    })),
   );
 }

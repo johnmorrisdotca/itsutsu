@@ -466,10 +466,10 @@ export const XP_UNWIRED: readonly XpEventType[] = [
   // XP-06
   "dayStreak7", "dayStreak30", "dayStreak100", "dayStreak365", "weekendGame",
   "backFromAway", "seatClaimedElsewhere",
-  // XP-05
-  "wonVsPerson", "wonVsBuddy", "revengeWin", "comeback",
-  "winStreak3", "winStreak5", "winStreak10", "gradeBeaten", "everyGradeBeaten",
-  "specialistBeaten", "firstWinAtVariant",
+  /* `comeback` is priced and deliberately not paid: nothing on this site can
+     read a position as losing for every variant, and an approximation would pay
+     everybody for every win. The whole refusal is in `xpGame.ts`. */
+  "comeback",
   // XP-04
   "firstBuddy", "buddyAdded", "challengeSent", "challengeAnswered", "rematchPlayed",
   "forkPlayed", "timeGiven", "applauseGiven", "nameSet", "countrySet", "bioSet",

@@ -152,21 +152,39 @@ describe("what is priced and not yet paid", () => {
     // this case is meant to be edited by XP-03 to XP-06 — and to fail loudly if
     // a kind is wired and nobody says so.
     //
-    // XP-02 wired four. XP-03 adds the tour's first-game awards and the long
-    // game, all of them on `recordPlayed` — see `xpGame.ts`.
+    // XP-02 wired four. XP-03 added the tour and the long game; XP-04 added
+    // everything a WIN pays. All of them ride `recordPlayed` — see `xpGame.ts`.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
     expect(wired.sort()).toEqual([
       "dailyVisit",
       "everyFamilyPlayed",
+      "everyGradeBeaten",
       "everyVariantPlayed",
       "firstGameEver",
       "firstOfFamily",
       "firstOfVariant",
+      "firstWinAtVariant",
       "gameFinished",
       "gameWon",
+      "gradeBeaten",
       "joined",
       "longGame",
+      "revengeWin",
+      "specialistBeaten",
+      "winStreak10",
+      "winStreak3",
+      "winStreak5",
+      "wonVsBuddy",
+      "wonVsPerson",
     ]);
+  });
+
+  it("says why `comeback` is priced and unpaid, rather than leaving it out", () => {
+    // The one type in the catalogue that nothing is going to pay. It stays in
+    // the list because that is what tells a page it is not yet earned, and the
+    // refusal is written where it would have fired — `xpGame.ts` — rather than
+    // left as an absence somebody would eventually read as an oversight.
+    expect(XP_UNWIRED).toContain("comeback");
   });
 });
 

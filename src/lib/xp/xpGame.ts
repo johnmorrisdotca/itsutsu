@@ -1,9 +1,10 @@
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { familyKeyOf } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { STREAK_KINDS, type StreakOutcome } from "@/lib/rating/streak";
+import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
+import { STREAK_KINDS, type Streak, type StreakOutcome } from "@/lib/rating/streak";
 
-import { XP_EVENTS, XP_LONG_GAME_MOVES } from "./xp.constants";
+import { XP_EVENTS, XP_LONG_GAME_MOVES, winStreakMilestoneFor } from "./xp.constants";
 import type { XpAward } from "./xp.types";
 
 /**
@@ -41,6 +42,44 @@ import type { XpAward } from "./xp.types";
  * there and is refused by the unique index. A version of this that read the
  * ledger first would be a second implementation of idempotency — one that can
  * disagree with the index, and that costs a query per finished game to do it.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * A FACT NOBODY COULD ESTABLISH IS NULL, AND A NULL PAYS NOTHING
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * `buddy` and `beatenMeBefore` are `boolean | null`, and null means the question
+ * could not be answered rather than "no". Nothing here reads a null as false and
+ * pays, because that is AGENTS.md's guard returning a plausible value for "I do
+ * not know" — `revengeWin` over an unreadable history would pay 30 XP for a
+ * turn-around that never happened, on every win, and no gate would ever report
+ * it. Silence is the safe answer.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * `comeback` IS IN THE CATALOGUE AND IS DELIBERATELY NOT PAID HERE
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * XP_DESIGN.md prices it at 30 for "won from a position the engine had you
+ * losing", and makes it conditional on there being an honest measure. There is
+ * not one, on three counts, and the honest thing is to say so rather than to
+ * approximate it:
+ *
+ * - **Nothing reads a position as losing for this site's games.** The measure it
+ *   would need is a win chance per position, and `VARIANT_SPECS` sets
+ *   `analysis: false` on the flips, the twists, the races and more — so for
+ *   those variants the answer is not "close" or "unknown", it does not exist.
+ * - **Deriving it at the end would cost a search per move.** A finished game is
+ *   sixty-odd positions; evaluating them inside the request that ended the game
+ *   is work bounded per call and run on every finished game, which is the cost
+ *   shape this project already paid for once.
+ * - **And it cannot be stored as it goes without a column**, which is a
+ *   migration on a shared database for a bonus nobody has asked for yet.
+ *
+ * A comeback bonus that treated "no reading" as "was losing" would pay
+ * everybody for every win. So the type stays priced, stays listed in
+ * `XP_UNWIRED` — which is what tells a page it is not yet paid — and nothing
+ * fires. If it is ever wanted, the honest shape is a win chance written onto the
+ * game row as the game is played, and a stated list of the variants that can
+ * earn it.
  */
 
 /** The finished game, as much of it as an award needs. */
@@ -58,10 +97,45 @@ export type FinishedGame = {
   moveCount: number;
 };
 
+/** Who was in the other seat, as far as this member's awards are concerned. */
+export type Opponent = {
+  /**
+   * Their member id, or null.
+   *
+   * Null is an UNBOUND seat or this member playing themselves, and both mean the
+   * same thing here: there is nobody this member can be said to have beaten. A
+   * hot-seat game where two accounts hold the two chairs is two different ids and
+   * is a real win over a real person, which is what the sit-as feature is for.
+   */
+  id: string | null;
+  /** The grade a program in that seat plays at, or null for a person. */
+  tier: string | null;
+  /** On this member's buddy list. Null where it could not be read. */
+  buddy: boolean | null;
+  /**
+   * Whether they had already beaten this member at this game. Null where it
+   * could not be read.
+   */
+  beatenMeBefore: boolean | null;
+};
+
 /** One member's half of one finished game. */
 export type PlayedSideFacts = {
   outcome: StreakOutcome;
+  /**
+   * The run this result made, over every finished game.
+   *
+   * Taken from the very columns `recordPlayed` is writing rather than counted
+   * again here: two implementations of "one more result" would be two answers to
+   * the question the streak column exists to answer once. Null is no run — which
+   * is not the same as a run of nought, and pays nothing either way.
+   */
+  run: Streak | null;
+  opponent: Opponent;
 };
+
+/** Nobody in the other seat, and nothing known about them. For a caller's default. */
+export const NO_OPPONENT: Opponent = { id: null, tier: null, buddy: null, beatenMeBefore: null };
 
 /** The variant keys, as a set, so an unknown string can be refused in one step. */
 const VARIANTS: ReadonlySet<string> = new Set<string>(RULE_VARIANT_LIST);
@@ -111,13 +185,122 @@ export function gameAwards(game: FinishedGame, side: PlayedSideFacts): XpAward[]
   }
 
   /* Winning, which is twice a finish: better, and not four times better, or the
-     site would only reward the strong. It is last in the batch rather than
-     beside the finish because a toast should read "a game seen through" before
-     "a game won", and because every award that RIDES the allowance has to sit
-     after the finish that decides it. */
-  if (side.outcome === STREAK_KINDS.win) {
-    awards.push({ type: XP_EVENTS.gameWon, subject: game.id });
+     site would only reward the strong. It comes after the finish rather than
+     beside it because a toast should read "a game seen through" before "a game
+     won", and because every award that RIDES the allowance has to sit after the
+     finish that decides it. */
+  if (side.outcome !== STREAK_KINDS.win) return awards;
+  return [...awards, ...winAwards(game, side, variant)];
+}
+
+/**
+ * What a win adds, on top of everything finishing already paid.
+ *
+ * Its own function because "what finishing pays" and "what winning pays" are two
+ * questions, and every judgement about the other seat lives in the second one —
+ * a person, a buddy, a rivalry, a grade. Keeping them apart is what lets a draw
+ * and a loss be read in one glance above.
+ */
+function winAwards(
+  game: FinishedGame,
+  side: PlayedSideFacts,
+  variant: RuleVariant | null,
+): XpAward[] {
+  const awards: XpAward[] = [{ type: XP_EVENTS.gameWon, subject: game.id }];
+  const { opponent } = side;
+  /* A program in the other seat is a grade, not a person, and an unbound seat is
+     neither. See `Opponent.id`. */
+  const person = opponent.id !== null && opponent.tier === null;
+
+  if (person) {
+    awards.push({ type: XP_EVENTS.wonVsPerson, subject: game.id });
+    /* True only. Null is "could not be read" and false is "not a buddy", and
+       neither of them is a buddy beaten. */
+    if (opponent.buddy === true) awards.push({ type: XP_EVENTS.wonVsBuddy, subject: game.id });
   }
 
+  if (variant !== null) {
+    /* Trying something new is paid once by `firstOfVariant`; understanding it is
+       paid once more here. Keyed on the game's name, so it is a first win at
+       Reversi rather than a first win. */
+    awards.push({ type: XP_EVENTS.firstWinAtVariant, subject: variant });
+
+    /* ── THE TURN-AROUND ───────────────────────────────────────────────────
+       John's "winning after losing to a friend". Once per rivalry per game —
+       `<opponentId>:<variant>` — so it is the turn-around that pays and not
+       every win after it. Against a person only: a computer grade is beaten
+       rather than avenged, and `gradeBeaten` is what pays for that. */
+    if (person && opponent.beatenMeBefore === true) {
+      awards.push({ type: XP_EVENTS.revengeWin, subject: `${opponent.id}:${variant}` });
+    }
+  }
+
+  const milestone = streakMilestone(side.run);
+  /* Keyed on the GAME that completed the run rather than on the run's length, so
+     a second run of three later pays again — which is the whole point of a
+     streak award. */
+  if (milestone !== null) awards.push({ type: milestone, subject: game.id });
+
+  awards.push(...gradeAwards(opponent));
   return awards;
+}
+
+/**
+ * The milestone a run of wins has just reached, or null.
+ *
+ * Only a run of WINS, and only at exactly three, five or ten:
+ * `winStreakMilestoneFor` answers null for four and for eleven, so an eleventh
+ * win asks for nothing rather than asking for the tenth's award and leaning on
+ * the unique index to refuse it.
+ */
+function streakMilestone(run: Streak | null) {
+  if (run === null || run.kind !== STREAK_KINDS.win) return null;
+  return winStreakMilestoneFor(run.count);
+}
+
+/**
+ * A computer grade beaten, or one of the two specialists.
+ *
+ * Keyed on the tier, so each grade pays once however many times it is beaten —
+ * which is what makes the five of them a ladder to climb rather than forty XP a
+ * game. The specialists are deliberately not on that ladder: they play one game
+ * each and have to be sought out, which is why they pay more than a grade.
+ */
+function gradeAwards(opponent: Opponent): XpAward[] {
+  const tier = opponent.tier;
+  if (tier === null) return [];
+  if ((BOT_SPECIALIST_LIST as readonly string[]).includes(tier)) {
+    return [{ type: XP_EVENTS.specialistBeaten, subject: tier }];
+  }
+  if ((BOT_TIER_LIST as readonly string[]).includes(tier)) {
+    return [{ type: XP_EVENTS.gradeBeaten, subject: tier }];
+  }
+  /* A tier this deploy does not know — a grade retired, or a row written by a
+     later version. Nothing, rather than an award keyed on a string that is not a
+     grade and would sit in the ledger unable to explain itself. */
+  return [];
+}
+
+/** The five graded grades: what `everyGradeBeaten` is counted against. */
+export const XP_GRADES_TO_BEAT = BOT_TIER_LIST.length;
+
+/**
+ * The other seat, for one member, or null where there is nobody to have beaten.
+ *
+ * NOT `rematch.ts`'s `opponentOf`, which answers a different question — "who
+ * would a rematch be against" — and answers the asker's own id for a game
+ * somebody played against themselves. John has played himself; that game is a
+ * win over nobody, and the against-a-person awards must stay out of it.
+ */
+export function otherSeat(
+  game: { blackMemberId: string | null; whiteMemberId: string | null },
+  memberId: string,
+): string | null {
+  const other =
+    game.blackMemberId === memberId
+      ? game.whiteMemberId
+      : game.whiteMemberId === memberId
+        ? game.blackMemberId
+        : null;
+  return other === memberId ? null : other;
 }
