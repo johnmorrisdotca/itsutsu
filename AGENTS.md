@@ -1025,6 +1025,34 @@ there" rather than "the file is unreadable". Two rules, both cheap:
   line, and `git diff --numstat` showing `-` for a source file is the same
   signal from git.
 
+### Three Things A Worktree Gets Wrong Before Any Code Runs
+
+All three were found by different agents on 2026-09-12, each cost a wrong
+diagnosis before the cause, and none of them is about the code.
+
+- **A worktree installed before its `.env` is copied in gets a Prisma client
+  that loads no `.env`, for its whole life.** The generated client records
+  the `.env` path at `prisma generate` time (`relativeEnvPaths`), and
+  `pnpm install`'s postinstall generates it. Installed at 05:56, `.env`
+  copied in at 06:14: every vitest runner in that worktree then fails with
+  `Environment variable not found: DATABASE_URL`, which reads as a missing
+  file rather than a stale generate — and the agent "fixed" a script line
+  that was never wrong. Copy `.env` in BEFORE `pnpm install`, or run
+  `pnpm db:generate` after. (The main checkout's client loads `.env` itself:
+  a bare `vitest run` there reaches the database with nothing passed, and an
+  inline `DATABASE_URL` wins over it — checked both ways.)
+- **`.auth/player.json` must be its own identity, never a copy of the admin
+  state.** A copy makes every "two player" case one account: `seatsToSitAt`
+  filters the stranger's seat out as the reader's own, and a spec about two
+  people passes over one. Mint it by redeeming an invite, as `auth.setup.ts`
+  does — the `--no-deps` route skips that setup, so it is on you.
+- **The session scratchpad is shared between the agents of one session.** An
+  agent's `mint-player.mjs` collided with another's file of the same name and
+  RAN THEIRS — pinned to their worktree and their port. It threw on first
+  read and wrote nothing; the bad version is a script that succeeds and
+  writes into somebody else's worktree. Prefix every scratchpad filename with
+  something of yours, and never trust a generic name you did not just write.
+
 ### The Stash Stack Is One Stack For Every Worktree
 
 Worktrees are isolated — checked by inode, not reasoned about: the same file
