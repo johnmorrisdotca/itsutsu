@@ -104,6 +104,21 @@ describe("seatStandIn", () => {
     expect(game?.whiteMemberId).toBe(HANAKO);
   });
 
+  it("TAKES the seat — a posted seat stops being posted, or the game never starts", async () => {
+    /*
+     * The kitchen-table bug of 2026-09-12. The claim bound the member and
+     * stamped the name and left `openSeat` reading "white", so the board went
+     * on drawing "Posted and waiting for somebody": no players, no turn, no
+     * move accepted, with both seats bound to the right two people. The
+     * seat-link claim clears the column; this one had not. A claim that
+     * leaves the seat open is not a claim.
+     */
+    if (game !== null) game.openSeat = "white";
+    await seatStandIn("k3m9-p2qx", HANAKO, "Hanako M.");
+    expect(game?.openSeat, "the seat was bound but still reads as open").toBeNull();
+    expect(updates.some((update) => "openSeat" in update && update.openSeat === null), "openSeat was not part of the claim's own write").toBe(true);
+  });
+
   it("leaves the other seat, and the whole of the other player, alone", async () => {
     await seatStandIn("k3m9-p2qx", HANAKO, "Hanako M.");
     expect(game?.blackMemberId).toBe(JOHN);
