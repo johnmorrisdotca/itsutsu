@@ -1,10 +1,9 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { RATING_START, rateGame, tierFor, type GameScore, type RatingTier } from "./elo";
-import { recordVariantResult } from "./variantRatings";
-import { RATING_POOLS, outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
-import { PLAYER_STREAK_SCOPES, streakIn, streakWrite, type Streak } from "./streak";
+import { tierFor, type RatingTier } from "./elo";
+import { RATING_POOLS } from "./pools";
+import { streakIn, type Streak } from "./streak";
 import { legaciesForName } from "@/lib/legacy/legacyPlayers.data";
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
 
@@ -17,7 +16,6 @@ import { wholeRecord } from "@/lib/legacy/wholeRecord";
 
 import { playerKey } from "./playerKey";
 import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
-import { isRateable } from "./rateable";
 import { ratingShown } from "./shownRecord";
 
 export { playerKey };
@@ -179,15 +177,6 @@ export async function fetchLeaders(limit: number): Promise<PlayerProfile[]> {
 }
 
 /**
- * Records one finished game between two named players: win, loss and draw
- * tallies for both, and a rating exchange. A game with a blank name on
- * either side changes nothing, and a draw scores a half each.
- *
- * The same result moves two ladders — the global one here, and the standing
- * for the variant it was played under — so they are written together and
- * never drift apart.
- */
-/**
  * The member who plays under this name, by id, or null when nobody does.
  *
  * Matched on the folded name, which is how every other part of this site
@@ -202,93 +191,6 @@ export async function memberIdForName(name: string): Promise<string | null> {
   return rows.find((row) => playerKey(row.name) === key)?.id ?? null;
 }
 
-/**
- * `pool` says which ladder this game moves — see `pools.ts`. It is required
- * rather than defaulted, so that every place a game is recorded has had to
- * decide whether it was played against a person or against the computer. A
- * default here would quietly rate a game against Meijin on the ladder of
- * people, which is the one thing the two pools exist to prevent.
- */
-export async function recordResult(
-  blackName: string,
-  whiteName: string,
-  winner: "black" | "white" | null,
-  variant: string,
-  pool: RatingPool,
-): Promise<void> {
-  const blackKey = playerKey(blackName);
-  const whiteKey = playerKey(whiteName);
-  // The rule is `rateable.ts`, so that the pages can say what it decided
-  // rather than leaving a player to work out why nothing happened.
-  if (!isRateable(blackName, whiteName)) return;
-
-  /*
-   * Whose record this is. A rating is earned by a person rather than by a
-   * spelling, so it is anchored to the member's opaque id wherever there is
-   * one to anchor it to. A name nobody holds an account under stays open —
-   * inventing an identity for every name typed into a game at one screen
-   * would be worse than leaving the question unanswered until it is asked.
-   */
-  const [blackId, whiteId] = await Promise.all([
-    memberIdForName(blackName),
-    memberIdForName(whiteName),
-  ]);
-
-  const [black, white] = await Promise.all([
-    prisma.player.upsert({
-      where: { key: blackKey },
-      create: { key: blackKey, name: blackName.trim(), rating: RATING_START, memberId: blackId },
-      update: { name: blackName.trim(), ...(blackId === null ? {} : { memberId: blackId }) },
-    }),
-    prisma.player.upsert({
-      where: { key: whiteKey },
-      create: { key: whiteKey, name: whiteName.trim(), rating: RATING_START, memberId: whiteId },
-      update: { name: whiteName.trim(), ...(whiteId === null ? {} : { memberId: whiteId }) },
-    }),
-  ]);
-
-  const blackScore: GameScore = winner === "black" ? 1 : winner === "white" ? 0 : 0.5;
-  // Both sides are read from, and written to, the same pool: that is what makes
-  // a game against the computer a symmetric rated game rather than an exhibition.
-  const before = { black: standingIn(black, pool), white: standingIn(white, pool) };
-  const rated = rateGame(before.black, before.white, blackScore);
-
-  /*
-   * The streak is carried forward from the row already in hand — THE WRITER
-   * ALREADY KNOWS. Nothing is read back: the upsert above returned the run so
-   * far, and one more result extends it or starts a new one. A streak worked
-   * out by reading a player's games would be a query per row on every page
-   * that lists people, which is the cost this design exists to avoid.
-   *
-   * Both the pool's run and the both-pools run move at once, because they are
-   * different numbers about the same game and neither can be derived from the
-   * other later.
-   */
-  const streaks = {
-    black: streakWrite(black, outcomeFor(winner, "black"), PLAYER_STREAK_SCOPES),
-    white: streakWrite(white, outcomeFor(winner, "white"), PLAYER_STREAK_SCOPES),
-  };
-
-  await prisma.$transaction([
-    prisma.player.update({
-      where: { key: blackKey },
-      // The columns are chosen by pool, so the shape is built rather than written out.
-      data: {
-        ...poolWrite(pool, rated.first.rating, rated.first.ratedGames, outcomeFor(winner, "black")),
-        ...streaks.black,
-      } as never,
-    }),
-    prisma.player.update({
-      where: { key: whiteKey },
-      data: {
-        ...poolWrite(pool, rated.second.rating, rated.second.ratedGames, outcomeFor(winner, "white")),
-        ...streaks.white,
-      } as never,
-    }),
-  ]);
-
-  await recordVariantResult(blackName, whiteName, winner, variant, pool);
-}
 
 /** One row of the directory: a member, with their record if they have one. */
 export type DirectoryEntry = {

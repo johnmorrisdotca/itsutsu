@@ -6,7 +6,7 @@ import { forfeitTurn, resign, winOnTime } from "@/lib/gomoku/engine";
 import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
 import { fetchTimeOff, timeOffGraceMs } from "@/lib/social/vacation";
 import { prisma } from "@/lib/prisma";
-import { recordResult } from "@/lib/rating/players";
+import { recordResult } from "@/lib/rating/recordResult";
 import { recordPlayed } from "@/lib/rating/playedRun";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat, seatMemberId } from "@/lib/bots/bots";

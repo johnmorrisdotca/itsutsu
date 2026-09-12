@@ -1,6 +1,6 @@
 {
   "name": "gomoku",
-  "version": "0.168.0",
+  "version": "0.168.1",
   "private": true,
   "scripts": {
     "dev": "next dev -p ${WEB_PORT:-6600}",
@@ -42,6 +42,7 @@
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
     "bots:play:prod": "node scripts/bots-play-prod.mjs",
     "xp:backfill": "XP_BACKFILL=1 vitest run src/lib/xp/backfillXp.play.test.ts --disable-console-intercept",
+    "standings:reconcile": "STANDINGS_RECONCILE=1 vitest run src/lib/rating/reconcileStandings.play.test.ts --disable-console-intercept",
     "xp:backfill:prod": "node scripts/xp-backfill-prod.mjs"
   },
   "dependencies": {

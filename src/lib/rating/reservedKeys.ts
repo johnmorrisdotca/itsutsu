@@ -7,8 +7,8 @@ import { playerKey } from "./playerKey";
  * name is up for a stranger to claim. An "elsewhere" record belongs to a
  * live member playing under their own name, so it reserves nothing; blocking
  * it would lock them out of their own ladder. Whoever types a reserved name
- * still plays their casual game; recordResult and recordVariantResult simply
- * decline to touch the ladder for it, the same way a blank name declines.
+ * still plays their casual game; `recordResult` simply declines to touch
+ * either ladder for it, the same way a blank name declines.
  * See legacyPlayers.data.ts.
  */
 export const RESERVED_PLAYER_KEYS: ReadonlySet<string> = new Set(
