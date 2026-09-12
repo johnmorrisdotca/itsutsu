@@ -10,6 +10,8 @@ import { RecordTable, type RecordTableRow } from "./RecordTable";
 import { RowActions } from "@/components/ui/Controls";
 import { BOT_ALL_TIERS, BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.constants";
 import { tierFor } from "@/lib/rating/elo";
+import { gamesPlayed } from "@/lib/rating/shownRecord";
+import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import type { DirectoryEntry } from "@/lib/rating/players";
 
 /**
@@ -39,7 +41,7 @@ import type { DirectoryEntry } from "@/lib/rating/players";
  * game, so its ordinary rating would sit at its starting value for ever and
  * printing that would be worse than printing nothing.
  */
-export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
+export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
   /*
    * Easiest first, so the ladder reads itself. The directory hands them over
    * in the order they were last seen, which for players who are always
@@ -59,14 +61,27 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
   const graded = shown.filter((entry) => !specialists.includes(entry.botTier ?? ""));
   const experts = shown.filter((entry) => specialists.includes(entry.botTier ?? ""));
 
+  /*
+   * Every finished game each of them has played, in one query for however
+   * many rows are on this tab — the same read `Directory.tsx` makes for the
+   * Members tab, so the two agree about the same bot. `entry.profile?.computer`
+   * is the RATED computer-pool record alone, and printing it under "played"
+   * was 0.147.1's bug again: a computer player with 36 finished games and 35
+   * unrated bot-series runs showed 1.
+   */
+  const tallies = await fetchPlayedTallies(shown.map((entry) => entry.id));
+
   const rows: RecordTableRow[] = shown.map((entry) => {
     /*
-     * Their figures come from the computer pool, which is the only one they
-     * play in. Reading the ordinary ones would say they had never played,
-     * however many games they had just finished — which is exactly what the
-     * page said the first time somebody beat Kyu.
+     * The RATING still comes from the computer-pool profile — that is a
+     * different question from "how many games", and it is right that it
+     * answers only about the rated ones. Reading the ordinary rating table
+     * would say they had never played at all, which is exactly what the page
+     * said the first time somebody beat Kyu.
      */
     const computer = entry.profile?.computer ?? null;
+    // Every finished game, rated or not — see the comment above `tallies`.
+    const here = gamesPlayed(tallies.get(entry.id));
     return {
       key: entry.id,
       // The grade, so a browser test can say they come out easiest-first
@@ -85,9 +100,23 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
           <MemberKindBadge kind={MEMBER_KINDS.robot} />
         </span>
       ),
-      record: computer ?? { wins: 0, losses: 0, draws: 0 },
-      of: { player: entry.name, pool: RATING_POOLS.computer, rated: "yes" },
-      streak: computer?.streak ?? null,
+      record: here,
+      /*
+       * Every game this bot has finished, rated or not — not only the rated
+       * ones `entry.profile?.computer` would give. `rated` is deliberately
+       * unset: "yes" would open a shorter list than the number beside it
+       * promises, which is the same fault "Nothing Is A Dead End" describes,
+       * the other way round.
+       */
+      of: { player: entry.name, pool: RATING_POOLS.computer },
+      /*
+       * NULL, NOT THE RATED STREAK — the same call `Directory.tsx` makes
+       * about this exact bot on the Members tab. The stored streak is a run
+       * of RATED computer-pool games alone; this row now counts every
+       * finished game, and a streak over a smaller set than the number
+       * beside it is a second figure nobody could reconcile with the first.
+       */
+      streak: null,
       rating:
         computer === null || computer.ratedGames === 0
           ? null

@@ -32,6 +32,8 @@ import { shownName } from "@/lib/rating/shownName";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { fetchPlayer } from "@/lib/rating/players";
+import { RATING_POOLS } from "@/lib/rating/pools";
+import { ratingShown } from "@/lib/rating/shownRecord";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
 export const metadata = { title: "Player" };
@@ -173,6 +175,16 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       }
     : undefined;
   const tier = player === null ? null : TIER_DISPLAY[player.tier];
+  /*
+   * THE SAME RULE `Directory.tsx` APPLIES TO THE SAME PROFILE. `player.rating`
+   * is the people-pool column alone, and it defaults to the untouched schema
+   * value the moment nobody has settled it — every one of the seven computer
+   * players printed "Rating 1600" beside their real computer-pool figure,
+   * because none of them has ever played a person-versus-person game.
+   * `ratingShown` is silence where nothing has been earned, and falls back to
+   * the computer rating, marked, where that is the only one there is.
+   */
+  const rating = ratingShown(player);
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
   const whole = wholeRecord(linked, { won: record.wins, lost: record.losses, drawn: record.draws });
 
@@ -298,7 +310,24 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         <Figures
           testId="player-figures"
           figures={[
-            { label: "Rating", value: player?.rating ?? "—", testId: "player-rating" },
+            {
+              label: "Rating",
+              value: (
+                <>
+                  {rating === null ? "—" : rating.rating}
+                  {rating?.pool === RATING_POOLS.computer ? (
+                    <span
+                      className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
+                      title="Earned against the computer players, which are rated in a pool of their own."
+                      data-testid="player-rating-computer"
+                    >
+                      機械
+                    </span>
+                  ) : null}
+                </>
+              ),
+              testId: "player-rating",
+            },
             ...(player !== null && player.computer.ratedGames > 0
               ? [{ label: "Vs computer", value: player.computer.rating, testId: "player-computer-rating" }]
               : []),
