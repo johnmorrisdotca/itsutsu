@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
-import { chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
+import { chooseGame, chosenBoard, openMoreSettings, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -132,7 +132,17 @@ test.describe("playing a finished game again", () => {
     await page.getByRole("link", { name: /Play again as White/ }).click();
     await ready(page, "set-up-game");
 
+    /*
+     * PRESSED IN TWO, BECAUSE WHAT STANDS BETWEEN THEM IS THE POINT. Start states
+     * the game; Begin makes it. And a rematch is the case that best earns the page
+     * in between: the colours swap, so "you are white this time" is worth reading
+     * BEFORE the board rather than being worked out from it three moves in.
+     */
     await page.getByTestId("set-up-start").click();
+    await ready(page, "doorstep");
+    await expect(page.getByTestId("doorstep-colours")).toContainText(them.name.split(" ")[0]);
+    await expect(page.getByTestId("doorstep-colours")).toContainText("you are white");
+    await page.getByTestId("doorstep-begin").click();
     await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
 
     const id = page.url().split("/").pop()!;
@@ -186,7 +196,7 @@ test.describe("playing a finished game again", () => {
      */
     await expect(page.getByTestId("set-up-again")).toContainText(/new game/i);
 
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
     await page.waitForURL(/\/games\/reversi\/match\/[^/]+$/, { timeout: 30_000 });
 
     const id = page.url().split("/").pop()!;
@@ -268,7 +278,7 @@ test.describe("carrying a position into a new game", () => {
     await openMoreSettings(page);
     await expect(page.getByTestId("shared-rules-move-time")).toHaveValue(String(86_400_000));
     await page.getByTestId("shared-rules-move-time").selectOption(String(5 * 60_000));
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
     await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
 
     const id = page.url().split("/").pop()!;

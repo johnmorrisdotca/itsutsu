@@ -170,6 +170,7 @@ test.describe("the pages that stay open", () => {
     for (const path of [
       "/games/gomoku/play",
       "/games/gomoku/new",
+      "/games/gomoku/begin",
       "/games/gomoku/me",
       "/games/gomoku/match/nosuchgame",
       "/games/gomoku/history",

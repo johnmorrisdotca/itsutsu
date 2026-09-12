@@ -8,7 +8,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { botsFor } from "@/lib/bots/bots.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { matchPath, seatPath } from "@/lib/gomoku/slugs";
+import { beginLink } from "./setUpAddress";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { Opponent } from "@/lib/social/opponents";
@@ -24,7 +24,7 @@ import type { RulesDraft } from "./rulesDraft";
 import { shownName } from "@/lib/rating/shownName";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 import { matchSeat } from "./seatMatch";
-import { creationFor } from "./setUpStart";
+import { sameRules } from "./setUpStart";
 
 /**
  * The default opponent, in the words the control uses.
@@ -76,6 +76,7 @@ const POST_FOR_ANYONE = "Post the seat for anyone";
  */
 export function SetUpGame({
   initial,
+  asPlayed = null,
   opponents,
   seats = [],
   signedIn,
@@ -83,10 +84,18 @@ export function SetUpGame({
   opponent = null,
   again = null,
   fork = null,
-  carry = {},
   problem = null,
 }: {
   initial: RulesDraft;
+  /**
+   * The game this was filled in from, as it was PLAYED — null where nothing was.
+   *
+   * Only a rematch has one, and it is what lets this screen notice it has been
+   * changed. Not the same thing as `initial`: the address can now carry a whole
+   * draft, so what the form opens with and what the old game was are two facts,
+   * and comparing a changed draft against itself would always say "unchanged".
+   */
+  asPlayed?: RulesDraft | null;
   opponents: Opponent[];
   /**
    * The seats already posted, so asking for a game somebody is already asking
@@ -115,8 +124,13 @@ export function SetUpGame({
   again?: SetUpAgain | null;
   /** A position this carries forward, and how far in. */
   fork?: SetUpFork | null;
-  /** What a rematch or a fork brings that this form has no row for — see `SetUpFrom`. */
-  carry?: Record<string, unknown>;
+  /*
+   * `carry` is no longer a prop here, and the absence is the point. The line
+   * length, the seed, who opens and the draw limit still travel — they come off
+   * the game a rematch or a fork was read from — but they are only needed by
+   * whatever BUILDS the creation, and this screen no longer does. The doorstep
+   * holds them, which is where the request is now made.
+   */
   /** Why the address could not be honoured, when it could not. */
   problem?: string | null;
 }) {
@@ -125,8 +139,12 @@ export function SetUpGame({
   const [against, setAgainst] = useState<string>(
     opponent === null ? ANYONE : valueFor(opponent),
   );
+  /*
+   * Pressed, and on the way. There is nothing here that can fail any more — the
+   * request that could moved to the doorstep — so this screen has no error to
+   * show, only a button that stops being pressable while the next page arrives.
+   */
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   /*
    * Says when the browser has taken this over.
    *
@@ -183,19 +201,20 @@ export function SetUpGame({
   });
 
   /*
-   * What this will make, decided in one pure place — see `creationFor`. The
-   * interesting part is `repeat`: a rematch is only a rematch while the form
-   * still describes the game it was filled in from, and this screen has to say
-   * so rather than hand somebody back their colours without mentioning it.
+   * WHETHER THIS IS STILL A REPEAT of the game it was filled in from.
+   *
+   * A rematch is only a rematch while the form still describes that game — the
+   * creation route takes every rule from the old one and nothing from the
+   * request — so the moment somebody changes a rule this stops being one, and the
+   * screen has to say so rather than hand back swapped colours without mentioning
+   * it. `sameRules` is the same comparison `creationFor` makes on the doorstep,
+   * asked here because this is where the sentence is printed.
+   *
+   * Compared against `asPlayed` rather than against `initial`: since the address
+   * can fill this form in itself, `initial` may already carry a change, and a
+   * changed draft compared against itself would always answer yes.
    */
-  const creation = creationFor({
-    rules: settled,
-    source: again === null && fork === null ? null : initial,
-    opponent: chosen,
-    again,
-    fork,
-    carry,
-  });
+  const repeat = again !== null && asPlayed !== null && sameRules(settled, asPlayed);
 
   /*
    * Who the game is against, for the line that stands in for the folded
@@ -225,54 +244,40 @@ export function SetUpGame({
    */
   const handicapWord = describeHandicap(settled.handicap);
 
-  async function start() {
+  /*
+   * THE WAY ON, WHICH NO LONGER CREATES ANYTHING.
+   *
+   * This used to POST the game and land on the board, and that was John's
+   * complaint stated as precisely as it can be: "we go straight to the game
+   * rather than the Doorstep screen which confirms settings… the board means
+   * we're playing!!!!" Choosing and confirming are two acts, and a screen that
+   * does both in one press cannot be read before it is committed to.
+   *
+   * So Start carries the draft to /games/<game>/begin, which states it and
+   * creates it on a press of its own. Every entry point reaches that page,
+   * because every entry point reaches this screen — see `SET_UP_PARAMS` and
+   * `beginLink`, and note that the draft travels in the address rather than in a
+   * store, so the doorstep can be reloaded, linked and come back from.
+   *
+   * WHAT A SEAT SOMEBODY IS ALREADY WAITING AT CARRIES INSTEAD. It goes to the
+   * same doorstep, naming the seat, and the doorstep reads that game and states
+   * ITS rules — because the match here is on the game, the board and the pace,
+   * and agreeing to somebody else's game means being shown the parts nobody
+   * compared. Sitting down used to land on a board with no confirmation either.
+   *
+   * `router.push`, not `replace`: pressing Start and then going back belongs on
+   * this screen, and the doorstep is a page a reader may honestly want to leave.
+   */
+  function start() {
     setBusy(true);
-    setError(null);
-    try {
-      /*
-       * Somebody is already asking for exactly this, so take their seat rather
-       * than post a second one next to it and leave two people waiting for
-       * each other.
-       */
-      if (waiting !== undefined) {
-        const sat = await fetch(`/api/games/${waiting.id}/sit`, { method: "POST" });
-        if (sat.ok) {
-          const { path } = (await sat.json()) as { path: string };
-          router.push(path);
-          return;
-        }
-        // Somebody else reached it first; fall through and post one instead.
-      }
-
-      const response = await fetch("/api/games/live", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(creation.body),
-      });
-      if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        setError(body?.error ?? "That game could not be started.");
-        return;
-      }
-      const created = (await response.json()) as { id: string; blackToken?: string };
-      /*
-       * A posted seat belongs to nobody yet, so its creator goes in by their own
-       * seat link, which claims the black seat for them. Everything else binds
-       * both seats at the moment it is written, so its own address seats whoever
-       * opens it — and the token for a seat that is somebody else's is not
-       * returned at all, which is why this reads `Location` rather than
-       * assuming a link it can build.
-       */
-      const to = response.headers.get("Location");
-      const posted = creation.body.open === true;
-      router.push(
-        posted && created.blackToken !== undefined
-          ? seatPath(settled.variant, created.id, created.blackToken)
-          : (to ?? matchPath(settled.variant, created.id)),
-      );
-    } finally {
-      setBusy(false);
-    }
+    router.push(
+      beginLink(settled, {
+        against: chosen?.id ?? null,
+        rematch: again?.id ?? null,
+        from: fork === null ? null : { id: fork.id, move: fork.move },
+        sit: waiting?.id ?? null,
+      }),
+    );
   }
 
   return (
@@ -294,7 +299,7 @@ export function SetUpGame({
       ) : null}
       {again !== null ? (
         <p className="text-xs text-moss" data-testid="set-up-again">
-          {creation.repeat
+          {repeat
             ? SET_UP_COPY.againHint(chosen?.name ?? "them", STONE_DISPLAY[again.colour].label)
             : SET_UP_COPY.againChanged}
         </p>
@@ -412,16 +417,13 @@ export function SetUpGame({
         />
       </div>
 
-      {error !== null ? (
-        <p className="text-xs text-shu" data-testid="set-up-error">
-          {error}
-        </p>
-      ) : null}
       <span>
         {/*
           The button says which of the two things it will do, because they are
           different things to the person pressing it: taking a seat somebody is
-          sitting at starts a game now, and posting one starts a wait.
+          sitting at starts a game now, and posting one starts a wait. Neither of
+          them starts it HERE any more — both lead to the page that states what is
+          about to be played, which is the one press away that was missing.
         */}
         <Button onClick={start} disabled={busy || !signedIn} strong data-testid="set-up-start">
           {busy
@@ -431,6 +433,9 @@ export function SetUpGame({
               : "Start the game 開始"}
         </Button>
       </span>
+      <p className="text-xs text-muted" data-testid="set-up-leads">
+        {SET_UP_COPY.startLeads}
+      </p>
       {waiting !== undefined ? (
         <p className="text-xs text-muted" data-testid="set-up-match">
           {START_COPY.matchHint(waiting.who)}

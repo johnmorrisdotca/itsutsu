@@ -60,4 +60,80 @@ export const SET_UP_COPY = {
   opponentFixed: "Asked for from their page. Change it here if you meant somebody else.",
   /** The way back out of a pre-filled screen to a blank one. */
   startOver: "Set a game up from scratch instead",
+  /**
+   * What the button at the bottom now does, since it no longer makes anything.
+   *
+   * Said because the change is worth noticing: pressing it used to write a game
+   * and land on a board, and it now leads to the page that states what is about
+   * to be played. Somebody who has used this screen before needs telling once.
+   */
+  startLeads: "You will see what is about to be played before anything is started.",
+} as const;
+
+/**
+ * THE RULES BESIDE A BOARD, IN WORDS.
+ *
+ * Short, because there are only two things left to say there. Everything that
+ * used to be decided beside a board is decided on the doorstep now, so the panel
+ * states rather than offers — see `SharedRules`.
+ */
+export const SHARED_RULES_COPY = {
+  /**
+   * Why the rows are answers.
+   *
+   * It said "the first stone is down" before, which was true of the moment the
+   * form went away and is no longer the reason: nothing after the doorstep can
+   * change these, stone or no stone. A note that gives an out-of-date reason is
+   * worse than a note giving none, because a reader believes it.
+   */
+  settled: "Agreed before this game was written. Nothing here can change them now.",
+  handicapMeans:
+    "The handicapped colour plays under those extra restrictions; the other colour plays the plain game.",
+} as const;
+
+/**
+ * THE DOORSTEP, IN WORDS: the page between choosing a game and playing one.
+ *
+ * The setup screen asks; this one states. So every line here is a fact rather
+ * than an instruction, and the two controls are named for the two things somebody
+ * standing on a doorstep can do — go in, or go back and change something.
+ *
+ * Called Begin rather than Start on purpose. "Start the game" is the press that
+ * led here, and reusing its words on the page after it would make the second
+ * press look like a repeat of the first — which is how a confirmation screen
+ * becomes a step people click through without reading.
+ */
+export const DOORSTEP_COPY = {
+  title: "Before the first stone",
+  kanji: "確認",
+  /** Above the table of rows, saying why nothing on this page can be changed here. */
+  note: "This is what will be played. Nothing has been written yet.",
+  begin: "Begin 開始",
+  beginning: "Beginning…",
+  /** Taking a seat somebody has already posted, rather than making a second game. */
+  sit: (who: string) => `Sit down with ${who} 着席`,
+  change: "Change something 変更",
+  /** Once this doorstep has made its game, the same control opens its board. */
+  board: "Open the board 対局へ",
+  made: "You have already begun this game. The button below opens its board rather than making a second one.",
+  another: "Begin another like this one",
+  refused: "That game could not be started.",
+  /**
+   * The seat went between this page being drawn and Begin being pressed.
+   *
+   * It says what the next press will do instead, because the screen before this
+   * one used to do it silently — a press naming one person quietly posting a game
+   * for anyone. The destination was right; doing it without saying so was not.
+   */
+  seatGone: "Somebody else took that seat first. Press Begin again to start a game of your own instead.",
+  signIn: "Sign in to start a game against somebody.",
+  /** Why a posted seat is no longer there to be taken — one line per reason. */
+  gone: {
+    taken: "Somebody else took that seat first, so this would be a new game of your own instead.",
+    finished: "That game has finished, so there is no seat at it to take.",
+    missing:
+      "That seat is no longer on the noticeboard, so this would be a new game of your own instead.",
+    "other-game":
+      "That seat is at a different game from this one, so it is not the seat this page is about.",
+  },
 } as const;

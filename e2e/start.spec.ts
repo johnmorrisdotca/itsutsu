@@ -1,6 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-import { PLAYER_STATE, chooseGame, openGamesPage, openMoreSettings, openSetUpPage } from "./support";
+import {
+  PLAYER_STATE,
+  chooseGame,
+  openGamesPage,
+  openMoreSettings,
+  openSetUpPage,
+  startAndBegin,
+} from "./support";
 
 /*
  * This file was called "starting a game is one sentence" and tested a one-line
@@ -44,7 +51,14 @@ test.describe("asking for a game", () => {
      * on the board. Asserting the posting case only would be asserting an
      * order the suite does not promise.
      */
-    await button.click();
+    /*
+     * AND BOTH GO BY WAY OF THE DOORSTEP, which is the step this used to skip.
+     * Pressing Start states what is about to happen and writes nothing; Begin is
+     * what makes the game or takes the seat. Waiting for a match address straight
+     * after Start used to work and now waits for ever, which is the change said as
+     * plainly as a spec can say it.
+     */
+    await startAndBegin(page);
 
     // Whichever it did, it landed on a real game with an address of its own.
     await page.waitForURL(/\/games\/[^/]+\/match\//);
@@ -70,7 +84,7 @@ test.describe("asking for a game", () => {
     await expect(page.getByTestId("set-up-start")).toContainText("Sit down with");
     await expect(page.getByTestId("set-up-match")).toBeVisible();
 
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
     await page.waitForURL(/\/games\/[^/]+\/match\//);
     await theirs.close();
   });

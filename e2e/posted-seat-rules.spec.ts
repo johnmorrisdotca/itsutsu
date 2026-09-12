@@ -1,20 +1,36 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { boardSizesFor } from "../src/lib/gomoku/gomoku.constants";
-import { watchForCrashes } from "./support";
+import { openBoardRules, watchForCrashes } from "./support";
+import { gamesMade } from "./tidy";
+
+/** Every game this file makes, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
- * Changing the rules of a game nobody has answered yet.
+ * THE RULES OF A GAME NOBODY HAS ANSWERED YET.
  *
- * John posted an open seat, changed the board size while it was still
- * waiting, and the page crashed. The narrow bug is worth fixing; the gap
- * behind it is worth closing, and it is the one he named: this whole area —
- * who the opponent is, what board it is on, how far along the game is — is a
- * matrix, and no cell of it should ever produce a hard crash. A combination
- * that makes no sense should be refused or not offered, never thrown at.
+ * John posted an open seat, changed the board size while it was still waiting,
+ * and the page crashed. The narrow bug was worth fixing; the gap behind it was
+ * the one he named — who the opponent is, what board it is on, how far along the
+ * game is, is a matrix, and no cell of it should ever produce a hard crash.
  *
- * So these walk the matrix rather than the single report. Anything the panel
- * lets a player click, it has to survive.
+ * WHAT HAS CHANGED SINCE, AND WHY THIS FILE READS DIFFERENTLY NOW. These cases
+ * used to walk that matrix by clicking the panel's own controls. There are none:
+ * every game is agreed on the doorstep before it is written, and a board does not
+ * re-offer its rules — the same sentence of John's that asked for the doorstep
+ * asked for this ("we do not want to see that Game board with all the settings on
+ * the side"). So the panel is a statement at every stage, including this one.
+ *
+ * The cases are kept rather than deleted, because the two things they really
+ * guarded still need guarding and neither is about a select:
+ *
+ *  - THE PAGE SURVIVES A GAME WHOSE RULES MOVE UNDER IT. The rules can still
+ *    change — the settings route allows it while nobody else is in the game — so
+ *    the board still has to cope with the game it is about becoming another one.
+ *    Driven through the route now, which is the only door left.
+ *  - THE ADDRESS FOLLOWS THE GAME. /games/reversi/<id> stops naming the game the
+ *    moment somebody changes it, and this page used to answer "there is nothing
+ *    here" about the board its own player was sitting at.
  */
 
 type Started = { id: string; blackToken: string };
@@ -28,7 +44,9 @@ async function startGame(
     data: { blackName: "Poster", whiteName: "", size: 9, ...data },
   });
   expect(started.status(), await started.text()).toBe(201);
-  return (await started.json()) as Started;
+  const game = (await started.json()) as Started;
+  tidyAway(game.id);
+  return game;
 }
 
 /**
@@ -36,76 +54,87 @@ async function startGame(
  *
  * The seat is claimed through /seat/<token>, which puts the credential in a
  * cookie and then redirects — a token in the address would be a seat anybody
- * could read over a shoulder. Without doing this the rules panel renders
- * read-only and there are no controls to break.
+ * could read over a shoulder.
  */
 async function openGame(page: Page, game: Started) {
   await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
   await expect(page.getByTestId("shared-rules")).toBeVisible();
-  await expect(page.getByTestId("shared-rules-size")).toBeVisible();
+}
+
+/** Changes a waiting game's rules the only way left: at the route. */
+async function change(request: Page["request"], game: Started, data: Record<string, unknown>) {
+  const response = await request.put(`/api/games/${game.id}/settings`, {
+    data: {
+      token: game.blackToken,
+      variant: "freestyle",
+      size: 9,
+      obstacles: "none",
+      opening: "free",
+      moveTimeMs: null,
+      timeoutPenalty: "turn",
+      drawLimit: "none",
+      clockMode: "move",
+      rated: true,
+      allowResign: true,
+      open: true,
+      handicap: null,
+      ...data,
+    },
+  });
+  expect(response.status(), await response.text()).toBe(200);
 }
 
 test.describe("the rules panel on a game still waiting for somebody", () => {
-  test("survives a board size change on a posted open seat", async ({ page }) => {
+  test("states the rules rather than offering them", async ({ page }) => {
     /*
-     * The exact report: create a game, post the seat for anyone to answer,
-     * then change the board size while it is still waiting.
+     * The window this closes: a posted seat whose creator could still change the
+     * board, the clock or the game itself from the board it was being played on.
+     * The doorstep is where those are settled, and a board with no stones on it
+     * can be cancelled and set up again, which is a cheaper answer than a window
+     * in which two people can disagree about what they agreed to.
      */
     const crashes = watchForCrashes(page);
     const game = await startGame(page.request, { size: 9, open: true });
     await openGame(page, game);
 
-    const size = page.getByTestId("shared-rules-size");
-    await expect(size).toBeVisible();
-    await size.selectOption("15");
-
-    // The page is still a page, the seat is still posted, and nothing threw.
-    await expect(page.getByTestId("shared-rules")).toBeVisible();
-    expect(crashes, `changing the size crashed the page:\n${crashes.join("\n")}`).toEqual([]);
-    await expect(size).toHaveValue("15");
-  });
-
-  test("survives every size the panel offers, on a posted seat", async ({ page }) => {
-    const crashes = watchForCrashes(page);
-    const game = await startGame(page.request, { size: 9, open: true });
-    await openGame(page, game);
-
-    // Whatever the control offers, it has to survive being chosen.
-    for (const option of boardSizesFor("freestyle")) {
-      await page.getByTestId("shared-rules-size").selectOption(String(option));
-      await expect(page.getByTestId("shared-rules")).toBeVisible();
-      await expect(page.getByTestId("shared-rules-size")).toHaveValue(String(option));
+    await openBoardRules(page);
+    for (const control of ["shared-rules-size", "shared-rules-variant", "shared-rules-opening"]) {
+      await expect(page.getByTestId(control), control).toHaveCount(0);
     }
+    await expect(page.getByTestId("shared-open-line")).toContainText("posted");
     expect(crashes, crashes.join("\n")).toEqual([]);
   });
 
-  test("survives a size change on a game that was never posted", async ({ page }) => {
-    // The same control, one state earlier: a seat kept for a named opponent.
+  test("survives every size the game has, whoever wrote it", async ({ page }) => {
     const crashes = watchForCrashes(page);
-    const game = await startGame(page.request, { size: 9, open: false, whiteName: "Aki" });
-    await openGame(page, game);
+    const game = await startGame(page.request, { size: 9, open: true });
 
-    await page.getByTestId("shared-rules-size").selectOption("13");
-    await expect(page.getByTestId("shared-rules")).toBeVisible();
+    for (const size of [9, 13, 15, 19]) {
+      await change(page.request, game, { size });
+      await openGame(page, game);
+      await expect(page.getByTestId("shared-rules-line")).toContainText(`${size}×${size}`);
+      await expect(page.getByTestId("shared-rules")).toBeVisible();
+    }
     expect(crashes, crashes.join("\n")).toEqual([]);
   });
 
   /**
    * The crash John reported, and the reason for it.
    *
-   * The address names the game as well as the match — /games/reversi/<id> —
-   * and either player may change the game until the first stone is down. So
-   * the moment he did, the address named a game this one was no longer a game
-   * of, and the board he was sitting at answered "there is no page at this
-   * address". Nothing threw; the page 404ed itself out from under him, which
-   * from a chair looks exactly like a crash.
+   * The address names the game as well as the match — /games/reversi/<id> — and
+   * the rules of a game nobody has answered can still change. So the moment they
+   * did, the address named a game this one was no longer a game of, and the board
+   * he was sitting at answered "there is no page at this address". Nothing threw;
+   * the page 404ed itself out from under him, which from a chair looks exactly
+   * like a crash.
    */
   test("keeps the player at the board when the game itself is changed", async ({ page }) => {
     const crashes = watchForCrashes(page);
     const game = await startGame(page.request, { size: 15, open: true });
     await openGame(page, game);
 
-    await page.getByTestId("shared-rules-variant").selectOption("reversi");
+    await change(page.request, game, { variant: "reversi", size: 8 });
+    await page.goto(`/games/gomoku/match/${game.id}`);
 
     // The address follows the game rather than stranding the player on the old name.
     await expect(page).toHaveURL(/\/games\/reversi\//);
@@ -116,30 +145,17 @@ test.describe("the rules panel on a game still waiting for somebody", () => {
 
   test("carries the board with the game when the variant has one of its own", async ({ page }) => {
     /*
-     * Reversi is 8x8 and nothing else. Switching a posted 15x15 game to it
-     * has to take the board along, or the row and the board disagree — and
-     * the size control is then showing a size the game is not played on.
+     * Reversi is 8×8 and nothing else. A posted 15×15 game switched to it has to
+     * take the board along, or the row and the board disagree — and the line above
+     * the fold is then describing a board nobody can see.
      */
     const crashes = watchForCrashes(page);
     const game = await startGame(page.request, { size: 15, open: true });
-    await openGame(page, game);
+    await change(page.request, game, { variant: "reversi", size: 15 });
 
-    await page.getByTestId("shared-rules-variant").selectOption("reversi");
+    await page.goto(`/games/reversi/match/${game.id}`);
     await expect(page.getByTestId("shared-rules")).toBeVisible();
-    /*
-     * The board went with the game, and there is now nothing to ask: a game
-     * with one board is not offered a choice between it and itself, so the
-     * control is gone rather than showing 8×8 as its only option. The line
-     * above it carries the answer, which is what this case is really about —
-     * the row and the board agreeing.
-     *
-     * This assertion was `toHaveValue("8")` when it was written, against a
-     * control that was always there. Changed by the setup-screen work, which
-     * hides a single-option board control everywhere for the same reason the
-     * start sentence does; say so if you would rather have the control back.
-     */
     await expect(page.getByTestId("shared-rules-line")).toContainText("8×8");
-    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
     expect(crashes, crashes.join("\n")).toEqual([]);
   });
 });

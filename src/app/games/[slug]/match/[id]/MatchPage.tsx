@@ -24,7 +24,7 @@ import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { seatPickList } from "@/lib/phrase/seatPick";
-import { markSeatTaken, resolveSeat, rulesAreSettled, seatIsFree } from "@/lib/history/seats";
+import { markSeatTaken, resolveSeat, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { activeGameCount, activeGameLimit } from "@/lib/history/activeGames";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
@@ -258,13 +258,12 @@ async function LiveMatch({
       whiteClaimedAt: true,
       moveCount: true,
       /*
-       * For `settled` below. A seat BOUND to a member is a person already in
-       * this game, whether or not they have opened it — a challenge is in their
-       * list the moment it is written and nobody ever follows a link. Same row,
-       * two more columns.
+       * The two member ids used to be read here as well, for `settled` — a seat
+       * bound to a member is a person already in this game whether or not they
+       * have opened it. Nothing beside the board asks whether the rules are still
+       * open any more (see below), so they go: a column fetched for a reader that
+       * no longer exists is a comment about the past wearing a query.
        */
-      blackMemberId: true,
-      whiteMemberId: true,
     },
   });
 
@@ -341,19 +340,14 @@ async function LiveMatch({
   const seatPicks = freeSeats.length === 0 ? [] : await seatPickList();
 
   /*
-   * Whether the rules are still open to change. Read from the same row as the
-   * seat links, because it is the same question asked twice: a seat still
-   * waiting for somebody is a game still being set up.
+   * NOTHING IS ASKED HERE ANY MORE, so nothing reads `rulesAreSettled`. The panel
+   * beside the board was a form for a game nobody had answered and is a statement
+   * at every stage now: the rules are agreed on the doorstep before the game is
+   * written, and "we do not want to see that Game board with all the settings on
+   * the side". The rule itself has not moved — `PUT /api/games/<id>/settings` still
+   * asks it and still answers 409 — which is where it belongs, since hiding a
+   * control whose route still answers is how the seat links went wrong.
    */
-  const settled =
-    tokens === null
-      ? true
-      : rulesAreSettled(
-          arriving
-            ? { ...tokens, [seat === STONES.black ? "blackClaimedAt" : "whiteClaimedAt"]: new Date() }
-            : tokens,
-        );
-
   let invites: SeatInvite[] = [];
   if (seat !== null) {
     if (tokens !== null) {
@@ -399,7 +393,7 @@ async function LiveMatch({
         </div>
 
         <aside className="flex w-full flex-col gap-4 lg:w-80">
-          <SharedRules game={game} token={token} seat={seat} refusal={refusal} settled={settled} />
+          <SharedRules game={game} refusal={refusal} />
           {forkOffered({ move, last: game.moveCount, seated: seat !== null }) ? (
             <div className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">

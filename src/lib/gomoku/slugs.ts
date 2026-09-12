@@ -131,6 +131,24 @@ export function setUpPath(variant: string): string {
 }
 
 /**
+ * /games/<slug>/begin — THE DOORSTEP. What is about to be played, read back,
+ * before anything has been written.
+ *
+ * The game is in the PATH here and offered as a choice at /games/new, and that
+ * is not a contradiction: by the time somebody is standing on the doorstep the
+ * game IS settled, so it is identity, and this page is a statement about one
+ * particular game. The screen before it is where the game is still a question.
+ *
+ * Everything else about the game to come rides in the query — see
+ * `SET_UP_PARAMS`. So the doorstep is a plain address: linkable, reloadable,
+ * and reversible, since pointing the same query at /games/new is the way back
+ * with every choice still made. It writes nothing; only its Begin does.
+ */
+export function beginPath(variant: string): string {
+  return `${gamePath(variant)}/begin`;
+}
+
+/**
  * /games/<slug>/match/<id> — one match, and with a move number, the position
  * after that move. A stored game is a move list, so a position is addressable
  * by counting: /games/gomoku/match/abc/12 is the board after the twelfth
@@ -192,7 +210,55 @@ export const SET_UP_PARAMS = {
   /** A board and a pace already asked for, so the screen does not ask twice. */
   board: "board",
   pace: "pace",
+  /**
+   * THE WHOLE OF A SETTLED GAME, for the two addresses that carry a finished
+   * draft rather than a head start on one.
+   *
+   * The five above were enough while the query only ever pre-filled a form that
+   * somebody was still going to fill in. The doorstep is the other errand: it
+   * STATES a game, and then hands the same choices back to the setup screen when
+   * somebody wants to change one. Both directions need every rule, or "change
+   * something" quietly resets whatever it could not carry — which is worse than
+   * no way back, because it looks like it worked.
+   *
+   * The names are address words rather than the draft's field names on purpose:
+   * `blocks`, not `obstacles`; `resign`, not `allowResign`. An address is read by
+   * people. The one conversion between the two lives in `setUpAddress.ts`
+   * (writing) and `setUpAsked.ts` (reading), and every value is checked against
+   * what the site actually offers on the way back in — a query string is
+   * somebody's typing.
+   *
+   * `game` is the exception worth naming: the game is in the PATH at
+   * /games/<game>/new and on the doorstep, where it is identity. This is for
+   * /games/new, where the game is still a choice and a pre-filled one is a head
+   * start like the board is. It carries the SLUG, which is the vocabulary the
+   * rest of the address is written in.
+   */
+  game: "game",
+  blocks: "blocks",
+  opening: "opening",
+  clock: "clock",
+  penalty: "penalty",
+  rated: "rated",
+  resign: "resign",
+  handicap: "handicap",
+  /**
+   * A seat already posted on the noticeboard that this will sit down at rather
+   * than post a second one beside.
+   *
+   * It is on the doorstep because the doorstep is where a game is agreed to, and
+   * sitting at somebody else's seat is agreeing to THEIR rules — the one case
+   * where the statement is about a row that already exists rather than about a
+   * draft. See `Doorstep`.
+   */
+  sit: "sit",
 } as const;
+
+/** How a rated game and a friendly one are said in an address. */
+export const RATED_WORDS = { rated: "rated", friendly: "friendly" } as const;
+
+/** And whether resigning is allowed. Words rather than 1 and 0, for a reader. */
+export const RESIGN_WORDS = { yes: "yes", no: "no" } as const;
 
 /**
  * A game with no clock, said out loud.
@@ -203,6 +269,19 @@ export const SET_UP_PARAMS = {
  * with the member's usual.
  */
 export const NO_PACE = "none";
+
+/**
+ * A game with nobody carrying a handicap, said out loud.
+ *
+ * The same distinction as `NO_PACE` and it bites harder. An absent parameter
+ * can only mean "nothing was said", and the screen answers that by falling
+ * back — to the member's usual for a clock, and for a rematch to the handicap
+ * the game being repeated was played under. So somebody who TOOK a handicap
+ * off on the doorstep and then pressed Change something would have had it
+ * handed straight back, which is a choice being reversed by an address that
+ * could not express it.
+ */
+export const NO_HANDICAP_ASKED = "none";
 
 /** The most moves an address may name, matching the route's own ceiling. */
 const MOVE_CEILING = 4096;

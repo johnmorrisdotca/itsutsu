@@ -1,40 +1,57 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-
 import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
-import { describeClock } from "@/lib/history/deadline";
-import { Button, SectionTitle } from "@/components/ui/Controls";
+import { SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
-import { penaltyMeans } from "./penalty";
-import { RulesForm } from "./RulesForm";
+import { MoreSettings } from "./MoreSettings";
 import { RulesStatement } from "./RulesStatement";
-import { draftFromGame, type RulesDraft } from "./rulesDraft";
-import { describeHandicap, describeRules } from "./rulesSummary";
+import { SHARED_RULES_COPY } from "./live.constants";
+import { draftFromGame } from "./rulesDraft";
+import { describeHandicap, describeRules, describeSettings } from "./rulesSummary";
 
 /**
- * The rules a shared game is played under, for everyone who opens its link,
- * and — for a seat holder, before the first stone — the means to change them.
- * The invited player never saw the settings the game was started from, so
- * this is the only place they learn what they are agreeing to.
+ * THE RULES BESIDE A BOARD: A STATEMENT, FOLDED SMALL.
+ *
+ * John, in the same breath as asking for the doorstep: "We do not want to see
+ * that Game board with all the settings on the side… the board means we're
+ * playing!!!!"
+ *
+ * TWO THINGS WENT WRONG HERE AND ONLY ONE HAD BEEN FIXED. The panel used to be
+ * a FORM for a game nobody had answered yet, which is how the rules of a posted
+ * seat could move under whoever took it; 0.156.0 closed most of that by settling
+ * the rules the moment somebody else arrives. What was left was the other half:
+ * the panel was still a form for the creator of an unanswered game, and still a
+ * column of nine labelled rows for everybody else. A board with the whole rule
+ * sheet open beside it does not read as a game in progress.
+ *
+ * So there is no form here at all, at any stage. The rules were agreed on the
+ * doorstep before the game existed — that is the whole point of that page — and
+ * a board is not the place to re-offer them. A creator who got the clock wrong
+ * cancels the game, which is one control away on a board with no stones on it,
+ * and sets it up again; that is a cheaper answer than a window in which one seat
+ * can change what the other agreed to, and it cannot be got wrong.
+ *
+ * AND IT IS COMPACT. One line saying what the game is, the two things that are
+ * facts about its STATE rather than its rules — a seat still posted, a game that
+ * will move no rating — and everything else behind the site's own disclosure,
+ * summarised by the line it folds under. Somebody who wants to check the penalty
+ * for running out of time is one tap away; somebody who came to play is looking
+ * at a board.
+ *
+ * The disclosure is the same component the setup screen folds its settings into,
+ * and the rows inside are the same `RulesStatement` the doorstep shows. So what
+ * was agreed, what is about to be played and what is being played are one set of
+ * words in three places rather than three descriptions that can drift.
  */
 export function SharedRules({
   game,
-  token,
-  seat,
   refusal,
-  settled,
 }: {
   game: GameDetail;
-  token: string | null;
-  seat: string | null;
   /**
    * Why this game will move no rating, when it will not. Decided on the
    * server — the rule reads the kept-record table — and said here rather than
@@ -42,75 +59,10 @@ export function SharedRules({
    * left to ask.
    */
   refusal: RatingRefusal | null;
-  /**
-   * Whether the rules are past changing: somebody else is in this game, or a
-   * stone is down. Decided on the server from the seat row — see
-   * `rulesAreSettled` — because a game's rules settle when the second player
-   * arrives, and the board alone cannot see who has arrived.
-   *
-   * IT COVERS MORE THAN IT USED TO, and what it stopped covering is the point
-   * of the setup screen. A challenge, a rematch and a fork bind the other seat
-   * at the moment they are written, so those arrive here settled and this panel
-   * is a statement from the first render. What is left editable is a game
-   * nobody else is in yet: a seat posted on the noticeboard, or a private one
-   * whose other chair is going out as a link. Those really are still being set
-   * up, and their creator fixing a clock they got wrong is not somebody moving
-   * the rules under a person who already agreed to them.
-   */
-  settled: boolean;
 }) {
-  const router = useRouter();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  /*
-   * A form only while there is still nobody to hold to these rules. It stayed
-   * one until the first stone, which left a window between somebody sitting
-   * down and somebody moving where one seat could change what the other had
-   * just agreed to — the door the setup screen was built to close, left open
-   * at the other end.
-   *
-   * That window has since closed twice over. It shut for a posted seat when the
-   * rules began settling as somebody sat down rather than as somebody moved,
-   * and it shut for a challenge when every challenge started being sent from
-   * the setup screen — see `rulesAreSettled`, which now reads a bound seat as
-   * somebody who has arrived. What is left here is a creator, alone, correcting
-   * a game nobody else is in.
-   */
-  const editable = seat !== null && token !== null && !settled;
   const variant = game.variant as RuleVariant;
   const copy = RULE_VARIANT_DISPLAY[variant];
-
-  /*
-   * One settled set of rules, sent whole. The form has already brought the
-   * settings that cannot disagree into line — see `applyRulesChange` — so
-   * there is nothing to merge or correct here, and no second copy of those
-   * rules to fall out of step with the one on the setup screen.
-   */
-  async function change(merged: RulesDraft) {
-    if (!editable) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const response = await fetch(`/api/games/${game.id}/settings`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token,
-          ...merged,
-          handicap: game.handicap.stone === null ? null : game.handicap,
-        }),
-      });
-      if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(body?.error ?? "Those rules could not be applied.");
-      }
-      router.refresh();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Those rules could not be applied.");
-    } finally {
-      setSaving(false);
-    }
-  }
+  const handicap = describeHandicap(game.handicap);
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="shared-rules">
@@ -118,44 +70,16 @@ export function SharedRules({
       <p className="text-sm font-semibold" data-testid="shared-rules-line">
         {describeRules(game)}
       </p>
-      {copy !== undefined ? (
-        <p className="text-xs text-muted">{copy.tagline}</p>
-      ) : null}
-      {game.opening !== OPENING_RULES.free && game.opening in OPENING_DISPLAY ? (
-        <p className="text-xs text-muted">
-          {OPENING_DISPLAY[game.opening as OpeningRule].tagline}
-        </p>
-      ) : null}
-      {describeHandicap(game.handicap) !== null ? (
-        <p className="text-xs text-muted">
-          The handicapped colour plays under those extra restrictions; the other colour plays the plain game.
-        </p>
-      ) : null}
+      {/*
+        A seat still on the noticeboard, and a game that will count for nothing.
+        Both stay OUT of the fold, because neither is a rule: they are things
+        about this game right now that somebody looking at the board would want to
+        know without being told to look.
+      */}
       {game.openSeat !== null ? (
         <p className="text-xs text-moss" data-testid="shared-open-line">
           The {game.openSeat} seat is posted on the games page for anyone to take.
         </p>
-      ) : null}
-      <p className="text-xs text-muted" data-testid="shared-times-line">
-        Started {new Date(game.playedAt).toLocaleString()}
-        {game.status === "finished" && game.lastMoveAt !== null
-          ? ` · finished ${new Date(game.lastMoveAt).toLocaleString()}`
-          : ""}
-      </p>
-      {/*
-        Only while the form is up. Once the statement is showing it says the
-        clock, the ratings and the cost of running out of time as labelled
-        rows, and this line was repeating all three of them word for word
-        directly above it.
-      */}
-      {editable ? (
-      <p className="text-xs text-muted" data-testid="shared-clock-line">
-        {describeClock(game.clockMode, game.moveTimeMs)}
-        {!game.rated ? ". Friendly: ratings unaffected" : ""}
-        {game.moveTimeMs !== null && game.clockMode !== "game"
-          ? `. ${penaltyMeans(game.timeoutPenalty)}`
-          : ""}
-      </p>
       ) : null}
       {refusal !== null ? (
         <p
@@ -169,48 +93,28 @@ export function SharedRules({
         </p>
       ) : null}
 
-      {/*
-        Once a stone is down the form goes and the answers stay. Everything it
-        was holding — the opening, whether resigning is allowed, what running
-        out of time costs — used to leave the page with it, which is hardest on
-        the player who was invited and never saw the settings to begin with.
-      */}
-      {!editable ? <RulesStatement rules={draftFromGame(game)} /> : null}
-
-      {editable ? (
-        <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">
-          <p className="text-xs text-muted">
-            Either player may change the rules until the first stone is down.
-          </p>
-          <RulesForm value={draftFromGame(game)} onChange={(next) => void change(next)} disabled={saving} />
-          {game.handicap.stone !== null ? (
-            <Button
-              onClick={() =>
-                void fetch(`/api/games/${game.id}/settings`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    token,
-                    size: game.size,
-                    variant: game.variant,
-                    obstacles: game.obstacles,
-                    opening: game.opening,
-                    moveTimeMs: game.moveTimeMs,
-                    timeoutPenalty: game.timeoutPenalty,
-                    handicap: null,
-                  }),
-                }).then(() => router.refresh())
-              }
-              disabled={saving}
-            >
-              Remove the handicap
-            </Button>
-          ) : null}
-          {error !== null ? (
-            <p className="text-xs text-shu">{error}</p>
-          ) : null}
-        </div>
-      ) : null}
+      <MoreSettings summary={describeSettings(game)}>
+        {copy !== undefined ? <p className="text-xs text-muted">{copy.tagline}</p> : null}
+        {game.opening !== OPENING_RULES.free && game.opening in OPENING_DISPLAY ? (
+          <p className="text-xs text-muted">{OPENING_DISPLAY[game.opening as OpeningRule].tagline}</p>
+        ) : null}
+        {handicap !== null ? (
+          <p className="text-xs text-muted">{SHARED_RULES_COPY.handicapMeans}</p>
+        ) : null}
+        {/*
+          The same rows the doorstep showed, with a note saying why they are
+          answers: they were settled before this game was written, which is a
+          different reason from the one that used to be given here and the true
+          one now that nothing after the doorstep can change them.
+        */}
+        <RulesStatement rules={draftFromGame(game)} note={SHARED_RULES_COPY.settled} />
+        <p className="text-xs text-muted" data-testid="shared-times-line">
+          Started {new Date(game.playedAt).toLocaleString()}
+          {game.status === "finished" && game.lastMoveAt !== null
+            ? ` · finished ${new Date(game.lastMoveAt).toLocaleString()}`
+            : ""}
+        </p>
+      </MoreSettings>
     </section>
   );
 }

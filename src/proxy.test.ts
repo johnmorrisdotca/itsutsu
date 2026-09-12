@@ -123,6 +123,10 @@ describe("the paths that stay open", () => {
     for (const path of [
       "/games/hex/play",
       "/games/hex/new",
+      // The doorstep. It writes nothing, but it is the last step before a game
+      // and it describes one — a stranger has no business reading it, and
+      // pressing Begin on it needs a session anyway.
+      "/games/hex/begin",
       "/games/hex/match/abc",
       "/games/hex/match/abc/12",
       "/games/hex/match/abc/seat/tok",

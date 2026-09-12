@@ -1,19 +1,27 @@
 import { expect, test } from "@playwright/test";
+import { openBoardRules } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
 
 /**
- * The rules of a game already being played are said, not offered.
+ * The rules of a game being played are said, never offered.
  *
- * Until the first stone the panel is a form. After it the form went away and
- * took the answers with it — the opening, whether resigning was allowed, what
- * running out of time costs, all simply gone from the page. Hardest on the
- * player who was invited, who never saw the settings the game was started
- * from and then watched the one screen that would have shown them disappear.
+ * It used to be half true. The panel became a statement once a stone was down,
+ * which fixed the worst of it — the form had been taking every answer with it
+ * when it went, hardest on the player who was invited and never saw the settings
+ * the game was started from. What was left was the other half: before that stone
+ * the panel was still a FORM, so a board could be sat at with every rule of the
+ * game still open beside it.
+ *
+ * Both halves are closed now, and by the same change. Every game is agreed on
+ * the doorstep before it is written, so there is nothing left for a board to
+ * ask — John's second sentence about the whole business was "we do not want to
+ * see that Game board with all the settings on the side". The panel states, at
+ * every stage, and folds what it states under a line saying what it is.
  */
-test.describe("the rules once play has begun", () => {
+test.describe("the rules beside a board", () => {
   async function game(request: import("@playwright/test").APIRequestContext) {
     const response = await request.post("/api/games/live", {
       data: {
@@ -33,15 +41,27 @@ test.describe("the rules once play has begun", () => {
     return game;
   }
 
-  test("offers a form before the first stone, and no statement", async ({ page, request }) => {
+  test("states them before the first stone, and offers no control", async ({ page, request }) => {
+    /*
+     * The half that was still a form. A seat holder at a game nobody has answered
+     * used to get every rule as a select — the creator's chance to fix a clock
+     * they got wrong, and also a window in which one seat could move what the
+     * other had just agreed to. The doorstep is where a clock gets fixed now, and
+     * a board with no stones on it can simply be cancelled and set up again.
+     */
     const live = await game(request);
     await page.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\/match\//);
-    await expect(page.getByTestId("shared-rules-opening")).toBeVisible();
-    await expect(page.getByTestId("rules-statement")).toHaveCount(0);
+
+    await openBoardRules(page);
+    // The statement is waited FOR, by the helper, before any absence is asserted:
+    // `toHaveCount(0)` passes the instant it is asked and would agree to anything.
+    for (const control of ["shared-rules-opening", "shared-rules-size", "shared-rules-move-time"]) {
+      await expect(page.getByTestId(control), control).toHaveCount(0);
+    }
   });
 
-  test("states them once a stone is down, including what the form was holding", async ({ page, request }) => {
+  test("says what the form used to be holding, once a stone is down", async ({ page, request }) => {
     const live = await game(request);
     await request.post(`/api/games/${live.id}/moves`, {
       data: { token: live.blackToken, row: 4, col: 4 },
@@ -50,10 +70,8 @@ test.describe("the rules once play has begun", () => {
     await page.goto(`/games/gomoku/match/${live.id}/seat/${live.whiteToken}`);
     await page.waitForURL(/\/games\/gomoku\/match\//);
 
+    await openBoardRules(page);
     const said = page.getByTestId("rules-statement");
-    await expect(said).toBeVisible();
-    // The controls are gone; every answer they were holding is not.
-    await expect(page.getByTestId("shared-rules-opening")).toHaveCount(0);
     await expect(said).toContainText("Opening");
     await expect(said).toContainText("Not allowed");
     await expect(said).toContainText("Friendly");
@@ -68,7 +86,23 @@ test.describe("the rules once play has begun", () => {
       data: { token: live.blackToken, row: 4, col: 4 },
     });
     await page.goto(`/games/gomoku/match/${live.id}`);
+    await openBoardRules(page);
     await expect(page.getByTestId("rules-statement")).toContainText("Opening");
+  });
+
+  test("says the clock and the ratings in the line it folds under", async ({ page, request }) => {
+    /*
+     * The point of folding rather than hiding: a reader who has not opened the
+     * drawer is still told the things that decide how a game feels. If the summary
+     * stopped saying them, the fold would be a way of losing information rather
+     * than of saving room.
+     */
+    const live = await game(request);
+    await page.goto(`/games/gomoku/match/${live.id}`);
+    const summary = page.getByTestId("shared-rules").getByTestId("more-settings-summary");
+    await expect(summary).toContainText("5 minutes a move");
+    await expect(summary).toContainText("Friendly");
+    await expect(summary).toContainText("No resigning");
   });
 
   test("nor on the panel that turns a local game into a shared one", async ({ page }) => {
@@ -91,25 +125,33 @@ test.describe("the rules once play has begun", () => {
     expect(inner!.x + inner!.width).toBeLessThanOrEqual(outer!.x + outer!.width + 1);
   });
 
-  test("no control is wider than the panel it sits in", async ({ page, request }) => {
+  test("nothing in the panel is wider than the panel", async ({ page, request }) => {
     /*
-     * A select is as wide as its longest option, and one of the timeout
-     * options was a whole sentence — it pushed the control past the edge of
-     * the panel. Measured rather than eyeballed.
+     * This used to measure three selects, one of whose options was a whole
+     * sentence and pushed the control past the edge. Those selects have gone, and
+     * the measurement is kept rather than deleted because the hazard has not: what
+     * is in there now is a row of labelled sentences, and a sentence that will not
+     * wrap overflows in exactly the same way.
+     *
+     * Measured on every row rather than on a list of named controls. A named list
+     * is what made the old version able to go green having checked nothing — each
+     * lookup was allowed to find no control and skip.
      */
     const live = await game(request);
     await page.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\/match\//);
+    await openBoardRules(page);
 
     const panel = page.getByTestId("shared-rules");
     const box = await panel.boundingBox();
     expect(box).not.toBeNull();
-    for (const testId of ["shared-rules-penalty", "shared-rules-move-time", "shared-rules-opening"]) {
-      const control = page.getByTestId(testId);
-      if ((await control.count()) === 0) continue;
-      const inner = await control.boundingBox();
-      expect(inner, testId).not.toBeNull();
-      expect(inner!.x + inner!.width, testId).toBeLessThanOrEqual(box!.x + box!.width + 1);
+    const rows = page.getByTestId("rules-statement").locator("dd");
+    const many = await rows.count();
+    expect(many, "the statement has no rows to measure").toBeGreaterThan(3);
+    for (let at = 0; at < many; at += 1) {
+      const inner = await rows.nth(at).boundingBox();
+      expect(inner, `row ${at}`).not.toBeNull();
+      expect(inner!.x + inner!.width, `row ${at}`).toBeLessThanOrEqual(box!.x + box!.width + 1);
     }
   });
 });

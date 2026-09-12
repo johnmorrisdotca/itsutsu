@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
-import { openMoreSettings, ready } from "./support";
+import { openMoreSettings, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -91,7 +91,7 @@ test.describe("a handicap is chosen where the rest of the rules are", () => {
      */
     await expect(page.getByTestId("set-up-summary")).toContainText(/handicap/i);
 
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
     await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
 
     const id = page.url().split("/").pop()!;

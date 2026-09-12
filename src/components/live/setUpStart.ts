@@ -1,5 +1,5 @@
-import { HANDICAP_RULES } from "@/lib/gomoku/gomoku.constants";
-import type { Handicap } from "@/lib/gomoku/gomoku.types";
+import { FIRST_STONE, HANDICAP_RULES, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { Handicap, Stone } from "@/lib/gomoku/gomoku.types";
 import type { RulesDraft } from "./rulesDraft";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 
@@ -114,4 +114,57 @@ export function creationFor({
   };
 
   return { body, repeat: false };
+}
+
+/**
+ * WHICH COLOUR THE ASKER ENDS UP WITH, worked out here because this module is
+ * where what the route will do with a request is already reasoned about.
+ *
+ * The doorstep states every fact a game will be played under before it exists,
+ * and the colours are the fact people most want — a rematch swaps them, and
+ * "you are black this time" is worth reading before the board rather than being
+ * worked out from it. So it has to be knowable in advance, and it is: each shape
+ * of creation puts the asker somewhere the route decides, not somewhere chance
+ * does.
+ *
+ *  - A REMATCH swaps, and `colourAfterSwap` has already said which way round.
+ *  - A FORK keeps the colour that played the position, because the position
+ *    belongs to the colours that were in it.
+ *  - A CHALLENGE gives the challenger black — see the creation route, which
+ *    writes `blackMemberId: mineId` for every named opponent.
+ *  - A POSTED SEAT keeps black for whoever posted it, for the same reason: the
+ *    route binds its creator to black and hands back only that seat's token.
+ *
+ * `mine` is nullable and `screen` is separate, because "both seats are yours"
+ * and "you are black" are different answers and a colour standing in for the
+ * first would be read as the second.
+ */
+export function seatsFor({
+  again,
+  fork,
+}: {
+  again: SetUpAgain | null;
+  fork: SetUpFork | null;
+}): { mine: Stone | null; screen: boolean } {
+  if (again !== null) return { mine: again.colour, screen: false };
+  if (fork !== null) return { mine: fork.colour, screen: fork.alone };
+  /*
+   * Everything else: whoever asks takes black. True of a challenge and of a
+   * posted seat alike, and stated as one fact rather than two branches because
+   * the route states it as one — `seats.blackMemberId` is the asker in both.
+   */
+  return { mine: STONES.black, screen: false };
+}
+
+/**
+ * Which colour moves first. Black, unless a game being carried says otherwise.
+ *
+ * Read out of `carry` rather than off the draft, because whoever opens is not a
+ * row on this form — it comes with a rematch or a fork and is passed straight
+ * through. Anything unreadable falls back to the same default the creation route
+ * applies, so the sentence a reader is shown is the game they will get.
+ */
+export function openerIn(carry: Record<string, unknown>): Stone {
+  const opener = carry.opener;
+  return opener === STONES.black || opener === STONES.white ? opener : FIRST_STONE;
 }

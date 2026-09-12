@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { chooseBoard, openMoreSettings, ready } from "./support";
+import { chooseBoard, chosenBoard, openMoreSettings, ready, startAndBegin } from "./support";
 
 
 /**
@@ -58,7 +58,7 @@ test.describe("setting a game up before it exists", () => {
     await page.getByTestId("shared-rules-rated").selectOption("friendly");
     await expect(page.getByTestId("set-up-summary")).toContainText("19×19");
 
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
     await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9]{4}-[a-z0-9]{4}/, { timeout: 30_000 });
     const id = page.url().split("/games/gomoku/match/")[1].split("/")[0];
     const made = await (await request.get(`/api/games/${id}`)).json();
@@ -77,8 +77,21 @@ test.describe("setting a game up before it exists", () => {
      * happened when the rules could be changed on a board already posted.
      */
     await expect(page.getByTestId("shared-rules-variant")).toHaveCount(0);
-    // Reversi is 8×8 and has no board to choose either, so nothing is asked.
-    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
+    /*
+     * Reversi is 8×8 and nothing else, so there is no CHOICE of board — and
+     * since 0.158.7 the board is shown anyway, as one block that cannot be
+     * pressed. John asked for that in as many words: "the Reversi games don't
+     * even have a board size… they should! It should show the board size
+     * (default) being used." A picker with one option is not a choice, and the
+     * board is still a fact about the game somebody is about to play.
+     *
+     * So the claim is the stronger one rather than the absence this used to
+     * assert: the block is there, it says 8×8, and it is marked as the only one.
+     */
+    const board = chosenBoard(page);
+    await expect(board).toHaveAttribute("data-size", "8");
+    await expect(board).toHaveAttribute("data-only", "true");
+    await expect(page.getByTestId("set-up-size")).toHaveCount(1);
     await expect(page.getByTestId("set-up-summary")).toContainText("Reversi");
     await expect(page.getByTestId("set-up-summary")).toContainText("8×8");
   });

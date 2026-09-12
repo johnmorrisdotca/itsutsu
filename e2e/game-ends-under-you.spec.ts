@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
-import { playAt, ready } from "./support";
+import { playAt, ready, startAndBegin } from "./support";
 
 /**
  * What a game does when it ends while you are sitting in front of it.
@@ -208,7 +208,7 @@ test.describe("a game that ends while you are looking at it", () => {
     await again.click();
     await page.waitForURL(/\/games\/new\?rematch=/);
     await ready(page, "set-up-game");
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
     await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
 
     // A real second game, with the same board and the same opponent in it.
