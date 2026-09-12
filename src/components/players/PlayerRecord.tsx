@@ -2,6 +2,7 @@ import { GameCount } from "@/components/games/GameCount";
 import { countText, figuresOf, winRateText } from "@/lib/rating/figures";
 import { streakLabel, streakText, type Streak } from "@/lib/rating/streak";
 import type { GameOutcome, GamePoolFilter, GameRatedFilter } from "@/lib/history/gameHistory.types";
+import { SortableHead, type RecordSort } from "./recordSort";
 import type { ReactNode } from "react";
 
 /**
@@ -279,21 +280,43 @@ export function playedScopeNote(of: RecordOf): string {
 export function RecordHeadings({
   trailing,
   playedTitle,
+  sort,
 }: {
   trailing?: ReactNode;
   /** What this table's Played column counts, when it is not every finished game. See `playedScopeNote`. */
   playedTitle?: string;
+  /**
+   * How this table sorts, when it does. Absent means every heading is text,
+   * which is what every table here was until the ladder learned to sort — so
+   * adding it to one page changes nothing on the others.
+   *
+   * `SortableHead` draws a plain `<th>` for a slot with no sort word in it, so
+   * the four shared counts and the four figures beside them stay one component
+   * whether or not a given table can order by them. Two sets of headings, one
+   * sortable and one not, is how a table becomes two tables again.
+   */
+  sort?: RecordSort;
 }) {
   return (
     <>
-      <th className={HEAD} title={playedTitle}>
+      <SortableHead sort={sort} slot="played" title={playedTitle}>
         Played
-      </th>
-      <th className={HEAD}>W</th>
-      <th className={HEAD}>L</th>
-      <th className={HEAD}>D</th>
-      <th className={HEAD}>Win rate</th>
-      <th className={HEAD}>Streak</th>
+      </SortableHead>
+      <SortableHead sort={sort} slot="won">
+        W
+      </SortableHead>
+      <SortableHead sort={sort} slot="lost">
+        L
+      </SortableHead>
+      <SortableHead sort={sort} slot="drawn">
+        D
+      </SortableHead>
+      <SortableHead sort={sort} slot="winRate">
+        Win rate
+      </SortableHead>
+      <SortableHead sort={sort} slot="streak">
+        Streak
+      </SortableHead>
       {trailing}
     </>
   );

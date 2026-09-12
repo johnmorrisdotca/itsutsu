@@ -87,6 +87,21 @@ export type SortSpec<Field extends string> = {
   readonly columns: readonly SortColumn<Field>[];
   /** The order a request with no `sort` gets. Must name one of `columns`. */
   readonly fallback: { readonly param: string; readonly direction: SortDirection };
+  /**
+   * THE PRIMARY KEY, WHICH BREAKS EVERY TIE THE SORT COLUMN LEAVES.
+   *
+   * Required, and not defaulted to `"id"`, because it is not always `id` and a
+   * wrong one is not a cosmetic mistake: a cursor built on a column that does
+   * not uniquely identify a row cannot say which of two tied rows it meant, so
+   * the page after it repeats some and skips others. `Game` is keyed by `id` and
+   * `Player` by `key` — two of the first two lists on this convention already
+   * disagree, which is the argument for stating it rather than assuming it.
+   *
+   * A default would have been forgotten at exactly the call site where it was
+   * wrong, and nothing would have failed: `key` and `id` are both strings, and a
+   * keyset over the wrong one pages plausibly and incorrectly.
+   */
+  readonly tiebreak: string;
 };
 
 /** A sort that has been checked against a spec: the column, and which way. */

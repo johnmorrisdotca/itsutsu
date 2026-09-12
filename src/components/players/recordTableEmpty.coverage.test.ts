@@ -28,7 +28,16 @@ import { describe, expect, it } from "vitest";
  * rendering the table against a database.
  */
 
-const FILES = ["src/components/players/Ladder.tsx", "src/components/players/ComputerPlayers.tsx"];
+/*
+ * `LadderMore.tsx` rather than `Ladder.tsx`: the ladder's table moved there when
+ * it learned to sort and page, because `Ladder.tsx` reads the database through
+ * `server-only` and cannot draw in a browser. The file holding the `RecordTable`
+ * call is the file this checks, so the gate followed the call.
+ */
+const FILES = [
+  "src/components/players/LadderMore.tsx",
+  "src/components/players/ComputerPlayers.tsx",
+];
 
 describe("a RecordTable caller does not restate RecordTable's own -empty testid", () => {
   it("has files to check, so a passing run means something", () => {

@@ -8,7 +8,13 @@ import {
   nextCursorFrom,
   takeFor,
 } from "./paging.cursor";
-import type { CursorPosition, SortColumn, SortDirection } from "./paging.types";
+import type {
+  CursorPosition,
+  SortChoice,
+  SortColumn,
+  SortDirection,
+  SortSpec,
+} from "./paging.types";
 
 type Field = "playedAt" | "moveCount" | "durationMs";
 
@@ -38,6 +44,23 @@ const DURATION: SortColumn<Field> = {
   index: null,
   unindexedBecause: "A hundred and thirty rows, sorted in memory by Postgres.",
 };
+
+/** The record's shape, near enough: three columns and a row keyed by `id`. */
+const SPEC: SortSpec<Field> = {
+  of: "the record",
+  columns: [PLAYED, MOVES, DURATION],
+  fallback: { param: "played", direction: "desc" },
+  tiebreak: "id",
+};
+
+/** The same columns on a table keyed by something else — see `SortSpec.tiebreak`. */
+const KEYED_BY_NAME: SortSpec<Field> = { ...SPEC, of: "the ladder", tiebreak: "key" };
+
+const choice = (column: SortColumn<Field>, direction: SortDirection): SortChoice<Field> => ({
+  column,
+  direction,
+  asked: true,
+});
 
 describe("encodeCursor / decodeCursor", () => {
   it("round-trips a string value", () => {
@@ -133,7 +156,7 @@ function matches(row: Row, where: Record<string, unknown>): boolean {
 }
 
 function sorted(rows: readonly Row[], column: SortColumn<Field>, direction: SortDirection): Row[] {
-  const order = keysetOrderBy(column, direction);
+  const order = keysetOrderBy(SPEC, choice(column, direction));
   const nullsLast = column.nullable === true;
   return [...rows].sort((a, b) => {
     const left = (a as unknown as Record<string, unknown>)[column.field] as number | string | null;
@@ -166,12 +189,14 @@ function walk(
     const after: CursorPosition | null =
       cursor === null ? null : decodeCursor(cursor, { param: column.param, direction });
     const eligible: Row[] =
-      after === null ? all : all.filter((row) => matches(row, keysetWhere(column, direction, after)));
+      after === null
+        ? all
+        : all.filter((row) => matches(row, keysetWhere(SPEC, choice(column, direction), after)));
     const read: Row[] = eligible.slice(0, takeFor(limit));
     const taken: { rows: Row[]; next: string | null } = nextCursorFrom<Row, Field>(
+      SPEC,
+      choice(column, direction),
       read,
-      column,
-      direction,
       limit,
     );
     seen.push(...taken.rows);
@@ -283,17 +308,19 @@ describe("paging a list", () => {
 });
 
 describe("nextCursorFrom", () => {
+  const newest = choice(PLAYED, "desc");
+
   it("says the page is the last one when the extra row did not arrive", () => {
     const rows = RECORD.slice(0, 5);
-    expect(nextCursorFrom(rows, PLAYED, "desc", 5).next).toBeNull();
-    expect(nextCursorFrom(rows, PLAYED, "desc", 5).rows).toHaveLength(5);
+    expect(nextCursorFrom(SPEC, newest, rows, 5).next).toBeNull();
+    expect(nextCursorFrom(SPEC, newest, rows, 5).rows).toHaveLength(5);
   });
 
   it("trims the extra row off the page it hands back", () => {
-    const { rows, next } = nextCursorFrom(RECORD.slice(0, 6), PLAYED, "desc", 5);
+    const { rows, next } = nextCursorFrom(SPEC, newest, RECORD.slice(0, 6), 5);
     expect(rows).toHaveLength(5);
     expect(next).not.toBeNull();
-    expect(decodeCursor(next!, { param: "played", direction: "desc" })?.id).toBe(rows[4].id);
+    expect(decodeCursor(next!, newest)?.id).toBe(rows[4].id);
   });
 
   it("carries a Date as its ISO string, so a cursor holds one type and not two", () => {
@@ -302,23 +329,64 @@ describe("nextCursorFrom", () => {
       { id: "a", playedAt: when },
       { id: "b", playedAt: when },
     ];
-    const { next } = nextCursorFrom(rows, PLAYED, "desc", 1);
-    expect(decodeCursor(next!, { param: "played", direction: "desc" })?.value).toBe(when.toISOString());
+    const { next } = nextCursorFrom(SPEC, newest, rows, 1);
+    expect(decodeCursor(next!, newest)?.value).toBe(when.toISOString());
+  });
+
+  /*
+   * THE TIEBREAKER IS READ FROM THE SPEC, which is the whole reason it is
+   * declared. `Player` has no `id` — a row is keyed by `key` — and a cursor built
+   * on the wrong column pages plausibly and wrongly: both are strings, so
+   * nothing fails, and the page after it repeats some rows and skips others.
+   */
+  it("points at a row by the column that spec calls its key", () => {
+    const rows = [
+      { key: "aa", id: "ignored-1", moveCount: 9 },
+      { key: "bb", id: "ignored-2", moveCount: 9 },
+    ];
+    const byName = nextCursorFrom(KEYED_BY_NAME, choice(MOVES, "desc"), rows, 1);
+    expect(decodeCursor(byName.next!, choice(MOVES, "desc"))?.id).toBe("aa");
+  });
+
+  /*
+   * A projection that left the key out cannot be pointed at, so the page says it
+   * is the last rather than handing out a cursor naming nothing. A list that
+   * stops early is visible; a cursor paging from `undefined` is not.
+   */
+  it("refuses to build a cursor from a row with no key", () => {
+    const rows = [{ moveCount: 9 }, { moveCount: 8 }];
+    const { rows: page, next } = nextCursorFrom(SPEC, choice(MOVES, "desc"), rows, 1);
+    expect(page).toHaveLength(1);
+    expect(next).toBeNull();
   });
 });
 
 describe("keysetOrderBy", () => {
-  it("ends with the ascending id, whichever way the column went", () => {
-    expect(keysetOrderBy(PLAYED, "desc")).toEqual([{ playedAt: "desc" }, { id: "asc" }]);
-    expect(keysetOrderBy(PLAYED, "asc")).toEqual([{ playedAt: "asc" }, { id: "asc" }]);
+  it("ends with the ascending key, whichever way the column went", () => {
+    expect(keysetOrderBy(SPEC, choice(PLAYED, "desc"))).toEqual([{ playedAt: "desc" }, { id: "asc" }]);
+    expect(keysetOrderBy(SPEC, choice(PLAYED, "asc"))).toEqual([{ playedAt: "asc" }, { id: "asc" }]);
+  });
+
+  it("uses the key the spec names, not an assumed id", () => {
+    expect(keysetOrderBy(KEYED_BY_NAME, choice(PLAYED, "desc"))).toEqual([
+      { playedAt: "desc" },
+      { key: "asc" },
+    ]);
+    expect(keysetWhere(KEYED_BY_NAME, choice(MOVES, "desc"), {
+      value: 9,
+      id: "aa",
+      sort: { param: "moves", direction: "desc" },
+    })).toEqual({
+      OR: [{ moveCount: { lt: 9 } }, { AND: [{ moveCount: 9 }, { key: { gt: "aa" } }] }],
+    });
   });
 
   it("pins a nullable column's nulls last in both directions", () => {
-    expect(keysetOrderBy(DURATION, "desc")).toEqual([
+    expect(keysetOrderBy(SPEC, choice(DURATION, "desc"))).toEqual([
       { durationMs: { sort: "desc", nulls: "last" } },
       { id: "asc" },
     ]);
-    expect(keysetOrderBy(DURATION, "asc")).toEqual([
+    expect(keysetOrderBy(SPEC, choice(DURATION, "asc"))).toEqual([
       { durationMs: { sort: "asc", nulls: "last" } },
       { id: "asc" },
     ]);

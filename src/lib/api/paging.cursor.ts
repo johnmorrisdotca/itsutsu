@@ -1,4 +1,9 @@
-import type { CursorPosition, SortColumn, SortDirection } from "./paging.types";
+import type {
+  CursorPosition,
+  SortChoice,
+  SortDirection,
+  SortSpec,
+} from "./paging.types";
 
 /**
  * THE CURSOR, AND WHY THIS SITE PAGES BY ONE.
@@ -20,8 +25,13 @@ import type { CursorPosition, SortColumn, SortDirection } from "./paging.types";
  * THE TIEBREAKER IS NOT OPTIONAL. Ordering by a sort column alone leaves ties
  * in an order the database is free to change between two queries, so a cursor
  * naming only the column's value cannot say which of the tied rows it meant.
- * Every order here therefore ends with the id, and every cursor carries it.
- * `buildGameOrderBy` already did this for the offset pager and said why.
+ * Every order here therefore ends with the primary key, and every cursor carries
+ * it. `buildGameOrderBy` already did this for the offset pager and said why.
+ *
+ * WHICH COLUMN THAT IS COMES FROM THE SPEC — `Game` is keyed by `id`, `Player`
+ * by `key` — so these functions take the spec rather than guessing. See
+ * `SortSpec.tiebreak` for why a default would have been the dangerous kind of
+ * convenience.
  *
  * THE SORT IS PART OF THE CURSOR, which is the part that is easy to leave out.
  * A cursor is a position in ONE ordering. Handed to a different ordering it
@@ -102,11 +112,13 @@ export function encodeCursor(position: CursorPosition): string {
  * is a request nobody can honour, while an unusable cursor has an obvious and
  * correct fallback.
  */
-export function decodeCursor(
+export function decodeCursor<Field extends string>(
   cursor: string,
   /** The sort the request is actually asking for. A cursor for another is refused. */
-  sort: { param: string; direction: SortDirection },
+  sort: { param: string; direction: SortDirection } | SortChoice<Field>,
 ): CursorPosition | null {
+  const asked =
+    "column" in sort ? { param: sort.column.param, direction: sort.direction } : sort;
   const text = fromBase64Url(cursor);
   if (text === null) return null;
 
@@ -127,7 +139,7 @@ export function decodeCursor(
   if (value !== null && typeof value !== "string" && typeof value !== "number") return null;
 
   // A position in another ordering is not a position in this one. See above.
-  if (payload.s !== sort.param || direction !== sort.direction) return null;
+  if (payload.s !== asked.param || direction !== asked.direction) return null;
 
   return { value, id: payload.i, sort: { param: payload.s, direction } };
 }
@@ -171,20 +183,21 @@ type Comparison = Record<string, unknown>;
  * together cleverly.
  */
 export function keysetWhere<Field extends string>(
-  column: SortColumn<Field>,
-  direction: SortDirection,
+  spec: SortSpec<Field>,
+  choice: SortChoice<Field>,
   after: CursorPosition,
 ): Comparison {
+  const { column, direction } = choice;
   const { field } = column;
   const beyond = direction === "asc" ? "gt" : "lt";
-  const laterId = { id: { gt: after.id } };
+  const laterRow = { [spec.tiebreak]: { gt: after.id } };
 
   if (column.nullable === true && after.value === null) {
     // In the null run, which is last: only a later null can follow.
-    return { AND: [{ [field]: null }, laterId] };
+    return { AND: [{ [field]: null }, laterRow] };
   }
 
-  const sameValueLaterRow = { AND: [{ [field]: after.value }, laterId] };
+  const sameValueLaterRow = { AND: [{ [field]: after.value }, laterRow] };
   const furtherAlong = { [field]: { [beyond]: after.value } };
 
   if (column.nullable === true) {
@@ -205,14 +218,15 @@ export function keysetWhere<Field extends string>(
  * place. Nulls are pinned LAST in both directions to match `keysetWhere`.
  */
 export function keysetOrderBy<Field extends string>(
-  column: SortColumn<Field>,
-  direction: SortDirection,
+  spec: SortSpec<Field>,
+  choice: SortChoice<Field>,
 ): Record<string, unknown>[] {
+  const { column, direction } = choice;
   const value =
     column.nullable === true
       ? { [column.field]: { sort: direction, nulls: "last" } }
       : { [column.field]: direction };
-  return [value, { id: "asc" }];
+  return [value, { [spec.tiebreak]: "asc" }];
 }
 
 /**
@@ -224,23 +238,32 @@ export function keysetOrderBy<Field extends string>(
  * before the read can already be stale by the time the rows come back, so a
  * page could be declared final while a row sat just past it.
  */
-export function nextCursorFrom<Row extends { id: string }, Field extends string>(
+export function nextCursorFrom<Row extends object, Field extends string>(
+  spec: SortSpec<Field>,
+  choice: SortChoice<Field>,
   rows: readonly Row[],
-  column: SortColumn<Field>,
-  direction: SortDirection,
   limit: number,
 ): { rows: Row[]; next: string | null } {
   if (rows.length <= limit) return { rows: [...rows], next: null };
 
   const page = rows.slice(0, limit);
-  const last = page[page.length - 1];
-  const raw = (last as Record<string, unknown>)[column.field];
+  const last = page[page.length - 1] as Record<string, unknown>;
+  const key = last[spec.tiebreak];
+  /*
+   * A row whose primary key is missing or is not a string cannot be pointed at,
+   * so the page says it is the last rather than handing out a cursor naming
+   * nothing. That is a programming mistake in a `select` — a projection that
+   * left the key out — and the safe failure is a list that stops early, which is
+   * visible, rather than a cursor that pages from `undefined`, which is not.
+   */
+  if (typeof key !== "string" || key === "") return { rows: page, next: null };
+
   return {
     rows: page,
     next: encodeCursor({
-      value: cursorValue(raw),
-      id: last.id,
-      sort: { param: column.param, direction },
+      value: cursorValue(last[choice.column.field]),
+      id: key,
+      sort: { param: choice.column.param, direction: choice.direction },
     }),
   };
 }

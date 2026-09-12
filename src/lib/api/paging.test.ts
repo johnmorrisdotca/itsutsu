@@ -38,6 +38,7 @@ const SPEC: SortSpec<Field> = {
     },
   ],
   fallback: { param: "played", direction: "desc" },
+  tiebreak: "id",
 };
 
 const at = (query: string) => new URLSearchParams(query);

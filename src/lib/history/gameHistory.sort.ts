@@ -4,7 +4,13 @@ import {
   parseLimit,
   parseSort,
 } from "@/lib/api/paging";
-import type { PagingRefusal, SortChoice, SortColumn, SortSpec } from "@/lib/api/paging.types";
+import type {
+  PagingRefusal,
+  SortChoice,
+  SortColumn,
+  SortDirection,
+  SortSpec,
+} from "@/lib/api/paging.types";
 
 import { GAME_PAGE_SIZE_DEFAULT, GAME_PAGE_SIZE_MAX } from "./gameHistory.constants";
 
@@ -89,6 +95,8 @@ export const GAME_SORT_SPEC: SortSpec<GameSortField> = {
     },
   ],
   fallback: { param: "played", direction: "desc" },
+  // A game is keyed by the eight characters in its every address.
+  tiebreak: "id",
 };
 
 /** The spec's column for a Prisma field, for the code that still speaks fields. */
@@ -96,6 +104,28 @@ export function gameSortColumn(field: GameSortField): SortColumn<GameSortField> 
   const column = GAME_SORT_SPEC.columns.find((one) => one.field === field);
   if (column === undefined) throw new Error(`The record does not sort by "${field}".`);
   return column;
+}
+
+/**
+ * A stored query's sort as the cursor helpers want it.
+ *
+ * `GameHistoryQuery` carries the column and direction flat, because that is the
+ * shape every filter and every page has read for months. The keyset functions
+ * want the spec's own row for that column — the nullability and the word in the
+ * address live there — so this is the one conversion, done in one place, rather
+ * than each read assembling its own and one of them getting the nullability
+ * wrong.
+ */
+export function gameSortChoice(query: {
+  sortBy: GameSortField;
+  sortDir: SortDirection;
+  sortAsked?: boolean;
+}): SortChoice<GameSortField> {
+  return {
+    column: gameSortColumn(query.sortBy),
+    direction: query.sortDir,
+    asked: query.sortAsked ?? true,
+  };
 }
 
 /**

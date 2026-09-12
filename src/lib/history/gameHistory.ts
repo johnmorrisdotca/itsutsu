@@ -10,7 +10,7 @@ import {
 } from "@/lib/api/paging.cursor";
 import { prisma } from "@/lib/prisma";
 import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
-import { gameSortColumn } from "./gameHistory.sort";
+import { GAME_SORT_SPEC, gameSortChoice } from "./gameHistory.sort";
 import { type FilterSeats, buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
 import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
@@ -226,11 +226,8 @@ export async function fetchGameHistoryPage(
   query: GameHistoryQuery,
 ): Promise<GameHistoryPage> {
   const filters = buildGameWhere(query, await filterSeats(query));
-  const column = gameSortColumn(query.sortBy);
-  const after =
-    query.cursor === null
-      ? null
-      : decodeCursor(query.cursor, { param: column.param, direction: query.sortDir });
+  const sort = gameSortChoice(query);
+  const after = query.cursor === null ? null : decodeCursor(query.cursor, sort);
 
   const [total, byResult, bySize] = await Promise.all([
     prisma.game.count({ where: filters }),
@@ -246,7 +243,7 @@ export async function fetchGameHistoryPage(
    * is the sort of mistake that produces a page of plausible, wrong rows.
    */
   const where: Prisma.GameWhereInput =
-    after === null ? filters : { AND: [filters, keysetWhere(column, query.sortDir, after)] };
+    after === null ? filters : { AND: [filters, keysetWhere(GAME_SORT_SPEC, sort, after)] };
 
   const read = await prisma.game.findMany({
     where,
@@ -260,7 +257,7 @@ export async function fetchGameHistoryPage(
     take: takeFor(pagination.pageSize),
     select: SUMMARY_SELECT,
   });
-  const { rows, next } = nextCursorFrom(read, column, query.sortDir, pagination.pageSize);
+  const { rows, next } = nextCursorFrom(GAME_SORT_SPEC, sort, read, pagination.pageSize);
   const names = await currentNamesFor(rows);
 
   return {

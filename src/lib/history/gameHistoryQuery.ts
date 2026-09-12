@@ -18,7 +18,7 @@ import {
   GAME_VARIANT_FILTERS,
   PLAYER_NAME_MAX,
 } from "./gameHistory.constants";
-import { gameSortColumn, readGamePaging } from "./gameHistory.sort";
+import { GAME_SORT_SPEC, gameSortChoice, readGamePaging } from "./gameHistory.sort";
 import type { GameHistoryQuery, GameOutcome } from "./gameHistory.types";
 
 /**
@@ -372,7 +372,7 @@ export function buildGameOrderBy(
   query: GameHistoryQuery,
 ): Prisma.GameOrderByWithRelationInput[] {
   return keysetOrderBy(
-    gameSortColumn(query.sortBy),
-    query.sortDir,
+    GAME_SORT_SPEC,
+    gameSortChoice(query),
   ) as Prisma.GameOrderByWithRelationInput[];
 }

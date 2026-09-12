@@ -95,4 +95,12 @@ export const LADDER_SORT_SPEC: SortSpec<LadderSortField> = {
     },
   ],
   fallback: { param: "rating", direction: "desc" },
+  /*
+   * `key` AND NOT `id`, because Player has no `id`: a row is keyed by the folded
+   * name a rating was earned under. This is the second list on the convention
+   * and already the reason `tiebreak` is declared rather than defaulted — a
+   * keyset over a column that is not the primary key pages plausibly and
+   * wrongly, and both are strings so nothing would have failed.
+   */
+  tiebreak: "key",
 };
