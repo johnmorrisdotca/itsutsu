@@ -471,10 +471,12 @@ hydration mismatch.
 - **Nothing at the top of the ladder.** Not level 100 with `reached: false`,
   which reads as a level somebody is approaching while already standing on it.
 
-**The level's NAME is `Level 42` until the hundred names land.** `levelOn` in
-`xpFlash.ts` is the one line XP-10 changes to `xpLevelName(level)`; nothing else
-moves. That fallback is UmaKuma's own — `xpRank` answers `Rank 42` for an unnamed
-rank, and its comment calls it a floor rather than a feature.
+**The level's NAME is the catalogue's, since XP-10's follow-up patch.** `levelOn`
+in `xpFlash.ts` was `Level 42` from XP-02 until the hundred names landed and now
+calls `xpLevelName(level)`, so a LEVEL UP 昇級 toast says "Dreamcast". Nothing
+else moved. `Level 42` survives as that function's FLOOR for a level the ladder
+does not have — UmaKuma's own answer, where `xpRank` says `Rank 42` for an
+unnamed rank and its comment calls it a floor rather than a feature.
 
 **The kanji for a level-up is `昇級`, not `昇段`.** Two reasons, and the second is
 the one that settles it. The hundred levels are video-game references, not dan
