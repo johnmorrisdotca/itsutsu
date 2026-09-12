@@ -292,11 +292,6 @@ function FiledMatch({
               strong
             />
           ) : null}
-          <ChallengeButton
-            from={{ id: game.id, move }}
-            variant={game.variant}
-            label={`Play from move ${move} 分岐`}
-          />
           {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}
           <Link href={historyPath(game.variant)} className="text-sm underline underline-offset-4">
             Back to the record
@@ -331,6 +326,7 @@ function FiledMatch({
         initialIndex={move}
         basePath={matchPath(game.variant, game.id)}
         appearance={appearance}
+        seated={seated}
       />
 
       {/*

@@ -30,6 +30,7 @@ import { activeGameCount, activeGameLimit } from "@/lib/history/activeGames";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
 import { prisma } from "@/lib/prisma";
+import { forkOffered } from "@/lib/history/fork";
 
 /** The site's own origin, taken from the request so links work behind any host. */
 async function origin(): Promise<string> {
@@ -399,7 +400,7 @@ async function LiveMatch({
 
         <aside className="flex w-full flex-col gap-4 lg:w-80">
           <SharedRules game={game} token={token} seat={seat} refusal={refusal} settled={settled} />
-          {seat !== null ? (
+          {forkOffered({ move, last: game.moveCount, seated: seat !== null }) ? (
             <div className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
                 Fork <span className="font-mincho normal-case tracking-normal">分岐</span>

@@ -7,9 +7,11 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
 import { Button, SectionTitle } from "@/components/ui/Controls";
+import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { PlayedMoves } from "./PlayedMoves";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
+import { forkOffered } from "@/lib/history/fork";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { moveNumberAt, timelineIndexForMove } from "@/lib/history/replayIndex";
 
@@ -76,6 +78,7 @@ export function GameReplay({
   initialIndex,
   basePath,
   appearance = DEFAULT_APPEARANCE,
+  seated = false,
 }: {
   game: GameDetail;
   /**
@@ -95,6 +98,13 @@ export function GameReplay({
    * is the record they will spend the most time looking at.
    */
   appearance?: Appearance;
+  /**
+   * Whether this reader held a seat in the game, rather than only watching
+   * it. Gates the fork below the scrubber — see `forkOffered` — and defaults
+   * to false so a caller with no seat to report (`KeptGames`, over a kept
+   * record with no real row to fork from) never offers one by omission.
+   */
+  seated?: boolean;
 }) {
   const timeline = useMemo(() => replayTimeline(game), [game]);
   /*
@@ -242,6 +252,29 @@ export function GameReplay({
             End
           </Button>
         </div>
+
+        {/*
+          A fork replays a position that could have gone differently — by
+          definition an earlier one, so it only appears once this reader has
+          actually scrubbed back from the end, and names the move it is at.
+          At the final move it would sit beside nothing, since "Play again"
+          lives in the header rather than here, but it would still be the
+          exact position that just decided the game — no more useful to
+          replay than a rematch is. See `forkOffered`.
+
+          MOVE NUMBER, not `index` or `last`: those are timeline positions —
+          see replayIndex.ts — and a fork's address is `matchPath`'s contract,
+          the same space `game.moveCount` is in. Comparing timeline positions
+          here would drift from "at the end" for any game whose timeline has
+          an entry no move ever claimed.
+        */}
+        {forkOffered({ move: moveNumber, last: game.moveCount, seated }) ? (
+          <ChallengeButton
+            from={{ id: game.id, move: moveNumber }}
+            variant={game.variant}
+            label={`Play from move ${moveNumber} 分岐`}
+          />
+        ) : null}
 
         {/*
           The record itself, which this page did not have. A scrubber says

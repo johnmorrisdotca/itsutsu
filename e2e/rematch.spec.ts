@@ -128,11 +128,20 @@ test.describe("a finished game offers to be played again", () => {
      * A reader who was not in it has nobody to play again. The absence is
      * asserted only after something that IS on the page has been waited for:
      * `toHaveCount(0)` passes the instant it is asked, so on its own it cannot
-     * tell "not offered" from "I asked before the page had answered".
+     * tell "not offered" from "I asked before the page had answered". "Back
+     * to the record" is unconditional, unlike the fork below it, so it is the
+     * anchor rather than a control this test is not about.
      */
     await page.goto(`/games/gomoku/match/${game.id}`);
-    await expect(page.getByRole("link", { name: /Play from move/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to the record" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Play again as/ })).toHaveCount(0);
+    /*
+     * Nobody played this game — its seats carry plain names and no member
+     * ids — so there is nobody a fork would be safe to bind a new game to,
+     * and this reader is shown none either, at the only position this game
+     * has to show them.
+     */
+    await expect(page.getByRole("link", { name: /Play from move/ })).toHaveCount(0);
   });
 
   test("refuses at the door too, not only on the page", async ({ request }) => {
