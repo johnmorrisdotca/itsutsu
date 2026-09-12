@@ -70,4 +70,15 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 38, name: "Cartridge III", note: "The N64 cart: no loading, no scratches, and the last of its kind for twenty years." },
   { level: 39, name: "GoldenEye 007", note: "Rare, 1997: four players, one screen, and a house rule about not picking Oddjob." },
   { level: 40, name: "Final Fantasy VII", note: "Square, 1997: three discs, a Buster Sword, and the death nobody was ready for." },
+  // 41-50: the turn of the millennium.
+  { level: 41, name: "Pokémon Red", note: "Game Freak, 1996: a hundred and fifty-one of them, a link cable, and the playground trade that started a world." },
+  { level: 42, name: "Dreamcast", note: "Sega, 1999: 9/9/99, a modem in the box, and the last console Sega ever made, ahead of its time to the end." },
+  { level: 43, name: "Metal Gear Solid", note: "Konami, 1998: a cardboard box, a codec call, and a boss who read your memory card." },
+  { level: 44, name: "Half-Life", note: "Valve, 1998: a crowbar, a tram ride, and a story told without ever taking the controls away from you." },
+  { level: 45, name: "LAN Party", note: "Ten PCs in a basement, a crate of cola, and Quake until sunrise: the golden age of the wired night." },
+  { level: 46, name: "StarCraft", note: "Blizzard, 1998: three races, a balance nobody has matched since, and a game South Korea put on television." },
+  { level: 47, name: "Headshot", note: "Counter-Strike, 1999: one bullet, one sound, and the word every shooter since has borrowed." },
+  { level: 48, name: "Boss Fight", kanji: "ボス戦", note: "The music changes, the health bar fills the screen, and everything you learned is about to be tested." },
+  { level: 49, name: "Symphony of the Night", note: "Castlevania, 1997: an upside-down castle that doubled the game, and the other half of the word Metroidvania." },
+  { level: 50, name: "PlayStation 2", note: "Sony, 2000: a DVD player that happened to play games, and 155 million sold, more than any console before or since." },
 ];
