@@ -131,8 +131,8 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 89, name: "Frame Perfect", note: "An input on the one frame in sixty that works: the difference between a good player and the best one alive." },
   { level: 90, name: "Ocarina of Time", note: "Nintendo, 1998: Z-targeting, the Temple of Time, and the highest score any critic has ever given a game." },
   // 91-100: the pantheon.
-  { level: 91, name: "Checkmate", kanji: "詰み", note: "The king has nowhere to go, and there is nothing left to say: the oldest winning word there is." },
-  { level: 92, name: "SSS", note: "Devil May Cry, 2001: the top of the style meter, three letters above S, held only by never being touched and never standing still." },
+  { level: 91, name: "SSS", note: "Devil May Cry, 2001: the top of the style meter, three letters above S, held only by never being touched and never standing still." },
+  { level: 92, name: "Checkmate", kanji: "詰み", note: "The king has nowhere to go, and there is nothing left to say: the oldest winning word there is." },
   { level: 93, name: "Konami Code", note: "Up, up, down, down, left, right, left, right, B, A: thirty lives in Contra, and the most famous secret ever typed." },
   { level: 94, name: "Tengen", kanji: "天元", note: "The origin of heaven: the centre point of the Go board, the boldest first move there is, and a title fought for since 1976." },
   { level: 95, name: "Final Boss", kanji: "大魔王", note: "The last one, the one every other fight was practice for; the name for whoever everyone else has to beat." },
