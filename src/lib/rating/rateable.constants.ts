@@ -38,9 +38,25 @@ export type RatingRefusal = (typeof RATING_REFUSALS)[keyof typeof RATING_REFUSAL
  * The sentence under them is the same either way, and is written to be true in
  * both tenses.
  */
+/**
+ * THE SAME FACT IN ONE WORD, for the places that print "Rated" or "Friendly".
+ *
+ * A panel showed a refusal in full and then, in its folded summary line and in
+ * the settings statement underneath, said "Rated" and "Counts towards
+ * ratings" — both read straight off the row's `rated` column, three lines under
+ * a notice saying the game would not count. Twelve production rows displayed
+ * exactly that contradiction on one screen.
+ *
+ * So the third answer gets a word of its own. "Rated" and "Friendly" are what
+ * the two ANSWERS to "should this count" look like; this is what it looks like
+ * when the site cannot honour either — and a chip cannot carry a reason, so it
+ * carries the verdict and leaves the reason to the sentence above it.
+ */
+export const RATING_REFUSED_WORD = "Will not count";
+
 export const RATING_REFUSAL_DISPLAY: Record<
   RatingRefusal,
-  { playing: string; filed: string; kanji: string; sentence: string }
+  { playing: string; filed: string; kanji: string; sentence: string; short: string }
 > = {
   [RATING_REFUSALS.unnamed]: {
     playing: "This game will not count",
@@ -48,6 +64,7 @@ export const RATING_REFUSAL_DISPLAY: Record<
     kanji: "無名",
     sentence:
       "A seat here has no name on it, so there is nobody for the result to belong to. A name on both seats is what makes a game count.",
+    short: `${RATING_REFUSED_WORD} — a seat has no name`,
   },
   [RATING_REFUSALS.onePlayer]: {
     playing: "This game will not count",
@@ -55,6 +72,7 @@ export const RATING_REFUSAL_DISPLAY: Record<
     kanji: "一人二役",
     sentence:
       "Both seats are the same player. A rating says how two people compare, and there is only one person here — so the game is filed and replayed like any other, but no rating moves.",
+    short: `${RATING_REFUSED_WORD} — one player`,
   },
   [RATING_REFUSALS.keptRecord]: {
     playing: "This game will not count",
@@ -62,6 +80,7 @@ export const RATING_REFUSAL_DISPLAY: Record<
     kanji: "記録",
     sentence:
       "One of these names belongs to a record kept from before this site, which nobody plays under here. The game is filed, but the ladder is left alone.",
+    short: `${RATING_REFUSED_WORD} — a kept record`,
   },
   [RATING_REFUSALS.hotSeat]: {
     playing: "This game will not count",
@@ -69,5 +88,6 @@ export const RATING_REFUSAL_DISPLAY: Record<
     kanji: "同卓",
     sentence:
       "Both seats were played from one screen, so there is no way to tell the two of you apart from a login. A rating is an exchange between two separate players, and hot-seat play cannot give the site one — however the two names read.",
+    short: `${RATING_REFUSED_WORD} — one screen`,
   },
 };

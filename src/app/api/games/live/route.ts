@@ -41,6 +41,7 @@ import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
+import { ratedAtCreation } from "@/lib/rating/ratedAtCreation";
 import { awardCreatedGame, createdGameKind } from "@/lib/xp/xpSocial";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { UnwinnableGame } from "@/lib/history/winnableGame";
@@ -362,20 +363,22 @@ export async function POST(request: Request) {
     void _challenge;
     void _challengeId;
     /*
-     * Whether THIS game moves a rating, resolved here rather than defaulted
-     * in the schema: said outright when the caller said it, and otherwise
-     * decided by what kind of game this is. A hot-seat board is somebody
-     * trying a board out at one screen — nobody asked for a rated game — so
-     * silence there means no. Everywhere else silence keeps meaning yes,
-     * which is what a challenge and a posted seat have always meant by
-     * saying nothing: `StartGame` and `ChallengeButton` rely on exactly
-     * that and never send `hotSeat`, so nothing here changes what they
-     * create. A rematch or a fork overrides this anyway, through
-     * `source.rated` below — that game already answered the question, and
-     * is not being asked again.
+     * Whether THIS game moves a rating: the seats, then the game it came out
+     * of, then the request, then yes. The whole argument for that order is in
+     * `ratedAtCreation`, including why a board at one screen can never be
+     * stored rated whoever asks.
+     *
+     * `rated` is spread AFTER `source` on purpose — this has already read what
+     * the source carried, so letting it win again would undo that last clause.
+     * `offer` keeps the place offers gave it: it carries the four offer columns
+     * and nothing about rating, so the two orderings are independent.
      */
-    const rated = ratedRequested ?? !hotSeat;
-    const merged = { ...settings, rated, ...source, ...seats, ...offer, hotSeat };
+    const rated = ratedAtCreation({
+      requested: ratedRequested,
+      carried: typeof source.rated === "boolean" ? source.rated : undefined,
+      hotSeat,
+    });
+    const merged = { ...settings, ...source, rated, ...seats, ...offer, hotSeat };
     /*
      * The variant the game will ACTUALLY be played under, which is not always
      * the one the request named. A rematch and a fork take their rules from

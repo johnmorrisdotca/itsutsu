@@ -93,7 +93,15 @@ export function SharedRules({
         </p>
       ) : null}
 
-      <MoreSettings summary={describeSettings(game)}>
+      {/*
+        THE REFUSAL GOES INTO THE FOLD AS WELL AS ABOVE IT.
+        The notice above said "this game will not count" while the summary line
+        of this very disclosure said "Rated", read straight off `game.rated`,
+        and the statement inside it said "Counts towards ratings". One panel,
+        one screen, three lines apart, and twelve production rows displayed it.
+        The refusal is already computed on the server; both places take it.
+      */}
+      <MoreSettings summary={describeSettings(game, refusal)}>
         {copy !== undefined ? <p className="text-xs text-muted">{copy.tagline}</p> : null}
         {game.opening !== OPENING_RULES.free && game.opening in OPENING_DISPLAY ? (
           <p className="text-xs text-muted">{OPENING_DISPLAY[game.opening as OpeningRule].tagline}</p>
@@ -107,7 +115,7 @@ export function SharedRules({
           different reason from the one that used to be given here and the true
           one now that nothing after the doorstep can change them.
         */}
-        <RulesStatement rules={draftFromGame(game)} note={SHARED_RULES_COPY.settled} />
+        <RulesStatement rules={draftFromGame(game)} note={SHARED_RULES_COPY.settled} refusal={refusal} />
         <p className="text-xs text-muted" data-testid="shared-times-line">
           Started {new Date(game.playedAt).toLocaleString()}
           {game.status === "finished" && game.lastMoveAt !== null

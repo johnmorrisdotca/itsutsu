@@ -41,6 +41,7 @@
     "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line && node scripts/make-game-thumbs.mjs",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
     "bots:play:prod": "node scripts/bots-play-prod.mjs",
+    "rated:audit": "RATED_AUDIT=1 vitest run src/lib/rating/ratedButRefused.play.test.ts --disable-console-intercept",
     "xp:backfill": "XP_BACKFILL=1 vitest run src/lib/xp/backfillXp.play.test.ts --disable-console-intercept",
     "standings:reconcile": "STANDINGS_RECONCILE=1 vitest run src/lib/rating/reconcileStandings.play.test.ts --disable-console-intercept",
     "xp:backfill:prod": "node scripts/xp-backfill-prod.mjs"

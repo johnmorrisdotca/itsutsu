@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { isHotSeat } from "@/lib/history/liveGame";
-import { gameRatingRefusal, isRateable, ratingRefusal } from "./rateable";
-import { RATING_REFUSALS, RATING_REFUSAL_DISPLAY } from "./rateable.constants";
+import { gameRatingRefusal, isRateable, ratingImpossible, ratingRefusal } from "./rateable";
+import { RATING_REFUSALS, RATING_REFUSAL_DISPLAY, RATING_REFUSED_WORD } from "./rateable.constants";
 
 describe("ratingRefusal", () => {
   it("says yes to two different people", () => {
@@ -47,6 +47,48 @@ describe("ratingRefusal", () => {
       expect(display.filed.length).toBeGreaterThan(0);
       expect(display.kanji.length).toBeGreaterThan(0);
       expect(display.sentence.length).toBeGreaterThan(20);
+      // And a short form, for the settings line and the row that used to read
+      // "Rated" off the column beneath a notice saying it would not count.
+      expect(display.short.startsWith(RATING_REFUSED_WORD), refusal).toBe(true);
+      expect(display.short.length, refusal).toBeGreaterThan(RATING_REFUSED_WORD.length);
+    }
+  });
+});
+
+/**
+ * The same rule with the row's own flag taken out of it — what the AUDIT asks,
+ * where the column is the thing under suspicion and so cannot gate the
+ * question. See `ratedButRefused.ts`.
+ */
+describe("ratingImpossible", () => {
+  it("answers whatever the column says, because it is never shown the column", () => {
+    // The twelve, as stored: rated true, one token in both seats.
+    expect(ratingImpossible({ hotSeat: true, blackName: "Aki", whiteName: "Sumi" })).toBe(
+      RATING_REFUSALS.hotSeat,
+    );
+    // And the same game after the audit has corrected it. Still one screen.
+    expect(ratingImpossible({ hotSeat: true, blackName: "Aki", whiteName: "Sumi" })).toBe(
+      RATING_REFUSALS.hotSeat,
+    );
+  });
+
+  it("says nothing about a game two different people could have rated", () => {
+    expect(ratingImpossible({ hotSeat: false, blackName: "Aki", whiteName: "Sumi" })).toBeNull();
+  });
+
+  it("is the whole of what gameRatingRefusal does once the flag says yes", () => {
+    // Two functions, one rule: the split is the flag and nothing else, so a
+    // future change to either cannot leave the audit and the pages disagreeing.
+    for (const [black, white, hotSeat] of [
+      ["Aki", "Sumi", false],
+      ["Aki", "Sumi", true],
+      ["John Morris", "  john   morris ", false],
+      ["", "Sumi", false],
+      ["Chibi", "Aki", false],
+    ] as const) {
+      expect(gameRatingRefusal({ rated: true, hotSeat, blackName: black, whiteName: white })).toBe(
+        ratingImpossible({ hotSeat, blackName: black, whiteName: white }),
+      );
     }
   });
 });

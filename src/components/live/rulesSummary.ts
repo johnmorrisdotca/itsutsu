@@ -10,6 +10,7 @@ import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY, variantLabel } fr
 import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { Handicap, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { describeClock } from "@/lib/history/deadline";
+import { RATING_REFUSED_WORD, type RatingRefusal } from "@/lib/rating/rateable.constants";
 
 /** The subset of settings a shared game carries, as strings from the store. */
 export type RulesLike = {
@@ -60,7 +61,7 @@ export type SettingsLike = {
  * wrap twice costs back the height this whole disclosure is for. It is one
  * tap away, with everything else.
  */
-export function describeSettings(rules: SettingsLike): SettingWord[] {
+export function describeSettings(rules: SettingsLike, refusal: RatingRefusal | null = null): SettingWord[] {
   const opening =
     rules.opening in OPENING_DISPLAY
       ? OPENING_DISPLAY[rules.opening as OpeningRule].label
@@ -75,7 +76,22 @@ export function describeSettings(rules: SettingsLike): SettingWord[] {
       text: describeClock(rules.clockMode, rules.moveTimeMs),
       notable: rules.moveTimeMs !== null,
     },
-    { text: rules.rated ? "Rated" : "Friendly", notable: !rules.rated },
+    /*
+     * THE ROW'S FLAG IS THE LAST THING ASKED, NOT THE FIRST.
+     *
+     * A refusal beats it both ways round. A game the site cannot rate is not
+     * "Rated" however the column reads — twelve production rows said exactly
+     * that, in this line, under a notice saying the game would not count — and
+     * it is not "Friendly" either, because nobody chose it: see the note on
+     * `hotSeat` in `rateable.constants.ts`.
+     *
+     * Null by default, so the two callers that hold a DRAFT rather than a game
+     * — the setup form and the doorstep — go on reading the choice being made,
+     * which is all they have and all they should have.
+     */
+    refusal !== null
+      ? { text: RATING_REFUSED_WORD, notable: true }
+      : { text: rules.rated ? "Rated" : "Friendly", notable: !rules.rated },
   ];
 }
 
