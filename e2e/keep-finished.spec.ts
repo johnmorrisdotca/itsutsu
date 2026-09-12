@@ -2,7 +2,8 @@ import { expect, test } from "@playwright/test";
 
 import { PrismaClient } from "@prisma/client";
 
-import { memberContext } from "./members";
+import { memberContext, removeMember, removePlayedUnder } from "./members";
+import { gamesMade } from "./tidy";
 import { shownName } from "../src/lib/rating/shownName";
 
 /*
@@ -21,6 +22,14 @@ import { shownName } from "../src/lib/rating/shownName";
  * the record still has it.
  */
 test.describe("keeping finished games in your own list", () => {
+  /* The games this file makes, taken away when it finishes. See `gamesMade`. */
+  const tidyAway = gamesMade();
+
+  /** One game's row in the queue, wherever it has been sorted to. */
+  function row(page: import("@playwright/test").Page, id: string) {
+    return page.locator(`[data-testid="my-game"][data-id="${id}"]`);
+  }
+
   test("is set on the profile, and offers keeping everything", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
     const context = await memberContext(browser, baseURL!, {
@@ -135,5 +144,95 @@ test.describe("keeping finished games in your own list", () => {
     await expect(page.getByTestId("history-list")).toContainText(shownName(me.name));
 
     await context.close();
+  });
+
+  /**
+   * BOTH HALVES ON ONE PAGE — one finished game inside the window and one past
+   * it, for the same member, at the same moment.
+   *
+   * The case above says the old game goes, and that was the whole of the claim
+   * while the window was applied in JavaScript AFTER the read: every game the
+   * member had ever sat in came back and most were thrown away. The window is a
+   * bound in the query now (`myListWindow`), and the failure THAT can cause is
+   * not "the old one is still here" — it is the recent one going with it, on a
+   * page that then looks perfectly tidy and is missing a game.
+   *
+   * So the presence is asserted first and the absence stands beside it. An
+   * absence on its own is true for a moment on every page, and "nothing is
+   * listed" would satisfy a spec that only looked for the old game to be gone.
+   */
+  test("keeps the game inside the window while letting go of the one past it", async ({
+    browser,
+    baseURL,
+  }) => {
+    const stamp = Date.now().toString(36);
+    const me = { email: `keeper4-${stamp}@example.test`, name: `Keeps${stamp} Tester` };
+    const against = { lately: `Fresh${stamp} Tester`, ancient: `Stale${stamp} Tester` };
+    const context = await memberContext(browser, baseURL!, me);
+    const page = await context.newPage();
+
+    /**
+     * One finished game of this member's own, made the way a player makes one:
+     * created, the seat taken BY ITS LINK — which is what binds an account to a
+     * seat, since a private game binds nobody when it is written — and then
+     * given up from that seat.
+     */
+    async function finished(opponent: string): Promise<string> {
+      const started = await context.request.post("/api/games/live", {
+        data: { blackName: me.name, whiteName: opponent, size: 9 },
+      });
+      expect(started.status()).toBe(201);
+      const game = (await started.json()) as { id: string; blackToken: string };
+      tidyAway(game.id);
+      await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+      const over = await context.request.post(`/api/games/${game.id}/resign`, {
+        data: { token: game.blackToken },
+      });
+      expect(over.status()).toBe(200);
+      return game.id;
+    }
+
+    const lately = await finished(against.lately);
+    const ancient = await finished(against.ancient);
+
+    // A month onto one of them, and onto nothing else: the clock is the one
+    // thing a test cannot wait for, and this row is this spec's own.
+    const prisma = new PrismaClient();
+    try {
+      const old = new Date(Date.now() - 30 * 86_400_000);
+      await prisma.game.update({ where: { id: ancient }, data: { playedAt: old, lastMoveAt: old } });
+    } finally {
+      await prisma.$disconnect();
+    }
+
+    /*
+     * Keeping everything, which is where everybody starts: BOTH are listed.
+     * This is the half that makes the rest mean anything — without it, "gone"
+     * below could as easily be "never arrived".
+     */
+    await page.goto("/play");
+    await expect(page.getByTestId("my-games-finished")).toBeVisible();
+    await expect(row(page, lately)).toBeVisible();
+    await expect(row(page, ancient)).toBeVisible();
+
+    await page.goto("/me?view=profile");
+    await page.getByTestId("keep-finished-days").selectOption("7");
+    await page.getByRole("button", { name: "Save profile" }).click();
+    await expect(page.getByText("Saved.")).toBeVisible();
+
+    // A week's window: the game from a month ago is not listed, and the one
+    // from a moment ago still is — waited for before anything is called absent.
+    await page.goto("/play");
+    await expect(page.getByTestId("my-games-finished")).toBeVisible();
+    await expect(row(page, lately)).toBeVisible();
+    await expect(row(page, ancient)).toHaveCount(0);
+
+    // And the game itself is untouched. The window hides a row from ONE list;
+    // a bound that had dropped the game would look identical on the page.
+    expect((await context.request.get(`/api/games/${ancient}`)).status()).toBe(200);
+
+    await context.close();
+    await removeMember(me.email);
+    await removePlayedUnder([me.name, against.lately, against.ancient]);
   });
 });

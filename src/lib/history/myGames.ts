@@ -11,7 +11,7 @@ import { SUMMARY_SELECT, toGameMove, toSummary } from "./gameHistory";
 import { waitingFirst } from "./nextGame";
 import { offerIsMine, offerState, offeredSeat } from "./offers";
 import { OFFER_STATES, type OfferState } from "./offers.types";
-import { KEEP_FINISHED_DEFAULT, staysInMyList } from "./retention";
+import { KEEP_FINISHED_DEFAULT, myListWindow, staysInMyList } from "./retention";
 import { type SettledPosition, settledPosition } from "./settledTurn";
 import type { GameMove, GameSummary } from "./gameHistory.types";
 
@@ -132,8 +132,36 @@ export async function fetchMyGames(
   };
   if (claims.size === 0 && memberId === null) return groups;
 
+  /*
+   * THE MEMBER'S WINDOW, IN THE QUERY RATHER THAN AFTER IT.
+   *
+   * This read had no date bound at all: every game the member had ever sat in
+   * came back, was replayed where it could not answer for itself, sorted, and
+   * then MOSTLY THROWN AWAY by `staysInMyList` below — on this page, on every
+   * `/api/games/mine` the badge asks for, and on every advance to the next
+   * game. `myListWindow` is the same rule as a `where`, written beside the
+   * check that used to be the only one, and it carries the whole argument:
+   * which branch never hides what, which index serves it, and the one case
+   * (keeping everything, the default) that it cannot bound.
+   *
+   * NULL MEANS NO BOUND, not a window of nothing, so it is tested for rather
+   * than spread in blind. And it goes in an `AND` rather than being spread
+   * over the `where`: the window is itself an `OR` and one object cannot hold
+   * two, so spreading it would silently replace the seats with the dates.
+   *
+   * AND STILL NO `take`, deliberately. The list has to be COMPLETE for the
+   * groups that are a debt — every game waiting on this reader, and every
+   * offer — because `shownGroup` prints the bucket's true size and
+   * `useAdvanceToNextGame` walks `yourMove` looking for the oldest. A cap on
+   * the read would drop games waiting on somebody and report a smaller number
+   * with nothing saying so, which is worse than the cost it saves. The bound
+   * is what makes the read proportional to what the page can show.
+   */
+  const kept = myListWindow(keepFinishedDays, now);
+
   const rows = await prisma.game.findMany({
     where: {
+      ...(kept === null ? {} : { AND: [kept] }),
       OR: [
         { id: { in: [...claims.keys()] } },
         /*
