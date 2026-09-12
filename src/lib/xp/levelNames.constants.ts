@@ -81,4 +81,15 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 48, name: "Boss Fight", kanji: "ボス戦", note: "The music changes, the health bar fills the screen, and everything you learned is about to be tested." },
   { level: 49, name: "Symphony of the Night", note: "Castlevania, 1997: an upside-down castle that doubled the game, and the other half of the word Metroidvania." },
   { level: 50, name: "PlayStation 2", note: "Sony, 2000: a DVD player that happened to play games, and 155 million sold, more than any console before or since." },
+  // 51-60: the sixth generation, and the seventh arriving.
+  { level: 51, name: "Game Boy Advance", note: "2001: a Super Nintendo in your pocket, and a screen you needed a lamp to see." },
+  { level: 52, name: "GameCube", note: "2001: a purple lunchbox with a handle, tiny discs, and a controller so good Smash players still refuse to give it up." },
+  { level: 53, name: "Xbox", note: "Microsoft, 2001: a PC in a black box, a hard drive inside, and a newcomer that became a rival in one generation." },
+  { level: 54, name: "Halo", note: "Bungie, 2001: Master Chief, a ring world, and the first shooter that felt right on a controller." },
+  { level: 55, name: "Katamari Damacy", kanji: "塊魂", note: "Namco, 2004: roll up the cat, then the car, then the continent, while the King of All Cosmos judges you." },
+  { level: 56, name: "World of Warcraft", note: "Blizzard, 2004: twelve million subscribers, a raid on Tuesday night, and Leeroy Jenkins." },
+  { level: 57, name: "Nintendo DS", note: "2004: two screens, a stylus, and 154 million sold, a touchscreen three years before the iPhone." },
+  { level: 58, name: "Shadow of the Colossus", note: "Team Ico, 2005: sixteen giants, an empty world, and the game people name when someone says games can't be art." },
+  { level: 59, name: "Achievement Unlocked", note: "Xbox 360, 2005: a chime, a little box in the corner, and the moment every game started keeping score of you." },
+  { level: 60, name: "Wii", note: "Nintendo, 2006: a remote instead of a pad, Wii Sports in the box, and grandparents bowling in the living room." },
 ];
