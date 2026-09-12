@@ -606,7 +606,11 @@ worth ruling out in this order before believing any of them:
    restart fixes that, because nothing there is stale — the only fix is the
    migration reaching `main` and the worktree rebasing, then `prisma generate`,
    then restarting its server. Four steps, and the symptom looks identical
-   after each of the first three.
+   after each of the first three. And the other direction has its own face: after
+   rebasing PAST a schema change, the first typecheck shows dozens of
+   `Property 'offeredAt' does not exist` errors across files you did not
+   touch — a stale generated client, cleared by `pnpm db:generate`, that reads
+   exactly like a broken merge.
 3. **Database litter.** `e2e/tidy.ts` clears abandoned seats, seeded members,
    the games a run left unfinished and the ones with nobody on either seat.
    Each spec removes what it made. A local database that has grown past the
@@ -661,6 +665,13 @@ database holding real accounts (the profile specs `PATCH /api/me`, which on
 this machine is John's own row); and **a spec run this way has not been run
 by the runner** — it verifies the behaviour, and it is not the same claim as a
 green suite. Say which one you are making.
+
+**And before any `--no-deps` run, confirm the listener on your `WEB_PORT` is
+your own worktree's process, not merely that something answers.** Playwright's
+`reuseExistingServer: true` will happily run your spec against whatever is on
+the port — another agent's dev server took 6651 between two of one agent's
+runs, and the next run would have been a green over code that was not running.
+`lsof -i :<port>` and check the PPID is your checkout's; move ports if not.
 
 A fourth is not a false failure but a false *pass*, which is worse, and it has
 now been found five times in one day: **a browser test that races hydration.**
