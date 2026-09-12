@@ -129,8 +129,9 @@ export async function wouldAnswerTheirOwnInvitation(
  *
  * So the rules settle when somebody else arrives, not when somebody moves.
  * Before that a game is still being set up: a creator who posted a seat with
- * the wrong clock can fix it, and a challenge nobody has opened yet can still
- * be adjusted. Once the other seat is taken they are what both people have.
+ * the wrong clock can fix it. Once the other seat is taken — or was bound to
+ * somebody at the moment the game was written, which is the same thing said
+ * another way — they are what both people have.
  *
  * A stone on the board settles them too, through `seatIsFree`, for the games
  * where nobody ever follows a link — a computer player never does.
@@ -140,9 +141,49 @@ export function rulesAreSettled(game: {
   openedAt?: Date | string | null;
   blackClaimedAt?: Date | string | null;
   whiteClaimedAt?: Date | string | null;
+  blackMemberId?: string | null;
+  whiteMemberId?: string | null;
   moveCount?: number;
 }): boolean {
   if ((game.moveCount ?? 0) > 0) return true;
+  /*
+   * BOTH SEATS BELONG TO SOMEBODY, SO BOTH PEOPLE ARE IN THIS GAME.
+   *
+   * A challenge, a rematch and a fork bind the other seat to a member's id at
+   * the moment they are written, and the game is in that person's list before
+   * they have seen it — there is nothing to accept, which is the point of them.
+   * Nobody follows a link, so nothing is stamped until each of them happens to
+   * open the board, and this used to read a challenge as "still waiting for
+   * somebody" for as long as the invited player had not looked. The challenger
+   * could change the board, the clock, the game itself, days after handing it
+   * over.
+   *
+   * THAT WINDOW WAS UNAVOIDABLE AND IS NOT ANY MORE. It existed because a
+   * challenge settled nothing: the button posted a game of Gomoku on the
+   * schema's defaults, so the form at the board was the only place its rules
+   * were ever chosen, and closing it would have left no way to choose them. A
+   * challenge is now sent FROM the setup screen with every rule already agreed,
+   * so the form beside the board is no longer the only chance — it is only the
+   * chance to move them afterwards.
+   *
+   * Being handed a game is arriving at it. The doctrine of this function is
+   * that the rules settle when somebody else arrives; this is what arriving
+   * looks like when nobody has a link to follow.
+   *
+   * It leaves untouched every case where nobody else is in it yet: a seat
+   * posted on the noticeboard has one member id and a null, a private game
+   * whose other seat goes out as a link has the same, and a board at one
+   * screen has neither. Those really are still being set up, and their form
+   * stays.
+   */
+  if (
+    game.blackMemberId !== null &&
+    game.blackMemberId !== undefined &&
+    game.whiteMemberId !== null &&
+    game.whiteMemberId !== undefined
+  ) {
+    return true;
+  }
   /*
    * A seat that was posted and is no longer posted has been answered, and
    * that is the moment somebody agreed to these rules — whatever the poster

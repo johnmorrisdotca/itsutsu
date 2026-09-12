@@ -72,7 +72,12 @@ test.describe("a game that ends while you are looking at it", () => {
     await ready(page, "shared-game");
 
     const banner = page.getByTestId("turn-banner");
-    const rematch = page.getByRole("button", { name: /Play again as/ });
+    /*
+     * A LINK, because playing again now leads to the screen that settles the
+     * game rather than creating one on the press. What this case is about is
+     * unchanged: a game still being played has no rematch to offer at all.
+     */
+    const rematch = page.getByRole("link", { name: /Play again as/ });
 
     // It opens as a game in play. That is the state the fault needs.
     await expect(banner).toContainText("Your move");
@@ -189,13 +194,22 @@ test.describe("a game that ends while you are looking at it", () => {
     await page.getByTestId("resign").click();
     await page.getByTestId("resign-yes").click();
 
-    const again = page.getByRole("button", { name: /Play again as/ });
+    const again = page.getByRole("link", { name: /Play again as/ });
     await expect(again, "no rematch offered after a game against a computer player").toBeVisible({
       timeout: 20_000,
     });
 
+    /*
+     * THROUGH THE SETUP SCREEN, which is where every way into a game goes now.
+     * It opens filled in from the game just finished, so accepting it is one
+     * press — and this case is about the rematch being OFFERED at all against a
+     * computer player, which is unchanged.
+     */
     await again.click();
-    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/);
+    await page.waitForURL(/\/games\/new\?rematch=/);
+    await ready(page, "set-up-game");
+    await page.getByTestId("set-up-start").click();
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
 
     // A real second game, with the same board and the same opponent in it.
     const id = page.url().split("/").pop()!;

@@ -256,6 +256,14 @@ async function LiveMatch({
       blackClaimedAt: true,
       whiteClaimedAt: true,
       moveCount: true,
+      /*
+       * For `settled` below. A seat BOUND to a member is a person already in
+       * this game, whether or not they have opened it — a challenge is in their
+       * list the moment it is written and nobody ever follows a link. Same row,
+       * two more columns.
+       */
+      blackMemberId: true,
+      whiteMemberId: true,
     },
   });
 

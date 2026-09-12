@@ -43,10 +43,19 @@ export function SharedRules({
    */
   refusal: RatingRefusal | null;
   /**
-   * Whether the rules are past changing: the other seat is taken, or a stone
-   * is down. Decided on the server from the seat row — see `rulesAreSettled` —
-   * because a game's rules settle when the second player arrives, and the
-   * board alone cannot see who has arrived.
+   * Whether the rules are past changing: somebody else is in this game, or a
+   * stone is down. Decided on the server from the seat row — see
+   * `rulesAreSettled` — because a game's rules settle when the second player
+   * arrives, and the board alone cannot see who has arrived.
+   *
+   * IT COVERS MORE THAN IT USED TO, and what it stopped covering is the point
+   * of the setup screen. A challenge, a rematch and a fork bind the other seat
+   * at the moment they are written, so those arrive here settled and this panel
+   * is a statement from the first render. What is left editable is a game
+   * nobody else is in yet: a seat posted on the noticeboard, or a private one
+   * whose other chair is going out as a link. Those really are still being set
+   * up, and their creator fixing a clock they got wrong is not somebody moving
+   * the rules under a person who already agreed to them.
    */
   settled: boolean;
 }) {
@@ -59,6 +68,13 @@ export function SharedRules({
    * down and somebody moving where one seat could change what the other had
    * just agreed to — the door the setup screen was built to close, left open
    * at the other end.
+   *
+   * That window has since closed twice over. It shut for a posted seat when the
+   * rules began settling as somebody sat down rather than as somebody moved,
+   * and it shut for a challenge when every challenge started being sent from
+   * the setup screen — see `rulesAreSettled`, which now reads a bound seat as
+   * somebody who has arrived. What is left here is a creator, alone, correcting
+   * a game nobody else is in.
    */
   const editable = seat !== null && token !== null && !settled;
   const variant = game.variant as RuleVariant;

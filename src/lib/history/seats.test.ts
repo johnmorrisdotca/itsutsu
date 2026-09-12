@@ -63,8 +63,33 @@ describe("rulesAreSettled", () => {
     expect(rulesAreSettled({ ...nobody, openSeat: "white", blackClaimedAt: new Date() })).toBe(false);
   });
 
-  it("leaves a challenge open until the other player opens it", () => {
-    expect(rulesAreSettled({ ...nobody, blackClaimedAt: new Date() })).toBe(false);
+  /*
+   * A CHALLENGE IS SETTLED THE MOMENT IT IS WRITTEN, which is a reversal and a
+   * deliberate one.
+   *
+   * It used to stay open until the invited player opened the board. That was
+   * unavoidable while a challenge settled nothing — the old button posted a game
+   * of Gomoku on the schema's defaults, so the form beside the board was the only
+   * place its rules were ever chosen. Every challenge is now sent from the setup
+   * screen with the rules already agreed, so the form afterwards is not the only
+   * chance to choose them; it is only the chance to move them under somebody who
+   * has already been handed the game.
+   */
+  it("settles a challenge the moment it is written, before anybody opens it", () => {
+    const challenge = { ...nobody, blackMemberId: "mem_a", whiteMemberId: "mem_b" };
+    expect(rulesAreSettled(challenge)).toBe(true);
+    // Even for the challenger, who is the only one who has looked at it.
+    expect(rulesAreSettled({ ...challenge, blackClaimedAt: new Date() })).toBe(true);
+  });
+
+  it("leaves a game open while only one seat belongs to anybody", () => {
+    /*
+     * A seat posted on the noticeboard, and a private game whose other seat
+     * goes out as a link, both look like this: one member id and a null. Nobody
+     * else is in it, so the creator can still fix a clock they got wrong.
+     */
+    expect(rulesAreSettled({ ...nobody, blackMemberId: "mem_a", whiteMemberId: null })).toBe(false);
+    expect(rulesAreSettled({ ...nobody, blackMemberId: "mem_a", blackClaimedAt: new Date() })).toBe(false);
   });
 
   it("settles them once the other seat is taken", () => {
