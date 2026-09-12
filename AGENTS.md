@@ -1003,6 +1003,28 @@ So:
   above already asks for, reading it for additions as well as for paths that
   have moved.
 
+### A Raw Control Byte In Source Makes The File Opaque
+
+The XP ledger used a NUL as the separator inside a map key — `${type}\0${subject}`
+— which is a sound choice, since nothing in either half can contain one. It was
+typed as the RAW BYTE rather than the escape, and that made `awardXp.ts` and its
+test binary to every tool that looks at source: `file(1)` said "data", grep
+answered "Binary file matches" and nothing else, and `git diff --numstat`
+showed `-/-`, which means every future diff of the ledger would have printed
+"Binary files differ" and shown nobody the change. TypeScript compiled it and
+the tests passed, so nothing failed.
+
+**How it stays unnoticed is the reason this is written down:** the agent's own
+greps on its own file returned nothing, which reads as "the pattern is not
+there" rather than "the file is unreadable". Two rules, both cheap:
+
+- **Write a control character as its escape, never as the byte** — `\0`,
+  `\t`, `\u001f`. Identical at runtime; text on disk.
+- **A grep that returns nothing on a file you know contains the thing is a
+  fact about the file, not the pattern.** `file <path>` settles it in one
+  line, and `git diff --numstat` showing `-` for a source file is the same
+  signal from git.
+
 ### The Stash Stack Is One Stack For Every Worktree
 
 Worktrees are isolated — checked by inode, not reasoned about: the same file
