@@ -34,6 +34,34 @@ export type MyGame = {
 
 export type MyGames = Record<MyGameGroup, MyGame[]>;
 
+/** A bucket capped for display, without losing how big the bucket actually was. */
+export type ShownGroup<T> = {
+  /** The capped slice, taken from the front. */
+  items: T[];
+  /** The bucket's own size, before the cap. */
+  total: number;
+  /** How many the cap left out. Zero means every one of them is shown. */
+  hidden: number;
+};
+
+/**
+ * Caps a bucket for display without losing how big the bucket actually was.
+ *
+ * The lobby caps how many of each group it shows — a "Lately finished" list
+ * running to fifty rows is a page nobody reaches the bottom of — but the
+ * header above the list has to say how many the bucket actually holds, not
+ * how many made it past the cap. Slicing at the call site and counting
+ * separately at the display site is exactly how "Lately finished 5" came to
+ * sit over a bucket of fourteen: the header read the slice's own length,
+ * which is never more than the cap, whatever the bucket held. Bundling the
+ * slice and the bucket's true size into one answer is what keeps a header
+ * from being able to make that mistake again.
+ */
+export function shownGroup<T>(items: readonly T[], cap: number): ShownGroup<T> {
+  const shown = items.slice(0, cap);
+  return { items: shown, total: items.length, hidden: items.length - shown.length };
+}
+
 /**
  * Sorts a browser's seats into the queue the turn-based sites taught: the
  * games waiting on you first, then the ones you are waiting on, the ones

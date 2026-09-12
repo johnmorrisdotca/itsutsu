@@ -11,12 +11,22 @@ export type PlayedCount = {
 /**
  * Finished games by kind, for the catalogue: the count says which games the
  * site's players actually play, and the latest game is a door into the record.
+ *
+ * `result: { not: "abandoned" }` on both queries, matching `playerRecord.ts` —
+ * read for every player-level "Played" — which has always left abandoned
+ * games out: they are not a result. Without it this count and a player's own
+ * page would disagree the first time a game is abandoned; dormant today only
+ * because production holds no such row yet.
  */
 export async function fetchPlayedCounts(): Promise<Map<string, PlayedCount>> {
   const [counts, latest] = await Promise.all([
-    prisma.game.groupBy({ by: ["variant"], where: { status: "finished" }, _count: { _all: true } }),
+    prisma.game.groupBy({
+      by: ["variant"],
+      where: { status: "finished", result: { not: "abandoned" } },
+      _count: { _all: true },
+    }),
     prisma.game.findMany({
-      where: { status: "finished" },
+      where: { status: "finished", result: { not: "abandoned" } },
       orderBy: { playedAt: "desc" },
       distinct: ["variant"],
       select: { id: true, variant: true, blackName: true, whiteName: true, playedAt: true },

@@ -128,6 +128,25 @@ describe("a game's name is the way into that game", () => {
   });
 });
 
+/**
+ * A bare count of games, printed as a member access with nothing behind it.
+ *
+ * `.(games|played)` catches the two names this codebase gives a plain count.
+ * `ratedGames` is a third, and a regex technicality let it through: a
+ * player's page printed `player.ratedGames` and `player.computer.ratedGames`
+ * — the pools' own rated-game counts — as bare `<span>`s, and neither matched.
+ * `ratedGames` is not named `games`, and the second one is a TWO-dot chain a
+ * single-dot pattern cannot reach. The `ratedGames` branch below allows one
+ * extra `.segment` for exactly that nesting, kept as its OWN alternative
+ * rather than folded into `(games|played)` so it cannot also start matching
+ * an unrelated two-dot chain — `data.player.played` on the embed widget is a
+ * real count this rule deliberately leaves unlinked (see EXCEPTIONS above),
+ * and folding the extra segment into the shared branch would have caught it
+ * by accident.
+ */
+const BARE_COUNT =
+  /\{\s*[A-Za-z_$][\w$]*\.(games|played)\s*\}|\{\s*[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)?\.ratedGames\s*\}/g;
+
 describe("a count of games is the way into those games", () => {
   it("nobody prints a record as a string", () => {
     /*
@@ -298,7 +317,7 @@ describe("a count of games is the way into those games", () => {
       "src/components/games/GameCatalogue.tsx":
         "a family's matches: /history filters by one game, so no page can show the set this counts",
     };
-    const counts = /\{\s*[A-Za-z_$][\w$]*\.(games|played)\s*\}/g;
+    const counts = BARE_COUNT;
     const offenders = FILES.filter((file) =>
       [...file.source.matchAll(counts)].some(
         (match) =>
@@ -320,7 +339,7 @@ describe("a count of games is the way into those games", () => {
   it("finds bare counts at all, so the check above is not vacuous", () => {
     // Every count going through GameCount is the goal; a pattern that stopped
     // matching anything would make this rule pass by seeing nothing.
-    const counts = /\{\s*[A-Za-z_$][\w$]*\.(games|played)\s*\}/g;
+    const counts = BARE_COUNT;
     const seen = FILES.filter((file) => [...file.source.matchAll(counts)].length > 0);
     expect(seen.length, "the pattern still matches the shape it is about").toBeGreaterThan(0);
   });

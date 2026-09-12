@@ -29,6 +29,16 @@ export const MY_GAMES_COPY = {
   sitTaken: "Somebody else just took that seat.",
   continueGame: "Continue",
   yourTurn: (count: number) => (count === 1 ? "1 game waiting on you" : `${count} games waiting on you`),
+  /**
+   * A group heading's count once its cap has actually cut something. The
+   * plain total is printed on its own everywhere the cap has nothing to say
+   * — most groups, most of the time — so this only has to read honestly next
+   * to it: "14 · showing 5", not a total that quietly meant "5 of however
+   * many there really are".
+   */
+  shownOf: (total: number, shown: number) => `${total} · showing ${shown}`,
+  /** Where a capped group with more behind it sends a signed-in reader. */
+  seeRecord: "See your record",
 } as const;
 
 /** The paces a game may be asked for, in the words the clock uses. */

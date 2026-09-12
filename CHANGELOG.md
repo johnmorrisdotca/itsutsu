@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.158.2 — 2026-09-12
+- A group header on your games page counts the whole bucket, not just the few it is showing — 14, showing 5 — and the played counts everywhere stop including abandoned games and start linking to the games behind them
+- The ladder's Played column says in a word that it counts rated games against people, so it no longer silently disagrees with the members list's every-game count under the same heading
+
 ## 0.158.1 — 2026-09-12
 - Your own record no longer says No games yet when you have played only friendly games: the line is shown when you have played anything, not only when you hold a rating
 
