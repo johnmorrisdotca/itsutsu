@@ -9,6 +9,7 @@ import { currentSession } from "@/lib/auth/currentSession";
 import { authOptions, isGoogleAuthConfigured } from "@/lib/auth/google";
 import { findMember } from "@/lib/auth/members";
 import { safeDestination } from "@/lib/auth/redirect";
+import { fetchSiteSettings } from "@/lib/site/siteStore";
 
 export const metadata = {
   title: "Join",
@@ -35,6 +36,13 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
     email !== null && !isAdminEmail(email) && (await findMember(email)) === null
       ? { name: google?.user?.name ?? "", email }
       : null;
+  /*
+   * What the operator has said about signing up, so the door can say it too.
+   * The door only DESCRIBES this; the decision is made in `/api/session` and
+   * `/api/session/google`, which is where a member is actually created. A page
+   * that guessed at the rule separately would be a second copy of it.
+   */
+  const site = await fetchSiteSettings();
 
   return (
     <div className="paper flex flex-1 flex-col items-center justify-center gap-8 px-4 py-16">
@@ -53,6 +61,8 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         pending={pending}
         initialCode={typeof params.code === "string" ? params.code.slice(0, 80) : ""}
         operator={params.operator === "1"}
+        registration={site.registration}
+        notice={site.joinNotice}
       />
       <p className="flex items-baseline gap-3 font-mono text-xs text-muted tabular-nums" data-testid="join-version">
         <span className="font-sans font-semibold text-ink-soft">{STAGE}</span>

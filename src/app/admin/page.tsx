@@ -8,6 +8,7 @@ import { AdminEmbeds } from "@/components/auth/AdminEmbeds";
 import { AdminInvites } from "@/components/auth/AdminInvites";
 import { AdminBots } from "@/components/auth/AdminBots";
 import { AdminMembers } from "@/components/auth/AdminMembers";
+import { AdminSite } from "@/components/auth/AdminSite";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
@@ -37,6 +38,14 @@ export const dynamic = "force-dynamic";
  */
 const TABS: Tab[] = [
   { key: "door", label: "The door", kanji: "門" },
+  /*
+   * Beside the door rather than first, and not first on purpose: `tabHref`
+   * makes the first tab the bare /admin address, so promoting this would
+   * change where /admin lands. The door is the mechanisms — codes and tokens;
+   * this is the policy they operate under, which is why it sits next to them
+   * rather than under "the work".
+   */
+  { key: "site", label: "The site", kanji: "設定" },
   { key: "members", label: "The members", kanji: "会員" },
   { key: "bots", label: "The bots", kanji: "機械" },
   { key: "work", label: "The work", kanji: "仕事" },
@@ -70,6 +79,12 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           <div className={PANEL_CLASS}>
             <AdminEmbeds />
           </div>
+        </div>
+      ) : null}
+
+      {open === "site" ? (
+        <div className={PANEL_CLASS} data-testid="admin-site-tab">
+          <AdminSite />
         </div>
       ) : null}
 
