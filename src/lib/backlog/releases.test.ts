@@ -47,6 +47,46 @@ describe("reading the changelog", () => {
   });
 });
 
+/**
+ * Board convergence ITS-04: `pnpm release:take` writes the day it takes a
+ * release, in the heading, because it is the one caller that knows it at the
+ * moment it is true. Every release before it exists is undated on purpose —
+ * a date guessed now would be a fact nobody established.
+ */
+describe("dated releases", () => {
+  const DATED = `# Changelog
+
+## 0.52.0 — 2026-09-12
+- A dated release
+
+## 0.51.0
+- An undated one, from before this existed
+
+## 0.50.0 — not a date
+- A stray word after the version is not a release at all
+`;
+
+  it("parses a dated heading with its date", () => {
+    const [dated] = parseReleases(DATED);
+    expect(dated).toMatchObject({ version: "0.52.0", date: "2026-09-12" });
+  });
+
+  it("parses an undated heading with date null, not an empty string", () => {
+    const [, undated] = parseReleases(DATED);
+    expect(undated).toMatchObject({ version: "0.51.0", date: null });
+  });
+
+  it("does not read a stray word after the version as a release at all", () => {
+    const versions = parseReleases(DATED).map((release) => release.version);
+    expect(versions).not.toContain("0.50.0");
+  });
+
+  it("accepts an em dash or a hyphen between the version and the date", () => {
+    expect(parseReleases("## 0.1.0 — 2026-01-01\n- x\n")[0].date).toBe("2026-01-01");
+    expect(parseReleases("## 0.1.0 - 2026-01-01\n- x\n")[0].date).toBe("2026-01-01");
+  });
+});
+
 describe("comparing versions", () => {
   it("orders by each part in turn", () => {
     expect(compareVersions("0.51.0", "0.50.9")).toBeGreaterThan(0);
@@ -97,10 +137,10 @@ describe("the site's own changelog", () => {
  */
 describe("the edition being served", () => {
   const releases = [
-    { version: "0.64.0", notes: ["latest"] },
-    { version: "0.63.0", notes: ["before that"] },
-    { version: "0.55.1", notes: ["a listed patch"] },
-    { version: "0.55.0", notes: ["older"] },
+    { version: "0.64.0", date: null, notes: ["latest"] },
+    { version: "0.63.0", date: null, notes: ["before that"] },
+    { version: "0.55.1", date: null, notes: ["a listed patch"] },
+    { version: "0.55.0", date: null, notes: ["older"] },
   ];
 
   it("marks the release itself when the running version is one", () => {

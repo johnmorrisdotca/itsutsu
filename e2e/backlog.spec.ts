@@ -96,12 +96,18 @@ test.describe("backlog", () => {
     await expect(page.getByTestId("backlog-problem")).toContainText("at least");
   });
 
-  test("an item moves through the statuses the board allows", async ({ page }) => {
+  test("an item moves through the statuses the board allows, and done is never one of them", async ({ page }) => {
+    /*
+     * Board convergence ITS-04: done is the release tool's alone. Neither the
+     * page nor the API offers it any more — movesFrom("inProgress") no longer
+     * lists it, so this is the select simply not offering something, not a
+     * refusal a reader would ever see.
+     */
     const title = newTitle("A test request that walks the board");
     await page.goto("/backlog");
     await page.getByTestId("backlog-add-panel").locator("summary").click();
     await page.getByTestId("backlog-title").fill(title);
-    await page.getByTestId("backlog-detail").fill("Added, picked up and finished, in that order.");
+    await page.getByTestId("backlog-detail").fill("Added and picked up, and no further than that.");
     await page.getByTestId("backlog-add").click();
 
     const row = page.getByTestId("backlog-item").filter({ hasText: title });
@@ -111,45 +117,8 @@ test.describe("backlog", () => {
 
     await row.getByTestId("move-status").selectOption("inProgress");
     await expect(row).toHaveAttribute("data-status", "inProgress");
-    await row.getByTestId("move-status").selectOption("done");
-    await expect(row).toHaveAttribute("data-status", "done");
-    await expect(row.getByTestId("status-pill-done")).toBeVisible();
-
-    /*
-     * And the row says which release it was finished in, stamped as the move
-     * happened. It has to be stamped rather than worked out afterwards: the
-     * changelog dates none of its releases, so there is nothing for a date to
-     * fall between, and the releases that can be dated at all landed on one
-     * day. The board says "marked done in" rather than "shipped in", because
-     * whoever lands a commit bumps the version in it — so a row finished just
-     * before its own release carries the number before it.
-     */
-    await expect(row.getByTestId("backlog-released-in")).toHaveText(/^\d+\.\d+\.\d+$/);
-    await expect(row).toContainText("marked done");
-  });
-
-  test("a row that leaves done stops claiming a release", async ({ page }) => {
-    /*
-     * The half that is easy to forget. A row reopened has not been released in
-     * anything, and last time's version still sitting on it would read exactly
-     * as though it had been.
-     */
-    const title = newTitle("A request that was finished and then reopened");
-    await page.goto("/backlog");
-    await page.getByTestId("backlog-add-panel").locator("summary").click();
-    await page.getByTestId("backlog-title").fill(title);
-    await page.getByTestId("backlog-detail").fill("Finished, then found to be unfinished.");
-    await page.getByTestId("backlog-add").click();
-
-    const row = page.getByTestId("backlog-item").filter({ hasText: title });
-    await row.getByTestId("move-status").selectOption("inProgress");
-    await row.getByTestId("move-status").selectOption("done");
-    await expect(row.getByTestId("backlog-released-in")).toBeVisible();
-
-    await row.getByTestId("move-status").selectOption("inProgress");
-    await expect(row).toHaveAttribute("data-status", "inProgress");
-    await expect(row.getByTestId("backlog-released-in")).toHaveCount(0);
-    await expect(row).toContainText("moved");
+    // And done is not offered from in progress either — only release:take reaches it.
+    await expect(row.getByTestId("move-status").locator("option")).toHaveText(["Move…", "Open", "Dropped"]);
   });
 
   /*
@@ -198,6 +167,16 @@ test.describe("backlog", () => {
 
     const illegal = await request.patch(`/api/backlog/${item.id}`, { data: { status: "done" } });
     expect(illegal.status()).toBe(422);
+
+    /*
+     * Board convergence ITS-04: not even from in progress, and not even for
+     * the operator's own session — done is the release tool's alone, and the
+     * operator has no releasedIn/releasedAt to offer.
+     */
+    const claimed = await request.patch(`/api/backlog/${item.id}`, { data: { status: "inProgress" } });
+    expect(claimed.status()).toBe(200);
+    const stillIllegal = await request.patch(`/api/backlog/${item.id}`, { data: { status: "done" } });
+    expect(stillIllegal.status()).toBe(422);
 
     const legal = await request.patch(`/api/backlog/${item.id}`, { data: { status: "dropped" } });
     expect(legal.status()).toBe(200);

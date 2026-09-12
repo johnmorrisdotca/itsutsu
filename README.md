@@ -788,7 +788,8 @@ One-time setup:
 | Mint an invite code | `pnpm invite` |
 | Clear the board's test litter | `pnpm backlog:cleanup-litter` |
 | Dependency audit | `pnpm security:check` |
-| Bump the version | `pnpm version:bump` |
+| Take a release (bumps the version, dates the changelog) | `pnpm release:take --summary "…"` |
+| Write to the features board from a terminal | `pnpm task` |
 
 `pnpm quality:check` runs lint, the 500-line file size gate, typecheck and the
 unit tests. See `AGENTS.md` for the conventions those gates enforce, and for

@@ -13,11 +13,27 @@
 
 export type Release = {
   version: string;
+  /**
+   * The UTC calendar day `pnpm release:take` stamped this release with, or
+   * null. Null is every release before board convergence ITS-04 shipped —
+   * 151 of them, undated, and staying that way: the date is not derivable
+   * after the fact (see the schema's own comment on `releasedAt`), and a
+   * guessed one would be worse than an honest gap.
+   */
+  date: string | null;
   /** What changed, in a player's words. One line each, as the file has them. */
   notes: string[];
 };
 
-const HEADING = /^##\s+(\S+)\s*$/;
+/**
+ * `## 1.2.3` for an undated release, or `## 1.2.3 — 2026-09-12` for one
+ * `pnpm release:take` dated. Anything else after the version — a stray word,
+ * a malformed date — is not a heading this reads as a release at all, which
+ * is deliberate: a heading this cannot parse is a heading the file's own
+ * rule does not recognise, and skipping it silently is safer than guessing
+ * at what it meant.
+ */
+const HEADING = /^##\s+(\d+\.\d+\.\d+)(?:\s+[—-]\s+(\d{4}-\d{2}-\d{2}))?\s*$/;
 
 /**
  * Every release in the changelog, newest first, as the file lists them.
@@ -33,7 +49,7 @@ export function parseReleases(markdown: string): Release[] {
     const line = raw.trim();
     const heading = HEADING.exec(line);
     if (heading !== null) {
-      current = { version: heading[1], notes: [] };
+      current = { version: heading[1], date: heading[2] ?? null, notes: [] };
       releases.push(current);
       continue;
     }

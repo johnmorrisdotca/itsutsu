@@ -438,38 +438,48 @@ so nothing today would catch this.
 
 ### Every Landed Commit Bumps The Version
 
-**Whoever lands a commit bumps `package.json` and adds a line to `CHANGELOG.md`
-in the same commit**, and says so to the other sessions first, so two of them
-never claim the same number. A **minor** is something a player would notice — a
-game, an opening, a page, a capability. A **patch** is a fix, a rewording, a
-refactor or a chore.
+**`pnpm release:take` takes the number, immediately before pushing, chained
+with `&&` so a red gate stops the push before any file is touched:**
 
-This is written here because it was already written in the changelog's own
-preamble, and that is a file you only open if you are already thinking about
-releases. Fifteen commits landed in one night without a bump for exactly that
-reason: nothing in the instructions being followed said to, and nothing failed.
-`releases.test.ts` only refuses a changelog naming a version NEWER than
-`package.json` — shipping work that the changelog never mentions passes every
-gate there is.
+```sh
+pnpm release:take --summary "A new game a player would notice." && \
+  pnpm preflight:prod && git fetch origin && git push origin HEAD:main
+```
+
+A **minor** (the default) is something a player would notice — a game, an
+opening, a page, a capability — and needs at least one `--summary`, written
+for the person reading `/releases`, not for whoever picks the ticket up next.
+A **patch** (`--patch`) is a fix, a rewording, a refactor or a chore, and
+needs no summary at all — pass one anyway and it still gets a changelog line.
+`--done <key>` marks a row done through the API with the version just taken;
+see board convergence ITS-04 and the Board Gate section above. `done` has no
+other door: the page and `pnpm task` cannot offer it, and a row already done
+does not move again.
+
+This replaces two things that used to go wrong by hand, both written down
+here because this file is the one you open when you are already thinking
+about releases. `CHANGELOG.md` had 151 releases and dated none of them —
+nothing recorded when they shipped, so nothing could be dated afterwards.
+And fifteen commits once landed in one night with no version bump at all,
+because nothing forced one: `releases.test.ts` only refuses a changelog
+naming a version NEWER than `package.json`, so shipping real work with the
+changelog never mentioning it passed every gate there was.
 
 The cost is not tidiness. **The version and the changelog are how the site's
-owner knows something shipped.** A night of real fixes went out with the
-version unchanged, and from the outside that is indistinguishable from a night
-where nothing was deployed — which is exactly what he concluded, and said.
+owner knows something shipped.** A night of real fixes went out unversioned,
+and from the outside that is indistinguishable from a night where nothing was
+deployed — which is exactly what he concluded, and said.
 
-**THE NUMBER IS CLAIMED AT MERGE, NOT ON THE BRANCH.** A session working in a
+**THE NUMBER IS NEVER WRITTEN ON THE BRANCH.** A session working in a
 worktree does not know what will land before it, so a number written into
-`package.json` on a branch is a guess about the order of other people's
-commits. Two branches guessed the same one in a single night, and the collision
-is only visible when the second merge produces a changelog with two entries
-under one version — which no gate catches, because `releases.test.ts` only
-objects to a version NEWER than `package.json`.
-
-So: **do the work on the branch and leave the version alone; take the number in
-the merge commit, when the order is a fact rather than a forecast.** The merging
-session is the one that can see what it is merging on top of. This contradicts
-nothing above — whoever LANDS a commit still bumps it, and a merge is a landing
-— it only says when the number becomes knowable.
+`package.json` while the work is still in progress is a guess about the
+order of other people's commits — two branches once guessed the same one in
+a single night. `pnpm release:take` fetches `origin/main` first and refuses
+outright if the version it would take is already there, which is the whole
+safety property: the number is only ever taken at the moment it is checked,
+immediately before the push that makes it real, and a taken one is caught
+rather than collided with. Leave `package.json` alone on a branch; the tool
+is what claims a number, and it does that once, right before pushing.
 
 ### Nothing Answers What It Cannot Answer
 

@@ -18,11 +18,10 @@ import {
   movesFrom,
   normalizeDraft,
   openCount,
-  releaseStampFor,
   sortItems,
   tally,
 } from "./backlog";
-import { BACKLOG_KINDS, BACKLOG_STATUSES, DETAIL_MAX, TITLE_MAX, TITLE_MIN } from "./backlog.constants";
+import { BACKLOG_KINDS, BACKLOG_STATUSES, DETAIL_MAX, STATUS_MOVES, TITLE_MAX, TITLE_MIN } from "./backlog.constants";
 import type { BacklogDraft, BacklogItem } from "./backlog.types";
 
 /** An item at a status, with dates far enough apart to sort unambiguously. */
@@ -148,8 +147,15 @@ describe("moving between statuses", () => {
     expect(moveProblems("open", "inProgress")).toEqual([]);
   });
 
-  it("finishes only what somebody was on", () => {
-    expect(canMove("inProgress", "done")).toBe(true);
+  /*
+   * Board convergence ITS-04: done is the release tool's alone. This table
+   * is not how it is reached — canMove/movesFrom answer from STATUS_MOVES,
+   * and STATUS_MOVES names nothing that leads to done, on purpose. See
+   * `finishItem` in backlogStore.ts, which writes it directly, conditionally,
+   * from inProgress only.
+   */
+  it("does not let in progress reach done through this table either", () => {
+    expect(canMove("inProgress", "done")).toBe(false);
   });
 
   it("lets somebody put a thing back down without dropping it", () => {
@@ -158,8 +164,17 @@ describe("moving between statuses", () => {
     expect(canMove("inProgress", "open")).toBe(true);
   });
 
-  it("reopens a finished item, and nothing else", () => {
-    expect(movesFrom("done")).toEqual(["inProgress"]);
+  it("done can be left by nothing and reached by nothing in this table", () => {
+    expect(movesFrom("done")).toEqual([]);
+    for (const status of Object.values(BACKLOG_STATUSES)) {
+      expect(STATUS_MOVES[status]).not.toContain(BACKLOG_STATUSES.done);
+    }
+  });
+
+  it("refuses done from every status, not only from open", () => {
+    for (const status of Object.values(BACKLOG_STATUSES)) {
+      expect(canMove(status, BACKLOG_STATUSES.done), `${status} -> done should be illegal`).toBe(false);
+    }
   });
 
   it("lets a dropped item be asked for again, and it is open like anything else", () => {
@@ -175,9 +190,9 @@ describe("moving between statuses", () => {
 
   it("returns a new item and leaves the old one exactly as it was", () => {
     const before = item({ id: "a", status: BACKLOG_STATUSES.inProgress, claimedBy: "John", claimedAt: "2026-09-01T00:00:00.000Z" });
-    const after = moveTo(before, BACKLOG_STATUSES.done, "John", new Date("2026-09-08T12:00:00.000Z"));
+    const after = moveTo(before, BACKLOG_STATUSES.open, "John", new Date("2026-09-08T12:00:00.000Z"));
     expect(after).not.toBeNull();
-    expect(after?.status).toBe("done");
+    expect(after?.status).toBe("open");
     expect(after?.movedAt).toBe("2026-09-08T12:00:00.000Z");
     expect(before.status).toBe("inProgress");
     expect(before.movedAt).toBe("2026-09-01T00:00:00.000Z");
@@ -185,30 +200,8 @@ describe("moving between statuses", () => {
 
   it("refuses an illegal move rather than performing it quietly", () => {
     expect(moveTo(item({ id: "a", status: BACKLOG_STATUSES.open }), BACKLOG_STATUSES.done, "John")).toBeNull();
-  });
-
-  it("stamps the running version on a row as it is marked done", () => {
-    expect(releaseStampFor(BACKLOG_STATUSES.done, "0.108.2")).toBe("0.108.2");
-  });
-
-  it("clears the stamp off a row that leaves done, rather than leaving last time's", () => {
-    // The case that matters: a row goes done, is reopened, and must not still
-    // claim a release. Nothing has shipped a row that is open again.
-    for (const status of Object.values(BACKLOG_STATUSES)) {
-      if (status === BACKLOG_STATUSES.done) continue;
-      expect(releaseStampFor(status, "0.108.2"), `${status} should carry no release`).toBeNull();
-    }
-  });
-
-  it("carries the same stamp through a move as the store writes to the row", () => {
-    // Two doors into a move, one rule. If these ever disagree the board says
-    // one thing on the way through and another once it is reloaded.
-    const before = item({ id: "a", status: BACKLOG_STATUSES.inProgress });
-    const done = moveTo(before, BACKLOG_STATUSES.done, "John", new Date("2026-09-08T12:00:00.000Z"), "0.108.2");
-    expect(done?.releasedIn).toBe(releaseStampFor(BACKLOG_STATUSES.done, "0.108.2"));
-
-    const reopened = moveTo(done!, BACKLOG_STATUSES.inProgress, "John", new Date("2026-09-09T12:00:00.000Z"), "0.109.0");
-    expect(reopened?.releasedIn).toBeNull();
+    // Not even from in progress — see the "done is the release tool's" block above.
+    expect(moveTo(item({ id: "a", status: BACKLOG_STATUSES.inProgress }), BACKLOG_STATUSES.done, "John")).toBeNull();
   });
 
   it("writes the claim on a move to in progress, and previews the same shape the store writes", () => {

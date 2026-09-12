@@ -25,23 +25,28 @@ export function dayStamp(iso: string): string {
  * Same field, read for what it means on this row rather than for what it is
  * called on the column.
  *
- * The version is the one that was running when somebody marked the row done,
- * which is usually the release before the one that carried the work — whoever
- * lands a commit bumps the version in it. So the sentence says "marked done
- * in" and not "shipped in": a small imprecision said out loud beats a tidier
- * story that is wrong. A row finished before the column existed has no
- * version and says none, rather than borrowing one it was never given.
+ * "Shipped in" only when `releasedAt` is set — board convergence ITS-04,
+ * `pnpm release:take` writing the version it is taking at the moment it
+ * takes it, which makes the word true. A row finished before ITS-04 carries
+ * `releasedIn` with no `releasedAt`: that version was the one RUNNING when
+ * somebody marked the row done, usually the release before the one that
+ * carried the work, and it keeps the old wording — "marked done in" — rather
+ * than a claim it was never given the means to make. A row finished before
+ * `releasedIn` existed at all has neither, and says only that it is done.
  */
 function MoveStamp({ item }: { item: BacklogItem }) {
   const day = dayStamp(item.movedAt);
   if (item.status !== BACKLOG_STATUSES.done) return <>moved {day}</>;
   if (item.releasedIn === null) return <>done {day}</>;
+  const version = (
+    <span className="font-medium text-ink-soft" data-testid="backlog-released-in">
+      {item.releasedIn}
+    </span>
+  );
+  if (item.releasedAt !== null) return <>shipped in {version}</>;
   return (
     <>
-      marked done {day} in{" "}
-      <span className="font-medium text-ink-soft" data-testid="backlog-released-in">
-        {item.releasedIn}
-      </span>
+      marked done {day} in {version}
     </>
   );
 }
@@ -191,21 +196,25 @@ export function BacklogRow({ item, onMoved }: BacklogRowProps) {
 
       <div className="flex shrink-0 items-center gap-2">
         <StatusPill status={item.status} />
-        <select
-          className={SELECT_CLASS}
-          value=""
-          disabled={busy}
-          aria-label={`Move "${item.title}" to another status`}
-          data-testid="move-status"
-          onChange={(event) => move(event.target.value)}
-        >
-          <option value="">Move…</option>
-          {moves.map((status) => (
-            <option key={status} value={status}>
-              {STATUS_DISPLAY[status].label}
-            </option>
-          ))}
-        </select>
+        {/* Done does not move (BOARD_RULES.md invariant 1): movesFrom("done")
+            is empty, and a select with nothing to offer is not a control. */}
+        {moves.length === 0 ? null : (
+          <select
+            className={SELECT_CLASS}
+            value=""
+            disabled={busy}
+            aria-label={`Move "${item.title}" to another status`}
+            data-testid="move-status"
+            onChange={(event) => move(event.target.value)}
+          >
+            <option value="">Move…</option>
+            {moves.map((status) => (
+              <option key={status} value={status}>
+                {STATUS_DISPLAY[status].label}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
     </li>
   );

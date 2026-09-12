@@ -3,7 +3,6 @@
   "version": "0.151.0",
   "private": true,
   "scripts": {
-    "version:bump": "node scripts/bump-version.mjs",
     "dev": "next dev -p ${WEB_PORT:-6600}",
     "build": "next build",
     "start": "next start -p ${WEB_PORT:-6600}",
@@ -35,6 +34,7 @@
     "invite": "node --env-file=.env scripts/mint-invite.ts",
     "embed-token": "node --env-file=.env scripts/mint-embed-token.ts",
     "task": "node --env-file=.env scripts/tasks.ts",
+    "release:take": "node --env-file=.env scripts/release-take.ts",
     "backlog:cleanup-litter": "node --env-file=.env scripts/cleanup-backlog-litter.ts",
     "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line && node scripts/make-game-thumbs.mjs",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
