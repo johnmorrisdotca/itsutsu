@@ -630,6 +630,19 @@ worth ruling out in this order before believing any of them:
    the standing, clear the variant first. Anything else is a test about this
    machine's history wearing a test about the code.
 
+**A branch that changes many routes gets its full run on a PULL REQUEST, not
+on the shared machine.** `ci.yml` runs on `pull_request` against a throwaway
+Postgres with its own concurrency group, so a big branch can have the whole
+browser suite run on a fresh database — the real green — without `auth.setup.ts`
+sweeping the shared one under four other sessions. Push the merge to a branch,
+open a PR, read the run, and push to `main` only once you can tell a real
+regression from the noise. That is how 0.156.0 shipped: three PR runs
+separated one genuine bug this branch introduced from twelve standing
+environment failures and four that were already red on `main`. The e2e gate
+being advisory (deploy needs only `verify`) is what lets the PR run be the
+judgement rather than an automatic block — so somebody has to READ it, which
+is the whole point of running it there.
+
 **To run ONE spec without taking the database out from under every other
 session**, there is a route, found by the Checkers agent and used twice since:
 
