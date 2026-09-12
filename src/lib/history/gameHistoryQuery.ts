@@ -131,6 +131,66 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
 }
 
 /**
+ * The member ids a filter needs and this module may not look up, because it is
+ * pure.
+ *
+ * Named fields rather than two positional lists. Both are arrays of ids, and a
+ * filter that quietly swapped them would answer a plausible, wrong question
+ * without failing — which is the one kind of mistake worth designing out rather
+ * than remembering.
+ */
+export type FilterSeats = {
+  /** The programs, for the pool filter. See `poolWhere`. */
+  computers: readonly string[];
+  /** Every member who goes by the asked-for `player` name. See `seatIs`. */
+  named: readonly string[];
+};
+
+/** Nothing looked up: every id-aware filter falls back to the name alone. */
+export const NO_FILTER_SEATS: FilterSeats = { computers: [], named: [] };
+
+/**
+ * "This seat is that player" — asked of the NAME and of the member IDS the name
+ * belongs to.
+ *
+ * WHY BOTH, and why the ids are the half that was missing. A game stores the
+ * names as they were played, so a filter matching only the name loses every game
+ * somebody played before renaming. `fetchPlayerRecord` learned that already and
+ * counts a person's games by member id OR folded name; this filter did not, so
+ * the two had different ideas of whose games those were. On production today her
+ * record counts five games and `/history?player=Hanachan` answers with none of
+ * them — the number right, the link it promised empty, which is the fault a count
+ * that cannot be opened always is.
+ *
+ * It is the same disjunction the record uses, so a count and the page it links to
+ * are narrowed by one definition of a person rather than two.
+ *
+ * THE NAME STAYS IN THE OR rather than being replaced by the ids. Most seats here
+ * have no account behind them — a name typed in at one screen, a record kept from
+ * another site — and those games are found by the only name they have.
+ *
+ * An empty `named` is a real answer and not "not looked up yet": a name nobody
+ * holds an account under resolves to no ids, and the filter is then the name
+ * alone, exactly as it has always been.
+ */
+function seatIs(
+  seat: "black" | "white",
+  player: string,
+  named: readonly string[],
+): Prisma.GameWhereInput {
+  const byName: Prisma.GameWhereInput =
+    seat === "black"
+      ? { blackName: { equals: player, mode: "insensitive" } }
+      : { whiteName: { equals: player, mode: "insensitive" } };
+  if (named.length === 0) return byName;
+  const byId: Prisma.GameWhereInput =
+    seat === "black"
+      ? { blackMemberId: { in: [...named] } }
+      : { whiteMemberId: { in: [...named] } };
+  return { OR: [byName, byId] };
+}
+
+/**
  * An outcome from one player's side of the board.
  *
  * The stored result names a colour, so "their losses" is two questions at
@@ -143,13 +203,17 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
  * than empty, so they are dropped: a filter nobody can honour should leave the
  * record as it was, not quietly return nothing.
  */
-function outcomeWhere(outcome: GameOutcome, player: string | null): Prisma.GameWhereInput | null {
+function outcomeWhere(
+  outcome: GameOutcome,
+  player: string | null,
+  named: readonly string[],
+): Prisma.GameWhereInput | null {
   if (outcome === "decided") return { result: { not: "abandoned" } };
   if (outcome === "drawn") return { result: "draw" };
   if (player === null) return null;
 
-  const asBlack: Prisma.GameWhereInput = { blackName: { equals: player, mode: "insensitive" } };
-  const asWhite: Prisma.GameWhereInput = { whiteName: { equals: player, mode: "insensitive" } };
+  const asBlack = seatIs("black", player, named);
+  const asWhite = seatIs("white", player, named);
   const theirs = outcome === "won" ? "black" : "white";
   const others = outcome === "won" ? "white" : "black";
   return {
@@ -196,31 +260,41 @@ function poolWhere(pool: string, computerSeats: readonly string[]): Prisma.GameW
  * seat they were, and what that seat said. Unanswerable without a name, and
  * dropped rather than answered emptily for the same reason.
  *
- * Read by NAME, while `fetchVerdictTally` counts by member id. On the page
- * that shows both — a member's own record — they are the same person, so the
- * two agree. They would part company only over a game somebody played under a
- * different name before renaming, which is the same seam every name-keyed
- * record on this site already has.
+ * `fetchVerdictTally` counts by member id, and this read by NAME — the seam that
+ * comment used to describe, and it has been closed rather than described: `seatIs`
+ * asks the ids as well, so a game somebody played under an older name is on both
+ * sides of the comparison instead of only the tally's.
  */
-function verdictWhere(verdict: string, player: string | null): Prisma.GameWhereInput | null {
+function verdictWhere(
+  verdict: string,
+  player: string | null,
+  named: readonly string[],
+): Prisma.GameWhereInput | null {
   if (player === null) return null;
   const said = verdict === GAME_VERDICT_ANY ? { not: null } : verdict;
   return {
     OR: [
-      { blackName: { equals: player, mode: "insensitive" }, blackVerdict: said },
-      { whiteName: { equals: player, mode: "insensitive" }, whiteVerdict: said },
+      { AND: [seatIs("black", player, named), { blackVerdict: said }] },
+      { AND: [seatIs("white", player, named), { whiteVerdict: said }] },
     ],
   };
 }
 
 export function buildGameWhere(
   query: GameHistoryQuery,
-  /** The member ids of the programs, for the pool filter. See `poolWhere`. */
-  computerSeats: readonly string[] = [],
+  /** The ids this module cannot look up for itself. See `FilterSeats`. */
+  seats: FilterSeats = NO_FILTER_SEATS,
 ): Prisma.GameWhereInput {
+  const { computers: computerSeats, named } = seats;
   // The record is every finished game; a match still being played is in its players' lists, not here.
   const conditions: Prisma.GameWhereInput[] = [{ status: "finished" }];
 
+  /*
+   * SEARCH IS ABOUT SPELLINGS and stays that way. It is a substring over the
+   * names a game was filed under — somebody half-remembering who they played —
+   * and resolving it through the members table would make "type a few letters"
+   * mean something else. `player` is the filter that means a person.
+   */
   if (query.search !== null) {
     conditions.push({
       OR: [
@@ -231,15 +305,12 @@ export function buildGameWhere(
   }
   if (query.player !== null) {
     conditions.push({
-      OR: [
-        { blackName: { equals: query.player, mode: "insensitive" } },
-        { whiteName: { equals: query.player, mode: "insensitive" } },
-      ],
+      OR: [seatIs("black", query.player, named), seatIs("white", query.player, named)],
     });
   }
   if (query.result !== "all") conditions.push({ result: query.result });
   if (query.outcome !== "all") {
-    const side = outcomeWhere(query.outcome, query.player);
+    const side = outcomeWhere(query.outcome, query.player, named);
     if (side !== null) conditions.push(side);
   }
   if (query.pool !== "all") {
@@ -248,7 +319,7 @@ export function buildGameWhere(
   }
   if (query.rated !== "all") conditions.push({ rated: query.rated === "yes" });
   if (query.verdict !== "all") {
-    const said = verdictWhere(query.verdict, query.player);
+    const said = verdictWhere(query.verdict, query.player, named);
     if (said !== null) conditions.push(said);
   }
   if (query.variant !== "all") conditions.push({ variant: query.variant });

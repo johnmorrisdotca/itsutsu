@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
-import { buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
+import { type FilterSeats, buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
 import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
 import { REACTIONS_KEPT } from "./reactions.constants";
@@ -163,10 +163,42 @@ async function computerSeatIds(): Promise<string[]> {
   return rows.map((row) => row.id);
 }
 
+/**
+ * Every member who goes by this name, so the listing can be filtered by WHO
+ * rather than by how their seat was spelled that day. See `seatIs`.
+ *
+ * EVERY member, not the first one. A display name carries no unique constraint,
+ * so two people may hold the same one, and "which of them did you mean" is a
+ * question an address with a name in it cannot answer. Picking one would answer
+ * it anyway, with somebody else's games; listing both is what the name actually
+ * denotes, and is what matching the stored name has always done here.
+ *
+ * That it is plural is also the honest report of a shortcoming: a link that could
+ * not be ambiguous would carry an id.
+ */
+async function membersNamed(player: string | null): Promise<string[]> {
+  const wanted = player?.trim() ?? "";
+  if (wanted === "") return [];
+  const rows = await prisma.member.findMany({
+    where: { name: { equals: wanted, mode: "insensitive" } },
+    select: { id: true },
+  });
+  return rows.map((row) => row.id);
+}
+
+/** The two lookups a filter needs, together, so neither is forgotten on its own. */
+async function filterSeats(query: GameHistoryQuery): Promise<FilterSeats> {
+  const [computers, named] = await Promise.all([
+    query.pool === "all" ? [] : computerSeatIds(),
+    membersNamed(query.player),
+  ]);
+  return { computers, named };
+}
+
 export async function fetchGameHistoryPage(
   query: GameHistoryQuery,
 ): Promise<GameHistoryPage> {
-  const where = buildGameWhere(query, query.pool === "all" ? [] : await computerSeatIds());
+  const where = buildGameWhere(query, await filterSeats(query));
 
   const [total, byResult, bySize] = await Promise.all([
     prisma.game.count({ where }),
@@ -213,7 +245,7 @@ export async function fetchGameHistoryPage(
 export async function fetchWholeRecord(
   query: GameHistoryQuery,
 ): Promise<{ items: GameSummary[]; total: number }> {
-  const where = buildGameWhere(query, query.pool === "all" ? [] : await computerSeatIds());
+  const where = buildGameWhere(query, await filterSeats(query));
   const [total, rows] = await Promise.all([
     prisma.game.count({ where }),
     prisma.game.findMany({
