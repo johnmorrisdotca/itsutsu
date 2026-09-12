@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ready } from "./support";
 
 /**
  * The gate, exercised with no session at all.
@@ -16,6 +17,13 @@ test.describe("a visitor with no invite", () => {
     await page.goto("/games/gomoku/play");
     await expect(page).toHaveURL(/\/join\?next=%2Fgames%2Fgomoku%2Fplay/);
     await expect(page.getByTestId("google-signin")).toBeVisible();
+    /*
+     * The door is a server-rendered form and revealing the code field is a
+     * button on it, so the wait does two jobs: the press below lands on a
+     * listening control, and the absence above is a statement about a
+     * rendered page rather than about how fast it answered.
+     */
+    await ready(page, "join-form");
     await expect(page.getByTestId("invite-code")).toHaveCount(0);
     await page.getByTestId("show-invite-code").click();
     await expect(page.getByTestId("invite-code")).toBeVisible();
@@ -253,6 +261,7 @@ test.describe("the account", () => {
     await expect(page.getByTestId("sign-in")).toBeVisible();
     await page.goto("/join");
     await expect(page.getByTestId("google-signin")).toBeVisible();
+    await ready(page, "join-form");
     await page.getByTestId("show-invite-code").click();
     await expect(page.getByTestId("invite-code")).toBeVisible();
   });

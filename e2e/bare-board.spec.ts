@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ready } from "./support";
 
 /**
  * Reading a page as the board alone.
@@ -18,6 +19,9 @@ test.describe("just the board", () => {
     const header = page.locator("[data-chrome]").first();
     await expect(header).toBeVisible();
 
+    // The switch is server-rendered in the masthead, so it is a real button
+    // before React attaches — and a press then strips nothing.
+    await ready(page, "bare-board");
     await page.getByTestId("bare-board-toggle").click();
     // Hidden, not removed: the stylesheet takes them off the page rather than
     // the components declining to render, so count them as seen or not seen.
@@ -35,6 +39,7 @@ test.describe("just the board", () => {
 
   test("is still bare on the next visit, without the page flashing first", async ({ page }) => {
     await page.goto(board);
+    await ready(page, "bare-board");
     await page.getByTestId("bare-board-toggle").click();
     await expect(page.locator("[data-chrome]").first()).toBeHidden();
 
@@ -48,6 +53,7 @@ test.describe("just the board", () => {
     await page.goto("/games/renju/play");
     await expect(page.locator("[data-chrome]").first()).toBeHidden();
 
+    await ready(page, "bare-board");
     await page.getByTestId("bare-board-toggle").click();
     await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
   });
@@ -68,6 +74,7 @@ test.describe("just the board", () => {
    */
   test("leaves a page it does not offer itself on completely alone", async ({ page }) => {
     await page.goto(board);
+    await ready(page, "bare-board");
     await page.getByTestId("bare-board-toggle").click();
     await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
 

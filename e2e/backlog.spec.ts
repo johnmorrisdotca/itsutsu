@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext, seedMember } from "./members";
+import { ready } from "./support";
 
 /**
  * The features board.
@@ -62,6 +63,9 @@ test.describe("backlog", () => {
     await expect(page.getByTestId("filter-unfinished")).toBeVisible();
     await expect(page.getByTestId("filter-open")).toBeVisible();
 
+    // The chips are buttons on the board's own client component: a press
+    // before it is listening narrows nothing.
+    await ready(page, "backlog-filters");
     // Filtering to a status shows only that status.
     await page.getByTestId("filter-done").click();
     const rows = page.getByTestId("backlog-item");
@@ -74,6 +78,7 @@ test.describe("backlog", () => {
   test("a request can be added, and is still there on a reload", async ({ page }) => {
     const title = newTitle("Keyboard shortcut for the scrubber");
     await page.goto("/backlog");
+    await ready(page, "backlog-filters");
     await page.getByTestId("backlog-add-panel").locator("summary").click();
     await page.getByTestId("backlog-title").fill(title);
     await page.getByTestId("backlog-detail").fill("Raised by an end-to-end test, and kept like any other request.");
@@ -84,12 +89,15 @@ test.describe("backlog", () => {
     await expect(added).toHaveAttribute("data-status", "open");
 
     await page.reload();
+    // A reload is a fresh server render, so the wait is needed again.
+    await ready(page, "backlog-filters");
     await page.getByTestId("filter-all").click();
     await expect(page.getByTestId("backlog-item").filter({ hasText: title })).toHaveCount(1);
   });
 
   test("a title too short to be a request is not offered to the server", async ({ page }) => {
     await page.goto("/backlog");
+    await ready(page, "backlog-filters");
     await page.getByTestId("backlog-add-panel").locator("summary").click();
     await page.getByTestId("backlog-title").fill("fix it");
     await expect(page.getByTestId("backlog-add")).toBeDisabled();
@@ -105,6 +113,7 @@ test.describe("backlog", () => {
      */
     const title = newTitle("A test request that walks the board");
     await page.goto("/backlog");
+    await ready(page, "backlog-filters");
     await page.getByTestId("backlog-add-panel").locator("summary").click();
     await page.getByTestId("backlog-title").fill(title);
     await page.getByTestId("backlog-detail").fill("Added and picked up, and no further than that.");
@@ -146,6 +155,7 @@ test.describe("backlog", () => {
     // Ordered by status and showing more than one, the board has a heading per status.
     await expect(page.getByTestId("backlog-group").first()).toBeVisible();
 
+    await ready(page, "backlog-filters");
     const item = page.getByTestId("backlog-item").filter({ hasText: title });
     await expect(item).toHaveCount(1);
     await item.getByTestId("move-status").selectOption("inProgress");
@@ -182,6 +192,7 @@ test.describe("backlog", () => {
     expect(legal.status()).toBe(200);
 
     await page.goto("/backlog");
+    await ready(page, "backlog-filters");
     await page.getByTestId("filter-dropped").click();
     await expect(page.getByTestId("backlog-item").filter({ hasText: title })).toHaveAttribute("data-status", "dropped");
   });

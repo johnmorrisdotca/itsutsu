@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { openSetup } from "./support";
+import { openSetup, ready } from "./support";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "../src/lib/gomoku/gomoku.constants";
 
@@ -83,6 +83,12 @@ test.describe("rules and learning", () => {
     await page.goto("/games?view=cards");
     const cards = page.getByTestId("game-cards").getByRole("listitem");
     const all = await cards.count();
+    /*
+     * The two narrowing bars are buttons rather than links — they rewrite
+     * the query through the router — so they are real buttons before React
+     * attaches and a press then narrows nothing at all.
+     */
+    await ready(page, "letter-filter");
     // No game starts with X; the button says so by refusing.
     await expect(page.getByTestId("letter-X")).toBeDisabled();
     await page.getByTestId("letter-T").click();
@@ -97,6 +103,7 @@ test.describe("rules and learning", () => {
   test("the rules can be narrowed by what wins, together with a letter", async ({ page }) => {
     await page.goto("/games?view=cards");
     const cards = page.getByTestId("game-cards").getByRole("listitem");
+    await ready(page, "letter-filter");
     await page.getByTestId("kind-flips").click();
     await expect(page).toHaveURL(/\/games\?view=cards&kind=flips$/);
     for (const card of await cards.allTextContents()) expect(card).toMatch(/Reversi/);
@@ -186,6 +193,8 @@ test.describe("signing out", () => {
   test("clears the session and sends the visitor to the front page", async ({ page }) => {
     await page.goto("/games");
     await expect(page.getByTestId("account-menu")).toBeVisible();
+    // Signing out is a button in the masthead, not a link.
+    await ready(page, "account-menu");
     await page.getByTestId("sign-out").click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByTestId("sign-in")).toBeVisible();

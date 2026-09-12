@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { ready } from "./support";
 
 /**
  * A finished game is something anyone may say was worth playing.
@@ -23,6 +24,9 @@ test.describe("applause on a finished game", () => {
     await page.goto(`/games/gomoku/match/${game.id}`);
     await expect(page.getByTestId("applause")).toContainText("No applause yet");
 
+    // The marks are buttons on a server-rendered panel, so a press before
+    // React attaches is dropped and the count never moves.
+    await ready(page, "applause");
     await page.getByTestId("applause-well-played").click();
     await expect(page.getByTestId("applause-well-played")).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("applause")).toContainText("1");
