@@ -1,0 +1,735 @@
+{
+  "about": "Which release carried each done backlog row that carries no releasedIn. Derived from CHANGELOG.md and git by scripts/derive-released-in.ts; the rules are src/lib/backlog/releasedInBackfill.ts. Only rows with confidence 'certain' may be written, and only by scripts/backfill-released-in.ts.",
+  "generatedAt": "2026-09-12T18:02:56.226Z",
+  "board": {
+    "rows": 156,
+    "done": 61,
+    "unstamped": 61
+  },
+  "releases": {
+    "inChangelog": 200,
+    "versionsInGit": 215
+  },
+  "tally": {
+    "certain": 11,
+    "likely": 1,
+    "possible": 6,
+    "unmapped": 43,
+    "reasons": {
+      "no-release-names-it": 5,
+      "test-litter": 36,
+      "more-than-one-release-fits": 2
+    }
+  },
+  "mapped": [
+    {
+      "key": "standing-game-option-defaults-per-account",
+      "title": "Standing game options kept against the account",
+      "releasedIn": "0.69.0",
+      "releasedAt": "2026-09-08T23:20:20-07:00",
+      "evidence": {
+        "rule": "title-in-notes",
+        "quote": "Standing game options kept against the account: board, clocks, length, rated and the advanced switches, set once and used to start every new game",
+        "score": 0.687,
+        "matchedWords": 5,
+        "rowWords": 6,
+        "runnerUp": {
+          "version": "0.2.0",
+          "score": 0.313
+        },
+        "commit": "741dd3d2",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-09T09:18:19.221Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "how-long-finished-games-stay-in-my-list",
+      "title": "Choose how long a finished game stays in your own list",
+      "releasedIn": "0.66.0",
+      "releasedAt": "2026-09-08T22:29:08-07:00",
+      "evidence": {
+        "rule": "title-in-notes",
+        "quote": "A member can say how long a finished game stays in their own list: a week, a fortnight, a month, three months, or for ever. The record keeps every game whatever it says",
+        "score": 0.683,
+        "matchedWords": 4,
+        "rowWords": 5,
+        "runnerUp": {
+          "version": "0.34.0",
+          "score": 0.36
+        },
+        "commit": "644b4b32",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-09T09:18:19.205Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "weekly-days-off-deadline-exemption",
+      "title": "A recurring weekly day off that deadlines honour",
+      "releasedIn": "0.67.0",
+      "releasedAt": "2026-09-08T22:45:40-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "A member can name the days of the week they do not play, and deadlines in games that honour vacation step over them every week without spending an away day",
+        "score": 0.371,
+        "matchedWords": 3,
+        "rowWords": 7,
+        "runnerUp": {
+          "version": "0.45.0",
+          "score": 0.177
+        },
+        "commit": "dff2db8a",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-09T09:18:19.199Z"
+      },
+      "confidence": "possible",
+      "heldBackBy": "score 0.371 under 0.62"
+    },
+    {
+      "key": "a-game-that-ends-in-a-draw-by-move-count",
+      "title": "A draw when nobody has won by a share of the board",
+      "releasedIn": "0.61.0",
+      "releasedAt": "2026-09-08T18:17:29-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "Hex ヘックス: a rhombus of hexagons, six neighbours to a cell, and the game is won by joining your own two sides. A draw is impossible, which is a fact about the board rather than a rule.",
+        "score": 0.325,
+        "matchedWords": 2,
+        "rowWords": 6,
+        "runnerUp": {
+          "version": "0.65.0",
+          "score": 0.225
+        },
+        "commit": "11348be2",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-09T09:18:19.193Z"
+      },
+      "confidence": "possible",
+      "heldBackBy": "score 0.325 under 0.62; only 0.1 clear of the next release"
+    },
+    {
+      "key": "hex-on-a-hexagonal-board",
+      "title": "Hex ヘックス, on a rhombus of hexagons",
+      "releasedIn": "0.61.0",
+      "releasedAt": "2026-09-08T18:17:29-07:00",
+      "evidence": {
+        "rule": "title-in-notes",
+        "quote": "Hex ヘックス: a rhombus of hexagons, six neighbours to a cell, and the game is won by joining your own two sides. A draw is impossible, which is a fact about the board rather than a rule.",
+        "score": 0.8,
+        "matchedWords": 4,
+        "rowWords": 5,
+        "runnerUp": {
+          "version": "0.65.0",
+          "score": 0
+        },
+        "commit": "11348be2",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-09T09:18:19.183Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "plain-text-list-of-every-game",
+      "title": "A plain-text list of every game, not one game at a time",
+      "releasedIn": "0.64.0",
+      "releasedAt": "2026-09-08T20:14:15-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "The whole record can be copied out as plain text: every game these filters select, in aligned columns, from the foot of the record page",
+        "score": 0.542,
+        "matchedWords": 2,
+        "rowWords": 5,
+        "runnerUp": {
+          "version": "0.51.0",
+          "score": 0.181
+        },
+        "commit": "17195a4e",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-09T09:16:47.592Z"
+      },
+      "confidence": "likely",
+      "heldBackBy": "score 0.542 under 0.62"
+    },
+    {
+      "key": "wikipedia-link-and-origin-flag-on-rules-pages",
+      "title": "A Wikipedia link and a country of origin on rules pages",
+      "releasedIn": "0.63.0",
+      "releasedAt": "2026-09-08T20:00:18-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "Rules pages carry the flag of the country a game came from and a link to its Wikipedia article, so the page can be checked against something outside the site",
+        "score": 0.697,
+        "matchedWords": 5,
+        "rowWords": 6,
+        "runnerUp": {
+          "version": "0.35.0",
+          "score": 0.121
+        },
+        "commit": "4aaac4c0",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-09T09:16:46.196Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "more-on-ratings-from-the-elder-sites-own-explanations",
+      "title": "More on ratings, from the elder sites' own explanations",
+      "releasedIn": "0.32.0",
+      "releasedAt": "2026-09-08T01:49:58-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "The About page tells the numbers: Elo with its formula and curve, the twenty-six renju openings, Connect Four solved, and the elder sites compared.",
+        "score": 0.471,
+        "matchedWords": 1,
+        "rowWords": 3,
+        "runnerUp": {
+          "version": "0.73.0",
+          "score": 0.059
+        },
+        "commit": "e9a63791",
+        "instantFrom": "changelog-heading",
+        "closedAt": "2026-09-09T09:06:12.944Z"
+      },
+      "confidence": "possible",
+      "heldBackBy": "score 0.471 under 0.62"
+    },
+    {
+      "key": "a-clock-that-starts-before-anybody-has-sat-down",
+      "title": "A clock that starts before anybody has sat down",
+      "releasedIn": "0.78.0",
+      "releasedAt": "2026-09-09T02:05:54-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "The operator's page is three tabs, and a clock starts when the second player sits down",
+        "score": 0.361,
+        "matchedWords": 3,
+        "rowWords": 4,
+        "runnerUp": {
+          "version": "0.69.0",
+          "score": 0.233
+        },
+        "commit": "f30c0116",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-09T09:01:56.349Z"
+      },
+      "confidence": "possible",
+      "heldBackBy": "score 0.361 under 0.62; only 0.128 clear of the next release"
+    },
+    {
+      "key": "say-how-a-move-is-written-down-and-credit-sgf",
+      "title": "Say how a move is written down, and credit SGF",
+      "releasedIn": "0.14.0",
+      "releasedAt": "2026-09-08T01:49:58-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "Sakata and Tarannikov openings, inspired-by credits, and a second wave of games.",
+        "score": 0.402,
+        "matchedWords": 1,
+        "rowWords": 4,
+        "runnerUp": {
+          "version": "0.79.0",
+          "score": 0.195
+        },
+        "commit": "e9a63791",
+        "instantFrom": "changelog-heading",
+        "closedAt": "2026-09-09T09:01:49.230Z"
+      },
+      "confidence": "possible",
+      "heldBackBy": "score 0.402 under 0.62"
+    },
+    {
+      "key": "the-plain-game-is-called-gomoku",
+      "title": "Call the plain game Gomoku, not Freestyle",
+      "releasedIn": "0.51.0",
+      "releasedAt": "2026-09-08T06:36:21-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "The plain game is called Gomoku 五目並べ now, not Freestyle, and the exact-five tournament form is Tournament Gomoku 競技五目: the plain name on the plain game, a qualifier on the tightened one, as GoldToken names them",
+        "score": 0.706,
+        "matchedWords": 4,
+        "rowWords": 5,
+        "runnerUp": {
+          "version": "0.50.4",
+          "score": 0.147
+        },
+        "commit": "0ed3fa18",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-08T13:56:20.364Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "grand-reversi-on-a-bigger-board",
+      "title": "Grand Reversi 大リバーシ, the flipping game on ten by ten",
+      "releasedIn": "0.48.0",
+      "releasedAt": "2026-09-08T04:35:53-07:00",
+      "evidence": {
+        "rule": "title-in-notes",
+        "quote": "Grand Reversi 大リバーシ: the flipping game on a 10×10 board, as ItsYourTurn had it",
+        "score": 0.6,
+        "matchedWords": 4,
+        "rowWords": 6,
+        "runnerUp": {
+          "version": "0.33.2",
+          "score": 0.067
+        },
+        "commit": "94ee2dc1",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-08T13:56:20.364Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "ignore-a-member",
+      "title": "Ignore a member, and mute an opponent in one game",
+      "releasedIn": "0.40.0",
+      "releasedAt": "2026-09-08T03:37:55-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "Ignore a member: they cannot challenge you and their messages are hidden from you; undo it from your profile. In any shared game, mute just that opponent's messages with one switch.",
+        "score": 0.746,
+        "matchedWords": 3,
+        "rowWords": 4,
+        "runnerUp": {
+          "version": "0.30.0",
+          "score": 0.254
+        },
+        "commit": "4fb417d5",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-08T13:56:20.364Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "halma-the-first-race-game",
+      "title": "Halma, a game with no lines in it",
+      "releasedIn": "0.50.0",
+      "releasedAt": "2026-09-08T06:08:29-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "Halma ハルマ: the race game, on 16×16, 10×10 or 8×8, with jump chains and shaded camps; the first game here that is not about lines",
+        "score": 1,
+        "matchedWords": 3,
+        "rowWords": 3,
+        "runnerUp": {
+          "version": "0.35.0",
+          "score": 0.143
+        },
+        "commit": "92ff5629",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-08T13:56:20.364Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "away-days-hold-deadlines",
+      "title": "Away days that hold a deadline open",
+      "releasedIn": "0.45.0",
+      "releasedAt": "2026-09-08T04:00:15-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "Away days: mark a range on your profile, three days a year, and deadlines in your games wait for it. A game can be set up to ignore vacation days.",
+        "score": 0.696,
+        "matchedWords": 3,
+        "rowWords": 5,
+        "runnerUp": {
+          "version": "0.52.0",
+          "score": 0.156
+        },
+        "commit": "7cecbd5e",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-08T13:56:20.364Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "champions-page-per-game-ladders",
+      "title": "A champions page with a ladder for every game",
+      "releasedIn": "0.47.0",
+      "releasedAt": "2026-09-08T04:28:01-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "Champions 名人: the best-rated player at every game on one page, and each game's own ladder beneath it",
+        "score": 1,
+        "matchedWords": 2,
+        "rowWords": 2,
+        "runnerUp": {
+          "version": "0.31.0",
+          "score": 0.133
+        },
+        "commit": "11a861b1",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-08T13:56:20.364Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "every-name-is-a-link",
+      "title": "Every name the site prints leads to that player",
+      "releasedIn": "0.52.0",
+      "releasedAt": "2026-09-08T06:51:23-07:00",
+      "evidence": {
+        "rule": "title-in-notes",
+        "quote": "Every member has a page from the day they join, so every name the site prints leads to the person; a test now walks the lists and fails if any name is printed without a link",
+        "score": 1,
+        "matchedWords": 4,
+        "rowWords": 4,
+        "runnerUp": {
+          "version": "0.50.3",
+          "score": 0.186
+        },
+        "commit": "4dd38543",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-08T13:56:20.364Z"
+      },
+      "confidence": "certain"
+    },
+    {
+      "key": "every-game-on-one-page",
+      "title": "Every game and variant on one plain page",
+      "releasedIn": "0.51.0",
+      "releasedAt": "2026-09-08T06:36:21-07:00",
+      "evidence": {
+        "rule": "distinctive-words",
+        "quote": "Every game on one plain page at /games/all, family by family, with the names the other sites gave each one",
+        "score": 1,
+        "matchedWords": 1,
+        "rowWords": 1,
+        "runnerUp": {
+          "version": "0.33.4",
+          "score": 1
+        },
+        "commit": "0ed3fa18",
+        "instantFrom": "version-bump",
+        "closedAt": "2026-09-08T13:56:20.364Z"
+      },
+      "confidence": "possible",
+      "heldBackBy": "only 0 clear of the next release"
+    }
+  ],
+  "unmapped": [
+    {
+      "key": "distraction-free-viewing-mode",
+      "title": "A distraction-free mode that is remembered between visits",
+      "reason": "no-release-names-it",
+      "note": "No release entry is about this row and no commit message names its key; the closest wording was 0.55.0 at 0.186 of its distinctive words, which is not enough to call it.",
+      "best": {
+        "version": "0.55.0",
+        "score": 0.186
+      }
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttwwzur",
+      "title": "A test request that walks the board mttwwzur",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttw61c3",
+      "title": "A test request that walks the board mttw61c3",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttw4s7f",
+      "title": "A test request that walks the board mttw4s7f",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "remembered-board-skin-per-account",
+      "title": "A board skin remembered against the account, not the browser",
+      "reason": "no-release-names-it",
+      "note": "No release entry is about this row and no commit message names its key; the closest wording was 0.55.0 at 0.177 of its distinctive words, which is not enough to call it.",
+      "best": {
+        "version": "0.55.0",
+        "score": 0.177
+      }
+    },
+    {
+      "key": "also-known-as-on-rules-pages",
+      "title": "An also-known-as section on every rules page",
+      "reason": "no-release-names-it",
+      "note": "No release entry is about this row and no commit message names its key; the closest wording was 0.72.0 at 0.24 of its distinctive words, which is not enough to call it.",
+      "best": {
+        "version": "0.72.0",
+        "score": 0.24
+      }
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttvt895",
+      "title": "A test request that walks the board mttvt895",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-section-on-go-with-diagrams-and-the-numbers",
+      "title": "A section on Go, with diagrams and the numbers",
+      "reason": "more-than-one-release-fits",
+      "note": "0.72.0 (0.308) and 0.32.0 (0.231) fit the words as well as each other, so neither is evidence.",
+      "best": {
+        "version": "0.72.0",
+        "score": 0.308
+      }
+    },
+    {
+      "key": "every-game-name-on-the-about-page-links-to-its-game",
+      "title": "Every game name on the About page links to its game",
+      "reason": "more-than-one-release-fits",
+      "note": "0.50.2 (1) and 0.34.0 (1) fit the words as well as each other, so neither is evidence.",
+      "best": {
+        "version": "0.50.2",
+        "score": 1
+      }
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttvc7kn",
+      "title": "A test request that walks the board mttvc7kn",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttvaebm",
+      "title": "A test request that walks the board mttvaebm",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttuugj9",
+      "title": "A test request that walks the board mttuugj9",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttu4nkm",
+      "title": "A test request that walks the board mttu4nkm",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtttruzi",
+      "title": "A test request that walks the board mtttruzi",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtttec3e",
+      "title": "A test request that walks the board mtttec3e",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttsst3x",
+      "title": "A test request that walks the board mttsst3x",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtts81bt",
+      "title": "A test request that walks the board mtts81bt",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttrzb9o",
+      "title": "A test request that walks the board mttrzb9o",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttremu8",
+      "title": "A test request that walks the board mttremu8",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttr5kdb",
+      "title": "A test request that walks the board mttr5kdb",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttqlltr",
+      "title": "A test request that walks the board mttqlltr",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttpttbw",
+      "title": "A test request that walks the board mttpttbw",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttpfmux",
+      "title": "A test request that walks the board mttpfmux",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttoylbw",
+      "title": "A test request that walks the board mttoylbw",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttoplvd",
+      "title": "A test request that walks the board mttoplvd",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtto6nab",
+      "title": "A test request that walks the board mtto6nab",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttnlvm2",
+      "title": "A test request that walks the board mttnlvm2",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttmschi",
+      "title": "A test request that walks the board mttmschi",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttmhruf",
+      "title": "A test request that walks the board mttmhruf",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttl1s6s",
+      "title": "A test request that walks the board mttl1s6s",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttksjlh",
+      "title": "A test request that walks the board mttksjlh",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttkkxou",
+      "title": "A test request that walks the board mttkkxou",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttk9vih",
+      "title": "A test request that walks the board mttk9vih",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttk6pd7",
+      "title": "A test request that walks the board mttk6pd7",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttk03c4",
+      "title": "A test request that walks the board mttk03c4",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mttj6003",
+      "title": "A test request that walks the board mttj6003",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtthm4jp",
+      "title": "A test request that walks the board mtthm4jp",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtst34h6",
+      "title": "A test request that walks the board mtst34h6",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtss32ed",
+      "title": "A test request that walks the board mtss32ed",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtss0vlj",
+      "title": "A test request that walks the board mtss0vlj",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "a-test-request-that-walks-the-board-mtsqgd01",
+      "title": "A test request that walks the board mtsqgd01",
+      "reason": "test-litter",
+      "note": "A row e2e/backlog.spec.ts created and left behind. No release carried it, so no release can be stamped on it; pnpm backlog:cleanup-litter is what this row wants.",
+      "best": null
+    },
+    {
+      "key": "keyboard-navigation-on-the-move-scrubber",
+      "title": "Keyboard navigation on the move scrubber",
+      "reason": "no-release-names-it",
+      "note": "No release entry is about this row and no commit message names its key; the closest wording was 0.52.0 at 0 of its distinctive words, which is not enough to call it.",
+      "best": {
+        "version": "0.52.0",
+        "score": 0
+      }
+    },
+    {
+      "key": "clear-the-games-from-before-sign-in",
+      "title": "Clear the test games from before sign-in existed",
+      "reason": "no-release-names-it",
+      "note": "No release entry is about this row and no commit message names its key; the closest wording was 0.52.0 at 0.133 of its distinctive words, which is not enough to call it.",
+      "best": {
+        "version": "0.52.0",
+        "score": 0.133
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "name": "gomoku",
-  "version": "0.167.0",
+  "version": "0.167.1",
   "private": true,
   "scripts": {
     "dev": "next dev -p ${WEB_PORT:-6600}",
@@ -36,6 +36,8 @@
     "task": "node --env-file=.env scripts/tasks.ts",
     "release:take": "node --env-file=.env scripts/release-take.ts",
     "backlog:cleanup-litter": "node --env-file=.env scripts/cleanup-backlog-litter.ts",
+    "board:released-in": "node --env-file=.env scripts/backfill-released-in.ts",
+    "board:released-in:derive": "node --env-file=.env scripts/derive-released-in.ts",
     "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line && node scripts/make-game-thumbs.mjs",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
     "bots:play:prod": "node scripts/bots-play-prod.mjs",
