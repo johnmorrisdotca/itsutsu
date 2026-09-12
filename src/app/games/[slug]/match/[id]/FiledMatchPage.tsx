@@ -158,14 +158,12 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * alone. Checking `game.rated` here would show a hot-seat or self-played
    * row as an ordinary counted result, which is exactly the bug twelve
    * production rows were found displaying.
-   */
-  /*
-   * THE NAMES AS PLAYED, not the names to show. `ratingRefusal` asks whether one
-   * person held both seats, and the ladder is keyed by the name a game was played
-   * under — so this has to read what the row says, not what the screen says. The
-   * two are the same word until somebody renames, and `recordResult` decides the
-   * real thing off the raw row: reading the resolved names here would let this
-   * page explain a refusal the database never made.
+   *
+   * THE NAMES AS PLAYED, not the names to show, for the same reason
+   * `recordResult` itself does: the ladder is keyed by the name a game was
+   * played under, not by however it renders today. `game.blackName` follows
+   * a rename; `game.playedAs.black` does not — reading the resolved name here
+   * would let this page explain a refusal the database never made.
    */
   const refusal =
     game.result === "abandoned"
