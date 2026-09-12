@@ -37,6 +37,10 @@ type Row = {
   blackMemberId: string | null;
   whiteMemberId: string | null;
   winner: "black" | "white" | null;
+  /** Required too, and for the same reason: the tour's awards are keyed on it. */
+  variant: string;
+  /** What `longGame` is measured against. */
+  moveCount: number;
 };
 
 /** Every finished, non-abandoned game the fake database holds, oldest first. */
@@ -112,7 +116,16 @@ function game(
   id?: string,
 ): Row {
   nextGameId += 1;
-  return { id: id ?? `g${nextGameId}`, blackMemberId: black, whiteMemberId: white, winner };
+  return {
+    id: id ?? `g${nextGameId}`,
+    blackMemberId: black,
+    whiteMemberId: white,
+    winner,
+    /* A real variant, because the tour's awards are keyed on it and a fixture
+       naming nothing would quietly assert the case where they do not fire. */
+    variant: "reversi",
+    moveCount: 10,
+  };
 }
 
 function member(id: string, streak: Streak | null = null) {
@@ -173,8 +186,8 @@ describe("whose run a decided game moves", () => {
      * call it a LOSS for both seats — two plausible results out of a row
      * nothing understands. A rule that cannot measure must not fire.
      */
-    expect(playedSides({ id: "gx", blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" })).toEqual([]);
-    expect(playedSides({ id: "gy", blackMemberId: "a", whiteMemberId: "b", winner: "" })).toEqual([]);
+    expect(playedSides({ blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" })).toEqual([]);
+    expect(playedSides({ blackMemberId: "a", whiteMemberId: "b", winner: "" })).toEqual([]);
   });
 });
 
@@ -352,8 +365,16 @@ describe("the XP a decided game asks for", () => {
     await recordPlayed(game("a", "b", "black", "k3m9-p2qx"));
 
     expect(asked).toEqual([
-      { memberId: "a", types: ["gameFinished", "gameWon"], subjects: ["k3m9-p2qx", "k3m9-p2qx"] },
-      { memberId: "b", types: ["gameFinished"], subjects: ["k3m9-p2qx"] },
+      {
+        memberId: "a",
+        types: ["gameFinished", "firstGameEver", "firstOfVariant", "firstOfFamily", "gameWon"],
+        subjects: ["k3m9-p2qx", "", "reversi", "flips", "k3m9-p2qx"],
+      },
+      {
+        memberId: "b",
+        types: ["gameFinished", "firstGameEver", "firstOfVariant", "firstOfFamily"],
+        subjects: ["k3m9-p2qx", "", "reversi", "flips"],
+      },
     ]);
   });
 
@@ -363,7 +384,8 @@ describe("the XP a decided game asks for", () => {
 
     await recordPlayed(game("a", "b", null, "d1"));
 
-    expect(asked.map((one) => one.types)).toEqual([["gameFinished"], ["gameFinished"]]);
+    for (const call of asked) expect(call.types).not.toContain("gameWon");
+    expect(asked.map((one) => one.types[0])).toEqual(["gameFinished", "gameFinished"]);
   });
 
   it("keys every award on the game, so one game pays once however often an ending fires", async () => {
@@ -378,7 +400,14 @@ describe("the XP a decided game asks for", () => {
     await recordPlayed(one);
 
     expect(asked).toHaveLength(4);
-    for (const call of asked) expect(new Set(call.subjects)).toEqual(new Set(["same"]));
+    // Every award about the GAME carries the game's id. The tour's awards are
+    // about the variant and the family, which is the whole point of them, so
+    // they are the ones deliberately not keyed here.
+    const perGame = new Set(["gameFinished", "gameWon", "longGame"]);
+    for (const call of asked) {
+      const subjects = call.types.flatMap((type, at) => (perGame.has(type) ? [call.subjects[at]] : []));
+      expect(new Set(subjects)).toEqual(new Set(["same"]));
+    }
   });
 
   it("asks nothing for a seat no member row answers to", async () => {
@@ -396,8 +425,14 @@ describe("the XP a decided game asks for", () => {
 
     await recordPlayed(game("solo", "solo", "black", "self"));
 
-    expect(asked).toEqual([
-      { memberId: "solo", types: ["gameFinished", "gameWon"], subjects: ["self", "self"] },
+    expect(asked).toHaveLength(1);
+    expect(asked[0].memberId).toBe("solo");
+    expect(asked[0].types).toEqual([
+      "gameFinished",
+      "firstGameEver",
+      "firstOfVariant",
+      "firstOfFamily",
+      "gameWon",
     ]);
   });
 
@@ -407,7 +442,14 @@ describe("the XP a decided game asks for", () => {
     member("a");
     member("b");
 
-    await recordPlayed({ id: "bad", blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" });
+    await recordPlayed({
+      id: "bad",
+      blackMemberId: "a",
+      whiteMemberId: "b",
+      winner: "abandoned",
+      variant: "reversi",
+      moveCount: 10,
+    });
 
     expect(asked).toEqual([]);
     expect(updates).toEqual([]);

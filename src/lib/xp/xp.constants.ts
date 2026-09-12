@@ -467,12 +467,9 @@ export const XP_UNWIRED: readonly XpEventType[] = [
   "dayStreak7", "dayStreak30", "dayStreak100", "dayStreak365", "weekendGame",
   "backFromAway", "seatClaimedElsewhere",
   // XP-05
-  "firstGameEver", "wonVsPerson", "wonVsBuddy", "revengeWin", "longGame", "comeback",
+  "wonVsPerson", "wonVsBuddy", "revengeWin", "comeback",
   "winStreak3", "winStreak5", "winStreak10", "gradeBeaten", "everyGradeBeaten",
-  "specialistBeaten",
-  // XP-03
-  "firstOfVariant", "firstWinAtVariant", "firstOfFamily", "everyFamilyPlayed",
-  "everyVariantPlayed",
+  "specialistBeaten", "firstWinAtVariant",
   // XP-04
   "firstBuddy", "buddyAdded", "challengeSent", "challengeAnswered", "rematchPlayed",
   "forkPlayed", "timeGiven", "applauseGiven", "nameSet", "countrySet", "bioSet",

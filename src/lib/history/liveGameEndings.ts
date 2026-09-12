@@ -146,7 +146,8 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   if (finished) {
     // Outside the hot-seat test on purpose: a run over every game played is
     // not a rating, and PLAYED counts a game at one screen. See `playedRun.ts`.
-    await recordPlayed({ ...row, winner: next.winner });
+    // The count includes the forfeited turn this claim may just have written.
+    await recordPlayed({ ...row, winner: next.winner, moveCount: next.moves.length });
     if (!isHotSeat(row)) {
       if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
       await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
@@ -210,7 +211,7 @@ export async function settleEnded(id: string, now = new Date()): Promise<boolean
 
   // Counted exactly as any other finish is. The run over every game played
   // asks nothing about rating or seats, because PLAYED does not.
-  await recordPlayed({ ...row, winner: state.winner });
+  await recordPlayed({ ...row, winner: state.winner, moveCount: state.moves.length });
   // Rated exactly as any other finish is, and by the same rules: never a game
   // at one screen, never a friendly, and always into the pool the seats decide.
   if (!isHotSeat(row) && row.rated) {
@@ -299,8 +300,8 @@ export async function resignGame(id: string, token: string, now = new Date()): P
     },
   });
   // A resigned game is a decided game, whoever it was against and whether or
-  // not anything rated it.
-  await recordPlayed({ ...row, winner: next.winner });
+  // not anything rated it. Resigning adds no move, so the count is the record's.
+  await recordPlayed({ ...row, winner: next.winner, moveCount: next.moves.length });
   if (!isHotSeat(row)) {
     if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });

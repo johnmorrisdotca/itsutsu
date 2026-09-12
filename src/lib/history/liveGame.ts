@@ -387,7 +387,10 @@ export async function appendMove(
      * and a game at one screen exactly as it counts a rated one — so the two
      * tests below must not narrow it. See `rating/playedRun.ts`.
      */
-    await recordPlayed({ ...row, winner: next.winner });
+    // The count AFTER this move, which is the one the XP ledger asks about: the
+    // row's own `moveCount` is written in the same transaction and `GAME_ROW`
+    // does not read it back, so `next` is the only thing here that knows.
+    await recordPlayed({ ...row, winner: next.winner, moveCount: next.moves.length });
     // A game at one screen is filed, never rated: the site cannot tell who was playing. Nor is a friendly.
     if (!isHotSeat(row) && row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });

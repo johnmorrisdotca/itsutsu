@@ -145,14 +145,28 @@ describe("what is priced and not yet paid", () => {
     expect(new Set(XP_UNWIRED).size).toBe(XP_UNWIRED.length);
   });
 
-  it("leaves exactly the four XP-02 wired out of the list", () => {
+  it("leaves exactly the wired ones out of the list", () => {
     // A page listing the ways to earn XP reads this catalogue, and a promise of
     // 500 XP that nothing pays is the same broken promise as a count with
     // nothing behind it. A type leaves the list when its ticket wires it, so
     // this case is meant to be edited by XP-03 to XP-06 — and to fail loudly if
     // a kind is wired and nobody says so.
+    //
+    // XP-02 wired four. XP-03 adds the tour's first-game awards and the long
+    // game, all of them on `recordPlayed` — see `xpGame.ts`.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
-    expect(wired.sort()).toEqual(["dailyVisit", "gameFinished", "gameWon", "joined"]);
+    expect(wired.sort()).toEqual([
+      "dailyVisit",
+      "everyFamilyPlayed",
+      "everyVariantPlayed",
+      "firstGameEver",
+      "firstOfFamily",
+      "firstOfVariant",
+      "gameFinished",
+      "gameWon",
+      "joined",
+      "longGame",
+    ]);
   });
 });
 
