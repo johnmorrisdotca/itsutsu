@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.164.1 — 2026-09-12
+- The tool that can replay everyone's history through the XP rules, in order, so games played before XP existed can earn what they would have — built and rehearsed; it runs only when asked twice, and on production only on the owner's word
+
 ## 0.164.0 — 2026-09-12
 - The XP ladder: all hundred levels with their names, what each costs to reach, and who is standing on each rung — with your own rung marked
 - The XP leaderboard: every member ranked by experience with their level name, sortable by points, level, last earned or name, and linked to the person
