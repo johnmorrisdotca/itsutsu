@@ -6,6 +6,7 @@ import { pagingSpecProblems, sortWords } from "./paging";
 import type { SortSpec } from "./paging.types";
 import { GAME_SORT_SPEC } from "@/lib/history/gameHistory.sort";
 import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
+import { XP_BOARD_SORT_SPEC } from "@/lib/xp/xpBoard.sort";
 import { XP_LEDGER_SORT } from "@/lib/xp/xpHistory.sort";
 
 /**
@@ -34,6 +35,17 @@ const SPECS: { of: string; spec: SortSpec<string> }[] = [
    * a `PrismaClient` into it.
    */
   { of: "a member's XP", spec: XP_LEDGER_SORT as SortSpec<string> },
+  /*
+   * The XP leaderboard on /xp, declared in `xpBoard.sort.ts` and split from
+   * `xpBoard.ts` for that same reason.
+   *
+   * Two XP specs and they are two lists, not one written twice: this one orders
+   * MEMBERS by what they have earned, and the ledger above orders one member's
+   * EVENTS by when they earned them. Different table, different indexes — this
+   * one names `Member_xp_idx` and `Member_xpLastAt_idx`, the ledger names
+   * XpEvent's.
+   */
+  { of: "the XP leaderboard", spec: XP_BOARD_SORT_SPEC as SortSpec<string> },
 ];
 
 /**
@@ -115,6 +127,6 @@ describe("every sort declaration", () => {
    * reminder to add the line rather than a reason to loosen it.
    */
   it("is the whole list of them", () => {
-    expect(SPECS).toHaveLength(3);
+    expect(SPECS).toHaveLength(4);
   });
 });

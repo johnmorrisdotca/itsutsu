@@ -43,3 +43,40 @@ export type XpToastHostProps = {
 
 /** Where in its life a shown toast is. */
 export type XpToastPhase = "shown" | "leaving";
+
+/**
+ * A LEVEL BESIDE A NAME, WHICH IS WHERE THE LADDER IS ACTUALLY READ.
+ *
+ * `/xp/levels` is the whole ladder and almost nobody will visit it. What every
+ * member sees instead is this: the rung they are on, wherever their name is
+ * printed. So the badge is the feature and the ladder page is its reference,
+ * which is why the badge carries the link rather than the other way round.
+ *
+ * It is in this file and not a `LevelName.types.ts` of its own because
+ * AGENTS.md asks for one types module per component group, and this directory is
+ * one group — the toasts and the badge are both "what XP looks like".
+ */
+export type LevelNameProps = {
+  /** The level, as `xpLevelFor(member.xp)` answered it. */
+  level: number;
+  /**
+   * Whether the badge leads to the level's own page.
+   *
+   * On by default, because a level with nothing behind it is the dead end this
+   * site has a gate about. Off only where the badge sits INSIDE another link —
+   * a stretched card, a row that is itself an anchor — since an anchor within an
+   * anchor is invalid HTML and the browser silently drops one of them, so the
+   * reader's click lands somewhere neither of us chose.
+   */
+  linkable?: boolean;
+  /**
+   * Draw the number alone, with the name on hover.
+   *
+   * For a narrow cell in a table that already has a name in it. The name is
+   * still in the `title` and in the accessible label, so nothing is lost to a
+   * reader who cannot hover — it is only the pixels that are short.
+   */
+  compact?: boolean;
+  className?: string;
+  testId?: string;
+};
