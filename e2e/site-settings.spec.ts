@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "@playwright/test";
 
 import { ready } from "./support";
 
@@ -49,12 +49,38 @@ test.afterEach(async ({ request }) => {
 });
 
 /** The panel, hydrated — never an element the server also renders. */
-async function openThePanel(page: import("@playwright/test").Page) {
+async function openThePanel(page: Page) {
   await page.goto("/admin?view=site");
   await ready(page, "admin-site");
 }
 
-test("the operator opens the site to anyone, and the door says so", async ({ page }) => {
+/**
+ * The door, as a STRANGER sees it — which is the only way to see it at all.
+ *
+ * `/join` redirects anybody already holding a session straight back out
+ * (`currentSession() !== null` → `redirect(next)`), and this file's own context
+ * is signed in as the operator. **A new page in that context inherits the
+ * cookie**, so the first version of this spec was asserting the door's copy on
+ * the front page, having been bounced there — the assertion failed on "element
+ * not found", which reads as a broken feature and was a broken test.
+ *
+ * A clean context is also the honest subject: every line of copy these tests
+ * check exists for somebody who is not signed in, so testing it while signed in
+ * would be testing it on the one visitor who never sees it. `baseURL` has to be
+ * passed explicitly, because `use` options are not applied to a context made by
+ * hand.
+ */
+async function openTheDoor(browser: Browser, baseURL: string | undefined) {
+  const context = await browser.newContext({
+    baseURL,
+    storageState: { cookies: [], origins: [] },
+  });
+  const door = await context.newPage();
+  await door.goto("/join");
+  return { door, context };
+}
+
+test("the operator opens the site to anyone, and the door says so", async ({ page, browser, baseURL }) => {
   await openThePanel(page);
 
   // Where it starts: asking for a code, and nobody has changed it.
@@ -76,14 +102,14 @@ test("the operator opens the site to anyone, and the door says so", async ({ pag
   await expect(page.getByTestId("provenance-registration")).toContainText("Set by");
 
   /*
-   * The consequence a reader sees. A new page, not a reload of this one — the
-   * door is a different address and this is the only way to learn whether
-   * anything outside /admin reads the setting at all.
+   * The consequence a reader sees. A separate visitor, not a reload of this
+   * page — the door is a different address, read by somebody who is not the
+   * operator, and this is the only way to learn whether anything outside
+   * /admin reads the setting at all.
    */
-  const door = await page.context().newPage();
-  await door.goto("/join");
+  const { door, context } = await openTheDoor(browser, baseURL);
   await expect(door.getByRole("paragraph").filter({ hasText: "no code needed" })).toBeVisible();
-  await door.close();
+  await context.close();
 });
 
 /*
@@ -92,7 +118,7 @@ test("the operator opens the site to anyone, and the door says so", async ({ pag
  * different things, and "I cannot get out of it" is a whole class of fault that
  * only the return trip sees.
  */
-test("and shuts it again, which is the trip the other test does not make", async ({ page }) => {
+test("and shuts it again, which is the trip the other test does not make", async ({ page, browser, baseURL }) => {
   await openThePanel(page);
   await page.getByTestId("registration-open-use").click();
   await page.getByTestId("registration-open-use-yes").click();
@@ -103,8 +129,7 @@ test("and shuts it again, which is the trip the other test does not make", async
   await page.getByTestId("registration-invite-only-use").click();
   await expect(page.getByTestId("registration-invite-only")).toHaveAttribute("data-chosen", "true");
 
-  const door = await page.context().newPage();
-  await door.goto("/join");
+  const { door, context } = await openTheDoor(browser, baseURL);
   /*
    * Wait for the form before asserting what is not in it. `toContainText` on an
    * absence passes the instant it is asked, and would pass on a page that had
@@ -112,18 +137,17 @@ test("and shuts it again, which is the trip the other test does not make", async
    */
   await expect(door.getByTestId("join-submit").or(door.getByTestId("google-signin"))).toBeVisible();
   await expect(door.locator("body")).not.toContainText("no code needed");
-  await door.close();
+  await context.close();
 });
 
-test("stops new members without shutting the site, and the door says that too", async ({ page }) => {
+test("stops new members without shutting the site, and the door says that too", async ({ page, browser, baseURL }) => {
   await openThePanel(page);
   await page.getByTestId("registration-closed-use").click();
   await expect(page.getByTestId("registration-closed-use-confirm")).toBeVisible();
   await page.getByTestId("registration-closed-use-yes").click();
   await expect(page.getByTestId("registration-closed")).toHaveAttribute("data-chosen", "true");
 
-  const door = await page.context().newPage();
-  await door.goto("/join");
+  const { door, context } = await openTheDoor(browser, baseURL);
   await expect(door.getByRole("paragraph").filter({ hasText: "not taking new members" })).toBeVisible();
   /*
    * And the code field is gone, because a door that takes an answer it will
@@ -133,10 +157,10 @@ test("stops new members without shutting the site, and the door says that too", 
    */
   await expect(door.getByTestId("google-signin")).toBeVisible();
   await expect(door.getByTestId("invite-code")).toHaveCount(0);
-  await door.close();
+  await context.close();
 });
 
-test("puts a line on the door, and takes it down again", async ({ page }) => {
+test("puts a line on the door, and takes it down again", async ({ page, browser, baseURL }) => {
   const notice = `Beta — ask John for a code (${Date.now()})`;
   await openThePanel(page);
 
@@ -144,18 +168,26 @@ test("puts a line on the door, and takes it down again", async ({ page }) => {
   await page.getByTestId("joinNotice-save").click();
   await expect(page.getByTestId("provenance-joinNotice")).toContainText("Set by");
 
-  const door = await page.context().newPage();
-  await door.goto("/join");
+  const { door, context } = await openTheDoor(browser, baseURL);
   await expect(door.getByTestId("join-notice")).toHaveText(notice);
 
   // Down again, on the same panel, and gone from the door.
   await page.getByTestId("joinNotice-clear").click();
   await expect(page.getByTestId("provenance-joinNotice")).toContainText("Nobody has changed this");
 
+  /*
+   * A second visit to the door, which is NOT the reload this repository warns
+   * against. That rule is about throwing away client state to make an
+   * assertion pass — the state the bug lives in. The notice is server-rendered
+   * copy on a page this visitor has no client state on at all, and it was taken
+   * down on a different page in a different context, so a fresh visit is the
+   * only way anybody could observe the change. The assertion below would not
+   * pass on a stale render; it would find the notice still there.
+   */
   await door.goto("/join");
   await expect(door.getByTestId("google-signin")).toBeVisible();
   await expect(door.getByTestId("join-notice")).toHaveCount(0);
-  await door.close();
+  await context.close();
 });
 
 /**
