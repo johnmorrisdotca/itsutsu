@@ -60,6 +60,12 @@ export function keptGameDetail(game: LegacyGame): GameDetail {
     status: "finished",
     blackName: keptGameName(game.black),
     whiteName: keptGameName(game.white),
+    /*
+     * The same two names. A kept game came from another site and has no member
+     * behind either seat, so the name it was played under and the name to show
+     * are not merely equal here — they are the only name there is.
+     */
+    playedAs: { black: keptGameName(game.black), white: keptGameName(game.white) },
     size: game.size,
     winLength: 5,
     variant: game.variant,

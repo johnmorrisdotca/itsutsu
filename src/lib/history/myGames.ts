@@ -6,6 +6,7 @@ import { replayGame } from "@/lib/gomoku/replay";
 import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
+import { NO_CURRENT_NAMES, currentNamesFor } from "./currentNames";
 import { SUMMARY_SELECT, toGameMove, toSummary } from "./gameHistory";
 import { waitingFirst } from "./nextGame";
 import { KEEP_FINISHED_DEFAULT, staysInMyList } from "./retention";
@@ -74,6 +75,7 @@ export async function fetchMyGames(
   });
 
   const replayed = await replaysFor(rows);
+  const names = await currentNamesFor(rows);
 
   for (const row of rows) {
     const token = claims.get(row.id);
@@ -91,7 +93,7 @@ export async function fetchMyGames(
     // A cookie that fits neither seat is stale itself; it names no game of ours.
     if (seat === null) continue;
 
-    const game = toSummary(row);
+    const game = toSummary(row, names);
     const { running, toPlay } = positionOf(row, replayed);
     const since = game.lastMoveAt ?? game.playedAt;
     // One token for both chairs: a game at one screen, always waiting on this browser.
@@ -202,7 +204,14 @@ async function replaysFor(rows: SeatRow[]): Promise<Map<string, GameState>> {
     else list.push(toGameMove(columns));
   }
   for (const row of wanted) {
-    replayed.set(row.id, replayGame({ ...toSummary(row), moves: byGame.get(row.id) ?? [] }));
+    /*
+     * NO_CURRENT_NAMES, said rather than forgotten. What comes out of here is a
+     * POSITION, handed to the engine to find whose turn it is — and the engine
+     * reads no names at all. There is nobody to resolve for because nothing here
+     * will ever be shown; the summary these rows pass through again, for the
+     * screen, is the one above.
+     */
+    replayed.set(row.id, replayGame({ ...toSummary(row, NO_CURRENT_NAMES), moves: byGame.get(row.id) ?? [] }));
   }
   return replayed;
 }

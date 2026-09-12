@@ -57,8 +57,23 @@ export type GameSummary = {
   id: string;
   playedAt: string;
   status: GameLifecycle;
+  /**
+   * The names to SHOW, resolved through the seats' member ids by `toSummary`, so
+   * a game played before somebody renamed still names them the way they are
+   * named now. A seat with no account behind it keeps exactly what was stored.
+   */
   blackName: string;
   whiteName: string;
+  /**
+   * The names as they were PLAYED, straight off the row.
+   *
+   * Not the same question as the two above, and the difference is the whole
+   * point: identity is an id, and a rating is a name it was earned under.
+   * Anything reasoning about the RATING reads these — `ratingRefusal` asks
+   * whether one person held both seats, and it has to ask about the names the
+   * ladder was keyed by. Anything a reader looks at reads the two above.
+   */
+  playedAs: { black: string; white: string };
   size: number;
   winLength: number;
   variant: string;

@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
 import { buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
 import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
@@ -96,10 +97,32 @@ export function toGameMove(row: MoveRow): GameMove {
   return move;
 }
 
-export function toSummary(row: SummaryRow): GameSummary {
+/**
+ * A stored row becomes the object every screen reads — and the one place a seat's
+ * name stops being the spelling on the row and becomes the person it belongs to.
+ *
+ * `names` IS REQUIRED, and the compiler is the gate rather than a habit. The
+ * resolution has to happen at exactly one seam or it happens at some of them:
+ * this is the only row-to-display boundary the listing, the record, a match page
+ * and a player's own games all pass through, so resolving here reaches every
+ * screen with nothing downstream to remember. An optional argument would have
+ * been forgotten at one call site, and a half-applied rename is the bug this is
+ * fixing. `NO_CURRENT_NAMES` is how a caller with genuinely nobody to resolve
+ * says so out loud.
+ */
+export function toSummary(row: SummaryRow, names: CurrentNames): GameSummary {
   const { blackForfeits, whiteForfeits, ...rest } = row;
   return {
     ...rest,
+    blackName: seatName(row.blackName, row.blackMemberId, names),
+    whiteName: seatName(row.whiteName, row.whiteMemberId, names),
+    /*
+     * The names as they were played, kept beside the names to show, because a
+     * rating is earned under the name it was earned under and a screen shows who
+     * somebody is now. Two different facts that are the same word today: the
+     * rating refusal reads these, every display reads the two above.
+     */
+    playedAs: { black: row.blackName, white: row.whiteName },
     playedAt: row.playedAt.toISOString(),
     lastMoveAt: row.lastMoveAt === null ? null : row.lastMoveAt.toISOString(),
     deadlineAt: row.deadlineAt === null ? null : row.deadlineAt.toISOString(),
@@ -159,10 +182,11 @@ export async function fetchGameHistoryPage(
     take: pagination.pageSize,
     select: SUMMARY_SELECT,
   });
+  const names = await currentNamesFor(rows);
 
   return {
     pagination,
-    items: rows.map(toSummary),
+    items: rows.map((row) => toSummary(row, names)),
     facets: {
       byResult: Object.fromEntries(
         GAME_RESULTS.map((result) => [
@@ -199,7 +223,8 @@ export async function fetchWholeRecord(
       select: SUMMARY_SELECT,
     }),
   ]);
-  return { items: rows.map(toSummary), total };
+  const names = await currentNamesFor(rows);
+  return { items: rows.map((row) => toSummary(row, names)), total };
 }
 
 /**
@@ -238,7 +263,7 @@ export async function fetchGameDetail(
   if (game === null) return null;
   const { moves, reactions, ...summary } = game;
   return {
-    ...toSummary(summary),
+    ...toSummary(summary, await currentNamesFor([summary])),
     moves: moves.map(toGameMove),
     reactions: reactions
       .map((reaction) => ({ ...reaction, createdAt: reaction.createdAt.toISOString() }))

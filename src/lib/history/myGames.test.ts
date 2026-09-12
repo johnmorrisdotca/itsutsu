@@ -26,11 +26,22 @@ const gameFindMany = vi.fn(async (_args: unknown) => rows);
 const moveFindMany = vi.fn(async ({ where }: { where: { gameId: { in: string[] } } }) =>
   moves.filter((move) => where.gameId.in.includes(move.gameId as string)),
 );
+/**
+ * The members a seat might be bound to, so a name can be resolved to whatever
+ * that member is called NOW. Counted, because the cost assertions above are the
+ * point of this file: resolving names must be ONE read for a whole list, not one
+ * per game.
+ */
+let members: { id: string; name: string }[] = [];
+const memberFindMany = vi.fn(async ({ where }: { where: { id: { in: string[] } } }) =>
+  members.filter((one) => where.id.in.includes(one.id)),
+);
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     game: { findMany: (args: never) => gameFindMany(args) },
     move: { findMany: (args: never) => moveFindMany(args) },
+    member: { findMany: (args: never) => memberFindMany(args) },
   },
 }));
 
@@ -111,8 +122,10 @@ async function only() {
 beforeEach(() => {
   rows = [];
   moves = [];
+  members = [];
   gameFindMany.mockClear();
   moveFindMany.mockClear();
+  memberFindMany.mockClear();
 });
 
 describe("what it costs to draw", () => {
@@ -133,6 +146,32 @@ describe("what it costs to draw", () => {
     // 800 move rows are there to be read, and none of them is.
     expect(moveFindMany).not.toHaveBeenCalled();
     expect(gameFindMany).toHaveBeenCalledTimes(1);
+  });
+
+  /*
+   * Showing a renamed member under the name they go by now costs ONE read for the
+   * whole list. A resolution asked per row would be the right answer at twenty
+   * times the price, on the list a signed-in reader loads most often.
+   */
+  it("resolves every seat's current name in one read, not one per game", async () => {
+    rows = Array.from({ length: 20 }, (_unused, index) =>
+      game({
+        id: `g${index}`,
+        moveCount: 40,
+        settledStatus: GAME_STATUS.playing,
+        settledToPlay: STONES.black,
+        blackMemberId: MEMBER,
+      }),
+    );
+    members = [{ id: MEMBER, name: "Hanachan" }];
+
+    const groups = await fetchMyGames(new Map(), MEMBER);
+    expect(groups.yourMove).toHaveLength(20);
+    expect(memberFindMany).toHaveBeenCalledTimes(1);
+    // And it is the current name that comes out, on every one of them.
+    expect(groups.yourMove.map((mine) => mine.game.blackName)).toEqual(
+      Array.from({ length: 20 }, () => "Hanachan"),
+    );
   });
 
   it("never asks for the moves of a game that is already filed", async () => {

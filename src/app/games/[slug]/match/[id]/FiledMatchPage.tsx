@@ -141,8 +141,16 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * out to the end and then could not find in their figures is the silence
    * this fills.
    */
+  /*
+   * THE NAMES AS PLAYED, not the names to show. `ratingRefusal` asks whether one
+   * person held both seats, and the ladder is keyed by the name a game was played
+   * under — so this has to read what the row says, not what the screen says. The
+   * two are the same word until somebody renames, and `recordResult` decides the
+   * real thing off the raw row: reading the resolved names here would let this
+   * page explain a refusal the database never made.
+   */
   const refusal =
-    game.rated && game.result !== "abandoned" ? ratingRefusal(game.blackName, game.whiteName) : null;
+    game.rated && game.result !== "abandoned" ? ratingRefusal(game.playedAs.black, game.playedAs.white) : null;
 
   /*
    * The reader's own board, on the page they will spend the longest looking
