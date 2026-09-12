@@ -463,16 +463,12 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
  * XP-02 wires four: `joined`, `dailyVisit`, `gameFinished`, `gameWon`.
  */
 export const XP_UNWIRED: readonly XpEventType[] = [
-  // XP-06
-  "seatClaimedElsewhere",
-  /* `comeback` is priced and deliberately not paid: nothing on this site can
-     read a position as losing for every variant, and an approximation would pay
-     everybody for every win. The whole refusal is in `xpGame.ts`. */
+  /* `comeback` is priced and deliberately not paid, and it is the only one left:
+     nothing on this site can read a position as losing for every variant — the
+     flips, the twists and the races set `analysis: false` — and an approximation
+     would pay everybody for every win. The whole refusal, with what it would take
+     to do it honestly, is in `xpGame.ts`. */
   "comeback",
-  // XP-04
-  "firstBuddy", "buddyAdded", "challengeSent", "challengeAnswered", "rematchPlayed",
-  "forkPlayed", "timeGiven", "applauseGiven", "nameSet", "countrySet", "bioSet",
-  "wordsSet",
 ];
 
 /** A game past this many moves went the distance. See `longGame`. */

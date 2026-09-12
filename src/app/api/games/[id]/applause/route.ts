@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { APPLAUSE_EMOJI, type ApplauseEmoji } from "@/lib/history/applause.constants";
 import { setApplause } from "@/lib/history/applause";
 import { overLimit } from "@/lib/api/rateLimit";
+import { XP_EVENTS } from "@/lib/xp/xp.constants";
+import { awardCourtesy } from "@/lib/xp/xpSocial";
 
 const applauseSchema = z.object({ emoji: z.enum(APPLAUSE_EMOJI) });
 
@@ -33,7 +35,26 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
 
     const { id } = await ctx.params;
     const outcome = await setApplause(id, me.email, parsed.data.emoji as ApplauseEmoji);
-    if (outcome.ok) return NextResponse.json(outcome.tally, { headers: NO_STORE });
+    if (outcome.ok) {
+      /*
+       * XP for a mark LEFT, not for one taken back: the same mark pressed twice
+       * is a change of mind and removes it, and `tally.mine` is what says which
+       * of the two just happened.
+       *
+       * Here rather than in `setApplause`, which is keyed by ADDRESS: the member
+       * id the ledger needs is free in this route — `currentMemberId` reads the
+       * row `currentSession` above has already fetched — and would be a query
+       * inside the store.
+       */
+      if (outcome.tally.mine !== null) {
+        await awardCourtesy({
+          memberId: await currentMemberId(),
+          gameId: id,
+          type: XP_EVENTS.applauseGiven,
+        });
+      }
+      return NextResponse.json(outcome.tally, { headers: NO_STORE });
+    }
     if (outcome.reason === "not-found") return notFound("No such game.");
     return unprocessable("A game is applauded once it is finished.");
   } catch (error) {

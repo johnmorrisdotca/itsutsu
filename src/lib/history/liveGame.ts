@@ -18,6 +18,7 @@ import { UnwinnableGame, unwinnableBecause } from "./winnableGame";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
+import { awardAnsweredChallenge } from "@/lib/xp/xpSocial";
 import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
 import type {
   CreatedGame,
@@ -379,6 +380,14 @@ export async function appendMove(
     }
     throw error;
   }
+
+  /*
+   * The move that answers a challenge, when that is what this is. Every test it
+   * makes is on columns already in hand, and it reads the ledger — once, on a
+   * seat's first move — only for a game two members were bound to and nobody
+   * posted. See `xpSocial.ts`, which explains how the asker is known at all.
+   */
+  await awardAnsweredChallenge(row, stone);
 
   if (finished) {
     /*

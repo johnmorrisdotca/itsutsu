@@ -156,9 +156,19 @@ describe("what is priced and not yet paid", () => {
     // everything a WIN pays, both on `recordPlayed` — see `xpGame.ts`. XP-05
     // added turning up: the run of days and coming back from away on the
     // `lastSeenAt` write (`dailyVisit.ts`), and the weekend on the finish.
+    // XP-06 added the ones about other people and about who you are.
+    //
+    // Which leaves `comeback`, refused in writing. Every other kind in the
+    // catalogue is paid by something.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
     expect(wired.sort()).toEqual([
+      "applauseGiven",
       "backFromAway",
+      "bioSet",
+      "buddyAdded",
+      "challengeAnswered",
+      "challengeSent",
+      "countrySet",
       "dailyVisit",
       "dayStreak100",
       "dayStreak30",
@@ -167,23 +177,30 @@ describe("what is priced and not yet paid", () => {
       "everyFamilyPlayed",
       "everyGradeBeaten",
       "everyVariantPlayed",
+      "firstBuddy",
       "firstGameEver",
       "firstOfFamily",
       "firstOfVariant",
       "firstWinAtVariant",
+      "forkPlayed",
       "gameFinished",
       "gameWon",
       "gradeBeaten",
       "joined",
       "longGame",
+      "nameSet",
+      "rematchPlayed",
       "revengeWin",
+      "seatClaimedElsewhere",
       "specialistBeaten",
+      "timeGiven",
       "weekendGame",
       "winStreak10",
       "winStreak3",
       "winStreak5",
       "wonVsBuddy",
       "wonVsPerson",
+      "wordsSet",
     ]);
   });
 

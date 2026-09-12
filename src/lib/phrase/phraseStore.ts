@@ -21,6 +21,7 @@ import "server-only";
  * outcome, so "it worked" over a `create` cannot pass.
  */
 import { prisma } from "@/lib/prisma";
+import { awardWordsSet } from "@/lib/xp/xpProfile";
 
 import { CREDENTIALS, mayRemove } from "./credentials";
 import { canonicalPhrase } from "./phrase";
@@ -121,6 +122,15 @@ export async function setPhrase(
     where: { id: memberId },
     data: { phraseHash: await hashPhrase(canonical), phraseSetAt: new Date() },
   });
+  /*
+   * The four words, once ever — and here rather than in the two routes because
+   * `claimOrVerifyPhraseFor` also lands on this function, when somebody with no
+   * phrase binds one at a borrowed device. Both doors, one rider.
+   *
+   * Not once per phrase: rerolling is the same call as setting, deliberately, so
+   * paying per phrase would pay a member for forgetting theirs.
+   */
+  await awardWordsSet(memberId);
   return { ok: true };
 }
 

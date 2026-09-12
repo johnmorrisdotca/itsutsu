@@ -9,8 +9,10 @@ import { prisma } from "@/lib/prisma";
 import { recordResult } from "@/lib/rating/players";
 import { recordPlayed } from "@/lib/rating/playedRun";
 import { poolFor } from "@/lib/rating/pools";
-import { hasBotSeat } from "@/lib/bots/bots";
+import { hasBotSeat, seatMemberId } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
+import { XP_EVENTS } from "@/lib/xp/xp.constants";
+import { awardCourtesy } from "@/lib/xp/xpSocial";
 import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
 import { fetchGameDetail } from "./gameHistory";
 import { FORFEITS_TO_LOSE } from "./gameSettingsSchema";
@@ -53,6 +55,12 @@ export async function giveTime(id: string, token: string, now = new Date()): Pro
 
   const gift = courtesyMs(row.clockMode, row.moveTimeMs);
   const receiver = state.toPlay;
+  /*
+   * Who is giving it, for the ledger. The seat's own member id, off the row
+   * already read — a gift from a browser holding only a token is nobody's to
+   * credit, and `awardXp` answers a null id with nothing.
+   */
+  const giverId = seatMemberId(row, giver);
   await prisma.$transaction([
     prisma.timeGift.create({ data: { gameId: id, giver, givenMs: gift } }),
     prisma.game.update({
@@ -68,6 +76,11 @@ export async function giveTime(id: string, token: string, now = new Date()): Pro
       },
     }),
   ]);
+  /*
+   * Sportsmanship, and almost impossible to farm: the gift is a real row on the
+   * record, it can only be given while waiting, and it is capped at three a day.
+   */
+  await awardCourtesy({ memberId: giverId, gameId: id, type: XP_EVENTS.timeGiven });
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };
   return { ok: true, game };
