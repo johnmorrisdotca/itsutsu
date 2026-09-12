@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { describeRules } from "./rulesSummary";
+import { describeRules, describeSettings } from "./rulesSummary";
 import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
 
 /**
@@ -50,5 +50,85 @@ describe("describeRules", () => {
   it("says nothing clever about a variant it does not know", () => {
     // An unknown name has no sizes to snap to, so the row's number stands.
     expect(describeRules({ ...plain, variant: "not-a-game", size: 12 })).toContain("12×12");
+  });
+});
+
+/**
+ * The line that stands in for the folded controls.
+ *
+ * It exists because the set-up screen's pictures pushed the Start button off
+ * the bottom of an iPad, so five controls moved behind a disclosure — and a
+ * disclosure is only honest if the line above it says what is inside. The one
+ * thing it must never do is describe a game other than the one the button
+ * would start, so what is checked here is that every word tracks the value it
+ * came from.
+ */
+const settings = {
+  opening: "free",
+  allowResign: true,
+  moveTimeMs: null as number | null,
+  clockMode: "move",
+  rated: true,
+};
+const words = (over: Partial<typeof settings> = {}) =>
+  describeSettings({ ...settings, ...over }).map((word) => word.text);
+const notable = (over: Partial<typeof settings> = {}) =>
+  describeSettings({ ...settings, ...over })
+    .filter((word) => word.notable)
+    .map((word) => word.text);
+
+describe("describeSettings", () => {
+  it("says all four settings, in the order the controls appear inside", () => {
+    expect(words()).toEqual(["Free opening", "Resigning allowed", "No clock", "Rated"]);
+  });
+
+  it("marks nothing notable when everything is the ordinary setting", () => {
+    // A line where every word shouts is a line where none of them does.
+    expect(notable()).toEqual([]);
+  });
+
+  it("tracks the clock, which is the case the disclosure was argued over", () => {
+    // "A rematch that arrived with a 5-minute clock should not read the same
+    // as one with none." It does not.
+    expect(words({ moveTimeMs: 5 * 60_000 })).toContain("5 minutes a move");
+    expect(notable({ moveTimeMs: 5 * 60_000 })).toEqual(["5 minutes a move"]);
+    expect(words()).toContain("No clock");
+  });
+
+  it("folds the clock's mode into the clock's own words", () => {
+    // Two controls, one word: the phrase says which mode without naming it.
+    expect(words({ moveTimeMs: 20 * 60_000, clockMode: "game" })).toContain(
+      "20 minutes each for the whole game",
+    );
+    expect(words({ moveTimeMs: 20 * 60_000, clockMode: "move" })).toContain("20 minutes a move");
+  });
+
+  it("tracks resigning, the ratings and the opening", () => {
+    expect(notable({ allowResign: false })).toEqual(["No resigning"]);
+    expect(words({ allowResign: false })).toContain("No resigning");
+    expect(notable({ rated: false })).toEqual(["Friendly"]);
+    expect(words({ rated: false })).toContain("Friendly");
+    expect(notable({ opening: "swap" })).toEqual(["Swap opening"]);
+  });
+
+  it("marks every one of them at once, so no word is left unwired", () => {
+    // The failure this guards is a word that always reads ordinary because
+    // nothing ever sets its flag, which looks exactly like a calm line.
+    const all = describeSettings({
+      opening: "swap",
+      allowResign: false,
+      moveTimeMs: 60_000,
+      clockMode: "move",
+      rated: false,
+    });
+    expect(
+      all.every((word) => word.notable),
+      all.map((word) => word.text).join(" / "),
+    ).toBe(true);
+  });
+
+  it("says an opening it does not recognise rather than dropping it", () => {
+    // Silence about a setting is the one thing a summary cannot afford.
+    expect(words({ opening: "not-an-opening" })).toContain("not-an-opening opening");
   });
 });

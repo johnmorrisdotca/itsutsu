@@ -132,6 +132,71 @@ export async function openSetUpPage(page: Page, slug?: string) {
 }
 
 /**
+ * Chooses a game on the set-up screen, the way a reader does.
+ *
+ * The dropdown here became two rows — all eleven families along the top,
+ * the open family's games underneath — so choosing is browsing to the
+ * family and then picking the game. This walks the families until the game
+ * appears, which is exactly the act it is standing in for, rather than
+ * reaching past the control to the state behind it. See GamePicker.tsx.
+ *
+ * Nothing is clicked when the game is already on screen, so the common
+ * case is one click and the spec is not pretending to browse.
+ */
+export async function chooseGame(page: Page, variant: string) {
+  const card = page.locator(`[data-testid="set-up-variant"][data-variant="${variant}"]`);
+  if ((await card.count()) === 0) {
+    const families = page.getByTestId("set-up-family");
+    const many = await families.count();
+    for (let at = 0; at < many; at += 1) {
+      await families.nth(at).click();
+      if ((await card.count()) > 0) break;
+    }
+  }
+  await card.click();
+  await expect(card).toHaveAttribute("data-chosen", "true");
+}
+
+/**
+ * Opens the drawer holding the opening, resigning, the clock, the ratings and
+ * the opponent.
+ *
+ * Those five are folded behind a line saying what they currently are, because
+ * the game and board pictures put the Start button below an iPad's fold —
+ * see MoreSettings.tsx for the measurement. A spec that wants one of them has
+ * to open it, the way a reader does.
+ *
+ * Idempotent, and it waits for what it opened: a `<details>` already open
+ * would otherwise be closed by a second click, which is the kind of failure
+ * that reads as the control being broken.
+ */
+export async function openMoreSettings(page: Page) {
+  const shut = await page
+    .getByTestId("more-settings")
+    .evaluate((el) => (el as HTMLDetailsElement).open === false);
+  if (shut) await page.getByTestId("more-settings-open").click();
+  await expect(page.getByTestId("set-up-with")).toBeVisible();
+}
+
+/** Chooses a board on the set-up screen. The blocks are radios; this presses one. */
+export async function chooseBoard(page: Page, size: number | string) {
+  const block = page.locator(`[data-testid="set-up-size"][data-size="${size}"]`);
+  await block.click();
+  await expect(block).toHaveAttribute("data-chosen", "true");
+}
+
+/**
+ * The board the set-up screen is currently on.
+ *
+ * A locator rather than a value, so a spec asserts against something that
+ * is ON the page — `toHaveCount(0)` on this says no board is chosen, which
+ * is a different claim from "the picker is absent" and both get made.
+ */
+export function chosenBoard(page: Page) {
+  return page.locator('[data-testid="set-up-size"][data-chosen="true"]');
+}
+
+/**
  * The page holding the games somebody has going.
  *
  * Its own page now, split out of the lobby: /games starts a game, /play

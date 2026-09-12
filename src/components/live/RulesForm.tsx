@@ -15,8 +15,30 @@ import {
 import { describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
+import type { ReactNode } from "react";
+import { BoardPicker } from "./BoardPicker";
+import { GamePicker } from "./GamePicker";
+import { MoreSettings } from "./MoreSettings";
 import { penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
+import { describeSettings, type SettingWord } from "./rulesSummary";
+
+/**
+ * How the two biggest choices are drawn. NOT which rules are offered — that
+ * is the same set on both screens and always will be, which is the whole
+ * reason this form is one component used twice.
+ *
+ * `select` is the rules panel beside a board: a narrow column next to a game
+ * already in progress, where a row of board pictures would crowd out the
+ * board it is about.
+ *
+ * `pictures` is the screen whose entire job is choosing — /games/new, where
+ * John's word for the dropdown was UGLY and the games have forty board
+ * photographs between them that were going unused.
+ */
+export const RULES_CHOOSERS = { select: "select", pictures: "pictures" } as const;
+
+export type RulesChooser = (typeof RULES_CHOOSERS)[keyof typeof RULES_CHOOSERS];
 
 /**
  * The rules of a shared game, as a form.
@@ -44,6 +66,8 @@ export function RulesForm({
    */
   showVariant = true,
   variantLabel = "Rules",
+  chooser = RULES_CHOOSERS.select,
+  fold,
   onSizeChosen,
 }: {
   value: RulesDraft;
@@ -61,6 +85,37 @@ export function RulesForm({
    */
   variantLabel?: string;
   /**
+   * How the game and the board are drawn — see RULES_CHOOSERS. One prop
+   * rather than two flags, because it is one decision: whether this is the
+   * screen that CHOOSES a game or the panel that AMENDS one. Everything
+   * either branch offers comes from the same tables and goes through the
+   * same `applyRulesChange`, so the two screens still cannot drift.
+   */
+  chooser?: RulesChooser;
+  /**
+   * Fold everything that is not the game or the board behind a line saying
+   * what it currently is — see `MoreSettings` for the measurement that made
+   * this necessary rather than nice.
+   *
+   * ONE PROP RATHER THAN A FLAG AND TWO SLOTS, because it is one idea: the
+   * caller has settings of its own to fold in with these, and saying so is
+   * what asks for the fold. The setup screen's opponent belongs inside the
+   * same drawer as the clock — it is a setting about a game already chosen —
+   * but it lives in that screen rather than in these rules, so it arrives
+   * here instead of being reached for.
+   *
+   * Absent on the panel beside a board, where every rule is inline: that
+   * panel is a narrow column about a game already in progress, there is no
+   * Start button under it to push off a screen, and a reader who opened it
+   * came to read the rules rather than to choose a game.
+   */
+  fold?: {
+    /** The caller's own words, appended after the rules' own. */
+    summary: SettingWord[];
+    /** The caller's own controls, placed inside after the rules' own. */
+    fields: ReactNode;
+  };
+  /**
    * Told when somebody chooses a board themselves, so a caller that was
    * following a default can stop. A chosen board is not a default.
    */
@@ -70,23 +125,37 @@ export function RulesForm({
   const variant = value.variant as RuleVariant;
   const sizes = boardSizesFor(variant);
 
-  return (
+  /*
+   * THE TWO QUESTIONS THE SCREEN EXISTS TO ASK: which game, and what board.
+   * Everything else is a setting about a game already chosen, and `fold` is
+   * what lets a caller put that distinction on the screen.
+   */
+  const head = (
     <>
       {showVariant ? (
-        <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
-          <Select
+        chooser === RULES_CHOOSERS.pictures ? (
+          <GamePicker
             value={value.variant}
             disabled={disabled}
-            onChange={(event) => change({ variant: event.target.value })}
-            data-testid="shared-rules-variant"
-          >
-            {RULE_VARIANT_LIST.map((option) => (
-              <option key={option} value={option}>
-                {RULE_VARIANT_DISPLAY[option].label}
-              </option>
-            ))}
-          </Select>
-        </Field>
+            onChange={(next) => change({ variant: next })}
+            label={variantLabel}
+          />
+        ) : (
+          <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
+            <Select
+              value={value.variant}
+              disabled={disabled}
+              onChange={(event) => change({ variant: event.target.value })}
+              data-testid="shared-rules-variant"
+            >
+              {RULE_VARIANT_LIST.map((option) => (
+                <option key={option} value={option}>
+                  {RULE_VARIANT_DISPLAY[option].label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )
       ) : null}
       {/*
         The boards this game has, not every board the site knows. A Reversi
@@ -95,24 +164,47 @@ export function RulesForm({
         because 8 was not in the list for anything to match.
       */}
       {sizes.length > 1 ? (
-        <Field label="Board">
-          <Select
+        chooser === RULES_CHOOSERS.pictures ? (
+          <BoardPicker
             value={value.size}
+            sizes={sizes}
             disabled={disabled}
-            onChange={(event) => {
-              onSizeChosen?.(Number(event.target.value));
-              change({ size: Number(event.target.value) });
+            onChange={(next) => {
+              onSizeChosen?.(next);
+              change({ size: next });
             }}
-            data-testid="shared-rules-size"
-          >
-            {sizes.map((option) => (
-              <option key={option} value={option}>
-                {option}×{option}
-              </option>
-            ))}
-          </Select>
-        </Field>
+          />
+        ) : (
+          <Field label="Board">
+            <Select
+              value={value.size}
+              disabled={disabled}
+              onChange={(event) => {
+                onSizeChosen?.(Number(event.target.value));
+                change({ size: Number(event.target.value) });
+              }}
+              data-testid="shared-rules-size"
+            >
+              {sizes.map((option) => (
+                <option key={option} value={option}>
+                  {option}×{option}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )
       ) : null}
+    </>
+  );
+
+  /*
+   * The rest: the opening, resigning, the clock, the ratings, and what
+   * running out of time costs. Unchanged — they move behind the disclosure
+   * exactly as they are — and rendered in the same order whether they are
+   * folded or not, so the two screens cannot come to put them differently.
+   */
+  const rest = (
+    <>
       <Field label="Opening">
         <Select
           value={value.opening}
@@ -205,6 +297,31 @@ export function RulesForm({
           </Select>
         </Field>
       ) : null}
+    </>
+  );
+
+  /*
+   * Inline unless the caller asked for the rest to be folded. The summary is
+   * built HERE, from the same `value` the controls above are bound to, so it
+   * cannot describe a game other than the one the button would start — see
+   * `describeSettings`. The caller's own words come after, in the order its
+   * own fields appear inside.
+   */
+  if (fold === undefined) {
+    return (
+      <>
+        {head}
+        {rest}
+      </>
+    );
+  }
+  return (
+    <>
+      {head}
+      <MoreSettings summary={[...describeSettings(value), ...fold.summary]}>
+        {rest}
+        {fold.fields}
+      </MoreSettings>
     </>
   );
 }
