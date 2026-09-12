@@ -48,4 +48,15 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 18, name: "Mega Man 2", note: "Capcom, 1988: eight robot masters in any order you liked, and the best soundtrack on the NES." },
   { level: 19, name: "Game Boy", note: "1989: four shades of green, thirty hours on two AAs, and Tetris in the box." },
   { level: 20, name: "Tetris", note: "Alexey Pajitnov, 1984: seven shapes, one rule, and the one game everybody on Earth has played." },
+  // 21-30: 16-bit, the console war, and the arcade at its loudest.
+  { level: 21, name: "Sega Genesis", note: "1989: Sega's 16-bit answer to Nintendo, 'blast processing', and the first console war worth the name." },
+  { level: 22, name: "Sonic the Hedgehog", note: "1991: a blue hedgehog with attitude, built to run faster than a plumber could ever jump." },
+  { level: 23, name: "Continue", note: "Ten seconds counting down on the screen, and a decision to make about your last quarter." },
+  { level: 24, name: "Cartridge II", note: "The 16-bit cart: twice the pins, a battery inside, and a quest that survived the night." },
+  { level: 25, name: "Super Nintendo", note: "1991: Mode 7, a pad with four coloured buttons, and the library still argued to be the best there ever was." },
+  { level: 26, name: "Hadouken", kanji: "波動拳", note: "Street Fighter II, 1991: quarter-circle forward and punch, the first special move every gamer learned to throw." },
+  { level: 27, name: "Fatality", note: "Mortal Kombat, 1992: 'FINISH HIM', then a move so gory it gave America a ratings board." },
+  { level: 28, name: "Mode 7", note: "The SNES trick that tilted a flat picture into a world: F-Zero, Pilotwings, and every track in Mario Kart." },
+  { level: 29, name: "Super Metroid", note: "1994: the map, the mood, and the animals you could go back to save; for many, the best game on the system." },
+  { level: 30, name: "Neo Geo", note: "SNK, 1990: the arcade board sold as a home console, at a price only the richest kid on the street could pay." },
 ];
