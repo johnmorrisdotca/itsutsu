@@ -60,7 +60,21 @@ export type TimeoutOutcome =
   | { ok: false; reason: TimeoutRefusal };
 
 /** Why a change of rules was refused. `started` means a stone is already down. */
-export type SettingsRefusal = "not-found" | "finished" | "wrong-token" | "started" | "settled";
+export type SettingsRefusal =
+  | "not-found"
+  | "finished"
+  | "wrong-token"
+  | "started"
+  | "settled"
+  /**
+   * The change would make this a game of something else.
+   *
+   * Its own reason rather than `settled`, which would be false — a posted seat
+   * really is still being set up, and its clock, board, opening, pace and
+   * ratings really can still move. What cannot is the one rule that is written
+   * into the ADDRESS. See `changesTheGame` in `liveGameSettings.ts`.
+   */
+  | "different-game";
 
 export type SettingsOutcome =
   | { ok: true; game: GameDetail }

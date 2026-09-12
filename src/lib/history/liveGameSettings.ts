@@ -21,8 +21,52 @@ import { UNSETTLED } from "./settledTurn";
  */
 
 /**
+ * WHETHER A CHANGE WOULD MAKE THIS A GAME OF SOMETHING ELSE.
+ *
+ * A separate question from `rulesAreSettled`, and deliberately not folded into
+ * it. That one answers "may any rule still move here", and its answer for a
+ * posted seat is yes — one seat taken, the other on the noticeboard, nobody yet
+ * to disagree with, so the clock, the board, the opening, the pace and the
+ * ratings can all be fixed by whoever is still setting it up. This answers a
+ * different question about the same game: "may THIS rule move". For one rule
+ * the answer is never, and a name covering both would have to lie about one.
+ *
+ * THE GAME IS IN THE ADDRESS. `/games/reversi/match/<id>` names it, and so does
+ * every seat link handed out under it, every history row, and every link
+ * somebody has already sent to somebody else. Change the variant and all of
+ * them point at a game that is not there any more. That is a different kind of
+ * damage from a clock nobody expected: the clock is on the board in front of
+ * you, and a stale address is a lie nobody can see.
+ *
+ * `MatchPage` redirects a stale slug to the game's real one, and that is a
+ * REPAIR for the links already in the wild rather than a licence to make more.
+ * It cannot mend a seat token written down, a history row somebody quoted, or
+ * anybody's idea of which game they were invited to.
+ *
+ * So the game is decided before the seat is posted and does not change
+ * afterwards. Somebody who chose wrongly cancels a board with no stones on it
+ * and sets up the game they meant — one control away, and it cannot be got
+ * wrong. That is the same answer `SharedRules` gives about the clock, for the
+ * same reason.
+ *
+ * Asked of the VALUE, not of the key. Every caller sends whole payloads — the
+ * setup screen, the route's own schema with its defaults, a script — so a
+ * payload names the variant whether or not anybody touched it. Refusing on the
+ * field being present would refuse every change there is, which is the failure
+ * `rules-settle.spec.ts` names in as many words: a refusal that refuses
+ * everything is not a rule.
+ */
+export function changesTheGame(
+  asked: Pick<Partial<LiveGameSettings>, "variant">,
+  held: { variant: string },
+): boolean {
+  return asked.variant !== undefined && asked.variant !== held.variant;
+}
+
+/**
  * Changes a shared game's rules. Only a seat holder may, and only while the
- * board is empty: once a stone is down the rules are part of the record.
+ * board is empty: once a stone is down the rules are part of the record. The
+ * game itself is never among them — see `changesTheGame`.
  */
 export async function updateLiveGameSettings(
   id: string,
@@ -43,6 +87,16 @@ export async function updateLiveGameSettings(
   if (rulesAreSettled({ ...row, moveCount: row.moves.length })) {
     return { ok: false, reason: "settled" };
   }
+  /*
+   * And the game itself is not one of the rules that may move, even here.
+   *
+   * Asked LAST of the refusals, so it only ever fires in the window the ones
+   * above leave open — a game nobody else is in yet. A stone-down game is
+   * `started` and a game two people are in is `settled` whatever the payload
+   * asks for: in those the whole rule sheet is fixed, and naming one field as
+   * the reason would be a smaller truth than the one there is.
+   */
+  if (changesTheGame(settings, row)) return { ok: false, reason: "different-game" };
 
   /*
    * A rules change changes the rules it names, and leaves the rest.
@@ -60,7 +114,14 @@ export async function updateLiveGameSettings(
    * function is the only place holding both.
    */
   const kept = <T>(asked: T | undefined, held: T): T => (asked === undefined ? held : asked);
-  const variant = kept(settings.variant, row.variant) as RuleVariant;
+  /*
+   * The game's own, never the payload's. `changesTheGame` has just established
+   * that the two agree, so reading the row is the same value taken from the one
+   * place that cannot come to differ from it. A `kept(settings.variant, …)`
+   * here would be correct today and would quietly become the hole again the
+   * first time somebody moved that guard.
+   */
+  const variant = row.variant as RuleVariant;
   const moveTimeMs = kept(settings.moveTimeMs, row.moveTimeMs);
   const clockMode = kept(settings.clockMode, row.clockMode);
   const open = kept(settings.open, row.openSeat !== null);
