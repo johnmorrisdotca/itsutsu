@@ -251,9 +251,30 @@ Named so the next reader does not fix them by loosening them.
   beside the new one.
 - `quick-phrases.spec.ts` — "is kept on the record, against the move it was sent
   at" fails two runs in four. **The version on `main`, unchanged, fails two in
-  four too**, checked out from `HEAD` and repeated four times beside the new one.
-  So the wait neither caused it nor cured it. At the failure the board still
-  reads "Your move — you are Black" with nothing in the reaction log, so the
-  move and the phrase both failed to reach the server. Worth its own ticket; it
-  is not a hydration race.
+  four too**, checked out and repeated four times beside the new one. So the wait
+  neither caused it nor cured it.
+- `turn-board.spec.ts` — "turns the board, and takes the letters and numbers with
+  it". Same check, same answer: **the version from `origin/main` fails on this
+  database too**, one run in two, with the identical symptom.
+
+Those last two are one fault, and it is worth naming because it is the third
+entry in `AGENTS.md`'s "A Spec Should Bring Its Own World" wearing a new hat.
+
+Both play a MOVE as the operator and then assert something about the board they
+moved on. A move is followed a moment later by being carried to the next game
+that is waiting — `useAdvanceToNextGame`, which exists because John asked for
+it — and the operator's stored session on this machine has twenty-one games
+waiting on a move. The nav in one failure's page snapshot says "Play 21" in so
+many words. `turn-board`'s failure then reads `"A3, Black stone" [disabled]`
+where a turned 9×9 board must begin at J1: A3 is not a corner of that board in
+either orientation, and `[disabled]` is a FINISHED game, so what the locator
+found was a move-list entry on somebody else's finished match. The page had
+changed games underneath the assertion.
+
+So the specs are asserting about a board that twenty-one rows they never created
+can carry them away from, and how often it happens depends on how busy this
+machine's database is. Giving them their own browser identity is the remedy the
+file already prescribes; it was tried on `quick-phrases` here and did not settle
+it on its own, so it needs a ticket and a proper look rather than a guess. It is
+not a hydration race, and it must not be answered by loosening either assertion.
 
