@@ -45,7 +45,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const { fetchMyGames } = await import("./myGames");
+const { fetchMyGames, shownGroup } = await import("./myGames");
 
 const MEMBER = "member-1";
 
@@ -364,5 +364,32 @@ describe("what the list still does regardless", () => {
     ];
     const groups = await fetchMyGames(new Map(), MEMBER, new Date("2026-09-11T00:00:00Z"));
     expect(groups.yourMove[0].stale).toBe(true);
+  });
+});
+
+describe("shownGroup keeps the bucket's true size, not just what it shows", () => {
+  it("reports nothing hidden when the cap covers the whole bucket", () => {
+    const result = shownGroup([1, 2, 3], 5);
+    expect(result).toEqual({ items: [1, 2, 3], total: 3, hidden: 0 });
+  });
+
+  it("says how many the cap left out, without losing the true total", () => {
+    /*
+     * The reported bug, reproduced directly: "Lately finished 5" printed over
+     * a bucket of fourteen because the header counted the slice (5), not the
+     * bucket it was sliced from (14).
+     */
+    const fourteen = Array.from({ length: 14 }, (_, index) => index);
+
+    const result = shownGroup(fourteen, 5);
+
+    expect(result.total).toBe(14);
+    expect(result.items).toHaveLength(5);
+    expect(result.hidden).toBe(9);
+  });
+
+  it("takes the slice from the front, so the cap keeps the same games it always did", () => {
+    const result = shownGroup(["a", "b", "c"], 2);
+    expect(result.items).toEqual(["a", "b"]);
   });
 });

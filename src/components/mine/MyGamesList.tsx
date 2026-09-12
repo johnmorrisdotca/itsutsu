@@ -9,8 +9,17 @@ import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
-import { MY_GAME_GROUPS, STALE_AFTER_DAYS, fetchMyGames, type MyGame, type MyGameGroup } from "@/lib/history/myGames";
+import {
+  MY_GAME_GROUPS,
+  STALE_AFTER_DAYS,
+  fetchMyGames,
+  shownGroup,
+  type MyGame,
+  type MyGameGroup,
+  type ShownGroup,
+} from "@/lib/history/myGames";
 import { seatClaims } from "@/lib/history/seatCookie";
+import { playerPath } from "@/lib/rating/playerKey";
 import { MY_GAMES_COPY } from "./mine.constants";
 import { ResignButton } from "./ResignButton";
 import { GameName } from "@/components/games/GameName";
@@ -55,7 +64,8 @@ export async function MyGamesList() {
   const email = await currentEmail();
   if (claims.size === 0 && email === null) return null;
   const now = new Date();
-  const groups = await fetchMyGames(claims, await currentMemberId(), now, await keepFinishedDaysFor(email));
+  const memberId = await currentMemberId();
+  const groups = await fetchMyGames(claims, memberId, now, await keepFinishedDaysFor(email));
   const total = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   if (total === 0) {
     if (email === null) return null;
@@ -89,29 +99,59 @@ export async function MyGamesList() {
       <h2 className="flex items-baseline gap-2 text-lg font-semibold">
         <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
-      {MY_GAME_GROUPS.map((group) =>
-        groups[group].length === 0 ? null : (
-          <Group key={group} group={group} items={groups[group].slice(0, SHOWN[group])} now={now} />
-        ),
-      )}
+      {MY_GAME_GROUPS.map((group) => {
+        const bucket = shownGroup(groups[group], SHOWN[group]);
+        return bucket.total === 0 ? null : (
+          <Group key={group} group={group} bucket={bucket} memberId={memberId} now={now} />
+        );
+      })}
     </section>
   );
 }
 
-function Group({ group, items, now }: { group: MyGameGroup; items: MyGame[]; now: Date }) {
+function Group({
+  group,
+  bucket,
+  memberId,
+  now,
+}: {
+  group: MyGameGroup;
+  bucket: ShownGroup<MyGame>;
+  /** Whose "see the rest" this is, when there is a rest and somewhere to send them for it. */
+  memberId: string | null;
+  now: Date;
+}) {
   const copy = MY_GAMES_COPY.groups[group];
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid={`my-games-${group}`}>
       <h3 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
         <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
-        <span className="font-normal tracking-normal">{items.length}</span>
+        <span className="font-normal tracking-normal" data-testid={`my-games-${group}-count`}>
+          {bucket.hidden > 0 ? MY_GAMES_COPY.shownOf(bucket.total, bucket.items.length) : bucket.total}
+        </span>
       </h3>
       <p className="text-xs text-muted">{copy.hint}</p>
       <ul className="flex flex-col gap-1.5">
-        {items.map((item) => (
+        {bucket.items.map((item) => (
           <Row key={item.game.id} item={item} now={now} />
         ))}
       </ul>
+      {/*
+        Held-back finished games have somewhere to be seen in full: a signed-in
+        member's own page counts every finished game, exactly what this bucket
+        does. The other groups have no such page — they are a queue of active
+        boards, not a record — so there is nothing honest to link to if one of
+        them ever grows past its cap instead.
+      */}
+      {bucket.hidden > 0 && group === "finished" && memberId !== null ? (
+        <Link
+          href={playerPath("", memberId)}
+          className="text-xs font-medium underline underline-offset-4"
+          data-testid="my-games-finished-more"
+        >
+          {MY_GAMES_COPY.seeRecord}
+        </Link>
+      ) : null}
     </div>
   );
 }
