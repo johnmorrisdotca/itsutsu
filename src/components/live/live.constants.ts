@@ -38,6 +38,21 @@ export const SET_UP_COPY = {
     "One colour plays under extra restrictions and the other plays the plain game — how the elder sites let a stronger player give a weaker one a start. Leave it at none for an even game.",
   handicapOpen: (colour: string) =>
     `${colour} plays under every restriction switched on below; the other colour plays the game as it comes. Switch on only what you mean — each one makes ${colour.toLowerCase()}'s game harder.`,
+  /**
+   * SAID OUT LOUD WHEN A NAMED PLAYER IS NOT OFFERED AT THIS GAME.
+   *
+   * A specialist computer player plays one game — away from its own board it is
+   * somebody else under another name and a different flag — so choosing another
+   * game drops it from the list of players offered. The screen then falls back to
+   * posting a seat for anyone, which is the right fallback and a terrible
+   * surprise: somebody who pressed Play on one program would get a seat posted
+   * to the noticeboard and no hint that they had.
+   *
+   * So it says which. This is the shape the lobby sentence already had a rule
+   * about — fall back, and say you have.
+   */
+  notAtThisGame: (who: string, game: string) =>
+    `${who} does not play ${game}, so this would post a seat for anyone instead. Change the game back, or pick somebody else.`,
   /** Said where the opponent came in on the address rather than being chosen. */
   opponentFixed: "Asked for from their page. Change it here if you meant somebody else.",
   /** The way back out of a pre-filled screen to a blank one. */

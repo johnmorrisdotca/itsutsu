@@ -131,6 +131,54 @@ test.describe("every way into a game reaches the setup screen", () => {
     await context.close();
   });
 
+  test("Play, on a computer player that plays ONE game", async ({ browser, baseURL }) => {
+    /*
+     * THE HOLE IN THE CASE ABOVE, and it is a quiet one. A specialist plays a
+     * single game — away from its own board it is somebody else under another
+     * name and a different flag — so a screen that opened at the site's default
+     * game would show it as the chosen opponent while the list of players offered
+     * at THAT game did not hold it. Pressing Start would then post a seat for
+     * anyone, which is the right fallback for a game nobody can be found for and
+     * a terrible answer to "play this program".
+     *
+     * So the screen opens at a game the named program actually plays.
+     */
+    const stamp = Date.now().toString(36);
+    const context = await memberContext(browser, baseURL!, {
+      email: `expert-${stamp}@example.test`,
+      name: `Expert ${stamp}`,
+    });
+    const page = await context.newPage();
+    await page.goto("/players?view=computers");
+    await expect(page.getByTestId("computer-players-table")).toBeVisible();
+
+    /*
+     * Tamenoki is the Reversi specialist, found by its grade rather than by its
+     * name or its position: the grade is the key, the name is copy, and the order
+     * is the page's business.
+     */
+    const specialist = page.locator('[data-testid="computer-player"][data-tier="tamenoki"]');
+    await expect(specialist).toBeVisible();
+    await specialist.getByTestId("challenge").click();
+
+    await expect(page).toHaveURL(/\/games\/new\?.*against=tamenoki/);
+    const screen = await setUpScreen(page);
+    // Opened at a game it plays, with it chosen — not at Gomoku with it dropped.
+    await expect(screen.game).toHaveValue("reversi");
+    await expect(screen.opponent).toHaveValue("c:tamenoki");
+    await expect(page.getByTestId("set-up-not-offered")).toHaveCount(0);
+
+    /*
+     * And when the game is changed to one it does not play, the screen SAYS the
+     * offer has lapsed rather than quietly posting a seat instead. Falling back
+     * is right; falling back in silence is the thing this whole change is about.
+     */
+    await screen.game.selectOption("halma");
+    await expect(page.getByTestId("set-up-not-offered")).toContainText(/does not play/i);
+
+    await context.close();
+  });
+
   test("the one-line sentence on the lobby, which keeps every word of it", async ({
     browser,
     baseURL,

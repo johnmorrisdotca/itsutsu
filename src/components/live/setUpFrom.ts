@@ -3,6 +3,7 @@ import "server-only";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import type { GameDefaults } from "@/components/game/gameDefaults";
 import { isBotId } from "@/lib/bots/bots";
+import { gamesPlayedBy } from "@/lib/bots/bots.constants";
 import {
   DEFAULT_SETTINGS,
   NO_HANDICAP,
@@ -55,7 +56,27 @@ export async function setUpFrom({
   if (want.rematch !== null) return await fromFinishedGame(want.rematch, variant);
   if (want.from !== null) return await fromPosition(want.from, variant);
 
-  const chosen = variant ?? (DEFAULT_SETTINGS.variant as RuleVariant);
+  const opponent = want.against === null ? null : await personNamed(want.against);
+  /*
+   * THE GAME, WHICH A NAMED COMPUTER PLAYER CAN DECIDE WHEN THE ADDRESS HAS NOT.
+   *
+   * The graded five play everything and settle nothing. A SPECIALIST plays one
+   * game — away from its own board it is somebody else under another name — so
+   * arriving from its Play button at the site's default game would show it as the
+   * chosen opponent while the list of players offered at that game did not hold
+   * it, and pressing Start would quietly post a seat for anyone instead of
+   * playing the program somebody had just pressed Play on.
+   *
+   * Only where the ADDRESS has not already named a game. There the address wins:
+   * it is identity, and a screen that moved the game out from under its own
+   * address would be the thing this whole area exists to stop. That case falls
+   * through to the chooser saying out loud that the named player is not offered
+   * here — see `SetUpGame`.
+   */
+  const chosen =
+    variant ??
+    (opponent !== null && opponent.computer ? (gamesPlayedBy(opponent.id)[0] ?? null) : null) ??
+    (DEFAULT_SETTINGS.variant as RuleVariant);
   const sizes = boardSizesFor(chosen);
   /*
    * The board: whichever was asked for if this game has it, else the member's
@@ -80,11 +101,14 @@ export async function setUpFrom({
 
   return {
     initial,
-    opponent: want.against === null ? null : await personNamed(want.against),
+    opponent,
     again: null,
     fork: null,
     carry: {},
-    problem: null,
+    problem:
+      want.against !== null && opponent === null
+        ? "Whoever that link named cannot be reached for a game. Pick somebody below."
+        : null,
   };
 }
 
