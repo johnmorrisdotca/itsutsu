@@ -86,22 +86,31 @@ export async function MyRecord({ name }: { name: string }) {
           <span className="text-muted">
             {TIER_DISPLAY[shown?.tier ?? "unrated"].label} ·{" "}
             {/*
-              The run across every rated game here, whichever pool scored it —
-              the same set of games the counts on this line are counting, and
-              stored on the row rather than worked out from the games.
+              The run across every finished game here, rated or not and
+              whichever pool scored it — the same set of games the counts on
+              this line are counting, read from the same pass over them.
             */}
             <RecordLine
               record={here}
               of={{ player: name }}
               /*
-               * NULL rather than the rated run — a decision, not an omission.
-               * This line counts every game; the stored runs are people,
-               * computer and rated, none of which is that set, and the streak
-               * words its scope from `of`. A rated run here would be described
-               * as a run over every game, which it is not. Dash over a
-               * plausible number. See the members list for the same choice.
+               * THE RUN OVER THE VERY ROWS THIS LINE COUNTED, and nothing
+               * stored. `fetchPlayerRecord` reads every finished game this
+               * person played, newest first, to produce `here` — so the run is
+               * free in the same pass, and free is only half of why it is the
+               * right one: it is the run over EXACTLY the games counted beside
+               * it, and cannot drift from them by a game.
+               *
+               * That matters here and not on the members list, because the two
+               * count by different rules on purpose. A list matches seats by
+               * member id alone (`fetchPlayedTallies`) and reads the stored
+               * `played` run; a person's OWN page also matches games played
+               * under a name never bound to an account, because those are
+               * theirs and this is the page they come to for them. The stored
+               * run is member-keyed, so printing it here would describe a set
+               * one game wider than itself on anybody who has such a game.
                */
-              streak={null}
+              streak={played.streak}
             />
           </span>
         </p>

@@ -54,10 +54,10 @@ const RECENT = 200;
  *
  * THE STREAK DOES NOT REACH BACK EITHER, for a stronger reason than the
  * rating's: a run is an ORDER, and a record copied down from another site is
- * four totals with no order in them at all. So this is the run of rated games
- * here, both pools — which is exactly the set `gamesPlayed` counts — and the
- * ※ under the table already tells a reader that part of the count came from
- * somewhere this site cannot see.
+ * four totals with no order in them at all. So it is the run over the games
+ * finished HERE — every one of them, rated or not, which is exactly the set
+ * `gamesPlayed` counts — and on a row carrying a kept record the cell says as
+ * much in its own words, since `of.here` is false there.
  */
 function directoryRow(
   entry: DirectoryEntry,
@@ -145,15 +145,25 @@ function directoryRow(
      */
     of: { player: entry.name, here: !kept },
     /*
-     * NULL, NOT THE RATED RUN, and this is a decision rather than an omission.
-     * The row's count is now every game; the stored runs are `people`,
-     * `computer` and `rated` — none is the set this row counts — and the
-     * streak cell words its scope from `of`, so a rated run here would be
-     * described as a run over every game, which it is not. A dash over a
-     * plausible number. A fourth scope, or a rated-only members list under an
-     * honest heading, is a product decision and not a merge's.
+     * THE RUN OVER EVERY GAME, which is the set this row's count is over —
+     * and it exists because this cell showed a dash until it did.
+     *
+     * The three runs on the rating row are `people`, `computer` and `rated`,
+     * and all three count RATED games; the count here counts every finished
+     * game. So a rated run printed here would have been described by the cell
+     * — which words its scope from the same `of` the counts link by — as a run
+     * over every game, which it was not. The answer was a fourth scope rather
+     * than a plausible number: `Member.playedStreakKind`, kept by
+     * `recordPlayed` wherever a game is decided, read off the row
+     * `fetchDirectory` was fetching anyway.
+     *
+     * It matches the count to the game, by construction: both are keyed by
+     * member id and both count a game against yourself once. Where `kept` is
+     * true the count reaches beyond this site and the run cannot — a run is an
+     * ORDER, and another site's record is four totals — which is why the cell
+     * is handed `here: false` above and says so in its own words.
      */
-    streak: null,
+    streak: entry.playedStreak,
     rating,
     joined: { at: entry.joinedAt, isNew: entry.isNew },
     note: kept ? (

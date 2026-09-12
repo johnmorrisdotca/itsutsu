@@ -1,12 +1,14 @@
 /**
  * Fills in the streak columns from the games, once.
  *
- * `20260911160000_a_record_keeps_its_streak` adds the columns and leaves them
- * empty, which is honest — null means nobody has finished a game and the
- * tables print an em dash for it. But every record that already exists was
- * earned before the columns did, so without this every row on the site shows a
- * dash until its player happens to play again. This reads the games and says
- * what the run WAS.
+ * `20260911160000_a_record_keeps_its_streak` adds the three rated runs on
+ * `Player` and `PlayerVariantRating`, and
+ * `20260912010000_a_member_keeps_the_run_over_every_game` adds the fourth on
+ * `Member`. All of them start empty, which is honest — null means nobody has
+ * finished a game and the tables print an em dash for it. But every record that
+ * already exists was earned before the columns did, so without this every row
+ * on the site shows a dash until its player happens to play again. This reads
+ * the games and says what the run WAS.
  *
  * A ONE-OFF, AND THE ONLY THING HERE THAT READS GAMES TO WORK OUT A STREAK.
  * From now on `recordResult` carries it forward — it already has the row in
@@ -51,6 +53,24 @@
  * than written anyway. Silence is the safe answer; a plausible number is the
  * dangerous one.
  *
+ * ─────────────────────────────────────────────────────────────────────────
+ * THE FOURTH RUN IS CHECKED AGAINST THE NUMBER THE PAGE PRINTS
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * `Member.playedStreak` is over EVERY decided game, rated or not, and there is
+ * no stored record beside it to reconcile with: PLAYED is not a column, it is
+ * counted from the games on every render by `fetchPlayedTallies`. So that
+ * function is what this reconciles against — imported, never restated — and a
+ * member's run is written only where the rebuild reproduces its tally exactly.
+ * A disagreement of one game is precisely the fault this scope exists to fix,
+ * so a member who disagrees keeps the dash and is named in the report, and a
+ * dry run FAILS on even one of them rather than mentioning it in passing.
+ *
+ * That half needs no `rated`, `isHotSeat` or `isRateable` test — it uses
+ * `playedSides` from `playedRun.ts`, which is the live path's own definition —
+ * and it is the only half that can speak for a member who has never played a
+ * rated game and therefore has no `Player` row at all.
+ *
  * The rules themselves are IMPORTED rather than restated. A first draft was a
  * plain `scripts/*.ts`, which cannot resolve `@/`, so it copied the folding
  * and the pool test by hand and disagreed with the stored tallies on the first
@@ -63,13 +83,15 @@
  *   BACKFILL_STREAKS=1 npx vitest run src/lib/rating/backfillStreaks.play.test.ts --disable-console-intercept
  *   BACKFILL_STREAKS=1 BACKFILL_STREAKS_RUN=1 npx vitest run … --disable-console-intercept
  *
- * WHAT IT COSTS. One query for every finished rated game ordered by when it
- * was played, no moves loaded; one for the player rows and one for the
- * standings, to check the rebuild against; then one small update per row that
- * reconciles. Production on 2026-09-11 held 125 games, 114 finished, 43 of
- * them rated, 9 player rows and 23 standings — a few hundred kilobytes read
- * and at most thirty small writes, which is the cheapest work Neon does. The
- * development database has six thousand games and it is still one pass.
+ * WHAT IT COSTS. One query for every DECIDED game ordered by when it was
+ * played, no moves loaded; one each for the player rows, the standings and the
+ * members, to check the rebuild against; one more inside `fetchPlayedTallies`,
+ * which reads the same games its own way on purpose; then one small update per
+ * row that reconciles. Production on 2026-09-11 held 129 games, 116 of them
+ * decided, 45 of those rated, with 9 player rows, 25 standings and 11 members
+ * — a few hundred kilobytes read and at most fifty small writes, which is the
+ * cheapest work Neon does. The development database has thousands of games and
+ * it is still one pass.
  *
  * SAFE TO RUN TWICE: the answer is read from the games each time, so a second
  * run writes what the first one wrote. It is not an append.
@@ -78,7 +100,9 @@ import { describe, expect, it } from "vitest";
 
 import { hasBotSeat } from "@/lib/bots/bots";
 import { isHotSeat } from "@/lib/history/liveGame";
+import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import { isRateable } from "./rateable";
+import { playedSides } from "./playedRun";
 import { playerKey } from "./playerKey";
 import { poolFor, type RatingPool } from "./pools";
 import { prisma } from "@/lib/prisma";
@@ -93,10 +117,15 @@ type Rebuilt = { streak: Streak | null; wins: number; losses: number; draws: num
 const nothing = (): Rebuilt => ({ streak: null, wins: 0, losses: 0, draws: 0 });
 
 /** The three scopes a Player row keeps; a standing keeps the first two. */
-type Scopes = "people" | "computer" | "all";
+type Scopes = "people" | "computer" | "all" | "played";
 type Rebuild = Record<Scopes, Rebuilt>;
 
-const noRebuild = (): Rebuild => ({ people: nothing(), computer: nothing(), all: nothing() });
+const noRebuild = (): Rebuild => ({
+  people: nothing(),
+  computer: nothing(),
+  all: nothing(),
+  played: nothing(),
+});
 
 function add(into: Rebuilt, outcome: StreakOutcome): void {
   into.streak = extendStreak(into.streak, outcome);
@@ -121,9 +150,16 @@ describe("backfilling the streak columns", () => {
   it.runIf(ASKED)(
     "writes the run each record was on, and only where it can rebuild that record exactly",
     async () => {
-      const [games, players, standings] = await Promise.all([
+      const [games, players, standings, members] = await Promise.all([
         prisma.game.findMany({
-          where: { status: "finished", rated: true, result: { not: "abandoned" } },
+          /*
+           * EVERY DECIDED GAME, not only the rated ones — one query still, and
+           * the rated half is filtered in the loop below. `Member.playedStreak`
+           * is over every finished game whether or not anything rated it, so a
+           * `rated: true` filter here would have made the member rebuild a
+           * rated run wearing a different name.
+           */
+          where: { status: "finished", result: { not: "abandoned" } },
           /*
            * OLDEST FIRST, because a run is built by carrying it forward — the
            * same direction `recordResult` works in, so the two cannot arrive
@@ -132,6 +168,7 @@ describe("backfilling the streak columns", () => {
           orderBy: { playedAt: "asc" },
           select: {
             variant: true,
+            rated: true,
             blackName: true,
             whiteName: true,
             blackToken: true,
@@ -164,6 +201,10 @@ describe("backfilling the streak columns", () => {
             computerDraws: true,
           },
         }),
+        // Every member, because the fourth run is keyed by id rather than by a
+        // folded name, and a member who has only ever played friendly games has
+        // no Player row for a name-keyed pass to find.
+        prisma.member.findMany({ select: { id: true, name: true } }),
       ]);
 
       const byPlayer = new Map<string, Rebuild>();
@@ -174,11 +215,27 @@ describe("backfilling the streak columns", () => {
        * name cannot contain, and there is not one.
        */
       const byStanding = new Map<string, { key: string; variant: string; rebuild: Rebuild }>();
+      /** The fourth run, keyed by member id — see `playedRun.ts`. */
+      const byMember = new Map<string, Rebuild>();
 
       let counted = 0;
       for (const game of games) {
-        // Exactly `liveGame.ts`'s two tests, in the same order, from the same
-        // modules — not a copy of them.
+        /*
+         * THE MEMBER HALF FIRST, AND BEFORE EVERY TEST BELOW IT. A run over
+         * every game played asks nothing about rating, hot seat or rateable
+         * names — `playedSides` is the whole definition and it is imported from
+         * the module the live path uses, so this cannot drift from it. Note it
+         * runs on a hot-seat game and on a friendly, which is the point.
+         */
+        for (const side of playedSides(game)) {
+          const rebuild = byMember.get(side.memberId) ?? noRebuild();
+          add(rebuild.played, side.outcome);
+          byMember.set(side.memberId, rebuild);
+        }
+
+        // And now the rated half. Exactly `liveGame.ts`'s three tests, in the
+        // same order, from the same modules — not a copy of them.
+        if (!game.rated) continue;
         if (isHotSeat(game)) continue;
         if (!isRateable(game.blackName, game.whiteName)) continue;
         counted += 1;
@@ -211,7 +268,7 @@ describe("backfilling the streak columns", () => {
 
       const url = process.env.DATABASE_URL ?? "";
       console.log(`Database: ${url.replace(/:[^:@/]*@/, ":****@").replace(/\?.*$/, "")}`);
-      console.log(`  ${games.length} finished rated games, ${counted} of them rateable`);
+      console.log(`  ${games.length} decided games, ${counted} of them rated and rateable`);
 
       /*
        * A rebuild is only believed where it reproduces the record already
@@ -282,6 +339,41 @@ describe("backfilling the streak columns", () => {
         }
       }
 
+      /*
+       * THE MEMBER HALF RECONCILES AGAINST THE NUMBER THE PAGE PRINTS.
+       *
+       * The rated rows above are checked against the tallies stored beside
+       * them; a member's row has no stored record to check against, because
+       * PLAYED is not stored anywhere — it is counted from the games by
+       * `fetchPlayedTallies` on every render. So that function IS the
+       * reconciliation, imported rather than restated: the rebuild is believed
+       * only where it reproduces, exactly, the record the members list will
+       * print this run beside. A disagreement of one game is the whole fault
+       * this scope was added to avoid, so a row that disagrees keeps its dash
+       * and is named.
+       */
+      const played = await fetchPlayedTallies(members.map((one) => one.id));
+      const memberWrites: { id: string; rebuild: Rebuild }[] = [];
+      let membersSkipped = 0;
+      for (const member of members) {
+        const rebuilt = byMember.get(member.id) ?? noRebuild();
+        const tally = played.get(member.id) ?? { wins: 0, losses: 0, draws: 0 };
+        if (!sameRecord(rebuilt.played, tally)) {
+          membersSkipped += 1;
+          if (unreconciled.length < 40) {
+            unreconciled.push(
+              `${member.name || member.id} (member): PLAYED says` +
+                ` ${tally.wins}/${tally.losses}/${tally.draws}, rebuilt` +
+                ` ${rebuilt.played.wins}/${rebuilt.played.losses}/${rebuilt.played.draws}`,
+            );
+          }
+          continue;
+        }
+        // Nothing to say is left alone rather than written as null — the same
+        // rule the rated rows follow, for the same reason.
+        if (rebuilt.played.streak !== null) memberWrites.push({ id: member.id, rebuild: rebuilt });
+      }
+
       console.log(
         `  ${playerWrites.length} of ${players.length} player rows reconcile` +
           ` (${playersSkipped} could not be rebuilt and keep their dash)`,
@@ -289,6 +381,10 @@ describe("backfilling the streak columns", () => {
       console.log(
         `  ${standingWrites.length} of ${standings.length} standings reconcile` +
           ` (${standingsSkipped} could not be rebuilt and keep their dash)`,
+      );
+      console.log(
+        `  ${memberWrites.length} of ${members.length} members' played runs reconcile` +
+          ` with what fetchPlayedTallies counts (${membersSkipped} could not and keep their dash)`,
       );
       for (const line of unreconciled) console.log(`    ! ${line}`);
 
@@ -309,6 +405,18 @@ describe("backfilling the streak columns", () => {
          */
         expect(players.length).toBeGreaterThan(0);
         expect(playersSkipped / players.length).toBeLessThan(0.5);
+        /*
+         * AND EVERY MEMBER MUST RECONCILE, with no allowance at all.
+         *
+         * The rated rows get a generous bar because their stored tallies may
+         * have been seeded rather than played, and a development database is
+         * full of those. This half has nothing seeded in it: both sides are
+         * read from the games table on this run, by the same definition, so a
+         * single disagreement means the two definitions have drifted — which
+         * is exactly the failure a streak beside a count must never have.
+         */
+        expect(members.length).toBeGreaterThan(0);
+        expect(membersSkipped).toBe(0);
         return;
       }
 
@@ -331,7 +439,16 @@ describe("backfilling the streak columns", () => {
           } as never,
         });
       }
-      console.log(`Wrote ${playerWrites.length} player rows and ${standingWrites.length} standings.`);
+      for (const { id, rebuild } of memberWrites) {
+        await prisma.member.update({
+          where: { id },
+          data: columnsFor(rebuild.played, "played") as never,
+        });
+      }
+      console.log(
+        `Wrote ${playerWrites.length} player rows, ${standingWrites.length} standings` +
+          ` and ${memberWrites.length} members' played runs.`,
+      );
     },
     900_000,
   );

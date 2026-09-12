@@ -142,12 +142,28 @@ export function streakFrom(results: readonly StreakOutcome[]): Streak | null {
  * about the same person, and a count that links to a set it did not count is
  * the fault AGENTS.md spends a page on.
  *
- * Deliberately the same three words as `GamePoolFilter`, so the value naming
- * the streak's scope is the very value that goes into the link beside it —
- * `of={{ pool }}`. A column and the address under it cannot disagree if they
- * are handed the same thing.
+ * The three pool scopes are deliberately the same three words as
+ * `GamePoolFilter`, so the value naming the streak's scope is the very value
+ * that goes into the link beside it — `of={{ pool }}`. A column and the
+ * address under it cannot disagree if they are handed the same thing.
+ *
+ * `played` IS THE ONE THAT IS NOT A POOL, and that is why this is a union
+ * rather than the filter type alone. It counts EVERY finished game — rated or
+ * friendly, either pool, whoever was in the other seat — because that is what
+ * the PLAYED column counts since 0.147.1, and a run beside a count has to be
+ * over the count's own games. Its link carries no `pool` and no `rated`, so
+ * there is no filter value to name it by; the scope and the empty filter are
+ * the same statement said two ways.
+ *
+ * IT IS ALSO THE ONLY SCOPE KEYED TO A MEMBER RATHER THAN A NAME, and that
+ * decides which table it lives on. The other three sit on `Player`, whose
+ * primary key is a folded name; this one has to answer for exactly the set
+ * `fetchPlayedTallies` counts, and that function matches by member id and
+ * nothing else. A folded name cannot answer a member's question — Hanachan's
+ * rating row is still keyed `hanako morris` — so `played` is kept on `Member`,
+ * where the id is the key.
  */
-export type StreakScope = GamePoolFilter;
+export type StreakScope = GamePoolFilter | "played";
 
 /**
  * Where each scope's streak is kept.
@@ -163,16 +179,29 @@ export type StreakScope = GamePoolFilter;
  * `PlayerVariantRating` keeps only the two pool scopes. Every table of
  * per-game standings is already one row per game per pool, so a both-pools
  * figure there would be a number nothing on the site shows.
+ *
+ * `playedStreak` NAMES THE COLUMN IT SITS BESIDE, which is the whole point of
+ * calling it that rather than `allStreak`: the run is over the games the
+ * PLAYED column counts, and a reader of either the schema or the table can
+ * check that in one step. `ratedStreak` is the confusable one — scope `all`
+ * means both POOLS and still only rated games — so the new pair is deliberately
+ * not another word for "all".
  */
 export const STREAK_COLUMNS = {
   people: { kind: "peopleStreakKind", count: "peopleStreakCount" },
   computer: { kind: "computerStreakKind", count: "computerStreakCount" },
   all: { kind: "ratedStreakKind", count: "ratedStreakCount" },
+  played: { kind: "playedStreakKind", count: "playedStreakCount" },
 } as const satisfies Record<StreakScope, { kind: string; count: string }>;
 
 /** The scopes each table keeps, so a writer cannot name one the row has no column for. */
 export const PLAYER_STREAK_SCOPES: readonly StreakScope[] = ["people", "computer", "all"];
 export const VARIANT_STREAK_SCOPES: readonly StreakScope[] = ["people", "computer"];
+/**
+ * `Member` keeps the one scope the rating tables cannot: every finished game,
+ * rated or not, keyed by the id rather than by a name. See `playedRun.ts`.
+ */
+export const MEMBER_STREAK_SCOPES: readonly StreakScope[] = ["played"];
 
 /**
  * One row's streak in one scope, or null where there is not one.

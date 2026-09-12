@@ -310,6 +310,17 @@ export type DirectoryEntry = {
   country: string;
   profile: PlayerProfile | null;
   /**
+   * The run over every finished game this member has played here, rated or
+   * not — the set the PLAYED column counts, and the only run that matches it.
+   *
+   * On the entry rather than inside `profile`, because `profile` is the rating
+   * table and this is not a rating: it is kept on `Member`, keyed by the id,
+   * and a member who has only ever played friendly games has this and no
+   * profile at all. Read off the row this function was already fetching, so
+   * the members list pays nothing for it — see `rating/playedRun.ts`.
+   */
+  playedStreak: Streak | null;
+  /**
    * What this name played before Itsutsu, from the kept records — nought for
    * almost everybody, and thousands for the few it is not.
    *
@@ -445,6 +456,13 @@ async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[]> {
     isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
     country: member.country,
     profile: byMember.get(member.id) ?? byKey.get(playerKey(member.name)) ?? null,
+    /*
+     * From the member's own row, never from the rating row beside it. The
+     * count this sits under is keyed by member id, and so is this — which is
+     * the point of keeping it here rather than on `Player`, whose key is a
+     * folded name that stops matching the moment somebody renames.
+     */
+    playedStreak: streakIn(member as unknown as Record<string, unknown>, "played"),
     elsewhere: keptRecordFor(member.name),
     botTier: member.botTier,
     unclaimableBecause: member.unclaimableBecause,

@@ -13,6 +13,7 @@ import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
 import { recordResult } from "@/lib/rating/players";
+import { recordPlayed } from "@/lib/rating/playedRun";
 import { UnwinnableGame, unwinnableBecause } from "./winnableGame";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat } from "@/lib/bots/bots";
@@ -380,6 +381,13 @@ export async function appendMove(
   }
 
   if (finished) {
+    /*
+     * The run over every game played, first and with no test in front of it.
+     * It is what the PLAYED column counts, and that column counts a friendly
+     * and a game at one screen exactly as it counts a rated one — so the two
+     * tests below must not narrow it. See `rating/playedRun.ts`.
+     */
+    await recordPlayed({ ...row, winner: next.winner });
     // A game at one screen is filed, never rated: the site cannot tell who was playing. Nor is a friendly.
     if (!isHotSeat(row) && row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
