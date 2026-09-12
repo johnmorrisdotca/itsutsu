@@ -110,13 +110,24 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
        */
       of: { player: entry.name, pool: RATING_POOLS.computer },
       /*
-       * NULL, NOT THE RATED STREAK — the same call `Directory.tsx` makes
-       * about this exact bot on the Members tab. The stored streak is a run
-       * of RATED computer-pool games alone; this row now counts every
-       * finished game, and a streak over a smaller set than the number
-       * beside it is a second figure nobody could reconcile with the first.
+       * THE RUN OVER EVERY GAME PLAYED, which is the set this row counts —
+       * the same figure `Directory.tsx` and the operator's Bots tab show for
+       * this exact bot, so the three tables agree about one program.
+       *
+       * A dash stood here for two releases, and the reasoning for it expired
+       * rather than being wrong: the only runs that existed were `people`,
+       * `computer` and `rated`, all three over RATED games, and one of those
+       * printed beside a count of EVERY finished game would have been a
+       * second figure nobody could reconcile with the first. 0.158.0 added
+       * the fourth scope for exactly that — `Member.playedStreakKind`, kept
+       * by `recordPlayed` wherever a game is decided and read off the row
+       * `fetchComputerPlayers` was fetching anyway, so it costs nothing.
+       *
+       * It matches the count by construction: both are keyed by member id,
+       * and `record` above is `gamesPlayed(tallies.get(entry.id))` — the run
+       * and the number are over the same games.
        */
-      streak: null,
+      streak: entry.playedStreak,
       rating:
         computer === null || computer.ratedGames === 0
           ? null

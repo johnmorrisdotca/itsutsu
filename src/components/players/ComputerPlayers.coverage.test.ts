@@ -40,6 +40,23 @@ describe("the Computers tab counts every finished game, not only the rated ones"
     expect(SOURCE).toContain("gamesPlayed");
   });
 
+  it("shows the run over the games it counted, not a dash", () => {
+    /*
+     * The same drift one column over, and it lasted two releases. `streak:
+     * null` was right while the only runs on offer were over RATED games —
+     * one of those beside a count of every finished game is two figures
+     * nobody can reconcile. 0.158.0 put `Member.playedStreak` on the row for
+     * exactly this, `Directory.tsx` and `AdminBots.tsx` both read it, and
+     * this tab went on printing an em dash with a comment explaining a
+     * shortage that had been fixed.
+     *
+     * So the rule rather than the import: this tab passes the played run,
+     * and never a literal null in its place.
+     */
+    expect(SOURCE).toContain("streak: entry.playedStreak");
+    expect(SOURCE).not.toMatch(/streak:\s*null/);
+  });
+
   it("does not link the count to rated games alone", () => {
     // Once the number counts every finished game, a link still saying
     // `rated: "yes"` would open a shorter list than the figure beside it
