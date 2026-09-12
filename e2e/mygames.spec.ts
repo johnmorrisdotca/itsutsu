@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, request as playwrightRequest, test } from "@playwright/test";
 
 import { PLAYER_STATE } from "./support";
 
@@ -75,12 +75,34 @@ test.describe("your games", () => {
 });
 
 test.describe("open seats", () => {
-  test("a game posted for anyone can be sat at by somebody else, once", async ({ browser, request }) => {
-    const created = await request.post("/api/games/live", {
+  test("a game posted for anyone can be sat at by somebody else, once", async ({ browser, request, baseURL }) => {
+    /*
+     * Posted by somebody with no member behind them, not by this file's own
+     * admin session. "Whoever starts a game is sitting at it" (games/live's
+     * route) binds a SIGNED-IN poster's own member id to a seat they post,
+     * and seatName() (currentNames.ts) always shows a bound seat's CURRENT
+     * member name over whatever the row's own field says — both deliberate,
+     * and both already covered elsewhere. So the admin identity every other
+     * request in this file uses would have its own live profile name shown
+     * on the noticeboard instead of "Host", which is what actually broke
+     * this test: this file's session is real (`ensureMember` gives the
+     * operator a row), so the label picked here was never what the row
+     * showed once posting started binding its poster. An invite-only
+     * identity is never bound, so the label chosen here is the label shown.
+     */
+    const minted = await request.post("/api/invites", { data: { note: "mygames-host" } });
+    expect(minted.status()).toBe(201);
+    const { code } = (await minted.json()) as { code: string };
+    const host = await playwrightRequest.newContext({ baseURL });
+    const signedIn = await host.post("/api/session", { data: { kind: "invite", code } });
+    expect(signedIn.ok()).toBe(true);
+
+    const created = await host.post("/api/games/live", {
       data: { blackName: "Host", size: 9, open: true },
     });
     expect(created.status()).toBe(201);
     const game = (await created.json()) as { id: string; blackToken: string };
+    await host.dispose();
 
     /*
      * Somebody else, and it has to be somebody else: this used to sign the
