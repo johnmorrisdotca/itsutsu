@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { shownName } from "../src/lib/rating/shownName";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
+import { gamesMade } from "./tidy";
 import { chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
 
 /**
@@ -73,6 +74,9 @@ async function throughTheDoorstep(page: Page) {
 }
 
 test.describe("every way into a game reaches the setup screen", () => {
+  /* The games this file posts, taken away when it finishes. See `gamesMade`. */
+  const mine = gamesMade();
+
   test("Play, on the page about a player", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
     const me = { email: `asks-${stamp}@example.test`, name: `Asks ${stamp}` };
@@ -242,13 +246,50 @@ test.describe("every way into a game reaches the setup screen", () => {
     const stamp = Date.now().toString(36);
     const me = { email: `sentence-${stamp}@example.test`, name: `Sentence ${stamp}` };
     const context = await memberContext(browser, baseURL!, me);
+
+    /*
+     * THIS CASE BRINGS THE SEAT THAT USED TO DECIDE IT.
+     *
+     * It was green on this machine every run and red on CI's fresh database
+     * every run, and neither outcome was about the code being right: the
+     * setup screen moves a DEFAULT board onto whichever seat somebody is
+     * already waiting on — see `matchSeat`, which exists so that asking for a
+     * game sits down with them rather than posting a second seat beside
+     * theirs — and it did that to a board the ADDRESS had settled. It only
+     * happened where EXACTLY ONE seat matched the game and the pace, so a
+     * busy database drowned it and a fresh one hit it every time.
+     *
+     * So the seat is posted here, by somebody else, at 9×9 — the board this
+     * case must NOT end up on. Six hours is picked because no other spec
+     * posts a seat at it, which is what keeps the lone match this case needs
+     * from depending on what else the database happens to hold.
+     */
+    const PACE = 6 * 60 * 60_000;
+    const poster = await memberContext(browser, baseURL!, {
+      email: `posted-${stamp}@example.test`,
+      name: `Posted ${stamp}`,
+    });
+    const seated = await poster.request.post("/api/games/live", {
+      data: { variant: "freestyle", size: 9, moveTimeMs: PACE, open: true, blackName: `Posted ${stamp}` },
+    });
+    expect(seated.status(), "the seat this case is about has to exist").toBe(201);
+    // And taken down when this file finishes: a seat left standing is what the
+    // next spec reads in the sentence, which is how this suite lost a day once.
+    mine(((await seated.json()) as { id: string }).id);
+    await poster.close();
+
     const page = await context.newPage();
     await page.goto("/games");
     await ready(page, "start-game");
 
     await page.getByTestId("start-game-variant").selectOption("freestyle");
+    await page.getByTestId("start-game-pace").selectOption(String(PACE));
+    /*
+     * The board is chosen AFTER the pace, because the sentence follows that
+     * waiting seat until somebody says otherwise — so this select starts at 9
+     * and choosing 19 is a reader overruling it, which is the whole scenario.
+     */
     await page.getByTestId("start-game-board").selectOption("19");
-    await page.getByTestId("start-game-pace").selectOption(String(24 * 60 * 60_000));
     /*
      * TWO CLAIMS, KEPT SEPARATE ON PURPOSE. The sentence's own job is that its
      * Go control — a <Link> whose href is derived from the selects — carries
@@ -256,30 +297,29 @@ test.describe("every way into a game reaches the setup screen", () => {
      * the assertion this case was always meant to make.
      *
      * Then the destination is loaded by that verified href rather than by a
-     * soft click, and the difference is the whole reason this case failed on
-     * CI while the code was right. The server renders `?board=19` correctly —
-     * the CI trace's own RSC payload for this address carries
-     * `initial.size: 19` — but a soft client navigation on a cold runner
-     * served the board picker its default and never revalidated, sticking at
-     * 9×9 for the full poll. Whether that soft-nav staleness is a real
-     * client-cache fault or only a cold-runner artefact is a question of its
-     * own, filed as `a-soft-navigation-to-a-board-address-can-render-stale`
-     * rather than answered by making this case flaky. Loading the address the
-     * link proved correct tests the destination without racing the router.
+     * soft click. That is not about a client cache: the SERVER render was
+     * wrong, and loading the address the link proved correct is what makes
+     * this an assertion about the destination rather than about the router.
      */
     const go = page.getByTestId("start-game-go");
     await expect(go).toHaveAttribute("href", /board=19/);
-    await expect(go).toHaveAttribute("href", /pace=86400000/);
+    await expect(go).toHaveAttribute("href", new RegExp(`pace=${PACE}`));
     const href = (await go.getAttribute("href")) ?? "";
     // The game it named is in the PATH, because that is identity on this site.
     expect(href).toMatch(/\/games\/gomoku\/new\?board=19/);
     await page.goto(href);
 
     const screen = await setUpScreen(page);
-    // And the board and the pace it named are filled in rather than asked again.
+    /*
+     * And the board and the pace it named are filled in rather than asked
+     * again — the board in particular, with a 9×9 seat waiting at this very
+     * game and pace. A link that says 19 and a screen that shows 9 is John's
+     * "started on 9×9 when I chose 19×19", and it was every board-carrying way
+     * in: this sentence, a family page, a challenge, the doorstep's way back.
+     */
     await expect(screen.board).toHaveAttribute("data-size", "19");
     await openMoreSettings(page);
-    await expect(screen.pace).toHaveValue(String(24 * 60 * 60_000));
+    await expect(screen.pace).toHaveValue(String(PACE));
 
     /*
      * And the doorstep repeats the board the sentence settled, which is the point

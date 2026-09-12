@@ -74,6 +74,24 @@ export type SetUpFrom = {
    * thrown away in silence.
    */
   asPlayed: RulesDraft | null;
+  /**
+   * THE BOARD IN `initial` WHERE SOMEBODY SETTLED IT, and null where it is only
+   * the default the screen opened at.
+   *
+   * `initial.size` alone cannot say which of those it is, and the screen does
+   * opposite things with them: a board that is only a default follows a seat
+   * somebody is already waiting on — see `matchSeat`, whose whole reason for
+   * existing is that always opening at a favourite board would post a second
+   * seat beside the one already there — and a board somebody settled is not the
+   * noticeboard's to move.
+   *
+   * Without it, an address carrying `?board=19` was treated as no answer at all,
+   * so a lone 9×9 seat on the board overruled it: a link from the lobby
+   * sentence, a family page or a challenge opened at the wrong board, and it did
+   * it only where exactly ONE seat matched — which is why it was invisible on a
+   * busy database and certain on a fresh one.
+   */
+  boardChosen: number | null;
   opponent: SetUpOpponent | null;
   again: SetUpAgain | null;
   fork: SetUpFork | null;

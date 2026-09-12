@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import type { RulesDraft } from "./rulesDraft";
 import { matchSeat } from "./seatMatch";
+import { boardAsked, readSetUpAsked } from "./setUpAsked";
 
 const WEEK = 7 * 24 * 60 * 60_000;
 
@@ -116,5 +118,66 @@ describe("sitting down at a seat somebody is already asking from", () => {
     const given = { ...rules };
     ask({ seats: [seat()] });
     expect(given).toEqual(rules);
+  });
+});
+
+/**
+ * A BOARD IN AN ADDRESS IS A CHOSEN BOARD, and this is the join that was broken.
+ *
+ * Every branch above was already right. What was wrong was upstream of it: the
+ * screen seeded `boardChosen` with null whatever the address said, so `?board=19`
+ * arrived as a size in the draft and nothing else — and the branch that moves a
+ * DEFAULT board onto a waiting seat could not tell it from one nobody had
+ * touched. A single 9×9 seat on the noticeboard then decided the board for
+ * somebody who had followed a 19×19 link.
+ *
+ * It is tested by composing the two pure halves, because that is the whole of
+ * the rule: what the address settled (`boardAsked`) and what the screen shows
+ * (`matchSeat`). And it only ever went wrong with EXACTLY ONE matching seat,
+ * which is why it was green on a busy database and red on a fresh one — so both
+ * counts are here.
+ */
+describe("a board the address settled is not the noticeboard's to move", () => {
+  const showing = (query: Record<string, string>, seats: readonly SeatOnBoard[]) =>
+    matchSeat({
+      rules,
+      seats,
+      posting: true,
+      boardChosen: boardAsked(readSetUpAsked(query), rules.variant as RuleVariant),
+      matchable: true,
+    });
+
+  it("keeps the asked board when one seat is waiting at another", () => {
+    const { settled, waiting } = showing({ board: "19" }, [seat({ size: 9 })]);
+    expect(settled.size, "the link said 19×19 and the screen says 19×19").toBe(19);
+    expect(waiting, "and does not sit down at a 9×9 board nobody asked for").toBeUndefined();
+  });
+
+  it("keeps it when two seats are waiting, which is the case that always passed", () => {
+    const { settled } = showing({ board: "19" }, [
+      seat({ id: "a", size: 9 }),
+      seat({ id: "b", size: 9 }),
+    ]);
+    expect(settled.size).toBe(19);
+  });
+
+  /*
+   * AND STILL FOLLOWS WHERE NOBODY HAS SAID ANYTHING — a challenge, a player's
+   * Play button, a family card. Those name a game and no board, and the rule
+   * this module exists for is theirs.
+   */
+  it("still follows a lone seat when the address named no board", () => {
+    const { settled, waiting } = showing({ against: "mem_1" }, [seat({ size: 9 })]);
+    expect(settled.size).toBe(9);
+    expect(waiting?.who).toBe("Kyoko");
+  });
+
+  /*
+   * A board the address named that this game does not have is silence, not a
+   * choice — so the following is still allowed to answer.
+   */
+  it("follows a lone seat when the address named a board this game has not", () => {
+    const { settled } = showing({ board: "12" }, [seat({ size: 9 })]);
+    expect(settled.size).toBe(9);
   });
 });

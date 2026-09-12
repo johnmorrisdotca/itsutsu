@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { readSetUpAsked } from "./setUpAsked";
+import { boardAsked, readSetUpAsked } from "./setUpAsked";
 
 /**
  * WHAT THE SETUP SCREEN BELIEVES ITS ADDRESS.
@@ -108,5 +108,71 @@ describe("reading what an address asked the setup screen for", () => {
   it("trims, because an address pasted by hand carries spaces", () => {
     expect(readSetUpAsked({ against: "  mem_1  " }).against).toBe("mem_1");
     expect(readSetUpAsked({ against: "   " }).against).toBeNull();
+  });
+});
+
+/**
+ * WHETHER THE BOARD ON THE SCREEN IS A CHOICE OR A DEFAULT.
+ *
+ * The distinction is the whole of it, and getting it wrong put a reader on the
+ * wrong board. `matchSeat` moves a DEFAULT board onto whichever seat somebody is
+ * already waiting on, so that asking for a game sits down with them rather than
+ * posting a second seat beside theirs — correct, and it must never do it to a
+ * board somebody settled.
+ *
+ * The bug was that an address settling one could not say so: `?board=19` reached
+ * the screen as a size in the draft and nothing else, so a lone 9×9 seat on the
+ * noticeboard overruled it and the picker opened at 9. Nothing here is about
+ * preferences: a member with none has the site's standing 15×15, and the 9 in
+ * that report came from the noticeboard.
+ */
+describe("the board an address settled, at the game being set up", () => {
+  const asked = (query: Record<string, string>) => readSetUpAsked(query);
+
+  it("is the size the address named, where this game offers it", () => {
+    expect(boardAsked(asked({ board: "19" }), "freestyle")).toBe(19);
+    expect(boardAsked(asked({ board: "9" }), "freestyle")).toBe(9);
+  });
+
+  /*
+   * THE BARE MEMBER, which is the case CI's fresh database always had and this
+   * machine never did. Nothing is remembered about them — no preferences, no
+   * standing board, no games played — so the address is the only thing that has
+   * said anything about the board, and it must be heard. A null here is what let
+   * the noticeboard answer instead.
+   */
+  it("is heard for somebody the site remembers nothing about", () => {
+    expect(
+      boardAsked(asked({ board: "19", pace: "86400000" }), "freestyle"),
+      "a first link followed by a new member settles the board as surely as a click",
+    ).toBe(19);
+  });
+
+  /*
+   * SILENCE, NOT A SNAP. A size this game does not offer is an address that
+   * said nothing readable, and the answer to that is the member's own standing
+   * board — never this game's first one, which would move somebody from their
+   * usual 15×15 to 9×9 because a link had a typo in it.
+   */
+  it("says nothing about a size this game does not offer", () => {
+    expect(boardAsked(asked({ board: "19" }), "reversi"), "Reversi is 8×8").toBeNull();
+    expect(boardAsked(asked({ board: "12" }), "freestyle"), "not a board on offer").toBeNull();
+    expect(boardAsked(asked({ board: "8" }), "freestyle")).toBeNull();
+  });
+
+  it("says nothing where the address said nothing", () => {
+    expect(boardAsked(asked({}), "freestyle")).toBeNull();
+    expect(boardAsked(asked({ against: "mem_1" }), "freestyle")).toBeNull();
+    expect(boardAsked(asked({ board: "big" }), "freestyle")).toBeNull();
+  });
+
+  /*
+   * A game with ONE board still answers where the address named it. The screen
+   * does not offer a picker there, so nothing can be followed onto it either —
+   * but "the address named the only board" is still a true thing to report, and
+   * a null would be this function guessing at what the caller does with it.
+   */
+  it("answers for a game played on one board only", () => {
+    expect(boardAsked(asked({ board: "8" }), "reversi")).toBe(8);
   });
 });

@@ -16,7 +16,7 @@ import { parseHandicap } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
 import { applyRulesChange, draftFromGame, type RulesDraft } from "./rulesDraft";
-import { readSetUpAsked, type SetUpAsked } from "./setUpAsked";
+import { boardAsked, readSetUpAsked, type SetUpAsked } from "./setUpAsked";
 import type { SetUpAgain, SetUpFork, SetUpFrom, SetUpOpponent } from "./setUp.types";
 
 /**
@@ -84,7 +84,8 @@ export async function setUpFrom({
    * standing board size is a wish rather than an instruction — a game with one
    * board gets that board, whatever anybody usually likes.
    */
-  const liked = want.board !== null && sizes.includes(want.board) ? want.board : defaults.size;
+  const settledBoard = boardAsked(want, chosen);
+  const liked = settledBoard ?? defaults.size;
   const initial: RulesDraft = {
     variant: chosen,
     size: sizeForVariant(chosen, sizes.includes(liked) ? liked : sizes[0]),
@@ -102,6 +103,7 @@ export async function setUpFrom({
   return {
     initial: askedOver(initial, want),
     asPlayed: null,
+    boardChosen: settledBoard,
     opponent,
     again: null,
     fork: null,
@@ -162,7 +164,7 @@ function askedOver(initial: RulesDraft, want: SetUpAsked, forked = false): Rules
    * usual 15×15 to 9×9 because a link had a typo in it.
    */
   const variant = said.variant ?? (initial.variant as RuleVariant);
-  const board = want.board !== null && boardSizesFor(variant).includes(want.board) ? want.board : null;
+  const board = boardAsked(want, variant);
 
   return applyRulesChange(initial, {
     ...(said.variant !== null ? { variant: said.variant } : {}),
@@ -276,6 +278,15 @@ async function fromFinishedGame(
   return {
     initial: askedOver(asPlayed, want),
     asPlayed,
+    /*
+     * A rematch's board comes off the game it repeats, which is not a default
+     * the noticeboard may move — but it is not this screen's business either,
+     * since a rematch is never matched to a stranger's seat at all. What IS
+     * reported is the address, for the doorstep's "change something" round
+     * trip: that carries the whole draft back here, and a board somebody
+     * changed on the way must not read as one nobody touched.
+     */
+    boardChosen: boardAsked(want, asPlayed.variant as RuleVariant),
     opponent: them,
     again,
     fork: null,
@@ -327,6 +338,13 @@ async function fromPosition(
   return {
     initial: askedOver(asPlayed, want, true),
     asPlayed,
+    /*
+     * Null, and not what the address said: a fork's board comes with the
+     * POSITION, `askedOver` throws the asked board away for exactly that
+     * reason, and reporting one here would claim the form holds a board it does
+     * not. See `askedOver` — only the pace settings are a fork's to change.
+     */
+    boardChosen: null,
     opponent: them,
     again: null,
     fork,
@@ -402,6 +420,8 @@ function blankFrom(variant: RuleVariant | null): SetUpFrom {
       handicap: NO_HANDICAP,
     },
     asPlayed: null,
+    /* Nothing was filled in at all, so nothing about the board was settled. */
+    boardChosen: null,
     opponent: null,
     again: null,
     fork: null,

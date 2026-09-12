@@ -67,6 +67,7 @@ export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/gam
         again={from.again}
         fork={from.fork}
         asPlayed={from.asPlayed}
+        boardChosen={from.boardChosen}
         problem={from.problem}
       />
     </Page>

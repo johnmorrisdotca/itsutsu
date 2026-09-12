@@ -77,6 +77,7 @@ const POST_FOR_ANYONE = "Post the seat for anyone";
 export function SetUpGame({
   initial,
   asPlayed = null,
+  boardChosen: boardSettled = null,
   opponents,
   seats = [],
   signedIn,
@@ -96,6 +97,16 @@ export function SetUpGame({
    * and comparing a changed draft against itself would always say "unchanged".
    */
   asPlayed?: RulesDraft | null;
+  /**
+   * The board the ADDRESS settled, or null where the draft's board is only the
+   * default this screen opened at. See `SetUpFrom.boardChosen`.
+   *
+   * It seeds the same state a click on the board picker writes, because it is
+   * the same fact arriving by a different door: `?board=19` is a choice
+   * somebody made, in a link they followed, and `matchSeat` already knows that
+   * a chosen board does not follow a seat on the noticeboard.
+   */
+  boardChosen?: number | null;
   opponents: Opponent[];
   /**
    * The seats already posted, so asking for a game somebody is already asking
@@ -183,8 +194,17 @@ export function SetUpGame({
    * The board somebody chose, held here rather than in the draft: the draft has
    * to stay a board the current game can actually be played on, and this has to
    * survive a game that cannot use it — see `matchSeat`.
+   *
+   * IT STARTS AT WHATEVER THE ADDRESS SETTLED, which is the whole of the fix
+   * for a wrong board on a link. It used to start at null, and null here means
+   * "nobody has said anything about the board" — so `?board=19` read as no
+   * answer, and a lone 9×9 seat on the noticeboard was followed over it. Every
+   * board-carrying way in was affected: the lobby sentence, a family page, a
+   * challenge, the doorstep's own way back. And only where exactly ONE seat
+   * matched the game and the pace, which is why a busy database never showed it
+   * and a fresh one always did.
    */
-  const [boardChosen, setBoardChosen] = useState<number | null>(null);
+  const [boardChosen, setBoardChosen] = useState<number | null>(boardSettled);
 
   /*
    * Whether somebody is already asking for exactly this, and which board to show

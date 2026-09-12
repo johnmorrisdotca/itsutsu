@@ -70,6 +70,7 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
         again={from.again}
         fork={from.fork}
         asPlayed={from.asPlayed}
+        boardChosen={from.boardChosen}
         problem={from.problem}
       />
     </Page>

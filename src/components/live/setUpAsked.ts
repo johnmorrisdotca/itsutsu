@@ -4,6 +4,7 @@ import {
   OBSTACLE_LAYOUTS,
   SECOND_STONE_EXCLUSIONS,
   STONES,
+  boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
 import type { Handicap, HandicapRule, OpeningRule, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import {
@@ -144,6 +145,27 @@ export function readSetUpAsked(
     rules: readAskedRules(asked),
     sit: one(asked, SET_UP_PARAMS.sit),
   };
+}
+
+/**
+ * THE BOARD AN ADDRESS SETTLED at the game being set up, or null for "nobody
+ * said".
+ *
+ * Said in one place because it was being decided in two — `setUpFrom` asked it
+ * to pre-fill the draft, `askedOver` asked it again to lay the address over one
+ * — and now in three, since the screen has to know whether the board in its
+ * draft is a CHOICE or a DEFAULT. Three copies of one condition is two chances
+ * for it to drift, and the third caller is the one that makes the difference
+ * visible: a board that is only a default may be moved by what is on the
+ * noticeboard, and a board somebody settled may not.
+ *
+ * Null for a size this game does not offer, rather than the game's first board:
+ * `boardSizesFor` is what the picker draws, and an address naming something
+ * outside it has said nothing readable about the board. Snapping instead would
+ * move somebody from their usual 15×15 to 9×9 because a link had a typo in it.
+ */
+export function boardAsked(want: SetUpAsked, variant: RuleVariant): number | null {
+  return want.board !== null && boardSizesFor(variant).includes(want.board) ? want.board : null;
 }
 
 /**
