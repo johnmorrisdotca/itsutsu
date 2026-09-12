@@ -1,6 +1,8 @@
 import { expect, test, type Browser, type BrowserContext } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
+import { xpLevelFor } from "../src/lib/xp/xpCurve";
+import { xpLevelName } from "../src/lib/xp/levelNames";
 import { memberContext } from "./members";
 
 /**
@@ -173,8 +175,19 @@ test.describe("a member's own XP", () => {
       await expect(page.getByTestId("my-xp-total")).toHaveText(
         `${seeded.total.toLocaleString("en-US")} XP`,
       );
-      await expect(page.getByTestId("my-xp-level")).toHaveText(/^Level \d+$/);
-      await expect(page.getByTestId("my-xp-next")).toContainText("to Level");
+      /*
+       * THE LEVEL'S NAME, NOT `Level 7`. The seeded total is a sum of catalogue
+       * constants, so the rung it lands on cannot be written down here as a
+       * literal — `xpLevelName` is asked for it. That alone would be the
+       * feature calling itself back, so the line below pins what actually
+       * changed and cannot be satisfied by the old code: the floor form is what
+       * this panel used to print, and seeing it again means the swap came
+       * undone.
+       */
+      const level = xpLevelFor(seeded.total);
+      await expect(page.getByTestId("my-xp-level")).toHaveText(xpLevelName(level));
+      await expect(page.getByTestId("my-xp-level")).not.toHaveText(/^Level \d+$/);
+      await expect(page.getByTestId("my-xp-next")).toContainText(`to ${xpLevelName(level + 1)}`);
 
       // Twelve awards, newest first: the last one seeded is the first one read.
       const rows = page.getByTestId("my-xp-award");
@@ -315,8 +328,14 @@ test.describe("a member's own XP", () => {
       await expect(page.getByTestId("my-xp-ledger")).toBeVisible();
       await expect(page.getByRole("columnheader", { name: "Earned" })).toBeVisible();
       await expect(page.getByRole("columnheader", { name: "About" })).toBeVisible();
-      // The level-1 standing is still a standing, and it is shown.
-      await expect(page.getByTestId("my-xp-level")).toHaveText("Level 1");
+      /*
+       * The level-1 standing is still a standing, and it is shown — by the
+       * catalogue's name for the bottom rung, pinned as a literal because a
+       * member with nought XP is always on it. "Insert Coin" rather than
+       * `xpLevelName(1)`, so a catalogue edit that renamed the rung every new
+       * member meets has to be looked at rather than absorbed.
+       */
+      await expect(page.getByTestId("my-xp-level")).toHaveText("Insert Coin");
       // And the way in, as a link.
       await expect(page.getByTestId("my-xp-empty").getByRole("link")).toHaveAttribute(
         "href",

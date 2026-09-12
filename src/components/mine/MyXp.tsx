@@ -8,7 +8,8 @@ import { familyPath, matchPath } from "@/lib/gomoku/slugs";
 import { foldEmail, memberRowFor } from "@/lib/auth/members";
 import { isRefusal } from "@/lib/api/paging";
 import { playerPath } from "@/lib/rating/playerKey";
-import { xpLevelLabel, xpMoreHref, xpParamsFrom } from "@/lib/xp/xpHistory";
+import { xpLevelName } from "@/lib/xp/levelNames";
+import { xpMoreHref, xpParamsFrom } from "@/lib/xp/xpHistory";
 import { xpLedgerPage } from "@/lib/xp/xpHistoryPage";
 import { xpStanding } from "@/lib/xp/xpCurve";
 import type { XpAbout, XpLedgerRow } from "@/lib/xp/xpHistory.types";
@@ -202,21 +203,19 @@ function Standing({ xp }: { xp: number }) {
           {xp.toLocaleString("en-US")} XP
         </span>
         {/*
-          The level's NAME, from one function, and the name is `Level 11` until
-          the hundred names land — UmaKuma's own floor for an unnamed rank.
-          `xpLevelLabel` is the one line XP-10 changes to `xpLevelName(level)`.
-
-          Not a link, deliberately: `/xp` and `/xp/levels` are XP-08's and
-          XP-10's and do not exist yet, and a link to a page that is not there
-          is worse than a plain word. Both belong here the day they land.
+          The level's NAME, from the one door — `xpLevelName`, which is the
+          catalogue's hundred rows with `Level 42` kept as its floor for a rung
+          the ladder does not have. It read `xpLevelLabel` from XP-09 until the
+          names landed; that function is gone rather than forwarding, so there
+          is one lookup and not two to choose between.
         */}
         <span className="font-semibold" data-testid="my-xp-level">
-          {xpLevelLabel(standing.level)}
+          {xpLevelName(standing.level)}
         </span>
         <span className="text-muted" data-testid="my-xp-next">
           {atTheTop
             ? "The top of the ladder."
-            : `${standing.toNext.toLocaleString("en-US")} to ${xpLevelLabel(standing.level + 1)}`}
+            : `${standing.toNext.toLocaleString("en-US")} to ${xpLevelName(standing.level + 1)}`}
         </span>
       </p>
       {/*
