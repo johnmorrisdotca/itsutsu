@@ -61,6 +61,13 @@ const REFUSAL_STATUS: Record<string, number> = {
   "wrong-token": 403,
   started: 409,
   settled: 409,
+  /*
+   * 409 with the other two, because it is the same kind of answer: the request
+   * is sound and the game's own state is what refuses it. Not 422 — nothing in
+   * the payload is malformed, and a caller told "unprocessable" would go looking
+   * at the variant it sent rather than at the game it sent it to.
+   */
+  "different-game": 409,
 };
 
 const REFUSAL_MESSAGE: Record<string, string> = {
@@ -69,11 +76,22 @@ const REFUSAL_MESSAGE: Record<string, string> = {
   "wrong-token": "That link does not hold a seat in this game.",
   started: "The first stone is down, so the rules are fixed.",
   settled: "Somebody has taken the other seat, so the rules are what they agreed to.",
+  "different-game":
+    "The game is in this match's address, so it cannot be changed. Cancel this board and set up the game you want.",
 };
 
 /**
  * Changes the rules of a shared game before it starts. Either seat may, since
- * both are about to play under them; nobody may once a stone is on the board.
+ * both are about to play under them; nobody may once a stone is on the board,
+ * and nobody may change the GAME at any point — that one is in the address, so
+ * moving it would leave every link, seat token and history row carrying its
+ * name pointing at something else. See `changesTheGame`.
+ *
+ * Nothing on the site calls this any more: the panel beside a board has been a
+ * statement rather than a form since 0.163.0, and every rule is agreed on the
+ * doorstep before a game is written. That is the reason the refusals here are
+ * the ones that matter — a route whose only callers are scripts is a route
+ * whose checks are the whole of its manners.
  */
 export async function PUT(
   request: Request,
