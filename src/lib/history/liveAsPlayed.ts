@@ -53,8 +53,15 @@ import type { CreationAsked } from "./liveRequest";
  * independent.
  */
 
-/** Exactly what `createLiveGame` takes, so a mismatch shows up here. */
-type LiveGameInput = Parameters<typeof import("./liveGame").createLiveGame>[0];
+/**
+ * Exactly what `createLiveGame` takes, so a mismatch shows up here.
+ *
+ * Exported because the ANSWER needs it too. The 201's `Location` names a game,
+ * and the only value that knows which game the row is being written as is this
+ * one — see `liveResponse.ts`, which reads the name off the same object rather
+ * than off the request.
+ */
+export type SettingsAsPlayed = Parameters<typeof import("./liveGame").createLiveGame>[0];
 
 export function settingsAsPlayed({
   asked,
@@ -62,7 +69,7 @@ export function settingsAsPlayed({
 }: {
   asked: CreationAsked;
   against: Against;
-}): LiveGameInput {
+}): SettingsAsPlayed {
   const {
     challenge: _challenge,
     challengeId: _challengeId,

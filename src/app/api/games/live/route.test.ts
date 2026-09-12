@@ -374,6 +374,34 @@ describe("POST /api/games/live — a fork", () => {
     expect(input.winLength, "and the line length the position was played to").toBe(ORIGIN.winLength);
   });
 
+  /*
+   * AND THE ANSWER SAYS THE SAME GAME THE ROW DOES.
+   *
+   * The 201's `Location` is where the caller is told the game is, and it was
+   * built from the variant the REQUEST sent while the row was written with the
+   * position's — so the request in the case above, which the route is right to
+   * overrule, was answered `/games/reversi/match/game-1` for a row played as
+   * gomoku. Both now come off the one value `createLiveGame` was handed, which
+   * is what makes them unable to disagree rather than merely agreed today.
+   *
+   * Asserted THROUGH THE ROUTE rather than on `createdResponse` alone: the unit
+   * beside `liveResponse.ts` proves the header follows the played settings, and
+   * this proves the route is what hands them over. See AGENTS.md, "A Merge
+   * Cannot Conflict With A File That No Longer Exists" — present and reached
+   * are two claims.
+   */
+  it("tells the caller where the game is under the name the row was written as", async () => {
+    const response = await post({ ...fork, variant: "reversi" });
+
+    expect(response.status).toBe(201);
+    const [input] = createLiveGame.mock.calls[0] as [{ variant: string }];
+    expect(input.variant, "the row").toBe(ORIGIN.variant);
+    // Freestyle gomoku lives at /games/gomoku — the slugs are a table, see `slugs.ts`.
+    expect(response.headers.get("Location"), "the header, off the same value").toBe(
+      "/games/gomoku/match/game-1",
+    );
+  });
+
   it("carries the position itself, as many moves as were asked for", async () => {
     await post({ from: { id: ORIGIN.id, move: 3 } });
 
