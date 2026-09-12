@@ -9,6 +9,51 @@ describe("appliedNarrowings", () => {
     expect(appliedNarrowings(NONE)).toEqual([]);
   });
 
+  /*
+   * The finding, made concrete: /history?outcome=won with no player. The
+   * query drops the outcome clause entirely (`outcomeWhere` returns null
+   * without a name to read "won" against), so a chip reading "Won" over the
+   * whole record would be claiming a narrowing nothing applied.
+   */
+  it("does not claim an outcome the query could not apply without a player", () => {
+    const narrowings = appliedNarrowings({ ...NONE, outcome: "won" });
+    expect(narrowings).toEqual([]);
+  });
+
+  it("does the same for lost, the outcome's other player-only half", () => {
+    expect(appliedNarrowings({ ...NONE, outcome: "lost" })).toEqual([]);
+  });
+
+  it("shows decided and drawn even with no player — they are not about anybody's side", () => {
+    expect(appliedNarrowings({ ...NONE, outcome: "decided" })).toEqual([
+      { key: "outcome", label: "Won, lost or drawn" },
+    ]);
+    expect(appliedNarrowings({ ...NONE, outcome: "drawn" })).toEqual([
+      { key: "outcome", label: "Drawn" },
+    ]);
+  });
+
+  it("shows won/lost once a player is applied", () => {
+    const player = { name: "Alice", memberId: "id-1", removable: true };
+    expect(appliedNarrowings({ ...NONE, player, outcome: "won" })).toEqual([
+      { key: "player", label: "Alice's games" },
+      { key: "outcome", label: "Won" },
+    ]);
+  });
+
+  it("never claims a verdict without a player — verdict has no player-free reading at all", () => {
+    expect(appliedNarrowings({ ...NONE, verdict: "up" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, verdict: "judged" })).toEqual([]);
+  });
+
+  it("shows a verdict once a player is applied", () => {
+    const player = { name: "Alice", memberId: "id-1", removable: true };
+    expect(appliedNarrowings({ ...NONE, player, verdict: "up" })).toEqual([
+      { key: "player", label: "Alice's games" },
+      { key: "verdict", label: "Played well" },
+    ]);
+  });
+
   it("gives a removable player chip no href — its own '×' takes it off", () => {
     const player = { name: "Alice", memberId: "id-1", removable: true };
     const [chip] = appliedNarrowings({ ...NONE, player });
@@ -37,7 +82,7 @@ describe("appliedNarrowings", () => {
     expect(chip.href).toBe("/players/someone-typed-in");
   });
 
-  it("shows pool and rated the same way it always has", () => {
+  it("still shows pool and rated with no player, unaffected by any of this", () => {
     expect(appliedNarrowings({ ...NONE, pool: "computer" })).toEqual([
       { key: "pool", label: "Against the computer" },
     ]);

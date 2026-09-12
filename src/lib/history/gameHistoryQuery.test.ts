@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildGameOrderBy,
   buildGameWhere,
+  outcomeNeedsPlayer,
   toGameHistoryQuery,
 } from "./gameHistoryQuery";
 import { GAME_PAGE_SIZE_DEFAULT } from "./gameHistory.constants";
@@ -280,6 +281,35 @@ describe("buildGameWhere", () => {
       // Unanswerable, not empty: better to leave the record as it was than to
       // quietly return nothing and look like a player with no wins.
       expect(buildGameWhere(parse("?outcome=won")!)).toEqual({ AND: [{ status: "finished" }] });
+    });
+
+    it("drops a loss the same way it drops a win", () => {
+      expect(buildGameWhere(parse("?outcome=lost")!)).toEqual({ AND: [{ status: "finished" }] });
+    });
+  });
+
+  /*
+   * `outcomeNeedsPlayer` is the query's own opinion of which outcomes it can
+   * judge without a name, and `HistoryFilters`' chip reads the same function
+   * (`narrowings.ts`) so it never claims a narrowing this WHERE clause did
+   * not apply. The two tests above already prove the query's behaviour;
+   * this ties the predicate to it by name, so a future outcome that changes
+   * one side without the other fails here rather than as a chip nobody
+   * questioned because the record it sat over looked plausible.
+   */
+  describe("outcomeNeedsPlayer", () => {
+    it("agrees with buildGameWhere about every outcome", () => {
+      for (const outcome of ["won", "lost", "drawn", "decided"] as const) {
+        const where = buildGameWhere(parse(`?outcome=${outcome}`)!);
+        // More conditions than just { status: "finished" } means the outcome
+        // clause survived — buildGameWhere always builds AND as an array.
+        const applied = Array.isArray(where.AND) && where.AND.length !== 1;
+        expect(outcomeNeedsPlayer(outcome), outcome).toBe(!applied);
+      }
+    });
+
+    it("says an outcome it does not recognise needs a player too", () => {
+      expect(outcomeNeedsPlayer("sideways")).toBe(true);
     });
   });
 

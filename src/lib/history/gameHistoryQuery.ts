@@ -191,6 +191,26 @@ function seatIs(
 }
 
 /**
+ * Whether `outcome` can be judged without a name to read it against.
+ *
+ * `decided` and `drawn` are questions about the RESULT alone — did it reach
+ * one, was it a draw — and answer themselves with no player in sight. `won`
+ * and `lost` are the other two: a colour won, but whether that was a win
+ * depends on which colour somebody was, so they are unanswerable without a
+ * name. `outcomeWhere` below is the query's own use of this; a filter chip
+ * reads it too (`narrowings.ts`), so the two cannot drift into disagreeing
+ * about which chip is honest to show.
+ *
+ * Takes a plain string rather than `GameOutcome` so a chip can ask it about
+ * whatever an address happens to hold, valid or not — an outcome this module
+ * does not recognise needs a player exactly as much as one that does: there
+ * is no reading of it that is answerable without one.
+ */
+export function outcomeNeedsPlayer(outcome: string): boolean {
+  return outcome !== "decided" && outcome !== "drawn";
+}
+
+/**
  * An outcome from one player's side of the board.
  *
  * The stored result names a colour, so "their losses" is two questions at
@@ -210,6 +230,8 @@ function outcomeWhere(
 ): Prisma.GameWhereInput | null {
   if (outcome === "decided") return { result: { not: "abandoned" } };
   if (outcome === "drawn") return { result: "draw" };
+  // outcomeNeedsPlayer(outcome) is always true from here on — decided and
+  // drawn, the only outcomes it says otherwise about, have already returned.
   if (player === null) return null;
 
   const asBlack = seatIs("black", player, named);
