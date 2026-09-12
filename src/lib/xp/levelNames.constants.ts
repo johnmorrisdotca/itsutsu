@@ -103,4 +103,15 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 68, name: "The Last of Us", note: "Naughty Dog, 2013: a giraffe, a lie at the end, and the story that made the whole medium grow up." },
   { level: 69, name: "Grand Theft Auto V", note: "Rockstar, 2013: Los Santos, three leads, and the second-best-selling game ever, still selling a decade on." },
   { level: 70, name: "PlayStation 4", note: "Sony, 2013: 'for the players', 117 million sold, and a generation won at a stroke." },
+  // 71-80: the present day, and the first marks of mastery.
+  { level: 71, name: "Nintendo Switch", note: "2017: a console you lift off the dock and carry out the door, and a Joy-Con click nobody tires of." },
+  { level: 72, name: "New Game+", kanji: "強くてニューゲーム", note: "Chrono Trigger's own words: finish the game, keep everything, and start again stronger than the world expects." },
+  { level: 73, name: "Speedrun", note: "Any%, glitchless or 100%: the same game, finished in a fraction of the time its makers thought it took." },
+  { level: 74, name: "PlayStation 5", note: "Sony, 2020: a DualSense that pushes back on your fingers, and the console nobody could find in a shop for a year." },
+  { level: 75, name: "Platinum Trophy", note: "Every trophy in the game, one platinum to show for it, and a reason to look at your own profile twice." },
+  { level: 76, name: "Hades", note: "Supergiant, 2020: escape the underworld, die, and discover that dying was the story; the indie boom's finest hour." },
+  { level: 77, name: "Combo Breaker", note: "Killer Instinct, 1994: 'C-C-C-COMBO BREAKER', and the two words shouted at every interruption since." },
+  { level: 78, name: "Easter Egg", note: "Adventure, 1979: Warren Robinett hid his name in a room Atari never knew about, and every secret since is named for it." },
+  { level: 79, name: "S-Rank", note: "The grade above A, from Devil May Cry to Resident Evil: not just finished, finished with style." },
+  { level: 80, name: "Breath of the Wild", note: "Nintendo, 2017: a plateau, a paraglider, and a whole kingdom that let you go anywhere you could see." },
 ];
