@@ -60,12 +60,39 @@ import { outcomeFor } from "./pools";
  * place. The backfill puts such a row right.
  */
 
-/** One decided game, as much of it as this needs. */
+/**
+ * One decided game, as much of it as this needs — and `winner` as loosely as
+ * the column really is.
+ *
+ * `Game.winner` is a plain string, so a caller reading a stored row cannot hand
+ * over anything narrower without asserting something about it. Taking it wide
+ * and refusing what cannot be read is the honest shape; narrowing it here would
+ * only move the guess to whoever calls.
+ */
 export type DecidedGame = {
   blackMemberId: string | null;
   whiteMemberId: string | null;
-  winner: "black" | "white" | null;
+  winner: string | null;
 };
+
+/**
+ * The winner, or a refusal.
+ *
+ * Null is a DRAW and means something; anything that is not a colour means the
+ * row cannot be read, and that is not the same thing. `outcomeFor` would call
+ * an unreadable value a loss for BOTH seats — a perfectly plausible pair of
+ * results out of a row nothing understands — so it is never reached with one.
+ * Undefined rather than a default, for the reason AGENTS.md gives: a rule that
+ * cannot measure must not fire.
+ *
+ * Both databases hold only `black`, `white` and null today, checked on
+ * 2026-09-11. This is what keeps that a fact rather than an assumption.
+ */
+function winnerOf(winner: string | null): "black" | "white" | null | undefined {
+  if (winner === null) return null;
+  if (winner === "black" || winner === "white") return winner;
+  return undefined;
+}
 
 /** One member's half of one decided game. */
 export type PlayedSide = { memberId: string; outcome: StreakOutcome };
@@ -81,12 +108,15 @@ export type PlayedSide = { memberId: string; outcome: StreakOutcome };
  * black.
  */
 export function playedSides(game: DecidedGame): PlayedSide[] {
+  const winner = winnerOf(game.winner);
+  // A row whose result cannot be read moves nobody's run. See `winnerOf`.
+  if (winner === undefined) return [];
   const sides: PlayedSide[] = [];
   if (game.blackMemberId !== null) {
-    sides.push({ memberId: game.blackMemberId, outcome: outcomeFor(game.winner, "black") });
+    sides.push({ memberId: game.blackMemberId, outcome: outcomeFor(winner, "black") });
   }
   if (game.whiteMemberId !== null && game.whiteMemberId !== game.blackMemberId) {
-    sides.push({ memberId: game.whiteMemberId, outcome: outcomeFor(game.winner, "white") });
+    sides.push({ memberId: game.whiteMemberId, outcome: outcomeFor(winner, "white") });
   }
   return sides;
 }

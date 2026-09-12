@@ -127,6 +127,17 @@ describe("whose run a decided game moves", () => {
       { memberId: "solo", outcome: "loss" },
     ]);
   });
+
+  it("moves nobody on a row whose result it cannot read", () => {
+    /*
+     * `winner` is a plain string column. Neither database holds anything but
+     * `black`, `white` and null today, and if one ever did, `outcomeFor` would
+     * call it a LOSS for both seats — two plausible results out of a row
+     * nothing understands. A rule that cannot measure must not fire.
+     */
+    expect(playedSides({ blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" })).toEqual([]);
+    expect(playedSides({ blackMemberId: "a", whiteMemberId: "b", winner: "" })).toEqual([]);
+  });
 });
 
 /**
