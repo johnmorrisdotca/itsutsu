@@ -18,6 +18,15 @@ export const RATING_REFUSALS = {
   unnamed: "unnamed",
   onePlayer: "one-player",
   keptRecord: "kept-record",
+  /**
+   * Two seats, one screen, one token. Deliberately not folded into
+   * `onePlayer`: a hot-seat game can hold two real, different names, and
+   * calling that "one player" would be a claim the page cannot back up. It
+   * is also not "friendly" — nobody chose unrated, the site simply has no way
+   * to tell the two of you apart from a login. See `gameRatingRefusal` in
+   * `rateable.ts`, which is the only place this reason is produced.
+   */
+  hotSeat: "hot-seat",
 } as const;
 
 export type RatingRefusal = (typeof RATING_REFUSALS)[keyof typeof RATING_REFUSALS];
@@ -53,5 +62,12 @@ export const RATING_REFUSAL_DISPLAY: Record<
     kanji: "記録",
     sentence:
       "One of these names belongs to a record kept from before this site, which nobody plays under here. The game is filed, but the ladder is left alone.",
+  },
+  [RATING_REFUSALS.hotSeat]: {
+    playing: "This game will not count",
+    filed: "This game did not count",
+    kanji: "同卓",
+    sentence:
+      "Both seats were played from one screen, so there is no way to tell the two of you apart from a login. A rating is an exchange between two separate players, and hot-seat play cannot give the site one — however the two names read.",
   },
 };

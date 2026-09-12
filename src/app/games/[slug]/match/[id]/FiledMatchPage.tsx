@@ -25,8 +25,9 @@ import { ignoredEmails } from "@/lib/social/ignores";
 import { appearanceFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
 import type { Appearance } from "@/components/board/board.types";
-import { ratingRefusal } from "@/lib/rating/rateable";
+import { gameRatingRefusal } from "@/lib/rating/rateable";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
+import { isHotSeat } from "@/lib/history/liveGame";
 import { prisma } from "@/lib/prisma";
 import { GameName } from "@/components/games/GameName";
 
@@ -65,7 +66,18 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
     currentMemberId(),
     prisma.game.findUnique({
       where: { id },
-      select: { blackMemberId: true, whiteMemberId: true, hiddenByBlack: true, hiddenByWhite: true, blackVerdict: true, whiteVerdict: true },
+      select: {
+        blackMemberId: true,
+        whiteMemberId: true,
+        hiddenByBlack: true,
+        hiddenByWhite: true,
+        blackVerdict: true,
+        whiteVerdict: true,
+        // For `refusal` below: hot seat is a fact about the tokens, not the
+        // names, and this row is the only place either page reads them.
+        blackToken: true,
+        whiteToken: true,
+      },
     }),
     currentSession().then((session) => fetchApplause(id, session?.email ?? null)),
   ]);
@@ -140,6 +152,12 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * over the top of an answer nobody was waiting for. A game somebody played
    * out to the end and then could not find in their figures is the silence
    * this fills.
+   *
+   * `gameRatingRefusal` is the same question the write side asks before ever
+   * calling `recordResult` — hot seat and the name-fold rule both, not either
+   * alone. Checking `game.rated` here would show a hot-seat or self-played
+   * row as an ordinary counted result, which is exactly the bug twelve
+   * production rows were found displaying.
    */
   /*
    * THE NAMES AS PLAYED, not the names to show. `ratingRefusal` asks whether one
@@ -150,7 +168,14 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * page explain a refusal the database never made.
    */
   const refusal =
-    game.rated && game.result !== "abandoned" ? ratingRefusal(game.playedAs.black, game.playedAs.white) : null;
+    game.result === "abandoned"
+      ? null
+      : gameRatingRefusal({
+          rated: game.rated,
+          hotSeat: members !== null && isHotSeat(members),
+          blackName: game.playedAs.black,
+          whiteName: game.playedAs.white,
+        });
 
   /*
    * The reader's own board, on the page they will spend the longest looking
