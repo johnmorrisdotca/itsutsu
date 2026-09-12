@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { extendStreak, streakFrom, type Streak, type StreakOutcome } from "./streak";
 
@@ -150,13 +150,26 @@ function member(id: string, streak: Streak | null = null) {
   });
 }
 
+/**
+ * A Wednesday, so that what a game asks for does not depend on the day the suite
+ * runs. `weekendGame` fires on a game finished at the weekend; without this, every
+ * case below asserting an exact list of awards would pass on five days and fail
+ * on two. Only `Date` is faked — the timers are real, because everything awaits.
+ */
+const MIDWEEK = new Date("2026-09-09T12:00:00Z");
+
 beforeEach(() => {
+  vi.useFakeTimers({ now: MIDWEEK, toFake: ["Date"] });
   stored = [];
   memberRows.clear();
   updates.length = 0;
   asked.length = 0;
   reads = 0;
   transactions = 0;
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("whose run a decided game moves", () => {

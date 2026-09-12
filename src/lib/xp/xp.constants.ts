@@ -464,8 +464,7 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
  */
 export const XP_UNWIRED: readonly XpEventType[] = [
   // XP-06
-  "dayStreak7", "dayStreak30", "dayStreak100", "dayStreak365", "weekendGame",
-  "backFromAway", "seatClaimedElsewhere",
+  "seatClaimedElsewhere",
   /* `comeback` is priced and deliberately not paid: nothing on this site can
      read a position as losing for every variant, and an approximation would pay
      everybody for every win. The whole refusal is in `xpGame.ts`. */

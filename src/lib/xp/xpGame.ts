@@ -132,6 +132,19 @@ export type PlayedSideFacts = {
    */
   run: Streak | null;
   opponent: Opponent;
+  /**
+   * The ISO week, when this game finished at the weekend FOR THIS MEMBER, and
+   * null when it did not.
+   *
+   * Decided by the caller because it depends on the member's own zone: a game
+   * that ends on Sunday evening in Tokyo ended on Sunday morning in Vancouver
+   * and on Saturday night in Tallinn, and only one of those readings is the
+   * member's. The week rather than the day, so the award is once a WEEKEND
+   * rather than once a game — a Saturday and the Sunday after it are one ISO
+   * week, which is why the week is the subject and a made-up "weekend id" is
+   * not.
+   */
+  weekendWeek: string | null;
 };
 
 /** Nobody in the other seat, and nothing known about them. For a caller's default. */
@@ -182,6 +195,17 @@ export function gameAwards(game: FinishedGame, side: PlayedSideFacts): XpAward[]
      that is about the game rather than about who played it. */
   if (game.moveCount >= XP_LONG_GAME_MOVES) {
     awards.push({ type: XP_EVENTS.longGame, subject: game.id });
+  }
+
+  /* John asked for the weekend. Once a weekend and not once a game, which is
+     what the ISO week as the subject says — otherwise it would be a second
+     `gameFinished` with a calendar in front of it.
+
+     A week is a non-empty string or it is nothing: an empty subject here would
+     mean "once ever", so a caller that had nothing to say must not be read as
+     having said the weekend. */
+  if (typeof side.weekendWeek === "string" && side.weekendWeek !== "") {
+    awards.push({ type: XP_EVENTS.weekendGame, subject: side.weekendWeek });
   }
 
   /* Winning, which is twice a finish: better, and not four times better, or the

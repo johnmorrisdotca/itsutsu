@@ -8,6 +8,7 @@ import { STREAK_KINDS, type Streak, type StreakOutcome } from "@/lib/rating/stre
 
 import { awardXp } from "./awardXp";
 import { XP_EVENTS } from "./xp.constants";
+import { isWeekend, xpWeekKey } from "./xpDay";
 import {
   NO_OPPONENT,
   XP_GRADES_TO_BEAT,
@@ -66,6 +67,12 @@ export type XpSide = {
   outcome: StreakOutcome;
   /** The run this result made, from the columns the writer is writing. */
   run: Streak | null;
+  /**
+   * Their own zone, for the weekend. Another column on a row already read: a
+   * game that ended on Sunday evening in Tokyo ended on Saturday night in
+   * Tallinn, and the member's reading is the one that counts.
+   */
+  timeZone: string | null;
 };
 
 /**
@@ -82,6 +89,7 @@ export type XpSide = {
 export async function awardFinishedGameXp(
   game: FinishedGame & { blackMemberId: string | null; whiteMemberId: string | null },
   sides: readonly XpSide[],
+  now: Date = new Date(),
 ): Promise<void> {
   const emails = new Map(sides.map((side) => [side.memberId, side.email]));
 
@@ -89,13 +97,21 @@ export async function awardFinishedGameXp(
     const opponent = await opponentFacts(game, side, emails);
     const paid = await awardXp({
       memberId: side.memberId,
-      awards: gameAwards(game, { outcome: side.outcome, run: side.run, opponent }),
+      awards: gameAwards(game, {
+        outcome: side.outcome,
+        run: side.run,
+        opponent,
+        /* Their weekend, not the server's. Null unless it really is one for
+           them, so nothing is paid on a guess about whose Sunday it is. */
+        weekendWeek: isWeekend(now, side.timeZone) ? xpWeekKey(now, side.timeZone) : null,
+      }),
+      now,
     });
     /* AFTER the batch, and only because of what it paid. A first game of a
        variant is what can complete the set of thirty-nine, so the question is
        worth asking exactly when one was just paid for and at no other time. */
-    await awardTourBonuses({ memberId: side.memberId, paid });
-    await awardLadderBonus({ memberId: side.memberId, paid });
+    await awardTourBonuses({ memberId: side.memberId, paid, now });
+    await awardLadderBonus({ memberId: side.memberId, paid, now });
   }
 }
 
@@ -214,9 +230,11 @@ async function hadBeatenMe({
 async function awardLadderBonus({
   memberId,
   paid,
+  now,
 }: {
   memberId: string;
   paid: Awaited<ReturnType<typeof awardXp>>;
+  now?: Date;
 }): Promise<void> {
   if (!justPaid(paid, XP_EVENTS.gradeBeaten)) return;
   try {
@@ -225,6 +243,7 @@ async function awardLadderBonus({
       each: XP_EVENTS.gradeBeaten,
       all: XP_EVENTS.everyGradeBeaten,
       size: XP_GRADES_TO_BEAT,
+      now,
     });
   } catch (problem) {
     console.error("Could not settle the computer ladder's bonus", memberId, problem);

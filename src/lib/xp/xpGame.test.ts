@@ -29,8 +29,19 @@ import {
 
 const game = { id: "k3m9-p2qx", variant: RULE_VARIANTS.reversi as string, moveCount: 12 };
 
-/** Nobody in the other seat: an unbound chair, or a member playing themselves. */
-const alone: PlayedSideFacts = { outcome: STREAK_KINDS.win, run: null, opponent: NO_OPPONENT };
+/**
+ * Nobody in the other seat: an unbound chair, or a member playing themselves.
+ *
+ * Midweek, too. `weekendWeek` is null in every case except the weekend's own,
+ * so no case here can pay a weekend award by accident — a fixture that left it
+ * to the calendar would pass or fail by the day of the week the suite ran.
+ */
+const alone: PlayedSideFacts = {
+  outcome: STREAK_KINDS.win,
+  run: null,
+  opponent: NO_OPPONENT,
+  weekendWeek: null,
+};
 /** A person, known not to be a buddy and known never to have won before. */
 const person: Opponent = { id: "m-they", tier: null, buddy: false, beatenMeBefore: false };
 
@@ -40,7 +51,7 @@ const drawn: PlayedSideFacts = { ...alone, outcome: STREAK_KINDS.draw };
 
 /** A win over somebody, with whatever is known about them laid over the default. */
 function beat(over: Partial<Opponent> = {}, run: Streak | null = null): PlayedSideFacts {
-  return { outcome: STREAK_KINDS.win, run, opponent: { ...person, ...over } };
+  return { ...alone, run, opponent: { ...person, ...over } };
 }
 
 /** The types a call asked for, in order. */
@@ -93,6 +104,24 @@ describe("what finishing a game pays", () => {
     const long = gameAwards({ ...game, moveCount: XP_LONG_GAME_MOVES }, won);
     expect(long[0].type).toBe("gameFinished");
     expect(long.findIndex((award) => award.type === "longGame")).toBeGreaterThan(0);
+  });
+});
+
+describe("a game at the weekend", () => {
+  it("pays for the week it names, and for nothing when there is no week", () => {
+    const week = { ...won, weekendWeek: "2026-W37" };
+    const awards = gameAwards(game, week);
+    expect(awards.find((award) => award.type === "weekendGame")?.subject).toBe("2026-W37");
+    // Once a WEEKEND, so the subject is the week and never the game: two games
+    // on one Saturday write one row.
+    expect(types(won)).not.toContain("weekendGame");
+  });
+
+  it("pays nothing for a week that is not one", () => {
+    // An empty subject would mean "once ever" — the shape a caller with nothing
+    // to say must not be read as. Belt and braces over the type, because the
+    // caller computes this from a zone and a clock.
+    expect(types({ ...won, weekendWeek: "" })).not.toContain("weekendGame");
   });
 });
 

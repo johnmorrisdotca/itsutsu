@@ -186,11 +186,18 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
 
   const rows = await prisma.member.findMany({
     where: { id: { in: sides.map((side) => side.memberId) } },
-    /* `email` rides this read for the XP ledger: the buddy list is keyed by
-       address and this function is keyed by id, so `wonVsBuddy` would need a
-       query of its own to turn one into the other. It is a column on a row being
-       read anyway. */
-    select: { id: true, email: true, playedStreakKind: true, playedStreakCount: true },
+    /* `email` and `timeZone` ride this read for the XP ledger. The buddy list is
+       keyed by address and this function is keyed by id, so `wonVsBuddy` would
+       otherwise need a query to turn one into the other; and whether a game
+       finished at the WEEKEND is a question about the member's own zone, not the
+       server's. Both are columns on a row being read anyway. */
+    select: {
+      id: true,
+      email: true,
+      timeZone: true,
+      playedStreakKind: true,
+      playedStreakCount: true,
+    },
   });
   const byId = new Map(rows.map((row) => [row.id, row]));
 
@@ -253,7 +260,7 @@ async function awardGameXp(
   game: DecidedGame,
   sides: readonly PlayedSide[],
   read: {
-    byId: ReadonlyMap<string, { email: string | null }>;
+    byId: ReadonlyMap<string, { email: string | null; timeZone: string | null }>;
     runs: ReadonlyMap<string, Streak | null>;
   },
 ): Promise<void> {
@@ -268,6 +275,7 @@ async function awardGameXp(
     sides.map((side) => ({
       memberId: side.memberId,
       email: read.byId.get(side.memberId)?.email ?? null,
+      timeZone: read.byId.get(side.memberId)?.timeZone ?? null,
       outcome: side.outcome,
       run: read.runs.get(side.memberId) ?? null,
     })),

@@ -153,10 +153,17 @@ describe("what is priced and not yet paid", () => {
     // a kind is wired and nobody says so.
     //
     // XP-02 wired four. XP-03 added the tour and the long game; XP-04 added
-    // everything a WIN pays. All of them ride `recordPlayed` — see `xpGame.ts`.
+    // everything a WIN pays, both on `recordPlayed` — see `xpGame.ts`. XP-05
+    // added turning up: the run of days and coming back from away on the
+    // `lastSeenAt` write (`dailyVisit.ts`), and the weekend on the finish.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
     expect(wired.sort()).toEqual([
+      "backFromAway",
       "dailyVisit",
+      "dayStreak100",
+      "dayStreak30",
+      "dayStreak365",
+      "dayStreak7",
       "everyFamilyPlayed",
       "everyGradeBeaten",
       "everyVariantPlayed",
@@ -171,6 +178,7 @@ describe("what is priced and not yet paid", () => {
       "longGame",
       "revengeWin",
       "specialistBeaten",
+      "weekendGame",
       "winStreak10",
       "winStreak3",
       "winStreak5",

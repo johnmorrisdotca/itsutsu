@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
@@ -140,6 +140,7 @@ const prismaFake = {
 vi.mock("@/lib/prisma", () => ({ prisma: prismaFake }));
 
 const { recordPlayed } = await import("@/lib/rating/playedRun");
+const { awardFinishedGameXp } = await import("./xpGameServer");
 
 function member(
   id: string,
@@ -187,12 +188,30 @@ function paid(memberId: string, type: string): number {
   return events.filter((row) => row.memberId === memberId && row.type === type).length;
 }
 
+/**
+ * A Wednesday, and the reason it is stated rather than left to the machine.
+ *
+ * `weekendGame` fires on a game finished at the weekend, so a suite run on a
+ * Saturday pays an extra award in every case that asserts what a game paid —
+ * which is a test that passes or fails by the day of the week, and it did
+ * exactly that the afternoon it was written. The weekend's own cases hand
+ * `awardFinishedGameXp` the instant they mean.
+ *
+ * Only `Date` is faked. The timers are real, because everything here awaits.
+ */
+const MIDWEEK = new Date("2026-09-09T12:00:00Z");
+
 beforeEach(() => {
+  vi.useFakeTimers({ now: MIDWEEK, toFake: ["Date"] });
   events = [];
   past = [];
   buddies = new Set();
   members.clear();
   nextId = 0;
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("a finished game, paid once", () => {
@@ -465,6 +484,71 @@ describe("the computer ladder, through the writer", () => {
     expect(paid("hunter", "specialistBeaten")).toBe(BOT_SPECIALIST_LIST.length);
     expect(paid("hunter", "gradeBeaten")).toBe(0);
     expect(paid("hunter", "everyGradeBeaten")).toBe(0);
+  });
+});
+
+describe("a game at the weekend", () => {
+  /*
+   * `now` is passed in rather than faked with a clock, because the question is
+   * not what time it is — it is whose Saturday it is. The same instant is
+   * Sunday morning in Tokyo and Saturday afternoon in Vancouver, and a member in
+   * Tallinn is on a third answer.
+   */
+  const saturday = new Date("2026-09-12T12:00:00Z");
+  const wednesday = new Date("2026-09-09T12:00:00Z");
+
+  function side(memberId: string, timeZone: string) {
+    return { memberId, email: null, timeZone, outcome: "win" as const, run: null };
+  }
+  const game = {
+    id: "weekend",
+    variant: RULE_VARIANTS.reversi,
+    moveCount: 8,
+    blackMemberId: "player",
+    whiteMemberId: null,
+  };
+
+  it("pays once a weekend, not once a game", async () => {
+    member("player");
+
+    await awardFinishedGameXp(game, [side("player", "")], saturday);
+    await awardFinishedGameXp({ ...game, id: "sunday" }, [side("player", "")], new Date("2026-09-13T12:00:00Z"));
+
+    expect(paid("player", "weekendGame")).toBe(1);
+    // The ISO week runs Monday to Sunday, so a Saturday and the Sunday after it
+    // are one weekend — which is the whole reason the week is the subject and a
+    // made-up "weekend id" is not.
+    expect(ledger("player")).toContain("weekendGame 2026-W37");
+  });
+
+  it("pays again the following weekend", async () => {
+    member("player");
+
+    await awardFinishedGameXp(game, [side("player", "")], saturday);
+    await awardFinishedGameXp({ ...game, id: "next" }, [side("player", "")], new Date("2026-09-19T12:00:00Z"));
+
+    expect(paid("player", "weekendGame")).toBe(2);
+  });
+
+  it("pays nothing midweek", async () => {
+    member("player");
+    await awardFinishedGameXp(game, [side("player", "")], wednesday);
+    expect(paid("player", "weekendGame")).toBe(0);
+  });
+
+  it("reads the weekend in the member's own zone", async () => {
+    // 21:00 UTC on Sunday is already Monday in Tokyo: the weekend is over for
+    // that member and not for a member in Vancouver, where it is Sunday
+    // afternoon.
+    member("tokyo");
+    member("vancouver");
+    const sundayNight = new Date("2026-09-13T21:00:00Z");
+
+    await awardFinishedGameXp(game, [side("tokyo", "Asia/Tokyo")], sundayNight);
+    await awardFinishedGameXp(game, [side("vancouver", "America/Vancouver")], sundayNight);
+
+    expect(paid("tokyo", "weekendGame")).toBe(0);
+    expect(paid("vancouver", "weekendGame")).toBe(1);
   });
 });
 
