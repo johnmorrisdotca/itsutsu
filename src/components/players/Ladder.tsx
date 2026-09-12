@@ -1,15 +1,14 @@
 import Link from "next/link";
 
-import { PlayerLink } from "./Standings";
-import { RATING_POOLS } from "@/lib/rating/pools";
-import { RecordTable, type RecordTableRow } from "./RecordTable";
-import { fetchLeaders } from "@/lib/rating/players";
-
-/** How far down the ladder the page reads. */
-const LEADERS = 50;
+import { LadderMore } from "./LadderMore";
+import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
+import { fetchLadderPage, readLadderPaging } from "@/lib/rating/ladder";
+import { isRefusal } from "@/lib/api/paging";
+import type { RecordSort } from "./recordSort";
 
 /**
- * The site ladder: everybody by rating, best first.
+ * The site ladder: everybody by rating, best first — and by any other column
+ * they press.
  *
  * The per-game ladders live on /champions, and this says so — a rating here
  * is across every game, which is not what somebody who wants to know the best
@@ -21,73 +20,91 @@ const LEADERS = 50;
  * counts after it; the members list put the counts first and the rating
  * seventh. Both were reasonable and the pair of them was the thing John was
  * looking at.
+ *
+ * WHICH FIVE OF THE TEN HEADINGS SORT is `LADDER_SORT_SPEC`'s decision, and it
+ * writes down why each of the other five cannot: win rate is arithmetic on three
+ * columns and rounded besides, a streak is two columns with no order over them,
+ * a tier is a coarser sort by rating, and Joined is on a table this does not
+ * read. Faking any of those in the browser would reorder twenty-five rows of
+ * however many there are and present the result as the ladder.
+ *
+ * THE TABLE ITSELF IS IN `LadderMore.tsx`, which is a client component, and the
+ * split is load-bearing rather than tidiness: this file imports
+ * `fetchLadderPage`, which imports `server-only`. A row builder shared between
+ * the two would pull that into the browser bundle and the build would fail — so
+ * everything a browser draws lives over there, and this file reads the database
+ * and hands down what it found.
  */
-export async function Ladder() {
-  const leaders = await fetchLeaders(LEADERS);
-  const rows: RecordTableRow[] = leaders.map((player) => ({
-    key: player.key,
-    subject: <PlayerLink name={player.name} memberId={player.memberId} />,
-    record: player,
+export async function Ladder({
+  /** The address as it stands, so a heading's press keeps the tab and the rest. */
+  query,
+}: {
+  query: string;
+}) {
+  const params = new URLSearchParams(query);
+  const asked = readLadderPaging(params);
+  /*
+   * A refused sort is the record's own choice one page over: the reader gets the
+   * ladder they came for and a line saying the order was not applied. A 400 in
+   * the middle of a page of tabs would be an error somebody who followed a stale
+   * link cannot act on.
+   */
+  const refused = isRefusal(asked);
+  const paging = refused
+    ? (readLadderPaging(new URLSearchParams()) as Exclude<typeof asked, { error: string }>)
+    : asked;
+  const page = await fetchLadderPage(paging);
+
+  const sort: RecordSort = {
+    at: "/players",
+    // The address as a string: this crosses into a client component. See `RecordSort`.
+    query,
+    spec: LADDER_SORT_SPEC,
+    current: paging.sort,
     /*
-      These are the ladder's own counting — rated games against people — so
-      the links say so. Sent to the record unqualified they would open every
-      game the name ever played, which is a longer list than the number they
-      came from and a worse answer than no link at all.
-    */
-    of: { player: player.name, pool: RATING_POOLS.people, rated: "yes" },
-    /*
-      And the streak is read from the same pool for the same reason. The row
-      carries three of them — this ladder's, the computer pool's, and both
-      together — and showing the wrong one here would be a run of wins that
-      the wins beside it do not account for.
-    */
-    streak: player.streak,
-    rating: { rating: player.rating, pool: RATING_POOLS.people },
-    tier: player.tier,
-  }));
+     * The five headings the database can order by, named against the slots
+     * `RecordTable` draws. The other four slots are left out, which is what
+     * makes them plain text — see `LADDER_SORT_SPEC` for the reason each cannot
+     * be ordered by, and `recordSort.coverage.test.ts` for the gate that refuses
+     * a word this spec does not have.
+     */
+    by: { played: "played", won: "won", lost: "lost", drawn: "drawn", rating: "rating" },
+  };
 
   return (
     <div className="flex flex-col gap-4" data-testid="ladder-section">
       <p className="text-sm text-muted">
         Ratings are Elo, starting at 1600. A player is unrated for the first few games,
-        provisional while the rating settles, and established after twenty. Each game keeps a
-        ladder of its own too: see the{" "}
+        provisional while the rating settles, and established after twenty. Press a heading to
+        sort by it. Each game keeps a ladder of its own too: see the{" "}
         <Link href="/champions" className="underline underline-offset-4" data-testid="champions-link">
           champions <span className="font-mincho">名人</span>
         </Link>
         .
       </p>
-      <RecordTable
-        subject="Player"
-        rows={rows}
-        columns={{ tier: true }}
-        /*
-          The Ladder's Played is rated games in the people pool, and the
-          Members tab's identical heading — one click away — is every
-          finished game. For the same person that read 5 against 14 with
-          nothing saying the two "Played" columns meant different things.
-          `playedScope` matches what every row's own `of` already counts,
-          so the heading cannot claim a scope the numbers under it lack.
-        */
-        playedScope={{ pool: RATING_POOLS.people, rated: "yes" }}
-        testId="players-table"
-        /*
-          The headings are drawn whether or not there is anybody under them.
-          This used to be a paragraph instead of the table, which taught a
-          reader nothing about what the site keeps and read as an apology; the
-          empty table shows the shape and offers the way in. See Show The Data,
-          Not The Way To It.
-        */
-        empty={
-          <>
-            Nobody has a rated game yet. Rated games are shared games between two members —{" "}
-            <Link href="/players" className="underline underline-offset-4">
-              find somebody to play
-            </Link>{" "}
-            and be the first onto the ladder.
-          </>
-        }
+      {refused ? (
+        <p className="text-sm text-muted" data-testid="ladder-sort-refused">
+          That was not an order the ladder has, so this is the ladder by rating.
+        </p>
+      ) : null}
+      <LadderMore
+        first={page.items}
+        from={page.next}
+        total={page.total}
+        endpoint={`/api/ladder?${ladderEndpoint(paging.sort, paging.limit)}`}
+        sort={sort}
       />
     </div>
   );
+}
+
+/** The listing address the next pages come from, without a cursor. */
+function ladderEndpoint(
+  sort: RecordSort["current"],
+  limit: number,
+): string {
+  const api = new URLSearchParams();
+  api.set("sort", `${sort.column.param}:${sort.direction}`);
+  api.set("limit", String(limit));
+  return api.toString();
 }

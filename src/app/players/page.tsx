@@ -108,7 +108,12 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
             now={now}
           />
         ) : null}
-        {open === "ladder" ? <Ladder /> : null}
+        {/*
+          The address as it stands, so a heading's press keeps the tab it is
+          inside and anything else on the query. A sort that dropped `view`
+          would send a reader who pressed Rating back to the Members tab.
+        */}
+        {open === "ladder" ? <Ladder query={addressOf(asked)} /> : null}
         {open === "computers" ? <ComputerTab /> : null}
         {open === "remembered" ? (
           <div className="flex flex-col gap-3" data-testid="remembered-section">

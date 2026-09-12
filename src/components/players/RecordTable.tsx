@@ -11,6 +11,7 @@ import {
   type WonLostDrawn,
 } from "./PlayerRecord";
 import { Paired } from "@/components/i18n/Paired";
+import { SortableHead, type RecordSort } from "./recordSort";
 import { RATING_POOLS, type RatingPool } from "@/lib/rating/pools";
 import { TIER_DISPLAY, type RatingTier } from "@/lib/rating/elo";
 import type { ReactNode } from "react";
@@ -198,6 +199,7 @@ export function RecordTable({
   testId,
   rowTestId,
   caption,
+  sort,
 }: {
   /** The heading over the subject column — "Member", "Game", "Player". */
   subject: string;
@@ -230,6 +232,17 @@ export function RecordTable({
   rowTestId?: string;
   /** A line under the table — what a mark in it means, usually. */
   caption?: ReactNode;
+  /**
+   * How this table sorts, when it does — see `RecordSort`.
+   *
+   * Optional, and every table that leaves it out keeps the headings it has
+   * always had. That is deliberate rather than transitional: a table whose rows
+   * are assembled in memory from several reads cannot be ordered by the
+   * database, and a heading that sorted the loaded page in the browser would lie
+   * the moment there were two pages. The members directory is exactly that, and
+   * says so where its rows are built.
+   */
+  sort?: RecordSort;
 }) {
   const showRating = columns.rating !== false;
   /*
@@ -252,15 +265,35 @@ export function RecordTable({
         <table className={TABLE_CLASS} data-testid={testId}>
           <thead className={TABLE_HEAD_CLASS}>
             <tr>
+              {/*
+                THE RANK IS NOT A SORT, and the difference matters once a
+                heading can be pressed. It is the row's place in the order
+                currently in force — numbered from the top of the page — so
+                "sort by #" would mean "sort by the order you are already in".
+                A plain heading is the honest answer.
+              */}
               {columns.rank === true ? <th className={HEAD}>#</th> : null}
               <th className={HEAD}>{subject}</th>
               <RecordHeadings
                 playedTitle={playedScope === undefined ? undefined : playedScopeNote(playedScope)}
+                sort={sort}
                 trailing={
                   <>
-                    {showRating ? <th className={HEAD}>Rating</th> : null}
-                    {columns.tier === true ? <th className={HEAD}>Tier</th> : null}
-                    {columns.joined === true ? <th className={HEAD}>Joined</th> : null}
+                    {showRating ? (
+                      <SortableHead sort={sort} slot="rating">
+                        Rating
+                      </SortableHead>
+                    ) : null}
+                    {columns.tier === true ? (
+                      <SortableHead sort={sort} slot="tier">
+                        Tier
+                      </SortableHead>
+                    ) : null}
+                    {columns.joined === true ? (
+                      <SortableHead sort={sort} slot="joined">
+                        Joined
+                      </SortableHead>
+                    ) : null}
                     {columns.actions === undefined ? null : (
                       <th className={HEAD}>{columns.actions}</th>
                     )}

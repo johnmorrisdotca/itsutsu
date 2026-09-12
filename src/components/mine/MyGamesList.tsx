@@ -37,13 +37,44 @@ function ago(iso: string, now: Date): string {
 }
 
 /**
- * How many of each group the lobby prints.
+ * How many of each group the lobby prints BY DEFAULT — and every one of them
+ * can now be opened in full.
  *
  * The games waiting on you are the reason to open this page, so they are all
  * shown however many there are. The rest are a reminder rather than a queue,
  * and a reminder that runs to fifty rows is a page nobody reaches the bottom
  * of — twenty games at once is the most anybody is meant to have, and the
  * groups that grow without anyone deciding to are held to a handful.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * "14 · SHOWING 5" IS A PROMISE, AND THE NINE ARE NOW REACHABLE
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * The cap was a display cap with nothing behind it: the heading said fourteen
+ * and there was no way to see nine of them. The comment under the finished
+ * group already said as much — "the other groups have no such page… so there is
+ * nothing honest to link to if one of them ever grows past its cap" — which was
+ * a true report of a gap rather than a reason for it.
+ *
+ * A `?all=<group>` on the address opens one group where it stands, and that is
+ * the honest answer for these lists specifically. It is NOT a cursor page, and
+ * it cannot be: which bucket a game is in depends on WHOSE TURN IT IS, which
+ * `fetchMyGames` works out by replaying the moves. The stored answer is
+ * nullable, and a null there means "nobody has written one" rather than "it is
+ * over" — see the head of `settledTurn.ts` — so a query cannot be trusted to
+ * group by it. A database cannot group by a replay, so there is no SQL ordering
+ * for a cursor to walk.
+ *
+ * What makes opening it in place truthful rather than the client-side sort this
+ * convention forbids elsewhere is that THE LIST IS ALREADY COMPLETE. Every
+ * active game of yours is read — the bound is the twenty-games-at-once cap on
+ * playing, not a cap on reading — so there is no second page for an in-memory
+ * slice to be wrong about. A Directory row could not say the same, and does not
+ * sort.
+ *
+ * ONE GROUP AT A TIME, and the way back is a link. Opening everything at once
+ * is the page this cap exists to prevent; and a group that could be opened and
+ * not closed is the one-directional fault only a return trip finds.
  */
 const SHOWN: Record<MyGameGroup, number> = {
   yourMove: 50,
@@ -59,13 +90,26 @@ const SHOWN: Record<MyGameGroup, number> = {
  * nobody has started, and lately finished ones. Nothing is shown when there
  * is nothing to show — the lobby is not the place for an empty list.
  */
-export async function MyGamesList() {
+export async function MyGamesList({
+  showAll = null,
+}: {
+  /**
+   * The group the address asks to see whole, or null for the ordinary caps.
+   *
+   * A loose string rather than a `MyGameGroup`, because it comes off a URL and
+   * has not been checked yet. `openedGroup` is the one place it becomes a group
+   * — an unknown value opens nothing rather than throwing, since a stale link is
+   * not something to put an error in front of somebody for.
+   */
+  showAll?: string | null;
+} = {}) {
   const claims = seatClaims((await cookies()).getAll());
   const email = await currentEmail();
   if (claims.size === 0 && email === null) return null;
   const now = new Date();
   const memberId = await currentMemberId();
   const groups = await fetchMyGames(claims, memberId, now, await keepFinishedDaysFor(email));
+  const opened = openedGroup(showAll);
   const total = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   if (total === 0) {
     if (email === null) return null;
@@ -100,13 +144,34 @@ export async function MyGamesList() {
         <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
       {MY_GAME_GROUPS.map((group) => {
-        const bucket = shownGroup(groups[group], SHOWN[group]);
+        const open = group === opened;
+        // Opened means no cap at all, which `shownGroup` says as the length itself.
+        const bucket = shownGroup(groups[group], open ? groups[group].length : SHOWN[group]);
         return bucket.total === 0 ? null : (
-          <Group key={group} group={group} bucket={bucket} memberId={memberId} now={now} />
+          <Group
+            key={group}
+            group={group}
+            bucket={bucket}
+            memberId={memberId}
+            now={now}
+            open={open}
+          />
         );
       })}
     </section>
   );
+}
+
+/**
+ * A group name off an address, checked — or null.
+ *
+ * Null for anything that is not one of the groups, which is what a stale or
+ * hand-typed `?all=` is. Opening nothing is the right answer to that: the page
+ * is the page either way, and a 404 or an error banner for a parameter nobody
+ * typed on purpose would be an error the reader cannot act on.
+ */
+function openedGroup(asked: string | null): MyGameGroup | null {
+  return MY_GAME_GROUPS.find((group) => group === asked) ?? null;
 }
 
 function Group({
@@ -114,12 +179,15 @@ function Group({
   bucket,
   memberId,
   now,
+  open,
 }: {
   group: MyGameGroup;
   bucket: ShownGroup<MyGame>;
   /** Whose "see the rest" this is, when there is a rest and somewhere to send them for it. */
   memberId: string | null;
   now: Date;
+  /** Whether the address has asked for this group whole. */
+  open: boolean;
 }) {
   const copy = MY_GAMES_COPY.groups[group];
   return (
@@ -137,20 +205,62 @@ function Group({
         ))}
       </ul>
       {/*
-        Held-back finished games have somewhere to be seen in full: a signed-in
-        member's own page counts every finished game, exactly what this bucket
-        does. The other groups have no such page — they are a queue of active
-        boards, not a record — so there is nothing honest to link to if one of
-        them ever grows past its cap instead.
+        NOTHING AT ALL WHEN THERE IS NOTHING TO OFFER, which is the ordinary case
+        and the one worth protecting. A group inside its cap has no rest to show,
+        is not the opened one, and has no record to point at — so this row is not
+        drawn, and the panel is exactly the panel it was before any of this
+        existed. An empty flex row would be a gap under every group on John's
+        daily page, added by a feature that had nothing to say there.
       */}
-      {bucket.hidden > 0 && group === "finished" && memberId !== null ? (
-        <Link
-          href={playerPath("", memberId)}
-          className="text-xs font-medium underline underline-offset-4"
-          data-testid="my-games-finished-more"
-        >
-          {MY_GAMES_COPY.seeRecord}
-        </Link>
+      {bucket.hidden > 0 || open ? (
+      <div className="flex flex-wrap items-center gap-4">
+        {/*
+          THE CAP, OPENED. "14 · showing 5" said fourteen and offered nine
+          nowhere; this is the nine. It is a link and the group is in the
+          address, so an opened group can be linked, reloaded and arrived back
+          at — the same reasoning every filter on this site keeps.
+        */}
+        {bucket.hidden > 0 ? (
+          <Link
+            href={`/play?all=${group}`}
+            className="text-xs font-medium underline underline-offset-4"
+            data-testid={`my-games-${group}-all`}
+          >
+            {MY_GAMES_COPY.showAll(bucket.total)}
+          </Link>
+        ) : null}
+        {/*
+          And the way back, which is the half a one-directional control always
+          forgets. Drawn only when this group is the opened one, so it is not a
+          link that does nothing on every other panel.
+        */}
+        {open ? (
+          <Link
+            href="/play"
+            className="text-xs font-medium underline underline-offset-4"
+            data-testid={`my-games-${group}-fewer`}
+          >
+            {MY_GAMES_COPY.showFewer}
+          </Link>
+        ) : null}
+        {/*
+          Held-back finished games also have somewhere to be seen BESIDE this
+          page: a signed-in member's own page counts every finished game, exactly
+          what this bucket does — and it counts the ones past the window this
+          list drops, which opening the group here cannot show. So it stays, and
+          it is a different promise from the one above rather than a duplicate of
+          it.
+        */}
+        {bucket.hidden > 0 && group === "finished" && memberId !== null ? (
+          <Link
+            href={playerPath("", memberId)}
+            className="text-xs font-medium underline underline-offset-4"
+            data-testid="my-games-finished-more"
+          >
+            {MY_GAMES_COPY.seeRecord}
+          </Link>
+        ) : null}
+      </div>
       ) : null}
     </div>
   );

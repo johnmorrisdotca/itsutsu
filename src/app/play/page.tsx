@@ -43,7 +43,8 @@ export const dynamic = "force-dynamic";
  * from the old address, by this site's standing rule that an address is
  * right rather than forgiving — a bookmark to /my-games is a 404 now.
  */
-export default function MyGamesPage() {
+export default async function MyGamesPage({ searchParams }: PageProps<"/play">) {
+  const asked = await searchParams;
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
@@ -70,7 +71,13 @@ export default function MyGamesPage() {
         </Link>
       </div>
 
-      <MyGamesList />
+      {/*
+        Which group, if any, the reader has asked to see whole. A query
+        parameter rather than component state, so an opened group is an address
+        — linkable, reloadable, and the same page on the way back. See
+        `MyGamesList`.
+      */}
+      <MyGamesList showAll={typeof asked.all === "string" ? asked.all : null} />
       <LocalGameCardClient />
     </Page>
   );

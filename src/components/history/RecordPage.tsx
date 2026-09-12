@@ -1,9 +1,9 @@
+import { isRefusal } from "@/lib/api/paging";
 import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { HistoryFilters } from "./HistoryFilters";
-import { HistoryTable } from "./HistoryTable";
-import { Pager } from "./Pager";
+import { LiveRecord } from "./LiveRecord";
 import { RecordText } from "./RecordText";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { historyPath } from "@/lib/gomoku/slugs";
@@ -57,20 +57,75 @@ export async function RecordPage({
   const url = new URL(`https://itsutsu.local${base}`);
   for (const [key, value] of Object.entries(queryParams)) url.searchParams.set(key, value);
 
-  const query = toGameHistoryQuery(url);
+  const parsed = toGameHistoryQuery(url);
+  /*
+   * A PAGE DEGRADES WHERE THE API REFUSES, and the two are right for their own
+   * readers. `/api/games` answers 400 naming the parameter, because a caller
+   * wrote that address on purpose and can fix it. A person who followed a stale
+   * link gets the record they came for and a line saying their filters were not
+   * applied — a page is not a place to put an error somebody cannot act on.
+   */
+  const refused = isRefusal(parsed);
+  const query = refused ? null : parsed;
   // What the query falls back to when the reader's own filters do not parse —
   // still carrying whatever the address itself implies, so an invalid `page`
   // on /games/<slug>/me can never widen "your games" into everybody's.
   const { query: fallbackParams } = recordAddress({}, { variant, impliedPlayer });
   const fallbackUrl = new URL(`https://itsutsu.local${base}`);
   for (const [key, value] of Object.entries(fallbackParams)) fallbackUrl.searchParams.set(key, value);
-  const asked = query ?? toGameHistoryQuery(fallbackUrl)!;
+  const fallback = toGameHistoryQuery(fallbackUrl);
+  /*
+   * The bare address always parses — it is nothing but the path — so a refusal
+   * here would be a programming mistake rather than something a reader did.
+   * Thrown rather than coerced: a plausible empty query would render the record
+   * of no games at all and look like a site with nothing in it.
+   */
+  if (isRefusal(fallback)) throw new Error(`The record's own address does not parse: ${fallback.error}`);
+  const asked = query ?? fallback;
   const [page, whole] = await Promise.all([
     fetchGameHistoryPage(asked),
     fetchWholeRecord(asked),
   ]);
 
   const copy = variant === undefined ? null : RULE_VARIANT_DISPLAY[variant];
+
+  /*
+   * WHERE THE PAGES AFTER THE FIRST ONE COME FROM.
+   *
+   * The same filters the server just read, so the scroller and the page below it
+   * are looking at one set of games — built from `queryParams` rather than from
+   * `flat`, because a game lives in the PATH here and the API takes it as a
+   * filter.
+   */
+  const api = new URLSearchParams();
+  for (const [key, value] of Object.entries(queryParams)) {
+    // Both are positions rather than filters, and the cursor is the scroller's own.
+    if (key !== "page" && key !== "cursor") api.set(key, value);
+  }
+  const endpoint = `/api/games?${api.toString()}`;
+
+  /*
+   * LIVE SCROLLING IS OFF WHERE THE ADDRESS IMPLIES A PLAYER, AND THAT IS A
+   * PRIVACY DECISION RATHER THAN AN OVERSIGHT.
+   *
+   * /games/<slug>/me is one player's record, and `recordAddress` exists to keep
+   * that member's whole name out of every address this page writes — a URL is a
+   * more permanent and more sharable thing than a screen, and it ends up in
+   * server logs. A fetch for the next page is a URL like any other. It cannot be
+   * bookmarked or shared, but it is logged, so putting the name in one would
+   * walk around the reason `flat` was separated from `query` in the first place.
+   *
+   * So that page keeps the pager, which needs no name in any address because the
+   * server works out who "me" is from the session. Doing it properly needs the
+   * next page to be asked for without naming anybody — a server function rather
+   * than a query string — which is a bigger change than adding a scroller, and
+   * is worth doing on its own rather than sliding in under this.
+   *
+   * `null` rather than a flag: it is exactly what `from` already means when
+   * there is nothing more to scroll to, so `LiveRecord` needs no second idea of
+   * why it is showing a pager.
+   */
+  const liveFrom = impliedPlayer === undefined ? page.next : null;
 
   return (
     <Page width="standard" gap="gap-6">
@@ -107,13 +162,19 @@ export async function RecordPage({
               }
         }
       />
-      {query === null ? (
+      {refused ? (
         <p className="rounded-xl border border-rule px-4 py-3 text-sm text-muted">
           Those filters were not valid, so this is the unfiltered record.
         </p>
       ) : null}
-      <HistoryTable items={page.items} />
-      <Pager pagination={page.pagination} params={flat} basePath={base} />
+      <LiveRecord
+        first={page.items}
+        from={liveFrom}
+        pagination={page.pagination}
+        endpoint={endpoint}
+        at={base}
+        params={flat}
+      />
       {/*
         Every game these filters select, not just the page being looked at:
         somebody copying the record out wants the record, and the filters are

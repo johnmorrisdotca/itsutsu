@@ -37,6 +37,16 @@ export const MY_GAMES_COPY = {
    * many there really are".
    */
   shownOf: (total: number, shown: number) => `${total} · showing ${shown}`,
+  /**
+   * What opens the rest of a capped group, in place.
+   *
+   * It names the TOTAL rather than saying "show more", because the total is what
+   * the heading beside it just claimed — "14 · showing 5" next to "Show all 14"
+   * is one sentence, and a reader can see the promise being kept.
+   */
+  showAll: (total: number) => `Show all ${total}`,
+  /** And back to the caps, so an opened group is not a one-way trip. */
+  showFewer: "Show fewer",
   /** Where a capped group with more behind it sends a signed-in reader. */
   seeRecord: "See your record",
 } as const;

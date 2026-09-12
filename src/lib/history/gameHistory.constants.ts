@@ -6,14 +6,16 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
  * its sort and filter controls from the same values.
  */
 
-export const GAME_SORT_BY = [
-  "playedAt",
-  "moveCount",
-  "size",
-  "duration",
-] as const;
-
-export const GAME_SORT_DIR = ["asc", "desc"] as const;
+/*
+ * WHAT THE RECORD SORTS BY LIVES IN `gameHistory.sort.ts`, not here.
+ *
+ * It used to be three tables in this file — the column names, the two
+ * directions, and a `GAME_SORT_DISPLAY` of labels — plus a fourth, `SORT_WORDS`,
+ * over in the query module mapping each to the word an address uses. Four lists
+ * that had to agree about four things, and nothing checked that they did. They
+ * are one list of rows now, each carrying its word, its column, its heading and
+ * the index that answers it. See `GAME_SORT_SPEC`.
+ */
 
 export const GAME_RESULTS = ["black", "white", "draw", "abandoned"] as const;
 
@@ -120,16 +122,6 @@ export const GAME_RATED_DISPLAY: Record<string, { label: string }> = {
 export const GAME_VARIANT_FILTERS = ["all", ...RULE_VARIANT_LIST] as const;
 
 export const GAME_SIZE_FILTERS = ["all", "9", "13", "15", "19"] as const;
-
-export const GAME_SORT_DISPLAY: Record<
-  (typeof GAME_SORT_BY)[number],
-  { label: string }
-> = {
-  playedAt: { label: "Date played" },
-  moveCount: { label: "Length" },
-  size: { label: "Board size" },
-  duration: { label: "Time taken" },
-};
 
 export const GAME_RESULT_DISPLAY: Record<
   (typeof GAME_RESULTS)[number],

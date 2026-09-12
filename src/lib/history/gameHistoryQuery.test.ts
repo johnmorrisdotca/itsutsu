@@ -5,10 +5,33 @@ import {
   outcomeNeedsPlayer,
   toGameHistoryQuery,
 } from "./gameHistoryQuery";
-import { GAME_PAGE_SIZE_DEFAULT } from "./gameHistory.constants";
+import { isRefusal } from "@/lib/api/paging";
+import { GAME_PAGE_SIZE_DEFAULT, GAME_PAGE_SIZE_MAX } from "./gameHistory.constants";
+import type { GameHistoryQuery } from "./gameHistory.types";
 
-const parse = (search: string) =>
+const read = (search: string) =>
   toGameHistoryQuery(new URL(`https://example.test/api/games${search}`));
+
+/**
+ * A query that parsed, or a failure naming what did not.
+ *
+ * The listing used to answer `null` for anything it could not read, and the
+ * route turned that into a 400 naming nothing. Every case below that used to
+ * assert `toBeNull()` now asserts which parameter was refused, which is what a
+ * caller actually needs — and what the test was silently not checking.
+ */
+const parse = (search: string): GameHistoryQuery => {
+  const query = read(search);
+  if (isRefusal(query)) throw new Error(`refused: ${query.error}`);
+  return query;
+};
+
+/** The refusal's message, for the cases that are meant to be refused. */
+const refusedBy = (search: string): string => {
+  const query = read(search);
+  if (!isRefusal(query)) throw new Error(`"${search}" was accepted`);
+  return query.error;
+};
 
 describe("toGameHistoryQuery", () => {
   it("defaults to the newest games first", () => {
@@ -21,7 +44,10 @@ describe("toGameHistoryQuery", () => {
       result: "all",
       variant: "all",
     });
-    expect(query?.size).toBeNull();
+    expect(query.size).toBeNull();
+    // Nobody asked for this order, which is what decides a heading's first press.
+    expect(query.sortAsked).toBe(false);
+    expect(query.cursor).toBeNull();
   });
 
   it("coerces numeric parameters from strings", () => {
@@ -29,35 +55,65 @@ describe("toGameHistoryQuery", () => {
   });
 
   it("treats a blank search as no filter rather than an empty match", () => {
-    expect(parse("?search=%20%20")?.search).toBeNull();
+    expect(parse("?search=%20%20").search).toBeNull();
   });
 
   it("trims a search that has content", () => {
-    expect(parse("?search=%20ren%20")?.search).toBe("ren");
+    expect(parse("?search=%20ren%20").search).toBe("ren");
   });
 
-  it("rejects a page size beyond the cap", () => {
-    expect(parse("?limit=5000")).toBeNull();
+  /*
+   * CLAMPED, NOT REFUSED, and the change is deliberate. `limit=5000` is a caller
+   * asking for more rows than they may have, and two hundred of them is a
+   * truthful answer: the envelope's `next` says there is more, so nothing has
+   * been hidden. It used to be a 400, which told a caller their whole request
+   * was wrong because one number was ambitious.
+   */
+  it("clamps a page size beyond the cap rather than refusing the request", () => {
+    expect(parse("?limit=5000").pageSize).toBe(GAME_PAGE_SIZE_MAX);
+    expect(parse("?limit=abc").pageSize).toBe(GAME_PAGE_SIZE_DEFAULT);
   });
 
-  it("rejects an unknown sort column", () => {
-    expect(parse("?sort=winner")).toBeNull();
+  it("refuses an unknown sort column BY NAME, and says what it accepts", () => {
+    const message = refusedBy("?sort=winner");
+    expect(message).toContain("winner");
+    expect(message).toContain("played");
+    expect(message).toContain("moves");
+  });
+
+  it("reads both spellings of the direction, and the attached one wins", () => {
     expect(parse("?sort=moves&order=asc")).toMatchObject({ sortBy: "moveCount", sortDir: "asc" });
+    expect(parse("?sort=moves:asc")).toMatchObject({ sortBy: "moveCount", sortDir: "asc" });
+    expect(parse("?sort=moves:desc&order=asc").sortDir).toBe("desc");
+    expect(parse("?sort=moves").sortAsked).toBe(true);
+  });
+
+  it("still reads a game's slug as its variant", () => {
     expect(parse("?variant=drop-four")).toMatchObject({ variant: "dropFour" });
   });
 
-  it("rejects an unknown result filter", () => {
-    expect(parse("?result=forfeit")).toBeNull();
+  it("carries a cursor through untouched — whether it decodes is the read's question", () => {
+    expect(parse("?cursor=abc").cursor).toBe("abc");
+  });
+
+  it("refuses an unknown result filter BY NAME", () => {
+    expect(refusedBy("?result=forfeit")).toContain("result");
+  });
+
+  it("names every filter that failed, once each", () => {
+    const message = refusedBy("?result=forfeit&size=42");
+    expect(message).toContain("result");
+    expect(message).toContain("size");
   });
 
   it("reads a board size filter as a number", () => {
-    expect(parse("?size=9")?.size).toBe(9);
+    expect(parse("?size=9").size).toBe(9);
   });
 
   it("parses a date range", () => {
     const query = parse("?from=2026-01-01&to=2026-02-01");
-    expect(query?.from).toBeInstanceOf(Date);
-    expect(query?.to?.toISOString()).toBe("2026-02-01T00:00:00.000Z");
+    expect(query.from).toBeInstanceOf(Date);
+    expect(query.to?.toISOString()).toBe("2026-02-01T00:00:00.000Z");
   });
 });
 

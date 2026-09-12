@@ -71,7 +71,7 @@ export type PlayerProfile = {
   ratedStreak: Streak | null;
 };
 
-function toProfile(row: {
+export function toProfile(row: {
   key: string;
   name: string;
   memberId: string | null;

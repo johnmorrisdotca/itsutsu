@@ -16,14 +16,20 @@ import { describe, expect, it } from "vitest";
  * The Ladder's scope is correct — a ladder is inherently rated — so the fix
  * is not to change what it counts, only to say so: `RecordTable`'s optional
  * `playedScope` puts the same sentence the streak cell already gives on
- * hover onto the heading itself. This checks Ladder.tsx actually passes it,
+ * hover onto the heading itself. This checks the ladder actually passes it,
  * rather than the fix living only in the components that can draw it.
+ *
+ * IT READS `LadderMore.tsx`, which is where the table moved when the ladder
+ * learned to sort and page: `Ladder.tsx` reads the database and cannot draw in a
+ * browser, because `fetchLadderPage` imports `server-only`. The claim is
+ * unchanged — the file holding the `RecordTable` call is the file that has to
+ * pass `playedScope` — and the gate followed the call rather than the name.
  */
 
-const SOURCE = readFileSync("src/components/players/Ladder.tsx", "utf8");
+const SOURCE = readFileSync("src/components/players/LadderMore.tsx", "utf8");
 
 describe("the Ladder's Played column says what it counts", () => {
-  it("has Ladder.tsx to check, so a passing run means something", () => {
+  it("has the ladder's table to check, so a passing run means something", () => {
     expect(SOURCE.length).toBeGreaterThan(200);
   });
 
