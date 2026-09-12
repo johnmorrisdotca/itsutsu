@@ -340,21 +340,14 @@ async function LiveMatch({
   const seatPicks = freeSeats.length === 0 ? [] : await seatPickList();
 
   /*
-   * NOTHING IS ASKED HERE ANY MORE, so nothing needs to know whether the rules
-   * are still open to change.
-   *
-   * This used to read `rulesAreSettled` to decide whether the panel beside the
-   * board was a form or a statement. It is always a statement now: the rules of
-   * a game are agreed on the doorstep before the game is written, and a board is
-   * not the place to re-offer them — John's second sentence about all this was
-   * "we do not want to see that Game board with all the settings on the side".
-   *
-   * The rule itself has not gone anywhere. `PUT /api/games/<id>/settings` still
-   * asks it and still answers 409 to a change a settled game will not take, which
-   * is where that check belongs: hiding a control whose route still answers is how
-   * the seat links went wrong.
+   * NOTHING IS ASKED HERE ANY MORE, so nothing reads `rulesAreSettled`. The panel
+   * beside the board was a form for a game nobody had answered and is a statement
+   * at every stage now: the rules are agreed on the doorstep before the game is
+   * written, and "we do not want to see that Game board with all the settings on
+   * the side". The rule itself has not moved — `PUT /api/games/<id>/settings` still
+   * asks it and still answers 409 — which is where it belongs, since hiding a
+   * control whose route still answers is how the seat links went wrong.
    */
-
   let invites: SeatInvite[] = [];
   if (seat !== null) {
     if (tokens !== null) {
