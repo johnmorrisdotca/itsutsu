@@ -170,6 +170,8 @@ export function WholeRecordPanel({
           */
           of: { player: name, here: source.here },
           streak: null,
+          streakBlankBecause:
+            "These rows are one site's totals, and a run is an order — the games of two sites interleave in time, so no site's row is a run of anything.",
         }))}
         columns={{ rating: false }}
         testId="whole-record-sources"

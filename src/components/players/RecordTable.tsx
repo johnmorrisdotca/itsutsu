@@ -135,6 +135,12 @@ export type RecordTableRow = {
   of: RecordOf;
   /** The run these same games are on, or null where there is not one. */
   streak: Streak | null;
+  /**
+   * Why the streak cell is blank, where the row knows a reason other than
+   * "nothing finished yet" — a per-site total has no run because a run is an
+   * order. Without it an em dash reads as a bug rather than as an answer.
+   */
+  streakBlankBecause?: string;
   /** Null prints a dash: a rating nobody has earned is not a rating of 1600. */
   rating?: ShownRating | null;
   tier?: RatingTier;
@@ -268,6 +274,7 @@ export function RecordTable({
                   record={row.record}
                   of={row.of}
                   streak={row.streak}
+                  streakBlankBecause={row.streakBlankBecause}
                   note={row.note}
                   trailing={
                     <>

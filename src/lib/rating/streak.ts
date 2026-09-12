@@ -78,9 +78,18 @@ export function streakText(streak: Streak | null): string {
   return `${STREAK_DISPLAY[streak.kind].letter}${streak.count}`;
 }
 
-/** The same in words, for a hover note: "3 won in a row". */
+/**
+ * The same in words, for a hover note: "3 won in a row".
+ *
+ * Null returns the empty string rather than a sentence, because there is no
+ * single true sentence for it. A blank streak means one of three different
+ * things — nobody has finished a game, this row's run is not known, or rows of
+ * this kind have no run — and only the caller knows which. It said "No
+ * finished games to make a streak of yet" for all three, which was a false
+ * statement on a row showing 511 games. See `StreakMark`, which decides.
+ */
 export function streakLabel(streak: Streak | null): string {
-  if (streak === null || streak.count <= 0) return "No finished games to make a streak of yet.";
+  if (streak === null || streak.count <= 0) return "";
   return `${streak.count} ${STREAK_DISPLAY[streak.kind].label}.`;
 }
 

@@ -106,7 +106,14 @@ function counts(record: WonLostDrawn, of: RecordOf) {
  * out of true and nobody can say why.
  */
 export const CELL = "py-1.5 pr-3 font-mono tabular-nums";
-export const HEAD = "py-1 pr-3";
+/*
+ * `whitespace-nowrap` because these headings are two words at most and a
+ * wrapped one throws the whole row's baseline out. On the members list, which
+ * carries two action columns, "WIN RATE" broke over two lines while the same
+ * heading on the ladder beside it did not — two tables meant to read as one,
+ * differing by a line height for no reason a reader could see.
+ */
+export const HEAD = "py-1 pr-3 whitespace-nowrap";
 
 /**
  * The heading typography every record table shares.
@@ -136,16 +143,61 @@ export const ROW_CLASS = "border-t border-rule";
  * no streak, and "W0" or "0" would be a claim about a run that never happened
  * — see the head of `rating/streak.ts`.
  */
-export function StreakMark({ streak, of = {} }: { streak: Streak | null; of?: RecordOf }) {
+export function StreakMark({
+  streak,
+  of = {},
+  played,
+  blankBecause,
+}: {
+  streak: Streak | null;
+  of?: RecordOf;
+  /** How many games the row counted, which tells "none yet" from "not known". */
+  played?: number;
+  /**
+   * Why this cell is blank, where a row has games and still has no run to
+   * show for a reason the row itself knows.
+   *
+   * The per-site table is the case: its rows are totals for a whole site, and
+   * a run is an ORDER — two sites' games interleave in time, so no site's row
+   * is a run of anything. Saying that is the difference between a blank a
+   * reader can understand and one that looks like a bug.
+   */
+  blankBecause?: string;
+}) {
+  /*
+   * A row that knows WHY it has no run says only that. The scope sentence
+   * exists to tell a reader which games a run covers, and appending it to "this
+   * kind of row has no run" promises a scope for a cell that has none —
+   * "...no site's row is a run of anything. Over the games finished here by
+   * Razryad" read as two answers disagreeing.
+   */
+  const reason = streakLabel(streak);
+  const title =
+    reason === "" && blankBecause !== undefined
+      ? blankBecause
+      : `${reason || blankOf(played)} ${streakCounts(of)}`.trim();
   return (
     <span
-      title={`${streakLabel(streak)} ${streakCounts(of)}`}
+      title={title}
       data-testid="record-streak"
       data-streak={streak === null ? "" : streak.kind}
     >
       {streakText(streak)}
     </span>
   );
+}
+
+/**
+ * What an em dash MEANS here, which is three different things.
+ *
+ * It said "No finished games to make a streak of yet" for all of them, and on
+ * a row showing 511 games that is simply untrue. A cell that cannot answer has
+ * to say so honestly — never claim a reason it does not know, and never claim
+ * the reason that happens to read best.
+ */
+function blankOf(played: number | undefined): string {
+  if (played === 0) return "No finished games yet, so there is no run to show.";
+  return "No run recorded for this row.";
 }
 
 /**
@@ -164,7 +216,15 @@ export function StreakMark({ streak, of = {} }: { streak: Streak | null; of?: Re
  * way that goes, a run that names its own set is a run a reader can still trust.
  */
 function streakCounts(of: RecordOf): string {
-  if (of.here === false) return "Counted on another site.";
+  /*
+   * `here: false` says the COUNTS beside this reach beyond Itsutsu — a kept
+   * record copied down from another site. It does not say that about the run,
+   * and cannot: a run is an order, and another site's figures are four totals
+   * with no order in them. So the sentence says what the run is over rather
+   * than repeating what the counts are over, which is the distinction the
+   * rating column already makes on the same rows.
+   */
+  if (of.here === false) return "A run is only ever counted from games played here.";
   const games = of.variant === undefined ? "games" : "games of this one game";
   const pool =
     of.pool === "computer"
@@ -209,6 +269,7 @@ export function RecordCells({
   record,
   of = {},
   streak,
+  streakBlankBecause,
   trailing,
   note,
 }: {
@@ -227,6 +288,8 @@ export function RecordCells({
    * those are different numbers about the same person.
    */
   streak: Streak | null;
+  /** Why the streak cell is blank, when the row knows a reason. See `StreakMark`. */
+  streakBlankBecause?: string;
   trailing?: ReactNode;
   /**
    * A mark on the count itself, for a total that needs qualifying.
@@ -254,7 +317,12 @@ export function RecordCells({
         {winRateText(cells.figures.winRate)}
       </td>
       <td className={CELL}>
-        <StreakMark streak={streak} of={of} />
+        <StreakMark
+          streak={streak}
+          of={of}
+          played={cells.figures.played}
+          blankBecause={streakBlankBecause}
+        />
       </td>
       {trailing}
     </>
@@ -296,7 +364,7 @@ export function RecordLine({
   return (
     <span className="font-mono text-xs tabular-nums text-muted" data-testid={testId}>
       {cells.played} played · {cells.won}W {cells.lost}L {cells.drawn}D · {winRateText(figures.winRate)} ·{" "}
-      <StreakMark streak={streak} of={of} />
+      <StreakMark streak={streak} of={of} played={figures.played} />
       {trailing === undefined ? null : <> · {trailing}</>}
     </span>
   );
