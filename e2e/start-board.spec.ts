@@ -40,15 +40,23 @@ test.describe("choosing the board before the game exists", () => {
     await expect(page.getByTestId("set-up-size")).toHaveText([/^9×9/, /^13×13/, /^15×15/, /^19×19/]);
   });
 
-  test("asks nothing about a game played on one board", async ({ page }) => {
+  test("shows a one-board game its board, and asks nothing about it", async ({ page }) => {
     await setUp(page, "reversi");
-    // Reversi is 8×8 and nothing else: there is no decision to put to anybody.
-    // Asserted after a control that IS on the form, so an absence cannot be
-    // satisfied by a page that has not rendered. The summary line is that
-    // control now: the opponent select moved behind it and is hidden until
-    // somebody opens it, so waiting on it would wait for ever.
+    /*
+     * Reversi is 8×8 and nothing else, so there is no decision to put to
+     * anybody — and since 0.158.7 the board is SHOWN rather than hidden, as one
+     * block with no tick on it and nothing to press. This case used to assert
+     * the absence, which was the right claim when a one-option picker hid
+     * itself and is the wrong one now: John's words were "the Reversi games
+     * don't even have a board size… they should!"
+     *
+     * The two halves are separate assertions because they are separate facts:
+     * the board is stated, and it is not a choice.
+     */
     await expect(page.getByTestId("more-settings-open")).toBeVisible();
-    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
+    await expect(page.getByTestId("set-up-size")).toHaveCount(1);
+    await expect(chosenBoard(page)).toHaveAttribute("data-size", "8");
+    await expect(chosenBoard(page)).toHaveAttribute("data-only", "true");
   });
 
   test("starts the game on the board that was chosen", async ({ page, request }) => {
@@ -145,10 +153,12 @@ test.describe("choosing the board before the game exists", () => {
     await setUp(page, "freestyle");
     await chooseBoard(page, 19);
 
-    // Through a game with one fixed board, and back again.
+    // Through a game with one fixed board, and back again. That game shows its
+    // own board as the only block there is — see the case above — so what this
+    // waits on is the row holding exactly one, rather than holding none.
     await chooseGame(page, "reversi");
     await expect(page.getByTestId("more-settings-open")).toBeVisible();
-    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
+    await expect(page.getByTestId("set-up-size")).toHaveCount(1);
     await chooseGame(page, "freestyle");
 
     // Still 19×19: looking at another game does not quietly lose the choice.
