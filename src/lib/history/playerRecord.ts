@@ -117,3 +117,64 @@ export async function fetchPlayerRecord(name: string, memberId?: string | null):
   );
   return record;
 }
+
+/** A played record without the per-game detail — what a LIST needs, not a profile page. */
+export type PlayedTally = { wins: number; losses: number; draws: number };
+
+/**
+ * Every finished game a whole batch of members has played here, keyed by
+ * member id — one query, however many members are being shown.
+ *
+ * `fetchPlayerRecord` answers this for one name, and a table of many members
+ * must not call it once per row: that is a query per row, the same fault
+ * removed from the landing page in 0.139.0, which had been reading 2,508 move
+ * rows to draw eight games. This is the batched form, for a list rather than
+ * a person's own page.
+ *
+ * MEMBER ID ONLY, never a name fallback. `fetchPlayerRecord` also matches by
+ * name, for a game recorded before a seat was ever bound to an account — right
+ * for a person's own page, and wrong here: production carries a game between
+ * "Meijin" and "Hidemasa Tamenoki" with both seats' member ids null, played
+ * before those rows existed under those names. Matching it by name pulled a
+ * game into a bot's total that was never bound to the row this function was
+ * asked about, and every member this is ever asked about is a real row with a
+ * real id — there is nothing a name would find that the id does not.
+ *
+ * A game against yourself is one game, not two: both seats carry the same
+ * member id, and it is counted once, from the black seat — the same
+ * attribution `fetchPlayerRecord` already uses when both seats resolve to the
+ * one person asking.
+ */
+export async function fetchPlayedTallies(ids: readonly string[]): Promise<Map<string, PlayedTally>> {
+  const wanted = [...new Set(ids.filter((id) => id !== ""))];
+  const tallies = new Map<string, PlayedTally>(wanted.map((id) => [id, { wins: 0, losses: 0, draws: 0 }]));
+  if (wanted.length === 0) return tallies;
+
+  const games = await prisma.game.findMany({
+    where: {
+      status: "finished",
+      result: { not: "abandoned" },
+      OR: [{ blackMemberId: { in: wanted } }, { whiteMemberId: { in: wanted } }],
+    },
+    select: { blackMemberId: true, whiteMemberId: true, winner: true },
+  });
+
+  const bump = (id: string, outcome: "won" | "lost" | "drew") => {
+    const tally = tallies.get(id);
+    if (tally === undefined) return;
+    if (outcome === "won") tally.wins += 1;
+    else if (outcome === "lost") tally.losses += 1;
+    else tally.draws += 1;
+  };
+
+  for (const { blackMemberId, whiteMemberId, winner } of games) {
+    if (blackMemberId !== null && tallies.has(blackMemberId)) {
+      bump(blackMemberId, winner === null ? "drew" : winner === "black" ? "won" : "lost");
+    }
+    if (whiteMemberId !== null && whiteMemberId !== blackMemberId && tallies.has(whiteMemberId)) {
+      bump(whiteMemberId, winner === null ? "drew" : winner === "white" ? "won" : "lost");
+    }
+  }
+
+  return tallies;
+}

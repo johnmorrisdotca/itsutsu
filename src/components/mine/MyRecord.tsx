@@ -2,6 +2,7 @@ import { RecordCells, RecordHeadings, RecordLine } from "@/components/players/Pl
 import Link from "next/link";
 
 import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
+import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
@@ -18,32 +19,45 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
  * What a member's name has earned: overall, then game by game, then the one
  * figure only they can see.
  *
- * Fetches its own rows. This is four queries — the player, the standings, the
- * member id and their own reads on their own games — and the page ran all
- * four on every visit, including the visits that were somebody changing their
- * time zone.
+ * Fetches its own rows. This is five queries — the player, the standings, the
+ * member id, their own reads on their own games, and every finished game they
+ * have played — and the page ran them all on every visit, including the
+ * visits that were somebody changing their time zone.
  */
 export async function MyRecord({ name }: { name: string }) {
   const mineId = await currentMemberId();
-  const [profile, standings, tally] = await Promise.all([
+  const [profile, standings, tally, played] = await Promise.all([
     // By id where there is one: a rating is keyed by the name it was earned
     // under, and that key stays put when somebody renames.
     name === "" && mineId === null ? Promise.resolve(null) : fetchPlayer(name, mineId),
     name === "" && mineId === null ? Promise.resolve([]) : fetchVariantStandings(name, mineId),
     mineId === null ? Promise.resolve(EMPTY_VERDICTS) : fetchVerdictTally(mineId),
+    /*
+     * Every finished game, rated or not — the games table itself, not the
+     * rating rows `profile` comes from. `profile` only exists once a RATED
+     * game has been recorded (`liveGame.ts` calls `recordResult` only when
+     * the row says rated), so a member whose games were all unrated read
+     * "No rated games yet" here while their own public page, one click away,
+     * showed the same games it always had. The members directory had the
+     * same bug for the same reason; this is the page where a person is
+     * looking for THEIR OWN figures.
+     */
+    fetchPlayerRecord(name, mineId),
   ]);
   // The same rule the members directory follows, from the same module, so the
   // two cannot answer differently about the same person.
   const shown = ratingShown(profile);
+  const here = gamesPlayed(played);
 
   // No heading of its own: the tab above says "Record 戦績", and a heading a
   // line under it said the same word and the same kanji again.
   return (
     <div className="flex flex-col gap-3" data-testid="my-record">
-      {profile === null ? (
-        <p className="text-sm text-muted">
-          No rated games yet. Rated games are shared games between two members: challenge someone from the{" "}
-          <Link href="/players" className="underline underline-offset-4">players</Link> page.
+      {here.wins + here.losses + here.draws === 0 ? (
+        <p className="text-sm text-muted" data-testid="my-record-empty">
+          No games yet. Challenge someone from the{" "}
+          <Link href="/players" className="underline underline-offset-4">players</Link> page — a
+          rated game, shared between two members, is what starts a rating.
         </p>
       ) : (
         <p className="text-sm">
@@ -56,9 +70,10 @@ export async function MyRecord({ name }: { name: string }) {
             where a person is looking for THEIR OWN figures.
 
             The rating is not summed and never will be — it is the ladder
-            rating, or failing that the computer one, marked. The counts are
-            both pools, and they link to all their rated games rather than to
-            one pool's, because that is the number they are under.
+            rating, or failing that the computer one, marked. The counts below
+            are every game played here, of either kind, and they link there —
+            `rated` is left unset on purpose, because "yes" would open a
+            shorter list than the number over it.
           */}
           Overall:{" "}
           <span className="font-mono tabular-nums" data-testid="my-rating">
@@ -75,7 +90,7 @@ export async function MyRecord({ name }: { name: string }) {
           </span>{" "}
           <span className="text-muted">
             {TIER_DISPLAY[shown?.tier ?? "unrated"].label} ·{" "}
-            <RecordLine record={gamesPlayed(profile)} of={{ player: name, rated: "yes" }} />
+            <RecordLine record={here} of={{ player: name }} />
           </span>
         </p>
       )}
