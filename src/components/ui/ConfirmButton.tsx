@@ -3,6 +3,8 @@
 import { useState, type ReactNode } from "react";
 
 import { Button } from "./Controls";
+import { ASKING } from "./ui.constants";
+import type { Asking } from "./ui.types";
 
 /**
  * A button for something that cannot be taken back.
@@ -24,6 +26,7 @@ export function ConfirmButton({
   confirm,
   cancel = "No, leave it",
   onConfirm,
+  onAsking,
   disabled = false,
   strong = false,
   title,
@@ -38,6 +41,13 @@ export function ConfirmButton({
   confirm: string;
   cancel?: string;
   onConfirm: () => void;
+  /**
+   * Told when the question goes up and how it comes down, for anything that has
+   * to hold still while it is up. The board takes this: it carries a player on
+   * to their next game a moment after a move, and used to take an open resign
+   * question away with it. Three states rather than a boolean — see `ASKING`.
+   */
+  onAsking?: (asking: Asking) => void;
   disabled?: boolean;
   strong?: boolean;
   title?: string;
@@ -52,12 +62,23 @@ export function ConfirmButton({
 }) {
   const [asking, setAsking] = useState(false);
 
+  /**
+   * The one place the question's state changes, so it cannot be moved without
+   * whatever is holding still behind it being told. `answered` is reported
+   * BEFORE `onConfirm`, because what that sets going decides where the reader
+   * ends up and must not be raced by a hold letting go.
+   */
+  function say(state: Asking) {
+    setAsking(state === ASKING.asked);
+    onAsking?.(state);
+  }
+
   if (!asking) {
     if (className !== undefined) {
       return (
         <button
           type="button"
-          onClick={() => setAsking(true)}
+          onClick={() => say(ASKING.asked)}
           disabled={disabled}
           title={title}
           className={className}
@@ -69,7 +90,7 @@ export function ConfirmButton({
     }
     return (
       <Button
-        onClick={() => setAsking(true)}
+        onClick={() => say(ASKING.asked)}
         disabled={disabled}
         strong={strong}
         title={title}
@@ -90,7 +111,7 @@ export function ConfirmButton({
       <div className="flex flex-wrap gap-2">
         <Button
           onClick={() => {
-            setAsking(false);
+            say(ASKING.answered);
             onConfirm();
           }}
           strong
@@ -98,7 +119,7 @@ export function ConfirmButton({
         >
           {confirm}
         </Button>
-        <Button onClick={() => setAsking(false)} data-testid={`${testId}-no`}>
+        <Button onClick={() => say(ASKING.dismissed)} data-testid={`${testId}-no`}>
           {cancel}
         </Button>
       </div>

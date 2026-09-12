@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { PLAYER_STATE, playAt, ready } from "./support";
+import { gamesMade } from "./tidy";
 
 /**
  * After a move, on to the next game that is waiting.
@@ -31,12 +32,25 @@ import { PLAYER_STATE, playAt, ready } from "./support";
 
 type Game = { id: string; blackToken: string; whiteToken: string };
 
+/**
+ * Its own boards, taken away when the file finishes.
+ *
+ * The queue this feature reads is the queue every OTHER spec's leftovers are
+ * in, so a file that tests "where does a move take me next" and leaves five
+ * unfinished games behind is making the next reader's world harder to reason
+ * about — and this one leaves them unfinished on purpose, because a dismissed
+ * question is the whole point of the case below.
+ */
+const mine = gamesMade();
+
 async function start(request: import("@playwright/test").APIRequestContext): Promise<Game> {
   const response = await request.post("/api/games/live", {
     data: { blackName: "Kai", whiteName: "Mio", size: 9, variant: "freestyle" },
   });
   expect(response.status(), await response.text()).toBe(201);
-  return (await response.json()) as Game;
+  const game = (await response.json()) as Game;
+  mine(game.id);
+  return game;
 }
 
 async function move(
@@ -128,5 +142,129 @@ test.describe("after a move, the next game that is waiting", () => {
     await ready(page, "shared-game");
     await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${watched.id}(/|$)`));
     await expect(page.getByTestId("nothing-waiting")).toHaveCount(0);
+  });
+
+  test("waits for an open resign, then goes when it is waved away", async ({ page, request }) => {
+    /*
+     * The advance lands a MOMENT after the move — a POST, a redraw, a read of
+     * the queue — and a player who plays a stone and reaches straight for
+     * Resign opens the question inside that moment. On a CI trace the board
+     * then navigated with the question still on it and the click hit nothing:
+     * "element was detached from the DOM".
+     *
+     * Two boards waiting, so the advance genuinely has somewhere to go: a case
+     * where nothing would have moved anyway cannot tell holding from having
+     * nowhere to hold from.
+     */
+    const other = await waitingOnBlack(request);
+    const here = await waitingOnBlack(request);
+
+    for (const game of [other, here]) {
+      await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+      await ready(page, "shared-game");
+    }
+    const thisMatch = new RegExp(`/games/gomoku/match/${here.id}(/|$)`);
+    await expect(page).toHaveURL(thisMatch);
+    await expect(page.getByTestId("turn-banner")).toContainText("Your move");
+
+    /*
+     * THE WINDOW, WIDENED RATHER THAN INVENTED. Held for two seconds, the move
+     * is the same move, the click is a real click on the real control and the
+     * advance runs its real course; what changes is that a race measured in
+     * a couple of hundred milliseconds on localhost becomes one a test can be
+     * inside. It is also the world the bug belongs to — a slow answer is
+     * exactly when somebody has time to reach for Resign first.
+     */
+    await page.route(new RegExp(`/api/games/${here.id}/moves$`), async (route) => {
+      if (route.request().method() !== "POST") {
+        await route.continue();
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+      await route.continue();
+    });
+
+    // The move goes, and the question goes up over it before the answer lands.
+    await playAt(page, 9, 4, 4);
+    await page.getByTestId("resign").click();
+    await expect(page.getByTestId("resign-confirm")).toBeVisible();
+
+    /*
+     * THE MOVE HAS LANDED, said by the address rather than waited out. The
+     * board writes the move count into it as it redraws, so `/3` is the client
+     * having taken the server's answer — which is the same breath in which the
+     * advance decides — and the id in front of it is this board and not
+     * another. One assertion, two facts, and no sleeping.
+     */
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${here.id}/3$`));
+    // So the question is still there to answer, which it was not before.
+    await expect(page.getByTestId("resign-confirm")).toBeVisible();
+    await expect(page.getByTestId("turn-banner")).toContainText("Waiting");
+
+    /*
+     * And waved away, the advance goes ahead: the player changed their mind
+     * about giving the game up, not about having finished their turn on it.
+     * This half is what proves the advance was HELD rather than never due —
+     * a feature that had quietly stopped working would stay here for ever.
+     */
+    await page.getByTestId("resign-no").click();
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${other.id}(/|$)`));
+    await ready(page, "shared-game");
+    await expect(page.getByTestId("turn-banner")).toContainText("Your move");
+  });
+
+  test("and stays put when the resign is gone through with", async ({ page, request }) => {
+    /*
+     * The other exit, and it must not be the same one. A question answered has
+     * ENDED THE GAME, and a game that has just ended is the one board worth
+     * staying on — the same reasoning `carriesOnwardFrom` gives for not
+     * whisking somebody past their own win. So the held advance is dropped
+     * rather than let through, and where to go next is the ending's business.
+     *
+     * Held over from the case above, because a held advance that fired a beat
+     * late would look identical to one that was dropped: this is the half that
+     * says WHICH.
+     */
+    const other = await waitingOnBlack(request);
+    const here = await waitingOnBlack(request);
+
+    for (const game of [other, here]) {
+      await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+      await ready(page, "shared-game");
+    }
+    const thisMatch = new RegExp(`/games/gomoku/match/${here.id}(/|$)`);
+    await expect(page).toHaveURL(thisMatch);
+
+    await page.route(new RegExp(`/api/games/${here.id}/moves$`), async (route) => {
+      if (route.request().method() !== "POST") {
+        await route.continue();
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+      await route.continue();
+    });
+
+    await playAt(page, 9, 4, 4);
+    await page.getByTestId("resign").click();
+    await expect(page.getByTestId("resign-confirm")).toBeVisible();
+    // The move is in, so there is a held advance to drop rather than none.
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${here.id}/3$`));
+
+    await page.getByTestId("resign-yes").click();
+
+    /*
+     * The server's word first, so the absence below is read off a page whose
+     * game has actually ended rather than off a page that has not answered.
+     */
+    await expect
+      .poll(
+        async () =>
+          ((await (await request.get(`/api/games/${here.id}`)).json()) as { status: string }).status,
+        { timeout: 15_000 },
+      )
+      .toBe("finished");
+    await expect(page, "the board was carried off its own ending").toHaveURL(thisMatch);
+    await expect(page.getByTestId("turn-banner")).toHaveCount(0);
+    await expect(page.getByTestId("resign-refused")).toHaveCount(0);
   });
 });

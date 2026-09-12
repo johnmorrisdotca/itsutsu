@@ -135,3 +135,26 @@ export const TONE_CLASS = {
   warn: "border-ochre/50 bg-ochre-soft text-ink",
   alarm: "border-shu/60 bg-shu-soft text-ink",
 } as const;
+
+/*
+ * WHAT A GUARDED QUESTION IS DOING — three states, not the two a boolean has.
+ *
+ * `ConfirmButton` asks before it does the irreversible thing, and whatever is
+ * behind it may have to hold still while the question is up. The board does:
+ * it carries a player onward to their next waiting game a moment after a move,
+ * and a player who plays a stone and reaches straight for Resign opens the
+ * question inside that moment. The navigation then took the board, the button
+ * and the question away together — "element was detached from the DOM".
+ *
+ * Holding needs to know when the question comes DOWN, and down is two
+ * different facts: waved away, so nothing happened and life goes on, or
+ * ANSWERED, so the act it guards is now under way and whatever that act does
+ * decides what happens next. One boolean would have to mean both, and the
+ * thing behind it would read it as whichever is wrong — see AGENTS.md,
+ * Nothing Answers What It Cannot Answer.
+ */
+export const ASKING = {
+  asked: "asked",
+  dismissed: "dismissed",
+  answered: "answered",
+} as const;

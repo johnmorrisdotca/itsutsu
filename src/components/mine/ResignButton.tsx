@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import type { Asking } from "@/components/ui/ui.types";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { MY_GAMES_COPY } from "./mine.constants";
 
@@ -27,6 +28,7 @@ export function ResignButton({
   token,
   moves = 1,
   onDone,
+  onAsking,
 }: {
   id: string;
   /**
@@ -44,6 +46,12 @@ export function ResignButton({
    */
   moves?: number;
   onDone?: () => void;
+  /**
+   * Passed on to the confirm, for a caller that must hold still while the
+   * question is up. The board is one: see `useAdvanceToNextGame`, which was
+   * carrying players off this very question.
+   */
+  onAsking?: (asking: Asking) => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -104,6 +112,7 @@ export function ResignButton({
         }
         confirm={copy.label}
         onConfirm={() => void resign()}
+        onAsking={onAsking}
         disabled={busy}
         className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs`}
         testId={nothingPlayed ? "cancel" : "resign"}
