@@ -12,6 +12,7 @@ import type { BacklogKind, BacklogSort } from "@/lib/backlog/backlog.types";
 import { AddBacklogItem } from "./AddBacklogItem";
 import { BacklogRow } from "./BacklogRow";
 import type { BacklogBoardProps, BoardView } from "./backlogBoard.types";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 const START: BoardView = { status: "unfinished", kind: "all", text: "", sort: "status" };
 
@@ -106,7 +107,7 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2" data-testid="backlog-filters">
+      <div className="flex flex-wrap items-center gap-2" data-testid="backlog-filters" {...readyMark(useHydrated())}>
         <FilterChip
           label="Unfinished"
           kanji="未了"

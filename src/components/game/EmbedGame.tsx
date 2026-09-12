@@ -7,6 +7,7 @@ import type { BoardTheme, StoneSet } from "@/components/board/board.types";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { useGameSession } from "./useGameSession";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 export type EmbedOptions = {
   settings: Partial<GameSettings>;
@@ -72,7 +73,7 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
   }, [state]);
 
   return (
-    <div ref={frame} className="flex flex-col gap-3 p-3">
+    <div ref={frame} className="flex flex-col gap-3 p-3" data-testid="embed-board" {...readyMark(useHydrated())}>
       <Board
         state={state}
         appearance={{

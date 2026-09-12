@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import {
   GAME_OUTCOME_DISPLAY,
@@ -112,7 +113,7 @@ export function HistoryFilters({
   });
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" data-testid="history-filters" {...readyMark(useHydrated())}>
       {narrowings.length > 0 ? (
         <div
           className="flex flex-wrap items-center gap-2 text-xs"

@@ -4,6 +4,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 export type Who = { signedIn: boolean; admin: boolean; email: string | null; name: string | null; picture: string | null; member: boolean };
 
@@ -22,6 +23,13 @@ export function AccountMenu({ initial }: { initial: Who }) {
   // The server already knows who is here; the first paint uses that, so nothing flashes in.
   const { data, mutate } = useSWR("/api/session", fetcher, { fallbackData: initial });
   const say = useSpeaker();
+  /*
+   * Read here rather than at the element, because there are early returns
+   * below it and a hook may not sit after one. Signing out is a button, so
+   * a press before React attaches does nothing; the mark is what a spec
+   * waits on instead of guessing.
+   */
+  const hydrated = useHydrated();
 
   if (data === undefined) return null;
   if (data === null || !data.signedIn) {
@@ -41,7 +49,7 @@ export function AccountMenu({ initial }: { initial: Who }) {
 
   const label = data.name || data.email || "Guest";
   return (
-    <span className="flex items-center gap-2 whitespace-nowrap" data-testid="account-menu">
+    <span className="flex items-center gap-2 whitespace-nowrap" data-testid="account-menu" {...readyMark(hydrated)}>
       {data.picture ? (
         // eslint-disable-next-line @next/next/no-img-element -- a Google avatar URL, not ours to optimise
         <img src={data.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />

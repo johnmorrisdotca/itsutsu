@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/ui.constants";
 import { CODE_WORDS } from "@/lib/invite/inviteCode";
 import type { RegistrationMode } from "@/lib/site/site.types";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /**
  * The door.
@@ -115,6 +116,8 @@ export function JoinForm({
     <form
       onSubmit={submit}
       className={`${PANEL_CLASS} flex w-full max-w-md flex-col gap-4`}
+      data-testid="join-form"
+      {...readyMark(useHydrated())}
     >
       <div className="flex flex-col gap-1">
         {/*

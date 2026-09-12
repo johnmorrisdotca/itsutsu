@@ -10,6 +10,7 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { CARD_LETTERS, GAME_CARD_KINDS } from "./games.constants";
 import type { GameCard } from "./games.types";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /** The letter a name files under: its first letter, accents folded, so Misère sits at M. */
 function initial(label: string): string {
@@ -57,6 +58,7 @@ export function GameCards({ cards }: { cards: GameCard[] }) {
         className="flex flex-wrap gap-1"
         aria-label="Games by first letter"
         data-testid="letter-filter"
+        {...readyMark(useHydrated())}
       >
         <LetterButton letter="All" active={chosen === ""} disabled={false} onClick={() => choose("")} />
         {CARD_LETTERS.map((letter) => (

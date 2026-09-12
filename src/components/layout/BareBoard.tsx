@@ -4,6 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { BARE_ATTRIBUTE, readBare, subscribeBare, writeBare } from "./bare";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /**
  * The switch for reading a page as the board alone, and the thing that
@@ -35,6 +36,7 @@ export function BareBoard() {
           : "flex justify-end print:hidden"
       }
       data-testid="bare-board"
+      {...readyMark(useHydrated())}
     >
       <button
         type="button"

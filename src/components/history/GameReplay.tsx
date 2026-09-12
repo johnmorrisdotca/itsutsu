@@ -14,6 +14,7 @@ import { pointName } from "@/lib/gomoku/notation";
 import { forkOffered } from "@/lib/history/fork";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { moveNumberAt, timelineIndexForMove } from "@/lib/history/replayIndex";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /**
  * The whole game as text, the way a printed record or the elder sites give
@@ -175,7 +176,11 @@ export function GameReplay({
   const current = game.moves[moveNumber - 1];
 
   return (
-    <div className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch">
+    <div
+      className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch"
+      data-testid="game-replay"
+      {...readyMark(useHydrated())}
+    >
       <div className="w-full min-w-0 flex-1">
         <div className="mx-auto w-full max-w-[min(100%,38rem)]">
           <Board
