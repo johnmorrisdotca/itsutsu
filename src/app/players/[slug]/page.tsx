@@ -9,7 +9,7 @@ import { SnapshotWarning, WholeRecordPanel } from "@/components/players/WholeRec
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
 import { Whereabouts } from "@/components/players/Whereabouts";
 import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
-import { KEPT_RECORD_COPY, PlayedEverywhere } from "@/components/players/LegacyRecord";
+import { KEPT_RECORD_COPY, PlayedEverywhere, keptRecordTail } from "@/components/players/LegacyRecord";
 import { LegacySourcePanel } from "@/components/players/LegacySource";
 import { Figures } from "@/components/ui/Figures";
 import { Tabs } from "@/components/ui/Tabs";
@@ -262,8 +262,15 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           <p className="text-sm text-muted" data-testid="kept-record-note">
             {keptRecord.location !== undefined ? `${keptRecord.location} · ` : ""}
             <PlayedEverywhere legacy={keptRecord} lead="Played as" />.{" "}
-            {KEPT_RECORD_COPY[keptRecord.kind]?.tail ??
-              "From before Itsutsu — kept alongside whatever they have since earned here."}
+            {/*
+              NOT the unconditional "never played on Itsutsu" this used to
+              say — Chibi and Kyokosan share one real, finished game here,
+              found by name because neither seat has a memberId, and the old
+              copy said there was nothing to find on the very page about to
+              show it. `record.games` is already read above for that table;
+              this asks it the same question rather than assuming the answer.
+            */}
+            {keptRecordTail(keptRecord.kind, record.games)}
           </p>
         )}
         <Whereabouts city={member?.city} timeZone={member?.timeZone} />

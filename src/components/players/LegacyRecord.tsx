@@ -28,11 +28,13 @@ import type { LegacyKind, LegacyPlayer, LegacySource } from "@/lib/legacy/legacy
  * else's, and used to be a second component.
  */
 export const KEPT_RECORD_COPY: Partial<
-  Record<LegacyKind, { badge: string; tail: string; here: string }>
+  Record<LegacyKind, { badge: string; tail: string; tailWithGamesHere: string; here: string }>
 > = {
   remembered: {
     badge: "Remembered",
     tail: "Never played on Itsutsu \u2014 this record is kept, not earned here.",
+    tailWithGamesHere:
+      "This record was kept from before Itsutsu \u2014 and the same name has also played a real game here; see below.",
     // Not "no games yet". There will not be any, and saying "yet" of somebody
     // who has died is the wrong word in the one place it would be noticed.
     here: "No games on Itsutsu. This record was made elsewhere, before this site existed, and is kept rather than added to.",
@@ -40,9 +42,40 @@ export const KEPT_RECORD_COPY: Partial<
   honorary: {
     badge: "Honorary member",
     tail: "Never played on Itsutsu \u2014 kept here as an honorary member, in her own right.",
+    tailWithGamesHere:
+      "Kept here as an honorary member of Itsutsu, in her own right \u2014 and the same name has also played a real game here; see below.",
     here: "No games on Itsutsu. An honorary member has a record here without having played for it \u2014 should she ever take a seat, this is where those games would appear.",
   },
 };
+
+/**
+ * The one line under a kept record's name \u2014 chosen by whether the SAME NAME
+ * also has a real, finished game logged here, rather than assumed the way
+ * `KEPT_RECORD_COPY[kind].tail` alone used to.
+ *
+ * Chibi and Kyokosan are why this exists: they share one real, finished
+ * Itsutsu game (freestyle, 37 moves, 2026-09-08) with nobody signed in as
+ * either of them, because `playerRecord.ts` matches a game by the name typed
+ * into its seats when it has no better anchor \u2014 the same rule that finds
+ * anybody's game played before their account existed. "Never played on
+ * Itsutsu" was true of every kept record until it stopped being true of
+ * these two, and the page went on saying it anyway, right above a table
+ * that would show the game.
+ *
+ * A kept record is about WHERE somebody's history came from, not a claim
+ * that the same name never sat at a board here \u2014 those are two different
+ * facts, and only the first one is always true.
+ */
+export function keptRecordTail(kind: LegacyKind, gamesHere: number): string {
+  const copy = KEPT_RECORD_COPY[kind];
+  if (gamesHere > 0) {
+    return (
+      copy?.tailWithGamesHere ??
+      "Kept from before Itsutsu \u2014 and the same name has also played a real game here; see below."
+    );
+  }
+  return copy?.tail ?? "From before Itsutsu \u2014 kept alongside whatever they have since earned here.";
+}
 
 /**
  * How a person is described where they played: the handle, the site, and the
