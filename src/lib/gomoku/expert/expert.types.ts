@@ -7,10 +7,23 @@ import type { GameState, Point, Stone, VariantSpec } from "../gomoku.types";
  * what can be counted in any of the forty games on this site: discs, captures,
  * pieces home, the shape of a line. That is the right way to have an opponent
  * in every game at once, and it is the wrong way to have a strong one in any
- * particular game. It was measured being wrong: in Reversi the two grades that
- * search deepest lost eighteen games to eleven against the two that barely
- * search at all, because a deeper search over a heuristic that misreads the
- * game finds the moves that exploit the misreading best.
+ * particular game.
+ *
+ * This used to cite the Reversi series — the grades that search deepest losing
+ * eighteen games to eleven to the ones that barely search — as the proof, and
+ * that reading of it turned out to be wrong. Those grades were not searching
+ * deepest in Reversi; they were not searching AT ALL, because the line games'
+ * search declines a flipping board. The losses were the absence of a lookahead
+ * rather than the presence of a bad one, and once `opponentLook.ts` gave them
+ * one the same series became 段 0-30 名人.
+ *
+ * The claim a specialist rests on is the one that survived that: 為乃木 takes ten
+ * games in ten off every graded player, including off a 名人 that now searches
+ * eight plies of Reversi. A shared reading that covers forty games is the right
+ * way to have an opponent everywhere and still not the way to have the best one
+ * anywhere — corners, edge stability, parity and the exact endgame are one
+ * game's theory, and no amount of depth over disc count and mobility arrives
+ * at them.
  *
  * So a specialist is not a grade with the knobs turned up. It is a different
  * reading of one family of board, and it is chosen by what the game's spec

@@ -61,6 +61,19 @@ export const BOT_TIER_LIST: readonly BotTier[] = [
  * to that is not a rebalanced ladder, which would only make 名人 worse at
  * everything else; it is a player who knows the game.
  *
+ * THE DIAGNOSIS IN THAT PARAGRAPH WAS HALF RIGHT, and the half that was wrong
+ * is worth leaving on the record beside it. "The two grades that search
+ * deepest" did not search at all in Reversi: the line games' search declines a
+ * flipping board, so `searchDepth` was inert there and 名人 was 段 with the
+ * handicaps taken off. It lost BECAUSE it had no lookahead, not because it had
+ * too much — at one ply a flipping game is not being read, and 段's noise was
+ * saving it from advice that pointed the wrong way. `opponentLook.ts` gave the
+ * grades a lookahead in those games and the same series is now 段 0-30 名人.
+ *
+ * None of which costs the specialists their reason to exist: 為乃木 still takes
+ * all fifty games off the ladder, including off a 名人 that now searches, and
+ * that is the claim this list rests on rather than the ladder's own disorder.
+ *
  * As measured — ten games an opponent, colours swapped every game, both sides
  * on the same wall clock a request gives a computer player, in
  * `expert/specialists.match.test.ts`. The Reversi half of that series runs on
@@ -131,11 +144,28 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
     name: "Guoshou",
     native: "国手",
     strength: "Strongest all-round",
+    /*
+     * What this used to say was that Guoshou "reads further than Meijin", full
+     * stop, and that is a claim about a knob rather than about a game. Both
+     * grades read to whatever depth the thinking time a request allows them
+     * gets to, two plies at a time, keeping the last depth they FINISHED — so
+     * asking one for eight and the other for six changes nothing at all unless
+     * an eight-deep pass can finish. On an eight by eight board of Reversi it
+     * cannot: measured over fifteen positions, six plies and eight chose the
+     * same move every single time. Where the branching is small enough — a
+     * board of checkers, a race — it can, and there the two do differ.
+     *
+     * So the blurb says where the difference shows and stops promising it
+     * everywhere. A player who picks the top of the ladder for a harder game
+     * should get one or be told why not.
+     */
     blurb:
-      "The nation's hand. Guoshou reads further than Meijin and weighs more " +
-      "of the board before it moves, so a threat you were saving is usually " +
-      "answered before you play it. Beating it is worth telling somebody " +
-      "about — and it is the strongest player here at every game but two.",
+      "The nation's hand. Guoshou weighs more of the board than Meijin before " +
+      "it moves and is asked to read two moves further, which tells on the big " +
+      "boards and in an endgame: a threat you were saving is answered before " +
+      "you play it. On the small boards the two of them run out of thinking " +
+      "time at the same depth and play much alike. Beating either is worth " +
+      "telling somebody about.",
   },
   /*
    * The specialists, named after the players who defined their games rather
@@ -322,6 +352,26 @@ export const EVAL_WEIGHTS = {
   advance: 5,
   /** Per stone captured, where a game captures. */
   capture: 90,
+  /**
+   * A man, a king, and a step towards being crowned, in checkers.
+   *
+   * Checkers had no reading at all. It does not flip, race for a camp, connect
+   * or capture in the sense the spec means — a jump is a slide, not a capture
+   * pair — so it fell through to the capture count, which the engine never
+   * writes there. Every position scored zero, every move scored the same, and
+   * all five grades played it by the tie-break: 級 came out level with 名人 and
+   * разряд beat both of the top two. A player that cannot tell one move from
+   * another is not a weak player, it is a blind one, and no amount of looking
+   * further ahead helps a blind player at all.
+   *
+   * A king is worth well over a man but not two of them, and a man a row from
+   * being crowned is worth more than one that has not moved. That is the whole
+   * of it: material and advancement, which is what the first half of a game of
+   * checkers is about.
+   */
+  man: 100,
+  king: 180,
+  crowning: 6,
   /** How much the line reading counts against everything else. */
   shape: 1,
   /** How much a point being near the middle is worth, to break ties inwards. */
@@ -415,4 +465,62 @@ export const SEARCH = {
   millis: 400,
   /** A backstop under the clock, so a pathological position cannot spin. */
   nodes: 60_000,
+} as const;
+
+/**
+ * How the general look-ahead spends itself — the one for the games that are not
+ * about lines. See `opponentLook.ts` for why it is a second search rather than
+ * a flag on the first.
+ *
+ * Narrower than `SEARCH` at every turn, and the reason is the price of a node
+ * rather than a judgement about breadth. The line search orders its candidates
+ * by the shape a stone makes at the point it lands on, which is arithmetic over
+ * four lines; this one has no such shortcut — the thing a move does in a
+ * flipping game or a race is to the whole board — so it orders by playing each
+ * candidate and reading the position it produces. That is one engine call and
+ * one whole-board reading per candidate, perhaps fifty times the cost, so the
+ * same wall clock buys a good deal less of it.
+ *
+ * `nodes` counts CANDIDATES WEIGHED rather than nodes visited, which is where
+ * the work actually is: a node choosing between twenty slides costs twenty
+ * times one choosing between one, and a budget that called both a single node
+ * would bound nothing.
+ */
+export const LOOK = {
+  /** Turns enumerated at a node before the list is trimmed. */
+  width: 40,
+  /** Candidates weighed at each node below the root. */
+  branch: 8,
+  /** Candidates weighed at the root, where being wrong is most expensive. */
+  rootBranch: 12,
+  /**
+   * What the look-ahead may weigh in one move, and here it is the limit that
+   * BINDS rather than a backstop under the clock.
+   *
+   * That is the opposite of `SEARCH.nodes` and the difference is deliberate, so
+   * it is worth the paragraph. There the argument is that a node count cannot
+   * bound a request, because what a node costs depends on the board — and it is
+   * right. Here the point is not to bound the request, which the clock already
+   * does; it is that spending the whole clock buys almost nothing.
+   *
+   * Measured on a 2026 laptop: with the clock alone, one move of Reversi took
+   * 176ms for 名人 and 200ms for 国手, Go on nine points 258ms — against half a
+   * millisecond for the grade below them, which does not search. And the
+   * ordering those numbers buy is already bought many times over at NINE
+   * HUNDRED: `ladder.order.test.ts` has 名人 taking three quarters of a series
+   * off 段 at Reversi on that budget, and the full round robin at two thousand
+   * has it winning nine of ten — where before the look-ahead existed it lost
+   * sixteen games in thirty.
+   *
+   * So the returns flatten long before the clock does, and the whole of what
+   * the rest of it buys is a bill. Four thousand is twice where the ordering is
+   * already complete and a fraction of where the clock stops, which is the
+   * honest place for it: a computer player can be sat in a great many games at
+   * once, every one of its moves is a request somebody pays for, and a ladder
+   * that is already in the right order does not get righter.
+   *
+   * Raising it costs money and buys a little play; lowering it saves money and
+   * the ordering holds a long way down. It is one number either way.
+   */
+  nodes: 4_000,
 } as const;

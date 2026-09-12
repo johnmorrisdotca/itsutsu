@@ -6,6 +6,7 @@ import { pieceScore, positionScore, pointScore, readsThreats, threatScore } from
 import { masteredTurn } from "./expert/experts";
 import { applyTurn, legalTurns } from "./opponentTurns";
 import { searchTurn } from "./opponentSearch";
+import { lookAheadTurn, lookDepth } from "./opponentLook";
 import type { GameState, Stone } from "./gomoku.types";
 import type { BotTier, BotTurn, SearchBudget, TierSpec } from "./opponent.types";
 
@@ -109,11 +110,40 @@ function pick<T>(items: T[], random: () => number): T {
   return items[Math.min(items.length - 1, Math.floor(random() * items.length))];
 }
 
-/** Whether two turns are the same turn, for matching a searched move to its candidate. */
+/**
+ * Whether two turns are the same turn, for matching a searched move to its
+ * candidate.
+ *
+ * Every shape of turn, not only a placement. This answered false for a slide
+ * and for a pass, which was correct while the only search was the line games'
+ * — those lay a stone and nothing else. The general look-ahead plays the games
+ * where a turn moves a piece or declines to, and a match that could not
+ * recognise one would have thrown its answer away silently: the searched turn
+ * would fail to find its candidate, be judged unsafe, and the grade would fall
+ * back to the one-ply reading having paid for a search it then ignored.
+ */
 function sameTurn(a: BotTurn, b: BotTurn): boolean {
   if (a.kind !== b.kind) return false;
+  if (a.kind === MOVE_KINDS.pass) return true;
   if (a.kind === MOVE_KINDS.place && b.kind === MOVE_KINDS.place) {
     return a.row === b.row && a.col === b.col && a.stone === b.stone;
+  }
+  if (a.kind === MOVE_KINDS.move && b.kind === MOVE_KINDS.move) {
+    return (
+      a.row === b.row &&
+      a.col === b.col &&
+      a.from.row === b.from.row &&
+      a.from.col === b.from.col
+    );
+  }
+  if (a.kind === MOVE_KINDS.piece && b.kind === MOVE_KINDS.piece) {
+    return (
+      a.cells.length === b.cells.length &&
+      a.cells.every((cell, index) => {
+        const other = b.cells[index];
+        return cell.row === other.row && cell.col === other.col && cell.stone === other.stone;
+      })
+    );
   }
   return false;
 }
@@ -221,7 +251,30 @@ export function chooseTurn(
    * by construction: it has everything that one has, and a plan as well.
    */
   if (spec.searchDepth > 0) {
-    const searched = searchTurn(state, spec.searchDepth, random, budget);
+    /*
+     * Two searches, and which one answers is decided by the game rather than by
+     * the grade. `searchTurn` is the line games' — whole-board shape, ordered by
+     * the threat ladder — and it answers null in the twenty-three games that are
+     * not about lines. `lookAheadTurn` is those games', and answers null in
+     * turn for the line games and for anything the shared reading cannot read
+     * at all.
+     *
+     * Before this, the second half did not exist, and that was the ordering bug
+     * rather than a gap in it: `searchDepth` is the ONLY knob separating 名人
+     * from 国手, so in the games where nothing searched the two were one program
+     * under two names — and the noisier, blunder-prone 段 beat both of them,
+     * because at one ply a flipping game is not being read at all. The cost is
+     * bounded by the same wall clock every grade already spends in the other
+     * sixteen games; see LOOK for why its node budget counts what it counts.
+     */
+    const searched =
+      searchTurn(state, spec.searchDepth, random, budget) ??
+      lookAheadTurn(
+        state,
+        lookDepth(VARIANT_SPECS[state.settings.variant], spec.searchDepth),
+        random,
+        budget,
+      );
     const entry =
       searched === null ? undefined : scored.find((option) => sameTurn(option.turn, searched));
     /*
