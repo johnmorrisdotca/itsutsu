@@ -11,6 +11,7 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchGameHistoryPage, fetchWholeRecord } from "@/lib/history/gameHistory";
 import { recordAsText } from "@/lib/history/recordText";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
+import { type ImpliedPlayer, recordAddress } from "@/lib/history/recordAddress";
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -34,31 +35,41 @@ export async function RecordPage({
   variant,
   params,
   at,
+  impliedPlayer,
 }: {
   variant?: RuleVariant;
   params: Params;
   /** The address this collection lives at, when it is not the game's whole record. */
   at?: string;
+  /**
+   * A player filter the ADDRESS implies rather than the query string —
+   * /games/<slug>/me, the only caller today. Applied to the query the same
+   * way `variant` already is, and kept out of every address this page
+   * writes: see `recordAddress`, which is what actually keeps a member's
+   * whole name from ever reaching a URL a reader could bookmark, share or
+   * find in a server log.
+   */
+  impliedPlayer?: ImpliedPlayer;
 }) {
   const base = at ?? (variant === undefined ? "/history" : historyPath(variant));
+  const { query: queryParams, flat } = recordAddress(params, { variant, impliedPlayer });
+
   const url = new URL(`https://itsutsu.local${base}`);
-  for (const [key, value] of Object.entries(params)) {
-    if (typeof value === "string" && key !== "variant") url.searchParams.set(key, value);
-  }
-  if (variant !== undefined) url.searchParams.set("variant", variant);
+  for (const [key, value] of Object.entries(queryParams)) url.searchParams.set(key, value);
 
   const query = toGameHistoryQuery(url);
-  const asked = query ?? toGameHistoryQuery(new URL(`https://itsutsu.local${base}`))!;
+  // What the query falls back to when the reader's own filters do not parse —
+  // still carrying whatever the address itself implies, so an invalid `page`
+  // on /games/<slug>/me can never widen "your games" into everybody's.
+  const { query: fallbackParams } = recordAddress({}, { variant, impliedPlayer });
+  const fallbackUrl = new URL(`https://itsutsu.local${base}`);
+  for (const [key, value] of Object.entries(fallbackParams)) fallbackUrl.searchParams.set(key, value);
+  const asked = query ?? toGameHistoryQuery(fallbackUrl)!;
   const [page, whole] = await Promise.all([
     fetchGameHistoryPage(asked),
     fetchWholeRecord(asked),
   ]);
 
-  const flat = Object.fromEntries(
-    Object.entries(params).filter(
-      (entry): entry is [string, string] => typeof entry[1] === "string" && entry[0] !== "variant",
-    ),
-  );
   const copy = variant === undefined ? null : RULE_VARIANT_DISPLAY[variant];
 
   return (
@@ -81,7 +92,21 @@ export async function RecordPage({
         </p>
       </div>
 
-      <HistoryFilters variant={variant ?? null} />
+      <HistoryFilters
+        variant={variant ?? null}
+        appliedPlayer={
+          asked.player === null
+            ? null
+            : {
+                name: asked.player,
+                memberId: impliedPlayer?.memberId ?? null,
+                // Removable unless the address is the one implying it — a
+                // reader who typed ?player=X into /history can take it off;
+                // /games/<slug>/me cannot mean anything else.
+                removable: impliedPlayer === undefined,
+              }
+        }
+      />
       {query === null ? (
         <p className="rounded-xl border border-rule px-4 py-3 text-sm text-muted">
           Those filters were not valid, so this is the unfiltered record.

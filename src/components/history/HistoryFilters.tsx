@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
@@ -7,19 +8,16 @@ import { useCallback } from "react";
 import {
   GAME_OUTCOME_DISPLAY,
   GAME_OUTCOME_FILTERS,
-  GAME_POOL_DISPLAY,
-  GAME_RATED_DISPLAY,
   GAME_RESULT_DISPLAY,
   GAME_RESULT_FILTERS,
   GAME_SIZE_FILTERS,
-  outcomeLabel,
-  verdictLabel,
   GAME_SORT_BY,
   GAME_SORT_DISPLAY,
   GAME_VARIANT_FILTERS,
 } from "@/lib/history/gameHistory.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { historyPath } from "@/lib/gomoku/slugs";
+import { type AppliedPlayer, appliedNarrowings } from "@/lib/history/narrowings";
 import { sortWord } from "@/lib/history/gameHistoryQuery";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { Field, Select } from "@/components/ui/Controls";
@@ -30,11 +28,26 @@ import { INPUT_CLASS } from "@/components/ui/ui.constants";
  * view can be linked, bookmarked and reloaded — and so the server component
  * beside it stays the only thing that reads the query.
  */
-export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
+export function HistoryFilters({
+  variant,
+  appliedPlayer,
+}: {
+  variant: RuleVariant | null;
+  /**
+   * The player filter the record actually applied — never read off the URL
+   * here, because the URL does not always say. /games/<slug>/me applies one
+   * for the query alone and never puts it in an address; `/history?outcome=
+   * won` with no player has one in the URL that the query drops entirely.
+   * Both are the server's call, made once in `RecordPage`, and handed down
+   * rather than re-guessed from `useSearchParams()` — see `narrowings.ts`.
+   */
+  appliedPlayer: AppliedPlayer | null;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const say = useSpeaker();
+  const player = appliedPlayer?.name ?? null;
 
   /*
    * The game is not a filter but a collection: /games/<slug>/history is one
@@ -76,29 +89,13 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
    * arrives as a chip that names itself and can be taken off, which also
    * makes the link's promise checkable: the chips are exactly what was asked.
    */
-  const player = value("player");
-  const narrowings = [
-    player === "" ? null : { key: "player", label: `${player}'s games` },
-    value("outcome") === ""
-      ? null
-      : {
-          key: "outcome",
-          label: outcomeLabel(value("outcome")),
-        },
-    value("pool") === ""
-      ? null
-      : {
-          key: "pool",
-          label: GAME_POOL_DISPLAY[value("pool")]?.label ?? value("pool"),
-        },
-    value("rated") === ""
-      ? null
-      : {
-          key: "rated",
-          label: GAME_RATED_DISPLAY[value("rated")]?.label ?? value("rated"),
-        },
-    value("verdict") === "" ? null : { key: "verdict", label: verdictLabel(value("verdict")) },
-  ].filter((one): one is { key: string; label: string } => one !== null);
+  const narrowings = appliedNarrowings({
+    player: appliedPlayer,
+    outcome: value("outcome"),
+    pool: value("pool"),
+    rated: value("rated"),
+    verdict: value("verdict"),
+  });
 
   return (
     <div className="flex flex-col gap-3">
@@ -108,23 +105,38 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
           data-testid="history-narrowed"
         >
           <span className="text-muted">{say.say("filter.narrowedTo")}</span>
-          {narrowings.map((one) => (
-            <button
-              key={one.key}
-              type="button"
-              onClick={() => update(one.key, "all")}
-              className="flex items-center gap-1.5 rounded-full border border-rule px-2.5 py-1 hover:border-ink-soft"
-              title={`Stop narrowing to ${one.label}`}
-              data-testid="history-narrowing"
-              data-narrowing={one.key}
-            >
-              {one.label}
-              <span aria-hidden className="text-muted">
-                ×
-              </span>
-              <span className="sr-only">— remove</span>
-            </button>
-          ))}
+          {narrowings.map((one) =>
+            one.href !== undefined ? (
+              // The address itself is applying this one (/games/<slug>/me),
+              // so there is nothing for a "×" to take off — it leads to the
+              // player's own page instead, by id rather than by name.
+              <Link
+                key={one.key}
+                href={one.href}
+                className="flex items-center gap-1.5 rounded-full border border-rule px-2.5 py-1 hover:border-ink-soft"
+                data-testid="history-narrowing"
+                data-narrowing={one.key}
+              >
+                {one.label}
+              </Link>
+            ) : (
+              <button
+                key={one.key}
+                type="button"
+                onClick={() => update(one.key, "all")}
+                className="flex items-center gap-1.5 rounded-full border border-rule px-2.5 py-1 hover:border-ink-soft"
+                title={`Stop narrowing to ${one.label}`}
+                data-testid="history-narrowing"
+                data-narrowing={one.key}
+              >
+                {one.label}
+                <span aria-hidden className="text-muted">
+                  ×
+                </span>
+                <span className="sr-only">— remove</span>
+              </button>
+            ),
+          )}
         </div>
       ) : null}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -147,7 +159,7 @@ export function HistoryFilters({ variant }: { variant: RuleVariant | null }) {
         selects at once would be offering a choice between a question and its
         own rephrasing.
       */}
-        {player === "" ? (
+        {player === null ? (
           <Field label={say.say("filter.result")}>
             <Select
               value={value("result", "all")}
