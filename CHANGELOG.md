@@ -9,6 +9,7 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 ## 0.163.0 — 2026-09-12
 - Start the game leads to a doorstep, not a board: a page that states exactly what is about to happen — the game, the board, the rules, the clock, whether it counts, who you are playing and which colour you hold — with one button, Begin, and one way back that keeps every choice. Nothing is created until Begin
 - The board means playing: the settings form beside a shared game is gone, and the rules are shown as a statement
+- A link that names a board is honoured on the setup page: a single seat already waiting at that game no longer moves the board to its own size over the one the address said
 
 ## 0.162.1 — 2026-09-12
 - A test that had been red on every fresh database since the setup-first work turned out to be the test, not the site: resigning from the board has always ended the game
