@@ -40,6 +40,33 @@ import type { PagedEnvelope } from "@/lib/api/paging.types";
  * - **It never loads two pages at once.** The observer can fire twice before
  *   React has re-rendered, so the cursor in flight is held in a ref rather than
  *   in state — state is the thing that has not updated yet.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * A LIST SHORTER THAN THE SCREEN FILLS ITSELF, AND THAT IS RIGHT
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * The observer watches an element below the list, so if the list does not reach
+ * the bottom of the window that element is ALREADY in view and a page loads
+ * without anybody scrolling. Appending pushes it down; if it is still within the
+ * look-ahead, another page loads. So a short first page walks itself until the
+ * screen is full and then stops.
+ *
+ * That is the behaviour to want, not a runaway. "The end of the list is on
+ * screen" means the reader is at the end, and a scroller that insisted on a
+ * gesture first would show three rows and sit there. It terminates for a reason
+ * that cannot be argued with: rows have height, so content exceeds the window
+ * plus the margin after a bounded number of pages, and `next` becoming null ends
+ * it in any case.
+ *
+ * It is worth knowing because of what it costs — each page is a request — and
+ * the mitigation is the DEFAULT PAGE SIZE rather than a guard here. Twenty games
+ * or twenty-five ladder rows is already taller than a window, so the ordinary
+ * case loads exactly one page and waits. It is only a deliberately tiny `limit`
+ * that produces a cascade, and three requests to fill a screen somebody asked
+ * for three rows at a time is the honest price of the request they made.
+ *
+ * A browser spec found this, and the spec was the thing that was wrong: it asked
+ * for `limit=3` and asserted three rows were on screen.
  */
 
 export type LiveScrollState<Item> = {
