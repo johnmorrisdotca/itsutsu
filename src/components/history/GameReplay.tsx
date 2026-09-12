@@ -11,13 +11,15 @@ import { PlayedMoves } from "./PlayedMoves";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
+import { moveNumberAt, timelineIndexForMove } from "@/lib/history/replayIndex";
 
 /**
  * The whole game as text, the way a printed record or the elder sites give
  * it: "1. h8 i9  2. h9 h10 …", one pair a turn. Each move is a link to its
  * position, and the plain text can be copied in one go.
  */
-function MoveList({ game, current, onJump }: { game: GameDetail; current: number; onJump: (index: number) => void }) {
+/** `current` and `onJump` both speak move numbers (`move.number`), never a timeline position — see replayIndex.ts. */
+function MoveList({ game, current, onJump }: { game: GameDetail; current: number; onJump: (moveNumber: number) => void }) {
   const [copied, setCopied] = useState(false);
   const names = useMemo(() => game.moves.map((move) => (move.kind === "pass" ? "pass" : pointName(game.size, move))), [game]);
   const text = useMemo(() => {
@@ -76,7 +78,13 @@ export function GameReplay({
   appearance = DEFAULT_APPEARANCE,
 }: {
   game: GameDetail;
-  /** The move to open at; the final position when not given. */
+  /**
+   * The MOVE to open at — a stone count, matching `game.moveCount` and the
+   * number `matchPath` puts on the address — not a position in the engine's
+   * own timeline. The two agree for a plain game and drift apart the moment
+   * an opening choice or a twist adds an entry the timeline has and no move
+   * ever claimed; the final position when not given.
+   */
   initialIndex?: number;
   /** The match's address; a position is that with the move number appended, and it is kept in the bar as the scrubber moves. */
   basePath?: string;
@@ -89,15 +97,26 @@ export function GameReplay({
   appearance?: Appearance;
 }) {
   const timeline = useMemo(() => replayTimeline(game), [game]);
-  const [index, setIndex] = useState(
-    Math.min(initialIndex ?? timeline.length - 1, timeline.length - 1),
+  /*
+   * `initialIndex` is a MOVE NUMBER, handed down from the address
+   * (`matchPath`'s own contract) and validated by the page against
+   * `game.moveCount` — so it has to be converted to a timeline position
+   * through the same function everything else in this component uses,
+   * rather than trusted as one directly. See replayIndex.ts.
+   */
+  const [index, setIndex] = useState(() =>
+    initialIndex === undefined ? timeline.length - 1 : timelineIndexForMove(timeline, initialIndex),
   );
 
   useEffect(() => {
     if (basePath === undefined) return;
-    const next = `${basePath}/${index}`;
+    // What travels in the address is a move number too, for the same
+    // reason it arrived as one: a shareable scrub-bar link is `matchPath`'s
+    // contract, and the engine's own timeline position is not what that
+    // contract means by "move".
+    const next = `${basePath}/${moveNumberAt(timeline[index])}`;
     if (window.location.pathname !== next) window.history.replaceState(null, "", next);
-  }, [basePath, index]);
+  }, [basePath, index, timeline]);
   const [showNumbers, setShowNumbers] = useState(false);
   /*
    * The same way up this game was being read while it was played. It is the
@@ -140,7 +159,10 @@ export function GameReplay({
   }, [last]);
 
   const state = timeline[index];
-  const current = game.moves[index - 1];
+  // The move number THIS POSITION is at, not the position's own index — see
+  // replayIndex.ts. Equal for a plain game and only for a plain game.
+  const moveNumber = moveNumberAt(state);
+  const current = game.moves[moveNumber - 1];
 
   return (
     <div className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch">
@@ -165,7 +187,7 @@ export function GameReplay({
       <aside className="flex w-full flex-col gap-4 lg:w-72">
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted">
-            Move <span className="font-mono tabular-nums">{index}</span> of{" "}
+            Move <span className="font-mono tabular-nums">{moveNumber}</span> of{" "}
             <span className="font-mono tabular-nums">{game.moveCount}</span>
             {current !== undefined ? (
               <>
@@ -177,7 +199,7 @@ export function GameReplay({
                     The last move is when the game ended, paired with move 0's "started" below. */}
                 <span className="block text-xs" data-testid="move-made-at">
                   {current.createdAt
-                    ? `${index === game.moveCount ? "ended" : "made"} ${new Date(current.createdAt).toLocaleString()}`
+                    ? `${moveNumber === game.moveCount ? "ended" : "made"} ${new Date(current.createdAt).toLocaleString()}`
                     : "\u00a0"}
                 </span>
               </>
@@ -236,8 +258,10 @@ export function GameReplay({
           <PlayedMoves
             size={game.size}
             moves={game.moves}
-            at={index}
-            onJump={(number) => setIndex(number)}
+            at={moveNumber}
+            // PlayedMoves hands back a MOVE NUMBER (move.number), the same
+            // thing it was given as `at` — never a timeline position.
+            onJump={(number) => setIndex(timelineIndexForMove(timeline, number))}
             emptyNote="No stones were played in this game."
           />
         </div>
@@ -250,7 +274,11 @@ export function GameReplay({
         </Button>
 
         <div className="lg:mt-auto">
-          <MoveList game={game} current={index} onJump={setIndex} />
+          <MoveList
+            game={game}
+            current={moveNumber}
+            onJump={(number) => setIndex(timelineIndexForMove(timeline, number))}
+          />
         </div>
       </aside>
     </div>
