@@ -235,4 +235,169 @@ test.describe("keeping finished games in your own list", () => {
     await removeMember(me.email);
     await removePlayedUnder([me.name, against.lately, against.ancient]);
   });
+
+  /**
+   * ───────────────────────────────────────────────────────────────────────────
+   * MORE FINISHED GAMES THAN ONE PAGE HOLDS
+   * ───────────────────────────────────────────────────────────────────────────
+   *
+   * The window above bounds the read for a member who has CHOSEN one. It cannot
+   * bound the default, "keep for ever", because there is no date to bound with —
+   * so the finished group pages instead, and this is the case that walks it.
+   *
+   * THREE PROMISES, AND ALL THREE ARE ASSERTED HERE, because each of them fails
+   * in a way that looks like the page working:
+   *
+   *  - THE COUNT IS TRUE. The heading says how many there are, not how many are
+   *    on screen. "Lately finished 5" over a bucket of twenty-three is the fault
+   *    `shownGroup` was written against, and a PAGE hands it a fresh way in:
+   *    counting the rows in hand gives the cap every time.
+   *  - THE LINK KEEPS THE PROMISE THE COUNT MADE. A number that refers to games
+   *    leads to those games — all of them — which for a paged list means the
+   *    pages between here and the end actually exist and hold the rest.
+   *  - THE PAGES DO NOT OVERLAP OR SKIP. Asserted over the union of two pages
+   *    rather than page by page, because a repeat and a gap are two halves of one
+   *    fault and a per-page check can miss either.
+   *
+   * AND IT CLICKS, rather than typing the addresses. A test that reaches its
+   * subject by a route no reader takes proves nothing about the route they do
+   * take, and this project has the language picker to show what that costs.
+   * There is no hydration window to race here — every control is a plain link,
+   * so a press before React attaches follows the href to the same address — but
+   * clicking is what a reader does, so clicking is what this does.
+   *
+   * IT BRINGS ITS OWN WORLD. Its member is made by this spec and its games are
+   * this spec's, so the counts below are statements about what it created and not
+   * about what four hundred other tests left on this machine. Both go away at the
+   * end.
+   */
+  test("pages the finished games, says how many there are, and leads to the rest", async ({
+    browser,
+    baseURL,
+  }) => {
+    const stamp = Date.now().toString(36);
+    const me = { email: `keeper5-${stamp}@example.test`, name: `Pager${stamp} Tester` };
+    const context = await memberContext(browser, baseURL!, me);
+    const page = await context.newPage();
+
+    /*
+     * TWENTY-THREE, which is the number that makes this case say something. The
+     * closed panel shows five and the opened one twenty, so anything up to twenty
+     * would open in full and never turn a page — the cursor would be built, be
+     * correct, and go untested.
+     */
+    const HOW_MANY = 23;
+    const CLOSED = 5;
+    const OPENED = 20;
+
+    const made: string[] = [];
+    const prisma = new PrismaClient();
+    try {
+      const mine = await prisma.member.findUnique({
+        where: { email: me.email },
+        select: { id: true },
+      });
+      expect(mine).not.toBeNull();
+      for (let n = 0; n < HOW_MANY; n += 1) {
+        /*
+         * Filed rows rather than games played through the API: this case is about
+         * the ORDER and the COUNT of a list, and playing twenty-three games would
+         * be seventy requests to arrange rows whose shape is the whole point.
+         * `e2e/xp-history.spec.ts` seeds a finished game the same way.
+         *
+         * `lastMoveAt` an hour apart and DESCENDING with the index, so the order
+         * the page must draw is known before the page is opened — and `rated:
+         * false`, because nothing here should move a rating on a shared database.
+         */
+        const when = new Date(Date.now() - (n + 1) * 3_600_000);
+        const row = await prisma.game.create({
+          data: {
+            id: `${stamp.slice(-4)}-${String(n).padStart(3, "0")}z`,
+            status: "finished",
+            result: "black",
+            winner: "black",
+            moveCount: 9,
+            rated: false,
+            size: 9,
+            winLength: 5,
+            variant: "freestyle",
+            obstacles: "none",
+            opener: "black",
+            blackName: me.name,
+            whiteName: `Turned${stamp} Tester`,
+            blackMemberId: mine!.id,
+            playedAt: when,
+            lastMoveAt: when,
+          },
+          select: { id: true },
+        });
+        made.push(row.id);
+        tidyAway(row.id);
+      }
+    } finally {
+      await prisma.$disconnect();
+    }
+
+    const panel = page.getByTestId("my-games-finished");
+    const count = page.getByTestId("my-games-finished-count");
+    const rows = panel.locator('[data-testid="my-game"]');
+
+    // ── The closed panel: five of twenty-three, and it says so. ──────────────
+    await page.goto("/play");
+    await expect(panel).toBeVisible();
+    await expect(rows).toHaveCount(CLOSED);
+    await expect(count).toHaveText(`${HOW_MANY} · showing ${CLOSED}`);
+    // Newest first, oldest last — the order `lastMoveAt ?? playedAt` puts them in.
+    await expect(rows.first()).toHaveAttribute("data-id", made[0]);
+    await expect(rows.nth(CLOSED - 1)).toHaveAttribute("data-id", made[CLOSED - 1]);
+
+    /*
+     * The rest are not on this page — asserted AFTER the five above, so it is a
+     * statement about a rendered page rather than about the speed of a request.
+     */
+    await expect(row(page, made[CLOSED])).toHaveCount(0);
+
+    // ── The link the count promised, clicked. ────────────────────────────────
+    await page.getByTestId("my-games-finished-all").click();
+    await expect(page).toHaveURL(/\?all=finished$/);
+    await expect(rows).toHaveCount(OPENED);
+    // Still the TRUE number over a page of twenty, not the page's own length.
+    await expect(count).toHaveText(`${HOW_MANY} · showing ${OPENED}`);
+    const first = await rows.evaluateAll((seen) =>
+      seen.map((one) => one.getAttribute("data-id") ?? ""),
+    );
+
+    // ── And the page after it, which is where the cursor is. ─────────────────
+    const older = page.getByTestId("my-games-finished-older");
+    await expect(older).toBeVisible();
+    await older.click();
+    await expect(page).toHaveURL(/cursor=/);
+    await expect(panel).toBeVisible();
+    await expect(rows).toHaveCount(HOW_MANY - OPENED);
+    const second = await rows.evaluateAll((seen) =>
+      seen.map((one) => one.getAttribute("data-id") ?? ""),
+    );
+
+    /*
+     * NO REPEATS AND NO GAPS. Over the union of the two pages, because that is
+     * the only assertion a plausible wrong answer cannot satisfy: a cursor that
+     * repeated a row would make the set smaller than the count, and one that
+     * skipped a row would leave a game this spec created on no page at all.
+     */
+    expect(new Set([...first, ...second]).size).toBe(HOW_MANY);
+    expect([...first, ...second]).toEqual(made);
+
+    // That was the last page, so there is nowhere further to go.
+    await expect(older).toHaveCount(0);
+
+    // ── The way back, which is the half a one-directional test never finds. ──
+    await page.getByTestId("my-games-finished-fewer").click();
+    await expect(page).toHaveURL(/\/play$/);
+    await expect(rows).toHaveCount(CLOSED);
+    await expect(count).toHaveText(`${HOW_MANY} · showing ${CLOSED}`);
+
+    await context.close();
+    await removeMember(me.email);
+    await removePlayedUnder([me.name, `Turned${stamp} Tester`]);
+  });
 });

@@ -77,7 +77,17 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         — linkable, reloadable, and the same page on the way back. See
         `MyGamesList`.
       */}
-      <MyGamesList showAll={typeof asked.all === "string" ? asked.all : null} />
+      <MyGamesList
+        showAll={typeof asked.all === "string" ? asked.all : null}
+        /*
+          And where the last page of the finished group ended. In the query beside
+          `all` for the same reason: a page of a list is a place, so it can be
+          linked, reloaded and arrived back at. Only the finished group pages —
+          see `MyGamesList` — so a cursor without `?all=finished` names a position
+          in a list nobody asked to see, and opens nothing.
+        */
+        cursor={typeof asked.cursor === "string" ? asked.cursor : null}
+      />
       <LocalGameCardClient />
     </Page>
   );

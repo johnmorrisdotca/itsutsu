@@ -2,18 +2,20 @@ import "server-only";
 
 import type { Prisma } from "@prisma/client";
 
-import { replayGame } from "@/lib/gomoku/replay";
-import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
-import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
+import { STONES } from "@/lib/gomoku/gomoku.constants";
+import type { Stone } from "@/lib/gomoku/gomoku.types";
+import type { Cursor } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
-import { NO_CURRENT_NAMES, currentNamesFor } from "./currentNames";
-import { SUMMARY_SELECT, toGameMove, toSummary } from "./gameHistory";
+import { currentNamesFor } from "./currentNames";
+import { toSummary } from "./gameHistory";
+import { DEBT_ONLY, myFinishedPage, myFinishedTotal } from "./myFinished";
+import { MY_FINISHED_PAGE } from "./myFinished.sort";
+import { QUEUE_SELECT, positionOf, replaysFor } from "./myGamesRows";
 import { waitingFirst } from "./nextGame";
 import { offerIsMine, offerState, offeredSeat } from "./offers";
 import { OFFER_STATES, type OfferState } from "./offers.types";
 import { KEEP_FINISHED_DEFAULT, myListWindow, staysInMyList } from "./retention";
-import { type SettledPosition, settledPosition } from "./settledTurn";
-import type { GameMove, GameSummary } from "./gameHistory.types";
+import type { GameSummary } from "./gameHistory.types";
 
 /** A game nobody has touched for this long is flagged, so it can be dealt with. */
 export const STALE_AFTER_DAYS = 14;
@@ -74,6 +76,42 @@ export type MyGame = {
 
 export type MyGames = Record<MyGameGroup, MyGame[]>;
 
+/**
+ * THE WHOLE QUEUE: the seven groups, plus what the one that PAGES could not say
+ * about itself.
+ *
+ * `groups` keeps the shape it has always had — a record of seven arrays — so
+ * every reader of it, including `/api/games/mine`, goes on reading arrays. What
+ * is new is that `groups.finished` is ONE PAGE rather than the whole group, and a
+ * page cannot report the two things the panel above it needs: how many there
+ * really are, and whether there is another page.
+ *
+ * THOSE TWO FACTS TRAVEL BESIDE THE GROUPS RATHER THAN INSIDE THEM, and the
+ * reason is worth stating because the tidier-looking arrangement is the broken
+ * one. Putting a `{ items, next, total }` envelope in `groups.finished` would
+ * make one of the seven a different shape from the other six, and the first
+ * casualty is `Object.values(groups).reduce((n, list) => n + list.length, 0)` —
+ * which is what the doorstep spec does to every group, and what would then read
+ * `undefined` and answer `NaN` with nothing failing.
+ *
+ * AND `fetchMyGames` RETURNS THIS RATHER THAN THE GROUPS ALONE, with no second
+ * door that hands back only the groups. A caller holding just the groups would
+ * reach for `groups.finished.length` for the count and get the PAGE's length — a
+ * number that is in range, looks right, and means something else. That is the
+ * one mistake this shape exists to make impossible.
+ */
+export type MyQueue = {
+  /** The seven groups. `finished` holds one page of itself; the rest are complete. */
+  groups: MyGames;
+  /** What the finished group's page cannot say about the group it came from. */
+  finished: {
+    /** How many finished games there are, over exactly the set the page pages. */
+    total: number;
+    /** Where the page ended, or null when it was the last one. */
+    next: Cursor | null;
+  };
+};
+
 /** A bucket capped for display, without losing how big the bucket actually was. */
 export type ShownGroup<T> = {
   /** The capped slice, taken from the front. */
@@ -103,6 +141,26 @@ export function shownGroup<T>(items: readonly T[], cap: number): ShownGroup<T> {
 }
 
 /**
+ * The same bucket, for the ONE group that arrives as a page rather than whole.
+ *
+ * `shownGroup` above derives the total from the list it was given, which is right
+ * for a complete group and would be a LIE for a page: the finished group's list
+ * is five rows of however many there are, so its own length is the cap and never
+ * the total. The count comes from the database (see `MyQueue.finished`), so it is
+ * passed in.
+ *
+ * Two functions rather than one that takes an optional total, because the
+ * difference between them is which fact is being trusted and a caller passing
+ * nothing would get a plausible, wrong number with nothing failing. The panel
+ * reads both the same way, which is the whole point: `hidden` still means "how
+ * many this is not showing", and the header still cannot print the slice's length
+ * and call it the total.
+ */
+export function pagedGroup<T>(page: readonly T[], total: number): ShownGroup<T> {
+  return { items: [...page], total, hidden: Math.max(0, total - page.length) };
+}
+
+/**
  * Sorts a browser's seats into the queue the turn-based sites taught: the
  * games waiting on you first, then the ones you are waiting on, the ones
  * nobody has started, and the ones that are over. "Yours" are the seats
@@ -120,7 +178,16 @@ export async function fetchMyGames(
    * badge polls, and the badge only wants the count of games waiting on you.
    */
   keepFinishedDays: number = KEEP_FINISHED_DEFAULT,
-): Promise<MyGames> {
+  /**
+   * Which page of the finished group, and how big — the only group that pages.
+   *
+   * An OBJECT rather than two more positional arguments. There would be six of
+   * them by now, three of them optional and two of them a number and a string a
+   * caller could hand over the wrong way round without anything failing.
+   * `FilterSeats` is named for the same reason and says it at more length.
+   */
+  finished: { limit?: number; cursor?: Cursor | null } = {},
+): Promise<MyQueue> {
   const groups: MyGames = {
     offered: [],
     yourMove: [],
@@ -130,7 +197,9 @@ export async function fetchMyGames(
     hotSeat: [],
     finished: [],
   };
-  if (claims.size === 0 && memberId === null) return groups;
+  if (claims.size === 0 && memberId === null) {
+    return { groups, finished: { total: 0, next: null } };
+  }
 
   /*
    * THE MEMBER'S WINDOW, IN THE QUERY RATHER THAN AFTER IT.
@@ -146,50 +215,88 @@ export async function fetchMyGames(
    *
    * NULL MEANS NO BOUND, not a window of nothing, so it is tested for rather
    * than spread in blind. And it goes in an `AND` rather than being spread
-   * over the `where`: the window is itself an `OR` and one object cannot hold
+   * over a `where`: the window is itself an `OR` and one object cannot hold
    * two, so spreading it would silently replace the seats with the dates.
-   *
-   * AND STILL NO `take`, deliberately. The list has to be COMPLETE for the
-   * groups that are a debt — every game waiting on this reader, and every
-   * offer — because `shownGroup` prints the bucket's true size and
-   * `useAdvanceToNextGame` walks `yourMove` looking for the oldest. A cap on
-   * the read would drop games waiting on somebody and report a smaller number
-   * with nothing saying so, which is worse than the cost it saves. The bound
-   * is what makes the read proportional to what the page can show.
    */
   const kept = myListWindow(keepFinishedDays, now);
 
-  const rows = await prisma.game.findMany({
-    where: {
-      ...(kept === null ? {} : { AND: [kept] }),
-      OR: [
-        { id: { in: [...claims.keys()] } },
-        /*
-         * THE THIRD WAY A GAME IS YOURS. A game OFFERED to you has neither
-         * seat bound to you — that is the whole point of an offer — so without
-         * this branch the person being asked would never see the question. On
-         * its own index, on the same query as the other two, so the queue
-         * costs no extra round trip.
-         */
-        ...(memberId === null
-          ? []
-          : [
-              { blackMemberId: memberId },
-              { whiteMemberId: memberId },
-              { offeredToMemberId: memberId },
-            ]),
-      ],
-    },
-    select: {
-      ...SUMMARY_SELECT,
-      blackToken: true,
-      whiteToken: true,
-      blackMemberId: true,
-      whiteMemberId: true,
-      settledStatus: true,
-      settledToPlay: true,
-    },
-  });
+  /*
+   * WHICH GAMES ARE THIS READER'S — the one definition, built once and handed to
+   * both halves of the read below, so the two cannot come to disagree about it.
+   */
+  const seats: Prisma.GameWhereInput = {
+    OR: [
+      { id: { in: [...claims.keys()] } },
+      /*
+       * THE THIRD WAY A GAME IS YOURS. A game OFFERED to you has neither
+       * seat bound to you — that is the whole point of an offer — so without
+       * this branch the person being asked would never see the question. On
+       * its own index, on the same query as the other two, so the queue
+       * costs no extra round trip.
+       */
+      ...(memberId === null
+        ? []
+        : [
+            { blackMemberId: memberId },
+            { whiteMemberId: memberId },
+            { offeredToMemberId: memberId },
+          ]),
+    ],
+  };
+
+  /*
+   * ─────────────────────────────────────────────────────────────────────────
+   * TWO READS: THE DEBT COMPLETE, THE FINISHED GROUP ONE PAGE
+   * ─────────────────────────────────────────────────────────────────────────
+   *
+   * The window above bounded this read for everybody who has CHOSEN a window. It
+   * could not bound the DEFAULT — "keep finished games for ever" — because there
+   * is no date to bound it with, so a member who has never touched the setting
+   * still read every game they had ever sat in. That is 571 rows on John's own
+   * account, on the page he opens daily and on every `/api/games/mine` the badge
+   * asks for, replayed where they could not answer for themselves and resolved
+   * to current names. The page shows five of them.
+   *
+   * SO THE FINISHED GROUP PAGES AND NOTHING ELSE DOES, and the asymmetry is the
+   * design rather than a compromise:
+   *
+   *  - THE DEBT GROUPS STAY COMPLETE. Every game waiting on this reader, every
+   *    board nobody has started, every offer in any state. `shownGroup` prints
+   *    the bucket's TRUE size and `useAdvanceToNextGame` walks `yourMove`
+   *    looking for the oldest, so a cap on this half would drop a game somebody
+   *    is waiting on and report a smaller number with nothing saying so. It
+   *    needs no cap either: it is bounded by the twenty-games-at-once limit on
+   *    playing and by how many offers a person can have outstanding.
+   *  - THE FINISHED GROUP IS HISTORY. It grows without anybody deciding to, it
+   *    is the half the page shows five of, and it is the only half whose "rest"
+   *    has somewhere else to be seen — the record, which is built to hold it. So
+   *    it is the half that pages.
+   *
+   * BOTH AT ONCE, because they are independent reads and waiting for one before
+   * asking for the other would add a round trip to every visit for nothing.
+   */
+  const [debt, page] = await Promise.all([
+    prisma.game.findMany({
+      where: { AND: [DEBT_ONLY, seats, ...(kept === null ? [] : [kept])] },
+      select: QUEUE_SELECT,
+    }),
+    myFinishedPage({
+      seats,
+      window: kept,
+      limit: finished.limit ?? MY_FINISHED_PAGE,
+      cursor: finished.cursor ?? null,
+    }),
+  ]);
+
+  /*
+   * One list from here on, because everything below — the seat, the offer, the
+   * group, the retention check — is decided per row and does not care which read
+   * a row arrived on. The two are exact complements (see `FINISHED_ONLY` and
+   * `DEBT_ONLY`), so concatenating them cannot double-count anything.
+   */
+  const rows = [...debt, ...page.rows];
+  /** Which ids came off the paged half, for the count below. */
+  const paged = new Set(page.rows.map((row) => row.id));
 
   const replayed = await replaysFor(rows);
   const names = await currentNamesFor(rows);
@@ -329,93 +436,38 @@ export async function fetchMyGames(
     if (group === "yourMove" || group === "offered") groups[group].sort(waitingFirst);
     else groups[group].sort((a, b) => b.since.localeCompare(a.since));
   }
-  return groups;
-}
 
-/** Everything about a row this list needs beyond the summary it prints. */
-type SeatRow = Prisma.GameGetPayload<{ select: typeof SUMMARY_SELECT }> & {
-  settledStatus: string | null;
-  settledToPlay: string | null;
-};
+  return { groups, finished: { total: await finishedTotal(), next: page.next } };
 
-/**
- * Whether a game is still running and whose move it is, without reading a
- * stone unless there is no other way.
- *
- * Three answers, in the order that keeps the reads down:
- *
- *  1. A row filed as anything but `active` is over, whatever the stones say.
- *     That was already the rule — `running` has always been `status ===
- *     "active" && …` — so the engine's verdict could never change the answer
- *     for these, and most of a long-standing list is these.
- *  2. An active row whose writer left a settled turn behind is answered from
- *     it. See `settledTurn`: the side that applied the move wrote it down.
- *  3. An active row that has none is replayed, exactly as every row was
- *     before. Null means nobody has written one, never "nobody is to move",
- *     and a replay can always answer.
- */
-function positionOf(row: SeatRow, replayed: Map<string, GameState>): SettledPosition {
-  if (row.status !== "active") return { running: false, toPlay: null };
-  const stored = settledPosition(row);
-  if (stored !== null) return stored;
-  const state = replayed.get(row.id);
-  // A game whose moves could not be read is not one to guess about.
-  if (state === undefined) return { running: false, toPlay: null };
-  return {
-    running: state.status === GAME_STATUS.playing,
-    toPlay: state.status === GAME_STATUS.playing ? state.toPlay : null,
-  };
-}
-
-/**
- * Replays only the games that cannot answer for themselves — the second query,
- * and on a list where every row has been written since these columns existed,
- * no query at all.
- *
- * One `findMany` for all of them rather than one each: the games needing it are
- * known before any of them is replayed, so there is no reason to go back to the
- * database once per game and every reason not to.
- */
-async function replaysFor(rows: SeatRow[]): Promise<Map<string, GameState>> {
-  const wanted = rows.filter((row) => row.status === "active" && settledPosition(row) === null);
-  const replayed = new Map<string, GameState>();
-  if (wanted.length === 0) return replayed;
-
-  const moves = await prisma.move.findMany({
-    where: { gameId: { in: wanted.map((row) => row.id) } },
-    select: { ...MOVE_COLUMNS, gameId: true },
-    orderBy: { number: "asc" },
-  });
-  const byGame = new Map<string, GameMove[]>();
-  for (const move of moves) {
-    const { gameId, ...columns } = move;
-    const list = byGame.get(gameId);
-    if (list === undefined) byGame.set(gameId, [toGameMove(columns)]);
-    else list.push(toGameMove(columns));
+  /**
+   * HOW MANY FINISHED GAMES THERE ARE, and the two ways of knowing one.
+   *
+   * A count is a second query, so it is asked only where the page cannot answer
+   * on its own — which is not most readers. A FIRST page with no cursor after it
+   * IS the whole group, so its own length is the exact total and nothing is
+   * asked: a member with three finished games pays for no count at all, ever.
+   *
+   * BOTH HALVES OF THAT CONDITION ARE LOAD-BEARING, and the first one is the half
+   * that is easy to leave out. `page.next === null` alone means "nothing follows
+   * this page", which is true of the LAST page of forty as well as of the only
+   * page of three — so on its own it would have reported the last page's length
+   * as the size of the whole group. A number in range, plausible, and wrong, on
+   * exactly the page a reader had walked furthest to reach. `myFinished.test.ts`
+   * caught it; nothing else would have.
+   *
+   * Past that, it is the count over exactly the set the page is a page of, PLUS
+   * the rows in this group that did not come off it. Those are the active rows
+   * the ENGINE has decided and nobody has filed — a Reversi board that filled
+   * up, `status` still `active` until something settles it — which arrive on the
+   * debt read because no `where` can ask whether a position is over. They are
+   * bounded by the twenty-active-games cap, they are shown with the first page,
+   * and they have to be added here or the heading would under-count the group it
+   * sits over by however many of them there are.
+   */
+  async function finishedTotal(): Promise<number> {
+    const whole = (finished.cursor ?? null) === null && page.next === null;
+    if (whole) return groups.finished.length;
+    const engineOver = groups.finished.filter((one) => !paged.has(one.game.id)).length;
+    return engineOver + (await myFinishedTotal({ seats, window: kept }));
   }
-  for (const row of wanted) {
-    /*
-     * NO_CURRENT_NAMES, said rather than forgotten. What comes out of here is a
-     * POSITION, handed to the engine to find whose turn it is — and the engine
-     * reads no names at all. There is nobody to resolve for because nothing here
-     * will ever be shown; the summary these rows pass through again, for the
-     * screen, is the one above.
-     */
-    replayed.set(row.id, replayGame({ ...toSummary(row, NO_CURRENT_NAMES), moves: byGame.get(row.id) ?? [] }));
-  }
-  return replayed;
 }
-
-const MOVE_COLUMNS = {
-  number: true,
-  row: true,
-  col: true,
-  stone: true,
-  kind: true,
-  fromRow: true,
-  fromCol: true,
-  twistQuadrant: true,
-  twistClockwise: true,
-  cells: true,
-  createdAt: true,
-} as const;

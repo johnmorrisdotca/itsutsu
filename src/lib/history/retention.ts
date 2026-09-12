@@ -109,9 +109,15 @@ export function staysInMyList(since: string, keepDays: number, now: Date): boole
  * `Game_offeredToMemberId_idx` for the three ways a game is a member's, and
  * the primary key for the seat cookies' `id IN (…)`. Postgres bitmap-ORs
  * those and applies this as a filter over the member's own rows, which is
- * already the smallest set anything here could scan. An index on `status` or
- * on `lastMoveAt` could not improve on that and would be read by nothing
- * else, so none is added.
+ * already the smallest set anything here could scan. An index on `status`
+ * could not improve on that and would be read by nothing else, so none is
+ * added.
+ *
+ * THERE IS NOW ONE ON `lastMoveAt`, and it is not for this. It was added with
+ * the finished group's paging, where the column is an ORDER rather than a
+ * filter — which is a different question, and the one an index can answer. See
+ * `myFinished.sort.ts`, which carries the measurement. This `where` goes on
+ * riding the member indexes exactly as described above.
  *
  * NULL, NOT A WINDOW OF ZERO, for "there is no bound" — a `keepDays` of 0
  * means KEEP EVERYTHING (see `KEEP_FINISHED_DISPLAY`, "For ever"), and it is
@@ -119,16 +125,41 @@ export function staysInMyList(since: string, keepDays: number, now: Date): boole
  * the site. An empty `{}` would be a where that filters nothing while reading
  * like one that was meant to.
  *
- * AND THE CASE THIS DOES NOT FIX, SAID PLAINLY. At `keepDays === 0` there is
- * no bound to put in, so a member keeping everything still reads every
- * finished game they have ever played — the default, and John's own setting.
- * Bounding that one needs the finished group to page by cursor, and it cannot
- * yet: which bucket a game lands in depends on whose turn it is, the order
- * within the group is `COALESCE(lastMoveAt, playedAt)` with no index on that
- * expression, and `shownGroup` promises the bucket's TRUE size above the five
- * rows it prints, which a page cannot answer without a count of its own. That
- * is a larger change than a bound and it is not this one. See `MyGamesList`,
- * which already argues why this page is not a cursor list.
+ * ─────────────────────────────────────────────────────────────────────────
+ * THE CASE THIS COULD NOT FIX, AND WHAT FIXED IT
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * At `keepDays === 0` there is no bound to put in, so a member keeping
+ * everything still read every finished game they had ever played — the default,
+ * and John's own setting. That is fixed one layer along rather than here: the
+ * queue's read is now TWO reads and the finished group takes one page (see
+ * `myFinished.ts`). This function is unchanged by it and is asked exactly the
+ * same question; at `keepDays === 0` it still answers null, and the PAGE is
+ * then the bound instead of a date.
+ *
+ * The three reasons written here for why that could not be done are worth
+ * keeping, because two of them were about the right thing and one was wrong
+ * about which group it applied to:
+ *
+ *  - "Which bucket a game lands in depends on whose turn it is." True, and it
+ *    is why the other six groups do NOT page. It is not true of this one:
+ *    "not active, and not an offer" is answerable from columns.
+ *  - "The order within the group is `COALESCE(lastMoveAt, playedAt)` with no
+ *    index on that expression." Still true, and the answer is the move this
+ *    function already makes — two branches that partition the rows, since
+ *    `lastMoveAt` is either null or it is not, ordered by the column each
+ *    branch has and merged.
+ *  - "`shownGroup` promises the bucket's TRUE size, which a page cannot answer
+ *    without a count of its own." Correct, so the count is run — once, and only
+ *    where the page is not already the whole group. `myFinishedTotal` says what
+ *    that costs.
+ *
+ * WHAT STILL HOLDS, AND IS WHY THIS CHECK STAYS BELOW THE PAGE AS WELL AS
+ * BESIDE IT: on a FINISHED row, branches 1 and 2 above cannot match, so this
+ * `where` reduces to its two date branches and agrees with `staysInMyList`
+ * exactly. That equality is what lets a count over this `where` be the group's
+ * true size — and `retention.test.ts` proves it over every combination of the
+ * two columns rather than leaving it to the eye.
  */
 export function myListWindow(keepDays: number, now: Date): Prisma.GameWhereInput | null {
   if (!Number.isFinite(keepDays) || keepDays <= 0) return null;
