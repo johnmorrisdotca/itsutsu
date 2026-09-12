@@ -6,6 +6,7 @@ import { pagingSpecProblems, sortWords } from "./paging";
 import type { SortSpec } from "./paging.types";
 import { GAME_SORT_SPEC } from "@/lib/history/gameHistory.sort";
 import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
+import { XP_LEDGER_SORT } from "@/lib/xp/xpHistory.sort";
 
 /**
  * THE GATE OVER EVERY SORTABLE LIST ON THE SITE.
@@ -25,6 +26,14 @@ import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
 const SPECS: { of: string; spec: SortSpec<string> }[] = [
   { of: "the record", spec: GAME_SORT_SPEC as SortSpec<string> },
   { of: "the ladder", spec: LADDER_SORT_SPEC as SortSpec<string> },
+  /*
+   * A member's own XP ledger, on /me's XP tab. Declared in `xpHistory.sort.ts`
+   * and not in `xpHistoryPage.ts`, which does the reading — for the reason its
+   * two neighbours above are split the same way: this gate imports every spec on
+   * the site, and a spec declared beside the query would drag `server-only` and
+   * a `PrismaClient` into it.
+   */
+  { of: "a member's XP", spec: XP_LEDGER_SORT as SortSpec<string> },
 ];
 
 /**
@@ -106,6 +115,6 @@ describe("every sort declaration", () => {
    * reminder to add the line rather than a reason to loosen it.
    */
   it("is the whole list of them", () => {
-    expect(SPECS).toHaveLength(2);
+    expect(SPECS).toHaveLength(3);
   });
 });
