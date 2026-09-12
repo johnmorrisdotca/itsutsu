@@ -28,16 +28,25 @@ test.describe("the board a game is played on", () => {
     await page.waitForURL(/\/games\/reversi\//);
 
     /*
-     * Nothing to choose, so nothing is asked: Reversi is 8×8 and the control
-     * is not there at all — the same rule the start sentence follows. What
-     * matters is that the panel is not offering boards this game does not
-     * have, and still says which one it is on.
+     * The panel beside a board does not offer boards at all any more — the rules
+     * of a game are agreed on the doorstep before it is written, and a board is
+     * not the place to re-offer them. What this case has always really been about
+     * survives that: the panel says which board the game is actually on, and it
+     * is the board the game has rather than the number somebody sent.
+     *
+     * The absence is asserted after the line above it has been waited for, so it
+     * is a statement about a rendered page rather than about how fast a request is.
      */
-    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
     await expect(page.getByTestId("shared-rules-line")).toContainText("8×8");
+    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
   });
 
-  test("a game that takes any board still offers the full range", async ({ page, request }) => {
+  test("a game that takes any board says which one it is on", async ({ page, request }) => {
+    /*
+     * The companion of the case above, on a game with four boards to choose from
+     * — the one where a panel offering a list could disagree with the board being
+     * drawn. It states the board instead, which cannot.
+     */
     const started = await request.post("/api/games/live", {
       data: { variant: "freestyle", blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 15 },
     });
@@ -46,9 +55,8 @@ test.describe("the board a game is played on", () => {
 
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
-    const sizes = page.getByTestId("shared-rules-size");
-    await expect(sizes.locator("option")).toHaveText(["9×9", "13×13", "15×15", "19×19"]);
-    await expect(sizes).toHaveValue("15");
+    await expect(page.getByTestId("shared-rules-line")).toContainText("15×15");
+    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
   });
 
   test("a size the game does not have is not written down, whoever asks", async ({ request }) => {

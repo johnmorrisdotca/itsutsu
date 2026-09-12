@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { openBoardRules } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -49,32 +50,77 @@ test.describe("when a shared game's rules settle", () => {
     expect((await other.request.post(`/api/games/${id}/sit`)).status()).toBe(200);
   }
 
-  test("stay open while the seat is still waiting for somebody", async ({ page, request }) => {
+  test("stay open at the route while the seat is still waiting for somebody", async ({
+    page,
+    request,
+  }) => {
+    /*
+     * ASKED AT THE ROUTE, BECAUSE THE PAGE NO LONGER ASKS IT.
+     *
+     * This used to assert that the panel beside the board was a FORM until
+     * somebody else arrived. There is no form there at any stage now: a game's
+     * rules are agreed on the doorstep before the game is written, and John's
+     * sentence about the board was "we do not want to see that Game board with all
+     * the settings on the side". A creator who got the clock wrong cancels a board
+     * with no stones on it and sets it up again.
+     *
+     * The RULE this file is about has not changed and is still worth a case: the
+     * settings route allows a change while nobody else is in the game and refuses
+     * one afterwards. That is where it lives, so that is where it is asked — and
+     * it is checked BOTH ways round in the case below, because a refusal that
+     * refuses everything is not a rule.
+     */
     const game = await posted(request);
+    const allowed = await request.put(`/api/games/${game.id}/settings`, {
+      data: {
+        token: game.blackToken,
+        variant: "freestyle",
+        size: 19,
+        obstacles: "none",
+        opening: "free",
+        moveTimeMs: null,
+        timeoutPenalty: "turn",
+        drawLimit: "none",
+        clockMode: "move",
+        rated: true,
+        allowResign: true,
+        open: true,
+        handicap: null,
+      },
+    });
+    expect(allowed.status(), await allowed.text()).toBe(200);
+
+    // And the board says the new rules rather than the ones it was written with.
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\/match\//);
-    // Nobody has answered, so a creator can still fix a clock they got wrong.
-    await expect(page.getByTestId("shared-rules-size")).toBeVisible();
-    await expect(page.getByTestId("rules-statement")).toHaveCount(0);
+    await expect(page.getByTestId("shared-rules-line")).toContainText("19×19");
   });
 
-  test("settle the moment the other seat is taken, before any stone", async ({
+  test("are stated beside the board whether or not anybody has arrived", async ({
     page,
     request,
     browser,
     baseURL,
   }) => {
+    /*
+     * The board reads the same before and after the other seat is taken, which is
+     * the change: it used to be a form and then a statement, and the shape of the
+     * page told a player which of two states their game was in — a distinction
+     * that belongs in the panel that says a seat is still posted, not in whether
+     * the rules are editable.
+     */
     const game = await posted(request);
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\/match\//);
-    await expect(page.getByTestId("shared-rules-size")).toBeVisible();
+    await openBoardRules(page);
+    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
 
     await answered(browser, baseURL!, game.id);
 
-    // No stone has been played, and the rules are already what both agreed to.
     await page.reload();
-    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
+    await openBoardRules(page);
     await expect(page.getByTestId("rules-statement")).toBeVisible();
+    await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
   });
 
   test("are settled for a challenge from the moment it is sent", async ({ browser, baseURL }) => {
@@ -117,13 +163,13 @@ test.describe("when a shared game's rules settle", () => {
      */
     const asker = await one.newPage();
     await asker.goto(`/games/gomoku/match/${game.id}`);
-    await expect(asker.getByTestId("rules-statement")).toBeVisible();
+    await openBoardRules(asker);
     await expect(asker.getByTestId("shared-rules-size")).toHaveCount(0);
 
     // And the invited player, who never agreed to anything twice.
     const asked = await two.newPage();
     await asked.goto(`/games/gomoku/match/${game.id}`);
-    await expect(asked.getByTestId("rules-statement")).toBeVisible();
+    await openBoardRules(asked);
     await expect(asked.getByTestId("shared-rules-size")).toHaveCount(0);
   });
 

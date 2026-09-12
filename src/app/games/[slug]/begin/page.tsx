@@ -104,20 +104,18 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
    * its body through, unchanged: the request is identical, it has simply moved one
    * screen along so that nothing is written before somebody has read what it says.
    */
+  const creation = creationFor({
+    rules: from.initial,
+    source: from.asPlayed,
+    opponent: from.opponent,
+    again: from.again,
+    fork: from.fork,
+    carry: from.carry,
+  });
   const begin: BeginAction =
     seat !== null
-      ? { kind: "sit", id: seat.id, who: playerWord(seat.who, false) }
-      : {
-          kind: "create",
-          body: creationFor({
-            rules: from.initial,
-            source: from.asPlayed,
-            opponent: from.opponent,
-            again: from.again,
-            fork: from.fork,
-            carry: from.carry,
-          }).body,
-        };
+      ? { kind: "sit", id: seat.id, who: playerWord(seat.who, false), instead: creation.body }
+      : { kind: "create", body: creation.body };
 
   const copy = RULE_VARIANT_DISPLAY[variant];
   /*

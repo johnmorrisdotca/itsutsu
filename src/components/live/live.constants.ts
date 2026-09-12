@@ -71,6 +71,27 @@ export const SET_UP_COPY = {
 } as const;
 
 /**
+ * THE RULES BESIDE A BOARD, IN WORDS.
+ *
+ * Short, because there are only two things left to say there. Everything that
+ * used to be decided beside a board is decided on the doorstep now, so the panel
+ * states rather than offers — see `SharedRules`.
+ */
+export const SHARED_RULES_COPY = {
+  /**
+   * Why the rows are answers.
+   *
+   * It said "the first stone is down" before, which was true of the moment the
+   * form went away and is no longer the reason: nothing after the doorstep can
+   * change these, stone or no stone. A note that gives an out-of-date reason is
+   * worse than a note giving none, because a reader believes it.
+   */
+  settled: "Agreed before this game was written. Nothing here can change them now.",
+  handicapMeans:
+    "The handicapped colour plays under those extra restrictions; the other colour plays the plain game.",
+} as const;
+
+/**
  * THE DOORSTEP, IN WORDS: the page between choosing a game and playing one.
  *
  * The setup screen asks; this one states. So every line here is a fact rather
@@ -97,7 +118,14 @@ export const DOORSTEP_COPY = {
   made: "You have already begun this game. The button below opens its board rather than making a second one.",
   another: "Begin another like this one",
   refused: "That game could not be started.",
-  seatGone: "That seat could not be taken.",
+  /**
+   * The seat went between this page being drawn and Begin being pressed.
+   *
+   * It says what the next press will do instead, because the screen before this
+   * one used to do it silently — a press naming one person quietly posting a game
+   * for anyone. The destination was right; doing it without saying so was not.
+   */
+  seatGone: "Somebody else took that seat first. Press Begin again to start a game of your own instead.",
   signIn: "Sign in to start a game against somebody.",
   /** Why a posted seat is no longer there to be taken — one line per reason. */
   gone: {

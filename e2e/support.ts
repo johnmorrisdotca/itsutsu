@@ -185,6 +185,51 @@ export async function openMoreSettings(page: Page) {
   await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
 }
 
+/**
+ * Presses Start on the setup screen and then Begin on the doorstep, which is
+ * what it now takes to reach a board.
+ *
+ * Start no longer creates anything: it carries the draft to /games/<game>/begin,
+ * which states what is about to be played and creates it on a press of its own.
+ * That is the whole of the doorstep ticket — "show the settings before the board,
+ * as the board means we're playing" — so every spec whose subject is the GAME
+ * rather than the confirmation goes through here.
+ *
+ * It waits on the doorstep's own marker between the two presses, and that is not
+ * politeness: Begin is a server-rendered button before React attaches, so a click
+ * in that window does nothing at all and the spec fails several lines later
+ * complaining about a board.
+ *
+ * A spec about the doorstep ITSELF should not use this — see e2e/doorstep.spec.ts,
+ * which presses the two separately and asserts what stands between them.
+ */
+export async function startAndBegin(page: Page) {
+  await page.getByTestId("set-up-start").click();
+  await ready(page, "doorstep");
+  await page.getByTestId("doorstep-begin").click();
+}
+
+/**
+ * Opens the rules beside a board, which are folded.
+ *
+ * The panel is one line plus a disclosure now. It was a form for a game nobody
+ * had answered and a column of nine labelled rows for everybody else, and John's
+ * word for that was "that Game board with all the settings on the side" — the
+ * rules are agreed on the doorstep before the game is written, so the board says
+ * what they are and does not lay them all out.
+ *
+ * A spec that wants one of those rows opens the drawer, the way a reader does.
+ * Its own helper rather than `openMoreSettings`, because that one waits on a
+ * CONTROL — the clock select — and there is no control here to wait on.
+ */
+export async function openBoardRules(page: Page) {
+  const panel = page.getByTestId("shared-rules");
+  const drawer = panel.getByTestId("more-settings");
+  const shut = await drawer.evaluate((el) => (el as HTMLDetailsElement).open === false);
+  if (shut) await panel.getByTestId("more-settings-open").click();
+  await expect(page.getByTestId("rules-statement")).toBeVisible();
+}
+
 /** Chooses a board on the set-up screen. The blocks are radios; this presses one. */
 export async function chooseBoard(page: Page, size: number | string) {
   const block = page.locator(`[data-testid="set-up-size"][data-size="${size}"]`);

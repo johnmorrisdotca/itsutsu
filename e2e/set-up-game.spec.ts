@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { chooseBoard, openMoreSettings, ready } from "./support";
+import { chooseBoard, openMoreSettings, ready, startAndBegin } from "./support";
 
 
 /**
@@ -58,7 +58,7 @@ test.describe("setting a game up before it exists", () => {
     await page.getByTestId("shared-rules-rated").selectOption("friendly");
     await expect(page.getByTestId("set-up-summary")).toContainText("19×19");
 
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
     await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9]{4}-[a-z0-9]{4}/, { timeout: 30_000 });
     const id = page.url().split("/games/gomoku/match/")[1].split("/")[0];
     const made = await (await request.get(`/api/games/${id}`)).json();

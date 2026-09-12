@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
-import { ready } from "./support";
+import { ready, startAndBegin } from "./support";
 
 /**
  * Playing that game again.
@@ -81,7 +81,7 @@ test.describe("a finished game offers to be played again", () => {
     await again.click();
     await page.waitForURL(/\/games\/new\?rematch=/);
     await ready(page, "set-up-game");
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
     await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
 
     // The new game really is the old one's game.

@@ -1,5 +1,4 @@
 import {
-  BOARD_SIZE_DISPLAY,
   OBSTACLE_LAYOUTS,
   OPENING_RULES,
   STONES,
@@ -147,8 +146,12 @@ export function describeGameProse(rules: RulesDraft): string {
    * describing a board nobody will see.
    */
   const size = copy === undefined ? rules.size : sizeForVariant(variant, rules.size);
-  const named = BOARD_SIZE_DISPLAY[size]?.label;
-  const board = named === undefined ? `${size}×${size}` : `${size}×${size} ${named}`;
+  /*
+   * The board as a pair of numbers and nothing else. `BOARD_SIZE_DISPLAY` has a
+   * name for each — "Eight", "Mini" — which earns its place on a chip beside a
+   * picker and reads as a mistake in a sentence: "on an 8×8 Eight board".
+   */
+  const board = `${size}×${size}`;
   const blocks = rules.obstacles === OBSTACLE_LAYOUTS.hoshi ? ", with the star points blocked" : "";
 
   const sentences = [`${name} on ${article(board)} ${board} board${blocks}.`];

@@ -87,7 +87,22 @@ export function Doorstep({
    * for why the browser holds that and the server is not asked.
    */
   const [made, setMade] = useGameBegunHere(`doorstep:${address}`);
+  /*
+   * The seat this was going to take has been taken by somebody else.
+   *
+   * Two people asking for the same game is a race, and sometimes the other one
+   * wins it between this page being drawn and Begin being pressed. The screen
+   * before this one used to fall through and post a game of its own without
+   * mentioning it — which is the right destination reached in the wrong way: a
+   * press that said one person's name should never quietly do something else.
+   *
+   * So the refusal is said, and the same button then offers the game of your own
+   * that you were going to get anyway. Nothing is a dead end and nothing is
+   * silent.
+   */
+  const [seatGone, setSeatGone] = useState(false);
   const ready = useHydrated();
+  const taking = begin.kind === "sit" && !seatGone;
 
   async function go() {
     /*
@@ -102,9 +117,23 @@ export function Doorstep({
     setBusy(true);
     setError(null);
     try {
-      const landed = begin.kind === "sit" ? await takeSeat(begin) : await create(begin, variant);
+      /*
+       * Take the seat, or make the game — and after a lost race, make the game the
+       * seat was standing in for. `instead` is on the sit action itself so the
+       * fallback is a value this page was handed rather than something it works
+       * out under pressure.
+       */
+      const landed =
+        begin.kind === "sit"
+          ? taking
+            ? await takeSeat(begin)
+            : await create(begin.instead, variant)
+          : await create(begin.body, variant);
       if (typeof landed !== "string") {
         setError(landed.error);
+        // A seat that could not be taken is a seat somebody else has. Say so, and
+        // let the next press make the game this was going to be instead.
+        if (taking) setSeatGone(true);
         return;
       }
       setMade(landed);
@@ -181,7 +210,7 @@ export function Doorstep({
             ? DOORSTEP_COPY.beginning
             : made !== null
               ? DOORSTEP_COPY.board
-              : begin.kind === "sit"
+              : taking && begin.kind === "sit"
                 ? DOORSTEP_COPY.sit(begin.who)
                 : DOORSTEP_COPY.begin}
         </Button>
@@ -225,20 +254,34 @@ export function Doorstep({
 /** What Begin will do. Two shapes, because they are two different acts. */
 export type BeginAction =
   | { kind: "create"; body: Record<string, unknown> }
-  | { kind: "sit"; id: string; who: string };
+  | {
+      kind: "sit";
+      id: string;
+      who: string;
+      /**
+       * The game to make if that seat has gone by the time Begin is pressed.
+       *
+       * Carried rather than fetched, so the answer to losing the race is one more
+       * press rather than a trip back through the setup screen — and stated rather
+       * than taken, which is the part the screen before this one got wrong: it fell
+       * through to posting a game of its own in silence, so a press that named a
+       * person could do something else entirely without saying so.
+       */
+      instead: Record<string, unknown>;
+    };
 
 /**
  * Writing the game: the same request the Start button used to send, moved one
  * screen along and otherwise untouched.
  */
 async function create(
-  begin: { body: Record<string, unknown> },
+  body: Record<string, unknown>,
   variant: string,
 ): Promise<string | { error: string }> {
   const response = await fetch("/api/games/live", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(begin.body),
+    body: JSON.stringify(body),
   });
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -253,7 +296,7 @@ async function create(
    * `Location` rather than assuming a link it could build.
    */
   const to = response.headers.get("Location");
-  return begin.body.open === true && created.blackToken !== undefined
+  return body.open === true && created.blackToken !== undefined
     ? seatPath(variant, created.id, created.blackToken)
     : (to ?? matchPath(variant, created.id));
 }

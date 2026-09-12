@@ -1,6 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-import { chooseBoard, chooseGame, chosenBoard, openMoreSettings, openSetUpPage } from "./support";
+import {
+  chooseBoard,
+  chooseGame,
+  chosenBoard,
+  openMoreSettings,
+  openSetUpPage,
+  startAndBegin,
+} from "./support";
 import { memberContext } from "./members";
 import { gamesMade } from "./tidy";
 
@@ -65,7 +72,7 @@ test.describe("choosing the board before the game exists", () => {
     )[0];
     expect(computer).toBeDefined();
     await opponents.selectOption(computer);
-    await page.getByTestId("set-up-start").click();
+    await startAndBegin(page);
 
     await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9-]+/, { timeout: 30_000 });
     const id = page.url().split("/games/gomoku/match/")[1].split("/")[0];
