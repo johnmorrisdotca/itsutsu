@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RulesDraft } from "./rulesDraft";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
-import { creationFor, sameRules } from "./setUpStart";
+import { creationFor, sameRules, seatsFor } from "./setUpStart";
 
 const draft: RulesDraft = {
   variant: "freestyle",
@@ -192,5 +192,49 @@ describe("whether two drafts describe the same game", () => {
    */
   it("does not count where the seat is advertised", () => {
     expect(sameRules(draft, { ...draft, open: true })).toBe(true);
+  });
+});
+
+/**
+ * WHETHER THIS PRESS MAKES A BOARD AT ONE SCREEN — the one fact that decides
+ * whether the setup screen may offer a rating at all.
+ *
+ * `screen` was already here for the seating sentence, and it turns out to be
+ * the same question the rating control needs answered: two seats in front of
+ * one person cannot move a rating, because the write path reads the seats
+ * before it asks the names and never reaches `recordResult`. So a rating
+ * select drawn over a game this answers `true` for is a control whose answer
+ * is stored, shown as chosen, and applied to nothing — see `RulesForm`'s
+ * `refused`, which is this answer turned into the board's own `hotSeat`
+ * refusal, and `describeSettings`, which says what will happen in its place.
+ *
+ * The distinction that matters since offers (0.167.0): a fork against a NAMED
+ * PERSON binds one seat and offers the other, so it is a game between two
+ * people and counts like any other. Only a fork with nobody to hand the second
+ * seat to becomes hot-seat, which is what `alone` says.
+ */
+describe("whether a press ends up at one screen", () => {
+  it("is true of a fork with nobody, which is the only shape it is true of", () => {
+    expect(seatsFor({ again: null, fork: { ...fork, alone: true } }).screen).toBe(true);
+  });
+
+  it("is false of a fork against a person, which is an offer and counts", () => {
+    expect(seatsFor({ again: null, fork: { ...fork, alone: false } }).screen).toBe(false);
+  });
+
+  it("is false of a rematch and of a plain game alike", () => {
+    expect(seatsFor({ again, fork: null }).screen).toBe(false);
+    expect(seatsFor({ again: null, fork: null }).screen).toBe(false);
+  });
+
+  /*
+   * And the colour is still reported for a lone fork: the position belongs to
+   * the colours that were in it, so "you are black" stays true even where both
+   * seats are the reader's. Two answers, not one — a colour standing in for
+   * "both seats are yours" is what `screen` exists to keep separate.
+   */
+  it("keeps the forker's own colour, whether or not anybody else is in it", () => {
+    expect(seatsFor({ again: null, fork: { ...fork, alone: true } }).mine).toBe(STONES.black);
+    expect(seatsFor({ again: null, fork: { ...fork, alone: false } }).mine).toBe(STONES.black);
   });
 });

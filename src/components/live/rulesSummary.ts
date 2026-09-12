@@ -85,9 +85,16 @@ export function describeSettings(rules: SettingsLike, refusal: RatingRefusal | n
      * it is not "Friendly" either, because nobody chose it: see the note on
      * `hotSeat` in `rateable.constants.ts`.
      *
-     * Null by default, so the two callers that hold a DRAFT rather than a game
-     * — the setup form and the doorstep — go on reading the choice being made,
-     * which is all they have and all they should have.
+     * Null by default, so a caller that holds a DRAFT rather than a game reads
+     * the choice being made, which is usually all it has.
+     *
+     * USUALLY, AND THE EXCEPTION IS WORTH SAYING: a draft whose press is
+     * already settled to a board at one screen — a fork with nobody to hand
+     * the second seat to — can know the refusal before the game exists, and
+     * the setup form and the doorstep pass `hotSeat` for exactly that case.
+     * The rating there is not a choice, so those two do not offer it either;
+     * see `RulesForm`'s `refused`. Everywhere else they pass nothing and the
+     * choice stands.
      */
     refusal !== null
       ? { text: RATING_REFUSED_WORD, notable: true }

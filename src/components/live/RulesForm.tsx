@@ -14,6 +14,7 @@ import {
 } from "@/lib/history/gameSettingsSchema";
 import { describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
+import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
 import type { ReactNode } from "react";
 import { BoardPicker } from "./BoardPicker";
@@ -67,6 +68,7 @@ export function RulesForm({
   showVariant = true,
   variantLabel = "Rules",
   chooser = RULES_CHOOSERS.select,
+  refused,
   fold,
   onSizeChosen,
 }: {
@@ -92,6 +94,25 @@ export function RulesForm({
    * same `applyRulesChange`, so the two screens still cannot drift.
    */
   chooser?: RulesChooser;
+  /**
+   * Why the game this form describes could never count, where that is already
+   * settled before it exists — or null while the rating is still a choice.
+   *
+   * No default, and required of every caller, because it decides whether a
+   * control is OFFERED at all, and a prop that could be forgotten would offer
+   * it silently. There is one shape today: a fork with nobody to hand the
+   * second seat to becomes a board at one screen, and a board at one screen
+   * cannot move a rating — the write path reads the seats before it asks the
+   * names and never reaches `recordResult`. So a rating chosen here would be
+   * stored on the row, shown as chosen, and applied to nothing. Since offers
+   * (0.167.0) a fork against a NAMED PERSON binds one seat and offers the
+   * other, so it counts like any other game and keeps the control.
+   *
+   * The fold's summary says what will happen in the control's place rather
+   * than the line going quiet about ratings altogether — `describeSettings`
+   * takes the same value.
+   */
+  refused: RatingRefusal | null;
   /**
    * Fold everything that is not the game or the board behind a line saying
    * what it currently is — see `MoreSettings` for the measurement that made
@@ -279,17 +300,29 @@ export function RulesForm({
           </Select>
         </Field>
       ) : null}
-      <Field label="Ratings">
-        <Select
-          value={value.rated ? "rated" : "friendly"}
-          disabled={disabled}
-          onChange={(event) => change({ rated: event.target.value === "rated" })}
-          data-testid="shared-rules-rated"
-        >
-          <option value="rated">Game will affect ratings</option>
-          <option value="friendly">Game will NOT affect ratings</option>
-        </Select>
-      </Field>
+      {/*
+        NOT OFFERED WHERE THE ANSWER IS ALREADY SETTLED AGAINST IT, because a
+        choice taken and thrown away is worse than no choice. A fork with
+        nobody becomes two seats in front of one person, which cannot move a
+        rating — the write path reads the seats before the names and never
+        asks — so this select would take an answer, store it on the row, show
+        it as chosen and change nothing, which is the control whose answer is
+        discarded this codebase keeps finding. The fact is said instead, in the
+        fold's own summary line, from the same `refused`.
+      */}
+      {refused !== null ? null : (
+        <Field label="Ratings">
+          <Select
+            value={value.rated ? "rated" : "friendly"}
+            disabled={disabled}
+            onChange={(event) => change({ rated: event.target.value === "rated" })}
+            data-testid="shared-rules-rated"
+          >
+            <option value="rated">Game will affect ratings</option>
+            <option value="friendly">Game will NOT affect ratings</option>
+          </Select>
+        </Field>
+      )}
       {/*
         The hint explains all three, because this is where somebody is choosing
         between them and the option itself is only a name. What this game's
@@ -333,7 +366,7 @@ export function RulesForm({
   return (
     <>
       {head}
-      <MoreSettings summary={[...describeSettings(value), ...fold.summary]}>
+      <MoreSettings summary={[...describeSettings(value, refused), ...fold.summary]}>
         {rest}
         {fold.fields}
       </MoreSettings>

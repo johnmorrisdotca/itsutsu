@@ -6,6 +6,7 @@ import {
   OPENING_RULES,
   STONES,
 } from "@/lib/gomoku/gomoku.constants";
+import { RATING_REFUSALS, RATING_REFUSED_WORD } from "@/lib/rating/rateable.constants";
 import { describeGameProse, describeSeating, type DoorstepWho } from "./doorstepSays";
 import type { RulesDraft } from "./rulesDraft";
 
@@ -44,35 +45,35 @@ const who: DoorstepWho = {
 
 describe("the game a doorstep is about, in sentences", () => {
   it("names the game, its kanji and the board it is on", () => {
-    expect(describeGameProse(draft)).toContain("Gomoku 五目並べ on a 19×19 board.");
+    expect(describeGameProse(draft, null)).toContain("Gomoku 五目並べ on a 19×19 board.");
   });
 
   it("says an 8×8 board with the right article, because a person reads it aloud", () => {
-    expect(describeGameProse({ ...draft, variant: "reversi", size: 8 })).toContain("on an 8×8 board");
+    expect(describeGameProse({ ...draft, variant: "reversi", size: 8 }, null)).toContain("on an 8×8 board");
   });
 
   it("leaves a free opening unsaid, and says any other one", () => {
-    expect(describeGameProse(draft)).not.toContain("opening");
-    expect(describeGameProse({ ...draft, opening: OPENING_RULES.pro })).toContain("Pro opening.");
+    expect(describeGameProse(draft, null)).not.toContain("opening");
+    expect(describeGameProse({ ...draft, opening: OPENING_RULES.pro }, null)).toContain("Pro opening.");
   });
 
   it("says the clock, the ratings and resigning, in the words the setup screen used", () => {
-    const said = describeGameProse({ ...draft, moveTimeMs: 300_000, rated: false, allowResign: false });
+    const said = describeGameProse({ ...draft, moveTimeMs: 300_000, rated: false, allowResign: false }, null);
     expect(said).toContain("No resigning.");
     expect(said).toContain("5 minutes a move.");
     expect(said).toContain("Friendly.");
   });
 
   it("says a handicap, whose colour and which restrictions", () => {
-    const said = describeGameProse({
-      ...draft,
-      handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true },
-    });
+    const said = describeGameProse(
+      { ...draft, handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true } },
+      null,
+    );
     expect(said).toContain("Black handicap: no double three.");
   });
 
   it("says the star points are blocked, where they are", () => {
-    expect(describeGameProse({ ...draft, obstacles: OBSTACLE_LAYOUTS.hoshi })).toContain(
+    expect(describeGameProse({ ...draft, obstacles: OBSTACLE_LAYOUTS.hoshi }, null)).toContain(
       "with the star points blocked",
     );
   });
@@ -83,7 +84,38 @@ describe("the game a doorstep is about, in sentences", () => {
      * nobody will ever see. The engine snaps it on the way in; this snaps it on the
      * way to the page, so the sentence and the board cannot disagree.
      */
-    expect(describeGameProse({ ...draft, variant: "reversi", size: 19 })).toContain("8×8");
+    expect(describeGameProse({ ...draft, variant: "reversi", size: 19 }, null)).toContain("8×8");
+  });
+
+  /*
+   * THE TWO SENTENCES ON THIS PAGE THAT MUST AGREE.
+   *
+   * A fork with nobody to hand the second seat to becomes a board at one
+   * screen, and `describeSeating` has always said so — "Both seats are yours".
+   * The settings paragraph beneath it read the draft's own flag, which a fork
+   * of a rated game carries as true, so the page said both "both seats are
+   * yours" and "Rated." about one game. The rating there is not the draft's to
+   * claim: the write path reads the seats before the names and a hot-seat game
+   * never reaches `recordResult` at all.
+   */
+  it("says a game at one screen will not count, rather than reading the draft's flag", () => {
+    const said = describeGameProse({ ...draft, rated: true }, RATING_REFUSALS.hotSeat);
+    expect(said).toContain(`${RATING_REFUSED_WORD}.`);
+    expect(said).not.toContain("Rated.");
+  });
+
+  it("and does not contradict the seating sentence beside it", () => {
+    const screen: DoorstepWho = { ...who, opponent: null, mine: null, screen: true };
+    expect(describeSeating(draft, screen)).toContain("two people at one screen");
+    // The doorstep hands both halves the same answer, read off the same `screen`.
+    const refused = screen.screen ? RATING_REFUSALS.hotSeat : null;
+    expect(describeGameProse({ ...draft, rated: true }, refused)).toContain(RATING_REFUSED_WORD);
+  });
+
+  it("leaves the rating to the draft for a fork against a person, which is an offer and counts", () => {
+    // Since offers, a fork naming somebody binds one seat and offers the
+    // other, so it is a game between two people like any other.
+    expect(describeGameProse({ ...draft, rated: true }, null)).toContain("Rated.");
   });
 });
 

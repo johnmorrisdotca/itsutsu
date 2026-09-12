@@ -13,28 +13,19 @@ import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { Opponent } from "@/lib/social/opponents";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
+import { RATING_REFUSALS } from "@/lib/rating/rateable.constants";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { HandicapChoice } from "./HandicapChoice";
 import { ANYONE, OpponentChoice, idIn, valueFor } from "./OpponentChoice";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { SET_UP_COPY } from "./live.constants";
-import { describeHandicap, describeRules, type SettingWord } from "./rulesSummary";
+import { describeRules } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
-import { shownName } from "@/lib/rating/shownName";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 import { matchSeat } from "./seatMatch";
-import { sameRules } from "./setUpStart";
-
-/**
- * The default opponent, in the words the control uses.
- *
- * Said once because it is now said twice — in the select, and in the summary
- * line that stands in for the select while it is folded. Two copies of it
- * would be two things to keep in step, and the one that drifted would be the
- * summary, which is the one that has to be true.
- */
-const POST_FOR_ANYONE = "Post the seat for anyone";
+import { sameRules, seatsFor } from "./setUpStart";
+import { foldedWords } from "./setUpWords";
 
 /**
  * SETTLING A GAME BEFORE THERE IS A GAME — EVERY GAME, FROM EVERYWHERE.
@@ -237,34 +228,6 @@ export function SetUpGame({
   const repeat = again !== null && asPlayed !== null && sameRules(settled, asPlayed);
 
   /*
-   * Who the game is against, for the line that stands in for the folded
-   * controls.
-   *
-   * It reads what the Start button will actually DO — `chosen`, the opponent
-   * resolved against the players offered at THIS game — rather than the select's
-   * raw value, because those can disagree: a specialist chosen at its own game
-   * and then left behind by a change of game is no longer among the players
-   * offered, and the game posts for anyone instead. A fork is a third case: it
-   * names nobody, because the route finds the other player in the game it forks.
-   */
-  const opponentWord: SettingWord =
-    fork !== null
-      ? {
-          text: `Against ${fork.alone ? "whoever you hand the seat to" : "the same opponent"}`,
-          notable: true,
-        }
-      : chosen !== null
-        ? { text: `Against ${shownName(chosen.name)}`, notable: true }
-        : { text: POST_FOR_ANYONE, notable: false };
-  /*
-   * And the handicap, which is folded with the rest and so has to be sayable
-   * without being opened. A game with no handicap says nothing rather than
-   * saying "no handicap": the line is what this game IS, and the ordinary
-   * answer to a question nobody asked is not worth a word of it.
-   */
-  const handicapWord = describeHandicap(settled.handicap);
-
-  /*
    * THE WAY ON, WHICH NO LONGER CREATES ANYTHING.
    *
    * This used to POST the game and land on the board, and that was John's
@@ -377,6 +340,21 @@ export function SetUpGame({
            */
           chooser={RULES_CHOOSERS.pictures}
           /*
+           * WHETHER THE GAME THIS BUTTON MAKES COULD EVER COUNT, answered
+           * before it exists and read from `seatsFor` — the same function the
+           * doorstep asks, so the screen that offers the rules and the page
+           * that states them cannot come to different answers about one press.
+           *
+           * `screen` is true of exactly one shape: a fork with nobody to hand
+           * the second seat to, which the creation route makes a hot seat.
+           * Since offers, a fork against a named person is an offer and counts
+           * like any other game, so the control stays for that one. Where it is
+           * true the rating select is not drawn at all — nothing here could
+           * overrule the route, so a control would be a question whose answer
+           * is thrown away.
+           */
+          refused={seatsFor({ again, fork }).screen ? RATING_REFUSALS.hotSeat : null}
+          /*
            * THE FIVE SETTINGS FOLD, AND THE OPPONENT AND THE HANDICAP FOLD WITH
            * THEM.
            *
@@ -389,10 +367,7 @@ export function SetUpGame({
            * shows who is carrying it without either being opened.
            */
           fold={{
-            summary: [
-              opponentWord,
-              ...(handicapWord === null ? [] : [{ text: handicapWord, notable: true }]),
-            ],
+            summary: foldedWords({ chosen, fork, handicap: settled.handicap }),
             fields: (
               <>
                 {/*

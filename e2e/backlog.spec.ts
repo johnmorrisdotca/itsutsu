@@ -186,6 +186,48 @@ test.describe("backlog", () => {
     await expect(page.getByTestId("backlog-item").filter({ hasText: title })).toHaveAttribute("data-status", "dropped");
   });
 
+  /*
+   * A PATCH that names nothing the board writes used to be answered 200.
+   *
+   * `releasedIn` is in the route's schema for the release tool's own branch,
+   * and `changeItem` has never written it — so a body of that field alone
+   * passed every rule that had an opinion, composed an empty update, and came
+   * back as a change that had happened. The unit tests pin the route's answer
+   * with the store mocked; this drives the real address against the real
+   * table, which is the only thing that can say the row was left alone.
+   */
+  test("the API refuses a body it could write nothing from, and leaves the row as it was", async ({ request }) => {
+    const title = newTitle("A request an empty PATCH must not touch");
+    const added = await request.post("/api/backlog", {
+      data: { title, detail: "A PATCH naming nothing is not a change.", kind: "fix", askedBy: "Playwright" },
+    });
+    expect(added.status()).toBe(201);
+    const item = (await added.json()) as { id: string; movedAt: string };
+
+    const nothing = await request.patch(`/api/backlog/${item.id}`, { data: { releasedIn: "9.9.9" } });
+    expect(nothing.status()).toBe(422);
+    // The refusal names what a change may carry, rather than only saying no.
+    const refusal = (await nothing.json()) as { error: string };
+    for (const field of ["status", "title", "detail", "kind", "askedBy", "priority", "effort"]) {
+      expect(refusal.error).toContain(field);
+    }
+
+    // One accepted field beside it still lands, and the release stamp is
+    // still nobody's to set but the release tool's.
+    const mixed = await request.patch(`/api/backlog/${item.id}`, { data: { priority: "low", releasedIn: "9.9.9" } });
+    expect(mixed.status()).toBe(200);
+
+    const board = await request.get("/api/backlog");
+    expect(board.status()).toBe(200);
+    const { items } = (await board.json()) as { items: Array<{ id: string; priority: string | null; releasedIn: string | null; movedAt: string }> };
+    const row = items.find((each) => each.id === item.id);
+    expect(row).toBeDefined();
+    expect(row!.priority).toBe("low");
+    expect(row!.releasedIn).toBeNull();
+    // A grade is not movement, so nothing above moved the row either.
+    expect(row!.movedAt).toBe(item.movedAt);
+  });
+
   test("the board is not one of the site's sections any more", async ({ page }) => {
     // It was in the top nav between Players and About. It is the operator's
     // now, so it is reached from Admin and from nowhere else.

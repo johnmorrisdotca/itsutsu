@@ -266,6 +266,97 @@ test.describe("carrying a position into a new game", () => {
     await context.close();
   });
 
+  /*
+   * A FORK WITH NOBODY OFFERS NO RATING, BECAUSE IT CANNOT HONOUR ONE.
+   *
+   * Forking a game whose other seat nobody signed in for — a board played from
+   * a link, at a kitchen table — leaves nobody to hand the second seat to, so
+   * the creation route makes the new game a hot seat. A hot-seat game moves no
+   * rating whatever its row says: the write path reads the seats before it asks
+   * the names and never reaches `recordResult`. The setup screen went on
+   * offering the rating select anyway, and both this screen and the doorstep
+   * after it printed "Rated" over a game that would count for nothing.
+   *
+   * Its own world: its own member, its own game, its own unclaimed seat. The
+   * absence below is asserted only after `openMoreSettings` has waited for a
+   * control that IS in the drawer, so it is a statement about a rendered form
+   * rather than about how fast the page answered.
+   */
+  test("a fork with nobody offers no rating, and says at one screen it will not count", async ({
+    browser,
+    baseURL,
+  }) => {
+    const stamp = Date.now().toString(36);
+    const me = { email: `lonefork-${stamp}@example.test`, name: `LoneFork ${stamp}` };
+    await seedMember(me);
+    const context = await memberContext(browser, baseURL!, me);
+
+    /*
+     * A game with nobody challenged: creating one through the API binds NEITHER
+     * seat (see kitchen-table.spec.ts), so following the black link below binds
+     * this member to black and leaves white a seat no account ever takes.
+     * Rated, because that is the row that makes the fault visible — the fork
+     * carries `rated: true` into a board at one screen.
+     */
+    const made = await context.request.post("/api/games/live", {
+      data: { variant: "freestyle", size: 9, winLength: 3, moveTimeMs: null, rated: true },
+    });
+    expect(made.status(), await made.text()).toBe(201);
+    const created = (await made.json()) as { id: string; blackToken: string };
+    tidyAway(created.id);
+
+    const page = await context.newPage();
+    // Following your own seat link is what a person does, and it is what makes
+    // this reader the one the fork is offered to at all — see `forkOffered`.
+    await page.goto(`/games/gomoku/match/${created.id}/seat/${created.blackToken}`);
+
+    // After claiming: binding a seat mints a fresh key for it.
+    const game = { id: created.id, ...(await seatTokensFor(created.id)) };
+    const moves: [number, number][] = [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [0, 2],
+    ];
+    for (const [index, [row, col]] of moves.entries()) {
+      const played = await context.request.post(`/api/games/${game.id}/moves`, {
+        data: { token: index % 2 === 0 ? game.blackToken : game.whiteToken, row, col },
+      });
+      expect(played.status(), await played.text()).toBe(201);
+    }
+
+    // One before the end, where the fork is offered at all.
+    await page.goto(`/games/gomoku/match/${game.id}/4`);
+    await page.getByRole("link", { name: /Play from move 4/ }).click();
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/new\\?from=${game.id}&move=4`));
+    await ready(page, "set-up-game");
+
+    // Nobody to hand the seat to, which the screen already said before this row existed.
+    await expect(page.getByTestId("set-up-fork")).toContainText("move 4");
+
+    await openMoreSettings(page);
+    await expect(page.getByTestId("shared-rules-rated")).toHaveCount(0);
+    // And the fact is stated in the control's place rather than left out.
+    await expect(page.getByTestId("more-settings-summary")).toContainText("Will not count");
+
+    /*
+     * AND THE DOORSTEP AGREES WITH ITSELF. Its paragraph and its table of facts
+     * both read from the same answer, so neither can say "Rated" beside "both
+     * seats are yours". Driven by the Start button rather than by typing the
+     * address, because a reader presses Start.
+     */
+    await page.getByTestId("set-up-start").click();
+    await ready(page, "doorstep");
+    await expect(page.getByTestId("doorstep-statement")).toContainText("Will not count");
+    await expect(page.getByTestId("doorstep-statement")).not.toContainText("Rated.");
+    await expect(page.getByTestId("doorstep-colours")).toContainText("two people at one screen");
+    // The table of facts has room for the reason as well as the verdict.
+    await expect(page.getByTestId("doorstep-facts")).toContainText("Will not count — one screen");
+
+    await context.close();
+  });
+
   test("and the clock it is played on is this game's own business", async ({ browser, baseURL }) => {
     /*
      * The board, the game and the opening come with the position. The PACE does

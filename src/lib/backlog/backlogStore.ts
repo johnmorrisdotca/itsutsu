@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 import {
   LEASE_MS,
+  changeProblems,
   draftProblems,
   editProblems,
   moveData,
@@ -222,6 +223,15 @@ export async function changeItem(
   const revised = revising ? normalizeDraft(revisedDraft(item, text)) : null;
 
   const problems = [
+    /*
+     * A change that would write nothing is refused rather than reported as
+     * done. Every rule below is silent about a field it was not given, so a
+     * body naming none of them used to pass all three and compose `data = {}`
+     * — a write of nothing, answered 200. `changeProblems` is the rule that
+     * has an opinion about the change AS A WHOLE, which is the only place
+     * that question can be asked from.
+     */
+    ...changeProblems(change),
     ...(status === undefined ? [] : moveProblems(item.status, status)),
     ...(revised === null ? [] : draftProblems(revised)),
     ...editProblems(edit),

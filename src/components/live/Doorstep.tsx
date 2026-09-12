@@ -8,6 +8,7 @@ import { matchPath, seatPath } from "@/lib/gomoku/slugs";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { RulesStatement } from "./RulesStatement";
 import { DOORSTEP_COPY } from "./live.constants";
 import { useGameBegunHere } from "./doorstepMemory";
@@ -47,6 +48,7 @@ export function Doorstep({
   variant,
   address,
   rules,
+  refused,
   prose,
   seating,
   change,
@@ -67,6 +69,17 @@ export function Doorstep({
   address: string;
   /** The rules this game will be played under, for the table under the prose. */
   rules: RulesDraft;
+  /**
+   * Why the game this page is about could never count, where that is settled
+   * before it exists — `hotSeat` for a fork with nobody, from the same
+   * `seatsFor` answer the prose and the seating sentence were built from, and
+   * null for everything else.
+   *
+   * The table under the prose has a Ratings row, and the draft alone cannot
+   * fill it in honestly: a fork of a rated game carries `rated: true` into a
+   * board at one screen, which will move no rating whatever the row says.
+   */
+  refused: RatingRefusal | null;
   /** The game and everything it is played under, in sentences. */
   prose: string;
   /** Who plays which colour — or why that is not decided yet. */
@@ -190,7 +203,7 @@ export function Doorstep({
         keeps the two from drifting.
       */}
       <div data-testid="doorstep-facts">
-        <RulesStatement rules={rules} note={DOORSTEP_COPY.note} />
+        <RulesStatement rules={rules} refusal={refused} note={DOORSTEP_COPY.note} />
       </div>
 
       {made !== null ? (
