@@ -5,6 +5,7 @@ import { GameDefaultsForm } from "@/components/mine/GameDefaultsForm";
 import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
 import { MyPeople } from "@/components/mine/MyPeople";
 import { MyRecord } from "@/components/mine/MyRecord";
+import { MyXp } from "@/components/mine/MyXp";
 import { NameForm } from "@/components/mine/NameForm";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { Page } from "@/components/layout/Page";
@@ -43,7 +44,7 @@ function supportedTimeZones(): string[] {
 }
 
 /*
- * Five things a member comes here for, so the page shows one at a time. They
+ * Six things a member comes here for, so the page shows one at a time. They
  * were six panels stacked down one page, and the record — the part somebody
  * comes back to look at rather than sets once — was at the bottom of it.
  *
@@ -55,6 +56,15 @@ function supportedTimeZones(): string[] {
  */
 const TABS: Tab[] = [
   { key: "record", label: "Record", kanji: "戦績" },
+  /*
+   * The XP ledger, second: the other thing on this page that is READ rather
+   * than filled in, and the only one of the two that grows every day. 経験 is
+   * experience — the word the toasts and the leaderboard use for the same
+   * ladder — and it is deliberately not 戦績 beside it, because a record says
+   * how well you play and XP says you turned up and tried things. Two ladders,
+   * kept apart on purpose; naming them the same thing would undo that.
+   */
+  { key: "xp", label: "XP", kanji: "経験" },
   { key: "profile", label: "Profile", kanji: "自己紹介" },
   /*
    * The four words, on a tab of their own. They sat at the very bottom of the
@@ -156,6 +166,16 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
           <Tabs tabs={TABS} active={open} base="/me" label="Which part of your account" />
 
           {open === "record" ? <MyRecord name={name} /> : null}
+
+          {/*
+            The ledger. Handed the address and nothing else: the total and the
+            level ride `memberRowFor`, which this render has already run and
+            cached, so the standing costs no query and the level is a lookup over
+            the curve. `fetchProfile`'s row above could not answer it —
+            `MemberProfile` is declared over a session-shaped `Member` that knows
+            nothing about XP — and that is worth knowing before reaching for it.
+          */}
+          {open === "xp" ? <MyXp email={me.email} params={params} /> : null}
 
           {open === "profile" ? (
             <div className="flex flex-col gap-3" data-testid="my-profile">
