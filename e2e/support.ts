@@ -148,3 +148,28 @@ export async function openMyGamesPage(page: Page) {
 export async function ready(page: Page, testId: string) {
   await expect(page.getByTestId(testId)).toHaveAttribute("data-ready", "true");
 }
+
+/**
+ * Every page error, collected. A React error boundary can swallow a throw and
+ * leave a plausible-looking page behind, so asserting on what is visible is
+ * not enough — the console and the page's own errors are the evidence.
+ *
+ * Also how a hydration mismatch gets caught. React does not fail a test when
+ * the server's markup does not match the client's — it redraws the tree and
+ * reports the mismatch as both a `console.error` and a thrown `pageerror`, so
+ * nothing is red unless something is watching for either. Attach this before
+ * the `page.goto` whose hydration you care about; a call after the navigation
+ * has already started can miss the message.
+ */
+export function watchForCrashes(page: Page): string[] {
+  const crashes: string[] = [];
+  page.on("pageerror", (error) => crashes.push(`pageerror: ${error.message}`));
+  page.on("console", (message) => {
+    if (message.type() !== "error") return;
+    const text = message.text();
+    // Next prints its own dev overlay noise; a real throw shows up either way.
+    if (text.includes("Failed to load resource")) return;
+    crashes.push(`console: ${text}`);
+  });
+  return crashes;
+}

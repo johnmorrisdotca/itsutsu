@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { boardSizesFor } from "../src/lib/gomoku/gomoku.constants";
+import { watchForCrashes } from "./support";
 
 /**
  * Changing the rules of a game nobody has answered yet.
@@ -28,24 +29,6 @@ async function startGame(
   });
   expect(started.status(), await started.text()).toBe(201);
   return (await started.json()) as Started;
-}
-
-/**
- * Every page error, collected. A React error boundary can swallow a throw and
- * leave a plausible-looking page behind, so asserting on what is visible is
- * not enough — the console and the page's own errors are the evidence.
- */
-function watchForCrashes(page: Page): string[] {
-  const crashes: string[] = [];
-  page.on("pageerror", (error) => crashes.push(`pageerror: ${error.message}`));
-  page.on("console", (message) => {
-    if (message.type() !== "error") return;
-    const text = message.text();
-    // Next prints its own dev overlay noise; a real throw shows up either way.
-    if (text.includes("Failed to load resource")) return;
-    crashes.push(`console: ${text}`);
-  });
-  return crashes;
 }
 
 /**

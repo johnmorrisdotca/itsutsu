@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { countryFrom, flagOf } from "./countries";
+import { allCountries, countryFrom, flagOf, resolveCountry, type MemberCountry } from "./countries";
 import { COUNTRY_ALIASES, COUNTRY_CODES } from "./countries.constants";
 
 /**
@@ -66,6 +66,53 @@ describe("countryFrom", () => {
     for (const [alias, code] of Object.entries(COUNTRY_ALIASES)) {
       expect(COUNTRY_CODES as readonly string[], alias).toContain(code);
     }
+  });
+});
+
+/**
+ * `ProfileForm` cannot call `countryFrom`/`allCountries` itself — it is a
+ * "use client" component, so its render function runs again in the browser
+ * during hydration, and `Intl.DisplayNames` does not spell every region the
+ * same way in every engine (Node 24 and the Chromium this repo's Playwright
+ * drives already disagree on FK, HK, MO and PS). `resolveCountry` is what it
+ * calls instead: the same resolution, against a list the caller supplies
+ * rather than one this module builds itself — so what follows proves it is a
+ * pure function of that list, never reaching for `allCountries()`, `names()`
+ * or `Intl` on its own.
+ */
+describe("resolveCountry", () => {
+  it("resolves only against the list it is given, not against Intl.DisplayNames itself", () => {
+    // A name nowhere in the real country list, standing in for the case that
+    // actually happened: an engine spelling a region differently from the one
+    // that rendered the page. If this passed by asking Intl.DisplayNames on
+    // its own, "Fictional Land" would not resolve — it isn't a real country.
+    const fictional: MemberCountry = { code: "FK", name: "Fictional Land", flag: flagOf("FK") };
+    expect(resolveCountry("Fictional Land", [fictional])?.code).toBe("FK");
+    // And the server's real spelling for FK is absent from this short list,
+    // so it must not resolve — proving the lookup is not secretly falling
+    // back to this module's own allCountries()/names().
+    expect(resolveCountry("Falkland Islands", [fictional])).toBeNull();
+  });
+
+  it("still takes a code, and still keeps words it cannot place, exactly like countryFrom", () => {
+    const countries = allCountries();
+    expect(resolveCountry("JP", countries)?.code).toBe("JP");
+    expect(resolveCountry("ca", countries)?.code).toBe("CA");
+    expect(resolveCountry("Middle Earth", countries)).toBeNull();
+    expect(resolveCountry("", countries)).toBeNull();
+  });
+
+  it("agrees with countryFrom when given countryFrom's own list, so the two cannot quietly drift apart", () => {
+    for (const written of ["Canada", "Japan", "JP", "UK", "Cote d'Ivoire", "Middle Earth", "  ", ""]) {
+      expect(resolveCountry(written, allCountries()), written).toEqual(countryFrom(written));
+    }
+  });
+
+  it("answers null for a real code the given list happens to leave out, rather than inventing a name for it", () => {
+    // Not a case ProfileForm can hit — it is always handed the full list —
+    // but the fallback matters: a code resolved that the caller's own list
+    // does not carry must not come back as a fabricated `{ name: code }`.
+    expect(resolveCountry("JP", [])).toBeNull();
   });
 });
 

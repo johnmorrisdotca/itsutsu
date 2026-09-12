@@ -6,6 +6,7 @@ import { countryFrom } from "../src/lib/social/countries";
 
 import { seedMember } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
+import { watchForCrashes } from "./support";
 
 /**
  * The flag beside somebody's name.
@@ -67,6 +68,19 @@ test.describe("where somebody is", () => {
   });
 
   test("is chosen from a list, and comes back as what was chosen", async ({ page }) => {
+    /*
+     * NOT A TEST FAILURE, WHICH IS THE POINT — this is what watches for one.
+     * `ProfileForm` used to compute its country options with its own call to
+     * `Intl.DisplayNames`, and re-ran that call in the browser during
+     * hydration; Node and this test's own Chromium do not spell every region
+     * the same way (they disagree on FK, HK, MO and PS), so the tree the
+     * server sent down did not match the one React built to check it, and
+     * React quietly discarded the server's markup and redrew it — logged on
+     * every run, and nothing here was reading the log. See `resolveCountry` in
+     * `@/lib/social/countries` for the fix; this assertion is what would have
+     * caught its absence, and what catches a regression back to it.
+     */
+    const crashes = watchForCrashes(page);
     await page.goto("/me?view=profile");
     const country = page.getByTestId("profile-country");
     await expect(country).toBeVisible();
@@ -86,6 +100,7 @@ test.describe("where somebody is", () => {
 
     await page.reload();
     await expect(page.getByTestId("profile-country")).toHaveValue("NZ");
+    expect(crashes, `the profile page hydrated with a mismatch:\n${crashes.join("\n")}`).toEqual([]);
   });
 
   test("keeps words it cannot place rather than quietly dropping them", async ({ page }) => {

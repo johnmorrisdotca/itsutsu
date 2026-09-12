@@ -7,7 +7,7 @@ import { Toggle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
 import { KEEP_FINISHED_DAYS, KEEP_FINISHED_DISPLAY } from "@/lib/history/retention";
 import { MOST_DAYS_OFF, WEEKDAYS, WEEKDAY_DISPLAY } from "@/lib/social/daysOff";
-import { allCountries, countryFrom } from "@/lib/social/countries";
+import { resolveCountry, type MemberCountry } from "@/lib/social/countries";
 
 export type ProfileFields = {
   awayFrom: string;
@@ -24,22 +24,28 @@ export type ProfileFields = {
   daysOff: number[];
 };
 
-/** The time zones this browser knows, for the picker; the server checks the choice again. */
-function zones(): string[] {
-  try {
-    const supported = (Intl as unknown as { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf;
-    return supported ? supported("timeZone") : [];
-  } catch {
-    return [];
-  }
-}
-
 /**
  * The rest of the profile, all optional: where you are and what time it is
  * there, a line about yourself, and two switches — whether you are listed
  * among who is here, and whether the site may mail you when it is your move.
+ *
+ * `countries` and `timeZones` come in as props, computed once on the server
+ * by `MePage`, rather than this component asking `Intl` for either itself.
+ * This is a client component, so its render function runs again in the
+ * browser during hydration — and `Intl.DisplayNames`/`Intl.supportedValuesOf`
+ * do not promise the same answer in every engine. See `resolveCountry` in
+ * `@/lib/social/countries` for the four country codes where that has already
+ * been caught disagreeing between Node and Chromium.
  */
-export function ProfileForm({ initial }: { initial: ProfileFields }) {
+export function ProfileForm({
+  initial,
+  countries,
+  timeZones,
+}: {
+  initial: ProfileFields;
+  countries: MemberCountry[];
+  timeZones: string[];
+}) {
   const router = useRouter();
   const [fields, setFields] = useState(initial);
   const [error, setError] = useState<string | null>(null);
@@ -58,8 +64,12 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
    * cannot resolve at all. A resolvable value is shown as its country; an
    * unresolvable one is kept as an option of its own words, so choosing
    * nothing in particular never rewrites what somebody already said.
+   *
+   * Resolved with `resolveCountry` against the `countries` prop, not
+   * `countryFrom`/`allCountries()` directly — see the comment above the
+   * component for why this component must not ask its own `Intl` anything.
    */
-  const known = countryFrom(fields.country);
+  const known = resolveCountry(fields.country, countries);
   const chosenCountry = known?.code ?? fields.country;
   const unlisted = known === null && fields.country.trim() !== "" ? fields.country : null;
 
@@ -119,7 +129,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
           >
             <option value="">Not saying</option>
             {unlisted === null ? null : <option value={unlisted}>{unlisted}</option>}
-            {allCountries().map((country) => (
+            {countries.map((country) => (
               <option key={country.code} value={country.code}>
                 {country.flag} {country.name}
               </option>
@@ -143,7 +153,7 @@ export function ProfileForm({ initial }: { initial: ProfileFields }) {
           data-testid="profile-zone"
         />
         <datalist id="time-zones">
-          {zones().map((zone) => (
+          {timeZones.map((zone) => (
             <option key={zone} value={zone} />
           ))}
         </datalist>
