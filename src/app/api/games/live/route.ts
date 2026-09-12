@@ -340,12 +340,36 @@ export async function POST(request: Request) {
      * happened, because on that board nothing ever could.
      */
     const playedAs = (typeof merged.variant === "string" ? merged.variant : parsed.data.variant) as RuleVariant;
+    /*
+     * THE SAME BUG AGAIN, ONE STEP FURTHER ALONG, and the fix above did not
+     * reach it.
+     *
+     * That fix asks the VARIANT'S SPEC for the line length, which settles every
+     * game that fixes its own — noughts and crosses is three in a row and cannot
+     * be anything else, so a rematch of one is safe. Freestyle gomoku does not
+     * fix one: its spec says null, because the length is a thing the two players
+     * agree. And the line below then read the length out of the REQUEST — which
+     * for a rematch says nothing at all, since a rematch sends its game's id and
+     * nothing else on purpose.
+     *
+     * So a 9×9 freestyle game two people had agreed at THREE in a row came back
+     * from a rematch needing five. Same shape as John's unwinnable board, same
+     * cause, and invisible to the test that covers it because that test uses a
+     * variant whose spec has an answer.
+     *
+     * `merged` is the game as it will actually be played: the request, with a
+     * rematch's or a fork's own settings laid over it. That is the thing to ask,
+     * and asking the request instead is what let a carried value be dropped
+     * between being carried and being used.
+     */
+    const carriedLine = typeof merged.winLength === "number" ? merged.winLength : undefined;
     const created = await createLiveGame({
       ...merged,
       from: from === undefined ? undefined : { id: from.id, moves: from.move },
       handicap: merged.handicap ?? NO_HANDICAP,
       winLength:
         VARIANT_SPECS[playedAs].winLength ??
+        carriedLine ??
         parsed.data.winLength ??
         DEFAULT_SETTINGS.winLength,
     });
