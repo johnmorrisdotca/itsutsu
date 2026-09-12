@@ -303,6 +303,40 @@ export async function Directory({
           label="How much of these records to count"
         />
       ) : null}
+      {/*
+        NO SORTABLE HEADINGS HERE, AND THAT IS A DECISION RATHER THAN AN
+        OMISSION — said in the source so it cannot be mistaken for one.
+        `RecordTable` takes a `sort` and the ladder beside this one passes it;
+        this table does not, for two reasons that both have to be fixed before
+        it could.
+
+        THE ROWS ARE A COMPOSITE OF FOUR READS. `fetchDirectory` gives the two
+        hundred most recently seen members; the programs and the kept records
+        are fetched separately, because a computer player is never "seen" and
+        somebody remembered here never signs in, so both fall off the end of any
+        recency order (see `fetchComputerPlayers`). `filterDirectory` then
+        narrows the three in memory. There is no single query whose `orderBy`
+        this table is drawn from, so there is nothing for a sort parameter to
+        reach.
+
+        AND THE COLUMNS ARE NOT ON THE ROW ANYWAY. Played, W, L and D come from
+        `fetchPlayedTallies`, a groupBy over the GAMES table keyed by member id;
+        the rating comes from `Player`. Ordering members by a figure held in two
+        other tables is a join this read does not make.
+
+        The obvious shortcut is the one thing that must not be done: sorting the
+        assembled array in the browser. It would look identical to the ladder's
+        headings and mean something else — "the best rated of the two hundred
+        most recently seen", which is not the best rated, and the two hundred is
+        a cap a reader cannot see. A heading that answers a narrower question
+        than it appears to is the fault this whole convention exists to remove,
+        wearing a control.
+
+        What would make it possible: one query over `Member` joined to `Player`
+        and to a games tally, with the programs and the kept records brought in
+        by that query rather than beside it. That is a rewrite of
+        `rating/players.ts`, not a prop.
+      */}
       <RecordTable
         subject="Member"
         rows={people.map((entry) => directoryRow(entry, scope, actions, tallies.get(entry.id)))}

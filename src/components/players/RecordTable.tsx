@@ -237,9 +237,9 @@ export function RecordTable({
    *
    * Optional, and every table that leaves it out keeps the headings it has
    * always had. That is deliberate rather than transitional: a table whose rows
-   * are assembled in memory from three reads cannot be ordered by the database,
-   * and a heading that sorted the loaded page in the browser would lie the
-   * moment there were two pages. The members directory is exactly that, and
+   * are assembled in memory from several reads cannot be ordered by the
+   * database, and a heading that sorted the loaded page in the browser would lie
+   * the moment there were two pages. The members directory is exactly that, and
    * says so where its rows are built.
    */
   sort?: RecordSort;

@@ -55,6 +55,32 @@ function FilterChip({
  * filter instant, and the counts honest, since they are counted from the same
  * list the rows come from. Adding and moving go to the server and then ask the
  * page to re-read, so what is on screen is always what is stored.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * AND IT IS NOT ON `lib/api/paging.ts`, DELIBERATELY
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * The record and the ladder moved to one convention — `sort=<column>[:asc|desc]`
+ * with a cursor, ordered by the database — and this did not. Written down here
+ * because "the board was not converted" and "the board should not be converted"
+ * look identical in a diff, and only one of them is true.
+ *
+ * A CLIENT-SIDE SORT IS ONLY A LIE WHERE THERE IS A SECOND PAGE, and there is
+ * not one here. `fetchBoard` reads every row — 218 on production — so sorting
+ * the array is sorting the whole set, not reordering one page of it and calling
+ * that the board. That is precisely the distinction the convention turns on, and
+ * it is the same reason /play's groups open in place rather than paging.
+ *
+ * THREE THINGS WOULD BREAK IF IT DID. The counts beside each status filter are
+ * counted from the same list the rows come from, which is what makes them agree
+ * with what a reader can see; a paged board would need a second query per
+ * status and could disagree with itself between them. The grouped-by-status view
+ * needs every row at once to know which groups exist at all. And every filter
+ * would become a round trip on a page whose whole manner is instant.
+ *
+ * What would change the answer is size: a board of thousands wants the
+ * convention, and the columns are plain ones — `movedAt` and `createdAt` are
+ * both indexed. It is a list of dozens, and the operator is one person.
  */
 export function BacklogBoard({ items, who }: BacklogBoardProps) {
   const router = useRouter();
