@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 
 import { Toggle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
@@ -113,6 +113,8 @@ export function ProfileForm({
   timeZones: string[];
 }) {
   const router = useRouter();
+  /** The id the retention select is described by — see where it is used. */
+  const keepHint = useId();
   const [fields, setFields] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -409,25 +411,35 @@ export function ProfileForm({
           ones just over. This says how long "just over" lasts. It hides them
           from that list and from nowhere else.
         */}
-        <label className="flex flex-col gap-1">
-          <span className="text-sm">Keep finished games in my list for</span>
-          <select
-            className={`${INPUT_CLASS} ${WIDTH.keep}`}
-            value={fields.keepFinishedDays}
-            onChange={(event) => set({ keepFinishedDays: Number(event.target.value) })}
-            data-testid="keep-finished-days"
-          >
-            {KEEP_FINISHED_DAYS.map((days) => (
-              <option key={days} value={days}>
-                {KEEP_FINISHED_DISPLAY[days].label} {KEEP_FINISHED_DISPLAY[days].kanji}
-              </option>
-            ))}
-          </select>
-          <span className="text-xs text-muted">
+        {/*
+          The note is the select's DESCRIPTION and not part of its name — the
+          same rule `Field` and `Toggle` keep, kept here by hand because this
+          one is a column rather than a row and does not use `Field`. Inside
+          the label, a screen reader read the whole paragraph out as the name
+          of the control and a voice-control user had to say it.
+        */}
+        <div className="flex flex-col gap-1">
+          <label className="flex flex-col gap-1">
+            <span className="text-sm">Keep finished games in my list for</span>
+            <select
+              className={`${INPUT_CLASS} ${WIDTH.keep}`}
+              value={fields.keepFinishedDays}
+              onChange={(event) => set({ keepFinishedDays: Number(event.target.value) })}
+              aria-describedby={keepHint}
+              data-testid="keep-finished-days"
+            >
+              {KEEP_FINISHED_DAYS.map((days) => (
+                <option key={days} value={days}>
+                  {KEEP_FINISHED_DISPLAY[days].label} {KEEP_FINISHED_DISPLAY[days].kanji}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span id={keepHint} className="text-xs text-muted">
             The record keeps every game whatever this says, and each one stays at its own address. This is only
             about how long they sit in your queue.
           </span>
-        </label>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">

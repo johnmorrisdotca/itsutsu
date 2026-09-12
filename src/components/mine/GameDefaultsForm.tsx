@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Select, Toggle } from "@/components/ui/Controls";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -25,6 +25,14 @@ import { describeMoveTime } from "@/lib/history/deadline";
  * preference either of them can change from another page.
  */
 export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
+  /*
+   * The ids the two notes below are attached with. Each is its select's
+   * DESCRIPTION and not part of its name — see `FieldHint` in `Controls.tsx`,
+   * which keeps the same rule for every `Field` and `Toggle` on the site.
+   * These two are columns rather than rows and so are written out by hand.
+   */
+  const boardHint = useId();
+  const lengthHint = useId();
   const [fields, setFields] = useState(initial);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,23 +73,26 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
    */
   return (
     <div className="flex flex-col gap-4" data-testid="game-defaults" {...readyMark(useHydrated())}>
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Board</span>
-        <Select
-          value={String(fields.size)}
-          onChange={(event) => set({ size: Number(event.target.value) })}
-          data-testid="default-size"
-        >
-          {BOARD_SIZES.map((size) => (
-            <option key={size} value={size}>
-              {size}×{size}
-            </option>
-          ))}
-        </Select>
-        <span className="text-xs text-muted">
+      <div className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1">
+          <span className="text-sm font-medium">Board</span>
+          <Select
+            value={String(fields.size)}
+            onChange={(event) => set({ size: Number(event.target.value) })}
+            aria-describedby={boardHint}
+            data-testid="default-size"
+          >
+            {BOARD_SIZES.map((size) => (
+              <option key={size} value={size}>
+                {size}×{size}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <span id={boardHint} className="text-xs text-muted">
           Games played on a board of their own — Hex, Halma, the small ones — keep theirs.
         </span>
-      </label>
+      </div>
 
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">Clock at this screen</span>
@@ -115,23 +126,26 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
         </Select>
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Length</span>
-        <Select
-          value={fields.drawLimit}
-          onChange={(event) => set({ drawLimit: event.target.value as DrawLimit })}
-          data-testid="default-draw-limit"
-        >
-          {DRAW_LIMIT_LIST.map((limit) => (
-            <option key={limit} value={limit}>
-              {DRAW_LIMIT_DISPLAY[limit].label} {DRAW_LIMIT_DISPLAY[limit].kanji}
-            </option>
-          ))}
-        </Select>
-        <span className="text-xs text-muted">
+      <div className="flex flex-col gap-1">
+        <label className="flex flex-col gap-1">
+          <span className="text-sm font-medium">Length</span>
+          <Select
+            value={fields.drawLimit}
+            onChange={(event) => set({ drawLimit: event.target.value as DrawLimit })}
+            aria-describedby={lengthHint}
+            data-testid="default-draw-limit"
+          >
+            {DRAW_LIMIT_LIST.map((limit) => (
+              <option key={limit} value={limit}>
+                {DRAW_LIMIT_DISPLAY[limit].label} {DRAW_LIMIT_DISPLAY[limit].kanji}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <span id={lengthHint} className="text-xs text-muted">
           Only on a board of nine by nine or larger, and never on a game that cannot be drawn.
         </span>
-      </label>
+      </div>
 
       <Toggle
         label="Games on two devices count towards ratings"
