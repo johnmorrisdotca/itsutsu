@@ -41,6 +41,32 @@ export async function preferencesFor(email: string | null): Promise<Preferences>
 }
 
 /**
+ * The column exactly as this member holds it, for a reader that has to tell
+ * a choice from a silence.
+ *
+ * `preferencesFor` above always answers, filling in each fallback, which is
+ * right for a page that has to be narrowed somehow and wrong for anything
+ * whose fallback would be a lie about the member. The language is the case
+ * that forced this: English is what a page is rendered in when nothing has
+ * said otherwise, so a filled-in "en" would be indistinguishable from a
+ * member who chose English, and would silently overrule the Japanese their
+ * browser was asking for. The column is the only place that difference
+ * survives — the same reason `keptPreferences` in the browser suite reads it
+ * raw rather than through the registry.
+ *
+ * Raw, and safe to be raw: every reader still puts it through
+ * `cleanPreferences`, which is idempotent, so passing this on unchecked is
+ * not a way round the registry.
+ *
+ * NO QUERY OF ITS OWN, exactly as above: it rides `memberRowFor`.
+ */
+export async function storedPreferencesFor(email: string | null): Promise<unknown> {
+  if (email === null) return null;
+  const row = await memberRowFor(foldEmail(email));
+  return row?.preferences ?? null;
+}
+
+/**
  * Lays a change over what the row holds and writes it back: one update by
  * primary key, or none when nothing would change.
  *

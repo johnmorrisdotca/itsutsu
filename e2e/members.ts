@@ -288,11 +288,24 @@ export async function seenDaysAgo(email: string, days: number): Promise<void> {
   }
 }
 
-/** A browser context signed in as that member, made if they do not exist yet. */
+/**
+ * A browser context signed in as that member, made if they do not exist yet.
+ *
+ * `options` is passed straight to `newContext`, and the case that asked for it
+ * is `locale`. A language spec needs a DEVICE WHOSE BROWSER ASKS FOR JAPANESE
+ * — otherwise "this device was answered in English" cannot be told apart from
+ * "English is what this site falls back to", and the assertion is green
+ * whatever the code does. `setExtraHTTPHeaders({ "accept-language": … })` is
+ * the obvious way and does not work: Chromium sends its own `Accept-Language`
+ * from the context's locale regardless, so the header never reaches the
+ * server. Found by breaking the feature on purpose and watching the case pass
+ * anyway.
+ */
 export async function memberContext(
   browser: Browser,
   baseURL: string,
   member: TestMember,
+  options?: Parameters<Browser["newContext"]>[0],
 ): Promise<BrowserContext> {
   await seedMember(member);
   const token = await signSession({
@@ -303,7 +316,7 @@ export async function memberContext(
   });
   if (token === null) throw new Error("No AUTH_SECRET: cannot sign a test session.");
 
-  const context = await browser.newContext({ baseURL });
+  const context = await browser.newContext({ baseURL, ...options });
   await context.addCookies([
     {
       name: SESSION_COOKIE,
