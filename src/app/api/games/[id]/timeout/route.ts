@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { claimTimeout } from "@/lib/history/liveGameEndings";
+import { OFFER_NOT_ACCEPTED, OFFER_NOT_ACCEPTED_STATUS } from "@/lib/history/offers.constants";
 import { overLimit } from "@/lib/api/rateLimit";
 
 const claimSchema = z.object({ token: z.string().min(1).max(128) });
@@ -14,6 +15,7 @@ const REFUSAL_STATUS: Record<string, number> = {
   "no-clock": 409,
   "not-due": 409,
   "your-own-turn": 409,
+  offered: OFFER_NOT_ACCEPTED_STATUS,
 };
 
 const REFUSAL_MESSAGE: Record<string, string> = {
@@ -23,6 +25,8 @@ const REFUSAL_MESSAGE: Record<string, string> = {
   "no-clock": "This game has no clock.",
   "not-due": "Their time is not up yet.",
   "your-own-turn": "It is your move, not theirs.",
+  // No clock runs against a game nobody has agreed to play, so nobody is late.
+  offered: OFFER_NOT_ACCEPTED,
 };
 
 /**

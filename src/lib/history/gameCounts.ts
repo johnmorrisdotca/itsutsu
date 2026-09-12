@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { NOT_A_REFUSED_OFFER } from "./offers";
 
 /** How many games of a kind have been finished here, and the latest one. */
 export type PlayedCount = {
@@ -69,7 +70,9 @@ export type RecentGame = {
  */
 export async function recentGamesOf(variant: string, limit = 5): Promise<RecentGame[]> {
   const rows = await prisma.game.findMany({
-    where: { variant, status: "finished" },
+    // And not an offer somebody refused: nobody played it, so it is not one of
+    // the "played games" this panel exists to show. See `offers.ts`.
+    where: { variant, status: "finished", ...NOT_A_REFUSED_OFFER },
     orderBy: { playedAt: "desc" },
     take: limit,
     select: { id: true, blackName: true, whiteName: true, blackMemberId: true, whiteMemberId: true, result: true, moveCount: true, playedAt: true },

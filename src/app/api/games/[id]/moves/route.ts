@@ -22,6 +22,7 @@ import {
   GAME_PAGE_SIZE_MIN,
 } from "@/lib/history/gameHistory.constants";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
+import { OFFER_NOT_ACCEPTED, OFFER_NOT_ACCEPTED_STATUS } from "@/lib/history/offers.constants";
 
 /**
  * A game's moves are always ordered by move number — a replay has exactly one
@@ -91,6 +92,7 @@ const REFUSAL_STATUS: Record<string, number> = {
   "not-your-turn": 409,
   illegal: 422,
   conflict: 409,
+  offered: OFFER_NOT_ACCEPTED_STATUS,
 };
 
 const REFUSAL_MESSAGE: Record<string, string> = {
@@ -100,6 +102,13 @@ const REFUSAL_MESSAGE: Record<string, string> = {
   "not-your-turn": "It is not your turn.",
   illegal: "That intersection cannot be played.",
   conflict: "Someone moved first. Reload to catch up.",
+  /*
+   * Its own answer rather than "finished" or "not your turn", both of which
+   * were in range and both of which would have been lies: the game has not
+   * ended and it may well be this seat's turn. A fork offer even has stones on
+   * it. What is missing is the other person's agreement.
+   */
+  offered: OFFER_NOT_ACCEPTED,
 };
 
 /**

@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
+import { NOT_A_REFUSED_OFFER } from "@/lib/history/offers";
 
 /**
  * The slice of the server an embedded board is allowed to see.
@@ -37,7 +38,13 @@ const RECENT_LIMIT = 6;
 export async function fetchEmbedSummary(
   playerName: string | null,
 ): Promise<EmbedSummary> {
-  const finished = { status: "finished" as const };
+  /*
+   * A refused offer is not a game anybody played, so it is not one an embedded
+   * board counts or lists. This is somebody else's page reporting what has
+   * happened here, which makes it the last place to be showing a game two
+   * people never agreed to.
+   */
+  const finished = { status: "finished" as const, ...NOT_A_REFUSED_OFFER };
 
   const [totalGames, rows] = await Promise.all([
     prisma.game.count({ where: finished }),

@@ -71,6 +71,11 @@ function row(over: Record<string, unknown> = {}): never {
     extraMs: 0,
     rated: true,
     openSeat: null,
+    // Nobody was asked to play this: an ordinary finished game.
+    offeredToMemberId: null,
+    offeredAt: null,
+    declinedAt: null,
+    withdrawnAt: null,
     blackMemberId: HANAKO,
     whiteMemberId: null,
     result: "black",

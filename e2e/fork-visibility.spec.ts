@@ -40,6 +40,21 @@ async function finishedGame(browser: Browser, baseURL: string, stamp: string) {
   expect(made.status(), await made.text()).toBe(201);
   const created = (await made.json()) as { id: string };
   tidyAway(created.id);
+  /*
+   * AND THEY ACCEPT IT, because a challenge is an OFFER now: one seat bound,
+   * one offered, and no move from either of them until the question is
+   * answered. A game they never agreed to is exactly what this file's own
+   * subject — forking somebody into a new game — was raised about, so the two
+   * lines are a fixture for this file rather than a detour from it.
+   *
+   * Before the tokens are read: accepting mints a fresh key for the seat it
+   * binds, so a token read earlier would no longer play anything.
+   */
+  const theirs = await memberContext(browser, baseURL, them);
+  const accepted = await theirs.request.post(`/api/games/${created.id}/offer/accept`, {});
+  expect(accepted.status(), await accepted.text()).toBe(200);
+  await theirs.close();
+
   const game = { id: created.id, ...(await seatTokensFor(created.id)) };
 
   // Black (the challenger, "me") takes the top row: a short, certain win.
@@ -148,11 +163,17 @@ test.describe("the fork panel on a live match", () => {
     const created = (await made.json()) as { id: string; blackToken: string };
     tidyAway(created.id);
 
+    // Accepted first: a challenge is an offer, and an offer takes no move.
+    const theirs = await memberContext(browser, baseURL!, them);
+    const accepted = await theirs.request.post(`/api/games/${created.id}/offer/accept`, {});
+    expect(accepted.status(), await accepted.text()).toBe(200);
+    await theirs.close();
+
     // One move, well short of a finish: the game is still active.
     const played = await context.request.post(`/api/games/${created.id}/moves`, {
       data: { token: created.blackToken, row: 0, col: 0 },
     });
-    expect(played.status()).toBe(201);
+    expect(played.status(), await played.text()).toBe(201);
 
     const page = await context.newPage();
     await page.goto(`/games/gomoku/match/${created.id}`);

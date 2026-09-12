@@ -17,6 +17,7 @@ import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
 import { fetchGameDetail } from "./gameHistory";
 import { FORFEITS_TO_LOSE } from "./gameSettingsSchema";
 import { GAME_ROW, isHotSeat, replay, stoneForToken } from "./liveGame";
+import { isOffered } from "./offers";
 import { settledTurn } from "./settledTurn";
 import type { TimeoutOutcome } from "./liveGame.types";
 
@@ -36,6 +37,8 @@ export async function giveTime(id: string, token: string, now = new Date()): Pro
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
   if (row.status !== "active") return { ok: false, reason: "finished" };
+  // An offer is answered, not played: nothing ends a game nobody agreed to.
+  if (isOffered(row)) return { ok: false, reason: "offered" };
   const giver = stoneForToken(row, token);
   if (giver === null) return { ok: false, reason: "wrong-token" };
   if (row.moveTimeMs === null) return { ok: false, reason: "no-clock" };
@@ -97,6 +100,8 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
   if (row.status !== "active") return { ok: false, reason: "finished" };
+  // An offer is answered, not played: nothing ends a game nobody agreed to.
+  if (isOffered(row)) return { ok: false, reason: "offered" };
   const claimant = stoneForToken(row, token);
   if (claimant === null) return { ok: false, reason: "wrong-token" };
 
@@ -201,7 +206,16 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
  */
 export async function settleEnded(id: string, now = new Date()): Promise<boolean> {
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
+  /*
+   * A POSTED SEAT AND AN OFFER ARE THE SAME KIND OF NOT-YET, and this is the
+   * one function that already said so about the first. A fork copies moves
+   * across, so an offered board can hold a position the engine reads as
+   * decided — and filing that as a finished game would write a result, a
+   * rating and a place in the record for a game the other person never
+   * agreed to play.
+   */
   if (row === null || row.status !== "active" || row.openSeat !== null) return false;
+  if (isOffered(row)) return false;
 
   const state = replay(row);
   if (state.status === GAME_STATUS.playing) return false;
@@ -254,6 +268,15 @@ export async function cancelGame(id: string, token: string, now = new Date()): P
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
   if (row.status !== "active") return { ok: false, reason: "finished" };
+  /*
+   * CALLING OFF IS NOT WITHDRAWING, and an offer has its own word for it.
+   * This path files the game as ended and says nothing about who was asked —
+   * so an offer called off this way would leave `offeredToMemberId` set on a
+   * finished row with neither `declinedAt` nor `withdrawnAt`, which is a
+   * refused offer that no listing knows to leave out. `withdrawOffer` writes
+   * the column that says what happened; this refuses and lets it.
+   */
+  if (isOffered(row)) return { ok: false, reason: "offered" };
   if (stoneForToken(row, token) === null) return { ok: false, reason: "wrong-token" };
   /*
    * The one thing that makes this different from a resignation, checked
@@ -292,6 +315,13 @@ export async function resignGame(id: string, token: string, now = new Date()): P
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
   if (row.status !== "active") return { ok: false, reason: "finished" };
+  /*
+   * AND THIS IS THE DANGEROUS ONE. The offerer holds a real token for their own
+   * seat, so without this line they could resign an offer — writing a rated
+   * LOSS for themselves and a WIN, on a permanent public record, for somebody
+   * who had not agreed to play. `recordResult` is three lines below.
+   */
+  if (isOffered(row)) return { ok: false, reason: "offered" };
   const loser = stoneForToken(row, token);
   if (loser === null) return { ok: false, reason: "wrong-token" };
   // The host may have set the game up so that nobody walks away from it.

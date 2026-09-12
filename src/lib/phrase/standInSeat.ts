@@ -41,6 +41,7 @@ export type StandInOutcome =
 const SEAT_ROW = {
   variant: true,
   openSeat: true,
+  offeredAt: true,
   moveCount: true,
   blackToken: true,
   whiteToken: true,
@@ -55,6 +56,7 @@ const SEAT_ROW = {
 type SeatRow = {
   variant: string;
   openSeat: string | null;
+  offeredAt: Date | null;
   moveCount: number;
   blackToken: string;
   whiteToken: string;
@@ -75,6 +77,15 @@ type SeatRow = {
  */
 function isFree(row: SeatRow, seat: Stone): boolean {
   if (row.moveCount > 0) return false;
+  /*
+   * AND NEITHER SEAT OF AN OFFER IS FREE. Four words prove WHO somebody is,
+   * and an offer is addressed to one person by member id — so without this,
+   * anybody in the room with their own words set could sit down in a seat
+   * offered to somebody else, accepting a game on their behalf through a door
+   * that never looks at `offeredToMemberId`. The offeree accepts through
+   * `POST /api/games/[id]/offer/accept` and nowhere else.
+   */
+  if (row.offeredAt !== null) return false;
   const claimed = seat === STONES.black ? row.blackClaimedAt : row.whiteClaimedAt;
   const held = seat === STONES.black ? row.blackMemberId : row.whiteMemberId;
   return claimed === null && held === null;

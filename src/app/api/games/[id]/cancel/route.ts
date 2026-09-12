@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { NO_STORE, readJson, serverError } from "@/lib/api/apiResponse";
 import { cancelGame } from "@/lib/history/liveGameEndings";
+import { OFFER_NOT_ACCEPTED, OFFER_NOT_ACCEPTED_STATUS } from "@/lib/history/offers.constants";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
 import { currentMemberId } from "@/lib/auth/currentSession";
@@ -17,6 +18,7 @@ const REFUSAL_STATUS: Record<string, number> = {
   finished: 409,
   "wrong-token": 403,
   "not-allowed": 409,
+  offered: OFFER_NOT_ACCEPTED_STATUS,
 };
 
 const REFUSAL_MESSAGE: Record<string, string> = {
@@ -24,6 +26,8 @@ const REFUSAL_MESSAGE: Record<string, string> = {
   finished: "That game is already over.",
   "wrong-token": "You do not hold a seat in this game.",
   "not-allowed": "That game has stones on it — resign it rather than calling it off.",
+  // Calling off is not withdrawing: see the guard in `cancelGame`.
+  offered: OFFER_NOT_ACCEPTED,
 };
 
 /**

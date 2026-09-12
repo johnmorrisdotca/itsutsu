@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
-import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { SEAT_DISPLAY, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
@@ -21,6 +21,7 @@ import {
 import { seatClaims } from "@/lib/history/seatCookie";
 import { playerPath } from "@/lib/rating/playerKey";
 import { MY_GAMES_COPY } from "./mine.constants";
+import { OfferButtons } from "./OfferButtons";
 import { ResignButton } from "./ResignButton";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
@@ -77,8 +78,23 @@ function ago(iso: string, now: Date): string {
  * not closed is the one-directional fault only a return trip finds.
  */
 const SHOWN: Record<MyGameGroup, number> = {
+  /*
+   * Every offer, always. They are the shortest group on the page — nobody is
+   * asked for fifty games — and each one is a person waiting on an answer, so
+   * a cap here would hide a question rather than trim a list. Same reasoning
+   * as `yourMove`, which is the other group that is a debt.
+   */
+  offered: 50,
   yourMove: 50,
   theirMove: 20,
+  /*
+   * And every offer you have SENT, for a reason the others do not share: this
+   * group holds the declines, and a decline is the one thing on this page
+   * somebody has to be told. Capping it could hide "Hanachan declined" behind
+   * five offers made since, which is the only way this feature can fail
+   * silently.
+   */
+  offerSent: 50,
   unstarted: 10,
   hotSeat: 5,
   finished: 5,
@@ -267,9 +283,16 @@ function Group({
 }
 
 function Row({ item, now }: { item: MyGame; now: Date }) {
-  const { game, seat, group } = item;
+  const { game, seat, group, offer, offerSide } = item;
   const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
   const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
+  /*
+   * The other person's name, for the sentences an offer's row says. Read off
+   * the seat this reader is NOT in, which on an offer is the other person
+   * whichever colour they hold — a rematch swaps them, so "white" would be
+   * wrong about half of them.
+   */
+  const them = (seat === STONES.black ? white : black).trim() || SEAT_DISPLAY.two.label;
   /*
    * One address either way. A match kept its identity when it finished and the
    * link to it did not: a finished game went to /history/<slug>/<id> and a
@@ -279,7 +302,14 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
   const href = matchPath(game.variant, game.id);
   // A hot-seat game's names are two people at one keyboard and belong to nobody.
   const named = group !== "hotSeat";
-  const running = group !== "finished";
+  /*
+   * AN OFFER IS NOT A GAME TO GIVE UP. Resign and Cancel are for a board two
+   * people are playing; an offer is answered with Accept, Decline or Withdraw
+   * and nothing else. Offering "Resign" on an offer would be a control that
+   * ends a game one of the two has never agreed to play — and the routes refuse
+   * it, so it would also be a button that does nothing.
+   */
+  const running = group !== "finished" && offer === null;
   return (
     <li
       /*
@@ -287,8 +317,18 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
         because it is waiting on you, and a hover shade would paint over the
         one thing the row is saying. The arrow filling is the hover here.
       */
+      /*
+         An offer TO you is shaded like your move, because it is the same
+         thing: something waiting on you. An offer you SENT is not, and a
+         declined one is not — a green row over "Hanachan declined" would read
+         as good news.
+      */
       className={`${STRETCHED_HOST} flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm ${
-        group === "yourMove" ? "border-moss/50 bg-moss-soft" : "border-rule"
+        group === "yourMove" || group === "offered"
+          ? "border-moss/50 bg-moss-soft"
+          : offer === "declined"
+            ? "border-ochre/50 bg-ochre-soft"
+            : "border-rule"
       }`}
       data-testid="my-game"
       data-id={game.id}
@@ -322,9 +362,33 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
           <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} />
         </span>
         <span className="text-xs text-muted">
-          <GameName variant={game.variant} raised /> · {game.size}×{game.size} · {game.moveCount} moves · you are{" "}
+          <GameName variant={game.variant} raised /> · {game.size}×{game.size} · {game.moveCount} moves ·{" "}
+          {/*
+            "you WOULD be white" on an offer, because you are not in it yet.
+            The colour is the fact a reader most wants before answering — a
+            rematch swaps them — and stating it as though the seat were
+            already theirs would be the one thing an offer must not say.
+          */}
+          {offer === "offered" && offerSide === "to-me" ? "you would be " : "you are "}
           {STONE_DISPLAY[seat].label} {STONE_DISPLAY[seat].kanji} · {ago(item.since, now)}
         </span>
+        {/*
+          WHAT AN OFFER IS DOING, in a sentence, on the row. A declined offer is
+          the one thing on this page somebody has to be TOLD rather than shown,
+          and it says plainly that nothing was played and nothing was rated —
+          so a refusal cannot read as a loss.
+        */}
+        {offer === null ? null : (
+          <span className="text-xs font-medium text-ink-soft" data-testid="offer-state">
+            {offer === "declined"
+              ? MY_GAMES_COPY.offer.declined(them)
+              : offer === "withdrawn"
+                ? MY_GAMES_COPY.offer.withdrawn
+                : offerSide === "to-me"
+                  ? MY_GAMES_COPY.offer.offered
+                  : MY_GAMES_COPY.offer.offerSent(them)}
+          </span>
+        )}
       </span>
       {item.stale ? (
         <span className="relative z-10 rounded-full border border-ochre/60 bg-ochre-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide uppercase" title={MY_GAMES_COPY.staleHint(STALE_AFTER_DAYS)}>
@@ -345,6 +409,17 @@ function Row({ item, now }: { item: MyGame; now: Date }) {
       {running && (game.allowResign || game.moveCount === 0) ? (
         <span className={RAISED_LINK}>
           <ResignButton id={game.id} moves={game.moveCount} />
+        </span>
+      ) : null}
+      {/*
+        Accept and Decline where the offer is, so answering does not need the
+        board first. Above the stretched row link — see the note on the resign
+        button — or the link swallows the press. Only while the offer stands: a
+        declined one is a row saying what happened, with nothing left to do.
+      */}
+      {offer === "offered" && offerSide !== null ? (
+        <span className={RAISED_LINK}>
+          <OfferButtons id={game.id} side={offerSide} />
         </span>
       ) : null}
       {/* `ml-auto` only matters once the controls have wrapped: the arrow keeps the row's far end. */}

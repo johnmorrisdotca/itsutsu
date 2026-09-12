@@ -14,6 +14,8 @@ export function deadlineFor(game: {
   deadlineAt?: Date | string | null;
   /** The seat still posted for anyone to take, or null once somebody has sat down. */
   openSeat?: string | null;
+  /** When this game was proposed to somebody, while they have yet to answer. */
+  offeredAt?: Date | string | null;
   /** Who holds each seat, so a computer's turn can be told from a person's. */
   blackMemberId?: string | null;
   whiteMemberId?: string | null;
@@ -48,6 +50,21 @@ export function deadlineFor(game: {
    * of a white who does not exist yet, and offer to claim a turn from them.
    */
   if (game.openSeat !== undefined && game.openSeat !== null) return null;
+  /*
+   * AND THE SAME IS TRUE OF A GAME NOBODY HAS AGREED TO PLAY. An offer waits
+   * on an answer, not on a move: a clock running against it would count down
+   * somebody's first period while they had yet to decide whether to sit down
+   * at all, and the board would offer to claim a turn from a player who has
+   * never been in this game. `acceptOffer` stamps the first deadline at the
+   * moment there is somebody to play against.
+   *
+   * Beside the posted-seat rule rather than in the timeout route, for the
+   * reason stated above it: this is the one function the board and the claim
+   * both go through, and a rule stated twice is a rule that ends up
+   * disagreeing with itself — the board saying "overdue" while the claim
+   * quietly refuses.
+   */
+  if (game.offeredAt !== undefined && game.offeredAt !== null) return null;
   if (game.deadlineAt !== undefined && game.deadlineAt !== null) {
     return typeof game.deadlineAt === "string" ? new Date(game.deadlineAt) : game.deadlineAt;
   }

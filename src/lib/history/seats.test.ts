@@ -13,7 +13,7 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
  * on offer while one person played both colours of it.
  */
 describe("seatIsFree", () => {
-  const empty = { openSeat: null, blackClaimedAt: null, whiteClaimedAt: null, moveCount: 0 };
+  const empty = { openSeat: null, blackClaimedAt: null, whiteClaimedAt: null, moveCount: 0, offeredAt: null };
 
   it("offers a seat nobody has taken", () => {
     expect(seatIsFree(empty, STONES.black)).toBe(true);
@@ -48,6 +48,43 @@ describe("seatIsFree", () => {
     expect(seatIsFree(started, STONES.white)).toBe(false);
     expect(seatIsFree(started, STONES.black)).toBe(false);
   });
+
+  /*
+   * ─────────────────────────────────────────────────────────────────────────
+   * AND NEITHER SEAT OF AN OFFER IS FREE
+   * ─────────────────────────────────────────────────────────────────────────
+   *
+   * A seat that is "free" in the sense this function means is one ANYBODY may
+   * take, and here is its link. An offered seat is spoken for by name: it
+   * belongs to one member, who reaches it by accepting and by no other door.
+   *
+   * BOTH seats rather than only the offered one, because the other is the
+   * offerer's own — there is nobody to invite to either of them, and an offer
+   * mints a credential for nobody. It is also what settles an offer's rules
+   * the moment it is made, through `rulesAreSettled` below.
+   *
+   * The bug this closed was on the board: `LiveMatch` selected the six columns
+   * this function used to take and not `offeredAt`, so it read `undefined` as
+   * "not an offer" and advertised the offeree's seat to the room — with a
+   * link, and a four-words panel beside it. `offeredAt` is required now, so
+   * the compiler is the thing that catches the next caller to forget it.
+   */
+  it("offers neither seat of a game proposed to somebody", () => {
+    const offered = { ...empty, offeredAt: new Date("2026-09-12T10:00:00Z") };
+    expect(seatIsFree(offered, STONES.white), "the seat that was offered").toBe(false);
+    expect(seatIsFree(offered, STONES.black), "the offerer's own seat").toBe(false);
+  });
+
+  it("offers them again once the offer has been accepted and cleared", () => {
+    /*
+     * Accepting clears `offeredAt`, so this is the row it leaves behind — and
+     * the seats then read exactly as any other game's do. The accepted seat is
+     * stamped by `acceptOffer`, which is why only one of them comes back.
+     */
+    const accepted = { ...empty, whiteClaimedAt: new Date() };
+    expect(seatIsFree(accepted, STONES.white)).toBe(false);
+    expect(seatIsFree(accepted, STONES.black)).toBe(true);
+  });
 });
 
 /**
@@ -56,7 +93,7 @@ describe("seatIsFree", () => {
  * where one seat could change what the other had just agreed to.
  */
 describe("rulesAreSettled", () => {
-  const nobody = { openSeat: null, blackClaimedAt: null, whiteClaimedAt: null, moveCount: 0 };
+  const nobody = { openSeat: null, blackClaimedAt: null, whiteClaimedAt: null, moveCount: 0, offeredAt: null };
 
   it("leaves a game nobody has answered open", () => {
     // A creator who posted the wrong clock can still fix it.
@@ -111,5 +148,20 @@ describe("rulesAreSettled", () => {
   it("settles them once a stone is down, whoever followed a link", () => {
     // A computer player never follows one, so its seat is never stamped.
     expect(rulesAreSettled({ ...nobody, moveCount: 1 })).toBe(true);
+  });
+
+  /*
+   * AND AN OFFER'S RULES ARE SETTLED THE MOMENT IT IS MADE, because the rules
+   * ARE the offer. A challenger who could move the board, the clock or the
+   * game itself while the question stood would be asking one thing and
+   * starting another — which is the very window the setup screen exists to
+   * close, reopened at the far end.
+   *
+   * Through `seatIsFree` rather than by a test of its own here, which is why
+   * this reads as one line: the offer makes neither seat free, and the foot of
+   * `rulesAreSettled` already means "both seats are somebody's".
+   */
+  it("settles the rules of a game that has been offered to somebody", () => {
+    expect(rulesAreSettled({ ...nobody, offeredAt: new Date("2026-09-12T10:00:00Z") })).toBe(true);
   });
 });

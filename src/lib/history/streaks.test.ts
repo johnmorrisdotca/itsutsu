@@ -42,6 +42,11 @@ function game(
   extraMs: 0,
   rated: true,
   openSeat: null,
+  // Nobody was asked to play these: a streak is read off finished games.
+  offeredToMemberId: null,
+  offeredAt: null,
+  declinedAt: null,
+  withdrawnAt: null,
   blackMemberId: null,
   whiteMemberId: null,
   };

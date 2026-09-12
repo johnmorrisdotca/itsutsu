@@ -20,6 +20,7 @@ import { hasBotSeat } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
 import { awardAnsweredChallenge } from "@/lib/xp/xpSocial";
 import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
+import { OFFER_SELECT, isOffered } from "./offers";
 import type {
   CreatedGame,
   LiveGameSettings,
@@ -77,6 +78,14 @@ export const GAME_ROW = {
   whiteToken: true,
   blackMemberId: true,
   whiteMemberId: true,
+  /*
+   * An offer is a game nothing may be done to until it is answered. Read on
+   * the one select every live-game function shares, so the guard below and the
+   * four in `liveGameEndings.ts` all ask the same columns — a select that
+   * forgot them would answer "not an offer" for every row, which is the
+   * plausible-looking wrong answer.
+   */
+  ...OFFER_SELECT,
   moves: {
     orderBy: { number: "asc" },
     select: {
@@ -148,6 +157,15 @@ export async function createLiveGame(
     /** The accounts holding each seat, for a challenge sent to a named member. */
     blackMemberId?: string;
     whiteMemberId?: string;
+    /**
+     * The member this game is being PROPOSED to, whose seat is offered rather
+     * than bound, and when they were asked. Both or neither — the pair is set
+     * together by the creation route, and an offer with no timestamp would be
+     * a proposal nobody can date. Every other way of making a game leaves
+     * both off.
+     */
+    offeredToMemberId?: string;
+    offeredAt?: Date;
     /** A position to start from: the first `moves` moves of another game are copied in. */
     from?: { id: string; moves: number };
   },
@@ -185,7 +203,22 @@ export async function createLiveGame(
       rated,
       blackTimeMs: budget,
       whiteTimeMs: budget,
-      deadlineAt: rest.moveTimeMs === null ? null : new Date(startedAt.getTime() + rest.moveTimeMs),
+      /*
+       * NO CLOCK RUNS AGAINST AN OFFER. A game proposed to somebody is waiting
+       * on an answer, not on a move, and a deadline stamped here would be a
+       * clock ticking against a seat nobody has agreed to sit in — the same
+       * reasoning `deadlineFor` gives for a seat still posted on the
+       * noticeboard. `acceptOffer` stamps the first deadline at the moment
+       * there is somebody to play against, so the opener gets their whole
+       * period however long the offer sat unanswered.
+       *
+       * Written as null rather than left for `deadlineFor` to ignore: a stored
+       * value nothing may read is one somebody will eventually read.
+       */
+      deadlineAt:
+        rest.moveTimeMs === null || rest.offeredAt !== undefined
+          ? null
+          : new Date(startedAt.getTime() + rest.moveTimeMs),
       handicap: storedHandicap(handicap) ?? undefined,
       ...(hotSeat ? { blackToken: token, whiteToken: token } : {}),
       // An open game posts its white seat for anyone; the creator sits as black.
@@ -257,6 +290,15 @@ export async function appendMove(
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
   if (row.status !== "active") return { ok: false, reason: "finished" };
+  /*
+   * AN OFFER IS ANSWERED, NOT PLAYED — by anybody, including the person who
+   * made it. Before the token check rather than after, because it is a fact
+   * about the GAME and not about who is asking: a fork carries moves across, so
+   * an offered board can have stones on it and a position whose turn it is, and
+   * the offerer holds a perfectly good token for their own seat. Nothing about
+   * that adds up to a game the other person has agreed to play.
+   */
+  if (isOffered(row)) return { ok: false, reason: "offered" };
 
   const state = replay(row);
   // One token for both chairs plays whoever is to move.

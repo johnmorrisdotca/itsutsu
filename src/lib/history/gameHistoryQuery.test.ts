@@ -118,8 +118,24 @@ describe("toGameHistoryQuery", () => {
 });
 
 describe("buildGameWhere", () => {
-  it("lists only finished games when nothing else is asked for", () => {
-    expect(buildGameWhere(parse("")!)).toEqual({ AND: [{ status: "finished" }] });
+  /**
+   * WHAT THE RECORD IS WITH NOTHING ASKED OF IT: every finished game, and not
+   * an offer somebody refused.
+   *
+   * The second half is not decoration. A declined or withdrawn offer is filed
+   * `status: finished, result: abandoned` — the same filing a board called off
+   * before the first stone gets — and an unfinished game IS part of the record,
+   * so this is the one query on the site that cannot exclude refused offers by
+   * excluding abandoned results. It has to say so, and `offers.coverage.test.ts`
+   * fails the build if this clause is ever dropped.
+   *
+   * Named here so that every assertion below reads as "the base, plus what was
+   * asked for" rather than repeating two clauses eleven times.
+   */
+  const BASE = [{ status: "finished" }, { declinedAt: null, withdrawnAt: null }];
+
+  it("lists every finished game but no refused offer, when nothing else is asked for", () => {
+    expect(buildGameWhere(parse("")!)).toEqual({ AND: BASE });
   });
 
   it("searches both seats case-insensitively", () => {
@@ -336,11 +352,11 @@ describe("buildGameWhere", () => {
     it("drops a win or a loss with nobody to read it against", () => {
       // Unanswerable, not empty: better to leave the record as it was than to
       // quietly return nothing and look like a player with no wins.
-      expect(buildGameWhere(parse("?outcome=won")!)).toEqual({ AND: [{ status: "finished" }] });
+      expect(buildGameWhere(parse("?outcome=won")!)).toEqual({ AND: BASE });
     });
 
     it("drops a loss the same way it drops a win", () => {
-      expect(buildGameWhere(parse("?outcome=lost")!)).toEqual({ AND: [{ status: "finished" }] });
+      expect(buildGameWhere(parse("?outcome=lost")!)).toEqual({ AND: BASE });
     });
   });
 
@@ -357,9 +373,14 @@ describe("buildGameWhere", () => {
     it("agrees with buildGameWhere about every outcome", () => {
       for (const outcome of ["won", "lost", "drawn", "decided"] as const) {
         const where = buildGameWhere(parse(`?outcome=${outcome}`)!);
-        // More conditions than just { status: "finished" } means the outcome
-        // clause survived — buildGameWhere always builds AND as an array.
-        const applied = Array.isArray(where.AND) && where.AND.length !== 1;
+        /*
+         * More conditions than the base means the outcome clause survived —
+         * `buildGameWhere` always builds AND as an array. Counted against
+         * `BASE.length` rather than against 1, so that adding a clause every
+         * query carries (the refused-offer exclusion was one) does not silently
+         * turn this into "every outcome was applied".
+         */
+        const applied = Array.isArray(where.AND) && where.AND.length !== BASE.length;
         expect(outcomeNeedsPlayer(outcome), outcome).toBe(!applied);
       }
     });
@@ -397,7 +418,7 @@ describe("buildGameWhere", () => {
     });
 
     it("leaves the people pool alone when there are no computer players", () => {
-      expect(buildGameWhere(parse("?pool=people")!, { computers: [], named: [] })).toEqual({ AND: [{ status: "finished" }] });
+      expect(buildGameWhere(parse("?pool=people")!, { computers: [], named: [] })).toEqual({ AND: BASE });
     });
 
     it("treats no seats handed in as no computer players, which is what it is", () => {
@@ -452,7 +473,7 @@ describe("buildGameWhere", () => {
     it("drops a verdict with nobody to read it against", () => {
       // Only the person who played can have said it, so without a name there
       // is no question here to answer.
-      expect(buildGameWhere(parse("?verdict=up")!)).toEqual({ AND: [{ status: "finished" }] });
+      expect(buildGameWhere(parse("?verdict=up")!)).toEqual({ AND: BASE });
     });
   });
 

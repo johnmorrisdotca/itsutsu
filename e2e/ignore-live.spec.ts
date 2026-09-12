@@ -35,6 +35,15 @@ test.describe("ignoring somebody, in a live game", () => {
     const game = (await started.json()) as { id: string; blackToken: string };
     tidyAway(game.id);
 
+    /*
+     * ACCEPTED, because a challenge is an OFFER now: one seat bound, one
+     * offered, and no move and no word from either of them until it is
+     * answered. Accepted BEFORE the ignoring, which keeps this file's own
+     * order — you fall out with somebody you are already playing.
+     */
+    const accepted = await mine.request.post(`/api/games/${game.id}/offer/accept`, {});
+    expect(accepted.status(), await accepted.text()).toBe(200);
+
     await mine.request.post("/api/ignores", { data: { email: loud.email } });
     await theirs.request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },

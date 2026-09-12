@@ -18,6 +18,7 @@ import {
   GAME_VARIANT_FILTERS,
   PLAYER_NAME_MAX,
 } from "./gameHistory.constants";
+import { NOT_A_REFUSED_OFFER } from "./offers";
 import { GAME_SORT_SPEC, gameSortChoice, readGamePaging } from "./gameHistory.sort";
 import type { GameHistoryQuery, GameOutcome } from "./gameHistory.types";
 
@@ -304,8 +305,24 @@ export function buildGameWhere(
   seats: FilterSeats = NO_FILTER_SEATS,
 ): Prisma.GameWhereInput {
   const { computers: computerSeats, named } = seats;
-  // The record is every finished game; a match still being played is in its players' lists, not here.
-  const conditions: Prisma.GameWhereInput[] = [{ status: "finished" }];
+  /*
+   * The record is every finished game; a match still being played is in its
+   * players' lists, not here.
+   *
+   * AND A REFUSED OFFER IS NOT A FINISHED GAME, which is the one place on this
+   * site where that distinction has to be made in SQL. A declined or withdrawn
+   * offer is filed `status: finished, result: abandoned` — the same filing a
+   * board called off before the first stone gets, because it is the only thing
+   * the stored result can honestly say — so without this line it would appear
+   * on /history, and on every per-game and per-player narrowing of it, beside
+   * real games with both names on it. Nobody played it and nobody agreed to.
+   *
+   * Most of the other finished-game queries are already safe, because they ask
+   * `result: { not: "abandoned" }` for their own reasons; this one deliberately
+   * does not, since an unfinished game is part of the record. Which queries are
+   * covered by which is checked in `offers.coverage.test.ts`.
+   */
+  const conditions: Prisma.GameWhereInput[] = [{ status: "finished" }, NOT_A_REFUSED_OFFER];
 
   /*
    * SEARCH IS ABOUT SPELLINGS and stays that way. It is a substring over the

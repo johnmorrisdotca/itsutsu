@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import QRCode from "qrcode";
@@ -14,10 +13,15 @@ import { FiledMatchPage } from "./FiledMatchPage";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { NotesPanel } from "@/components/game/NotesPanel";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { STONES } from "@/lib/gomoku/gomoku.constants";
+import { SEAT_DISPLAY, STONES } from "@/lib/gomoku/gomoku.constants";
+import { isOffered, offerIsMine, offeredSeat, offererSeat, wasRefused } from "@/lib/history/offers";
+import { acrossTheBoard, mutedColours, type Across } from "@/lib/history/acrossTheBoard";
+import { OfferPanel } from "@/components/live/OfferPanel";
+import { RefusedOfferPage } from "./RefusedOfferPage";
+import { SeatFullNotice } from "./SeatFullNotice";
+import { shownName } from "@/lib/rating/shownName";
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { isHotSeat } from "@/lib/history/liveGame";
-import { isIgnoring } from "@/lib/social/ignores";
 import { gameRatingRefusal } from "@/lib/rating/rateable";
 import { matchPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
@@ -26,7 +30,6 @@ import { seatCookieName } from "@/lib/history/seatCookie";
 import { seatPickList } from "@/lib/phrase/seatPick";
 import { markSeatTaken, resolveSeat, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
-import { activeGameCount, activeGameLimit } from "@/lib/history/activeGames";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
 import { prisma } from "@/lib/prisma";
@@ -110,6 +113,18 @@ export async function MatchPage({
    * was a redirect to a second address until the two were folded into one, and
    * a redirect is what made a link to a game stop working the day it finished.
    */
+  /*
+   * AN OFFER THAT WAS REFUSED IS NOT A MATCH, so it does not get the match
+   * page. It is filed `status: finished` — that is how it leaves the cap, the
+   * lobby and every sweep — so without this it fell through to the replay,
+   * which would have drawn a board, a move list and a result line for a game
+   * nobody ever agreed to play. "Unfinished 中断" over an empty board, reading
+   * as a game that was started and given up.
+   *
+   * A page rather than a 404, because the offerer follows a link to it from
+   * their own queue and a dead end is the one thing this page must not be.
+   */
+  if (wasRefused(game)) return <RefusedOfferPage game={game} />;
   if (game.status !== "active") return <FiledMatchPage id={id} move={move} />;
 
   /*
@@ -143,61 +158,47 @@ export async function MatchPage({
   }
 
   /*
-   * Who sits across the board: the other seat's name and, when it is an
-   * account that said where it is, its country — the way the elder sites put
-   * it, "against Kyokosan from Canada".
+   * WHO IS ACROSS THE BOARD, AND WHO THIS READER HAS MUTED — both in
+   * `acrossTheBoard.ts`, which also keeps the reason the second one is asked
+   * for a WATCHER and not only for a player.
    */
-  let opponent: { name: string; country: string; awayUntil: string | null } | null = null;
+  const mine = await currentEmail();
+  const opponent = tokens === null ? null : await acrossTheBoard(seat, tokens, game);
+  const ignoring = tokens === null ? [] : await mutedColours(mine, tokens);
 
   /*
-   * Whose messages this reader has chosen not to hear, seat or no seat.
+   * WHICH SIDE OF AN OFFER THIS READER IS ON, worked out here because it needs
+   * their member id and everything below is a client component.
    *
-   * This used to be worked out inside the block below, which only runs for
-   * somebody holding a seat — so a member who had ignored a player and then
-   * opened that player's game to watch it saw everything they said. The
-   * ignore list is a rule about who may reach you, not about which chair you
-   * are sitting in, and the record page has answered it this way for any
-   * reader since the conversation was put on it.
+   * `null` for a stranger watching an offered game, which is right: an offer is
+   * addressed to one person, and a watcher is shown the board and the ordinary
+   * "you are watching" line. Nothing about who was asked is printed for them.
    */
-  const ignoring: Stone[] = [];
-  const mine = await currentEmail();
-  if (mine !== null && tokens !== null) {
-    const seatIds = [
-      [STONES.black, tokens.blackMemberId],
-      [STONES.white, tokens.whiteMemberId],
-    ] as const;
-    const held = seatIds.map(([, id]) => id).filter((id) => id !== null);
-    const rows =
-      held.length === 0
-        ? []
-        : await prisma.member.findMany({ where: { id: { in: held } }, select: { id: true, email: true } });
-    for (const [stone, memberId] of seatIds) {
-      const address = rows.find((row) => row.id === memberId)?.email ?? null;
-      if (address !== null && (await isIgnoring(mine, address))) ignoring.push(stone);
-    }
-  }
-
-  if (seat !== null && tokens !== null) {
-    const otherId = seat === STONES.black ? tokens.whiteMemberId : tokens.blackMemberId;
-    const otherName = (seat === STONES.black ? game.whiteName : game.blackName).trim();
-    // Found by id, because that is what a seat holds now. The ignore list is
-    // still keyed by address, so theirs is read back from the row.
-    const member =
-      otherId === null
-        ? null
-        : await prisma.member.findUnique({
-            where: { id: otherId },
-            select: { name: true, country: true, awayFrom: true, awayUntil: true },
-          });
-    if (member !== null || otherName !== "") {
-      const now = new Date().getTime();
-      const away =
-        member?.awayFrom && member.awayUntil && member.awayFrom.getTime() <= now && member.awayUntil.getTime() > now
-          ? member.awayUntil.toISOString()
-          : null;
-      opponent = { name: member?.name || otherName || "the other seat", country: member?.country ?? "", awayUntil: away };
-    }
-  }
+  const mineId = await currentMemberId();
+  const side = offerIsMine(game, mineId);
+  /*
+   * The OTHER person's seat, which is a different seat for each of the two
+   * readers: whoever is looking at this wants the other one named. Derived from
+   * the offer rather than from "white", because a rematch swaps the colours and
+   * a fixed colour would be wrong about half of them.
+   */
+  const theirSeat = side === "to-me" ? offererSeat(game) : offeredSeat(game);
+  /*
+   * `isOffered` as well as a side, because `side` is true of a REFUSED offer
+   * too — the offerer has to be told which of theirs was declined — and this
+   * prop is what puts Accept and Decline on the board. An offer that has been
+   * answered has nothing left to answer.
+   */
+  const offer =
+    side === null || theirSeat === null || !isOffered(game)
+      ? null
+      : {
+          side,
+          who: shownName(
+            (theirSeat === STONES.black ? game.blackName : game.whiteName).trim() ||
+              SEAT_DISPLAY.two.label,
+          ),
+        };
 
   return (
     <LiveMatch
@@ -208,6 +209,7 @@ export async function MatchPage({
       opponent={opponent}
       ignoring={ignoring}
       seatFull={seatFull}
+      offer={offer}
     />
   );
 }
@@ -220,17 +222,20 @@ async function LiveMatch({
   opponent,
   ignoring,
   seatFull,
+  offer,
 }: {
   game: GameDetail;
   token: string | null;
   seat: Stone | null;
   /** The position the address names, for forking a new game from it. */
   move: number;
-  opponent: { name: string; country: string; awayUntil: string | null } | null;
+  opponent: Across | null;
   /** Whether a seat link turned this reader away for holding too many games. */
   seatFull: boolean;
   /** Colours whose player this reader has ignored. */
   ignoring: readonly Stone[];
+  /** An unanswered offer this reader is one of the two people in. */
+  offer: { side: "to-me" | "from-me"; who: string } | null;
 }) {
   /*
    * Seat links are only handed out to someone who already holds one. A reader
@@ -257,6 +262,18 @@ async function LiveMatch({
       blackClaimedAt: true,
       whiteClaimedAt: true,
       moveCount: true,
+      /*
+       * AND WHETHER THIS GAME IS AN OFFER, which `seatIsFree` below now
+       * requires rather than accepting as optional — because forgetting it
+       * here is exactly what went wrong. Without it that function was handed
+       * `undefined`, read it as "not an offer", and reported the offeree's
+       * seat as free: so the board offered the four-words panel and a seat
+       * link for a seat that had been promised to one person by name. The
+       * route refused, so it was a control that did nothing, which is the
+       * failure the note below about hidden controls warns about, inverted.
+       * Found by `e2e/offers.spec.ts` driving the real board.
+       */
+      offeredAt: true,
       /*
        * The two member ids used to be read here as well, for `settled` — a seat
        * bound to a member is a person already in this game whether or not they
@@ -289,8 +306,14 @@ async function LiveMatch({
    * `playedAs` on `GameSummary` — reading the resolved `blackName` here would
    * let this page explain a refusal the database never made.
    */
+  /*
+   * AND AN OFFER IS LEFT ALONE FOR THE SAME REASON A POSTED SEAT IS. It has a
+   * name on the other seat, so the name-fold rule would happily answer — but
+   * nobody is in that seat yet, so any answer would be about a game that does
+   * not exist. A game waiting to be agreed is not a game that will not count.
+   */
   const refusal =
-    game.openSeat === null
+    game.openSeat === null && !isOffered(game)
       ? gameRatingRefusal({
           rated: game.rated,
           hotSeat: tokens !== null && isHotSeat(tokens),
@@ -387,14 +410,29 @@ async function LiveMatch({
               basePath={matchPath(game.variant, game.id)}
               opponent={opponent}
               ignoring={ignoring}
+              offer={offer}
               appearance={appearance}
             />
           </div>
         </div>
 
         <aside className="flex w-full flex-col gap-4 lg:w-80">
+          {/*
+            THE ANSWER, FIRST IN THE PANEL. An offer is the one thing on this
+            page a reader has to do something about, so it sits above the
+            rules rather than under them — and the rules directly below it are
+            what they are deciding about, which is the order somebody reads in.
+          */}
+          {offer !== null ? (
+            <OfferPanel id={game.id} side={offer.side} who={offer.who} />
+          ) : null}
           <SharedRules game={game} refusal={refusal} />
-          {forkOffered({ move, last: game.moveCount, seated: seat !== null }) ? (
+          {/*
+            And nothing to fork off a board nobody has agreed to play on yet.
+            Forking an offer would propose a second game out of a position that
+            is itself still a question.
+          */}
+          {offer === null && forkOffered({ move, last: game.moveCount, seated: seat !== null }) ? (
             <div className={`${PANEL_CLASS} flex flex-col gap-2`}>
               <h2 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
                 Fork <span className="font-mincho normal-case tracking-normal">分岐</span>
@@ -423,9 +461,15 @@ async function LiveMatch({
             while a seat is waiting, whether or not they already hold one.
           */}
           {freeSeats.length > 0 ? <SitAsPanel gameId={game.id} freeSeats={freeSeats} members={seatPicks} /> : null}
+          {/*
+            `offer === null` on the watching notice: the offeree HAS no seat and
+            no link — that is what "tokenless until accepted" means — so telling
+            them to open one would be a dead end pointing at a thing that does
+            not exist. The panel above is their way in, and it is the only one.
+          */}
           {invites.length > 0 ? (
             <InvitePanel invites={invites} yourStone={seat} />
-          ) : seat === null && freeSeats.length === 0 ? (
+          ) : offer === null && seat === null && freeSeats.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-rule px-4 py-6 text-sm text-muted">
               You are watching this game. Open your own seat link to play.
             </p>
@@ -433,52 +477,5 @@ async function LiveMatch({
         </aside>
       </div>
   </Page>
-  );
-}
-
-/**
- * Why a seat link did not seat you, on the page it sent you to.
- *
- * It says what to do about it and that the invitation is still good, because
- * a refusal that reads as a dead end sends somebody away from a game they
- * were invited to.
- */
-async function SeatFullNotice({ shown }: { shown: boolean }) {
-  if (!shown) return null;
-  /*
-   * The numbers are read HERE rather than carried on the address. The ticket
-   * asks for the count in the refusal — "since a bare refusal reads as a
-   * fault" — and a number passed through a query is one a reader can edit,
-   * so the page would be quoting them back their own guess. One extra count,
-   * only ever on this path.
-   */
-  const mine = await currentMemberId();
-  const held = mine === null ? null : await activeGameCount(mine);
-  return (
-    <p
-      className="rounded-xl border border-ochre/40 bg-ochre/10 px-4 py-3 text-sm"
-      role="status"
-      data-testid="seat-full-notice"
-    >
-      <strong className="font-semibold">Your seat is still waiting.</strong>{" "}
-      {held === null ? (
-        <>You already have as many games on the go as this site allows at once, so it was not claimed for you.</>
-      ) : (
-        <>
-          You have{" "}
-          {/*
-            The count leads to the games it counted, which is this site's rule
-            about any number that refers to games — and here it is also the
-            only useful thing to do about the refusal: the game to finish is
-            in that list.
-          */}
-          <Link href="/play" className="font-medium underline underline-offset-4">
-            {held} games on the go
-          </Link>
-          , and {activeGameLimit()} at once is the limit here, so it was not claimed for you.
-        </>
-      )}{" "}
-      Finish or resign one and follow the same link again — it has not been used up.
-    </p>
   );
 }

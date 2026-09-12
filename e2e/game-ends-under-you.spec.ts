@@ -2,6 +2,18 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
 import { playAt, ready, startAndBegin } from "./support";
+import { gamesMade } from "./tidy";
+
+/**
+ * Every game this file makes, taken away when it finishes.
+ *
+ * It made none of its own before, and each run left three behind — two games
+ * and a rematch. Noticed while offers were being built: the unanswered offers
+ * this file's own failing runs had left had nothing to clear them. AGENTS.md
+ * on database litter: a database that grows cuts real rows off the end of
+ * capped lists and fails other specs for reasons that are not the code's.
+ */
+const tidyAway = gamesMade();
 
 /**
  * What a game does when it ends while you are sitting in front of it.
@@ -55,10 +67,24 @@ test.describe("a game that ends while you are looking at it", () => {
     });
     expect(made.status(), await made.text()).toBe(201);
     const created = (await made.json()) as { id: string };
+    tidyAway(created.id);
+
+    /*
+     * ACCEPTED FIRST. A challenge is an OFFER now — one seat bound, one
+     * offered — and nothing may be played on it until the other person agrees.
+     * This file is about a game ENDING under a reader, so it needs a game.
+     */
+    const theirs = await memberContext(browser, baseURL!, them);
+    const accepted = await theirs.request.post(`/api/games/${created.id}/offer/accept`, {});
+    expect(accepted.status(), await accepted.text()).toBe(200);
+    await theirs.close();
+
     /*
      * Read from the row: since 0.133.1 the API hands back only the caller's own
      * seat token, correctly. This spec has to move the opponent's stones, which
      * is a fixture rather than anything a player can do. See `seatTokensFor`.
+     *
+     * AFTER the acceptance, which mints a fresh key for the seat it binds.
      */
     const seats = await seatTokensFor(created.id);
 
@@ -178,6 +204,7 @@ test.describe("a game that ends while you are looking at it", () => {
     });
     expect(made.status(), await made.text()).toBe(201);
     const created = (await made.json()) as { id: string };
+    tidyAway(created.id);
 
     await page.goto(`/games/gomoku/match/${created.id}`);
     await ready(page, "shared-game");
@@ -213,6 +240,7 @@ test.describe("a game that ends while you are looking at it", () => {
 
     // A real second game, with the same board and the same opponent in it.
     const id = page.url().split("/").pop()!;
+    tidyAway(id);
     const started = await context.request.get(`/api/games/${id}`);
     expect(started.status()).toBe(200);
     const next = (await started.json()) as { size: number; blackName: string; whiteName: string };

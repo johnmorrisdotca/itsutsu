@@ -6,7 +6,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MY_GAMES_COPY } from "./mine.constants";
 
-const fetcher = async (url: string): Promise<{ yourMove: number } | null> => {
+const fetcher = async (url: string): Promise<{ yourMove: number; offered?: number } | null> => {
   const response = await fetch(url);
   // A visitor with no session gets nothing, and shows nothing.
   return response.ok ? response.json() : null;
@@ -103,7 +103,20 @@ export function YourTurnBadge() {
     revalidateOnFocus: true,
     dedupingInterval: 2_000,
   });
-  const count = data?.yourMove ?? 0;
+  /*
+   * BOTH KINDS OF WAITING, IN ONE PIP. A game wanting a move and an offer
+   * wanting an answer are both things waiting on the reader, and a badge that
+   * counted only one of them would leave somebody with an unanswered offer
+   * looking at a bare "Play" link — which is the "never hunt for your turn"
+   * rule broken by the one control that exists to keep it.
+   *
+   * The words tell them apart (`waitingOn`), because they want different
+   * things done. Offers the reader has SENT are not counted: those are waiting
+   * on somebody else.
+   */
+  const moves = data?.yourMove ?? 0;
+  const offers = data?.offered ?? 0;
+  const count = moves + offers;
   return (
     /*
      * The slot is always here, empty or not, and is what a browser test waits
@@ -124,8 +137,8 @@ export function YourTurnBadge() {
       {count === 0 ? null : (
         <span
           className="inline-flex min-w-5 items-center justify-center rounded-full bg-moss px-1.5 text-[0.65rem] font-semibold text-paper"
-          title={MY_GAMES_COPY.yourTurn(count)}
-          aria-label={MY_GAMES_COPY.yourTurn(count)}
+          title={MY_GAMES_COPY.waitingOn(moves, offers)}
+          aria-label={MY_GAMES_COPY.waitingOn(moves, offers)}
           data-testid="your-turn-badge"
         >
           {count}

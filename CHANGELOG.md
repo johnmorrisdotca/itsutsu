@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.167.0 — 2026-09-12
+- A game you propose to a person — a challenge, a rematch or a fork — is an offer until they accept it: it waits in their list with Accept and Decline, declining costs them nothing, you can withdraw it, and nothing is bound to them until they say yes
+
 ## 0.166.0 — 2026-09-12
 - Your level has its name everywhere now: in the toast when you reach one, on your own page with the rung ahead a click away, beside every name on the players page and the Computers and Bots tabs, and on a player's page with their total — and each name leads to its rung on the ladder
 

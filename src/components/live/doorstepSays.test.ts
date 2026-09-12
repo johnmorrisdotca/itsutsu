@@ -89,9 +89,49 @@ describe("the game a doorstep is about, in sentences", () => {
 
 describe("who plays which colour, said on the doorstep", () => {
   it("names both colours and who moves first", () => {
-    expect(describeSeating(draft, who)).toBe(
+    expect(describeSeating(draft, who)).toContain(
       "Against Bob T., who plays black; you are white and move second.",
     );
+  });
+
+  /*
+   * AND THAT BEGIN MAKES AN OFFER RATHER THAN A GAME.
+   *
+   * The doorstep's whole job is that nothing is a surprise on the other side of
+   * it, and "this person is now in a game with you" stopped being what Begin
+   * does. Somebody who reads this page and presses the button should know they
+   * are asking — otherwise the first surprise is a board that will not let them
+   * move, and the second is finding out that the other person can say no.
+   *
+   * Appended to whatever the seating turns out to be, rather than written into
+   * each of the four branches, because a branch is exactly where a sentence
+   * gets forgotten — so it is asserted on the branches too.
+   */
+  it("says an opponent can accept or decline, and that refusing costs nothing", () => {
+    const said = describeSeating(draft, who);
+    expect(said).toContain("This is an offer");
+    expect(said).toContain("Bob T. can accept or decline");
+    expect(said).toContain("costs nobody anything");
+  });
+
+  it("says it under a swap opening too, where the colours are not settled", () => {
+    const said = describeSeating({ opening: OPENING_RULES.swap }, who);
+    expect(said).toContain("This is an offer");
+  });
+
+  /*
+   * NOT FOR A PROGRAM, and this is the exception rather than an oversight: a
+   * computer has nothing to accept with, never signs in, and its game starts at
+   * once — which is the reason people pick one. Saying "it can decline" of a
+   * program would be untrue of the one opponent that never does.
+   */
+  it("says nothing of the sort about a computer, which has nothing to accept with", () => {
+    expect(describeSeating(draft, { ...who, computer: true })).not.toContain("an offer");
+  });
+
+  it("says nothing of the sort about two people at one screen, or a posted seat", () => {
+    expect(describeSeating(draft, { ...who, screen: true })).not.toContain("an offer");
+    expect(describeSeating(draft, { ...who, opponent: null })).not.toContain("an offer");
   });
 
   it("says you move first when the colour you hold is the one that opens", () => {
