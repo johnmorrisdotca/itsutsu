@@ -1,6 +1,7 @@
 import { tierFor, type RatingTier } from "./elo";
 import { RATING_POOLS, type RatingPool } from "./pools";
 import type { PlayerProfile } from "./players";
+import type { PlayedTally } from "@/lib/history/playerRecord";
 
 /**
  * What a list should print beside somebody's name when they play in two pools.
@@ -22,21 +23,32 @@ import type { PlayerProfile } from "./players";
  */
 
 /**
- * Every finished game somebody has played here, whichever pool scored it.
+ * Every finished game somebody has played here — every one, not only the
+ * rated ones.
  *
- * Summed rather than picked between, because these columns count GAMES and a
- * game against a program is one somebody played. It is the ratings that must
- * not be mixed — a number earned against people and a number earned against
- * programs mean different things — and those are answered separately by
- * `ratingShown`, which says which pool it is quoting.
+ * THIS USED TO READ `PlayerProfile`, the rating table, and summed its two
+ * pools exactly the way the doc comment above still describes. That was a
+ * second, narrower bug wearing the first one's fix: a rating row only ever
+ * exists for a RATED game — `liveGame.ts` calls `recordResult` only when the
+ * row says rated — so summing both pools' rating columns answers "how many
+ * rated games", not "how many played", while the column above it says
+ * PLAYED. Measured on production: a computer player with 36 finished games
+ * showed 1, because 35 of them were unrated bot-series runs. The two humans
+ * on the same page matched exactly, because every game either of them had
+ * played happened to be rated — which is exactly why nobody had caught it.
+ *
+ * So this now takes the batched read of the games table itself
+ * (`fetchPlayedTallies`, for a list; `fetchPlayerRecord`, for one person's own
+ * page) rather than the rating rows, and the header, the code and a player's
+ * own page all mean the same thing by "played" again.
+ *
+ * Undefined rather than defaulted before the call, matching `Map.get` — a
+ * member nobody has a tally for has played nothing, not nothing worth
+ * reporting.
  */
-export function gamesPlayed(profile: PlayerProfile | null): { wins: number; losses: number; draws: number } {
-  if (profile === null) return { wins: 0, losses: 0, draws: 0 };
-  return {
-    wins: profile.wins + profile.computer.wins,
-    losses: profile.losses + profile.computer.losses,
-    draws: profile.draws + profile.computer.draws,
-  };
+export function gamesPlayed(played: PlayedTally | undefined): { wins: number; losses: number; draws: number } {
+  if (played === undefined) return { wins: 0, losses: 0, draws: 0 };
+  return { wins: played.wins, losses: played.losses, draws: played.draws };
 }
 
 /**

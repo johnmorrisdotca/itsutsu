@@ -12,6 +12,7 @@ import { RowActions } from "@/components/ui/Controls";
 import { buddyEmails } from "@/lib/social/buddies";
 import { currentSession } from "@/lib/auth/currentSession";
 import { fetchComputerPlayers, fetchDirectory, fetchKeptRecords, type DirectoryEntry } from "@/lib/rating/players";
+import { fetchPlayedTallies, type PlayedTally } from "@/lib/history/playerRecord";
 import { gamesPlayed, ratingShown } from "@/lib/rating/shownRecord";
 import { RECORD_SCOPES, scopeWorthAsking, type RecordScope } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "./RecordScopeBar";
@@ -42,6 +43,16 @@ const RECENT = 200;
  * who were left unmarked, which is why it read as a contradiction rather than
  * as a distinction.
  *
+ * "EVERY GAME PLAYED HERE" WAS THE INTENT ABOVE AND NOT WHAT THE CODE DID, for
+ * a second bug wearing the first one's fix. `gamesPlayed` read `profile`, the
+ * rating table — and a rating row only exists for a RATED game, so a bot with
+ * dozens of unrated bot-series games behind it still came out as one or two
+ * played. Measured on production: Andrus Meritalu had 36 finished games and
+ * this column said 1. `played` is the honest source, a batched read of the
+ * games table itself (`fetchPlayedTallies`) rather than the ratings earned
+ * from it, and it is why this row now needs both props: `profile` for the
+ * rating, `played` for the count beside it.
+ *
  * THE COUNTS NOW REACH FURTHER BACK THAN THIS SITE, which was the same fault
  * one step over. A kept record has a member row so the site can list them at
  * all, and this table read the Itsutsu columns alone — so Chibi, fourteen
@@ -58,10 +69,16 @@ const RECENT = 200;
 function DirectoryRecord({
   name,
   profile,
+  played,
   elsewhere,
   scope,
-}: Pick<DirectoryEntry, "profile" | "elsewhere"> & { name: string; scope: RecordScope }) {
-  const here = gamesPlayed(profile);
+}: Pick<DirectoryEntry, "profile" | "elsewhere"> & {
+  name: string;
+  /** This member's tally from `fetchPlayedTallies`, or undefined for nobody yet. */
+  played: PlayedTally | undefined;
+  scope: RecordScope;
+}) {
+  const here = gamesPlayed(played);
   /*
    * Counting everywhere unless the reader has asked for this site alone. The
    * table led with the lifetime figure and offered no way to narrow it, while
@@ -70,7 +87,7 @@ function DirectoryRecord({
    * give one of them.
    */
   const everywhere = scope === RECORD_SCOPES.everywhere;
-  const played = everywhere
+  const playedRecord = everywhere
     ? {
         wins: here.wins + elsewhere.wins,
         losses: here.losses + elsewhere.losses,
@@ -83,15 +100,20 @@ function DirectoryRecord({
   return (
     <>
       <RecordCells
-        record={played}
+        record={playedRecord}
         /*
-         * Rated games here, both pools, which is what `gamesPlayed` added up.
+         * Every game here, both pools, rated or not — which is what `here`
+         * now adds up. `rated` is left unset (both) on purpose: setting it to
+         * "yes" is what a link must never do to a count that no longer means
+         * only the rated ones, because it would open a shorter list than the
+         * number beside it promised.
+         *
          * A row carrying a kept record is counting games this site never saw,
          * so it links nowhere: there is nothing here to open, and a link that
          * showed the Itsutsu half under a total that includes another site
          * would be quietly wrong about which games it meant.
          */
-        of={{ player: name, rated: "yes", here: !kept }}
+        of={{ player: name, here: !kept }}
         note={
           kept ? (
             /*
@@ -180,8 +202,19 @@ export async function Directory({
   const extra = [...computers, ...kept].filter((one) => !seen.has(one.id));
   const everybody = [...directory, ...extra];
   const people = filterDirectory(everybody, filter, now.getTime());
-  const buddies = me?.email ? await buddyEmails(me.email) : new Set<string>();
-  const ignored = me?.email ? await ignoredEmails(me.email) : new Set<string>();
+  const [buddies, ignored, tallies] = await Promise.all([
+    me?.email ? buddyEmails(me.email) : Promise.resolve(new Set<string>()),
+    me?.email ? ignoredEmails(me.email) : Promise.resolve(new Set<string>()),
+    /*
+     * Every row's played count, in the one query this whole page needed and
+     * used to do without: the "Played" column read `profile`, the rating
+     * table, which only holds RATED games. One query however many rows are
+     * on screen — the shape the landing page's fix in 0.139.0 already set,
+     * for the same reason: a table of many is not a page about one person,
+     * and must not cost a query per row.
+     */
+    fetchPlayedTallies(everybody.map((entry) => entry.id)),
+  ]);
 
   return (
     <div className="flex flex-col gap-4" data-testid="directory-section">
@@ -280,6 +313,7 @@ export async function Directory({
                 <DirectoryRecord
                   name={entry.name}
                   profile={entry.profile}
+                  played={tallies.get(entry.id)}
                   elsewhere={entry.elsewhere}
                   scope={scope}
                 />
