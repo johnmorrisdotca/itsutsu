@@ -149,10 +149,17 @@ function askedOver(initial: RulesDraft, want: SetUpAsked, forked = false): Rules
   if (forked) return applyRulesChange(initial, pace);
 
   /*
-   * A board only where the game being asked for actually has it. `sizeForVariant`
-   * lets any number through for the games with no board of their own, so this is
-   * the check that keeps an address from naming a 12×12 gomoku board — which the
-   * creation route would refuse after the doorstep had already stated it.
+   * A BOARD ONLY WHERE THE GAME BEING ASKED FOR ACTUALLY OFFERS IT, and this is
+   * not the same as letting `applyRulesChange` snap it.
+   *
+   * That function already refuses a board the picker has no block for — since
+   * 0.158.7 it snaps through `boardSizesFor` rather than `sizeForVariant` — but it
+   * snaps to the game's FIRST board, which is the right answer to "this draft
+   * holds an impossible size" and the wrong one to "an address named a size this
+   * game does not have". The second is an address that said nothing readable, and
+   * silence here means the member's own standing board, exactly as it does on the
+   * plain path above. Snapping instead would quietly move somebody from their
+   * usual 15×15 to 9×9 because a link had a typo in it.
    */
   const variant = said.variant ?? (initial.variant as RuleVariant);
   const board = want.board !== null && boardSizesFor(variant).includes(want.board) ? want.board : null;
