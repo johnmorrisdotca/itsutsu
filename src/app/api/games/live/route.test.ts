@@ -72,9 +72,19 @@ const ORIGIN = {
   whiteMemberId: null,
 };
 
+/**
+ * The origin a fork or a rematch reads, which one case below replaces.
+ *
+ * Mutable because the interesting fork is out of a RATED game, and the row
+ * that matters is one whose `rated` column says true for a game that could
+ * never have counted — see `ratedButRefused.ts`. Reset before every case, so
+ * nothing leaks between them.
+ */
+let origin: Record<string, unknown> = { ...ORIGIN };
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    game: { findUnique: async () => ORIGIN },
+    game: { findUnique: async () => origin },
     member: { findUnique: async () => null, findMany: async () => [] },
   },
 }));
@@ -93,6 +103,7 @@ function post(body: Record<string, unknown>) {
 
 beforeEach(() => {
   createLiveGame.mockClear();
+  origin = { ...ORIGIN };
 });
 
 describe("POST /api/games/live — rated", () => {
@@ -105,11 +116,20 @@ describe("POST /api/games/live — rated", () => {
     expect(input.rated).toBe(false);
   });
 
-  it("a hot-seat board that explicitly asks to be rated stays rated", async () => {
+  /*
+   * IT USED TO. The route honoured an explicit `rated: true` on a hot-seat
+   * board, and storing it was a claim the site can never keep: every write
+   * path — `appendMove`, `settleEnded`, `claimTimeout`, `resignGame` — checks
+   * `isHotSeat` before `recordResult`, and a game's two tokens are written
+   * once and never rewritten, so a hot-seat game can never move a rating at
+   * any point in its life. Twelve finished production rows carried that claim
+   * and their pages showed a rated result; see `ratedButRefused.ts`.
+   */
+  it("a hot-seat board cannot be rated even by asking outright", async () => {
     await post({ hotSeat: true, open: false, rated: true });
 
     const [input] = createLiveGame.mock.calls[0] as [{ rated: boolean }];
-    expect(input.rated).toBe(true);
+    expect(input.rated).toBe(false);
   });
 
   it("a hot-seat board that explicitly declines rating stays unrated", async () => {
@@ -148,6 +168,71 @@ describe("POST /api/games/live — rated", () => {
     expect(response.status).toBe(201);
     const [input] = createLiveGame.mock.calls[0] as [{ rated: boolean }];
     expect(input.rated).toBe(true);
+  });
+
+  /*
+   * THE DOOR A BAD ROW USED TO MAKE ANOTHER BAD ROW THROUGH.
+   *
+   * A fork with nobody to challenge becomes a hot-seat game — there is no
+   * second player to send it to — and `source.rated` was spread over the
+   * decision afterwards. So forking any RATED game whose opponent has no
+   * address minted a fresh `rated: true` hot-seat row: exactly the shape of
+   * the twelve production rows found on 2026-09-11, made by the site, today,
+   * with the write-path fix of 0.145.2 in place.
+   *
+   * Nobody is signed in here, so `currentMemberId` is null and the origin's
+   * seats hold no member ids — which is precisely the case that finds no
+   * opponent and falls through to one screen.
+   */
+  it("a fork that becomes a hot-seat game does not inherit the source's rating", async () => {
+    origin = { ...ORIGIN, rated: true };
+
+    const response = await post({ from: { id: "origin-1", move: 2 } });
+
+    expect(response.status).toBe(201);
+    const [input] = createLiveGame.mock.calls[0] as [{ rated: boolean; hotSeat?: boolean }];
+    expect(input.hotSeat).toBe(true);
+    expect(input.rated).toBe(false);
+  });
+
+  /*
+   * AND ASKING FOR IT ON THE WAY THROUGH THE FORK DOES NOT HELP EITHER.
+   *
+   * A fork whose caller names `rated` has that field deleted from `source`
+   * (see `FORK_PACE_SETTINGS` — the pace is the caller's to settle, unlike the
+   * position), so this is the request speaking with nothing carried over it.
+   * It still lands unrated, because the game is being played at one screen
+   * and nothing about a request can change that.
+   */
+  it("a hot-seat fork cannot be rated by asking on the way through", async () => {
+    origin = { ...ORIGIN, rated: true };
+
+    await post({ from: { id: "origin-1", move: 2 }, rated: true });
+
+    const [input] = createLiveGame.mock.calls[0] as [{ rated: boolean; hotSeat?: boolean }];
+    expect(input.hotSeat).toBe(true);
+    expect(input.rated).toBe(false);
+  });
+
+  /*
+   * THE ORDERING THE FIX MUST NOT DISTURB, checked where it is visible: the
+   * source's other pace settings still travel with a fork, so `rated` is not
+   * being lifted out of `source` by some looser rule that took the rest with
+   * it. A three-day-a-move game once forked into a five-minute one, which is
+   * why any of this is spread at all.
+   */
+  it("still carries everything else the forked game was played under", async () => {
+    origin = { ...ORIGIN, rated: true };
+
+    await post({ from: { id: "origin-1", move: 2 } });
+
+    const [input] = createLiveGame.mock.calls[0] as [
+      { moveTimeMs: number | null; timeoutPenalty: string; allowResign: boolean; winLength: number },
+    ];
+    expect(input.moveTimeMs).toBe(ORIGIN.moveTimeMs);
+    expect(input.timeoutPenalty).toBe(ORIGIN.timeoutPenalty);
+    expect(input.allowResign).toBe(ORIGIN.allowResign);
+    expect(input.winLength).toBe(ORIGIN.winLength);
   });
 });
 
@@ -242,16 +327,32 @@ describe("POST /api/games/live — a fork", () => {
     expect(input.rated).toBe(ORIGIN.rated);
   });
 
-  it("yields the pace to a caller that has settled one", async () => {
+  /*
+   * `rated` IS THE ONE PACE SETTING A HOT-SEAT FORK CANNOT YIELD, and it is
+   * asserted here rather than left to the case further up, because this is the
+   * test somebody reads to learn what a fork honours.
+   *
+   * Nobody is signed in in these cases, and the origin's seats hold no member
+   * ids, so there is nobody to challenge and the fork becomes a game at one
+   * screen. A hot-seat game can never move a rating — every write path checks
+   * `isHotSeat` before `recordResult`, and a game's tokens are written once —
+   * so storing `rated: true` would be a claim the site cannot keep. It is the
+   * shape of the twelve rows found on production on 2026-09-11.
+   *
+   * The clock, the penalty and resigning are untouched: those the caller
+   * settles, and the server honours.
+   */
+  it("yields the pace to a caller that has settled one, bar a rating it cannot give", async () => {
     await post({ ...fork, moveTimeMs: 5 * 60_000, timeoutPenalty: "turn", allowResign: true, rated: true });
 
     const [input] = createLiveGame.mock.calls[0] as [
-      { moveTimeMs: number | null; timeoutPenalty: string; allowResign: boolean; rated: boolean },
+      { moveTimeMs: number | null; timeoutPenalty: string; allowResign: boolean; rated: boolean; hotSeat?: boolean },
     ];
     expect(input.moveTimeMs, "the pace the setup screen settled").toBe(5 * 60_000);
     expect(input.timeoutPenalty).toBe("turn");
     expect(input.allowResign).toBe(true);
-    expect(input.rated).toBe(true);
+    expect(input.hotSeat, "nobody to challenge, so it is one screen").toBe(true);
+    expect(input.rated, "a game at one screen cannot be rated, however it is asked for").toBe(false);
   });
 
   /*

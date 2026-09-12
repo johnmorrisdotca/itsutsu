@@ -4,6 +4,7 @@ import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
 import { GAME_COPY } from "@/components/game/game.constants";
+import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { penaltyMeans } from "./penalty";
 import type { RulesDraft } from "./rulesDraft";
 
@@ -27,8 +28,18 @@ import type { RulesDraft } from "./rulesDraft";
 export function RulesStatement({
   rules,
   note = "The first stone is down, so these are the rules the game is played under.",
+  refusal = null,
 }: {
   rules: RulesDraft;
+  /**
+   * Why this game cannot move a rating, when it cannot — so the Ratings row
+   * below says what happened rather than what the row's column claims.
+   *
+   * Null for a draft. The doorstep shows these same rows for a game that does
+   * not exist yet, where `rated` IS the answer because it is the choice being
+   * made and there is no game to refuse.
+   */
+  refusal?: RatingRefusal | null;
   /**
    * The line above the rows, saying why they are answers rather than controls.
    *
@@ -64,7 +75,23 @@ export function RulesStatement({
       value: rules.clockMode === "game" ? "Time is for the whole game" : "Time is per move",
     });
   }
-  said.push({ label: "Ratings", value: rules.rated ? "Counts towards ratings" : "Friendly — ratings unaffected" });
+  /*
+   * The refusal first, for the reason `describeSettings` gives at the same
+   * decision: a game the site cannot rate is neither "Counts towards ratings"
+   * nor "Friendly", and this row saying the first of those under a notice
+   * saying the game will not count is the contradiction twelve production
+   * rows put on one screen. Here there is room for the reason as well as the
+   * verdict, so the short form carries both.
+   */
+  said.push({
+    label: "Ratings",
+    value:
+      refusal !== null
+        ? RATING_REFUSAL_DISPLAY[refusal].short
+        : rules.rated
+          ? "Counts towards ratings"
+          : "Friendly — ratings unaffected",
+  });
   if (timed && rules.clockMode !== "game") {
     said.push({ label: GAME_COPY.penalty.label, value: penaltyMeans(rules.timeoutPenalty) });
   }

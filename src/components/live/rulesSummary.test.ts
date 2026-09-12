@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { describeRules, describeSettings } from "./rulesSummary";
 import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
+import {
+  RATING_REFUSALS,
+  RATING_REFUSED_WORD,
+  type RatingRefusal,
+} from "@/lib/rating/rateable.constants";
 
 /**
  * The line above a board describes that board.
@@ -70,10 +75,10 @@ const settings = {
   clockMode: "move",
   rated: true,
 };
-const words = (over: Partial<typeof settings> = {}) =>
-  describeSettings({ ...settings, ...over }).map((word) => word.text);
-const notable = (over: Partial<typeof settings> = {}) =>
-  describeSettings({ ...settings, ...over })
+const words = (over: Partial<typeof settings> = {}, refusal: RatingRefusal | null = null) =>
+  describeSettings({ ...settings, ...over }, refusal).map((word) => word.text);
+const notable = (over: Partial<typeof settings> = {}, refusal: RatingRefusal | null = null) =>
+  describeSettings({ ...settings, ...over }, refusal)
     .filter((word) => word.notable)
     .map((word) => word.text);
 
@@ -130,5 +135,42 @@ describe("describeSettings", () => {
   it("says an opening it does not recognise rather than dropping it", () => {
     // Silence about a setting is the one thing a summary cannot afford.
     expect(words({ opening: "not-an-opening" })).toContain("not-an-opening opening");
+  });
+
+  /*
+   * THE LINE THAT SAID "RATED" OVER A GAME THAT WOULD NOT COUNT.
+   *
+   * Twelve finished rows on production carried `rated: true` for a game played
+   * at one screen. The panel's notice said the game did not count and this
+   * summary line, three lines under it, said "Rated" — because it read the
+   * column instead of the question. A refusal now answers here.
+   */
+  describe("a game the site cannot rate", () => {
+    it("says it will not count, whatever the row's column says", () => {
+      expect(words({}, RATING_REFUSALS.hotSeat)).toContain(RATING_REFUSED_WORD);
+      expect(words({}, RATING_REFUSALS.hotSeat)).not.toContain("Rated");
+      // And for every reason, not only the one that found the twelve.
+      for (const refusal of Object.values(RATING_REFUSALS)) {
+        expect(words({}, refusal), refusal).toContain(RATING_REFUSED_WORD);
+      }
+    });
+
+    it("does not call it friendly either, because nobody chose that", () => {
+      // A hot-seat game is not a friendly: see the note on `hotSeat` in
+      // rateable.constants.ts. The column reading false does not make it one.
+      expect(words({ rated: false }, RATING_REFUSALS.hotSeat)).not.toContain("Friendly");
+      expect(words({ rated: false }, RATING_REFUSALS.hotSeat)).toContain(RATING_REFUSED_WORD);
+    });
+
+    it("is notable, which a refused rating always is", () => {
+      expect(notable({}, RATING_REFUSALS.onePlayer)).toEqual([RATING_REFUSED_WORD]);
+    });
+
+    it("leaves a draft alone: with no refusal, the choice is still the answer", () => {
+      // The setup form and the doorstep hold a draft rather than a game, and
+      // pass nothing. Those callers must read exactly as they did.
+      expect(words()).toContain("Rated");
+      expect(words({ rated: false })).toContain("Friendly");
+    });
   });
 });

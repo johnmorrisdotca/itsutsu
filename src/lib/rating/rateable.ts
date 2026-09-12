@@ -48,6 +48,32 @@ export function isRateable(blackName: string, whiteName: string): boolean {
 }
 
 /**
+ * Why a rating COULD NEVER move for this game — whatever its `rated` column
+ * says.
+ *
+ * The two halves of the write path's test, in the order it applies them, and
+ * nothing about whether anybody asked for a rating. That separation is the
+ * point: `rated: false` on a stored row means two different things — "somebody
+ * chose a friendly game" and "this could never have counted" — and a reader
+ * asking why their evening is not in their figures needs the second, which the
+ * column cannot tell them.
+ *
+ * Not exported to any page directly. `gameRatingRefusal` below is what a
+ * display asks, because a game nobody asked to count is a friendly and should
+ * be badged as one rather than lectured at; this is the half the AUDIT needs,
+ * where the column is the thing under suspicion and cannot be used to gate
+ * the question. See `ratedButRefused.ts`.
+ */
+export function ratingImpossible(game: {
+  hotSeat: boolean;
+  blackName: string;
+  whiteName: string;
+}): RatingRefusal | null {
+  if (game.hotSeat) return RATING_REFUSALS.hotSeat;
+  return ratingRefusal(game.blackName, game.whiteName);
+}
+
+/**
  * Whether a game actually moved — or, unfinished, would ever move — a
  * rating, and if not, why not. The same question `appendMove`,
  * `claimTimeout`, `settleEnded` and `resignGame` each ask before calling
@@ -79,6 +105,5 @@ export function gameRatingRefusal(game: {
   whiteName: string;
 }): RatingRefusal | null {
   if (!game.rated) return null;
-  if (game.hotSeat) return RATING_REFUSALS.hotSeat;
-  return ratingRefusal(game.blackName, game.whiteName);
+  return ratingImpossible(game);
 }
