@@ -67,8 +67,16 @@ export function BoardPicker({
           return (
             <label
               key={size}
-              className={`${PICK_CARD} min-w-24 flex-1 flex-col justify-center gap-1.5 p-2 ${
-                only ? "cursor-default" : "cursor-pointer"
+              /*
+               * `flex-1` while there is a choice, so two, three or four
+               * blocks share the row evenly. A LONE block does not stretch:
+               * filling the panel edge to edge made Reversi's 8×8 read as a
+               * banner rather than as one board among the sizes it might
+               * have had, and a block four times the width of everybody
+               * else's looks like an announcement.
+               */
+              className={`${PICK_CARD} min-w-24 flex-col justify-center gap-1.5 p-2 ${
+                only ? "w-40 cursor-default" : "flex-1 cursor-pointer"
               }`}
               data-testid="set-up-size"
               data-size={size}
