@@ -106,7 +106,9 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const { XP_LEDGER_PAGE_MAX, xpLedgerPage } = await import("./xpHistoryPage");
+const { xpLedgerPage } = await import("./xpHistoryPage");
+// From the sort module, which has no database in it and needs no mock.
+const { XP_LEDGER_PAGE_MAX } = await import("./xpHistory.sort");
 
 const MINE = "member-mine";
 

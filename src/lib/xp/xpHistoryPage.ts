@@ -13,11 +13,12 @@ import {
   nextCursorFrom,
   takeFor,
 } from "@/lib/api/paging.cursor";
-import type { PagedEnvelope, PagingRefusal, SortSpec } from "@/lib/api/paging.types";
+import type { PagedEnvelope, PagingRefusal } from "@/lib/api/paging.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 
 import { needsMatch, xpLedgerRowFor } from "./xpHistory";
+import { XP_LEDGER_PAGE, XP_LEDGER_PAGE_MAX, XP_LEDGER_SORT } from "./xpHistory.sort";
 import type { XpLedgerRow, XpLedgerSkips } from "./xpHistory.types";
 
 /**
@@ -71,37 +72,6 @@ import type { XpLedgerRow, XpLedgerSkips } from "./xpHistory.types";
  * bounded extra read, per page view, and no per-row query anywhere.
  */
 
-/**
- * The ledger's sort. One column, because there is one question a ledger is
- * asked: what happened, newest first.
- *
- * Ascending is still offered and costs nothing — the same index reads either
- * way — and it is the one a member wants when they go looking for the first
- * thing they ever earned. Amount and kind are NOT offered: `XpEvent` has no
- * index on either, and the convention's own rule is that a sortable column is
- * an indexed column, because a sort has to order all of a member's events and
- * not just the page being shown.
- */
-export const XP_LEDGER_SORT: SortSpec<"createdAt"> = {
-  of: "your XP",
-  columns: [
-    {
-      param: "earned",
-      field: "createdAt",
-      label: "Earned",
-      firstPress: "desc",
-      index: "XpEvent_memberId_createdAt_idx",
-    },
-  ],
-  fallback: { param: "earned", direction: "desc" },
-};
-
-/** A screenful of awards. More than the twenty a game list wants: a row is one line. */
-export const XP_LEDGER_PAGE = 25;
-
-/** And the most anybody may ask for at once. */
-export const XP_LEDGER_PAGE_MAX = 100;
-
 export type XpLedgerPage = PagedEnvelope<XpLedgerRow> & {
   /** What this page could not explain. See `XpLedgerSkips`. */
   skipped: XpLedgerSkips;
@@ -147,22 +117,26 @@ export async function xpLedgerPage(input: {
     max: XP_LEDGER_PAGE_MAX,
   });
   const asked = parseCursor(input.params);
-  const after =
-    asked === null
-      ? null
-      : decodeCursor(asked, { param: sort.column.param, direction: sort.direction });
+  const after = asked === null ? null : decodeCursor(asked, sort);
 
   const read = await prisma.xpEvent.findMany({
     where: {
       memberId: input.memberId,
-      ...(after === null ? {} : keysetWhere(sort.column, sort.direction, after)),
+      ...(after === null ? {} : keysetWhere(XP_LEDGER_SORT, sort, after)),
     },
-    orderBy: keysetOrderBy(sort.column, sort.direction),
+    orderBy: keysetOrderBy(XP_LEDGER_SORT, sort),
     take: takeFor(limit),
+    /*
+     * `id` is in the projection because the cursor is built from it — see
+     * `tiebreak` above. `nextCursorFrom` answers "that was the last page" rather
+     * than handing out a cursor naming `undefined` when a `select` leaves the
+     * key out, so forgetting it here would stop the ledger at one page with
+     * nothing reporting why.
+     */
     select: { id: true, type: true, points: true, subject: true, dayKey: true, createdAt: true },
   });
 
-  const { rows, next } = nextCursorFrom(read, sort.column, sort.direction, limit);
+  const { rows, next } = nextCursorFrom(XP_LEDGER_SORT, sort, read, limit);
 
   /*
    * The unreadable rows are dropped HERE rather than filtered out of the read,
