@@ -64,7 +64,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const { clearPhrase, phraseStatus, setPhrase, verifyPhraseFor } = await import("./phraseStore");
+const { claimOrVerifyPhraseFor, clearPhrase, phraseStatus, setPhrase, verifyPhraseFor } = await import("./phraseStore");
 
 /** Hanako: an account that already exists and has already played. */
 const HANAKO = "h4n4k0jdxxxxxxxx";
@@ -268,5 +268,75 @@ describe("clearPhrase", () => {
 
   it("is null-safe about a member who is not there", async () => {
     expect(await clearPhrase("nobodyatallxxxxx")).toEqual({ ok: false, reason: "no-member" });
+  });
+});
+
+describe("four words given at a seat", () => {
+  /*
+   * The half that was missing, and the whole point of the feature. John: "We
+   * don't sign in. She is signed in. We are providing the words to be
+   * associated with my account. That's the point." Verification alone could
+   * only serve somebody who had already set words from a device signed in as
+   * them — which is the one thing this exists to avoid needing.
+   */
+  it("binds the words to an account that has none, and says it did", async () => {
+    rows = [member({ id: HANAKO, name: "Hanako M." })];
+
+    const claim = await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+
+    expect(claim.ok).toBe(true);
+    if (!claim.ok) return;
+    expect(claim.memberId).toBe(HANAKO);
+    expect(claim.bound, "the screen has to be able to say these are your words now").toBe(true);
+    expect(rows[0].phraseHash, "the words were not written").not.toBeNull();
+  });
+
+  it("lets those same words back in afterwards, which is what makes them a login", async () => {
+    rows = [member({ id: HANAKO, name: "Hanako M." })];
+    await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+
+    const again = await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+
+    expect(again.ok).toBe(true);
+    if (!again.ok) return;
+    expect(again.bound, "the second time is a sign-in, not a claim").toBe(false);
+  });
+
+  it("refuses different words once an account has some — first words win, and only once", async () => {
+    rows = [member({ id: HANAKO, name: "Hanako M." })];
+    await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+
+    const other = await claimOrVerifyPhraseFor("Hanako M.", ["stove", "punch", "vivid", "cargo"]);
+
+    expect(other.ok, "an account with words is not up for grabs").toBe(false);
+  });
+
+  it("NEVER binds words to the operator, whose account is the one where low risk stops being true", async () => {
+    process.env.ADMIN_EMAILS = "boss@example.test";
+    rows = [member({ id: "operator1xxxxxxx", name: "The Operator", email: "boss@example.test" })];
+
+    const claim = await claimOrVerifyPhraseFor("The Operator", WORDS);
+
+    expect(claim.ok).toBe(false);
+    expect(rows[0].phraseHash, "the operator's account took words from a seat").toBeNull();
+  });
+
+  it("binds nothing to a banned member, a kept record, or a computer player", async () => {
+    rows = [
+      member({ id: "banned0xxxxxxxxx", name: "Gone", bannedAt: new Date() }),
+      member({ id: "kept000xxxxxxxxx", name: "Kept", unclaimableBecause: "a record from elsewhere" }),
+      member({ id: "program0xxxxxxxx", name: "Kyu", botTier: "kyu" }),
+    ];
+
+    for (const name of ["Gone", "Kept", "Kyu"]) {
+      expect((await claimOrVerifyPhraseFor(name, WORDS)).ok, `${name} was claimable`).toBe(false);
+    }
+    for (const row of rows) expect(row.phraseHash).toBeNull();
+  });
+
+  it("says nothing different for a name nobody here goes by", async () => {
+    rows = [member({ id: HANAKO, name: "Hanako M." })];
+
+    expect((await claimOrVerifyPhraseFor("Nobody At All", WORDS)).ok).toBe(false);
   });
 });

@@ -35,6 +35,7 @@ export function SitAsPanel({ gameId, freeSeats }: { gameId: string; freeSeats: r
   const [prefix, setPrefix] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [justBound, setJustBound] = useState(false);
 
   const activeSlot = slots.indexOf(null);
 
@@ -72,14 +73,33 @@ export function SitAsPanel({ gameId, freeSeats }: { gameId: string; freeSeats: r
       setError(payload?.error ?? "Could not take that seat.");
       return;
     }
+    /*
+     * Words that were NEW to this account are worth saying out loud once. The
+     * person has just acquired a way back into their own account from any
+     * device, and nothing else on this screen would tell them — they would
+     * find out by trying it somewhere else, or not at all.
+     */
+    const payload = (await response.json().catch(() => null)) as { bound?: boolean } | null;
     reset();
+    if (payload?.bound === true) setJustBound(true);
     router.refresh();
   }
+
+  const boundNotice =
+    justBound ? (
+      <p className="text-sm" data-testid="phrase-just-bound">
+        Those four words are yours now. They will let you play as yourself on any device — nobody has to sign out.
+      </p>
+    ) : null;
 
   if (!open) {
     return (
       <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="sit-as-closed" {...readyMark(hydrated)}>
-        <p className="text-sm text-muted">Not you signed in? Somebody with four words can sit in here as themselves.</p>
+        {boundNotice}
+        <p className="text-sm text-muted">
+          Not you signed in? Sit in here as yourself with four words — and if you have none yet, the four you pick
+          become yours.
+        </p>
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -96,8 +116,10 @@ export function SitAsPanel({ gameId, freeSeats }: { gameId: string; freeSeats: r
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="sit-as-panel" {...readyMark(hydrated)}>
+      {boundNotice}
       <p className="text-xs text-muted">
-        Your name, then your four words — tapped, never typed. The seat becomes yours on this device.
+        Your name, then your four words — tapped, never typed. The seat becomes yours on this device, and if your
+        account has no words yet these become them.
       </p>
 
       <label className="flex flex-col gap-1 text-sm">

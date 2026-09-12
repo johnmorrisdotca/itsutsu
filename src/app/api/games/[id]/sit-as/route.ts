@@ -6,7 +6,7 @@ import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
-import { verifyPhraseFor } from "@/lib/phrase/phraseStore";
+import { claimOrVerifyPhraseFor } from "@/lib/phrase/phraseStore";
 import { seatStandIn } from "@/lib/phrase/standInSeat";
 import { seatCookieName } from "@/lib/history/seatCookie";
 
@@ -80,16 +80,28 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
       return NextResponse.json({ error: REFUSED }, { status: 401, headers: NO_STORE });
     }
 
-    const memberId = await verifyPhraseFor(parsed.data.name, parsed.data.words);
-    if (memberId === null) {
+    /*
+     * Checked if the account has words, BOUND to it if it has none — see
+     * `claimOrVerifyPhraseFor`. Arriving at somebody else's device with no
+     * words and no other device was the case this whole feature exists for,
+     * and verification alone could not serve it.
+     */
+    const claim = await claimOrVerifyPhraseFor(parsed.data.name, parsed.data.words);
+    if (!claim.ok) {
       return NextResponse.json({ error: REFUSED }, { status: 401, headers: NO_STORE });
     }
+    const memberId = claim.memberId;
 
     const outcome = await seatStandIn(id, memberId, parsed.data.name, parsed.data.seat);
     if (!outcome.ok) return refusal(outcome.reason, outcome.said);
 
     const response = NextResponse.json(
-      { path: matchPath(outcome.variant, id), seat: outcome.seat, name: parsed.data.name },
+      /*
+       * `bound` says these four words are NEW to this account, so the screen
+       * can tell somebody they now have a way back in rather than letting them
+       * discover it. It reports what happened; it grants nothing.
+       */
+      { path: matchPath(outcome.variant, id), seat: outcome.seat, name: parsed.data.name, bound: claim.bound },
       { status: 200, headers: NO_STORE },
     );
     /*

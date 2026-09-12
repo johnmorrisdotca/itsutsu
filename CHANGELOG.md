@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.146.0
+- Four words can be chosen right at the seat: sit down at somebody else's device, give your name, pick four words, and if your account has none yet they become yours — nobody signs in, nobody signs out, and you have a way back in from any device
+
 ## 0.145.0
 - The tables of players scroll themselves on a phone rather than dragging the whole page sideways: the members list, the ladders, the records and the kept results from elsewhere all stay inside their own width, so the navigation and the footer stop sliding with them
 

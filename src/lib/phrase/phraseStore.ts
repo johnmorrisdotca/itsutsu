@@ -24,6 +24,7 @@ import { prisma } from "@/lib/prisma";
 
 import { CREDENTIALS, mayRemove } from "./credentials";
 import { canonicalPhrase } from "./phrase";
+import { isAdminEmail } from "@/lib/auth/admin";
 import { hashPhrase, phraseMatches } from "./phraseHash";
 
 /** The columns any of this needs. Narrow, because it is read on a hot path. */
@@ -180,4 +181,76 @@ export async function verifyPhraseFor(
   if (row.botTier !== null) return null;
 
   return row.id;
+}
+
+export type SeatPhraseOutcome =
+  | { ok: true; memberId: string; bound: boolean }
+  | { ok: false };
+
+/**
+ * Four words given at a seat: checked against the account if it has words, and
+ * BOUND to it if it has none.
+ *
+ * THIS IS THE POINT OF THE FEATURE AND IT WAS THE HALF THAT WAS MISSING. John:
+ * "We don't sign in. She is signed in. We are providing the words to be
+ * associated with my account. That's the point." What shipped could only ever
+ * verify words that already existed, which meant they had to be set from a
+ * device already signed in as you — the one thing the feature exists to avoid.
+ * Arriving at somebody else's tablet with no words and no other device left you
+ * stuck, which is exactly the case it was built for.
+ *
+ * So an account with no words yet takes the four it is given. **First words
+ * win**, and the risk of that is one John has weighed and accepted in terms
+ * worth keeping: "the risk is low. all games are logged. you can claim a Lost
+ * user as we can know when a user is lost... or the opponent can vouch for
+ * them." The exposure is bounded by design — it can only ever happen ONCE per
+ * account, and only to an account that has never set words.
+ *
+ * THE OPERATOR IS CARVED OUT, and that is not a hedge. "Low risk" stops being
+ * true for the one account that can read every address on the site and move
+ * every row on the board, so no words are ever bound to it this way. It may
+ * still set them the ordinary way, signed in, like anybody else.
+ *
+ * The same refusals as verification, for the same reasons: a banned member, a
+ * kept record nobody may climb inside, and a computer player which is a program
+ * with nobody to be it.
+ *
+ * Rate limiting lives on the route, as it does for `verifyPhraseFor` — a
+ * library function has no address to count. Nothing may call this without one.
+ */
+export async function claimOrVerifyPhraseFor(
+  name: string,
+  words: readonly string[],
+): Promise<SeatPhraseOutcome> {
+  const wanted = name.trim();
+  if (wanted === "") return { ok: false };
+
+  const canonical = canonicalPhrase([...words]);
+  if (canonical === null) return { ok: false };
+
+  const row = await prisma.member.findFirst({
+    where: { name: { equals: wanted, mode: "insensitive" } },
+    select: FACTS,
+  });
+
+  /*
+   * The hash is compared even when there is no row, and the answer thrown
+   * away, exactly as `verifyPhraseFor` does — an instant refusal for a name
+   * nobody here goes by would say which names are worth trying.
+   */
+  const matched = await phraseMatches(canonical, row?.phraseHash ?? null);
+  if (row === null) return { ok: false };
+  if (row.bannedAt !== null || row.unclaimableBecause !== null || row.botTier !== null) {
+    return { ok: false };
+  }
+
+  if (row.phraseHash === null) {
+    if (isAdminEmail(row.email)) return { ok: false };
+    const set = await setPhrase(row.id, words);
+    if (!set.ok) return { ok: false };
+    return { ok: true, memberId: row.id, bound: true };
+  }
+
+  if (!matched) return { ok: false };
+  return { ok: true, memberId: row.id, bound: false };
 }

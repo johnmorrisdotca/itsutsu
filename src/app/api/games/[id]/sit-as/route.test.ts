@@ -14,8 +14,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  *  - and there is a way BACK, because a tablet gets handed over all evening.
  */
 
-const verifyPhraseFor = vi.fn<(name: string, words: readonly string[]) => Promise<string | null>>(
-  async () => "h4n4k0jdxxxxxxxx",
+type Claim = { ok: true; memberId: string; bound: boolean } | { ok: false };
+const verifyPhraseFor = vi.fn<(name: string, words: readonly string[]) => Promise<Claim>>(
+  async () => ({ ok: true, memberId: "h4n4k0jdxxxxxxxx", bound: false }),
 );
 
 const seatStandIn = vi.fn<() => Promise<Record<string, unknown>>>(async () => ({
@@ -35,7 +36,7 @@ vi.mock("@/lib/api/rateLimit", () => ({
   },
 }));
 vi.mock("@/lib/phrase/phraseStore", () => ({
-  verifyPhraseFor: (name: string, words: readonly string[]) => verifyPhraseFor(name, words),
+  claimOrVerifyPhraseFor: (name: string, words: readonly string[]) => verifyPhraseFor(name, words),
 }));
 vi.mock("@/lib/phrase/standInSeat", () => ({ seatStandIn: () => seatStandIn() }));
 
@@ -56,7 +57,7 @@ function sitAs(body: unknown, id = "k3m9-p2qx") {
 
 beforeEach(() => {
   verifyPhraseFor.mockClear();
-  verifyPhraseFor.mockResolvedValue("h4n4k0jdxxxxxxxx");
+  verifyPhraseFor.mockResolvedValue({ ok: true, memberId: "h4n4k0jdxxxxxxxx", bound: false });
   seatStandIn.mockClear();
   seatStandIn.mockResolvedValue({ ok: true, seat: "white", token: "white-token", variant: "freestyle" });
   overLimit.mockClear();
@@ -98,8 +99,15 @@ describe("POST /api/games/[id]/sit-as", () => {
     expect(config).toMatchObject({ strict: true, maxRequests: 5 });
   });
 
+  it("says when the four words were bound to the account just now, so the screen can say so", async () => {
+    verifyPhraseFor.mockResolvedValue({ ok: true, memberId: "h4n4k0jdxxxxxxxx", bound: true });
+    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    expect(response.status).toBe(200);
+    expect(((await response.json()) as { bound?: boolean }).bound).toBe(true);
+  });
+
   it("refuses wrong words", async () => {
-    verifyPhraseFor.mockResolvedValue(null);
+    verifyPhraseFor.mockResolvedValue({ ok: false });
     const response = await sitAs({ name: "Hanako M.", words: WORDS });
     expect(response.status).toBe(401);
     expect(seatStandIn).not.toHaveBeenCalled();
@@ -111,7 +119,7 @@ describe("POST /api/games/[id]/sit-as", () => {
    * would answer that question for free.
    */
   it("says the same thing for wrong words, an unknown name, and a malformed body", async () => {
-    verifyPhraseFor.mockResolvedValue(null);
+    verifyPhraseFor.mockResolvedValue({ ok: false });
     const wrongWords = await (await sitAs({ name: "Hanako M.", words: WORDS })).json();
     const unknownName = await (await sitAs({ name: "Nobody", words: WORDS })).json();
     const malformed = await (await sitAs({ name: "", words: [] })).json();
