@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useRef, type KeyboardEvent } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameThumb } from "@/components/games/GameThumb";
@@ -9,7 +9,7 @@ import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-import { familyShown } from "./picker";
+import { familyShown, gameForFamilyClick, type Family } from "./picker";
 import { PickMark } from "./PickMark";
 import { PICK_CARD, PICK_CHIP, PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_GRID } from "./picker.constants";
 
@@ -77,15 +77,28 @@ export function GamePicker({
   label: string;
 }) {
   /*
-   * The family being browsed, which is the chosen game's own until somebody
-   * looks elsewhere. The rule is `familyShown` — pure, in its own module and
-   * tested there, because it is the one thing here that can be wrong without
-   * showing: a screen that arrives with a game already chosen must open on
-   * that game's family rather than on the first.
+   * The open family is a READING of the chosen game, and there is no state
+   * here at all.
+   *
+   * There was, and it was the bug: a separate `browsing` state meant the row
+   * of families could say one thing while the chosen game said another, so
+   * clicking Drops from Hex gave the eight drop games over Hex's boards and a
+   * heading still reading "Hex ヘックス · 13×13 Medium". Nothing was going to
+   * keep two answers in step for long. Now a family click chooses that
+   * family's game — see `gameForFamilyClick` — and this is derived from it,
+   * so the two cannot come apart.
    */
-  const [browsing, setBrowsing] = useState<string | null>(null);
-  const family = familyShown(value, browsing);
+  const family = familyShown(value);
   const tagline = RULE_VARIANT_DISPLAY[value as RuleVariant]?.tagline;
+
+  /*
+   * A click on a family chooses its game; a click on the family already open
+   * does nothing. Both halves are `gameForFamilyClick`, tested in picker.ts.
+   */
+  const openFamily = (entry: Family) => {
+    const next = gameForFamilyClick(entry, value);
+    if (next !== null) onChange(next);
+  };
 
   /*
    * ONE TAB STOP FOR ELEVEN FAMILIES. A row of eleven focusable buttons would
@@ -108,13 +121,19 @@ export function GamePicker({
             : -1;
     if (to === -1) return;
     event.preventDefault();
-    setBrowsing(GAME_FAMILIES[to].title);
+    /*
+     * Arrows choose, the way a click does. This is a tab strip with automatic
+     * activation, which the ARIA practices recommend where the panel is cheap
+     * to draw — and it has to be the same act as a click, or the keyboard
+     * would have the browse-without-choosing behaviour that was the bug.
+     */
+    openFamily(GAME_FAMILIES[to]);
     chips.current[to]?.focus();
   }
 
   return (
-    <fieldset className="flex min-w-0 flex-col gap-2" data-testid="shared-rules-variant">
-      <legend className="mb-1 text-sm text-ink-soft">{label}</legend>
+    <fieldset className="flex min-w-0 flex-col gap-1.5" data-testid="shared-rules-variant">
+      <legend className="mb-0.5 text-sm text-ink-soft">{label}</legend>
 
       {/* Row one: every family there is, wrapping rather than scrolling sideways. */}
       <div role="tablist" aria-label="Families of games" className="flex flex-wrap gap-1.5">
@@ -132,7 +151,13 @@ export function GamePicker({
               aria-selected={showing}
               aria-controls="family-games"
               tabIndex={showing ? 0 : -1}
-              onClick={() => setBrowsing(entry.title)}
+              /*
+               * Inert while a game is being created, like the radios below
+               * it. It was not, which meant the game could still be changed
+               * in the moment between pressing Start and the game existing.
+               */
+              disabled={disabled}
+              onClick={() => openFamily(entry)}
               onKeyDown={(event) => travel(event, at)}
               className={`${PICK_CHIP} ${showing ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
               data-testid="set-up-family"
@@ -151,39 +176,59 @@ export function GamePicker({
               */}
               <Paired en={entry.title} kanji={entry.kanji} kanjiClassName="hidden opacity-70 lg:inline" />
               {/*
-                Where the chosen game lives, for a reader who has wandered off
-                to look at another family. Without it, browsing away leaves a
-                picker with nothing checked anywhere on it and no way back but
-                memory.
+                A dot used to mark the family holding the chosen game, for a
+                reader who had browsed away from it. Nobody can be away from
+                it now — the open family IS the chosen game's — so the dot
+                would sit on the lit chip every time and mark nothing. It went
+                with the state that made it necessary.
               */}
-              {entry.games.includes(value as RuleVariant) ? (
-                <span
-                  aria-hidden="true"
-                  className={`size-1.5 shrink-0 rounded-full ${showing ? "bg-paper" : "bg-ink"}`}
-                />
-              ) : null}
             </button>
           );
         })}
       </div>
 
       {/*
-        Row two: the open family's games. Its height is fixed by PICK_GRID —
-        see there for why — so browsing the families never moves the Start
-        button under the reader's hand.
+        ROW TWO, AND IT HANGS OFF ROW ONE RATHER THAN SITTING UNDER IT.
+
+        John: "The top row group should have some space of differentiation
+        between the games below row." Eleven chips wrap to two lines, so the
+        games were a third line of boxes at the same rhythm and the eye read
+        three rows of one thing. The rule down the left and the indent say
+        these belong to the chip above — an indent costs no height, which
+        matters because the Start button has twenty-one pixels of margin
+        above an iPad's fold and this whole block is new.
+
+        `role="tabpanel"` moved out here with the container, so what the
+        family chip controls is the family's description AND its games, which
+        is what it actually controls.
       */}
       <div
         role="tabpanel"
         id="family-games"
         aria-labelledby={`family-tab-${GAME_FAMILIES.indexOf(family)}`}
-        className={PICK_GRID}
+        className="mt-1 flex min-w-0 flex-col gap-1 border-l-2 border-rule-strong pl-2.5"
+        data-testid="set-up-family-games"
       >
+        {/*
+          WHAT THIS FAMILY IS. John: "Also would be good to see descriptions
+          for these categories of games." The line is the one `GAME_FAMILIES`
+          already carries and /games already prints, so there is no second
+          copy of it to drift — and it doubles as the label that makes the
+          indent legible without a heading.
+
+          Two lines on this control and no more: what the family is, here,
+          and what the chosen game is, under the grid.
+        */}
+        <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
+          {family.blurb}
+        </span>
+        <div className={PICK_GRID}>
         {family.games.map((game) => {
           const copy = RULE_VARIANT_DISPLAY[game];
           return (
             <label
               key={game}
-              className={`${PICK_CARD} gap-1.5 p-1`}
+              className={`${PICK_CARD} cursor-pointer gap-1.5 p-1`}
               data-testid="set-up-variant"
               data-variant={game}
               data-chosen={game === value ? "true" : "false"}
@@ -230,13 +275,15 @@ export function GamePicker({
             </label>
           );
         })}
-      </div>
+        </div>
 
-      {tagline !== undefined ? (
-        <span className="text-xs leading-snug text-muted" data-testid="set-up-variant-hint">
-          {tagline}
-        </span>
-      ) : null}
+        {/* What the chosen GAME is, inside the family's block with its games. */}
+        {tagline !== undefined ? (
+          <span className="text-xs leading-snug text-muted" data-testid="set-up-variant-hint">
+            {tagline}
+          </span>
+        ) : null}
+      </div>
     </fieldset>
   );
 }

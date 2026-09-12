@@ -1,4 +1,4 @@
-import { NO_HANDICAP, OPENING_RULES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, OPENING_RULES, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import type { Handicap, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
 
@@ -51,7 +51,31 @@ export function applyRulesChange(current: RulesDraft, next: Partial<RulesDraft>)
   if (!SHARED_OPENINGS.includes(merged.opening as OpeningRule)) {
     merged.opening = OPENING_RULES.free;
   }
-  merged.size = sizeForVariant(merged.variant as RuleVariant, merged.size);
+  /*
+   * A BOARD THE PICKER ACTUALLY OFFERS, not merely one the engine tolerates.
+   *
+   * This was `sizeForVariant`, and the two are not the same question. That
+   * one reads `VARIANT_SPECS[…].boardSizes` and treats NULL as "any size is
+   * fine", which is true of the engine: gomoku will play on any square board.
+   * `boardSizesFor` turns the same null into `BOARD_SIZES` — the four boards
+   * the site offers — and that is what the board picker draws.
+   *
+   * So for every variant with no declared sizes, the two disagreed, and the
+   * draft could hold a board the picker had no block for. Coming from Halma
+   * at 8×8 to Gomoku left the size at 8: the header read "Gomoku 五目並べ ·
+   * 8×8 Eight", the row showed 9, 13, 15 and 19, and NOT ONE of them had a
+   * tick on it. A screen with no answer marked anywhere is the same fault
+   * John reported one layer down — the parts disagreeing about which game
+   * this is — and it was reachable before a family click could change the
+   * game, just harder to walk into.
+   *
+   * `sizeForVariant` is left alone on purpose: it guards what may be WRITTEN,
+   * and a stored 16×16 gomoku game is a real game that should keep its board.
+   * This guards what may be OFFERED, which is a smaller set, and the form is
+   * the only place that distinction matters.
+   */
+  const offered = boardSizesFor(merged.variant as RuleVariant);
+  merged.size = offered.includes(merged.size) ? merged.size : offered[0];
   return merged;
 }
 

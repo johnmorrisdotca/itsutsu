@@ -18,37 +18,71 @@
 import { GAME_FAMILIES, familyOf } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
-type Family = (typeof GAME_FAMILIES)[number];
+/** One row of `GAME_FAMILIES`: a title, its kanji, its blurb and its games. */
+export type Family = (typeof GAME_FAMILIES)[number];
 
 /**
- * Which family the picker's second row is showing.
+ * Which family the picker's second row is showing: the one holding the game
+ * that is chosen, and nothing else.
  *
- * Pure, and in its own module beside `picker.constants.ts`, because it is the one rule in that control
- * that can be wrong in a way nobody would see. The picker is two rows —
- * families along the top, the chosen family's games underneath — and this
- * decides the second from the first.
+ * IT USED TO TAKE A SECOND ARGUMENT, and that argument was the bug John
+ * found. The row of families was a BROWSE — clicking one opened its games
+ * and left the chosen game alone — so the screen could hold two answers to
+ * "which game is this" at once. He was on Hex at 13×13, clicked Drops, and
+ * got the eight drop games under a heading that still read "Hex ヘックス ·
+ * 13×13 Medium" over a board row still offering Hex's 11, 13 and 19. Every
+ * part was doing as it was told. The boards follow the chosen game, and the
+ * chosen game was still Hex.
  *
- * THE ANSWER IS DERIVED FROM THE CHOSEN GAME, not remembered from the first
- * render. That is the whole point, and it is what makes the control work for
- * a screen that arrives with a game already decided: a rematch, a challenge,
- * a fork, or anything else that pre-fills the form opens on the family
- * holding that game rather than on Five in a row. State initialised once
- * from a prop would be right on the default and wrong on every one of those.
- *
- * `browsing` overrides it, and only when it names a family that exists. A
- * family somebody has opened is a decision and stays open; until they make
- * one there is nothing to remember, so there is nothing to keep in step and
- * no effect to keep it there.
+ * The fix is not to push the boards into step with the open family. It is
+ * that there was never anything for them to be out of step WITH: a family
+ * click now chooses that family's game, so the open family is a reading of
+ * the chosen game and cannot disagree with it. One source of truth, and the
+ * disagreement is not fixed so much as made unable to exist. See
+ * `defaultGameOf`, which is the other half.
  *
  * IT NEVER ANSWERS "NOTHING". A game this site no longer knows — a row kept
  * from before a rename — would otherwise leave the second row empty and the
  * picker looking broken, which is the shape AGENTS.md calls a value that
  * happens to be in range: an empty row means both "no family" and "a family
- * with no games in it". The first family is a real answer and the chips
- * above it show plainly that none is the chosen one.
+ * with no games in it". The first family is a real answer, and no chip shows
+ * as chosen, which is the truth about a game that is not in any family.
  */
-export function familyShown(variant: string, browsing: string | null): Family {
-  const opened = GAME_FAMILIES.find((family) => family.title === browsing);
-  if (opened !== undefined) return opened;
+export function familyShown(variant: string): Family {
   return familyOf(variant as RuleVariant) ?? GAME_FAMILIES[0];
+}
+
+/**
+ * The game a family stands for: its first, which is the one it is named
+ * after.
+ *
+ * Clicking "Drops" has to land on a real game, because the click IS the
+ * choice now rather than a way of looking around. The first game in each
+ * family is already the canonical one — Gomoku heads Five in a row, Drop
+ * Four heads Drops, Reversi heads Flips, Tic-tac-toe heads Small boards —
+ * so the order in `GAME_FAMILIES` carries this meaning, and `picker.test.ts`
+ * checks it rather than leaving it as a thing somebody happened to arrange.
+ *
+ * A CLICK ON THE FAMILY ALREADY OPEN CHANGES NOTHING, and that rule lives at
+ * the call site rather than here: this answers "what does this family stand
+ * for", which has one answer whatever is currently chosen. Somebody on Renju
+ * who taps the lit "Five in a row" chip has not asked to be moved to Gomoku.
+ */
+export function defaultGameOf(family: Family): RuleVariant {
+  return family.games[0];
+}
+
+/**
+ * The game a click on a family should choose, or null when it should choose
+ * nothing.
+ *
+ * Null rather than "the game you already have", so a caller can tell "no
+ * change is wanted" from "change to this", and never fires a change that
+ * would only re-apply what is already there. `applyRulesChange` snaps the
+ * board on every change it is handed, so a no-op change is not free: it
+ * would be a second chance to lose a board size somebody chose.
+ */
+export function gameForFamilyClick(family: Family, chosen: string): RuleVariant | null {
+  if (family.games.includes(chosen as RuleVariant)) return null;
+  return defaultGameOf(family);
 }

@@ -41,19 +41,39 @@ export function BoardPicker({
   onChange: (size: number) => void;
   disabled?: boolean;
 }) {
+  /*
+   * A game with one board is a STATEMENT, not a choice.
+   *
+   * It is still drawn — the same block, the same number, the same picture of
+   * the board at its own density — because the reader is about to play on it
+   * and hiding it told them nothing. Fourteen of the thirty-nine games have
+   * one board, so this was better than a third of the catalogue saying
+   * nothing at all about what it would be played on.
+   *
+   * What changes is that it stops pretending to be pressable: no pointer and
+   * no check mark. A radio group of one cannot be unchecked anyway, so the
+   * control was already inert; this only makes it look as inert as it is.
+   *
+   * Not `disabled`, which would grey it out. Greying says "this is off", and
+   * the board is not off — it is the board.
+   */
+  const only = sizes.length === 1;
   return (
-    <fieldset className="flex min-w-0 flex-col gap-2" data-testid="shared-rules-size">
-      <legend className="mb-1 text-sm text-ink-soft">Board</legend>
+    <fieldset className="flex min-w-0 flex-col gap-1.5" data-testid="shared-rules-size">
+      <legend className="mb-0.5 text-sm text-ink-soft">Board</legend>
       <div className={PICK_BLOCKS}>
         {sizes.map((size) => {
           const copy = BOARD_SIZE_DISPLAY[size];
           return (
             <label
               key={size}
-              className={`${PICK_CARD} min-w-24 flex-1 flex-col justify-center gap-1.5 p-2`}
+              className={`${PICK_CARD} min-w-24 flex-1 flex-col justify-center gap-1.5 p-2 ${
+                only ? "cursor-default" : "cursor-pointer"
+              }`}
               data-testid="set-up-size"
               data-size={size}
               data-chosen={size === value ? "true" : "false"}
+              data-only={only ? "true" : "false"}
             >
               <input
                 type="radio"
@@ -93,11 +113,30 @@ export function BoardPicker({
                   <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="opacity-70" />
                 </span>
               ) : null}
-              <PickMark className="absolute top-1.5 right-1.5 size-6" />
+              {/*
+                The check is what says "this one", among several. With one
+                block there is no among, so a tick on the only thing in the
+                row marks it out from nothing.
+              */}
+              {only ? null : <PickMark className="absolute top-1.5 right-1.5 size-6" />}
             </label>
           );
         })}
       </div>
+      {/*
+        NO LINE SAYING "this game is played on one board", and it was written
+        and then taken out again for a reason worth keeping.
+
+        It cost twenty pixels, and twenty pixels is what made a one-board game
+        taller than a four-board one — so the Start button sat at a different
+        height on Reversi than on Gomoku, and the fold was a different number
+        for fourteen of the thirty-nine games. Every game now has the same
+        panel, which is both a better property and easier to keep.
+
+        What it was explaining is already said by the thing itself: one block,
+        no check mark, no pointer. The board is the fact; "there is nothing to
+        choose" is a remark about the control, and the control is making it.
+      */}
     </fieldset>
   );
 }
