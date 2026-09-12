@@ -50,7 +50,19 @@ export type SeededXpMember = { email: string; id: string; name: string; xp: numb
  * arithmetic worth testing: an off-by-one at a boundary is the bug, and a member
  * sitting comfortably in the middle of a band would never find it.
  */
-export async function seedXpMember(level: number, label: string): Promise<SeededXpMember> {
+export async function seedXpMember(
+  level: number,
+  label: string,
+  /**
+   * A name to sort by, where the spec cares about the order names come in.
+   *
+   * The leaderboard's Member heading sorts on `Member.name`, so a spec that
+   * presses it has to control what the names are — three random ones would land
+   * in an order the spec cannot predict, and an assertion written against the
+   * order they happened to come out in would be a test about this run.
+   */
+  name?: string,
+): Promise<SeededXpMember> {
   loadEnv();
   const prisma = new PrismaClient();
   const email = xpEmail(label);
@@ -63,14 +75,14 @@ export async function seedXpMember(level: number, label: string): Promise<Seeded
    * page was right. A hyphenated name is ONE name to `shownName`, which splits on
    * spaces only, so this is shown whole.
    */
-  const name = `Xp-${label}-${Math.floor(Math.random() * 1e6)}`;
+  const whole = name ?? `Xp-${label}-${Math.floor(Math.random() * 1e6)}`;
   const xp = xpForLevel(level);
   try {
     await prisma.member.create({
       data: {
         email,
         id,
-        name,
+        name: whole,
         picture: "",
         invitedWith: "playwright",
         xp,
@@ -80,7 +92,7 @@ export async function seedXpMember(level: number, label: string): Promise<Seeded
   } finally {
     await prisma.$disconnect();
   }
-  return { email, id, name, xp };
+  return { email, id, name: whole, xp };
 }
 
 /** Takes back exactly the rows a spec made, by the addresses it was given. */

@@ -98,6 +98,21 @@ export const NAV = [
    * of whoever did the removing.
    */
   { href: "/players", label: "Players" },
+  /*
+   * XP, BESIDE PLAYERS BECAUSE IT IS THE OTHER LADDER.
+   *
+   * Players holds the rating — how well somebody plays, pooled and per variant.
+   * This holds the experience — that they turned up and tried things. They are
+   * two independent standings and neither can be bought with the other, so they
+   * read as a pair rather than as one under the other.
+   *
+   * No row in `NAV_PHRASE` for it, and that is the table's own design: an
+   * address with no phrase keeps its English label, so a section can be added
+   * without touching the dictionaries. "XP" is also the word a Japanese player
+   * uses for it — 経験値 is paired with the heading on the page itself, where
+   * there is room for two scripts and the bar has room for one.
+   */
+  { href: "/xp", label: "XP" },
   { href: "/about", label: "About" },
 ] as const;
 
