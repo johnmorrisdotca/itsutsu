@@ -298,6 +298,95 @@ describe("resolveAgainst — continuing a position", () => {
     expect(settled.offer).toMatchObject({ offeredToMemberId: "them" });
   });
 
+  /*
+   * A FORK OF A GAME AGAINST A COMPUTER PLAYER IS A GAME AGAINST THAT COMPUTER
+   * PLAYER, and it used to be two people at one screen.
+   *
+   * The other seat was bound from the opponent's EMAIL, and a computer player has
+   * none — it never signs in. So a fork of any game played against one found
+   * nobody to play and fell through to a board at one screen, while the setup
+   * screen, which asks `personNamed` and gets the program back, said "Against the
+   * same opponent" and offered a rating the route then refused. Three screens
+   * describing three different games, and the one a person got was the one nobody
+   * had been shown.
+   *
+   * By ID now, which is the form that always works and exactly what a fresh game
+   * against a computer already uses (`against=<bot id>` becomes `challengeId`).
+   */
+  it("seats the computer player the position was played against, rather than one screen", async () => {
+    mine = "me";
+    session = { email: "me@example.com", name: "Me" };
+    origin = { ...ORIGIN, blackMemberId: "me", whiteMemberId: "kyu" };
+
+    const settled = await against({ from: { id: "origin-1", move: 2 } });
+
+    expect(settled.hotSeat, "there is a program to play, so it is not one screen").toBe(false);
+    expect(settled.seats.whiteMemberId, "the seat it had").toBe("kyu");
+    expect(settled.seats.blackMemberId).toBe("me");
+    expect(settled.offeredSeat, "a program has nothing to accept with").toBeNull();
+    expect(settled.computerSeated, "so it may have a move to make at once").toBe(true);
+  });
+
+  /*
+   * AND THE BOT TAKES THE SEAT IT HAD, which is not always white.
+   *
+   * A fork continues a position and a position belongs to the colours that were
+   * in it — `seatsFor` promises the forker `fork.colour` on the doorstep, and
+   * `rematch.ts` says it outright: "A fork is not a rematch and does not swap."
+   * The route seated whoever asked as BLACK whatever they had played, so forking
+   * a game you played white in handed you the other side of your own position.
+   */
+  it("keeps the colours the position was played in, both ways round", async () => {
+    mine = "me";
+    session = { email: "me@example.com", name: "Me" };
+    origin = { ...ORIGIN, blackMemberId: "kyu", whiteMemberId: "me" };
+
+    const settled = await against({ from: { id: "origin-1", move: 2 } });
+
+    expect(settled.seats.whiteMemberId, "I played white, so I still do").toBe("me");
+    expect(settled.seats.blackMemberId).toBe("kyu");
+    expect(settled.seats.whiteName).toBe("Me");
+    expect(settled.seats.blackName).toBe("Kyu");
+  });
+
+  it("keeps the colours for a person too, and offers them the seat they had", async () => {
+    mine = "me";
+    session = { email: "me@example.com", name: "Me" };
+    origin = { ...ORIGIN, blackMemberId: "them", whiteMemberId: "me" };
+
+    const settled = await against({ from: { id: "origin-1", move: 2 } });
+
+    expect(settled.seats.whiteMemberId).toBe("me");
+    expect(settled.seats.blackMemberId, "lifted off: they are asked, not seated").toBeUndefined();
+    expect(settled.seats.blackName).toBe("Them");
+    expect(settled.offeredSeat, "the seat they played, not the one a challenge would give").toBe("black");
+  });
+
+  /*
+   * A CHALLENGE STILL SEATS WHOEVER ASKS AS BLACK. Only a position settles the
+   * colours, and nothing else on this route carries one — so the change above
+   * must not leak into the ordinary ask.
+   */
+  it("still seats the asker black where no position says otherwise", async () => {
+    mine = "me";
+    session = { email: "me@example.com", name: "Me" };
+
+    const settled = await against({ challengeId: "kyu" });
+
+    expect(settled.seats.blackMemberId).toBe("me");
+    expect(settled.seats.whiteMemberId).toBe("kyu");
+  });
+
+  it("leaves a fork by somebody who was not in the game at one screen", async () => {
+    mine = "stranger";
+    session = { email: "stranger@example.com", name: "Stranger" };
+
+    const settled = await against({ from: { id: "origin-1", move: 2 } });
+
+    expect(settled.hotSeat).toBe(true);
+    expect(settled.computerSeated).toBe(false);
+  });
+
   it("refuses a position the game never reached", async () => {
     expect(await refusal({ from: { id: "origin-1", move: ORIGIN.moveCount + 1 } })).toMatchObject({
       status: 400,

@@ -21,7 +21,14 @@ function asked(body: Record<string, unknown>): CreationAsked {
 
 const CREATED = { id: "game-1", blackToken: "black-token", whiteToken: "white-token" };
 
-const NOBODY: Against = { seats: {}, source: {}, hotSeat: false, offer: {}, offeredSeat: null };
+const NOBODY: Against = {
+  seats: {},
+  source: {},
+  hotSeat: false,
+  offer: {},
+  offeredSeat: null,
+  computerSeated: false,
+};
 
 describe("refusalResponse", () => {
   /*

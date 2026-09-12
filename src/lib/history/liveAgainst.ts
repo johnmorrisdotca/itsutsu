@@ -3,12 +3,20 @@ import "server-only";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
+import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { isIgnoring } from "@/lib/social/ignores";
 import type { CreationAsked, CreationRefusal } from "./liveRequest";
 import { offerLiftedOff } from "./offers";
-import { FORK_PACE_SETTINGS, opponentOf, seatsForRematch, settingsToCarry, type Seating } from "./rematch";
+import {
+  FORK_PACE_SETTINGS,
+  opponentOf,
+  seatOf,
+  seatsForRematch,
+  settingsToCarry,
+  type Seating,
+} from "./rematch";
 
 /**
  * WHO A NEW GAME IS AGAINST, AND WHAT THAT MAKES IT.
@@ -32,8 +40,12 @@ import { FORK_PACE_SETTINGS, opponentOf, seatsForRematch, settingsToCarry, type 
  *     being forked, yields the pace to whoever asked, and works out who the
  *     other seat belongs to — which it then hands to (3) rather than seating
  *     itself, because "the person who was in that game" and "the person you
- *     named" want the identical treatment once they are found.
- *  3. **Asking somebody** seats the caller black and the other person white.
+ *     named" want the identical treatment once they are found. It hands over a
+ *     MEMBER ID and the colour the forker played; both matter, and both were
+ *     wrong. See "A fork of a game against a computer player" below.
+ *  3. **Asking somebody** seats the caller black and the other person white —
+ *     unless a position has already settled the colours, in which case each of
+ *     them keeps the seat they had.
  *  4. **A seat posted for anyone** binds the creator, so the rule that stops
  *     somebody answering their own invitation has an id to recognise.
  *
@@ -53,6 +65,47 @@ import { FORK_PACE_SETTINGS, opponentOf, seatsForRematch, settingsToCarry, type 
  * nobody was asked to play, and for a computer player, which has nothing to
  * accept with. The rule itself, and the reason it exists, are in
  * `offerLiftedOff`.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * A FORK OF A GAME AGAINST A COMPUTER PLAYER IS A GAME AGAINST THAT PLAYER
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * It used to be two people at one screen, and nothing said so. The fork bound
+ * the other seat from the opponent's EMAIL, and a computer player has none — it
+ * never signs in, which is the whole reason `challengeId` exists. So a fork of
+ * any game played against one found nobody, fell through to a hot seat, and
+ * quietly made a board for two people at one device.
+ *
+ * The screens in front of it said something else. `personNamed` answers with the
+ * program (its null address is the one exception it makes), so `fork.alone` was
+ * false, the setup screen said "Against the same opponent", the doorstep said
+ * "Against Hidemasa Tamenoki 機械, who plays white" and offered a rating — which
+ * `ratedAtCreation` then refused, because a hot-seat game can never move one.
+ * Three screens describing three games, and the one a person got was the one
+ * nobody had been shown.
+ *
+ * So the fork resolves its opponent BY ID, which is exactly what a fresh game
+ * against a computer already does — the doorstep's `against=<bot id>` becomes
+ * `challengeId` — and every rule about programs then applies unchanged: seated
+ * rather than asked, `ensureBotMembers` first, no ignore list to consult. It
+ * costs one query fewer than the email round trip it replaces.
+ *
+ * **Rated, in the computer pool.** A game against a computer player is rated
+ * today, fully and symmetrically, and simply somewhere else — see `pools.ts`.
+ * Nothing in `rateable.ts` refuses a program a rating, and the position being
+ * forked was itself reached by this person and this program, so there is no
+ * sense in which the result would be somebody else's work. The same is already
+ * true of a fork against a PERSON, whose rating is inherited from the game it
+ * came out of.
+ *
+ * **AND THE COLOURS STAY.** A fork continues a position and a position belongs
+ * to the colours that were in it — `rematch.ts` says it outright, "A fork is not
+ * a rematch and does not swap", and `seatsFor` promises the forker `fork.colour`
+ * on the doorstep. The route seated whoever asked as black whatever they had
+ * played, so forking a game you played WHITE in handed you the other side of
+ * your own position while the page you had just read said otherwise. Harmless
+ * until now only because the case it bit hardest — a fork against a program —
+ * never got as far as being seated at all.
  *
  * Split out of `POST /api/games/live`, which had reached the file-size gate
  * holding this, the request's schema, the settings merge and the answer all at
@@ -79,6 +132,23 @@ export type Against = {
   offer: { offeredToMemberId: string; offeredAt: Date } | Record<string, never>;
   /** Which seat is being offered, or null where this is not an offer. */
   offeredSeat: Stone | null;
+  /**
+   * A computer player holds one of the seats above, so it may have a move to
+   * make the moment the game exists.
+   *
+   * READ OFF THE SETTLED SEATS rather than off the request, and that is the
+   * point of it. The route used to ask "did this request name a computer to
+   * challenge", which is true of a fresh challenge and false of the two other
+   * ways a program ends up in a seat: a fork of a game against one, and a
+   * rematch of one. A rematch against a program has therefore never played its
+   * opening move — the board sat waiting on a player that never waits, until the
+   * person moved and the move route called `playBotTurns` for them.
+   *
+   * An offered seat has had its id lifted off by the time this is read, so an
+   * offer can never look like a seated program; that falls out of the shape
+   * rather than needing a condition.
+   */
+  computerSeated: boolean;
 };
 
 /** Refusals more than one case gives, in the one wording each of them has. */
@@ -152,10 +222,17 @@ async function playingAgain(
 async function continuingAPosition(
   asked: CreationAsked,
   from: { id: string; move: number },
-  named: string | undefined,
 ): Promise<
   | { refused: CreationRefusal }
-  | { carried: { source: Record<string, unknown>; challenge: string | undefined; oneScreen: boolean } }
+  | {
+      carried: {
+        source: Record<string, unknown>;
+        /** Whoever else was in the position, by member id, or null if nobody was. */
+        opponentId: string | null;
+        /** The colour the caller played, which they keep. Null where they were not in it. */
+        mySeat: Stone | null;
+      };
+    }
 > {
   const origin = await prisma.game.findUnique({ where: { id: from.id } });
   if (origin === null) return { refused: NO_SUCH_GAME };
@@ -180,24 +257,19 @@ async function continuingAPosition(
 
   /*
    * Whoever is not me in the game being forked is who the new one is against,
-   * found by id and turned back into the address a challenge is addressed to —
-   * so `askingSomebody` below does the seating, and a fork against a person
-   * and an ask of that same person are one case rather than two.
+   * handed on BY MEMBER ID so `askingSomebody` below does the seating — a fork
+   * against somebody and an ask of that same somebody are one case once they are
+   * found. By id and not by address, which is the whole of the computer-player
+   * fix at the top of this file: an id is what a member IS, an address is only
+   * how they sign in, and a program has the first and never the second.
+   *
+   * `mySeat` travels with it because a fork does not swap. Null for a reader who
+   * was not in the game at all, which is also the case that finds no opponent.
    */
   const mine = await currentMemberId();
-  const otherId =
-    mine !== null && origin.blackMemberId === mine
-      ? origin.whiteMemberId
-      : mine !== null && origin.whiteMemberId === mine
-        ? origin.blackMemberId
-        : null;
-  const otherMember =
-    otherId === null
-      ? null
-      : await prisma.member.findUnique({ where: { id: otherId }, select: { email: true } });
-  const challenge = named === undefined && otherMember?.email ? otherMember.email : named;
-  // Nobody to play, so the fork is a game at one screen that can be handed out from there.
-  return { carried: { source, challenge, oneScreen: challenge === undefined } };
+  const mySeat = seatOf(origin, mine);
+  const opponentId = opponentOf(origin, mine);
+  return { carried: { source, opponentId, mySeat } };
 }
 
 /**
@@ -212,6 +284,8 @@ async function askingSomebody(
   asked: CreationAsked,
   challenge: string | undefined,
   challengeId: string | undefined,
+  /** The colour the caller keeps, where a position has settled one. Black otherwise. */
+  keep: Stone | null,
 ): Promise<{ refused: CreationRefusal } | { seats: AgainstSeats; offerTo: string | null }> {
   const me = await currentSession();
   const signIn: CreationRefusal = { status: 401, error: "Sign in to challenge someone." };
@@ -231,12 +305,26 @@ async function askingSomebody(
     return { refused: NOT_TAKING_GAMES };
   }
 
+  /*
+   * WHOEVER ASKS TAKES BLACK, unless a position says which colour they had.
+   *
+   * `keep` is null for every ordinary ask — nothing there carries a colour — so
+   * this is the same seating it has always been, stated as one expression rather
+   * than two branches. A fork passes the colour it was played in, and the other
+   * player takes the other seat: the seat they had.
+   *
+   * The names the REQUEST sends stay keyed to the colours, because that is what
+   * they are: `blackName` names whoever sits black, whoever that turns out to be.
+   * A fork sends neither, so both fall through to the accounts' own.
+   */
+  const iAmBlack = (keep ?? STONES.black) === STONES.black;
+  const myName = me.name || "";
   return {
     seats: {
-      blackMemberId: mineId,
-      whiteMemberId: other.id,
-      blackName: asked.data.blackName || me.name || "",
-      whiteName: asked.data.whiteName || other.name,
+      blackMemberId: iAmBlack ? mineId : other.id,
+      whiteMemberId: iAmBlack ? other.id : mineId,
+      blackName: asked.data.blackName || (iAmBlack ? myName : other.name),
+      whiteName: asked.data.whiteName || (iAmBlack ? other.name : myName),
     },
     // A person is asked; a program is simply seated. See `offerTo` above.
     offerTo: computer ? null : other.id,
@@ -253,10 +341,19 @@ export async function resolveAgainst(
   asked: CreationAsked,
 ): Promise<{ refused: CreationRefusal } | { against: Against }> {
   let source: Record<string, unknown> = {};
-  let challenge = asked.data.challenge;
+  /*
+   * CONST, and the lint rule that says so is telling the truth about the fix
+   * above: the fork used to overwrite this with the opponent's ADDRESS, and it
+   * now fills in `challengeId` instead. Nothing on this route reassigns what the
+   * caller asked for by address any more.
+   */
+  const challenge = asked.data.challenge;
+  let challengeId = asked.data.challengeId;
   let hotSeat = asked.data.hotSeat;
   let rematchSeats: Seating | null = null;
   let offerTo: string | null = null;
+  /** The colour a carried position settles for the caller, where one does. */
+  let keep: Stone | null = null;
 
   if (asked.data.rematch !== undefined) {
     const again = await playingAgain(asked.data.rematch);
@@ -266,20 +363,29 @@ export async function resolveAgainst(
     offerTo = again.carried.offerTo;
   }
   if (asked.data.from !== undefined) {
-    const on = await continuingAPosition(asked, asked.data.from, challenge);
+    const on = await continuingAPosition(asked, asked.data.from);
     if ("refused" in on) return on;
     source = on.carried.source;
-    challenge = on.carried.challenge;
-    // Only ever set, never cleared: a caller that asked for one screen gets one.
-    if (on.carried.oneScreen) hotSeat = true;
+    keep = on.carried.mySeat;
+    /*
+     * The person in the position, where the request named nobody itself. A
+     * request that DID name somebody wins: it is the more specific instruction,
+     * and it is how a fork whose opponent has since become unreachable can still
+     * be handed to somebody else.
+     */
+    if (challenge === undefined && challengeId === undefined && on.carried.opponentId !== null) {
+      challengeId = on.carried.opponentId;
+    }
+    // Nobody at all to play, so the fork is a board at one screen. Only ever
+    // set, never cleared: a caller that asked for one screen gets one.
+    if (challenge === undefined && challengeId === undefined) hotSeat = true;
   }
 
-  const challengeId = asked.data.challengeId;
   if (challengeId !== undefined && isBotId(challengeId)) await ensureBotMembers();
 
   let seats: AgainstSeats = rematchSeats ?? {};
   if (rematchSeats === null && (challenge !== undefined || challengeId !== undefined)) {
-    const asking = await askingSomebody(asked, challenge, challengeId);
+    const asking = await askingSomebody(asked, challenge, challengeId, keep);
     if ("refused" in asking) return asking;
     seats = asking.seats;
     offerTo = asking.offerTo;
@@ -309,5 +415,14 @@ export async function resolveAgainst(
     if (creator !== null) seats = { ...seats, blackMemberId: creator };
   }
 
-  return { against: { seats, source, hotSeat, offer: proposed.offer, offeredSeat: proposed.seat } };
+  return {
+    against: {
+      seats,
+      source,
+      hotSeat,
+      offer: proposed.offer,
+      offeredSeat: proposed.seat,
+      computerSeated: isBotId(seats.blackMemberId) || isBotId(seats.whiteMemberId),
+    },
+  };
 }

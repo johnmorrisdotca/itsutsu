@@ -367,7 +367,17 @@ export function SetUpGame({
            * shows who is carrying it without either being opened.
            */
           fold={{
-            summary: foldedWords({ chosen, fork, handicap: settled.handicap }),
+            /*
+              The fork's own opponent, not the select's: a fork offers no
+              opponent control, so `chosen` is null for one and the line would
+              have read "Post the seat for anyone" over a game against the
+              player who was in the position.
+            */
+            summary: foldedWords({
+              opponent: fork !== null ? opponent : chosen,
+              fork,
+              handicap: settled.handicap,
+            }),
             fields: (
               <>
                 {/*

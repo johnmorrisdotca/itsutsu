@@ -27,6 +27,7 @@ const NOBODY: Against = {
   hotSeat: false,
   offer: {},
   offeredSeat: null,
+  computerSeated: false,
 };
 
 /** What a forked or rematched game of noughts and crosses carries with it. */

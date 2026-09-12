@@ -2,7 +2,6 @@ import { badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiR
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { playBotTurns } from "@/lib/bots/botPlay";
-import { isBotId } from "@/lib/bots/bots";
 import { activeLimitRefusal, memberOverActiveLimit } from "@/lib/history/activeGames";
 import { resolveAgainst } from "@/lib/history/liveAgainst";
 import { settingsAsPlayed } from "@/lib/history/liveAsPlayed";
@@ -92,11 +91,17 @@ export async function POST(request: Request) {
 
     /*
      * A computer holding the seat that opens plays its stone now, so the board
-     * the challenger lands on is a board with a move on it rather than one
+     * whoever asked lands on is a board with a move on it rather than one
      * waiting on a player that never waits.
+     *
+     * ASKED OF THE GAME, NOT OF THE REQUEST. This read `challengeId` and a bot
+     * id, which names one of the three ways a program ends up in a seat and
+     * misses the other two — a fork of a game against one, and a rematch of one,
+     * neither of which sends a challenge. `playBotTurns` is safe to call on any
+     * game: it returns without a move for an open seat, for an offer, and for a
+     * position that is not the program's to play.
      */
-    const challengeId = asked.data.challengeId;
-    if (challengeId !== undefined && isBotId(challengeId)) {
+    if (against.computerSeated) {
       try {
         await playBotTurns(created.id);
       } catch (error) {

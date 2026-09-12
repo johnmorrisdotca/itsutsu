@@ -1,6 +1,6 @@
 import type { Handicap } from "@/lib/gomoku/gomoku.types";
-import { shownName } from "@/lib/rating/shownName";
 
+import { playerWord } from "./doorstepSays";
 import { describeHandicap, type SettingWord } from "./rulesSummary";
 import type { SetUpFork, SetUpOpponent } from "./setUp.types";
 
@@ -35,37 +35,48 @@ export const POST_FOR_ANYONE = "Post the seat for anyone";
  * The setup screen's own two words, in the order its own fields appear inside
  * the drawer.
  *
- * WHO IT IS AGAINST reads what the Start button will actually DO — `chosen`,
- * the opponent resolved against the players offered at THIS game — rather than
- * the select's raw value, because those can disagree: a specialist chosen at
- * its own game and then left behind by a change of game is no longer among the
- * players offered, and the game posts for anyone instead. A fork is a third
- * case: it names nobody, because the route finds the other player in the game
- * it forks, and says so differently depending on whether there was one.
+ * WHO IT IS AGAINST reads what the Start button will actually DO rather than the
+ * select's raw value, because those can disagree: a specialist chosen at its own
+ * game and then left behind by a change of game is no longer among the players
+ * offered, and the game posts for anyone instead.
+ *
+ * A FORK NAMES ITS OPPONENT, and it used to say "the same opponent" instead. The
+ * vaguer wording came from the request: a fork sends no opponent, because the
+ * route finds the other player in the position itself. But what the request
+ * carries is not what a line has to say — the screen is holding that player
+ * already, and names them in the hint paragraph two lines below. Saying it here
+ * too matters most for the case that was broken: a fork of a game against a
+ * computer player, where "the same opponent" was the only thing on the screen
+ * that did not say a program was about to take the seat.
+ *
+ * Through `playerWord`, so a program is marked as one in the same words the
+ * doorstep uses. The two lines are read a press apart and there is nothing to be
+ * gained by their disagreeing about who is playing.
  *
  * THE HANDICAP is left out entirely where there is none, rather than saying "no
  * handicap": the line is what this game IS, and the ordinary answer to a
  * question nobody asked is not worth a word of it.
  */
 export function foldedWords({
-  chosen,
+  opponent,
   fork,
   handicap,
 }: {
-  /** The opponent the press will actually name, or null for a posted seat. */
-  chosen: SetUpOpponent | null;
+  /**
+   * Who this game will actually be against: the player chosen in the select for
+   * an ordinary ask, and whoever was in the POSITION for a fork. Null for a seat
+   * posted for anyone, and for a fork of a game nobody else was in.
+   */
+  opponent: SetUpOpponent | null;
   /** The position being carried, where one is. */
   fork: SetUpFork | null;
   handicap: Handicap;
 }): SettingWord[] {
   const against: SettingWord =
-    fork !== null
-      ? {
-          text: `Against ${fork.alone ? "whoever you hand the seat to" : "the same opponent"}`,
-          notable: true,
-        }
-      : chosen !== null
-        ? { text: `Against ${shownName(chosen.name)}`, notable: true }
+    opponent !== null
+      ? { text: `Against ${playerWord(opponent.name, opponent.computer)}`, notable: true }
+      : fork !== null
+        ? { text: "Against whoever you hand the seat to", notable: true }
         : { text: POST_FOR_ANYONE, notable: false };
 
   const carried = describeHandicap(handicap);
