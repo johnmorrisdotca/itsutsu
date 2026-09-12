@@ -137,6 +137,15 @@ function guardedBy(query: Query): string | null {
    * pointer at a checked fact rather than a hole.
    */
   if (/buildGameWhere\(/.test(query.source)) return "filters built by buildGameWhere";
+  /*
+   * OR THROUGH THE QUEUE'S OWN CHOKE POINT, which is the same construction one
+   * list along. `FINISHED_ONLY` is what "a finished game" means to /play's
+   * finished group, it is spread into both of that group's reads, and it carries
+   * `NOT_A_REFUSED_OFFER` — so a read built from it is answered by whatever that
+   * constant asks. The assertion below is what keeps this a pointer at a checked
+   * fact rather than a hole, exactly as for `buildGameWhere`.
+   */
+  if (/FINISHED_ONLY/.test(query.source)) return "filters built from FINISHED_ONLY";
   if (/status:\s*"active"/.test(query.source)) return "asks for active games only";
   if (/result:\s*\{\s*not:\s*"abandoned"\s*\}/.test(query.source)) return "excludes abandoned results";
   return null;
@@ -179,6 +188,24 @@ describe("no listing shows a refused offer as a game", () => {
      */
     const source = readFileSync("src/lib/history/gameHistoryQuery.ts", "utf8");
     expect(source).toContain("NOT_A_REFUSED_OFFER");
+  });
+
+  it("keeps the queue's finished group saying so outright, since it must page real abandoned games", () => {
+    /*
+     * The second choke point, and it cannot take the cheap way out either: a
+     * game called off before the first stone IS a finished game of this
+     * reader's and belongs in their list, so `result: { not: "abandoned" }` is
+     * not available to it. A REFUSED OFFER is filed the same way and is not a
+     * game of theirs at all — it belongs to the offerer's own group, complete —
+     * so the two are told apart by the offer columns and by nothing else.
+     *
+     * If this ever fails, the fix is to put `NOT_A_REFUSED_OFFER` back into
+     * `FINISHED_ONLY`, not to add a clause: dropping it would page a decline
+     * into "Lately finished" on the page its own group sits on.
+     */
+    const source = readFileSync("src/lib/history/myFinished.ts", "utf8");
+    expect(source).toContain("NOT_A_REFUSED_OFFER");
+    expect(source).toMatch(/export const FINISHED_ONLY[\s\S]{0,600}NOT_A_REFUSED_OFFER/);
   });
 });
 

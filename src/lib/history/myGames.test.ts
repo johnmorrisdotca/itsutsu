@@ -24,35 +24,93 @@ let rows: Row[] = [];
 let moves: Row[] = [];
 
 /**
- * ONE COMPARISON, IN THE SHAPES THIS QUERY IS ALLOWED TO USE — and a throw for
- * anything else.
+ * THE FAKE BELOW HONOURS THE `where`, THE `orderBy` AND THE `take` it is handed
+ * rather than handing back every row.
  *
- * The fake below HONOURS THE `where` it is handed rather than handing back
- * every row, because since the member's window went into the query (see
- * `myListWindow`) what the list shows is decided in two places and only one of
- * them is this file's JavaScript. A fake that ignored the `where` would report
- * green on a query that read the whole table — or, worse, on one that dropped a
- * game somebody is waiting to move in.
+ * What the list shows is decided in three places now and only one of them is
+ * this file's JavaScript: the member's window went into the query (see
+ * `myListWindow`), and the finished group is a PAGE of a sorted read (see
+ * `myFinished.ts`). A fake that ignored any of the three would report green on a
+ * query that read the whole table — or, worse, on one that dropped a game
+ * somebody is waiting to move in.
+ */
+/**
+ * A STORED VALUE AND A BOUND, AS TWO COMPARABLE THINGS OF ONE KIND — or null
+ * when they are not comparable at all.
+ *
+ * WHAT IS HELD DECIDES, never what the `where` carries, and that is the whole
+ * reason this is a function. A cursor's value arrives as an ISO STRING and not a
+ * Date — `paging.cursor.ts` converts one so that encoding and decoding cannot
+ * produce two types for one position — so a bound against a date column has to be
+ * read as an instant whichever shape it came in. Deciding from the BOUND instead
+ * means guessing whether a string is a date, and `Date.parse` will happily find
+ * one in an id: the first version of this did exactly that and fell over trying
+ * to order two game ids, because one of them parsed as a date and the other did
+ * not.
+ */
+function pair(held: unknown, bound: unknown): [number, number] | [string, string] | null {
+  if (held instanceof Date) {
+    const when =
+      bound instanceof Date
+        ? bound.getTime()
+        : typeof bound === "string"
+          ? Date.parse(bound)
+          : Number.NaN;
+    return Number.isNaN(when) ? null : [held.getTime(), when];
+  }
+  if (typeof held === "string" && typeof bound === "string") return [held, bound];
+  if (typeof held === "number" && typeof bound === "number") return [held, bound];
+  return null;
+}
+
+/** -1, 0 or 1, for two values of one kind. */
+function rank(left: number | string, right: number | string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+/**
+ * ONE COMPARISON, IN THE SHAPES THESE QUERIES ARE ALLOWED TO USE — and a throw
+ * for anything else.
  *
  * It refuses an operator it does not know instead of answering "no match":
- * shrugging would quietly empty the list and pass, which is the false pass
- * that is most convincing exactly when somebody is proving a test works.
+ * shrugging would quietly empty a list and pass, which is the false pass that is
+ * most convincing exactly when somebody is proving a test works.
  */
 function compares(held: unknown, test: unknown): boolean {
   if (test === null) return held === null;
-  if (test instanceof Date) return held instanceof Date && held.getTime() === test.getTime();
-  if (typeof test === "object") {
+  if (typeof test === "object" && !(test instanceof Date)) {
     const ops = test as Record<string, unknown>;
     if ("in" in ops) return (ops.in as unknown[]).includes(held);
     if ("not" in ops) return !compares(held, ops.not);
-    if ("gte" in ops) {
-      const bound = ops.gte;
-      if (!(bound instanceof Date)) throw new Error("gte was handed something that is not a date");
-      return held instanceof Date && held.getTime() >= bound.getTime();
+    for (const [op, keep] of [
+      ["gte", (cmp: number) => cmp >= 0],
+      ["gt", (cmp: number) => cmp > 0],
+      ["lte", (cmp: number) => cmp <= 0],
+      ["lt", (cmp: number) => cmp < 0],
+    ] as const) {
+      if (!(op in ops)) continue;
+      const both = pair(held, ops[op]);
+      /*
+       * Null here is a row whose column is null, which no inequality matches —
+       * Postgres says the same. A bound that cannot be read at all would have
+       * been a `pair` of null as well, which is why the throw is above in
+       * `order` and not here: this is asked of every row of every read, and a
+       * null column is the ordinary case rather than a programming mistake.
+       */
+      return both !== null && keep(rank(both[0], both[1]));
     }
-    throw new Error(`the queue asked with an operator this fake cannot read: ${JSON.stringify(test)}`);
+    throw new Error(`asked with an operator this fake cannot read: ${JSON.stringify(test)}`);
   }
-  return held === test;
+  /*
+   * A BARE VALUE IS AN EQUALITY, and against a date column it may be an ISO
+   * string: `keysetWhere` writes its "same value, later row" branch as
+   * `{ lastMoveAt: value }` with the cursor's string in it. Compared with `===`
+   * that is false for every row there is — not a crash, but an empty page that
+   * reads as "no more games". A three-row list paged to one row and stopped that
+   * way, with the cursor, the order and the merge all correct.
+   */
+  const both = pair(held, test);
+  return both === null ? held === test : rank(both[0], both[1]) === 0;
 }
 
 function matches(row: Row, where: Record<string, unknown>): boolean {
@@ -67,13 +125,64 @@ function matches(row: Row, where: Record<string, unknown>): boolean {
   return true;
 }
 
-/** How many rows the last read actually brought back, which is the cost. */
+/**
+ * ONE COLUMN'S VALUE AGAINST ANOTHER ROW'S, for the order a read asks for.
+ *
+ * Nulls LAST, which matches `keysetOrderBy`. Two values of the same column, so
+ * there is no coercion to do and nothing to guess: anything that is not a pair of
+ * dates, strings or numbers is a read this fake cannot honour, and it says so
+ * rather than picking an order.
+ */
+function order(a: unknown, b: unknown): number {
+  if (a === null || a === undefined) return b === null || b === undefined ? 0 : 1;
+  if (b === null || b === undefined) return -1;
+  if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
+  if (typeof a === "string" && typeof b === "string") return rank(a, b);
+  if (typeof a === "number" && typeof b === "number") return a - b;
+  throw new Error(`this fake cannot order ${JSON.stringify(a)} against ${JSON.stringify(b)}`);
+}
+
+/**
+ * HOW MANY ROWS THE QUEUE BROUGHT BACK IN TOTAL, which is the cost.
+ *
+ * Accumulated across every read rather than overwritten by the last one, because
+ * the queue is TWO reads now — the debt complete, the finished group one page,
+ * the second of those in two runs — and a measure that reported only the last
+ * would go green on a change that read the whole history in the first. Reset in
+ * `beforeEach`, so a case that asserts on it makes one call.
+ */
 let rowsRead = 0;
-const gameFindMany = vi.fn(async (args: { where: Record<string, unknown> }) => {
-  const found = rows.filter((row) => matches(row, args.where));
-  rowsRead = found.length;
-  return found;
-});
+/**
+ * The fake honours `where`, `orderBy` AND `take`, in that order — which is the
+ * order Postgres applies them, and the only order in which a page means
+ * anything. Sorting after slicing would hand back an arbitrary five rows and
+ * call them the newest five; slicing without sorting would make every cursor
+ * point at whichever row happened to be last in the array.
+ */
+const gameFindMany = vi.fn(
+  async (args: {
+    where: Record<string, unknown>;
+    orderBy?: Record<string, unknown>[];
+    take?: number;
+  }) => {
+    const found = rows.filter((row) => matches(row, args.where));
+    for (const clause of [...(args.orderBy ?? [])].reverse()) {
+      const [field, direction] = Object.entries(clause)[0] as [string, string];
+      if (typeof direction !== "string") {
+        throw new Error(`this fake cannot order by ${JSON.stringify(clause)}`);
+      }
+      const way = direction === "desc" ? -1 : 1;
+      found.sort((a, b) => way * order(a[field], b[field]));
+    }
+    const page = args.take === undefined ? found : found.slice(0, args.take);
+    rowsRead += page.length;
+    return page;
+  },
+);
+/** The finished group's true size, over the same `where` its page is read with. */
+const gameCount = vi.fn(async ({ where }: { where: Record<string, unknown> }) =>
+  rows.filter((row) => matches(row, where)).length,
+);
 const moveFindMany = vi.fn(async ({ where }: { where: { gameId: { in: string[] } } }) =>
   moves.filter((move) => where.gameId.in.includes(move.gameId as string)),
 );
@@ -90,13 +199,27 @@ const memberFindMany = vi.fn(async ({ where }: { where: { id: { in: string[] } }
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    game: { findMany: (args: never) => gameFindMany(args) },
+    game: { findMany: (args: never) => gameFindMany(args), count: (args: never) => gameCount(args) },
     move: { findMany: (args: never) => moveFindMany(args) },
     member: { findMany: (args: never) => memberFindMany(args) },
   },
 }));
 
-const { fetchMyGames, shownGroup } = await import("./myGames");
+const { fetchMyGames, pagedGroup, shownGroup } = await import("./myGames");
+
+/**
+ * THE SEVEN GROUPS, which is what nearly every case below is about.
+ *
+ * `fetchMyGames` answers a `MyQueue` — the groups, plus how big the finished
+ * group really is and where its page ended — because `groups.finished` is one
+ * page now and a caller holding only the groups would read its length as the
+ * total. The cases about the finished group's PAGING use `fetchMyGames` itself;
+ * everything else wants the groups and says so through this.
+ */
+const queueOf = async (
+  ...args: Parameters<typeof fetchMyGames>
+): Promise<Awaited<ReturnType<typeof fetchMyGames>>["groups"]> =>
+  (await fetchMyGames(...args)).groups;
 
 const MEMBER = "member-1";
 
@@ -169,7 +292,7 @@ function stones(gameId: string, count: number): Row[] {
 
 /** The one game in the list, wherever it was sorted to. */
 async function only() {
-  const groups = await fetchMyGames(new Map(), MEMBER);
+  const groups = await queueOf(new Map(), MEMBER);
   const all = Object.values(groups).flat();
   expect(all).toHaveLength(1);
   return all[0];
@@ -181,6 +304,7 @@ beforeEach(() => {
   members = [];
   rowsRead = 0;
   gameFindMany.mockClear();
+  gameCount.mockClear();
   moveFindMany.mockClear();
   memberFindMany.mockClear();
 });
@@ -197,12 +321,21 @@ describe("what it costs to draw", () => {
     );
     moves = rows.flatMap((row) => stones(row.id as string, 40));
 
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(groups.yourMove).toHaveLength(10);
     expect(groups.theirMove).toHaveLength(10);
     // 800 move rows are there to be read, and none of them is.
     expect(moveFindMany).not.toHaveBeenCalled();
-    expect(gameFindMany).toHaveBeenCalledTimes(1);
+    /*
+     * THREE READS, AND WHY THAT IS THE RIGHT NUMBER. The debt groups are one
+     * complete read; the finished group is a page, which is two runs because its
+     * order is `lastMoveAt ?? playedAt` and Prisma cannot order by a `COALESCE`.
+     * See `myFinished.ts`. All three go out at once, so this is one round trip's
+     * latency and not three — and the number is asserted rather than left to
+     * grow, because a per-row query appearing in here is exactly the fault the
+     * rest of this file is about.
+     */
+    expect(gameFindMany).toHaveBeenCalledTimes(3);
   });
 
   /*
@@ -222,7 +355,7 @@ describe("what it costs to draw", () => {
     );
     members = [{ id: MEMBER, name: "Hanachan" }];
 
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(groups.yourMove).toHaveLength(20);
     expect(memberFindMany).toHaveBeenCalledTimes(1);
     // And it is the current name that comes out, on every one of them.
@@ -254,7 +387,7 @@ describe("what it costs to draw", () => {
     ];
     moves = [...stones("settled", 40), ...stones("filed", 40), ...stones("silent", 2)];
 
-    await fetchMyGames(new Map(), MEMBER);
+    await queueOf(new Map(), MEMBER);
     expect(moveFindMany).toHaveBeenCalledTimes(1);
     expect(moveFindMany.mock.calls[0][0]).toMatchObject({ where: { gameId: { in: ["silent"] } } });
   });
@@ -377,7 +510,7 @@ describe("a row with nothing stored", () => {
      */
     rows = [game({ id: "a", moveCount: 2 }), game({ id: "b", moveCount: 1 })];
     moves = [...stones("a", 2), ...stones("b", 1)];
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     const byId = new Map(Object.values(groups).flat().map((one) => [one.game.id, one]));
     // Two stones down: black to move. One stone down: white to move.
     expect(byId.get("a")?.toPlay).toBe(STONES.black);
@@ -388,7 +521,7 @@ describe("a row with nothing stored", () => {
 describe("what the list still does regardless", () => {
   it("leaves out a game no seat of yours is in", async () => {
     rows = [game({ blackMemberId: "somebody", whiteMemberId: "else" })];
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(Object.values(groups).flat()).toHaveLength(0);
   });
 
@@ -419,7 +552,7 @@ describe("what the list still does regardless", () => {
         settledToPlay: STONES.black,
       }),
     ];
-    const groups = await fetchMyGames(new Map(), MEMBER, new Date("2026-09-11T00:00:00Z"));
+    const groups = await queueOf(new Map(), MEMBER, new Date("2026-09-11T00:00:00Z"));
     expect(groups.yourMove[0].stale).toBe(true);
   });
 });
@@ -488,7 +621,7 @@ describe("where an offer goes in the queue", () => {
 
   it("puts an offer to you in its own group, and names the colour you would take", async () => {
     rows = [offeredToMe()];
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(groups.offered).toHaveLength(1);
     expect(groups.yourMove).toEqual([]);
     expect(groups.unstarted).toEqual([]);
@@ -500,7 +633,7 @@ describe("where an offer goes in the queue", () => {
 
   it("puts an offer you made in its own group too, never in the unstarted boards", async () => {
     rows = [offeredByMe()];
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(groups.offerSent).toHaveLength(1);
     expect(groups.offerSent[0].offerSide).toBe("from-me");
     expect(groups.unstarted).toEqual([]);
@@ -520,7 +653,7 @@ describe("where an offer goes in the queue", () => {
         settledToPlay: STONES.white,
       }),
     ];
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(groups.yourMove).toEqual([]);
     expect(groups.offered).toHaveLength(1);
     // And nobody is to move in it, so nothing downstream can read a turn off it.
@@ -539,7 +672,7 @@ describe("where an offer goes in the queue", () => {
         lastMoveAt: new Date("2026-09-03T00:00:00Z"),
       }),
     ];
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(Object.values(groups).flat()).toEqual([]);
   });
 
@@ -556,7 +689,7 @@ describe("where an offer goes in the queue", () => {
         lastMoveAt: new Date("2026-09-03T00:00:00Z"),
       }),
     ];
-    const groups = await fetchMyGames(new Map(), MEMBER, new Date("2026-09-04T00:00:00Z"));
+    const groups = await queueOf(new Map(), MEMBER, new Date("2026-09-04T00:00:00Z"));
     expect(groups.finished).toEqual([]);
     expect(groups.offerSent).toHaveLength(1);
     expect(groups.offerSent[0].offer).toBe("declined");
@@ -570,7 +703,7 @@ describe("where an offer goes in the queue", () => {
         lastMoveAt: new Date("2026-09-03T00:00:00Z"),
       }),
     ];
-    const groups = await fetchMyGames(new Map(), MEMBER, new Date("2026-09-04T00:00:00Z"));
+    const groups = await queueOf(new Map(), MEMBER, new Date("2026-09-04T00:00:00Z"));
     expect(groups.offerSent[0].offer).toBe("withdrawn");
   });
 
@@ -587,7 +720,7 @@ describe("where an offer goes in the queue", () => {
         lastMoveAt: new Date("2026-09-03T00:00:00Z"),
       }),
     ];
-    const groups = await fetchMyGames(new Map(), MEMBER, new Date("2026-11-01T00:00:00Z"), 7);
+    const groups = await queueOf(new Map(), MEMBER, new Date("2026-11-01T00:00:00Z"), 7);
     expect(groups.offerSent).toEqual([]);
   });
 
@@ -606,7 +739,7 @@ describe("where an offer goes in the queue", () => {
         settledToPlay: STONES.white,
       }),
     ];
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(groups.offered).toEqual([]);
     expect(groups.offerSent).toEqual([]);
     expect(groups.yourMove).toHaveLength(1);
@@ -621,7 +754,7 @@ describe("where an offer goes in the queue", () => {
    */
   it("shows an offer to nobody but its two people", async () => {
     rows = [offeredToMe()];
-    const groups = await fetchMyGames(new Map(), "member-3");
+    const groups = await queueOf(new Map(), "member-3");
     expect(Object.values(groups).flat()).toEqual([]);
   });
 
@@ -632,10 +765,21 @@ describe("where an offer goes in the queue", () => {
    */
   it("reads the offers on the same query as the seats", async () => {
     rows = [offeredToMe(), offeredByMe({ id: "g2" })];
-    await fetchMyGames(new Map(), MEMBER);
-    expect(gameFindMany).toHaveBeenCalledTimes(1);
-    const asked = gameFindMany.mock.calls[0][0] as { where: { OR: Record<string, unknown>[] } };
-    expect(asked.where.OR).toEqual(expect.arrayContaining([{ offeredToMemberId: MEMBER }]));
+    await queueOf(new Map(), MEMBER);
+    /*
+     * ON THE COMPLETE READ, and still one query for the three ways a game is
+     * yours. The seats moved under an `AND` when the finished group started
+     * paging — the read is now "anything a debt could be, AND one of your
+     * seats" — so this reads the branch rather than the top level. The point is
+     * unchanged: the offers are not a query of their own.
+     */
+    const asked = gameFindMany.mock.calls[0][0] as {
+      where: { AND: { OR?: Record<string, unknown>[] }[] };
+    };
+    const seats = asked.where.AND.find((one) =>
+      (one.OR ?? []).some((branch) => "blackMemberId" in branch),
+    );
+    expect(seats?.OR).toEqual(expect.arrayContaining([{ offeredToMemberId: MEMBER }]));
   });
 
   /*
@@ -648,7 +792,7 @@ describe("where an offer goes in the queue", () => {
       offeredToMe({ id: "new", lastMoveAt: new Date("2026-09-09T00:00:00Z") }),
       offeredToMe({ id: "old", lastMoveAt: new Date("2026-09-03T00:00:00Z") }),
     ];
-    const groups = await fetchMyGames(new Map(), MEMBER);
+    const groups = await queueOf(new Map(), MEMBER);
     expect(groups.offered.map((one) => one.game.id)).toEqual(["old", "new"]);
   });
 });
@@ -689,27 +833,51 @@ describe("what the read costs before anything is sorted", () => {
   it("does not read a finished game past the member's window", async () => {
     rows = [filed("lately", 2), ...Array.from({ length: 50 }, (_unused, index) => filed(`old-${index}`, 60 + index))];
 
-    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 14);
+    const groups = await queueOf(new Map(), MEMBER, NOW, 14);
     expect(groups.finished.map((one) => one.game.id)).toEqual(["lately"]);
     // Fifty-one rows to be had, and the list is drawn from one of them.
     expect(rowsRead).toBe(1);
   });
 
-  it("reads every finished game when the member keeps everything, and says so by asking for no bound", async () => {
-    /*
-     * THE CASE THE BOUND CANNOT HELP, kept honest rather than left implied.
-     * Keeping for ever is the default, so this is most members today: there is
-     * no date to bound by, and the read is the whole history again. Bounding it
-     * needs the finished group to page, which `myListWindow` explains is a
-     * larger change than this one.
-     */
-    rows = [filed("lately", 2), filed("ancient", 900)];
+  /*
+   * THE CASE THE BOUND COULD NOT HELP, AND WHAT NOW BOUNDS IT.
+   *
+   * Keeping for ever is the DEFAULT, so it is most members and it is John's own
+   * setting: there is no date to bound the read with, and the read used to be
+   * the whole history again. This case asserted exactly that, as an honest
+   * report of a gap. The gap is closed by the PAGE instead of a date, so what it
+   * asserts now is the opposite — and the assertion that matters is `rowsRead`,
+   * because a page that quietly stopped being asked for would show up here as
+   * two hundred rows rather than as a list that happens to look right.
+   */
+  it("bounds a member who keeps everything by the page, since there is no date to bound by", async () => {
+    rows = [
+      filed("lately", 2),
+      ...Array.from({ length: 200 }, (_unused, index) => filed(`older-${index}`, 10 + index)),
+    ];
 
-    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 0);
-    expect(groups.finished.map((one) => one.game.id)).toEqual(["lately", "ancient"]);
-    expect(rowsRead).toBe(2);
-    const asked = gameFindMany.mock.calls[0][0] as { where: Record<string, unknown> };
-    expect(asked.where.AND).toBeUndefined();
+    const queue = await fetchMyGames(new Map(), MEMBER, NOW, 0, { limit: 5 });
+    expect(queue.groups.finished.map((one) => one.game.id)).toEqual([
+      "lately",
+      "older-0",
+      "older-1",
+      "older-2",
+      "older-3",
+    ]);
+    /*
+     * Six rather than five: each run is read ONE row longer than the page, which
+     * is how "is there more" is answered without a second query — see `takeFor`.
+     * The null run is empty here, so it contributes nothing. Two hundred and one
+     * rows to be had, and six of them are read.
+     */
+    expect(rowsRead).toBe(6);
+    // And the heading still says how many there really are, exactly.
+    expect(queue.finished.total).toBe(201);
+    expect(queue.finished.next).not.toBeNull();
+
+    // No date bound was asked for, which is the half `myListWindow` decides.
+    const asked = gameFindMany.mock.calls[0][0] as { where: { AND: unknown[] } };
+    expect(asked.where.AND).toHaveLength(2);
   });
 
   it("never drops a game still being played, however old it has grown", async () => {
@@ -730,7 +898,7 @@ describe("what the read costs before anything is sorted", () => {
       }),
     ];
 
-    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 7);
+    const groups = await queueOf(new Map(), MEMBER, NOW, 7);
     expect(groups.yourMove.map((one) => one.game.id)).toEqual(["long-game"]);
     expect(groups.yourMove[0].stale).toBe(true);
   });
@@ -757,7 +925,7 @@ describe("what the read costs before anything is sorted", () => {
       }),
     ];
 
-    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 7);
+    const groups = await queueOf(new Map(), MEMBER, NOW, 7);
     // Read — the bound is the looser half — and then left out.
     expect(rowsRead).toBe(1);
     expect(Object.values(groups).flat()).toEqual([]);
@@ -778,7 +946,7 @@ describe("what the read costs before anything is sorted", () => {
       }),
     ];
 
-    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 7);
+    const groups = await queueOf(new Map(), MEMBER, NOW, 7);
     expect(groups.offered.map((one) => one.game.id)).toEqual(["still-asking"]);
   });
 
@@ -789,21 +957,37 @@ describe("what the read costs before anything is sorted", () => {
      * handed every member everybody's recent games. It goes in an `AND`.
      */
     rows = [filed("mine", 2)];
-    await fetchMyGames(new Map(), MEMBER, NOW, 14);
+    await queueOf(new Map(), MEMBER, NOW, 14);
 
+    /*
+     * THREE ORs NOW, AT ONE LEVEL, WHICH IS WHY THEY ARE ALL IN THE `AND`. The
+     * debt read asks "anything a debt could be" — itself an OR — beside the
+     * seats and the window, which are two more. A `where` cannot hold two at one
+     * level, so the trap this case was written for got bigger rather than going
+     * away: spreading any of the three would silently replace another and hand a
+     * member somebody else's games, or every recent game on the site.
+     */
     const asked = gameFindMany.mock.calls[0][0] as {
-      where: { OR: Record<string, unknown>[]; AND: { OR: Record<string, unknown>[] }[] };
+      where: { AND: { OR: Record<string, unknown>[] }[] };
     };
-    expect(asked.where.OR).toEqual(
+    expect(asked.where.AND).toHaveLength(3);
+    const branches = asked.where.AND.map((one) => one.OR);
+    expect(branches).toEqual(
       expect.arrayContaining([
-        { blackMemberId: MEMBER },
-        { whiteMemberId: MEMBER },
-        { offeredToMemberId: MEMBER },
+        expect.arrayContaining([
+          { blackMemberId: MEMBER },
+          { whiteMemberId: MEMBER },
+          { offeredToMemberId: MEMBER },
+        ]),
       ]),
     );
-    expect(asked.where.AND).toHaveLength(1);
-    expect(asked.where.AND[0].OR).toEqual(
-      expect.arrayContaining([{ status: "active" }]),
+    // The debt read's own half: anything active, and every offer in any state.
+    expect(branches).toEqual(
+      expect.arrayContaining([expect.arrayContaining([{ status: "active" }])]),
+    );
+    // And the window, which is the dates.
+    expect(branches).toEqual(
+      expect.arrayContaining([expect.arrayContaining([{ lastMoveAt: { gte: expect.any(Date) } }])]),
     );
   });
 
@@ -819,7 +1003,7 @@ describe("what the read costs before anything is sorted", () => {
     rows = [
       game({ id: "cookied", blackMemberId: null, whiteMemberId: null, playedAt: old, lastMoveAt: old, status: "finished", result: "draw" }),
     ];
-    const groups = await fetchMyGames(new Map([["cookied", "tok-black"]]), null, NOW);
+    const groups = await queueOf(new Map([["cookied", "tok-black"]]), null, NOW);
     expect(groups.finished.map((one) => one.game.id)).toEqual(["cookied"]);
   });
 });

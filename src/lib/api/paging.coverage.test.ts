@@ -9,6 +9,7 @@ import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
 import { XP_BOARD_SORT_SPEC } from "@/lib/xp/xpBoard.sort";
 import { XP_LEDGER_SORT } from "@/lib/xp/xpHistory.sort";
 import { DIRECTORY_SORT_SPEC } from "@/lib/rating/directory.sort";
+import { MY_FINISHED_SORT } from "@/lib/history/myFinished.sort";
 
 /**
  * THE GATE OVER EVERY SORTABLE LIST ON THE SITE.
@@ -62,6 +63,19 @@ const SPECS: { of: string; spec: SortSpec<string> }[] = [
    * existed, so the index rule is kept literally here rather than waived.
    */
   { of: "the members directory", spec: DIRECTORY_SORT_SPEC as SortSpec<string> },
+  /*
+   * The finished group of a member's own queue, on /play. The only list here
+   * whose order is a `COALESCE` — `lastMoveAt ?? playedAt`, the age each row
+   * prints — which Prisma cannot express, so its read is two runs that partition
+   * the rows and one cursor that serves both. See `myFinished.ts`.
+   *
+   * It declares ONE column and no reader can ask for another: a queue has no
+   * sortable headings, and the order that group means is "lately finished". It is
+   * here for the other half of what this gate checks — that the index a
+   * declaration names exists — because that is the half a type cannot make, and
+   * this one names an index the same change added.
+   */
+  { of: "your finished games", spec: MY_FINISHED_SORT as SortSpec<string> },
 ];
 
 /**
@@ -129,6 +143,8 @@ describe("every sort declaration", () => {
     // The directory's default order, added with the tally columns it sorts by.
     expect(have.has("Member_lastSeenAt_idx")).toBe(true);
     expect(have.has("Member_played_idx")).toBe(true);
+    // The order the queue's finished group pages by, added with that paging.
+    expect(have.has("Game_lastMoveAt_idx")).toBe(true);
     expect(have.has("Game_moveCount_idx")).toBe(false);
     expect(have.has("Game_durationMs_idx")).toBe(false);
   });
@@ -146,6 +162,6 @@ describe("every sort declaration", () => {
    * reminder to add the line rather than a reason to loosen it.
    */
   it("is the whole list of them", () => {
-    expect(SPECS).toHaveLength(5);
+    expect(SPECS).toHaveLength(6);
   });
 });

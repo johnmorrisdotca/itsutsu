@@ -52,7 +52,13 @@ const files = sources("src").map((path) => ({ path, text: readFileSync(path, "ut
  */
 const MAY_NAME_THE_COLUMNS = new Map([
   [join(HISTORY, OWNER), "owns both columns and is the only thing that decides their values"],
-  [join(HISTORY, "myGames.ts"), "selects them to read; never assigns either"],
+  /*
+   * The queue's projection, which was in `myGames.ts` until the finished group
+   * learned to page and both halves of that read needed the same select. It is
+   * the same reader on the same two columns, in a module of its own — so the
+   * entry MOVED rather than a second one being added.
+   */
+  [join(HISTORY, "myGamesRows.ts"), "selects them to read; never assigns either"],
 ]);
 
 /**

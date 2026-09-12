@@ -105,6 +105,15 @@ export const MY_GAMES_COPY = {
    * is one sentence, and a reader can see the promise being kept.
    */
   showAll: (total: number) => `Show all ${total}`,
+  /**
+   * The page after this one, for the finished group — the only one that pages.
+   *
+   * "Older" rather than "more" or a number, because it says which WAY the page
+   * turns and this list is newest first, so a reader knows what they will get.
+   * A number would have to be `total - what you have seen`, which means carrying
+   * a running count through the address for a label.
+   */
+  showOlder: "Older finished games",
   /** And back to the caps, so an opened group is not a one-way trip. */
   showFewer: "Show fewer",
   /** Where a capped group with more behind it sends a signed-in reader. */

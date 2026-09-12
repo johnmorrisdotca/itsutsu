@@ -1,0 +1,61 @@
+-- The queue's finished group pages, and this is the index behind its order.
+--
+-- ─────────────────────────────────────────────────────────────────────────
+-- WHAT IT IS FOR
+-- ─────────────────────────────────────────────────────────────────────────
+--
+-- /play and every /api/games/mine the header's badge asks for read EVERY game
+-- the member had ever sat in. 0.169.3 put the member's retention window into
+-- that query, which bounded it for everybody who had chosen a window — and left
+-- the DEFAULT, "keep finished games for ever", reading the lot, because there
+-- is no date to bound it with. 571 rows on the site owner's own account, on the
+-- page he opens daily, to show five of them.
+--
+-- So the finished group pages by cursor, newest first, ordered by the age the
+-- page prints: `lastMoveAt ?? playedAt`. Postgres cannot be asked to order by
+-- that through Prisma, so the read is two runs that PARTITION the rows —
+-- `lastMoveAt IS NOT NULL` ordered by this column, `lastMoveAt IS NULL` ordered
+-- by `playedAt` — merged, with one cursor serving both. `myListWindow` already
+-- made the same move for the same expression as a `where`.
+--
+-- This index answers the first run. `Game_playedAt_idx` already answered the
+-- second, and it holds all but a handful of the rows: `lastMoveAt` is stamped
+-- at creation by `createLiveGame` and moved by every move and every ending, so
+-- a null there means a row some other path wrote. 129 of 3,617 finished rows on
+-- the development database.
+--
+-- ─────────────────────────────────────────────────────────────────────────
+-- WHAT IT BUYS, MEASURED RATHER THAN ASSUMED
+-- ─────────────────────────────────────────────────────────────────────────
+--
+-- Read with EXPLAIN (ANALYZE, BUFFERS) on the development database on
+-- 2026-09-12, by creating it inside a transaction and rolling back. One page of
+-- six, for the member holding 571 finished games of 6,411:
+--
+--   without    296 buffers / 0.97 ms   bitmap-OR of the three member indexes,
+--                                      then a top-N heapsort of all 571 rows
+--   with        58 buffers / 0.12 ms   backward scan of this index, 7 rows
+--                                      examined, then an incremental sort
+--
+-- And for a member holding 19 finished games of 6,411 the planner DECLINES it
+-- and takes the heapsort (32 buffers / 0.14 ms) — correctly, because scanning a
+-- global index to find six of somebody's rows gets worse the sparser they are.
+-- Which is the property worth stating: with or without this, the cost is
+-- bounded by the member's own rows, and it is the page's LIMIT that stops 571
+-- of them reaching Node. This is a sixfold win for the heaviest reader on the
+-- page they open daily, and never a cost to a light one.
+--
+-- `retention.ts` said an index here "could not improve on that and would be
+-- read by nothing else". That was true while `lastMoveAt` was only a FILTER
+-- over a member's own rows, and it stopped being true the moment the column
+-- became an ORDER.
+--
+-- ─────────────────────────────────────────────────────────────────────────
+-- WHAT IT COSTS AND WHAT IT TOUCHES
+-- ─────────────────────────────────────────────────────────────────────────
+--
+-- Additive and reversible: one B-tree over one nullable timestamp, on a table
+-- production holds a few hundred rows of. It reads no data, writes no data, and
+-- drops nothing, so there is no state a rollback would have to reconstruct —
+-- `DROP INDEX "Game_lastMoveAt_idx"` undoes it completely.
+CREATE INDEX "Game_lastMoveAt_idx" ON "Game"("lastMoveAt");

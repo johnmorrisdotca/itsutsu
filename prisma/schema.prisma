@@ -215,6 +215,20 @@ model Game {
   /// The offers waiting on one person: the third way a game is "yours", read
   /// on the same query as the two seat indexes above by `fetchMyGames`.
   @@index([offeredToMemberId])
+  /// The order the queue's FINISHED group pages by — `lastMoveAt ?? playedAt`,
+  /// whose non-null run this answers and whose null run `playedAt` above does.
+  /// See `myFinished.sort.ts`, which names it and carries the measurement: for
+  /// the member holding 571 finished games of 6,411, one page of six goes from
+  /// 296 buffers and 0.97 ms (bitmap-OR of the three member indexes, then a
+  /// top-N heapsort of all 571) to 58 buffers and 0.12 ms (backward scan of
+  /// this, 7 rows examined). For a member holding 19 the planner declines it
+  /// and takes the heapsort, correctly — so this is a win for the heaviest
+  /// reader and never a cost to a light one.
+  ///
+  /// `retention.ts` says an index here "would be read by nothing else", which
+  /// was true while `lastMoveAt` was only a FILTER over a member's own rows and
+  /// stopped being true the moment it became an ORDER.
+  @@index([lastMoveAt])
 }
 
 model Move {
