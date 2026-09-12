@@ -29,10 +29,20 @@
  *   - a HOT-SEAT game is filed and never rated (`isHotSeat`);
  *   - an ANONYMOUS seat, or one name in both seats, or a name reserved for
  *     somebody remembered here, is refused by `isRateable`;
- *   - and a game FILED FROM ONE BROWSER through `recordGame` is stored with
- *     `rated` at its column default of true, two distinct seat tokens, and no
- *     rating ever moved. Nothing on the row distinguishes it from a shared
- *     game that was rated. That is a question the Game table cannot answer.
+ *   - and a game FILED FROM ONE BROWSER through `recordGame` was stored with
+ *     `rated` at its column default of true, and no rating ever moved. Nothing
+ *     on the row distinguishes it from a shared game that was rated. That is a
+ *     question the Game table cannot answer.
+ *
+ * **THE STORED `rated` FLAG IS NOT TRUSTED**, and `isHotSeat` is not enough on
+ * its own. Read read-only from production on 2026-09-11: fourteen rows are
+ * stamped rated that no rating ever moved — eight active, six finished. Twelve
+ * of them are hot-seat. The other two are not, and one of those is a FINISHED
+ * `John Morris` versus `John Morris` with two different seat tokens, which only
+ * `ratingRefusal`'s one-player check catches. The write path was fixed for new
+ * games in 0.145.2; these rows remain. So every test the write side applies is
+ * asked here, from the same modules, and the reconciliation below is what
+ * catches whatever those tests still cannot see.
  *
  * So this does not guess. It rebuilds each record's wins, losses and draws
  * alongside the run, and **writes only where the rebuilt record matches the

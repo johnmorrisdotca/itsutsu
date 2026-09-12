@@ -136,16 +136,45 @@ export const ROW_CLASS = "border-t border-rule";
  * no streak, and "W0" or "0" would be a claim about a run that never happened
  * — see the head of `rating/streak.ts`.
  */
-export function StreakMark({ streak }: { streak: Streak | null }) {
+export function StreakMark({ streak, of = {} }: { streak: Streak | null; of?: RecordOf }) {
   return (
     <span
-      title={streakLabel(streak)}
+      title={`${streakLabel(streak)} ${streakCounts(of)}`}
       data-testid="record-streak"
       data-streak={streak === null ? "" : streak.kind}
     >
       {streakText(streak)}
     </span>
   );
+}
+
+/**
+ * WHICH GAMES THIS RUN IS OVER, said out loud on every streak on the site.
+ *
+ * A streak is the one figure in the row that cannot be checked by looking. The
+ * counts beside it link to the games they counted, so a reader can open them
+ * and see; a run is a single number with no way to inspect it. So it has to
+ * SAY what it is about, and it says it from the same `of` the counts are
+ * filtered by — which means the sentence and the links cannot drift apart.
+ *
+ * It earned this the day the PLAYED column changed meaning. That column was
+ * counting rated games under a heading that says played, and when it was fixed
+ * to count every finished game a streak over rated games alone became a second
+ * number on the same row that nobody could reconcile with the first. Whichever
+ * way that goes, a run that names its own set is a run a reader can still trust.
+ */
+function streakCounts(of: RecordOf): string {
+  if (of.here === false) return "Counted on another site.";
+  const games = of.variant === undefined ? "games" : "games of this one game";
+  const pool =
+    of.pool === "computer"
+      ? " against the computer players"
+      : of.pool === "people"
+        ? " against other people"
+        : "";
+  const rated = of.rated === "yes" ? "rated " : of.rated === "no" ? "friendly " : "";
+  const whose = of.player === undefined || of.player === "" ? "" : ` by ${of.player}`;
+  return `Over the ${rated}${games}${pool} finished here${whose}, most recent first.`;
 }
 
 /**
@@ -225,7 +254,7 @@ export function RecordCells({
         {winRateText(cells.figures.winRate)}
       </td>
       <td className={CELL}>
-        <StreakMark streak={streak} />
+        <StreakMark streak={streak} of={of} />
       </td>
       {trailing}
     </>
@@ -267,7 +296,7 @@ export function RecordLine({
   return (
     <span className="font-mono text-xs tabular-nums text-muted" data-testid={testId}>
       {cells.played} played · {cells.won}W {cells.lost}L {cells.drawn}D · {winRateText(figures.winRate)} ·{" "}
-      <StreakMark streak={streak} />
+      <StreakMark streak={streak} of={of} />
       {trailing === undefined ? null : <> · {trailing}</>}
     </span>
   );

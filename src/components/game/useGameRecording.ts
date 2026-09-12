@@ -29,7 +29,14 @@ async function fetchStreak(name: string): Promise<number | null> {
   const response = await fetch(`/api/games?${query}`);
   if (!response.ok) return null;
   const page = (await response.json()) as GameHistoryPage;
-  return winStreak(page.items, name);
+  /*
+   * By name, because a browser is never told its own member id —
+   * `/api/session` hands back an address and a display name and nothing else.
+   * `streaks.ts` prefers an id where it is given one and matches both the
+   * shown name and the name a seat was played under where it is not, so a
+   * player who renamed still gets their whole run here.
+   */
+  return winStreak(page.items, { name });
 }
 
 /**
