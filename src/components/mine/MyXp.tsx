@@ -127,12 +127,21 @@ function About({ about }: { about: XpAbout }) {
   }
 
   if (about.of === "family") {
-    // A family is reached through one of its games; a retitled family has no
-    // game to reach it through and keeps its words. See `familyThrough`.
+    /*
+     * A family is reached through one of its games; a retitled family has no
+     * game to reach it through and keeps its words. See `familyThrough`.
+     *
+     * Styled the way `GameName` and `PlayerName` style themselves —
+     * `hover:underline` — because a family's title IS a name, and a name drawn
+     * differently from the game name in the row above it reads as a different
+     * kind of thing. The always-underlined links in this column are the ones
+     * that are PHRASES rather than names: "that match", "your rival". That is
+     * the rule, and it is why two styles appear in one cell.
+     */
     return about.through === null ? (
       <span title="A family that has been renamed since this was earned.">{about.title}</span>
     ) : (
-      <Link href={familyPath(about.through)} className="underline underline-offset-4">
+      <Link href={familyPath(about.through)} className="underline-offset-2 hover:underline">
         {about.title}
       </Link>
     );
@@ -225,7 +234,21 @@ function Standing({ xp }: { xp: number }) {
   );
 }
 
-/** The ledger's own headings, which stand whether or not there is a row under them. */
+/**
+ * The ledger's own headings, which stand whether or not there is a row under
+ * them.
+ *
+ * FOUR COLUMNS ON A DESK, THREE ON A PHONE. At 390 the fourth one squeezed
+ * every other cell until "that match" broke over two lines and the sentence
+ * became a two-word-wide ribbon — a table crushed rather than a table read. So
+ * `About` folds into the row's own cell below that width and the heading folds
+ * with it, which is why the subject appears twice in the markup: one of the two
+ * is always `display: none`, so a reader and a screen reader each meet exactly
+ * one. The alternative was hiding the sentence on a phone, and the sentence
+ * saying what an award was for is the column a ledger exists for.
+ */
+const ABOUT_ON_A_DESK = "hidden sm:table-cell";
+
 function Headings() {
   return (
     <thead className={TABLE_HEAD_CLASS}>
@@ -233,7 +256,7 @@ function Headings() {
         <th scope="col" className={HEAD}>Earned</th>
         <th scope="col" className={HEAD}>XP</th>
         <th scope="col" className={HEAD}>For</th>
-        <th scope="col" className={HEAD}>About</th>
+        <th scope="col" className={`${HEAD} ${ABOUT_ON_A_DESK}`}>About</th>
       </tr>
     </thead>
   );
@@ -326,13 +349,23 @@ export async function MyXp({
                 ) : (
                   page.items.map((row) => (
                     <tr key={row.id} className={ROW_CLASS} data-testid="my-xp-award">
-                      <td className={CELL}>
+                      {/*
+                        `whitespace-nowrap` on both figures. At 390 the browser
+                        will break "2026-09-08" across two lines to make room for
+                        the sentence beside it, and a date in two pieces is the
+                        one thing in the row that stops being readable. The
+                        sentence is what should wrap, and does.
+                      */}
+                      <td className={`${CELL} whitespace-nowrap align-top`}>
                         <Earned row={row} />
                       </td>
-                      <td className={CELL} data-testid="my-xp-points">
+                      <td
+                        className={`${CELL} whitespace-nowrap align-top`}
+                        data-testid="my-xp-points"
+                      >
                         +{row.points}
                       </td>
-                      <td className="py-1.5 pr-3">
+                      <td className="py-1.5 pr-3 align-top">
                         <span className="font-semibold">
                           <Paired
                             en={row.label}
@@ -342,8 +375,21 @@ export async function MyXp({
                         </span>
                         {/* The sentence saying what it was for, from the catalogue. */}
                         <span className="block text-xs text-muted">{row.blurb}</span>
+                        {/*
+                          The phone's About, under the sentence — see
+                          ABOUT_ON_A_DESK — and NOT for a row about nothing.
+                          The dash exists to fill a column cell so the column
+                          stays aligned; with no column to fill it is a line of
+                          punctuation on a phone saying what the absence of a
+                          line already says.
+                        */}
+                        {row.about.of === "nobody" ? null : (
+                          <span className="mt-0.5 block sm:hidden">
+                            <About about={row.about} />
+                          </span>
+                        )}
                       </td>
-                      <td className="py-1.5 pr-3">
+                      <td className={`py-1.5 pr-3 align-top ${ABOUT_ON_A_DESK}`}>
                         <About about={row.about} />
                       </td>
                     </tr>
