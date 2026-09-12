@@ -107,15 +107,15 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("tab").filter({ hasText: "Members" })).toHaveAttribute("data-open", "true");
   });
 
-  test("a member's own page is four parts, one at a time", async ({ page }) => {
+  test("a member's own page is five parts, one at a time", async ({ page }) => {
     /*
-     * The record, the profile, the defaults for a new game, and the people
-     * they have said something about. Six panels down one page before this,
+     * The record, the profile, the four words, the defaults for a new game,
+     * and the people they have said something about. Six panels down one page before this,
      * with the record — the part somebody comes back to look at rather than
      * fills in once — at the bottom of it.
      */
     await page.goto("/me");
-    await expect(page.getByTestId("tab")).toHaveCount(4);
+    await expect(page.getByTestId("tab")).toHaveCount(5);
     await expect(page.getByTestId("my-record")).toBeVisible();
     await expect(page.getByTestId("my-profile")).toHaveCount(0);
     await expect(page.getByTestId("my-people")).toHaveCount(0);

@@ -1,5 +1,6 @@
 import type { MyGameGroup } from "@/lib/history/myGames";
 import { RATING_SPLIT } from "@/lib/history/openSeatsFilter";
+import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 
 export const MY_GAMES_COPY = {
   title: { label: "Your games", kanji: "対局中" },
@@ -111,4 +112,50 @@ export const START_COPY = {
     "Nobody is asking for a game right now. Post a seat above and yours is first on the board.",
   onlyMine: "Only yours so far. It stays until somebody sits down or you withdraw it.",
   nobodyHere: "Nobody else is here just now. A seat posted above waits for whoever comes in next.",
+} as const;
+
+/**
+ * The Words tab: four words a member picks so that they can sit down at
+ * somebody else's device and play as themselves. Everything a reader is shown
+ * there, in one place, so the tiles and the picker cannot drift apart in what
+ * they call a box or a word.
+ */
+export const WORDS_COPY = {
+  lead: "Four words that let you play as yourself on somebody else's device, without anybody signing out.",
+  unsetStatus: "No four words are set yet.",
+  setStatus: "Four words are set",
+  since: (date: string) => ` — since ${date}`,
+  kept: "They cannot be shown again, not even to you. Forgotten them? Choose four new ones — it takes half a minute.",
+  choose: "Choose your four words",
+  chooseAgain: "Choose four new words",
+  remove: "Remove",
+  removeQuestion: "Remove your four words?",
+  removeYes: "Yes, remove them",
+  removeNo: "Keep them",
+  cannotRemove:
+    "Your four words are the only way into this account, so they cannot be removed. Add a sign-in address first, and then they can go.",
+  saved: "Saved. From now on these four words are you, on any device.",
+  slotsLabel: "Your four words, in the order you arranged them",
+  emptyBox: (box: number) => `Box ${box} of ${PHRASE_LENGTH}, empty`,
+  nextBox: (box: number) => `Box ${box} of ${PHRASE_LENGTH}, the next to be filled`,
+  hiddenWord: "A word, set and hidden",
+  tileTitle: "Tap to take this word back out. Drag it, or use the arrow keys, to move it to another box.",
+  tileHint: "Enter takes this word back out. The arrow keys move it one box along; Home and End to the first and last box.",
+  moved: (word: string, box: number) => `${word} is now in box ${box} of ${PHRASE_LENGTH}.`,
+  arrange:
+    "Drag a word to another box if a different order is easier to remember — the order is yours, and it never matters to the words. Tap a word to take it back out.",
+  keepOne: "Tap a word to keep it.",
+  toGo: (left: number) => `${["No", "One", "Two", "Three", "Four"][left] ?? String(left)} more to go.`,
+  finding: "Finding four words…",
+  refresh: "Show me four other words",
+  writeDown: "Write these four words down somewhere now.",
+  writeDownWhy:
+    "Once they are set they cannot be shown again — not to you, not to anyone. If you forget them, the fix is to pick four new ones, so there is no crisis, only a re-pick.",
+  acknowledge: "I have written these four words down.",
+  save: "Save these four words",
+  startOver: "Start over",
+  cancel: "Cancel",
+  drawFailed: "Could not offer any words.",
+  saveFailed: "Could not set those words.",
+  removeFailed: "Could not remove those words.",
 } as const;
