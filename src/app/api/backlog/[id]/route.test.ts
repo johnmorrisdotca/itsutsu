@@ -105,6 +105,50 @@ describe("PATCH /api/backlog/[id] with a board token", () => {
 });
 
 /**
+ * A body from which nothing can be composed used to be answered 200.
+ *
+ * `{ releasedIn: "1.2.3" }` with no status passed the schema — the field is
+ * there for the release branch above — fell into `changeItem`'s edit rest,
+ * met no rule that had an opinion about it, and composed `data = {}`. Prisma
+ * was handed an empty update and the caller was told its change had landed,
+ * with the row exactly as it was. So: refused, and the refusal reads out the
+ * fields a change may name, because a caller that sent the wrong one needs to
+ * know which the right ones are.
+ *
+ * The store is mocked here, so what these pin is the ROUTE's answer: the
+ * refusal arrives without `changeItem` being called at all, which is the
+ * property that matters — nothing reaches the database to be written as
+ * nothing. `backlogStore.test.ts` pins the same rule from the other side, for
+ * a caller that never met this route.
+ */
+describe("PATCH /api/backlog/[id] with nothing it can write", () => {
+  it("answers 422 naming every field a change may carry, and writes nothing", async () => {
+    const response = await patch({ releasedIn: "1.2.3", nonsense: true }, AUTH);
+    expect(response.status).toBe(422);
+    expect(changeItem).not.toHaveBeenCalled();
+
+    const body = (await response.json()) as { error: string; details: string[] };
+    for (const field of ["status", "title", "detail", "kind", "askedBy", "priority", "effort"]) {
+      expect(body.error).toContain(field);
+    }
+    expect(body.details).toEqual([body.error]);
+  });
+
+  it("answers 422 to an empty body rather than 200", async () => {
+    const response = await patch({}, AUTH);
+    expect(response.status).toBe(422);
+    expect(changeItem).not.toHaveBeenCalled();
+  });
+
+  it("applies the one field it accepts and ignores the rest, when a body carries both", async () => {
+    const response = await patch({ priority: "low", releasedIn: "1.2.3", nonsense: true }, AUTH);
+    expect(response.status).toBe(200);
+    // The accepted field lands; nothing the board does not write goes to the store.
+    expect(changeItem).toHaveBeenCalledWith("item-1", { priority: "low", releasedIn: "1.2.3" }, "Claude (session abc)");
+  });
+});
+
+/**
  * Board convergence ITS-04: `done` is the release tool's alone. Every check
  * here runs before `finishItem` is ever called, matching `changeItem`'s own
  * "refused whole, not half-applied".

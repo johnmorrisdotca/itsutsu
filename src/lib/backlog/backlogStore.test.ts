@@ -233,6 +233,41 @@ describe("a grade", () => {
 });
 
 /**
+ * A change that names nothing this board writes.
+ *
+ * Every rule above is silent about a field it was not given, so a change
+ * naming none of them passed all three and composed `data = {}` — Prisma was
+ * handed an empty update and the caller was told its change had landed. The
+ * route answered 200 on it (see its own test); this is the same rule asked
+ * from inside the process, where there is no route to have caught it.
+ */
+describe("a change with nothing in it", () => {
+  it("is refused, names what a change may carry, and writes nothing", async () => {
+    const outcome = await changeItem("a", {}, "John");
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect(outcome).toEqual({ ok: false, reason: "illegal", problems: [expect.stringContaining("priority")] });
+    expect(update).not.toHaveBeenCalled();
+    expect(updateMany).not.toHaveBeenCalled();
+  });
+
+  it("is refused when its only field is one the board does not write", async () => {
+    // What the route's schema lets through for the release branch, with no
+    // status beside it: not a field `changeItem` has ever written.
+    const outcome = await changeItem("a", { releasedIn: "1.2.3" } as never, "John");
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect(update).not.toHaveBeenCalled();
+    expect(rows[0].releasedIn).toBeNull();
+  });
+
+  it("still writes the accepted half of a change that carries one of each", async () => {
+    const outcome = await changeItem("a", { priority: "low", releasedIn: "1.2.3" } as never, "John");
+    expect(outcome.ok).toBe(true);
+    expect(rows[0].priority).toBe("low");
+    expect(rows[0].releasedIn).toBeNull();
+  });
+});
+
+/**
  * Board convergence ITS-04: `done` is reached by nothing `changeItem`/
  * `moveItem` accept — STATUS_MOVES names no way in — so `finishItem` is the
  * one door, and it is tested on its own rather than as a case of a move.

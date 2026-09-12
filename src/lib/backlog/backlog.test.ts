@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   LEASE_MS,
   canMove,
+  changeProblems,
+  changedFields,
   draftProblems,
   editProblems,
   filterItems,
@@ -21,8 +23,16 @@ import {
   sortItems,
   tally,
 } from "./backlog";
-import { BACKLOG_KINDS, BACKLOG_STATUSES, DETAIL_MAX, STATUS_MOVES, TITLE_MAX, TITLE_MIN } from "./backlog.constants";
-import type { BacklogDraft, BacklogItem } from "./backlog.types";
+import {
+  BACKLOG_KINDS,
+  BACKLOG_STATUSES,
+  CHANGE_FIELDS,
+  DETAIL_MAX,
+  STATUS_MOVES,
+  TITLE_MAX,
+  TITLE_MIN,
+} from "./backlog.constants";
+import type { BacklogChange, BacklogDraft, BacklogItem } from "./backlog.types";
 
 /** An item at a status, with dates far enough apart to sort unambiguously. */
 function item(over: Partial<BacklogItem> & { id: string }): BacklogItem {
@@ -128,6 +138,51 @@ describe("what may be written about a row directly", () => {
 
   it("says nothing about a field that was not sent", () => {
     expect(editProblems({})).toEqual([]);
+  });
+});
+
+/**
+ * `editProblems` saying nothing about a field it was not sent is right, and it
+ * is why this function has to exist: every rule the store asks is silent about
+ * a change that names nothing, so all three together once let an empty write
+ * through and reported it as a change that had happened.
+ */
+describe("whether there is anything to change at all", () => {
+  it("counts only the fields the board actually writes", () => {
+    expect(changedFields({ status: BACKLOG_STATUSES.open })).toEqual(["status"]);
+    expect(changedFields({ title: "A request revised", effort: "small" })).toEqual(["title", "effort"]);
+    expect(changedFields({ releasedIn: "1.2.3", nonsense: true } as never)).toEqual([]);
+  });
+
+  it("counts a grade being taken back, because null is a value somebody chose", () => {
+    expect(changedFields({ priority: null })).toEqual(["priority"]);
+    expect(changeProblems({ priority: null })).toEqual([]);
+  });
+
+  it("refuses a change that names nothing, and says what it accepts", () => {
+    const problems = changeProblems({});
+    expect(problems).toHaveLength(1);
+    for (const field of CHANGE_FIELDS) expect(problems[0]).toContain(field);
+  });
+
+  it("refuses one that names only what the board does not write", () => {
+    expect(changeProblems({ releasedIn: "1.2.3" } as never)).toHaveLength(1);
+  });
+
+  it("names every field of a change, so the list cannot go stale beside the type", () => {
+    // A field added to `BacklogChange` and not to CHANGE_FIELDS does not
+    // compile (see the `satisfies` in backlog.constants.ts); this is the same
+    // claim from the other end, that nothing in the list is made up.
+    const everything: Required<BacklogChange> = {
+      status: BACKLOG_STATUSES.open,
+      title: "A request that says something",
+      detail: "Why it is wanted.",
+      kind: BACKLOG_KINDS.fix,
+      askedBy: "John",
+      priority: "high",
+      effort: "small",
+    };
+    expect(changedFields(everything)).toEqual(CHANGE_FIELDS);
   });
 });
 

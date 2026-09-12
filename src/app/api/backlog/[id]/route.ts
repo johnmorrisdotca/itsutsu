@@ -7,6 +7,7 @@ import {
   BACKLOG_KIND_VALUES,
   BACKLOG_PRIORITY_VALUES,
   BACKLOG_STATUS_VALUES,
+  changeProblems,
 } from "@/lib/backlog/backlog";
 import { BACKLOG_STATUSES, CLAIMED_BY_MAX } from "@/lib/backlog/backlog.constants";
 import { boardActor } from "@/lib/backlog/boardActor";
@@ -20,8 +21,23 @@ const SEMVER = /^\d+\.\d+\.\d+$/;
 /*
  * A partial rather than a union of shapes. It was one or the other, so grading
  * a row and handing it to somebody took two calls, and adding a third field
- * would have meant a third arm. Every field is optional and at least one must
- * be present, so an empty body is still refused.
+ * would have meant a third arm. Every field is optional, and what makes a body
+ * a change at all is asked below by `changeProblems` rather than here.
+ *
+ * It used to be asked here, as `.refine(Object.keys(body).length > 0)`, and
+ * that could not answer the question: the keys it counted are the keys THIS
+ * SCHEMA names, and two of them — the release pair — are not fields a change
+ * writes. So `{ releasedIn: "1.2.3" }` counted as one field, passed, composed
+ * a write of nothing, and was answered 200. A body of pure invention
+ * (`{ nonsense: 1 }`) fared better only by accident: zod strips an unknown key,
+ * so it arrived here empty and was refused with words that named nothing a
+ * caller could send instead. One rule, in the pure module, now answers both.
+ *
+ * Unknown fields are IGNORED rather than refused, which is what this route has
+ * always done — an unnamed key never reaches the handler at all. So a body of
+ * one accepted field and one the board does not write applies the accepted one
+ * and says nothing about the other, and a body of nothing but unwritable
+ * fields is refused for carrying no change, which is the honest reading of it.
  *
  * `null` is a real value for a grade and not the same as leaving it out:
  * omitting it changes nothing, and sending null ungrades the row. There is no
@@ -55,12 +71,15 @@ const patchSchema = z
     effort: z.enum(BACKLOG_EFFORT_VALUES as [string, ...string[]]).nullable().optional(),
     releasedIn: z.string().optional(),
     releasedAt: z.string().optional(),
-  })
-  .refine((body) => Object.keys(body).length > 0, { message: "empty" });
+  });
 
 /**
  * Moves one item to another status, revises what it says, or grades it — any
  * of those, in one write.
+ *
+ * Any of those, and at least one of them: a body naming nothing this board
+ * writes answers 422 and names what it accepts, rather than reporting a write
+ * of nothing as a change that happened.
  *
  * A move the board's table forbids — a proposal jumping straight to done —
  * answers 422 rather than being written, so the rule holds whatever calls it:
@@ -126,8 +145,19 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
       return NextResponse.json(finished.item, { headers: NO_STORE });
     }
 
+    /*
+     * A body this board can write nothing from is refused here, before the
+     * database is touched, the same way a wrong actor never reaches
+     * `finishItem`. `changeItem` asks the identical rule — an in-process
+     * caller is owed the same refusal — so this is the rule being asked
+     * early, not a second statement of it.
+     */
+    const change = parsed.data as BacklogChange;
+    const nothing = changeProblems(change);
+    if (nothing.length > 0) return unprocessable(nothing[0], nothing);
+
     // The enums are checked above; the lengths and the move are the store's to refuse.
-    const outcome = await changeItem(id, parsed.data as BacklogChange, actor);
+    const outcome = await changeItem(id, change, actor);
     if (!outcome.ok) {
       if (outcome.reason === "missing") return notFound("No such item.");
       if (outcome.reason === "held") return conflict(`Held by ${outcome.heldBy}. Ask them to release it.`);

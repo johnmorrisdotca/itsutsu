@@ -1,4 +1,4 @@
-import type { BacklogEffort, BacklogKind, BacklogPriority, BacklogSort, BacklogStatus } from "./backlog.types";
+import type { BacklogChange, BacklogEffort, BacklogKind, BacklogPriority, BacklogSort, BacklogStatus } from "./backlog.types";
 
 /**
  * The board's fixed vocabulary: its statuses, what may follow what, and the
@@ -158,6 +158,35 @@ export const ASKED_BY_MAX = 60;
  *  claim can carry something like "Claude (session 21d00c32)". */
 export const CLAIMED_BY_MAX = 80;
 export const KEY_MAX = 80;
+
+/**
+ * The fields of a row a change may actually write, by name.
+ *
+ * Written as a record of every key of `BacklogChange` rather than a hand-kept
+ * array, so a field added to the type does not compile until it is named here.
+ * The refusal for a change carrying none of them names this list, and a list
+ * of what is accepted that can go stale beside the type it describes is worse
+ * than no list: it would name a field the board no longer writes, or omit one
+ * it does.
+ *
+ * `releasedIn`/`releasedAt` are deliberately absent. They are not fields of a
+ * change at all — `finishItem` writes them, from the version `pnpm
+ * release:take` is taking at that moment (board convergence ITS-04) — so a
+ * body carrying one of those and nothing else is a body this board can write
+ * nothing from, which is exactly what this list exists to say.
+ */
+const CHANGE_FIELD_SET = {
+  status: true,
+  title: true,
+  detail: true,
+  kind: true,
+  askedBy: true,
+  priority: true,
+  effort: true,
+} as const satisfies Record<keyof BacklogChange, true>;
+
+/** The same list, in the order a refusal reads them out. */
+export const CHANGE_FIELDS = Object.keys(CHANGE_FIELD_SET) as readonly (keyof BacklogChange)[];
 
 export const BACKLOG_PRIORITIES = {
   high: "high",

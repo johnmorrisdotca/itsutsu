@@ -1,6 +1,7 @@
 import {
   ASKED_BY_MAX,
   BACKLOG_KINDS,
+  CHANGE_FIELDS,
   BACKLOG_EFFORTS,
   BACKLOG_PRIORITIES,
   EFFORT_ORDER,
@@ -16,6 +17,7 @@ import {
   TITLE_MIN,
 } from "./backlog.constants";
 import type {
+  BacklogChange,
   BacklogDraft,
   BacklogEdit,
   BacklogEffort,
@@ -164,6 +166,43 @@ export function editProblems(edit: BacklogEdit): string[] {
     problems.push("Grade the work as small, medium or large.");
   }
   return problems;
+}
+
+/**
+ * The fields of a row this change would actually write.
+ *
+ * Read off `CHANGE_FIELDS` rather than off the change's own keys, so a body
+ * carrying something the board does not write — `releasedIn` outside a
+ * release, a field somebody invented — cannot count itself as a change. A
+ * field present with `null` in it does count: null is a real value for a
+ * grade, and taking a judgement back is a change.
+ */
+export function changedFields(change: BacklogChange): readonly (keyof BacklogChange)[] {
+  return CHANGE_FIELDS.filter((field) => change[field] !== undefined);
+}
+
+/**
+ * What is wrong with a change that names nothing this board can write, in
+ * words that say what it does accept; empty means there is something to write.
+ *
+ * The rule behind a fault worth naming: `PATCH /api/backlog/:id` answered 200
+ * to a body it had written nothing from. A body of only `releasedIn` passed
+ * the route's schema — the field is there for the release tool's own branch —
+ * reached `changeItem`, matched none of the three rules that had an opinion,
+ * composed `data = {}`, and came back as a change that had happened. The
+ * caller was told its edit had landed and the row was untouched: a plausible
+ * answer standing in for "there was nothing here I could do", which is the
+ * shape Nothing Answers What It Cannot Answer is about.
+ *
+ * So the answer is a refusal, and it reads the list out rather than hinting at
+ * it — a caller that sent the wrong field needs to know which the right ones
+ * are. Asked in the two places `draftProblems` is asked: the route, so nothing
+ * reaches the database, and the store, so nothing reaches the database from
+ * inside the process either.
+ */
+export function changeProblems(change: BacklogChange): string[] {
+  if (changedFields(change).length > 0) return [];
+  return [`Nothing there to change. A change names at least one of: ${CHANGE_FIELDS.join(", ")}.`];
 }
 
 /** Whether an item at `from` may be moved to `to`. */
