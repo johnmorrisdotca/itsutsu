@@ -1,10 +1,14 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { awardXp } from "@/lib/xp/awardXp";
-import { XP_EVENTS } from "@/lib/xp/xp.constants";
-import type { XpAward } from "@/lib/xp/xp.types";
-import { MEMBER_STREAK_SCOPES, STREAK_KINDS, streakWrite, type StreakOutcome } from "./streak";
+import { awardFinishedGameXp } from "@/lib/xp/xpGameServer";
+import {
+  MEMBER_STREAK_SCOPES,
+  streakIn,
+  streakWrite,
+  type Streak,
+  type StreakOutcome,
+} from "./streak";
 import { outcomeFor } from "./pools";
 
 /**
@@ -72,7 +76,24 @@ import { outcomeFor } from "./pools";
  * and refusing what cannot be read is the honest shape; narrowing it here would
  * only move the guess to whoever calls.
  */
-export type DecidedGame = {
+export type DecidedSeats = {
+  blackMemberId: string | null;
+  whiteMemberId: string | null;
+  winner: string | null;
+};
+
+/**
+ * Everything recording one takes — the seats, and the facts the ledger keys its
+ * awards on.
+ *
+ * TWO TYPES RATHER THAN ONE, because two questions are being asked. `playedSides`
+ * answers "whose run does this move, and which way", which needs the seats and
+ * the result and nothing else — it is asked of rows read for other reasons, and
+ * of a backfill's rows, and widening it would make every one of those callers
+ * carry fields its answer does not depend on. `recordPlayed` answers "what does
+ * this finished game do", which includes paying for it.
+ */
+export type DecidedGame = DecidedSeats & {
   /**
    * The game's own id.
    *
@@ -84,9 +105,25 @@ export type DecidedGame = {
    * answer rather than a missing one, so the compiler asks for it instead.
    */
   id: string;
-  blackMemberId: string | null;
-  whiteMemberId: string | null;
-  winner: string | null;
+  /**
+   * What was played, for the tour's awards — a first game of a variant, and of
+   * its family.
+   *
+   * A plain string because `Game.variant` is one, and checked in `xpGame.ts`
+   * rather than asserted here. REQUIRED, like `id`, so the four endings each
+   * hand it over: a default of freestyle would pay every member a first game of
+   * gomoku for a game of Hex, which is a wrong answer rather than a missing one.
+   */
+  variant: string;
+  /**
+   * How many moves the finished game holds. See `longGame`.
+   *
+   * REQUIRED for the same reason, and it is the one field the callers cannot
+   * spread off the row they read: `GAME_ROW` selects the move LIST and the
+   * count is what the ending has just worked out. Asking for it explicitly is
+   * what stops a caller passing the count from before its own last move.
+   */
+  moveCount: number;
 };
 
 /**
@@ -121,7 +158,7 @@ export type PlayedSide = { memberId: string; outcome: StreakOutcome };
  * matches the other seat's is the same person twice, and is answered once from
  * black.
  */
-export function playedSides(game: DecidedGame): PlayedSide[] {
+export function playedSides(game: DecidedSeats): PlayedSide[] {
   const winner = winnerOf(game.winner);
   // A row whose result cannot be read moves nobody's run. See `winnerOf`.
   if (winner === undefined) return [];
@@ -149,9 +186,27 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
 
   const rows = await prisma.member.findMany({
     where: { id: { in: sides.map((side) => side.memberId) } },
-    select: { id: true, playedStreakKind: true, playedStreakCount: true },
+    /* `email` and `timeZone` ride this read for the XP ledger. The buddy list is
+       keyed by address and this function is keyed by id, so `wonVsBuddy` would
+       otherwise need a query to turn one into the other; and whether a game
+       finished at the WEEKEND is a question about the member's own zone, not the
+       server's. Both are columns on a row being read anyway. */
+    select: {
+      id: true,
+      email: true,
+      timeZone: true,
+      playedStreakKind: true,
+      playedStreakCount: true,
+    },
   });
   const byId = new Map(rows.map((row) => [row.id, row]));
+
+  /* The run each seat's result made, kept as it is computed. `streakWrite` is
+     the one implementation of "one more result" and this reads the answer back
+     out of the very object being written — so the milestone a run reaches and
+     the run itself cannot disagree, which two calls to `extendStreak` would
+     eventually manage. */
+  const runs = new Map<string, Streak | null>();
 
   const writes = sides.flatMap((side) => {
     const row = byId.get(side.memberId);
@@ -159,21 +214,18 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
     // carry forward and nothing that would show it. Silence rather than an
     // upsert inventing a member.
     if (row === undefined) return [];
-    return [
-      prisma.member.update({
-        where: { id: side.memberId },
-        data: streakWrite(
-          row as unknown as Record<string, unknown>,
-          side.outcome,
-          MEMBER_STREAK_SCOPES,
-        ) as never,
-      }),
-    ];
+    const write = streakWrite(
+      row as unknown as Record<string, unknown>,
+      side.outcome,
+      MEMBER_STREAK_SCOPES,
+    );
+    runs.set(side.memberId, streakIn(write, "played"));
+    return [prisma.member.update({ where: { id: side.memberId }, data: write as never })];
   });
   if (writes.length === 0) return;
   await prisma.$transaction(writes);
 
-  await awardGameXp(game, sides);
+  await awardGameXp(game, sides, { byId, runs });
 }
 
 /**
@@ -198,18 +250,34 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
  * rides that allowance so a game outside it is silent as a whole rather than
  * paying for being won but not for being finished.
  *
- * The awards a game can earn BEYOND these two — a win over a person, over a
- * buddy, a turn-around, a streak, a grade, a first game of a variant — are
- * XP-03 to XP-06, and they belong in a pure module that is handed the game and
- * returns a list. See `docs/plans/xp/XP_DESIGN.md`; this is deliberately only
- * the two that need nothing but the row in hand.
+ * WHAT a game pays is `xpGame.ts`, pure and handed the facts; this passes the
+ * row on and nothing more. The one thing it decides is which facts to pass: the
+ * variant and the move count come off the row, and every other award the site
+ * has for a finished game is derived from those and from the run this write is
+ * already carrying forward.
  */
-async function awardGameXp(game: DecidedGame, sides: readonly PlayedSide[]): Promise<void> {
-  for (const side of sides) {
-    const awards: XpAward[] = [{ type: XP_EVENTS.gameFinished, subject: game.id }];
-    if (side.outcome === STREAK_KINDS.win) {
-      awards.push({ type: XP_EVENTS.gameWon, subject: game.id });
-    }
-    await awardXp({ memberId: side.memberId, awards });
-  }
+async function awardGameXp(
+  game: DecidedGame,
+  sides: readonly PlayedSide[],
+  read: {
+    byId: ReadonlyMap<string, { email: string | null; timeZone: string | null }>;
+    runs: ReadonlyMap<string, Streak | null>;
+  },
+): Promise<void> {
+  await awardFinishedGameXp(
+    {
+      id: game.id,
+      variant: game.variant,
+      moveCount: game.moveCount,
+      blackMemberId: game.blackMemberId,
+      whiteMemberId: game.whiteMemberId,
+    },
+    sides.map((side) => ({
+      memberId: side.memberId,
+      email: read.byId.get(side.memberId)?.email ?? null,
+      timeZone: read.byId.get(side.memberId)?.timeZone ?? null,
+      outcome: side.outcome,
+      run: read.runs.get(side.memberId) ?? null,
+    })),
+  );
 }

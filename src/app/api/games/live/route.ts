@@ -39,6 +39,7 @@ import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
+import { awardCreatedGame, createdGameKind } from "@/lib/xp/xpSocial";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { UnwinnableGame } from "@/lib/history/winnableGame";
 
@@ -414,6 +415,13 @@ export async function POST(request: Request) {
      * symmetry" — the asymmetry is the point.
      */
     const caller = await currentMemberId();
+    /*
+     * XP for the game just made, on the one call that makes every game: an ask,
+     * a rematch or a fork, and nothing for the lobby or a posted seat. Which of
+     * the three is `createdGameKind`, from what the caller actually sent — see
+     * `xpSocial.ts`, which explains why the order of those tests matters.
+     */
+    await awardCreatedGame({ memberId: caller, gameId: created.id, kind: createdGameKind(parsed.data) });
     /*
      * TWO WAYS A SEAT IS NOT YOURS TO HOLD, and the first draft of this fix
      * caught only the second — which broke the first. `both-seats.spec.ts`

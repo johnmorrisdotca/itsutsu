@@ -9,8 +9,10 @@ import { prisma } from "@/lib/prisma";
 import { recordResult } from "@/lib/rating/players";
 import { recordPlayed } from "@/lib/rating/playedRun";
 import { poolFor } from "@/lib/rating/pools";
-import { hasBotSeat } from "@/lib/bots/bots";
+import { hasBotSeat, seatMemberId } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
+import { XP_EVENTS } from "@/lib/xp/xp.constants";
+import { awardCourtesy } from "@/lib/xp/xpSocial";
 import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
 import { fetchGameDetail } from "./gameHistory";
 import { FORFEITS_TO_LOSE } from "./gameSettingsSchema";
@@ -53,6 +55,12 @@ export async function giveTime(id: string, token: string, now = new Date()): Pro
 
   const gift = courtesyMs(row.clockMode, row.moveTimeMs);
   const receiver = state.toPlay;
+  /*
+   * Who is giving it, for the ledger. The seat's own member id, off the row
+   * already read — a gift from a browser holding only a token is nobody's to
+   * credit, and `awardXp` answers a null id with nothing.
+   */
+  const giverId = seatMemberId(row, giver);
   await prisma.$transaction([
     prisma.timeGift.create({ data: { gameId: id, giver, givenMs: gift } }),
     prisma.game.update({
@@ -68,6 +76,11 @@ export async function giveTime(id: string, token: string, now = new Date()): Pro
       },
     }),
   ]);
+  /*
+   * Sportsmanship, and almost impossible to farm: the gift is a real row on the
+   * record, it can only be given while waiting, and it is capped at three a day.
+   */
+  await awardCourtesy({ memberId: giverId, gameId: id, type: XP_EVENTS.timeGiven });
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };
   return { ok: true, game };
@@ -146,7 +159,8 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   if (finished) {
     // Outside the hot-seat test on purpose: a run over every game played is
     // not a rating, and PLAYED counts a game at one screen. See `playedRun.ts`.
-    await recordPlayed({ ...row, winner: next.winner });
+    // The count includes the forfeited turn this claim may just have written.
+    await recordPlayed({ ...row, winner: next.winner, moveCount: next.moves.length });
     if (!isHotSeat(row)) {
       if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
       await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
@@ -210,7 +224,7 @@ export async function settleEnded(id: string, now = new Date()): Promise<boolean
 
   // Counted exactly as any other finish is. The run over every game played
   // asks nothing about rating or seats, because PLAYED does not.
-  await recordPlayed({ ...row, winner: state.winner });
+  await recordPlayed({ ...row, winner: state.winner, moveCount: state.moves.length });
   // Rated exactly as any other finish is, and by the same rules: never a game
   // at one screen, never a friendly, and always into the pool the seats decide.
   if (!isHotSeat(row) && row.rated) {
@@ -299,8 +313,8 @@ export async function resignGame(id: string, token: string, now = new Date()): P
     },
   });
   // A resigned game is a decided game, whoever it was against and whether or
-  // not anything rated it.
-  await recordPlayed({ ...row, winner: next.winner });
+  // not anything rated it. Resigning adds no move, so the count is the record's.
+  await recordPlayed({ ...row, winner: next.winner, moveCount: next.moves.length });
   if (!isHotSeat(row)) {
     if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });

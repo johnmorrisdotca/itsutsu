@@ -2,8 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
-import { prisma } from "@/lib/prisma";
-import { touchMember } from "./members";
+import { memberRowFor, touchMember } from "./members";
 import { SESSION_COOKIE, verifySession, type Session } from "./session";
 
 /**
@@ -44,6 +43,19 @@ export async function currentEmail(): Promise<string | null> {
 export async function currentMemberId(): Promise<string | null> {
   const email = await currentEmail();
   if (email === null) return null;
-  const row = await prisma.member.findUnique({ where: { email }, select: { id: true } });
+  /*
+   * OFF THE ROW THAT HAS ALREADY BEEN READ, rather than a `findUnique` of its
+   * own. `memberRowFor` is `cache()`d per request and `currentSession()` above
+   * has just run it through `touchMember`, so by the time anybody asks who is
+   * signed in, the row — and the id on it — is in hand. It is keyed by the
+   * folded address, which is what `currentEmail` returns.
+   *
+   * This is what `XP_DESIGN.md` means by "adding `id` has a bonus": every route
+   * that asks for the member id to write something now asks for free, which is
+   * what lets an award ride a route's existing work instead of adding a query to
+   * it. Outside a render the cache is per call, so this is one read either way
+   * and never more than one.
+   */
+  const row = await memberRowFor(email);
   return row?.id ?? null;
 }

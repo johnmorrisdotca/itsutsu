@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { extendStreak, streakFrom, type Streak, type StreakOutcome } from "./streak";
 
@@ -37,11 +37,18 @@ type Row = {
   blackMemberId: string | null;
   whiteMemberId: string | null;
   winner: "black" | "white" | null;
+  /** Required too, and for the same reason: the tour's awards are keyed on it. */
+  variant: string;
+  /** What `longGame` is measured against. */
+  moveCount: number;
 };
 
 /** Every finished, non-abandoned game the fake database holds, oldest first. */
 let stored: Row[] = [];
-const memberRows = new Map<string, { id: string; playedStreakKind: string | null; playedStreakCount: number }>();
+const memberRows = new Map<
+  string,
+  { id: string; email: string | null; playedStreakKind: string | null; playedStreakCount: number }
+>();
 const updates: { id: string; data: Record<string, unknown> }[] = [];
 let reads = 0;
 let transactions = 0;
@@ -50,6 +57,13 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     game: {
       findMany: async () => stored,
+      /* The rivalry read behind `revengeWin`: nobody here has beaten anybody
+         before. It is answered rather than left missing so this file exercises
+         the same path the live one does instead of the read's failure path. */
+      findFirst: async () => null,
+    },
+    buddy: {
+      findUnique: async () => null,
     },
     member: {
       findMany: async ({ where }: { where: { id: { in: string[] } } }) => {
@@ -112,24 +126,50 @@ function game(
   id?: string,
 ): Row {
   nextGameId += 1;
-  return { id: id ?? `g${nextGameId}`, blackMemberId: black, whiteMemberId: white, winner };
+  return {
+    id: id ?? `g${nextGameId}`,
+    blackMemberId: black,
+    whiteMemberId: white,
+    winner,
+    /* A real variant, because the tour's awards are keyed on it and a fixture
+       naming nothing would quietly assert the case where they do not fire. */
+    variant: "reversi",
+    moveCount: 10,
+  };
 }
 
 function member(id: string, streak: Streak | null = null) {
   memberRows.set(id, {
     id,
+    /* Read for the XP ledger, which needs an address to ask the buddy list
+       about. Null here, so nothing in this file pays `wonVsBuddy` — what that
+       award comes to is asserted in `src/lib/xp/xpGameServer.test.ts`. */
+    email: null,
     playedStreakKind: streak?.kind ?? null,
     playedStreakCount: streak?.count ?? 0,
   });
 }
 
+/**
+ * A Wednesday, so that what a game asks for does not depend on the day the suite
+ * runs. `weekendGame` fires on a game finished at the weekend; without this, every
+ * case below asserting an exact list of awards would pass on five days and fail
+ * on two. Only `Date` is faked — the timers are real, because everything awaits.
+ */
+const MIDWEEK = new Date("2026-09-09T12:00:00Z");
+
 beforeEach(() => {
+  vi.useFakeTimers({ now: MIDWEEK, toFake: ["Date"] });
   stored = [];
   memberRows.clear();
   updates.length = 0;
   asked.length = 0;
   reads = 0;
   transactions = 0;
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("whose run a decided game moves", () => {
@@ -173,8 +213,8 @@ describe("whose run a decided game moves", () => {
      * call it a LOSS for both seats — two plausible results out of a row
      * nothing understands. A rule that cannot measure must not fire.
      */
-    expect(playedSides({ id: "gx", blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" })).toEqual([]);
-    expect(playedSides({ id: "gy", blackMemberId: "a", whiteMemberId: "b", winner: "" })).toEqual([]);
+    expect(playedSides({ blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" })).toEqual([]);
+    expect(playedSides({ blackMemberId: "a", whiteMemberId: "b", winner: "" })).toEqual([]);
   });
 });
 
@@ -352,8 +392,24 @@ describe("the XP a decided game asks for", () => {
     await recordPlayed(game("a", "b", "black", "k3m9-p2qx"));
 
     expect(asked).toEqual([
-      { memberId: "a", types: ["gameFinished", "gameWon"], subjects: ["k3m9-p2qx", "k3m9-p2qx"] },
-      { memberId: "b", types: ["gameFinished"], subjects: ["k3m9-p2qx"] },
+      {
+        memberId: "a",
+        types: [
+          "gameFinished",
+          "firstGameEver",
+          "firstOfVariant",
+          "firstOfFamily",
+          "gameWon",
+          "wonVsPerson",
+          "firstWinAtVariant",
+        ],
+        subjects: ["k3m9-p2qx", "", "reversi", "flips", "k3m9-p2qx", "k3m9-p2qx", "reversi"],
+      },
+      {
+        memberId: "b",
+        types: ["gameFinished", "firstGameEver", "firstOfVariant", "firstOfFamily"],
+        subjects: ["k3m9-p2qx", "", "reversi", "flips"],
+      },
     ]);
   });
 
@@ -363,7 +419,8 @@ describe("the XP a decided game asks for", () => {
 
     await recordPlayed(game("a", "b", null, "d1"));
 
-    expect(asked.map((one) => one.types)).toEqual([["gameFinished"], ["gameFinished"]]);
+    for (const call of asked) expect(call.types).not.toContain("gameWon");
+    expect(asked.map((one) => one.types[0])).toEqual(["gameFinished", "gameFinished"]);
   });
 
   it("keys every award on the game, so one game pays once however often an ending fires", async () => {
@@ -378,7 +435,14 @@ describe("the XP a decided game asks for", () => {
     await recordPlayed(one);
 
     expect(asked).toHaveLength(4);
-    for (const call of asked) expect(new Set(call.subjects)).toEqual(new Set(["same"]));
+    // Every award about the GAME carries the game's id. The tour's awards are
+    // about the variant and the family, which is the whole point of them, so
+    // they are the ones deliberately not keyed here.
+    const perGame = new Set(["gameFinished", "gameWon", "longGame"]);
+    for (const call of asked) {
+      const subjects = call.types.flatMap((type, at) => (perGame.has(type) ? [call.subjects[at]] : []));
+      expect(new Set(subjects)).toEqual(new Set(["same"]));
+    }
   });
 
   it("asks nothing for a seat no member row answers to", async () => {
@@ -396,9 +460,19 @@ describe("the XP a decided game asks for", () => {
 
     await recordPlayed(game("solo", "solo", "black", "self"));
 
-    expect(asked).toEqual([
-      { memberId: "solo", types: ["gameFinished", "gameWon"], subjects: ["self", "self"] },
+    expect(asked).toHaveLength(1);
+    expect(asked[0].memberId).toBe("solo");
+    expect(asked[0].types).toEqual([
+      "gameFinished",
+      "firstGameEver",
+      "firstOfVariant",
+      "firstOfFamily",
+      "gameWon",
+      "firstWinAtVariant",
     ]);
+    // And nothing about the other seat, because the other seat is him. A win
+    // over yourself is a win over nobody.
+    expect(asked[0].types).not.toContain("wonVsPerson");
   });
 
   it("asks nothing about a row whose result it cannot read", async () => {
@@ -407,7 +481,14 @@ describe("the XP a decided game asks for", () => {
     member("a");
     member("b");
 
-    await recordPlayed({ id: "bad", blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" });
+    await recordPlayed({
+      id: "bad",
+      blackMemberId: "a",
+      whiteMemberId: "b",
+      winner: "abandoned",
+      variant: "reversi",
+      moveCount: 10,
+    });
 
     expect(asked).toEqual([]);
     expect(updates).toEqual([]);

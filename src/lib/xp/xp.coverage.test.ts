@@ -145,14 +145,71 @@ describe("what is priced and not yet paid", () => {
     expect(new Set(XP_UNWIRED).size).toBe(XP_UNWIRED.length);
   });
 
-  it("leaves exactly the four XP-02 wired out of the list", () => {
+  it("leaves exactly the wired ones out of the list", () => {
     // A page listing the ways to earn XP reads this catalogue, and a promise of
     // 500 XP that nothing pays is the same broken promise as a count with
     // nothing behind it. A type leaves the list when its ticket wires it, so
     // this case is meant to be edited by XP-03 to XP-06 — and to fail loudly if
     // a kind is wired and nobody says so.
+    //
+    // XP-02 wired four. XP-03 added the tour and the long game; XP-04 added
+    // everything a WIN pays, both on `recordPlayed` — see `xpGame.ts`. XP-05
+    // added turning up: the run of days and coming back from away on the
+    // `lastSeenAt` write (`dailyVisit.ts`), and the weekend on the finish.
+    // XP-06 added the ones about other people and about who you are.
+    //
+    // Which leaves `comeback`, refused in writing. Every other kind in the
+    // catalogue is paid by something.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
-    expect(wired.sort()).toEqual(["dailyVisit", "gameFinished", "gameWon", "joined"]);
+    expect(wired.sort()).toEqual([
+      "applauseGiven",
+      "backFromAway",
+      "bioSet",
+      "buddyAdded",
+      "challengeAnswered",
+      "challengeSent",
+      "countrySet",
+      "dailyVisit",
+      "dayStreak100",
+      "dayStreak30",
+      "dayStreak365",
+      "dayStreak7",
+      "everyFamilyPlayed",
+      "everyGradeBeaten",
+      "everyVariantPlayed",
+      "firstBuddy",
+      "firstGameEver",
+      "firstOfFamily",
+      "firstOfVariant",
+      "firstWinAtVariant",
+      "forkPlayed",
+      "gameFinished",
+      "gameWon",
+      "gradeBeaten",
+      "joined",
+      "longGame",
+      "nameSet",
+      "rematchPlayed",
+      "revengeWin",
+      "seatClaimedElsewhere",
+      "specialistBeaten",
+      "timeGiven",
+      "weekendGame",
+      "winStreak10",
+      "winStreak3",
+      "winStreak5",
+      "wonVsBuddy",
+      "wonVsPerson",
+      "wordsSet",
+    ]);
+  });
+
+  it("says why `comeback` is priced and unpaid, rather than leaving it out", () => {
+    // The one type in the catalogue that nothing is going to pay. It stays in
+    // the list because that is what tells a page it is not yet earned, and the
+    // refusal is written where it would have fired — `xpGame.ts` — rather than
+    // left as an absence somebody would eventually read as an oversight.
+    expect(XP_UNWIRED).toContain("comeback");
   });
 });
 

@@ -14,6 +14,7 @@ import { cleanGameDefaults } from "@/components/game/gameDefaults";
 import { overLimit } from "@/lib/api/rateLimit";
 import { writePreferences } from "@/lib/preferences/memberPreferences";
 import { acceptPreferences } from "@/lib/preferences/preferences";
+import { awardNameSet, awardProfileXp } from "@/lib/xp/xpProfile";
 
 const nameSchema = z.object({
   name: z
@@ -125,6 +126,17 @@ export async function PATCH(request: Request) {
     }
     if (profile.timeZone !== undefined && !knownTimeZone(profile.timeZone)) return badRequest("Unknown time zone.");
     if (Object.keys(profile).length > 0) await updateProfile(me.email, profile);
+    /*
+     * XP for a page that now says something about somebody, decided from the
+     * values as they NOW STAND rather than from the patch: asking for a country
+     * and sending an empty one is clearing it, not setting it. Only when the save
+     * was about one of the two fields, so changing the wood your board is drawn
+     * on — same row, same route — costs nothing at all. See `xpProfile.ts`, which
+     * also says why this rides the route rather than `updateProfile`.
+     */
+    const touched = plain.country !== undefined || plain.bio !== undefined;
+    const saved = { country: plain.country ?? member.country, bio: plain.bio ?? member.bio };
+    await awardProfileXp({ memberId: member.id ?? null, row: saved, touched });
     // Laid over what the row already holds — read once above, not again here.
     if (kept !== null) await writePreferences(me.email, member.preferences, kept.patch);
 
@@ -139,6 +151,9 @@ export async function PATCH(request: Request) {
         );
       }
       shown = member.name;
+      // A name they chose, once ever. Only on the rename that was allowed: the
+      // three refusals above return before this.
+      await awardNameSet(member.id ?? null);
       const token = await signSession({ ...me, name: member.name });
       if (token !== null) response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(PLAYER_SESSION_DAYS));
     }

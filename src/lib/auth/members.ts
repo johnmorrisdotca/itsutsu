@@ -321,6 +321,10 @@ export const memberRowFor = cache(async (key: string) =>
          was paying for a second `findUnique` to get it. */
       xp: true,
       xpFlash: true,
+      /* And the end of their away spell, which is what `backFromAway` is keyed
+         on. A column on a row being read anyway, so "are they back" costs two
+         comparisons rather than a query — see `xpHabit.ts`. */
+      awayUntil: true,
     },
   }),
 );

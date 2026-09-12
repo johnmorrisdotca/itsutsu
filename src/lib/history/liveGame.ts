@@ -18,6 +18,7 @@ import { UnwinnableGame, unwinnableBecause } from "./winnableGame";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
+import { awardAnsweredChallenge } from "@/lib/xp/xpSocial";
 import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
 import type {
   CreatedGame,
@@ -380,6 +381,14 @@ export async function appendMove(
     throw error;
   }
 
+  /*
+   * The move that answers a challenge, when that is what this is. Every test it
+   * makes is on columns already in hand, and it reads the ledger — once, on a
+   * seat's first move — only for a game two members were bound to and nobody
+   * posted. See `xpSocial.ts`, which explains how the asker is known at all.
+   */
+  await awardAnsweredChallenge(row, stone);
+
   if (finished) {
     /*
      * The run over every game played, first and with no test in front of it.
@@ -387,7 +396,10 @@ export async function appendMove(
      * and a game at one screen exactly as it counts a rated one — so the two
      * tests below must not narrow it. See `rating/playedRun.ts`.
      */
-    await recordPlayed({ ...row, winner: next.winner });
+    // The count AFTER this move, which is the one the XP ledger asks about: the
+    // row's own `moveCount` is written in the same transaction and `GAME_ROW`
+    // does not read it back, so `next` is the only thing here that knows.
+    await recordPlayed({ ...row, winner: next.winner, moveCount: next.moves.length });
     // A game at one screen is filed, never rated: the site cannot tell who was playing. Nor is a friendly.
     if (!isHotSeat(row) && row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });

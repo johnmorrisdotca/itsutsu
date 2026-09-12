@@ -11,6 +11,7 @@ import { claimOrVerifyPhraseFor } from "@/lib/phrase/phraseStore";
 import { seatStandIn } from "@/lib/phrase/standInSeat";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { shownName } from "@/lib/rating/shownName";
+import { awardSeatClaimedElsewhere } from "@/lib/xp/xpSocial";
 
 /** How long the board stays hers on this device — the same as any claimed seat. */
 const SEAT_COOKIE_DAYS = 30;
@@ -116,6 +117,16 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      */
     const outcome = await seatStandIn(id, claim.memberId, claim.name, parsed.data.seat);
     if (!outcome.ok) return refusal(outcome.reason, outcome.said);
+
+    /*
+     * THE SITE'S CLEVEREST FEATURE, AND NOTHING CELEBRATED IT UNTIL NOW. The
+     * award rides the seat actually being taken — after every refusal above, so
+     * a wrong guess at somebody's words pays nothing — and is keyed on the game,
+     * so a tablet changing hands over one board pays once.
+     *
+     * `xpSocial.ts` says why this door rather than the seat-link one.
+     */
+    await awardSeatClaimedElsewhere({ memberId: claim.memberId, gameId: id });
 
     const response = NextResponse.json(
       /*
