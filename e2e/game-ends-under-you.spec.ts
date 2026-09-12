@@ -55,10 +55,23 @@ test.describe("a game that ends while you are looking at it", () => {
     });
     expect(made.status(), await made.text()).toBe(201);
     const created = (await made.json()) as { id: string };
+
+    /*
+     * ACCEPTED FIRST. A challenge is an OFFER now — one seat bound, one
+     * offered — and nothing may be played on it until the other person agrees.
+     * This file is about a game ENDING under a reader, so it needs a game.
+     */
+    const theirs = await memberContext(browser, baseURL!, them);
+    const accepted = await theirs.request.post(`/api/games/${created.id}/offer/accept`, {});
+    expect(accepted.status(), await accepted.text()).toBe(200);
+    await theirs.close();
+
     /*
      * Read from the row: since 0.133.1 the API hands back only the caller's own
      * seat token, correctly. This spec has to move the opponent's stones, which
      * is a fixture rather than anything a player can do. See `seatTokensFor`.
+     *
+     * AFTER the acceptance, which mints a fresh key for the seat it binds.
      */
     const seats = await seatTokensFor(created.id);
 

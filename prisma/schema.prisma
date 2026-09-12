@@ -121,6 +121,48 @@ model Game {
   /// When the open seat was posted, so the board lists the newest first.
   openedAt    DateTime?
 
+  /// ─────────────────────────────────────────────────────────────────────────
+  /// A GAME PROPOSED TO A PERSON IS AN OFFER UNTIL THEY ACCEPT IT.
+  /// ─────────────────────────────────────────────────────────────────────────
+  ///
+  /// A challenge, a rematch and a fork against a known person used to BIND
+  /// that person's seat at the moment the game was written — they were in a
+  /// game they had never agreed to, and it was on their record if it was ever
+  /// played out. John, about a fork from a position: "the opponent should get
+  /// the option to refuse the game… no penalties for refusing."
+  ///
+  /// So the other seat is OFFERED and not bound. The member id goes here
+  /// rather than onto `whiteMemberId`, which is the whole mechanism: every
+  /// query that means "a person is in this game" reads the seat columns, and
+  /// an offer must not answer any of them.
+  ///
+  /// THE OFFER IS CLEARED WHEN IT IS ACCEPTED, so that an accepted game is
+  /// indistinguishable from the bound game it would have been before any of
+  /// this existed. That is deliberate and is what keeps the rest of the site
+  /// out of it: the only rows carrying `offeredAt` are rows that are NOT
+  /// ordinary games, so "is this an ordinary game" stays a single null test
+  /// that cannot be got wrong in one of the dozen places that ask it.
+  /// The cost, said plainly: an accepted game no longer remembers that it was
+  /// asked for. The XP ledger's `challengeSent` row and the seats' own
+  /// `blackClaimedAt`/`whiteClaimedAt` are where that is recorded.
+  ///
+  /// The member the game was proposed to, whose seat is offered and not yet
+  /// theirs. Only they may answer it, and they are found by id — an offer
+  /// mints no credential for anybody, which is why there is no token here.
+  offeredToMemberId String?
+  /// When the offer was made. Null on every game nobody was asked to play,
+  /// and cleared when the offer is accepted.
+  offeredAt         DateTime?
+  /// When the offeree said no. NOT the same fact as `withdrawnAt` below, and
+  /// they are two columns rather than one for that reason: "they refused" and
+  /// "I took it back" are different things to tell somebody, and a single
+  /// timestamp would mean both. Either one set means this row is an offer that
+  /// never became a game — filed `status: finished, result: abandoned`, with
+  /// no winner, no rating and no place in the record.
+  declinedAt        DateTime?
+  /// When the offerer took the offer back before it was answered.
+  withdrawnAt       DateTime?
+
   /// How the game ended — and, until it has, a placeholder.
   ///
   /// A game is born `status: active, result: abandoned`, and the result is
@@ -170,6 +212,9 @@ model Game {
   @@index([openSeat, openedAt])
   @@index([blackMemberId])
   @@index([whiteMemberId])
+  /// The offers waiting on one person: the third way a game is "yours", read
+  /// on the same query as the two seat indexes above by `fetchMyGames`.
+  @@index([offeredToMemberId])
 }
 
 model Move {

@@ -87,6 +87,15 @@ export function keptGameDetail(game: LegacyGame): GameDetail {
     extraMs: 0,
     rated: true,
     openSeat: null,
+    /*
+     * Nobody was asked to play these. They were played on another site years
+     * ago and copied down here — there was no offer to make, and no seat on
+     * this site for one to have been made about.
+     */
+    offeredToMemberId: null,
+    offeredAt: null,
+    declinedAt: null,
+    withdrawnAt: null,
     blackMemberId: null,
     whiteMemberId: null,
     result: game.winner ?? "draw",

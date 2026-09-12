@@ -34,6 +34,8 @@ import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
 import { createLiveGame } from "@/lib/history/liveGame";
+import { offerLiftedOff } from "@/lib/history/offers";
+import { callersSeat, creationBody, withholdsASeat } from "@/lib/history/seatTokens";
 import { activeLimitRefusal, memberOverActiveLimit } from "@/lib/history/activeGames";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
@@ -135,6 +137,17 @@ export async function POST(request: Request) {
     let hotSeat = parsed.data.hotSeat;
     let rematchSeats: { blackMemberId: string; whiteMemberId: string; blackName: string; whiteName: string } | null =
       null;
+    /**
+     * The member this game is being PROPOSED to, rather than seated.
+     *
+     * Set in whichever of the two blocks below found them — a rematch knows
+     * them from the game being replayed, a challenge or a fork from the
+     * request — and read once, after the seats are settled, so there is one
+     * place that turns "who was asked" into "which seat is offered". Null for
+     * every game nobody was asked to play, and for a computer player, which
+     * has nothing to accept with.
+     */
+    let offerTo: string | null = null;
 
     /*
      * Playing that game again.
@@ -167,6 +180,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "That member is not taking games from you." }, { status: 403, headers: NO_STORE });
       }
       if (isBotId(them.id)) await ensureBotMembers();
+      // Playing that game again is a thing to ask for, not to impose: the other
+      // side agreed to the first game and has said nothing about a second.
+      if (!isBotId(them.id)) offerTo = them.id;
 
       source = settingsToCarry(origin);
       rematchSeats = seatsForRematch(
@@ -266,7 +282,21 @@ export async function POST(request: Request) {
         blackName: parsed.data.blackName || me.name || "",
         whiteName: parsed.data.whiteName || other.name,
       };
+      // A person is asked; a program is simply seated. See `offerTo` above.
+      if (!computer) offerTo = other.id;
     }
+
+    /*
+     * AND A GAME PROPOSED TO A PERSON IS AN OFFER, NOT A BINDING.
+     *
+     * The other seat's member id is lifted off and put on the offer instead.
+     * The rule, the reason it exists and the rematch's colour swap are all in
+     * `offerLiftedOff`; `offerTo` is null for everything that is not an offer,
+     * which leaves every one of those games written exactly as before.
+     */
+    const proposed = offerLiftedOff(seats, offerTo);
+    const { offer, seat: offeredSeat } = proposed;
+    seats = proposed.seats;
 
     /*
      * Whoever starts a game is sitting at it, and the row should say so from
@@ -298,6 +328,25 @@ export async function POST(request: Request) {
      * be just as buried as the challenger. Refused before the game is
      * written, the same as every other reason this route says no.
      */
+    /*
+     * AND ONLY THE SEATS THIS CREATION ACTUALLY FILLS, which since offers is a
+     * narrower set than it was — deliberately.
+     *
+     * An OFFER fills one seat. It used to fill two, and this check counted
+     * both: challenging somebody who was already holding twenty boards was
+     * refused outright, in a sentence addressed to the wrong person —
+     * `activeLimitRefusal` reads "You have N games on the go", which told the
+     * challenger somebody else's count and was untrue of the reader. Worse, it
+     * meant a stranger's cap could be filled with twenty games they never
+     * wanted, using the one feature whose whole promise is that declining
+     * costs nothing.
+     *
+     * So an unanswered offer counts against NOBODY but its maker, and the
+     * offeree meets the cap at the moment they take the board on — in
+     * `acceptOffer`, where the number in the sentence is their own. `seats` no
+     * longer carries their id by the time this runs, so that falls out of the
+     * shape rather than needing a condition.
+     */
     const atTheLimit = await memberOverActiveLimit([seats.blackMemberId, seats.whiteMemberId]);
     if (atTheLimit !== null) return unprocessable(activeLimitRefusal(atTheLimit));
 
@@ -326,7 +375,7 @@ export async function POST(request: Request) {
      * is not being asked again.
      */
     const rated = ratedRequested ?? !hotSeat;
-    const merged = { ...settings, rated, ...source, ...seats, hotSeat };
+    const merged = { ...settings, rated, ...source, ...seats, ...offer, hotSeat };
     /*
      * The variant the game will ACTUALLY be played under, which is not always
      * the one the request named. A rematch and a fork take their rules from
@@ -388,76 +437,32 @@ export async function POST(request: Request) {
       }
     }
 
-    /*
-     * A SEAT THAT IS SOMEBODY ELSE'S IS NOT YOURS TO HOLD THE TOKEN FOR.
-     *
-     * A token is the whole credential. `stoneForToken` is what every
-     * seat-bound endpoint identifies a player by — resigning, moving, giving
-     * time, claiming a timeout, changing the rules — so whoever holds a seat's
-     * token can act AS that seat, whatever any rule about membership says.
-     *
-     * This condition used to read `merged.open === true && !hotSeat`, which
-     * named the noticeboard case rather than the rule, and the two are not the
-     * same set. A CHALLENGE binds white to another member's id and is rated by
-     * default, and it fell outside "posted" — so the challenger was handed
-     * their opponent's token and could resign on their behalf, crediting
-     * themselves a rated win and writing a loss that person never played onto
-     * a permanent public record. A rematch and a fork against a known opponent
-     * did the same.
-     *
-     * So the rule, stated as the rule: **a seat bound to somebody other than
-     * the caller never has its token returned.** Both tokens still go back
-     * when both seats are the caller's to give — a private game they must send
-     * a link for, or a hot-seat board where one browser plays both colours.
-     *
-     * Nothing on the client is narrowed by this: `StartGame`, `SetUpGame` and
-     * `StartSharedGame` read `blackToken` only. Do not widen the return "for
-     * symmetry" — the asymmetry is the point.
-     */
     const caller = await currentMemberId();
     /*
      * XP for the game just made, on the one call that makes every game: an ask,
      * a rematch or a fork, and nothing for the lobby or a posted seat. Which of
      * the three is `createdGameKind`, from what the caller actually sent — see
-     * `xpSocial.ts`, which explains why the order of those tests matters.
+     * `xpSocial.ts`, which explains why the order of those tests matters, and
+     * why an offer that is declined leaves this award exactly where it is.
      */
     await awardCreatedGame({ memberId: caller, gameId: created.id, kind: createdGameKind(parsed.data) });
     /*
-     * TWO WAYS A SEAT IS NOT YOURS TO HOLD, and the first draft of this fix
-     * caught only the second — which broke the first. `both-seats.spec.ts`
-     * failed on it immediately, which is what that spec is for.
+     * WHICH SEAT KEYS THIS ANSWER MAY CARRY — the rule, its three cases and the
+     * two bugs that wrote it, all in `seatTokens.ts`, which is where a reader
+     * looking for "who may hold a seat" will find it.
      *
-     *  - POSTED on the noticeboard. Nobody is bound to it; it is answered by
-     *    sitting down, so there is nobody for the poster to send a link to.
-     *  - BOUND TO SOMEBODY ELSE by a challenge, a rematch or a fork.
-     *
-     * The unbound seat of a PRIVATE game is the case that must still come
-     * back: it is unbound for the opposite reason — the caller has to send a
-     * link to whoever they mean to play, and cannot without the token.
-     *
-     * So "unbound" alone answers nothing, because it means both "for whoever
-     * sits down" and "for whoever I invite". `open` is what tells them apart.
+     * `offeredSeat` rather than `offer` for the offered case: the thing that
+     * says a seat is actually being withheld is the seat, and `offer` being
+     * empty and `offeredSeat` being null are the same fact stated twice.
      */
-    const posted = merged.open === true;
-    const bound = [seats.blackMemberId, seats.whiteMemberId].filter(
-      (id): id is string => id !== undefined && id !== null,
-    );
-    const someoneElsesSeat = !hotSeat && (posted || bound.some((id) => id !== caller));
-    /*
-     * THEIR OWN SEAT, WHICHEVER COLOUR IT IS — not "the black one".
-     *
-     * A REMATCH SWAPS THE COLOURS (`seatsForRematch`: "They had black, so now
-     * I do"), so the caller is white about half the time. Returning
-     * `blackToken` for every withheld case would have handed them their
-     * opponent's token in exactly those games — the same bug this is fixing,
-     * pointed the other way, and harder to notice because it only appears on
-     * the second game between two people.
-     */
-    const mySeat =
-      seats.whiteMemberId !== undefined && seats.whiteMemberId === caller ? "white" : "black";
-    const myToken = mySeat === "white" ? created.whiteToken : created.blackToken;
-    const created_body = someoneElsesSeat ? { id: created.id, [`${mySeat}Token`]: myToken } : created;
-    const response = NextResponse.json(created_body, {
+    const withheld = withholdsASeat({
+      hotSeat,
+      posted: merged.open === true,
+      offered: offeredSeat !== null,
+      seats,
+      caller,
+    });
+    const response = NextResponse.json(creationBody(created, withheld, callersSeat(seats, caller)), {
       status: 201,
       headers: { ...NO_STORE, Location: matchPath(parsed.data.variant, created.id) },
     });

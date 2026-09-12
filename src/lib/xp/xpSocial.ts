@@ -69,6 +69,31 @@ export function createdGameKind(asked: {
  * Keyed on the NEW game's id, so asking the same person again tomorrow pays
  * again — this is not a once-ever award, it is the thing that starts everything,
  * and it is capped at three a day instead.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * PAID FOR THE ASKING, AND NOT TAKEN BACK IF THE ANSWER IS NO
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * A challenge, a rematch and a fork against a person are OFFERS now — the
+ * other side accepts or declines — and this award is deliberately unchanged by
+ * that. The ask happened; the answer is not the asker's to control.
+ *
+ * Making it conditional on acceptance would hand the offerer's standing to the
+ * offeree, which is the same thing as charging somebody for saying no. "No
+ * penalties for refusing" has to hold for both of them, or a decline becomes a
+ * thing to resent — which would defeat the feature by way of its own scoring.
+ * The ledger is append-only in any case, so a clawback would mean inventing a
+ * reversal path for this one case.
+ *
+ * The award for ANSWERING needs no change either, and the reason is worth
+ * knowing because it falls out of the mechanism rather than being arranged:
+ * `awardAnsweredChallenge` starts with `wasAsked`, which requires BOTH seats to
+ * carry a member id. An outstanding offer has a loose seat, so it can never
+ * reach it; a declined one never will; and an accepted one reaches it exactly
+ * as a challenge always has, because accepting is what binds the seat.
+ *
+ * Nothing is awarded for declining. There is no call to make — the decline
+ * route writes no ledger row at all.
  */
 export async function awardCreatedGame({
   memberId,

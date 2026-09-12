@@ -79,6 +79,11 @@ function game(over: Partial<Row> = {}): Row {
     extraMs: 0,
     rated: true,
     openSeat: null,
+    // Nobody was asked to play this one: an ordinary game with both seats bound.
+    offeredToMemberId: null,
+    offeredAt: null,
+    declinedAt: null,
+    withdrawnAt: null,
     result: "abandoned",
     winner: null,
     moveCount: 1,
@@ -391,5 +396,207 @@ describe("shownGroup keeps the bucket's true size, not just what it shows", () =
   it("takes the slice from the front, so the cap keeps the same games it always did", () => {
     const result = shownGroup(["a", "b", "c"], 2);
     expect(result.items).toEqual(["a", "b"]);
+  });
+});
+
+/**
+ * AN OFFER IS ANSWERED, NOT PLAYED — which the queue has to say by putting it
+ * somewhere a move is never taken from.
+ *
+ * `useAdvanceToNextGame` reads `groups.yourMove` and walks it, so an offer
+ * reaching that bucket would carry somebody onto a board they had never agreed
+ * to play. A fork offer is what makes that a real risk rather than a tidiness:
+ * it copies moves across, so the position has a colour to move and it may well
+ * be the offeree's.
+ */
+describe("where an offer goes in the queue", () => {
+  /** A game MEMBER has been offered: their seat is loose, the offer names them. */
+  function offeredToMe(over: Partial<Row> = {}): Row {
+    return game({
+      blackMemberId: "member-2",
+      whiteMemberId: null,
+      offeredToMemberId: MEMBER,
+      offeredAt: new Date("2026-09-02T00:00:00Z"),
+      moveCount: 0,
+      ...over,
+    });
+  }
+
+  /** One MEMBER has made: their seat is bound, somebody else's is offered. */
+  function offeredByMe(over: Partial<Row> = {}): Row {
+    return game({
+      blackMemberId: MEMBER,
+      whiteMemberId: null,
+      offeredToMemberId: "member-2",
+      offeredAt: new Date("2026-09-02T00:00:00Z"),
+      moveCount: 0,
+      ...over,
+    });
+  }
+
+  it("puts an offer to you in its own group, and names the colour you would take", async () => {
+    rows = [offeredToMe()];
+    const groups = await fetchMyGames(new Map(), MEMBER);
+    expect(groups.offered).toHaveLength(1);
+    expect(groups.yourMove).toEqual([]);
+    expect(groups.unstarted).toEqual([]);
+    expect(groups.offered[0].offer).toBe("offered");
+    expect(groups.offered[0].offerSide).toBe("to-me");
+    // Their seat is the loose one: black is taken, so they would be white.
+    expect(groups.offered[0].seat).toBe(STONES.white);
+  });
+
+  it("puts an offer you made in its own group too, never in the unstarted boards", async () => {
+    rows = [offeredByMe()];
+    const groups = await fetchMyGames(new Map(), MEMBER);
+    expect(groups.offerSent).toHaveLength(1);
+    expect(groups.offerSent[0].offerSide).toBe("from-me");
+    expect(groups.unstarted).toEqual([]);
+    expect(groups.yourMove).toEqual([]);
+  });
+
+  /*
+   * THE FORK CASE, and the reason the offer test comes before the turn ladder
+   * rather than after it. Eight moves in, with the offeree to move: every
+   * other rule in `fetchMyGames` would have called this "your move".
+   */
+  it("keeps a forked offer out of your move even when the position is waiting on you", async () => {
+    rows = [
+      offeredToMe({
+        moveCount: 8,
+        settledStatus: GAME_STATUS.playing,
+        settledToPlay: STONES.white,
+      }),
+    ];
+    const groups = await fetchMyGames(new Map(), MEMBER);
+    expect(groups.yourMove).toEqual([]);
+    expect(groups.offered).toHaveLength(1);
+    // And nobody is to move in it, so nothing downstream can read a turn off it.
+    expect(groups.offered[0].toPlay).toBeNull();
+  });
+
+  /*
+   * SAYING NO MAKES IT DISAPPEAR, which is what "costs nothing" looks like
+   * from the offeree's side: no row, no result, nothing in their list to tidy.
+   */
+  it("shows the offeree nothing at all once they have declined", async () => {
+    rows = [
+      offeredToMe({
+        status: "finished",
+        declinedAt: new Date("2026-09-03T00:00:00Z"),
+        lastMoveAt: new Date("2026-09-03T00:00:00Z"),
+      }),
+    ];
+    const groups = await fetchMyGames(new Map(), MEMBER);
+    expect(Object.values(groups).flat()).toEqual([]);
+  });
+
+  /*
+   * AND THE OFFERER IS TOLD. It stays with their offers, saying it was
+   * declined — not in "Lately finished", whose hint reads "Filed in the
+   * record", because it is in no record at all.
+   */
+  it("tells the offerer it was declined, in their offers rather than their finished games", async () => {
+    rows = [
+      offeredByMe({
+        status: "finished",
+        declinedAt: new Date("2026-09-03T00:00:00Z"),
+        lastMoveAt: new Date("2026-09-03T00:00:00Z"),
+      }),
+    ];
+    const groups = await fetchMyGames(new Map(), MEMBER, new Date("2026-09-04T00:00:00Z"));
+    expect(groups.finished).toEqual([]);
+    expect(groups.offerSent).toHaveLength(1);
+    expect(groups.offerSent[0].offer).toBe("declined");
+  });
+
+  it("tells a withdrawal from a decline, which are two different things to say", async () => {
+    rows = [
+      offeredByMe({
+        status: "finished",
+        withdrawnAt: new Date("2026-09-03T00:00:00Z"),
+        lastMoveAt: new Date("2026-09-03T00:00:00Z"),
+      }),
+    ];
+    const groups = await fetchMyGames(new Map(), MEMBER, new Date("2026-09-04T00:00:00Z"));
+    expect(groups.offerSent[0].offer).toBe("withdrawn");
+  });
+
+  /*
+   * And it leaves on its own, by the window that already drops a finished
+   * game — so being told is a thing that happens once and then stops, with no
+   * second mechanism marking anything as seen.
+   */
+  it("drops a refused offer on the same window a finished game leaves by", async () => {
+    rows = [
+      offeredByMe({
+        status: "finished",
+        declinedAt: new Date("2026-09-03T00:00:00Z"),
+        lastMoveAt: new Date("2026-09-03T00:00:00Z"),
+      }),
+    ];
+    const groups = await fetchMyGames(new Map(), MEMBER, new Date("2026-11-01T00:00:00Z"), 7);
+    expect(groups.offerSent).toEqual([]);
+  });
+
+  /*
+   * AND AN ACCEPTED GAME IS AN ORDINARY GAME. `acceptOffer` clears the offer
+   * and binds the seat, so this is the row it leaves behind — and the queue
+   * must read it with no trace of where it came from.
+   */
+  it("reads an accepted game exactly as it reads any other", async () => {
+    rows = [
+      game({
+        blackMemberId: "member-2",
+        whiteMemberId: MEMBER,
+        moveCount: 1,
+        settledStatus: GAME_STATUS.playing,
+        settledToPlay: STONES.white,
+      }),
+    ];
+    const groups = await fetchMyGames(new Map(), MEMBER);
+    expect(groups.offered).toEqual([]);
+    expect(groups.offerSent).toEqual([]);
+    expect(groups.yourMove).toHaveLength(1);
+    expect(groups.yourMove[0].offer).toBeNull();
+    expect(groups.yourMove[0].offerSide).toBeNull();
+    expect(groups.yourMove[0].toPlay).toBe(STONES.white);
+  });
+
+  /*
+   * A STRANGER WHO HOLDS THE ADDRESS IS TOLD NOTHING, and cannot be: an offer
+   * is reached by member id, and nobody else is one of the two people in it.
+   */
+  it("shows an offer to nobody but its two people", async () => {
+    rows = [offeredToMe()];
+    const groups = await fetchMyGames(new Map(), "member-3");
+    expect(Object.values(groups).flat()).toEqual([]);
+  });
+
+  /*
+   * THE QUEUE IS ONE QUERY, and adding offers to it must not have made it two.
+   * The third way a game is yours is a third branch of the same OR, on its own
+   * index — see the migration.
+   */
+  it("reads the offers on the same query as the seats", async () => {
+    rows = [offeredToMe(), offeredByMe({ id: "g2" })];
+    await fetchMyGames(new Map(), MEMBER);
+    expect(gameFindMany).toHaveBeenCalledTimes(1);
+    const asked = gameFindMany.mock.calls[0][0] as { where: { OR: Record<string, unknown>[] } };
+    expect(asked.where.OR).toEqual(expect.arrayContaining([{ offeredToMemberId: MEMBER }]));
+  });
+
+  /*
+   * Oldest first, as the games waiting on your move read: an offer is a debt,
+   * and the one that has been waiting longest is the one somebody is most
+   * likely to be wondering about.
+   */
+  it("reads the longest-waiting offer first", async () => {
+    rows = [
+      offeredToMe({ id: "new", lastMoveAt: new Date("2026-09-09T00:00:00Z") }),
+      offeredToMe({ id: "old", lastMoveAt: new Date("2026-09-03T00:00:00Z") }),
+    ];
+    const groups = await fetchMyGames(new Map(), MEMBER);
+    expect(groups.offered.map((one) => one.game.id)).toEqual(["old", "new"]);
   });
 });

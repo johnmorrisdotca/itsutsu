@@ -22,6 +22,7 @@ export function TurnBanner({
   yourTurn,
   finished,
   awaiting = false,
+  offer = null,
   finishedAt = null,
 }: {
   state: ReturnType<typeof replayGame>;
@@ -30,6 +31,15 @@ export function TurnBanner({
   finished: boolean;
   /** Posted for anyone, and nobody has answered it yet. */
   awaiting?: boolean;
+  /**
+   * Offered to one named person who has yet to answer, and which side of it
+   * this reader is on — null for an ordinary game.
+   *
+   * Two sentences rather than one, because the two people are waiting on
+   * opposite things. The one who was asked has a decision to make; the one who
+   * asked has nothing to do but wait, or take it back.
+   */
+  offer?: { side: "to-me" | "from-me"; who: string } | null;
   /** When the last move landed, once the game is over; shown so nobody has to go to the record for it. */
   finishedAt?: string | null;
 }) {
@@ -72,6 +82,42 @@ export function TurnBanner({
    * do — but it is offered rather than announced, and the sentence says what
    * the game is actually doing.
    */
+  /*
+   * A GAME PROPOSED TO SOMEBODY, BEFORE THEY HAVE ANSWERED.
+   *
+   * Before the seat tests below, and before `awaiting`, because it is the
+   * strongest thing true of this board: nothing about whose turn it is means
+   * anything until the question is answered. Without it a fork offer — which
+   * carries moves across, so the position has a colour to move — drew "Your
+   * move — you are Black" at somebody who had never agreed to play, and
+   * "Waiting for White…" at the person who was still waiting to be answered.
+   *
+   * The board underneath stays drawn and unplayable, which is the point of
+   * showing it at all: an offer is a position you look at before deciding.
+   */
+  if (offer !== null) {
+    return (
+      <p
+        className={`rounded-xl border px-3 py-2.5 text-sm ${offer.side === "to-me" ? TONE_CLASS.good : TONE_CLASS.calm}`}
+        data-testid="turn-banner"
+        data-offer={offer.side}
+      >
+        {offer.side === "to-me" ? (
+          <>
+            <span className="font-semibold">{offer.who} has offered you this game 申込.</span>{" "}
+            Look at the board, then accept or decline. Declining costs you nothing — no result, no
+            rating, and nothing on your record.
+          </>
+        ) : (
+          <>
+            <span className="font-semibold">Offered to {offer.who} 申込済.</span> Nothing starts until
+            they accept, and no clock is running. You can withdraw it at any time.
+          </>
+        )}
+      </p>
+    );
+  }
+
   if (awaiting && seat !== null) {
     return (
       <p

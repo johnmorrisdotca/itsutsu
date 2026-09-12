@@ -45,6 +45,30 @@ test.describe("a finished game offers to be played again", () => {
      * spec reads it from the row it made — a fixture, not something a player
      * can do. See `seatTokensFor`.
      */
+    /*
+     * AND THEY HAVE TO ACCEPT IT BEFORE ANYBODY CAN PLAY IT.
+     *
+     * A challenge is an OFFER now — the other person accepts or declines, and
+     * declining costs nothing (John: "the opponent should get the option to
+     * refuse the game"). So the game above has one seat bound and one offered,
+     * and the moves route answers 409 to either token until the question is
+     * answered. That is the feature working, and the two lines below are what a
+     * spec about a REMATCH has to do to get past it.
+     *
+     * Answered through the route rather than by writing the row, because that
+     * is what the button on their queue does. `e2e/offers.spec.ts` is where
+     * the clicking is driven; here it is a fixture for something else.
+     */
+    const theirs = await memberContext(browser, baseURL!, them);
+    const accepted = await theirs.request.post(`/api/games/${created.id}/offer/accept`, {});
+    expect(accepted.status(), await accepted.text()).toBe(200);
+    await theirs.close();
+
+    /*
+     * The tokens are read AFTER the acceptance, and that ordering matters:
+     * accepting mints a fresh key for the seat it binds, so a token read
+     * before it is a token that no longer plays anything.
+     */
     const game = { id: created.id, ...(await seatTokensFor(created.id)) };
 
     // Play it out. Black is the challenger, which is this member.

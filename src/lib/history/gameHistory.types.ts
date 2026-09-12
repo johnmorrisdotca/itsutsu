@@ -136,6 +136,21 @@ export type GameSummary = {
   rated: boolean;
   /** A seat anyone may take, while it waits; null otherwise. */
   openSeat: string | null;
+  /**
+   * THE OFFER, WHEN THIS GAME IS ONE — see the schema's note on `offeredAt`.
+   *
+   * A game proposed to a person: one seat is the offerer's and the other is
+   * not yet anybody's. `offeredToMemberId` is who was asked, and the board
+   * reads it to know which of the two people is looking at it. All four are
+   * null on every game nobody was asked to play, and on every accepted one:
+   * accepting clears the offer, so an accepted game reads exactly as a bound
+   * game always did.
+   */
+  offeredToMemberId: string | null;
+  offeredAt: string | null;
+  /** When the offeree said no, or the offerer took it back. Never both. */
+  declinedAt: string | null;
+  withdrawnAt: string | null;
   /** The member holding each seat, when an account holds it rather than a link. */
   blackMemberId: string | null;
   whiteMemberId: string | null;

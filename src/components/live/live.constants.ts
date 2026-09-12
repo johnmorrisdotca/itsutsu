@@ -137,3 +137,36 @@ export const DOORSTEP_COPY = {
       "That seat is at a different game from this one, so it is not the seat this page is about.",
   },
 } as const;
+
+/**
+ * WHAT THE OFFER PANEL BESIDE THE BOARD SAYS, to each of the two people.
+ *
+ * TWO SENTENCES AND NOT ONE WITH A NAME SWAPPED IN, because the two readers
+ * want different facts. The person who was ASKED is deciding, and the thing
+ * they most need to know is what refusing costs them — nothing, and it is said
+ * outright rather than left to be discovered. The person who ASKED has nothing
+ * to do but wait, and the thing they most need to know is that no clock is
+ * running against them while they do, since a game they cannot move in with a
+ * deadline on screen would read as a fault.
+ *
+ * Both end by saying it can happen again: a decline is not the end of anything,
+ * and "ask again whenever you like" is the difference between a refusal and a
+ * rebuff. John: "no penalties for refusing."
+ */
+export const OFFER_PANEL_COPY = {
+  toMe: {
+    title: "This game is an offer",
+    kanji: "申込",
+    lead: (who: string) =>
+      `${who} has asked you for this game. The board and the rules below are what you would be ` +
+      `playing — no move can be made by either of you until you accept. Declining ends it with ` +
+      `no result, no rating and nothing on either record, and ${who} can always ask again.`,
+  },
+  fromMe: {
+    title: "Your offer",
+    kanji: "申込済",
+    lead: (who: string) =>
+      `Waiting on ${who}. No clock is running and neither of you can move until they accept. ` +
+      `Withdrawing costs nobody anything — you can offer it again.`,
+  },
+} as const;

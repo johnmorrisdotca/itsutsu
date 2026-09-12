@@ -51,7 +51,9 @@ export type TimeoutRefusal =
   | "no-clock"
   | "not-due"
   | "your-own-turn"
-  | "not-allowed";
+  | "not-allowed"
+  /** The game is an offer nobody has accepted yet. See `MoveRefusal.offered`. */
+  | "offered";
 
 export type TimeoutOutcome =
   | { ok: true; game: GameDetail }
@@ -71,7 +73,17 @@ export type MoveRefusal =
   | "wrong-token"
   | "not-your-turn"
   | "illegal"
-  | "conflict";
+  | "conflict"
+  /**
+   * The game is an offer nobody has accepted yet.
+   *
+   * Its own reason rather than `finished` or `not-your-turn`, both of which
+   * were in range and both of which would have been lies: the game has not
+   * ended and it may well be this seat's turn. What is missing is the other
+   * person's agreement, and a board that says "it is not your turn" about
+   * that sends somebody looking for a move they have not got.
+   */
+  | "offered";
 
 export type MoveOutcome =
   | { ok: true; game: GameDetail }

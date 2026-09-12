@@ -5,6 +5,7 @@ import { chooseTurn } from "@/lib/gomoku/opponent";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
 import { appendMove, GAME_ROW, replay } from "@/lib/history/liveGame";
 import type { MoveRequest } from "@/lib/history/liveGame.types";
+import { isOffered } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
 import { botInSeat } from "./bots";
 import { settleEnded } from "@/lib/history/liveGameEndings";
@@ -75,6 +76,14 @@ export async function playBotTurns(
     }
     // A posted seat has nobody in it; a computer does not sit down by playing.
     if (row.openSeat !== null) return;
+    /*
+     * NOR DOES IT ANSWER AN OFFER BY PLAYING. Nothing is ever offered TO a
+     * program — it has nothing to accept with, so `live/route.ts` binds its
+     * seat as it always did — but the offerer's own seat can be a program's in
+     * a rematch of a game somebody played against one, and a computer playing
+     * a stone here would be it agreeing to a game on the offeree's behalf.
+     */
+    if (isOffered(row)) return;
 
     const state = replay(row);
     /*
@@ -126,6 +135,8 @@ export async function playBotTurns(
 export async function waitingOnBot(id: string): Promise<boolean> {
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null || row.status !== "active" || row.openSeat !== null) return false;
+  // An offer is waiting on an answer, not on a move. See `playBotTurns`.
+  if (isOffered(row)) return false;
   const state = replay(row);
   if (state.status !== GAME_STATUS.playing) return false;
   return botInSeat(row, state.toPlay) !== null;

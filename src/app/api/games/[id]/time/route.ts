@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { giveTime } from "@/lib/history/liveGameEndings";
+import { OFFER_NOT_ACCEPTED, OFFER_NOT_ACCEPTED_STATUS } from "@/lib/history/offers.constants";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { overLimit } from "@/lib/api/rateLimit";
 
@@ -15,6 +16,7 @@ const REFUSAL_STATUS: Record<string, number> = {
   "wrong-token": 403,
   "no-clock": 409,
   "your-own-turn": 409,
+  offered: OFFER_NOT_ACCEPTED_STATUS,
 };
 
 const REFUSAL_MESSAGE: Record<string, string> = {
@@ -23,6 +25,7 @@ const REFUSAL_MESSAGE: Record<string, string> = {
   "wrong-token": "You do not hold a seat in this game.",
   "no-clock": "This game has no clock.",
   "your-own-turn": "It is your move; time is given to the other side.",
+  offered: OFFER_NOT_ACCEPTED,
 };
 
 /**

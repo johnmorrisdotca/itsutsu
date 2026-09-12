@@ -26,7 +26,21 @@ export async function GET(request: Request) {
     const email = await currentEmail();
     const games = await fetchMyGames(claims, await currentMemberId(), new Date(), await keepFinishedDaysFor(email));
     return NextResponse.json(
-      { yourMove: games.yourMove.length, groups: games },
+      {
+        yourMove: games.yourMove.length,
+        /*
+         * Offers waiting on this reader, counted separately rather than added
+         * into `yourMove`.
+         *
+         * `yourMove` is read by the advance to the next game as well as by the
+         * badge — `useAdvanceToNextGame` takes `groups.yourMove` and walks it —
+         * so a count that quietly included offers would have sent somebody to a
+         * board they had not agreed to play on. Two numbers, each true of one
+         * thing; the badge adds them and its words keep them apart.
+         */
+        offered: games.offered.length,
+        groups: games,
+      },
       { status: 200, headers: NO_STORE },
     );
   } catch (error) {

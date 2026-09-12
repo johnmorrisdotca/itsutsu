@@ -24,6 +24,8 @@ type Game = {
   whiteName: string;
   blackClaimedAt: Date | null;
   whiteClaimedAt: Date | null;
+  /** Set where this game was PROPOSED to somebody: neither seat is free then. */
+  offeredAt: Date | null;
 };
 
 let game: Game | null = null;
@@ -77,6 +79,17 @@ function boardWithFreeWhite(overrides: Partial<Game> = {}): Game {
     whiteName: "",
     blackClaimedAt: new Date(),
     whiteClaimedAt: null,
+    /*
+     * Nobody was ASKED to play this one — its white seat is loose because a
+     * link is going out for it, which is the case four words exist for.
+     *
+     * Written out rather than left off, and `isFree` reads it strictly
+     * (`!== null`) for the same reason: a select that forgot the column hands
+     * back `undefined`, and the safe answer to "I cannot tell whether this is
+     * an offer" is to refuse the seat, not to hand it over. See the guard in
+     * `standInSeat.ts`.
+     */
+    offeredAt: null,
     ...overrides,
   };
 }
@@ -241,6 +254,39 @@ describe("seatStandIn", () => {
 
   it("refuses a blank name rather than seating somebody called nothing", async () => {
     expect(await seatStandIn("k3m9-p2qx", HANAKO, "   ")).toEqual({ ok: false, reason: "no-name" });
+    expect(updates).toEqual([]);
+  });
+
+  /*
+   * ─────────────────────────────────────────────────────────────────────────
+   * AND NOT A SEAT THAT WAS OFFERED TO SOMEBODY ELSE.
+   * ─────────────────────────────────────────────────────────────────────────
+   *
+   * Four words prove WHO somebody is; they do not make them the person a game
+   * was proposed to. An offer is addressed to one member by id, and this door
+   * never looks at `offeredToMemberId` — so without the guard, anybody in the
+   * room with their own words set could sit down in an offered seat and accept
+   * a game on the offeree's behalf, through the one way in that asks nothing
+   * about who was asked.
+   *
+   * Written as a test on the ROW rather than on the id, because that is the
+   * shape of the guard: while a game carries an offer, NEITHER seat is free.
+   * The offeree accepts through `POST /api/games/[id]/offer/accept` and nowhere
+   * else.
+   */
+  it("refuses an offered seat, even to somebody whose four words are right", async () => {
+    game = boardWithFreeWhite({ offeredAt: new Date("2026-09-12T10:00:00Z") });
+    const outcome = await seatStandIn("k3m9-p2qx", HANAKO, "Hanako M.");
+    expect(outcome.ok).toBe(false);
+    expect(outcome.ok === false && outcome.reason).toBe("no-free-seat");
+    expect(updates).toEqual([]);
+    expect(game?.whiteMemberId).toBeNull();
+  });
+
+  it("refuses the offered seat even when it is asked for by name", async () => {
+    game = boardWithFreeWhite({ offeredAt: new Date("2026-09-12T10:00:00Z") });
+    const outcome = await seatStandIn("k3m9-p2qx", HANAKO, "Hanako M.", "white");
+    expect(outcome.ok).toBe(false);
     expect(updates).toEqual([]);
   });
 });

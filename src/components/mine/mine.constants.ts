@@ -5,12 +5,53 @@ import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 export const MY_GAMES_COPY = {
   title: { label: "Your games", kanji: "対局中" },
   groups: {
+    /*
+     * 申込 — a proposal, an application. The word the elder Japanese games
+     * sites use for a game offered to a named opponent, which is exactly what
+     * this is: not an invitation to anybody, and not a game yet.
+     */
+    offered: {
+      label: "Offers to you",
+      kanji: "申込",
+      hint: "Somebody has asked you for a game. Accept it or decline — declining costs you nothing.",
+    },
     yourMove: { label: "Your move", kanji: "手番", hint: "Waiting on you." },
     theirMove: { label: "Their move", kanji: "相手番", hint: "Waiting on the other side. You will be told when it is yours." },
+    offerSent: {
+      label: "Your offers",
+      kanji: "申込済",
+      hint: "Games you have asked somebody for. Nothing starts until they accept, and you can withdraw one at any time.",
+    },
     unstarted: { label: "Not started", kanji: "未着手", hint: "Boards with no stones yet. Hand out the other seat, post it for anyone, or play first." },
     hotSeat: { label: "At this screen", kanji: "対面", hint: "Two people at one board, in this browser. Kept, never rated." },
     finished: { label: "Lately finished", kanji: "終局", hint: "Filed in the record." },
   } satisfies Record<MyGameGroup, { label: string; kanji: string; hint: string }>,
+  /**
+   * WHAT AN OFFER'S ROW SAYS ABOUT ITSELF.
+   *
+   * A declined offer is the one thing here somebody has to be TOLD rather than
+   * shown, so it says who declined it by name. It is not a result and does not
+   * read like one: nobody won, nothing was rated, and the sentence says so
+   * rather than leaving a reader to wonder what a refusal cost them.
+   */
+  offer: {
+    offered: "Waiting on your answer.",
+    offerSent: (who: string) => `Offered to ${who} — nothing starts until they accept.`,
+    declined: (who: string) => `${who} declined. Nothing was played and nothing was rated.`,
+    withdrawn: "You withdrew this offer.",
+    accept: { label: "Accept", kanji: "承諾" },
+    decline: { label: "Decline", kanji: "辞退" },
+    withdraw: { label: "Withdraw", kanji: "取消" },
+    /*
+     * No confirmation on Decline, on purpose. A question before saying no
+     * makes refusing feel like a thing with consequences, and the whole point
+     * is that it has none — and the offer can simply be made again. Withdraw
+     * is the same: it is the offerer's own game, with nothing in it.
+     */
+    declineFailed: "Could not decline that game.",
+    acceptFailed: "Could not accept that game.",
+    withdrawFailed: "Could not withdraw that offer.",
+  },
   stale: "Stale",
   staleHint: (days: number) => `No move for more than ${days} days. Resign it, or make a move.`,
   resign: { label: "Resign", kanji: "投了" },
@@ -29,6 +70,25 @@ export const MY_GAMES_COPY = {
   sitTaken: "Somebody else just took that seat.",
   continueGame: "Continue",
   yourTurn: (count: number) => (count === 1 ? "1 game waiting on you" : `${count} games waiting on you`),
+  /**
+   * WHAT THE BADGE BESIDE "PLAY" MEANS, once an offer can be waiting too.
+   *
+   * The badge counts both, because both are things waiting on the reader — but
+   * the words keep them apart, because they want different things done. A game
+   * wants a move; an offer wants an answer, and "3 games waiting on you" over a
+   * count that includes an unanswered offer would send somebody looking for a
+   * board to play on that does not exist yet.
+   *
+   * Offers FROM the reader are never counted. They are waiting on somebody
+   * else, which is the definition of the group they sit in.
+   */
+  waitingOn: (moves: number, offers: number) => {
+    const games = moves === 1 ? "1 game waiting on you" : `${moves} games waiting on you`;
+    const asks = offers === 1 ? "1 offer to answer" : `${offers} offers to answer`;
+    if (offers === 0) return games;
+    if (moves === 0) return asks;
+    return `${games}, ${asks}`;
+  },
   /**
    * A group heading's count once its cap has actually cut something. The
    * plain total is printed on its own everywhere the cap has nothing to say
@@ -122,9 +182,16 @@ export const START_COPY = {
   computerHint: (who: string, strength: string) =>
     `${who} plays at once, so you are never waiting and the clock never runs against it. ` +
     `${strength}. The game is rated, for both of you, against the computer rather than on the ladder of people.`,
-  challengeHintHere: (who: string) => `The game is in ${who}'s list the moment you start it; there is nothing to accept. ${who} is here now.`,
+  /*
+   * "THERE IS NOTHING TO ACCEPT" WAS TRUE AND IS NOT ANY MORE, which is
+   * exactly the kind of sentence that outlives the thing it described. A game
+   * proposed to a person is now an offer they may decline, so the hint says
+   * what actually happens — and says the part a challenger wants to know,
+   * which is that a refusal costs neither of them anything.
+   */
+  challengeHintHere: (who: string) => `${who} is asked, and can accept or decline — declining costs nobody anything. ${who} is here now, so you may not be waiting long.`,
   challengeHintAway: (who: string, pace: string) =>
-    `The game is in ${who}'s list the moment you start it; there is nothing to accept. ${who} is not here at the moment, which is fine at ${pace.toLowerCase()}.`,
+    `${who} is asked, and can accept or decline — declining costs nobody anything. ${who} is not here at the moment, which is fine at ${pace.toLowerCase()}.`,
   signedOut: "Sign in to play against somebody else. Two at one screen works either way.",
   /*
    * TWO FAILURES THE SENTENCE CAN NO LONGER HAVE, so their words are gone with

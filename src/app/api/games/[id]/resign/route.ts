@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { NO_STORE, readJson, serverError } from "@/lib/api/apiResponse";
 import { resignGame } from "@/lib/history/liveGameEndings";
+import { OFFER_NOT_ACCEPTED, OFFER_NOT_ACCEPTED_STATUS } from "@/lib/history/offers.constants";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
 import { currentMemberId } from "@/lib/auth/currentSession";
@@ -18,6 +19,7 @@ const REFUSAL_STATUS: Record<string, number> = {
   finished: 409,
   "wrong-token": 403,
   "not-allowed": 409,
+  offered: OFFER_NOT_ACCEPTED_STATUS,
 };
 
 const REFUSAL_MESSAGE: Record<string, string> = {
@@ -25,6 +27,12 @@ const REFUSAL_MESSAGE: Record<string, string> = {
   finished: "That game is already over.",
   "wrong-token": "You do not hold a seat in this game.",
   "not-allowed": "This game was set up so that nobody may resign it.",
+  /*
+   * There is nothing to resign: an offer has no game in it to give up, and
+   * resigning one would have written a loss for the offerer and a rated win
+   * for somebody who never accepted. Withdrawing is the door.
+   */
+  offered: OFFER_NOT_ACCEPTED,
 };
 
 /**

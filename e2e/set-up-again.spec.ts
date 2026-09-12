@@ -61,6 +61,18 @@ async function playedOut(
   expect(made.status(), await made.text()).toBe(201);
   const created = (await made.json()) as { id: string };
   tidyAway(created.id);
+
+  /*
+   * AND THEY ACCEPT IT. A challenge is an OFFER now — one seat bound, one
+   * offered — and the moves route answers 409 to either token until it is
+   * answered. Read the tokens AFTER, because accepting mints a fresh key for
+   * the seat it binds.
+   */
+  const theirs = await memberContext(browser, baseURL, them);
+  const accepted = await theirs.request.post(`/api/games/${created.id}/offer/accept`, {});
+  expect(accepted.status(), await accepted.text()).toBe(200);
+  await theirs.close();
+
   const game = { id: created.id, ...(await seatTokensFor(created.id)) };
 
   // Play it out. Black is the challenger, which is this member.

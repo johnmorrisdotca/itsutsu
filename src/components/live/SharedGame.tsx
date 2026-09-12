@@ -61,11 +61,22 @@ export function SharedGame({
   basePath,
   opponent = null,
   ignoring = [],
+  offer = null,
   appearance = DEFAULT_APPEARANCE,
 }: {
   initial: GameDetail;
   token: string | null;
   seat: Stone | null;
+  /**
+   * This game is an offer nobody has answered yet, and which side of it the
+   * reader is on. Null for an ordinary game.
+   *
+   * Handed down from the page rather than worked out here, because deciding it
+   * needs the reader's member id and a client component has no business
+   * knowing one. What it changes here is small and important: the banner says
+   * what the board is, and the board cannot be played.
+   */
+  offer?: { side: "to-me" | "from-me"; who: string } | null;
   /**
    * How this reader likes a board dressed, from their account. The shared
    * board used to draw the default and nothing else, so a member's own board
@@ -124,7 +135,21 @@ export function SharedGame({
     if (window.location.pathname !== next)
       window.history.replaceState(null, "", next);
   }, [basePath, played]);
-  const yourTurn = seat !== null && state.toPlay === seat;
+  /*
+   * NOBODY'S TURN, AND NOTHING PLAYABLE, WHILE THIS IS AN OFFER.
+   *
+   * Both of these are folded in here rather than at each of the dozen places
+   * they are read — the banner, the clock, the board's own `readOnly`, the
+   * colour chooser, the piece tray, the pass button, the resign button — and
+   * that is the reason to do it here: `POST /api/games/[id]/moves` refuses an
+   * offered game outright, so anything left enabled would be a control that
+   * fails rather than one that is not offered.
+   *
+   * A fork offer is what makes this more than tidiness: it carries moves
+   * across, so the position has a real colour to move and `state.toPlay`
+   * happily names it.
+   */
+  const yourTurn = offer === null && seat !== null && state.toPlay === seat;
   const playable = yourTurn && state.status === GAME_STATUS.playing;
   const [selected, setSelected] = useState<Point | null>(null);
   const { hand, rotate, flip, toggleSingle } = usePieceHand(state);
@@ -241,6 +266,7 @@ export function SharedGame({
         yourTurn={yourTurn}
         // Posted for anyone and not yet answered: waiting, not playing.
         awaiting={detail.openSeat !== null && state.moves.length === 0}
+        offer={offer}
         finished={state.status !== GAME_STATUS.playing}
         finishedAt={detail.status === "finished" ? detail.lastMoveAt : null}
       />
@@ -369,8 +395,16 @@ export function SharedGame({
         />
       </div>
 
-      {/* An empty board can be called off even where resigning is refused. */}
-      {seat !== null &&
+      {/*
+        An empty board can be called off even where resigning is refused — but
+        an OFFER is neither resigned nor called off. It is withdrawn, which is a
+        different door on the server (`cancelGame` refuses an offer outright, so
+        this would be a button that does nothing) and a different word: there is
+        no game here to give up, only a question to take back. The control for
+        that is in the offer panel beside the board.
+      */}
+      {offer === null &&
+      seat !== null &&
       (detail.allowResign || state.moves.length === 0) &&
       state.status === GAME_STATUS.playing ? (
         <div className="flex justify-end">
@@ -393,7 +427,12 @@ export function SharedGame({
         </div>
       ) : null}
 
-      {seat !== null && token !== null ? (
+      {/*
+        Nothing to say across a board nobody has agreed to sit at. The offeree
+        holds no token and could not send one anyway; the offerer would be
+        waving at somebody who has not answered the question yet.
+      */}
+      {offer === null && seat !== null && token !== null ? (
         <ReactionBar
           lastMove={state.moves.length > 0 ? state.moves.length : null}
           disabled={false}

@@ -9,6 +9,8 @@ import { prisma } from "@/lib/prisma";
 import { NO_CURRENT_NAMES, currentNamesFor } from "./currentNames";
 import { SUMMARY_SELECT, toGameMove, toSummary } from "./gameHistory";
 import { waitingFirst } from "./nextGame";
+import { offerIsMine, offerState, offeredSeat } from "./offers";
+import { OFFER_STATES, type OfferState } from "./offers.types";
 import { KEEP_FINISHED_DEFAULT, staysInMyList } from "./retention";
 import { type SettledPosition, settledPosition } from "./settledTurn";
 import type { GameMove, GameSummary } from "./gameHistory.types";
@@ -16,14 +18,52 @@ import type { GameMove, GameSummary } from "./gameHistory.types";
 /** A game nobody has touched for this long is flagged, so it can be dealt with. */
 export const STALE_AFTER_DAYS = 14;
 
-export const MY_GAME_GROUPS = ["yourMove", "theirMove", "unstarted", "hotSeat", "finished"] as const;
+/**
+ * The queue, in the order it is drawn.
+ *
+ * OFFERS TO YOU COME FIRST, ahead even of the games waiting on your move.
+ * They are the same kind of debt — something is waiting on you — and they are
+ * the more urgent one: a game waiting on a move is a game two people are
+ * playing, while an offer is somebody who cannot start at all until you
+ * answer. There are never many, so putting them at the top costs the rest of
+ * the page nothing.
+ *
+ * YOUR OWN OFFERS sit with the games you are waiting on, because that is what
+ * they are — after "their move", before the boards nobody has started.
+ */
+export const MY_GAME_GROUPS = [
+  "offered",
+  "yourMove",
+  "theirMove",
+  "offerSent",
+  "unstarted",
+  "hotSeat",
+  "finished",
+] as const;
 export type MyGameGroup = (typeof MY_GAME_GROUPS)[number];
 
 export type MyGame = {
   game: GameSummary;
-  /** The colour this browser holds in it. */
+  /**
+   * The colour this browser holds in it — or, on an offer, the colour it WOULD
+   * hold. An offer's seat is not yet anybody's, and the one fact a reader most
+   * wants before answering is which side of the board they are being asked to
+   * take, so the honest thing is to name it and let `offer` below say that it
+   * is not theirs yet.
+   */
   seat: Stone;
   group: MyGameGroup;
+  /**
+   * What this offer has become, for the two groups that hold offers, and null
+   * for an ordinary game.
+   *
+   * Carried rather than worked out in the row, because the row would have to
+   * ask the same four columns and could get a different answer — and because
+   * "declined" and "withdrawn" are the two states a reader is told apart by.
+   */
+  offer: OfferState | null;
+  /** Which side of an offer this reader is on. Null for an ordinary game. */
+  offerSide: "to-me" | "from-me" | null;
   /** Whose turn it is, while the game runs. */
   toPlay: Stone | null;
   /** When something last happened, as an ISO string. */
@@ -81,14 +121,35 @@ export async function fetchMyGames(
    */
   keepFinishedDays: number = KEEP_FINISHED_DEFAULT,
 ): Promise<MyGames> {
-  const groups: MyGames = { yourMove: [], theirMove: [], unstarted: [], hotSeat: [], finished: [] };
+  const groups: MyGames = {
+    offered: [],
+    yourMove: [],
+    theirMove: [],
+    offerSent: [],
+    unstarted: [],
+    hotSeat: [],
+    finished: [],
+  };
   if (claims.size === 0 && memberId === null) return groups;
 
   const rows = await prisma.game.findMany({
     where: {
       OR: [
         { id: { in: [...claims.keys()] } },
-        ...(memberId === null ? [] : [{ blackMemberId: memberId }, { whiteMemberId: memberId }]),
+        /*
+         * THE THIRD WAY A GAME IS YOURS. A game OFFERED to you has neither
+         * seat bound to you — that is the whole point of an offer — so without
+         * this branch the person being asked would never see the question. On
+         * its own index, on the same query as the other two, so the queue
+         * costs no extra round trip.
+         */
+        ...(memberId === null
+          ? []
+          : [
+              { blackMemberId: memberId },
+              { whiteMemberId: memberId },
+              { offeredToMemberId: memberId },
+            ]),
       ],
     },
     select: {
@@ -107,6 +168,28 @@ export async function fetchMyGames(
 
   for (const row of rows) {
     const token = claims.get(row.id);
+    /*
+     * WHICH SIDE OF AN OFFER THIS READER IS ON, before anything about seats —
+     * because on an offer the answer to "which seat is yours" is different for
+     * the two of them, and for one of them it is "none yet".
+     */
+    const side = offerIsMine(row, memberId);
+    const offer = side === null ? null : offerState(row);
+    /*
+     * SAYING NO MAKES IT GO AWAY, and this is the line that makes that true.
+     *
+     * A refused offer is news to the person who ASKED — their queue says which
+     * of their offers was declined — and it is nothing at all to the person who
+     * was asked: they said no, it cost them nothing, and a row about it sitting
+     * in their list afterwards would be the site keeping a note of their
+     * refusal. That is the opposite of what this feature is for.
+     *
+     * Said outright rather than falling out of the seats. The seats of a
+     * refused offer are exactly what they were, so `offeredSeat` answers for
+     * it — deliberately, since the offerer needs that answer — and without
+     * this the offeree would find their own refusal filed under "Your offers".
+     */
+    if (side === "to-me" && offer !== null && offer !== OFFER_STATES.offered) continue;
     // This browser's own seat first; the account's otherwise.
     const seat =
       token === row.blackToken
@@ -117,7 +200,10 @@ export async function fetchMyGames(
             ? STONES.black
             : memberId !== null && row.whiteMemberId === memberId
               ? STONES.white
-              : null;
+              : // Being asked is not holding a seat, so there is none to find on
+                // the row: the colour shown is the one they WOULD take. Null
+                // still when that cannot be worked out, which drops the row.
+                (side === "to-me" ? offeredSeat(row) : null);
     // A cookie that fits neither seat is stale itself; it names no game of ours.
     if (seat === null) continue;
 
@@ -126,28 +212,73 @@ export async function fetchMyGames(
     const since = game.lastMoveAt ?? game.playedAt;
     // One token for both chairs: a game at one screen, always waiting on this browser.
     const hotSeat = row.blackToken === row.whiteToken;
-    const group: MyGameGroup = !running
-      ? "finished"
-      : hotSeat
-        ? "hotSeat"
-        : game.moveCount === 0
-          ? "unstarted"
-          : toPlay === seat
-            ? "yourMove"
-            : "theirMove";
+    /*
+     * AN OFFER IS NEVER IN THE PLAYING GROUPS, and that is checked first
+     * rather than folded in below — which is the whole of how the advance to
+     * the next game comes to skip one. `useAdvanceToNextGame` reads
+     * `groups.yourMove` and nothing else, so an offer being absent from that
+     * bucket is not a second rule anybody has to remember: an offer is
+     * answered, not played, so it is not a game waiting for a move.
+     *
+     * A FORK MAKES THAT MORE THAN A TIDINESS. It copies moves across, so an
+     * offered board has stones on it and a position with a colour to move —
+     * and if that colour happens to be the offeree's, the ladder below would
+     * have filed a game nobody had agreed to under "Your move" and carried
+     * them onto it after their last move somewhere else.
+     */
+    const group: MyGameGroup =
+      offer === "offered"
+        ? side === "to-me"
+          ? "offered"
+          : "offerSent"
+        : /*
+           * A REFUSED OFFER IS NOT A FINISHED GAME, so it does not go in the
+           * group whose hint reads "Filed in the record" — it is in no record
+           * at all. It stays with the offerer's other offers, saying which of
+           * them was declined and which withdrawn, and it leaves the list on
+           * the same window that drops a finished game (below). That is the
+           * "told once and then gone" John's queue needs, with no second
+           * mechanism to mark a thing as seen.
+           *
+           * The offeree never reaches here: their side of a refused offer has
+           * no seat on the row and no offer to derive one from, so it was
+           * dropped above. Saying no makes the game disappear for them, which
+           * is exactly what "costs nothing" should look like.
+           */
+          offer !== null
+          ? "offerSent"
+          : !running
+            ? "finished"
+            : hotSeat
+              ? "hotSeat"
+              : game.moveCount === 0
+                ? "unstarted"
+                : toPlay === seat
+                  ? "yourMove"
+                  : "theirMove";
 
     /*
      * A finished game past the member's window is left out of the list, and
-     * out of nothing else. Only the finished group: a game still waiting on
-     * somebody is never hidden, however old it has grown.
+     * out of nothing else. Only the finished group and a refused offer: a game
+     * — or an offer — still waiting on somebody is never hidden, however old it
+     * has grown.
      */
-    if (group === "finished" && !staysInMyList(since, keepFinishedDays, now)) continue;
+    const over = group === "finished" || (group === "offerSent" && offer !== "offered");
+    if (over && !staysInMyList(since, keepFinishedDays, now)) continue;
 
     groups[group].push({
       game,
       seat,
       group,
-      toPlay,
+      offer,
+      offerSide: side,
+      /*
+       * NOBODY IS TO MOVE IN AN OFFER. The position has a colour to move — a
+       * fork copies moves, so it may be either — and naming it here would put
+       * "your move" against a game nobody has agreed to play. Null is what
+       * this field already means by "there is no turn to take".
+       */
+      toPlay: offer === null ? toPlay : null,
       since,
       stale: running && now.getTime() - new Date(since).getTime() > STALE_AFTER_DAYS * 86_400_000,
     });
@@ -164,7 +295,10 @@ export async function fetchMyGames(
    * correspondence site ordered them, and why.
    */
   for (const group of MY_GAME_GROUPS) {
-    if (group === "yourMove") groups[group].sort(waitingFirst);
+    // An offer to you reads oldest first for the same reason your move does:
+    // it is a debt, and the one that has been waiting longest is the one
+    // somebody is most likely to be wondering about.
+    if (group === "yourMove" || group === "offered") groups[group].sort(waitingFirst);
     else groups[group].sort((a, b) => b.since.localeCompare(a.since));
   }
   return groups;

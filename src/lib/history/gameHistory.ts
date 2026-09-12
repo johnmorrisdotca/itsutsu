@@ -56,6 +56,19 @@ export const SUMMARY_SELECT = {
   extraMs: true,
   rated: true,
   openSeat: true,
+  /*
+   * The offer, on the one select every screen's `GameSummary` comes through.
+   *
+   * All four, and not only `offeredAt`: the board has to know WHO was asked to
+   * decide which of the two people is reading it, and the queue has to tell a
+   * declined offer from a withdrawn one to know what to say about it. A
+   * summary carrying half the answer would send each reader that needs the
+   * other half back to the database for a column this query already had.
+   */
+  offeredToMemberId: true,
+  offeredAt: true,
+  declinedAt: true,
+  withdrawnAt: true,
   blackMemberId: true,
   whiteMemberId: true,
   result: true,
@@ -133,6 +146,11 @@ export function toSummary(row: SummaryRow, names: CurrentNames): GameSummary {
     playedAt: row.playedAt.toISOString(),
     lastMoveAt: row.lastMoveAt === null ? null : row.lastMoveAt.toISOString(),
     deadlineAt: row.deadlineAt === null ? null : row.deadlineAt.toISOString(),
+    // The offer's three dates, as strings like every other date here: a
+    // summary crosses to the browser as JSON, and a `Date` does not survive it.
+    offeredAt: row.offeredAt === null ? null : row.offeredAt.toISOString(),
+    declinedAt: row.declinedAt === null ? null : row.declinedAt.toISOString(),
+    withdrawnAt: row.withdrawnAt === null ? null : row.withdrawnAt.toISOString(),
     handicap: parseHandicap(row.handicap),
     forfeits: { black: blackForfeits, white: whiteForfeits },
   };

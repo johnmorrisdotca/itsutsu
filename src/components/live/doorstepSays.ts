@@ -92,6 +92,17 @@ export function playerWord(name: string, computer: boolean): string {
  * than naming a colour that is in range and wrong half the time.
  */
 export function describeSeating(rules: { opening: string }, who: DoorstepWho): string {
+  /*
+   * The offer note is appended to whatever the seating turns out to be, rather
+   * than written into each branch: there are four ways out of the function
+   * below and three of them can name an opponent, so a branch is exactly the
+   * kind of place a sentence gets forgotten. `offerNote` answers "" for every
+   * case that is not an offer.
+   */
+  return describeSeats(rules, who) + offerNote(who);
+}
+
+function describeSeats(rules: { opening: string }, who: DoorstepWho): string {
   const against = who.opponent === null ? null : playerWord(who.opponent, who.computer);
 
   if (who.screen) {
@@ -123,6 +134,26 @@ export function describeSeating(rules: { opening: string }, who: DoorstepWho): s
   return against === null
     ? `You are ${mine} and ${order}. The ${theirs} seat is posted on the games page for whoever answers it.`
     : `Against ${against}, who plays ${theirs}; you are ${mine} and ${order}.`;
+}
+
+/**
+ * AND THAT PRESSING BEGIN MAKES AN OFFER, NOT A GAME.
+ *
+ * The doorstep's whole job is that nothing is a surprise on the other side of
+ * it, and "this person is now in a game with you" stopped being what Begin
+ * does. Somebody who reads this page and presses the button should know they
+ * are asking rather than starting — otherwise the first surprise is a board
+ * that will not let them move.
+ *
+ * Nothing for a program: it has nothing to accept with and its game starts at
+ * once, which is the reason people pick one. Nothing for a posted seat or a
+ * board at one screen either — neither names anybody to ask — and those two
+ * never reach here, since this only runs where `who.opponent` is a name.
+ */
+export function offerNote(who: DoorstepWho): string {
+  if (who.computer || who.screen || who.opponent === null) return "";
+  const them = playerWord(who.opponent, who.computer);
+  return ` This is an offer: ${them} can accept or decline it, and declining costs nobody anything.`;
 }
 
 /**

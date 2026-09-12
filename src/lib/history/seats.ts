@@ -76,10 +76,48 @@ export function seatIsFree(
     blackClaimedAt?: Date | string | null;
     whiteClaimedAt?: Date | string | null;
     moveCount?: number;
+    /**
+     * When this game was proposed to somebody who has yet to answer.
+     *
+     * REQUIRED, AND THE COMPILER IS THE GATE — the one field of this shape
+     * that is, and it is not a style choice. Every other field here answers
+     * safely when it is missing: an unstamped seat reads as free, which is
+     * what it was before any of them existed. This one is the opposite. A
+     * caller whose select forgot it hands over `undefined`, and "I was not
+     * told whether this is an offer" would then read as "it is not one" — so
+     * a seat somebody had been offered by name would be advertised to
+     * everybody looking at the board, with a link and a four-words panel
+     * beside it.
+     *
+     * That is not hypothetical: it is what happened. `LiveMatch` selected six
+     * columns and not this one, so the offeree's seat read as free and
+     * `SitAsPanel` offered it to the room. The route refused — `standInSeat`
+     * reads its own copy strictly — so it was a control that did nothing,
+     * which is the failure MatchPage's own comments warn about, inverted. A
+     * browser test found it; nothing in the type system could, while this was
+     * optional. Now it can.
+     */
+    offeredAt: Date | string | null;
   },
   seat: Stone,
 ): boolean {
   if ((game.moveCount ?? 0) > 0) return false;
+  /*
+   * NEITHER SEAT OF AN OFFER IS FREE — both rather than only the offered one,
+   * deliberately. One is the offerer's, and the other is spoken for by name:
+   * an offer is addressed to ONE person, so a seat that is "waiting for
+   * somebody" in the sense this function means — anybody may take it, and
+   * here is its link — is not what an offered seat is.
+   *
+   * Saying it of both keeps this reading three columns instead of five, and
+   * closes three doors at once. The invite links and the four-words panel
+   * beside the board both ask this (`MatchPage`), so an offer shows neither —
+   * an offer mints a way in for nobody. And `rulesAreSettled` below reads it,
+   * which settles the rules of an offer the moment it is made: the rules ARE
+   * the offer, and moving them afterwards would make it a different question
+   * from the one that was asked.
+   */
+  if (game.offeredAt !== null) return false;
   // A posted seat is offered to anybody, but — like every other seat — only
   // until somebody takes it. There is no case left where openSeat matters.
   const claimed = seat === STONES.black ? game.blackClaimedAt : game.whiteClaimedAt;
@@ -139,6 +177,18 @@ export async function wouldAnswerTheirOwnInvitation(
 export function rulesAreSettled(game: {
   openSeat?: string | null;
   openedAt?: Date | string | null;
+  /**
+   * Proposed to somebody who has yet to answer.
+   *
+   * Settled, and read through `seatIsFree` at the foot of this function rather
+   * than tested here: the rules of an offer are what was offered. A challenger
+   * who could move the board, the clock or the game itself while the question
+   * stood would be asking one thing and starting another.
+   *
+   * Required for the reason `seatIsFree` gives at length: absent would mean
+   * "not an offer", which is the plausible wrong answer.
+   */
+  offeredAt: Date | string | null;
   blackClaimedAt?: Date | string | null;
   whiteClaimedAt?: Date | string | null;
   blackMemberId?: string | null;
