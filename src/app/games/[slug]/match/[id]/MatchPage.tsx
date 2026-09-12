@@ -18,7 +18,7 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { isHotSeat } from "@/lib/history/liveGame";
 import { isIgnoring } from "@/lib/social/ignores";
-import { ratingRefusal } from "@/lib/rating/rateable";
+import { gameRatingRefusal } from "@/lib/rating/rateable";
 import { matchPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -232,34 +232,6 @@ async function LiveMatch({
   ignoring: readonly Stone[];
 }) {
   /*
-   * Whether this game will move a rating, and if it will not, why.
-   *
-   * Said here, while the game is still being played, because afterwards there
-   * is nothing to say it with: the ladder has not moved and there is no gap on
-   * a page to click on. A seat still posted on the noticeboard is left alone —
-   * it has no name on it because nobody has taken it yet, which is a game
-   * waiting rather than a game that will not count.
-   */
-  /*
-   * THE NAMES AS PLAYED, not the names to show. `ratingRefusal` asks whether one
-   * person held both seats, and the ladder is keyed by the name a game was played
-   * under — so this has to read what the row says, not what the screen says. The
-   * two are the same word until somebody renames, and `recordResult` decides the
-   * real thing off the raw row: reading the resolved names here would let this
-   * page explain a refusal the database never made.
-   */
-  const refusal =
-    game.rated && game.openSeat === null ? ratingRefusal(game.playedAs.black, game.playedAs.white) : null;
-
-  /*
-   * The board this member likes, on the board they are actually playing on.
-   * The shared game drew the default and nothing else, so a board dressed on
-   * the account followed them into a local game and stopped at the door of a
-   * real one.
-   */
-  const appearance = appearanceFrom(await appearanceFor(await currentEmail()));
-
-  /*
    * Seat links are only handed out to someone who already holds one. A reader
    * with no claim, or the wrong one, gets a board they can watch and not
    * touch — so a shared spectator link cannot be turned into a seat.
@@ -270,6 +242,9 @@ async function LiveMatch({
    * game, which meant either of them could play the other's moves. A seat
    * somebody is already sitting in has no link worth giving out and every
    * reason not to have one on screen.
+   *
+   * Fetched before `refusal` below, which reads the tokens too: hot seat is
+   * a fact about them, not about the names.
    */
   const tokens = await prisma.game.findUnique({
     where: { id: game.id },
@@ -283,6 +258,46 @@ async function LiveMatch({
       moveCount: true,
     },
   });
+
+  /*
+   * Whether this game will move a rating, and if it will not, why.
+   *
+   * Said here, while the game is still being played, because afterwards there
+   * is nothing to say it with: the ladder has not moved and there is no gap on
+   * a page to click on. A seat still posted on the noticeboard is left alone —
+   * it has no name on it because nobody has taken it yet, which is a game
+   * waiting rather than a game that will not count.
+   *
+   * `gameRatingRefusal` is the same question the write side asks before ever
+   * calling `recordResult` — hot seat and the name-fold rule both, not either
+   * alone. Checking the names alone would show a hot-seat game between two
+   * ordinary, different names as an on-track rated game right up to the
+   * moment it finished, which is exactly what ten of twelve production rows
+   * did.
+   *
+   * THE NAMES AS PLAYED, not the names to show: `ratingRefusal` (inside
+   * `gameRatingRefusal`) asks whether one person held both seats, keyed by
+   * the name a game was played under, not by however it renders today. See
+   * `playedAs` on `GameSummary` — reading the resolved `blackName` here would
+   * let this page explain a refusal the database never made.
+   */
+  const refusal =
+    game.openSeat === null
+      ? gameRatingRefusal({
+          rated: game.rated,
+          hotSeat: tokens !== null && isHotSeat(tokens),
+          blackName: game.playedAs.black,
+          whiteName: game.playedAs.white,
+        })
+      : null;
+
+  /*
+   * The board this member likes, on the board they are actually playing on.
+   * The shared game drew the default and nothing else, so a board dressed on
+   * the account followed them into a local game and stopped at the door of a
+   * real one.
+   */
+  const appearance = appearanceFrom(await appearanceFor(await currentEmail()));
 
   /*
    * A seat holder opening the game is that seat's holder arriving, and until
