@@ -15,14 +15,18 @@ const STANDARD = [
   "/games/gomoku/standings",
   "/history",
   "/learn",
-  "/players",
   "/champions",
   "/about",
   "/me",
 ];
 // The board wants the room. It is /games/<slug>/play now — /games/<slug>
 // itself is the game's page, and reads on the same column as the rest.
-const WIDE = ["/games/gomoku/play"];
+/*
+ * /players is wide since 0.164.2: the members table wants 1118px and was cutting
+ * "Challenge" 61px past the edge of the standard column. Page.tsx splits `width`
+ * from `board`, so it is wide without being a board page — no "Just the board".
+ */
+const WIDE = ["/games/gomoku/play", "/players"];
 
 async function mainWidth(page: import("@playwright/test").Page, path: string): Promise<number> {
   await page.goto(path);
