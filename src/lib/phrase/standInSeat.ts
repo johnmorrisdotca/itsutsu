@@ -140,7 +140,18 @@ export async function seatStandIn(
    */
   await prisma.game.update({
     where: { id },
-    data: { [`${seat}MemberId`]: memberId, [`${seat}Name`]: shown },
+    /*
+     * AND THE SEAT IS NO LONGER OPEN. Binding the member and stamping the name
+     * is not taking the seat: `openSeat` is what the board reads to decide
+     * whether the game has started, and while it still names a waiting colour
+     * the page draws a board nobody can play on — "Posted and waiting for
+     * somebody", no players, no turn, no move. That is exactly what John met
+     * at the kitchen table on 2026-09-12: Hanachan started Wild Tic-tac-toe,
+     * he sat in with his four words, and "we can't even play a piece." The
+     * seat-link claim clears it (openGames.ts); this path forgot to. Same
+     * write, or it is not a claim.
+     */
+    data: { [`${seat}MemberId`]: memberId, [`${seat}Name`]: shown, openSeat: null },
   });
 
   /*
