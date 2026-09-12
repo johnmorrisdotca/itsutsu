@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canChooseColour, canExtendOpening, canSwapSeats, chooseColour, createGame, extendOpening, isLegalMove, playMove, resolveOpener, seatToPlay } from "../engine";
+import { openingDecidesColours } from "./opening";
 import { replayMoves } from "./record";
 import {
   FIRST_PLAYERS,
@@ -240,5 +241,68 @@ describe("swap2", () => {
     const last = timeline[timeline.length - 1];
     expect(last.moves).toHaveLength(4);
     expect(last.seats).toEqual(start.seats);
+  });
+});
+
+/**
+ * WHICH OPENINGS DECIDE THE COLOURS, asked as a question rather than read off a
+ * list in a page.
+ *
+ * The doorstep states every fact a game will be played under before the game
+ * exists, and under these five it cannot state the colours: one player lays the
+ * first stones and the other looks at the position and chooses. Naming black
+ * beforehand would be plausible and wrong half the time, so the page asks this
+ * and says "the opening decides" instead.
+ *
+ * Tested here, beside the rule, rather than in the page — and tested in BOTH
+ * directions, because the failure that matters is the false negative: an opening
+ * that swaps and answers no would have the doorstep promising a colour it cannot
+ * deliver, which is worse than saying nothing.
+ */
+describe("whether an opening decides who plays which colour", () => {
+  it("says yes to every protocol that offers a swap", () => {
+    for (const opening of [
+      OPENING_RULES.swap,
+      OPENING_RULES.swap2,
+      OPENING_RULES.rif,
+      OPENING_RULES.sakata,
+      OPENING_RULES.tarannikov,
+    ]) {
+      expect(openingDecidesColours(opening), opening).toBe(true);
+    }
+  });
+
+  it("says no to the ones that only restrict where stones may go", () => {
+    for (const opening of [OPENING_RULES.free, OPENING_RULES.pro, OPENING_RULES.longPro]) {
+      expect(openingDecidesColours(opening), opening).toBe(false);
+    }
+  });
+
+  it("agrees with the engine: a yes is an opening that actually pauses to choose", () => {
+    /*
+     * The answer checked against the thing it is an answer about, rather than
+     * against a second list. An opening that decides the colours is one that reaches
+     * a `choosing` stage, so a swap added to one list and not the other shows up
+     * here instead of in a sentence on a page nobody is testing.
+     */
+    const three = [centre, p(7, 8), p(8, 8)];
+    /*
+     * The renju protocols are on renju, because `normaliseSettings` drops an
+     * opening the variant does not offer — a freestyle game asked for RIF is
+     * quietly a free one, and a case that did not know that would be testing the
+     * fallback while believing it was testing the swap.
+     */
+    for (const [opening, variant] of [
+      [OPENING_RULES.swap, RULE_VARIANTS.freestyle],
+      [OPENING_RULES.swap2, RULE_VARIANTS.freestyle],
+      [OPENING_RULES.rif, RULE_VARIANTS.renju],
+    ] as const) {
+      const game = play(createGame({ variant, opening }), three);
+      expect(game.settings.opening, opening).toBe(opening);
+      expect(game.opening.stage, opening).toBe(OPENING_STAGES.choosing);
+      expect(openingDecidesColours(opening), opening).toBe(true);
+    }
+    const plain = play(createGame({ opening: OPENING_RULES.free }), three);
+    expect(plain.opening.stage).toBe(OPENING_STAGES.done);
   });
 });

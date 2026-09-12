@@ -47,6 +47,31 @@ async function setUpScreen(page: Page) {
   };
 }
 
+/**
+ * Presses Start and says what it reaches: the doorstep, and still no game.
+ *
+ * THE SECOND HALF OF THIS FILE'S RULE, added when the doorstep was. Each case
+ * below already proved that a press lands on the setup screen rather than on a
+ * board. What none of them said was where the button at the BOTTOM of that
+ * screen goes — and for a long time it went straight to a board, which is the
+ * complaint John made four times: "we go straight to the game rather than the
+ * Doorstep screen which confirms settings".
+ *
+ * So every entry point is now followed one press further. It is cheap, because
+ * the thing being asserted is that nothing happens: no row is written and no
+ * board is loaded.
+ */
+async function throughTheDoorstep(page: Page) {
+  await page.getByTestId("set-up-start").click();
+  await expect(page).toHaveURL(/\/games\/[^/]+\/begin(\?|$)/);
+  await ready(page, "doorstep");
+  await expect(page.getByTestId("doorstep-begin")).toBeVisible();
+  await expect(page.getByTestId("doorstep-change")).toBeVisible();
+  // A statement, not a board and not a second form.
+  await expect(page.getByTestId("shared-game")).toHaveCount(0);
+  await expect(page.getByTestId("set-up-game")).toHaveCount(0);
+}
+
 test.describe("every way into a game reaches the setup screen", () => {
   test("Play, on the page about a player", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
@@ -77,6 +102,8 @@ test.describe("every way into a game reaches the setup screen", () => {
     // And the game is a question: the address named nobody's game, so it is asked.
     await expect(screen.game).toBeVisible();
     await expect(screen.start).toBeVisible();
+
+    await throughTheDoorstep(page);
 
     await context.close();
   });
@@ -114,6 +141,8 @@ test.describe("every way into a game reaches the setup screen", () => {
     await openMoreSettings(page);
     await expect(screen.opponent).toHaveValue(`m:${theirId}`);
 
+    await throughTheDoorstep(page);
+
     await context.close();
   });
 
@@ -145,6 +174,8 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(screen.game, "the game is asked, because a program plays any of them").toBeVisible();
     await openMoreSettings(page);
     await expect(screen.opponent).not.toHaveValue("anyone");
+
+    await throughTheDoorstep(page);
 
     await context.close();
   });
@@ -250,6 +281,14 @@ test.describe("every way into a game reaches the setup screen", () => {
     await openMoreSettings(page);
     await expect(screen.pace).toHaveValue(String(24 * 60 * 60_000));
 
+    /*
+     * And the doorstep repeats the board the sentence settled, which is the point
+     * of carrying the whole draft in the address rather than a head start on one:
+     * a confirmation that quietly showed 9x9 would be worse than none.
+     */
+    await throughTheDoorstep(page);
+    await expect(page.getByTestId("doorstep-statement")).toContainText("19×19");
+
     await context.close();
   });
 
@@ -274,6 +313,13 @@ test.describe("every way into a game reaches the setup screen", () => {
     const screen = await setUpScreen(page);
     await openMoreSettings(page);
     await expect(screen.opponent).toHaveValue(`m:${theirId}`);
+
+    /*
+     * The doorstep names them and says which colour each of them gets, which is
+     * the fact a person most wants before agreeing to a game.
+     */
+    await throughTheDoorstep(page);
+    await expect(page.getByTestId("doorstep-colours")).toContainText(/black/i);
 
     await context.close();
   });
@@ -332,6 +378,9 @@ test.describe("every way into a game reaches the setup screen", () => {
       "page",
     );
 
+    await chooseGame(page, "reversi");
+    await throughTheDoorstep(page);
+
     await context.close();
   });
 
@@ -357,6 +406,9 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(page).toHaveURL(/\/games\/new$/);
     await setUpScreen(page);
 
+    await chooseGame(page, "reversi");
+    await throughTheDoorstep(page);
+
     await context.close();
   });
 
@@ -378,6 +430,13 @@ test.describe("every way into a game reaches the setup screen", () => {
     await page.goto(`/players/${theirId}`);
     await page.getByTestId("player-actions").getByTestId("challenge").click();
     await setUpScreen(page);
+    /*
+     * ALL THE WAY TO THE LAST PRESS BEFORE THE GAME. The promise used to end at
+     * the setup screen, which was one screen short: the press at the bottom of it
+     * wrote a row. Standing on the doorstep, having read what is about to happen,
+     * is still nothing written.
+     */
+    await throughTheDoorstep(page);
 
     const mine = await context.request.get("/api/games/mine");
     /*
