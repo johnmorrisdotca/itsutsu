@@ -168,9 +168,23 @@ describe("describeSettings", () => {
 
     it("leaves a draft alone: with no refusal, the choice is still the answer", () => {
       // The setup form and the doorstep hold a draft rather than a game, and
-      // pass nothing. Those callers must read exactly as they did.
+      // pass nothing for every game that can count. Those callers read exactly
+      // as they did.
       expect(words()).toContain("Rated");
       expect(words({ rated: false })).toContain("Friendly");
+    });
+
+    it("and answers for the one draft that already knows: a fork with nobody", () => {
+      /*
+       * A fork with no opponent becomes a board at one screen, so the refusal
+       * is knowable before the game is written — and the draft it carries says
+       * `rated: true`, because that is what the game it forked said. The setup
+       * form and the doorstep pass `hotSeat` for that case and withhold the
+       * control, which is the only thing this line has to get right about a
+       * draft: what it says must be what will happen.
+       */
+      expect(words({ rated: true }, RATING_REFUSALS.hotSeat)).toContain(RATING_REFUSED_WORD);
+      expect(words({ rated: true }, RATING_REFUSALS.hotSeat)).not.toContain("Rated");
     });
   });
 });

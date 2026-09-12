@@ -16,6 +16,7 @@ import { sittingAt } from "@/components/live/sittingAt";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
+import { RATING_REFUSALS } from "@/lib/rating/rateable.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export const dynamic = "force-dynamic";
@@ -99,6 +100,21 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   });
 
   /*
+   * WHY THIS GAME COULD NEVER COUNT, WHERE THAT IS ALREADY SETTLED.
+   *
+   * A board at one screen moves no rating whatever the draft says: the write
+   * path reads the seats before it asks the names and never reaches
+   * `recordResult`. The one press that gets there from here is a fork with
+   * nobody to hand the second seat to, which `seatsFor` has just answered for
+   * the seating sentence — so both halves of this page read the same fact, and
+   * neither can print "Rated" two lines under "Both seats are yours".
+   *
+   * Null otherwise, and that is not a guess: every other press makes a game
+   * between two people, where the rating is a choice and the draft holds it.
+   */
+  const refused = screen ? RATING_REFUSALS.hotSeat : null;
+
+  /*
    * WHAT BEGIN WILL DO — decided on the server, and the only thing on this page
    * that writes. `creationFor` is the same function the Start button used to send
    * its body through, unchanged: the request is identical, it has simply moved one
@@ -151,7 +167,8 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
         variant={rules.variant}
         address={beginLink(from.initial, known)}
         rules={rules}
-        prose={describeGameProse(rules)}
+        refused={refused}
+        prose={describeGameProse(rules, refused)}
         seating={seating}
         change={changeLink(from.initial, known)}
         begin={begin}

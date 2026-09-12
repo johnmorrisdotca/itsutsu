@@ -35,9 +35,15 @@ export function RulesStatement({
    * Why this game cannot move a rating, when it cannot — so the Ratings row
    * below says what happened rather than what the row's column claims.
    *
-   * Null for a draft. The doorstep shows these same rows for a game that does
-   * not exist yet, where `rated` IS the answer because it is the choice being
-   * made and there is no game to refuse.
+   * Null for a draft, nearly always: the doorstep shows these same rows for a
+   * game that does not exist yet, where `rated` IS the answer because it is the
+   * choice being made and there is no game to refuse.
+   *
+   * The one draft that can answer is one whose press is already settled to a
+   * board at one screen — a fork with nobody to hand the second seat to. The
+   * doorstep passes `hotSeat` for it, because "Counts towards ratings" in this
+   * row two lines under "Both seats are yours" is the same contradiction on a
+   * game that has not happened yet.
    */
   refusal?: RatingRefusal | null;
   /**

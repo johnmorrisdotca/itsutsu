@@ -11,6 +11,7 @@ import type { OpeningRule } from "@/lib/gomoku/gomoku.types";
 import { openingDecidesColours } from "@/lib/gomoku/rules/opening";
 import { RULE_VARIANT_DISPLAY, variantLabel } from "@/lib/gomoku/variants.constants";
 import { MEMBER_KIND_DISPLAY, MEMBER_KINDS } from "@/lib/auth/memberKind";
+import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { shownName } from "@/lib/rating/shownName";
 import type { RulesDraft } from "./rulesDraft";
 import { describeHandicap, describeSettings } from "./rulesSummary";
@@ -165,8 +166,16 @@ export function offerNote(who: DoorstepWho): string {
  * things in the same sequence. A free opening is left out here exactly as it is
  * left out of the one-line statement: the ordinary answer to a question nobody
  * asked is not worth a sentence.
+ *
+ * `refused` is `hotSeat` where `who.screen` is true and null otherwise, and it
+ * is a parameter rather than something read off the draft because the draft
+ * cannot know it: whether both seats end up in front of one person is a fact
+ * about the SEATS. It matters here because this paragraph is the last thing read
+ * before a game is written — and a board at one screen will move no rating
+ * whatever the draft says, so "Rated." above "Both seats are yours" would be
+ * this page contradicting itself in two sentences.
  */
-export function describeGameProse(rules: RulesDraft): string {
+export function describeGameProse(rules: RulesDraft, refused: RatingRefusal | null): string {
   const variant = rules.variant as RuleVariant;
   const copy = RULE_VARIANT_DISPLAY[variant];
   const name = copy === undefined ? variantLabel(rules.variant) : `${copy.label} ${copy.kanji}`;
@@ -186,7 +195,7 @@ export function describeGameProse(rules: RulesDraft): string {
   const blocks = rules.obstacles === OBSTACLE_LAYOUTS.hoshi ? ", with the star points blocked" : "";
 
   const sentences = [`${name} on ${article(board)} ${board} board${blocks}.`];
-  for (const word of describeSettings(rules)) {
+  for (const word of describeSettings(rules, refused)) {
     if (word.text === `${OPENING_DISPLAY[OPENING_RULES.free].label} opening`) continue;
     sentences.push(`${word.text}.`);
   }
