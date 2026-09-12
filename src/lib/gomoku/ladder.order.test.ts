@@ -43,6 +43,27 @@ import type { BotTier, SearchBudget } from "./opponent.types";
  * a tool rather than a gate — a matrix over three boards is minutes. What is
  * gated here is short, seeded, and counted in positions rather than seconds, so
  * it says the same thing on a loaded machine as on an idle one.
+ *
+ * WHAT IS STILL NOT AN ORDER, because a ladder half fixed and described as fixed
+ * is the fault this file exists about:
+ *
+ * - **名人 and 国手 are level at most games.** Both deepen two plies at a time
+ *   and keep the last pass they FINISHED, so asking one for eight plies and the
+ *   other for six changes nothing at all unless an eight-deep pass finishes
+ *   inside a request. Reversi over thirty games: 14-16, and over fifteen
+ *   positions the two depths chose the same move every time. Five in a row over
+ *   ten games: 5-5, and not one of them drawn. Where the branching is small
+ *   enough the extra plies do arrive — a board of checkers, a race — so it is a
+ *   per-game fact, and 国手's blurb now says as much rather than promising a
+ *   deeper read everywhere. See LEVEL_AT_THE_TOP for the games where neither of
+ *   them searches at all.
+ * - **The three grades that do not search are level at Reversi**: разряд 14-16
+ *   級, разряд 14-16 段, while 級 loses 6-23 to 段. A flipping game cannot be
+ *   played at one ply, so no reweighting of the one-ply reading orders three
+ *   one-ply players — `flipScore`'s comment carries the measurement from trying.
+ * - **段's 1-1-with-four-draws against 名人 at five in a row was a six-game
+ *   artefact.** Over ten games it is 1-9, and none drawn. The flattening in that
+ *   report was real for the top two and not for 段.
  */
 
 /**

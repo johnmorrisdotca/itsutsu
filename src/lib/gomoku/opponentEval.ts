@@ -92,6 +92,27 @@ function corners(size: number): Point[] {
  * Holding more discs early is famously the losing plan — every disc is one
  * more thing the other side can turn — so the count is weighted by how full
  * the board is, and matters most at the end, when it is the whole result.
+ *
+ * DO NOT REWEIGHT THIS TO FIX THE BOTTOM OF THE LADDER. It was tried, and the
+ * measurement is the reason it is not here.
+ *
+ * The three grades that do not search are level with each other at Reversi:
+ * over thirty games a pairing, разряд 14-16 級 and разряд 14-16 段 while 級 loses
+ * 6-23 to 段 — so following this reading MORE closely at one ply does not
+ * reliably make a player stronger. The obvious culprit is the disc term, since
+ * greedy disc-taking is the classic losing plan, and the obvious fix is to make
+ * it later still. Cubing `fullness` made things worse in both directions:
+ * разряд went to 15-11 up on 級, and 級 came out 16-14 AHEAD of 段, which is a
+ * new inversion where there had been a clear one.
+ *
+ * The diagnosis that survives is that a flipping game cannot be played at one
+ * ply at all. A move there is good or bad because of what it lets the other side
+ * do next, so no weighting of a reading that cannot see next puts three one-ply
+ * players in an order. What separates the bottom grades is their noise and their
+ * blunder rate, and those need a judgement worth degrading. Giving 段 a search
+ * would order them — and 段 is the Medium grade, so that is a bill on every
+ * middling game on the site, and a decision for the site's owner rather than for
+ * this comment.
  */
 function flipScore(state: GameState, stone: Stone, spec: VariantSpec): number {
   const { size } = state.settings;
