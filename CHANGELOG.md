@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.158.8 — 2026-09-12
+- The fork button no longer sits on the last move of a finished game offering to replay the end of a loss: it appears only when you have stepped back to an earlier position, and only if you were one of the players — a watcher is never offered a fork
+
 ## 0.158.7 — 2026-09-12
 - Choosing a family on the setup page now moves the boards with it — click Drops and you see Drop Four's boards, not the last game's — and a game with only one board shows that board instead of nothing
 - Each family on the setup page carries its one-line description, and the family row sits apart from the games under it

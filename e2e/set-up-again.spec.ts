@@ -207,9 +207,18 @@ test.describe("carrying a position into a new game", () => {
     const stamp = Date.now().toString(36);
     const { context, them, game } = await playedOut(browser, baseURL!, stamp);
     const page = await context.newPage();
-    await page.goto(`/games/gomoku/match/${game.id}`);
+    /*
+     * One before the end, not the address `playedOut` finishes on: a fork is
+     * hidden at the game's own last move (it would offer to replay the very
+     * position that just decided it, beside "Play again"), so this test reads
+     * it from a position where it is actually offered. What is under test
+     * here is the fork's OWN behaviour once shown — that it names its game
+     * and its move — not when it is shown, which `fork.test.ts` and the
+     * fork-visibility spec cover.
+     */
+    await page.goto(`/games/gomoku/match/${game.id}/4`);
 
-    const fork = page.getByRole("link", { name: /Play from move 5/ });
+    const fork = page.getByRole("link", { name: /Play from move 4/ });
     await expect(fork).toBeVisible();
     await fork.click();
 
@@ -218,10 +227,10 @@ test.describe("carrying a position into a new game", () => {
      * reason: a position belongs to the game it was played in. Offering to make
      * a Gomoku position a Halma one would not be a preference.
      */
-    await expect(page).toHaveURL(new RegExp(`/games/gomoku/new\\?from=${game.id}&move=5`));
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/new\\?from=${game.id}&move=4`));
     await ready(page, "set-up-game");
 
-    await expect(page.getByTestId("set-up-fork")).toContainText("move 5");
+    await expect(page.getByTestId("set-up-fork")).toContainText("move 4");
     await expect(page.getByTestId("set-up-fork")).toContainText(them.name);
     /*
      * So the game is not offered — and the absence is asserted only after
@@ -245,8 +254,9 @@ test.describe("carrying a position into a new game", () => {
     const stamp = Date.now().toString(36);
     const { context, game } = await playedOut(browser, baseURL!, stamp);
     const page = await context.newPage();
-    await page.goto(`/games/gomoku/match/${game.id}`);
-    await page.getByRole("link", { name: /Play from move 5/ }).click();
+    // One before the end — see the fork test above for why the last move itself offers none.
+    await page.goto(`/games/gomoku/match/${game.id}/4`);
+    await page.getByRole("link", { name: /Play from move 4/ }).click();
     await ready(page, "set-up-game");
 
     /*
@@ -268,7 +278,7 @@ test.describe("carrying a position into a new game", () => {
     const next = (await made.json()) as { size: number; moveTimeMs: number | null; moveCount: number };
     expect(next.moveTimeMs, "the pace this game was set up with").toBe(5 * 60_000);
     expect(next.size, "and the board the position needs, which was not asked about").toBe(9);
-    expect(next.moveCount, "with the position carried into it").toBe(5);
+    expect(next.moveCount, "with the position carried into it").toBe(4);
 
     await context.close();
   });
