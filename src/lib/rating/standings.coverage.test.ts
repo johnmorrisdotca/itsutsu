@@ -138,18 +138,34 @@ describe("the two ladders cannot disagree", () => {
   });
 
   /**
-   * Four endings, and the one that deliberately rates nothing.
+   * The endings that owe a result, and the three that deliberately owe none.
    *
    * A game reaches `finished` from a move that wins it, a flag somebody claims,
    * a resignation, and a position with no legal turn in it — a full Reversi
    * board, which has no last move to do the filing and was sitting `active` on
    * production until `settleEnded` was written. Each of those must record the
-   * result. `cancelGame` must NOT: a board with no stones on it costs nobody
-   * anything, and its own comment says so.
+   * result.
+   *
+   * Three must not, and each says so in its own source: `cancelGame`, because a
+   * board with no stones on it costs nobody anything; `truncateMoves`, because
+   * it refuses anything but a hot seat and a game at one screen is never rated;
+   * and `endOffer`, because an offer declined or withdrawn was never a game.
+   *
+   * **`endOffer` is the entry this gate earned its place with a second time.**
+   * The offers work landed while this branch was open, and the rebase was clean
+   * — nothing had reason to object, because the new way of filing a game is in
+   * a file this branch never touched. Only this test could say that another
+   * ending had appeared and ask it whether it owed a result.
    */
   const NEVER_RATES = new Map([
     ["cancelGame", "a game with no moves in it costs nobody anything — no winner, no rating"],
     ["truncateMoves", "refuses anything but a hot seat, and a game at one screen is never rated"],
+    [
+      "endOffer",
+      "the one write behind declineOffer and withdrawOffer: an offer nobody accepted is" +
+        ' filed finished/abandoned with a null winner, and `result: "abandoned"` is the' +
+        " one value the rebuild's own `where` excludes — there is no result to record",
+    ],
   ]);
 
   it("records a result from every ending that finishes a game", () => {
