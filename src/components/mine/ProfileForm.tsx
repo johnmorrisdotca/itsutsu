@@ -8,6 +8,7 @@ import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.cons
 import { KEEP_FINISHED_DAYS, KEEP_FINISHED_DISPLAY } from "@/lib/history/retention";
 import { MOST_DAYS_OFF, WEEKDAYS, WEEKDAY_DISPLAY } from "@/lib/social/daysOff";
 import { resolveCountry, type MemberCountry } from "@/lib/social/countries";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 export type ProfileFields = {
   awayFrom: string;
@@ -180,7 +181,7 @@ export function ProfileForm({
    * line at the panel's full width, which is roughly twice a comfortable one.
    */
   return (
-    <form onSubmit={submit} className="flex max-w-[29rem] flex-col gap-7" data-testid="profile-form">
+    <form onSubmit={submit} className="flex max-w-[29rem] flex-col gap-7" data-testid="profile-form" {...readyMark(useHydrated())}>
       {/* WHERE YOU ARE, AND A LINE ABOUT YOU. */}
       <div className="flex flex-col gap-3">
         {/*

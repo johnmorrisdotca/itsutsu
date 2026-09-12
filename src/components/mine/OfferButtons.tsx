@@ -7,6 +7,7 @@ import { Paired } from "@/components/i18n/Paired";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { OFFER_ACTIONS, type OfferAction } from "@/lib/history/offers.types";
 import { MY_GAMES_COPY } from "./mine.constants";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /**
  * ANSWERING AN OFFER: accept, decline, or take it back.
@@ -69,7 +70,7 @@ export function OfferButtons({
 
   const copy = MY_GAMES_COPY.offer;
   return (
-    <span className="flex flex-col items-end gap-1">
+    <span className="flex flex-col items-end gap-1" data-testid="offer-buttons" {...readyMark(useHydrated())}>
       {refused === null ? null : (
         <span className="text-xs text-ochre" role="status" data-testid="offer-refused">
           {refused}

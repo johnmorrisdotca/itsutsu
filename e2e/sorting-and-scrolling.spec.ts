@@ -104,6 +104,7 @@ test.describe("the record sorts and scrolls", () => {
     const crashes = watchForCrashes(page);
     await page.goto("/history");
     // The filter bar is a client component; its select is only live once attached.
+    await ready(page, "history-filters");
     await ready(page, "live-record");
 
     const before = await recordIds(page);

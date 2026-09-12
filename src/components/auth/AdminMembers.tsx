@@ -12,6 +12,7 @@ import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { PlayerName } from "@/components/players/PlayerName";
 import { ADMIN_WORDS_COPY } from "./admin.constants";
 import { MemberKindBadge } from "./MemberKindBadge";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { MemberWordsModal } from "./MemberWordsModal";
 import type { WordsSubject } from "./admin.types";
 
@@ -101,7 +102,7 @@ export function AdminMembers() {
   const capped = total > members.length;
 
   return (
-    <section className="flex flex-col gap-3" data-testid="admin-members">
+    <section className="flex flex-col gap-3" data-testid="admin-members" {...readyMark(useHydrated())}>
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
         <Paired en="Members" kanji="会員" kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         <span className="font-normal tracking-normal" data-testid="member-total">

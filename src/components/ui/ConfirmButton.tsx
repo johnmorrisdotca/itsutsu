@@ -2,6 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+
 import { Button } from "./Controls";
 import { ASKING } from "./ui.constants";
 import type { Asking } from "./ui.types";
@@ -61,6 +63,20 @@ export function ConfirmButton({
   testId: string;
 }) {
   const [asking, setAsking] = useState(false);
+  /*
+   * WHY THE TRIGGER CARRIES A READY MARK.
+   *
+   * It is server-rendered, so it is a real button before React attaches — and
+   * a press in that window does nothing at all: the question never goes up,
+   * and a spec then fails on the `-yes` button it cannot find, which reads as
+   * the confirmation being broken rather than as the press being early. One
+   * mark here covers every act that asks first: resigning and calling off a
+   * game, throwing an unfinished board away, opening or shutting the door.
+   *
+   * `readyHere` in e2e/support.ts is how a spec waits for it, because these
+   * appear once per row and a page-wide `getByTestId` would be ambiguous.
+   */
+  const hydrated = useHydrated();
 
   /**
    * The one place the question's state changes, so it cannot be moved without
@@ -83,6 +99,7 @@ export function ConfirmButton({
           title={title}
           className={className}
           data-testid={testId}
+          {...readyMark(hydrated)}
         >
           {label}
         </button>
@@ -95,6 +112,7 @@ export function ConfirmButton({
         strong={strong}
         title={title}
         data-testid={testId}
+        {...readyMark(hydrated)}
       >
         {label}
       </Button>

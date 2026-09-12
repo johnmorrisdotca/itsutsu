@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext, seedMember } from "./members";
+import { ready } from "./support";
 
 /**
  * The days of the week somebody does not play.
@@ -25,6 +26,11 @@ test.describe("days I do not play", () => {
     // Nobody starts with a day off: deadlines work as they always have.
     await expect(page.getByTestId("day-off-0")).toHaveAttribute("aria-pressed", "false");
 
+    // The profile is a server-rendered form: its selects and its day
+    // buttons are real controls before React attaches, and a choice made
+    // then is dropped — the state never hears it and the next render puts
+    // the control back where it was.
+    await ready(page, "profile-form");
     await page.getByTestId("day-off-0").click();
     await page.getByTestId("day-off-6").click();
     await page.getByRole("button", { name: "Save profile" }).click();
@@ -48,6 +54,11 @@ test.describe("days I do not play", () => {
     const page = await context.newPage();
     await page.goto("/me?view=profile");
 
+    // The profile is a server-rendered form: its selects and its day
+    // buttons are real controls before React attaches, and a choice made
+    // then is dropped — the state never hears it and the next render puts
+    // the control back where it was.
+    await ready(page, "profile-form");
     for (const day of [0, 1, 2, 3, 4, 5]) await page.getByTestId(`day-off-${day}`).click();
     // Six taken; the seventh is not on offer, because a game that could never
     // reach a deadline is not a preference.

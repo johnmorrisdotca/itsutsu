@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ready } from "./support";
 
 /**
  * A long request shows its opening and offers the rest.
@@ -13,6 +14,10 @@ import { expect, test } from "@playwright/test";
 test.describe("a long request on the board", () => {
   test("shows its opening, and the whole of it when asked", async ({ page }) => {
     await page.goto("/admin?view=work");
+    // The fold is a button inside the board's client component. Waiting for
+    // the mark also makes the assertion below a statement about a rendered
+    // board rather than about how fast the request came back.
+    await ready(page, "backlog-filters");
     const toggle = page.getByTestId("backlog-detail-toggle").first();
     // Every board this suite runs against has at least one long request on it;
     // if that ever stops being true this says so rather than passing quietly.
@@ -43,6 +48,7 @@ test.describe("a long request on the board", () => {
 
   test("says whether it is open, for somebody not using a mouse", async ({ page }) => {
     await page.goto("/admin?view=work");
+    await ready(page, "backlog-filters");
     const toggle = page.getByTestId("backlog-detail-toggle").first();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await toggle.click();

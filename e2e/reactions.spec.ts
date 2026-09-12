@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ready } from "./support";
 
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(request: import("@playwright/test").APIRequestContext) {
@@ -20,6 +21,13 @@ test.describe("reactions between the two players", () => {
     await black.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await white.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
+    /*
+     * Both boards, before either is driven. A stone played before React has
+     * the board is dropped, and then the OTHER side waits out its ten-second
+     * poll for a move nobody made — which reads as the poll being broken.
+     */
+    await ready(black, "shared-game");
+    await ready(white, "shared-game");
     await black.getByRole("button", { name: /^E5, empty$/ }).click();
     // White reacts to the move once its own poll has shown it.
     await expect(white.getByRole("button", { name: "E5, Black stone" })).toBeVisible({
@@ -41,6 +49,9 @@ test.describe("reactions between the two players", () => {
   }) => {
     const game = await startGame(request);
     await page.goto(`/games/gomoku/match/${game.id}`);
+    // The board is what a watcher does get, waited for, so the absence below
+    // is about a rendered page and not about how fast it answered.
+    await ready(page, "shared-game");
     await expect(page.getByTestId("reaction-bar")).toHaveCount(0);
 
     const refused = await request.post(`/api/games/${game.id}/reactions`, {

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { playerSlug } from "../src/lib/rating/playerKey";
-import { playAt, playSequence, winningSequence } from "./support";
+import { playAt, playSequence, ready, winningSequence } from "./support";
 
 test.describe("the game record", () => {
   test("a finished game is filed and can be replayed", async ({ page }) => {
@@ -41,6 +41,13 @@ test.describe("the game record", () => {
     // The replay opens at the final position and steps backwards.
     await expect(page.getByRole("button", { name: "H8, Black stone" })).toBeVisible();
     await expect(page.getByTestId("move-made-at")).toBeVisible();
+    /*
+     * The replay's arrows, its scrubber and its keyboard are all the client
+     * component's: the buttons are server-rendered and real before React
+     * attaches, and a press then moves nothing — which fails several lines
+     * down on a stone that never appeared.
+     */
+    await ready(page, "game-replay");
     await page.getByRole("button", { name: "Start" }).click();
     await expect(page.getByRole("button", { name: /^H8, empty$/ })).toBeVisible();
     // At move 0 the line under the count says when the game started, so nothing jumps.
@@ -71,6 +78,9 @@ test.describe("the game record", () => {
     // The other filters ride along in the query.
     await expect(page.getByTestId("history-result")).toHaveValue("white");
     // Choosing another game moves to its record and keeps them.
+    // The filter bar is server-rendered, so a choice made before it is
+    // listening goes nowhere and the address never changes.
+    await ready(page, "history-filters");
     await page.getByTestId("history-game").selectOption("renju");
     await expect(page).toHaveURL(/\/games\/renju\/history\?result=white$/);
     await page.getByTestId("history-game").selectOption("all");

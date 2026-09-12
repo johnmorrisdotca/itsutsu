@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { MY_GAMES_COPY } from "./mine.constants";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /** Takes an open seat and goes to the board. A seat gone in the meantime says so. */
 export function SitButton({ id }: { id: string }) {
@@ -31,7 +32,14 @@ export function SitButton({ id }: { id: string }) {
   return (
     <span className="flex items-center gap-2">
       {note !== null ? <span className="text-xs text-shu">{note}</span> : null}
-      <button type="button" onClick={sit} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-2 py-1 text-xs`} data-testid="sit">
+      <button
+        type="button"
+        onClick={sit}
+        disabled={busy}
+        className={`${BUTTON_BASE} ${BUTTON_STRONG} px-2 py-1 text-xs`}
+        data-testid="sit"
+        {...readyMark(useHydrated())}
+      >
         <Paired en={MY_GAMES_COPY.sit.label} kanji={MY_GAMES_COPY.sit.kanji} kanjiClassName="opacity-80" />
       </button>
     </span>

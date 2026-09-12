@@ -25,7 +25,12 @@ export function Button({
   disabled?: boolean;
   strong?: boolean;
   title?: string;
-} & { "data-testid"?: string }) {
+  /*
+   * The hydration mark, for a button a spec has to wait for. `readyMark`
+   * spells the attribute in one place; this only has to let it through the
+   * props rather than swallow it as unknown.
+   */
+} & { "data-testid"?: string; "data-ready"?: string }) {
   return (
     <button
       type="button"

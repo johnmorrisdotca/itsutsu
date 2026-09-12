@@ -6,7 +6,7 @@ import { countryFrom } from "../src/lib/social/countries";
 
 import { seedMember } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
-import { watchForCrashes } from "./support";
+import { ready, watchForCrashes } from "./support";
 
 /**
  * The flag beside somebody's name.
@@ -84,6 +84,11 @@ test.describe("where somebody is", () => {
     await page.goto("/me?view=profile");
     const country = page.getByTestId("profile-country");
     await expect(country).toBeVisible();
+    // The profile is a server-rendered form: its selects and its day
+    // buttons are real controls before React attaches, and a choice made
+    // then is dropped — the state never hears it and the next render puts
+    // the control back where it was.
+    await ready(page, "profile-form");
 
     await country.selectOption("NZ");
     /*

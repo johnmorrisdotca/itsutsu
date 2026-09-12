@@ -2,7 +2,7 @@ import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext, memberIdFor, removeMember } from "./members";
-import { playAt, ready } from "./support";
+import { playAt, ready, readyHere } from "./support";
 
 /**
  * A GAME PROPOSED TO A PERSON IS AN OFFER UNTIL THEY ACCEPT IT.
@@ -124,7 +124,18 @@ async function offerAGame(
   return id;
 }
 
-/** The offer's row on /play, for whichever of the two people is looking. */
+/**
+ * The offer's row on /play, for whichever of the two people is looking.
+ *
+ * ACCEPT, DECLINE AND WITHDRAW ARE WAITED FOR AT EVERY PRESS — `readyHere` on
+ * the row's `offer-buttons`, which the component marks once the browser has it.
+ * All three are server-rendered, so they are real buttons before React attaches
+ * and a press in that window does nothing at all. What that would look like
+ * here is the worst possible reading: the row does not leave the list, and the
+ * spec reports that answering an offer left it standing.
+ *
+ * `readyHere` rather than `ready`, because there is one set per row.
+ */
 async function queueRow(context: BrowserContext, group: string, id: string) {
   const page = await context.newPage();
   await page.goto("/play");
@@ -264,6 +275,7 @@ test.describe("declining an offer", () => {
 
     // Clicked, on the queue, exactly as a reader would.
     const { page: theirs, row } = await queueRow(asked, "offered", id);
+    await readyHere(row.getByTestId("offer-buttons"));
     await row.getByTestId("offer-decline").click();
     // Their whole offers panel goes with it: saying no makes it disappear.
     await expect(row, "the answered offer leaves this reader's list").toHaveCount(0);
@@ -301,6 +313,7 @@ test.describe("declining an offer", () => {
     await page.close();
 
     const { page: theirs, row } = await queueRow(asked, "offered", id);
+    await readyHere(row.getByTestId("offer-buttons"));
     await row.getByTestId("offer-decline").click();
     await expect(row, "the answered offer leaves this reader's list").toHaveCount(0);
     await theirs.close();
@@ -323,6 +336,7 @@ test.describe("declining an offer", () => {
     await page.close();
 
     const { page: theirs, row } = await queueRow(asked, "offered", id);
+    await readyHere(row.getByTestId("offer-buttons"));
     await row.getByTestId("offer-decline").click();
     await expect(row, "the answered offer leaves this reader's list").toHaveCount(0);
     await theirs.close();
@@ -349,6 +363,7 @@ test.describe("declining an offer", () => {
     await page.close();
 
     const { page: theirs, row } = await queueRow(asked, "offered", id);
+    await readyHere(row.getByTestId("offer-buttons"));
     await row.getByTestId("offer-decline").click();
     await expect(row, "the answered offer leaves this reader's list").toHaveCount(0);
     await theirs.close();
@@ -377,6 +392,7 @@ test.describe("accepting an offer", () => {
     await page.close();
 
     const { page: theirs, row } = await queueRow(asked, "offered", id);
+    await readyHere(row.getByTestId("offer-buttons"));
     await row.getByTestId("offer-accept").click();
     // The offers panel goes; the game is theirs now.
     await expect(row, "the answered offer leaves this reader's list").toHaveCount(0);
@@ -423,6 +439,7 @@ test.describe("accepting an offer", () => {
     }
 
     const { page: theirs, row } = await queueRow(asked, "offered", id);
+    await readyHere(row.getByTestId("offer-buttons"));
     await row.getByTestId("offer-accept").click();
     await expect(row, "the answered offer leaves this reader's list").toHaveCount(0);
     await theirs.close();
@@ -450,6 +467,7 @@ test.describe("withdrawing an offer", () => {
     await page.close();
 
     const { page: mine, row } = await queueRow(asker, "offerSent", id);
+    await readyHere(row.getByTestId("offer-buttons"));
     await row.getByTestId("offer-withdraw").click();
     await expect(row.getByTestId("offer-state")).toContainText("withdrew");
     await mine.close();
@@ -636,6 +654,7 @@ test.describe("a fork from a position", () => {
     await page.close();
 
     const { page: theirs, row } = await queueRow(asked, "offered", first);
+    await readyHere(row.getByTestId("offer-buttons"));
     await row.getByTestId("offer-accept").click();
     await expect(row, "the answered offer leaves this reader's list").toHaveCount(0);
     await theirs.close();

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { gamesMade } from "./tidy";
+import { ready } from "./support";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
@@ -28,6 +29,12 @@ test.describe("turning the board round", () => {
     await page.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
 
+    /*
+     * The board and the Turn button are both the shared game's, and both are
+     * server-rendered: a stone played or a turn asked for before React
+     * attaches is dropped, and the failure lands on a coordinate.
+     */
+    await ready(page, "shared-game");
     // A stone somewhere off-centre, so a half turn is visible rather than symmetric.
     await page.getByRole("button", { name: /^A9, empty$/ }).click();
     await expect(page.getByRole("button", { name: "A9, Black stone" })).toBeVisible();
@@ -50,6 +57,7 @@ test.describe("turning the board round", () => {
     await black.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
     await white.goto(`/games/gomoku/match/${live.id}/seat/${live.whiteToken}`);
 
+    await ready(black, "shared-game");
     await black.getByTestId("turn-board").click();
     await expect(black.getByRole("button", { name: /^[A-J]\d+, / }).first()).toHaveAccessibleName(
       /^J1, /,
@@ -67,6 +75,7 @@ test.describe("turning the board round", () => {
     const live = await game(request);
     await page.goto(`/games/gomoku/match/${live.id}/seat/${live.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
+    await ready(page, "shared-game");
     await page.getByRole("button", { name: /^A9, empty$/ }).click();
     await expect(page.getByRole("button", { name: "A9, Black stone" })).toBeVisible();
     await page.getByTestId("turn-board").click();
@@ -84,6 +93,7 @@ test.describe("turning the board round", () => {
 
     await page.goto(`/games/gomoku/match/${one.id}/seat/${one.blackToken}`);
     await page.waitForURL(/\/games\/gomoku\//);
+    await ready(page, "shared-game");
     await page.getByTestId("turn-board").click();
     await expect(page.getByTestId("turn-board")).toHaveText(/Turn the board back/);
 

@@ -4,7 +4,7 @@ export const PLAYER_STATE = ".auth/player.json";
 /** An embed token minted by the setup, for the embed specs to use. */
 export const EMBED_TOKEN_FILE = ".auth/embed.json";
 
-import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 
 import { UNRATED_BELOW } from "../src/lib/rating/elo";
 
@@ -266,6 +266,26 @@ export async function openMyGamesPage(page: Page) {
  */
 export async function ready(page: Page, testId: string) {
   await expect(page.getByTestId(testId)).toHaveAttribute("data-ready", "true");
+}
+
+/**
+ * The same wait, against a control a spec has already narrowed down.
+ *
+ * `ready` asks the whole page for a test id, which is exactly right for a
+ * panel there is one of. It is wrong for the controls that come one per ROW —
+ * resigning a game in the queue, taking an open seat, answering an offer —
+ * where a page-wide `getByTestId` is a strict-mode violation rather than a
+ * wait. Those carry the mark on themselves, and this is how to read it:
+ *
+ *     await readyHere(row.getByTestId("resign"));
+ *     await row.getByTestId("resign").click();
+ *
+ * Its own function rather than an overload of `ready`, because the two say
+ * different things — one is "this page is listening", the other is "this
+ * button is" — and the marker's spelling still lives in one place.
+ */
+export async function readyHere(control: Locator) {
+  await expect(control).toHaveAttribute("data-ready", "true");
 }
 
 /**

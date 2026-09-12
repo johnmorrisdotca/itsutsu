@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ready } from "./support";
 
 /**
  * The moves of a game, where a game is read.
@@ -67,6 +68,9 @@ test.describe("the moves of a game are listed where the game is read", () => {
      * Clicking a move goes to that position. That is the whole reason a
      * record is worth reading — stopping where you meant to.
      */
+    // The moves are buttons on the replay's own component, so a press before
+    // it is listening moves the scrubber nowhere.
+    await ready(page, "game-replay");
     await list.getByTestId("played-move").nth(1).click();
     await expect(page.getByTestId("replay-scrubber")).toHaveValue("2");
   });

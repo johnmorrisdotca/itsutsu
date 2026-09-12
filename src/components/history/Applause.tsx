@@ -6,6 +6,7 @@ import { useState } from "react";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { APPLAUSE, APPLAUSE_COPY, type ApplauseEmoji } from "@/lib/history/applause.constants";
 import type { ApplauseTally } from "@/lib/history/applause";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /**
  * The row of marks under a finished game.
@@ -39,7 +40,7 @@ export function Applause({
   }
 
   return (
-    <section className="flex flex-col gap-2" data-testid="applause">
+    <section className="flex flex-col gap-2" data-testid="applause" {...readyMark(useHydrated())}>
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
         <Paired en={APPLAUSE_COPY.title.label} kanji={APPLAUSE_COPY.title.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         {tally.total > 0 ? <span className="font-normal tracking-normal">{tally.total}</span> : null}

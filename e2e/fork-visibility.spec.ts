@@ -90,6 +90,14 @@ test.describe("the fork on a finished game's replay", () => {
      * the absence right after it is a statement about a rendered page rather
      * than about the speed of the request.
      */
+    /*
+     * AND THE MARK AS WELL AS THE VALUE, because a range input answers an
+     * arrow key natively: the DOM value would move from 5 to 4 with React
+     * not yet attached, nothing would re-render, and the fork this test is
+     * about would never appear. A value that changes without a render is
+     * the quietest version of this bug there is.
+     */
+    await ready(page, "game-replay");
     const scrubber = page.getByTestId("replay-scrubber");
     await expect(scrubber).toHaveValue("5");
     await expect(page.getByRole("link", { name: /Play from move/ })).toHaveCount(0);
@@ -131,6 +139,7 @@ test.describe("the fork on a finished game's replay", () => {
      */
     for (const watcherPage of [await strangerContext.newPage(), page]) {
       await watcherPage.goto(`/games/gomoku/match/${game.id}`);
+      await ready(watcherPage, "game-replay");
       const scrubber = watcherPage.getByTestId("replay-scrubber");
       await expect(scrubber).toHaveValue("5");
       await expect(watcherPage.getByRole("link", { name: /Play from move/ })).toHaveCount(0);

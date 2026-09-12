@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { memberContext, removeMember, removePlayedUnder } from "./members";
 import { gamesMade } from "./tidy";
+import { ready } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
 
 /*
@@ -43,6 +44,11 @@ test.describe("keeping finished games in your own list", () => {
     await expect(choice).toBeVisible();
     // Everybody starts keeping everything: nothing disappears unless asked.
     await expect(choice).toHaveValue("0");
+    // The profile is a server-rendered form: its selects and its day
+    // buttons are real controls before React attaches, and a choice made
+    // then is dropped — the state never hears it and the next render puts
+    // the control back where it was.
+    await ready(page, "profile-form");
 
     await choice.selectOption("14");
     await page.getByRole("button", { name: "Save profile" }).click();
@@ -80,6 +86,11 @@ test.describe("keeping finished games in your own list", () => {
     // The shortest window there is. The game was finished seconds ago, so it
     // is still inside it — the setting is about age, not about hiding.
     await page.goto("/me?view=profile");
+    // The profile is a server-rendered form: its selects and its day
+    // buttons are real controls before React attaches, and a choice made
+    // then is dropped — the state never hears it and the next render puts
+    // the control back where it was.
+    await ready(page, "profile-form");
     await page.getByTestId("keep-finished-days").selectOption("7");
     await page.getByRole("button", { name: "Save profile" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();
@@ -131,6 +142,11 @@ test.describe("keeping finished games in your own list", () => {
     await expect(page.getByTestId("my-games-finished")).toContainText(shownName(`Cloth${stamp} Tester`));
 
     await page.goto("/me?view=profile");
+    // The profile is a server-rendered form: its selects and its day
+    // buttons are real controls before React attaches, and a choice made
+    // then is dropped — the state never hears it and the next render puts
+    // the control back where it was.
+    await ready(page, "profile-form");
     await page.getByTestId("keep-finished-days").selectOption("7");
     await page.getByRole("button", { name: "Save profile" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();
@@ -216,6 +232,11 @@ test.describe("keeping finished games in your own list", () => {
     await expect(row(page, ancient)).toBeVisible();
 
     await page.goto("/me?view=profile");
+    // The profile is a server-rendered form: its selects and its day
+    // buttons are real controls before React attaches, and a choice made
+    // then is dropped — the state never hears it and the next render puts
+    // the control back where it was.
+    await ready(page, "profile-form");
     await page.getByTestId("keep-finished-days").selectOption("7");
     await page.getByRole("button", { name: "Save profile" }).click();
     await expect(page.getByText("Saved.")).toBeVisible();

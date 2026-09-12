@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { gamesMade } from "./tidy";
+import { ready } from "./support";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
@@ -31,6 +32,9 @@ test.describe("quick phrases", () => {
     await black.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await white.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
+    // The phrases live in the shared board's own component, which says when
+    // it is listening. A tap before then sends nothing.
+    await ready(black, "shared-game");
     await expect(black.getByTestId("quick-phrases")).toBeVisible();
     await black.getByTestId("quick-phrase").filter({ hasText: "Hello, good luck" }).click();
 
@@ -44,6 +48,7 @@ test.describe("quick phrases", () => {
     const game = await seatedGame(request);
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
 
+    await ready(page, "shared-game");
     const box = page.getByTestId("reaction-text");
     await box.fill("half a thought");
     await page.getByTestId("quick-phrase").filter({ hasText: "No rush" }).click();
@@ -57,6 +62,9 @@ test.describe("quick phrases", () => {
   test("is kept on the record, against the move it was sent at", async ({ page, request }) => {
     const game = await seatedGame(request);
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+    // The board too: a stone played before the browser has the board is
+    // swallowed, and the next line fails on a stone that was never laid.
+    await ready(page, "shared-game");
     await page.getByRole("button", { name: /^E5, empty$/ }).click();
     await expect(page.getByRole("button", { name: "E5, Black stone" })).toBeVisible();
     await page.getByTestId("quick-phrase").filter({ hasText: "Good game, thank you" }).click();
@@ -73,6 +81,10 @@ test.describe("quick phrases", () => {
   test("a spectator is offered none of them", async ({ page, request }) => {
     const game = await seatedGame(request);
     await page.goto(`/games/gomoku/match/${game.id}`);
+    // Waited for before anything is called absent: the board is what a
+    // watcher does get, and `toHaveCount(0)` on its own would agree to an
+    // empty page as readily as to a board with no phrases on it.
+    await ready(page, "shared-game");
     // Same rule as the emoji bar: only a seat holder may say anything.
     await expect(page.getByTestId("quick-phrases")).toHaveCount(0);
   });

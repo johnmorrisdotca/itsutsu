@@ -924,7 +924,7 @@ Three instances found in one night, all green, all saying nothing:
   A skip is an absence too.
 
 **And the corollary, which is the reason this is a section rather than a
-footnote:** `ready()` appears in 2 of 102 spec files. Five hydration races
+footnote:** `ready()` appeared in 2 of 102 spec files when this was written; the 0.170.2 sweep took it to 42 of 122 and the marks from 14 to 28 components, with every one of the 122 accounted for in `docs/plans/e2e-ready-sweep.md` — 57 drive nothing hydrated, 22 drive the practice board (`ssr: false`, so the board and its handlers arrive in one commit), and one is left with its reason. Five hydration races
 were found in a single day against that adoption. **A documented remedy
 nobody applies is worse than an undocumented problem, because it lets
 everybody believe the problem is handled.** The finding is the 2%, not the
