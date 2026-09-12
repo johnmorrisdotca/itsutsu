@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.154.0 — 2026-09-12
+- Your four words have a tab of their own on your page — Words 合言葉 — built like a screen showing you a code: four big boxes as the centrepiece, four large word tiles to pick from, a refresh icon for four others, and you can drag a word into any of the four spots, by touch or by keyboard. The order is yours to arrange and never changes the words themselves
+
 ## 0.153.0 — 2026-09-12
 - Choosing a game to set up is two rows of pictures rather than a dropdown of thirty-nine names: every family with its mark, then that family's games with their boards — and the board size is a row of blocks drawn at their real density
 - The five settings you rarely change sit behind one line that reads their current values — Free opening, No clock, Rated, Post for anyone — closed by default so the Start button is above the fold on an iPad, and one tap to open

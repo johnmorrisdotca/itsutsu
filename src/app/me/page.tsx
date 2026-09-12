@@ -43,7 +43,7 @@ function supportedTimeZones(): string[] {
 }
 
 /*
- * Four things a member comes here for, so the page shows one at a time. They
+ * Five things a member comes here for, so the page shows one at a time. They
  * were six panels stacked down one page, and the record — the part somebody
  * comes back to look at rather than sets once — was at the bottom of it.
  *
@@ -56,6 +56,15 @@ function supportedTimeZones(): string[] {
 const TABS: Tab[] = [
   { key: "record", label: "Record", kanji: "戦績" },
   { key: "profile", label: "Profile", kanji: "自己紹介" },
+  /*
+   * The four words, on a tab of their own. They sat at the very bottom of the
+   * Profile, under the city and the time zone and the days off — a credential
+   * among things other people see about you, and John called it ugly. 合言葉
+   * (aikotoba) is a watchword: the words by which somebody else's device
+   * recognises you as you, which is exactly what these are for. Third, and
+   * not last, so it is still on screen where the strip scrolls on a phone.
+   */
+  { key: "words", label: "Words", kanji: "合言葉" },
   { key: "games", label: "New games", kanji: "既定" },
   /*
    * 人 rather than 仲間 for the tab: 仲間 is buddies specifically, and this tab
@@ -98,7 +107,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
    * a specific row — the one thing this must never be tempted to look up by
    * name or address instead.
    */
-  const myId = open === "profile" ? await currentMemberId() : null;
+  const myId = open === "words" ? await currentMemberId() : null;
   const phraseFacts = myId !== null ? await phraseStatus(myId) : null;
   const phraseInitial = {
     set: phraseFacts?.set ?? false,
@@ -166,9 +175,10 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                 countries={allCountries()}
                 timeZones={supportedTimeZones()}
               />
-              {myId !== null ? <PhraseSetup initial={phraseInitial} /> : null}
             </div>
           ) : null}
+
+          {open === "words" && myId !== null ? <PhraseSetup initial={phraseInitial} /> : null}
 
           {open === "games" ? (
             <div className="flex flex-col gap-3" data-testid="game-defaults-panel">
