@@ -54,14 +54,55 @@ const fetcher = async (url: string): Promise<{ yourMove: number } | null> => {
  * and sorts what is left. `memberRowFor` — the one row every page already
  * reads, cached per request — does not carry the count, and nothing else does.
  *
- * A cheaper `count` was considered and is worse than the poll: it can only
- * count the rows that carry a settled turn, so it would quietly under-report
- * on every older game, and a badge that says 12 when 14 are waiting is a
- * plausible number standing in for an answer nobody has. See AGENTS.md,
- * "Nothing Answers What It Cannot Answer".
+ * A cheaper `count` was considered and rejected: it can only count the rows
+ * that carry a settled turn, so it would quietly under-report on every older
+ * game, and a badge that says 12 when 14 are waiting is a plausible number
+ * standing in for an answer nobody has. See AGENTS.md, "Nothing Answers What
+ * It Cannot Answer".
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * AND THERE IS NO INTERVAL, WHICH IS THE OTHER HALF OF THE SAME ARGUMENT
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * This asked every thirty seconds. On a serverless deployment that is one
+ * invocation every thirty seconds per OPEN TAB per signed-in member, for ever,
+ * whether or not anybody is looking — a bill that grows with how long the site
+ * is left open rather than with how much it is used. The site's owner rules
+ * that out twice over: no extra cost, ever, and no interval polling on
+ * principle. A count in the corner of the navigation bar is the last thing
+ * that should be buying invocations by the minute.
+ *
+ * So it is read when there is a reason to read it:
+ *
+ * - **On mount**, which is on every page. `SiteHeader` is mounted by each
+ *   PAGE rather than by the layout, and a page re-renders on navigation —
+ *   the same mechanism the XP toasts rely on, and it is why moving around the
+ *   site keeps the count current for free.
+ * - **On focus**, so a tab left open behind other work is right again the
+ *   moment somebody comes back to it. That is the one case an interval was
+ *   really serving, and coming back to the tab is a better signal than a
+ *   timer: it happens when somebody is there to read the answer.
+ *
+ * `dedupingInterval` is written down rather than left to the default, because
+ * it is the thing that keeps "read it on every page" from meaning "read it on
+ * every click". Two seconds: a burst of navigation — a double click, a run
+ * through three pages — is one fetch, while a deliberate move and then a look
+ * at the queue is two, which is right. Longer would be cheaper and would start
+ * showing a stale count immediately after the move that changed it, which is
+ * precisely when somebody is looking.
+ *
+ * WHAT IT COSTS, SAID PLAINLY: the count can be stale between navigations. A
+ * game somebody else moves in while you sit on one page is not shown until you
+ * open another page or come back to the tab. That is accepted — the move you
+ * make yourself already navigates, and the alternative is a timer nobody asked
+ * for on a bill nobody wants.
  */
 export function YourTurnBadge() {
-  const { data } = useSWR("/api/games/mine", fetcher, { refreshInterval: 30_000, revalidateOnFocus: true });
+  const { data } = useSWR("/api/games/mine", fetcher, {
+    refreshInterval: 0,
+    revalidateOnFocus: true,
+    dedupingInterval: 2_000,
+  });
   const count = data?.yourMove ?? 0;
   return (
     /*

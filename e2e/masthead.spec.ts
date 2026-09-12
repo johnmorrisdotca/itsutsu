@@ -106,6 +106,62 @@ test.describe("the masthead", () => {
   }
 });
 
+/**
+ * THE WAITING COUNT DOES NOT POLL, WHICH IS A BILL RATHER THAN A LAYOUT.
+ *
+ * It asked `/api/games/mine` every thirty seconds. On a serverless deployment
+ * that is an invocation every thirty seconds per open tab per signed-in
+ * member, for ever, whether or not anybody is looking — and the site's owner
+ * rules out both halves of that: no extra cost, ever, and no interval polling
+ * on principle. It reads on mount, which is every page, and on focus. See
+ * `YourTurnBadge`.
+ *
+ * The clock is driven rather than waited out, and it is installed before the
+ * page loads and wound only after the browser has taken the masthead over:
+ * the timer under test would be created by React, so winding before that
+ * leaves nothing to fire and the test says nothing at all. Waiting for the
+ * FIRST request is the presence this absence is measured against — without
+ * it, "no requests" would also be true of a page that never asked.
+ */
+test.describe("the waiting count", () => {
+  test("asks once for a page and never again on a timer", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const me = { email: `poll-${stamp}@example.test`, name: `Poll ${stamp}` };
+    const context = await memberContext(browser, baseURL!, me);
+    try {
+      const page = await context.newPage();
+      const asked: string[] = [];
+      page.on("request", (request) => {
+        if (request.url().includes("/api/games/mine")) asked.push(request.url());
+      });
+
+      await page.clock.install();
+      await page.goto("/players");
+      await ready(page, "your-turn-slot");
+      // The one read a page is allowed: it happened, so the count below means something.
+      await expect
+        .poll(() => asked.length, { message: "the badge never asked at all" })
+        .toBeGreaterThan(0);
+      const onLoad = asked.length;
+
+      // A minute of nobody touching anything — two turns of the interval that was.
+      await page.clock.runFor("01:00");
+      /*
+       * Given a moment of real time as well, because a request the faked clock
+       * released would still have to cross the wire before it could be counted.
+       */
+      await page.waitForTimeout(500);
+      expect(
+        asked.length,
+        `the count polled while the page sat idle: ${asked.length} requests, ${onLoad} on load`,
+      ).toBe(onLoad);
+    } finally {
+      await context.close();
+      await removeMember(me.email);
+    }
+  });
+});
+
 /** A rounded height, so a sub-pixel difference is not read as a shift. */
 async function heightOf(locator: import("@playwright/test").Locator): Promise<number> {
   const box = await locator.boundingBox();
