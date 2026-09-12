@@ -14,12 +14,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  *  - and there is a way BACK, because a tablet gets handed over all evening.
  */
 
-type Claim = { ok: true; memberId: string; bound: boolean } | { ok: false };
-const verifyPhraseFor = vi.fn<(name: string, words: readonly string[]) => Promise<Claim>>(
-  async () => ({ ok: true, memberId: "h4n4k0jdxxxxxxxx", bound: false }),
-);
+/** Her member id, which is what a tap on her name carries. */
+const HER_ID = "h4n4k0jdxxxxxxxx";
 
-const seatStandIn = vi.fn<() => Promise<Record<string, unknown>>>(async () => ({
+type Claimant = { memberId: string } | { name: string };
+type Claim = { ok: true; memberId: string; name: string; bound: boolean } | { ok: false };
+const CLAIMED = { ok: true, memberId: HER_ID, name: "Hanako Morris", bound: false } as const;
+const verifyPhraseFor = vi.fn<(who: Claimant, words: readonly string[]) => Promise<Claim>>(async () => CLAIMED);
+
+const seatStandIn = vi.fn<(...args: unknown[]) => Promise<Record<string, unknown>>>(async () => ({
   ok: true,
   seat: "white",
   token: "white-token",
@@ -36,9 +39,12 @@ vi.mock("@/lib/api/rateLimit", () => ({
   },
 }));
 vi.mock("@/lib/phrase/phraseStore", () => ({
-  claimOrVerifyPhraseFor: (name: string, words: readonly string[]) => verifyPhraseFor(name, words),
+  claimOrVerifyPhraseFor: (who: Claimant, words: readonly string[]) => verifyPhraseFor(who, words),
 }));
-vi.mock("@/lib/phrase/standInSeat", () => ({ seatStandIn: () => seatStandIn() }));
+// Arguments forwarded, because what the route passes ON is part of what it gets right.
+vi.mock("@/lib/phrase/standInSeat", () => ({
+  seatStandIn: (...args: unknown[]) => seatStandIn(...args),
+}));
 
 const { DELETE, POST } = await import("./route");
 
@@ -57,7 +63,7 @@ function sitAs(body: unknown, id = "k3m9-p2qx") {
 
 beforeEach(() => {
   verifyPhraseFor.mockClear();
-  verifyPhraseFor.mockResolvedValue({ ok: true, memberId: "h4n4k0jdxxxxxxxx", bound: false });
+  verifyPhraseFor.mockResolvedValue({ ...CLAIMED });
   seatStandIn.mockClear();
   seatStandIn.mockResolvedValue({ ok: true, seat: "white", token: "white-token", variant: "freestyle" });
   overLimit.mockClear();
@@ -66,13 +72,13 @@ beforeEach(() => {
 
 describe("POST /api/games/[id]/sit-as", () => {
   it("seats her and says where the board is", async () => {
-    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    const response = await sitAs({ memberId: HER_ID, words: WORDS });
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ seat: "white" });
   });
 
   it("puts the seat's token in this browser's cookie, so the board is hers to play", async () => {
-    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    const response = await sitAs({ memberId: HER_ID, words: WORDS });
     const cookie = response.cookies.get("seat_k3m9-p2qx");
     expect(cookie?.value).toBe("white-token");
     // A credential, so no script on the page may read it.
@@ -86,29 +92,29 @@ describe("POST /api/games/[id]/sit-as", () => {
    */
   it("asks the guessing limit before doing any work", async () => {
     overLimit.mockReturnValue(new Response(null, { status: 429 }));
-    await sitAs({ name: "Hanako M.", words: WORDS });
+    await sitAs({ memberId: HER_ID, words: WORDS });
     expect(overLimit).toHaveBeenCalled();
     expect(verifyPhraseFor).not.toHaveBeenCalled();
     expect(seatStandIn).not.toHaveBeenCalled();
   });
 
   it("counts against the strict limit, which the test suite's relief cannot loosen", async () => {
-    await sitAs({ name: "Hanako M.", words: WORDS });
+    await sitAs({ memberId: HER_ID, words: WORDS });
     const [, scope, config] = overLimit.mock.calls[0];
     expect(scope).toBe("phrase-entry");
     expect(config).toMatchObject({ strict: true, maxRequests: 5 });
   });
 
   it("says when the four words were bound to the account just now, so the screen can say so", async () => {
-    verifyPhraseFor.mockResolvedValue({ ok: true, memberId: "h4n4k0jdxxxxxxxx", bound: true });
-    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    verifyPhraseFor.mockResolvedValue({ ...CLAIMED, bound: true });
+    const response = await sitAs({ memberId: HER_ID, words: WORDS });
     expect(response.status).toBe(200);
     expect(((await response.json()) as { bound?: boolean }).bound).toBe(true);
   });
 
   it("refuses wrong words", async () => {
     verifyPhraseFor.mockResolvedValue({ ok: false });
-    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    const response = await sitAs({ memberId: HER_ID, words: WORDS });
     expect(response.status).toBe(401);
     expect(seatStandIn).not.toHaveBeenCalled();
   });
@@ -118,56 +124,112 @@ describe("POST /api/games/[id]/sit-as", () => {
    * out which names hold accounts here. A different message for "no such name"
    * would answer that question for free.
    */
-  it("says the same thing for wrong words, an unknown name, and a malformed body", async () => {
+  it("says the same thing for wrong words, an unknown member, and a malformed body", async () => {
     verifyPhraseFor.mockResolvedValue({ ok: false });
-    const wrongWords = await (await sitAs({ name: "Hanako M.", words: WORDS })).json();
-    const unknownName = await (await sitAs({ name: "Nobody", words: WORDS })).json();
-    const malformed = await (await sitAs({ name: "", words: [] })).json();
-    expect(wrongWords.error).toBe(unknownName.error);
+    const wrongWords = await (await sitAs({ memberId: HER_ID, words: WORDS })).json();
+    const unknownMember = await (await sitAs({ memberId: "nobodyatallxxxxx", words: WORDS })).json();
+    const malformed = await (await sitAs({ memberId: "", words: [] })).json();
+    expect(wrongWords.error).toBe(unknownMember.error);
     expect(malformed.error).toBe(wrongWords.error);
   });
 
   it("answers 401 for a malformed body too, rather than explaining the shape", async () => {
     expect((await sitAs({ nonsense: true })).status).toBe(401);
-    expect((await sitAs({ name: "Hanako M." })).status).toBe(401);
+    expect((await sitAs({ memberId: HER_ID })).status).toBe(401);
+  });
+
+  /*
+   * WHO IS AN ID, AND ONLY AN ID. Nothing types a name here any more — the panel
+   * offers a list to tap and a tap carries the row it meant — so a body carrying
+   * a name is not an older client being accommodated, it is a request this route
+   * cannot honestly answer: a display name names however many members happen to
+   * be called that. Refused without reaching the store, and refused in the one
+   * wording everything else uses.
+   */
+  it("refuses a body that says a name instead of a member, without going near the words", async () => {
+    const response = await sitAs({ name: "Hanako Morris", words: WORDS });
+    expect(response.status).toBe(401);
+    expect(verifyPhraseFor).not.toHaveBeenCalled();
+    expect(seatStandIn).not.toHaveBeenCalled();
+  });
+
+  it("refuses anything that is not a member id, whatever it looks like", async () => {
+    for (const memberId of ["Hanako M.", "no", "UPPER1234567890x", "two--hyphens", "-leading"]) {
+      expect((await sitAs({ memberId, words: WORDS })).status, memberId).toBe(401);
+    }
+    expect(verifyPhraseFor).not.toHaveBeenCalled();
+  });
+
+  /*
+   * THE POINT OF THE WHOLE CHANGE, at the level a route can get it wrong: the id
+   * a person tapped is what asks the question. Passing the printed name on would
+   * be asking which of the members called that it meant, which is the question
+   * that has no answer.
+   */
+  it("asks about the member by id, never by the name that was printed", async () => {
+    await sitAs({ memberId: HER_ID, words: WORDS });
+    expect(verifyPhraseFor).toHaveBeenCalledWith({ memberId: HER_ID }, WORDS);
+  });
+
+  /*
+   * And the seat is stamped with the name ON THE ACCOUNT, handed back by the
+   * claim. The rating is filed against the seat's name, so a seat carrying
+   * anything else files somebody's win under nobody.
+   */
+  it("stamps the seat with the account's own name, not one from the request", async () => {
+    await sitAs({ memberId: HER_ID, words: WORDS });
+    const [gameId, memberId, name] = seatStandIn.mock.calls[0] ?? [];
+    expect(gameId).toBe("k3m9-p2qx");
+    expect(memberId).toBe(HER_ID);
+    expect(name).toBe("Hanako Morris");
+  });
+
+  /*
+   * A full name reaches the seat and must not reach the SCREEN. John had the
+   * site changed to print a first name and an initial because his daughter plays
+   * here, and this answer is rendered on a device signed in as somebody else.
+   */
+  it("says who sat down by their shown name, never the full one", async () => {
+    const said = (await (await sitAs({ memberId: HER_ID, words: WORDS })).json()) as { name?: string };
+    expect(said.name).toBe("Hanako M.");
   });
 
   it("never says the words back, in the answer or in a cookie", async () => {
-    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    const response = await sitAs({ memberId: HER_ID, words: WORDS });
     const said = JSON.stringify(await response.json()) + JSON.stringify([...response.cookies.getAll()]);
     for (const word of WORDS) expect(said).not.toContain(word);
   });
 
   it("refuses to hash a novel — a phrase is four short words", async () => {
-    const response = await sitAs({ name: "Hanako M.", words: ["a".repeat(500), "b", "c", "d"] });
+    const response = await sitAs({ memberId: HER_ID, words: ["a".repeat(500), "b", "c", "d"] });
     expect(response.status).toBe(401);
     expect(verifyPhraseFor).not.toHaveBeenCalled();
   });
 
   it("passes on which seat was asked for", async () => {
-    await sitAs({ name: "Hanako M.", words: WORDS, seat: "black" });
+    await sitAs({ memberId: HER_ID, words: WORDS, seat: "black" });
     expect(seatStandIn).toHaveBeenCalled();
   });
 
   it("refuses a seat colour that is not a colour", async () => {
-    expect((await sitAs({ name: "Hanako M.", words: WORDS, seat: "purple" })).status).toBe(401);
+    expect((await sitAs({ memberId: HER_ID, words: WORDS, seat: "purple" })).status).toBe(401);
   });
 
   it("asks which seat, rather than choosing, when both are free", async () => {
     seatStandIn.mockResolvedValue({ ok: false, reason: "which-seat" });
-    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    const response = await sitAs({ memberId: HER_ID, words: WORDS });
     expect(response.status).toBe(422);
     await expect(response.json()).resolves.toMatchObject({ error: expect.stringMatching(/which/i) });
   });
 
   it("says so when the seat went to somebody else", async () => {
     seatStandIn.mockResolvedValue({ ok: false, reason: "no-free-seat" });
-    expect((await sitAs({ name: "Hanako M.", words: WORDS })).status).toBe(409);
+    expect((await sitAs({ memberId: HER_ID, words: WORDS })).status).toBe(409);
   });
 
   it("says so when she is already sitting at this board", async () => {
     seatStandIn.mockResolvedValue({ ok: false, reason: "already-seated" });
-    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    const response = await sitAs({ memberId: HER_ID, words: WORDS });
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toMatchObject({ reason: "already-seated" });
   });
@@ -178,14 +240,14 @@ describe("POST /api/games/[id]/sit-as", () => {
       reason: "over-limit",
       said: "You have 20 games on the go, and 20 at once is the limit here.",
     });
-    const response = await sitAs({ name: "Hanako M.", words: WORDS });
+    const response = await sitAs({ memberId: HER_ID, words: WORDS });
     expect(response.status).toBe(422);
     await expect(response.json()).resolves.toMatchObject({ error: expect.stringMatching(/20/) });
   });
 
   it("is 404 for a game that is not there", async () => {
     seatStandIn.mockResolvedValue({ ok: false, reason: "no-game" });
-    expect((await sitAs({ name: "Hanako M.", words: WORDS })).status).toBe(404);
+    expect((await sitAs({ memberId: HER_ID, words: WORDS })).status).toBe(404);
   });
 });
 

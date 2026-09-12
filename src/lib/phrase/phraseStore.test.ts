@@ -53,6 +53,16 @@ vi.mock("@/lib/prisma", () => ({
         const wanted = (where.name?.equals ?? "").trim().toLowerCase();
         return rows.find((row) => row.name.trim().toLowerCase() === wanted) ?? null;
       },
+      /*
+       * `take` is honoured, because the store asks for exactly two rows to learn
+       * that a name means more than one person. A mock that ignored it would
+       * make that test pass over code that had fetched the lot.
+       */
+      findMany: async ({ where, take }: { where: { name?: { equals?: string } }; take?: number }) => {
+        const wanted = (where.name?.equals ?? "").trim().toLowerCase();
+        const found = rows.filter((row) => row.name.trim().toLowerCase() === wanted);
+        return take === undefined ? found : found.slice(0, take);
+      },
       update: async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
         writes.push({ where, data });
         const row = rows.find((one) => one.id === where.id);
@@ -278,11 +288,15 @@ describe("four words given at a seat", () => {
    * associated with my account. That's the point." Verification alone could
    * only serve somebody who had already set words from a device signed in as
    * them — which is the one thing this exists to avoid needing.
+   *
+   * WHO IS TAPPED, NOT TYPED, so every case here claims by member id — the shape
+   * the seat actually sends, off the list in `seatPick.ts`. The name shape is
+   * exercised at the bottom, where what is being tested is its refusal.
    */
   it("binds the words to an account that has none, and says it did", async () => {
     rows = [member({ id: HANAKO, name: "Hanako M." })];
 
-    const claim = await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+    const claim = await claimOrVerifyPhraseFor({ memberId: HANAKO }, WORDS);
 
     expect(claim.ok).toBe(true);
     if (!claim.ok) return;
@@ -291,11 +305,23 @@ describe("four words given at a seat", () => {
     expect(rows[0].phraseHash, "the words were not written").not.toBeNull();
   });
 
+  it("hands back the name ON THE ROW, which is what the seat is stamped with", async () => {
+    rows = [member({ id: HANAKO, name: "Hanako M." })];
+
+    const claim = await claimOrVerifyPhraseFor({ memberId: HANAKO }, WORDS);
+
+    expect(claim.ok).toBe(true);
+    if (!claim.ok) return;
+    // The rating is filed against the seat's name, so it must be the member's
+    // own and not a spelling that arrived with the request.
+    expect(claim.name).toBe("Hanako M.");
+  });
+
   it("lets those same words back in afterwards, which is what makes them a login", async () => {
     rows = [member({ id: HANAKO, name: "Hanako M." })];
-    await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+    await claimOrVerifyPhraseFor({ memberId: HANAKO }, WORDS);
 
-    const again = await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+    const again = await claimOrVerifyPhraseFor({ memberId: HANAKO }, WORDS);
 
     expect(again.ok).toBe(true);
     if (!again.ok) return;
@@ -304,9 +330,9 @@ describe("four words given at a seat", () => {
 
   it("refuses different words once an account has some — first words win, and only once", async () => {
     rows = [member({ id: HANAKO, name: "Hanako M." })];
-    await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+    await claimOrVerifyPhraseFor({ memberId: HANAKO }, WORDS);
 
-    const other = await claimOrVerifyPhraseFor("Hanako M.", ["stove", "punch", "vivid", "cargo"]);
+    const other = await claimOrVerifyPhraseFor({ memberId: HANAKO }, ["stove", "punch", "vivid", "cargo"]);
 
     expect(other.ok, "an account with words is not up for grabs").toBe(false);
   });
@@ -315,12 +341,18 @@ describe("four words given at a seat", () => {
     process.env.ADMIN_EMAILS = "boss@example.test";
     rows = [member({ id: "operator1xxxxxxx", name: "The Operator", email: "boss@example.test" })];
 
-    const claim = await claimOrVerifyPhraseFor("The Operator", WORDS);
+    const claim = await claimOrVerifyPhraseFor({ memberId: "operator1xxxxxxx" }, WORDS);
 
     expect(claim.ok).toBe(false);
     expect(rows[0].phraseHash, "the operator's account took words from a seat").toBeNull();
   });
 
+  /*
+   * The rows `seatPick.ts` leaves off the list. Both halves are checked because
+   * they are one rule read from two ends: a name that can never work must not be
+   * offered, AND must be refused if it arrives anyway — a list is a screen, and a
+   * screen is not a lock.
+   */
   it("binds nothing to a banned member, a kept record, or a computer player", async () => {
     rows = [
       member({ id: "banned0xxxxxxxxx", name: "Gone", bannedAt: new Date() }),
@@ -328,15 +360,61 @@ describe("four words given at a seat", () => {
       member({ id: "program0xxxxxxxx", name: "Kyu", botTier: "kyu" }),
     ];
 
-    for (const name of ["Gone", "Kept", "Kyu"]) {
-      expect((await claimOrVerifyPhraseFor(name, WORDS)).ok, `${name} was claimable`).toBe(false);
+    for (const row of rows) {
+      expect((await claimOrVerifyPhraseFor({ memberId: row.id }, WORDS)).ok, `${row.name} was claimable`).toBe(false);
     }
     for (const row of rows) expect(row.phraseHash).toBeNull();
   });
 
-  it("says nothing different for a name nobody here goes by", async () => {
+  it("says nothing different for a member id nobody here holds", async () => {
     rows = [member({ id: HANAKO, name: "Hanako M." })];
 
-    expect((await claimOrVerifyPhraseFor("Nobody At All", WORDS)).ok).toBe(false);
+    expect((await claimOrVerifyPhraseFor({ memberId: "nobodyatallxxxxx" }, WORDS)).ok).toBe(false);
+    expect((await claimOrVerifyPhraseFor({ memberId: "" }, WORDS)).ok).toBe(false);
+  });
+
+  /*
+   * THE REASON THE SEAT PICKS BY ID AT ALL, and the case that cannot be got
+   * right any other way. Display names here are not unique, are not indexed, and
+   * — since a name is advice about how you appear to others rather than an
+   * identifier — never will be. Two members called the same thing are two rows a
+   * person chooses between; the id says which, and nothing has to guess.
+   */
+  describe("two members with the same name", () => {
+    const OTHER = "j0hn2ndjdxxxxxxx";
+
+    beforeEach(() => {
+      rows = [
+        member({ id: "j0hn1stjdxxxxxxx", name: "John Morris" }),
+        member({ id: OTHER, name: "john morris" }),
+      ];
+    });
+
+    it("reaches the one whose id was tapped, and binds words to that row alone", async () => {
+      const claim = await claimOrVerifyPhraseFor({ memberId: OTHER }, WORDS);
+
+      expect(claim.ok).toBe(true);
+      if (!claim.ok) return;
+      expect(claim.memberId).toBe(OTHER);
+      expect(rows[1].phraseHash, "the tapped row got no words").not.toBeNull();
+      expect(rows[0].phraseHash, "somebody else's account was written to").toBeNull();
+    });
+
+    it("REFUSES the name, rather than picking whichever row came back first", async () => {
+      // Not a stopgap for a constraint that is coming: no constraint is coming,
+      // and this is the only thing standing between an ambiguous name and an
+      // authentication path guessing. It must not be removed as redundant.
+      expect((await claimOrVerifyPhraseFor({ name: "John Morris" }, WORDS)).ok).toBe(false);
+      expect(await verifyPhraseFor("John Morris", WORDS)).toBeNull();
+      for (const row of rows) expect(row.phraseHash, "an ambiguous name bound words").toBeNull();
+    });
+
+    it("still answers a name that means exactly one person", async () => {
+      rows = [member({ id: HANAKO, name: "Hanako M." })];
+
+      const claim = await claimOrVerifyPhraseFor({ name: "hanako m." }, WORDS);
+
+      expect(claim.ok, "an unambiguous name is still answerable").toBe(true);
+    });
   });
 });

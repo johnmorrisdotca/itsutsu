@@ -10,6 +10,25 @@
 export const BUTTON_BASE =
   "inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35";
 
+/*
+ * A CONTROL A CHILD TAPS ON AN IPAD, which the ordinary button is not.
+ *
+ * `BUTTON_BASE` is a mouse-sized control: 1.5 units of vertical padding on
+ * 14px text comes out around thirty pixels tall. John has said twice that the
+ * buttons on the four-words screens are too small, and that screen is the one
+ * his twelve-year-old uses — dozens of taps to find four words and her own
+ * name, on glass, with a fingertip. Forty-eight pixels is the size a fingertip
+ * actually hits.
+ *
+ * A SIBLING OF `BUTTON_BASE` AND NOT A MODIFIER ON IT. Both set padding and
+ * text size, and Tailwind decides between conflicting utilities by their order
+ * in the stylesheet rather than in the attribute — so `${BUTTON_BASE}
+ * ${something-bigger}` would be a coin toss. This is the whole class; pair it
+ * with `BUTTON_QUIET` or `BUTTON_STRONG`, which only set colours.
+ */
+export const BUTTON_TAP =
+  "inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl border px-4 py-3 text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35";
+
 export const BUTTON_QUIET =
   "border-rule-strong/80 bg-ivory/80 text-ink hover:bg-rule/60";
 

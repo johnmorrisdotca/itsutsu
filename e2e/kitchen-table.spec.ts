@@ -8,13 +8,21 @@ import { shownName } from "../src/lib/rating/shownName";
 
 /**
  * The kitchen table: one iPad, John signed in, and his daughter taking the
- * free seat AS HERSELF so the game counts for her, using nothing but a name
- * and four words she can tap.
+ * free seat AS HERSELF so the game counts for her, by finding her own name in a
+ * list and tapping four words.
  *
  * Two screens, driven the way a reader drives them rather than by calling the
  * API directly, per AGENTS.md's "A Test That Does What A User Would Not Do" —
- * neither screen has a text box a phrase could be typed into, so these specs
- * never type one either.
+ * and NEITHER SCREEN HAS A TEXT BOX AT ALL now, so these specs type nothing
+ * anywhere. That is asserted rather than assumed below: John's whole answer to
+ * which account a name means was "everyone doesn't have to type anything", and a
+ * text box creeping back would be the feature quietly losing its point.
+ *
+ * The names are stamped in the FIRST word on purpose. The site prints a first
+ * name and an initial, so a stamp in the surname would leave two specs both
+ * looking for "Hanako M." in a list that holds every member of this database —
+ * which is the litter rule in AGENTS.md: a spec must not assert anything about a
+ * row it did not create.
  */
 const tidyAway = gamesMade();
 
@@ -39,6 +47,23 @@ async function pickPhrase(page: Page): Promise<string[]> {
   return chosen;
 }
 
+/**
+ * Finds somebody in the list of names and taps them. Never typed — the list is
+ * the whole of how a person says who they are now, and what the tap carries is
+ * that member's id rather than the name on the button.
+ */
+async function tapName(page: Page, name: string): Promise<void> {
+  const list = page.getByTestId("sit-as-members");
+  await expect(list).toBeVisible();
+  /*
+   * An absence asserted only AFTER something present has been waited for, per
+   * AGENTS.md: the list is on screen, so "there is no box to type in" is a
+   * statement about a rendered panel rather than about how fast the request was.
+   */
+  await expect(page.getByTestId("sit-as-panel").locator("input, textarea")).toHaveCount(0);
+  await list.getByRole("button", { name: shownName(name), exact: true }).click();
+}
+
 /** Finds a word on the entry pad by tapping letters, then the word itself. Never typed. */
 async function tapWord(page: Page, word: string): Promise<void> {
   for (const letter of word) {
@@ -61,8 +86,8 @@ test.describe("four words are how you get back to your games", () => {
     const stamp = Date.now().toString(36);
     // An account that already exists, exactly like any real member's row —
     // step one asks for a phrase on one of THOSE, never a fresh signup.
-    const her = { email: `hanako-${stamp}@example.test`, name: `Hanako ${stamp}` };
-    const john = { email: `kitchen-john-${stamp}@example.test`, name: `Kitchen John ${stamp}` };
+    const her = { email: `hanako-${stamp}@example.test`, name: `Hanako${stamp} Morris` };
+    const john = { email: `kitchen-john-${stamp}@example.test`, name: `Kitchen${stamp} John` };
 
     // STEP 1 — her own account gains a phrase, from her own session.
     const herContext = await memberContext(browser, baseURL!, her);
@@ -110,7 +135,19 @@ test.describe("four words are how you get back to your games", () => {
 
     await johnPage.getByTestId("sit-as-open").click();
     await expect(johnPage.getByTestId("sit-as-panel")).toBeVisible();
-    await johnPage.getByTestId("sit-as-name").fill(her.name);
+
+    /*
+     * THE WAY BACK, BEFORE THE WAY THERE. A wrong tap has to be undoable or the
+     * list is a trap — and per AGENTS.md a one-directional test finds
+     * one-directional bugs. So: tap him, change her mind, and the list is back.
+     */
+    await tapName(johnPage, john.name);
+    await johnPage.getByTestId("sit-as-who").click();
+    await expect(johnPage.getByTestId("sit-as-members")).toBeVisible();
+
+    await tapName(johnPage, her.name);
+    // Whose words are being tapped is on screen, so nobody is entering them blind.
+    await expect(johnPage.getByTestId("sit-as-who")).toContainText(shownName(her.name));
 
     // Tapped in the REVERSE of the order she picked them — order must not
     // matter, and this is that property exercised through the real screen
@@ -140,8 +177,8 @@ test.describe("four words are how you get back to your games", () => {
 
   test("refuses a seat to the wrong four words, and leaves it free", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
-    const her = { email: `wrong-hanako-${stamp}@example.test`, name: `Wrong Hanako ${stamp}` };
-    const john = { email: `wrong-john-${stamp}@example.test`, name: `Wrong John ${stamp}` };
+    const her = { email: `wrong-hanako-${stamp}@example.test`, name: `WrongHanako${stamp} Morris` };
+    const john = { email: `wrong-john-${stamp}@example.test`, name: `WrongJohn${stamp} Smith` };
 
     const herContext = await memberContext(browser, baseURL!, her);
     const herPage = await herContext.newPage();
@@ -176,7 +213,7 @@ test.describe("four words are how you get back to your games", () => {
     await johnPage.goto(`/games/gomoku/match/${game.id}`);
     await johnPage.getByTestId("sit-as-open").click();
     await expect(johnPage.getByTestId("sit-as-panel")).toBeVisible();
-    await johnPage.getByTestId("sit-as-name").fill(her.name);
+    await tapName(johnPage, her.name);
 
     // Four real words from the list, guaranteed not to be the four she kept.
     const decoys = WORDLIST.filter((word) => !words.includes(word)).slice(0, PHRASE_LENGTH);

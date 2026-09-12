@@ -44,6 +44,60 @@ export type SetPhraseOutcome =
   | { ok: false; reason: "not-a-phrase" | "no-member" };
 
 /**
+ * Who is claiming: the member somebody TAPPED, or a name somebody said.
+ *
+ * A union rather than one string, because the two are not the same question and
+ * only one of them has an answer. An id names exactly one row. A name names
+ * however many rows happen to be called that — display names here are not
+ * unique and the column has no index at all — so a name is a question this
+ * module can be asked and cannot always answer.
+ *
+ * The seat picks by id. The list a person taps carries it (`seatPick.ts`), which
+ * is what stops a claim ever having to guess which "John Morris" was meant.
+ */
+export type PhraseClaimant = { memberId: string } | { name: string };
+
+/**
+ * The one row a claimant means, or null.
+ *
+ * THE AMBIGUOUS NAME IS REFUSED, NOT GUESSED, and that refusal is load-bearing
+ * rather than a stopgap. It went in while making display names unique was still
+ * the plan; that plan is off — a name is advice about how you appear to others
+ * and not an identifier — so two members may share one for ever, and this is the
+ * only thing standing between that and an authentication path picking whichever
+ * row came back first. A constraint would not have made a `findFirst` on a
+ * non-unique column correct, and there is no constraint now either.
+ *
+ * **DO NOT REMOVE IT BECAUSE THE SEAT NO LONGER REACHES IT.** The seat picks by
+ * id, so from that path this branch is unreachable and the refusal can never
+ * fire — which is exactly what it looks like just before somebody deletes it as
+ * dead. `verifyPhraseFor` still resolves a member by name, and a guard dropped
+ * because ONE caller stopped needing it is how this class of bug comes back. It
+ * survives on its own merits: as long as anything here turns a string into an
+ * account, the string has to be allowed to mean "I cannot tell".
+ */
+async function claimantRow(who: PhraseClaimant) {
+  if ("memberId" in who) {
+    const wanted = who.memberId.trim();
+    // Unique by definition: an id is the row's own name for itself.
+    return wanted === "" ? null : prisma.member.findUnique({ where: { id: wanted }, select: FACTS });
+  }
+
+  const wanted = who.name.trim();
+  if (wanted === "") return null;
+  /*
+   * Two is all it takes to know the answer is "I cannot tell", so two is all
+   * that is fetched.
+   */
+  const rows = await prisma.member.findMany({
+    where: { name: { equals: wanted, mode: "insensitive" } },
+    select: FACTS,
+    take: 2,
+  });
+  return rows.length === 1 ? (rows[0] ?? null) : null;
+}
+
+/**
  * Sets — or rerolls — a member's phrase.
  *
  * Rerolling is the same call, and deliberately so. A properly hashed phrase
@@ -151,10 +205,8 @@ export async function verifyPhraseFor(
   const canonical = canonicalPhrase([...words]);
   if (canonical === null) return null;
 
-  const row = await prisma.member.findFirst({
-    where: { name: { equals: wanted, mode: "insensitive" } },
-    select: FACTS,
-  });
+  // Null when the name means two people — see `claimantRow`.
+  const row = await claimantRow({ name: wanted });
 
   /*
    * The hash is checked even when there is no row and no phrase, and the result
@@ -184,7 +236,20 @@ export async function verifyPhraseFor(
 }
 
 export type SeatPhraseOutcome =
-  | { ok: true; memberId: string; bound: boolean }
+  | {
+      ok: true;
+      memberId: string;
+      /**
+       * The name on the row, which is what the seat is stamped with.
+       *
+       * It comes from the account rather than from the request, and that is the
+       * point of returning it: the rating is filed against the seat's NAME, so a
+       * seat must carry what the member is actually called and not a spelling
+       * somebody handed in. Nothing types it any more in any case.
+       */
+      name: string;
+      bound: boolean;
+    }
   | { ok: false };
 
 /**
@@ -213,25 +278,27 @@ export type SeatPhraseOutcome =
  *
  * The same refusals as verification, for the same reasons: a banned member, a
  * kept record nobody may climb inside, and a computer player which is a program
- * with nobody to be it.
+ * with nobody to be it. `seatPick.ts` leaves all three off the list a person
+ * taps, so the two are one rule read from both ends.
+ *
+ * WHO IS TAPPED, NOT TYPED. This takes a `PhraseClaimant`, and the seat hands it
+ * the id of a member picked off a list. Nothing about the claim is weaker for it:
+ * an id is exactly as public as a name was — `/players` prints every member and
+ * links each one by id — and the words are still the whole of the proof, still
+ * checked under the guessing limit, and the account can still only ever be bound
+ * once. What changes is that "which account is this" stopped being a guess.
  *
  * Rate limiting lives on the route, as it does for `verifyPhraseFor` — a
  * library function has no address to count. Nothing may call this without one.
  */
 export async function claimOrVerifyPhraseFor(
-  name: string,
+  who: PhraseClaimant,
   words: readonly string[],
 ): Promise<SeatPhraseOutcome> {
-  const wanted = name.trim();
-  if (wanted === "") return { ok: false };
-
   const canonical = canonicalPhrase([...words]);
   if (canonical === null) return { ok: false };
 
-  const row = await prisma.member.findFirst({
-    where: { name: { equals: wanted, mode: "insensitive" } },
-    select: FACTS,
-  });
+  const row = await claimantRow(who);
 
   /*
    * The hash is compared even when there is no row, and the answer thrown
@@ -248,9 +315,9 @@ export async function claimOrVerifyPhraseFor(
     if (isAdminEmail(row.email)) return { ok: false };
     const set = await setPhrase(row.id, words);
     if (!set.ok) return { ok: false };
-    return { ok: true, memberId: row.id, bound: true };
+    return { ok: true, memberId: row.id, name: row.name, bound: true };
   }
 
   if (!matched) return { ok: false };
-  return { ok: true, memberId: row.id, bound: false };
+  return { ok: true, memberId: row.id, name: row.name, bound: false };
 }
