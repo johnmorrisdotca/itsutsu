@@ -107,7 +107,7 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("tab").filter({ hasText: "Members" })).toHaveAttribute("data-open", "true");
   });
 
-  test("a member's own page is five parts, one at a time", async ({ page }) => {
+  test("a member's own page is six parts, one at a time", async ({ page }) => {
     /*
      * The record, the profile, the four words, the defaults for a new game,
      * and the people they have said something about. Six panels down one page before this,
@@ -115,7 +115,8 @@ test.describe("a page of many sections is tabs", () => {
      * fills in once — at the bottom of it.
      */
     await page.goto("/me");
-    await expect(page.getByTestId("tab")).toHaveCount(5);
+    // Six since 0.161.0: Record, XP, Profile, Words, New games, People.
+    await expect(page.getByTestId("tab")).toHaveCount(6);
     await expect(page.getByTestId("my-record")).toBeVisible();
     await expect(page.getByTestId("my-profile")).toHaveCount(0);
     await expect(page.getByTestId("my-people")).toHaveCount(0);

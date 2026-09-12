@@ -46,7 +46,12 @@ test.describe("notes, messages, deadlines and players", () => {
     const white = await (await browser.newContext()).newPage();
     await white.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
-    await expect(white.getByTestId("shared-clock-line")).toContainText("5 minutes a move");
+    /*
+     * The clock is stated inside the rules statement now (0.163.0): the board
+     * no longer carries a settings form or its own clock line, because the
+     * rules were agreed on the doorstep before the game was written.
+     */
+    await expect(white.getByTestId("rules-statement")).toContainText("5 minutes a move");
     await expect(white.getByTestId("deadline")).toContainText("Black must move by");
     await expect(white.getByTestId("claim-timeout")).toHaveCount(0);
 
