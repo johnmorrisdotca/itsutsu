@@ -11,6 +11,7 @@ import {
   type WonLostDrawn,
 } from "./PlayerRecord";
 import { Paired } from "@/components/i18n/Paired";
+import { RowActions } from "@/components/ui/Controls";
 import { SortableHead, type RecordSort } from "./recordSort";
 import { RATING_POOLS, type RatingPool } from "@/lib/rating/pools";
 import { TIER_DISPLAY, type RatingTier } from "@/lib/rating/elo";
@@ -90,6 +91,57 @@ import type { Streak } from "@/lib/rating/streak";
  *   player's own by-game breakdown counts every finished game, rated or not,
  *   across both pools, and no one rating belongs to such a row. A column of
  *   dashes is not a smaller truth, it is a column that says nothing.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * EVERY ROW IS THE SAME HEIGHT, AND IT TAKES BOTH OF THESE
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * A row's height belongs to the table, not to what that particular row
+ * happens to hold. On the members list it belonged to neither: the rows were
+ * 59 pixels, the reader's own 45, the seven programs 53 and the two kept
+ * records 45. Three heights in one table, which reads as three kinds of thing.
+ *
+ * Neither cause was a missing element as such. Both were WRAPPING, and each
+ * wrapped in a different cell:
+ *
+ * - The ordinary rows were tallest because the "☆ Buddy" button broke over
+ *   two lines — 46 pixels of controls where the other two buttons beside it
+ *   were 30.
+ * - A program's row was tallest because its NAME broke over two lines: a long
+ *   one, a flag and a ROBOT badge in a column squeezed to 223 pixels.
+ * - A row with no controls at all had nothing holding the controls' height,
+ *   so it fell to whatever the rest of the line came to.
+ *
+ * So the fix is two rules, and the missing one is the reason this was only
+ * ever half fixed before:
+ *
+ * 1. **Nothing in a record row wraps.** These cells are short facts — a
+ *    count, a rate, a run, a rating, two or three small controls — and a cell
+ *    that takes a second line makes ONE row taller than its neighbours. Wide
+ *    is the right answer instead of tall: the table already scrolls inside its
+ *    own `overflow-x-auto`, which is what AGENTS.md asks of wide content. The
+ *    headings have said this for releases — see `HEAD` in `PlayerRecord.tsx`,
+ *    where a wrapped "WIN RATE" threw one table half a line out against the
+ *    one beside it — and the body was left to wrap where it liked.
+ *
+ *    WHAT THAT COSTS, MEASURED, because somebody will want to weigh it. The
+ *    members list wants 1,051 pixels and its box on /players is 990, so the
+ *    right-hand end of the actions column now sits 61 pixels past the edge
+ *    and has to be scrolled to. The table was ALWAYS over-subscribed by that
+ *    much: wrapping is how the browser hid it, at the price of the ragged
+ *    rows this is about, and it is the same answer the table already gave at
+ *    every width under a desktop's. If it should fit instead, that is a
+ *    decision about the COLUMNS, or about the page's width (/players is
+ *    `standard`, `max-w-5xl`), taken with those numbers in hand — never a
+ *    licence to let one row be taller than the row above it.
+ * 2. **The controls' height is held whether a row has controls or not.** Your
+ *    own row has nobody to befriend, a kept record has nobody to challenge,
+ *    and a program has no account to act on — so all three are handed an empty
+ *    `RowActions`, which is that component's whole purpose. Held by the TABLE
+ *    rather than by each caller: `RowActions` says "there is nothing to
+ *    remember per table", and that is only true if the table does it. Every
+ *    caller returning `null` for a row with nothing to offer was doing the
+ *    right thing; the cell was dropping the space on the floor.
  */
 
 /** Which of the optional columns a table shows. */
@@ -311,7 +363,13 @@ export function RecordTable({
               </tr>
             ) : null}
             {rows.map((row, index) => (
-              <tr key={row.key} className={ROW_CLASS} data-testid={rowTestId} {...row.attributes}>
+              // `whitespace-nowrap` on the row, so no cell can wrap — see above.
+              <tr
+                key={row.key}
+                className={`${ROW_CLASS} whitespace-nowrap`}
+                data-testid={rowTestId}
+                {...row.attributes}
+              >
                 {columns.rank === true ? (
                   <td className={`${CELL} text-muted`}>{index + 1}</td>
                 ) : null}
@@ -355,7 +413,14 @@ export function RecordTable({
                         </td>
                       ) : null}
                       {columns.actions === undefined ? null : (
-                        <td className="py-1.5 text-right">{row.actions}</td>
+                        <td className="py-1.5 text-right">
+                          {/*
+                            An empty `RowActions` where a row offers nothing, so
+                            the space a control would have taken is held rather
+                            than the absence patched — see the head of this file.
+                          */}
+                          {row.actions ?? <RowActions />}
+                        </td>
                       )}
                     </>
                   }

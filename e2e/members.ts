@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
 
-import { makeMemberId } from "../src/lib/auth/memberId";
+import { UNCLAIMABLE_REASONS, makeMemberId } from "../src/lib/auth/memberId";
 import { playerKey } from "../src/lib/rating/playerKey";
 import {
   PLAYER_SESSION_DAYS,
@@ -80,6 +80,61 @@ export async function seedMember({
       },
       update: { name, country, city, timeZone, bio, unclaimableBecause, lastSeenAt: new Date() },
     });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * A record kept for somebody who never held an account: no address at all.
+ *
+ * `seedMember` cannot make one, because the address is its key — and a row
+ * given a made-up address is not the thing under test. What makes a kept
+ * record's ROW different is precisely that `email` is null: the directory
+ * offers it nothing to befriend or challenge, and the operator's list offers
+ * nothing to shut or rename, so both draw a row with a badge and no controls.
+ *
+ * Chibi and Kyokosan are the two real ones and they are somebody else's — a
+ * spec asserting anything about those is a spec about this database's history
+ * (AGENTS.md, "A Spec Should Bring Its Own World"). This makes one of its own.
+ *
+ * Returns the id, which is the only handle there is on a row with no address.
+ */
+export async function seedKeptRecord({
+  name,
+  country = "",
+}: {
+  name: string;
+  country?: string;
+}): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const id = makeMemberId();
+    await prisma.member.create({
+      data: {
+        id,
+        email: null,
+        name,
+        picture: "",
+        invitedWith: "playwright",
+        country,
+        unclaimableBecause: UNCLAIMABLE_REASONS.keptRecord,
+      },
+    });
+    return id;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** Takes a row made by `seedKeptRecord` away again — by id, having no address. */
+export async function removeMemberById(id: string): Promise<void> {
+  loadEnv();
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.deleteMany({ where: { id } });
   } finally {
     await prisma.$disconnect();
   }
