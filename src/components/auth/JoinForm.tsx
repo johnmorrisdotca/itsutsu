@@ -117,8 +117,16 @@ export function JoinForm({
       className={`${PANEL_CLASS} flex w-full max-w-md flex-col gap-4`}
     >
       <div className="flex flex-col gap-1">
+        {/*
+          The same precedence as the sentence below it, which is the operator's
+          door first. Before signing up could be closed there were only three
+          states and `pending` could not collide with the operator's door; now
+          it can — /join?operator=1 in a browser Google knows — and the heading
+          and the sentence must not answer that differently.
+          締切 is the word a club uses when it has stopped taking names.
+        */}
         <h1 className="font-mincho text-2xl font-bold">
-          {pending !== null ? "ようこそ" : mode === "invite" ? "合言葉" : "管理"}
+          {mode === "admin" ? "管理" : shut ? "締切" : pending !== null ? "ようこそ" : "合言葉"}
         </h1>
         <p className="text-sm text-muted">
           {mode === "admin"
