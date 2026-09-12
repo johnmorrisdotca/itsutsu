@@ -71,8 +71,7 @@ test.describe("a page of many sections is tabs", () => {
      * below the fold on the day it was added.
      */
     await page.goto("/players");
-    // Five since 0.165.0: the door, the site, the members, the bots, the work.
-    await expect(page.getByTestId("tab")).toHaveCount(5);
+    await expect(page.getByTestId("tab")).toHaveCount(4);
     await expect(page.getByTestId("directory-section")).toBeVisible();
     // One at a time: the ladder is not also on screen below the directory.
     await expect(page.getByTestId("ladder-section")).toHaveCount(0);
@@ -157,7 +156,8 @@ test.describe("a page of many sections is tabs", () => {
      * anybody who runs a site.
      */
     await page.goto("/admin");
-    await expect(page.getByTestId("tab")).toHaveCount(4);
+    // Five since 0.165.0: the door, the site, the members, the bots, the work.
+    await expect(page.getByTestId("tab")).toHaveCount(5);
     await expect(page.getByTestId("admin-door")).toBeVisible();
     // One at a time: the board is not also on screen behind the invites.
     await expect(page.getByTestId("admin-backlog")).toHaveCount(0);
