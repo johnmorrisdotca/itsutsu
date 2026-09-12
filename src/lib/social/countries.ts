@@ -26,14 +26,6 @@ export function flagOf(code: MemberCountryCode): string {
   );
 }
 
-/**
- * Country names as the platform spells them, code by code.
- *
- * Built once. `Intl.DisplayNames` is not free to construct, and this runs for
- * every row of a directory of hundreds.
- */
-let byName: Map<string, MemberCountryCode> | null = null;
-
 function fold(text: string): string {
   return text
     .trim()
@@ -45,42 +37,7 @@ function fold(text: string): string {
     .trim();
 }
 
-function names(): Map<string, MemberCountryCode> {
-  if (byName !== null) return byName;
-  const built = new Map<string, MemberCountryCode>();
-  const display = new Intl.DisplayNames(["en"], { type: "region" });
-  for (const code of COUNTRY_CODES) {
-    const name = display.of(code);
-    if (name !== undefined && name !== code) built.set(fold(name), code);
-  }
-  for (const [alias, code] of Object.entries(COUNTRY_ALIASES)) built.set(fold(alias), code);
-  byName = built;
-  return built;
-}
-
 export type MemberCountry = { code: MemberCountryCode; name: string; flag: string };
-
-/**
- * What a member typed, resolved — or null, meaning show their words as they
- * wrote them and no flag.
- *
- * Takes a code as readily as a name, since "JP" is a perfectly reasonable
- * thing to have typed into a box labelled country.
- */
-export function countryFrom(written: string): MemberCountry | null {
-  const folded = fold(written);
-  if (folded === "") return null;
-
-  const code =
-    (folded.length === 2 &&
-      (COUNTRY_CODES as readonly string[]).includes(folded.toUpperCase())
-      ? (folded.toUpperCase() as MemberCountryCode)
-      : undefined) ?? names().get(folded);
-  if (code === undefined) return null;
-
-  const display = new Intl.DisplayNames(["en"], { type: "region" });
-  return { code, name: display.of(code) ?? code, flag: flagOf(code) };
-}
 
 /**
  * Every country the site will offer, in alphabetical order.
@@ -89,8 +46,10 @@ export function countryFrom(written: string): MemberCountry | null {
  * text — this is a list to choose from, not a new rule about what may be in
  * that column, and `countryFrom` still has to read whatever is already there.
  *
- * Built once, for the same reason `names()` is: `Intl.DisplayNames` is not
- * free to construct and there are two hundred and forty-nine of these.
+ * Built once. `Intl.DisplayNames` is not free to construct, there are two
+ * hundred and forty-nine of these, and — since this is the only place that
+ * constructs one — it is also the only place anything else in this file has
+ * to agree with.
  */
 let sorted: MemberCountry[] | null = null;
 
@@ -101,4 +60,77 @@ export function allCountries(): MemberCountry[] {
     // By name rather than by code, because the list is read as names.
     .sort((a, b) => a.name.localeCompare(b.name));
   return sorted;
+}
+
+/** fold(name) -> code, for a given list of countries, plus every alias. */
+function foldedLookup(countries: MemberCountry[]): Map<string, MemberCountryCode> {
+  const built = new Map<string, MemberCountryCode>();
+  for (const country of countries) built.set(fold(country.name), country.code);
+  for (const [alias, code] of Object.entries(COUNTRY_ALIASES)) built.set(fold(alias), code);
+  return built;
+}
+
+/** Built once, from `allCountries()`, for the same reason that is. */
+let byName: Map<string, MemberCountryCode> | null = null;
+
+function names(): Map<string, MemberCountryCode> {
+  if (byName !== null) return byName;
+  byName = foldedLookup(allCountries());
+  return byName;
+}
+
+function resolveAgainst(
+  written: string,
+  countries: MemberCountry[],
+  foldMap: Map<string, MemberCountryCode>,
+): MemberCountry | null {
+  const folded = fold(written);
+  if (folded === "") return null;
+
+  const code =
+    (folded.length === 2 &&
+      (COUNTRY_CODES as readonly string[]).includes(folded.toUpperCase())
+      ? (folded.toUpperCase() as MemberCountryCode)
+      : undefined) ?? foldMap.get(folded);
+  if (code === undefined) return null;
+
+  // Found rather than fabricated: a code this particular list does not carry
+  // answers null, not a made-up `{ name: code }` standing in for a country.
+  return countries.find((country) => country.code === code) ?? null;
+}
+
+/**
+ * What a member typed, resolved — or null, meaning show their words as they
+ * wrote them and no flag.
+ *
+ * Takes a code as readily as a name, since "JP" is a perfectly reasonable
+ * thing to have typed into a box labelled country.
+ */
+export function countryFrom(written: string): MemberCountry | null {
+  return resolveAgainst(written, allCountries(), names());
+}
+
+/**
+ * The same resolution as `countryFrom`, against a list the caller already
+ * holds rather than this module's own `allCountries()`.
+ *
+ * `Intl.DisplayNames` does not promise the same spelling in every JavaScript
+ * engine, and it does not keep it: Node 24 and the Chromium Playwright drives
+ * disagree on four of the two hundred and forty-nine — FK ("Falkland
+ * Islands" against "Falkland Islands (Islas Malvinas)"), HK ("Hong Kong SAR
+ * China" against "Hong Kong"), MO ("Macao SAR China" against "Macao") and PS
+ * ("Palestinian Territories" against "Palestine"). A server-rendered page and
+ * the same "use client" component re-running in a visitor's own browser
+ * during hydration are exactly two different engines, so a component that
+ * called `countryFrom`/`allCountries` itself would resolve some stored values
+ * one way on the server and another after hydration — not only a different
+ * flag, but for a value that only folds to a match in one engine's spelling,
+ * a different STRUCTURE: whether the "kept your own words" option exists at
+ * all. `ProfileForm` takes `countries` as a prop, computed once on the server
+ * by `MePage`, and resolves against exactly that — so it never asks its own
+ * `Intl` anything, and cannot disagree with the markup the server already
+ * sent down.
+ */
+export function resolveCountry(written: string, countries: MemberCountry[]): MemberCountry | null {
+  return resolveAgainst(written, countries, foldedLookup(countries));
 }

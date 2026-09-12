@@ -18,9 +18,29 @@ import { gameDefaultsFrom } from "@/components/game/gameDefaults";
 import { phraseStatus } from "@/lib/phrase/phraseStore";
 import { safeDestination } from "@/lib/auth/redirect";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { allCountries } from "@/lib/social/countries";
 
 export const metadata = { title: "You" };
 export const dynamic = "force-dynamic";
+
+/**
+ * The time zones this deployment's Node recognises, for the picker; `PATCH
+ * /api/me` checks whatever is actually chosen again regardless, since the
+ * control next to it is free text and this is only ever a suggestion list.
+ *
+ * Computed here, once, on the server — and handed to `ProfileForm` as a prop
+ * for the same reason `allCountries()` is. See the comment on `resolveCountry`
+ * in `@/lib/social/countries`: a "use client" component re-running this in a
+ * visitor's own browser during hydration cannot be trusted to agree with what
+ * the server already rendered, because `Intl` does not promise it will.
+ */
+function supportedTimeZones(): string[] {
+  try {
+    return Intl.supportedValuesOf("timeZone");
+  } catch {
+    return [];
+  }
+}
 
 /*
  * Four things a member comes here for, so the page shows one at a time. They
@@ -143,6 +163,8 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   keepFinishedDays: member?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT,
                   daysOff: member?.daysOff ?? [],
                 }}
+                countries={allCountries()}
+                timeZones={supportedTimeZones()}
               />
               {myId !== null ? <PhraseSetup initial={phraseInitial} /> : null}
             </div>
