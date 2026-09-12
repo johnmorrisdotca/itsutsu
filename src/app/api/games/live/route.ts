@@ -87,7 +87,15 @@ export async function POST(request: Request) {
     ]);
     if (atTheLimit !== null) return unprocessable(activeLimitRefusal(atTheLimit));
 
-    const created = await createLiveGame(settingsAsPlayed({ asked, against }));
+    /*
+     * ONE VALUE, WRITTEN AND THEN REPORTED. The row is created from this, and
+     * the 201 names the game off the same object — so the address the caller is
+     * handed cannot name a game the row is not. It could: the header was built
+     * from the variant the REQUEST sent, and a rematch sends none while a
+     * fork's is overridden by the position it continues. See `liveResponse.ts`.
+     */
+    const played = settingsAsPlayed({ asked, against });
+    const created = await createLiveGame(played);
 
     /*
      * A computer holding the seat that opens plays its stone now, so the board
@@ -118,7 +126,7 @@ export async function POST(request: Request) {
      * why an offer that is declined leaves this award exactly where it is.
      */
     await awardCreatedGame({ memberId: caller, gameId: created.id, kind: createdGameKind(asked.data) });
-    return createdResponse({ created, asked, against, caller });
+    return createdResponse({ created, asked, against, played, caller });
   } catch (error) {
     /*
      * A game that could not be won is the caller's mistake to hear about, not

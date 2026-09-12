@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Against } from "./liveAgainst";
+import { settingsAsPlayed } from "./liveAsPlayed";
 import { createdResponse, refusalResponse } from "./liveResponse";
 import { liveGameSchema, type CreationAsked } from "./liveRequest";
 
@@ -29,6 +30,31 @@ const NOBODY: Against = {
   offeredSeat: null,
   computerSeated: false,
 };
+
+/**
+ * A 201 for one creation, with the settings the row would be written from
+ * worked out the way the route works them out.
+ *
+ * `played` IS NOT A LITERAL HERE, ON PURPOSE. The answer names the game the row
+ * is, and a test that typed that name in by hand would agree just as readily
+ * with a header built from the REQUEST — which is the bug this file now pins.
+ * `settingsAsPlayed` is the same function the route calls, on the same pair, so
+ * what these cases assert about is the real merge.
+ */
+function answer(
+  body: Record<string, unknown>,
+  against: Against = NOBODY,
+  caller: string | null = null,
+) {
+  const asking = asked(body);
+  return createdResponse({
+    created: CREATED,
+    asked: asking,
+    against,
+    played: settingsAsPlayed({ asked: asking, against }),
+    caller,
+  });
+}
 
 describe("refusalResponse", () => {
   /*
@@ -71,12 +97,7 @@ describe("refusalResponse", () => {
 
 describe("createdResponse", () => {
   it("hands both keys back where both seats are the caller's to give", async () => {
-    const response = createdResponse({
-      created: CREATED,
-      asked: asked({}),
-      against: NOBODY,
-      caller: null,
-    });
+    const response = answer({});
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual(CREATED);
@@ -90,12 +111,11 @@ describe("createdResponse", () => {
    * never played onto a permanent public record.
    */
   it("keeps the other person's key when a seat is bound to them", async () => {
-    const response = createdResponse({
-      created: CREATED,
-      asked: asked({ challengeId: "them" }),
-      against: { ...NOBODY, seats: { blackMemberId: "me", whiteMemberId: "them" } },
-      caller: "me",
-    });
+    const response = answer(
+      { challengeId: "them" },
+      { ...NOBODY, seats: { blackMemberId: "me", whiteMemberId: "them" } },
+      "me",
+    );
 
     expect(await response.json()).toEqual({ id: "game-1", blackToken: "black-token" });
   });
@@ -106,74 +126,82 @@ describe("createdResponse", () => {
    * case would have handed them their opponent's token in exactly those games.
    */
   it("hands back the caller's own colour when a rematch has swapped them", async () => {
-    const response = createdResponse({
-      created: CREATED,
-      asked: asked({ rematch: "origin-1" }),
-      against: { ...NOBODY, seats: { blackMemberId: "them", whiteMemberId: "me" } },
-      caller: "me",
-    });
+    const response = answer(
+      { rematch: "origin-1" },
+      { ...NOBODY, seats: { blackMemberId: "them", whiteMemberId: "me" } },
+      "me",
+    );
 
     expect(await response.json()).toEqual({ id: "game-1", whiteToken: "white-token" });
   });
 
   it("withholds a seat somebody has only been asked for", async () => {
-    const response = createdResponse({
-      created: CREATED,
-      asked: asked({ challengeId: "them" }),
-      against: {
+    const response = answer(
+      { challengeId: "them" },
+      {
         ...NOBODY,
         seats: { blackMemberId: "me" },
         offer: { offeredToMemberId: "them", offeredAt: new Date() },
         offeredSeat: "white",
       },
-      caller: "me",
-    });
+      "me",
+    );
 
     expect(await response.json()).toEqual({ id: "game-1", blackToken: "black-token" });
   });
 
   it("withholds a seat posted for whoever sits down", async () => {
-    const response = createdResponse({
-      created: CREATED,
-      asked: asked({ open: true }),
-      against: { ...NOBODY, seats: { blackMemberId: "me" } },
-      caller: "me",
-    });
+    const response = answer({ open: true }, { ...NOBODY, seats: { blackMemberId: "me" } }, "me");
 
     expect(await response.json()).toEqual({ id: "game-1", blackToken: "black-token" });
   });
 
   it("claims a hot-seat board for the browser that started it, and nothing else does", () => {
-    const one = createdResponse({
-      created: CREATED,
-      asked: asked({ hotSeat: true }),
-      against: { ...NOBODY, hotSeat: true },
-      caller: null,
-    });
+    const one = answer({ hotSeat: true }, { ...NOBODY, hotSeat: true });
     const seat = one.cookies.get("seat_game-1");
 
     expect(seat?.value).toBe("black-token");
     expect(seat?.httpOnly).toBe(true);
     expect(seat?.path).toBe("/");
 
-    const shared = createdResponse({
-      created: CREATED,
-      asked: asked({}),
-      against: NOBODY,
-      caller: null,
-    });
+    const shared = answer({});
     expect(shared.cookies.get("seat_game-1")).toBeUndefined();
   });
 
   /** The address a match actually lives at, so a caller reading Location lands on it. */
-  it("says where the game is, under the name the request gave it", () => {
-    const response = createdResponse({
-      created: CREATED,
-      asked: asked({ variant: "reversi" }),
-      against: NOBODY,
-      caller: null,
-    });
+  it("says where the game is, under the name the request gave it where nothing carries another", () => {
+    expect(answer({ variant: "reversi" }).headers.get("Location")).toBe("/games/reversi/match/game-1");
+  });
 
-    expect(response.headers.get("Location")).toBe("/games/reversi/match/game-1");
+  /*
+   * AND UNDER THE NAME IT WILL BE PLAYED AS, WHERE THAT IS A DIFFERENT NAME.
+   *
+   * This is the case the header got wrong, and it is not a contrived one. A fork
+   * continues a POSITION, so the game that position was played on comes with it
+   * and overrules whatever the request named: `settingsToCarry` puts the
+   * origin's variant into `source`, and `settingsAsPlayed` spreads the source
+   * OVER the request, because replaying the copied moves onto any other board
+   * would not be the same position. `route.test.ts` posts this very body — a
+   * fork sent `variant: "reversi"` — to pin that the row ignores it. A rematch
+   * is the same thing one step further along: it sends no variant at all, so the
+   * schema's default of freestyle is the whole of what the request has to say.
+   *
+   * So the row here is a game of gomoku, the request said Reversi, and the
+   * answer used to hand the caller `/games/reversi/match/game-1` — an address
+   * naming a game that row is not. The two are asserted to DIFFER first, because
+   * a Location built from the request would satisfy the line below just as
+   * happily if they agreed.
+   */
+  it("says where the game is under the name it will be PLAYED as, not the one asked for", () => {
+    const body = { variant: "reversi", from: { id: "origin-1", move: 2 } };
+    const forked: Against = { ...NOBODY, source: { variant: "freestyle", winLength: 5 } };
+
+    expect(asked(body).data.variant, "the game the caller asked for").toBe("reversi");
+    expect(settingsAsPlayed({ asked: asked(body), against: forked }).variant, "the game the row is").toBe(
+      "freestyle",
+    );
+
+    // Freestyle gomoku lives at /games/gomoku — the slugs are a table, see `slugs.ts`.
+    expect(answer(body, forked).headers.get("Location")).toBe("/games/gomoku/match/game-1");
   });
 });

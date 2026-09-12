@@ -92,6 +92,23 @@ export const SHARED_RULES_COPY = {
 } as const;
 
 /**
+ * WHAT A READER WITH NO ACCOUNT IS TOLD, ON BOTH SCREENS THAT TELL THEM.
+ *
+ * Said once because it is said twice — under the setup screen's Start, and under
+ * the doorstep's Begin — in the same words and the same small muted paragraph.
+ * It was written out twice, which is two things to keep in step for a sentence
+ * whose whole job is to be the same answer in both places: reading half a way in
+ * that playing needs an account, pressing on, and being told it again in
+ * different words is the site failing to hold one position.
+ *
+ * Its own export rather than a key on either screen's copy, because it belongs to
+ * neither: `DOORSTEP_COPY.signIn` was where it lived, and the setup screen
+ * reading the DOORSTEP's words for its own paragraph is the sort of borrowing
+ * that makes the next rewording miss one of the two.
+ */
+export const SIGN_IN_TO_PLAY = "Sign in to start a game against somebody.";
+
+/**
  * THE DOORSTEP, IN WORDS: the page between choosing a game and playing one.
  *
  * The setup screen asks; this one states. So every line here is a fact rather
@@ -126,7 +143,6 @@ export const DOORSTEP_COPY = {
    * for anyone. The destination was right; doing it without saying so was not.
    */
   seatGone: "Somebody else took that seat first. Press Begin again to start a game of your own instead.",
-  signIn: "Sign in to start a game against somebody.",
   /** Why a posted seat is no longer there to be taken — one line per reason. */
   gone: {
     taken: "Somebody else took that seat first, so this would be a new game of your own instead.",

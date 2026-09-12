@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { NO_STORE, badRequest, unprocessable, type ApiError } from "@/lib/api/apiResponse";
 import { matchPath } from "@/lib/gomoku/slugs";
 import type { Against } from "./liveAgainst";
+import type { SettingsAsPlayed } from "./liveAsPlayed";
 import type { CreatedGame } from "./liveGame.types";
 import type { CreationAsked, CreationRefusal } from "./liveRequest";
 import { seatCookieName } from "./seatCookie";
@@ -45,16 +46,42 @@ export function refusalResponse(refused: CreationRefusal): NextResponse<ApiError
  * `offeredSeat` rather than the offer columns for the offered case: the thing
  * that says a seat is actually being withheld is the seat, and an empty `offer`
  * and a null `offeredSeat` are the same fact stated twice.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * AND `Location` NAMES THE GAME AS PLAYED, NOT THE ONE THAT WAS ASKED FOR
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * It was built from `asked.data.variant`, which is the variant the CALLER sent
+ * — and that is not always the game the row gets written as. A rematch sends no
+ * variant at all, so the schema fills in its default of freestyle; a fork sends
+ * whatever the screen was showing, and the position it continues overrides it.
+ * `liveAsPlayed.ts` is the module that settles which game is actually played,
+ * and it spreads the source OVER the request for exactly that reason.
+ *
+ * So the answer could name a game the row is not: a fork of a freestyle
+ * position sent with `variant: "reversi"` answered `/games/reversi/match/<id>`
+ * for a game of gomoku. Nothing here reads it — and the match page mends a
+ * stale slug by redirecting on the id, which is why this could sit unnoticed —
+ * but a header is a report, and a report naming the wrong game is wrong whether
+ * or not today's callers happen to read it. See AGENTS.md, "Nothing Answers
+ * What It Cannot Answer".
+ *
+ * The fix is not a second lookup: `played` is the very object `createLiveGame`
+ * was handed, so the header and the row are one value said twice and cannot
+ * come to disagree.
  */
 export function createdResponse({
   created,
   asked,
   against,
+  played,
   caller,
 }: {
   created: CreatedGame;
   asked: CreationAsked;
   against: Against;
+  /** The settings the row was written from, which is what says where it lives. */
+  played: SettingsAsPlayed;
   /** The member asking, or null for a browser with no account. */
   caller: string | null;
 }): NextResponse<CreationBody> {
@@ -68,7 +95,7 @@ export function createdResponse({
   });
   const response = NextResponse.json(creationBody(created, withheld, callersSeat(seats, caller)), {
     status: 201,
-    headers: { ...NO_STORE, Location: matchPath(asked.data.variant, created.id) },
+    headers: { ...NO_STORE, Location: matchPath(played.variant, created.id) },
   });
   // A hot-seat game is claimed by the browser that started it, here and now.
   if (hotSeat) {

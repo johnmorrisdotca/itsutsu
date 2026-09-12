@@ -10,7 +10,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { RulesStatement } from "./RulesStatement";
-import { DOORSTEP_COPY } from "./live.constants";
+import { DOORSTEP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
 import { useGameBegunHere } from "./doorstepMemory";
 import type { RulesDraft } from "./rulesDraft";
 
@@ -258,7 +258,7 @@ export function Doorstep({
       </div>
 
       {!signedIn ? (
-        <p className="text-xs text-muted">{DOORSTEP_COPY.signIn}</p>
+        <p className="text-xs text-muted">{SIGN_IN_TO_PLAY}</p>
       ) : null}
     </section>
   );

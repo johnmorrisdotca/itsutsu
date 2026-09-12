@@ -25,7 +25,13 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/begi
   const { slug } = await params;
   const variant = variantFor(slug);
   return {
-    title: variant === null ? "Before the first stone" : `Begin ${RULE_VARIANT_DISPLAY[variant].label}`,
+    /*
+     * The heading the page itself draws, rather than the same words typed again:
+     * this file already imports `DOORSTEP_COPY` for the refusals below, and the
+     * tab and the heading naming one page are the case where a second copy shows
+     * up as the site disagreeing with itself in a browser's own tab strip.
+     */
+    title: variant === null ? DOORSTEP_COPY.title : `Begin ${RULE_VARIANT_DISPLAY[variant].label}`,
   };
 }
 

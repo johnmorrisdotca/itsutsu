@@ -19,7 +19,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { HandicapChoice } from "./HandicapChoice";
 import { ANYONE, OpponentChoice, idIn, valueFor } from "./OpponentChoice";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
-import { SET_UP_COPY } from "./live.constants";
+import { SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
 import { describeRules } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
@@ -447,7 +447,7 @@ export function SetUpGame({
         </p>
       ) : null}
       {!signedIn ? (
-        <p className="text-xs text-muted">Sign in to start a game against somebody.</p>
+        <p className="text-xs text-muted">{SIGN_IN_TO_PLAY}</p>
       ) : null}
     </section>
   );
