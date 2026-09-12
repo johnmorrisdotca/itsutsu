@@ -32,7 +32,6 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/me">
  * to — but it is not one the chip's "×" can take off: this address always
  * means "my games", so the chip leads to the reader's own player page instead.
  *
-
  * NOTHING IS SHOWN TO SOMEBODY THIS PAGE CANNOT NAME. A reader with no session
  * — or a session with no member row behind it — has no games here to count,
  * and an unfiltered record would be every member's games wearing the word
