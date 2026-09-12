@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Paired } from "@/components/i18n/Paired";
+import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Doorstep, type BeginAction } from "@/components/live/Doorstep";
@@ -129,19 +129,16 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
     <Page width="standard" gap="gap-6">
       <SiteHeader />
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold" data-testid="doorstep-title">
-          <Paired
-            en={copy.label}
-            kanji={copy.kanji}
-            kanjiClassName="text-lg font-normal opacity-70"
-          />
-        </h1>
         {/*
-          The game's own tagline and the way through to how it is played. Somebody
-          about to begin a game they have not played before is exactly who wants the
-          rules, and the doorstep is the last moment before that stops being reading
-          and starts being a move.
+          The game's name, leading to the game — the site's standing rule, and
+          worth keeping here of all places: somebody about to begin a game they
+          have not played before is the reader most likely to want its front door,
+          and this is the last moment before reading turns into a move.
         */}
+        <h1 className="text-2xl font-semibold" data-testid="doorstep-title">
+          <GameName variant={variant} kanji className="no-underline hover:underline" />
+        </h1>
+        {/* And what the game IS, in its own words, above what this one will be. */}
         <p className="max-w-prose text-sm text-muted">
           {copy.tagline}{" "}
           <Link href={rulesPath(variant)} className="underline underline-offset-4">
