@@ -112,10 +112,10 @@ type Option = { turn: BotTurn; after: GameState };
  * times one that weighs one, and a budget that counted both as a single node
  * would bound nothing.
  */
-function ordered(state: GameState, branch: number, budget: Budget): Option[] {
+function ordered(state: GameState, branch: number, budget: Budget, width: number): Option[] {
   const mover = state.toPlay;
   const options: { option: Option; score: number }[] = [];
-  for (const turn of legalTurns(state, LOOK.width)) {
+  for (const turn of legalTurns(state, width)) {
     const after = applyTurn(state, turn);
     // A turn the engine refuses is not a turn.
     if (after === state) continue;
@@ -147,7 +147,7 @@ function look(
   if (state.status !== GAME_STATUS.playing) return terminalScore(state, me, depth);
   if (depth === 0 || spent(budget)) return positionScore(state, me);
 
-  const options = ordered(state, LOOK.branch, budget);
+  const options = ordered(state, LOOK.branch, budget, LOOK.width);
   if (options.length === 0) return positionScore(state, me);
 
   const maximising = state.toPlay === me;
@@ -175,6 +175,17 @@ function look(
  * The turn the general look-ahead likes, or null where it has nothing to say:
  * the game is not one this reading covers, or there is no turn to take.
  *
+ * `width` is the caller's own candidate width, not this module's, and that is
+ * not a detail. The chooser weighs `TierSpec.width` turns and then looks for the
+ * searched one among them; in a game where a turn is a slide, `legalTurns`
+ * SPREADS a long list evenly to fit the limit it is given, so two different
+ * limits produce two different samples of it. Enumerate the root at a width of
+ * our own and the turn handed back can be one the chooser never weighed — which
+ * fails no test and throws nothing: the match simply misses, the move is judged
+ * unsafe, and the grade falls back to one ply having paid for a search it then
+ * ignored. Taking the width from the caller makes the root a subset of what the
+ * caller has, by construction rather than by luck.
+ *
  * Deepened two plies at a time, keeping the best answer of each COMPLETED pass.
  * A pass that ran out of budget part way through is thrown away, and that is
  * the opposite of the usual advice, so it is worth the sentence: a node that
@@ -189,6 +200,7 @@ export function lookAheadTurn(
   depth: number,
   random: () => number,
   limit: SearchBudget = {},
+  width: number = LOOK.width,
 ): BotTurn | null {
   const spec: VariantSpec | undefined = VARIANT_SPECS[state.settings.variant];
   if (spec === undefined || !lookable(spec)) return null;
@@ -201,7 +213,7 @@ export function lookAheadTurn(
     until: Date.now() + (limit.millis ?? SEARCH.millis),
   };
 
-  const root = ordered(state, LOOK.rootBranch, budget);
+  const root = ordered(state, LOOK.rootBranch, budget, width);
   if (root.length === 0) return null;
   if (root.length === 1) return root[0].turn;
 

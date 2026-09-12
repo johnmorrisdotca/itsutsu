@@ -4,7 +4,7 @@ import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, EVAL_WEIGHTS, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
 import { pieceScore, positionScore, pointScore, readsThreats, threatScore } from "./opponentEval";
 import { masteredTurn } from "./expert/experts";
-import { applyTurn, legalTurns } from "./opponentTurns";
+import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
 import { searchTurn } from "./opponentSearch";
 import { lookAheadTurn, lookDepth } from "./opponentLook";
 import type { GameState, Stone } from "./gomoku.types";
@@ -108,44 +108,6 @@ function handsOverTheGame(after: GameState, me: Stone): boolean {
 /** One of `items`, drawn evenly. Ties are broken by chance, never by board order. */
 function pick<T>(items: T[], random: () => number): T {
   return items[Math.min(items.length - 1, Math.floor(random() * items.length))];
-}
-
-/**
- * Whether two turns are the same turn, for matching a searched move to its
- * candidate.
- *
- * Every shape of turn, not only a placement. This answered false for a slide
- * and for a pass, which was correct while the only search was the line games'
- * — those lay a stone and nothing else. The general look-ahead plays the games
- * where a turn moves a piece or declines to, and a match that could not
- * recognise one would have thrown its answer away silently: the searched turn
- * would fail to find its candidate, be judged unsafe, and the grade would fall
- * back to the one-ply reading having paid for a search it then ignored.
- */
-function sameTurn(a: BotTurn, b: BotTurn): boolean {
-  if (a.kind !== b.kind) return false;
-  if (a.kind === MOVE_KINDS.pass) return true;
-  if (a.kind === MOVE_KINDS.place && b.kind === MOVE_KINDS.place) {
-    return a.row === b.row && a.col === b.col && a.stone === b.stone;
-  }
-  if (a.kind === MOVE_KINDS.move && b.kind === MOVE_KINDS.move) {
-    return (
-      a.row === b.row &&
-      a.col === b.col &&
-      a.from.row === b.from.row &&
-      a.from.col === b.from.col
-    );
-  }
-  if (a.kind === MOVE_KINDS.piece && b.kind === MOVE_KINDS.piece) {
-    return (
-      a.cells.length === b.cells.length &&
-      a.cells.every((cell, index) => {
-        const other = b.cells[index];
-        return cell.row === other.row && cell.col === other.col && cell.stone === other.stone;
-      })
-    );
-  }
-  return false;
 }
 
 /** The best-scoring entries, with ties kept so chance can settle them. */
@@ -274,6 +236,8 @@ export function chooseTurn(
         lookDepth(VARIANT_SPECS[state.settings.variant], spec.searchDepth),
         random,
         budget,
+        // Its own width, so what it hands back is among what was weighed above.
+        spec.width,
       );
     const entry =
       searched === null ? undefined : scored.find((option) => sameTurn(option.turn, searched));

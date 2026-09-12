@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { createGame } from "./engine";
 import { GAME_STATUS, RULE_VARIANTS, RULE_VARIANT_LIST, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { seededRandom } from "./rules/random";
-import { BOT_TIERS } from "./opponent.constants";
+import { BOT_TIERS, TIER_SPECS } from "./opponent.constants";
 import { chooseTurn } from "./opponent";
-import { applyTurn } from "./opponentTurns";
-import { lookable } from "./opponentLook";
+import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
+import { lookAheadTurn, lookable } from "./opponentLook";
 import { searchable } from "./opponentSearch";
 import { readsPosition } from "./opponentEval";
 import type { RuleVariant, Stone } from "./gomoku.types";
@@ -213,6 +213,51 @@ describe("every rung of the ladder is a different player", () => {
     expect(lookable(VARIANT_SPECS[RULE_VARIANTS.misereFive])).toBe(false);
     expect(lookable(VARIANT_SPECS[RULE_VARIANTS.twistFive])).toBe(false);
     expect(lookable(VARIANT_SPECS[RULE_VARIANTS.dominoFive])).toBe(false);
+  });
+
+  it("hands back a turn the chooser actually weighed, in every family it reads", () => {
+    /*
+     * The search is USED rather than merely present, which is a second claim and
+     * the one that fails quietly.
+     *
+     * `chooseTurn` weighs `TierSpec.width` turns, asks the look-ahead for its
+     * opinion, and then finds that opinion among the turns it weighed so it can
+     * check it is not a blunder. A turn it cannot find is treated as unsafe and
+     * dropped — so if the two ever enumerate different samples of the same
+     * position, the grade pays for a search and plays the one-ply move, and
+     * nothing anywhere says so. Two ways that could happen and both are real:
+     * `legalTurns` SPREADS a long list of slides evenly to fit whatever limit it
+     * is handed, so two limits give two samples; and `sameTurn` answered false
+     * for a slide and for a pass until the look-ahead existed to play them.
+     *
+     * One position per family it reads, which is what makes this a gate on the
+     * mechanism rather than on Reversi.
+     */
+    const width = TIER_SPECS[BOT_TIERS.guoshou].width;
+    for (const [variant, size] of [
+      [RULE_VARIANTS.reversi, 8],
+      [RULE_VARIANTS.antiReversi, 8],
+      [RULE_VARIANTS.checkers, 8],
+      [RULE_VARIANTS.halma, 8],
+      [RULE_VARIANTS.chineseCheckers, 17],
+      [RULE_VARIANTS.go, 9],
+    ] as [RuleVariant, number][]) {
+      const random = seededRandom(29);
+      let state = createGame({ variant, size }, random());
+      // A few turns in, so a flipping board has flips and a race has moved.
+      for (let turn = 0; turn < 6 && state.status === GAME_STATUS.playing; turn += 1) {
+        const played = chooseTurn(state, BOT_TIERS.dan, random, TEST_BUDGET);
+        if (played === null) break;
+        state = applyTurn(state, played);
+      }
+      const found = lookAheadTurn(state, 4, seededRandom(31), TEST_BUDGET, width);
+      expect(found, `${variant}: the look-ahead had nothing to say`).not.toBeNull();
+      const weighed = legalTurns(state, width);
+      expect(
+        weighed.some((turn) => sameTurn(turn, found!)),
+        `${variant}: the look-ahead chose a turn the chooser never weighed`,
+      ).toBe(true);
+    }
   });
 });
 
