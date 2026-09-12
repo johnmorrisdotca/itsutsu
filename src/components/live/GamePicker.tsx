@@ -139,7 +139,7 @@ export function GamePicker({
               data-family={entry.title}
               data-open={showing ? "true" : "false"}
             >
-              <FamilyMark family={entry.title} className="size-6 shrink-0 rounded-sm" />
+              <FamilyMark family={entry.title} className="size-5 shrink-0 rounded-sm" />
               {/*
                 The kanji goes below a laptop, and only for a reader of
                 English. Eleven chips carrying both scripts wrap to three
@@ -183,7 +183,7 @@ export function GamePicker({
           return (
             <label
               key={game}
-              className={`${PICK_CARD} gap-2 p-1`}
+              className={`${PICK_CARD} gap-1.5 p-1`}
               data-testid="set-up-variant"
               data-variant={game}
               data-chosen={game === value ? "true" : "false"}
@@ -210,10 +210,23 @@ export function GamePicker({
                 picture does the rest of the work, and doing that work is why
                 John asked for pictures.
               */}
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">
+              {/*
+                A thirteenth of a pixel smaller than the site's small text
+                until a laptop, and this is measured too. Three columns at
+                exactly 768 — an iPad in portrait, the device this screen is
+                for — leave 132px beside the board for the name and its
+                kanji, and "Tournament Gomoku" at 14px wants 124 of them, so
+                the clip reached back into the name: "Tournament Gomo…". At
+                13px it wants 115 and the kanji takes the squeeze instead,
+                which is the way round this control is supposed to fail.
+
+                Two columns would have fixed it too and cost 56px of height,
+                which is more than the whole margin the Start button has.
+              */}
+              <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium lg:text-sm">
                 <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
               </span>
-              <PickMark className="mr-0.5 size-5" />
+              <PickMark className="size-5" />
             </label>
           );
         })}

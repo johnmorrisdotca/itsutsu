@@ -17,13 +17,23 @@ import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import { Button, Field, SectionTitle, Select } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
-import { describeRules } from "./rulesSummary";
+import { describeRules, type SettingWord } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
 import { shownName } from "@/lib/rating/shownName";
 
 /** What the opponent choice means; the same words the start sentence uses. */
 const ANYONE = "anyone";
 const COMPUTER = "c:";
+
+/**
+ * The default opponent, in the words the control uses.
+ *
+ * Said once because it is now said twice — in the select, and in the summary
+ * line that stands in for the select while it is folded. Two copies of it
+ * would be two things to keep in step, and the one that drifted would be the
+ * summary, which is the one that has to be true.
+ */
+const POST_FOR_ANYONE = "Post the seat for anyone";
 
 /**
  * Settling a game before there is a game.
@@ -101,6 +111,23 @@ export function SetUpGame({
     : undefined;
   const here = opponents.filter((one) => one.here);
   const away = opponents.filter((one) => !one.here);
+  /*
+   * Who the game is against, for the line that stands in for the folded
+   * controls.
+   *
+   * It reads the same two values the Start button reads — `named`, `computer`,
+   * or neither — rather than the select's raw value, because those can
+   * disagree: a specialist chosen at its own game and then left behind by a
+   * change of game is no longer among the players offered, and the game posts
+   * for anyone instead. The summary has to say what the button will DO, not
+   * what the control still happens to hold.
+   */
+  const opponentWord: SettingWord =
+    named !== undefined
+      ? { text: `Against ${shownName(named.name)}`, notable: true }
+      : computer !== undefined
+        ? { text: `Against ${computer.name}`, notable: true }
+        : { text: POST_FOR_ANYONE, notable: false };
 
   /*
    * A seat worth taking is one that matches the whole of what is being asked
@@ -243,45 +270,61 @@ export function SetUpGame({
            * and a row of board pictures there would crowd out the board.
            */
           chooser={RULES_CHOOSERS.pictures}
+          /*
+           * THE FIVE SETTINGS FOLD, AND THE OPPONENT FOLDS WITH THEM.
+           *
+           * The pictures cost 470 pixels over the two dropdowns they replaced
+           * and put the Start button below an iPad's fold — see MoreSettings
+           * for the measurement. The opponent is one of the five because it
+           * is the same kind of thing: a setting about a game already chosen,
+           * not the question this screen exists to ask. It is named in the
+           * summary line, so a rematch still shows who it is against without
+           * being opened, and one tap changes it.
+           */
+          fold={{
+            summary: [opponentWord],
+            fields: (
+              <Field label="Opponent">
+                <Select
+                  value={against}
+                  disabled={busy || !signedIn}
+                  onChange={(event) => setAgainst(event.target.value)}
+                  data-testid="set-up-with"
+                >
+                  <option value={ANYONE}>{POST_FOR_ANYONE}</option>
+                  {here.length > 0 ? (
+                    <optgroup label="Here now 在室">
+                      {here.map((one) => (
+                        <option key={one.email} value={`m:${one.email}`}>
+                          {shownName(one.name)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : null}
+                  {away.length > 0 ? (
+                    <optgroup label="Players you know 知人">
+                      {away.map((one) => (
+                        <option key={one.email} value={`m:${one.email}`}>
+                          {shownName(one.name)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : null}
+                  <optgroup label="The computer 対コンピュータ">
+                    {/* A specialist is offered at its own game and nowhere else. */}
+                    {computers.map((bot) => (
+                      <option key={bot.id} value={`${COMPUTER}${bot.id}`}>
+                        {[bot.name, BOT_PROFILES[bot.tier].native].filter(Boolean).join(" ")} ·{" "}
+                        {BOT_PROFILES[bot.tier].strength}
+                      </option>
+                    ))}
+                  </optgroup>
+                </Select>
+              </Field>
+            ),
+          }}
           onSizeChosen={setBoardChosen}
         />
-        <Field label="Opponent">
-          <Select
-            value={against}
-            disabled={busy || !signedIn}
-            onChange={(event) => setAgainst(event.target.value)}
-            data-testid="set-up-with"
-          >
-            <option value={ANYONE}>Post the seat for anyone</option>
-            {here.length > 0 ? (
-              <optgroup label="Here now 在室">
-                {here.map((one) => (
-                  <option key={one.email} value={`m:${one.email}`}>
-                    {shownName(one.name)}
-                  </option>
-                ))}
-              </optgroup>
-            ) : null}
-            {away.length > 0 ? (
-              <optgroup label="Players you know 知人">
-                {away.map((one) => (
-                  <option key={one.email} value={`m:${one.email}`}>
-                    {shownName(one.name)}
-                  </option>
-                ))}
-              </optgroup>
-            ) : null}
-            <optgroup label="The computer 対コンピュータ">
-              {/* A specialist is offered at its own game and nowhere else. */}
-              {computers.map((bot) => (
-                <option key={bot.id} value={`${COMPUTER}${bot.id}`}>
-                  {[bot.name, BOT_PROFILES[bot.tier].native].filter(Boolean).join(" ")} ·{" "}
-                  {BOT_PROFILES[bot.tier].strength}
-                </option>
-              ))}
-            </optgroup>
-          </Select>
-        </Field>
       </div>
 
       {error !== null ? (

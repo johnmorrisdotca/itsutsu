@@ -54,13 +54,18 @@ export const PICK_CARD = `${PICK_BASE} ${PICK_RESTING} ${PICK_CHOSEN}`;
  *
  * `min-h-12` is 48px, comfortably past the 44px minimum rather than at it:
  * this screen is used on an iPad, and "the buttons are too small" is a
- * complaint John has made about two other screens. The padding is tight
- * around that height on purpose — eleven chips have to reach a second line
- * rather than a third, and every line they take comes off the bottom of the
- * screen where the Start button is.
+ * complaint John has made about two other screens.
+ *
+ * NARROW, NOT SHORT. Everything tight here is horizontal — `px-1.5`, `gap-1`,
+ * a 20px mark — and the 48px height is untouched, so what shrinks is never
+ * the thing a finger has to hit. It is measured rather than tasteful: eleven
+ * chips at their roomier size wrapped to THREE lines on an iPad, and the
+ * third line was 54 of the 33 pixels between the Start button and the bottom
+ * of an iPad in Safari. Two lines clears it. Anything that makes a chip wider
+ * — a longer family name, a bigger mark — needs that measurement taken again.
  */
 export const PICK_CHIP =
-  "flex min-h-12 items-center gap-1.5 rounded-lg border px-2 py-1 text-xs transition-colors" +
+  "flex min-h-12 items-center gap-1 rounded-lg border px-1.5 py-1 text-xs transition-colors" +
   " outline-none focus-visible:ring-2 focus-visible:ring-moss";
 
 export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
@@ -78,8 +83,17 @@ export const PICK_CHIP_SHUT =
  * declared in the template are drawn whether or not anything sits in them,
  * so the row is as tall for Checkers (one game) as for Drops (eight).
  *
- * Eight is the largest family, and each shape holds exactly that: 2×4 up to
- * a tablet, 3×3 on a laptop, 4×2 on a desk.
+ * Eight is the largest family, and each shape holds exactly that: 1×8 on a
+ * phone, 2×4 from a large phone, 3×3 on a tablet, 4×2 on a desk.
+ *
+ * ONE COLUMN ON A PHONE, which is what /games already does with its game
+ * cards — two columns here was the odd one out. Measured: at 390px, two
+ * columns leave 70px beside the board for the name, which cut seven of the
+ * thirty-nine to about nine characters — "Tournament Gomo…", "Chinese
+ * Checker…". A phone is the screen where reading is hardest and it is the
+ * one place a clipped name is least affordable. It costs 208px of height,
+ * all of it on the phone, where nothing has a fold to clear: the Start
+ * button's margin was measured on an iPad, which gets three columns.
  *
  * THE ROW HEIGHT IS THE THUMBNAIL'S. 3rem is the 40px board plus the card's
  * own padding and nothing else, so every pixel of this control's height is a
@@ -98,7 +112,8 @@ export const PICK_CHIP_SHUT =
  * tell one game from another.
  */
 export const PICK_GRID =
-  "grid grid-cols-2 grid-rows-[repeat(4,3rem)] gap-2" +
+  "grid grid-cols-1 grid-rows-[repeat(8,3rem)] gap-2" +
+  " sm:grid-cols-2 sm:grid-rows-[repeat(4,3rem)]" +
   " md:grid-cols-3 md:grid-rows-[repeat(3,3rem)]" +
   " xl:grid-cols-4 xl:grid-rows-[repeat(2,3rem)]";
 

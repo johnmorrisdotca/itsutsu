@@ -9,6 +9,7 @@ import {
 import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY, variantLabel } from "@/lib/gomoku/variants.constants";
 import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { Handicap, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { describeClock } from "@/lib/history/deadline";
 
 /** The subset of settings a shared game carries, as strings from the store. */
 export type RulesLike = {
@@ -18,6 +19,65 @@ export type RulesLike = {
   opening: string;
   handicap: Handicap;
 };
+
+/**
+ * One fact about a game, for the line that stands in for a folded control.
+ *
+ * `notable` is NOT "changed from the default", which is a question this
+ * cannot answer: the pace a screen opens on is the member's own standing
+ * preference rather than a constant, so there is no default here to compare
+ * with, and a flag claiming otherwise would be a judgement nobody made.
+ *
+ * It is the question it CAN answer — whether this is the ordinary setting or
+ * one worth noticing. That does the job the flag was wanted for: a rematch
+ * arriving with a five-minute clock reads differently from one with none,
+ * because a clock is notable and no clock is not.
+ */
+export type SettingWord = { text: string; notable: boolean };
+
+/** The settings a game carries besides which game it is and what board it is on. */
+export type SettingsLike = {
+  opening: string;
+  allowResign: boolean;
+  moveTimeMs: number | null;
+  clockMode: string;
+  rated: boolean;
+};
+
+/**
+ * The settings that are not the game or the board, as words.
+ *
+ * This is what a folded disclosure shows in place of its controls, so it is
+ * read from the SAME value the controls are bound to — see `MoreSettings`.
+ * A summary computed from anything else could say "No clock" over a form
+ * about to submit one, which is worse than no summary at all.
+ *
+ * The clock is one word for two controls, because `describeClock` already
+ * folds the mode into the phrase: "5 minutes a move" and "20 minutes each
+ * for the whole game" say which mode without naming it. What running out of
+ * time costs is not here — it exists only when a clock does, it is a detail
+ * of the clock rather than a choice beside it, and a line long enough to
+ * wrap twice costs back the height this whole disclosure is for. It is one
+ * tap away, with everything else.
+ */
+export function describeSettings(rules: SettingsLike): SettingWord[] {
+  const opening =
+    rules.opening in OPENING_DISPLAY
+      ? OPENING_DISPLAY[rules.opening as OpeningRule].label
+      : rules.opening;
+  return [
+    { text: `${opening} opening`, notable: rules.opening !== OPENING_RULES.free },
+    {
+      text: rules.allowResign ? "Resigning allowed" : "No resigning",
+      notable: !rules.allowResign,
+    },
+    {
+      text: describeClock(rules.clockMode, rules.moveTimeMs),
+      notable: rules.moveTimeMs !== null,
+    },
+    { text: rules.rated ? "Rated" : "Friendly", notable: !rules.rated },
+  ];
+}
 
 /** The handicap in a sentence, or null when there is none. */
 export function describeHandicap(handicap: Handicap): string | null {
