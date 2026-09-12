@@ -18,6 +18,7 @@ import type { PlayedTally } from "@/lib/history/playerRecord";
 import { RECORD_SCOPES, scopeWorthAsking, type RecordScope } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "./RecordScopeBar";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
+import { levelShown } from "@/lib/xp/levelShown";
 import { filterDirectory, type DirectoryFilter } from "@/lib/rating/directoryFilter";
 import { SHOW_EVERYBODY_HREF } from "@/lib/rating/rememberedFilter";
 import { ignoredEmails } from "@/lib/social/ignores";
@@ -165,6 +166,14 @@ function directoryRow(
      */
     streak: entry.playedStreak,
     rating,
+    /*
+     * The XP level beside the name, off the member row this list already read.
+     * `levelShown` is what decides whether there is one worth printing: nought
+     * answers null, so nobody who has earned nothing wears a badge — and the
+     * programs, which `awardXp` refuses by name, are omitted by that same rule
+     * rather than by a check on `botTier`.
+     */
+    level: levelShown(entry.xp),
     joined: { at: entry.joinedAt, isNew: entry.isNew },
     note: kept ? (
       /*

@@ -8,7 +8,9 @@ import { familyPath, matchPath } from "@/lib/gomoku/slugs";
 import { foldEmail, memberRowFor } from "@/lib/auth/members";
 import { isRefusal } from "@/lib/api/paging";
 import { playerPath } from "@/lib/rating/playerKey";
-import { xpLevelLabel, xpMoreHref, xpParamsFrom } from "@/lib/xp/xpHistory";
+import { LevelName } from "@/components/xp/LevelName";
+import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
+import { xpMoreHref, xpParamsFrom } from "@/lib/xp/xpHistory";
 import { xpLedgerPage } from "@/lib/xp/xpHistoryPage";
 import { xpStanding } from "@/lib/xp/xpCurve";
 import type { XpAbout, XpLedgerRow } from "@/lib/xp/xpHistory.types";
@@ -191,10 +193,28 @@ function About({ about }: { about: XpAbout }) {
   return <span className="text-muted">—</span>;
 }
 
-/** The total, the level, and how far the next one is. */
+/**
+ * The total, the level, how far the next one is, and the way on to the two
+ * pages a level belongs to.
+ *
+ * EVERY LEVEL NAMED HERE LEADS SOMEWHERE. XP-09 built this line when
+ * `/xp/levels` and `/xp` did not exist and its comment said exactly that: "a
+ * link to a page that is not there is worse than a plain word. Both belong here
+ * the day they land." They landed in 0.164.0, so the rung the reader stands on
+ * goes through `LevelName` to its own page and the rung ahead links to theirs.
+ * Two named ranks with nothing behind them were sitting on the one line a member
+ * reads about their own standing.
+ *
+ * THE TWO PAGES ARE A LINE UNDER THE BAR AND NOT A PANEL. "Show The Data, Not
+ * The Way To It" is why this component exists at all — the ledger is below it
+ * rather than a link to one — and the same rule says what these two may be: the
+ * hundred rungs, and where the reader stands among people, are MORE of what the
+ * line above already shows. They are the only links here that lead off the panel.
+ */
 function Standing({ xp }: { xp: number }) {
   const standing = xpStanding(xp);
   const atTheTop = standing.span === 0;
+  const next = standing.level + 1;
   return (
     <div className="flex flex-col gap-1.5" data-testid="my-xp-standing">
       <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
@@ -202,27 +222,41 @@ function Standing({ xp }: { xp: number }) {
           {xp.toLocaleString("en-US")} XP
         </span>
         {/*
-          The level's NAME, from one function, and the name is `Level 11` until
-          the hundred names land — UmaKuma's own floor for an unnamed rank.
-          `xpLevelLabel` is the one line XP-10 changes to `xpLevelName(level)`.
-
-          Not a link, deliberately: `/xp` and `/xp/levels` are XP-08's and
-          XP-10's and do not exist yet, and a link to a page that is not there
-          is worse than a plain word. Both belong here the day they land.
+          The badge rather than a word: the number, the name, the kanji on hover
+          and the way to the rung — the same mark that now sits beside a member's
+          name in every list, so a reader meets their level in one form wherever
+          they meet it.
         */}
-        <span className="font-semibold" data-testid="my-xp-level">
-          {xpLevelLabel(standing.level)}
-        </span>
+        <LevelName level={standing.level} className="text-sm font-semibold" testId="my-xp-level" />
         <span className="text-muted" data-testid="my-xp-next">
-          {atTheTop
-            ? "The top of the ladder."
-            : `${standing.toNext.toLocaleString("en-US")} to ${xpLevelLabel(standing.level + 1)}`}
+          {atTheTop ? (
+            "The top of the ladder."
+          ) : (
+            <>
+              {standing.toNext.toLocaleString("en-US")} to{" "}
+              {/*
+                The rung AHEAD, named and linked — a plain `Link` and not a
+                second `LevelName`, because "215 to Lv 13 · Game Boy" puts two
+                badges on one line and the number in this sentence is a DISTANCE
+                rather than a place in the order. `levelPath` is the one
+                definition of where a rung lives, so it cannot drift from the
+                badge beside it.
+              */}
+              <Link
+                href={levelPath(next)}
+                className="underline underline-offset-4"
+                data-testid="my-xp-next-level"
+              >
+                {xpLevelName(next)}
+              </Link>
+            </>
+          )}
         </span>
       </p>
       {/*
         The bar is `aria-hidden`: it says the same thing as the line above it,
         which is already words, and a progress bar announced as "63%" after
-        "215 to Level 12" is the same fact twice in a worse unit.
+        "215 to Cartridge I" is the same fact twice in a worse unit.
       */}
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-shade" aria-hidden>
         <div
@@ -230,6 +264,19 @@ function Standing({ xp }: { xp: number }) {
           style={{ width: `${Math.round(standing.ratio * 100)}%` }}
         />
       </div>
+      <p className="text-xs text-muted">
+        <Link
+          href="/xp/levels"
+          className="underline underline-offset-4"
+          data-testid="my-xp-ladder-link"
+        >
+          All hundred levels <span className="font-mincho">百級</span>
+        </Link>
+        {" · "}
+        <Link href="/xp" className="underline underline-offset-4" data-testid="my-xp-leaderboard-link">
+          Where you stand <span className="font-mincho">順位</span>
+        </Link>
+      </p>
     </div>
   );
 }

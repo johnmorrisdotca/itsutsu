@@ -9,7 +9,6 @@ import {
   XP_SUBJECT_KIND_OF,
   xpAboutFor,
   xpLedgerRowFor,
-  xpLevelLabel,
   xpMoreHref,
   xpParamsFrom,
 } from "./xpHistory";
@@ -253,18 +252,6 @@ describe("one stored event as a row", () => {
 
   it("drops a type this deploy cannot explain rather than printing undefined", () => {
     expect(xpLedgerRowFor({ ...event, type: "wonAtSomethingElse" })).toBeNull();
-  });
-});
-
-describe("the level's name", () => {
-  it("is Level N until the hundred names land", () => {
-    /*
-     * The floor UmaKuma's `xpRank` keeps, and the one line XP-10 replaces with
-     * `xpLevelName(level)`. `xpFlash.ts`'s `levelOn` holds the same floor for
-     * the toasts; the two are the whole of the join.
-     */
-    expect(xpLevelLabel(1)).toBe("Level 1");
-    expect(xpLevelLabel(42)).toBe("Level 42");
   });
 });
 

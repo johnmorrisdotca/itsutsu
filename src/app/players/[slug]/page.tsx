@@ -4,6 +4,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CountryMark } from "@/components/players/CountryMark";
 import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
+import { MemberLevel } from "@/components/xp/MemberLevel";
 import { memberKind } from "@/lib/auth/memberKind";
 import { SnapshotWarning, WholeRecordPanel } from "@/components/players/WholeRecord";
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
@@ -250,6 +251,12 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
               legacyKind: keptRecord?.kind ?? null,
             })}
           />
+          {/*
+            Their standing, on the line that says who this is. `undefined` here
+            is a kept record with no member row, and is not a nought —
+            `MemberLevel` holds that argument and draws nothing for either.
+          */}
+          <MemberLevel xp={member?.xp} />
         </h1>
         {/*
           Where their playing happened, for somebody whose record was made

@@ -56,6 +56,8 @@ export type NamedMember = {
   city?: string;
   timeZone?: string;
   bio?: string;
+  /** Their XP total. Absent means the lookup did not read it — see `MemberLevel`. */
+  xp?: number;
 };
 
 /** Emails are compared folded; Google gives them in whatever case the user typed once. */
@@ -455,6 +457,7 @@ export async function findMemberById(id: string): Promise<NamedMember | null> {
       city: true,
       timeZone: true,
       bio: true,
+      xp: true,
     },
   });
   return row;
@@ -482,6 +485,7 @@ export async function findMemberByName(name: string): Promise<NamedMember | null
       city: true,
       timeZone: true,
       bio: true,
+      xp: true,
     },
   });
   return row;

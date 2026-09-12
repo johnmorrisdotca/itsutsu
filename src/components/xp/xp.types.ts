@@ -80,3 +80,16 @@ export type LevelNameProps = {
   className?: string;
   testId?: string;
 };
+
+/**
+ * Somebody's standing on a page ABOUT them: the level and the total.
+ *
+ * `xp` is optional because the absence and a nought are different facts —
+ * `MemberLevel`'s own comment sets out all three answers and why two of them
+ * draw nothing. A lookup that did not select the column hands `undefined`, and
+ * that must not become a `0` on the way here.
+ */
+export type MemberLevelProps = {
+  xp?: number;
+  testId?: string;
+};

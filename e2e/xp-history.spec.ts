@@ -1,6 +1,8 @@
 import { expect, test, type Browser, type BrowserContext } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
+import { xpLevelFor } from "../src/lib/xp/xpCurve";
+import { xpLevelName } from "../src/lib/xp/levelNames";
 import { memberContext } from "./members";
 
 /**
@@ -173,8 +175,28 @@ test.describe("a member's own XP", () => {
       await expect(page.getByTestId("my-xp-total")).toHaveText(
         `${seeded.total.toLocaleString("en-US")} XP`,
       );
-      await expect(page.getByTestId("my-xp-level")).toHaveText(/^Level \d+$/);
-      await expect(page.getByTestId("my-xp-next")).toContainText("to Level");
+      /*
+       * THE LEVEL'S NAME, NOT `Level 7`, AND IT LEADS TO THE RUNG. The seeded
+       * total is a sum of catalogue constants so the rung cannot be a literal
+       * here — `xpLevelName` is asked for it. That alone would be the feature
+       * calling itself back, so the second line pins what actually changed and
+       * cannot be satisfied by the old code: the floor form is what this panel
+       * used to print, and seeing it again means the swap came undone.
+       */
+      const level = xpLevelFor(seeded.total);
+      const badge = page.getByTestId("my-xp-level");
+      await expect(badge).toHaveText(`Lv ${level} · ${xpLevelName(level)}`);
+      await expect(badge).not.toHaveText(/^Level \d+$/);
+      // The badge is the way to the rung, and the rung ahead is the way to its own.
+      await expect(badge).toHaveAttribute("href", `/xp/levels/${level}`);
+      await expect(page.getByTestId("my-xp-next")).toContainText(`to ${xpLevelName(level + 1)}`);
+      await expect(page.getByTestId("my-xp-next-level")).toHaveAttribute(
+        "href",
+        `/xp/levels/${level + 1}`,
+      );
+      // The two pages a level belongs to, which did not exist when this panel was built.
+      await expect(page.getByTestId("my-xp-ladder-link")).toHaveAttribute("href", "/xp/levels");
+      await expect(page.getByTestId("my-xp-leaderboard-link")).toHaveAttribute("href", "/xp");
 
       // Twelve awards, newest first: the last one seeded is the first one read.
       const rows = page.getByTestId("my-xp-award");
@@ -315,8 +337,14 @@ test.describe("a member's own XP", () => {
       await expect(page.getByTestId("my-xp-ledger")).toBeVisible();
       await expect(page.getByRole("columnheader", { name: "Earned" })).toBeVisible();
       await expect(page.getByRole("columnheader", { name: "About" })).toBeVisible();
-      // The level-1 standing is still a standing, and it is shown.
-      await expect(page.getByTestId("my-xp-level")).toHaveText("Level 1");
+      /*
+       * The level-1 standing is still a standing, and it is shown — the badge
+       * with the catalogue's name for the bottom rung, pinned as a literal
+       * because a member with nought XP is always on it. "Insert Coin" rather
+       * than `xpLevelName(1)`, so a catalogue edit that renamed the rung every
+       * new member meets has to be looked at rather than absorbed.
+       */
+      await expect(page.getByTestId("my-xp-level")).toHaveText("Lv 1 · Insert Coin");
       // And the way in, as a link.
       await expect(page.getByTestId("my-xp-empty").getByRole("link")).toHaveAttribute(
         "href",

@@ -283,9 +283,13 @@ describe("a stored flash, read back", () => {
     expect(toToasts(flash).map((item) => item.id)).toEqual(first);
   });
 
-  it("mentions a level once per batch, on the last award", () => {
+  it("mentions a level once per batch, on the last award, by its NAME", () => {
     // A level is crossed once however many awards carried you over it. Saying
-    // "you reached Level 12" on all three would say it three times in one stack.
+    // "you reached Cartridge I" on all three would say it three times in one
+    // stack. The name is the catalogue's since XP-10's follow-up patch — level
+    // 12 is "Cartridge I" — and asserted as the name rather than as
+    // `xpLevelName(12)`, so a catalogue edit that silently renamed a rung the
+    // toasts are pinned to has to be looked at rather than absorbed.
     const items = toToasts({
       at: "t",
       awards: [
@@ -296,12 +300,12 @@ describe("a stored flash, read back", () => {
     });
 
     expect(items[0].level).toBeUndefined();
-    expect(items[1].level).toEqual({ name: "Level 12", reached: true });
+    expect(items[1].level).toEqual({ name: "Cartridge I", reached: true });
   });
 
   it("carries a level nobody has reached yet as the quiet next-level line", () => {
     const items = toToasts({ at: "t", awards: [{ type: "dailyVisit", points: 5 }], level: { level: 9, reached: false } });
-    expect(items[0].level).toEqual({ name: "Level 9", reached: false });
+    expect(items[0].level).toEqual({ name: "1-Up", reached: false });
   });
 
   it("drops a level it cannot read rather than naming Level NaN", () => {

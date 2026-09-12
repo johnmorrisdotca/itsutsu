@@ -8,15 +8,26 @@ import {
   TABLE_HEAD_CLASS,
   playedScopeNote,
   type RecordOf,
-  type WonLostDrawn,
 } from "./PlayerRecord";
+import { LevelName } from "@/components/xp/LevelName";
 import { Paired } from "@/components/i18n/Paired";
 import { RowActions } from "@/components/ui/Controls";
 import { SortableHead, type RecordSort } from "./recordSort";
-import { RATING_POOLS, type RatingPool } from "@/lib/rating/pools";
-import { TIER_DISPLAY, type RatingTier } from "@/lib/rating/elo";
+import { RATING_POOLS } from "@/lib/rating/pools";
+import { TIER_DISPLAY } from "@/lib/rating/elo";
+/*
+ * The row's shape is `recordTable.types.ts` and re-exported here, because four
+ * files import `RecordTableRow` from this module and a type with two doors is a
+ * type that drifts. One door, one place to read the contract, and the component
+ * that draws it is the one that hands it out.
+ */
+export type {
+  RecordColumns,
+  RecordTableRow,
+  ShownRating,
+} from "./recordTable.types";
 import type { ReactNode } from "react";
-import type { Streak } from "@/lib/rating/streak";
+import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.types";
 
 /**
  * ONE TABLE OF RECORDS, USED EVERYWHERE ONE IS SHOWN.
@@ -77,6 +88,27 @@ import type { Streak } from "@/lib/rating/streak";
  * - **Actions last**, because they are not facts.
  *
  * ─────────────────────────────────────────────────────────────────────────
+ * THE LEVEL IS A MARK IN THE SUBJECT CELL AND NOT AN ELEVENTH COLUMN
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * A member's XP level goes beside their NAME, in the cell the name is already
+ * in, as `LevelName`'s compact badge. The reason it is not a column is measured
+ * rather than aesthetic: the members list fits `/players` EXACTLY — 1,118 pixels
+ * of table in 1,118 of box at both 1280 and 1216 — so there is no slack for an
+ * eleventh column to come out of, and taking it would cut "Challenge" off the
+ * end again, the fault 0.164.2 had just finished fixing. The badge instead rides
+ * the room the subject column already has: that cell is 274 pixels wide and the
+ * compact badge is about thirty of them, so the table's width does not move at
+ * all. Both figures are in the section below, re-measured for this change.
+ *
+ * It belongs there on the merits too. A level is not a figure compared DOWN a
+ * column the way Played and Rating are — nothing sorts by it and nothing adds it
+ * up — it is part of how this site refers to a person, like the flag and the
+ * ROBOT badge already in that cell. `LevelName`'s compact form is what makes it
+ * fit, and its own comment argues why the NUMBER survives and the name drops to
+ * the `title`: this is the call site it was written for.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
  * WHAT A CALLER MAY SWITCH OFF, AND WHAT THAT COSTS
  * ─────────────────────────────────────────────────────────────────────────
  *
@@ -124,16 +156,31 @@ import type { Streak } from "@/lib/rating/streak";
  *    where a wrapped "WIN RATE" threw one table half a line out against the
  *    one beside it — and the body was left to wrap where it liked.
  *
- *    WHAT THAT COSTS, MEASURED, because somebody will want to weigh it. The
- *    members list wants 1,051 pixels and its box on /players is 990, so the
- *    right-hand end of the actions column now sits 61 pixels past the edge
- *    and has to be scrolled to. The table was ALWAYS over-subscribed by that
- *    much: wrapping is how the browser hid it, at the price of the ragged
- *    rows this is about, and it is the same answer the table already gave at
- *    every width under a desktop's. If it should fit instead, that is a
- *    decision about the COLUMNS, or about the page's width (/players is
- *    `standard`, `max-w-5xl`), taken with those numbers in hand — never a
- *    licence to let one row be taller than the row above it.
+ *    WHAT THAT COSTS, MEASURED, because somebody will want to weigh it. When
+ *    this was written the members list wanted 1,051 pixels in a box of 990, so
+ *    the right-hand end of the actions column sat 61 past the edge and had to
+ *    be scrolled to. The table was ALWAYS over-subscribed by that much and
+ *    wrapping is how the browser hid it, at the price of the ragged rows this
+ *    is about. 0.164.2 answered it the way the sentence said to — a decision
+ *    about the PAGE rather than a licence to let one row be taller than the row
+ *    above it: `/players` is `width="wide"` (`max-w-6xl`) now, not `standard`.
+ *
+ *    RE-MEASURED AFTER THAT MOVE, at 1280 and at 1216: the box is 1,118 at
+ *    both, the table is 1,118, and the overflow is NOUGHT. It fits, and it fits
+ *    with no slack whatever — which is a better place to be and a more
+ *    dangerous one, because the next column has nowhere to come from and the
+ *    failure it causes is silent. Read these numbers before adding one.
+ * 3. **A badge added to the subject cell needs a flex row, or it is a second
+ *    LINE.** The XP level went in as a plain sibling of `row.subject` and made
+ *    36 of the 209 rows on /players 53 pixels against the other 45 — this
+ *    fault, reintroduced by the commit after the one that fixed it. Nothing
+ *    wrapped and nothing was too long: every caller's subject is a
+ *    `display: flex` span, which is a BLOCK-level box, so an inline badge after
+ *    one starts a new line inside the cell. Eight pixels, on the rows that had
+ *    a level and on no others, which reads as "some members are different"
+ *    rather than as a layout fault. The remedy is to make the two flex items of
+ *    one row; the general rule is that anything added beside a subject joins its
+ *    line rather than following it.
  * 2. **The controls' height is held whether a row has controls or not.** Your
  *    own row has nobody to befriend, a kept record has nobody to challenge,
  *    and a program has no account to act on — so all three are handed an empty
@@ -144,76 +191,6 @@ import type { Streak } from "@/lib/rating/streak";
  *    right thing; the cell was dropping the space on the floor.
  */
 
-/** Which of the optional columns a table shows. */
-export type RecordColumns = {
-  /** A place in the order, numbered from the top. Ladders only. */
-  rank?: boolean;
-  /** How settled the rating is. Meaningless where the rows are not ratings. */
-  tier?: boolean;
-  /** When a member came in. People only. */
-  joined?: boolean;
-  /**
-   * Off where a row has no single rating to show — see above. On by default,
-   * so a table without one has said so.
-   */
-  rating?: boolean;
-  /** The heading over the actions column; absent means there are no actions. */
-  actions?: string;
-};
-
-/** A rating as a row shows it: the number, and which ladder earned it. */
-export type ShownRating = { rating: number; pool: RatingPool };
-
-export type RecordTableRow = {
-  /** React's key, and nothing else — never shown. */
-  key: string;
-  /**
-   * The one thing that varies: a game, a member, a player, a site.
-   *
-   * A node rather than a named kind because these really are different — a
-   * game name with its thumbnail, a member with their avatar, country and
-   * badge — and pretending otherwise would put every one of those inside this
-   * file. It is the ONLY slot, deliberately: everything after it is drawn
-   * here, so a caller cannot spell a shared figure its own way.
-   */
-  subject: ReactNode;
-  record: WonLostDrawn;
-  /**
-   * Exactly which games these counted, so every number leads to them.
-   *
-   * Required, not optional. `gameLinks.coverage.test.ts` enforces this by
-   * regex on `<RecordCells … of={…}>` call sites; now that the call site is
-   * inside this file, the guarantee moves to the type — which is stronger,
-   * because a type cannot be satisfied by writing the right characters.
-   */
-  of: RecordOf;
-  /** The run these same games are on, or null where there is not one. */
-  streak: Streak | null;
-  /**
-   * Why the streak cell is blank, where the row knows a reason other than
-   * "nothing finished yet" — a per-site total has no run because a run is an
-   * order. Without it an em dash reads as a bug rather than as an answer.
-   */
-  streakBlankBecause?: string;
-  /** Null prints a dash: a rating nobody has earned is not a rating of 1600. */
-  rating?: ShownRating | null;
-  tier?: RatingTier;
-  joined?: { at: string; isNew: boolean };
-  /** What the reader may do about this row — a button or two. */
-  actions?: ReactNode;
-  /** A mark on the played count, for a total that needs qualifying. */
-  note?: ReactNode;
-  /**
-   * `data-*` attributes on the row, for identifying it rather than drawing it.
-   *
-   * The Computers tab tags each row with the grade it is — `data-tier="kyu"` —
-   * so a browser test can say the grades come out in order without reading the
-   * names. Typed as data attributes on purpose: it is a hook for tests and
-   * nothing that can reach the styling, the headings or a cell's contents,
-   * which is where the drift this component exists to stop would come back in.
-   */
-  attributes?: Record<`data-${string}`, string>;
-};
 
 /**
  * A rating with the mark that says which pool earned it.
@@ -373,7 +350,27 @@ export function RecordTable({
                 {columns.rank === true ? (
                   <td className={`${CELL} text-muted`}>{index + 1}</td>
                 ) : null}
-                <td className="py-1.5 pr-3">{row.subject}</td>
+                <td className="py-1.5 pr-3">
+                  {/*
+                    ONE FLEX ROW, AND THE THIRD RULE ABOVE IS WHY. Measured: as
+                    a plain sibling of `row.subject` the badge made 36 of 209
+                    rows on /players 53 pixels against the other 45. Only where
+                    there IS a level, so a table with none keeps the markup
+                    0.164.2 measured. `items-baseline`, so the badge sits on the
+                    name's baseline even where a subject is two lines tall — the
+                    Bots tab puts a grade under the name. And AFTER the subject,
+                    never inside it: an anchor within an anchor is invalid HTML
+                    and a browser drops one of them silently.
+                  */}
+                  {typeof row.level === "number" ? (
+                    <span className="flex min-w-0 items-baseline gap-2">
+                      {row.subject}
+                      <LevelName level={row.level} compact className="text-muted" testId="record-level" />
+                    </span>
+                  ) : (
+                    row.subject
+                  )}
+                </td>
                 <RecordCells
                   record={row.record}
                   of={row.of}

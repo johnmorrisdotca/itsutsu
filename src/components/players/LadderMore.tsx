@@ -41,6 +41,18 @@ function ladderRow(player: PlayerProfile): RecordTableRow {
     streak: player.streak,
     rating: { rating: player.rating, pool: RATING_POOLS.people },
     tier: player.tier,
+    /*
+      NO `level`, AND IT IS AN ABSENCE WITH A REASON. The members list and the
+      computers tab badge a member's XP level beside their name; this table
+      cannot, because a `PlayerProfile` is a `Player` row and XP lives on
+      `Member`. The two are joined by a folded NAME that stops matching the
+      moment somebody renames, so filling it would cost this page a second query
+      per page of the ladder to answer a question nobody sorts or pages by.
+
+      Said here rather than left to look like an oversight — the two are
+      identical in a diff. If it should be here, the honest route is `xp` on the
+      row `fetchLadderPage` already reads, not a lookup per name.
+    */
   };
 }
 

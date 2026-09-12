@@ -9,12 +9,22 @@ import { XP_SUBJECT_KINDS, type XpAbout, type XpLedgerRow, type XpSubjectKind } 
 import type { XpEventType } from "./xp.types";
 
 /**
- * READING A SUBJECT BACK, AND NAMING THE LEVEL A TOTAL STANDS AT.
+ * READING A SUBJECT BACK.
  *
  * The writing half of the ledger is `awardXp.ts`; this is the only module that
  * reads a subject back and has to say what it referred to. Pure, and it imports
  * no database, so `xpHistory.test.ts` proves the mapping against the catalogue
  * itself rather than against a seeded row.
+ *
+ * **NAMING A LEVEL IS NO LONGER THIS MODULE'S JOB, and the removal is the
+ * point.** `xpLevelLabel` lived here and answered `Level 42`, a placeholder
+ * with the one-line swap to `xpLevelName` written in its own comment. The
+ * hundred names landed, so it is gone rather than made into a one-line
+ * forwarder: a second name for one lookup is how a join comes to have two
+ * sites, and the next surface that wants a level would have had two functions
+ * to choose between with nothing to choose on. `xpLevelName` in
+ * `src/lib/xp/levelNames.ts` is the only door, and it keeps `Level 42` as its
+ * floor for a rung the ladder does not have.
  *
  * The reason it is a table and not a switch is `XP_SUBJECTS`'s reason: getting
  * this wrong is invisible. A `gradeBeaten` read as a variant key links to
@@ -210,25 +220,6 @@ export function xpLedgerRowFor(event: {
     dayKey: event.dayKey,
     earnedAt: event.createdAt.toISOString(),
   };
-}
-
-/**
- * WHAT A LEVEL IS CALLED.
- *
- * `Level 42` until the hundred names land, which is UmaKuma's own floor —
- * `xpRank` answers `Rank 42` for an unnamed rank and its comment calls it a
- * floor rather than a feature. A rank with no name is honest; a crash on
- * somebody's own page is not, and a made-up name would be worse than either.
- *
- * **XP-10 replaces the one line below with `xpLevelName(level)` from
- * `src/lib/xp/levelNames.ts` and nothing else on this page moves.** It is a
- * function here, and not `Level ${level}` written into the panel, for exactly
- * that reason: the join wants one site, not one per surface. `xpFlash.ts`'s
- * `levelOn` holds the same floor for the toasts and is the other half of the
- * same one-line change.
- */
-export function xpLevelLabel(level: number): string {
-  return `Level ${level}`;
 }
 
 /**

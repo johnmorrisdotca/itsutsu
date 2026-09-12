@@ -4,6 +4,7 @@ import { currentEmail } from "@/lib/auth/currentSession";
 import { memberRowFor } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 
+import { xpLevelName } from "./levelNames";
 import { XP_EVENT_SPECS } from "./xp.constants";
 import type { XpEventType } from "./xp.types";
 
@@ -164,18 +165,27 @@ export function toToasts(value: unknown): XpToastItem[] {
 /**
  * The level line a batch carries, named, or null.
  *
- * **The name is the placeholder until the hundred names land.** `LEVEL_NAMES` in
- * `levelNames.constants.ts` is somebody else's file and XP-10 owns the lookup;
- * until then a level reads as `Level 42`, which is honest and legible where a
- * crash on a page is neither, and which is exactly what UmaKuma's `xpRank` does
- * for an unnamed rank. **XP-10 replaces the one line below with
- * `xpLevelName(level)` and nothing else here changes.**
+ * **The swap has happened: the name is the catalogue's.** This line read
+ * `` `Level ${level.level}` `` from XP-02 until XP-10's hundred names landed,
+ * and the comment here promised the one-line change — it is made, and a
+ * LEVEL UP 昇級 toast now says "Dreamcast" where it used to say "Level 42".
+ * `xpLevelName` is the only door to the catalogue and keeps the old text as its
+ * floor, so a level the ladder does not have still reads as `Level 101` rather
+ * than crashing a header on somebody's own page.
+ *
+ * **The number is dropped from the toast and that is deliberate.** A toast is
+ * one line, seen once, with no room for "42 · Dreamcast"; the name is the half
+ * worth reading and the rung is a click away on `/xp/levels`. Where the level
+ * sits in a table BESIDE a name — the members list, the computers tab — the
+ * badge keeps the number, because there a level is a place in a sequence and
+ * the rows are read against each other. `LevelName`'s own comment says which
+ * way round that is and why.
  */
 function levelOn(flash: Partial<XpFlash>): { name: string; reached: boolean } | null {
   const level = flash.level;
   if (!level || typeof level.level !== "number" || typeof level.reached !== "boolean") return null;
   if (!Number.isInteger(level.level) || level.level < 1) return null;
-  return { name: `Level ${level.level}`, reached: level.reached };
+  return { name: xpLevelName(level.level), reached: level.reached };
 }
 
 /**

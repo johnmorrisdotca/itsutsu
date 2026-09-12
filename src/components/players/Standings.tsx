@@ -88,6 +88,12 @@ export function StandingsTable({
         streak: standing.streak,
         rating: { rating: standing.rating, pool },
         tier: standing.tier,
+        /*
+          No `level`, for the site ladder's reason one file over: a
+          `VariantStanding` is a rating row keyed by a folded name and XP is on
+          `Member`, so a badge here would cost a query this table does not make.
+          Stated rather than omitted, since the two look the same in a diff.
+        */
         actions: actions === undefined ? undefined : actions(standing),
       }))}
       columns={{ rank: true, tier: true, actions: actions === undefined ? undefined : actionsLabel }}
