@@ -1,5 +1,24 @@
-import { NO_PACE, SET_UP_PARAMS } from "@/lib/gomoku/slugs";
-import { MOVE_TIME_OPTIONS } from "@/lib/history/gameSettingsSchema";
+import {
+  HANDICAP_RULES,
+  NO_HANDICAP,
+  OBSTACLE_LAYOUTS,
+  SECOND_STONE_EXCLUSIONS,
+  STONES,
+} from "@/lib/gomoku/gomoku.constants";
+import type { Handicap, HandicapRule, OpeningRule, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
+import {
+  NO_HANDICAP_ASKED,
+  NO_PACE,
+  RATED_WORDS,
+  RESIGN_WORDS,
+  SET_UP_PARAMS,
+  variantFor,
+} from "@/lib/gomoku/slugs";
+import {
+  MOVE_TIME_OPTIONS,
+  SHARED_OPENINGS,
+  TIMEOUT_PENALTIES,
+} from "@/lib/history/gameSettingsSchema";
 
 /** The most moves an address may name, matching the creation route's own ceiling. */
 const MOVE_CEILING = 4096;
@@ -38,6 +57,38 @@ export type SetUpAsked = {
   board: number | null;
   /** Wrapped, because "no clock" and "nobody said" are different answers. */
   pace: { ms: number | null } | null;
+  /**
+   * THE REST OF A SETTLED GAME, where the address carries a whole one.
+   *
+   * Every field is null for "nobody said", and a value only where the address
+   * named something the site actually offers. Nothing here is defaulted: a
+   * default written in this module would be a choice nobody made, arriving at
+   * the screen indistinguishable from a real one — and the screen has a real
+   * answer for silence already, which is the member's own standing preference
+   * or the game's own first board.
+   */
+  rules: AskedRules;
+  /** A game to sit down at rather than make a second one beside. */
+  sit: string | null;
+};
+
+/**
+ * The rules an address named, each one separately absent.
+ *
+ * A partial of `RulesDraft` would say the same thing in fewer words and hide
+ * the whole point: these are not a draft with gaps, they are a list of things
+ * that either were or were not said. The two cases are different everywhere
+ * this is read.
+ */
+export type AskedRules = {
+  variant: RuleVariant | null;
+  obstacles: string | null;
+  opening: OpeningRule | null;
+  clockMode: string | null;
+  timeoutPenalty: string | null;
+  rated: boolean | null;
+  allowResign: boolean | null;
+  handicap: Handicap | null;
 };
 
 /** One value from a query, or null where it is absent or repeated into an array. */
@@ -90,5 +141,89 @@ export function readSetUpAsked(
         : pace !== null && Number.isInteger(paceMs) && PACES_OFFERED.includes(paceMs)
           ? { ms: paceMs }
           : null,
+    rules: readAskedRules(asked),
+    sit: one(asked, SET_UP_PARAMS.sit),
   };
+}
+
+/**
+ * The rules an address named, each checked against what the site offers.
+ *
+ * Same care as everything above, for the same reason: this is read off an
+ * address somebody can edit. A value that is not one of the site's own is not
+ * a rule the screen has been told — it is a rule the screen has not been told,
+ * and those are two different answers with two different fallbacks.
+ */
+function readAskedRules(asked: Record<string, string | string[] | undefined>): AskedRules {
+  const game = one(asked, SET_UP_PARAMS.game);
+  const opening = one(asked, SET_UP_PARAMS.opening);
+  const blocks = one(asked, SET_UP_PARAMS.blocks);
+  const clock = one(asked, SET_UP_PARAMS.clock);
+  const penalty = one(asked, SET_UP_PARAMS.penalty);
+  const rated = one(asked, SET_UP_PARAMS.rated);
+  const resign = one(asked, SET_UP_PARAMS.resign);
+
+  return {
+    /*
+     * By SLUG, the way the path names a game. The draft holds the variant key
+     * and an address holds the slug — /games/new?game=misere-five rather than
+     * ?game=misereFive — because an address is read by people, and because the
+     * slug table exists so that renaming a variant key cannot move a page.
+     */
+    variant: game === null ? null : variantFor(game),
+    obstacles:
+      blocks !== null && Object.values(OBSTACLE_LAYOUTS).includes(blocks as never) ? blocks : null,
+    opening:
+      opening !== null && SHARED_OPENINGS.includes(opening as OpeningRule)
+        ? (opening as OpeningRule)
+        : null,
+    clockMode: clock === "move" || clock === "game" ? clock : null,
+    timeoutPenalty:
+      penalty !== null && TIMEOUT_PENALTIES.includes(penalty as never) ? penalty : null,
+    /*
+     * Three states, not two. The word the site uses, or nothing — never `false`
+     * standing in for an absent parameter, which is how a rated game would
+     * become a friendly one by an address forgetting to mention it.
+     */
+    rated: rated === RATED_WORDS.rated ? true : rated === RATED_WORDS.friendly ? false : null,
+    allowResign: resign === RESIGN_WORDS.yes ? true : resign === RESIGN_WORDS.no ? false : null,
+    handicap: readHandicap(one(asked, SET_UP_PARAMS.handicap)),
+  };
+}
+
+/**
+ * A handicap said in one word: the colour carrying it, then the restrictions,
+ * then the size of the centre its second stone must leave — `black-overline-3`.
+ *
+ * ONE UNREADABLE TOKEN THROWS THE WHOLE THING AWAY, rather than keeping the
+ * half that parsed. A handicap is a set of restrictions on one player, and half
+ * of one is a game neither side agreed to; answering "nobody said" sends the
+ * screen back to its own default, which is the ordinary game. That is the safe
+ * direction — it can only ever under-state — and the statement a reader is
+ * shown comes from the same parse, so the words and the game cannot disagree.
+ */
+function readHandicap(raw: string | null): Handicap | null {
+  if (raw === null) return null;
+  /*
+   * "Nobody is carrying one", said out loud — which is a different answer from an
+   * absent parameter and has to be, or taking a handicap off on the doorstep and
+   * pressing Change something would hand it straight back. See `NO_HANDICAP_ASKED`.
+   */
+  if (raw === NO_HANDICAP_ASKED) return NO_HANDICAP;
+  const parts = raw.split("-").filter((part) => part !== "");
+  const [colour, ...rest] = parts;
+  if (colour !== STONES.black && colour !== STONES.white) return null;
+
+  const handicap: Handicap = { ...NO_HANDICAP, stone: colour as Stone };
+  for (const part of rest) {
+    if (/^\d+$/.test(part)) {
+      const reach = Number(part);
+      if (!SECOND_STONE_EXCLUSIONS.includes(reach as never)) return null;
+      handicap.secondStoneExclusion = reach;
+      continue;
+    }
+    if (!HANDICAP_RULES.includes(part as HandicapRule)) return null;
+    handicap[part as HandicapRule] = true;
+  }
+  return handicap;
 }

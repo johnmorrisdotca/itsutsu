@@ -14,7 +14,30 @@ import { readSetUpAsked } from "./setUpAsked";
 describe("reading what an address asked the setup screen for", () => {
   it("says nothing was asked when nothing was", () => {
     const asked = readSetUpAsked({});
-    expect(asked).toEqual({ against: null, rematch: null, from: null, board: null, pace: null });
+    expect(asked).toEqual({
+      against: null,
+      rematch: null,
+      from: null,
+      board: null,
+      pace: null,
+      sit: null,
+      /*
+       * Every rule separately absent, rather than a draft with defaults in it.
+       * Asserted field by field on purpose: a default appearing here would be a
+       * choice nobody made, arriving at the screen indistinguishable from one
+       * somebody did make, and this is the test that would notice.
+       */
+      rules: {
+        variant: null,
+        obstacles: null,
+        opening: null,
+        clockMode: null,
+        timeoutPenalty: null,
+        rated: null,
+        allowResign: null,
+        handicap: null,
+      },
+    });
   });
 
   it("reads an opponent, a game to repeat and a position to carry", () => {

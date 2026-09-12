@@ -50,6 +50,28 @@ const RENJU_OPENINGS: readonly GameSettings["opening"][] = [
   OPENING_RULES.tarannikov,
 ];
 
+/**
+ * WHETHER THE OPENING IS WHAT DECIDES WHO PLAYS WHICH COLOUR.
+ *
+ * Asked by the doorstep, which states every fact a game will be played under
+ * before it is created — and the colours are the fact people most want. Under
+ * these five protocols the seats are settled and the colours are not: one
+ * player lays the first stones and the other looks at the position and chooses,
+ * so any claim made beforehand about who is black would be a guess.
+ *
+ * Here rather than in the page, because it is a rule of the game and rules live
+ * with the engine. The page asks; it does not keep its own list. A sixth
+ * swapping protocol added to either list above is then answered correctly by
+ * everything that asks, which a list copied into a component would not be.
+ *
+ * "I do not know yet" is the honest answer this enables, and the alternative is
+ * the dangerous kind of plausible: naming black would be in range, readable,
+ * and wrong half the time.
+ */
+export function openingDecidesColours(opening: GameSettings["opening"]): boolean {
+  return SWAP_OPENINGS.includes(opening) || RENJU_OPENINGS.includes(opening);
+}
+
 export function initialOpening(
   settings: GameSettings,
   opener: Stone,

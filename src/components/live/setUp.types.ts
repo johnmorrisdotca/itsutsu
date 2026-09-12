@@ -41,6 +41,15 @@ export type SetUpFork = {
   move: number;
   /** True where nobody held the other seat, so the new game is one at this screen. */
   alone: boolean;
+  /**
+   * The colour whoever is forking keeps — a position belongs to the colours that
+   * were in it, and the route hands the forker their own seat back.
+   *
+   * Null where this reader was not in the game being forked at all, which is a
+   * fork into a board at one screen. Nullable rather than defaulted for the usual
+   * reason: black is a real colour and would read as one.
+   */
+  colour: Stone | null;
 };
 
 /**
@@ -52,6 +61,19 @@ export type SetUpFork = {
  */
 export type SetUpFrom = {
   initial: RulesDraft;
+  /**
+   * The game this was filled in from, AS IT WAS PLAYED. Null where nothing was
+   * filled in from a game at all.
+   *
+   * A second draft beside `initial`, because the two answer different questions
+   * and one value cannot answer both. `initial` is what the form opens with,
+   * which an address may have changed; this is what the old game actually was.
+   * `creationFor` compares them to decide whether it is still asking for a
+   * rematch — a rematch takes every rule from the game it repeats, so the moment
+   * somebody changes one it has to stop claiming to be one, or the change is
+   * thrown away in silence.
+   */
+  asPlayed: RulesDraft | null;
   opponent: SetUpOpponent | null;
   again: SetUpAgain | null;
   fork: SetUpFork | null;

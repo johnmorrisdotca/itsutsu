@@ -13,10 +13,10 @@ import {
 } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { parseHandicap } from "@/lib/history/gameSettingsSchema";
-import { colourAfterSwap, opponentOf } from "@/lib/history/rematch";
+import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
-import { draftFromGame, type RulesDraft } from "./rulesDraft";
-import { readSetUpAsked } from "./setUpAsked";
+import { applyRulesChange, draftFromGame, type RulesDraft } from "./rulesDraft";
+import { readSetUpAsked, type SetUpAsked } from "./setUpAsked";
 import type { SetUpAgain, SetUpFork, SetUpFrom, SetUpOpponent } from "./setUp.types";
 
 /**
@@ -53,8 +53,8 @@ export async function setUpFrom({
    * first: what they find decides the game, the board and every rule, and the
    * plain path below only has the member's own defaults to go on.
    */
-  if (want.rematch !== null) return await fromFinishedGame(want.rematch, variant);
-  if (want.from !== null) return await fromPosition(want.from, variant);
+  if (want.rematch !== null) return await fromFinishedGame(want.rematch, variant, want);
+  if (want.from !== null) return await fromPosition(want.from, variant, want);
 
   const opponent = want.against === null ? null : await personNamed(want.against);
   /*
@@ -100,7 +100,8 @@ export async function setUpFrom({
   };
 
   return {
-    initial,
+    initial: askedOver(initial, want),
+    asPlayed: null,
     opponent,
     again: null,
     fork: null,
@@ -110,6 +111,60 @@ export async function setUpFrom({
         ? "Whoever that link named cannot be reached for a game. Pick somebody below."
         : null,
   };
+}
+
+/**
+ * A DRAFT WITH WHATEVER THE ADDRESS ACTUALLY SAID LAID OVER IT.
+ *
+ * The five parameters this screen started with were a head start on a form
+ * somebody was still going to fill in. The doorstep needs the other thing: an
+ * address that carries a FINISHED draft, both so that the page after this one
+ * can state it and so that "change something" lands back here with every answer
+ * still made. A round trip that dropped a field would put a game somebody had
+ * not agreed to in front of them, looking exactly like one they had.
+ *
+ * Each field is laid over only where the address said something — `AskedRules`
+ * keeps "said nothing" and "said this" apart precisely so this can. And it goes
+ * through `applyRulesChange`, so a game and a board that cannot sit together are
+ * brought into line here, the same way they are when somebody moves a control.
+ *
+ * A FORK IS THE EXCEPTION, and it is the same exception the creation route
+ * makes. The board, the game, the obstacles, the opening and the handicap come
+ * with the POSITION and are not anybody's to change — replaying the copied moves
+ * onto another board would not be that position. So only the pace settings are
+ * honoured, which is exactly the set `FORK_PACE_SETTINGS` names and the route
+ * already lets a caller settle. Letting the rest through would put values in
+ * this form that the route is right to throw away, which is the thing this
+ * codebase calls a control whose answer is discarded.
+ */
+function askedOver(initial: RulesDraft, want: SetUpAsked, forked = false): RulesDraft {
+  const said = want.rules;
+  const pace: Partial<RulesDraft> = {
+    ...(want.pace !== null ? { moveTimeMs: want.pace.ms } : {}),
+    ...(said.clockMode !== null ? { clockMode: said.clockMode } : {}),
+    ...(said.timeoutPenalty !== null ? { timeoutPenalty: said.timeoutPenalty } : {}),
+    ...(said.allowResign !== null ? { allowResign: said.allowResign } : {}),
+    ...(said.rated !== null ? { rated: said.rated } : {}),
+  };
+  if (forked) return applyRulesChange(initial, pace);
+
+  /*
+   * A board only where the game being asked for actually has it. `sizeForVariant`
+   * lets any number through for the games with no board of their own, so this is
+   * the check that keeps an address from naming a 12×12 gomoku board — which the
+   * creation route would refuse after the doorstep had already stated it.
+   */
+  const variant = said.variant ?? (initial.variant as RuleVariant);
+  const board = want.board !== null && boardSizesFor(variant).includes(want.board) ? want.board : null;
+
+  return applyRulesChange(initial, {
+    ...(said.variant !== null ? { variant: said.variant } : {}),
+    ...(board !== null ? { size: board } : {}),
+    ...(said.obstacles !== null ? { obstacles: said.obstacles } : {}),
+    ...(said.opening !== null ? { opening: said.opening } : {}),
+    ...(said.handicap !== null ? { handicap: said.handicap } : {}),
+    ...pace,
+  });
 }
 
 /** The member or program an `against` names, or null where there is no such player. */
@@ -174,7 +229,11 @@ const GAME_FOR_SET_UP = {
  * some rules", and a screen that would not let him is a screen that failed at
  * the one thing it was asked for.
  */
-async function fromFinishedGame(id: string, variant: RuleVariant | null): Promise<SetUpFrom> {
+async function fromFinishedGame(
+  id: string,
+  variant: RuleVariant | null,
+  want: SetUpAsked,
+): Promise<SetUpFrom> {
   const blank = blankFrom(variant);
   const origin = await prisma.game.findUnique({ where: { id }, select: GAME_FOR_SET_UP });
   if (origin === null) return { ...blank, problem: "There is no such game to play again." };
@@ -194,8 +253,22 @@ async function fromFinishedGame(id: string, variant: RuleVariant | null): Promis
   }
 
   const again: SetUpAgain = { id: origin.id, colour };
+  /*
+   * TWO DRAFTS, ANSWERING DIFFERENT QUESTIONS.
+   *
+   * `asPlayed` is the game as it WAS played. `initial` is what this form opens
+   * with, which is the same thing until an address says otherwise. One value
+   * standing for both worked only while nothing could carry a changed rule back
+   * here: `creationFor` asks whether the form still describes the game it was
+   * filled in from, and now that the address can fill the form in itself, a
+   * changed rule compared against itself would answer yes — asking the route for
+   * a REMATCH, which takes every rule from the old game and would have thrown
+   * the change silently away.
+   */
+  const asPlayed = { ...draftOf(origin), open: false };
   return {
-    initial: { ...draftOf(origin), open: false },
+    initial: askedOver(asPlayed, want),
+    asPlayed,
     opponent: them,
     again,
     fork: null,
@@ -214,23 +287,39 @@ async function fromFinishedGame(id: string, variant: RuleVariant | null): Promis
  * those stay editable with the source's own values already in them.
  */
 async function fromPosition(
-  want: { id: string; move: number },
+  asked: { id: string; move: number },
   variant: RuleVariant | null,
+  want: SetUpAsked,
 ): Promise<SetUpFrom> {
   const blank = blankFrom(variant);
-  const origin = await prisma.game.findUnique({ where: { id: want.id }, select: GAME_FOR_SET_UP });
+  const origin = await prisma.game.findUnique({ where: { id: asked.id }, select: GAME_FOR_SET_UP });
   if (origin === null) return { ...blank, problem: "There is no such game to play on from." };
-  if (want.move > origin.moveCount) {
+  if (asked.move > origin.moveCount) {
     return { ...blank, problem: "That game has fewer moves than the position asked for." };
   }
 
   const mineId = await currentMemberId();
   const theirId = opponentOf(origin, mineId);
   const them = theirId === null ? null : await personNamed(theirId);
-  const fork: SetUpFork = { id: origin.id, move: want.move, alone: them === null };
+  /*
+   * The colour whoever is forking keeps. A fork continues a position and a
+   * position belongs to the colours that were in it, so the route hands the
+   * forker their own seat back — and the doorstep can therefore say which colour
+   * that is rather than leaving somebody to work it out from the board. Null
+   * where this reader was not in the game at all, which forks into a board at
+   * one screen and has no "your colour" to name.
+   */
+  const fork: SetUpFork = {
+    id: origin.id,
+    move: asked.move,
+    alone: them === null,
+    colour: seatOf(origin, mineId),
+  };
 
+  const asPlayed = { ...draftOf(origin), open: false };
   return {
-    initial: { ...draftOf(origin), open: false },
+    initial: askedOver(asPlayed, want, true),
+    asPlayed,
     opponent: them,
     again: null,
     fork,
@@ -305,6 +394,7 @@ function blankFrom(variant: RuleVariant | null): SetUpFrom {
       open: true,
       handicap: NO_HANDICAP,
     },
+    asPlayed: null,
     opponent: null,
     again: null,
     fork: null,

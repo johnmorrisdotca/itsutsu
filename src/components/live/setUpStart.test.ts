@@ -21,7 +21,7 @@ const draft: RulesDraft = {
 
 const them: SetUpOpponent = { id: "mem_them", name: "Bob", computer: false };
 const again: SetUpAgain = { id: "g_old", colour: STONES.white };
-const fork: SetUpFork = { id: "g_old", move: 12, alone: false };
+const fork: SetUpFork = { id: "g_old", move: 12, alone: false, colour: STONES.black };
 /** The line length and the seed, which no row on this form asks about. */
 const carry = { winLength: 3, seed: 7, opener: "black", drawLimit: "none" };
 

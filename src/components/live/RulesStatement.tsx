@@ -24,7 +24,22 @@ import type { RulesDraft } from "./rulesDraft";
  * not change shape when the game starts, it settles. A control becomes the
  * answer it was holding.
  */
-export function RulesStatement({ rules }: { rules: RulesDraft }) {
+export function RulesStatement({
+  rules,
+  note = "The first stone is down, so these are the rules the game is played under.",
+}: {
+  rules: RulesDraft;
+  /**
+   * The line above the rows, saying why they are answers rather than controls.
+   *
+   * A prop because the same rows are now shown in two places with two different
+   * reasons for being settled: beside a board, because the game has started, and
+   * on the doorstep, because nothing has been written yet. One sentence covering
+   * both would have to be vague about which, and "these are the rules" without
+   * saying why is the half of a statement that carries no information.
+   */
+  note?: string;
+}) {
   const variant = rules.variant as RuleVariant;
   const timed = rules.moveTimeMs !== null;
   const said: { label: string; value: string }[] = [
@@ -56,9 +71,7 @@ export function RulesStatement({ rules }: { rules: RulesDraft }) {
 
   return (
     <div className="mt-1 flex flex-col gap-2 border-t border-rule pt-3" data-testid="rules-statement">
-      <p className="text-xs text-muted">
-        The first stone is down, so these are the rules the game is played under.
-      </p>
+      <p className="text-xs text-muted">{note}</p>
       <dl className="flex flex-col gap-1.5">
         {said.map((row) => (
           <div key={row.label} className="flex min-w-0 items-baseline justify-between gap-3 text-sm">
