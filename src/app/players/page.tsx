@@ -73,8 +73,25 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
    */
   await ensureBotMembers();
 
+  /*
+   * WIDE, AND NOT A BOARD — the two are separate questions since this page
+   * needed the first without the second; see `Page`.
+   *
+   * The members list is ten columns: a name with a flag and a badge, played,
+   * W, L, D, win rate, streak, rating, joined, and three controls. Measured,
+   * it wants 1,051 pixels, and a `standard` column gave its table a box of
+   * 990 — so the end of the actions column sat 61 pixels past the edge and
+   * "Challenge" was cut off at every desktop width, reachable only by
+   * scrolling the table sideways. That was the price of rows that are all the
+   * same height, and it is not a price worth paying on the page it shows up
+   * on. `wide` gives the table 1,118 and it fits.
+   *
+   * A narrow screen still scrolls the table in its own box, which is what it
+   * did before and what AGENTS.md asks of wide content. What has gone is the
+   * scroll at the widths where there was room all along.
+   */
   return (
-    <Page width="standard" gap="gap-6">
+    <Page width="wide" board={false} gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <h1 className="flex items-baseline gap-2 text-lg font-semibold">

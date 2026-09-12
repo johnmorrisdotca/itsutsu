@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { RATING_START, TIER_DISPLAY } from "../src/lib/rating/elo";
 import { playerSlug } from "../src/lib/rating/playerKey";
-import { playAt } from "./support";
+import { removePlayedUnder } from "./members";
+import { RATED_TO_SETTLE, playAt, playRatedGames } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
 
 /** Starts a server-side game and returns its id and both seat tokens. */
@@ -79,35 +81,61 @@ test.describe("notes, messages, deadlines and players", () => {
     const black = `Sora${stamp} Tester`;
     const white = `Ren${stamp} Tester`;
     /*
-     * A shared game, given up by white. Only a shared game rates: a game at
-     * one screen is filed and never rated, because the site cannot tell who
+     * Shared games, each given up by white. Only a shared game rates: a game
+     * at one screen is filed and never rated, because the site cannot tell who
      * was really playing it.
+     *
+     * FOUR OF THEM, AND THE SPEC FOLLOWED THE RULE RATHER THAN THE OTHER WAY
+     * ROUND. This asserted "1620" after one game, and since 0.157.0 one rated
+     * game leaves a player `unrated` — `ratingShown` answers null for that
+     * tier and the page prints a dash, deliberately, because a rating nobody
+     * has earned is not a rating of 1600. So the number was right about the
+     * arithmetic and wrong about whether the site should print it, and this
+     * had been red on every fresh database. `elo.ts` decides how many games
+     * settle a tier and `playRatedGames` plays that many.
      */
-    const started = await request.post("/api/games/live", {
-      data: { blackName: black, whiteName: white, size: 9, variant: "freestyle" },
-    });
-    expect(started.status()).toBe(201);
-    const game = (await started.json()) as { id: string; whiteToken: string };
-    expect(
-      (await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status(),
-    ).toBe(200);
+    await playRatedGames(request, { winner: black, loser: white });
+    try {
+      await page.goto(`/players/${playerSlug(black)}`);
+      await expect(page.getByTestId("player-record")).toContainText(`${RATED_TO_SETTLE}W · 0L · 0D`);
+      await expect(page.getByTestId("player-by-variant")).toContainText("Gomoku");
+      /*
+       * The rating, said the two ways the page says it: a number rather than a
+       * dash, and the word that says the number is worth printing. Not the
+       * exact figure — that follows from K, the rounding and the order of the
+       * games, and a spec holding a copy of it fails the day any of the three
+       * is tuned, which is how this case came to be red in the first place.
+       * What IS asserted is the direction: the winner ends above where
+       * everybody starts and the loser below, which is the claim this test's
+       * name makes.
+       */
+      await expect(page.getByTestId("player-rating")).toHaveText(/^\d{4}$/);
+      await expect(page.getByText(TIER_DISPLAY.provisional.label)).toBeVisible();
+      const winner = Number((await page.getByTestId("player-rating").innerText()).trim());
+      expect(winner, "winning four rated games did not put this player above the start").toBeGreaterThan(
+        RATING_START,
+      );
 
-    await page.goto(`/players/${playerSlug(black)}`);
-    await expect(page.getByTestId("player-record")).toContainText("1W · 0L · 0D");
-    await expect(page.getByTestId("player-rating")).toContainText("1620");
-    await expect(page.getByTestId("player-by-variant")).toContainText("Gomoku");
+      await page.goto(`/players/${playerSlug(white)}`);
+      await expect(page.getByTestId("player-record")).toContainText(`0W · ${RATED_TO_SETTLE}L · 0D`);
+      await expect(page.getByTestId("player-rating")).toHaveText(/^\d{4}$/);
+      await expect(page.getByText(TIER_DISPLAY.provisional.label)).toBeVisible();
+      const loser = Number((await page.getByTestId("player-rating").innerText()).trim());
+      expect(loser, "losing four rated games did not put this player below the start").toBeLessThan(
+        RATING_START,
+      );
 
-    await page.goto(`/players/${playerSlug(white)}`);
-    await expect(page.getByTestId("player-record")).toContainText("0W · 1L · 0D");
-    await expect(page.getByTestId("player-rating")).toContainText("1580");
-
-    await page.goto("/players?view=ladder");
-    /*
-     * By the name the ladder PRINTS, which is the first one. The address still
-     * carries the whole of it — that is what playerSlug uses above — but a list
-     * shows a person by their first name now.
-     */
-    await expect(page.getByTestId("players-table")).toContainText(shownName(black));
+      await page.goto("/players?view=ladder");
+      /*
+       * By the name the ladder PRINTS, which is the first one. The address still
+       * carries the whole of it — that is what playerSlug uses above — but a list
+       * shows a person by their first name now.
+       */
+      await expect(page.getByTestId("players-table")).toContainText(shownName(black));
+    } finally {
+      // The standings these names earned outlive the games; see removePlayedUnder.
+      await removePlayedUnder([black, white]);
+    }
   });
 
   test("a local game can still be played after the notes panel appears", async ({ page }) => {

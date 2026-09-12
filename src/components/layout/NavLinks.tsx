@@ -151,7 +151,18 @@ export function NavLinks() {
             key={item.href}
             href={item.href}
             aria-current={current ? "page" : undefined}
-            className={`whitespace-nowrap underline-offset-4 hover:underline ${
+            /*
+             * `relative` so the waiting count has something to hang off.
+             *
+             * The badge is a pip over this link's top corner rather than a word
+             * appended to the bar, because the bar has no room for one: it is
+             * read in the browser and arrives after the page, and in the flow
+             * those pixels wrapped the whole masthead at an iPad's width. See
+             * `YourTurnBadge`, which carries the measurement. A positioned
+             * inline element with no offsets of its own draws exactly as it did
+             * before, so every row keeps the class and only Play uses it.
+             */
+            className={`relative whitespace-nowrap underline-offset-4 hover:underline ${
               current ? "font-semibold underline decoration-moss decoration-2" : ""
             }`}
           >

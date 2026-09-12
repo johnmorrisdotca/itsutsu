@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
 
-import { makeMemberId } from "../src/lib/auth/memberId";
+import { UNCLAIMABLE_REASONS, makeMemberId } from "../src/lib/auth/memberId";
 import { playerKey } from "../src/lib/rating/playerKey";
 import {
   PLAYER_SESSION_DAYS,
@@ -80,6 +80,61 @@ export async function seedMember({
       },
       update: { name, country, city, timeZone, bio, unclaimableBecause, lastSeenAt: new Date() },
     });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * A record kept for somebody who never held an account: no address at all.
+ *
+ * `seedMember` cannot make one, because the address is its key — and a row
+ * given a made-up address is not the thing under test. What makes a kept
+ * record's ROW different is precisely that `email` is null: the directory
+ * offers it nothing to befriend or challenge, and the operator's list offers
+ * nothing to shut or rename, so both draw a row with a badge and no controls.
+ *
+ * Chibi and Kyokosan are the two real ones and they are somebody else's — a
+ * spec asserting anything about those is a spec about this database's history
+ * (AGENTS.md, "A Spec Should Bring Its Own World"). This makes one of its own.
+ *
+ * Returns the id, which is the only handle there is on a row with no address.
+ */
+export async function seedKeptRecord({
+  name,
+  country = "",
+}: {
+  name: string;
+  country?: string;
+}): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const id = makeMemberId();
+    await prisma.member.create({
+      data: {
+        id,
+        email: null,
+        name,
+        picture: "",
+        invitedWith: "playwright",
+        country,
+        unclaimableBecause: UNCLAIMABLE_REASONS.keptRecord,
+      },
+    });
+    return id;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** Takes a row made by `seedKeptRecord` away again — by id, having no address. */
+export async function removeMemberById(id: string): Promise<void> {
+  loadEnv();
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.deleteMany({ where: { id } });
   } finally {
     await prisma.$disconnect();
   }
@@ -372,6 +427,33 @@ export async function seedPeopleStanding(
       update: figures,
     });
     return standing.key;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * Takes away the rating rows a spec earned by PLAYING under invented names.
+ *
+ * A game played under a typed-in name writes a `Player` row and a
+ * `PlayerVariantRating` row keyed by the folded name, and those OUTLIVE the
+ * game: `tidy.ts` sweeps games and knows nothing about a name's standing, so
+ * every run that plays under a fresh name leaves two rows behind for ever.
+ * AGENTS.md names the consequence — a name stays taken, and `PATCH /api/me`
+ * answers 409 to anybody who later asks for it.
+ *
+ * By NAME rather than by key, so a caller hands over what it invented and
+ * this applies the same folding the ratings do.
+ */
+export async function removePlayedUnder(names: readonly string[]): Promise<void> {
+  loadEnv();
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+  const keys = names.map(playerKey).filter((key) => key !== "");
+  if (keys.length === 0) return;
+  const prisma = new PrismaClient();
+  try {
+    await prisma.playerVariantRating.deleteMany({ where: { key: { in: keys } } });
+    await prisma.player.deleteMany({ where: { key: { in: keys } } });
   } finally {
     await prisma.$disconnect();
   }
