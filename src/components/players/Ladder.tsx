@@ -70,13 +70,13 @@ export async function Ladder() {
           Not The Way To It.
         */
         empty={
-          <span data-testid="players-empty">
+          <>
             Nobody has a rated game yet. Rated games are shared games between two members —{" "}
             <Link href="/players" className="underline underline-offset-4">
               find somebody to play
             </Link>{" "}
             and be the first onto the ladder.
-          </span>
+          </>
         }
       />
     </div>

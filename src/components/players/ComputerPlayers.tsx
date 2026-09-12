@@ -171,11 +171,7 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
         columns={{ tier: true, actions: "Play" }}
         testId="computer-players-table"
         rowTestId="computer-player"
-        empty={
-          <span data-testid="computer-players-empty">
-            No computer players are set up on this site yet.
-          </span>
-        }
+        empty={<>No computer players are set up on this site yet.</>}
         caption={
           <p className="text-xs text-muted">
             Each of them has a page of their own, the same as anybody else: follow a name to see what
