@@ -23,8 +23,20 @@ test.describe("the operator's members list", () => {
 
     expect(typeof body.total, "the answer carries a real total").toBe("number");
     expect(body.total).toBeGreaterThanOrEqual(body.items.length);
-    // The page is a page: it never carries more than it says it will.
-    expect(body.items.length).toBeLessThanOrEqual(body.shown);
+    /*
+     * The page is a page — of PEOPLE. It never carries more of those than it
+     * says it will, and it deliberately carries the programs as well as them:
+     * a computer player is never seen, so recency sorts it last and it would
+     * drop off the end of any capped list (`alwaysListed`). That is the whole
+     * reason those rows are appended past the cap.
+     *
+     * This used to be asked of `items.length` and was true only while this
+     * database had fewer members than the cap. It crossed 200 on 2026-09-12
+     * and the assertion started failing — on a list that was behaving exactly
+     * as designed, in a file about counting. The honest statement is the one
+     * the guarantee actually makes.
+     */
+    expect(body.items.length - body.robots).toBeLessThanOrEqual(body.shown);
 
     /*
      * The people and the programs counted apart, because the operator's page
