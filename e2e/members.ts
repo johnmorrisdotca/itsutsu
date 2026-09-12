@@ -106,6 +106,54 @@ export async function removeMember(email: string): Promise<void> {
 }
 
 /**
+ * Everything the preferences registry keeps for one account, exactly as it is
+ * stored — so a spec that has to change one can hand it back untouched.
+ *
+ * WHY A SPEC NEEDS THIS AT ALL. Since the players filter moved off its cookie
+ * and onto the account, a case that visits `/players?who=people` writes that
+ * narrowing onto whoever is signed in, and the suite is signed in as the
+ * operator — which on a developer's machine is a REAL account, John's own. A
+ * cookie was thrown away with the browser context; an account is not, so the
+ * file was red on its own second run and John's players page was left narrowed
+ * by a test run.
+ *
+ * READ, NOT RESOLVED, and that is why it is not `PATCH /api/me` twice. The
+ * registry always answers, filling in its fallback where nothing was chosen —
+ * so anything that reads through it cannot tell "I asked for everyone" from "I
+ * have never said", and putting the fallback back would write a judgement
+ * nobody made onto the row. The column is the only place that difference
+ * survives. `null` here means the account has no row, which the operator can
+ * be on a development database; there is then nothing to keep and nothing to
+ * put back.
+ */
+export async function keptPreferences(email: string): Promise<unknown> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const row = await prisma.member.findUnique({ where: { email }, select: { preferences: true } });
+    return row === null ? null : row.preferences;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/** Puts one back as it was found, `keptPreferences` having been what found it. */
+export async function putPreferencesBack(email: string, kept: unknown): Promise<void> {
+  if (kept === null) return;
+  loadEnv();
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.updateMany({
+      where: { email },
+      data: { preferences: kept as Parameters<typeof prisma.member.updateMany>[0]["data"]["preferences"] },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
  * Whether a member's four words are set, and when — read from the row.
  *
  * The one thing about a phrase that can be known: it is hashed, and no API
