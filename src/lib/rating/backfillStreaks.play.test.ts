@@ -256,11 +256,25 @@ describe("backfilling the streak columns", () => {
 
       const standingWrites: { key: string; variant: string; rebuild: Rebuild }[] = [];
       let standingsSkipped = 0;
+      /*
+       * Named rather than merely counted. A row that cannot be rebuilt keeps
+       * its dash for good, so whoever runs this needs to be able to go and
+       * look at why — a count alone is a number nobody can act on.
+       */
+      const unreconciled: string[] = [];
       for (const row of standings) {
         const rebuild = byStanding.get(`${row.key} ${row.variant}`)?.rebuild ?? noRebuild();
         const stored = storedFor(row);
         if (!sameRecord(rebuild.people, stored.people) || !sameRecord(rebuild.computer, stored.computer)) {
           standingsSkipped += 1;
+          if (unreconciled.length < 20) {
+            unreconciled.push(
+              `${row.key} @ ${row.variant}: stored ${stored.people.wins}/${stored.people.losses}/${stored.people.draws}` +
+                ` + ${stored.computer.wins}/${stored.computer.losses}/${stored.computer.draws},` +
+                ` rebuilt ${rebuild.people.wins}/${rebuild.people.losses}/${rebuild.people.draws}` +
+                ` + ${rebuild.computer.wins}/${rebuild.computer.losses}/${rebuild.computer.draws}`,
+            );
+          }
           continue;
         }
         if (rebuild.people.streak !== null || rebuild.computer.streak !== null) {
@@ -276,17 +290,25 @@ describe("backfilling the streak columns", () => {
         `  ${standingWrites.length} of ${standings.length} standings reconcile` +
           ` (${standingsSkipped} could not be rebuilt and keep their dash)`,
       );
+      for (const line of unreconciled) console.log(`    ! ${line}`);
 
       if (!RUN) {
         console.log("Report only. Set BACKFILL_STREAKS_RUN=1 to write.");
         /*
-         * A dry run still proves it can read and RECONCILE, which is the half
-         * that can be wrong — and it asserts, rather than reporting green
-         * having looked at nothing. Most rows must reconcile: if hardly any
-         * do, the rebuild disagrees with the writer and nothing here should be
-         * trusted.
+         * A dry run still proves it can RECONCILE, which is the half that can
+         * be wrong — and it asserts, rather than reporting green having looked
+         * at nothing.
+         *
+         * MOST ROWS MUST RECONCILE. If the rebuild disagrees with the writer
+         * on a large share of them, the rebuild is wrong and nothing it
+         * produces should be written — so that is a failure here rather than a
+         * line in a report somebody skims. The bar is deliberately generous,
+         * because a development database is full of rows whose tallies were
+         * seeded rather than played; on production, where every rated row got
+         * there through `recordResult`, it should be all of them.
          */
-        expect(playerWrites.length + playersSkipped).toBe(players.length);
+        expect(players.length).toBeGreaterThan(0);
+        expect(playersSkipped / players.length).toBeLessThan(0.5);
         return;
       }
 
