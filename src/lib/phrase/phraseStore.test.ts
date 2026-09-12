@@ -406,4 +406,53 @@ describe("four words given at a seat", () => {
 
     expect((await claimOrVerifyPhraseFor("Nobody At All", WORDS)).ok).toBe(false);
   });
+
+  /*
+   * AN AMBIGUOUS NAME MATTERS MORE HERE THAN IT DOES FOR A SIGN-IN, because this
+   * does not only read the row it picks — it WRITES a password onto it, once and
+   * for ever. `Member.name` has no unique constraint and the development database
+   * holds two "John Morris" today.
+   *
+   * Get it wrong and there is no retry: the words become the other person's
+   * password, the person they were meant for still has none and can never bind
+   * any by this route again — their name now resolves to a row that HAS a phrase,
+   * so their next attempt is checked against somebody else's hash — and nothing
+   * anywhere says it happened.
+   */
+  describe("when two members share a name", () => {
+    const ONE = "tw1nsjdxxxxxxxxx";
+    const TWO = "tw1nsjdyyyyyyyyy";
+
+    beforeEach(() => {
+      rows = [
+        member({ id: ONE, name: "John Morris", email: "one@example.com" }),
+        member({ id: TWO, name: "John Morris", email: "two@example.com" }),
+      ];
+    });
+
+    it("binds words to NEITHER of them", async () => {
+      const claim = await claimOrVerifyPhraseFor("John Morris", WORDS);
+
+      expect(claim.ok).toBe(false);
+      expect(rows[0].phraseHash, "one of them took words meant for the other").toBeNull();
+      expect(rows[1].phraseHash, "one of them took words meant for the other").toBeNull();
+    });
+
+    it("writes nothing at all, rather than writing and refusing", async () => {
+      await claimOrVerifyPhraseFor("John Morris", WORDS);
+      expect(writes).toHaveLength(0);
+    });
+
+    /* And refusing the ambiguous case has not stopped the ordinary one working. */
+    it("still binds words for a name only one member goes by", async () => {
+      rows.push(member({ id: HANAKO, name: "Hanako M." }));
+
+      const claim = await claimOrVerifyPhraseFor("Hanako M.", WORDS);
+
+      expect(claim.ok).toBe(true);
+      if (!claim.ok) return;
+      expect(claim.memberId).toBe(HANAKO);
+      expect(claim.bound).toBe(true);
+    });
+  });
 });

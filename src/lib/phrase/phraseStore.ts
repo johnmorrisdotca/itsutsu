@@ -247,6 +247,21 @@ export type SeatPhraseOutcome =
  *
  * Rate limiting lives on the route, as it does for `verifyPhraseFor` — a
  * library function has no address to count. Nothing may call this without one.
+ *
+ * AN AMBIGUOUS NAME REFUSES, and it matters more here than it does for plain
+ * verification. `Member.name` carries no unique constraint, so "the member called
+ * X" may name two rows — and this function does not only READ the one it picks,
+ * it WRITES a credential onto it and says first words win, only once. Getting
+ * that wrong is not a failed sign-in that can be retried:
+ *
+ * - the four words land on whichever row came back first, which may be the other
+ *   person's account, and they are that account's password from then on;
+ * - the person they were meant for still has none, and can never bind any by this
+ *   route again, because their name now resolves to a row that HAS a phrase and
+ *   their next attempt is checked against somebody else's hash;
+ * - nothing anywhere reports that it happened.
+ *
+ * So two rows is the same refusal as no rows. `verifyPhraseFor` says the rest.
  */
 export async function claimOrVerifyPhraseFor(
   name: string,
@@ -258,10 +273,14 @@ export async function claimOrVerifyPhraseFor(
   const canonical = canonicalPhrase([...words]);
   if (canonical === null) return { ok: false };
 
-  const row = await prisma.member.findFirst({
+  const found = await prisma.member.findMany({
     where: { name: { equals: wanted, mode: "insensitive" } },
     select: FACTS,
+    take: 2,
   });
+  // One row or nothing. The hash below still runs against the null, so a refusal
+  // for two rows costs what a refusal for none does.
+  const row = found.length === 1 ? found[0] : null;
 
   /*
    * The hash is compared even when there is no row, and the answer thrown
