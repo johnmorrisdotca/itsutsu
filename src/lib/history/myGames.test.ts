@@ -22,7 +22,58 @@ type Row = Record<string, unknown>;
 
 let rows: Row[] = [];
 let moves: Row[] = [];
-const gameFindMany = vi.fn(async (_args: unknown) => rows);
+
+/**
+ * ONE COMPARISON, IN THE SHAPES THIS QUERY IS ALLOWED TO USE — and a throw for
+ * anything else.
+ *
+ * The fake below HONOURS THE `where` it is handed rather than handing back
+ * every row, because since the member's window went into the query (see
+ * `myListWindow`) what the list shows is decided in two places and only one of
+ * them is this file's JavaScript. A fake that ignored the `where` would report
+ * green on a query that read the whole table — or, worse, on one that dropped a
+ * game somebody is waiting to move in.
+ *
+ * It refuses an operator it does not know instead of answering "no match":
+ * shrugging would quietly empty the list and pass, which is the false pass
+ * that is most convincing exactly when somebody is proving a test works.
+ */
+function compares(held: unknown, test: unknown): boolean {
+  if (test === null) return held === null;
+  if (test instanceof Date) return held instanceof Date && held.getTime() === test.getTime();
+  if (typeof test === "object") {
+    const ops = test as Record<string, unknown>;
+    if ("in" in ops) return (ops.in as unknown[]).includes(held);
+    if ("not" in ops) return !compares(held, ops.not);
+    if ("gte" in ops) {
+      const bound = ops.gte;
+      if (!(bound instanceof Date)) throw new Error("gte was handed something that is not a date");
+      return held instanceof Date && held.getTime() >= bound.getTime();
+    }
+    throw new Error(`the queue asked with an operator this fake cannot read: ${JSON.stringify(test)}`);
+  }
+  return held === test;
+}
+
+function matches(row: Row, where: Record<string, unknown>): boolean {
+  for (const [key, test] of Object.entries(where)) {
+    const clauses = test as Record<string, unknown>[];
+    if (key === "OR") {
+      if (!clauses.some((one) => matches(row, one))) return false;
+    } else if (key === "AND") {
+      if (!clauses.every((one) => matches(row, one))) return false;
+    } else if (!compares(row[key], test)) return false;
+  }
+  return true;
+}
+
+/** How many rows the last read actually brought back, which is the cost. */
+let rowsRead = 0;
+const gameFindMany = vi.fn(async (args: { where: Record<string, unknown> }) => {
+  const found = rows.filter((row) => matches(row, args.where));
+  rowsRead = found.length;
+  return found;
+});
 const moveFindMany = vi.fn(async ({ where }: { where: { gameId: { in: string[] } } }) =>
   moves.filter((move) => where.gameId.in.includes(move.gameId as string)),
 );
@@ -128,6 +179,7 @@ beforeEach(() => {
   rows = [];
   moves = [];
   members = [];
+  rowsRead = 0;
   gameFindMany.mockClear();
   moveFindMany.mockClear();
   memberFindMany.mockClear();
@@ -598,5 +650,176 @@ describe("where an offer goes in the queue", () => {
     ];
     const groups = await fetchMyGames(new Map(), MEMBER);
     expect(groups.offered.map((one) => one.game.id)).toEqual(["old", "new"]);
+  });
+});
+
+/**
+ * ───────────────────────────────────────────────────────────────────────────
+ * WHAT THE QUERY ITSELF ASKS FOR, WHICH IS WHERE THE COST WAS
+ * ───────────────────────────────────────────────────────────────────────────
+ *
+ * The read had no date bound. Every game the member had ever sat in came
+ * back — one member on a development database holds 559 — was replayed where
+ * it could not answer for itself, sorted, and then mostly thrown away by the
+ * retention check at the bottom of the loop. On `/play`, on every
+ * `/api/games/mine` the badge asks for on every page, and on every advance to
+ * the next game after a move.
+ *
+ * So these are assertions about the QUERY, not only about the answer: the
+ * fake above honours the `where`, so a bound that stopped being sent would
+ * show up here as rows read rather than as a list that happens to look right.
+ */
+describe("what the read costs before anything is sorted", () => {
+  const NOW = new Date("2026-09-11T00:00:00Z");
+
+  /** A game filed as over, with its last move `days` before the now under test. */
+  function filed(id: string, days: number): Row {
+    const when = new Date(NOW.getTime() - days * 86_400_000);
+    return game({
+      id,
+      status: "finished",
+      result: "black",
+      winner: STONES.black,
+      moveCount: 30,
+      playedAt: when,
+      lastMoveAt: when,
+    });
+  }
+
+  it("does not read a finished game past the member's window", async () => {
+    rows = [filed("lately", 2), ...Array.from({ length: 50 }, (_unused, index) => filed(`old-${index}`, 60 + index))];
+
+    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 14);
+    expect(groups.finished.map((one) => one.game.id)).toEqual(["lately"]);
+    // Fifty-one rows to be had, and the list is drawn from one of them.
+    expect(rowsRead).toBe(1);
+  });
+
+  it("reads every finished game when the member keeps everything, and says so by asking for no bound", async () => {
+    /*
+     * THE CASE THE BOUND CANNOT HELP, kept honest rather than left implied.
+     * Keeping for ever is the default, so this is most members today: there is
+     * no date to bound by, and the read is the whole history again. Bounding it
+     * needs the finished group to page, which `myListWindow` explains is a
+     * larger change than this one.
+     */
+    rows = [filed("lately", 2), filed("ancient", 900)];
+
+    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 0);
+    expect(groups.finished.map((one) => one.game.id)).toEqual(["lately", "ancient"]);
+    expect(rowsRead).toBe(2);
+    const asked = gameFindMany.mock.calls[0][0] as { where: Record<string, unknown> };
+    expect(asked.where.AND).toBeUndefined();
+  });
+
+  it("never drops a game still being played, however old it has grown", async () => {
+    /*
+     * The one thing this must not do. A correspondence game somebody has not
+     * moved in for a year is the game they most need to be shown, and a bound
+     * that read only the last fortnight would have taken it off the page — with
+     * nothing failing, because the row would simply not be there.
+     */
+    rows = [
+      game({
+        id: "long-game",
+        playedAt: new Date(NOW.getTime() - 400 * 86_400_000),
+        lastMoveAt: new Date(NOW.getTime() - 400 * 86_400_000),
+        settledStatus: GAME_STATUS.playing,
+        settledToPlay: STONES.black,
+        moveCount: 12,
+      }),
+    ];
+
+    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 7);
+    expect(groups.yourMove.map((one) => one.game.id)).toEqual(["long-game"]);
+    expect(groups.yourMove[0].stale).toBe(true);
+  });
+
+  it("still lets go of an old game the engine ended while the row says active", async () => {
+    /*
+     * THE ONE ROW THE TWO HALVES DISAGREE ABOUT, so it is worth a case of its
+     * own. A Reversi board that filled up is over with nothing written down —
+     * the row still says `active` — so the bound READS it, because a `where`
+     * cannot ask the engine anything. The check is what knows it is over and
+     * drops it, exactly as it did before the bound existed. If that ever
+     * stopped being true, an old finished game would come back to the list
+     * for one variant and nobody would know why.
+     */
+    const long = new Date(NOW.getTime() - 400 * 86_400_000);
+    rows = [
+      game({
+        id: "filled-up",
+        playedAt: long,
+        lastMoveAt: long,
+        settledStatus: GAME_STATUS.won,
+        settledToPlay: null,
+        moveCount: 60,
+      }),
+    ];
+
+    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 7);
+    // Read — the bound is the looser half — and then left out.
+    expect(rowsRead).toBe(1);
+    expect(Object.values(groups).flat()).toEqual([]);
+  });
+
+  it("never drops an offer nobody has answered, however long it has waited", async () => {
+    const long = new Date(NOW.getTime() - 400 * 86_400_000);
+    rows = [
+      game({
+        id: "still-asking",
+        blackMemberId: "member-2",
+        whiteMemberId: null,
+        offeredToMemberId: MEMBER,
+        offeredAt: long,
+        moveCount: 0,
+        playedAt: long,
+        lastMoveAt: long,
+      }),
+    ];
+
+    const groups = await fetchMyGames(new Map(), MEMBER, NOW, 7);
+    expect(groups.offered.map((one) => one.game.id)).toEqual(["still-asking"]);
+  });
+
+  it("keeps the bound beside the three ways a game is yours, not instead of them", async () => {
+    /*
+     * The window is itself an OR, and a `where` cannot hold two of those at one
+     * level — so spreading it would have replaced the seats with the dates and
+     * handed every member everybody's recent games. It goes in an `AND`.
+     */
+    rows = [filed("mine", 2)];
+    await fetchMyGames(new Map(), MEMBER, NOW, 14);
+
+    const asked = gameFindMany.mock.calls[0][0] as {
+      where: { OR: Record<string, unknown>[]; AND: { OR: Record<string, unknown>[] }[] };
+    };
+    expect(asked.where.OR).toEqual(
+      expect.arrayContaining([
+        { blackMemberId: MEMBER },
+        { whiteMemberId: MEMBER },
+        { offeredToMemberId: MEMBER },
+      ]),
+    );
+    expect(asked.where.AND).toHaveLength(1);
+    expect(asked.where.AND[0].OR).toEqual(
+      expect.arrayContaining([{ status: "active" }]),
+    );
+  });
+
+  it("reads a game this browser holds a seat cookie in, bound or not", async () => {
+    /*
+     * A phone with a scanned link and no account gets the default window —
+     * keeping everything — and its read is bounded by the cookies themselves,
+     * which are a primary-key lookup and a handful at most. Worth a case
+     * because the seat-cookie branch is the one that does not go through a
+     * member id at all.
+     */
+    const old = new Date(NOW.getTime() - 900 * 86_400_000);
+    rows = [
+      game({ id: "cookied", blackMemberId: null, whiteMemberId: null, playedAt: old, lastMoveAt: old, status: "finished", result: "draw" }),
+    ];
+    const groups = await fetchMyGames(new Map([["cookied", "tok-black"]]), null, NOW);
+    expect(groups.finished.map((one) => one.game.id)).toEqual(["cookied"]);
   });
 });
