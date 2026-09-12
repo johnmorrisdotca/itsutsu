@@ -948,3 +948,27 @@ So:
   `git diff --name-status` against the merge base, the same sweep the entry
   above already asks for, reading it for additions as well as for paths that
   have moved.
+
+### The Stash Stack Is One Stack For Every Worktree
+
+Worktrees are isolated — checked by inode, not reasoned about: the same file
+in two agent worktrees is two files. **The stash is not.** `git stash` from any
+worktree pushes onto the one stack the repository has, so a bare `git stash
+pop` in one worktree can pop an entry some other session made in another, and
+the edit it was holding is gone. That cost the PLAYED-column agent a
+working-tree change it then had to rewrite.
+
+The rule this repository already has — never a bare `pop`; name the stash and
+`git stash apply <sha>` — was written for the shared checkout. It holds for the
+same reason in every worktree, and this is the reason: **the stack is shared
+even when the working directory is not.**
+
+Two smaller things from the same night, since they read as broken branches
+and are not:
+
+- **A worktree with no `node_modules` fails `pnpm typecheck` with "next:
+  command not found".** `pnpm install` there, once. The `npx` equivalents work
+  because they resolve from the main checkout, which is how this hides.
+- **"A file changed under me" in a worktree is your own rebase pulling in a
+  change that landed on main**, not another session in your directory. Read
+  the diff before assuming an intruder.
