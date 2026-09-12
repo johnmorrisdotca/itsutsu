@@ -92,4 +92,15 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 58, name: "Shadow of the Colossus", note: "Team Ico, 2005: sixteen giants, an empty world, and the game people name when someone says games can't be art." },
   { level: 59, name: "Achievement Unlocked", note: "Xbox 360, 2005: a chime, a little box in the corner, and the moment every game started keeping score of you." },
   { level: 60, name: "Wii", note: "Nintendo, 2006: a remote instead of a pad, Wii Sports in the box, and grandparents bowling in the living room." },
+  // 61-70: the HD era, and games growing up.
+  { level: 61, name: "Portal", note: "Valve, 2007: a gun that made two holes, a computer that made promises about cake, and a song over the credits." },
+  { level: 62, name: "BioShock", note: "Irrational, 2007: a city under the sea, a plasmid in your hand, and 'would you kindly'." },
+  { level: 63, name: "PlayStation 3", note: "Sony, 2006: Blu-ray, the Cell processor, and trophies, the first console with a platinum to earn." },
+  { level: 64, name: "Minecraft", note: "Mojang, 2011: a block of dirt, a creeper at the door, and 300 million sold, the best-selling game there has ever been." },
+  { level: 65, name: "Skyrim", note: "Bethesda, 2011: 'Fus Ro Dah', a dragon on the road, and an arrow to the knee." },
+  { level: 66, name: "Dark Souls", note: "FromSoftware, 2011: 'YOU DIED', a bonfire, and the hardest game that was ever fair. Praise the sun." },
+  { level: 67, name: "Journey", note: "thatgamecompany, 2012: a stranger in the desert who could only sing to you, and two hours nobody who played them forgets." },
+  { level: 68, name: "The Last of Us", note: "Naughty Dog, 2013: a giraffe, a lie at the end, and the story that made the whole medium grow up." },
+  { level: 69, name: "Grand Theft Auto V", note: "Rockstar, 2013: Los Santos, three leads, and the second-best-selling game ever, still selling a decade on." },
+  { level: 70, name: "PlayStation 4", note: "Sony, 2013: 'for the players', 117 million sold, and a generation won at a stroke." },
 ];
