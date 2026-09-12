@@ -8,8 +8,12 @@ import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button, RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/memberRoster";
+import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { PlayerName } from "@/components/players/PlayerName";
+import { ADMIN_WORDS_COPY } from "./admin.constants";
 import { MemberKindBadge } from "./MemberKindBadge";
+import { MemberWordsModal } from "./MemberWordsModal";
+import type { WordsSubject } from "./admin.types";
 
 const json = async (url: string) => {
   const response = await fetch(url);
@@ -28,14 +32,37 @@ function day(iso: string): string {
  * Shutting an account stops it on its next request and revokes the invite it
  * came in by. Nothing is deleted: the games they played are the other
  * player's games too, and a rating is a fact about both of them.
+ *
+ * PEOPLE ONLY. The computer players used to be listed here among them, badged
+ * as robots, and they are seven rows the operator never does anything to — so
+ * they have a tab of their own (`AdminBots`) showing what an operator actually
+ * wants to know about a program. The split is `memberKind`'s, which is the
+ * site's one answer to what a member IS: their rows carry both `botTier` and
+ * `unclaimableBecause: "computer"` and agree either way.
+ *
+ * THE KEPT RECORDS STAY HERE. They are people — a record of somebody's games
+ * from before this site — and the controls on this list are the ones you point
+ * at a person. Two rows do not make a tab, and the badge already says which
+ * they are.
+ *
+ * WORDS 合言葉 is the third way a member's four words can be set: the member's
+ * own tab, sitting in at a game, and the operator here. The link is a LINK —
+ * the list asks the server for nothing per row, and the modal draws its first
+ * four candidates only once it is open. What the row knows already is the DATE
+ * words were last set, which came down with the list.
  */
 export function AdminMembers() {
-  const { data, mutate } = useSWR<{ items: MemberSummary[]; total?: number; shown?: number }>(
-    "/api/members",
-    json,
-  );
+  const { data, mutate } = useSWR<{
+    items: MemberSummary[];
+    total?: number;
+    people?: number;
+    robots?: number;
+    shown?: number;
+  }>("/api/members", json);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** The member whose Words modal is open, or null. One at a time. */
+  const [words, setWords] = useState<WordsSubject | null>(null);
 
   async function change(body: Record<string, unknown>, email: string) {
     setBusy(email);
@@ -54,14 +81,23 @@ export function AdminMembers() {
     await mutate();
   }
 
-  const members = data?.items ?? [];
+  /*
+   * The people. A program is a member row like any other and is counted as one
+   * everywhere else on the site; this list is the operator's view of WHO IS
+   * HERE, and the Bots tab is the view of what plays for the site.
+   */
+  const members = (data?.items ?? []).filter((member) => member.kind !== MEMBER_KINDS.robot);
   /*
    * The number of members, not the number of rows on screen. The heading used
    * to print the length of the list it had been given, which is capped — so a
    * site with nine hundred members reported two hundred, in the one place
    * somebody goes to find out how many there are.
+   *
+   * `people` rather than `total` now that the programs are shown elsewhere:
+   * counting them in a heading over a list they are not in is the same fault
+   * one category along. The route works it out from the list it already has.
    */
-  const total = data?.total ?? members.length;
+  const total = data?.people ?? data?.total ?? members.length;
   const capped = total > members.length;
 
   return (
@@ -123,10 +159,48 @@ export function AdminMembers() {
               </span>
               <span className="truncate text-xs text-muted">
                 {member.email} · joined {day(member.createdAt)} · seen {day(member.lastSeenAt)}
+                {/*
+                  Whether there are four words on this account, and since when.
+                  The DATE is the only thing that can be said about a phrase —
+                  it is hashed and cannot be shown again to anybody — and it is
+                  what the operator weighs before replacing one. Said on rows
+                  that could have words at all: a kept record or a computer
+                  player has nobody to hand them to, and "No words" against one
+                  of those would read as something missing.
+                */}
+                {member.mayHavePhrase ? (
+                  <span data-testid="member-words-state">
+                    {" · "}
+                    {member.phraseSetAt === null
+                      ? ADMIN_WORDS_COPY.rowUnset
+                      : ADMIN_WORDS_COPY.rowSet(day(member.phraseSetAt))}
+                  </span>
+                ) : null}
                 {member.bannedNote === "" ? "" : ` · ${member.bannedNote}`}
               </span>
             </span>
             <RowActions>
+            {/*
+              WORDS 合言葉. Setting a credential is the one thing here that
+              gives somebody a way IN rather than taking one away, so it is
+              offered only where there is an account to get into —
+              `mayHavePhrase` is `canBeClaimed`, answered on the server.
+              Pressing it opens the member's own picker in a modal; nothing is
+              asked of the server until it is open.
+            */}
+            {member.mayHavePhrase ? (
+              <Button
+                onClick={() => setWords({ id: member.id, name: member.name, phraseSetAt: member.phraseSetAt })}
+                title={ADMIN_WORDS_COPY.linkTitle}
+                data-testid="member-words"
+              >
+                <Paired
+                  en={ADMIN_WORDS_COPY.link}
+                  kanji={ADMIN_WORDS_COPY.linkKanji}
+                  kanjiClassName="font-mincho text-xs opacity-70"
+                />
+              </Button>
+            ) : null}
             {account === null || member.name.trim() === "" ? null : (
               <ConfirmButton
                 label="Take the name off"
@@ -181,6 +255,23 @@ export function AdminMembers() {
         })}
       </ul>
       {members.length === 0 ? <p className={`${PANEL_CLASS} text-sm text-muted`}>Nobody has joined yet.</p> : null}
+      {/*
+        One modal for whichever row asked for it, mounted only while it is open
+        — so the list holds no picker, makes no draw, and has nothing of
+        anybody's words in it until the operator opens one.
+      */}
+      {words === null ? null : (
+        <MemberWordsModal
+          member={words}
+          onClose={() => setWords(null)}
+          /*
+            Read the list again rather than patching the row: the date is the
+            server's to state, and one request after a save is the same thing
+            every other control on this list already does.
+          */
+          onSaved={() => void mutate()}
+        />
+      )}
     </section>
   );
 }

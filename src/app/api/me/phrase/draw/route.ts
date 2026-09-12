@@ -59,10 +59,15 @@ export async function POST(request: Request) {
 
     /*
      * A phrase belongs to the account setting it, so the pick is tied to that
-     * member's id and the ticket carries it. This is what stops one person's
-     * pick being driven into another person's account — a parent setting a
-     * child's words is the one thing John ruled out by name, because a
-     * credential an adult can set stops proving it is her.
+     * member's id and the ticket carries it. This is what stops one MEMBER's
+     * pick being driven into another member's account.
+     *
+     * The operator is the one exception, and it is a separate route rather than
+     * a flag here: `/api/admin/members/[id]/phrase/draw` names the member in
+     * its path and proves `currentAdmin()`. This comment used to say a parent
+     * setting a child's words was ruled out by name; John asked for exactly
+     * that, for his daughter's account at the kitchen table, and the answer was
+     * a door with the operator's own lock on it — not a loosening of this one.
      */
     const me = await currentMemberId();
     if (me === null) {

@@ -6,6 +6,7 @@ import { AdminBoardCard } from "@/components/backlog/AdminBoardCard";
 import { BacklogBoard } from "@/components/backlog/BacklogBoard";
 import { AdminEmbeds } from "@/components/auth/AdminEmbeds";
 import { AdminInvites } from "@/components/auth/AdminInvites";
+import { AdminBots } from "@/components/auth/AdminBots";
 import { AdminMembers } from "@/components/auth/AdminMembers";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -22,14 +23,22 @@ export const metadata = { title: "Admin", robots: { index: false, follow: false 
 export const dynamic = "force-dynamic";
 
 /*
- * Three things the operator does here, so the page shows one at a time: who
- * gets in, who is in, and what is being built. They were three headings on
- * one page and the whole features board sat inside the third, which made it
- * long however short the headings were.
+ * Four things the operator does here, so the page shows one at a time: who
+ * gets in, who is in, what plays for the site, and what is being built. They
+ * were three headings on one page and the whole features board sat inside the
+ * third, which made it long however short the headings were.
+ *
+ * BOTS IS ITS OWN TAB RATHER THAN A SECTION OF MEMBERS. The computer players
+ * were in that list among the people, and to an operator they are a different
+ * kind of row: nothing to shut, no name to take off, nobody to write to, and
+ * four facts the members list does not carry. John: "A Bots tab is good to
+ * split up Members from Bots." It sits beside the members rather than after
+ * the work, because it answers the same question one category along.
  */
 const TABS: Tab[] = [
   { key: "door", label: "The door", kanji: "門" },
   { key: "members", label: "The members", kanji: "会員" },
+  { key: "bots", label: "The bots", kanji: "機械" },
   { key: "work", label: "The work", kanji: "仕事" },
 ];
 
@@ -67,6 +76,12 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       {open === "members" ? (
         <div className={PANEL_CLASS} data-testid="admin-people">
           <AdminMembers />
+        </div>
+      ) : null}
+
+      {open === "bots" ? (
+        <div className={PANEL_CLASS} data-testid="admin-machines">
+          <AdminBots />
         </div>
       ) : null}
 

@@ -5,6 +5,7 @@ import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { renameMember } from "@/lib/auth/members";
 import { countMembers, listMembers, setBanned } from "@/lib/auth/memberRoster";
+import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 
 /** How many rows the operator's list carries at once. */
@@ -34,7 +35,23 @@ export async function GET(request: Request) {
       listMembers(MEMBERS_SHOWN, me.email ?? null),
       countMembers(),
     ]);
-    return NextResponse.json({ items, total, shown: MEMBERS_SHOWN }, { headers: NO_STORE });
+    /*
+     * The programs counted apart from the people, because the operator's page
+     * shows them on two tabs now and a heading that says "207 members" over a
+     * list of two hundred people is the same fault the total was added to fix,
+     * one category along.
+     *
+     * FREE, AND THAT IS WHY IT IS DONE HERE. `listMembers` already fetches
+     * every computer player unconditionally — they are the rows that must
+     * survive the cap — so this is a filter over a list in hand rather than a
+     * query. `total` counts every row in the table, and every bot row is in
+     * `items` by that guarantee, so `total - robots` is exactly the people.
+     */
+    const robots = items.filter((one) => one.kind === MEMBER_KINDS.robot).length;
+    return NextResponse.json(
+      { items, total, people: total - robots, robots, shown: MEMBERS_SHOWN },
+      { headers: NO_STORE },
+    );
   } catch (error) {
     console.error(error);
     return serverError("Could not read the members.");
