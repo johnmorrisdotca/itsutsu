@@ -2,6 +2,18 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
 import { playAt, ready, startAndBegin } from "./support";
+import { gamesMade } from "./tidy";
+
+/**
+ * Every game this file makes, taken away when it finishes.
+ *
+ * It made none of its own before, and each run left three behind — two games
+ * and a rematch. Noticed while offers were being built: the unanswered offers
+ * this file's own failing runs had left had nothing to clear them. AGENTS.md
+ * on database litter: a database that grows cuts real rows off the end of
+ * capped lists and fails other specs for reasons that are not the code's.
+ */
+const tidyAway = gamesMade();
 
 /**
  * What a game does when it ends while you are sitting in front of it.
@@ -55,6 +67,7 @@ test.describe("a game that ends while you are looking at it", () => {
     });
     expect(made.status(), await made.text()).toBe(201);
     const created = (await made.json()) as { id: string };
+    tidyAway(created.id);
 
     /*
      * ACCEPTED FIRST. A challenge is an OFFER now — one seat bound, one
@@ -191,6 +204,7 @@ test.describe("a game that ends while you are looking at it", () => {
     });
     expect(made.status(), await made.text()).toBe(201);
     const created = (await made.json()) as { id: string };
+    tidyAway(created.id);
 
     await page.goto(`/games/gomoku/match/${created.id}`);
     await ready(page, "shared-game");
@@ -226,6 +240,7 @@ test.describe("a game that ends while you are looking at it", () => {
 
     // A real second game, with the same board and the same opponent in it.
     const id = page.url().split("/").pop()!;
+    tidyAway(id);
     const started = await context.request.get(`/api/games/${id}`);
     expect(started.status()).toBe(200);
     const next = (await started.json()) as { size: number; blackName: string; whiteName: string };

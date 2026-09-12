@@ -2,6 +2,19 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
 import { ready, startAndBegin } from "./support";
+import { gamesMade } from "./tidy";
+
+/**
+ * Every game this file makes, taken away when it finishes.
+ *
+ * It made none of its own before, and each run left two behind — the game it
+ * plays out and the rematch it starts. Noticed while offers were being built:
+ * the unanswered offers this file's own failing runs had left were sitting in
+ * the database with nothing to clear them. AGENTS.md on database litter: a
+ * local database that grows cuts real rows off the end of capped lists and
+ * fails other specs for reasons that have nothing to do with the code.
+ */
+const tidyAway = gamesMade();
 
 /**
  * Playing that game again.
@@ -38,6 +51,7 @@ test.describe("a finished game offers to be played again", () => {
     });
     expect(made.status()).toBe(201);
     const created = (await made.json()) as { id: string; blackToken: string };
+    tidyAway(created.id);
     /*
      * The white token is NOT in that response any more, and must not be: this
      * is a challenge, so white is bound to the other member, and handing it
@@ -110,6 +124,9 @@ test.describe("a finished game offers to be played again", () => {
 
     // The new game really is the old one's game.
     const id = page.url().split("/").pop()!;
+    // And the rematch is this file's to take away too: it is an offer nobody
+    // will answer, and an unanswered offer is a row that would sit for ever.
+    tidyAway(id);
     const started = await context.request.get(`/api/games/${id}`);
     expect(started.status()).toBe(200);
     const next = (await started.json()) as {
