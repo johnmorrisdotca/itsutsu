@@ -5,7 +5,6 @@ import { useState } from "react";
 
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { botsFor } from "@/lib/bots/bots.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
@@ -24,6 +23,7 @@ import { describeHandicap, describeRules, type SettingWord } from "./rulesSummar
 import type { RulesDraft } from "./rulesDraft";
 import { shownName } from "@/lib/rating/shownName";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
+import { matchSeat } from "./seatMatch";
 import { creationFor } from "./setUpStart";
 
 /**
@@ -162,68 +162,25 @@ export function SetUpGame({
       : null;
 
   /*
-   * The board somebody chose, remembered across a game that cannot use it.
-   *
-   * applyRulesChange snaps the size to one the chosen game is played on, so
-   * looking at Reversi — which is 8x8 and nothing else — and coming back would
-   * otherwise lose a 19x19 that had been chosen deliberately. The choice is
-   * held here rather than in the draft, because the draft has to stay a board
-   * the current game can actually be played on.
+   * The board somebody chose, held here rather than in the draft: the draft has
+   * to stay a board the current game can actually be played on, and this has to
+   * survive a game that cannot use it — see `matchSeat`.
    */
   const [boardChosen, setBoardChosen] = useState<number | null>(null);
 
   /*
-   * A GAME THAT CAME FROM ANOTHER GAME NEVER SITS DOWN AT A STRANGER'S SEAT.
-   *
-   * The auto-match below exists because asking for a game and posting a seat
-   * are the same wish, and the only difference is whether somebody is already
-   * asking. A rematch and a fork are not that wish: they are about one
-   * particular person and, for a fork, one particular position. Following a
-   * posted seat's board would also quietly move a fork off the board its own
-   * moves were played on, which is not a preference — it is a different game.
+   * Whether somebody is already asking for exactly this, and which board to show
+   * — one rule, in one module, with its own tests: `matchSeat`. A rematch and a
+   * fork are never matched, because they are about one particular person and, for
+   * a fork, one particular position.
    */
-  const matchable = again === null && fork === null;
-  const alone =
-    matchable && against === ANYONE && boardChosen === null
-      ? seats.filter((seat) => seat.variant === rules.variant && seat.moveTimeMs === rules.moveTimeMs)
-      : [];
-  /*
-   * The board follows a seat somebody is already waiting on, until anybody
-   * touches it.
-   *
-   * This is the regression the control could easily have caused and the old
-   * sentence was careful about: every seat on the board was posted at some
-   * size, and a screen that always opened at the member's own favourite would
-   * stop matching them — so asking for a game would post a SECOND seat beside
-   * the one already waiting, and neither would ever be filled.
-   *
-   * Derived rather than written into state. The followed board is a reading of
-   * what is on the noticeboard, not a decision anybody has made, and storing a
-   * reading as if it were a decision is what makes it need an effect to keep
-   * it in step — which React rightly refuses.
-   */
-  const follow = alone.length === 1 ? alone[0] : undefined;
-  const wanted =
-    boardChosen !== null && boardSizesFor(rules.variant as RuleVariant).includes(boardChosen)
-      ? boardChosen
-      : undefined;
-  const settled: RulesDraft =
-    follow !== undefined
-      ? { ...rules, size: follow.size }
-      : wanted !== undefined
-        ? { ...rules, size: wanted }
-        : rules;
-
-  /* Somebody already asking for exactly this — the game, the board AND the pace. */
-  const waiting =
-    matchable && against === ANYONE
-      ? seats.find(
-          (seat) =>
-            seat.variant === settled.variant &&
-            seat.size === settled.size &&
-            seat.moveTimeMs === settled.moveTimeMs,
-        )
-      : undefined;
+  const { settled, waiting } = matchSeat({
+    rules,
+    seats,
+    posting: against === ANYONE,
+    boardChosen,
+    matchable: again === null && fork === null,
+  });
 
   /*
    * What this will make, decided in one pure place — see `creationFor`. The

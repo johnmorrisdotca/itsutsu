@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
-import { ready } from "./support";
+import { chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
 
 /**
  * EVERY WAY OF STARTING A GAME GOES THROUGH THE SETUP SCREEN FIRST.
@@ -25,7 +25,14 @@ import { ready } from "./support";
  *  - what the press already knew is filled in, so nothing is asked twice.
  */
 
-/** Waits until the setup screen is listening, then reports what it is offering. */
+/**
+ * Waits until the setup screen is listening, then reports what it is offering.
+ *
+ * The game and the board are PICKERS rather than dropdowns — rows of pictures —
+ * so "is the game asked" is whether that fieldset is on the page, and "which one
+ * is chosen" is read off the chosen card. The clock and the opponent are behind
+ * the More settings drawer, which a spec opens the way a reader does.
+ */
 async function setUpScreen(page: Page) {
   await ready(page, "set-up-game");
   return {
@@ -33,7 +40,8 @@ async function setUpScreen(page: Page) {
     start: page.getByTestId("set-up-start"),
     summary: page.getByTestId("set-up-summary"),
     game: page.getByTestId("shared-rules-variant"),
-    board: page.getByTestId("shared-rules-size"),
+    chosenGame: page.locator('[data-testid="set-up-variant"][data-chosen="true"]'),
+    board: chosenBoard(page),
     pace: page.getByTestId("shared-rules-move-time"),
   };
 }
@@ -62,6 +70,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(page).toHaveURL(new RegExp(`/games/new\\?.*against=${theirId}`));
     const screen = await setUpScreen(page);
     // Their name is filled in and selected, so the game is the only question left.
+    await openMoreSettings(page);
     await expect(screen.opponent).toHaveValue(`m:${theirId}`);
     await expect(page.getByTestId("set-up-against")).toContainText(them.name);
     // And the game is a question: the address named nobody's game, so it is asked.
@@ -95,6 +104,7 @@ test.describe("every way into a game reaches the setup screen", () => {
 
     await expect(page).toHaveURL(new RegExp(`/games/new\\?.*against=${theirId}`));
     const screen = await setUpScreen(page);
+    await openMoreSettings(page);
     await expect(screen.opponent).toHaveValue(`m:${theirId}`);
 
     await context.close();
@@ -126,6 +136,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(page).toHaveURL(/\/games\/new\?.*against=/);
     const screen = await setUpScreen(page);
     await expect(screen.game, "the game is asked, because a program plays any of them").toBeVisible();
+    await openMoreSettings(page);
     await expect(screen.opponent).not.toHaveValue("anyone");
 
     await context.close();
@@ -164,7 +175,8 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(page).toHaveURL(/\/games\/new\?.*against=tamenoki/);
     const screen = await setUpScreen(page);
     // Opened at a game it plays, with it chosen — not at Gomoku with it dropped.
-    await expect(screen.game).toHaveValue("reversi");
+    await expect(screen.chosenGame).toHaveAttribute("data-variant", "reversi");
+    await openMoreSettings(page);
     await expect(screen.opponent).toHaveValue("c:tamenoki");
     await expect(page.getByTestId("set-up-not-offered")).toHaveCount(0);
 
@@ -173,7 +185,7 @@ test.describe("every way into a game reaches the setup screen", () => {
      * offer has lapsed rather than quietly posting a seat instead. Falling back
      * is right; falling back in silence is the thing this whole change is about.
      */
-    await screen.game.selectOption("halma");
+    await chooseGame(page, "halma");
     await expect(page.getByTestId("set-up-not-offered")).toContainText(/does not play/i);
 
     await context.close();
@@ -205,7 +217,8 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(page).toHaveURL(/\/games\/gomoku\/new\?/);
     const screen = await setUpScreen(page);
     // And the board and the pace it named are filled in rather than asked again.
-    await expect(screen.board).toHaveValue("19");
+    await expect(screen.board).toHaveAttribute("data-size", "19");
+    await openMoreSettings(page);
     await expect(screen.pace).toHaveValue(String(24 * 60 * 60_000));
 
     await context.close();
@@ -230,6 +243,7 @@ test.describe("every way into a game reaches the setup screen", () => {
 
     await expect(page).toHaveURL(new RegExp(`/new\\?.*against=${theirId}`));
     const screen = await setUpScreen(page);
+    await openMoreSettings(page);
     await expect(screen.opponent).toHaveValue(`m:${theirId}`);
 
     await context.close();

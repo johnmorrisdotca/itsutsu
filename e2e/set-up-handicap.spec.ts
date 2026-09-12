@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
-import { ready } from "./support";
+import { openMoreSettings, ready } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -34,6 +34,12 @@ test.describe("a handicap is chosen where the rest of the rules are", () => {
     const page = await context.newPage();
     await page.goto("/games/gomoku/new");
     await ready(page, "set-up-game");
+    /*
+     * The handicap is folded with the opening, the clock, the ratings and the
+     * opponent: settings about a game already chosen, behind one line. So a
+     * reader opens the drawer to reach it, and so does this.
+     */
+    await openMoreSettings(page);
 
     const colour = page.getByTestId("set-up-handicap-stone");
     await expect(colour).toBeVisible();
@@ -67,6 +73,7 @@ test.describe("a handicap is chosen where the rest of the rules are", () => {
     const page = await context.newPage();
     await page.goto(`/games/gomoku/new?against=${theirId}`);
     await ready(page, "set-up-game");
+    await openMoreSettings(page);
     await expect(page.getByTestId("set-up-with")).toHaveValue(`m:${theirId}`);
 
     // The stronger player takes on the rules of a harder game. Black is the
@@ -113,6 +120,7 @@ test.describe("a handicap is chosen where the rest of the rules are", () => {
     const page = await context.newPage();
     await page.goto("/games/gomoku/new");
     await ready(page, "set-up-game");
+    await openMoreSettings(page);
 
     await page.getByTestId("set-up-handicap-stone").selectOption("black");
     const rule = page.getByRole("checkbox", { name: /No double three/i }).first();

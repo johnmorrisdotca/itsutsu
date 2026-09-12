@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
-import { ready } from "./support";
+import { chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -101,8 +101,14 @@ test.describe("playing a finished game again", () => {
     await expect(page).toHaveURL(new RegExp(`/games/new\\?rematch=${game.id}`));
     await ready(page, "set-up-game");
 
-    // Everything the old game was played under is here, and nothing is asked twice.
-    await expect(page.getByTestId("shared-rules-size")).toHaveValue("9");
+    /*
+     * Everything the old game was played under is here, and nothing is asked
+     * twice. The board is a row of blocks rather than a dropdown, so the claim is
+     * about which block is chosen; the clock and the opponent are behind the More
+     * settings drawer, which a reader opens and so does this.
+     */
+    await expect(chosenBoard(page)).toHaveAttribute("data-size", "9");
+    await openMoreSettings(page);
     await expect(page.getByTestId("shared-rules-move-time")).toHaveValue(String(86_400_000));
     await expect(page.getByTestId("set-up-with")).not.toHaveValue("anyone");
     await expect(page.getByTestId("set-up-again")).toContainText(them.name);
@@ -171,7 +177,7 @@ test.describe("playing a finished game again", () => {
     await page.getByRole("link", { name: /Play again as White/ }).click();
     await ready(page, "set-up-game");
 
-    await page.getByTestId("shared-rules-variant").selectOption("reversi");
+    await chooseGame(page, "reversi");
 
     /*
      * The screen says it has stopped being a repeat. It has to: a rematch swaps
@@ -222,6 +228,7 @@ test.describe("carrying a position into a new game", () => {
      * something that IS on the form has been waited for, or it would pass on a
      * page that had not rendered at all.
      */
+    await openMoreSettings(page);
     await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
     await expect(page.getByTestId("shared-rules-variant")).toHaveCount(0);
 
@@ -242,7 +249,13 @@ test.describe("carrying a position into a new game", () => {
     await page.getByRole("link", { name: /Play from move 5/ }).click();
     await ready(page, "set-up-game");
 
-    // It opens on the clock the game it forks was played on, not on a default.
+    /*
+     * It opens on the clock the game it forks was played on, not on a default —
+     * and the clock is in the drawer, so a reader opens it to see that. A fork
+     * has no opponent in there, which is what `openMoreSettings` waits on the
+     * clock rather than the opponent for.
+     */
+    await openMoreSettings(page);
     await expect(page.getByTestId("shared-rules-move-time")).toHaveValue(String(86_400_000));
     await page.getByTestId("shared-rules-move-time").selectOption(String(5 * 60_000));
     await page.getByTestId("set-up-start").click();
