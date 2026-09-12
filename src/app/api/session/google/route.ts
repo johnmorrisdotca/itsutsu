@@ -14,6 +14,8 @@ import {
   signSession,
 } from "@/lib/auth/session";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
+import { mayJoin } from "@/lib/site/site";
+import { registrationMode } from "@/lib/site/siteStore";
 
 /**
  * Where a Google sign-in becomes a session this site understands.
@@ -52,9 +54,25 @@ export async function GET(request: Request) {
     );
   }
 
+  /*
+   * Known to Google, not yet to us. THIS IS THE SIGNUP DECISION, and the only
+   * one on this route — every line above it is about an address the site has
+   * already met, and none of them reads how signing up is set.
+   *
+   * `invite-only` sends them to the door to be asked for the code, exactly as
+   * this route has always done. `closed` sends them to the door too, which then
+   * says the site is not taking new members — a redirect rather than a refusal,
+   * because the door is where the site explains itself and a bare 403 out of an
+   * OAuth callback explains nothing to anybody. `open` falls through to the
+   * ordinary path below, where `admitMember` creates the row and `created`
+   * sends them on to choose a name: Google having proved the address was always
+   * the whole of what the code stood in for here.
+   *
+   * The mode is only read when there is a decision to make. An address already
+   * a member costs no query at all, which is nearly every sign-in.
+   */
   const member = await findMember(email);
-  if (member === null) {
-    // Known to Google, not yet to us: the door will ask for the invite code.
+  if (member === null && !mayJoin(await registrationMode(), false)) {
     const join = new URL("/join", url.origin);
     if (destination !== "/") join.searchParams.set("next", destination);
     return NextResponse.redirect(join);

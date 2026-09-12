@@ -7,7 +7,9 @@ import { getServerSession } from "next-auth";
 
 import { isOperatorLogin } from "@/lib/auth/admin";
 import { authOptions } from "@/lib/auth/google";
-import { admitMember, foldEmail, isBanned, touchMember } from "@/lib/auth/members";
+import { admitMember, findMember, foldEmail, isBanned, touchMember } from "@/lib/auth/members";
+import { mayJoin } from "@/lib/site/site";
+import { registrationMode } from "@/lib/site/siteStore";
 import {
   ADMIN_SESSION_DAYS,
   PLAYER_SESSION_DAYS,
@@ -110,6 +112,20 @@ export async function POST(request: Request) {
     if (email) {
       // A shut account is shut whatever code is presented at the door.
       if (await isBanned(email)) return refused();
+      /*
+       * The second door, and the only other place a stranger becomes a member.
+       * A code IS the thing `invite-only` asks for, so it passes; `closed` turns
+       * it away, because a mode that let last week's code still make members
+       * would not be the mode the panel says it is.
+       *
+       * Asked only of a stranger. An address already a member never reaches
+       * this — `admitMember` refreshes the row it finds — so no setting here can
+       * shut out somebody already in, and the code itself stays as valid as it
+       * was for everybody else.
+       */
+      if ((await findMember(email)) === null && !mayJoin(await registrationMode(), true)) {
+        return refused();
+      }
       const member = await admitMember({
         email,
         name: google?.user?.name ?? "",

@@ -836,3 +836,38 @@ model BacklogItem {
   @@index([status, movedAt])
   @@index([createdAt])
 }
+
+/// One site-level thing the operator has said about how this site behaves,
+/// keyed by name: who may sign up, whether the site is open at all.
+///
+/// A ROW PER KEY, not a column per setting and not one JSON blob, because that
+/// is the shape the shared settings service uses — `settings/{key}` GET and
+/// PUT — so the day this moves there, the store changes and nothing that reads
+/// it does. UmaKuma already keeps the same table under the same name, which is
+/// the second reason to match it rather than invent a third shape.
+///
+/// THE ABSENCE OF A ROW IS THE DEFAULT, and that is the whole safety property:
+/// a deployment that has never written a setting behaves exactly as this one
+/// behaved before the table existed. Nothing is seeded, so nothing has to be
+/// seeded correctly — UmaKuma's own backlog records the near-miss where a
+/// lockdown key deployed without its row would have shut out every account
+/// already holding an invite.
+///
+/// `SITE_SETTING_SPECS` owns what a setting may be and what it is until
+/// somebody says otherwise; this table only stores what was said. A value the
+/// registry no longer offers reads as that one setting's default rather than
+/// throwing, the way `cleanPreferences` treats a preference.
+model SiteSetting {
+  /// The registry's own name for it, verbatim: `registration`, `maintenance`.
+  /// One name in the TypeScript, in this column, in the API and on the panel,
+  /// so there is no mapping table to drift.
+  key       String   @id
+  /// Always a string, whatever the setting means. Every setting here is a
+  /// scalar — a mode, a switch, a short line of copy — and a string survives
+  /// both this column and a `settings/{key}` PUT unchanged.
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  /// The operator who last wrote it, for the question "who shut the door".
+  updatedBy String   @default("")
+}

@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { EMBED_TOKEN_PARAM, signEmbedToken } from "@/lib/auth/embedToken";
+import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
 
 import { MATCHER_EXEMPT, config, isBoardApiPath, proxy, wouldBeOpen } from "./proxy";
 
@@ -483,5 +484,260 @@ describe("the two token exceptions survive the fail-closed change, in production
       }),
     );
     expect(response.status).toBe(200);
+  });
+});
+
+/**
+ * The maintenance shutter, which is the only thing in this repository allowed
+ * to turn the gate's yes into a no.
+ *
+ * Every case below drives `proxy` itself with a constructed request, because
+ * the whole question is what a REQUEST gets — `maintenanceRefusal` returning
+ * the right object would prove nothing about where the gate calls it from, and
+ * the placement is the part that can be wrong. Two of these fail if it is
+ * called before the deciding rather than after, and two fail if it is called
+ * on the wrong side of the session check.
+ */
+describe("the site being worked on", () => {
+  const ENV = { ...process.env };
+  const SECRET = "a-secret-long-enough-to-be-accepted";
+  const OPERATOR = "operator@itsutsu.com";
+
+  afterEach(() => {
+    process.env = { ...ENV };
+    vi.unstubAllEnvs();
+  });
+
+  /** The shutter down, a key in the lock, and one operator on the allowlist. */
+  function shutTheSite(): void {
+    process.env.AUTH_SECRET = SECRET;
+    process.env.ADMIN_EMAILS = OPERATOR;
+    process.env.SITE_MAINTENANCE = "on";
+  }
+
+  async function cookieFor(session: {
+    kind: "admin" | "player";
+    email?: string;
+  }): Promise<string> {
+    const token = await signSession({
+      ...session,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    });
+    expect(token).not.toBeNull();
+    return `${SESSION_COOKIE}=${token}`;
+  }
+
+  function ask(path: string, cookie?: string): NextRequest {
+    return new NextRequest(
+      `https://itsutsu.com${path}`,
+      cookie === undefined ? undefined : { headers: { cookie } },
+    );
+  }
+
+  it("shows a member the notice instead of the page they asked for", async () => {
+    shutTheSite();
+    const response = await proxy(ask("/history", await cookieFor({ kind: "player", email: "her@example.com" })));
+    expect(response.status).toBe(503);
+    // Not a redirect to /join: signing in is not what is wrong here, and the
+    // door must not be made to look like the way out of it.
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    const body = await response.text();
+    expect(body).toContain("being worked on");
+    // It names no variable and no operator. Somebody reading the shutter learns
+    // that the site is shut, and nothing whatsoever about how it is run.
+    expect(body).not.toContain("SITE_MAINTENANCE");
+    expect(body).not.toContain(OPERATOR);
+  });
+
+  it("shows a stranger the notice on the pages they could otherwise read", async () => {
+    shutTheSite();
+    const response = await proxy(ask("/games"));
+    expect(response.status).toBe(503);
+    expect(await response.text()).toContain("being worked on");
+  });
+
+  /*
+   * AND LEAVES A REFUSAL THAT HAD ALREADY HAPPENED EXACTLY AS IT WAS, which is
+   * the invariant stated from the other side and is worth a test of its own
+   * because it looks at first like a gap. A stranger deep-linking to /history
+   * is sent to the door, not shown the notice — the shutter runs where the
+   * gate's yeses arrive, and this request never got one. It cannot turn a no
+   * into a different no any more than it can turn one into a yes.
+   *
+   * Nothing is lost by it: they were not going to see /history today either
+   * way, and the door is where a visitor with no invite belongs. What matters
+   * is that every page a non-operator can actually REACH is the notice, which
+   * the two tests above are.
+   */
+  it("leaves a refusal the gate had already arrived at untouched", async () => {
+    shutTheSite();
+    const page = await proxy(ask("/history"));
+    expect(page.status).toBe(307);
+    expect(page.headers.get("location")).toContain("/join");
+    const api = await proxy(ask("/api/games"));
+    expect(api.status).toBe(401);
+  });
+
+  it("answers an API caller with a 503 it can act on rather than HTML", async () => {
+    shutTheSite();
+    const response = await proxy(
+      ask("/api/games", await cookieFor({ kind: "player", email: "her@example.com" })),
+    );
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Content-Type")).toContain("application/json");
+    expect(await response.json()).toEqual({
+      error: "The site is being worked on. Try again shortly.",
+    });
+  });
+
+  it("lets the operator through, so the site can be taken back out of it", async () => {
+    shutTheSite();
+    const response = await proxy(ask("/history", await cookieFor({ kind: "admin", email: OPERATOR })));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("lets the operator reach the panel that says how to lift it", async () => {
+    shutTheSite();
+    const response = await proxy(ask("/admin", await cookieFor({ kind: "admin", email: OPERATOR })));
+    expect(response.status).toBe(200);
+  });
+
+  /*
+   * The two halves of being the operator, each failing on its own. A session
+   * that merely SAYS admin is not enough, or removing somebody from
+   * ADMIN_EMAILS would leave their cookie working until it expired — a day.
+   * And an ordinary member whose address happens to be on the allowlist is
+   * still an ordinary member, since only the operator's own sign-in mints the
+   * admin kind.
+   */
+  it("shuts out a member's session, allowlisted address or not", async () => {
+    shutTheSite();
+    const response = await proxy(ask("/history", await cookieFor({ kind: "player", email: OPERATOR })));
+    expect(response.status).toBe(503);
+  });
+
+  it("shuts out an admin session whose address is not on the allowlist", async () => {
+    shutTheSite();
+    const response = await proxy(
+      ask("/history", await cookieFor({ kind: "admin", email: "someone@example.com" })),
+    );
+    expect(response.status).toBe(503);
+  });
+
+  it("shuts out a session with no address at all, which an invite code mints", async () => {
+    shutTheSite();
+    const response = await proxy(ask("/history", await cookieFor({ kind: "player" })));
+    expect(response.status).toBe(503);
+  });
+
+  /*
+   * READING DOES NOT STAY OPEN, and this is a decision rather than a
+   * consequence. "Reading is open, playing is gated" is about who holds an
+   * invite; it is not about an hour when the database is being migrated
+   * underneath the pages that read it. Every open page here draws from the same
+   * database, so leaving them up would show a reader a 500, a half-migrated
+   * table, or a count that is briefly untrue — three worse answers than a
+   * notice saying the site is being worked on.
+   */
+  it("closes the pages a stranger may ordinarily read", async () => {
+    shutTheSite();
+    for (const path of ["/", "/games", "/games/gomoku", "/games/hex/rules", "/about", "/learn"]) {
+      const response = await proxy(ask(path));
+      expect(response.status, `${path} should be shut while the site is`).toBe(503);
+    }
+  });
+
+  /*
+   * The doors, which is how the shutter is survivable. The recovery has to work
+   * from a browser holding no cookie at all — a new laptop, a cleared cache, an
+   * operator pass that expired overnight — so the paths that mint a session
+   * stay reachable. They grant nothing: each was already open before this
+   * existed, and the shutter simply declines to take them back.
+   */
+  it("keeps the door open, so the operator can always sign in and lift it", async () => {
+    shutTheSite();
+    for (const path of ["/join", "/api/session", "/api/auth/callback/google"]) {
+      const response = await proxy(ask(path));
+      expect(response.status, `${path} must stay reachable`).toBe(200);
+      expect(response.headers.get("location"), `${path} must not redirect`).toBeNull();
+    }
+  });
+
+  /*
+   * The recovery path that needs no database write and no session: the variable
+   * itself. Removing it, or setting it to anything that is not "on", puts the
+   * site back exactly as it was — which is what makes a stuck setting
+   * recoverable from Vercel alone.
+   */
+  it("is off when the variable is absent, and the gate behaves exactly as before", async () => {
+    process.env.AUTH_SECRET = SECRET;
+    delete process.env.SITE_MAINTENANCE;
+    expect((await proxy(ask("/games"))).status).toBe(200);
+    const shut = await proxy(ask("/history"));
+    expect(shut.status).toBe(307);
+    expect(shut.headers.get("location")).toContain("/join");
+  });
+
+  it("is off for any value that is not the word, rather than for any value that is not a word it knows", async () => {
+    process.env.AUTH_SECRET = SECRET;
+    for (const value of ["off", "", "true", "1", "yes", "ON!", "maintenance"]) {
+      process.env.SITE_MAINTENANCE = value;
+      const response = await proxy(ask("/games"));
+      expect(response.status, `SITE_MAINTENANCE=${value} must not shut the site`).toBe(200);
+    }
+  });
+
+  it("reads the word whatever case or spacing it was pasted with", async () => {
+    process.env.AUTH_SECRET = SECRET;
+    for (const value of ["on", "ON", " on ", "On"]) {
+      process.env.SITE_MAINTENANCE = value;
+      const response = await proxy(ask("/games"));
+      expect(response.status, `SITE_MAINTENANCE=${value} must shut the site`).toBe(503);
+    }
+  });
+
+  /*
+   * The two token exceptions are deliberately NOT shuttered, and that is a
+   * decision worth a failing test if anybody changes it. Both are narrow,
+   * read-only credentials that never reach a page; and the board token is how
+   * the operator works the backlog, which is exactly what they are doing while
+   * the site is down.
+   */
+  it("leaves the embed and board credentials alone, which is how the operator keeps working", async () => {
+    shutTheSite();
+    process.env.BOARD_TOKEN = "right-token";
+    const token = await signEmbedToken("proxy.test.ts");
+    const embed = await proxy(ask(`/embed?${EMBED_TOKEN_PARAM}=${token}`));
+    expect(embed.status).toBe(200);
+    const board = await proxy(
+      new NextRequest("https://itsutsu.com/api/backlog", {
+        headers: { Authorization: "Bearer right-token" },
+      }),
+    );
+    expect(board.status).toBe(200);
+  });
+
+  /*
+   * The invariant the whole design rests on, stated as a test rather than only
+   * as a comment: the shutter can take a way through away and can never add
+   * one. A path the gate refuses is still refused while the site is shut, and
+   * no cookie, variable or address makes the shutter open it.
+   */
+  it("never opens anything the gate had shut", async () => {
+    shutTheSite();
+    const operator = await cookieFor({ kind: "admin", email: OPERATOR });
+    // The one request that gets furthest: the operator, on a gated page. Even
+    // that is only ever the 200 the gate would have given them anyway.
+    expect((await proxy(ask("/history", operator))).status).toBe(200);
+    // And with no key at all, in production, the shutter changes nothing: the
+    // unconfigured refusal still wins, because it runs before this does.
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.AUTH_SECRET;
+    const response = await proxy(ask("/history"));
+    expect(response.status).toBe(503);
+    const body = await response.text();
+    expect(body).toContain("not configured");
   });
 });

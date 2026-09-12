@@ -11,6 +11,7 @@ import {
   LANG_REMEMBER_FOR_SECONDS,
 } from "@/lib/i18n/i18n.constants";
 import { readLocale } from "@/lib/i18n/locale";
+import { maintenanceRefusal } from "@/lib/site/maintenance";
 
 /**
  * The gate.
@@ -276,11 +277,26 @@ function rememberLanguage(request: NextRequest): NextResponse | null {
 }
 
 /**
- * Carry on — and keep the language, when one was asked for on the way.
+ * Carry on — unless the site is being worked on — and keep the language, when
+ * one was asked for on the way.
  *
- * It decides nothing: the gate has already said yes by the time it runs, and
- * the one thing it adds is a cookie, which a Server Component can read while
- * it renders and cannot set.
+ * The gate has already said yes by the time this runs, and this is where all
+ * three of its yeses arrive, which is why the maintenance shutter is here and
+ * nowhere else. It can only ever turn that yes into a no: `maintenanceRefusal`
+ * returns a 503 or null, never a pass, so nothing it does can open a path the
+ * deciding above had shut. `isOpenPath`, `OPEN_PATHS`, `OPEN_EXACTLY`,
+ * `OPEN_PATTERNS` and the two token exceptions are untouched — the exceptions
+ * deliberately, since each is a narrow read-only credential and the board token
+ * is how the operator works the backlog while the site is down.
+ *
+ * It costs one environment variable read on every request that is not in
+ * maintenance, which is every request on almost every day. See
+ * `MAINTENANCE_ENV` for why the shutter is a variable and not a row: a gate
+ * that queried Postgres per request would be both the cost fault and a shutter
+ * that cannot answer during the hour the database is being worked on.
+ *
+ * The language cookie still decides nothing, and is still here because a
+ * Server Component can read a cookie while it renders and cannot set one.
  *
  * The players page's narrowing was kept here too, in a cookie, until it had
  * an account to live on. It is remembered by the page now, through the
@@ -290,8 +306,12 @@ function rememberLanguage(request: NextRequest): NextResponse | null {
  * cookie set here for `/players?who=…` remembered whichever of the bar's
  * links had last come into view, a narrowing nobody chose.
  */
-function carryOn(request: NextRequest): NextResponse {
-  return rememberLanguage(request) ?? NextResponse.next();
+async function carryOn(request: NextRequest): Promise<NextResponse> {
+  return (
+    (await maintenanceRefusal(request)) ??
+    rememberLanguage(request) ??
+    NextResponse.next()
+  );
 }
 
 export async function proxy(request: NextRequest) {
