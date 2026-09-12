@@ -6,13 +6,14 @@ import { isReservedKey } from "./reservedKeys";
  * Whether a finished game between these two names moves a rating, and if not,
  * why not.
  *
- * The rule was written out twice — once in `recordResult` for the global
- * ladder and once in `recordVariantResult` for the per-game one — as the same
- * five-clause `if` that returned early. Two copies of a rule is one rule that
- * can drift, and neither copy could be shown to anybody: a condition inside a
- * function that returns `void` has no answer to give a page. Named here, it is
- * one rule, it is tested on its own, and the board and the record can both say
- * what it decided.
+ * The rule was once written out twice — in the two functions that separately
+ * moved the global ladder and the per-game standing — as the same five-clause
+ * `if` that returned early. Two copies of a rule is one rule that can drift,
+ * and neither copy could be shown to anybody: a condition inside a function
+ * that returns `void` has no answer to give a page. Named here, it is one
+ * rule, it is tested on its own, and the board and the record can both say
+ * what it decided. (Those two writers are now one — `recordResult.ts` — for a
+ * related reason: two writers of one fact is one fact that can disagree.)
  *
  * Names rather than accounts, because that is what the ladder is keyed by: two
  * spellings of one name are one player, which is exactly how somebody ends up
