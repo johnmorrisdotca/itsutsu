@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.162.1 — 2026-09-12
+- A test that had been red on every fresh database since the setup-first work turned out to be the test, not the site: resigning from the board has always ended the game
+
 ## 0.162.0 — 2026-09-12
 - Every finished game now pays experience points — for playing, for a first game of each kind and each family, for touring all of them, for winning over a person, over a buddy, after losing to them, for a streak, for beating each computer grade — and for showing up: a daily return, a run of days, a weekend game, coming back after time away
 - Points show as a toast sliding from the top the moment they land, with a level-up marked when one is reached — no polling, no timers beyond the toast's own dismissal
