@@ -49,9 +49,16 @@ vi.mock("@/lib/prisma", () => ({
       create,
       findUnique: async ({ where }: { where: { id?: string; email?: string } }) =>
         rows.find((row) => (where.id !== undefined ? row.id === where.id : row.email === where.email)) ?? null,
-      findFirst: async ({ where }: { where: { name?: { equals?: string } } }) => {
+      /*
+       * Every row whose name folds to the asked one, capped as the store caps
+       * it. The mock returns a LIST rather than the first match on purpose: a
+       * mock that could only ever hand back one row could not show the store
+       * refusing two, which is the case that matters most here.
+       */
+      findMany: async ({ where, take }: { where: { name?: { equals?: string } }; take?: number }) => {
         const wanted = (where.name?.equals ?? "").trim().toLowerCase();
-        return rows.find((row) => row.name.trim().toLowerCase() === wanted) ?? null;
+        const found = rows.filter((row) => row.name.trim().toLowerCase() === wanted);
+        return take === undefined ? found : found.slice(0, take);
       },
       update: async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
         writes.push({ where, data });
@@ -203,6 +210,66 @@ describe("verifyPhraseFor", () => {
     await setPhrase(HANAKO, WORDS);
     expect(await verifyPhraseFor("Hanako M.", ["acid"])).toBeNull();
     expect(await verifyPhraseFor("Hanako M.", [])).toBeNull();
+  });
+
+  /*
+   * A DISPLAY NAME IS NOT UNIQUE, and these four are the whole reason the lookup
+   * asks for two rows.
+   *
+   * `Member.name` has no unique constraint — only `email` has one — so two
+   * people may both go by "John Morris", and the development database has
+   * exactly that pair today. The old lookup was a `findFirst`, which answers
+   * "which of these two?" with whichever row the database happened to hand back:
+   * her own words would have signed her in as him about half the time.
+   */
+  describe("when two members share a name", () => {
+    const ONE = "tw1nsjdxxxxxxxxx";
+    const TWO = "tw1nsjdyyyyyyyyy";
+
+    beforeEach(() => {
+      rows.push(
+        member({ id: ONE, name: "John Morris", email: "one@example.com" }),
+        member({ id: TWO, name: "John Morris", email: "two@example.com" }),
+      );
+    });
+
+    it("refuses both of them rather than picking one", async () => {
+      await setPhrase(ONE, WORDS);
+      expect(await verifyPhraseFor("John Morris", WORDS)).toBeNull();
+    });
+
+    /*
+     * The impersonation itself, which is the case worth spelling out.
+     *
+     * Two people sharing a name may also share four words — a parent setting
+     * both children up is likelier to reuse a memorable set than a stranger is
+     * to guess one. Then a name and those words match BOTH rows, and the old
+     * lookup handed back whichever it read first: the second one taps her own
+     * words, they are correct, and she is signed in as the first. Refusing is
+     * the only honest answer to "which of these two is you".
+     */
+    it("refuses even when the words are right for both of them", async () => {
+      await setPhrase(ONE, WORDS);
+      await setPhrase(TWO, WORDS);
+      expect(await verifyPhraseFor("John Morris", WORDS)).toBeNull();
+    });
+
+    /* Refusing an ambiguous name must not have broken the unambiguous one. */
+    it("still signs in a name only one member goes by", async () => {
+      await setPhrase(HANAKO, WORDS);
+      expect(await verifyPhraseFor("Hanako M.", WORDS)).toBe(HANAKO);
+    });
+
+    /*
+     * The refusal is the same null as every other, so a caller cannot learn
+     * from it that two people here share a name.
+     */
+    it("says no more than any other refusal does", async () => {
+      await setPhrase(ONE, WORDS);
+      expect(await verifyPhraseFor("John Morris", WORDS)).toBe(
+        await verifyPhraseFor("Nobody At All", WORDS),
+      );
+    });
   });
 });
 
