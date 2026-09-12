@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 
 /**
  * The slice of the server an embedded board is allowed to see.
@@ -74,26 +75,21 @@ export async function fetchEmbedSummary(
 /**
  * One player's record, matched on the name games were recorded under. Names
  * are free text, so this is a tally of a label rather than of a person.
+ *
+ * THE SAME FUNCTION THE REST OF THE SITE COUNTS WITH, rather than a second
+ * reading of the games table. This used to run `blackGames + whiteGames` as
+ * two separate counts with no dedup for a game played against yourself —
+ * both seats carry the one name, so that game satisfied both counts and was
+ * added in twice. `fetchPlayerRecord` reads one row per finished game and
+ * counts it once, which is the same rule `fetchPlayedTallies` states for
+ * every other page: a game against yourself is one game, counted once, from
+ * the black seat. This is the number a third-party page gets embedded with,
+ * so it has to agree with the number Itsutsu shows on every page of its own.
  */
 async function playerRecord(name: string): Promise<EmbedSummary["player"]> {
   const trimmed = name.trim();
   if (trimmed === "") return null;
 
-  const asBlack = { blackName: { equals: trimmed, mode: "insensitive" as const } };
-  const asWhite = { whiteName: { equals: trimmed, mode: "insensitive" as const } };
-  const finished = { status: "finished" as const };
-
-  const [blackGames, whiteGames, wonBlack, wonWhite, drawn] = await Promise.all([
-    prisma.game.count({ where: { ...finished, ...asBlack } }),
-    prisma.game.count({ where: { ...finished, ...asWhite } }),
-    prisma.game.count({ where: { ...finished, ...asBlack, result: "black" } }),
-    prisma.game.count({ where: { ...finished, ...asWhite, result: "white" } }),
-    prisma.game.count({
-      where: { ...finished, result: "draw", OR: [asBlack, asWhite] },
-    }),
-  ]);
-
-  const played = blackGames + whiteGames;
-  const won = wonBlack + wonWhite;
-  return { name: trimmed, played, won, lost: played - won - drawn, drawn };
+  const record = await fetchPlayerRecord(trimmed);
+  return { name: trimmed, played: record.games, won: record.wins, lost: record.losses, drawn: record.draws };
 }
