@@ -12,12 +12,12 @@ import { RowActions } from "@/components/ui/Controls";
 import { buddyEmails } from "@/lib/social/buddies";
 import { currentSession } from "@/lib/auth/currentSession";
 import { fetchComputerPlayers, fetchDirectory, fetchKeptRecords, type DirectoryEntry } from "@/lib/rating/players";
-import { fetchPlayedTallies, type PlayedTally } from "@/lib/history/playerRecord";
 import { gamesPlayed, ratingShown } from "@/lib/rating/shownRecord";
+import { fetchPlayedTallies } from "@/lib/history/playerRecord";
+import type { PlayedTally } from "@/lib/history/playerRecord";
 import { RECORD_SCOPES, scopeWorthAsking, type RecordScope } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "./RecordScopeBar";
-import { RATING_POOLS } from "@/lib/rating/pools";
-import { RecordCells, RecordHeadings } from "./PlayerRecord";
+import { RecordTable, type RecordTableRow } from "./RecordTable";
 import { filterDirectory, type DirectoryFilter } from "@/lib/rating/directoryFilter";
 import { SHOW_EVERYBODY_HREF } from "@/lib/rating/rememberedFilter";
 import { ignoredEmails } from "@/lib/social/ignores";
@@ -29,55 +29,49 @@ import { shownName } from "@/lib/rating/shownName";
 const RECENT = 200;
 
 /**
- * The three counts and the rating, for a person who may play in either pool.
+ * One member's row, worked out from their profile and what they played
+ * elsewhere.
  *
- * This row used to read the ladder columns alone, and a person whose games had
- * all been against the computer players came out as 0W 0L 0D with a dash for a
+ * This used to read the ladder columns alone, and a person whose games had all
+ * been against the computer players came out as 0W 0L 0D with a dash for a
  * rating — while their own page, one click away, showed five games and a
  * rating of 1639. The columns were not wrong about the ladder; they were
  * answering a question nobody had asked them, and saying nothing about which.
  *
  * So the counts are every game played here, and the rating says which pool
- * earned it whenever it is not the ladder. The list of computer players below
- * this one has marked its figures that way all along — it was only the people
- * who were left unmarked, which is why it read as a contradiction rather than
- * as a distinction.
+ * earned it whenever it is not the ladder.
  *
- * "EVERY GAME PLAYED HERE" WAS THE INTENT ABOVE AND NOT WHAT THE CODE DID, for
- * a second bug wearing the first one's fix. `gamesPlayed` read `profile`, the
- * rating table — and a rating row only exists for a RATED game, so a bot with
- * dozens of unrated bot-series games behind it still came out as one or two
- * played. Measured on production: Andrus Meritalu had 36 finished games and
- * this column said 1. `played` is the honest source, a batched read of the
- * games table itself (`fetchPlayedTallies`) rather than the ratings earned
- * from it, and it is why this row now needs both props: `profile` for the
- * rating, `played` for the count beside it.
- *
- * THE COUNTS NOW REACH FURTHER BACK THAN THIS SITE, which was the same fault
- * one step over. A kept record has a member row so the site can list them at
- * all, and this table read the Itsutsu columns alone — so Chibi, fourteen
- * thousand games on two sites before this one existed, appeared as somebody
- * who had never played. His own page said 14,606 the whole time.
+ * THE COUNTS REACH FURTHER BACK THAN THIS SITE, which was the same fault one
+ * step over. A kept record has a member row so the site can list them at all,
+ * and this table read the Itsutsu columns alone — so Chibi, fourteen thousand
+ * games on two sites before this one existed, appeared as somebody who had
+ * never played. His own page said 14,606 the whole time.
  *
  * THE RATING DOES NOT REACH BACK, and that is the one column that must not.
  * Games and wins add up; ratings do not — another site's is on another scale,
  * against other players, and was never converted. So the rating column always
- * answers about Itsutsu whatever the counts beside it are counting. Chibi's
- * dash is a fact about Chibi, who never played here; it is not what a lifetime
- * view looks like. Somebody with a real rating here keeps showing it.
+ * answers about Itsutsu whatever the counts beside it are counting.
+ *
+ * THE STREAK DOES NOT REACH BACK EITHER, for a stronger reason than the
+ * rating's: a run is an ORDER, and a record copied down from another site is
+ * four totals with no order in them at all. So this is the run of rated games
+ * here, both pools — which is exactly the set `gamesPlayed` counts — and the
+ * ※ under the table already tells a reader that part of the count came from
+ * somewhere this site cannot see.
  */
-function DirectoryRecord({
-  name,
-  profile,
-  played,
-  elsewhere,
-  scope,
-}: Pick<DirectoryEntry, "profile" | "elsewhere"> & {
-  name: string;
+function directoryRow(
+  entry: DirectoryEntry,
+  scope: RecordScope,
+  actions: ReturnType<typeof directoryActions>,
   /** This member's tally from `fetchPlayedTallies`, or undefined for nobody yet. */
-  played: PlayedTally | undefined;
-  scope: RecordScope;
-}) {
+  played: PlayedTally | undefined,
+): RecordTableRow {
+  /*
+   * EVERY GAME PLAYED HERE, from the games table — not `entry.profile`, the
+   * rating table, which only holds RATED games. That was 0.147.1's fix: Andrus
+   * Meritalu had 36 finished games and this column said 1. This branch was cut
+   * before it and re-threaded at the merge; the tally is the honest source.
+   */
   const here = gamesPlayed(played);
   /*
    * Counting everywhere unless the reader has asked for this site alone. The
@@ -87,74 +81,130 @@ function DirectoryRecord({
    * give one of them.
    */
   const everywhere = scope === RECORD_SCOPES.everywhere;
-  const playedRecord = everywhere
+  const elsewhere = entry.elsewhere;
+  const record = everywhere
     ? {
         wins: here.wins + elsewhere.wins,
         losses: here.losses + elsewhere.losses,
         draws: here.draws + elsewhere.draws,
       }
-    : { wins: here.wins, losses: here.losses, draws: here.draws };
-  const rating = ratingShown(profile);
+    : here;
   // Only worth marking where the figure beside it actually reaches back.
   const kept = everywhere && elsewhere.wins + elsewhere.losses + elsewhere.draws > 0;
-  return (
-    <>
-      <RecordCells
-        record={playedRecord}
-        /*
-         * Every game here, both pools, rated or not — which is what `here`
-         * now adds up. `rated` is left unset (both) on purpose: setting it to
-         * "yes" is what a link must never do to a count that no longer means
-         * only the rated ones, because it would open a shorter list than the
-         * number beside it promised.
-         *
-         * A row carrying a kept record is counting games this site never saw,
-         * so it links nowhere: there is nothing here to open, and a link that
-         * showed the Itsutsu half under a total that includes another site
-         * would be quietly wrong about which games it meant.
-         */
-        of={{ player: name, here: !kept }}
-        note={
-          kept ? (
-            /*
-             * Marked, because part of this number does not move.
-             *
-             * A profile page says it in a paragraph beside the figure; a table
-             * row has nowhere to put one. Leaving it out because it does not
-             * fit would be misleading by omission — which is precisely the
-             * fault the paragraph was written to avoid — so the mark carries
-             * it, and the line under the table says what the mark means.
-             */
-            <span
-              className="ml-0.5 align-super text-[0.6rem] text-muted"
-              title="Includes games from another site, copied down once and not updated since."
-              data-testid="record-kept-mark"
-            >
-              ※
-            </span>
-          ) : null
-        }
-      />
-      <td className="py-1.5 pr-3 font-mono tabular-nums" data-testid="directory-rating">
-        {rating === null ? (
-          "–"
+  const rating = ratingShown(entry.profile);
+  return {
+    key: entry.id,
+    subject: (
+      <span className="flex items-center gap-2">
+        <RecencyMark recency={actions.recency(entry)} />
+        {entry.picture ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
+          <img src={entry.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
+        ) : null}
+        {entry.name.trim() !== "" ? (
+          <Link
+            href={playerPath(entry.name, entry.id)}
+            className="underline-offset-2 hover:underline"
+            data-testid="directory-name"
+          >
+            {shownName(entry.name)}
+          </Link>
         ) : (
-          <>
-            {rating.rating}
-            {rating.pool === RATING_POOLS.computer ? (
-              <span
-                className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                title="Earned against the computer players, which are rated in a pool of their own."
-                data-testid="rating-pool-computer"
-              >
-                機械
-              </span>
-            ) : null}
-          </>
+          entry.email
         )}
-      </td>
-    </>
-  );
+        {/* Where they are, which is most of why they answer at four in the morning. */}
+        <CountryMark country={entry.country} className="text-sm" />
+        {/*
+          Which sort of member this is, drawn on the unusual rows only — the
+          badge the operator's list has used all along, rather than a second
+          one invented here. It earns its place now that the default shows
+          programs alongside people: a reader should never have to work out
+          which of the names is a program.
+        */}
+        <MemberKindBadge
+          kind={memberKind({
+            email: entry.email,
+            botTier: entry.botTier,
+            unclaimableBecause: entry.unclaimableBecause,
+          })}
+        />
+      </span>
+    ),
+    record,
+    /*
+     * Every game here, both pools, which is what `here` adds up. A
+     * row carrying a kept record is counting games this site never saw, so it
+     * links nowhere: there is nothing here to open, and a link that showed the
+     * Itsutsu half under a total that includes another site would be quietly
+     * wrong about which games it meant.
+     */
+    /*
+     * Every game here, both pools, rated or not — which is what `here` now adds
+     * up. `rated` is deliberately unset: "yes" would open a shorter list than
+     * the number beside it promised. A kept record links nowhere (see below).
+     */
+    of: { player: entry.name, here: !kept },
+    /*
+     * NULL, NOT THE RATED RUN, and this is a decision rather than an omission.
+     * The row's count is now every game; the stored runs are `people`,
+     * `computer` and `rated` — none is the set this row counts — and the
+     * streak cell words its scope from `of`, so a rated run here would be
+     * described as a run over every game, which it is not. A dash over a
+     * plausible number. A fourth scope, or a rated-only members list under an
+     * honest heading, is a product decision and not a merge's.
+     */
+    streak: null,
+    rating,
+    joined: { at: entry.joinedAt, isNew: entry.isNew },
+    note: kept ? (
+      /*
+       * Marked, because part of this number does not move.
+       *
+       * A profile page says it in a paragraph beside the figure; a table row
+       * has nowhere to put one. Leaving it out because it does not fit would
+       * be misleading by omission — which is precisely the fault the paragraph
+       * was written to avoid — so the mark carries it, and the line under the
+       * table says what the mark means.
+       */
+      <span
+        className="ml-0.5 align-super text-[0.6rem] text-muted"
+        title="Includes games from another site, copied down once and not updated since."
+        data-testid="record-kept-mark"
+      >
+        ※
+      </span>
+    ) : null,
+    actions: actions.forEntry(entry),
+  };
+}
+
+/**
+ * What the reader may do about each member, and how recently each was seen.
+ *
+ * Gathered once and handed to every row rather than looked up per row: it
+ * reads the signed-in reader's buddies and ignores, which is two queries for
+ * the whole list however long the list is.
+ */
+function directoryActions(
+  me: { email?: string | null } | null,
+  buddies: Set<string>,
+  ignored: Set<string>,
+  now: Date,
+) {
+  return {
+    recency: (entry: DirectoryEntry) => recencyOf(new Date(entry.lastSeenAt), now),
+    forEntry: (entry: DirectoryEntry) => {
+      if (!me?.email || entry.email === null || me.email === entry.email) return null;
+      const email = entry.email;
+      return (
+        <RowActions>
+          <BuddyButton email={email} isBuddy={buddies.has(email)} />
+          <IgnoreButton email={email} ignoring={ignored.has(email)} />
+          <ChallengeButton email={email} />
+        </RowActions>
+      );
+    },
+  };
 }
 
 /**
@@ -205,16 +255,14 @@ export async function Directory({
   const [buddies, ignored, tallies] = await Promise.all([
     me?.email ? buddyEmails(me.email) : Promise.resolve(new Set<string>()),
     me?.email ? ignoredEmails(me.email) : Promise.resolve(new Set<string>()),
-    /*
-     * Every row's played count, in the one query this whole page needed and
-     * used to do without: the "Played" column read `profile`, the rating
-     * table, which only holds RATED games. One query however many rows are
-     * on screen — the shape the landing page's fix in 0.139.0 already set,
-     * for the same reason: a table of many is not a page about one person,
-     * and must not cost a query per row.
-     */
+    // Every row's played count in ONE query, however many rows — the shape
+    // 0.139.0 set for the landing page: a table of many must not cost one per row.
     fetchPlayedTallies(everybody.map((entry) => entry.id)),
   ]);
+  const actions = directoryActions(me, buddies, ignored, now);
+  const anyKept = people.some(
+    (entry) => entry.elsewhere.wins + entry.elsewhere.losses + entry.elsewhere.draws > 0,
+  );
 
   return (
     <div className="flex flex-col gap-4" data-testid="directory-section">
@@ -231,7 +279,7 @@ export async function Directory({
         change anything is furniture that also promises a chapter which is not
         there.
       */}
-      {scopeWorthAsking(people.some((one) => one.elsewhere.wins + one.elsewhere.losses + one.elsewhere.draws > 0) ? 2 : 1) ? (
+      {scopeWorthAsking(anyKept ? 2 : 1) ? (
         <RecordScopeBar
           base="/players"
           query={query}
@@ -239,128 +287,43 @@ export async function Directory({
           label="How much of these records to count"
         />
       ) : null}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm" data-testid="directory">
-          <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-            <tr>
-              <th className="py-1 pr-3">Member</th>
-              <RecordHeadings />
-              <th className="py-1 pr-3">Rating</th>
-              <th className="py-1 pr-3">Joined</th>
-              <th className="py-1"></th>
-              <th className="py-1"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {people.length === 0 ? (
-              <tr className="border-t border-rule">
-                <td colSpan={9} className="py-3 text-sm text-muted" data-testid="directory-empty">
-                  Nobody here answers to all of that.{" "}
-                  {/*
-                    Says "everyone" out loud rather than pointing at the bare
-                    page. Now that /players means "however I last asked for it",
-                    a way back that went there would re-apply the very narrowing
-                    it offers to remove, and appear to do nothing at all.
-                  */}
-                  <Link href={SHOW_EVERYBODY_HREF} className="underline underline-offset-4" data-testid="directory-clear">
-                    Show everybody again
-                  </Link>
-                  .
-                </td>
-              </tr>
-            ) : null}
-            {people.map((entry) => (
-              <tr key={entry.id} className="border-t border-rule">
-                <td className="py-1.5 pr-3">
-                  <span className="flex items-center gap-2">
-                    <RecencyMark recency={recencyOf(new Date(entry.lastSeenAt), now)} />
-                    {entry.picture ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
-                      <img src={entry.picture} alt="" className="size-5 rounded-full" referrerPolicy="no-referrer" />
-                    ) : null}
-                    {entry.name.trim() !== "" ? (
-                      <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline" data-testid="directory-name">
-                        {shownName(entry.name)}
-                      </Link>
-                    ) : (
-                      entry.email
-                    )}
-                    {/* Where they are, which is most of why they answer at four in the morning. */}
-                    <CountryMark country={entry.country} className="text-sm" />
-                    {/*
-                      Which sort of member this is, drawn on the unusual rows
-                      only — the badge the operator's list has used all along,
-                      rather than a second one invented here.
-  
-                      It earns its place on this list now that the default shows
-                      programs alongside people. The suite already carried the
-                      objection to that: "a program in the directory of people
-                      would be a person as far as anybody reading it is
-                      concerned." That was right, and hiding them was the wrong
-                      answer to it — a reader on a quiet evening should find the
-                      five opponents who are always here, and should never have
-                      to work out which of the names is a program.
-                    */}
-                    <MemberKindBadge
-                      kind={memberKind({
-                        email: entry.email,
-                        botTier: entry.botTier,
-                        unclaimableBecause: entry.unclaimableBecause,
-                      })}
-                    />
-                  </span>
-                </td>
-                <DirectoryRecord
-                  name={entry.name}
-                  profile={entry.profile}
-                  played={tallies.get(entry.id)}
-                  elsewhere={entry.elsewhere}
-                  scope={scope}
-                />
-                <td className="py-1.5 pr-3 text-xs text-muted">
-                  {new Date(entry.joinedAt).toLocaleDateString()}
-                  {entry.isNew ? (
-                    <span className="ml-2 rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">
-                      New 新人
-                    </span>
-                  ) : null}
-                </td>
-                <td className="py-1.5 text-right">
-                  <RowActions>
-                    {me?.email && entry.email !== null && me.email !== entry.email ? (
-                      <>
-                        <BuddyButton email={entry.email} isBuddy={buddies.has(entry.email)} />
-                        <IgnoreButton email={entry.email} ignoring={ignored.has(entry.email)} />
-                      </>
-                    ) : null}
-                  </RowActions>
-                </td>
-                <td className="py-1.5 text-right">
-                  <RowActions>
-                    {me?.email && entry.email !== null && me.email !== entry.email ? (
-                      <ChallengeButton email={entry.email} />
-                    ) : null}
-                  </RowActions>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {/*
-        What the mark means, said once under the table rather than repeated in
-        every row that carries it. Drawn only when a row on this screen
-        actually has one: a legend for a mark nobody can see is furniture.
-      */}
-      {people.some((entry) => entry.elsewhere.wins + entry.elsewhere.losses + entry.elsewhere.draws > 0) ? (
-        <p className="text-xs leading-snug text-muted" data-testid="directory-kept-note">
-          <span className="align-super text-[0.6rem]">※</span> Counts games from before Itsutsu, on
-          the sites named on that player&rsquo;s own page.{" "}
-          <span className="font-medium text-ink-soft">Those figures do not update</span> — they were
-          copied down by hand once and are a snapshot of that day. Only what happens here is counted
-          as it happens, and the rating column is always Itsutsu&rsquo;s alone.
-        </p>
-      ) : null}
+      <RecordTable
+        subject="Member"
+        rows={people.map((entry) => directoryRow(entry, scope, actions, tallies.get(entry.id)))}
+        columns={{ joined: true, actions: "" }}
+        testId="directory"
+        empty={
+          <span data-testid="directory-empty">
+            Nobody here answers to all of that.{" "}
+            {/*
+              Says "everyone" out loud rather than pointing at the bare page.
+              Now that /players means "however I last asked for it", a way back
+              that went there would re-apply the very narrowing it offers to
+              remove, and appear to do nothing at all.
+            */}
+            <Link href={SHOW_EVERYBODY_HREF} className="underline underline-offset-4" data-testid="directory-clear">
+              Show everybody again
+            </Link>
+            .
+          </span>
+        }
+        /*
+          What the mark means, said once under the table rather than repeated
+          in every row that carries it. Drawn only when a row on this screen
+          actually has one: a legend for a mark nobody can see is furniture.
+        */
+        caption={
+          anyKept ? (
+            <p className="text-xs leading-snug text-muted" data-testid="directory-kept-note">
+              <span className="align-super text-[0.6rem]">※</span> Counts games from before Itsutsu, on
+              the sites named on that player&rsquo;s own page.{" "}
+              <span className="font-medium text-ink-soft">Those figures do not update</span> — they were
+              copied down by hand once and are a snapshot of that day. Only what happens here is counted
+              as it happens; the rating and the streak are always Itsutsu&rsquo;s alone.
+            </p>
+          ) : null
+        }
+      />
     </div>
   );
 }

@@ -26,8 +26,17 @@ import { describe, expect, it } from "vitest";
 
 const COMPONENTS = "src/components";
 
-/** The module every other component must go through, and the tests beside it. */
-const ALLOWED = new Set(["PlayerRecord.tsx"]);
+/**
+ * The two modules every other component must go through.
+ *
+ * `PlayerRecord.tsx` owns the figures — played, W, L, D, the win rate and the
+ * streak. `RecordTable.tsx` owns everything AROUND them: the table, the
+ * headings, the order, the rating, the tier, the empty state. They are two
+ * files rather than one because they are two jobs and one would be near the
+ * line limit; they are both exempt here for the same reason, which is that
+ * somebody has to actually draw the thing.
+ */
+const ALLOWED = new Set(["PlayerRecord.tsx", "RecordTable.tsx"]);
 
 function filesUnder(dir: string): string[] {
   const out: string[] = [];
@@ -88,6 +97,47 @@ describe("a record is shown one way", () => {
     const homeMade = /(wins|won)\s*\/\s*\(?\s*(played|total|wins)/;
     const offenders = FILES.filter((file) => homeMade.test(file.source)).map((file) => file.path);
     expect(offenders, "take the rate from figuresOf in rating/figures.ts").toEqual([]);
+  });
+
+  it("nobody builds a table of records around the shared cells", () => {
+    /*
+     * THE CHECK THAT MAKES THE REST OF THIS FILE WORTH HAVING, and it is new
+     * because the old rules only ever guarded the four counts. Every page had
+     * dutifully used `RecordCells` and then built its own table around them —
+     * so the figures agreed and the COLUMNS did not. Five pages, four column
+     * orders, two spellings of the same three counts, and one of them a list
+     * of cards rather than a table at all. John: "Stats tables have to look
+     * the same… Make sure we show the same columns in all places."
+     *
+     * So the headings and the cells may only be drawn by the component that
+     * owns the whole table. A page wanting a record table asks for one; a page
+     * wanting a column the table does not have asks for the column to be
+     * added, where every page gets it at once.
+     */
+    const raw = /<Record(Headings|Cells)\b/;
+    const offenders = FILES.filter((file) => raw.test(file.source)).map((file) => file.path);
+    expect(offenders, "use RecordTable from RecordTable.tsx, which owns the columns").toEqual([]);
+  });
+
+  it("every record table says whose games it is counting", () => {
+    /*
+     * The `of` that makes each number a way into exactly the games it counted
+     * used to be checked by regex on `<RecordCells … of={…}>` call sites in
+     * `gameLinks.coverage.test.ts`. Those call sites are now inside
+     * `RecordTable.tsx`, so the guarantee has moved to the TYPE: `of` is
+     * required on `RecordTableRow` and on `RecordCells`, and so is `streak`.
+     *
+     * That is stronger than a regex — a type cannot be satisfied by writing
+     * the right characters in the right order — but it is invisible, and an
+     * invisible guarantee is one somebody deletes while tidying. This says out
+     * loud where it lives.
+     */
+    const table = FILES.find((file) => file.path.endsWith("RecordTable.tsx"));
+    // Not in FILES: it is on the ALLOWED list, so read it directly.
+    const source = readFileSync(join(COMPONENTS, "players", "RecordTable.tsx"), "utf8");
+    expect(table, "RecordTable.tsx is exempt from the shape checks above").toBeUndefined();
+    expect(source).toContain("of: RecordOf");
+    expect(source).toContain("streak: Streak | null");
   });
 
   it("nobody lays out a run of number cells of their own", () => {

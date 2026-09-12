@@ -42,6 +42,7 @@ describe("championsOf", () => {
     rating,
     ratedGames,
     tier: tierFor(ratedGames),
+    streak: null,
     wins: 0,
     losses: 0,
     draws: 0,

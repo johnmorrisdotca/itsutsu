@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.150.0
+- Every table of records on the site is the same table — the members list, the ladders, the Computers tab (which had no headings at all), your own record, a player's by-game breakdown — with the same columns in the same order: what happened first, and the site's conclusion, the rating, last. A STREAK column says how many in a row, and its hover says exactly which games it counted
+
 ## 0.149.0
 - The computer opponents are in the order the site presents them in: the grades now look ahead in the flipping games, the races, Go and Checkers, where before only the line games had a search — so Meijin beats Dan and Dan beats Kyu at every game, not only at five-in-a-row
 

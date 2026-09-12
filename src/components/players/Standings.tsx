@@ -1,5 +1,6 @@
 import { Paired } from "@/components/i18n/Paired";
-import { RecordCells, RecordHeadings } from "./PlayerRecord";
+import { RecordTable } from "./RecordTable";
+import { TABLE_CLASS, TABLE_HEAD_CLASS } from "./PlayerRecord";
 import { playerPath } from "@/lib/rating/playerKey";
 import Link from "next/link";
 
@@ -27,15 +28,22 @@ export function TierMark({ tier }: { tier: RatingTier }) {
   );
 }
 
-const HEAD_CLASS = "text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase";
-
-/** One game's ladder, best first, numbered from the top. */
+/**
+ * One game's ladder, best first, numbered from the top.
+ *
+ * Every column after the name is `RecordTable`'s, which is the same table the
+ * members list, the site ladder, the computer players and a member's own
+ * record use. This had its own copy of the heading typography, its own table
+ * element and its own order — rating second — and the site had four such
+ * orders between five pages.
+ */
 export function StandingsTable({
   standings,
   pool = "people",
   actions,
   actionsLabel = "",
   testId = "standings-table",
+  empty = "Nobody has a rated game of this yet.",
 }: {
   standings: VariantStanding[];
   /**
@@ -64,40 +72,28 @@ export function StandingsTable({
   actions?: (standing: VariantStanding) => ReactNode;
   actionsLabel?: string;
   testId?: string;
+  /** What no rows means here. The headings are drawn either way. */
+  empty?: ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm" data-testid={testId}>
-        <thead className={HEAD_CLASS}>
-          <tr>
-            <th className="py-1 pr-3">#</th>
-            <th className="py-1 pr-3">Player</th>
-            <th className="py-1 pr-3">Rating</th>
-            <th className="py-1 pr-3">Tier</th>
-            <RecordHeadings trailing={actions === undefined ? undefined : <th className="py-1 pr-3">{actionsLabel}</th>} />
-          </tr>
-        </thead>
-        <tbody>
-          {standings.map((standing, index) => (
-            <tr key={standing.key} className="border-t border-rule">
-              <td className="py-1.5 pr-3 font-mono text-muted tabular-nums">{index + 1}</td>
-              <td className="py-1.5 pr-3">
-                <PlayerLink name={standing.name} memberId={standing.memberId} />
-              </td>
-              <td className="py-1.5 pr-3 font-mono tabular-nums">{standing.rating}</td>
-              <td className="py-1.5 pr-3">
-                <TierMark tier={standing.tier} />
-              </td>
-              <RecordCells
-                record={standing}
-                of={{ player: standing.name, variant: standing.variant, pool, rated: "yes" }}
-                trailing={actions === undefined ? undefined : <td className="py-1.5 pr-3">{actions(standing)}</td>}
-              />
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <RecordTable
+      subject="Player"
+      rows={standings.map((standing) => ({
+        key: standing.key,
+        subject: <PlayerLink name={standing.name} memberId={standing.memberId} />,
+        record: standing,
+        of: { player: standing.name, variant: standing.variant, pool, rated: "yes" },
+        // The pool's own run, from the same row as the figures beside it —
+        // a standing IS one pool, so there is only one honest answer here.
+        streak: standing.streak,
+        rating: { rating: standing.rating, pool },
+        tier: standing.tier,
+        actions: actions === undefined ? undefined : actions(standing),
+      }))}
+      columns={{ rank: true, tier: true, actions: actions === undefined ? undefined : actionsLabel }}
+      testId={testId}
+      empty={empty}
+    />
   );
 }
 
@@ -139,36 +135,42 @@ export function LadderSideView({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm" data-testid={testId}>
-          <thead className={HEAD_CLASS}>
-            <tr>
-              <th className="py-1 pr-2">#</th>
-              <th className="py-1 pr-2">Player</th>
-              <th className="py-1 text-right">Rating</th>
+      {/*
+        Not `RecordTable`: this is deliberately a REDUCED form, three columns
+        wide, and the record columns live at /games/<game>/standings where
+        there is room to read them. It shares the table and heading classes so
+        the two look like one family, which is all it should share — a
+        side-view that grew the shared columns would be the full table in a
+        narrow space, which is what John asked it not to be.
+      */}
+      <table className={TABLE_CLASS} data-testid={testId}>
+        <thead className={TABLE_HEAD_CLASS}>
+          <tr>
+            <th className="py-1 pr-2">#</th>
+            <th className="py-1 pr-2">Player</th>
+            <th className="py-1 text-right">Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          {standings.length === 0 ? (
+            <tr className="border-t border-rule">
+              <td colSpan={3} className="py-2 text-sm text-muted" data-testid="ladder-side-view-empty">
+                {emptyNote}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {standings.length === 0 ? (
-              <tr className="border-t border-rule">
-                <td colSpan={3} className="py-2 text-sm text-muted" data-testid="ladder-side-view-empty">
-                  {emptyNote}
+          ) : (
+            standings.map((standing, index) => (
+              <tr key={standing.key} className="border-t border-rule">
+                <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
+                <td className="min-w-0 truncate py-1.5 pr-2">
+                  <PlayerLink name={standing.name} memberId={standing.memberId} />
                 </td>
+                <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
               </tr>
-            ) : (
-              standings.map((standing, index) => (
-                <tr key={standing.key} className="border-t border-rule">
-                  <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
-                  <td className="min-w-0 truncate py-1.5 pr-2">
-                    <PlayerLink name={standing.name} memberId={standing.memberId} />
-                  </td>
-                  <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
       {invitation}
     </div>
   );

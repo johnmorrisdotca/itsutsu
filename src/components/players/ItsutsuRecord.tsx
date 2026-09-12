@@ -1,16 +1,14 @@
 import Link from "next/link";
 
-import { GameCount } from "@/components/games/GameCount";
 import { GameName } from "@/components/games/GameName";
 import { PlayerActions } from "./PlayerActions";
+import { RecordTable } from "./RecordTable";
 import type { NamedMember } from "@/lib/auth/members";
 import { playerKey } from "@/lib/rating/playerKey";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
 import type { PlayerRecord } from "@/lib/history/playerRecord";
 import type { TimeGiftRecord } from "@/lib/history/timeGifts";
-import { countText, figuresOf, winRateText } from "@/lib/rating/figures";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 
@@ -75,82 +73,52 @@ export function ItsutsuRecord({
   }
   return (
     <div className="flex flex-col gap-6">
-      {record.byVariant.length > 0 ? (
-        <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-          <h3 className={SECTION_TITLE}>By game</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm" data-testid="player-by-variant">
-              <thead>
-                <tr className="text-left">
-                  <th className="pb-1.5 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">Game</th>
-                  <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-                    Played
-                  </th>
-                  <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-                    Won · Lost · Drawn
-                  </th>
-                  <th className="pb-1.5 text-right text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase">
-                    Win rate
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {record.byVariant.map((row) => {
-                  const figures = figuresOf({ won: row.wins, lost: row.losses, drawn: row.draws });
-                  return (
-                    <tr key={row.variant} className="border-t border-rule">
-                      <td className="py-1.5 pr-3">
-                        <GameName variant={row.variant} />
-                      </td>
-                      <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
-                        <GameCount
-                          count={countText(figures.played)}
-                          variant={row.variant}
-                          player={name}
-                          outcome="decided"
-                          title={`Every game of ${variantLabel(row.variant)} ${name} has finished here`}
-                        />
-                      </td>
-                      {/*
-                        Each number goes to the games behind it. A record is three
-                        counts and three filters, and printing them as one string
-                        would make the reader take it apart again to ask the
-                        question the page has already answered.
-                      */}
-                      <td className="py-1.5 pr-3 text-right font-mono tabular-nums">
-                        <GameCount
-                          count={figures.won}
-                          variant={row.variant}
-                          player={name}
-                          outcome="won"
-                          title={`The games of ${variantLabel(row.variant)} ${name} won`}
-                        />
-                        {" · "}
-                        <GameCount
-                          count={figures.lost}
-                          variant={row.variant}
-                          player={name}
-                          outcome="lost"
-                          title={`The games of ${variantLabel(row.variant)} ${name} lost`}
-                        />
-                        {" · "}
-                        <GameCount
-                          count={figures.drawn}
-                          variant={row.variant}
-                          player={name}
-                          outcome="drawn"
-                          title={`The games of ${variantLabel(row.variant)} ${name} drew`}
-                        />
-                      </td>
-                      <td className="py-1.5 pr-3 text-right font-mono tabular-nums">{winRateText(figures.winRate)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
+      <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
+        <h3 className={SECTION_TITLE}>By game</h3>
+        {/*
+          THE SAME TABLE AS EVERY OTHER RECORD ON THE SITE, which is what
+          changed here. This had its own headings — "Won · Lost · Drawn" as ONE
+          right-aligned column of three linked numbers, where the ladder and
+          the members list give W, L and D a column each — and its own heading
+          typography, a near-miss of the shared one. A reader going from a
+          player's page to the members list met the same five facts drawn two
+          different ways.
+
+          NO RATING COLUMN, and that is a decision rather than an omission.
+          These rows count EVERY finished game — rated or friendly, against a
+          person or a program, both pools together — and no single rating
+          belongs to such a row: a rating is one pool's rated games. The site's
+          per-game ratings are on the /me record tab and the game's own ladder,
+          where the rows are the right shape to carry them. A column of dashes
+          here would say nothing while looking like an answer.
+        */}
+        <RecordTable
+          subject="Game"
+          rows={record.byVariant.map((row) => ({
+            key: row.variant,
+            subject: <GameName variant={row.variant} />,
+            record: row,
+            /*
+              Every finished game of this one game, which is what "decided"
+              means: the abandoned ones are not results and are not counted, so
+              the link must leave them out too. No `rated` and no `pool` —
+              unlike a ladder's row, this number really is all of them.
+            */
+            of: { player: name, variant: row.variant },
+            /*
+              And the run over exactly those games, worked out in the same pass
+              that counted them. It is NOT the streak stored on the rating row:
+              that one counts rated games, and this column does not. Two
+              different numbers, and showing the stored one here would be a run
+              the counts beside it cannot account for.
+            */
+            streak: row.streak,
+          }))}
+          columns={{ rating: false }}
+          testId="player-by-variant"
+          empty={<>No finished games here yet.</>}
+        />
+      </section>
 
       {record.recent.length > 0 ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-3`}>

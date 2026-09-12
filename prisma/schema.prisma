@@ -304,6 +304,37 @@ model Player {
   computerWins       Int @default(0)
   computerLosses     Int @default(0)
   computerDraws      Int @default(0)
+
+  /// The run this name is on: consecutive results of the same kind, most
+  /// recent first. See `rating/streak.ts`, which owns the rule — a draw is
+  /// its own streak, and ends a run of wins rather than being skipped.
+  ///
+  /// A COLUMN RATHER THAN A QUERY, and that is the whole design. Reading a
+  /// streak back from the games would mean a player's history per row, on a
+  /// page listing every member — the fault taken off the landing page in
+  /// 0.139.0, where drawing eight games read 2,508 move rows. Whatever
+  /// records a result has already read this row, so the run so far is in its
+  /// hands: `recordResult` carries it forward and nothing reads a game back.
+  ///
+  /// THREE SCOPES, BECAUSE THEY ARE THREE DIFFERENT NUMBERS. `people` is the
+  /// ladder's run, `computer` the run against the programs, and `rated` both
+  /// pools together — which is what the members list and a member's own
+  /// headline count. They cannot be derived from each other: a run across two
+  /// pools depends on the order the games interleave in, which neither pool's
+  /// own run records.
+  ///
+  /// NULL MEANS NOBODY HAS FINISHED A GAME, not a run of nought. The kind and
+  /// the count are only ever believed together, which is what keeps a
+  /// nullable pair honest — see `Game.settledStatus` for the same shape.
+  /// Spelled out rather than following the bare-name-means-people convention
+  /// the rating columns use, because `ratedStreak` is the one that does NOT
+  /// mean the people pool and would be misread by whoever knows this schema best.
+  peopleStreakKind    String?
+  peopleStreakCount   Int @default(0)
+  computerStreakKind  String?
+  computerStreakCount Int @default(0)
+  ratedStreakKind     String?
+  ratedStreakCount    Int @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -343,6 +374,18 @@ model PlayerVariantRating {
   computerWins       Int @default(0)
   computerLosses     Int @default(0)
   computerDraws      Int @default(0)
+  /// This standing's run, per pool. See Player.peopleStreakKind for the rule
+  /// and the reason it is stored rather than counted.
+  ///
+  /// Two scopes here and three on Player, deliberately. Every table of
+  /// per-game standings on this site is already one row per game per pool —
+  /// a player who has played Renju against both shows two lines, because
+  /// adding them is the one thing the pools exist to forbid — so a
+  /// both-pools streak here would be a number no page could honestly print.
+  peopleStreakKind    String?
+  peopleStreakCount   Int @default(0)
+  computerStreakKind  String?
+  computerStreakCount Int @default(0)
   updatedAt  DateTime @updatedAt
 
   @@id([key, variant])

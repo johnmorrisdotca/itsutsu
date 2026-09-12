@@ -1,13 +1,15 @@
-import { RecordLine } from "./PlayerRecord";
 import Link from "next/link";
 
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
-import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
-import { PlayerName } from "@/components/players/PlayerName";
 import { CountryMark } from "@/components/players/CountryMark";
-import { RowActions } from "@/components/ui/Controls";
+import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
+import { PlayerName } from "@/components/players/PlayerName";
+import { RATING_POOLS } from "@/lib/rating/pools";
+import { RecordTable, type RecordTableRow } from "./RecordTable";
+import { RowActions } from "@/components/ui/Controls";
 import { BOT_ALL_TIERS, BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.constants";
+import { tierFor } from "@/lib/rating/elo";
 import type { DirectoryEntry } from "@/lib/rating/players";
 
 /**
@@ -16,8 +18,21 @@ import type { DirectoryEntry } from "@/lib/rating/players";
  * They are members like anybody else — their own rows, their own ids, their
  * own pages — so this is a section of the directory rather than a different
  * kind of thing. It exists because a reader looking for somebody to play
- * should be able to find them together and see at a glance which
- * is which, rather than picking them out of a list of people by their badges.
+ * should be able to find them together and see at a glance which is which,
+ * rather than picking them out of a list of people by their badges.
+ *
+ * THE SAME TABLE AS EVERY OTHER RECORD ON THE SITE, which is what changed
+ * here. This was a list of bordered cards reading "9 played · 0W 9L 0D · 0.0%
+ * · 1466" — the same five facts as the ladder beside it, in a line of text
+ * instead of columns, with no headings at all. John: "Computer Players is
+ * where it's really messed up ... not consistent." A reader comparing Kyu with
+ * Dan had to read two sentences and take them apart; now they read down a
+ * column, exactly as they do everywhere else.
+ *
+ * The Play button stays, as the row's action column. It is the thing somebody
+ * came to this tab to do, and the rule that every opponent you are shown
+ * offers what you would want to do about them does not stop applying because
+ * the list became a table.
  *
  * The rating shown is the one earned against the computer players, because
  * that is the only pool they play in: a bot never plays a person-versus-person
@@ -25,7 +40,6 @@ import type { DirectoryEntry } from "@/lib/rating/players";
  * printing that would be worse than printing nothing.
  */
 export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
-  if (entries.length === 0) return null;
   /*
    * Easiest first, so the ladder reads itself. The directory hands them over
    * in the order they were last seen, which for players who are always
@@ -44,6 +58,49 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
   const specialists: readonly string[] = BOT_SPECIALIST_LIST;
   const graded = shown.filter((entry) => !specialists.includes(entry.botTier ?? ""));
   const experts = shown.filter((entry) => specialists.includes(entry.botTier ?? ""));
+
+  const rows: RecordTableRow[] = shown.map((entry) => {
+    /*
+     * Their figures come from the computer pool, which is the only one they
+     * play in. Reading the ordinary ones would say they had never played,
+     * however many games they had just finished — which is exactly what the
+     * page said the first time somebody beat Kyu.
+     */
+    const computer = entry.profile?.computer ?? null;
+    return {
+      key: entry.id,
+      // The grade, so a browser test can say they come out easiest-first
+      // without reading the names — which are copy and will change.
+      attributes: { "data-tier": entry.botTier ?? "" },
+      subject: (
+        <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+          <PlayerName
+            name={entry.name}
+            memberId={entry.id}
+            fallback=""
+            className="font-medium"
+            testId="computer-player-name"
+          />
+          <CountryMark country={entry.country} className="text-sm" />
+          <MemberKindBadge kind={MEMBER_KINDS.robot} />
+        </span>
+      ),
+      record: computer ?? { wins: 0, losses: 0, draws: 0 },
+      of: { player: entry.name, pool: RATING_POOLS.computer, rated: "yes" },
+      streak: computer?.streak ?? null,
+      rating:
+        computer === null || computer.ratedGames === 0
+          ? null
+          : { rating: computer.rating, pool: RATING_POOLS.computer },
+      tier: tierFor(computer?.ratedGames ?? 0),
+      actions: (
+        <RowActions>
+          <ChallengeButton memberId={entry.id} label="Play" />
+        </RowActions>
+      ),
+    };
+  });
+
   /*
    * No panel and no heading of its own: this is the body of the Computers
    * tab, and the tab has already said what it is.
@@ -56,6 +113,10 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
         while there were five, which is the kind of small untruth a page tells
         for months because nobody thinks of a paragraph as something that can
         go out of date.
+
+        It stays ABOVE the table. It is the only thing on this tab that says
+        what these players are and why their rating is kept apart, and a table
+        cannot say either.
       */}
       <p className="max-w-prose text-xs text-muted">
         {graded.length} opponents that will play any game on this board, from the gentlest to the strongest
@@ -69,44 +130,28 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
         play them — kept apart from the ladder, so a game against a program never changes where you stand among the
         people.
       </p>
-      <ul className="flex flex-col gap-1.5">
-        {shown.map((entry) => (
-          <li
-            key={entry.id}
-            className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-rule px-3 py-2 text-sm"
-            data-testid="computer-player"
-            data-tier={entry.botTier}
-          >
-            <span className="flex min-h-7 min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
-              <PlayerName name={entry.name} memberId={entry.id} fallback="" className="font-medium" testId="computer-player-name" />
-              <CountryMark country={entry.country} className="ml-1.5 text-sm" />
-              <MemberKindBadge kind={MEMBER_KINDS.robot} />
-            </span>
-            {/*
-              Their figures come from the computer pool, which is the only one
-              they play in. Reading the ordinary ones would say they had never
-              played, however many games they had just finished — which is
-              exactly what the page said the first time somebody beat Kyu.
-            */}
-            <RecordLine
-              record={entry.profile === null ? { wins: 0, losses: 0, draws: 0 } : entry.profile.computer}
-              of={{ player: entry.name, pool: "computer", rated: "yes" }}
-              trailing={entry.profile === null ? undefined : entry.profile.computer.rating}
-              testId="computer-player-record"
-            />
-            <RowActions>
-              <ChallengeButton memberId={entry.id} label="Play" />
-            </RowActions>
-          </li>
-        ))}
-      </ul>
-      <p className="text-xs text-muted">
-        Each of them has a page of their own, the same as anybody else:{" "}
-        <Link href="/players" className="underline underline-offset-4">
-          follow a name
-        </Link>{" "}
-        to see what they have played.
-      </p>
+      <RecordTable
+        subject="Player"
+        rows={rows}
+        columns={{ tier: true, actions: "Play" }}
+        testId="computer-players-table"
+        rowTestId="computer-player"
+        empty={
+          <span data-testid="computer-players-empty">
+            No computer players are set up on this site yet.
+          </span>
+        }
+        caption={
+          <p className="text-xs text-muted">
+            Each of them has a page of their own, the same as anybody else: follow a name to see what
+            they have played, or the{" "}
+            <Link href="/players" className="underline underline-offset-4">
+              players
+            </Link>{" "}
+            page for everybody.
+          </p>
+        }
+      />
     </section>
   );
 }

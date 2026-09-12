@@ -1,6 +1,7 @@
 import { Paired } from "@/components/i18n/Paired";
 import { Figures } from "@/components/ui/Figures";
-import { PlayedFigure, RecordCells, RecordFigure, RecordHeadings } from "./PlayerRecord";
+import { PlayedFigure, RecordFigure } from "./PlayerRecord";
+import { RecordTable } from "./RecordTable";
 import { winRateText } from "@/lib/rating/figures";
 import type { WholeRecord as Whole } from "@/lib/legacy/wholeRecord";
 
@@ -111,67 +112,71 @@ export function WholeRecordPanel({
       {/*
         A table rather than a run of dots on a line. These rows exist to be
         compared — four thousand games on one site against twenty on another —
-        and comparing is what a column does and a sentence does not. It uses
-        the same cells as every other table of records here, so a site's line
-        reads the same way a player's row does elsewhere.
+        and comparing is what a column does and a sentence does not. It is the
+        same table as every other record on the site, so a site's line reads
+        the way a player's row does elsewhere.
+
+        NO RATING COLUMN AND NO STREAK, and both are decisions. A rating from
+        another site is on another scale and does not add — the paragraph below
+        says so at length. A streak is stronger still: a run is an ORDER, and
+        what was kept from another site is four totals with no order in them at
+        all. Nor would this site's own row have one worth printing, because a
+        run interleaves with games played elsewhere that are not in this table.
+        Silence is the honest answer; a dash in every cell would be a column
+        that says nothing while looking like one that does.
       */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs" data-testid="whole-record-sources">
-          <thead className="text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-            <tr>
-              <th className="py-1 pr-3">Site</th>
-              <RecordHeadings />
-            </tr>
-          </thead>
-          <tbody>
-            {whole.sources.map((source) => (
-              <tr key={source.site} className="border-t border-rule">
-                <td className="py-1.5 pr-3">
-                  <span className="font-medium text-ink-soft">
-                    {/*
-                      The link is how somebody checks the claim, so it goes
-                      where one was written down and nowhere else. An address
-                      guessed from a site name and a handle would point at the
-                      wrong person as often as the right one, which is worse
-                      than no link at all.
-                    */}
-                    {source.url === null ? (
-                      source.site
-                    ) : (
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="underline underline-offset-2"
-                        data-testid="whole-record-link"
-                      >
-                        {source.site}
-                      </a>
-                    )}
-                  </span>
-                  {source.handle !== null ? (
-                    <span className="ml-1.5 text-muted">as {source.handle}</span>
-                  ) : null}
-                </td>
+      <RecordTable
+        subject="Site"
+        rows={whole.sources.map((source) => ({
+          key: source.site,
+          subject: (
+            <>
+              <span className="font-medium text-ink-soft">
                 {/*
-                  Only this site's row has games to open. The others are four
-                  numbers copied down once from a site that is still standing
-                  and still counting — true, and with nothing behind them
-                  here.
+                  The link is how somebody checks the claim, so it goes where
+                  one was written down and nowhere else. An address guessed
+                  from a site name and a handle would point at the wrong person
+                  as often as the right one, which is worse than no link at
+                  all.
                 */}
-                <RecordCells
-                  record={{
-                    wins: source.figures.won,
-                    losses: source.figures.lost,
-                    draws: source.figures.drawn,
-                  }}
-                  of={{ player: name, here: source.here }}
-                />
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                {source.url === null ? (
+                  source.site
+                ) : (
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="underline underline-offset-2"
+                    data-testid="whole-record-link"
+                  >
+                    {source.site}
+                  </a>
+                )}
+              </span>
+              {source.handle !== null ? (
+                <span className="ml-1.5 text-muted">as {source.handle}</span>
+              ) : null}
+            </>
+          ),
+          record: {
+            wins: source.figures.won,
+            losses: source.figures.lost,
+            draws: source.figures.drawn,
+          },
+          /*
+            Only this site's row has games to open. The others are four numbers
+            copied down once from a site that is still standing and still
+            counting — true, and with nothing behind them here.
+          */
+          of: { player: name, here: source.here },
+          streak: null,
+          streakBlankBecause:
+            "These rows are one site's totals, and a run is an order — the games of two sites interleave in time, so no site's row is a run of anything.",
+        }))}
+        columns={{ rating: false }}
+        testId="whole-record-sources"
+        empty={<>Nothing has been recorded under this name anywhere yet.</>}
+      />
 
       {whole.kept && showFigures ? <SnapshotWarning /> : null}
 

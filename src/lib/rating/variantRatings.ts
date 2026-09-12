@@ -6,6 +6,7 @@ import { playerKey } from "./playerKey";
 import { memberIdForName } from "./players";
 import { isRateable } from "./rateable";
 import { POOL_COLUMNS, RATING_POOLS, outcomeFor, poolWrite, standingIn, type RatingPool } from "./pools";
+import { VARIANT_STREAK_SCOPES, streakWrite, type Streak } from "./streak";
 
 /**
  * Ratings per game, alongside the global ladder.
@@ -41,6 +42,13 @@ export type VariantStanding = {
   wins: number;
   losses: number;
   draws: number;
+  /**
+   * The run this standing is on, in the pool it belongs to: consecutive
+   * results of the same kind, most recent first, or null where there are
+   * none. Read from the same row as the figures beside it, so it costs
+   * nothing — see `streak.ts`.
+   */
+  streak: Streak | null;
   /**
    * Which ladder these figures are from.
    *
@@ -123,14 +131,30 @@ export async function recordVariantResult(
   // The same pool on both sides, per game, exactly as the global ladder does it.
   const rated = rateGame(standingIn(black, pool), standingIn(white, pool), scoreForBlack(winner));
 
+  /*
+   * The run carried forward from the rows already read, exactly as the global
+   * ladder does it. Only the pool's own scope here: a per-game table is one
+   * row per pool, so there is no both-pools figure for it to keep.
+   */
+  const streaks = {
+    black: streakWrite(black, outcomeFor(winner, "black"), VARIANT_STREAK_SCOPES),
+    white: streakWrite(white, outcomeFor(winner, "white"), VARIANT_STREAK_SCOPES),
+  };
+
   await prisma.$transaction([
     prisma.playerVariantRating.update({
       where: { key_variant: { key: blackKey, variant } },
-      data: poolWrite(pool, rated.first.rating, rated.first.ratedGames, outcomeFor(winner, "black")) as never,
+      data: {
+        ...poolWrite(pool, rated.first.rating, rated.first.ratedGames, outcomeFor(winner, "black")),
+        ...streaks.black,
+      } as never,
     }),
     prisma.playerVariantRating.update({
       where: { key_variant: { key: whiteKey, variant } },
-      data: poolWrite(pool, rated.second.rating, rated.second.ratedGames, outcomeFor(winner, "white")) as never,
+      data: {
+        ...poolWrite(pool, rated.second.rating, rated.second.ratedGames, outcomeFor(winner, "white")),
+        ...streaks.white,
+      } as never,
     }),
   ]);
 }

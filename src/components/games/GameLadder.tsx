@@ -165,7 +165,19 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
           data-testid="your-game-record"
         >
           <span className="text-muted">Your record at {title}:</span>
-          <RecordLine record={yours} of={{ player: me.name, variant }} testId="your-game-record-line" />
+          {/*
+            The run over those same games — every finished game of this one,
+            rated or not — which came back from the same read that counted
+            them. Not the stored streak on the rating row: that one counts
+            rated games only, and would be a run these counts cannot account
+            for.
+          */}
+          <RecordLine
+            record={yours}
+            of={{ player: me.name, variant }}
+            streak={yours.streak}
+            testId="your-game-record-line"
+          />
         </div>
       ) : null}
     </section>
