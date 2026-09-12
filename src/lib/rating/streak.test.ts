@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MEMBER_STREAK_SCOPES,
   NO_STREAK_TEXT,
   PLAYER_STREAK_SCOPES,
   STREAK_COLUMNS,
@@ -123,15 +124,50 @@ describe("writing a streak", () => {
   });
 
   it("only ever names columns the table it is for actually has", () => {
-    const playerColumns = PLAYER_STREAK_SCOPES.flatMap((scope) => [
+    const columns = PLAYER_STREAK_SCOPES.flatMap((scope) => [
       STREAK_COLUMNS[scope].kind,
       STREAK_COLUMNS[scope].count,
     ]);
     for (const scope of VARIANT_STREAK_SCOPES) {
-      expect(playerColumns).toContain(STREAK_COLUMNS[scope].kind);
+      expect(columns).toContain(STREAK_COLUMNS[scope].kind);
     }
     // Every scope has its own pair: no two share a column, or one write would
     // silently overwrite another's answer about a different set of games.
-    expect(new Set(playerColumns).size).toBe(playerColumns.length);
+    expect(new Set(columns).size).toBe(columns.length);
+  });
+
+  it("keeps the played run on the member and out of the rating tables", () => {
+    /*
+     * `played` is every finished game, keyed by member id, and lives on
+     * `Member`. Naming it in a write to `Player` or to a standing would be a
+     * column those tables do not have — and, worse, would put a member-keyed
+     * answer on a row keyed by a folded name.
+     */
+    const memberColumns = MEMBER_STREAK_SCOPES.flatMap((scope) => [
+      STREAK_COLUMNS[scope].kind,
+      STREAK_COLUMNS[scope].count,
+    ]);
+    for (const column of memberColumns) expect(playerColumns()).not.toContain(column);
+    expect(MEMBER_STREAK_SCOPES).not.toContain("all");
+
+    // It moves by the one rule every other run moves by, and nothing else.
+    const row = { playedStreakKind: "draw", playedStreakCount: 3 };
+    expect(streakWrite(row, "draw", MEMBER_STREAK_SCOPES)).toEqual({
+      playedStreakKind: "draw",
+      playedStreakCount: 4,
+    });
+    expect(streakWrite(row, "win", MEMBER_STREAK_SCOPES)).toEqual({
+      playedStreakKind: "win",
+      playedStreakCount: 1,
+    });
+    expect(streakIn(row, "played")).toEqual({ kind: "draw", count: 3 });
   });
 });
+
+/** Every column the two rating tables keep a run in. */
+function playerColumns(): string[] {
+  return [...PLAYER_STREAK_SCOPES, ...VARIANT_STREAK_SCOPES].flatMap((scope) => [
+    STREAK_COLUMNS[scope].kind,
+    STREAK_COLUMNS[scope].count,
+  ]);
+}

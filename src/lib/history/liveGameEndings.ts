@@ -7,6 +7,7 @@ import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
 import { fetchTimeOff, timeOffGraceMs } from "@/lib/social/vacation";
 import { prisma } from "@/lib/prisma";
 import { recordResult } from "@/lib/rating/players";
+import { recordPlayed } from "@/lib/rating/playedRun";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat } from "@/lib/bots/bots";
 import { sendEmail } from "@/lib/notify/email";
@@ -143,6 +144,9 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   await prisma.$transaction(writes);
 
   if (finished) {
+    // Outside the hot-seat test on purpose: a run over every game played is
+    // not a rating, and PLAYED counts a game at one screen. See `playedRun.ts`.
+    await recordPlayed({ ...row, winner: next.winner });
     if (!isHotSeat(row)) {
       if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
       await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
@@ -204,6 +208,9 @@ export async function settleEnded(id: string, now = new Date()): Promise<boolean
     },
   });
 
+  // Counted exactly as any other finish is. The run over every game played
+  // asks nothing about rating or seats, because PLAYED does not.
+  await recordPlayed({ ...row, winner: state.winner });
   // Rated exactly as any other finish is, and by the same rules: never a game
   // at one screen, never a friendly, and always into the pool the seats decide.
   if (!isHotSeat(row) && row.rated) {
@@ -291,6 +298,9 @@ export async function resignGame(id: string, token: string, now = new Date()): P
       lastMoveAt: now,
     },
   });
+  // A resigned game is a decided game, whoever it was against and whether or
+  // not anything rated it.
+  await recordPlayed({ ...row, winner: next.winner });
   if (!isHotSeat(row)) {
     if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
