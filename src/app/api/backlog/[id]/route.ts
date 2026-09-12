@@ -8,11 +8,14 @@ import {
   BACKLOG_PRIORITY_VALUES,
   BACKLOG_STATUS_VALUES,
 } from "@/lib/backlog/backlog";
-import { CLAIMED_BY_MAX } from "@/lib/backlog/backlog.constants";
+import { BACKLOG_STATUSES, CLAIMED_BY_MAX } from "@/lib/backlog/backlog.constants";
 import { boardActor } from "@/lib/backlog/boardActor";
-import { changeItem } from "@/lib/backlog/backlogStore";
+import { changeItem, finishItem } from "@/lib/backlog/backlogStore";
 import type { BacklogChange } from "@/lib/backlog/backlog.types";
 import { overLimit } from "@/lib/api/rateLimit";
+
+/** `releasedIn` is a version `pnpm release:take` has just taken, nothing else. */
+const SEMVER = /^\d+\.\d+\.\d+$/;
 
 /*
  * A partial rather than a union of shapes. It was one or the other, so grading
@@ -33,6 +36,13 @@ import { overLimit } from "@/lib/api/rateLimit";
  * Who holds a row is not a field a caller sends. In progress is a claim, and
  * a claim is written by the store from the actor this route already knows —
  * see `changeItem` and BOARD_RULES.md invariant 2.
+ *
+ * `releasedIn`/`releasedAt` are here for exactly one caller: `pnpm
+ * release:take`, sending `status: "done"` with the version it just took and
+ * the instant it took it. Nothing else may send `done` at all — see the PATCH
+ * handler below, which checks the actor and the two fields before `status`
+ * ever reaches `changeItem`, where `done` is simply not a destination
+ * `STATUS_MOVES` names (board convergence ITS-04).
  */
 const patchSchema = z
   .object({
@@ -43,6 +53,8 @@ const patchSchema = z
     askedBy: z.string().optional(),
     priority: z.enum(BACKLOG_PRIORITY_VALUES as [string, ...string[]]).nullable().optional(),
     effort: z.enum(BACKLOG_EFFORT_VALUES as [string, ...string[]]).nullable().optional(),
+    releasedIn: z.string().optional(),
+    releasedAt: z.string().optional(),
   })
   .refine((body) => Object.keys(body).length > 0, { message: "empty" });
 
@@ -84,6 +96,36 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
 
     const { id } = await ctx.params;
     const actor = who.name.trim().slice(0, CLAIMED_BY_MAX) || "operator";
+
+    /*
+     * `done` is the release tool's alone (BOARD_RULES.md invariant 9). Every
+     * check here runs before `finishItem` is ever called, so a wrong actor or
+     * a missing field never reaches the store at all — same discipline as
+     * `changeItem`'s own "refused whole, not half-applied".
+     */
+    if (parsed.data.status === BACKLOG_STATUSES.done) {
+      if (who.via !== "token") {
+        return unprocessable("Only the release tool may mark a row done.");
+      }
+      const { releasedIn, releasedAt } = parsed.data;
+      if (releasedIn === undefined || releasedAt === undefined) {
+        return unprocessable("A move to done needs releasedIn and releasedAt.");
+      }
+      if (!SEMVER.test(releasedIn)) {
+        return unprocessable("releasedIn must be a version like 1.2.3.");
+      }
+      const at = new Date(releasedAt);
+      if (Number.isNaN(at.getTime())) return badRequest("releasedAt must be a valid date.");
+
+      const finished = await finishItem(id, { version: releasedIn, at }, actor);
+      if (!finished.ok) {
+        if (finished.reason === "missing") return notFound("No such item.");
+        if (finished.reason === "held") return conflict(`Held by ${finished.heldBy}. Ask them to release it.`);
+        return unprocessable(finished.problems[0], finished.problems);
+      }
+      return NextResponse.json(finished.item, { headers: NO_STORE });
+    }
+
     // The enums are checked above; the lengths and the move are the store's to refuse.
     const outcome = await changeItem(id, parsed.data as BacklogChange, actor);
     if (!outcome.ok) {

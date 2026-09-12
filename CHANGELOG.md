@@ -4,7 +4,11 @@ What changed, in a player's words. Versions follow semver as the site reads it: 
 
 The site calls itself **Beta** whatever the number says: real accounts and persisted ratings are past alpha.
 
-Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
+**`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
+
+## 0.152.0 — 2026-09-12
+- The board's release history says which day each version shipped, and a row a release closes says shipped in rather than marked done in
+- Closing a row is part of taking a release number now, not a step somebody remembers afterwards — the fifteen that shipped and stayed open cannot happen again
 
 ## 0.151.0
 - A Checkers board reads as a checkerboard on every theme: the squares in play are shaded so the pattern is unmistakable at a glance and at thumbnail size, where before it was faint enough to miss which squares the game is played on

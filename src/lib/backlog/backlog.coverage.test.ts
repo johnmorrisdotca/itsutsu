@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { BACKLOG_EFFORT_VALUES, BACKLOG_KIND_VALUES, BACKLOG_PRIORITY_VALUES, BACKLOG_STATUS_VALUES, LEASE_MS, draftProblems, isBacklogKind, isBacklogStatus, movesFrom } from "./backlog";
 import {
+  BACKLOG_STATUSES,
   CLAIMED_BY_MAX,
   KEY_MAX,
   KIND_DISPLAY,
@@ -52,13 +53,31 @@ describe("the claim contract in BOARD_RULES.md", () => {
 });
 
 describe("every status is usable", () => {
-  it.each(BACKLOG_STATUS_VALUES)("%s can be left for somewhere else", (status) => {
+  /*
+   * Board convergence ITS-04: done is the one deliberate exception on both
+   * counts, so it is asserted separately rather than folded into the loop
+   * with a silent "greater than or equal to zero" — a status that CANNOT be
+   * left or reached is meant to read differently from one that merely
+   * happens to have few doors.
+   */
+  const LEAVABLE = BACKLOG_STATUS_VALUES.filter((status) => status !== BACKLOG_STATUSES.done);
+
+  it.each(LEAVABLE)("%s can be left for somewhere else", (status) => {
     expect(movesFrom(status).length).toBeGreaterThan(0);
   });
 
-  it.each(BACKLOG_STATUS_VALUES)("%s can be reached from somewhere else", (status) => {
+  it("done can be left by nothing in this table — BOARD_RULES.md invariant 1", () => {
+    expect(STATUS_MOVES[BACKLOG_STATUSES.done]).toEqual([]);
+  });
+
+  it.each(LEAVABLE)("%s can be reached from somewhere else", (status) => {
     const from = BACKLOG_STATUS_VALUES.filter((other) => other !== status && STATUS_MOVES[other].includes(status));
     expect(from.length).toBeGreaterThan(0);
+  });
+
+  it("done is reached by nothing in this table — only finishItem writes it", () => {
+    const from = BACKLOG_STATUS_VALUES.filter((other) => STATUS_MOVES[other].includes(BACKLOG_STATUSES.done));
+    expect(from).toEqual([]);
   });
 
   it.each(BACKLOG_STATUS_VALUES)("%s never leads to itself", (status) => {

@@ -13,6 +13,7 @@ import {
   revisedDraft,
   statusFrom,
 } from "./backlog";
+import { BACKLOG_STATUSES } from "./backlog.constants";
 import { BACKLOG_SEED } from "./backlog.seed.data";
 import type {
   BacklogChange,
@@ -309,4 +310,72 @@ export async function moveItem(id: string, to: BacklogStatus, actor: string, now
  */
 export async function editItem(id: string, fields: BacklogEdit, actor: string, now: Date = new Date()): Promise<MoveOutcome> {
   return changeItem(id, fields, actor, now);
+}
+
+/**
+ * Marks a row done, with the release that carried it. The only door: `done`
+ * is not in `STATUS_MOVES` as a destination (board convergence ITS-04), so
+ * `changeItem`/`moveItem` refuse it as illegal before this function is ever
+ * reached, from the page, from `pnpm task`, from anywhere but the route's
+ * own release-tool branch. That is deliberate — see BOARD_RULES.md
+ * invariant 9 and STATUS_MOVES's own comment on `done`.
+ *
+ * Legal from `inProgress` only, and conditional the same way a move is
+ * (BOARD_RULES.md invariant 4): a live claim somebody else holds, or a row
+ * that has moved out from under this call since it was read, is refused
+ * rather than overwritten. `moveWhere` is asked with the row's STORED
+ * status — `current.status`, not the folded `item.status` — for the same
+ * reason `changeItem` does: the database matches the `where` against the
+ * column, and a legacy row can say `building` while meaning `inProgress`.
+ *
+ * `claimedBy`/`claimedAt` clear the way any move away from `inProgress`
+ * does: a finished row is nobody's to hold. `movedAt` moves with it, the
+ * same as every other status change.
+ */
+export async function finishItem(
+  id: string,
+  release: { version: string; at: Date },
+  actor: string,
+  now: Date = new Date(),
+): Promise<MoveOutcome> {
+  const current = await prisma.backlogItem.findUnique({ where: { id }, select: SELECT });
+  if (current === null) return { ok: false, reason: "missing" };
+  const item = toItem(current);
+
+  if (item.status !== BACKLOG_STATUSES.inProgress) {
+    return {
+      ok: false,
+      reason: "illegal",
+      problems: [`Only a row in progress may be marked done; this one is "${item.status}".`],
+    };
+  }
+
+  const staleBefore = new Date(now.getTime() - LEASE_MS);
+  const moved = await prisma.backlogItem.updateMany({
+    where: moveWhere(id, current.status as BacklogStatus, actor, staleBefore),
+    data: {
+      status: BACKLOG_STATUSES.done,
+      releasedIn: release.version,
+      releasedAt: release.at,
+      claimedBy: null,
+      claimedAt: null,
+      movedAt: now,
+    },
+  });
+
+  if (moved.count === 0) {
+    const fresh = await prisma.backlogItem.findUnique({ where: { id }, select: { claimedBy: true, status: true } });
+    if (fresh === null) return { ok: false, reason: "missing" };
+    if (fresh.claimedBy !== null && fresh.claimedBy !== "") {
+      return { ok: false, reason: "held", heldBy: fresh.claimedBy };
+    }
+    return {
+      ok: false,
+      reason: "illegal",
+      problems: [`This row is "${fresh.status}" now, not "${current.status}" — read it again and try the move from there.`],
+    };
+  }
+
+  const row = await prisma.backlogItem.findUniqueOrThrow({ where: { id }, select: SELECT });
+  return { ok: true, item: toItem(row) };
 }

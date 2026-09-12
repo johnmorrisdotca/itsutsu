@@ -67,16 +67,29 @@ export const OPEN_STATUSES: readonly BacklogStatus[] = [
  * table says the moves out loud, and `canMove` is the only thing allowed to
  * answer the question — the API and the page both ask it.
  *
- * Every status can be left and every status can be reached, which the gate
- * checks: a status nothing leads to is a hole a row falls into.
+ * Every status but `done` can be left and every status but `done` can be
+ * reached through this table, which the gate checks: a status nothing leads
+ * to is a hole a row falls into. `done` is the one exception on both counts,
+ * and deliberately so — see below.
  */
 export const STATUS_MOVES: Record<BacklogStatus, readonly BacklogStatus[]> = {
   // On the board and nobody on it: pick it up, or say no.
   open: [BACKLOG_STATUSES.inProgress, BACKLOG_STATUSES.dropped],
-  // Somebody has it: finish it, put it back down, or abandon it.
-  inProgress: [BACKLOG_STATUSES.done, BACKLOG_STATUSES.open, BACKLOG_STATUSES.dropped],
-  // Shipped. It can only be reopened — done is not a way out of the board.
-  done: [BACKLOG_STATUSES.inProgress],
+  // Somebody has it: put it back down, or abandon it. Not "finish it" — see below.
+  inProgress: [BACKLOG_STATUSES.open, BACKLOG_STATUSES.dropped],
+  /*
+   * DONE IS TERMINAL, AND THIS TABLE IS NOT HOW IT IS REACHED (board
+   * convergence ITS-04). Reaching it needs the version that carried the
+   * work, which is only knowable at the moment `pnpm release:take` takes
+   * that number — not from this table, which the page and `pnpm task` both
+   * read, and neither may ever offer Done. `finishItem` in backlogStore.ts
+   * writes it directly, conditionally, from `inProgress` only, alongside
+   * `releasedIn` and `releasedAt`. And it does not leave: a done row's
+   * release stamp is a fact about a release that went out, and reopening it
+   * would rewrite that fact. A regression is a new row citing this one, not
+   * this one coming back.
+   */
+  done: [],
   // Said no. Somebody may ask again, and then it is open like anything else.
   dropped: [BACKLOG_STATUSES.open],
 };

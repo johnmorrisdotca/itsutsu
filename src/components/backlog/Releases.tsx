@@ -23,6 +23,11 @@ function ReleaseEntry({
     <li className="flex flex-col gap-0.5 border-t border-rule py-2 first:border-t-0" data-testid="release">
       <span className="flex items-baseline gap-2">
         <span className="font-mono text-sm font-semibold tabular-nums">{release.version}</span>
+        {release.date === null ? null : (
+          <span className="font-mono text-xs text-muted" data-testid="release-date">
+            {release.date}
+          </span>
+        )}
         {current ? (
           <span className="rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">
             This edition 現行

@@ -116,7 +116,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const { addItem, changeItem, editItem, moveItem } = await import("./backlogStore");
+const { addItem, changeItem, editItem, finishItem, moveItem } = await import("./backlogStore");
 
 function row(over: Partial<Row> = {}): Row {
   return {
@@ -213,26 +213,71 @@ describe("a grade", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
-  it("is written in one conditional write together with a legal move, and done carries the release", async () => {
+  it("is written in one conditional write together with a legal move", async () => {
     rows = [row({ status: "inProgress" })];
-    const outcome = await changeItem("a", { status: BACKLOG_STATUSES.done, effort: "small" }, "John");
+    const outcome = await changeItem("a", { status: BACKLOG_STATUSES.open, effort: "small" }, "John");
     expect(outcome.ok).toBe(true);
     expect(updateMany).toHaveBeenCalledTimes(1);
     expect(update).not.toHaveBeenCalled();
-    expect(rows[0].status).toBe("done");
+    expect(rows[0].status).toBe("open");
     expect(rows[0].effort).toBe("small");
-    // Done is nobody's to hold.
-    expect(rows[0].claimedBy).toBeNull();
-    expect(rows[0].releasedIn).not.toBeNull();
   });
 
-  it("clears the release stamp on the way back out of done, and writes the mover's claim", async () => {
-    rows = [row({ status: "done", releasedIn: "0.1.0" })];
-    const outcome = await moveItem("a", BACKLOG_STATUSES.inProgress, "John");
+  it("does not let a grade ride along on a move to done — that move is not this door's to make", async () => {
+    rows = [row({ status: "inProgress" })];
+    const outcome = await changeItem("a", { status: BACKLOG_STATUSES.done, effort: "small" }, "John");
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(rows[0].effort).toBeNull();
+  });
+});
+
+/**
+ * Board convergence ITS-04: `done` is reached by nothing `changeItem`/
+ * `moveItem` accept — STATUS_MOVES names no way in — so `finishItem` is the
+ * one door, and it is tested on its own rather than as a case of a move.
+ */
+describe("finishItem", () => {
+  const release = { version: "0.150.1", at: new Date("2026-09-12T00:00:00.000Z") };
+
+  it("is illegal from open — only a row somebody is on may be finished", async () => {
+    rows = [row({ status: "open" })];
+    const outcome = await finishItem("a", release, "John");
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(rows[0].status).toBe("open");
+  });
+
+  it("is held when another actor's claim is still inside its lease", async () => {
+    rows = [row({ status: "inProgress", claimedBy: "A", claimedAt: new Date() })];
+    const outcome = await finishItem("a", release, "B");
+    expect(outcome).toEqual({ ok: false, reason: "held", heldBy: "A" });
+    expect(rows[0].status).toBe("inProgress");
+  });
+
+  it("writes the two release columns and clears the claim, held by the actor or nobody", async () => {
+    rows = [row({ status: "inProgress", claimedBy: "John", claimedAt: new Date() })];
+    const outcome = await finishItem("a", release, "John");
     expect(outcome.ok).toBe(true);
-    expect(rows[0].releasedIn).toBeNull();
-    expect(rows[0].claimedBy).toBe("John");
-    expect(rows[0].claimedAt).not.toBeNull();
+    expect(rows[0].status).toBe("done");
+    expect(rows[0].releasedIn).toBe("0.150.1");
+    expect(rows[0].releasedAt).toEqual(release.at);
+    expect(rows[0].claimedBy).toBeNull();
+    expect(rows[0].claimedAt).toBeNull();
+  });
+
+  it("is missing rather than illegal when the row is gone", async () => {
+    expect(await finishItem("nope", release, "John")).toEqual({ ok: false, reason: "missing" });
+  });
+
+  it("reaches a row still filed under the board's older words, the same fix changeItem needed", async () => {
+    // `toItem` folds `building` to `inProgress`; the conditional write is
+    // matched by the database against the column, so it has to carry what
+    // the row SAYS — see changeItem's own comment on `current.status`.
+    rows = [row({ status: "building" })];
+    const outcome = await finishItem("a", release, "John");
+    expect(outcome.ok, "a row filed as building could not be finished at all").toBe(true);
+    expect(rows[0].status).toBe(BACKLOG_STATUSES.done);
   });
 });
 
@@ -254,7 +299,7 @@ describe("a row that is not there", () => {
 describe("a live claim", () => {
   it("refuses a different actor's move while the hold is inside the lease, and writes nothing", async () => {
     rows = [row({ status: "inProgress", claimedBy: "A", claimedAt: new Date() })];
-    const outcome = await changeItem("a", { status: BACKLOG_STATUSES.done }, "B");
+    const outcome = await changeItem("a", { status: BACKLOG_STATUSES.dropped }, "B");
     expect(outcome).toEqual({ ok: false, reason: "held", heldBy: "A" });
     expect(rows[0].status).toBe("inProgress");
     expect(rows[0].claimedBy).toBe("A");
@@ -262,9 +307,9 @@ describe("a live claim", () => {
 
   it("lets the holder itself move the row it holds", async () => {
     rows = [row({ status: "inProgress", claimedBy: "A", claimedAt: new Date() })];
-    const outcome = await changeItem("a", { status: BACKLOG_STATUSES.done }, "A");
+    const outcome = await changeItem("a", { status: BACKLOG_STATUSES.dropped }, "A");
     expect(outcome.ok).toBe(true);
-    expect(rows[0].status).toBe("done");
+    expect(rows[0].status).toBe("dropped");
   });
 
   it("lets anybody move a row nobody holds", async () => {
@@ -277,15 +322,15 @@ describe("a live claim", () => {
   it("lets a different actor take a hold once its lease has lapsed", async () => {
     const longAgo = new Date(Date.now() - LEASE_MS - 1000);
     rows = [row({ status: "inProgress", claimedBy: "A", claimedAt: longAgo })];
-    const outcome = await moveItem("a", BACKLOG_STATUSES.done, "B");
+    const outcome = await moveItem("a", BACKLOG_STATUSES.dropped, "B");
     expect(outcome.ok).toBe(true);
-    expect(rows[0].status).toBe("done");
+    expect(rows[0].status).toBe("dropped");
   });
 
   it("still refuses a stale hold's actor one millisecond before the lease is up", async () => {
     const justInsideLease = new Date(Date.now() - LEASE_MS + 1000);
     rows = [row({ status: "inProgress", claimedBy: "A", claimedAt: justInsideLease })];
-    const outcome = await moveItem("a", BACKLOG_STATUSES.done, "B");
+    const outcome = await moveItem("a", BACKLOG_STATUSES.dropped, "B");
     expect(outcome).toEqual({ ok: false, reason: "held", heldBy: "A" });
   });
 
@@ -315,18 +360,17 @@ describe("a row still filed under the board's older words", () => {
   it("can still be moved, though it is stored under a word the board no longer writes", async () => {
     rows = [row({ status: "building" })];
 
-    const outcome = await moveItem("a", BACKLOG_STATUSES.done, "John");
+    const outcome = await moveItem("a", BACKLOG_STATUSES.open, "John");
 
     expect(outcome.ok, "a row filed as building could not be moved at all").toBe(true);
-    expect(rows[0].status).toBe(BACKLOG_STATUSES.done);
+    expect(rows[0].status).toBe(BACKLOG_STATUSES.open);
   });
 
-  it("goes on to done from proposed by way of in progress, as open would", async () => {
+  it("goes on to in progress from proposed, as open would", async () => {
     rows = [row({ status: "proposed" })];
 
     expect((await moveItem("a", BACKLOG_STATUSES.inProgress, "John")).ok).toBe(true);
-    expect((await moveItem("a", BACKLOG_STATUSES.done, "John")).ok).toBe(true);
-    expect(rows[0].releasedIn, "a closed row carries the release it was closed in").not.toBeNull();
+    expect(rows[0].claimedBy).toBe("John");
   });
 
   it("says the status moved under it rather than blaming a hold nobody has", async () => {

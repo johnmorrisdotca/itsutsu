@@ -14,6 +14,12 @@ import { prisma } from "@/lib/prisma";
  *
  * Named rows only. A sweep that decided for itself what looked finished would
  * be the same fault pointing the other way.
+ *
+ * Board convergence ITS-04: a "stuck" row is no longer moved to done here at
+ * all. `done` has one door now — `finishItem`, which only `pnpm
+ * release:take --done <key>` calls, with the version it is taking at that
+ * moment — and this sweep has no release to attach one to. It still reports
+ * which rows look stuck; closing one is `pnpm release:take`'s job.
  */
 const ASKED = process.env.SETTLE_BOARD === "1";
 const run = process.env.SETTLE_BOARD_RUN === "1";
@@ -57,7 +63,9 @@ describe("rows that shipped and never left in progress", () => {
         NOT_STARTED[one.title] === undefined,
     );
 
-    for (const one of stuck) console.log(`  done: ${one.title}\n        because ${SHIPPED[one.title]}`);
+    for (const one of stuck) {
+      console.log(`  stuck, close with release:take: ${one.title} (key: ${one.key})\n        because ${SHIPPED[one.title]}`);
+    }
     for (const one of back) console.log(`  open: ${one.title}\n        because ${NOT_STARTED[one.title]}`);
     for (const one of others) console.log(`  LEFT ALONE, not named here: ${one.title}`);
 
@@ -67,15 +75,16 @@ describe("rows that shipped and never left in progress", () => {
       return;
     }
 
-    for (const [rows, to] of [
-      [stuck, "done"],
-      [back, "open"],
-    ] as const) {
-      for (const one of rows) {
-        const outcome = await moveItem(one.id, to, "settleBoard sweep");
-        console.log(`  ${one.title} → ${to}: ${outcome.ok ? "moved" : `refused — ${outcome.reason}`}`);
-        expect(outcome.ok).toBe(true);
-      }
+    for (const one of back) {
+      const outcome = await moveItem(one.id, "open", "settleBoard sweep");
+      console.log(`  ${one.title} → open: ${outcome.ok ? "moved" : `refused — ${outcome.reason}`}`);
+      expect(outcome.ok).toBe(true);
+    }
+    if (stuck.length > 0) {
+      console.log(
+        `\n${stuck.length} row(s) named above are stuck but were NOT moved: ` +
+          "run `pnpm release:take --summary \"…\" --done <key>` for each, once there is a real release to attach them to.",
+      );
     }
     await prisma.$disconnect();
   }, 120_000);
