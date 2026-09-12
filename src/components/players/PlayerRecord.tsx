@@ -201,6 +201,24 @@ function blankOf(played: number | undefined): string {
 }
 
 /**
+ * The three answers a record's own hover sentences are built from — which
+ * games, against whom, rated or not — read once from `of` so `streakCounts`
+ * and `playedScopeNote` cannot describe the same row two different ways.
+ */
+function scopeWords(of: RecordOf): { games: string; pool: string; rated: string } {
+  return {
+    games: of.variant === undefined ? "games" : "games of this one game",
+    pool:
+      of.pool === "computer"
+        ? " against the computer players"
+        : of.pool === "people"
+          ? " against other people"
+          : "",
+    rated: of.rated === "yes" ? "rated " : of.rated === "no" ? "friendly " : "",
+  };
+}
+
+/**
  * WHICH GAMES THIS RUN IS OVER, said out loud on every streak on the site.
  *
  * A streak is the one figure in the row that cannot be checked by looking. The
@@ -225,16 +243,30 @@ function streakCounts(of: RecordOf): string {
    * rating column already makes on the same rows.
    */
   if (of.here === false) return "A run is only ever counted from games played here.";
-  const games = of.variant === undefined ? "games" : "games of this one game";
-  const pool =
-    of.pool === "computer"
-      ? " against the computer players"
-      : of.pool === "people"
-        ? " against other people"
-        : "";
-  const rated = of.rated === "yes" ? "rated " : of.rated === "no" ? "friendly " : "";
+  const { games, pool, rated } = scopeWords(of);
   const whose = of.player === undefined || of.player === "" ? "" : ` by ${of.player}`;
   return `Over the ${rated}${games}${pool} finished here${whose}, most recent first.`;
+}
+
+/**
+ * WHAT "PLAYED" COUNTS HERE, said on hover from the same `of` the numbers
+ * under it are filtered by — the same idea `streakCounts` already keeps,
+ * for the same reason: a table's heading and its cells must not be able to
+ * drift into describing two different sets of games.
+ *
+ * `RecordHeadings` draws one "Played" heading for every table on the site,
+ * and it does not always mean the same thing under it: the site ladder counts
+ * rated games in one pool, a member's own page counts every finished game in
+ * either. For the same person that was 5 against 14, one click apart, with
+ * nothing on either page saying so. `RecordTable`'s `playedScope` is optional
+ * and most callers leave it unset — "every finished game" needs no footnote —
+ * so this only has something to say where a table's Played is narrower than
+ * that.
+ */
+export function playedScopeNote(of: RecordOf): string {
+  if (of.here === false) return "Counted on another site — no games here to open.";
+  const { games, pool, rated } = scopeWords(of);
+  return `Counts the ${rated}${games}${pool}, finished here.`;
 }
 
 /**
@@ -244,10 +276,19 @@ function streakCounts(of: RecordOf): string {
  * is the quietest bug a table can have — every number reads as a different
  * quantity and nothing looks broken.
  */
-export function RecordHeadings({ trailing }: { trailing?: ReactNode }) {
+export function RecordHeadings({
+  trailing,
+  playedTitle,
+}: {
+  trailing?: ReactNode;
+  /** What this table's Played column counts, when it is not every finished game. See `playedScopeNote`. */
+  playedTitle?: string;
+}) {
   return (
     <>
-      <th className={HEAD}>Played</th>
+      <th className={HEAD} title={playedTitle}>
+        Played
+      </th>
       <th className={HEAD}>W</th>
       <th className={HEAD}>L</th>
       <th className={HEAD}>D</th>

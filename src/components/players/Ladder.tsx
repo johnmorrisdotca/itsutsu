@@ -61,6 +61,15 @@ export async function Ladder() {
         subject="Player"
         rows={rows}
         columns={{ tier: true }}
+        /*
+          The Ladder's Played is rated games in the people pool, and the
+          Members tab's identical heading — one click away — is every
+          finished game. For the same person that read 5 against 14 with
+          nothing saying the two "Played" columns meant different things.
+          `playedScope` matches what every row's own `of` already counts,
+          so the heading cannot claim a scope the numbers under it lack.
+        */
+        playedScope={{ pool: RATING_POOLS.people, rated: "yes" }}
         testId="players-table"
         /*
           The headings are drawn whether or not there is anybody under them.

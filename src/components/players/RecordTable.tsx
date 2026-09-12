@@ -6,6 +6,7 @@ import {
   RecordHeadings,
   TABLE_CLASS,
   TABLE_HEAD_CLASS,
+  playedScopeNote,
   type RecordOf,
   type WonLostDrawn,
 } from "./PlayerRecord";
@@ -192,6 +193,7 @@ export function RecordTable({
   subject,
   rows,
   columns = {},
+  playedScope,
   empty,
   testId,
   rowTestId,
@@ -201,6 +203,16 @@ export function RecordTable({
   subject: string;
   rows: readonly RecordTableRow[];
   columns?: RecordColumns;
+  /**
+   * What this table's Played column counts, when a reader could not tell from
+   * the number alone — the ladder's is rated games in one pool, and looks
+   * identical to a member's own page's, which is every finished game in
+   * either. Left unset everywhere Played needs no footnote: that is most
+   * tables, and a heading explaining itself on all of them would be a
+   * footnote nobody asked for. Worded the same way the streak cell already
+   * words its own scope, from the same shape of `of`.
+   */
+  playedScope?: RecordOf;
   /**
    * What no rows MEANS here, under the headings.
    *
@@ -243,6 +255,7 @@ export function RecordTable({
               {columns.rank === true ? <th className={HEAD}>#</th> : null}
               <th className={HEAD}>{subject}</th>
               <RecordHeadings
+                playedTitle={playedScope === undefined ? undefined : playedScopeNote(playedScope)}
                 trailing={
                   <>
                     {showRating ? <th className={HEAD}>Rating</th> : null}
