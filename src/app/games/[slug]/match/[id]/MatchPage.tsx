@@ -397,9 +397,14 @@ async function LiveMatch({
                 Fork <span className="font-mincho normal-case tracking-normal">分岐</span>
               </h2>
               <p className="text-xs text-muted">
-                Start a second game from this exact position, against the same opponent. Both games go on.
+                Start a second game from this exact position, against the same opponent. Both games go on. You settle
+                the clock and whether it counts before it starts; the board and the rules come with the position.
               </p>
-              <ChallengeButton from={{ id: game.id, move }} label={`Play from move ${move}`} />
+              <ChallengeButton
+                from={{ id: game.id, move }}
+                variant={game.variant}
+                label={`Play from move ${move}`}
+              />
             </div>
           ) : null}
           {seat !== null ? (

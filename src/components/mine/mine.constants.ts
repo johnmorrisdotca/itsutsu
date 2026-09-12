@@ -108,6 +108,22 @@ export const START_COPY = {
   signedOut: "Sign in to play against somebody else. Two at one screen works either way.",
   failed: "That game could not be started. Try again.",
   seatTaken: "Somebody took that seat first. Yours is posted instead.",
+  /**
+   * WHAT THE SENTENCE DOES NOW, ADDED TO WHATEVER ELSE ITS HINT IS SAYING.
+   *
+   * The sentence used to create the game where it stood. It does not any more:
+   * every way into a game on this site goes through the screen that settles the
+   * rules first, and this one is the fastest way to reach it — the game, the
+   * board, the pace and the opponent are carried across and already filled in,
+   * so the press after this one is a confirmation.
+   *
+   * Said in the hint rather than by rewording the button. The button names the
+   * errand and John chose those words; "Sit down with Kyoko" is still exactly
+   * what pressing it sets about doing, and the screen it lands on says the same
+   * thing on its own button. What would be dishonest is leaving a reader to
+   * discover the extra step, so the hint says it.
+   */
+  nextIsSetUp: "You confirm the rules on the next screen; nothing is started until you do.",
   noSeats:
     "Nobody is asking for a game right now. Post a seat above and yours is first on the board.",
   onlyMine: "Only yours so far. It stays until somebody sits down or you withdraw it.",

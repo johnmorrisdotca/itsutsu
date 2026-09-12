@@ -54,6 +54,25 @@ export const NAV = [
    * site's own voice and stays.
    */
   { href: "/play", label: "Play" },
+  /*
+   * NEW GAME, WHICH THE BAR HAS NEVER HAD, AND EVERY SITE THIS WAS MODELLED ON
+   * DOES. ItsYourTurn puts it in the left rail directly under Game Status, and
+   * for good reason: the moment you notice you have nothing to move is the
+   * moment you want another game, and until now the answer to that was three
+   * pages — Games, pick one, then its setup screen.
+   *
+   * It sits between Play and Games on purpose, and the three read as a
+   * progression rather than as a list: Play is the games I have going, New game
+   * is another one of my own, Games is the catalogue of what there is. Putting
+   * it beside Play also puts the two "my own play" rows together, so Games keeps
+   * being about the site's games rather than about mine.
+   *
+   * ONE LINK AND NOTHING MORE, which it could not have been a week ago. /games/new
+   * used to be one of several ways in and the only one that settled anything; now
+   * every way in lands there, so a row in the bar pointing at it is the whole
+   * feature rather than a fourth door with its own behaviour to keep in step.
+   */
+  { href: "/games/new", label: "New game" },
   { href: "/games", label: "Games" },
   /*
    * RULES AND LEARN ARE GONE FROM HERE, AND NEITHER IS GONE FROM THE SITE.
@@ -82,14 +101,36 @@ export const NAV = [
   { href: "/about", label: "About" },
 ] as const;
 
+/**
+ * WHICH ROW THE READER IS IN, WHERE ONE ADDRESS SITS UNDER ANOTHER.
+ *
+ * `startsWith` alone said "you are in Games" about /games/new as well as "you
+ * are in New game", so both rows underlined themselves on the setup screen and
+ * the bar claimed the reader was in two places. The longest match wins instead:
+ * the most specific row that could be talking about this address is the one
+ * that is.
+ *
+ * Computed once for the whole bar rather than asked per row, because "am I the
+ * current one" is a question about the WHOLE list and no row can answer it
+ * alone — which is exactly why asking it per row gave two answers.
+ */
+function currentHref(pathname: string): string | null {
+  const matches = NAV.filter(
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
+  );
+  if (matches.length === 0) return null;
+  return matches.reduce((best, item) => (item.href.length > best.href.length ? item : best)).href;
+}
+
 /** The site's sections, with the one the reader is in underlined. */
 export function NavLinks() {
   const pathname = usePathname();
   const say = useSpeaker();
+  const here = currentHref(pathname);
   return (
     <>
       {NAV.map((item) => {
-        const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const current = item.href === here;
         return (
           <Link
             key={item.href}

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 
 const draft: RulesDraft = {
@@ -13,6 +14,7 @@ const draft: RulesDraft = {
   rated: true,
   allowResign: true,
   open: false,
+  handicap: NO_HANDICAP,
 };
 
 describe("applyRulesChange", () => {

@@ -11,6 +11,8 @@ export type SeatOnBoard = {
 
 /** Somebody the sentence can name as an opponent. */
 export type Opponent = {
+  /** Their member id: how the sentence names them on the way to the setup screen. */
+  id: string;
   email: string;
   name: string;
   /** Here in the last half hour, so the hint can say so. */

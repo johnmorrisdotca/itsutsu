@@ -95,6 +95,12 @@ export function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
       tier: tierFor(computer?.ratedGames ?? 0),
       actions: (
         <RowActions>
+          {/*
+            Play leads to the screen that settles the game, not into one. A
+            program plays anything, so the one thing this row could never
+            decide on its own is WHICH game — and until now it decided
+            freestyle, silently, on every press.
+          */}
           <ChallengeButton memberId={entry.id} label="Play" />
         </RowActions>
       ),

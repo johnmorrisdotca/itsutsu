@@ -29,7 +29,7 @@ import {
 } from "@/lib/history/gameSettingsSchema";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { seatCookieName } from "@/lib/history/seatCookie";
-import { opponentOf, seatsForRematch, settingsToCarry } from "@/lib/history/rematch";
+import { FORK_PACE_SETTINGS, opponentOf, seatsForRematch, settingsToCarry } from "@/lib/history/rematch";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
@@ -190,6 +190,26 @@ export async function POST(request: Request) {
         blackName: origin.blackName,
         whiteName: origin.whiteName,
       };
+      /*
+       * EXCEPT WHERE THE CALLER HAS SETTLED THE PACE ITSELF.
+       *
+       * `source` is spread over the request below, which is right for everything
+       * the POSITION depends on and wrong for everything about the moves still
+       * to come — see `FORK_PACE_SETTINGS` for which is which and why. Without
+       * this, a fork's setup screen would offer a clock, a penalty and a
+       * friendly game and have all three thrown away on the way in: a form of
+       * controls that do nothing.
+       *
+       * KEYED ON WHAT THE CALLER ACTUALLY SENT, not on what came out of the
+       * schema. Zod fills a default in for every field it was not given, so the
+       * parsed body cannot tell silence from a choice — and silence here has to
+       * go on meaning "the game I forked", which is the whole of the fix above.
+       * The raw body is the only thing that knows the difference.
+       */
+      const said = new Set(
+        body !== null && typeof body === "object" && !Array.isArray(body) ? Object.keys(body) : [],
+      );
+      for (const key of FORK_PACE_SETTINGS) if (said.has(key)) delete source[key];
       // Forking a game keeps the two players: whoever is not me in the game
       // being forked is who the new one is against, found by id and turned
       // back into the address a challenge is addressed to.

@@ -5,6 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { localTimeIn, recencyOf, type Recency } from "./presence";
 
 export type BuddyEntry = {
+  /**
+   * Their member id, which is how anything that offers a game names them.
+   *
+   * Free: the row is already read whole. It is here because a computer player
+   * has no address, and because the site stopped addressing a challenge to an
+   * email — see `Opponent`.
+   */
+  id: string;
   /** Null for a kept record: somebody who never signed in. */
   email: string | null;
   name: string;
@@ -31,6 +39,7 @@ export async function fetchBuddies(owner: string, now = new Date()): Promise<Bud
     orderBy: { lastSeenAt: "desc" },
   });
   return members.map((member) => ({
+    id: member.id,
     email: member.email,
     name: member.name,
     picture: member.picture,

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Select } from "@/components/ui/Controls";
@@ -8,7 +7,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { DEFAULT_BOARD_SIZE, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { gamePath, matchPath, playPath, rulesPath, seatPath } from "@/lib/gomoku/slugs";
+import { NO_PACE, gamePath, playPath, rulesPath, setUpLink } from "@/lib/gomoku/slugs";
 import Link from "next/link";
 import { botsFor } from "@/lib/bots/bots.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
@@ -17,15 +16,25 @@ import type { StartGameProps } from "./startGame.types";
 import { shownName } from "@/lib/rating/shownName";
 
 /**
- * "anyone", "screen", "m:<email>" for a member, or "c:<id>" for one of the
+ * "anyone", "screen", "m:<id>" for a member, or "c:<id>" for one of the
  * computer players — what the third word of the sentence means.
  *
- * A computer is named by its id rather than by an address because it has none:
- * it never signs in, and an address is only how you sign in.
+ * Everybody is named by their member id. A computer never signs in and so has
+ * no address at all, which is why it was always the id here; a person's address
+ * worked and put every buddy's email into the page's markup to do it.
  */
 const ANYONE = "anyone";
 const SCREEN = "screen";
 const COMPUTER = "c:";
+/**
+ * A member, by id.
+ *
+ * It was by address, which meant this select wrote every buddy's email into the
+ * page's markup and could not name a computer player at all. The setup screen
+ * the sentence now leads to is addressed by id for the same two reasons — see
+ * `SET_UP_PARAMS`.
+ */
+const MEMBER = "m:";
 
 /**
  * Starting a game, as one sentence: play this game, at this pace, with
@@ -36,14 +45,11 @@ const COMPUTER = "c:";
  * "someone at this screen" is the board in this browser.
  */
 export function StartGame({ families, seats, opponents, signedIn }: StartGameProps) {
-  const router = useRouter();
   const [variant, setVariant] = useState(families[0]?.games[0]?.variant ?? "freestyle");
   /** Null until somebody picks one: the sentence follows a waiting seat instead. */
   const [size, setSize] = useState<number | null>(null);
   const [pace, setPace] = useState<string>(String(PACES[0].value));
   const [against, setAgainst] = useState<string>(signedIn ? ANYONE : SCREEN);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   /** False on the server, true once the browser has it — see `data-ready` below. */
   const ready = useHydrated();
 
@@ -94,7 +100,9 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
    * to describe what you are about to get, or the control is decoration.
    */
   const match = forThisGame.find((seat) => seat.moveTimeMs === moveTimeMs && seat.size === board);
-  const named = against.startsWith("m:") ? opponents.find((one) => one.email === against.slice(2)) : undefined;
+  const named = against.startsWith(MEMBER)
+    ? opponents.find((one) => one.id === against.slice(MEMBER.length))
+    : undefined;
   /*
    * Looked up in the players offered at *this* game rather than in all of
    * them, so choosing a specialist and then changing the game does not leave
@@ -116,7 +124,7 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
           ? START_COPY.sitWith(match.who)
           : START_COPY.post;
 
-  const hint =
+  const about =
     against === SCREEN
       ? START_COPY.screenHint
       : computer !== undefined
@@ -130,59 +138,50 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
           : forThisGame.length > 0
             ? START_COPY.otherPaceHint(forThisGame.length, game?.label ?? variant)
             : START_COPY.firstHint(game?.label ?? variant);
+  /*
+   * And that there is a screen between the press and the game. Said here
+   * rather than by rewording the button, which names the errand in John's own
+   * words and still names it correctly — what would be dishonest is leaving
+   * somebody to discover the extra step. The board at this screen is exempt:
+   * that press really does land on a board, which is what it says.
+   */
+  const hint = against === SCREEN ? about : `${about} ${START_COPY.nextIsSetUp}`;
 
-  async function start() {
-    setError(null);
-    if (against === SCREEN) {
-      // The BOARD. The button says "Set up the board", and /games/<slug> is
-      // the game's front door, which has no board on it.
-      router.push(playPath(variant));
-      return;
-    }
-    setBusy(true);
-    try {
-      // Somebody is already asking for exactly this: take their seat.
-      if (named === undefined && computer === undefined && match !== undefined) {
-        const sat = await fetch(`/api/games/${match.id}/sit`, { method: "POST" });
-        if (sat.ok) {
-          const { path } = (await sat.json()) as { path: string };
-          router.push(path);
-          return;
-        }
-        setError(START_COPY.seatTaken);
-      }
-
-      const response = await fetch("/api/games/live", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          computer !== undefined
-            ? { variant, size: board, moveTimeMs, challengeId: computer.id }
-            : named === undefined
-              ? { variant, size: board, moveTimeMs, open: true }
-              : { variant, size: board, moveTimeMs, challenge: named.email },
-        ),
-      });
-      if (!response.ok) {
-        setError(START_COPY.failed);
-        return;
-      }
-      const created = (await response.json()) as { id: string; blackToken: string };
-      /*
-       * A challenge binds both seats to accounts, so its own address seats
-       * whoever opens it. A posted seat belongs to nobody yet, so the opener
-       * goes in by their seat link, which claims the black seat for them.
-       */
-      const to = response.headers.get("Location");
-      router.push(
-        named === undefined && computer === undefined
-          ? seatPath(variant, created.id, created.blackToken)
-          : (to ?? matchPath(variant, created.id)),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+  /*
+   * WHERE THE SENTENCE GOES, WHICH IS NO LONGER STRAIGHT INTO A GAME.
+   *
+   * It used to POST the game itself and land you on a board. That was the last
+   * of the six ways into a game that skipped the screen where the rules are
+   * settled, and John has asked for that screen in front of every one of them:
+   * "There are many places we can start a game... and we need that page before
+   * the game starts."
+   *
+   * SO THE SENTENCE IS THE FAST WAY TO REACH IT RATHER THAN A WAY AROUND IT,
+   * and it loses nothing by being one — everything it had settled travels with
+   * it, so the screen it lands on is filled in and one press from a game. It
+   * keeps its auto-matching too, because that screen does the same thing with
+   * the same seats: ask for a game somebody is already asking for and it offers
+   * to sit down at theirs rather than post a second one beside it.
+   *
+   * "Someone at this screen" still goes to the BOARD, and must: a scratch board
+   * is not a game anybody set up, which is the whole of what it is for.
+   */
+  const href =
+    against === SCREEN
+      ? playPath(variant)
+      : setUpLink({
+          variant,
+          /*
+           * Only where there was a board to choose. On a game played on one
+           * board the control is not offered, and an address naming the only
+           * possible board would be saying a choice was made that nobody made.
+           */
+          board: sizes.length > 1 ? board : undefined,
+          // Said out loud, because "no clock" and "nobody said" want opposite
+          // answers from the screen that reads this back.
+          pace: moveTimeMs === null ? NO_PACE : moveTimeMs,
+          against: computer?.id ?? named?.id,
+        });
 
   const here = opponents.filter((one) => one.here);
   const away = opponents.filter((one) => !one.here);
@@ -269,7 +268,7 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
           {here.length > 0 ? (
             <optgroup label={`${START_COPY.hereNow.label} ${START_COPY.hereNow.kanji}`}>
               {here.map((one) => (
-                <option key={one.email} value={`m:${one.email}`}>
+                <option key={one.id} value={`${MEMBER}${one.id}`}>
                   {shownName(one.name)}
                 </option>
               ))}
@@ -278,7 +277,7 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
           {away.length > 0 ? (
             <optgroup label={`${START_COPY.buddies.label} ${START_COPY.buddies.kanji}`}>
               {away.map((one) => (
-                <option key={one.email} value={`m:${one.email}`}>
+                <option key={one.id} value={`${MEMBER}${one.id}`}>
                   {shownName(one.name)}
                 </option>
               ))}
@@ -296,15 +295,21 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
           ) : null}
           <option value={SCREEN}>{START_COPY.atThisScreen}</option>
         </Select>
-        <button
-          type="button"
-          onClick={start}
-          disabled={busy}
-          className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2 text-sm sm:ml-auto`}
+        {/*
+          A LINK, BECAUSE IT NAVIGATES. It used to be a button that wrote a game
+          and then navigated to it; there is nothing to write here any more, and
+          a link is better at the one job that is left — it prefetches, it opens
+          in a new tab if somebody wants that, and it cannot drop a press to
+          hydration because there is no handler waiting to be attached. The
+          selects above still need the ready mark; this no longer does.
+        */}
+        <Link
+          href={href}
+          className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2 text-center text-sm sm:ml-auto`}
           data-testid="start-game-go"
         >
           {label}
-        </button>
+        </Link>
       </div>
       <p className="text-xs text-muted" data-testid="start-game-hint">
         {signedIn ? hint : START_COPY.signedOut}
@@ -325,11 +330,6 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
             set it up in full
           </Link>{" "}
           · or browse the families below.
-        </p>
-      ) : null}
-      {error !== null ? (
-        <p className="text-xs text-shu" data-testid="start-game-error">
-          {error}
         </p>
       ) : null}
     </div>

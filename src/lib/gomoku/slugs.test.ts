@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { RULE_VARIANT_LIST } from "./gomoku.constants";
 import {
   GAME_SLUGS,
+  NO_PACE,
   backgroundPath,
   familyPath,
   gamePath,
@@ -12,6 +13,7 @@ import {
   playPath,
   rulesPath,
   seatPath,
+  setUpLink,
   setUpPath,
   slugFor,
   standingsPath,
@@ -94,5 +96,90 @@ describe("game slugs", () => {
   it("keeps match ids out of the facet names", () => {
     expect(matchPath("freestyle", "rules")).toBe("/games/gomoku/match/rules");
     expect(matchPath("freestyle", "rules")).not.toBe(rulesPath("freestyle"));
+  });
+});
+
+/**
+ * WHAT THE SETUP SCREEN IS HANDED, AND HOW.
+ *
+ * Every way of starting a game leads to that screen now, and each arrives
+ * knowing a different amount. The facts travel in the query so that a
+ * pre-filled screen is a plain address — linkable, readable, and nameable by a
+ * spec — and the GAME stays in the path, because identity belongs there.
+ */
+describe("the way to the setup screen", () => {
+  it("is /games/new when the game is still to choose", () => {
+    expect(setUpLink({})).toBe("/games/new");
+  });
+
+  it("names the game in the path when the game is settled", () => {
+    expect(setUpLink({ variant: "reversi" })).toBe("/games/reversi/new");
+    expect(setUpLink({ variant: "freestyle" })).toBe("/games/gomoku/new");
+  });
+
+  /*
+   * By id, never by address. A computer player has no address at all, and a
+   * member's address in a query string is one in a history, a referrer and
+   * anything pasted to a friend.
+   */
+  it("carries an opponent by member id", () => {
+    expect(setUpLink({ against: "mem_123" })).toBe("/games/new?against=mem_123");
+  });
+
+  /*
+   * A REMATCH LEAVES THE GAME OUT OF THE PATH ON PURPOSE. /games/new is where
+   * the game is still a choice, which is the whole of John's "I want to play
+   * Bob at Reversi, but I want to try that variant" — a rematch that locked the
+   * game because its address named one could not offer that.
+   */
+  it("leaves a rematch's game out of the path, so the game can still be changed", () => {
+    expect(setUpLink({ rematch: "g1" })).toBe("/games/new?rematch=g1");
+    expect(setUpLink({ rematch: "g1" })).not.toContain("/games/gomoku/");
+  });
+
+  /*
+   * A FORK'S GAME IS IN THE PATH, for the opposite reason: the position it
+   * carries belongs to the game it was played in, so naming another game would
+   * not be a preference, it would be nonsense.
+   */
+  it("names a fork's game, and how far in", () => {
+    expect(setUpLink({ variant: "renju", from: { id: "g2", move: 12 } })).toBe(
+      "/games/renju/new?from=g2&move=12",
+    );
+  });
+
+  it("clamps a fork's move to something the page can read back", () => {
+    expect(setUpLink({ from: { id: "g", move: -4 } })).toContain("move=0");
+    expect(setUpLink({ from: { id: "g", move: 1.7 } })).toContain("move=1");
+    expect(setUpLink({ from: { id: "g", move: 99_999 } })).toContain("move=4096");
+  });
+
+  it("carries a board and a pace somebody has already asked for", () => {
+    expect(setUpLink({ variant: "freestyle", board: 19, pace: 300_000 })).toBe(
+      "/games/gomoku/new?board=19&pace=300000",
+    );
+  });
+
+  /*
+   * "No clock" and "nobody said" are different answers, and an absent
+   * parameter can only carry the second. So a game with no clock says so.
+   */
+  it("says no clock out loud rather than by leaving it out", () => {
+    expect(setUpLink({ variant: "freestyle", pace: NO_PACE })).toBe("/games/gomoku/new?pace=none");
+    expect(setUpLink({ variant: "freestyle" })).not.toContain("pace");
+  });
+
+  it("carries everything at once, for the sentence that knows everything", () => {
+    const link = setUpLink({ variant: "reversi", against: "mem_9", board: 8, pace: NO_PACE });
+    expect(link.startsWith("/games/reversi/new?")).toBe(true);
+    expect(link).toContain("against=mem_9");
+    expect(link).toContain("board=8");
+    expect(link).toContain("pace=none");
+  });
+
+  /* An empty id is nobody, and must not become `?against=`. */
+  it("says nothing rather than saying an empty thing", () => {
+    expect(setUpLink({ against: "" })).toBe("/games/new");
+    expect(setUpLink({ rematch: "" })).toBe("/games/new");
   });
 });

@@ -8,22 +8,23 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { botsFor } from "@/lib/bots/bots.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
-import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
+import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
+import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { Opponent } from "@/lib/social/opponents";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
-import { Button, Field, SectionTitle, Select } from "@/components/ui/Controls";
+import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { HandicapChoice } from "./HandicapChoice";
+import { ANYONE, OpponentChoice, idIn, valueFor } from "./OpponentChoice";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
-import { describeRules, type SettingWord } from "./rulesSummary";
+import { SET_UP_COPY } from "./live.constants";
+import { describeHandicap, describeRules, type SettingWord } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
 import { shownName } from "@/lib/rating/shownName";
-
-/** What the opponent choice means; the same words the start sentence uses. */
-const ANYONE = "anyone";
-const COMPUTER = "c:";
+import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
+import { creationFor } from "./setUpStart";
 
 /**
  * The default opponent, in the words the control uses.
@@ -36,7 +37,7 @@ const COMPUTER = "c:";
 const POST_FOR_ANYONE = "Post the seat for anyone";
 
 /**
- * Settling a game before there is a game.
+ * SETTLING A GAME BEFORE THERE IS A GAME — EVERY GAME, FROM EVERYWHERE.
  *
  * Every rule here used to be chosen on a board that already existed: the game
  * was created the moment you asked for one, and you landed on something that
@@ -48,6 +49,30 @@ const POST_FOR_ANYONE = "Post the seat for anyone";
  * So nothing exists until the button at the bottom. Until then this is a form
  * and a sentence describing what it will make, and the game is created once,
  * settled, with the rules it will be played under.
+ *
+ * WHAT CHANGED SECOND, AND IS THE POINT OF THE PRESENT ROUND: this screen was
+ * built and then reached from exactly one place. A player's page, the players
+ * list, the computer players tab, a rematch, a fork and the lobby sentence all
+ * went on creating a game the instant they were pressed — so John, looking at a
+ * computer player's page, pressed Play and was in a game of Gomoku he had not
+ * asked for. His words: "you're playing Gomoku with an accidental click (or
+ * just clicking around). I keep telling you we need to take the user to the
+ * Game settings page, the page BEFORE the game starts."
+ *
+ * Now every one of them arrives HERE, with whatever it already knows filled in:
+ *
+ *  - THE OPPONENT ONLY — a player's page, a challenge, the computer players
+ *    tab. They are named and selected; the game and the rules are the choice.
+ *  - THE OPPONENT, THE GAME AND THE RULES — a rematch. Everything is filled in
+ *    and the screen reads as a confirmation: one press accepts it, and every
+ *    field is still a field. That is John's "I want to definitely play Bob at
+ *    Reversi, but I want to try that variant, and change some rules."
+ *  - AND A POSITION — a fork. The board, the game and the opening come with the
+ *    position and are not offered, because a Reversi position is not a Halma
+ *    one; the clock and whether it counts are this game's own.
+ *
+ * None of that is held in a cookie or a store. It arrives in the query, so a
+ * pre-filled screen is a plain address — see `SET_UP_PARAMS`.
  */
 export function SetUpGame({
   initial,
@@ -55,6 +80,11 @@ export function SetUpGame({
   seats = [],
   signedIn,
   chooseGame = false,
+  opponent = null,
+  again = null,
+  fork = null,
+  carry = {},
+  problem = null,
 }: {
   initial: RulesDraft;
   opponents: Opponent[];
@@ -64,9 +94,7 @@ export function SetUpGame({
    *
    * This came off the one-line sentence that used to start games, whose own
    * comment put it best: auto-match and posting a seat are the same wish said
-   * twice, and the only difference is whether somebody is already asking. The
-   * sentence is gone and the wish is not, so it lives here now — a screen that
-   * replaced it and quietly dropped this would not be a replacement.
+   * twice, and the only difference is whether somebody is already asking.
    */
   seats?: SeatOnBoard[];
   signedIn: boolean;
@@ -75,81 +103,64 @@ export function SetUpGame({
    *
    * Set at /games/new, where nothing has been chosen yet, and left alone at
    * /games/<game>/new, where the address has already said which game this is
-   * — changing it there would make the address a lie.
+   * — changing it there would make the address a lie. A rematch is sent to
+   * /games/new for exactly this reason: its game is a DEFAULT rather than an
+   * identity, and a rematch that could not change the game would fail at the
+   * thing it was asked for.
    */
   chooseGame?: boolean;
+  /** Somebody the address named. Selected, and offered even if the list would not have them. */
+  opponent?: SetUpOpponent | null;
+  /** A finished game this repeats, and the colour the asker takes in it. */
+  again?: SetUpAgain | null;
+  /** A position this carries forward, and how far in. */
+  fork?: SetUpFork | null;
+  /** What a rematch or a fork brings that this form has no row for — see `SetUpFrom`. */
+  carry?: Record<string, unknown>;
+  /** Why the address could not be honoured, when it could not. */
+  problem?: string | null;
 }) {
   const router = useRouter();
   const [rules, setRules] = useState<RulesDraft>(initial);
-  const [against, setAgainst] = useState<string>(ANYONE);
+  const [against, setAgainst] = useState<string>(
+    opponent === null ? ANYONE : valueFor(opponent),
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /*
    * Says when the browser has taken this over.
    *
-   * These selects are server-rendered, so they are real controls before React
+   * These controls are server-rendered, so they are real controls before React
    * has attached anything to them, and a choice made in that window is simply
-   * dropped — the state never hears it and the next render puts the select
+   * dropped — the state never hears it and the next render puts the control
    * back. A person cannot lose that race; a test that opens the page and
    * chooses in the same breath loses it whenever the page is slow, and then
-   * fails somewhere else entirely. The mark moved here with the controls when
-   * the one-line sentence that used to carry it was removed.
+   * fails somewhere else entirely.
    */
   const ready = useHydrated();
 
-  const named = against.startsWith("m:")
-    ? opponents.find((one) => one.email === against.slice(2))
-    : undefined;
   /*
    * The players offered at this game, and the one that has been chosen. Looked
    * up in that list rather than in all of them, so a specialist chosen before
-   * the game was changed does not stay chosen at a game it does not play.
+   * the game was changed does not stay chosen at a game it does not play — and
+   * that holds for one the ADDRESS named too, which is why `opponent` is not
+   * simply trusted here.
    */
   const computers = botsFor(rules.variant as RuleVariant);
-  const computer = against.startsWith(COMPUTER)
-    ? computers.find((bot) => bot.id === against.slice(COMPUTER.length))
-    : undefined;
-  const here = opponents.filter((one) => one.here);
-  const away = opponents.filter((one) => !one.here);
+  const chosenId = idIn(against);
+  const chosen = chosenId === null ? null : whoIs(chosenId, computers, opponents, opponent);
   /*
-   * Who the game is against, for the line that stands in for the folded
-   * controls.
-   *
-   * It reads the same two values the Start button reads — `named`, `computer`,
-   * or neither — rather than the select's raw value, because those can
-   * disagree: a specialist chosen at its own game and then left behind by a
-   * change of game is no longer among the players offered, and the game posts
-   * for anyone instead. The summary has to say what the button will DO, not
-   * what the control still happens to hold.
+   * Somebody the chooser is holding and this game will not have — in practice a
+   * specialist program, after the game was changed to one it does not play. The
+   * name is kept so the screen can say whose offer has just lapsed; the fallback
+   * itself is unchanged, because posting a seat for anyone is the right thing to
+   * do with a game nobody can be found for.
    */
-  const opponentWord: SettingWord =
-    named !== undefined
-      ? { text: `Against ${shownName(named.name)}`, notable: true }
-      : computer !== undefined
-        ? { text: `Against ${computer.name}`, notable: true }
-        : { text: POST_FOR_ANYONE, notable: false };
+  const dropped =
+    chosenId !== null && chosen === null && opponent !== null && opponent.id === chosenId
+      ? opponent.name
+      : null;
 
-  /*
-   * A seat worth taking is one that matches the whole of what is being asked
-   * for — the game, the board AND the pace. Matching on the game alone would
-   * sit somebody down at a board or a clock they did not choose, which is the
-   * opposite of settling the rules before the game exists.
-   */
-
-
-  /*
-   * The board follows a seat somebody is already waiting on, until anybody
-   * touches it.
-   *
-   * This is the regression the control could easily have caused and the old
-   * sentence was careful about: every seat on the board was posted at some
-   * size, and a screen that always opened at the member's own favourite would
-   * stop matching them — so asking for a game would post a SECOND seat beside
-   * the one already waiting, and neither would ever be filled. Following the
-   * waiting seat keeps the common case one press, and touching the control
-   * stops it following, because at that point the board is a choice somebody
-   * has made rather than a default.
-   */
   /*
    * The board somebody chose, remembered across a game that cannot use it.
    *
@@ -160,17 +171,38 @@ export function SetUpGame({
    * the current game can actually be played on.
    */
   const [boardChosen, setBoardChosen] = useState<number | null>(null);
+
+  /*
+   * A GAME THAT CAME FROM ANOTHER GAME NEVER SITS DOWN AT A STRANGER'S SEAT.
+   *
+   * The auto-match below exists because asking for a game and posting a seat
+   * are the same wish, and the only difference is whether somebody is already
+   * asking. A rematch and a fork are not that wish: they are about one
+   * particular person and, for a fork, one particular position. Following a
+   * posted seat's board would also quietly move a fork off the board its own
+   * moves were played on, which is not a preference — it is a different game.
+   */
+  const matchable = again === null && fork === null;
   const alone =
-    against === ANYONE && boardChosen === null
+    matchable && against === ANYONE && boardChosen === null
       ? seats.filter((seat) => seat.variant === rules.variant && seat.moveTimeMs === rules.moveTimeMs)
       : [];
-  const follow = alone.length === 1 ? alone[0] : undefined;
   /*
+   * The board follows a seat somebody is already waiting on, until anybody
+   * touches it.
+   *
+   * This is the regression the control could easily have caused and the old
+   * sentence was careful about: every seat on the board was posted at some
+   * size, and a screen that always opened at the member's own favourite would
+   * stop matching them — so asking for a game would post a SECOND seat beside
+   * the one already waiting, and neither would ever be filled.
+   *
    * Derived rather than written into state. The followed board is a reading of
    * what is on the noticeboard, not a decision anybody has made, and storing a
    * reading as if it were a decision is what makes it need an effect to keep
    * it in step — which React rightly refuses.
    */
+  const follow = alone.length === 1 ? alone[0] : undefined;
   const wanted =
     boardChosen !== null && boardSizesFor(rules.variant as RuleVariant).includes(boardChosen)
       ? boardChosen
@@ -184,7 +216,7 @@ export function SetUpGame({
 
   /* Somebody already asking for exactly this — the game, the board AND the pace. */
   const waiting =
-    against === ANYONE
+    matchable && against === ANYONE
       ? seats.find(
           (seat) =>
             seat.variant === settled.variant &&
@@ -192,6 +224,49 @@ export function SetUpGame({
             seat.moveTimeMs === settled.moveTimeMs,
         )
       : undefined;
+
+  /*
+   * What this will make, decided in one pure place — see `creationFor`. The
+   * interesting part is `repeat`: a rematch is only a rematch while the form
+   * still describes the game it was filled in from, and this screen has to say
+   * so rather than hand somebody back their colours without mentioning it.
+   */
+  const creation = creationFor({
+    rules: settled,
+    source: again === null && fork === null ? null : initial,
+    opponent: chosen,
+    again,
+    fork,
+    carry,
+  });
+
+  /*
+   * Who the game is against, for the line that stands in for the folded
+   * controls.
+   *
+   * It reads what the Start button will actually DO — `chosen`, the opponent
+   * resolved against the players offered at THIS game — rather than the select's
+   * raw value, because those can disagree: a specialist chosen at its own game
+   * and then left behind by a change of game is no longer among the players
+   * offered, and the game posts for anyone instead. A fork is a third case: it
+   * names nobody, because the route finds the other player in the game it forks.
+   */
+  const opponentWord: SettingWord =
+    fork !== null
+      ? {
+          text: `Against ${fork.alone ? "whoever you hand the seat to" : "the same opponent"}`,
+          notable: true,
+        }
+      : chosen !== null
+        ? { text: `Against ${shownName(chosen.name)}`, notable: true }
+        : { text: POST_FOR_ANYONE, notable: false };
+  /*
+   * And the handicap, which is folded with the rest and so has to be sayable
+   * without being opened. A game with no handicap says nothing rather than
+   * saying "no handicap": the line is what this game IS, and the ordinary
+   * answer to a question nobody asked is not worth a word of it.
+   */
+  const handicapWord = describeHandicap(settled.handicap);
 
   async function start() {
     setBusy(true);
@@ -215,25 +290,28 @@ export function SetUpGame({
       const response = await fetch("/api/games/live", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...settled,
-          // Posted for anyone unless somebody in particular is being asked.
-          open: named === undefined && computer === undefined,
-          ...(computer !== undefined ? { challengeId: computer.id } : {}),
-          ...(named !== undefined ? { challenge: named.email } : {}),
-        }),
+        body: JSON.stringify(creation.body),
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
         setError(body?.error ?? "That game could not be started.");
         return;
       }
-      const created = (await response.json()) as { id: string; blackToken: string };
+      const created = (await response.json()) as { id: string; blackToken?: string };
+      /*
+       * A posted seat belongs to nobody yet, so its creator goes in by their own
+       * seat link, which claims the black seat for them. Everything else binds
+       * both seats at the moment it is written, so its own address seats whoever
+       * opens it — and the token for a seat that is somebody else's is not
+       * returned at all, which is why this reads `Location` rather than
+       * assuming a link it can build.
+       */
       const to = response.headers.get("Location");
+      const posted = creation.body.open === true;
       router.push(
-        named === undefined && computer === undefined
-          ? seatPath(rules.variant, created.id, created.blackToken)
-          : (to ?? matchPath(rules.variant, created.id)),
+        posted && created.blackToken !== undefined
+          ? seatPath(settled.variant, created.id, created.blackToken)
+          : (to ?? matchPath(settled.variant, created.id)),
       );
     } finally {
       setBusy(false);
@@ -244,12 +322,58 @@ export function SetUpGame({
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="set-up-game" {...readyMark(ready)}>
       <SectionTitle kanji="準備">Set up the game</SectionTitle>
       {/*
+        WHAT THIS ONE IS, before what it is played under. A rematch, a fork and
+        a fresh game are the same form with different numbers in it, and a
+        reader who cannot tell which they are looking at has been handed a
+        puzzle rather than a confirmation.
+      */}
+      {problem !== null ? (
+        <p
+          className="rounded-lg border border-ochre/60 bg-ochre-soft px-3 py-2 text-xs text-ink"
+          data-testid="set-up-problem"
+        >
+          {problem}
+        </p>
+      ) : null}
+      {again !== null ? (
+        <p className="text-xs text-moss" data-testid="set-up-again">
+          {creation.repeat
+            ? SET_UP_COPY.againHint(chosen?.name ?? "them", STONE_DISPLAY[again.colour].label)
+            : SET_UP_COPY.againChanged}
+        </p>
+      ) : null}
+      {fork !== null ? (
+        <p className="text-xs text-moss" data-testid="set-up-fork">
+          {fork.alone
+            ? `${SET_UP_COPY.fork(fork.move)}. ${SET_UP_COPY.forkAlone}`
+            : SET_UP_COPY.forkHint(fork.move, opponent?.name ?? "the same opponent")}
+        </p>
+      ) : null}
+      {again === null && fork === null && opponent !== null ? (
+        <p className="text-xs text-moss" data-testid="set-up-against">
+          {SET_UP_COPY.againstHint(opponent.name)}
+        </p>
+      ) : null}
+      {/*
+        A NAMED PLAYER THE CHOSEN GAME DOES NOT OFFER, said rather than swallowed.
+        A specialist program plays one game, so changing the game drops it from
+        the list — and the screen then falls back to posting a seat for anyone,
+        which is the right fallback and a surprise nobody should have to notice
+        for themselves.
+      */}
+      {dropped !== null ? (
+        <p className="text-xs text-shu" data-testid="set-up-not-offered">
+          {SET_UP_COPY.notAtThisGame(dropped, variantLabel(settled.variant))}
+        </p>
+      ) : null}
+
+      {/*
         What it will be, in the same words the rules panel uses once it is a
         game — so what somebody agreed to and what they are playing read the
         same, rather than being described twice in two voices.
       */}
       <p className="text-sm font-semibold" data-testid="set-up-summary">
-        {describeRules({ ...settled, handicap: NO_HANDICAP })}
+        {describeRules(settled)}
       </p>
       <p className="text-xs text-muted">
         Nothing is started until you say so. Once it is, these are the rules it is played under.
@@ -271,56 +395,60 @@ export function SetUpGame({
            */
           chooser={RULES_CHOOSERS.pictures}
           /*
-           * THE FIVE SETTINGS FOLD, AND THE OPPONENT FOLDS WITH THEM.
+           * THE FIVE SETTINGS FOLD, AND THE OPPONENT AND THE HANDICAP FOLD WITH
+           * THEM.
            *
            * The pictures cost 470 pixels over the two dropdowns they replaced
            * and put the Start button below an iPad's fold — see MoreSettings
-           * for the measurement. The opponent is one of the five because it
-           * is the same kind of thing: a setting about a game already chosen,
-           * not the question this screen exists to ask. It is named in the
-           * summary line, so a rematch still shows who it is against without
-           * being opened, and one tap changes it.
+           * for the measurement. These two are in the drawer because they are
+           * the same kind of thing: settings about a game already chosen, not
+           * the question this screen exists to ask. Both are named in the
+           * summary line, so a rematch shows who it is against and a handicap
+           * shows who is carrying it without either being opened.
            */
           fold={{
-            summary: [opponentWord],
+            summary: [
+              opponentWord,
+              ...(handicapWord === null ? [] : [{ text: handicapWord, notable: true }]),
+            ],
             fields: (
-              <Field label="Opponent">
-                <Select
-                  value={against}
-                  disabled={busy || !signedIn}
-                  onChange={(event) => setAgainst(event.target.value)}
-                  data-testid="set-up-with"
-                >
-                  <option value={ANYONE}>{POST_FOR_ANYONE}</option>
-                  {here.length > 0 ? (
-                    <optgroup label="Here now 在室">
-                      {here.map((one) => (
-                        <option key={one.email} value={`m:${one.email}`}>
-                          {shownName(one.name)}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ) : null}
-                  {away.length > 0 ? (
-                    <optgroup label="Players you know 知人">
-                      {away.map((one) => (
-                        <option key={one.email} value={`m:${one.email}`}>
-                          {shownName(one.name)}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ) : null}
-                  <optgroup label="The computer 対コンピュータ">
-                    {/* A specialist is offered at its own game and nowhere else. */}
-                    {computers.map((bot) => (
-                      <option key={bot.id} value={`${COMPUTER}${bot.id}`}>
-                        {[bot.name, BOT_PROFILES[bot.tier].native].filter(Boolean).join(" ")} ·{" "}
-                        {BOT_PROFILES[bot.tier].strength}
-                      </option>
-                    ))}
-                  </optgroup>
-                </Select>
-              </Field>
+              <>
+                {/*
+                  A HANDICAP, WHICH THIS SCREEN HAD NO ANSWER FOR UNTIL NOW. John:
+                  "you're playing someone who's not very strong — you want to, in
+                  the settings page, give yourself a handicap to help them out."
+                  The engine has had them all along and nothing could ask for one.
+
+                  Not on a fork: the position was played under whatever handicap
+                  the game had, and the route carries that with the moves.
+                  Offering to change it here would be a control the server is
+                  right to ignore.
+                */}
+                {fork === null ? (
+                  <HandicapChoice
+                    value={settled.handicap}
+                    variant={settled.variant}
+                    disabled={busy}
+                    onChange={(handicap) => setRules({ ...settled, handicap })}
+                  />
+                ) : null}
+                {/*
+                  A fork is against whoever was in the game it came from — the
+                  route reads that off the seats — so there is nothing to ask,
+                  and asking would be a control whose answer is discarded.
+                */}
+                {fork === null ? (
+                  <OpponentChoice
+                    value={against}
+                    onChange={setAgainst}
+                    variant={settled.variant}
+                    opponents={opponents}
+                    named={opponent}
+                    disabled={busy}
+                    signedIn={signedIn}
+                  />
+                ) : null}
+              </>
             ),
           }}
           onSizeChosen={setBoardChosen}
@@ -336,9 +464,7 @@ export function SetUpGame({
         {/*
           The button says which of the two things it will do, because they are
           different things to the person pressing it: taking a seat somebody is
-          sitting at starts a game now, and posting one starts a wait. The
-          sentence this screen replaced said which, and a replacement that made
-          both read "start" would have been a step backwards.
+          sitting at starts a game now, and posting one starts a wait.
         */}
         <Button onClick={start} disabled={busy || !signedIn} strong data-testid="set-up-start">
           {busy
@@ -358,4 +484,32 @@ export function SetUpGame({
       ) : null}
     </section>
   );
+}
+
+/**
+ * Who a chosen value names, looked up where it can honestly be found.
+ *
+ * The order matters. A program is only itself at a game it plays — away from
+ * its own board a specialist is somebody else under a second name — so the list
+ * of programs offered at THIS game is asked first, and an opponent the address
+ * named is only honoured as a program while that list still holds them.
+ */
+function whoIs(
+  id: string,
+  computers: readonly { id: string; name: string }[],
+  opponents: readonly Opponent[],
+  named: SetUpOpponent | null,
+): SetUpOpponent | null {
+  const bot = computers.find((one) => one.id === id);
+  if (bot !== undefined) return { id: bot.id, name: bot.name, computer: true };
+  const person = opponents.find((one) => one.id === id);
+  if (person !== undefined) return { id: person.id, name: person.name, computer: false };
+  /*
+   * Somebody the address named who is on neither list — a player met in the
+   * directory, who is nobody's buddy and is not here now. Honoured, because
+   * dropping them would answer "play this person" with a seat posted for
+   * anyone; but never for a program, which the list above is the authority on.
+   */
+  if (named !== null && named.id === id && !named.computer) return named;
+  return null;
 }

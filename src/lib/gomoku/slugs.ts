@@ -150,3 +150,102 @@ export function matchPath(variant: string, id: string, move?: number): string {
 export function seatPath(variant: string, id: string, token: string): string {
   return `${matchPath(variant, id)}/seat/${token}`;
 }
+
+/**
+ * WHAT IS ALREADY DECIDED, ON THE WAY TO THE SCREEN THAT DECIDES THE REST.
+ *
+ * Every way of starting a game on this site now leads to the setup screen
+ * rather than to a board, and each of them arrives knowing something
+ * different: a player's page knows the opponent, a finished game knows the
+ * opponent and the rules and the colours, a fork knows a position as well, the
+ * one-line sentence knows the game and the board and the pace. The screen is
+ * the same screen; only how much of it is already filled in changes.
+ *
+ * THOSE FACTS TRAVEL IN THE QUERY, AND NOWHERE ELSE. Not a cookie, not a
+ * store: a pre-filled setup screen is then a plain address — it can be linked,
+ * sent to somebody, opened in a second tab, and read by a person before they
+ * press anything. A cookie would make the same screen mean different things to
+ * two readers and leave nothing for a spec to name. The game itself stays in
+ * the PATH, because that is identity and this site puts identity in the path;
+ * everything here narrows what the screen starts from, which is a filter.
+ *
+ * The names are a table rather than string literals at a dozen call sites, so
+ * the links that write them and the pages that read them cannot come to
+ * disagree about one.
+ */
+export const SET_UP_PARAMS = {
+  /**
+   * The opponent, by member id.
+   *
+   * An id rather than an address, for two reasons that point the same way: a
+   * computer player has no address at all, because it never signs in, and a
+   * member's address in a query string is a member's address in a browser
+   * history, a referrer header and anything they paste to a friend. An id is
+   * opaque and already appears in this site's addresses.
+   */
+  against: "against",
+  /** A finished game to play again: its rules, its opponent, its colours swapped. */
+  rematch: "rematch",
+  /** A game to carry a position out of, with `move` saying how far. */
+  from: "from",
+  move: "move",
+  /** A board and a pace already asked for, so the screen does not ask twice. */
+  board: "board",
+  pace: "pace",
+} as const;
+
+/**
+ * A game with no clock, said out loud.
+ *
+ * "No clock" and "nothing was said about the clock" are different answers and
+ * an absent parameter can only mean the second. A pace of `none` is somebody
+ * choosing to play without one, which the screen must keep rather than replace
+ * with the member's usual.
+ */
+export const NO_PACE = "none";
+
+/** The most moves an address may name, matching the route's own ceiling. */
+const MOVE_CEILING = 4096;
+
+/**
+ * The way to the setup screen, carrying whatever is already known.
+ *
+ * With no `variant` it is /games/new, where the game is still to choose — which
+ * is what a rematch wants, so that "play Bob again, but let us try the variant"
+ * is a choice the screen actually offers. With one it is /games/<slug>/new, and
+ * the game is settled because the address says so: a fork's position belongs to
+ * its game, and the sentence on the lobby has already named one.
+ */
+export function setUpLink(known: {
+  variant?: string;
+  against?: string;
+  rematch?: string;
+  from?: { id: string; move: number };
+  board?: number;
+  /** `NO_PACE` for a game with no clock; omitted when nobody has said. */
+  pace?: number | typeof NO_PACE;
+}): string {
+  const base = known.variant === undefined ? "/games/new" : setUpPath(known.variant);
+  const query = new URLSearchParams();
+  if (known.against !== undefined && known.against !== "") {
+    query.set(SET_UP_PARAMS.against, known.against);
+  }
+  if (known.rematch !== undefined && known.rematch !== "") {
+    query.set(SET_UP_PARAMS.rematch, known.rematch);
+  }
+  if (known.from !== undefined) {
+    query.set(SET_UP_PARAMS.from, known.from.id);
+    /*
+     * Clamped rather than trusted, and to an integer. The move is read off a
+     * page that is counting stones, so it is a number here — but it lands in
+     * an address, and an address that cannot be parsed by the page it points
+     * at is a link to a refusal.
+     */
+    const move = Math.min(Math.max(0, Math.trunc(known.from.move)), MOVE_CEILING);
+    query.set(SET_UP_PARAMS.move, String(move));
+  }
+  if (known.board !== undefined) query.set(SET_UP_PARAMS.board, String(known.board));
+  if (known.pace !== undefined) query.set(SET_UP_PARAMS.pace, String(known.pace));
+  const asked = query.toString();
+  return asked === "" ? base : `${base}?${asked}`;
+}
