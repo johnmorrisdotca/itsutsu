@@ -85,15 +85,29 @@ export function negotiate(
 /**
  * Where a language can be said to come from, most binding first.
  *
- * `onAccount` is a seam, not a feature: nothing supplies it today. It is the
- * hook the approved-but-unbuilt Preferences API drops into, and it is first
- * because a preference somebody saved to their account should not be
- * overruled by a browser they happen to be sitting at. It is spelt out here,
- * and tested, so the order is a decision on the record rather than one made
- * in a hurry by whoever builds that API.
+ * `onAccount` was written here as a seam before anything supplied it, with
+ * the order decided in advance on purpose — "a preference somebody saved to
+ * their account should not be overruled by a browser they happen to be
+ * sitting at" — so that whoever built the preferences half would find the
+ * decision already made rather than make it in a hurry. It is supplied now,
+ * from the registry in `lib/preferences`, and that order is kept.
+ *
+ * `justChosen` is the one thing that outranks it, and it is here for the
+ * reason the account ranks above the browser in the first place. An account
+ * language is the last thing this member said; a click is the thing they are
+ * saying now. Without a source that can only mean "now", the two are the same
+ * string and the account wins for ever — which is 0.126.0's "can't change
+ * back to ENG from JP" reached by a different road. See `LANG_CHOSEN_COOKIE`
+ * for why that cannot be read off the remembered cookie instead.
  */
 export type LocaleSources = {
-  /** Saved on the member's account. Nothing writes this yet. */
+  /**
+   * Chosen in this browser moments ago — the `lang-chosen` cookie the gate
+   * sets beside the remembered one. True for one request after a click and
+   * never otherwise, which is the whole of what makes it safe to put first.
+   */
+  justChosen?: string | null;
+  /** Saved on the member's account, and followed on every device they sign in on. */
   onAccount?: string | null;
   /** What this browser was last told to remember — the `lang` cookie. */
   remembered?: string | null;
@@ -109,6 +123,9 @@ export type LocaleSources = {
 export function resolveLocale(sources: LocaleSources, offered: readonly Locale[]): Locale {
   const speaks = (locale: Locale | null): locale is Locale =>
     locale !== null && offered.includes(locale);
+
+  const chose = readLocale(sources.justChosen);
+  if (speaks(chose)) return chose;
 
   const saved = readLocale(sources.onAccount);
   if (speaks(saved)) return saved;

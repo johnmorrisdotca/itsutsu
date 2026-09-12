@@ -741,3 +741,140 @@ describe("the site being worked on", () => {
     expect(body).toContain("not configured");
   });
 });
+
+/**
+ * A language asked for in the address.
+ *
+ * `rememberLanguage` had no cases at all until the language became a
+ * cross-device preference, and the reason it needs them now is that it is the
+ * ONE THING THE GATE CONTRIBUTES to that feature: the render on the other
+ * side of its redirect cannot tell a fresh choice from a year-old cookie
+ * unless this file says so.
+ *
+ * `proxy.test.ts` is deliberately where this lives rather than an i18n test.
+ * The rule for this file is that an addition may only wrap a yes the gate has
+ * already arrived at, so the claim worth pinning is not "the cookie is set"
+ * but "no decision moved to make room for it" — and only the gate's own tests
+ * can say that.
+ */
+describe("remembering a language asked for in the address", () => {
+  const ENV = { ...process.env };
+  const SECRET = "a-secret-long-enough-to-be-accepted";
+
+  afterEach(() => {
+    process.env = { ...ENV };
+    vi.unstubAllEnvs();
+  });
+
+  function ask(path: string, cookie?: string): NextRequest {
+    process.env.AUTH_SECRET = SECRET;
+    return new NextRequest(
+      `https://itsutsu.com${path}`,
+      cookie === undefined ? undefined : { headers: { cookie } },
+    );
+  }
+
+  /** The cookies a response's Set-Cookie headers carried, by name. */
+  function cookiesOn(response: Response): Record<string, string> {
+    const found: Record<string, string> = {};
+    for (const line of response.headers.getSetCookie()) {
+      const [pair = ""] = line.split(";");
+      const at = pair.indexOf("=");
+      if (at > 0) found[pair.slice(0, at).trim()] = pair.slice(at + 1).trim();
+    }
+    return found;
+  }
+
+  it("takes the language out of the address and keeps it in a cookie", async () => {
+    const response = await proxy(ask("/games?lang=ja"));
+    expect(response.status).toBe(307);
+    const location = response.headers.get("location") ?? "";
+    expect(location).toContain("/games");
+    expect(location, "the address kept the language on it").not.toContain("lang=");
+    expect(cookiesOn(response).lang).toBe("ja");
+  });
+
+  /*
+   * THE ONE NEW THING THE GATE DOES. A member's language lives on their
+   * account from this release on, and the account is one request behind at
+   * the moment they change their mind — so something has to say "this was
+   * chosen just now", and only the request carrying `?lang=` knows it.
+   * `memberLanguage.ts` does the keeping; this only says so in a cookie.
+   */
+  it("says in a second cookie that the language was chosen just now", async () => {
+    const set = cookiesOn(await proxy(ask("/games?lang=ja")));
+    expect(set["lang-chosen"]).toBe("ja");
+    // The language, not a flag: whoever reads the marker needs to know WHICH,
+    // and a flag plus the other cookie would be two sources for one fact.
+    expect(set["lang-chosen"]).toBe(set.lang);
+  });
+
+  it("gives the marker a life measured in a minute, and the language a year", async () => {
+    const lines = (await proxy(ask("/games?lang=ja"))).headers.getSetCookie();
+    const marker = lines.find((line) => line.startsWith("lang-chosen="));
+    const kept = lines.find((line) => line.startsWith("lang="));
+    // A marker that outlived its click would become a second standing
+    // preference, which is the thing it exists to prevent.
+    expect(marker).toContain("Max-Age=60");
+    expect(kept).toContain(`Max-Age=${60 * 60 * 24 * 365}`);
+    for (const line of [marker, kept]) {
+      expect(line).toContain("HttpOnly");
+      expect(line).toContain("Path=/");
+    }
+  });
+
+  it("sets neither cookie for a language the site does not speak", async () => {
+    for (const wrong of ["de", "zh", "es", "klingon", "", "JA"]) {
+      const response = await proxy(ask(`/games?lang=${wrong}`));
+      expect(response.status, `lang=${wrong} must not redirect`).toBe(200);
+      expect(cookiesOn(response), `lang=${wrong} must keep nothing`).toEqual({});
+    }
+  });
+
+  it("never answers a form post with a redirect", async () => {
+    process.env.AUTH_SECRET = SECRET;
+    const posted = await proxy(
+      new NextRequest("https://itsutsu.com/games?lang=ja", { method: "POST" }),
+    );
+    expect(posted.headers.get("location")).toBeNull();
+    expect(cookiesOn(posted)).toEqual({});
+  });
+
+  /*
+   * THE INVARIANT, and the only reason a cookie belongs in this file at all.
+   * `rememberLanguage` runs inside `carryOn`, which is where all three of the
+   * gate's yeses arrive, so it can only ever act on a request already being
+   * let through. A `?lang=` on a shut path must still be shut, and neither
+   * cookie may appear on that answer: a cookie set on a refusal would be the
+   * gate leaking a decision it never made.
+   */
+  it("cannot turn a refusal into a way through, and leaves no cookie on one", async () => {
+    const shut = await proxy(ask("/history?lang=ja"));
+    expect(shut.status).toBe(307);
+    expect(shut.headers.get("location")).toContain("/join");
+    expect(cookiesOn(shut)).toEqual({});
+  });
+
+  it("carries the whole address to the door, language and all", async () => {
+    // The language is dropped only on the way past a yes. A visitor sent to
+    // the door must still arrive back where they were going.
+    const shut = await proxy(ask("/history?result=white&lang=ja"));
+    expect(shut.headers.get("location") ?? "").toContain("result%3Dwhite");
+  });
+
+  it("remembers for a member's session exactly as it does for a stranger", async () => {
+    // Signed with the key the gate is about to verify with, or the session is
+    // simply not a session and the case would prove nothing about languages.
+    process.env.AUTH_SECRET = SECRET;
+    const token = await signSession({
+      kind: "player",
+      email: "her@example.com",
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    });
+    const response = await proxy(ask("/history?lang=ja", `${SESSION_COOKIE}=${token}`));
+    expect(response.status).toBe(307);
+    // Who is asking is not this file's business: the gate sets the same two
+    // cookies either way and never looks up an account to decide.
+    expect(cookiesOn(response)["lang-chosen"]).toBe("ja");
+  });
+});

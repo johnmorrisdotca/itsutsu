@@ -48,6 +48,40 @@ export const LANG_COOKIE = "lang";
 export const LANG_REMEMBER_FOR_SECONDS = 60 * 60 * 24 * 365;
 
 /**
+ * The cookie that says a language was JUST CHOSEN, in this browser, by
+ * whoever is sitting at it — and says nothing else at all.
+ *
+ * It exists because a member's language now lives on their account, which
+ * means the account has to be able to lose the argument exactly once: on the
+ * request where they are changing their mind. `LANG_COOKIE` cannot say that.
+ * It reads the same a second after the click and a year after it, so it means
+ * both "I chose this just now" and "I was told this last winter" — and a
+ * reader that cannot tell those apart has to pick which mistake to make.
+ * Either it lets the stored account language overrule a fresh click, which is
+ * the 0.126.0 bug ("Can't change back to ENG from JP") arriving by a new
+ * road; or it writes the cookie back over the account whenever the two
+ * differ, and then two devices take the language off each other for ever,
+ * because a stale cookie and a fresh one are the same string.
+ *
+ * So this is a second cookie with one meaning, which is the rule this
+ * repository already states for `flipped: false` and for the board's nullable
+ * grades. `proxy.ts` sets it beside the other one, on the redirect it was
+ * already returning: it reads no database, learns nothing about who is
+ * asking, and decides nothing it did not decide before. `currentLocale` is
+ * the only thing that reads it — once to answer in the language just picked,
+ * and once to write that choice onto the account it belongs to.
+ *
+ * SHORT ON PURPOSE. It has one job on the very next request, and a marker
+ * that outlived its click would quietly become a second standing preference,
+ * which is the thing it exists to prevent. A minute covers the redirect and
+ * the page after it with room to spare. A marker still in the jar after that
+ * has been acted on already and acting on it again writes nothing — see
+ * `sameStored`.
+ */
+export const LANG_CHOSEN_COOKIE = "lang-chosen";
+export const LANG_CHOSEN_FOR_SECONDS = 60;
+
+/**
  * Every phrase the site can say in more than one language, in the language it
  * was written in.
  *

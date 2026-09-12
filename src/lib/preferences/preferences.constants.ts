@@ -1,3 +1,5 @@
+import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
@@ -37,6 +39,34 @@ export const PREFERENCE_SPECS = {
   playersWho: { options: DIRECTORY_WHO_LIST, fallback: NO_FILTER.who },
   playersSettled: { options: FLAG, fallback: NO_FILTER.settled },
   playersActive: { options: FLAG, fallback: NO_FILTER.active },
+
+  /*
+   * The language the site speaks to this member, wherever they sign in.
+   * John: "I think language is another cross device thing."
+   *
+   * THE OPTIONS ARE THE LANGUAGES THE SITE CAN SPEAK, not the ones it knows
+   * the name of. `OFFERED_LOCALES` is the list with a dictionary behind it,
+   * and `i18n.types.ts` already gives the reason in as many words: offering
+   * one the site cannot say anything in would be "a value in range that means
+   * 'nothing'". So `{ language: "zh" }` is refused by name at `/api/me` today
+   * and accepted the day somebody writes that dictionary, with nothing here
+   * to remember to change.
+   *
+   * THE FALLBACK IS NOT AN ANSWER ABOUT THE MEMBER, and this is the one row
+   * of the registry where that distinction bites. `DEFAULT_LOCALE` is what a
+   * page is rendered in when nothing anywhere has said otherwise — its own
+   * comment insists it "is not a preference and never stands in for one" —
+   * so reading this through `preferencesFrom` or `preferencesFor` would turn
+   * "has never chosen" into "chose English", and a Japanese browser belonging
+   * to a member who never touched the picker would be answered in English.
+   * That is the whole `Accept-Language` path lost to a default.
+   *
+   * So nothing reads the language through the filled-in view. `languageFrom`
+   * in `lib/i18n/languagePreference.ts` reads it through `cleanPreferences`
+   * and answers null for "never said", which is the only honest answer, and
+   * `languagePreference.test.ts` holds the two apart on purpose.
+   */
+  language: { options: OFFERED_LOCALES, fallback: DEFAULT_LOCALE },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */

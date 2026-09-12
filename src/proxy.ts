@@ -6,6 +6,8 @@ import { constantTimeEqual } from "@/lib/auth/constantTimeEqual";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
 import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import {
+  LANG_CHOSEN_COOKIE,
+  LANG_CHOSEN_FOR_SECONDS,
   LANG_COOKIE,
   LANG_PARAM,
   LANG_REMEMBER_FOR_SECONDS,
@@ -255,6 +257,12 @@ function isBoardApi(pathname: string): boolean {
  * already said yes, the redirect goes to the same path with one parameter
  * removed, and that request is decided again from scratch exactly as it would
  * have been. GET only, so a form post is never answered with a redirect.
+ *
+ * It sets two cookies rather than one: the language, kept for a year, and a
+ * minute-long marker saying it was chosen just now. Neither is read here. A
+ * member's language lives on their account, and the marker is the only thing
+ * the gate can offer towards that without asking the database who is asking —
+ * which it must not. See `LANG_CHOSEN_COOKIE`.
  */
 function rememberLanguage(request: NextRequest): NextResponse | null {
   if (request.method !== "GET") return null;
@@ -270,6 +278,29 @@ function rememberLanguage(request: NextRequest): NextResponse | null {
     // Every page: a language is not about one page.
     path: "/",
     maxAge: LANG_REMEMBER_FOR_SECONDS,
+    sameSite: "lax",
+    httpOnly: true,
+  });
+  /*
+   * And a second cookie whose only meaning is "this was chosen just now,
+   * here", so that the render on the other side of the redirect can keep the
+   * choice on the member's account — see `LANG_CHOSEN_COOKIE`, which says why
+   * the cookie above cannot answer that question, and `memberLanguage.ts`,
+   * which does the keeping.
+   *
+   * THIS FILE LEARNS NOTHING. It still does not ask who is signed in, still
+   * reads no database, and still decides nothing: the value is the language
+   * already being written on the line above, and every branch of the gate
+   * arrives here exactly as it did before. A request that was going to be
+   * redirected is redirected, with one more `Set-Cookie` on it. Whether the
+   * marker means anything is decided later, by something that does know who
+   * is asking and is allowed to write.
+   */
+  response.cookies.set({
+    name: LANG_CHOSEN_COOKIE,
+    value: asked,
+    path: "/",
+    maxAge: LANG_CHOSEN_FOR_SECONDS,
     sameSite: "lax",
     httpOnly: true,
   });

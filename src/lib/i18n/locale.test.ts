@@ -78,6 +78,56 @@ describe("which language to answer in", () => {
     expect(resolveLocale({ onAccount: "ja", remembered: "en", accepts: "en" }, OFFERED)).toBe("ja");
   });
 
+  /*
+   * THE CASE THE ACCOUNT SOURCE COULD NOT SHIP WITHOUT, and it is 0.126.0's
+   * bug waiting to be reintroduced by a better-behaved route. A member whose
+   * account says Japanese clicks English. The gate writes the new language
+   * into the cookie and redirects; the account still says Japanese for one
+   * more request. If the account wins that argument, the page they changed
+   * the language on is the one page that does not change — and since it will
+   * be true of the next page, and the one after, it reads as permanent. John
+   * could not get out of Japanese, which he does not read.
+   *
+   * So a click has a source of its own, above the account, true for exactly
+   * one request. It cannot be folded into `remembered`: that cookie lasts a
+   * year and would then outrank the account for ever, which is the opposite
+   * fault — see the two cases below it.
+   */
+  it("lets a language just chosen beat the one on the account", () => {
+    expect(resolveLocale({ justChosen: "en", onAccount: "ja", remembered: "en" }, OFFERED)).toBe("en");
+  });
+
+  it("beats every other source at once, since choosing is the newest thing said", () => {
+    expect(
+      resolveLocale({ justChosen: "ja", onAccount: "en", remembered: "en", accepts: "en" }, OFFERED),
+    ).toBe("ja");
+  });
+
+  it("falls back on the account for a marker naming a language the site cannot speak", () => {
+    // A cookie is something anybody can write, and this one is no different.
+    expect(resolveLocale({ justChosen: "es", onAccount: "ja" }, OFFERED)).toBe("ja");
+    expect(resolveLocale({ justChosen: "klingon", onAccount: "ja" }, OFFERED)).toBe("ja");
+  });
+
+  it("says nothing at all when no language was just chosen", () => {
+    // The ordinary request: the marker is absent, and the account decides.
+    expect(resolveLocale({ justChosen: null, onAccount: "ja", accepts: "en" }, OFFERED)).toBe("ja");
+  });
+
+  /*
+   * The other half of the reason `justChosen` exists. The account is what
+   * makes one choice reach every device, so it has to outrank a cookie that
+   * was written on THIS device a year ago and has meant nothing since.
+   */
+  it("prefers the account over a device that was told something else long ago", () => {
+    expect(resolveLocale({ onAccount: "en", remembered: "ja", accepts: "ja" }, OFFERED)).toBe("en");
+  });
+
+  it("applies the account to a device that has never been told anything", () => {
+    // A new phone, a fresh browser: no cookie of its own, and no `?lang=`.
+    expect(resolveLocale({ onAccount: "ja" }, OFFERED)).toBe("ja");
+  });
+
   it("prefers what was remembered over what the browser asks for", () => {
     expect(resolveLocale({ remembered: "ja", accepts: "en" }, OFFERED)).toBe("ja");
   });
