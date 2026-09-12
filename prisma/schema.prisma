@@ -548,7 +548,113 @@ model Member {
   playedStreakKind  String?
   playedStreakCount Int @default(0)
 
+  /// Every point this member has earned, denormalised from XpEvent.
+  ///
+  /// A COLUMN AND NOT A SUM, and the reason is the same one `playedStreakCount`
+  /// gives: every list that shows a level shows it beside a name — the members
+  /// directory, a ladder, the XP leaderboard — and a sum per row is the fault
+  /// taken off the landing page in 0.139.0, where 2,508 move rows were read to
+  /// draw eight games. Every one of those lists already fetches this row.
+  ///
+  /// Safe to denormalise because it is a SUM and not a formula. It can be
+  /// recomputed from XpEvent and checked, and `awardXp` writes the event and
+  /// this in one transaction, so a replayed request cannot drift them.
+  ///
+  /// THE LEVEL IS NOT STORED BESIDE IT. `xpLevelFor` is a lookup over a
+  /// hundred-element array in memory, so a list that has this row has the level
+  /// for nothing — and the curve is a table precisely so it can be retuned with
+  /// no migration behind it. A stored level is a cached copy of that table, and
+  /// the moment it is retuned every stored level is a number nobody can trust
+  /// and nothing reports it.
+  xp      Int   @default(0)
+
+  /// XP earned that this member has not been shown yet.
+  ///
+  /// A courtesy, not a record — the ledger is XpEvent, and a missed toast is
+  /// not a bug worth waking anybody for. It is a column because half the awards
+  /// here have nobody waiting on a response: a visit is awarded during a server
+  /// render, and a game finishes because the OPPONENT moved, or a bot did, or a
+  /// clock ran out. There is no reply to put it in, and a cookie cannot be set
+  /// during a render.
+  ///
+  /// Written by awardXp inside the transaction that writes the total, so it
+  /// costs no write of its own; read off the row `memberRowFor` already fetches
+  /// on every server-rendered page, so it costs no query; cleared by the toast
+  /// host once it has been shown. See src/lib/xp/xpFlash.ts.
+  xpFlash Json?
+
+  /// When this member last earned anything. Null means never.
+  ///
+  /// A COLUMN BECAUSE THE LEADERBOARD SORTS BY IT. `max(createdAt)` per member
+  /// is either a query per row — the fault taken off the landing page in
+  /// 0.139.0 — or a grouped subquery that no index can order, which is a full
+  /// scan of XpEvent every time somebody clicks the heading. Written by awardXp
+  /// in the same update that increments `xp`, so it costs nothing.
+  ///
+  /// NULLABLE, and never a stand-in date. "Has never earned anything" is a real
+  /// state a leaderboard wants to show differently, and `createdAt` or the epoch
+  /// would both be dates somebody could mistake for a real one.
+  xpLastAt DateTime?
+
   @@index([botTier])
+  /// The XP leaderboard's default sort: highest first. The LEVEL is derived from
+  /// this column and the curve is monotonic, so sorting by level is sorting by
+  /// this — there is nothing to index for it, and nothing to store.
+  @@index([xp])
+  /// The leaderboard's other sort, and how "who is actually climbing" is read.
+  @@index([xpLastAt])
+}
+
+/// One thing a member earned, once.
+///
+/// THE UNIQUE INDEX IS THE WHOLE DESIGN. A type plus a subject says how often an
+/// award may happen — the day key for a daily one, the game id for a game, the
+/// variant for a first play, "" for a once-ever — so idempotency is the schema's
+/// job and not a rule every caller has to remember. A replayed request, a
+/// double-fired handler and a bot replaying an ending all write the row that is
+/// already there, and the second write is refused.
+///
+/// UmaKuma's XpEvent is one row per (account, kind, day) ACCUMULATED, which
+/// answers a daily cap and a once-a-day award in one read and pays for it with
+/// an XP_ONCE_PER_DAY list, an XP_DAILY_CAPS map, and per-award timing gone for
+/// good. Putting the frequency in the subject buys all of that back with one
+/// index.
+///
+/// NO RELATION TO Member, matching every other member-keyed table here
+/// (Player.memberId, PlayerVariantRating.memberId, Game.blackMemberId): the id
+/// is opaque, the join is never wanted, and production carries decided games
+/// with null seat ids that a foreign key would have refused.
+model XpEvent {
+  id       String @id @default(cuid())
+  memberId String
+  /// The key in XP_EVENTS. Deliberately not a Prisma enum: a Postgres enum
+  /// member cannot be renamed under rows that hold it, and this catalogue will
+  /// grow — BacklogStatus carries three legacy values for exactly that reason.
+  /// `XpEventType` in src/lib/xp/xp.types.ts is what keeps it honest.
+  type     String
+  /// What was actually paid, AT THE TIME. Not what the type is worth now:
+  /// repricing an award must never rewrite anybody's history.
+  points   Int
+  /// What this award was about. "" for an award about nobody but the member.
+  ///
+  /// NOT NULLABLE, and the reason is the index above it: Postgres does not
+  /// consider two nulls equal, so a nullable subject would let a once-ever
+  /// award be paid twice — the index present, tested, and silently not doing
+  /// the one job it exists for. "" is a real and distinct meaning here rather
+  /// than a stand-in for a missing answer, which is what makes it the right
+  /// answer and not a value that happens to be in range.
+  subject  String @default("")
+  /// The day it was earned, in the member's own zone where they have set one.
+  /// A column rather than something derived from createdAt, so the day's
+  /// allowance is one indexed count and a history page needs no arithmetic.
+  dayKey   String
+  createdAt DateTime @default(now())
+
+  @@unique([memberId, type, subject])
+  /// The day's allowance: one count, one index.
+  @@index([memberId, dayKey])
+  /// A member's own history, newest first.
+  @@index([memberId, createdAt])
 }
 
 /// Courtesy time one seat gave the other during a game, kept so sportsmanship can be read later.

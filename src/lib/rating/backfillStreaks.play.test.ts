@@ -167,6 +167,12 @@ describe("backfilling the streak columns", () => {
            */
           orderBy: { playedAt: "asc" },
           select: {
+            /* `playedSides` takes a DecidedGame, which carries the id since
+               0.159.0 so the XP ledger can key a game's awards on it. The
+               backfill never awards XP — it rebuilds runs from history and
+               nothing more — but it is handed the same rows, so it reads the
+               same columns. */
+            id: true,
             variant: true,
             rated: true,
             blackName: true,

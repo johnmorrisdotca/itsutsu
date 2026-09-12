@@ -10,6 +10,9 @@ import { DEFAULT_GAME_DEFAULTS, gameDefaultsFrom, type GameDefaults } from "@/co
 import { prisma } from "@/lib/prisma";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
+import { awardXp } from "@/lib/xp/awardXp";
+import { XP_EVENTS } from "@/lib/xp/xp.constants";
+import { isNewDay, xpDayKey } from "@/lib/xp/xpDay";
 
 /**
  * Somebody who signs in. The address is what they sign in with, so every
@@ -108,9 +111,15 @@ export async function admitMember(
         picture: input.picture,
         invitedWith: input.invitedWith ?? "",
       },
-      select: { email: true, name: true, picture: true },
+      select: { id: true, email: true, name: true, picture: true },
     });
-    return { ...row, email: row.email ?? email, created: true };
+    /* The first line in a member's XP history, written where the row is made.
+       It rides the create rather than sitting in the sign-in route because
+       `created: true` happens exactly once per member and nothing else on the
+       site can say so. Quiet by construction — `awardXp` swallows and logs —
+       because a ledger write must never be able to fail a sign-in. */
+    await awardXp({ memberId: row.id, awards: [{ type: XP_EVENTS.joined }] });
+    return { email: row.email ?? email, name: row.name, picture: row.picture, created: true };
   }
   // The name is the member's to choose; Google's is only the first suggestion.
   const row = await prisma.member.update({
@@ -293,7 +302,20 @@ const TOUCH_EVERY_MS = 60_000;
 export const memberRowFor = cache(async (key: string) =>
   prisma.member.findUnique({
     where: { email: key },
-    select: { lastSeenAt: true, bannedAt: true, preferences: true },
+    select: {
+      id: true,
+      lastSeenAt: true,
+      bannedAt: true,
+      preferences: true,
+      timeZone: true,
+      /* XP rides this read for the same reason a preference does. `xpFlash` is
+         the toast a member has not been shown yet, and it must reach the
+         masthead on every page without a query of its own — see
+         `src/lib/xp/xpFlash.ts`. `id` comes along because `currentMemberId`
+         was paying for a second `findUnique` to get it. */
+      xp: true,
+      xpFlash: true,
+    },
   }),
 );
 
@@ -314,8 +336,29 @@ export const touchMember = cache(async (email: string): Promise<{ banned: boolea
   const row = await memberRowFor(key);
   if (row === null) return { banned: false };
   if (row.bannedAt !== null) return { banned: true };
-  if (Date.now() - row.lastSeenAt.getTime() >= TOUCH_EVERY_MS) {
-    await prisma.member.update({ where: { email: key }, data: { lastSeenAt: new Date() } });
+  const now = new Date();
+  if (now.getTime() - row.lastSeenAt.getTime() >= TOUCH_EVERY_MS) {
+    /* ── THE DAY'S XP RIDES THIS WRITE, AND COSTS A COMPARISON ────────────
+       `lastSeenAt` is already in hand and is about to be overwritten, so
+       "is this a new day for them" is one comparison on values we hold — no
+       read, and nothing attempted on the four hundred other page loads of a
+       day. Their own zone, because this site's members are in Japan, Estonia
+       and Canada and a fixed one would end somebody's day in the afternoon.
+
+       The alternative was to call `awardXp` on every touch and let the unique
+       index refuse the repeats. That works and is wrong: a minute-throttled
+       touch is up to 1,440 award attempts a day per member, each a query, to
+       write one row. A cap or an index should not be the only thing keeping a
+       cost down. */
+    const fresh = isNewDay(row.lastSeenAt, now, row.timeZone);
+    await prisma.member.update({ where: { email: key }, data: { lastSeenAt: now } });
+    if (fresh) {
+      await awardXp({
+        memberId: row.id,
+        awards: [{ type: XP_EVENTS.dailyVisit, subject: xpDayKey(now, row.timeZone) }],
+        now,
+      });
+    }
   }
   return { banned: false };
 });

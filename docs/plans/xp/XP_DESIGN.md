@@ -432,17 +432,58 @@ export type XpFlash = {
 | `xpFlashFor(email)` | `src/lib/xp/xpFlash.ts` | `SiteHeader`. Reads the flash off the cached member row and turns `{type, points}` into the host's props using the constants table. Returns `[]` for nobody signed in. |
 | `clearXpFlash()` | `src/lib/xp/xpFlash.actions.ts`, `"use server"` | the client host, once it has shown them. A Server Function, which is the Next 16 name; no route file needed. |
 
-`xpFlashFor` hands XP-07 exactly the props it was given, built on the server so
-the client never sees the constants table:
+`xpFlashFor` hands the host exactly what `src/components/xp/XpToastHost.tsx`
+takes, built on the server so the client never ships the catalogue:
 
 ```ts
-export type XpToastProps = {
+export type XpToastItem = {
+  /** Unique per award, stable across a re-render of the same flash. */
+  id: string;
   points: number;
   label: string;
+  /** May be empty. */
   kanji: string;
   sentence: string;
+  /** `reached: true` is a level-up; `false` is the quiet "next level" line. */
+  level?: { name: string; reached: boolean };
 };
 ```
+
+`label`, `kanji` and `sentence` come from `XP_EVENT_SPECS`; `level` comes from
+the curve. The `id` is the flash's stamp plus the award's position in the batch —
+stable so a dismiss keeps working, and **not random**, because a random id
+differs between the server's markup and the browser's and is reported as a
+hydration mismatch.
+
+**Three decisions about `level`, each of which could have gone the other way.**
+
+- **It is sent when a level was crossed, and when the award left the member
+  within `XP_ONE_MORE_GAME` (30 — one finished win) of the next one. Not on
+  every award.** The interface allows the latter, and it would mean every
+  daily-visit toast carries a progress line, which turns a courtesy that goes
+  away on its own into a status panel following a reader round the site. The
+  nudge earns its place by being rare, and by being *true*: "one more game" is
+  something a reader can go and do, where "8% to go" is a number nobody can act
+  on.
+- **It goes on the LAST award of a batch, not all of them.** A level is crossed
+  once however many awards carried you over it; on all three it would say "you
+  reached Pixel" three times in one stack.
+- **Nothing at the top of the ladder.** Not level 100 with `reached: false`,
+  which reads as a level somebody is approaching while already standing on it.
+
+**The level's NAME is `Level 42` until the hundred names land.** `levelOn` in
+`xpFlash.ts` is the one line XP-10 changes to `xpLevelName(level)`; nothing else
+moves. That fallback is UmaKuma's own — `xpRank` answers `Rank 42` for an unnamed
+rank, and its comment calls it a floor rather than a feature.
+
+**The kanji for a level-up is `昇級`, not `昇段`.** Two reasons, and the second is
+the one that settles it. The hundred levels are video-game references, not dan
+grades, so `昇段` — promotion to a *dan* rank specifically — would be describing
+something the ladder does not have. And `kyu`, `dan` and `meijin` are already
+taken on this site: they are three of the five computer grades in `BOT_TIER_LIST`.
+Dan-and-kyu language anywhere in the XP ladder would collide with the bot ladder's
+vocabulary, in a place where a reader has every reason to think the two are
+related. **The names file should avoid dan/kyu wording for the same reason.**
 
 ### Where the host mounts
 
@@ -563,6 +604,39 @@ UmaKuma stores `Account.xpLevel` beside the total and needs a
 after in one transaction, so it compares `xpLevelFor(before)` with
 `xpLevelFor(after)` and needs nothing persisted.
 
+### Sorting and paging the leaderboard, and the index behind each column
+
+The leaderboard does not invent its own sorting. It consumes **`src/lib/api/paging.ts`**
+— `sort=<column>[:asc|desc]`, an opaque `cursor`, a capped `limit`, and the
+envelope `{ items, next, total? }`, cursor-based — and the sortable headings
+**`RecordTable`** grows in the same pass. That convention is another agent's
+work, landing now; the leaderboard ticket depends on it and must not write a
+second one.
+
+**Every sortable column is an indexed column on `Member`.** That is the whole
+requirement, because a sort has to order *all* members and not just the page
+being shown, so a sort key that is not an index is a full scan on every click of
+a heading — the landing-page fault of 0.139.0 wearing a table header.
+
+| Heading | Sorts on | Index | Note |
+|---|---|---|---|
+| XP | `Member.xp` | `Member_xp_idx` | The default, descending. |
+| Level | `Member.xp` | `Member_xp_idx` | **Nothing extra.** The curve is monotonic, so ordering by level *is* ordering by XP. Do not add an `xpLevel` column to make the heading sortable — it is already sortable, and the column would be a cached copy of a table meant to be retuned. |
+| Last earned | `Member.xpLastAt` | `Member_xpLastAt_idx` | Nullable. Null is "never earned anything", which the table shows as a dash rather than as a date. |
+| Name | `Member.name` | — | Unindexed, and acceptable: it is a tie-break and a small-N convenience, never the default. If the members table ever grows past a few hundred, index it. |
+
+`Member.xpLastAt` is in XP-02's second migration for this reason and no other.
+`max(XpEvent.createdAt) group by memberId` answers the same question, and as a
+*sort* it is either a query per row or a grouped subquery no index can order.
+`awardXp` writes it in the same `UPDATE` that increments `xp`, so it costs
+nothing, and it is only written when something was actually paid — "last earned"
+has to mean earned, or a member whose seventh game of the day paid nothing would
+float above one who really did earn.
+
+**The leaderboard must exclude bots in its own query**, on `botTier: null`, even
+though `awardXp` already refuses them. Two places, because the awarder is where
+it is *true* and the leaderboard is where it would be *visible*.
+
 ### The day key
 
 `dayKey` is `YYYY-MM-DD` in the member's `timeZone` where they have set one, and
@@ -586,6 +660,37 @@ is applied, because the local database is shared and a migration on an unmerged
 branch makes every other worktree's `migrate dev` offer a reset.
 
 Before it reaches production, a Neon branch: `before-xp-2026-09-12`.
+
+**Two migrations, not one.** `20260912120000_a_member_keeps_their_experience` is
+the ledger and the total; `20260912123000_the_ladder_sorts_by_what_it_shows` adds
+`Member.xpLastAt` for the leaderboard's second sort. The second exists because
+the first was already applied when the sorting convention landed, and Prisma
+checksums a migration file — editing an applied one breaks `migrate status` on
+every database holding it. Two files is the right cost of that.
+
+### Nobody's XP is backfilled, and that is a decision
+
+Production holds **116 finished games** and 4 real people (11 members, 7 of them
+bots). Every one of them starts at zero.
+
+Backfilling is tempting and half of it is easy: 116 games times a finish and a
+win is an afternoon. The other half is not. `firstOfVariant`, `firstOfFamily`,
+`revengeWin` and the streaks are all **ordered** facts — they depend on what had
+already happened when each game ended — so a backfill has to replay history in
+chronological order through `awardXp` itself, or the totals are a different
+number from what the rules would have produced. And a *partial* backfill is the
+worst of the three options: four people with totals that reflect some awards and
+not others, which nothing can explain and nobody can check.
+
+The idempotent subject makes the replay safe and repeatable whenever somebody
+wants it — that is exactly what it is for — so this is a deferral rather than a
+refusal. **It is its own ticket.** Until it runs, the ladder honestly says the
+ladder started today.
+
+A backfill, when it happens, needs one thing this design does not yet have: a
+check that `Member.xp` equals `sum(XpEvent.points)` for every member. That is one
+query, it belongs in the backfill script, and it is the only way to know a replay
+landed.
 
 ## Where the seams are
 
