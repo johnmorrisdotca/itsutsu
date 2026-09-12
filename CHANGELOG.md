@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.155.2 — 2026-09-12
+- The release history counts 167 releases, which is how many there have been: one version had two headings, and now has one
+
 ## 0.155.1 — 2026-09-12
 - Two working rules written where the next session reads them: Intl belongs in a handler and never in render, and how to run one browser spec without sweeping the shared database
 
@@ -393,8 +396,6 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 ## 0.43.0
 - After a game, say privately how you think you played: thumbs up or down, and a tally of your own reads on your profile.
-
-## 0.43.0
 - John's GoldToken record too, and a member can now carry more than one kept record
 
 ## 0.42.0

@@ -36,6 +36,23 @@ describe("reading the changelog", () => {
     expect(releases.map((release) => release.version)).not.toContain("0.49.9");
   });
 
+  it("names each version once in the real changelog — 0.43.0 was a heading twice and counted twice", () => {
+    /*
+     * The numbers audit found `## 0.43.0` at two headings with different
+     * notes under each, so /backlog and /admin said 168 releases for 167
+     * versions. The parser takes a release per heading and had no reason to
+     * notice. The notes were real and the second heading was not; they are
+     * folded under one heading now, and this holds it there. A heading that
+     * already exists is a version that already shipped, and a second block
+     * under it is a mistake in the file, not a second release.
+     */
+    const real = parseReleases(readFileSync(join(process.cwd(), "CHANGELOG.md"), "utf8"));
+    const seen = new Map<string, number>();
+    for (const release of real) seen.set(release.version, (seen.get(release.version) ?? 0) + 1);
+    const doubled = [...seen].filter(([, count]) => count > 1).map(([version]) => version);
+    expect(doubled, "a version with two headings is counted as two releases").toEqual([]);
+  });
+
   it("reads an empty or wordless changelog as no releases at all", () => {
     expect(parseReleases("")).toEqual([]);
     expect(parseReleases("# Changelog\n\nNothing yet.\n")).toEqual([]);
