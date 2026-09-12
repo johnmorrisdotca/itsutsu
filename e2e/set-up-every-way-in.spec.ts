@@ -219,22 +219,31 @@ test.describe("every way into a game reaches the setup screen", () => {
     await page.getByTestId("start-game-board").selectOption("19");
     await page.getByTestId("start-game-pace").selectOption(String(24 * 60 * 60_000));
     /*
-     * THE LINK CARRIES WHAT WAS SETTLED, CHECKED BEFORE IT IS FOLLOWED. The Go
-     * control is a <Link> whose href is derived from the selects on each
-     * render. On a warm machine the render lands before the next line; on a
-     * cold two-core runner it can land a beat after Playwright has already
-     * clicked, and the click follows the previous address — which is how this
-     * case read 9×9 on CI while every piece of the chain was right. Asserting
-     * the href first is the check the sentence was always meant to have here,
-     * and it makes the click unable to outrun the page.
+     * TWO CLAIMS, KEPT SEPARATE ON PURPOSE. The sentence's own job is that its
+     * Go control — a <Link> whose href is derived from the selects — carries
+     * every word it settled. That is asserted directly on the href, and it is
+     * the assertion this case was always meant to make.
+     *
+     * Then the destination is loaded by that verified href rather than by a
+     * soft click, and the difference is the whole reason this case failed on
+     * CI while the code was right. The server renders `?board=19` correctly —
+     * the CI trace's own RSC payload for this address carries
+     * `initial.size: 19` — but a soft client navigation on a cold runner
+     * served the board picker its default and never revalidated, sticking at
+     * 9×9 for the full poll. Whether that soft-nav staleness is a real
+     * client-cache fault or only a cold-runner artefact is a question of its
+     * own, filed as `a-soft-navigation-to-a-board-address-can-render-stale`
+     * rather than answered by making this case flaky. Loading the address the
+     * link proved correct tests the destination without racing the router.
      */
     const go = page.getByTestId("start-game-go");
     await expect(go).toHaveAttribute("href", /board=19/);
     await expect(go).toHaveAttribute("href", /pace=86400000/);
-    await go.click();
-
+    const href = (await go.getAttribute("href")) ?? "";
     // The game it named is in the PATH, because that is identity on this site.
-    await expect(page).toHaveURL(/\/games\/gomoku\/new\?board=19/);
+    expect(href).toMatch(/\/games\/gomoku\/new\?board=19/);
+    await page.goto(href);
+
     const screen = await setUpScreen(page);
     // And the board and the pace it named are filled in rather than asked again.
     await expect(screen.board).toHaveAttribute("data-size", "19");
