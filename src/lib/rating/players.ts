@@ -4,8 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { tierFor, type RatingTier } from "./elo";
 import { RATING_POOLS } from "./pools";
 import { streakIn, type Streak } from "./streak";
-import { legaciesForName } from "@/lib/legacy/legacyPlayers.data";
-import { wholeRecord } from "@/lib/legacy/wholeRecord";
 
 /**
  * Players by name. There are no accounts, so a name is an identity: the
@@ -15,7 +13,6 @@ import { wholeRecord } from "@/lib/legacy/wholeRecord";
  */
 
 import { playerKey } from "./playerKey";
-import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { ratingShown } from "./shownRecord";
 
 export { playerKey };
@@ -192,134 +189,6 @@ export async function memberIdForName(name: string): Promise<string | null> {
 }
 
 
-/** One row of the directory: a member, with their record if they have one. */
-export type DirectoryEntry = {
-  /**
-   * The member's opaque id: the one thing every member has and no two share.
-   * It is what a list of these is keyed by — the address is null for a kept
-   * record, and two of those in one list are two rows with the same key.
-   */
-  id: string;
-  /** Null for a kept record: somebody who never signed in. */
-  email: string | null;
-  name: string;
-  picture: string;
-  lastSeenAt: string;
-  joinedAt: string;
-  /** Joined within the last two weeks: someone to welcome. */
-  isNew: boolean;
-  /** As they wrote it: free text, resolved to a flag where it can be. */
-  country: string;
-  profile: PlayerProfile | null;
-  /**
-   * The run over every finished game this member has played here, rated or
-   * not — the set the PLAYED column counts, and the only run that matches it.
-   *
-   * On the entry rather than inside `profile`, because `profile` is the rating
-   * table and this is not a rating: it is kept on `Member`, keyed by the id,
-   * and a member who has only ever played friendly games has this and no
-   * profile at all. Read off the row this function was already fetching, so
-   * the members list pays nothing for it — see `rating/playedRun.ts`.
-   */
-  playedStreak: Streak | null;
-  /**
-   * What this name played before Itsutsu, from the kept records — nought for
-   * almost everybody, and thousands for the few it is not.
-   *
-   * Carried on the row because the list is where it was missing. A kept record
-   * had a member row so the site could list them at all, and the list read the
-   * Itsutsu columns alone, so Chibi appeared as somebody who had never played
-   * a game while his own page showed fourteen thousand. The two were reading
-   * different halves of the same person.
-   *
-   * Games only. There is no rating here and there will not be one: another
-   * site's is on another scale, against other players, and was never
-   * converted.
-   */
-  elsewhere: { wins: number; losses: number; draws: number };
-  /** The engine that plays this member's seats, when a program does. */
-  botTier: string | null;
-  unclaimableBecause: string | null;
-  /**
-   * Their XP total, for the level badge beside their name.
-   *
-   * COSTS NOTHING, which is the only reason it is here. `toDirectory` is handed
-   * whole `Member` rows — `prisma.member.findMany` with no `select` — so this
-   * column was already read and thrown away on every one of the three lists
-   * built from it. The level itself is not stored and never will be:
-   * `xpLevelFor` is a lookup over a hundred numbers in memory, so a badge on
-   * every row of a page of members is free. See `Member.xp` in the schema, which
-   * says the same thing from the other end.
-   *
-   * The TOTAL and not the level, because a row carrying a level would be
-   * carrying an answer to a question the reader has not asked yet — whether
-   * there is a standing worth printing at all is `levelShown`'s to decide, and
-   * a program's nought must reach it rather than arriving as a 1.
-   */
-  xp: number;
-};
-
-/** How long a member counts as new in the directory. */
-const NEW_FOR_DAYS = 14;
-
-/**
- * What one name played before this site, summed across the sites it was kept
- * from — nought where there is nothing kept, which is almost everybody.
- *
- * `wholeRecord` is handed an empty "here", so what comes back is the kept
- * part alone: this site's own games are already counted from the rating rows
- * and adding them here would count them twice.
- */
-function keptRecordFor(name: string): { wins: number; losses: number; draws: number } {
-  const kept = wholeRecord(legaciesForName(name), { won: 0, lost: 0, drawn: 0 });
-  return { wins: kept.figures.won, losses: kept.figures.lost, draws: kept.figures.drawn };
-}
-
-/**
- * Everyone who has come in, most recently seen first, with the record their
- * name has earned. A member who has not finished a game yet is still listed —
- * the directory is how people find each other to play.
- */
-export async function fetchDirectory(limit: number): Promise<DirectoryEntry[]> {
-  return toDirectory(await prisma.member.findMany({ orderBy: { lastSeenAt: "desc" }, take: limit }));
-}
-
-/**
- * Every computer player, however many people are on the site.
- *
- * They used to be picked out of the directory's first page, which is ordered
- * by who was seen last and cut at a limit. A computer player is never "seen"
- * — it does not sign in — so the moment the site had more members than that
- * limit, every one of them dropped off the end and the players page had no computer
- * opponents on it at all. Nobody would have connected the two facts.
- *
- * They are a fixed, tiny set, so they are fetched as one: a directory page is
- * a page of people, and this is not that.
- */
-export async function fetchComputerPlayers(): Promise<DirectoryEntry[]> {
-  return toDirectory(await prisma.member.findMany({ where: { botTier: { not: null } } }));
-}
-
-/**
- * Every kept record, however many people are on the site.
- *
- * The same fault the computer players had, one kind of member over, and the
- * reasoning above applies word for word: the directory is ordered by who was
- * seen last, and somebody remembered here NEVER SIGNS IN, so their stamp is
- * frozen at the moment their row was written. Past the directory's limit they
- * would drop off the end and the members list would stop showing them —
- * quietly, on the day the site got busy enough for it to matter, and for a
- * reason nobody would connect to the symptom.
- *
- * Chibi and Kyokosan are two rows and there will never be many, so they are
- * fetched as one, exactly as the programs are.
- */
-export async function fetchKeptRecords(): Promise<DirectoryEntry[]> {
-  return toDirectory(
-    await prisma.member.findMany({ where: { unclaimableBecause: UNCLAIMABLE_REASONS.keptRecord } }),
-  );
-}
-
 /**
  * The rating worth showing beside a batch of names at once, keyed by the
  * folded name each was asked by.
@@ -339,53 +208,3 @@ export async function ratingsByName(names: readonly string[]): Promise<Map<strin
   return new Map(keys.map((key) => [key, byKey.get(key) ?? null]));
 }
 
-type MemberRow = Awaited<ReturnType<typeof prisma.member.findMany>>[number];
-
-async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[]> {
-  /*
-   * FOUND BY THE MEMBER, WITH THE NAME AS THE FALLBACK — and this is the
-   * function that printed the zeros John saw.
-   *
-   * The directory asked for each member's record under `playerKey(member.name)`,
-   * their name TODAY. A rating is keyed by the name it was EARNED under, and
-   * that key does not move when somebody renames, so a renamed member read as
-   * "0 games played" on the page that lists everybody. Their row was one
-   * column away the whole time: `memberId` is on it and indexed.
-   *
-   * Both lookups, one query each, because the name is still the only handle
-   * on a record with nobody behind it — a kept record from another site, or a
-   * name typed into a game at one screen. The member's own row wins where
-   * both answer.
-   */
-  const ids = members.map((member) => member.id).filter((id) => id !== "");
-  const keys = members.map((member) => playerKey(member.name)).filter((key) => key !== "");
-  const [owned, named] = await Promise.all([
-    ids.length === 0 ? [] : prisma.player.findMany({ where: { memberId: { in: ids } } }),
-    keys.length === 0 ? [] : prisma.player.findMany({ where: { key: { in: keys } } }),
-  ]);
-  const byMember = new Map(owned.map((row) => [row.memberId, toProfile(row)]));
-  const byKey = new Map(named.map((row) => [row.key, toProfile(row)]));
-  return members.map((member) => ({
-    id: member.id,
-    email: member.email,
-    name: member.name,
-    picture: member.picture,
-    lastSeenAt: member.lastSeenAt.toISOString(),
-    joinedAt: member.createdAt.toISOString(),
-    isNew: Date.now() - member.createdAt.getTime() < NEW_FOR_DAYS * 86_400_000,
-    country: member.country,
-    profile: byMember.get(member.id) ?? byKey.get(playerKey(member.name)) ?? null,
-    /*
-     * From the member's own row, never from the rating row beside it. The
-     * count this sits under is keyed by member id, and so is this — which is
-     * the point of keeping it here rather than on `Player`, whose key is a
-     * folded name that stops matching the moment somebody renames.
-     */
-    playedStreak: streakIn(member as unknown as Record<string, unknown>, "played"),
-    elsewhere: keptRecordFor(member.name),
-    botTier: member.botTier,
-    unclaimableBecause: member.unclaimableBecause,
-    // Off the member's own row, already fetched. See the field's own note.
-    xp: member.xp,
-  }));
-}

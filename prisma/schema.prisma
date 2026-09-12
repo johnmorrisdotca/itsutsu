@@ -593,6 +593,50 @@ model Member {
   playedStreakKind  String?
   playedStreakCount Int @default(0)
 
+  /// EVERY FINISHED GAME THIS MEMBER HAS PLAYED HERE, AND HOW EACH WENT.
+  ///
+  /// The same four numbers `fetchPlayedTallies` counts out of the games table,
+  /// kept on the row instead — and `played` is the sum of the other three
+  /// rather than a fifth fact, so that "order by how much somebody has played"
+  /// is one indexed column and not `won + lost + drawn`, which no index can
+  /// answer.
+  ///
+  /// WHY THEY ARE COLUMNS: the members directory sorts and pages by them. A
+  /// tally that lives in the games table can be COUNTED per page — that is
+  /// what `fetchPlayedTallies` does, in one query, and it was the right answer
+  /// while the directory was a single capped list — but it cannot be ORDERED
+  /// by, because the order has to be decided before the page is chosen. The
+  /// old directory said as much where its headings were drawn: sorting the
+  /// assembled array would have meant "the most played of the two hundred most
+  /// recently seen", which is not the most played. Ordering members by a figure
+  /// held in another table is the one thing that read could not do.
+  ///
+  /// MAINTAINED WHEREVER A GAME IS DECIDED, by `recordPlayed` in
+  /// `rating/playedRun.ts` — the same one write that carries `playedStreakKind`
+  /// forward, in the same transaction, so the run and the tally beside it can
+  /// never disagree about the game that has just finished. One UPDATE per
+  /// finished game per bound seat, and no read at all per page of the
+  /// directory. `playedRun.ts` states the three rules that decide the set: a
+  /// finished game whose result is not `abandoned`, matched BY MEMBER ID ONLY,
+  /// and a game against yourself counted once from the black seat.
+  ///
+  /// DENORMALISED, WHICH IS SAFE HERE FOR THE REASON `xp` GIVES: these are
+  /// sums, not formulas, so they can be recomputed from `Game` and checked
+  /// against `fetchPlayedTallies` — which `playedTally.test.ts` does, on the
+  /// same games. The migration that added them filled them the same way, in
+  /// SQL, from every game already recorded.
+  ///
+  /// NOUGHT IS A REAL ANSWER HERE, unlike the run beside it. "Has played
+  /// nothing" and "has won none of what they played" are both honestly nought,
+  /// and a table printing 0W 0L 0D over 0 played says exactly that. It is the
+  /// STREAK that cannot be nought — a run of nought means both "no games" and
+  /// "a run that just ended" — which is why that one is nullable and these are
+  /// not.
+  played Int @default(0)
+  won    Int @default(0)
+  lost   Int @default(0)
+  drawn  Int @default(0)
+
   /// Every point this member has earned, denormalised from XpEvent.
   ///
   /// A COLUMN AND NOT A SUM, and the reason is the same one `playedStreakCount`
@@ -648,6 +692,26 @@ model Member {
   @@index([xp])
   /// The leaderboard's other sort, and how "who is actually climbing" is read.
   @@index([xpLastAt])
+
+  /// THE MEMBERS DIRECTORY'S SIX ORDERS, one index each — see
+  /// `rating/directory.sort.ts`, which names every one of these and is checked
+  /// against this file by `paging.coverage.test.ts`.
+  ///
+  /// `lastSeenAt` is the one that would be worth having if only one were: it is
+  /// the directory's DEFAULT order, so it runs on every visit to /players
+  /// whether or not anybody pressed a heading, and until now it ran as a scan
+  /// and a sort of the whole table. The other five are the headings a reader
+  /// can press. They are cheap to keep — `recordPlayed` touches at most two
+  /// member rows per finished game, and a rename touches one — and the
+  /// alternative is a declaration saying "no index, and the table is small
+  /// enough", which stops being true on the quiet.
+  @@index([lastSeenAt])
+  @@index([createdAt])
+  @@index([name])
+  @@index([played])
+  @@index([won])
+  @@index([lost])
+  @@index([drawn])
 }
 
 /// One thing a member earned, once.

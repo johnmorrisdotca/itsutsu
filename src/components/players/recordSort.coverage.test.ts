@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { DIRECTORY_SORT_SPEC } from "@/lib/rating/directory.sort";
 import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
 import { sortWords } from "@/lib/api/paging";
 
@@ -26,6 +27,11 @@ const LADDER = readFileSync(
   "utf8",
 );
 
+const DIRECTORY = readFileSync(
+  join(process.cwd(), "src/components/players/Directory.tsx"),
+  "utf8",
+);
+
 /** The `by: { … }` object out of a component's source, as slot → word. */
 function slotsIn(source: string, after: string): Record<string, string> {
   const start = source.indexOf(after);
@@ -40,6 +46,14 @@ function slotsIn(source: string, after: string): Record<string, string> {
 
 /** The slots `RecordTable` and `RecordHeadings` actually draw. */
 const DRAWN = [
+  /*
+   * The SUBJECT heading — "Member", "Player", "Game" — which became a sortable
+   * slot when the members directory learned to order by name. It is the only
+   * table that presses it; every other one leaves the slot out and keeps the
+   * plain heading it has always had, which is what `SortableHead` does for a
+   * slot no spec names.
+   */
+  "subject",
   "played",
   "won",
   "lost",
@@ -93,5 +107,80 @@ describe("the ladder's sortable headings", () => {
     for (const word of sortWords(LADDER_SORT_SPEC)) {
       expect(pressed, `nothing on the page presses "${word}"`).toContain(word);
     }
+  });
+});
+
+/**
+ * THE MEMBERS DIRECTORY'S HEADINGS, which could not sort at all until its rows
+ * came from one ordered query.
+ *
+ * Two things here that the ladder's block above has no version of, and both are
+ * the point rather than an exception being made:
+ *
+ *   - IT PRESSES THE SUBJECT HEADING. Sorting by name is what a directory of
+ *     six hundred people wants most, and it is the only table on the site that
+ *     can: a ladder's rows are keyed by a folded name and a table of games has
+ *     no name at all.
+ *   - ONE DECLARED COLUMN IS DELIBERATELY NOT PRESSABLE. `seen` is the
+ *     directory's own order — "most recently seen first", which is what the page
+ *     has always meant — and how recently somebody was seen is drawn as a MARK
+ *     in the name cell rather than as a column, so there is no heading over it.
+ *     It is asserted rather than tolerated: this is the ONE column that may be
+ *     unpressable, and it has to be reachable as a control some other way, which
+ *     is the link `Directory.tsx` offers whenever another order is in force.
+ */
+describe("the members directory's sortable headings", () => {
+  const by = slotsIn(DIRECTORY, "const sort: RecordSort");
+
+  it("presses the six columns the directory can order by", () => {
+    expect(Object.keys(by).sort()).toEqual([
+      "drawn",
+      "joined",
+      "lost",
+      "played",
+      "subject",
+      "won",
+    ]);
+  });
+
+  it("presses only words the directory actually sorts by", () => {
+    const words = sortWords(DIRECTORY_SORT_SPEC);
+    for (const [slot, word] of Object.entries(by)) {
+      expect(words, `the "${slot}" heading presses "${word}"`).toContain(word);
+    }
+  });
+
+  it("names only headings the table draws", () => {
+    for (const slot of Object.keys(by)) expect(DRAWN).toContain(slot);
+  });
+
+  it("leaves win rate, streak, rating and tier as plain text", () => {
+    /*
+     * Win rate is arithmetic on three columns and rounded; a streak is two
+     * columns with no order over them; a tier is read off a rating — and the
+     * RATING is not on this table at all. `DIRECTORY_SORT_SPEC` argues each, and
+     * the rating's reason ends by pointing at the Ladder tab, which sorts by it
+     * on `Player_rating_idx`. Faking any of them in the browser would reorder
+     * one page of six hundred rows and present the result as the directory.
+     */
+    for (const slot of ["winRate", "streak", "rating", "tier"]) {
+      expect(by[slot], `"${slot}" has become sortable — is there a column behind it?`).toBeUndefined();
+    }
+  });
+
+  it("offers every column it declares except the one with no heading", () => {
+    const pressed = new Set(Object.values(by));
+    const unpressed = sortWords(DIRECTORY_SORT_SPEC).filter((word) => !pressed.has(word));
+    // Exactly one, and exactly this one. A second unpressable column is a sort
+    // that exists in the declaration and on no page — present and never
+    // reached, which is what this whole file is for.
+    expect(unpressed).toEqual(["seen"]);
+    // It is the order a bare visit runs, which is why it needs no heading…
+    expect(DIRECTORY_SORT_SPEC.fallback.param).toBe("seen");
+    // …and there is still a control for it, so a reader can get back out of a
+    // sort they pressed. Test the way back, not just the way there.
+    expect(DIRECTORY, "nothing on the page returns to the directory's own order").toContain(
+      "directory-own-order",
+    );
   });
 });

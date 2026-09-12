@@ -9,7 +9,7 @@ import { lastPlayedByMember } from "@/lib/history/lastPlayed";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import { levelShown } from "@/lib/xp/levelShown";
 import { tierFor } from "@/lib/rating/elo";
-import { fetchComputerPlayers } from "@/lib/rating/players";
+import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { gamesPlayed } from "@/lib/rating/shownRecord";
 

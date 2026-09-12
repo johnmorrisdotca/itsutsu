@@ -13,7 +13,7 @@ import { BOT_ALL_TIERS, BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.consta
 import { tierFor } from "@/lib/rating/elo";
 import { gamesPlayed } from "@/lib/rating/shownRecord";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
-import type { DirectoryEntry } from "@/lib/rating/players";
+import type { DirectoryEntry } from "@/lib/rating/directoryRows";
 
 /**
  * The players that are programs.

@@ -99,21 +99,78 @@ test.describe("who the directory lists", () => {
     await expect(named(page, HERE.name)).toHaveCount(1);
   });
 
+  /**
+   * "SEEN LATELY", ASKED OF A ROW THIS SPEC CAN ACTUALLY FIND.
+   *
+   * This looked for AWAY on the FIRST view of the directory, and AWAY is seeded
+   * as deliberately the oldest-seen row there is. The directory is ordered by
+   * who was seen last, so the row this case is about is the last row the list
+   * would ever reach — it was off the end of the old two-hundred cap on any
+   * database with more members than that, and it is on the last PAGE now that
+   * the cap is a page. Three sessions hit it in one night, and every one of
+   * them read it as a broken filter: the filter was right the whole time and
+   * the spec was asking a list that had not got that far.
+   *
+   * So it presses JOINED first. Both of these members were created seconds ago
+   * by this file's own `beforeEach`, which makes them the two newest members on
+   * whatever database this is — so most-recently-joined-first puts them on the
+   * first page by construction, not by luck. That is the rule AGENTS.md states
+   * twice, applied to a row's POSITION rather than to its contents: a spec must
+   * not assert anything about a name, a count or a row it did not itself
+   * create, and where a row lands in a paged list is one of those things.
+   *
+   * AND IT PRESSES, rather than typing the address. Both controls are links
+   * whose whole job is to keep each other's answer — a filter that dropped the
+   * sort, or a sort that dropped the filter, would leave a reader looking at a
+   * list neither of their presses asked for. Driving them in turn is the only
+   * thing that says they compose; the filter bar did NOT keep the sort until
+   * the day this was written.
+   */
   test("leaves out somebody nobody has seen for a month, and never a program", async ({ page }) => {
     // Asked for out loud rather than left to the bare address, which now
     // answers with whatever this browser last asked for.
     await page.goto("/players?who=everyone");
-    await expect(named(page, AWAY.name)).toHaveCount(1);
+    await expect(page.getByTestId("directory")).toBeVisible();
 
-    await page.goto("/players?active=1");
+    // Newest members first, which is where this spec's own two rows are.
+    await page.getByTestId("sortable-head").filter({ hasText: "Joined" }).click();
+    await expect(page).toHaveURL(/sort=joined(%3A|:)desc/);
+    await expect(named(page, AWAY.name)).toHaveCount(1);
+    await expect(named(page, HERE.name)).toHaveCount(1);
+
+    /*
+     * The narrowing is a number as well as a list, and the number needs no row
+     * to be on any page: with nothing narrowed the bar prints one figure, and
+     * the moment something is left out it prints two. AWAY is one this spec put
+     * there itself, so the second form is guaranteed whatever else this database
+     * holds.
+     */
+    await expect(page.getByTestId("directory-count")).not.toContainText(" of ");
+
+    // Pressed, not typed — and the press must keep the order above.
+    await page.getByTestId("only-active").click();
+    await expect(page).toHaveURL(/active=1/);
+    await expect(page).toHaveURL(/sort=joined(%3A|:)desc/);
+    await expect(page.getByTestId("only-active")).toHaveAttribute("aria-pressed", "true");
+
+    /*
+     * HERE FIRST, AND THAT ORDER IS THE POINT. `toHaveCount(0)` passes the
+     * instant it is asked and cannot tell "not offered" from "I asked before
+     * the page had answered" — so the row that IS expected is waited for before
+     * the row that is not. Both are in the same table, under the same
+     * narrowing, so the absence is a statement about a rendered page.
+     */
     await expect(named(page, HERE.name)).toHaveCount(1);
     await expect(named(page, AWAY.name)).toHaveCount(0);
+    // And the count says somebody was left out, which the list alone cannot.
+    await expect(page.getByTestId("directory-count")).toContainText(" of ");
 
     /*
      * The case that would have made this filter quietly wrong. A program does
      * not sign in, so its stamp never moves and every away test would put it
      * away for ever — "seen lately" would have emptied the computers list on
-     * any site older than a month.
+     * any site older than a month. Narrowed to the programs, which is a handful
+     * of rows and therefore one page whatever the order.
      */
     await page.goto("/players?who=computers&active=1");
     await expect(named(page, A_ROBOT)).toHaveCount(1);

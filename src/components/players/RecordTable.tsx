@@ -170,6 +170,14 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  *    with no slack whatever — which is a better place to be and a more
  *    dangerous one, because the next column has nowhere to come from and the
  *    failure it causes is silent. Read these numbers before adding one.
+ *
+ *    RE-MEASURED AGAIN when the members directory learned to sort, because six
+ *    of its headings became LINKS with a direction arrow after them. Box 1,118,
+ *    table 1,118, overflow nought, every row 45 pixels — at 1280 and at 1216,
+ *    with and without a sort in force. It costs nothing because an arrow is a
+ *    character inside a heading whose column is already wider than its label,
+ *    which is the same room the level badge rides in the subject cell. A
+ *    seventh heading is not a column and neither is a sort.
  * 3. **A badge added to the subject cell needs a flex row, or it is a second
  *    LINE.** The XP level went in as a plain sibling of `row.subject` and made
  *    36 of the 209 rows on /players 53 pixels against the other 45 — this
@@ -302,7 +310,17 @@ export function RecordTable({
                 A plain heading is the honest answer.
               */}
               {columns.rank === true ? <th className={HEAD}>#</th> : null}
-              <th className={HEAD}>{subject}</th>
+              {/*
+                The subject heading sorts on exactly one table — the members
+                directory, by name — and is plain text everywhere else, which is
+                what `SortableHead` does for a slot no spec names. It is drawn
+                through the same component as every other heading so that the
+                arrow, the `aria-sort` and the "press to reverse" label are the
+                one implementation rather than a second one for this column.
+              */}
+              <SortableHead sort={sort} slot="subject">
+                {subject}
+              </SortableHead>
               <RecordHeadings
                 playedTitle={playedScope === undefined ? undefined : playedScopeNote(playedScope)}
                 sort={sort}

@@ -35,10 +35,23 @@ const OFF = "border-rule bg-ivory/70 hover:border-rule-strong";
  */
 export function DirectoryFilters({
   filter,
+  query,
   shown,
   total,
 }: {
   filter: DirectoryFilter;
+  /**
+   * The address as it stands, so narrowing keeps whatever else is on it.
+   *
+   * It kept nothing until the directory learned to sort, which was harmless
+   * while who/settled/active were the whole of what /players could say. With a
+   * sort in the query it made this bar a control that undoes another control:
+   * press Played, then press People, and the order silently goes back to who
+   * was seen last. `filterBarHref` says which parameters survive and which
+   * cannot.
+   */
+  query: string;
+  /** How many members match the narrowing, and how many there are at all. */
   shown: number;
   total: number;
 }) {
@@ -48,7 +61,7 @@ export function DirectoryFilters({
    * would make the Everyone button ask for the narrowing it is offering to
    * remove — which is exactly what it did.
    */
-  const to = (next: DirectoryFilter) => filterBarHref(next);
+  const to = (next: DirectoryFilter) => filterBarHref(next, query);
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-testid="directory-filters">

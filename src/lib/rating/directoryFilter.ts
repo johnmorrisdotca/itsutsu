@@ -95,8 +95,29 @@ export function readDirectoryFilter(query: {
  * anything about narrowing, the whole of it is read from the address, so an
  * absent `settled` or `active` correctly means off rather than remembered.
  */
-export function filterBarHref(filter: DirectoryFilter): string {
-  const params = new URLSearchParams({ who: filter.who });
+export function filterBarHref(filter: DirectoryFilter, query = ""): string {
+  /*
+   * EVERYTHING ELSE ON THE ADDRESS SURVIVES, and it did not until the directory
+   * learned to sort. This built a fresh query of who/settled/active and nothing
+   * more, which was harmless while those three were the whole of what /players
+   * could say — and became a control that undoes another control the moment
+   * there was a sort to lose. Press Played, then press People, and the list
+   * quietly goes back to who was seen last.
+   *
+   * The same rule `sortHref` keeps from the other side: a press must keep every
+   * parameter it is not about. `scopeHrefFrom` keeps it too, and says so.
+   */
+  const params = new URLSearchParams(query);
+  for (const gone of ["who", "settled", "active"]) params.delete(gone);
+  /*
+   * THE CURSOR DOES NOT SURVIVE, for exactly the reason it does not survive a
+   * sort: it is a position in the list as it was narrowed BEFORE, and carrying
+   * it into a different narrowing opens the middle of a list and calls it the
+   * top. `page` goes with it.
+   */
+  for (const gone of ["cursor", "page"]) params.delete(gone);
+
+  params.set("who", filter.who);
   if (filter.settled) params.set("settled", "1");
   if (filter.active) params.set("active", "1");
   return `/players?${params.toString()}`;

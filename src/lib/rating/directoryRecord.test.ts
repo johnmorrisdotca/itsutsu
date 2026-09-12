@@ -64,7 +64,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const { fetchDirectory } = await import("./players");
+const { fetchDirectory } = await import("./directoryRows");
 
 const HER = "964k9atpbhzja6d9";
 
