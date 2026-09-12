@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.151.0
+- A Checkers board reads as a checkerboard on every theme: the squares in play are shaded so the pattern is unmistakable at a glance and at thumbnail size, where before it was faint enough to miss which squares the game is played on
+
 ## 0.150.0
 - Every table of records on the site is the same table — the members list, the ladders, the Computers tab (which had no headings at all), your own record, a player's by-game breakdown — with the same columns in the same order: what happened first, and the site's conclusion, the rating, last. A STREAK column says how many in a row, and its hover says exactly which games it counted
 

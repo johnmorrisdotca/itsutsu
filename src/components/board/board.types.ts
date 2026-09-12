@@ -51,6 +51,33 @@ export type BoardThemeTokens = {
   surface: string;
   /** Sits under `surface` to give the wood an edge and a shadow. */
   frame: string;
+  /**
+   * The squares in play, on a board where only half of them are: the dark
+   * squares of checkers. Laid over `surface`, so give it an alpha and the
+   * wood still shows through.
+   *
+   * Its own token rather than the frame at a low opacity, which is what this
+   * used to be. A rim colour and a playing square answer different questions,
+   * and borrowing one for the other tied them together — so the rim could not
+   * be changed without changing the board, and the board could not be made to
+   * read without thickening the rim.
+   *
+   * It also could not work. `frame` is chosen to stand against the surface
+   * from OUTSIDE it, which on the two extreme boards means it is already the
+   * same end of the scale: near-black ink under a near-black surface, pale
+   * grey-beige under near-white paper. Measured at 22%, sumi came out at a
+   * contrast of 1.06 and washi at 1.09 — that is to say, invisible, at any
+   * opacity you like, because there was no room left to move in.
+   *
+   * So it is per theme and stated, never derived — and the direction is part
+   * of what is stated. A square in play steps AWAY from the surface whichever
+   * way there is room: darker on the light boards, and LIGHTER on `sumi` and
+   * `shinkaya`, where there is no darker left to move into. Reaching for
+   * darker on the dark ones is how the black pieces got lost — measured at
+   * 1.16 against their own square on shinkaya, worse than the fault being
+   * fixed. Both halves have to read: the checkering, and the pieces on it.
+   */
+  playSquare: string;
   line: string;
   star: string;
   coordinate: string;

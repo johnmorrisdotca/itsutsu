@@ -19,6 +19,7 @@ export const BOARD_THEMES = {
     surface:
       "radial-gradient(120% 90% at 20% 0%, #f0cf95 0%, #e2ba7a 45%, #d3a662 100%)",
     frame: "#8a5a24",
+    playSquare: "rgba(74, 44, 14, 0.45)",
     line: "#5b3d1c",
     star: "#5b3d1c",
     coordinate: "#7c5a30",
@@ -31,6 +32,11 @@ export const BOARD_THEMES = {
     surface:
       "radial-gradient(120% 90% at 25% 0%, #a9743f 0%, #8d5c30 50%, #714825 100%)",
     frame: "#40260f",
+    // Lighter, like sumi: this wood is dark enough that a darker square
+    // swallowed the black pieces standing on it (measured at 1.16).
+    // Strong enough to hold at the LIGHT corner of the gradient too,
+    // where a paler fill closed up to 1.62 and only mid-board looked fine.
+    playSquare: "rgba(226, 214, 188, 0.62)",
     line: "#2e1b0c",
     star: "#2e1b0c",
     coordinate: "#e8d3b6",
@@ -43,6 +49,7 @@ export const BOARD_THEMES = {
     surface:
       "radial-gradient(130% 100% at 15% 0%, #fbf7ee 0%, #f2ebdc 55%, #e7dcc6 100%)",
     frame: "#c8bda4",
+    playSquare: "rgba(110, 104, 90, 0.52)",
     line: "#6b6152",
     star: "#6b6152",
     coordinate: "#8b8172",
@@ -55,6 +62,8 @@ export const BOARD_THEMES = {
     surface:
       "radial-gradient(130% 100% at 20% 0%, #2c2f36 0%, #1e2127 55%, #14161b 100%)",
     frame: "#0b0d10",
+    // Lighter, not darker: on ink there is no darker left to move into.
+    playSquare: "rgba(150, 158, 172, 0.40)",
     line: "#6f7681",
     star: "#8b93a0",
     coordinate: "#9aa2af",
@@ -67,6 +76,7 @@ export const BOARD_THEMES = {
     surface:
       "radial-gradient(130% 100% at 20% 0%, #9cb87a 0%, #82a05f 55%, #6a884a 100%)",
     frame: "#3f5228",
+    playSquare: "rgba(35, 55, 20, 0.50)",
     line: "#33421f",
     star: "#33421f",
     coordinate: "#e9f0dc",
