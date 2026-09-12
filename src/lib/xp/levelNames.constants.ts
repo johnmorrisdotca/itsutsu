@@ -59,4 +59,15 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 28, name: "Mode 7", note: "The SNES trick that tilted a flat picture into a world: F-Zero, Pilotwings, and every track in Mario Kart." },
   { level: 29, name: "Super Metroid", note: "1994: the map, the mood, and the animals you could go back to save; for many, the best game on the system." },
   { level: 30, name: "Neo Geo", note: "SNK, 1990: the arcade board sold as a home console, at a price only the richest kid on the street could pay." },
+  // 31-40: the leap into 3D.
+  { level: 31, name: "Chrono Trigger", note: "Square, 1995: the dream team, thirteen endings, and the RPG people still name when asked for the best." },
+  { level: 32, name: "Doom", note: "id Software, 1993: shareware, a shotgun, and the first game your office network was secretly for." },
+  { level: 33, name: "PlayStation", note: "Sony, 1994: a CD, a grey box, and the moment games moved out of the kids' bedroom." },
+  { level: 34, name: "Memory Card", note: "Fifteen blocks of saved game, carried to a friend's house in a pocket like a wallet." },
+  { level: 35, name: "Nintendo 64", note: "1996: a three-pronged pad, four controller ports, and the analog stick every console since has copied." },
+  { level: 36, name: "Super Mario 64", note: "1996: the first time a stick moved a man through a real, round, three-dimensional world." },
+  { level: 37, name: "Rumble Pak", note: "1997: the first controller that hit back, and the reason Star Fox 64 shipped with one in the box." },
+  { level: 38, name: "Cartridge III", note: "The N64 cart: no loading, no scratches, and the last of its kind for twenty years." },
+  { level: 39, name: "GoldenEye 007", note: "Rare, 1997: four players, one screen, and a house rule about not picking Oddjob." },
+  { level: 40, name: "Final Fantasy VII", note: "Square, 1997: three discs, a Buster Sword, and the death nobody was ready for." },
 ];
