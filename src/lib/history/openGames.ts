@@ -3,6 +3,7 @@ import "server-only";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
+import { currentNamesFor } from "./currentNames";
 import { nextDeadline } from "./deadline";
 import { SUMMARY_SELECT, toSummary } from "./gameHistory";
 import type { GameSummary } from "./gameHistory.types";
@@ -38,7 +39,8 @@ export async function fetchOpenSeats(except: Iterable<string> = []): Promise<Gam
     orderBy: [{ openedAt: "desc" }, { id: "asc" }],
     select: SUMMARY_SELECT,
   });
-  return rows.map(toSummary);
+  const names = await currentNamesFor(rows);
+  return rows.map((row) => toSummary(row, names));
 }
 
 /**

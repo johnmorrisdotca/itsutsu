@@ -140,6 +140,27 @@ export async function phraseStatus(memberId: string): Promise<PhraseStatus | nul
  *
  * The rate limit that makes this safe is on the routes, not here — a library
  * function has no address to count. Nothing must call this without one.
+ *
+ * AND A DISPLAY NAME IS NOT UNIQUE, which is the whole reason the lookup below
+ * is shaped the way it is. `Member.name` carries no unique constraint — only
+ * `email` does — so "the member called X" is a question the database may not be
+ * able to answer. A `findFirst` here answered it anyway, with whichever row came
+ * back first, and that row is arbitrary: two members who both go by "John
+ * Morris" and the words of either one would have signed somebody in as the
+ * other. There are no duplicate names on production today, so nothing was
+ * broken; the development database has a pair, so nothing was preventing it
+ * either.
+ *
+ * So an ambiguous name REFUSES. Silence is the safe answer to "which of these
+ * two did you mean" and an arbitrary row is the dangerous one, and on a sign-in
+ * the dangerous one is somebody signing in as somebody else. `take: 2` is
+ * enough to know there is more than one without reading the table.
+ *
+ * This is a guard and not the remedy. Sign-in still needs a handle that is
+ * unique BY CONSTRUCTION — a unique display name, a separate short handle, or
+ * something already unique — and that is a decision about what members are
+ * asked for rather than one this module can make. Until it is made, a name two
+ * people share is a name neither of them can sign in with.
  */
 export async function verifyPhraseFor(
   name: string,
@@ -151,10 +172,19 @@ export async function verifyPhraseFor(
   const canonical = canonicalPhrase([...words]);
   if (canonical === null) return null;
 
-  const row = await prisma.member.findFirst({
+  const found = await prisma.member.findMany({
     where: { name: { equals: wanted, mode: "insensitive" } },
     select: FACTS,
+    take: 2,
   });
+  /*
+   * One row or nothing. Two rows is not "pick one" — it is the same null as a
+   * name nobody here goes by, so an ambiguous name does not even tell a caller
+   * that it is ambiguous. The hash below still runs against the null, so
+   * refusing costs exactly as long as failing, and the two cannot be told apart
+   * by a clock any more than by a message.
+   */
+  const row = found.length === 1 ? found[0] : null;
 
   /*
    * The hash is checked even when there is no row and no phrase, and the result
@@ -217,6 +247,21 @@ export type SeatPhraseOutcome =
  *
  * Rate limiting lives on the route, as it does for `verifyPhraseFor` — a
  * library function has no address to count. Nothing may call this without one.
+ *
+ * AN AMBIGUOUS NAME REFUSES, and it matters more here than it does for plain
+ * verification. `Member.name` carries no unique constraint, so "the member called
+ * X" may name two rows — and this function does not only READ the one it picks,
+ * it WRITES a credential onto it and says first words win, only once. Getting
+ * that wrong is not a failed sign-in that can be retried:
+ *
+ * - the four words land on whichever row came back first, which may be the other
+ *   person's account, and they are that account's password from then on;
+ * - the person they were meant for still has none, and can never bind any by this
+ *   route again, because their name now resolves to a row that HAS a phrase and
+ *   their next attempt is checked against somebody else's hash;
+ * - nothing anywhere reports that it happened.
+ *
+ * So two rows is the same refusal as no rows. `verifyPhraseFor` says the rest.
  */
 export async function claimOrVerifyPhraseFor(
   name: string,
@@ -228,10 +273,14 @@ export async function claimOrVerifyPhraseFor(
   const canonical = canonicalPhrase([...words]);
   if (canonical === null) return { ok: false };
 
-  const row = await prisma.member.findFirst({
+  const found = await prisma.member.findMany({
     where: { name: { equals: wanted, mode: "insensitive" } },
     select: FACTS,
+    take: 2,
   });
+  // One row or nothing. The hash below still runs against the null, so a refusal
+  // for two rows costs what a refusal for none does.
+  const row = found.length === 1 ? found[0] : null;
 
   /*
    * The hash is compared even when there is no row, and the answer thrown

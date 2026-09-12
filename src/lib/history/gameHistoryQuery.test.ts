@@ -87,6 +87,135 @@ describe("buildGameWhere", () => {
   });
 
   /*
+   * A PLAYER IS A PERSON, NOT A SPELLING.
+   *
+   * These are the cases the whole exercise is about. A game stores the names as
+   * they were played, so a filter matching only the name lost every game somebody
+   * played before renaming. Measured on production: her record counts five games
+   * and `/history?player=Hanachan` answered with none of them, because every one
+   * of the five is stored under "Hanako Morris". A count whose link opens an empty
+   * page is the same fault as a count with no link at all, wearing a link.
+   */
+  describe("a player named in the address", () => {
+    const HER = "964k9atpbhzja6d9";
+
+    it("finds the games of whoever holds the name, whatever the seat was called", () => {
+      const where = buildGameWhere(parse("?player=Hanachan")!, { computers: [], named: [HER] });
+      expect(where.AND).toContainEqual({
+        OR: [
+          {
+            OR: [
+              { blackName: { equals: "Hanachan", mode: "insensitive" } },
+              { blackMemberId: { in: [HER] } },
+            ],
+          },
+          {
+            OR: [
+              { whiteName: { equals: "Hanachan", mode: "insensitive" } },
+              { whiteMemberId: { in: [HER] } },
+            ],
+          },
+        ],
+      });
+    });
+
+    /*
+     * Most seats on this site have no account behind them, and their games must
+     * stay findable. Told of no member, the filter is the name alone — which is
+     * what it has always been, rather than a narrower question quietly asked.
+     */
+    it("falls back to the stored name when the name belongs to no member", () => {
+      const where = buildGameWhere(parse("?player=Aki")!, { computers: [], named: [] });
+      expect(where.AND).toContainEqual({
+        OR: [
+          { blackName: { equals: "Aki", mode: "insensitive" } },
+          { whiteName: { equals: "Aki", mode: "insensitive" } },
+        ],
+      });
+    });
+
+    /*
+     * A display name carries no unique constraint, so two people may hold one.
+     * Both go in: picking one would answer "which of them did you mean" with
+     * somebody else's games, and the name has always denoted both here.
+     */
+    it("takes every member who goes by the name, not the first", () => {
+      const where = buildGameWhere(parse("?player=John Morris")!, {
+        computers: [],
+        named: ["one", "two"],
+      });
+      expect(where.AND).toContainEqual({
+        OR: [
+          {
+            OR: [
+              { blackName: { equals: "John Morris", mode: "insensitive" } },
+              { blackMemberId: { in: ["one", "two"] } },
+            ],
+          },
+          {
+            OR: [
+              { whiteName: { equals: "John Morris", mode: "insensitive" } },
+              { whiteMemberId: { in: ["one", "two"] } },
+            ],
+          },
+        ],
+      });
+    });
+
+    /*
+     * The outcome filter reads the same seats. It used to ask only the name, so
+     * "her three wins" and "her games" disagreed about which games were hers.
+     */
+    it("reads an outcome from the same seats the player filter found", () => {
+      const where = buildGameWhere(parse("?player=Hanachan&outcome=won")!, {
+        computers: [],
+        named: [HER],
+      });
+      expect(where.AND).toContainEqual({
+        OR: [
+          {
+            AND: [
+              {
+                OR: [
+                  { blackName: { equals: "Hanachan", mode: "insensitive" } },
+                  { blackMemberId: { in: [HER] } },
+                ],
+              },
+              { result: "black" },
+            ],
+          },
+          {
+            AND: [
+              {
+                OR: [
+                  { whiteName: { equals: "Hanachan", mode: "insensitive" } },
+                  { whiteMemberId: { in: [HER] } },
+                ],
+              },
+              { result: "white" },
+            ],
+          },
+        ],
+      });
+    });
+
+    /*
+     * A SEARCH IS ABOUT SPELLINGS and must not follow anybody. It is somebody
+     * half-remembering who they played; resolving it would make a few typed
+     * letters mean something else entirely.
+     */
+    it("leaves a search matching the names as they were filed", () => {
+      const where = buildGameWhere(parse("?search=hana")!, { computers: [], named: [HER] });
+      expect(where.AND).toContainEqual({
+        OR: [
+          { blackName: { contains: "hana", mode: "insensitive" } },
+          { whiteName: { contains: "hana", mode: "insensitive" } },
+        ],
+      });
+    });
+  });
+
+  /*
    * The player-relative outcome. Every count on the site links through it, so
    * "their seven losses" opening seven games is the whole promise being kept
    * — and the stored result names a colour, which cannot answer that alone.
@@ -156,7 +285,7 @@ describe("buildGameWhere", () => {
 
   describe("which ladder was counting", () => {
     it("finds the computer pool by who was sitting in the seats", () => {
-      const where = buildGameWhere(parse("?pool=computer")!, ["bot-1", "bot-2"]);
+      const where = buildGameWhere(parse("?pool=computer")!, { computers: ["bot-1", "bot-2"], named: [] });
       expect(where.AND).toContainEqual({
         OR: [
           { blackMemberId: { in: ["bot-1", "bot-2"] } },
@@ -168,7 +297,7 @@ describe("buildGameWhere", () => {
     it("keeps a seat nobody holds an account for in the people pool", () => {
       // `NOT (id IN (…))` is not true of NULL, and most of the record is games
       // played under a typed-in name with no member behind it.
-      const where = buildGameWhere(parse("?pool=people")!, ["bot-1"]);
+      const where = buildGameWhere(parse("?pool=people")!, { computers: ["bot-1"], named: [] });
       expect(where.AND).toContainEqual({
         AND: [
           { OR: [{ blackMemberId: null }, { blackMemberId: { notIn: ["bot-1"] } }] },
@@ -178,11 +307,11 @@ describe("buildGameWhere", () => {
     });
 
     it("finds no computer games when there are no computer players", () => {
-      expect(buildGameWhere(parse("?pool=computer")!, []).AND).toContainEqual({ id: { in: [] } });
+      expect(buildGameWhere(parse("?pool=computer")!, { computers: [], named: [] }).AND).toContainEqual({ id: { in: [] } });
     });
 
     it("leaves the people pool alone when there are no computer players", () => {
-      expect(buildGameWhere(parse("?pool=people")!, [])).toEqual({ AND: [{ status: "finished" }] });
+      expect(buildGameWhere(parse("?pool=people")!, { computers: [], named: [] })).toEqual({ AND: [{ status: "finished" }] });
     });
 
     it("treats no seats handed in as no computer players, which is what it is", () => {
@@ -202,13 +331,18 @@ describe("buildGameWhere", () => {
     });
   });
 
+  /*
+   * The seat and the verdict are AND-combined rather than written as one object,
+   * because "this seat is that player" may itself be an OR once the name has been
+   * resolved to member ids — see `seatIs`. Same rows, a shape that composes.
+   */
   describe("what a player said about their own play", () => {
     it("reads a verdict from whichever seat they were in", () => {
       const where = buildGameWhere(parse("?player=Aki&verdict=up")!);
       expect(where.AND).toContainEqual({
         OR: [
-          { blackName: { equals: "Aki", mode: "insensitive" }, blackVerdict: "up" },
-          { whiteName: { equals: "Aki", mode: "insensitive" }, whiteVerdict: "up" },
+          { AND: [{ blackName: { equals: "Aki", mode: "insensitive" } }, { blackVerdict: "up" }] },
+          { AND: [{ whiteName: { equals: "Aki", mode: "insensitive" } }, { whiteVerdict: "up" }] },
         ],
       });
     });
@@ -223,8 +357,8 @@ describe("buildGameWhere", () => {
       const where = buildGameWhere(parse("?player=Aki&verdict=judged")!);
       expect(where.AND).toContainEqual({
         OR: [
-          { blackName: { equals: "Aki", mode: "insensitive" }, blackVerdict: { not: null } },
-          { whiteName: { equals: "Aki", mode: "insensitive" }, whiteVerdict: { not: null } },
+          { AND: [{ blackName: { equals: "Aki", mode: "insensitive" } }, { blackVerdict: { not: null } }] },
+          { AND: [{ whiteName: { equals: "Aki", mode: "insensitive" } }, { whiteVerdict: { not: null } }] },
         ],
       });
     });

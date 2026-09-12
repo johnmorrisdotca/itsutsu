@@ -239,8 +239,16 @@ async function LiveMatch({
    * it has no name on it because nobody has taken it yet, which is a game
    * waiting rather than a game that will not count.
    */
+  /*
+   * THE NAMES AS PLAYED, not the names to show. `ratingRefusal` asks whether one
+   * person held both seats, and the ladder is keyed by the name a game was played
+   * under — so this has to read what the row says, not what the screen says. The
+   * two are the same word until somebody renames, and `recordResult` decides the
+   * real thing off the raw row: reading the resolved names here would let this
+   * page explain a refusal the database never made.
+   */
   const refusal =
-    game.rated && game.openSeat === null ? ratingRefusal(game.blackName, game.whiteName) : null;
+    game.rated && game.openSeat === null ? ratingRefusal(game.playedAs.black, game.playedAs.white) : null;
 
   /*
    * The board this member likes, on the board they are actually playing on.

@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.147.0
+- A game names you as you are now: change your display name and every game you ever played shows the new one, on the board and in every list, while your rating stays earned under the name it was earned under
+- A count of your games opens exactly those games: the record and the history now agree about who you are, so a link from "5 games" no longer lands on an empty page
+
 ## 0.146.0
 - Four words can be chosen right at the seat: sit down at somebody else's device, give your name, pick four words, and if your account has none yet they become yours — nobody signs in, nobody signs out, and you have a way back in from any device
 
