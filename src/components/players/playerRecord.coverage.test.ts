@@ -131,13 +131,26 @@ describe("a record is shown one way", () => {
      * the right characters in the right order — but it is invisible, and an
      * invisible guarantee is one somebody deletes while tidying. This says out
      * loud where it lives.
+     *
+     * AND IT MOVED, WHICH THIS TEST IS WHY WE KNOW. `RecordTableRow` was inline
+     * in `RecordTable.tsx` until that file reached the 500-line gate and the
+     * types were split into `recordTable.types.ts` — the split AGENTS.md asks
+     * for anyway. This assertion went red on the move, which is the test doing
+     * exactly the job the paragraph above claims for it: it reads the file the
+     * contract is IN, so it must follow the contract rather than the component.
      */
     const table = FILES.find((file) => file.path.endsWith("RecordTable.tsx"));
     // Not in FILES: it is on the ALLOWED list, so read it directly.
-    const source = readFileSync(join(COMPONENTS, "players", "RecordTable.tsx"), "utf8");
+    const component = readFileSync(join(COMPONENTS, "players", "RecordTable.tsx"), "utf8");
+    const source = readFileSync(join(COMPONENTS, "players", "recordTable.types.ts"), "utf8");
     expect(table, "RecordTable.tsx is exempt from the shape checks above").toBeUndefined();
     expect(source).toContain("of: RecordOf");
     expect(source).toContain("streak: Streak | null");
+    // Neither is optional, which is the whole of the guarantee.
+    expect(source).not.toMatch(/\bof\?:/);
+    expect(source).not.toMatch(/\bstreak\?:/);
+    // And the component still hands the row out, so the four importers have one door.
+    expect(component).toContain('from "./recordTable.types"');
   });
 
   it("nobody lays out a run of number cells of their own", () => {

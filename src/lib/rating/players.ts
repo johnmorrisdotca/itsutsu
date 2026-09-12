@@ -338,6 +338,23 @@ export type DirectoryEntry = {
   /** The engine that plays this member's seats, when a program does. */
   botTier: string | null;
   unclaimableBecause: string | null;
+  /**
+   * Their XP total, for the level badge beside their name.
+   *
+   * COSTS NOTHING, which is the only reason it is here. `toDirectory` is handed
+   * whole `Member` rows — `prisma.member.findMany` with no `select` — so this
+   * column was already read and thrown away on every one of the three lists
+   * built from it. The level itself is not stored and never will be:
+   * `xpLevelFor` is a lookup over a hundred numbers in memory, so a badge on
+   * every row of a page of members is free. See `Member.xp` in the schema, which
+   * says the same thing from the other end.
+   *
+   * The TOTAL and not the level, because a row carrying a level would be
+   * carrying an answer to a question the reader has not asked yet — whether
+   * there is a standing worth printing at all is `levelShown`'s to decide, and
+   * a program's nought must reach it rather than arriving as a 1.
+   */
+  xp: number;
 };
 
 /** How long a member counts as new in the directory. */
@@ -466,5 +483,7 @@ async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[]> {
     elsewhere: keptRecordFor(member.name),
     botTier: member.botTier,
     unclaimableBecause: member.unclaimableBecause,
+    // Off the member's own row, already fetched. See the field's own note.
+    xp: member.xp,
   }));
 }
