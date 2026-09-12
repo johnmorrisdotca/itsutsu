@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { hasPlayedAnyGames } from "./MyRecord";
+import { playedScopeNote } from "@/components/players/PlayerRecord";
+import { hasPlayedAnyGames, MY_STANDINGS_SCOPE } from "./MyRecord";
 
 /**
  * The guard `MyRecord` gates its whole record line on: "No games yet" versus
@@ -36,5 +37,27 @@ describe("hasPlayedAnyGames", () => {
 
   it("is true even where every finished game was a loss", () => {
     expect(hasPlayedAnyGames({ wins: 0, losses: 3, draws: 0 })).toBe(true);
+  });
+});
+
+/*
+ * /me's per-game table (fetchVariantStandings, rated only) and
+ * /players/<id>'s (ItsutsuRecord, via record.byVariant — every finished
+ * game) draw the same "Played" heading over two different counts for the
+ * same person. MY_STANDINGS_SCOPE is what tells RecordTable's heading to
+ * say so, the same fix batch 2 already made for the Ladder tab.
+ */
+describe("MY_STANDINGS_SCOPE", () => {
+  it("says Played here counts rated games, not every finished game", () => {
+    const note = playedScopeNote(MY_STANDINGS_SCOPE);
+    expect(note).toContain("rated");
+  });
+
+  it("names no one pool — a row can hold a standing in either", () => {
+    // A member can hold a standing against people and a separate one
+    // against the computer for the same game; each row already marks
+    // which is which beside its name, so the table-wide note must not
+    // claim a single pool the rows themselves do not all share.
+    expect(playedScopeNote(MY_STANDINGS_SCOPE)).not.toMatch(/computer|people/);
   });
 });

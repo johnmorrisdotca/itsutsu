@@ -16,8 +16,14 @@ import { isReservedKey } from "@/lib/rating/reservedKeys";
  * member reached through these functions has one — the column is nullable
  * only because a kept record belongs to somebody who never held an account
  * and never had an address to give.
+ *
+ * `id` is optional here for the same reason it is on `NamedMember`: most
+ * callers only ever needed the address, the name and the picture, and giving
+ * it to all of them regardless would be a change wider than anyone asked for.
+ * `findMember` fills it in, so anything reading its own signed-in member has
+ * one to pass on — see `playerPath`, which is what an id is for.
  */
-export type Member = { email: string; name: string; picture: string };
+export type Member = { email: string; name: string; picture: string; id?: string };
 
 /**
  * Somebody the site knows about, who may never have signed in.
@@ -58,7 +64,7 @@ export function foldEmail(email: string): string {
 export async function findMember(email: string): Promise<Member | null> {
   const row = await prisma.member.findUnique({
     where: { email: foldEmail(email) },
-    select: { email: true, name: true, picture: true },
+    select: { id: true, email: true, name: true, picture: true },
   });
   // Found by address, so it has one.
   return row === null ? null : { ...row, email: row.email ?? foldEmail(email) };

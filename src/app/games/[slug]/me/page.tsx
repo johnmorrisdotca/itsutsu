@@ -26,10 +26,11 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/me">
  * The reader's own games of one game, at /games/<slug>/me.
  *
  * The same record as /games/<slug>/history with one filter already applied, so
- * it is the record component with `player` set rather than a second listing
- * that would drift from it. The filter arrives as a chip the reader can take
- * off, which is this site's rule about a page a link narrowed: it says what it
- * was narrowed to and lets it be undone.
+ * it is the record component with `impliedPlayer` set rather than a second
+ * listing that would drift from it. The filter still arrives as a chip, this
+ * site's rule about a page a filter narrowed — it says what it was narrowed
+ * to — but it is not one the chip's "×" can take off: this address always
+ * means "my games", so the chip leads to the reader's own player page instead.
  *
  * NOTHING IS SHOWN TO SOMEBODY THIS PAGE CANNOT NAME. A reader with no session
  * — or a session with no member row behind it — has no games here to count,
@@ -71,12 +72,20 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
    * The player is fixed by the address, not by the query: this collection IS
    * "my games of this game". Anything else a reader asks for — how they went,
    * which board, the sort — still comes from the query and is layered on top.
+   *
+   * `impliedPlayer` carries the filter to the query WITHOUT putting it in
+   * `params` — `params` is what `RecordPage` turns into this page's own
+   * address (and the Pager's, for page 2 onward), and a member's whole name
+   * has no business there: this site shows only "Hanako M." elsewhere and
+   * links to a person by id, never by name (see `playerPath`). Read as
+   * `params` alone, this page's own address never carries who "me" is at all.
    */
   const asked = await searchParams;
   return (
     <RecordPage
       variant={variant}
-      params={{ ...asked, player: me.name }}
+      params={asked}
+      impliedPlayer={{ name: me.name, memberId: me.id ?? null }}
       at={myGamePath(variant)}
     />
   );
