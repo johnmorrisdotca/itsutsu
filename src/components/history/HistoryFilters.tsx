@@ -11,17 +11,31 @@ import {
   GAME_RESULT_DISPLAY,
   GAME_RESULT_FILTERS,
   GAME_SIZE_FILTERS,
-  GAME_SORT_BY,
-  GAME_SORT_DISPLAY,
   GAME_VARIANT_FILTERS,
 } from "@/lib/history/gameHistory.constants";
+import { GAME_SORT_COLUMNS } from "@/lib/history/gameHistory.sort";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { historyPath } from "@/lib/gomoku/slugs";
 import { type AppliedPlayer, appliedNarrowings } from "@/lib/history/narrowings";
-import { sortWord } from "@/lib/history/gameHistoryQuery";
 import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { Field, Select } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
+
+/**
+ * Which option is selected, from either spelling of the address.
+ *
+ * A reader arriving on an old link carries `sort=played&order=asc`, and the
+ * select's options are `played:asc`. Reading only the new form would show this
+ * control set to the record's default while the list below it was sorted the
+ * other way — a control that disagrees with the page it is on, which is worse
+ * than one that does nothing.
+ */
+function sortValue(sort: string, order: string): string {
+  const [word, attached] = sort.split(":", 2);
+  const column = word === "" ? GAME_SORT_COLUMNS[0].param : word;
+  const direction = attached ?? (order === "" ? "desc" : order);
+  return `${column}:${direction}`;
+}
 
 /**
  * The filter bar writes to the URL rather than to local state, so a filtered
@@ -219,22 +233,34 @@ export function HistoryFilters({
         </Field>
 
         <Field label={say.say("filter.sort")}>
+          {/*
+            ONE PARAMETER RATHER THAN TWO. This select has always shown its
+            options as `<word>:<direction>` and then split them back apart into
+            `sort=` and `order=` on the way into the address. `sort=played:desc`
+            is the same statement with nothing to split, and it is the form the
+            convention in `lib/api/paging.ts` calls canonical — so a sorted
+            heading elsewhere on the site and this select write the same address.
+
+            `order=` is still READ, because it is in links and bookmarks people
+            already hold; nothing new writes it. See the head of `paging.ts`.
+          */}
           <Select
-            value={`${value("sort", "played")}:${value("order", "desc")}`}
+            value={sortValue(value("sort", ""), value("order", ""))}
             onChange={(event) => {
-              const [by, dir] = event.target.value.split(":");
               const next = new URLSearchParams(params.toString());
-              next.set("sort", by);
-              next.set("order", dir);
+              next.set("sort", event.target.value);
+              next.delete("order");
+              // The page and the cursor are both positions in the OLD order.
               next.delete("page");
+              next.delete("cursor");
               router.replace(`${pathname}?${next.toString()}`);
             }}
             data-testid="history-sort"
           >
-            {GAME_SORT_BY.flatMap((by) =>
+            {GAME_SORT_COLUMNS.flatMap((column) =>
               (["desc", "asc"] as const).map((dir) => (
-                <option key={`${by}:${dir}`} value={`${sortWord(by)}:${dir}`}>
-                  {GAME_SORT_DISPLAY[by].label} {dir === "desc" ? "↓" : "↑"}
+                <option key={`${column.param}:${dir}`} value={`${column.param}:${dir}`}>
+                  {column.label} {dir === "desc" ? "↓" : "↑"}
                 </option>
               )),
             )}

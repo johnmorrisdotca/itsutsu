@@ -1,4 +1,6 @@
 import type { Handicap } from "@/lib/gomoku/gomoku.types";
+import type { Cursor, SortDirection } from "@/lib/api/paging.types";
+import type { GameSortField } from "./gameHistory.sort";
 import type {
   GAME_OUTCOME_FILTERS,
   GAME_OUTCOMES,
@@ -9,14 +11,13 @@ import type {
   GAME_RESULT_FILTERS,
   GAME_RESULTS,
   GAME_SIZE_FILTERS,
-  GAME_SORT_BY,
-  GAME_SORT_DIR,
   GAME_VARIANT_FILTERS,
 } from "./gameHistory.constants";
 
 export type GameResult = (typeof GAME_RESULTS)[number];
-export type GameSortBy = (typeof GAME_SORT_BY)[number];
-export type GameSortDir = (typeof GAME_SORT_DIR)[number];
+/** The record's sortable columns, declared once in `GAME_SORT_SPEC`. */
+export type GameSortBy = GameSortField;
+export type GameSortDir = SortDirection;
 export type GameResultFilter = (typeof GAME_RESULT_FILTERS)[number];
 export type GameOutcome = (typeof GAME_OUTCOMES)[number];
 export type GameOutcomeFilter = (typeof GAME_OUTCOME_FILTERS)[number];
@@ -29,10 +30,36 @@ export type GameSizeFilter = (typeof GAME_SIZE_FILTERS)[number];
 
 /** A parsed, validated listing request. Nulls mean "no filter". */
 export type GameHistoryQuery = {
+  /**
+   * Which offset page, for the `Pager` — which works with no JavaScript and
+   * stays. Ignored entirely when a `cursor` is present: the two are different
+   * ways of saying where to start, and honouring both at once would be two
+   * answers to one question.
+   */
   page: number;
   pageSize: number;
+  /**
+   * Where the last page ended, for live scrolling. Null for the first page.
+   *
+   * A cursor and a page number are not interchangeable and the difference is
+   * the point: a page number is a promise about a list that has not changed,
+   * and this site inserts a finished game at the top of the record every few
+   * hours. See the head of `paging.cursor.ts`.
+   */
+  cursor: Cursor | null;
   sortBy: GameSortBy;
   sortDir: GameSortDir;
+  /**
+   * Whether the READER asked for this order or it is the record's own default.
+   *
+   * Not decoration: it decides which way a heading's next press goes. /history
+   * is sorted by date descending without anybody asking, so treating that as
+   * "already sorted by date" would answer the first press on that heading with
+   * ascending — showing the oldest games to somebody who just asked for the
+   * newest. "Nobody asked" and "somebody asked for exactly this" are two
+   * states, and a boolean is how they stop looking alike.
+   */
+  sortAsked: boolean;
   search: string | null;
   player: string | null;
   result: GameResultFilter;
@@ -161,6 +188,20 @@ export type Pagination = {
 
 export type GameHistoryPage = {
   pagination: Pagination;
+  /**
+   * Where this page ended, for the reader who scrolls past it — null when it
+   * was the last.
+   *
+   * Beside `pagination` rather than instead of it, because the two serve two
+   * readers. Somebody with no JavaScript gets the `Pager`, which needs to know
+   * it is page 3 of 12; somebody scrolling gets this, which needs to know which
+   * row to carry on after. Offsets cannot do the second honestly — a game
+   * finishing mid-read repeats a row or hides one — and a cursor cannot do the
+   * first at all, because "how many pages" is not a question a position in a
+   * list can answer. So both are here, and the page shows one or the other,
+   * never both at once.
+   */
+  next: Cursor | null;
   items: GameSummary[];
   /** Counts across the whole filtered set, for filter chips that show totals. */
   facets: {

@@ -1,3 +1,4 @@
+import { isRefusal } from "@/lib/api/paging";
 import { GameName } from "@/components/games/GameName";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -57,14 +58,31 @@ export async function RecordPage({
   const url = new URL(`https://itsutsu.local${base}`);
   for (const [key, value] of Object.entries(queryParams)) url.searchParams.set(key, value);
 
-  const query = toGameHistoryQuery(url);
+  const parsed = toGameHistoryQuery(url);
+  /*
+   * A PAGE DEGRADES WHERE THE API REFUSES, and the two are right for their own
+   * readers. `/api/games` answers 400 naming the parameter, because a caller
+   * wrote that address on purpose and can fix it. A person who followed a stale
+   * link gets the record they came for and a line saying their filters were not
+   * applied — a page is not a place to put an error somebody cannot act on.
+   */
+  const refused = isRefusal(parsed);
+  const query = refused ? null : parsed;
   // What the query falls back to when the reader's own filters do not parse —
   // still carrying whatever the address itself implies, so an invalid `page`
   // on /games/<slug>/me can never widen "your games" into everybody's.
   const { query: fallbackParams } = recordAddress({}, { variant, impliedPlayer });
   const fallbackUrl = new URL(`https://itsutsu.local${base}`);
   for (const [key, value] of Object.entries(fallbackParams)) fallbackUrl.searchParams.set(key, value);
-  const asked = query ?? toGameHistoryQuery(fallbackUrl)!;
+  const fallback = toGameHistoryQuery(fallbackUrl);
+  /*
+   * The bare address always parses — it is nothing but the path — so a refusal
+   * here would be a programming mistake rather than something a reader did.
+   * Thrown rather than coerced: a plausible empty query would render the record
+   * of no games at all and look like a site with nothing in it.
+   */
+  if (isRefusal(fallback)) throw new Error(`The record's own address does not parse: ${fallback.error}`);
+  const asked = query ?? fallback;
   const [page, whole] = await Promise.all([
     fetchGameHistoryPage(asked),
     fetchWholeRecord(asked),
@@ -107,7 +125,7 @@ export async function RecordPage({
               }
         }
       />
-      {query === null ? (
+      {refused ? (
         <p className="rounded-xl border border-rule px-4 py-3 text-sm text-muted">
           Those filters were not valid, so this is the unfiltered record.
         </p>

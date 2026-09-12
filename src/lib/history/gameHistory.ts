@@ -2,8 +2,15 @@ import "server-only";
 
 import { Prisma } from "@prisma/client";
 
+import {
+  decodeCursor,
+  keysetWhere,
+  nextCursorFrom,
+  takeFor,
+} from "@/lib/api/paging.cursor";
 import { prisma } from "@/lib/prisma";
 import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
+import { gameSortColumn } from "./gameHistory.sort";
 import { type FilterSeats, buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
 import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
@@ -195,29 +202,70 @@ async function filterSeats(query: GameHistoryQuery): Promise<FilterSeats> {
   return { computers, named };
 }
 
+/**
+ * ONE PAGE OF THE RECORD, REACHED EITHER WAY.
+ *
+ * A cursor and a page number both say where to start, and this is the one place
+ * that knows which was asked for. When a cursor is present the read is a keyset
+ * — "the rows after that one, in this order" — and nothing above the page can
+ * move it. When there is none it is the offset read the `Pager` has always used,
+ * because the `Pager` needs to say "page 3 of 12" and a position in a list
+ * cannot answer that.
+ *
+ * BOTH PATHS HAND BACK A `next`, which is what lets live scrolling begin from a
+ * page a reader arrived at by any route — a bookmark, a count's link, page four
+ * of the pager. Without that the enhancement would only work from the top of
+ * the list, and the second page of anything would fall back to the pager with
+ * nothing saying why.
+ *
+ * A CURSOR THAT DOES NOT DECODE IS THE FIRST PAGE, not an error: a cursor is
+ * something this site handed out, so a stale one means a changed sort or an old
+ * link, and starting the record again is exactly right. See `decodeCursor`.
+ */
 export async function fetchGameHistoryPage(
   query: GameHistoryQuery,
 ): Promise<GameHistoryPage> {
-  const where = buildGameWhere(query, await filterSeats(query));
+  const filters = buildGameWhere(query, await filterSeats(query));
+  const column = gameSortColumn(query.sortBy);
+  const after =
+    query.cursor === null
+      ? null
+      : decodeCursor(query.cursor, { param: column.param, direction: query.sortDir });
 
   const [total, byResult, bySize] = await Promise.all([
-    prisma.game.count({ where }),
-    prisma.game.groupBy({ by: ["result"], where, _count: { _all: true } }),
-    prisma.game.groupBy({ by: ["size"], where, _count: { _all: true } }),
+    prisma.game.count({ where: filters }),
+    prisma.game.groupBy({ by: ["result"], where: filters, _count: { _all: true } }),
+    prisma.game.groupBy({ by: ["size"], where: filters, _count: { _all: true } }),
   ]);
 
   const pagination = paginate(total, query);
-  const rows = await prisma.game.findMany({
+  /*
+   * The keyset condition is ANDed with the filters rather than merged into them.
+   * `buildGameWhere` already returns an `AND` of its own conditions, and
+   * spreading a second `OR` into that object would replace one of them — which
+   * is the sort of mistake that produces a page of plausible, wrong rows.
+   */
+  const where: Prisma.GameWhereInput =
+    after === null ? filters : { AND: [filters, keysetWhere(column, query.sortDir, after)] };
+
+  const read = await prisma.game.findMany({
     where,
     orderBy: buildGameOrderBy(query),
-    skip: (pagination.page - 1) * pagination.pageSize,
-    take: pagination.pageSize,
+    // An offset page is only skipped into when there is no cursor to start from.
+    ...(after === null ? { skip: (pagination.page - 1) * pagination.pageSize } : {}),
+    /*
+     * One row further than the page, so "is there more" is answered by whether
+     * it arrived rather than by comparing a count that may already be stale.
+     */
+    take: takeFor(pagination.pageSize),
     select: SUMMARY_SELECT,
   });
+  const { rows, next } = nextCursorFrom(read, column, query.sortDir, pagination.pageSize);
   const names = await currentNamesFor(rows);
 
   return {
     pagination,
+    next,
     items: rows.map((row) => toSummary(row, names)),
     facets: {
       byResult: Object.fromEntries(

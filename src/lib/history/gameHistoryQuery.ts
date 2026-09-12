@@ -1,12 +1,12 @@
+import { keysetOrderBy } from "@/lib/api/paging.cursor";
+import { isRefusal } from "@/lib/api/paging";
+import type { PagingRefusal } from "@/lib/api/paging.types";
 import { variantFor } from "@/lib/gomoku/slugs";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import {
   GAME_PAGE_MAX,
-  GAME_PAGE_SIZE_DEFAULT,
-  GAME_PAGE_SIZE_MAX,
-  GAME_PAGE_SIZE_MIN,
   GAME_OUTCOME_FILTERS,
   GAME_POOL_FILTERS,
   GAME_RATED_FILTERS,
@@ -15,31 +15,27 @@ import {
   GAME_RESULT_FILTERS,
   GAME_SEARCH_MAX,
   GAME_SIZE_FILTERS,
-  GAME_SORT_BY,
-  GAME_SORT_DIR,
   GAME_VARIANT_FILTERS,
   PLAYER_NAME_MAX,
 } from "./gameHistory.constants";
+import { gameSortColumn, readGamePaging } from "./gameHistory.sort";
 import type { GameHistoryQuery, GameOutcome } from "./gameHistory.types";
 
 /**
  * Reading, filtering and ordering game history.
  *
- * Every bound here is deliberate: `pageSize` is capped so one request cannot
- * pull the whole table, `search` is length-limited so it cannot become a
- * pathological scan, and `page` is accepted optimistically and clamped later
- * against the real total rather than rejected.
+ * THE FILTERS ARE HERE; SORTING AND PAGING ARE `gameHistory.sort.ts` AND
+ * `lib/api/paging.ts`. That split is the whole point of the convention: a filter
+ * is particular to what a game is, and "which column, which way, how many and
+ * from where" is the same question on every list this site has. This module
+ * never decides a bound on a page size or a sort direction any more.
+ *
+ * Every bound that is still here is deliberate: `search` is length-limited so it
+ * cannot become a pathological scan, and `page` is accepted optimistically and
+ * clamped later against the real total rather than rejected.
  */
 const querySchema = z.object({
   page: z.coerce.number().int().min(1).max(GAME_PAGE_MAX).default(1),
-  pageSize: z.coerce
-    .number()
-    .int()
-    .min(GAME_PAGE_SIZE_MIN)
-    .max(GAME_PAGE_SIZE_MAX)
-    .default(GAME_PAGE_SIZE_DEFAULT),
-  sortBy: z.enum(GAME_SORT_BY).default("playedAt"),
-  sortDir: z.enum(GAME_SORT_DIR).default("desc"),
   search: z.string().max(GAME_SEARCH_MAX).optional(),
   player: z.string().max(PLAYER_NAME_MAX).optional(),
   result: z.enum(GAME_RESULT_FILTERS).default("all"),
@@ -53,27 +49,6 @@ const querySchema = z.object({
   to: z.coerce.date().optional(),
 });
 
-/**
- * What the address calls a sort, and what the table calls it. Addresses use
- * plain words with no casing — /history?sort=played&order=desc — so that a
- * link reads the same whoever typed it; the columns keep their own names.
- */
-export const SORT_WORDS: Record<string, (typeof GAME_SORT_BY)[number]> = {
-  played: "playedAt",
-  moves: "moveCount",
-  size: "size",
-  duration: "duration",
-};
-
-export function sortWord(field: (typeof GAME_SORT_BY)[number]): string {
-  return Object.entries(SORT_WORDS).find(([, value]) => value === field)?.[0] ?? field;
-}
-
-function sortField(word: string | undefined): string | undefined {
-  if (word === undefined) return undefined;
-  return SORT_WORDS[word] ?? word;
-}
-
 /** A game in the address is its slug, the same as on /games and /history. */
 function variantFilter(value: string | undefined): string | undefined {
   if (value === undefined || value === "all") return value;
@@ -86,15 +61,23 @@ function trimmed(value: string | undefined): string | null {
   return text ? text : null;
 }
 
-export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
+/**
+ * A listing request, or a refusal saying which parameter could not be honoured.
+ *
+ * THREE OUTCOMES BECAME TWO. It used to answer `null` for anything it could not
+ * parse, and the route turned that into "Invalid listing parameters." — a 400
+ * that names nothing, so a caller who mistyped one filter had to guess which of
+ * fifteen it was. A refusal carries the name, because a refusal a caller cannot
+ * act on is barely better than a wrong answer.
+ */
+export function toGameHistoryQuery(url: URL): GameHistoryQuery | PagingRefusal {
   const get = (key: string) => url.searchParams.get(key) ?? undefined;
+
+  const paging = readGamePaging(url);
+  if (isRefusal(paging)) return paging;
 
   const parsed = querySchema.safeParse({
     page: get("page"),
-    // The address speaks plain words; the field names inside are the table's.
-    pageSize: get("limit"),
-    sortBy: sortField(get("sort")),
-    sortDir: get("order"),
     search: get("search"),
     player: get("player"),
     result: get("result"),
@@ -108,14 +91,27 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | null {
     to: get("to"),
   });
 
-  if (!parsed.success) return null;
+  if (!parsed.success) {
+    /*
+     * Named, and de-duplicated: Zod reports one issue per failing field and a
+     * caller wants the fields, not the count. `page` has no path when the whole
+     * object fails, which is why the fallback is there rather than assumed away.
+     */
+    const named = [
+      ...new Set(parsed.error.issues.map((issue) => String(issue.path[0] ?? "the query"))),
+    ];
+    return { error: `These listing filters are not valid: ${named.join(", ")}.` };
+  }
 
   const { data } = parsed;
   return {
     page: data.page,
-    pageSize: data.pageSize,
-    sortBy: data.sortBy,
-    sortDir: data.sortDir,
+    pageSize: paging.limit,
+    cursor: paging.cursor,
+    sortBy: paging.sort.column.field,
+    sortDir: paging.sort.direction,
+    /** Whether the reader asked for this order, which decides how a heading flips. */
+    sortAsked: paging.sort.asked,
     search: trimmed(data.search),
     player: trimmed(data.player),
     result: data.result,
@@ -362,21 +358,21 @@ export function buildGameWhere(
 /**
  * Ordering always ends with `id`, so two games recorded in the same
  * millisecond cannot swap places between page one and page two and hide a row.
+ *
+ * READ OFF THE SORT DECLARATION rather than switched on here, and that is a
+ * correctness property and not tidiness. The order and the cursor's keyset
+ * comparison are two halves of one claim: a cursor built for `(playedAt, id)`
+ * handed to a read ordered any other way skips rows and repeats rows. This used
+ * to be a `switch` that agreed with the cursor by coincidence, and the
+ * coincidence would have ended the first time somebody added a third tiebreaker
+ * to one of them. `keysetOrderBy` is now the only thing that decides an order,
+ * so they cannot disagree.
  */
 export function buildGameOrderBy(
   query: GameHistoryQuery,
 ): Prisma.GameOrderByWithRelationInput[] {
-  const { sortDir: dir } = query;
-
-  switch (query.sortBy) {
-    case "moveCount":
-      return [{ moveCount: dir }, { id: "asc" }];
-    case "size":
-      return [{ size: dir }, { id: "asc" }];
-    case "duration":
-      // Games recorded without a clock sort last either way, never interleaved.
-      return [{ durationMs: { sort: dir, nulls: "last" } }, { id: "asc" }];
-    default:
-      return [{ playedAt: dir }, { id: "asc" }];
-  }
+  return keysetOrderBy(
+    gameSortColumn(query.sortBy),
+    query.sortDir,
+  ) as Prisma.GameOrderByWithRelationInput[];
 }
