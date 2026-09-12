@@ -1,4 +1,5 @@
 import { expect, request as playwrightRequest, test } from "@playwright/test";
+import { ready } from "./support";
 
 /**
  * An embedded board reading live data from the server.
@@ -78,6 +79,13 @@ test.describe("an embed reading server data", () => {
     await expect(page.getByTestId("embed-stats")).toBeVisible();
     await expect(page.getByTestId("embed-stats")).toContainText(/game/);
 
+    /*
+     * The embedded board is server-rendered and hydrated in place — unlike
+     * the practice board at /games/<slug>/play, which is loaded on the client
+     * only and so has no window in which its controls exist without their
+     * handlers. Here that window is real, and a stone played in it is lost.
+     */
+    await ready(page, "embed-board");
     // The game itself is still local: a stone lands without a network call.
     await page.getByRole("button", { name: /^E5, empty$/ }).click();
     await expect(page.getByRole("button", { name: "E5, Black stone" })).toBeVisible();
@@ -97,6 +105,8 @@ test.describe("an embed reading server data", () => {
     await page.goto(`/embed?token=${dataToken}&size=9`);
 
     await expect(page.getByRole("button", { name: /^E5, empty$/ })).toBeVisible();
+    // The board, waited for, before the summary is called absent.
+    await ready(page, "embed-board");
     await expect(page.getByTestId("embed-stats")).toHaveCount(0);
 
     await context.close();

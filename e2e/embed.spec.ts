@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, request as playwrightRequest, test } from "@playwright/test";
 
-import { EMBED_TOKEN_FILE, PLAYER_STATE } from "./support";
+import { EMBED_TOKEN_FILE, PLAYER_STATE, ready } from "./support";
 
 /**
  * Embedding, from the position another site is in: no session, no cookies.
@@ -19,6 +19,13 @@ test.describe("an embedded board", () => {
     await page.goto(`/embed?token=${embedToken()}&size=9`);
 
     await expect(page.getByRole("button", { name: /^E5, empty$/ })).toBeVisible();
+    /*
+     * The embedded board is server-rendered and hydrated in place — unlike
+     * the practice board at /games/<slug>/play, which is loaded on the client
+     * only and so has no window in which its controls exist without their
+     * handlers. Here that window is real, and a stone played in it is lost.
+     */
+    await ready(page, "embed-board");
     await page.getByRole("button", { name: /^E5, empty$/ }).click();
     await expect(page.getByRole("button", { name: "E5, Black stone" })).toBeVisible();
   });
@@ -99,6 +106,7 @@ test.describe("an embedded board", () => {
     });
 
     await page.goto(`/embed?token=${embedToken()}&size=9`);
+    await ready(page, "embed-board");
     await page.getByRole("button", { name: /^E5, empty$/ }).click();
     await expect.poll(() => messages).toContain("gomoku:move");
   });

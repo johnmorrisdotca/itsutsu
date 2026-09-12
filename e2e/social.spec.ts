@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { RATING_START, TIER_DISPLAY } from "../src/lib/rating/elo";
 import { playerSlug } from "../src/lib/rating/playerKey";
 import { removePlayedUnder } from "./members";
-import { RATED_TO_SETTLE, playAt, playRatedGames } from "./support";
+import { RATED_TO_SETTLE, playAt, playRatedGames, ready } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
 
 /** Starts a server-side game and returns its id and both seat tokens. */
@@ -36,6 +36,11 @@ test.describe("notes, messages, deadlines and players", () => {
     await black.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await white.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
+    // The message box and its Send belong to the shared board's component,
+    // which reports when the browser has it. Sending before then does
+    // nothing, and the other seat waits ten seconds for a message nobody
+    // ever sent.
+    await ready(white, "shared-game");
     await white.getByTestId("reaction-text").fill("Take your time, no rush");
     await white.getByRole("button", { name: "Send Take your time" }).click();
     await expect(white.getByTestId("reaction-message")).toContainText("no rush");
@@ -53,8 +58,11 @@ test.describe("notes, messages, deadlines and players", () => {
      * no longer carries a settings form or its own clock line, because the
      * rules were agreed on the doorstep before the game was written.
      */
+    await ready(white, "shared-game");
     await expect(white.getByTestId("rules-statement")).toContainText("5 minutes a move");
     await expect(white.getByTestId("deadline")).toContainText("Black must move by");
+    // Absent, said after the deadline above it: a presence on the same
+    // rendered page is what makes this a claim about the page.
     await expect(white.getByTestId("claim-timeout")).toHaveCount(0);
 
     const early = await request.post(`/api/games/${game.id}/timeout`, {

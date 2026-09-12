@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { memberContext } from "./members";
 import { gamesMade } from "./tidy";
+import { ready } from "./support";
 import { PHRASE_LENGTH } from "../src/lib/phrase/phrase";
 import { WORDLIST } from "../src/lib/phrase/wordlist.constants";
 import { shownName } from "../src/lib/rating/shownName";
@@ -93,7 +94,7 @@ test.describe("four words are how you get back to your games", () => {
     const herContext = await memberContext(browser, baseURL!, her);
     const herPage = await herContext.newPage();
     await herPage.goto("/me?view=words");
-    await expect(herPage.getByTestId("phrase-setup")).toHaveAttribute("data-ready", "true");
+    await ready(herPage, "phrase-setup");
     await expect(herPage.getByTestId("phrase-status")).toContainText("No four words");
 
     await herPage.getByTestId("phrase-set-button").click();
@@ -131,7 +132,7 @@ test.describe("four words are how you get back to your games", () => {
      */
     await johnPage.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await johnPage.goto(`/games/gomoku/match/${game.id}`);
-    await expect(johnPage.getByTestId("sit-as-closed")).toHaveAttribute("data-ready", "true");
+    await ready(johnPage, "sit-as-closed");
 
     await johnPage.getByTestId("sit-as-open").click();
     await expect(johnPage.getByTestId("sit-as-panel")).toBeVisible();
@@ -183,6 +184,7 @@ test.describe("four words are how you get back to your games", () => {
     const herContext = await memberContext(browser, baseURL!, her);
     const herPage = await herContext.newPage();
     await herPage.goto("/me?view=words");
+    await ready(herPage, "phrase-setup");
     await herPage.getByTestId("phrase-set-button").click();
     const words = await pickPhrase(herPage);
     await herPage.getByTestId("phrase-acknowledge").check();
@@ -211,6 +213,7 @@ test.describe("four words are how you get back to your games", () => {
      */
     await johnPage.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await johnPage.goto(`/games/gomoku/match/${game.id}`);
+    await ready(johnPage, "sit-as-closed");
     await johnPage.getByTestId("sit-as-open").click();
     await expect(johnPage.getByTestId("sit-as-panel")).toBeVisible();
     await tapName(johnPage, her.name);

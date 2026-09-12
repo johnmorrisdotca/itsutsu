@@ -1,6 +1,6 @@
 import { expect, request as playwrightRequest, test } from "@playwright/test";
 
-import { PLAYER_STATE } from "./support";
+import { PLAYER_STATE, readyHere } from "./support";
 
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(request: import("@playwright/test").APIRequestContext) {
@@ -53,6 +53,14 @@ test.describe("your games", () => {
     await page.goto("/play");
 
     const row = page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
+    /*
+     * `readyHere` and not `ready`, because there is one of these per row: a
+     * page-wide `getByTestId("resign")` on a queue with two games in it is a
+     * strict-mode violation rather than a wait. The press itself needs it —
+     * the trigger is server-rendered, so an early press puts no question up
+     * and the line below then fails on a `-yes` button that never existed.
+     */
+    await readyHere(row.getByTestId("resign"));
     await row.getByTestId("resign").click();
     await row.getByTestId("resign-yes").click();
     await expect(page.getByTestId("my-games-finished").locator(row)).toBeVisible();
@@ -115,6 +123,9 @@ test.describe("open seats", () => {
     await page.goto("/games");
     const row = page.getByTestId("open-game").filter({ hasText: "Host" });
     await expect(row).toBeVisible();
+    // Taking a seat posts to the API from the browser, so the button does
+    // nothing at all until React is holding it.
+    await readyHere(row.getByTestId("sit"));
     await row.getByTestId("sit").click();
     await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${game.id}`));
     await expect(page.getByTestId("turn-banner")).toContainText("Waiting");

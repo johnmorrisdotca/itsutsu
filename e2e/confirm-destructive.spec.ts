@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readyHere } from "./support";
 
 
 /**
@@ -29,6 +30,14 @@ test.describe("asking before something cannot be undone", () => {
     await page.goto("/play");
 
     const row = page.locator(`[data-testid="my-game"][data-id="${game.id}"]`);
+    /*
+     * THE WHOLE SUBJECT OF THIS FILE IS THE ASKING, so the press that opens
+     * it must land on a control that can hear it. Server-rendered, the
+     * trigger is a real button before React attaches and an early press
+     * raises no question — which would read here as the confirmation being
+     * absent, in the one file whose job is to prove it is there.
+     */
+    await readyHere(row.getByTestId("resign"));
     await row.getByTestId("resign").click();
 
     // It asks, in the site's own words rather than the browser's.

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { ready } from "./support";
 
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(request: import("@playwright/test").APIRequestContext) {
@@ -31,6 +32,10 @@ test.describe("a game played from two devices", () => {
     await expect(blackPage.getByTestId("turn-banner")).toContainText("Your move");
     await expect(whitePage.getByTestId("turn-banner")).toContainText("Waiting");
 
+    // The live board is server-rendered and hydrated in place, so a stone
+    // played before React has it is dropped — and the other seat then waits
+    // fifteen seconds for a move that was never made.
+    await ready(blackPage, "shared-game");
     await blackPage.getByRole("button", { name: /^E5, empty$/ }).click();
     await expect(blackPage.getByTestId("turn-banner")).toContainText("Waiting");
 
