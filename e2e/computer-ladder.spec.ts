@@ -126,8 +126,11 @@ test.describe("the ladder against the computer players", () => {
     let checked = 0;
     for (let at = 0; at < count; at += 1) {
       const href = (await links.nth(at).getAttribute("href")) ?? "";
-      // The player's own name links to their page and is not a count.
-      if (href.startsWith("/players/")) continue;
+      // The player's own name links to their page and is not a count — and
+      // since 0.156.0 the row also offers a game, which is an action, not a
+      // count either. Both are skipped by what they link TO, so a new kind of
+      // count cannot slip past as "not a count" by being something else.
+      if (href.startsWith("/players/") || href.startsWith("/games/new")) continue;
       expect(href, `link ${at} of ${count}`).toContain("/games/reversi/history");
       expect(href, `link ${at} of ${count} must name the pool`).toContain("pool=computer");
       expect(href, `link ${at} of ${count} must exclude unrated games`).toContain("rated=yes");

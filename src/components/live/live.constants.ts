@@ -22,8 +22,11 @@ export const SET_UP_COPY = {
     `${who} is who you are playing. Choose the game and the rules, and the game is in their list the moment you start it — there is nothing for them to accept.`,
   /** The heading and lead for a game being played again. */
   again: (who: string) => `Play ${who} again`,
+  // `who` is said, not merely accepted: a confirmation that does not name the
+  // person is a confirmation of nothing. The spec that caught it asks for the
+  // name here, and the signature had promised it all along.
   againHint: (who: string, colour: string) =>
-    `The same board, the same rules and the same clock as last time, with the colours swapped — you take ${colour}. Everything below is already filled in, so this is a confirmation; change anything you would rather play differently.`,
+    `The same board, the same rules and the same clock as last time against ${who}, with the colours swapped — you take ${colour}. Everything below is already filled in, so this is a confirmation; change anything you would rather play differently.`,
   /** Said when a rematch has been altered, because then it is not one. */
   againChanged:
     "You have changed something, so this starts a new game against the same player rather than a repeat of the last one. The colours are drawn the ordinary way: you open.",

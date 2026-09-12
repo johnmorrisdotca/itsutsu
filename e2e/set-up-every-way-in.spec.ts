@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { shownName } from "../src/lib/rating/shownName";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
 import { chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
@@ -83,7 +84,7 @@ test.describe("every way into a game reaches the setup screen", () => {
   test("Challenge, on a row of the players list", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
     const me = { email: `lists-${stamp}@example.test`, name: `Lists ${stamp}` };
-    const them = { email: `listed-${stamp}@example.test`, name: `Listed ${stamp}` };
+    const them = { email: `listed-${stamp}@example.test`, name: `Listed${stamp} Tester` };
     await seedMember(me);
     await seedMember(them);
     const theirId = await memberIdFor(them.email);
@@ -98,7 +99,13 @@ test.describe("every way into a game reaches the setup screen", () => {
      * the row rather than by position, because the list is ordered by who was
      * last seen and this spec must not care.
      */
-    const row = page.locator("tr", { hasText: them.name }).first();
+    /*
+     * By the name the site PRINTS — a first name and an initial — through the
+     * same function it prints with. The stamp is in the first word for that
+     * reason: a surname stamp would have this case hunting for "Listed M." in a
+     * list of every member, which is exactly how it failed on its first run.
+     */
+    const row = page.locator("tr", { hasText: shownName(them.name) }).first();
     await expect(row).toBeVisible();
     await row.getByTestId("challenge").click();
 
@@ -211,10 +218,23 @@ test.describe("every way into a game reaches the setup screen", () => {
     await page.getByTestId("start-game-variant").selectOption("freestyle");
     await page.getByTestId("start-game-board").selectOption("19");
     await page.getByTestId("start-game-pace").selectOption(String(24 * 60 * 60_000));
-    await page.getByTestId("start-game-go").click();
+    /*
+     * THE LINK CARRIES WHAT WAS SETTLED, CHECKED BEFORE IT IS FOLLOWED. The Go
+     * control is a <Link> whose href is derived from the selects on each
+     * render. On a warm machine the render lands before the next line; on a
+     * cold two-core runner it can land a beat after Playwright has already
+     * clicked, and the click follows the previous address — which is how this
+     * case read 9×9 on CI while every piece of the chain was right. Asserting
+     * the href first is the check the sentence was always meant to have here,
+     * and it makes the click unable to outrun the page.
+     */
+    const go = page.getByTestId("start-game-go");
+    await expect(go).toHaveAttribute("href", /board=19/);
+    await expect(go).toHaveAttribute("href", /pace=86400000/);
+    await go.click();
 
     // The game it named is in the PATH, because that is identity on this site.
-    await expect(page).toHaveURL(/\/games\/gomoku\/new\?/);
+    await expect(page).toHaveURL(/\/games\/gomoku\/new\?board=19/);
     const screen = await setUpScreen(page);
     // And the board and the pace it named are filled in rather than asked again.
     await expect(screen.board).toHaveAttribute("data-size", "19");
