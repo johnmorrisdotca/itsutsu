@@ -1,4 +1,4 @@
-import { RecordLine, type WonLostDrawn } from "@/components/players/PlayerRecord";
+import { RecordLine, type RecordOf, type WonLostDrawn } from "@/components/players/PlayerRecord";
 import { RecordTable } from "@/components/players/RecordTable";
 import Link from "next/link";
 
@@ -31,6 +31,23 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 export function hasPlayedAnyGames(record: WonLostDrawn): boolean {
   return record.wins + record.losses + record.draws > 0;
 }
+
+/**
+ * What the per-game table below actually counts: `fetchVariantStandings`
+ * rows, and every one of those is a RATED standing by construction —
+ * `PlayerVariantRating` gets a row only once `ratedGames` or
+ * `computerRatedGames` is over zero. `/players/<id>`'s own per-game table
+ * (`ItsutsuRecord`, via `record.byVariant`) counts every finished game
+ * instead, so the same "Played" heading meant two different things one
+ * click apart with nothing on either page saying so — the fault batch 2
+ * already fixed for the Ladder tab, with the same `playedScope` prop.
+ *
+ * `pool` is left out on purpose, not forgotten: a member can hold a standing
+ * against people and a separate one against the computer for the same game,
+ * and each row already marks which is which beside its name — a single
+ * table-wide scope has no one pool to state.
+ */
+export const MY_STANDINGS_SCOPE: RecordOf = { rated: "yes" };
 
 /**
  * What a member's name has earned: overall, then game by game, then the one
@@ -149,6 +166,7 @@ export async function MyRecord({ name }: { name: string }) {
       */}
       <RecordTable
         subject="Game"
+        playedScope={MY_STANDINGS_SCOPE}
         rows={standings.map((row) => ({
           key: `${row.variant}-${row.pool}`,
           subject: (
