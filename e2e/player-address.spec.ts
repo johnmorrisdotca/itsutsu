@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-import { seedMember } from "./members";
+import { memberIdFor, removeMember, seedMember } from "./members";
+import { removeXpMembers, seedXpMember } from "./xpMembers";
+import { xpLevelName } from "../src/lib/xp/levelNames";
 
 /**
  * A link to a person carries their id, not their name.
@@ -69,5 +71,61 @@ test.describe("a member's address", () => {
      */
     await page.goto("/players/john-morris");
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+  });
+
+  /*
+   * ─────────────────────────────────────────────────────────────────────────
+   * AND THE PAGE SAYS WHERE THEY STAND
+   * ─────────────────────────────────────────────────────────────────────────
+   *
+   * Both directions, because one of them is the fault. A page that drew the
+   * badge for everybody would put "Level 1 · Insert Coin" on a stranger who has
+   * never played, and the only test that can tell that apart from the feature
+   * working is the one that visits somebody with no XP.
+   *
+   * Straight to `/players/<id>`, not through the members list: that list is
+   * capped at the 200 most recently seen and this database holds four hundred,
+   * so a spec that navigated would be asserting about the cap.
+   */
+  test("says where a member stands, by the name of their level and their total", async ({ page }) => {
+    const seeded = await seedXpMember(5, "addr-level");
+    try {
+      await page.goto(`/players/${seeded.id}`);
+      // The heading first: the standing is INSIDE it, so waiting on the panel
+      // alone would be reading a page that has not drawn its own name yet.
+      await expect(page.getByTestId("player-profile")).toBeVisible();
+      const standing = page.getByTestId("member-level");
+      await expect(standing).toBeVisible();
+
+      // The level's NAME, and the rung it leads to — not `Level 5`.
+      const badge = standing.getByTestId("level-name");
+      await expect(badge).toHaveText(`Lv 5 · ${xpLevelName(5)}`);
+      await expect(badge).toHaveAttribute("href", "/xp/levels/5");
+      // And the total, which is the half a profile has room for and a table does not.
+      await expect(standing.getByTestId("member-level-total")).toHaveText(
+        `${seeded.xp.toLocaleString("en-US")} XP`,
+      );
+    } finally {
+      await removeXpMembers([seeded.email]);
+    }
+  });
+
+  test("says nothing about a level for somebody who has never earned any", async ({ page }) => {
+    const email = `addr-noxp-${Date.now()}@example.test`;
+    await seedMember({ email, name: `Nought Tester${Date.now()}` });
+    try {
+      await page.goto(`/players/${await memberIdFor(email)}`);
+      /*
+       * THE PRESENCE FIRST, or this assertion is about how fast the request was
+       * rather than about the page. An absence is only meaningful after
+       * something that IS there has been waited for — here the panel the badge
+       * would have been inside, and the heading it would have been on.
+       */
+      await expect(page.getByTestId("player-profile")).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+      await expect(page.getByTestId("member-level")).toHaveCount(0);
+    } finally {
+      await removeMember(email);
+    }
   });
 });

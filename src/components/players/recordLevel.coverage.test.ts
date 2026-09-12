@@ -183,3 +183,84 @@ describe("a table of people that shows no level says why", () => {
     });
   }
 });
+
+/**
+ * A PERSON'S OWN PAGE, WHICH IS WHERE A STRANGER MEETS THEM.
+ *
+ * The same two faults as the tables above, one page over, and the second is the
+ * one that only a profile page can have: a level printed for somebody whose XP
+ * was never READ. `findMembersByNames` selects a narrow set of columns and XP is
+ * not among them, so a row from it hands `undefined` — and `undefined ?? 0` on
+ * the way into a badge would turn a missing read into a claim that this person
+ * has earned nothing, which is indistinguishable on screen from the truth.
+ */
+describe("a person's public page shows their standing through MemberLevel", () => {
+  const PAGE = "src/app/players/[slug]/page.tsx";
+  const COMPONENT = "src/components/xp/MemberLevel.tsx";
+
+  it("has both files to check, so a passing run means something", () => {
+    expect(read(PAGE).length).toBeGreaterThan(2_000);
+    expect(read(COMPONENT).length).toBeGreaterThan(500);
+  });
+
+  it("draws the standing on the line that names the person, not in a section of its own", () => {
+    /*
+     * "Show The Data, Not The Way To It" decides the placement: a person's page
+     * is where their XP belongs, and the line that already carries their
+     * country and what kind of member they are is where the page says who they
+     * are. So the tag sits inside the `<h1>`, not after it.
+     */
+    const source = read(PAGE);
+    expect(source).toContain('import { MemberLevel } from "@/components/xp/MemberLevel"');
+    const opened = source.indexOf("<h1");
+    const closed = source.indexOf("</h1>");
+    const at = source.indexOf("<MemberLevel");
+    expect(opened).toBeGreaterThan(-1);
+    expect(at, "the page does not draw MemberLevel at all").toBeGreaterThan(-1);
+    expect(at).toBeGreaterThan(opened);
+    expect(at).toBeLessThan(closed);
+  });
+
+  it("hands the total over untouched, never defaulted to nought", () => {
+    /*
+     * THE FAULT THIS EXISTS FOR. `xp={member?.xp ?? 0}` typechecks, reads as
+     * tidy, and silently converts "nobody asked" into "has earned nothing" —
+     * AGENTS.md's own example of a value that happens to be in range standing
+     * in for "I do not know". The page must pass the absence through and let
+     * the component answer it.
+     */
+    const source = read(PAGE);
+    expect(source).toMatch(/<MemberLevel\s+xp=\{member\?\.xp\}/);
+    expect(source).not.toMatch(/xp=\{[^}]*\?\?\s*0/);
+  });
+
+  it("prints no level of its own anywhere on the page", () => {
+    // A rank beside a name with nothing behind it is the dead end, and a
+    // profile page is the likeliest place to reach for one by hand.
+    const source = read(PAGE);
+    expect(source).not.toMatch(/`Level \$\{/);
+    expect(source).not.toContain("xpLevelName");
+    expect(source).not.toContain("xpLevelFor");
+  });
+
+  it("renders the badge through LevelName when there is a level, and nothing when there is not", () => {
+    /*
+     * Both directions, asserted on the component because a `.tsx` cannot be
+     * rendered by this runner — vitest collects `.test.ts` and there is no DOM.
+     * The rule itself is unit-tested in `src/lib/xp/levelShown.test.ts`; what
+     * is checked here is that this component ASKS it, and returns early on
+     * both kinds of absence rather than drawing a default.
+     */
+    const source = read(COMPONENT);
+    expect(source).toContain('import { LevelName } from "./LevelName"');
+    expect(source).toContain('from "@/lib/xp/levelShown"');
+    // Nobody asked, and nothing earned: two refusals, not one.
+    expect(source).toMatch(/if \(xp === undefined\) return null;/);
+    expect(source).toMatch(/levelShown\(xp\)/);
+    expect(source).toMatch(/if \(level === null\) return null;/);
+    // And the level reaches the screen only through the badge.
+    expect(source).toMatch(/<LevelName level=\{level\}/);
+    expect(source).not.toContain("xpLevelFor");
+    expect(source).not.toMatch(/`Level \$\{/);
+  });
+});
