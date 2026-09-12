@@ -12,7 +12,7 @@ import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, sizeForVariant } from "@/l
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
-import { recordResult } from "@/lib/rating/players";
+import { recordResult } from "@/lib/rating/recordResult";
 import { recordPlayed } from "@/lib/rating/playedRun";
 import { UnwinnableGame, unwinnableBecause } from "./winnableGame";
 import { poolFor } from "@/lib/rating/pools";
