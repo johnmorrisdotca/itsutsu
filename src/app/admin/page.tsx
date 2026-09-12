@@ -24,10 +24,11 @@ export const metadata = { title: "Admin", robots: { index: false, follow: false 
 export const dynamic = "force-dynamic";
 
 /*
- * Four things the operator does here, so the page shows one at a time: who
- * gets in, who is in, what plays for the site, and what is being built. They
- * were three headings on one page and the whole features board sat inside the
- * third, which made it long however short the headings were.
+ * Five things the operator does here, so the page shows one at a time: who
+ * gets in, how the site decides that, who is in, what plays for the site, and
+ * what is being built. They were three headings on one page and the whole
+ * features board sat inside the third, which made it long however short the
+ * headings were.
  *
  * BOTS IS ITS OWN TAB RATHER THAN A SECTION OF MEMBERS. The computer players
  * were in that list among the people, and to an operator they are a different
