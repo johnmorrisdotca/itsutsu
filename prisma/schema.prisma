@@ -382,6 +382,16 @@ model PlayerVariantRating {
   /// a player who has played Renju against both shows two lines, because
   /// adding them is the one thing the pools exist to forbid — so a
   /// both-pools streak here would be a number no page could honestly print.
+  ///
+  /// AND NO `played` SCOPE EITHER, which is a decision rather than an
+  /// oversight: `Member.playedStreakKind` has one and this does not. Only two
+  /// places on the site show a per-game record over EVERY game — the "By game"
+  /// table on a player's page and "Your record at X" under a game's ladder —
+  /// and both are about ONE person, so both already hold that person's games
+  /// and read the run out of the same pass (`fetchPlayerRecord().byVariant`).
+  /// There is no LIST of per-game all-games records anywhere, which is the only
+  /// thing a stored run would be for. Adding one would mean a write per name
+  /// per variant on every unrated finish to feed a figure nothing reads.
   peopleStreakKind    String?
   peopleStreakCount   Int @default(0)
   computerStreakKind  String?
