@@ -10,6 +10,9 @@ import { DEFAULT_GAME_DEFAULTS, gameDefaultsFrom, type GameDefaults } from "@/co
 import { prisma } from "@/lib/prisma";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
+import { awardXp } from "@/lib/xp/awardXp";
+import { XP_EVENTS } from "@/lib/xp/xp.constants";
+import { awardDailyVisit } from "@/lib/xp/dailyVisit";
 
 /**
  * Somebody who signs in. The address is what they sign in with, so every
@@ -114,9 +117,15 @@ export async function admitMember(
         picture: input.picture,
         invitedWith: input.invitedWith ?? "",
       },
-      select: { email: true, name: true, picture: true },
+      select: { id: true, email: true, name: true, picture: true },
     });
-    return { ...row, email: row.email ?? email, created: true };
+    /* The first line in a member's XP history, written where the row is made.
+       It rides the create rather than sitting in the sign-in route because
+       `created: true` happens exactly once per member and nothing else on the
+       site can say so. Quiet by construction — `awardXp` swallows and logs —
+       because a ledger write must never be able to fail a sign-in. */
+    await awardXp({ memberId: row.id, awards: [{ type: XP_EVENTS.joined }] });
+    return { email: row.email ?? email, name: row.name, picture: row.picture, created: true };
   }
   // The name is the member's to choose; Google's is only the first suggestion.
   const row = await prisma.member.update({
@@ -299,7 +308,20 @@ const TOUCH_EVERY_MS = 60_000;
 export const memberRowFor = cache(async (key: string) =>
   prisma.member.findUnique({
     where: { email: key },
-    select: { lastSeenAt: true, bannedAt: true, preferences: true },
+    select: {
+      id: true,
+      lastSeenAt: true,
+      bannedAt: true,
+      preferences: true,
+      timeZone: true,
+      /* XP rides this read for the same reason a preference does. `xpFlash` is
+         the toast a member has not been shown yet, and it must reach the
+         masthead on every page without a query of its own — see
+         `src/lib/xp/xpFlash.ts`. `id` comes along because `currentMemberId`
+         was paying for a second `findUnique` to get it. */
+      xp: true,
+      xpFlash: true,
+    },
   }),
 );
 
@@ -320,8 +342,12 @@ export const touchMember = cache(async (email: string): Promise<{ banned: boolea
   const row = await memberRowFor(key);
   if (row === null) return { banned: false };
   if (row.bannedAt !== null) return { banned: true };
-  if (Date.now() - row.lastSeenAt.getTime() >= TOUCH_EVERY_MS) {
-    await prisma.member.update({ where: { email: key }, data: { lastSeenAt: new Date() } });
+  const now = new Date();
+  if (now.getTime() - row.lastSeenAt.getTime() >= TOUCH_EVERY_MS) {
+    /* The day's XP rides this write — see `awardDailyVisit`, which is handed
+       the row as it was, before "seen" is stamped over the old `lastSeenAt`. */
+    await prisma.member.update({ where: { email: key }, data: { lastSeenAt: now } });
+    await awardDailyVisit(row, now);
   }
   return { banned: false };
 });

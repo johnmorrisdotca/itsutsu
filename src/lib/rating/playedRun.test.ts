@@ -32,6 +32,8 @@ import { extendStreak, streakFrom, type Streak, type StreakOutcome } from "./str
  * row — which is the whole point of the equivalence below.
  */
 type Row = {
+  /** Required since 0.159.0: the XP ledger keys a game's awards on it. */
+  id: string;
   blackMemberId: string | null;
   whiteMemberId: string | null;
   winner: "black" | "white" | null;
@@ -71,11 +73,46 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+/**
+ * The XP awards a finished game asked for, recorded rather than paid.
+ *
+ * Mocked because this file is about the RUN — that it counts the same games as
+ * the number printed beside it — and a real `awardXp` would want a member row,
+ * an XpEvent table and a day key that none of the fixtures here have. What is
+ * worth asserting at this seam is that each bound side was asked for the right
+ * awards keyed on the right game, and that is what `asked` holds. What those
+ * awards then come to is `awardXp.test.ts`.
+ */
+const asked: { memberId: string | null | undefined; types: string[]; subjects: string[] }[] = [];
+vi.mock("@/lib/xp/awardXp", () => ({
+  awardXp: async ({
+    memberId,
+    awards,
+  }: {
+    memberId: string | null | undefined;
+    awards: { type: string; subject?: string }[];
+  }) => {
+    asked.push({
+      memberId,
+      types: awards.map((award) => award.type),
+      subjects: awards.map((award) => award.subject ?? ""),
+    });
+    return { awards: [], points: 0, xp: 0, crossed: null };
+  },
+}));
+
 const { playedSides, recordPlayed } = await import("./playedRun");
 const { fetchPlayedTallies } = await import("@/lib/history/playerRecord");
 
-function game(black: string | null, white: string | null, winner: "black" | "white" | null): Row {
-  return { blackMemberId: black, whiteMemberId: white, winner };
+let nextGameId = 0;
+function game(
+  black: string | null,
+  white: string | null,
+  winner: "black" | "white" | null,
+  id?: string,
+): Row {
+  nextGameId += 1;
+  return { id: id ?? `g${nextGameId}`, blackMemberId: black, whiteMemberId: white, winner };
 }
 
 function member(id: string, streak: Streak | null = null) {
@@ -90,6 +127,7 @@ beforeEach(() => {
   stored = [];
   memberRows.clear();
   updates.length = 0;
+  asked.length = 0;
   reads = 0;
   transactions = 0;
 });
@@ -135,8 +173,8 @@ describe("whose run a decided game moves", () => {
      * call it a LOSS for both seats — two plausible results out of a row
      * nothing understands. A rule that cannot measure must not fire.
      */
-    expect(playedSides({ blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" })).toEqual([]);
-    expect(playedSides({ blackMemberId: "a", whiteMemberId: "b", winner: "" })).toEqual([]);
+    expect(playedSides({ id: "gx", blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" })).toEqual([]);
+    expect(playedSides({ id: "gy", blackMemberId: "a", whiteMemberId: "b", winner: "" })).toEqual([]);
   });
 });
 
@@ -275,6 +313,7 @@ describe("what recording one costs", () => {
     expect(reads).toBe(0);
     expect(transactions).toBe(0);
     expect(updates).toEqual([]);
+    expect(asked).toEqual([]);
   });
 
   it("writes nothing for a seat no member row answers to", async () => {
@@ -284,6 +323,93 @@ describe("what recording one costs", () => {
 
     expect(reads).toBe(1);
     expect(transactions).toBe(0);
+    expect(updates).toEqual([]);
+  });
+});
+
+/**
+ * The XP the same decided game asks for.
+ *
+ * XP rides THIS function rather than `recordResult`, which is the decision worth
+ * pinning: `recordResult` takes names, bails on `!isRateable`, and is only
+ * called `if (row.rated)`. XP is about playing rather than about rating, so an
+ * unrated game and a hot-seat game both pay it — which is exactly the set of
+ * games this function already sees, once per bound member id.
+ *
+ * What the awards then come to — the day's allowance, the unique index, whether
+ * a bot may earn at all — is `src/lib/xp/awardXp.test.ts`. Here the question is
+ * only whether the right member was asked for the right awards about the right
+ * game.
+ */
+describe("the XP a decided game asks for", () => {
+  it("pays the winner for finishing and for winning, and the loser for finishing", async () => {
+    // A lost game still pays. Seeing a game through is the courtesy
+    // correspondence play depends on, and a ladder that only paid winners would
+    // be a second rating.
+    member("a");
+    member("b");
+
+    await recordPlayed(game("a", "b", "black", "k3m9-p2qx"));
+
+    expect(asked).toEqual([
+      { memberId: "a", types: ["gameFinished", "gameWon"], subjects: ["k3m9-p2qx", "k3m9-p2qx"] },
+      { memberId: "b", types: ["gameFinished"], subjects: ["k3m9-p2qx"] },
+    ]);
+  });
+
+  it("pays both seats for finishing a draw and neither for winning it", async () => {
+    member("a");
+    member("b");
+
+    await recordPlayed(game("a", "b", null, "d1"));
+
+    expect(asked.map((one) => one.types)).toEqual([["gameFinished"], ["gameFinished"]]);
+  });
+
+  it("keys every award on the game, so one game pays once however often an ending fires", async () => {
+    // Three of the four endings can fire for one game — a move that wins, then a
+    // timeout claimed on the already-finished row — and bots replay endings.
+    // Without the game id on the subject, the second firing would pay again.
+    member("a");
+    member("b");
+    const one = game("a", "b", "white", "same");
+
+    await recordPlayed(one);
+    await recordPlayed(one);
+
+    expect(asked).toHaveLength(4);
+    for (const call of asked) expect(new Set(call.subjects)).toEqual(new Set(["same"]));
+  });
+
+  it("asks nothing for a seat no member row answers to", async () => {
+    // The streak write already skips it; the award must too, or the operator —
+    // who has no Member row at all — becomes a member the first time they finish
+    // a game in the browser suite.
+    await recordPlayed(game("ghost", null, "black"));
+    expect(asked).toEqual([]);
+  });
+
+  it("asks once for a game against yourself, from the black seat", async () => {
+    // John has played himself. Two calls would pay him for a win and for a loss
+    // out of one game, and move his total twice for one row.
+    member("solo");
+
+    await recordPlayed(game("solo", "solo", "black", "self"));
+
+    expect(asked).toEqual([
+      { memberId: "solo", types: ["gameFinished", "gameWon"], subjects: ["self", "self"] },
+    ]);
+  });
+
+  it("asks nothing about a row whose result it cannot read", async () => {
+    // `winner` is a plain string column. A value nothing understands must move
+    // nobody's run and pay nobody — a rule that cannot measure must not fire.
+    member("a");
+    member("b");
+
+    await recordPlayed({ id: "bad", blackMemberId: "a", whiteMemberId: "b", winner: "abandoned" });
+
+    expect(asked).toEqual([]);
     expect(updates).toEqual([]);
   });
 });

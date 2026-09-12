@@ -1,7 +1,10 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { MEMBER_STREAK_SCOPES, streakWrite, type StreakOutcome } from "./streak";
+import { awardXp } from "@/lib/xp/awardXp";
+import { XP_EVENTS } from "@/lib/xp/xp.constants";
+import type { XpAward } from "@/lib/xp/xp.types";
+import { MEMBER_STREAK_SCOPES, STREAK_KINDS, streakWrite, type StreakOutcome } from "./streak";
 import { outcomeFor } from "./pools";
 
 /**
@@ -70,6 +73,17 @@ import { outcomeFor } from "./pools";
  * only move the guess to whoever calls.
  */
 export type DecidedGame = {
+  /**
+   * The game's own id.
+   *
+   * REQUIRED, though the streak columns do not need it, because the XP ledger
+   * does: `gameFinished` and `gameWon` are keyed on it, which is what makes one
+   * game pay once however many times an ending fires. Optional would mean a
+   * caller that forgot it awarded with an empty subject — once ever, for the
+   * first game a member ever finished, and never again. That is a silent wrong
+   * answer rather than a missing one, so the compiler asks for it instead.
+   */
+  id: string;
   blackMemberId: string | null;
   whiteMemberId: string | null;
   winner: string | null;
@@ -158,4 +172,44 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
   });
   if (writes.length === 0) return;
   await prisma.$transaction(writes);
+
+  await awardGameXp(game, sides);
+}
+
+/**
+ * What the finished game paid each bound seat.
+ *
+ * Here rather than in the four endings because this is already the one place a
+ * decided game is seen exactly once per bound member id — which is precisely
+ * what an XP award needs, and is the reason XP rides this rather than
+ * `recordResult`. `recordResult` takes NAMES, bails on `!isRateable`, and is
+ * called only `if (row.rated)`; XP is about playing, not about rating, so an
+ * unrated hot-seat game pays it and a rating-ineligible name does not stop it.
+ *
+ * AFTER the streak transaction and outside it, on purpose. The run is the thing
+ * this function exists to keep and the ledger is bookkeeping on top of it, so a
+ * ledger failure must not roll the run back — and `awardXp` swallows its own
+ * failures, so nothing here can throw at the ending that called it either.
+ *
+ * A loss pays too, for finishing: seeing a game through is the courtesy
+ * correspondence play depends on, and a ladder that only pays winners is a
+ * second rating. `XP_EVENT_SPECS.gameFinished.cap` is what stops somebody
+ * hot-seating tic-tac-toe against themselves for an afternoon, and `gameWon`
+ * rides that allowance so a game outside it is silent as a whole rather than
+ * paying for being won but not for being finished.
+ *
+ * The awards a game can earn BEYOND these two — a win over a person, over a
+ * buddy, a turn-around, a streak, a grade, a first game of a variant — are
+ * XP-03 to XP-06, and they belong in a pure module that is handed the game and
+ * returns a list. See `docs/plans/xp/XP_DESIGN.md`; this is deliberately only
+ * the two that need nothing but the row in hand.
+ */
+async function awardGameXp(game: DecidedGame, sides: readonly PlayedSide[]): Promise<void> {
+  for (const side of sides) {
+    const awards: XpAward[] = [{ type: XP_EVENTS.gameFinished, subject: game.id }];
+    if (side.outcome === STREAK_KINDS.win) {
+      awards.push({ type: XP_EVENTS.gameWon, subject: game.id });
+    }
+    await awardXp({ memberId: side.memberId, awards });
+  }
 }
