@@ -225,6 +225,151 @@ test.describe("playing a finished game again", () => {
 });
 
 test.describe("carrying a position into a new game", () => {
+  /*
+   * A FORK OF A GAME AGAINST A COMPUTER PLAYER PLAYS THAT COMPUTER PLAYER AGAIN.
+   *
+   * It used to become two people at one screen, and every screen in front of it
+   * said otherwise. The route bound the second seat from the opponent's EMAIL and
+   * a program has none — it never signs in — so the fork found nobody, fell
+   * through to a hot seat, and quietly made a board for one device. Meanwhile
+   * `personNamed` answers with the program, so the setup screen named it, the
+   * doorstep said "who plays white" and offered a rating, and `ratedAtCreation`
+   * then refused that rating because a hot-seat game can never move one.
+   *
+   * DRIVEN THROUGH THE CONTROLS A READER USES, because the fault was invisible
+   * from the API: posting `from` directly and reading the row back would have
+   * shown the hot seat without showing the three screens that promised otherwise.
+   * The fork is CLICKED off the replay, the setup screen is read, Start and Begin
+   * are pressed, and only then is the row asked what it says.
+   *
+   * Its own world: its own member, its own game, both taken away afterwards.
+   */
+  test("a fork of a game against a computer player plays that computer player again", async ({
+    browser,
+    baseURL,
+  }) => {
+    const stamp = Date.now().toString(36);
+    const me = { email: `botfork-${stamp}@example.test`, name: `BotFork ${stamp}` };
+    await seedMember(me);
+    const context = await memberContext(browser, baseURL!, me);
+
+    /*
+     * A graded computer player, by the fixed id `BOT_MEMBERS` gives it — the same
+     * `challengeId` the doorstep's `against=<bot id>` sends for a fresh game.
+     * Named here rather than imported because nothing under e2e/ resolves `@/`.
+     */
+    const made = await context.request.post("/api/games/live", {
+      data: {
+        challengeId: "kyu",
+        variant: "freestyle",
+        size: 9,
+        winLength: 5,
+        moveTimeMs: 86_400_000,
+        allowResign: true,
+      },
+    });
+    expect(made.status(), await made.text()).toBe(201);
+    const created = (await made.json()) as { id: string };
+    tidyAway(created.id);
+
+    /*
+     * The program's NAME as the row actually holds it, read back rather than
+     * written down here: the screens below have to agree with the database, and a
+     * name copied into a spec is a second place for it to be right.
+     */
+    const before = await context.request.get(`/api/games/${created.id}`);
+    expect(before.status()).toBe(200);
+    const source = (await before.json()) as { whiteMemberId: string | null; whiteName: string };
+    expect(source.whiteMemberId, "a program is seated, not asked").toBe("kyu");
+    const machine = `${source.whiteName} 機械`;
+
+    /*
+     * ONE STONE OF MINE, AND NOT A SECOND, which is a deliberate limit rather
+     * than the least I could get away with. The moves route plays the program's
+     * reply, and where that reply lands is the program's business — a second
+     * stone of mine at a square I had chosen in advance collided with it and
+     * failed this spec with "That intersection cannot be played", which is a
+     * flake about a search wearing a bug about a fork. One move, then resigned,
+     * leaves two moves on the record and nothing that depends on a choice
+     * neither of us makes.
+     */
+    const game = { id: created.id, ...(await seatTokensFor(created.id)) };
+    const played = await context.request.post(`/api/games/${game.id}/moves`, {
+      data: { token: game.blackToken, row: 0, col: 0 },
+    });
+    expect(played.status(), await played.text()).toBe(201);
+    const resigned = await context.request.post(`/api/games/${game.id}/resign`, {
+      data: { token: game.blackToken },
+    });
+    expect(resigned.status(), await resigned.text()).toBe(200);
+
+    /*
+     * FROM MOVE ONE, so the forked position is the program's to answer. That is
+     * the half the old code could not reach at all: with the game hot-seated
+     * there was nobody whose move it was, and `playBotTurns` was never called
+     * because the route asked the REQUEST for a computer rather than the game.
+     */
+    const page = await context.newPage();
+    await page.goto(`/games/gomoku/match/${game.id}/1`);
+
+    const fork = page.getByRole("link", { name: /Play from move 1/ });
+    await expect(fork).toBeVisible();
+    await fork.click();
+
+    await expect(page).toHaveURL(new RegExp(`/games/gomoku/new\\?from=${game.id}&move=1`));
+    await ready(page, "set-up-game");
+
+    // The screen names the program, and marks it as one — in the hint paragraph
+    // and in the folded summary line, which used to read "the same opponent".
+    await expect(page.getByTestId("set-up-fork")).toContainText(source.whiteName);
+    await expect(page.getByTestId("more-settings-summary")).toContainText(machine);
+    await openMoreSettings(page);
+    /*
+     * AND THE RATING IS STILL OFFERED, which is the promise the route used to
+     * break. A game against a computer player is rated — in the computer pool,
+     * fully and symmetrically (see `pools.ts`) — so there is nothing here to
+     * withhold. The absence is asserted after a control that IS in the drawer has
+     * been waited for, so it is a statement about a rendered form.
+     */
+    await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
+    await expect(page.getByTestId("shared-rules-rated")).toBeVisible();
+
+    await page.getByTestId("set-up-start").click();
+    await ready(page, "doorstep");
+    // The doorstep says who is playing, and does not say both seats are yours.
+    await expect(page.getByTestId("doorstep-colours")).toContainText(machine);
+    await expect(page.getByTestId("doorstep-colours")).not.toContainText("Both seats are yours");
+    await expect(page.getByTestId("doorstep-colours"), "a program is never asked").not.toContainText(
+      "This is an offer",
+    );
+
+    await page.getByTestId("doorstep-begin").click();
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+
+    const id = page.url().split("/").pop()!;
+    tidyAway(id);
+    const next = await context.request.get(`/api/games/${id}`);
+    expect(next.status()).toBe(200);
+    const forked = (await next.json()) as {
+      blackMemberId: string | null;
+      whiteMemberId: string | null;
+      rated: boolean;
+      moveCount: number;
+    };
+
+    expect(forked.whiteMemberId, "the seat the program had, not a hot seat").toBe("kyu");
+    expect(forked.blackMemberId, "and the colour I played, kept").not.toBeNull();
+    expect(forked.rated, "rated, in the computer pool, as a fresh game against one is").toBe(true);
+    /*
+     * The position, and the program's answer to it. One move was carried and it
+     * was white's turn, so a program that is actually seated has played by now —
+     * two moves rather than one is the whole of "the bot answers".
+     */
+    expect(forked.moveCount, "the carried move, and the program's reply to it").toBe(2);
+
+    await context.close();
+  });
+
   test("a fork names its game in the path, and says how far in", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
     const { context, them, game } = await playedOut(browser, baseURL!, stamp);

@@ -93,14 +93,17 @@ export function creationFor({
    */
   const posted = opponent === null && fork === null;
   /*
-   * A FORK NAMES NO OPPONENT AND MUST NOT. The route finds the other player in
-   * the game being forked — a position belongs to the two who were in it — and
-   * it does that by looking the seat up, then falls back to a board at one
-   * screen when nobody held it. Sending an opponent as well would put the route
-   * on both roads at once: the id binds a seat while the fallback, which only
-   * watches for an ADDRESS, still concludes nobody was named and marks the game
-   * a hot seat. Bound and hot-seated together is not a state anything here
-   * means, and the display rules about rating read it as neither.
+   * A FORK NAMES NO OPPONENT AND HAS NO NEED TO. The route finds the other
+   * player in the game being forked — a position belongs to the two who were in
+   * it — by reading the seats, and falls back to a board at one screen only
+   * where nobody held one.
+   *
+   * It used to be stronger than that: sending an opponent as well put the route
+   * on both roads at once, because the fallback watched for an ADDRESS and a
+   * bound id was not one, so the game came out bound AND hot-seated. That is
+   * gone — the route resolves the opponent by member id now, so a named one is
+   * simply honoured over the position's — and this stays as it is because the
+   * route still knows better than this screen who was in that game.
    */
   const body: Record<string, unknown> = {
     ...carry,
@@ -130,8 +133,9 @@ export function creationFor({
  *  - A REMATCH swaps, and `colourAfterSwap` has already said which way round.
  *  - A FORK keeps the colour that played the position, because the position
  *    belongs to the colours that were in it.
- *  - A CHALLENGE gives the challenger black — see the creation route, which
- *    writes `blackMemberId: mineId` for every named opponent.
+ *  - A CHALLENGE gives the challenger black — see `askingSomebody` in
+ *    `liveAgainst.ts`, which seats whoever asks as black wherever no position has
+ *    settled the colours, and keeps the position's colours where one has.
  *  - A POSTED SEAT keeps black for whoever posted it, for the same reason: the
  *    route binds its creator to black and hands back only that seat's token.
  *
