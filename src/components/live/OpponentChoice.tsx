@@ -7,6 +7,7 @@ import { shownName } from "@/lib/rating/shownName";
 import type { Opponent } from "@/lib/social/opponents";
 import { Field, Select } from "@/components/ui/Controls";
 import type { SetUpOpponent } from "./setUp.types";
+import { POST_FOR_ANYONE } from "./setUpWords";
 
 /**
  * What the opponent choice means.
@@ -100,7 +101,16 @@ export function OpponentChoice({
         onChange={(event) => onChange(event.target.value)}
         data-testid="set-up-with"
       >
-        <option value={ANYONE}>Post the seat for anyone</option>
+        {/*
+         * THE WORDS FROM `setUpWords.ts`, WHICH IS WHERE THEY ARE DECIDED. The
+         * folded summary line stands in for this select while the drawer is
+         * shut, so the two say the same thing a press apart — and this had the
+         * sentence written out again, which made the constant's own promise
+         * ("said once because it is said twice") false the day it was written.
+         * The copy that drifts is always the summary, and the summary is the one
+         * that has to be true.
+         */}
+        <option value={ANYONE}>{POST_FOR_ANYONE}</option>
         {extra !== null ? (
           <optgroup label="Asked for 指名">
             <option value={valueFor(extra)}>{shownName(extra.name)}</option>
