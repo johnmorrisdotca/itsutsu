@@ -3,12 +3,14 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
+import { isMemberId } from "@/lib/auth/memberId";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 import { claimOrVerifyPhraseFor } from "@/lib/phrase/phraseStore";
 import { seatStandIn } from "@/lib/phrase/standInSeat";
 import { seatCookieName } from "@/lib/history/seatCookie";
+import { shownName } from "@/lib/rating/shownName";
 
 /** How long the board stays hers on this device — the same as any claimed seat. */
 const SEAT_COOKIE_DAYS = 30;
@@ -22,10 +24,18 @@ const SEAT_COOKIE_DAYS = 30;
  * counts for both — which is the whole feature, and is what hot seat
  * deliberately is not.
  *
- * A NAME AND THEN THE WORDS, which is a username and a password. The words
- * cannot find a member on their own: every row's hash is salted, so there is
- * nothing to look up. A name is not a secret and costs nothing to say; the words
- * are what prove it.
+ * WHO AND THEN THE WORDS, which is a username and a password. The words cannot
+ * find a member on their own: every row's hash is salted, so there is nothing to
+ * look up. Who you are is not a secret and costs nothing to say; the words are
+ * what prove it.
+ *
+ * AND "WHO" IS AN ID, TAPPED OFF A LIST, NEVER A TYPED NAME. John: "let them find
+ * their name. Once they find their name, the four words will match up with them.
+ * And everyone doesn't have to type anything when finding their name." A tap
+ * carries the member's own id, so this route never has to work out which account
+ * a string meant — which display names cannot say, being neither unique nor
+ * indexed — and a child claiming her seat on a borrowed iPad meets no keyboard at
+ * all. `seatPick.ts` builds the list; `SitAsPanel` is where it is tapped.
  *
  * THE GATE IS NOT TOUCHED. This is a new way to prove who somebody is, and
  * `src/proxy.ts` still decides entirely on its own whether a request gets in at
@@ -33,13 +43,20 @@ const SEAT_COOKIE_DAYS = 30;
  * arrives here after the gate has already said yes. It cannot turn a no into a
  * yes, because it never runs on a no.
  *
- * EVERY REFUSAL THAT COULD BE A GUESS SAYS THE SAME THING. Wrong name, wrong
- * words, a name nobody here goes by — one message, one status. Telling them
- * apart would make this a way to find out who holds an account.
+ * EVERY REFUSAL THAT COULD BE A GUESS SAYS THE SAME THING. Wrong member, wrong
+ * words, an account with no words set — one message, one status. Telling them
+ * apart would make this a way to find out who holds a phrase here, which is
+ * exactly what "that name has no words set" would announce.
  */
 const sitAsSchema = z.object({
-  /** The display name of whoever is sitting down. Not a secret. */
-  name: z.string().trim().min(1).max(60),
+  /**
+   * WHICH MEMBER, by opaque id, tapped off the list rather than typed.
+   *
+   * Not a credential and not a secret — every player's page on this site is
+   * already addressed by this id — so it identifies and proves nothing. The
+   * words do the proving.
+   */
+  memberId: z.string().trim().refine(isMemberId),
   /**
    * The four words, tapped rather than typed.
    *
@@ -86,13 +103,18 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      * words and no other device was the case this whole feature exists for,
      * and verification alone could not serve it.
      */
-    const claim = await claimOrVerifyPhraseFor(parsed.data.name, parsed.data.words);
+    const claim = await claimOrVerifyPhraseFor({ memberId: parsed.data.memberId }, parsed.data.words);
     if (!claim.ok) {
       return NextResponse.json({ error: REFUSED }, { status: 401, headers: NO_STORE });
     }
-    const memberId = claim.memberId;
 
-    const outcome = await seatStandIn(id, memberId, parsed.data.name, parsed.data.seat);
+    /*
+     * The seat is stamped with the name ON THE ACCOUNT, handed back by the claim.
+     * It used to be stamped with whatever was typed, which was the same name in
+     * practice and was not the same fact — and the rating is filed against the
+     * seat's name, so the one that matters is the member's own.
+     */
+    const outcome = await seatStandIn(id, claim.memberId, claim.name, parsed.data.seat);
     if (!outcome.ok) return refusal(outcome.reason, outcome.said);
 
     const response = NextResponse.json(
@@ -101,7 +123,13 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
        * can tell somebody they now have a way back in rather than letting them
        * discover it. It reports what happened; it grants nothing.
        */
-      { path: matchPath(outcome.variant, id), seat: outcome.seat, name: parsed.data.name, bound: claim.bound },
+      /*
+       * `shownName`, not the column: a first name and an initial, the same as
+       * every other place a person is printed here. A response is a thing a
+       * screen renders, and this one is rendered on a device signed in as
+       * somebody else.
+       */
+      { path: matchPath(outcome.variant, id), seat: outcome.seat, name: shownName(claim.name), bound: claim.bound },
       { status: 200, headers: NO_STORE },
     );
     /*

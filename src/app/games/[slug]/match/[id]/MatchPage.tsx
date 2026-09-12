@@ -23,6 +23,7 @@ import { matchPath, seatPath, slugFor } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
+import { seatPickList } from "@/lib/phrase/seatPick";
 import { markSeatTaken, resolveSeat, rulesAreSettled, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
 import { activeGameCount, activeGameLimit } from "@/lib/history/activeGames";
@@ -307,6 +308,15 @@ async function LiveMatch({
     tokens === null ? [] : [STONES.black, STONES.white].filter((stone) => seatIsFree(tokens, stone));
 
   /*
+   * Who could sit down here, for `SitAsPanel` to print as names to tap. Read on
+   * the server and handed over as a prop rather than fetched by the panel: a
+   * route that answers "who holds an account here" is a route somebody can ask,
+   * and there is no need for one — this page is already a server render, and the
+   * question is only asked when a seat is actually free.
+   */
+  const seatPicks = freeSeats.length === 0 ? [] : await seatPickList();
+
+  /*
    * Whether the rules are still open to change. Read from the same row as the
    * seat links, because it is the same question asked twice: a seat still
    * waiting for somebody is a game still being set up.
@@ -389,7 +399,7 @@ async function LiveMatch({
             here — that is the whole point of it — so it shows for any reader
             while a seat is waiting, whether or not they already hold one.
           */}
-          {freeSeats.length > 0 ? <SitAsPanel gameId={game.id} freeSeats={freeSeats} /> : null}
+          {freeSeats.length > 0 ? <SitAsPanel gameId={game.id} freeSeats={freeSeats} members={seatPicks} /> : null}
           {invites.length > 0 ? (
             <InvitePanel invites={invites} yourStone={seat} />
           ) : seat === null && freeSeats.length === 0 ? (
