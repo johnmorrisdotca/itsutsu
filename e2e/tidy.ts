@@ -2,6 +2,7 @@ import { test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
+import { removePlayedUnder } from "./members";
 
 /**
  * Clears what an earlier run of this suite left behind.
@@ -212,6 +213,38 @@ export function gamesMade(): (id: string) => string {
   return (id: string) => {
     ids.push(id);
     return id;
+  };
+}
+
+/**
+ * The NAMES a spec's games were played under, taken away when it finishes.
+ *
+ * `const under = namesPlayedUnder();` beside `gamesMade()`, then
+ * `blackName: under(\`Kaya ${stamp}\`)` where the name is invented. The games
+ * go with `gamesMade`; this takes away what OUTLIVES them.
+ *
+ * Because a live game is created rated, and finishing one writes a `Player`
+ * row and a `PlayerVariantRating` row keyed by the folded name — rows
+ * `gamesMade` knows nothing about, so every run leaves two behind for ever.
+ * Read off this machine on 2026-09-12: 413 `Kaya …` players, 413 variant
+ * ratings, and one row named plain **Sumi** carrying 409 rated games and 409
+ * losses, because two specs used a FIXED name for white. AGENTS.md names the
+ * consequence — the name is taken for ever and `PATCH /api/me` answers 409 to
+ * anybody who later asks for it.
+ *
+ * So a name a spec invents must be unique to the run AND taken away with it.
+ * Only what this file made, by the same bargain as everything else here: a
+ * bare "Sumi" is four hundred other games' standing and is not ours to drop.
+ */
+export function namesPlayedUnder(): (name: string) => string {
+  const names: string[] = [];
+  test.afterAll(async () => {
+    await removePlayedUnder(names);
+    names.length = 0;
+  });
+  return (name: string) => {
+    names.push(name);
+    return name;
   };
 }
 
