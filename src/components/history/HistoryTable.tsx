@@ -37,7 +37,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
         const linkable = game.result !== "abandoned";
         return (
           // The row is the link into the replay, stretched over the card; a name inside it is its own link, above it.
-          <li key={game.id} className="relative">
+          <li key={game.id} className="relative" data-testid="history-row">
             {/*
               The row has always been the link; the arrow is what says so, and
               it is the same sign every card on the site that opens now wears.

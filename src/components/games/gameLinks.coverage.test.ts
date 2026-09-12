@@ -205,6 +205,20 @@ describe("a count of games is the way into those games", () => {
     // The total of the filter the reader is already looking at. A link would
     // lead to the page they are on.
     "src/components/history/Pager.tsx": "the count of the page you are already on",
+    /*
+     * THE SAME SENTENCE AS THE PAGER'S, in the control that replaces it.
+     *
+     * "40 of 3,493 shown" is the pager's "Page 2 of 175 · 3,493 games" said for
+     * a reader who is scrolling instead of pressing Next, and it is exempt for
+     * exactly the reason above and no other: every game it counts is already on
+     * this page or one scroll below it, so the only honest destination for a
+     * link would be the address the reader is at.
+     *
+     * Worth saying that this gate FOUND the line rather than the line being
+     * written with an exception in mind. It is here because the reason survived
+     * being asked for.
+     */
+    "src/components/history/LiveRecord.tsx": "the count of the page you are already on, scrolled",
     // An embed on somebody else's site. It is a picture of a record, and a
     // link out of it goes somewhere the reader did not ask to be sent.
     "src/components/embed/EmbedStats.tsx": "an embed on another site",
