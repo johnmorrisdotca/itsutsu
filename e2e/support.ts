@@ -157,6 +157,27 @@ export async function chooseGame(page: Page, variant: string) {
   await expect(card).toHaveAttribute("data-chosen", "true");
 }
 
+/**
+ * Opens the drawer holding the opening, resigning, the clock, the ratings and
+ * the opponent.
+ *
+ * Those five are folded behind a line saying what they currently are, because
+ * the game and board pictures put the Start button below an iPad's fold —
+ * see MoreSettings.tsx for the measurement. A spec that wants one of them has
+ * to open it, the way a reader does.
+ *
+ * Idempotent, and it waits for what it opened: a `<details>` already open
+ * would otherwise be closed by a second click, which is the kind of failure
+ * that reads as the control being broken.
+ */
+export async function openMoreSettings(page: Page) {
+  const shut = await page
+    .getByTestId("more-settings")
+    .evaluate((el) => (el as HTMLDetailsElement).open === false);
+  if (shut) await page.getByTestId("more-settings-open").click();
+  await expect(page.getByTestId("set-up-with")).toBeVisible();
+}
+
 /** Chooses a board on the set-up screen. The blocks are radios; this presses one. */
 export async function chooseBoard(page: Page, size: number | string) {
   const block = page.locator(`[data-testid="set-up-size"][data-size="${size}"]`);

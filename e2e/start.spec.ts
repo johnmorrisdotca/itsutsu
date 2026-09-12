@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { PLAYER_STATE, chooseGame, openGamesPage, openSetUpPage } from "./support";
+import { PLAYER_STATE, chooseGame, openGamesPage, openMoreSettings, openSetUpPage } from "./support";
 
 /*
  * This file was called "starting a game is one sentence" and tested a one-line
@@ -26,6 +26,8 @@ const SEVEN_DAYS = String(7 * 24 * 60 * 60_000);
 async function askFor(page: import("@playwright/test").Page, variant: string) {
   await openSetUpPage(page);
   await chooseGame(page, variant);
+  // The pace and the opponent are behind the summary line now.
+  await openMoreSettings(page);
   await page.getByTestId("shared-rules-move-time").selectOption(SEVEN_DAYS);
 }
 

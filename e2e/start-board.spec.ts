@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { chooseBoard, chooseGame, chosenBoard, openSetUpPage } from "./support";
+import { chooseBoard, chooseGame, chosenBoard, openMoreSettings, openSetUpPage } from "./support";
 import { memberContext } from "./members";
 import { gamesMade } from "./tidy";
 
@@ -37,8 +37,10 @@ test.describe("choosing the board before the game exists", () => {
     await setUp(page, "reversi");
     // Reversi is 8×8 and nothing else: there is no decision to put to anybody.
     // Asserted after a control that IS on the form, so an absence cannot be
-    // satisfied by a page that has not rendered.
-    await expect(page.getByTestId("set-up-with")).toBeVisible();
+    // satisfied by a page that has not rendered. The summary line is that
+    // control now: the opponent select moved behind it and is hidden until
+    // somebody opens it, so waiting on it would wait for ever.
+    await expect(page.getByTestId("more-settings-open")).toBeVisible();
     await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
   });
 
@@ -52,6 +54,7 @@ test.describe("choosing the board before the game exists", () => {
      * which is right and is the wrong thing to assert a chosen board against
      * — the board would be the poster's rather than this one.
      */
+    await openMoreSettings(page);
     const opponents = page.getByTestId("set-up-with");
     const computer = (
       await opponents
@@ -93,6 +96,7 @@ test.describe("choosing the board before the game exists", () => {
     await waiting.close();
 
     await setUp(page, "freestyle");
+    await openMoreSettings(page);
     await page.getByTestId("set-up-with").selectOption("anyone");
     await page.getByTestId("shared-rules-move-time").selectOption(String(WEEK));
 
@@ -117,6 +121,7 @@ test.describe("choosing the board before the game exists", () => {
     await poster.close();
 
     await setUp(page, "freestyle");
+    await openMoreSettings(page);
     await page.getByTestId("set-up-with").selectOption("anyone");
     await page.getByTestId("shared-rules-move-time").selectOption(String(WEEK));
 
@@ -135,7 +140,7 @@ test.describe("choosing the board before the game exists", () => {
 
     // Through a game with one fixed board, and back again.
     await chooseGame(page, "reversi");
-    await expect(page.getByTestId("set-up-with")).toBeVisible();
+    await expect(page.getByTestId("more-settings-open")).toBeVisible();
     await expect(page.getByTestId("shared-rules-size")).toHaveCount(0);
     await chooseGame(page, "freestyle");
 

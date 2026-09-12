@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { chooseGame, openSetUpPage } from "./support";
+import { chooseGame, openMoreSettings, openSetUpPage } from "./support";
 
 import { memberContext } from "./members";
 
@@ -58,6 +58,8 @@ test.describe("a seat somebody else is waiting on", () => {
      */
     await openSetUpPage(page);
     await chooseGame(page, "notakto");
+    // The pace and the opponent are behind the summary line now.
+    await openMoreSettings(page);
     await page.getByTestId("shared-rules-move-time").selectOption(pace);
     await page.getByTestId("set-up-with").selectOption("anyone");
 

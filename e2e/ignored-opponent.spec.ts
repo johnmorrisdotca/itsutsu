@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
-import { openSetUpPage } from "./support";
+import { openMoreSettings, openSetUpPage } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
 
 /*
@@ -50,21 +50,31 @@ test.describe("the opponent chooser obeys the ignore list", () => {
     const starred = await mine.request.post("/api/buddies", { data: { email: them.email } });
     expect(starred.status()).toBeLessThan(300);
 
+    /*
+     * The chooser is behind the summary line now, so it is OPENED rather
+     * than reached past: a reader who wants to pick somebody taps that line,
+     * and a test asserting about a control nobody could see would be
+     * asserting about markup instead of about the screen.
+     */
     const chooser = page.getByTestId("set-up-with");
     await openSetUpPage(page);
+    await openMoreSettings(page);
     await expect(chooser).toContainText(shownName(them.name));
 
     // And where the address has already named the game, which reads the same list.
     await openSetUpPage(page, "gomoku");
+    await openMoreSettings(page);
     await expect(chooser).toContainText(shownName(them.name));
 
     const shut = await mine.request.post("/api/ignores", { data: { email: them.email } });
     expect(shut.status()).toBeLessThan(300);
 
     await openSetUpPage(page);
+    await openMoreSettings(page);
     await expect(chooser).toBeVisible();
     await expect(chooser).not.toContainText(shownName(them.name));
     await openSetUpPage(page, "gomoku");
+    await openMoreSettings(page);
     await expect(chooser).toBeVisible();
     await expect(chooser).not.toContainText(shownName(them.name));
 

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { chooseBoard, ready } from "./support";
+import { chooseBoard, openMoreSettings, ready } from "./support";
 
 
 /**
@@ -28,8 +28,10 @@ test.describe("setting a game up before it exists", () => {
      * Loudly is better, and waiting is better than either.
      */
     await ready(page, "set-up-game");
-    // Move every control there is. Nothing has been created by any of it.
+    // Move every control there is, the folded ones included. Nothing has
+    // been created by any of it.
     await chooseBoard(page, 19);
+    await openMoreSettings(page);
     await page.getByTestId("shared-rules-rated").selectOption("friendly");
     await page.getByTestId("shared-rules-move-time").selectOption({ index: 1 });
 
@@ -52,6 +54,7 @@ test.describe("setting a game up before it exists", () => {
      */
     await ready(page, "set-up-game");
     await chooseBoard(page, 19);
+    await openMoreSettings(page);
     await page.getByTestId("shared-rules-rated").selectOption("friendly");
     await expect(page.getByTestId("set-up-summary")).toContainText("19×19");
 
