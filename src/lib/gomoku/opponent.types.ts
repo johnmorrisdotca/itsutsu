@@ -65,9 +65,10 @@ export type BotTurn =
 export type TierSpec = {
   /**
    * How far it looks. 1 is its own move only; 2 asks what the opponent could
-   * do in reply. Nothing here searches deeper than that — a turn-based site
-   * has to answer a request, and two plies of a checked, spec-driven reading
-   * is a stronger opponent than four plies of a guess.
+   * do in reply. This is the GUARD's reach and not the search's: two plies of a
+   * reading checked through the engine stop a player blundering, which is what
+   * separates a graded player from a learner. Seeing a plan is `searchDepth`,
+   * and it is a different question and a different number.
    */
   depth: 1 | 2;
   /**
@@ -96,6 +97,24 @@ export type TierSpec = {
    * difference between a player who does not blunder and a player who is
    * strong: seeing the four that forces a reply, and the three waiting behind
    * it.
+   *
+   * "Where looking ahead means something" is TWO searches, and for a long time
+   * it was one. `opponentSearch.ts` reads a line game by the shape of its
+   * stones and declines everything else — twenty-three of the site's
+   * thirty-nine games — so in all of those this number did nothing whatever,
+   * and since it is the only knob that separates the top two grades, the top
+   * two grades were one player wearing two names. `opponentLook.ts` is the
+   * other half: the same idea over the family-aware reading of a whole
+   * position, for the flipping games, the races, Go and checkers.
+   *
+   * It is a TARGET rather than a depth reached. Both searches deepen two plies
+   * at a time under a wall clock and keep the last pass they FINISHED, so
+   * asking for eight instead of six changes nothing unless an eight-deep pass
+   * finishes inside the request. On an 8×8 board of Reversi it does not —
+   * measured over fifteen positions, six and eight chose the same move every
+   * time — and on a board of checkers it does. That is why the difference
+   * between 名人 and 国手 is a per-game fact rather than a promise, and why
+   * 国手's blurb says so.
    */
   searchDepth: number;
   /**

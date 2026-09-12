@@ -4,8 +4,9 @@ import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, EVAL_WEIGHTS, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
 import { pieceScore, positionScore, pointScore, readsThreats, threatScore } from "./opponentEval";
 import { masteredTurn } from "./expert/experts";
-import { applyTurn, legalTurns } from "./opponentTurns";
+import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
 import { searchTurn } from "./opponentSearch";
+import { lookAheadTurn, lookDepth } from "./opponentLook";
 import type { GameState, Stone } from "./gomoku.types";
 import type { BotTier, BotTurn, SearchBudget, TierSpec } from "./opponent.types";
 
@@ -107,15 +108,6 @@ function handsOverTheGame(after: GameState, me: Stone): boolean {
 /** One of `items`, drawn evenly. Ties are broken by chance, never by board order. */
 function pick<T>(items: T[], random: () => number): T {
   return items[Math.min(items.length - 1, Math.floor(random() * items.length))];
-}
-
-/** Whether two turns are the same turn, for matching a searched move to its candidate. */
-function sameTurn(a: BotTurn, b: BotTurn): boolean {
-  if (a.kind !== b.kind) return false;
-  if (a.kind === MOVE_KINDS.place && b.kind === MOVE_KINDS.place) {
-    return a.row === b.row && a.col === b.col && a.stone === b.stone;
-  }
-  return false;
 }
 
 /** The best-scoring entries, with ties kept so chance can settle them. */
@@ -221,7 +213,32 @@ export function chooseTurn(
    * by construction: it has everything that one has, and a plan as well.
    */
   if (spec.searchDepth > 0) {
-    const searched = searchTurn(state, spec.searchDepth, random, budget);
+    /*
+     * Two searches, and which one answers is decided by the game rather than by
+     * the grade. `searchTurn` is the line games' — whole-board shape, ordered by
+     * the threat ladder — and it answers null in the twenty-three games that are
+     * not about lines. `lookAheadTurn` is those games', and answers null in
+     * turn for the line games and for anything the shared reading cannot read
+     * at all.
+     *
+     * Before this, the second half did not exist, and that was the ordering bug
+     * rather than a gap in it: `searchDepth` is the ONLY knob separating 名人
+     * from 国手, so in the games where nothing searched the two were one program
+     * under two names — and the noisier, blunder-prone 段 beat both of them,
+     * because at one ply a flipping game is not being read at all. The cost is
+     * bounded by the same wall clock every grade already spends in the other
+     * sixteen games; see LOOK for why its node budget counts what it counts.
+     */
+    const searched =
+      searchTurn(state, spec.searchDepth, random, budget) ??
+      lookAheadTurn(
+        state,
+        lookDepth(VARIANT_SPECS[state.settings.variant], spec.searchDepth),
+        random,
+        budget,
+        // Its own width, so what it hands back is among what was weighed above.
+        spec.width,
+      );
     const entry =
       searched === null ? undefined : scored.find((option) => sameTurn(option.turn, searched));
     /*

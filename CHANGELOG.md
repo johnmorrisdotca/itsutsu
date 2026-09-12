@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 Whoever lands a commit bumps `package.json` and adds a line here in the same commit, and announces the bump to the other session first, so two sessions never claim the same number.
 
+## 0.149.0
+- The computer opponents are in the order the site presents them in: the grades now look ahead in the flipping games, the races, Go and Checkers, where before only the line games had a search — so Meijin beats Dan and Dan beats Kyu at every game, not only at five-in-a-row
+
 ## 0.148.0
 - Sitting in at somebody else's device is taps all the way through: pick your name from the list, tap your four words, play. There is nothing to type, every button is big enough for a child's finger on an iPad, and a name that could never work is never offered
 

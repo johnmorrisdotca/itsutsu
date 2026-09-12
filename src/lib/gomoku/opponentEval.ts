@@ -10,6 +10,7 @@ import { DIRECTIONS, GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constan
 import { SHAPE_BASE } from "./analysis.constants";
 import { rulesFor } from "./engine";
 import { farCampSquares, racesForCamp } from "./rules/farCamp";
+import { isKingAt } from "./rules/checkers";
 import { DECIDED_SCORE, DRAW_SCORE, EVAL_WEIGHTS } from "./opponent.constants";
 import { KOMI, scoreArea } from "./rules/go";
 import { threatAt } from "./threats";
@@ -91,6 +92,27 @@ function corners(size: number): Point[] {
  * Holding more discs early is famously the losing plan — every disc is one
  * more thing the other side can turn — so the count is weighted by how full
  * the board is, and matters most at the end, when it is the whole result.
+ *
+ * DO NOT REWEIGHT THIS TO FIX THE BOTTOM OF THE LADDER. It was tried, and the
+ * measurement is the reason it is not here.
+ *
+ * The three grades that do not search are level with each other at Reversi:
+ * over thirty games a pairing, разряд 14-16 級 and разряд 14-16 段 while 級 loses
+ * 6-23 to 段 — so following this reading MORE closely at one ply does not
+ * reliably make a player stronger. The obvious culprit is the disc term, since
+ * greedy disc-taking is the classic losing plan, and the obvious fix is to make
+ * it later still. Cubing `fullness` made things worse in both directions:
+ * разряд went to 15-11 up on 級, and 級 came out 16-14 AHEAD of 段, which is a
+ * new inversion where there had been a clear one.
+ *
+ * The diagnosis that survives is that a flipping game cannot be played at one
+ * ply at all. A move there is good or bad because of what it lets the other side
+ * do next, so no weighting of a reading that cannot see next puts three one-ply
+ * players in an order. What separates the bottom grades is their noise and their
+ * blunder rate, and those need a judgement worth degrading. Giving 段 a search
+ * would order them — and 段 is the Medium grade, so that is a bill on every
+ * middling game on the site, and a decision for the site's owner rather than for
+ * this comment.
  */
 function flipScore(state: GameState, stone: Stone, spec: VariantSpec): number {
   const { size } = state.settings;
@@ -384,6 +406,67 @@ export function threatScore(
 }
 
 /**
+ * Checkers: what each side has on the board, and how close its men are to being
+ * crowned.
+ *
+ * Thin, and it is the difference between a game and a coin toss. Checkers
+ * matches none of the families above — it does not flip, it races for no camp,
+ * it connects nothing, and a jump is a slide rather than a capture pair, so
+ * `state.captures` is never written — and it therefore fell all the way through
+ * to the capture count, which is zero in every position a game of checkers can
+ * reach. Every move scored the same as every other, so the grade's noise and its
+ * blunder rate had nothing to sit on top of and the ladder was flat: measured
+ * over ten games a pairing, 級 drew level with 名人 and разряд beat both of the
+ * top two. That is not a weak ladder, it is no ladder, and it is the same fault
+ * as the star board where every marble scored as equally far from home.
+ */
+function checkersScore(state: GameState, stone: Stone): number {
+  const { size } = state.settings;
+  let score = 0;
+  state.board.forEach((cell, index) => {
+    if (!isStone(cell)) return;
+    const point = pointOf(size, index);
+    // A man's own crowning row is the far one from where its colour started.
+    const towards = cell === STONES.black ? point.row : size - 1 - point.row;
+    const worth = isKingAt(state.kings, point)
+      ? EVAL_WEIGHTS.king
+      : EVAL_WEIGHTS.man + towards * EVAL_WEIGHTS.crowning;
+    score += cell === stone ? worth : -worth;
+  });
+  return score;
+}
+
+/**
+ * Whether the reading below is a true enough account of a game with this spec to
+ * be worth MINIMISING several plies deep — which is a higher bar than saying
+ * something about it, and the bar that matters.
+ *
+ * Asked before any general look-ahead is spent — see `opponentLook.ts`. Two ways
+ * to fail it, and both were measured rather than argued:
+ *
+ * - **It says nothing.** A game this reading cannot place scores every position
+ *   identically, and "identically" is a number in range: a minimax over it
+ *   returns whichever turn was enumerated first and looks exactly like a
+ *   judgement rather than like the silence it is.
+ * - **It says something untrue.** `connectScore` is the clear case, and its own
+ *   comment says so: how much of an axis a colour spans is not what joining two
+ *   sides means, and a real Hex player searches for the join. It is enough to
+ *   aim a one-ply player at its own edges instead of at random, and it is not
+ *   enough to be maximised. Measured over ten games a pairing on an eleven-point
+ *   rhombus, searching it took 名人 from 8-2 against разряд to 5-5, and 段 from
+ *   half the field to a third of it — which is the oldest lesson in this
+ *   directory: a deeper search over a reading that misunderstands the game finds
+ *   the moves that exploit the misunderstanding best.
+ *
+ * So a reading that is only a nudge stays a nudge. Hex keeps the one-ply
+ * reading and the engine-checked guard above it, which are right there, and the
+ * grades are separated at it by how often they blunder rather than by depth.
+ */
+export function readsPosition(spec: VariantSpec): boolean {
+  return spec.flips || spec.go || racesForCamp(spec) || spec.captures || spec.checkers;
+}
+
+/**
  * The whole position, from `stone`'s side. A settled game is read straight off
  * the engine's verdict; an unsettled one is read through whichever of the
  * families above the game's spec puts it in.
@@ -395,6 +478,7 @@ export function positionScore(state: GameState, stone: Stone): number {
   if (spec.go) return goScore(state, stone);
   if (racesForCamp(spec)) return raceScore(state, stone);
   if (spec.connects) return connectScore(state, stone);
+  if (spec.checkers) return checkersScore(state, stone);
 
   const foe = otherStone(stone);
   const captured =
