@@ -4,13 +4,18 @@ import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 
 /** What the site says about itself, in three lines. */
 const PITCH = [
   {
     title: "Five in a row",
     kanji: "五目",
-    body: "Gomoku, renju, connect6 and the family of games that grew from a line of stones. Thirty of them, each with its rules a click away.",
+    // The count is read off the same list the catalogue counts from, never
+    // written down here a second time. This page once spelled out a number
+    // in plain words while /games?view=list computed a different one from
+    // the same catalogue, because prose does not know when a game is added.
+    body: `Gomoku, renju, connect6 and the family of games that grew from a line of stones. ${RULE_VARIANT_LIST.length} of them, each with its rules a click away.`,
   },
   {
     title: "Two phones, one board",
