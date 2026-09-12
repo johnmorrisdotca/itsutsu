@@ -4,7 +4,9 @@ export const PLAYER_STATE = ".auth/player.json";
 /** An embed token minted by the setup, for the embed specs to use. */
 export const EMBED_TOKEN_FILE = ".auth/embed.json";
 
-import { expect, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Page } from "@playwright/test";
+
+import { UNRATED_BELOW } from "../src/lib/rating/elo";
 
 /** Column letters as the board labels them, with "I" skipped as in go. */
 const COLUMN_LETTERS = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
@@ -220,6 +222,68 @@ export async function openMyGamesPage(page: Page) {
 export async function ready(page: Page, testId: string) {
   await expect(page.getByTestId(testId)).toHaveAttribute("data-ready", "true");
 }
+
+/**
+ * Plays enough rated games under two names for the winner's tier to settle,
+ * and returns nothing but the fact that it did.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * WHY FOUR AND NOT ONE, WHICH IS THE WHOLE POINT OF THIS HELPER
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * A page shows a dash where a rating is not worth printing yet, and
+ * `elo.ts` says what "yet" means: fewer than `UNRATED_BELOW` rated games is
+ * the `unrated` tier, and `ratingShown` answers null for one. That is a
+ * deliberate rule with its reasoning written beside it — a rating nobody has
+ * earned is not a rating of 1600, it is silence.
+ *
+ * Two specs were written before that rule and asserted a number after ONE
+ * rated game, so both had been red on every fresh database since 0.157.0.
+ * The site was right and the specs were stale. They play four now, which is
+ * the number the rule names rather than a number somebody picked, so raising
+ * the bar to five moves this with it.
+ *
+ * PLAYED, NOT SEEDED. What both specs are about is that finishing a shared
+ * game RATES the people in it, so writing the rating rows directly would be
+ * asserting a fixture. Each game is created and resigned through the API,
+ * exactly as the one game before it was.
+ *
+ * The winner takes every game, so the pair end either side of the starting
+ * figure and "the winner is above the person they beat" is a statement the
+ * caller can make. The exact numbers are not: they follow from K, the
+ * rounding and the order, and a spec that wrote them down would fail the day
+ * any of the three was tuned.
+ */
+export async function playRatedGames(
+  request: APIRequestContext,
+  {
+    winner,
+    loser,
+    games = UNRATED_BELOW,
+    variant = "freestyle",
+    size = 9,
+  }: { winner: string; loser: string; games?: number; variant?: string; size?: number },
+): Promise<void> {
+  for (let played = 0; played < games; played += 1) {
+    const started = await request.post("/api/games/live", {
+      data: { blackName: winner, whiteName: loser, size, variant },
+    });
+    expect(started.status(), `game ${played + 1} of ${games} was not created`).toBe(201);
+    const game = (await started.json()) as { id: string; whiteToken: string };
+    /*
+     * Given up by white, because resignation is the one finish that rates a
+     * shared game — and a game at one screen is filed and never rated, since
+     * the site cannot tell who was really playing it.
+     */
+    const gaveUp = await request.post(`/api/games/${game.id}/resign`, {
+      data: { token: game.whiteToken },
+    });
+    expect(gaveUp.status(), `game ${played + 1} of ${games} was not resigned`).toBe(200);
+  }
+}
+
+/** How many rated games `playRatedGames` plays, for the counts a spec asserts. */
+export const RATED_TO_SETTLE = UNRATED_BELOW;
 
 /**
  * Every page error, collected. A React error boundary can swallow a throw and

@@ -432,6 +432,33 @@ export async function seedPeopleStanding(
   }
 }
 
+/**
+ * Takes away the rating rows a spec earned by PLAYING under invented names.
+ *
+ * A game played under a typed-in name writes a `Player` row and a
+ * `PlayerVariantRating` row keyed by the folded name, and those OUTLIVE the
+ * game: `tidy.ts` sweeps games and knows nothing about a name's standing, so
+ * every run that plays under a fresh name leaves two rows behind for ever.
+ * AGENTS.md names the consequence — a name stays taken, and `PATCH /api/me`
+ * answers 409 to anybody who later asks for it.
+ *
+ * By NAME rather than by key, so a caller hands over what it invented and
+ * this applies the same folding the ratings do.
+ */
+export async function removePlayedUnder(names: readonly string[]): Promise<void> {
+  loadEnv();
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+  const keys = names.map(playerKey).filter((key) => key !== "");
+  if (keys.length === 0) return;
+  const prisma = new PrismaClient();
+  try {
+    await prisma.playerVariantRating.deleteMany({ where: { key: { in: keys } } });
+    await prisma.player.deleteMany({ where: { key: { in: keys } } });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 /** And takes it away again. */
 export async function clearPeopleStanding(variant: string, key: string): Promise<void> {
   loadEnv();
