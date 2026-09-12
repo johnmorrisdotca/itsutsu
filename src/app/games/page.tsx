@@ -382,30 +382,36 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
 }
 
 /**
- * /games for somebody with no invite: the catalogue, and nothing that needs a
- * database.
+ * /games for somebody with no invite: the catalogue, and one query rather
+ * than the whole lobby's.
  *
  * A SEPARATE COMPONENT RATHER THAN A HANDFUL OF CONDITIONS, because the
- * property worth having is one somebody can check by reading: there is no
- * query in here. Written as `{signedIn ? … : null}` around each panel above,
- * the reads would still have happened — they are awaited before any of it is
- * drawn — and the page would have gone on costing a stranger the whole lobby
- * to render none of it.
+ * property worth having is one somebody can check by reading: the seats, the
+ * opponents, the ignore list and everything else the lobby needs are simply
+ * not imported here. Written as `{signedIn ? … : null}` around each panel
+ * above, those reads would still have happened — they are awaited before any
+ * of it is drawn — and the page would have gone on costing a stranger the
+ * whole lobby to render none of it.
  *
- * The families carry no counts and no last game, which is not an omission. A
- * count of matches is members' activity and the last game names two of them,
- * and both would be a database read on a page that now has no reason to make
- * one. What a stranger came for is which games exist and what they are, and
- * that is a table in this repository.
+ * The families still carry no LAST GAME: it names the two members who played
+ * it and links to a match a stranger cannot open, which is exactly the kind
+ * of thing this page must not draw and then refuse. `played` is different — a
+ * count of finished games names nobody, so it is not the lobby's activity
+ * feed, it is the same fact about the catalogue `fetchPlayedCounts` already
+ * gives the signed-in path. Printing `0` here regardless of the real number
+ * was the falsest possible answer: production holds 116 finished games, and a
+ * stranger was told none of it had ever been played, on the one page whose
+ * whole job is to invite them in.
  */
-function PublicCatalogue({ view, say }: { view: CatalogueView; say: Speaker }) {
+async function PublicCatalogue({ view, say }: { view: CatalogueView; say: Speaker }) {
+  const counts = await fetchPlayedCounts();
   const families: CatalogueFamily[] = GAME_FAMILIES.map((family) => ({
     title: family.title,
     kanji: family.kanji,
     blurb: family.blurb,
-    // Nought here means "not counted", and it is never printed: the family
-    // line and the last game are both drawn only for a member.
-    played: 0,
+    // A real count, not a fixed nought — see the doc comment above. Summed
+    // from the per-variant counts the same way the signed-in path sums them.
+    played: family.games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0),
     games: family.games.map((variant) => {
       const copy = RULE_VARIANT_DISPLAY[variant];
       return {
