@@ -132,7 +132,17 @@ test.describe("playing a finished game again", () => {
     await page.getByRole("link", { name: /Play again as White/ }).click();
     await ready(page, "set-up-game");
 
-    await startAndBegin(page);
+    /*
+     * PRESSED IN TWO, BECAUSE WHAT STANDS BETWEEN THEM IS THE POINT. Start states
+     * the game; Begin makes it. And a rematch is the case that best earns the page
+     * in between: the colours swap, so "you are white this time" is worth reading
+     * BEFORE the board rather than being worked out from it three moves in.
+     */
+    await page.getByTestId("set-up-start").click();
+    await ready(page, "doorstep");
+    await expect(page.getByTestId("doorstep-colours")).toContainText(them.name.split(" ")[0]);
+    await expect(page.getByTestId("doorstep-colours")).toContainText("you are white");
+    await page.getByTestId("doorstep-begin").click();
     await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
 
     const id = page.url().split("/").pop()!;
