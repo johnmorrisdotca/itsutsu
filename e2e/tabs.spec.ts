@@ -71,7 +71,8 @@ test.describe("a page of many sections is tabs", () => {
      * below the fold on the day it was added.
      */
     await page.goto("/players");
-    await expect(page.getByTestId("tab")).toHaveCount(4);
+    // Five since 0.165.0: the door, the site, the members, the bots, the work.
+    await expect(page.getByTestId("tab")).toHaveCount(5);
     await expect(page.getByTestId("directory-section")).toBeVisible();
     // One at a time: the ladder is not also on screen below the directory.
     await expect(page.getByTestId("ladder-section")).toHaveCount(0);
@@ -147,7 +148,7 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("tabs")).toHaveCount(0);
   });
 
-  test("the operator's page is four tabs, one part at a time", async ({ page }) => {
+  test("the operator's page is five tabs, one part at a time", async ({ page }) => {
     /*
      * The door, the members, the bots and the work. It was three headings on
      * one page with the whole features board inside the third, which made it
