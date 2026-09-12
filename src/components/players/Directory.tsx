@@ -309,7 +309,15 @@ export async function Directory({
         columns={{ joined: true, actions: "" }}
         testId="directory"
         empty={
-          <span data-testid="directory-empty">
+          /*
+           * No testid of its own: `RecordTable` already wraps whatever `empty`
+           * renders in a `<td data-testid="directory-empty">` — the id this
+           * span duplicated from before the tables were unified, when
+           * Directory drew its own empty row and needed one. Two elements
+           * answering to the same test id is a strict-mode violation waiting
+           * to happen, so the outer one is the only one that keeps it now.
+           */
+          <span>
             Nobody here answers to all of that.{" "}
             {/*
               Says "everyone" out loud rather than pointing at the bare page.

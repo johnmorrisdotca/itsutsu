@@ -70,7 +70,15 @@ test.describe("a combined record", () => {
     await page.goto("/players?who=everyone");
     const row = page.getByTestId("directory").locator("tr", { hasText: "Chibi" });
     await expect(row.getByTestId("record-played")).not.toHaveText("0");
-    await expect(row.getByTestId("directory-rating")).toHaveText("–");
+    /*
+     * "record-rating", not "directory-rating": 0.150.0 unified every table
+     * of records into one component, and its rating cell carries one shared
+     * test id on every table it appears on rather than a name namespaced to
+     * whichever page is asking — see RatingCell in RecordTable.tsx, which
+     * always renders this cell (an em dash for a row with no rating, never
+     * an omitted cell) under `data-testid="record-rating"`.
+     */
+    await expect(row.getByTestId("record-rating")).toHaveText("–");
   });
 
   test("adds every site up, and shows which part came from where", async ({ page }) => {

@@ -1,4 +1,4 @@
-import { RecordLine } from "@/components/players/PlayerRecord";
+import { RecordLine, type WonLostDrawn } from "@/components/players/PlayerRecord";
 import { RecordTable } from "@/components/players/RecordTable";
 import Link from "next/link";
 
@@ -15,6 +15,22 @@ import { fetchPlayer } from "@/lib/rating/players";
 import { fetchVariantStandings } from "@/lib/rating/variantRatings";
 import { playerPath } from "@/lib/rating/playerKey";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+
+/**
+ * Whether a member has any finished games at all — rated or not, against a
+ * person or a program, win, loss or draw.
+ *
+ * The guard `MyRecord` gates its whole record line on, pulled out and
+ * exported so it can be pinned by a test without rendering a server
+ * component this project has no DOM set up for. `profile === null` used to
+ * stand in for this and was wrong to: `Player` is a rating row that exists
+ * only once a RATED game is recorded, so it answers "has this member ever
+ * settled a rating", not "has this member ever played" — and a member whose
+ * games were all friendly has one without the other.
+ */
+export function hasPlayedAnyGames(record: WonLostDrawn): boolean {
+  return record.wins + record.losses + record.draws > 0;
+}
 
 /**
  * What a member's name has earned: overall, then game by game, then the one
@@ -42,6 +58,16 @@ export async function MyRecord({ name }: { name: string }) {
     fetchPlayerRecord(name, mineId),
   ]);
   const here = gamesPlayed(played);
+  /*
+   * GATED ON GAMES, NOT ON A RATING ROW — see `hasPlayedAnyGames` above.
+   * `here` is the same every-finished-game count `fetchPlayerRecord` already
+   * read two lines up, so this asks nothing the page was not already
+   * fetching. A member with games and no settled rating now falls through to
+   * the record line below, which prints their real counts and a dash for the
+   * rating — the same shape the members directory already shows for exactly
+   * that case, via the same `ratingShown`.
+   */
+  const hasPlayed = hasPlayedAnyGames(here);
   // The same rule the members directory follows, from the same module, so the
   // two cannot answer differently about the same person.
   const shown = ratingShown(profile);
@@ -50,7 +76,7 @@ export async function MyRecord({ name }: { name: string }) {
   // line under it said the same word and the same kanji again.
   return (
     <div className="flex flex-col gap-3" data-testid="my-record">
-      {profile === null ? (
+      {!hasPlayed ? (
         <p className="text-sm text-muted">
           No games yet. Rated games are shared games between two members: challenge someone from the{" "}
           <Link href="/players" className="underline underline-offset-4">players</Link> page.
