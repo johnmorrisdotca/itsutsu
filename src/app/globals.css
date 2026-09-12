@@ -163,3 +163,91 @@ html[data-bare="true"] [data-strippable] aside {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * XP TOASTS — components/xp. The movement only; the clock is in the host.
+ *
+ * A toast drops in from above the page and, when its time is up, fades and
+ * lifts, and then the slot it stood in closes so the stack settles rather
+ * than jumps. The durations are custom properties the host sets from
+ * xp.constants.ts, so they are stated once. The slot collapses through
+ * grid-template-rows, which is the one height-to-nothing transition a browser
+ * can run without knowing the height; its child gets min-height: 0 so the
+ * row can shrink under it, and by then the card is at opacity 0 so what
+ * overflows is invisible.
+ */
+.xp-toast-host {
+  gap: var(--xp-toast-gap, 0.5rem);
+}
+
+@keyframes xp-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-110%) scale(0.98);
+  }
+  55% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes xp-toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.98);
+  }
+}
+
+.xp-toast {
+  animation: xp-toast-in var(--xp-toast-enter, 420ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--xp-toast-delay, 0ms);
+}
+
+.xp-toast[data-phase="leaving"] {
+  animation: xp-toast-out var(--xp-toast-leave, 260ms) ease-in both;
+  pointer-events: none;
+}
+
+.xp-toast-slot {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows var(--xp-toast-collapse, 220ms) ease var(--xp-toast-leave, 260ms),
+    margin-bottom var(--xp-toast-collapse, 220ms) ease var(--xp-toast-leave, 260ms);
+}
+
+.xp-toast-slot > * {
+  min-height: 0;
+}
+
+.xp-toast-slot[data-phase="leaving"] {
+  grid-template-rows: 0fr;
+  margin-bottom: calc(-1 * var(--xp-toast-gap, 0.5rem));
+}
+
+/*
+ * Less motion, the same notice. The toast still appears, still stays for its
+ * time, and still goes; only the sliding and the settling are dropped. Said
+ * here as well as in the site-wide rule above, because a rule that shortens
+ * an animation to nothing would leave a LEAVING toast at its last frame only
+ * by luck of the keyframe, and this is not a place to be lucky.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .xp-toast {
+    animation: none;
+  }
+  .xp-toast[data-phase="leaving"] {
+    animation: none;
+    opacity: 0;
+  }
+  .xp-toast-slot {
+    transition: none;
+  }
+}
