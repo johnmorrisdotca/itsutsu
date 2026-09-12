@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, request as playwrightRequest, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
@@ -82,21 +82,36 @@ test.describe("a person's name leads to their page", () => {
     await context.close();
   });
 
-  test("a seat nobody has taken is described, not linked", async ({ page, browser, baseURL }) => {
-    // The two honest exceptions: an empty chair is not a person, so it stays
-    // plain rather than pointing at a page that does not exist.
-    //
-    // Posted by somebody else, since a seat is not shown back to whoever put
-    // it up — posting it as this reader would leave nothing on their board.
-    const other = await memberContext(browser, baseURL ?? "http://localhost:6600", {
-      email: "names-link-poster@example.test",
-      name: "Names Link Poster",
-    });
-    const made = await other.request.post("/api/games/live", {
+  test("a seat nobody has taken is described, not linked", async ({ page, request, baseURL }) => {
+    /*
+     * The two honest exceptions: an empty chair is not a person, so it stays
+     * plain rather than pointing at a page that does not exist.
+     *
+     * `memberContext` cannot produce that scenario any more. Posting an open
+     * seat while signed in as a real member now binds that member's id to it
+     * — "Whoever starts a game is sitting at it" (games/live's route), closing
+     * an exploit where a poster answered their own invitation — and a bound
+     * seat is shown under its member's CURRENT name (currentNames.ts's
+     * seatName) rather than under whatever the row's own field says. So a
+     * blank name from a signed-in member no longer reads as nobody; it reads
+     * as them, linked, which is correct for them and wrong for this test. An
+     * invite-only identity is never bound, so it is the one that still is.
+     *
+     * Posted by somebody else, since a seat is not shown back to whoever put
+     * it up — posting it as this reader would leave nothing on their board.
+     */
+    const minted = await request.post("/api/invites", { data: { note: "names-link-poster" } });
+    expect(minted.status()).toBe(201);
+    const { code } = (await minted.json()) as { code: string };
+    const other = await playwrightRequest.newContext({ baseURL });
+    const signedIn = await other.post("/api/session", { data: { kind: "invite", code } });
+    expect(signedIn.ok()).toBe(true);
+
+    const made = await other.post("/api/games/live", {
       data: { blackName: "", whiteName: "", size: 9, open: true },
     });
     expect(made.status()).toBe(201);
-    await other.close();
+    await other.dispose();
     await page.goto("/games");
     const open = page.getByTestId("open-game").first();
     if (await open.isVisible()) {
