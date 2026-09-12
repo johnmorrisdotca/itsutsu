@@ -61,13 +61,23 @@ export function BoardLines({
       aria-hidden="true"
       style={rhombus ? { transform: `translateY(16.667%) skewX(${(Math.atan(0.5) * 180) / Math.PI}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : undefined}
     >
-      {/* Checkers: the dark squares are the ones in play, shaded so they read at a glance. */}
+      {/*
+        * Checkers: the dark squares are the ones in play, shaded so they read
+        * at a glance — which is the whole board here, since every piece stands
+        * on one and every move runs along them.
+        *
+        * From `playSquare`, the theme's own token for exactly this. It used to
+        * be `frame` at 22%, and that did not read: a contrast of 1.24 on kaya
+        * and 1.06 on sumi, where a plain square and a square in play were the
+        * same colour to the eye. See `playSquare` in board.types.ts for why no
+        * opacity on the frame could have fixed it.
+        */}
       {checkered ? (
         <g aria-hidden="true">
           {Array.from({ length: size }, (_, row) =>
             Array.from({ length: size }, (_, col) =>
               (row + col) % 2 === 1 ? (
-                <rect key={`d${row}-${col}`} x={col} y={row} width={1} height={1} fill={theme.frame} opacity={0.22} />
+                <rect key={`d${row}-${col}`} x={col} y={row} width={1} height={1} fill={theme.playSquare} />
               ) : null,
             ),
           )}
