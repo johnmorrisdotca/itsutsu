@@ -630,6 +630,25 @@ worth ruling out in this order before believing any of them:
    the standing, clear the variant first. Anything else is a test about this
    machine's history wearing a test about the code.
 
+**To run ONE spec without taking the database out from under every other
+session**, there is a route, found by the Checkers agent and used twice since:
+
+```sh
+pnpm exec playwright test e2e/<one>.spec.ts --no-deps --output /tmp/<scratch>
+```
+
+`--no-deps` skips the `setup` project, which is where `auth.setup.ts` sweeps
+the shared database; `--output` somewhere private keeps `test-results/` out of
+another run's way. The spec still needs a signed-in state, so mint
+`.auth/admin.json` yourself with a throwaway script that posts to
+`/api/session` — never by running the setup project. Two caveats, and the
+second is the one to say out loud when reporting: a spec that creates rows
+still creates them, so read what it seeds before running it against a
+database holding real accounts (the profile specs `PATCH /api/me`, which on
+this machine is John's own row); and **a spec run this way has not been run
+by the runner** — it verifies the behaviour, and it is not the same claim as a
+green suite. Say which one you are making.
+
 A fourth is not a false failure but a false *pass*, which is worse, and it has
 now been found five times in one day: **a browser test that races hydration.**
 A server-rendered control is a real control before React attaches, so waiting
@@ -639,6 +658,18 @@ does not exist yet — so a spec that drives `page.clock` before then finds
 nothing to fire. Both fail somewhere else entirely: "started on 9×9 when I
 chose 19×19" is a bug about timing wearing a bug about boards, and "the modal
 never appeared" is the same thing wearing a modal.
+
+**`Intl` in render is a bug; `Intl` in a handler is the only correct place
+for it.** The 0.146.1 fault was `Intl.DisplayNames` called while a client
+component rendered: Node and Chromium spell four regions differently, so the
+server drew one form and the browser drew another. The fix moved the list to
+a server prop. But the "use this device's time zone" link still calls
+`Intl.DateTimeFormat().resolvedOptions().timeZone` — in its click handler —
+and that is right, not a leftover: the server cannot know the device, the
+browser is the only honest source, and a handler runs after hydration where no
+mismatch is possible. A merge gate that greps `ProfileForm.tsx` for `Intl`
+will find it and stop. Read where the call sits before "fixing" it; removing
+that one would break the link to fix a bug it does not have.
 
 Wait on the marker, never on an element: `{...readyMark(useHydrated())}` from
 `src/lib/ui/hydrated.ts` on the component, and `ready(page, testId)` from
