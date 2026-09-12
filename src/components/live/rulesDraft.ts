@@ -1,5 +1,5 @@
-import { OPENING_RULES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
-import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { NO_HANDICAP, OPENING_RULES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import type { Handicap, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
 
 /**
@@ -22,6 +22,17 @@ export type RulesDraft = {
   allowResign: boolean;
   /** Posted on the games page for anyone to take. */
   open: boolean;
+  /**
+   * The extra restrictions one colour plays under, so the stronger player can
+   * give the other a start.
+   *
+   * On the draft rather than held apart from it, because it is a rule of the
+   * game like the opening is: a rematch or a fork has to carry it, the summary
+   * line has to describe it, and anything held in a second place beside the
+   * draft is a second thing to remember to pass on. `NO_HANDICAP` is the
+   * ordinary game, which is what almost every draft has.
+   */
+  handicap: Handicap;
 };
 
 /**
@@ -60,6 +71,13 @@ export function draftFromGame(game: {
   rated: boolean;
   allowResign: boolean;
   openSeat: string | null;
+  /**
+   * Optional, because the two callers hold different things: a live game's
+   * detail always carries one, and a row read for a rematch may be read for
+   * its settings alone. Absent means the plain game, never "some handicap I
+   * could not read" — see `parseHandicap`, which answers the same way.
+   */
+  handicap?: Handicap;
 }): RulesDraft {
   return {
     variant: game.variant,
@@ -72,5 +90,6 @@ export function draftFromGame(game: {
     rated: game.rated,
     allowResign: game.allowResign,
     open: game.openSeat !== null,
+    handicap: game.handicap ?? NO_HANDICAP,
   };
 }

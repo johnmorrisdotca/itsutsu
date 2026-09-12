@@ -427,3 +427,27 @@ export async function seatTokensFor(id: string): Promise<{ blackToken: string; w
     await prisma.$disconnect();
   }
 }
+
+/**
+ * The member id behind an address a spec seeded.
+ *
+ * Needed because everything that offers a game now names a member by id rather
+ * than by address — a computer player has no address, and a challenge button
+ * that took one wrote members' emails into the markup of every list it appeared
+ * in. So a spec that wants to say "this link points at THIS person" has to know
+ * the id, and `seedMember` mints one rather than being told one.
+ *
+ * A row the spec itself created, read by the spec: the same bargain as
+ * `seatTokensFor`, and not a thing the site ever does.
+ */
+export async function memberIdFor(email: string): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const row = await prisma.member.findUnique({ where: { email }, select: { id: true } });
+    if (row === null) throw new Error(`no member ${email}: seed them first`);
+    return row.id;
+  } finally {
+    await prisma.$disconnect();
+  }
+}

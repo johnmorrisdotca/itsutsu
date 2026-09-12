@@ -6,7 +6,7 @@ import {
   BOT_TIERS,
   BOT_TIER_LIST,
 } from "@/lib/gomoku/opponent.constants";
-import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
+import { RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { isMemberId } from "@/lib/auth/memberId";
 import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { deadlineFor } from "@/lib/history/deadline";
@@ -16,6 +16,7 @@ import {
   BOT_UNCLAIMABLE,
   botRowFields,
   botsFor,
+  gamesPlayedBy,
 } from "./bots.constants";
 import { botInSeat, botTierFor, hasBotSeat, isBotId } from "./bots";
 
@@ -163,5 +164,51 @@ describe("a computer is never late", () => {
     expect(
       deadlineFor({ ...clocked, whiteMemberId: BOT_MEMBERS.dan.id })?.toISOString(),
     ).toBe("2026-09-09T10:01:00.000Z");
+  });
+});
+
+/**
+ * WHICH GAMES ONE OF THEM PLAYS — `botsFor` read the other way round.
+ *
+ * For the setup screen, which can arrive knowing WHO and not WHAT: a Play button
+ * on a computer player's row names the program and nothing else. The graded five
+ * need no help. A specialist plays one game, and a screen that opened at the
+ * site's default would show it as the chosen opponent while the list of players
+ * offered at that game did not hold it — so pressing Start would have posted a
+ * seat for anyone instead of playing the program somebody pressed Play on.
+ */
+describe("the games one computer player will sit down to", () => {
+  it("is every game, for each of the graded ladder", () => {
+    for (const tier of BOT_TIER_LIST) {
+      const games = gamesPlayedBy(BOT_MEMBERS[tier].id);
+      expect(games.length, `${tier} plays anything on this board`).toBe(RULE_VARIANT_LIST.length);
+    }
+  });
+
+  it("is a game each, for the specialists", () => {
+    for (const tier of BOT_SPECIALIST_LIST) {
+      const games = gamesPlayedBy(BOT_MEMBERS[tier].id);
+      /*
+       * At least one, or the setup screen would have nowhere to open — and the
+       * specialist would be a player that cannot be played. Fewer than all of
+       * them, or it is not a specialist.
+       */
+      expect(games.length, `${tier} has a game of its own`).toBeGreaterThan(0);
+      expect(games.length, `${tier} does not play everything`).toBeLessThan(RULE_VARIANT_LIST.length);
+    }
+  });
+
+  /* The two directions have to agree, or one of them is a second opinion. */
+  it("agrees with the list of players offered at each of those games", () => {
+    for (const tier of BOT_ALL_TIERS) {
+      const id = BOT_MEMBERS[tier].id;
+      for (const variant of gamesPlayedBy(id)) {
+        expect(botsFor(variant).some((bot) => bot.id === id), `${tier} at ${variant}`).toBe(true);
+      }
+    }
+  });
+
+  it("says nothing about somebody who is not a computer player", () => {
+    expect(gamesPlayedBy("not-a-program")).toEqual([]);
   });
 });

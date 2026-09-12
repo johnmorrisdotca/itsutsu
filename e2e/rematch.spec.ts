@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
+import { ready } from "./support";
 
 /**
  * Playing that game again.
@@ -68,11 +69,20 @@ test.describe("a finished game offers to be played again", () => {
      * played black, so the rematch offers white. A swap nobody mentions is the
      * kind of thing somebody notices three moves in.
      */
-    const again = page.getByRole("button", { name: /Play again as White/ });
+    const again = page.getByRole("link", { name: /Play again as White/ });
     await expect(again).toBeVisible();
 
+    /*
+     * THROUGH THE SETUP SCREEN, filled in from the game just finished. What is
+     * being checked here is unchanged and is the point: everything that game was
+     * played under has to survive the extra screen, and the colours still swap.
+     * `set-up-again.spec.ts` is where the screen itself is examined.
+     */
     await again.click();
-    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/);
+    await page.waitForURL(/\/games\/new\?rematch=/);
+    await ready(page, "set-up-game");
+    await page.getByTestId("set-up-start").click();
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
 
     // The new game really is the old one's game.
     const id = page.url().split("/").pop()!;
@@ -114,9 +124,15 @@ test.describe("a finished game offers to be played again", () => {
       });
     }
 
-    // A reader who was not in it has nobody to play again.
+    /*
+     * A reader who was not in it has nobody to play again. The absence is
+     * asserted only after something that IS on the page has been waited for:
+     * `toHaveCount(0)` passes the instant it is asked, so on its own it cannot
+     * tell "not offered" from "I asked before the page had answered".
+     */
     await page.goto(`/games/gomoku/match/${game.id}`);
-    await expect(page.getByRole("button", { name: /Play again as/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Play from move/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Play again as/ })).toHaveCount(0);
   });
 
   test("refuses at the door too, not only on the page", async ({ request }) => {

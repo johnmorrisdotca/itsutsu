@@ -54,7 +54,7 @@ export async function MyPeople({ email }: { email: string }) {
                   <RowActions>
                     {buddy.email === null ? null : (
                       <>
-                        <ChallengeButton email={buddy.email} />
+                        <ChallengeButton memberId={buddy.id} />
                         <BuddyButton email={buddy.email} isBuddy />
                       </>
                     )}

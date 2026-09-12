@@ -29,7 +29,7 @@ import {
 } from "@/lib/history/gameSettingsSchema";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { seatCookieName } from "@/lib/history/seatCookie";
-import { opponentOf, seatsForRematch, settingsToCarry } from "@/lib/history/rematch";
+import { FORK_PACE_SETTINGS, opponentOf, seatsForRematch, settingsToCarry } from "@/lib/history/rematch";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { isIgnoring } from "@/lib/social/ignores";
 import { prisma } from "@/lib/prisma";
@@ -190,6 +190,26 @@ export async function POST(request: Request) {
         blackName: origin.blackName,
         whiteName: origin.whiteName,
       };
+      /*
+       * EXCEPT WHERE THE CALLER HAS SETTLED THE PACE ITSELF.
+       *
+       * `source` is spread over the request below, which is right for everything
+       * the POSITION depends on and wrong for everything about the moves still
+       * to come — see `FORK_PACE_SETTINGS` for which is which and why. Without
+       * this, a fork's setup screen would offer a clock, a penalty and a
+       * friendly game and have all three thrown away on the way in: a form of
+       * controls that do nothing.
+       *
+       * KEYED ON WHAT THE CALLER ACTUALLY SENT, not on what came out of the
+       * schema. Zod fills a default in for every field it was not given, so the
+       * parsed body cannot tell silence from a choice — and silence here has to
+       * go on meaning "the game I forked", which is the whole of the fix above.
+       * The raw body is the only thing that knows the difference.
+       */
+      const said = new Set(
+        body !== null && typeof body === "object" && !Array.isArray(body) ? Object.keys(body) : [],
+      );
+      for (const key of FORK_PACE_SETTINGS) if (said.has(key)) delete source[key];
       // Forking a game keeps the two players: whoever is not me in the game
       // being forked is who the new one is against, found by id and turned
       // back into the address a challenge is addressed to.
@@ -320,12 +340,36 @@ export async function POST(request: Request) {
      * happened, because on that board nothing ever could.
      */
     const playedAs = (typeof merged.variant === "string" ? merged.variant : parsed.data.variant) as RuleVariant;
+    /*
+     * THE SAME BUG AGAIN, ONE STEP FURTHER ALONG, and the fix above did not
+     * reach it.
+     *
+     * That fix asks the VARIANT'S SPEC for the line length, which settles every
+     * game that fixes its own — noughts and crosses is three in a row and cannot
+     * be anything else, so a rematch of one is safe. Freestyle gomoku does not
+     * fix one: its spec says null, because the length is a thing the two players
+     * agree. And the line below then read the length out of the REQUEST — which
+     * for a rematch says nothing at all, since a rematch sends its game's id and
+     * nothing else on purpose.
+     *
+     * So a 9×9 freestyle game two people had agreed at THREE in a row came back
+     * from a rematch needing five. Same shape as John's unwinnable board, same
+     * cause, and invisible to the test that covers it because that test uses a
+     * variant whose spec has an answer.
+     *
+     * `merged` is the game as it will actually be played: the request, with a
+     * rematch's or a fork's own settings laid over it. That is the thing to ask,
+     * and asking the request instead is what let a carried value be dropped
+     * between being carried and being used.
+     */
+    const carriedLine = typeof merged.winLength === "number" ? merged.winLength : undefined;
     const created = await createLiveGame({
       ...merged,
       from: from === undefined ? undefined : { id: from.id, moves: from.move },
       handicap: merged.handicap ?? NO_HANDICAP,
       winLength:
         VARIANT_SPECS[playedAs].winLength ??
+        carriedLine ??
         parsed.data.winLength ??
         DEFAULT_SETTINGS.winLength,
     });

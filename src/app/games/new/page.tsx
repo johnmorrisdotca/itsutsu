@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SetUpGame } from "@/components/live/SetUpGame";
-import type { RulesDraft } from "@/components/live/rulesDraft";
+import { SetUpHeading } from "@/components/live/SetUpHeading";
+import { setUpFrom } from "@/components/live/setUpFrom";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { gameDefaultsFor } from "@/lib/auth/members";
-import {
-  boardSizesFor,
-  DEFAULT_SETTINGS,
-  OPENING_RULES,
-  sizeForVariant,
-} from "@/lib/gomoku/gomoku.constants";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
 
@@ -38,50 +32,43 @@ export const metadata: Metadata = { title: "Set up a game" };
  * of the ticket this answers: there is no half-made game to land on, no board
  * that is not really a board, and no settings that can move under an address
  * already pointing at them.
+ *
+ * AND IT IS WHERE A REMATCH LANDS, which is why the game being a choice here
+ * matters beyond the lobby. A rematch knows the game, the board, the clock and
+ * the opponent — but the game is a DEFAULT rather than an identity, because the
+ * thing John asked for by name was "I want to definitely play Bob at Reversi,
+ * but I want to try that variant". Sending a rematch to the address that names
+ * a game would have settled the one field he wanted open.
  */
-export default async function SetUpAnyGamePage() {
-  const email = await currentEmail();
+export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/games/new">) {
+  const [asked, email] = await Promise.all([searchParams, currentEmail()]);
   const [defaults, opponents, seats] = await Promise.all([
     gameDefaultsFor(email),
     fetchOpponents(email),
     seatsToSitAt(),
   ]);
-
   /*
-   * What they usually play, on a board that game is played on. A standing
-   * board size is a wish rather than an instruction: a game with one board
-   * gets that board, whatever the member usually likes.
+   * Reads a row only where the address asked for one — a game to repeat, a
+   * position to carry, a player to name. An ordinary visit costs nothing extra.
    */
-  const variant = DEFAULT_SETTINGS.variant;
-  const sizes = boardSizesFor(variant);
-  const initial: RulesDraft = {
-    variant,
-    size: sizeForVariant(variant, sizes.includes(defaults.size) ? defaults.size : sizes[0]),
-    obstacles: "none",
-    opening: OPENING_RULES.free,
-    moveTimeMs: defaults.moveTimeMs,
-    timeoutPenalty: "turn",
-    clockMode: "move",
-    rated: true,
-    allowResign: true,
-    open: true,
-  };
+  const from = await setUpFrom({ variant: null, asked, defaults });
 
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Set up a game 対局設定</h1>
-        <p className="max-w-prose text-sm text-muted">
-          Everything the game will be played under, settled here before it exists. Nothing is started until you say
-          so.{" "}
-          <Link href="/games" className="underline underline-offset-4">
-            Every game there is
-          </Link>{" "}
-          if you would rather read about one first.
-        </p>
-      </div>
-      <SetUpGame initial={initial} opponents={opponents} seats={seats} signedIn={email !== null} chooseGame />
+      <SetUpHeading from={from} variant={null} />
+      <SetUpGame
+        initial={from.initial}
+        opponents={opponents}
+        seats={seats}
+        signedIn={email !== null}
+        chooseGame
+        opponent={from.opponent}
+        again={from.again}
+        fork={from.fork}
+        carry={from.carry}
+        problem={from.problem}
+      />
     </Page>
   );
 }

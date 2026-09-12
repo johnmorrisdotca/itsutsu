@@ -44,7 +44,7 @@ export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null 
               </span>
               <RowActions>
                 {me !== null && entry.email !== null ? (
-                  <ChallengeButton email={entry.email} label="Challenge" />
+                  <ChallengeButton memberId={entry.id} label="Challenge" />
                 ) : null}
               </RowActions>
             </li>

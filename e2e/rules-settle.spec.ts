@@ -77,13 +77,24 @@ test.describe("when a shared game's rules settle", () => {
     await expect(page.getByTestId("rules-statement")).toBeVisible();
   });
 
-  test("settle for a challenge too, where nobody ever follows a link", async ({ browser, baseURL }) => {
+  test("are settled for a challenge from the moment it is sent", async ({ browser, baseURL }) => {
     /*
-     * The case the seat-link half cannot see. A challenge binds both seats to
-     * accounts the moment it is sent and neither player follows a link, so
-     * nothing was ever stamped for either of them — and a challenged game's
-     * rules stayed open right up to the first stone. Opening the game is that
-     * seat's holder arriving, and it says so now.
+     * A CHALLENGE IS SETTLED BEFORE EITHER PLAYER LOOKS AT IT, and that is a
+     * reversal of what this case used to assert.
+     *
+     * It used to say the rules stayed open until the invited player opened the
+     * board, and that was the best answer available: the old Challenge button
+     * settled nothing at all — it posted a game of Gomoku on the schema's
+     * defaults — so the form beside the board was the only place a challenged
+     * game's rules were ever chosen, and closing it would have left nowhere to
+     * choose them.
+     *
+     * Every challenge is now sent FROM the setup screen with the board, the
+     * clock and the rules already agreed. So the form afterwards is not a last
+     * chance to decide anything; it is only a chance to move the rules under
+     * somebody who already has the game in their list and has not seen it yet.
+     * A challenge binds both seats the moment it is written, and being handed a
+     * game is arriving at it.
      */
     const stamp = Date.now().toString(36);
     const asks = { email: `asker-${stamp}@example.com`, name: `Asker ${stamp}` };
@@ -98,19 +109,52 @@ test.describe("when a shared game's rules settle", () => {
     const game = (await started.json()) as { id: string };
     tidyAway(game.id);
 
-    // The challenger opens it: still only one of them has arrived.
+    /*
+     * The challenger opens it first and sees a statement rather than a form.
+     * The statement is waited FOR before the form's absence is asserted: a
+     * `toHaveCount(0)` on its own passes the instant it is asked, so it cannot
+     * tell "not offered" from "the page has not answered yet".
+     */
     const asker = await one.newPage();
     await asker.goto(`/games/gomoku/match/${game.id}`);
-    await expect(asker.getByTestId("shared-rules-size")).toBeVisible();
+    await expect(asker.getByTestId("rules-statement")).toBeVisible();
+    await expect(asker.getByTestId("shared-rules-size")).toHaveCount(0);
 
-    // The invited player opens it. Now the rules are what both have.
+    // And the invited player, who never agreed to anything twice.
     const asked = await two.newPage();
     await asked.goto(`/games/gomoku/match/${game.id}`);
     await expect(asked.getByTestId("rules-statement")).toBeVisible();
+    await expect(asked.getByTestId("shared-rules-size")).toHaveCount(0);
+  });
 
-    await asker.reload();
-    await expect(asker.getByTestId("shared-rules-size")).toHaveCount(0);
-    await expect(asker.getByTestId("rules-statement")).toBeVisible();
+  test("and the server refuses a challenge's change too, not only the page", async ({
+    browser,
+    baseURL,
+  }) => {
+    /*
+     * Hiding a control whose route still answers is how the seat links went
+     * wrong, so the refusal is checked where it lives. The token is read from
+     * the row rather than from the response, because a challenge binds white to
+     * the other member and its token is deliberately never returned.
+     */
+    const stamp = Date.now().toString(36);
+    const asks = { email: `refuser-${stamp}@example.com`, name: `Refuser ${stamp}` };
+    const answers = { email: `refused-${stamp}@example.com`, name: `Refused ${stamp}` };
+    const one = await memberContext(browser, baseURL!, asks);
+    await memberContext(browser, baseURL!, answers);
+
+    const started = await one.request.post("/api/games/live", {
+      data: { variant: "freestyle", size: 9, moveTimeMs: null, challenge: answers.email },
+    });
+    expect(started.status()).toBe(201);
+    const game = (await started.json()) as { id: string; blackToken: string };
+    tidyAway(game.id);
+
+    const refused = await one.request.put(`/api/games/${game.id}/settings`, {
+      data: { token: game.blackToken, size: 19 },
+    });
+    expect(refused.status(), "a challenge's rules are what the other player was handed").toBe(409);
+    expect((await refused.json()).reason).toBe("settled");
   });
 
   test("and the server refuses the change, not just the page", async ({ request, browser, baseURL }) => {

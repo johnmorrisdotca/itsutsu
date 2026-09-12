@@ -28,7 +28,12 @@ test.describe("the actions on a player's page", () => {
 
     const actions = page.getByTestId("player-actions");
     await expect(actions).toBeVisible();
-    await expect(actions.getByRole("button", { name: /Ask for a game/ })).toBeVisible();
+    /*
+     * A LINK, because the offer of a game now leads to the screen that settles
+     * one rather than creating a game where it stands. Buddy and Ignore are
+     * still buttons: each of those is a thing that happens on the press.
+     */
+    await expect(actions.getByRole("link", { name: /Ask for a game/ })).toBeVisible();
     await expect(actions.getByRole("button", { name: /Buddy/ })).toBeVisible();
     await expect(actions.getByRole("button", { name: /Ignore/ })).toBeVisible();
   });
@@ -39,7 +44,7 @@ test.describe("the actions on a player's page", () => {
     await page.goto("/players/kyu");
     const actions = page.getByTestId("player-actions");
     await expect(actions).toBeVisible();
-    await expect(actions.getByRole("button", { name: /Play/ })).toBeVisible();
+    await expect(actions.getByRole("link", { name: /Play/ })).toBeVisible();
     await expect(actions.getByRole("button", { name: /Buddy/ })).toHaveCount(0);
     await expect(actions.getByRole("button", { name: /Ignore/ })).toHaveCount(0);
   });

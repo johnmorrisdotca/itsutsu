@@ -64,10 +64,21 @@ export async function MyGamesList() {
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">
           <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
+        {/*
+          THE ONE PLACE ON THIS PAGE THAT SHOULD OFFER A GAME, and it had a
+          sentence with no way out of it. John raised it: /play is where a member
+          lands, it lists the games they have going, and somebody with none was
+          told what they could do rather than shown the door to it.
+        */}
         <p className="text-sm text-muted">
-          Nothing waiting on you yet. Challenge someone from the{" "}
-          <Link href="/players" className="underline underline-offset-4">players</Link> page, take an open
-          seat below, or start a game and hand the other seat to a friend.
+          Nothing waiting on you yet.{" "}
+          <Link href="/games/new" className="font-medium underline underline-offset-4" data-testid="empty-new-game">
+            Set up a game 対局設定
+          </Link>{" "}
+          — pick the game, the board and who it is against, and nothing starts until you say so. Or challenge
+          somebody from the{" "}
+          <Link href="/players" className="underline underline-offset-4">players</Link> page, or take an open
+          seat below.
         </p>
       </section>
     );

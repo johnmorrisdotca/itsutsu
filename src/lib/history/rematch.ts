@@ -68,6 +68,41 @@ export function settingsToCarry(origin: PlayedGame) {
   };
 }
 
+/**
+ * WHAT A FORK'S CALLER IS ALLOWED TO SETTLE FOR ITSELF.
+ *
+ * A fork carries a POSITION, and everything the position depends on comes with
+ * it and is not up for discussion: the game, the board, the obstacles, the
+ * opening, the seed, the line length, who opens. Replaying the copied moves onto
+ * anything else would not be the same position, so a control offering to change
+ * one of those would be a control the server is right to ignore — and a control
+ * whose answer is discarded is the thing this codebase calls a report that
+ * cannot answer.
+ *
+ * THE PACE IS DIFFERENT, and the difference is that it is about the moves still
+ * to come rather than the ones already played. How fast, what a missed deadline
+ * costs, whether resigning is allowed, whether it counts, how long before a
+ * draw — none of that is a fact about the position, and all of it is a fact
+ * about the new game. So a fork keeps the source's answers where its caller has
+ * nothing to say, and yields to the caller where it has.
+ *
+ * Which preserves the thing that made the clock come with a fork in the first
+ * place: a three-day-a-move game forked into a five-minute one, because the fork
+ * carried the board and the rules and then took the pace from whatever the
+ * defaults happened to be. A caller that sends nothing still gets the source's
+ * clock, exactly as it has since that was fixed. The setup screen now sends the
+ * source's clock too — it reads the same row to fill its own form in — so the
+ * ordinary path agrees with the fallback rather than relying on it.
+ */
+export const FORK_PACE_SETTINGS = [
+  "moveTimeMs",
+  "clockMode",
+  "timeoutPenalty",
+  "allowResign",
+  "rated",
+  "drawLimit",
+] as const;
+
 /** The colour somebody held in a game, or null if they were not in it. */
 export function seatOf(origin: PlayedGame, memberId: string | null): "black" | "white" | null {
   if (memberId === null) return null;

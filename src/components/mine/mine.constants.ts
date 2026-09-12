@@ -106,8 +106,29 @@ export const START_COPY = {
   challengeHintAway: (who: string, pace: string) =>
     `The game is in ${who}'s list the moment you start it; there is nothing to accept. ${who} is not here at the moment, which is fine at ${pace.toLowerCase()}.`,
   signedOut: "Sign in to play against somebody else. Two at one screen works either way.",
-  failed: "That game could not be started. Try again.",
-  seatTaken: "Somebody took that seat first. Yours is posted instead.",
+  /*
+   * TWO FAILURES THE SENTENCE CAN NO LONGER HAVE, so their words are gone with
+   * them: "that game could not be started", and "somebody took that seat first".
+   * It writes nothing now — it carries what it has settled to the setup screen —
+   * so there is no creation to fail and no seat race to lose. Both things still
+   * happen, one screen along, and that screen has its own words for them.
+   */
+  /**
+   * WHAT THE SENTENCE DOES NOW, ADDED TO WHATEVER ELSE ITS HINT IS SAYING.
+   *
+   * The sentence used to create the game where it stood. It does not any more:
+   * every way into a game on this site goes through the screen that settles the
+   * rules first, and this one is the fastest way to reach it — the game, the
+   * board, the pace and the opponent are carried across and already filled in,
+   * so the press after this one is a confirmation.
+   *
+   * Said in the hint rather than by rewording the button. The button names the
+   * errand and John chose those words; "Sit down with Kyoko" is still exactly
+   * what pressing it sets about doing, and the screen it lands on says the same
+   * thing on its own button. What would be dishonest is leaving a reader to
+   * discover the extra step, so the hint says it.
+   */
+  nextIsSetUp: "You confirm the rules on the next screen; nothing is started until you do.",
   noSeats:
     "Nobody is asking for a game right now. Post a seat above and yours is first on the board.",
   onlyMine: "Only yours so far. It stays until somebody sits down or you withdraw it.",

@@ -6,6 +6,16 @@ import { fetchHereNow } from "./presence";
 
 /** Somebody a game can be offered to. */
 export type Opponent = {
+  /**
+   * Their member id, which is how a game against them is asked for.
+   *
+   * The address is still here because the ignore list is kept by address and
+   * this list is filtered against it — but nothing that OFFERS a game reads it
+   * any more. A computer player has no address at all, so the id was always
+   * the form that works for everybody, and it keeps members' addresses out of
+   * the markup of every page with a chooser on it.
+   */
+  id: string;
   email: string;
   name: string;
   /** Here in the last half hour, so a hint can say so. */
@@ -35,9 +45,19 @@ export async function fetchOpponents(email: string | null): Promise<Opponent[]> 
   return [
     ...here
       .filter((entry) => entry.email !== null && entry.email !== email && !ignored.has(entry.email))
-      .map((entry) => ({ email: entry.email as string, name: entry.name || (entry.email as string), here: true })),
+      .map((entry) => ({
+        id: entry.id,
+        email: entry.email as string,
+        name: entry.name || (entry.email as string),
+        here: true,
+      })),
     ...buddies
       .filter((buddy) => buddy.email !== null && !hereEmails.has(buddy.email) && !ignored.has(buddy.email))
-      .map((buddy) => ({ email: buddy.email as string, name: buddy.name || (buddy.email as string), here: false })),
+      .map((buddy) => ({
+        id: buddy.id,
+        email: buddy.email as string,
+        name: buddy.name || (buddy.email as string),
+        here: false,
+      })),
   ];
 }

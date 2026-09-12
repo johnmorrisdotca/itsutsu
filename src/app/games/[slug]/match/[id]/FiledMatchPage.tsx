@@ -273,6 +273,17 @@ function FiledMatch({
             The colour is on the button because it changes. Black moves first
             and that is worth something, so a rematch swaps; a swap nobody
             mentions is the kind of thing somebody notices three moves in.
+
+            IT NOW LEADS TO THE SETUP SCREEN, filled in with this game's board,
+            clock and rules and reading as a confirmation — one press accepts
+            it. The colour on the label is still the colour it will be, said
+            here and said again there. The reason for the extra screen is
+            John's, and it is the whole point of it: "Perhaps you want to switch
+            over to a variant — you need this page so that you can say, I want
+            to definitely play Bob at Reversi, but I want to try that variant,
+            and change some rules." A rematch that could only be accepted
+            whole was the one place on this site where a person had a decision
+            to make and nowhere to make it.
           */}
           {againIn !== null ? (
             <ChallengeButton
@@ -281,7 +292,11 @@ function FiledMatch({
               strong
             />
           ) : null}
-          <ChallengeButton from={{ id: game.id, move }} label={`Play from move ${move} 分岐`} />
+          <ChallengeButton
+            from={{ id: game.id, move }}
+            variant={game.variant}
+            label={`Play from move ${move} 分岐`}
+          />
           {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}
           <Link href={historyPath(game.variant)} className="text-sm underline underline-offset-4">
             Back to the record

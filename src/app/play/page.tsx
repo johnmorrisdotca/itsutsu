@@ -22,11 +22,18 @@ export const dynamic = "force-dynamic";
  * We do not. Not very good discoverability. Just that icon up top."
  *
  * So the games you are playing are a place rather than a region of a longer
- * page. Starting a NEW one is its own page too, at /games, where the games
- * themselves already live — /games/<slug>/play is a board and /games is the
- * catalogue, so the games' own namespace keeping the catalogue reads right
- * and your matches getting an address of their own reads better than both
- * sharing one.
+ * page. Starting a NEW one is its own page too, at /games/new — /games/<slug>/play
+ * is a board and /games is the catalogue, so the games' own namespace keeping the
+ * catalogue reads right and your matches getting an address of their own reads
+ * better than both sharing one.
+ *
+ * AND THE WAY TO START ONE IS NOW REACHABLE FROM HERE, which for a while it was
+ * not. This page listed your games and offered the catalogue, so a member with
+ * nothing to move had to go to Games, pick one, and only then meet the screen
+ * that settles a game — three pages to do the thing this page makes you want to
+ * do. New game is in the navigation now, and the empty list offers it directly.
+ * Not a third control on top of those: the bar is on every page, and a page with
+ * its own duplicate of a bar row is a page with two answers to one question.
  *
  * AT /play, WHICH WAS /my-games. John: "why is it called My-games? really
  * hate that dash... why not just /play?" The stronger reason than the dash
@@ -52,8 +59,11 @@ export default function MyGamesPage() {
           </p>
         </div>
         {/*
-          The way out of this page is starting another game, so it is on the
-          page rather than only in the navigation.
+          The CATALOGUE, which is a different errand from starting a game and
+          reads as one now that the bar carries New game: this is "show me what
+          there is to play", not "play something". The offer to start one is in
+          the navigation and in the empty list, where a reader who has nothing to
+          move will meet it.
         */}
         <Link href="/games" className="text-sm font-semibold underline underline-offset-4" data-testid="to-new-game">
           All the games 遊び方 →

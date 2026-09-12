@@ -169,13 +169,20 @@ export async function chooseGame(page: Page, variant: string) {
  * Idempotent, and it waits for what it opened: a `<details>` already open
  * would otherwise be closed by a second click, which is the kind of failure
  * that reads as the control being broken.
+ *
+ * IT WAITS ON THE CLOCK RATHER THAN ON THE OPPONENT. It waited on the opponent
+ * first, which is right about the drawer's contents on most screens and wrong
+ * about one: a FORK is against whoever was in the game it came from — the route
+ * reads that off the seats — so that screen offers no opponent at all, and a
+ * helper waiting for one would time out on a page that was working. The clock is
+ * in the drawer on every setup screen there is.
  */
 export async function openMoreSettings(page: Page) {
   const shut = await page
     .getByTestId("more-settings")
     .evaluate((el) => (el as HTMLDetailsElement).open === false);
   if (shut) await page.getByTestId("more-settings-open").click();
-  await expect(page.getByTestId("set-up-with")).toBeVisible();
+  await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
 }
 
 /** Chooses a board on the set-up screen. The blocks are radios; this presses one. */

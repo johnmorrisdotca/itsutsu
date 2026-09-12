@@ -2,65 +2,20 @@
 
 import {
   HANDICAP_RULES,
-  LINE_RULES,
   NO_HANDICAP,
   SECOND_STONE_EXCLUSIONS,
   STONES,
   STONE_DISPLAY,
-  VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
-import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { SECOND_STONE_EXCLUSION_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { HANDICAP_RULE_DISPLAY } from "@/lib/gomoku/openings.constants";
-import type {
-  GameSettings,
-  Handicap,
-  HandicapRule,
-  Stone,
-} from "@/lib/gomoku/gomoku.types";
+import { handicapOffer } from "@/lib/gomoku/handicapOffer";
+import type { Handicap, Stone } from "@/lib/gomoku/gomoku.types";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
 const NONE = "none";
-
-/**
- * Whether a toggle does anything for this colour under this variant, and if
- * not, why: some the variant already imposes, some only mean anything in a
- * game that captures or plays two stones a turn.
- */
-function relevance(
-  rule: HandicapRule,
-  settings: GameSettings,
-  stone: Stone,
-): { available: boolean; imposed: boolean; note: string | null } {
-  const spec = VARIANT_SPECS[settings.variant];
-  const open = { available: true, imposed: false, note: null };
-  const already = {
-    available: false,
-    imposed: true,
-    note: `Already a rule of ${RULE_VARIANT_DISPLAY[settings.variant].label} for ${STONE_DISPLAY[stone].label.toLowerCase()}.`,
-  };
-  const elsewhere = (note: string) => ({ available: false, imposed: false, note });
-
-  switch (rule) {
-    case "doubleThree":
-    case "doubleFour":
-    case "overline":
-      return spec.forbidden[stone].includes(rule) ? already : open;
-    case "exactLine":
-      return spec.lineRule[stone] === LINE_RULES.atLeast ? open : already;
-    case "openLine":
-      return spec.lineRule[stone] === LINE_RULES.exactOpen ? already : open;
-    case "singleStone":
-      return spec.stonesPerTurn > 1
-        ? open
-        : elsewhere("Only in a game that places two stones a turn.");
-    case "noCaptures":
-      return spec.captures ? open : elsewhere("Only in a game with captures.");
-    case "longerLine":
-      return open;
-  }
-}
 
 /**
  * A handicap for one colour, built from the restrictions the variants impose:
@@ -100,7 +55,7 @@ export function HandicapPanel({ session, actions }: GamePanelProps) {
         <div className="flex flex-col gap-3 rounded-xl border border-rule p-3">
           {HANDICAP_RULES.map((rule) => {
             const copy = HANDICAP_RULE_DISPLAY[rule];
-            const { available, imposed, note } = relevance(rule, settings, stone);
+            const { available, imposed, note } = handicapOffer(rule, settings.variant, stone);
             return (
               <div key={rule} className={available ? undefined : "opacity-60"}>
                 <Toggle

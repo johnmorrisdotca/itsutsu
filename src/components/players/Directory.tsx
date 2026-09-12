@@ -200,7 +200,13 @@ function directoryActions(
         <RowActions>
           <BuddyButton email={email} isBuddy={buddies.has(email)} />
           <IgnoreButton email={email} ignoring={ignored.has(email)} />
-          <ChallengeButton email={email} />
+          {/*
+            By id, and to the setup screen rather than into a game. A directory
+            row is the most likely place for an accidental press on this whole
+            site — the button sits at the end of every line of a long list — and
+            it used to create a game of Gomoku on the spot.
+          */}
+          <ChallengeButton memberId={entry.id} />
         </RowActions>
       );
     },

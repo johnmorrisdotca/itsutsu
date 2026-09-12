@@ -1,4 +1,5 @@
 import { BOT_ALL_TIERS, BOT_PROFILES, BOT_TIERS } from "@/lib/gomoku/opponent.constants";
+import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { tiersFor } from "@/lib/gomoku/expert/experts";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
@@ -157,6 +158,25 @@ export const BOT_MEMBER_LIST: readonly BotMember[] = BOT_ALL_TIERS.map(
  */
 export function botsFor(variant: RuleVariant): readonly BotMember[] {
   return tiersFor(variant).map((tier) => BOT_MEMBERS[tier]);
+}
+
+/**
+ * The games one computer player will sit down to — `botsFor` read the other way
+ * round.
+ *
+ * For a screen that has been told WHO and not WHAT: the setup screen, arrived at
+ * from a Play button on a computer player's row. The graded five play everything
+ * and need no help, but a specialist plays one game, and opening its setup screen
+ * at the site's default game would leave it named as the opponent and not on the
+ * list of players offered — so pressing Start would quietly post a seat for
+ * anyone instead of playing the program somebody just pressed Play on.
+ *
+ * Derived rather than written down beside `TIER_SPECS`, because a second list of
+ * "which games has this one studied" is a list that can disagree with the first,
+ * and the one that goes stale is whichever nobody is looking at.
+ */
+export function gamesPlayedBy(id: string): readonly RuleVariant[] {
+  return RULE_VARIANT_LIST.filter((variant) => botsFor(variant).some((bot) => bot.id === id));
 }
 
 /** Their ids, for the constant-time lookup the clock needs. */

@@ -74,11 +74,20 @@ export function PlayerActions({
 
   return (
     <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
-      <ChallengeButton
-        email={email}
-        label={compact ? "Play 対局" : "Ask for a game 対局を申し込む"}
-        strong={!compact}
-      />
+      {/*
+        A game is offered by member id, so the offer needs one. A member row
+        without an id is a kept record — somebody who never signed in — and
+        `email === null` above has already sent those away; a row that somehow
+        has an address and no id is nobody this can reach, and saying nothing is
+        the honest answer rather than a button that cannot name who it is for.
+      */}
+      {memberId === undefined ? null : (
+        <ChallengeButton
+          memberId={memberId}
+          label={compact ? "Play 対局" : "Ask for a game 対局を申し込む"}
+          strong={!compact}
+        />
+      )}
       <BuddyButton email={email} isBuddy={isBuddy} />
       <IgnoreButton email={email} ignoring={ignoring} />
     </div>

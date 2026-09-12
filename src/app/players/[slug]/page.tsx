@@ -422,10 +422,24 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           {askable && record.games > 0 ? (
             <p className="flex flex-wrap items-center gap-3 text-sm text-muted" data-testid="ask-after-record">
               Seen enough?{" "}
-              {member?.botTier ? (
-                <ChallengeButton memberId={member.id} label="Play 対局" />
-              ) : (
-                <ChallengeButton email={member?.email ?? ""} label="Ask for a game 対局を申し込む" />
+              {/*
+                ONE OFFER, TWO WORDINGS. It was two components because a game
+                against a program had to be asked for by id and a game against a
+                person by address — and that was never a real difference, only
+                the shape the creation route happened to take. Everything is
+                asked for by id now, so the branch is a choice of words: "Play"
+                is right about something that answers at once, and asking a
+                person for a game is asking.
+
+                And it leads to the setup screen rather than into a game, which
+                is the whole of this change and the very button John was looking
+                at when he asked for it a third time.
+              */}
+              {member === undefined || member === null ? null : (
+                <ChallengeButton
+                  memberId={member.id}
+                  label={member.botTier ? "Play 対局" : "Ask for a game 対局を申し込む"}
+                />
               )}
             </p>
           ) : null}
