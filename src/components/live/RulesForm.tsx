@@ -163,36 +163,51 @@ export function RulesForm({
         is played on — and showing 9×9 as the current board of an 8×8 game,
         because 8 was not in the list for anything to match.
       */}
-      {sizes.length > 1 ? (
-        chooser === RULES_CHOOSERS.pictures ? (
-          <BoardPicker
+      {/*
+        ALWAYS ON THE SCREEN THAT CHOOSES, EVEN WHEN THERE IS NOTHING TO
+        CHOOSE. John: "And the Reversi games don't even have a board size…
+        they should! It should show the board size (default) being used."
+
+        Every Reversi variant has exactly one board — 8×8, or 6×6 for Mini and
+        10×10 for Grand — so `boardSizesFor` returned one size and the picker
+        hid itself, and the page went from the games straight to the rest of
+        the rules with nothing said about what it would be played on. That is
+        Show The Data read backwards: a picker with one option is not a choice,
+        but the board is still a FACT, and the reader is about to play on it.
+
+        The panel beside a board keeps the old rule and shows nothing, because
+        the fact is already on that page — `describeRules` prints "Reversi
+        リバーシ · 8×8 Eight" at the top of it — and a select holding one
+        option in a narrow column beside a live game is furniture.
+      */}
+      {chooser === RULES_CHOOSERS.pictures ? (
+        <BoardPicker
+          value={value.size}
+          sizes={sizes}
+          disabled={disabled}
+          onChange={(next) => {
+            onSizeChosen?.(next);
+            change({ size: next });
+          }}
+        />
+      ) : sizes.length > 1 ? (
+        <Field label="Board">
+          <Select
             value={value.size}
-            sizes={sizes}
             disabled={disabled}
-            onChange={(next) => {
-              onSizeChosen?.(next);
-              change({ size: next });
+            onChange={(event) => {
+              onSizeChosen?.(Number(event.target.value));
+              change({ size: Number(event.target.value) });
             }}
-          />
-        ) : (
-          <Field label="Board">
-            <Select
-              value={value.size}
-              disabled={disabled}
-              onChange={(event) => {
-                onSizeChosen?.(Number(event.target.value));
-                change({ size: Number(event.target.value) });
-              }}
-              data-testid="shared-rules-size"
-            >
-              {sizes.map((option) => (
-                <option key={option} value={option}>
-                  {option}×{option}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        )
+            data-testid="shared-rules-size"
+          >
+            {sizes.map((option) => (
+              <option key={option} value={option}>
+                {option}×{option}
+              </option>
+            ))}
+          </Select>
+        </Field>
       ) : null}
     </>
   );

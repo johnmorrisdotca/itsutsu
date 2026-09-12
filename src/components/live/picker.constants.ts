@@ -29,7 +29,15 @@
 
 /** Shared by every card and block: the frame, the pointer, the focus ring. */
 const PICK_BASE =
-  "relative flex cursor-pointer items-center rounded-xl border bg-ivory/70 text-left transition-colors" +
+  /*
+   * THE CURSOR IS NOT HERE, and that is the same lesson PickMark's size
+   * carries. `cursor-pointer` lived in this string, and a board block with
+   * one option tried to override it with `cursor-default` — two cursor
+   * utilities of equal weight on one element, decided by whichever Tailwind
+   * happened to emit last. It emitted pointer, so a board nobody can change
+   * went on inviting the press. Every caller says its own cursor.
+   */
+  "relative flex items-center rounded-xl border bg-ivory/70 text-left transition-colors" +
   " has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-moss" +
   " has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50";
 
@@ -66,7 +74,8 @@ export const PICK_CARD = `${PICK_BASE} ${PICK_RESTING} ${PICK_CHOSEN}`;
  */
 export const PICK_CHIP =
   "flex min-h-12 items-center gap-1 rounded-lg border px-1.5 py-1 text-xs transition-colors" +
-  " outline-none focus-visible:ring-2 focus-visible:ring-moss";
+  " outline-none focus-visible:ring-2 focus-visible:ring-moss" +
+  " disabled:cursor-not-allowed disabled:opacity-50";
 
 export const PICK_CHIP_OPEN = "border-ink bg-ink text-paper";
 
