@@ -115,7 +115,17 @@ function GameBrowser({
                   >
                     <h3 className="flex items-baseline justify-between gap-2">
                       <span className="flex items-baseline gap-2 text-base font-semibold">
-                        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-sm font-normal opacity-70" />
+                        {/*
+                          THE NAME LEADS TO THE GAME, like every other name on
+                          the site. This dialog named forty games and led to
+                          none of them: the Play button starts one, which is a
+                          different errand from reading about one, and the
+                          openings heading below already reaches the focused
+                          game's page — so the way out existed for one card in
+                          forty. Found by `gameLinks.coverage.test.ts` once it
+                          could see a name written through `Paired`.
+                        */}
+                        <GameName variant={option} kanji />
                       </span>
                       {current ? (
                         <span className="rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-moss uppercase">
