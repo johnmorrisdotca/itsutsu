@@ -525,6 +525,35 @@ describe("the components the rules are kept in", () => {
     expect(source).toContain("game-not-here");
   });
 
+  it("nobody writes a second GameName, GameCount or PlayerName of their own", () => {
+    /*
+     * A COPY OF THE OWNER IS THE ONE WAY PAST EVERY CHECK ABOVE, and it is not
+     * a hypothetical: `LegacySource.tsx` had its own `GameName`, twenty lines
+     * that did everything the shared one does and linked to `rulesPath`. It was
+     * right when the rules page was the front door, and it stopped being right
+     * the moment the address move pointed every other name at /games/<slug> —
+     * so one page went on sending readers to the old door with nothing failing.
+     *
+     * Nothing else could have found it. Every check above asks whether a name
+     * is inside a link, and a local component that renders a `<Link>` passes
+     * them all; the assertions below read `GameName.tsx` and would never open
+     * the copy. The rule those assertions enforce — where a game's name leads —
+     * is only worth enforcing in one place if there IS only one place.
+     */
+    const shadows = FILES.filter((file) =>
+      [...file.source.matchAll(/\bfunction (GameName|GameCount|PlayerName)\s*\(/g)].some(
+        // Its own file is where it is SUPPOSED to be. `OWNERS` already keeps
+        // GameName.tsx and GameCount.tsx out of `FILES`; PlayerName.tsx is in
+        // them, because it prints names and counts like any other page.
+        (match) => !file.path.endsWith(`/${match[1]}.tsx`),
+      ),
+    ).map((file) => file.path);
+    expect(
+      shadows,
+      "import GameName / GameCount / PlayerName rather than writing another one",
+    ).toEqual([]);
+  });
+
   it("GameCount carries the filter that was counted", () => {
     const source = readFileSync("src/components/games/GameCount.tsx", "utf8");
     for (const filter of ["player", "outcome", "pool", "rated", "variant"]) {
