@@ -155,7 +155,16 @@ export async function visitorContext(
     exp: expiryInDays(PLAYER_SESSION_DAYS),
   });
   if (token === null) throw new Error("No AUTH_SECRET: cannot sign a test session.");
-  const context = await browser.newContext({ baseURL });
+  /*
+   * AN EMPTY STORAGE STATE, SAID OUT LOUD. `browser.newContext` inherits the
+   * project's `use` options, and the project signs every context in as the
+   * operator through `.auth/admin.json`. Left implicit, this visitor's browser
+   * would carry the operator's state underneath its own cookie — and on the
+   * `--no-deps` route, where that file is never minted, it failed all four
+   * cases at this line before reaching the site. The only identity here is the
+   * one this function signs.
+   */
+  const context = await browser.newContext({ baseURL, storageState: { cookies: [], origins: [] } });
   await context.addCookies([
     { name: SESSION_COOKIE, value: token, url: baseURL, httpOnly: true, sameSite: "Lax" },
   ]);
