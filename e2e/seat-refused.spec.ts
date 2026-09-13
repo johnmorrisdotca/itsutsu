@@ -33,13 +33,26 @@ test.describe("a seat link that cannot seat you", () => {
      * The number is the reader's OWN count, read by the page rather than
      * carried on the address — a number in a query is one a reader can edit,
      * and the page would be quoting their guess back at them.
+     *
+     * And it says WHICH games it counted. The cap counts games still being
+     * played with this member in a seat; /play holds more than that, so a
+     * sentence saying only "games on the go" over a link to /play was a number
+     * promising a longer list than it came from.
      */
-    await expect(notice).toContainText(/You have \d+ games on the go/);
+    await expect(notice).toContainText(/You are seated at \d+ games still being played/);
 
-    // And it leads to the games it counted, which is this site's rule about
-    // any number that refers to games. It is also the only useful thing to do
-    // about the refusal: the game to finish is in that list.
-    await expect(notice.locator("a").first()).toHaveAttribute("href", "/play");
+    /*
+     * THE COUNT IS NOT THE LINK, and that is the rule kept rather than broken.
+     * It used to be, and /play shows a browser's whole queue — the games
+     * offered to them, the finished ones it keeps, any seat held by cookie — so
+     * following the number found more rows than the sentence claimed. The way
+     * to act on it is still here, as words: a link that says "your games" makes
+     * no promise about a number.
+     */
+    const held = notice.getByTestId("seat-full-held");
+    await expect(held).toBeVisible();
+    await expect(held.locator("a")).toHaveCount(0);
+    await expect(notice.getByRole("link", { name: "your games" })).toHaveAttribute("href", "/play");
 
     // The site is around it, which is what the hand-written document lacked.
     await expect(page.locator("[data-chrome]").first()).toBeVisible();
