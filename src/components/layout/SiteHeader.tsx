@@ -6,6 +6,7 @@ import { currentSession } from "@/lib/auth/currentSession";
 import { xpFlashFor } from "@/lib/xp/xpFlash";
 
 import { BrandHero, BrandWordmark } from "./BrandMarks";
+import { LearnTimeZone } from "./LearnTimeZone";
 import { NavLinks } from "./NavLinks";
 import { XpToasts } from "./XpToasts";
 
@@ -30,6 +31,15 @@ async function Nav() {
       <NavLinks />
       <AdminLink initial={who} />
       <AccountMenu initial={who} />
+      {/*
+        Draws nothing. Here rather than beside the two mastheads below because
+        `Nav` is the one thing both of them render, so this is mounted exactly
+        once per page whichever shape the header takes. It has to be inside a
+        server-rendered page at all, which is why it is not in the root layout:
+        a layout renders once per document load, and the day it records is a
+        fact about the browser that has just arrived.
+      */}
+      <LearnTimeZone />
     </nav>
   );
 }

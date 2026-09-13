@@ -10,8 +10,8 @@ import { DEFAULT_GAME_DEFAULTS, gameDefaultsFrom, type GameDefaults } from "@/co
 import { prisma } from "@/lib/prisma";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
-import { awardXp } from "@/lib/xp/awardXp";
-import { XP_EVENTS } from "@/lib/xp/xp.constants";
+import { awardAdmission } from "@/lib/xp/admission";
+import { zoneToAssign } from "./zoneGuess";
 import { awardDailyVisit } from "@/lib/xp/dailyVisit";
 
 /**
@@ -109,7 +109,13 @@ export async function admitMember(
   input: Member & { invitedWith?: string },
 ): Promise<Member & { created: boolean }> {
   const email = foldEmail(input.email);
-  const existing = await prisma.member.findUnique({ where: { email }, select: { email: true } });
+  const existing = await prisma.member.findUnique({
+    where: { email },
+    /* The day's XP rides this lookup, which was happening anyway. It is the
+       member AS THEY WERE — the only moment `lastSeenAt` still says when they
+       were last here, since the update below is about to overwrite it. */
+    select: { id: true, email: true, lastSeenAt: true, timeZone: true, awayUntil: true, country: true },
+  });
   if (existing === null) {
     const row = await prisma.member.create({
       data: {
@@ -121,20 +127,36 @@ export async function admitMember(
       },
       select: { id: true, email: true, name: true, picture: true },
     });
-    /* The first line in a member's XP history, written where the row is made.
-       It rides the create rather than sitting in the sign-in route because
-       `created: true` happens exactly once per member and nothing else on the
-       site can say so. Quiet by construction — `awardXp` swallows and logs —
-       because a ledger write must never be able to fail a sign-in. */
-    await awardXp({ memberId: row.id, awards: [{ type: XP_EVENTS.joined }] });
+    /* The first lines in a member's XP history, written where the row is made:
+       joining, and the day they did it on. `lastSeenAt: null` is what says this
+       is the first visit there has ever been — the column itself already reads
+       today, which would refuse it. See `awardAdmission`. Quiet by construction
+       — `awardXp` swallows and logs — because a ledger write must never be able
+       to fail a sign-in. */
+    await awardAdmission({ id: row.id, lastSeenAt: null, timeZone: null, awayUntil: null });
     return { email: row.email ?? email, name: row.name, picture: row.picture, created: true };
   }
   // The name is the member's to choose; Google's is only the first suggestion.
+  const now = new Date();
+  /* Rung 3 of the time-zone order, on a write that was happening anyway: a
+     member with a country and no zone is guessed rather than reckoned in UTC.
+     Null leaves the column untouched, so this can never overwrite a zone
+     somebody chose or their browser measured — see `zoneToAssign`. */
+  const guessed = zoneToAssign({ stored: existing.timeZone, country: existing.country });
   const row = await prisma.member.update({
     where: { email },
-    data: { picture: input.picture, lastSeenAt: new Date() },
+    data: {
+      picture: input.picture,
+      lastSeenAt: now,
+      ...(guessed === null ? {} : { timeZone: guessed }),
+    },
     select: { email: true, name: true, picture: true },
   });
+  /* SIGNING IN IS A VISIT, and the stamp above has just spent the day it
+     happened on. Paid from `existing`, which is the row before that write —
+     carrying the zone just assigned, so the very first day is already counted
+     in their own zone rather than one last time in UTC. */
+  await awardAdmission({ ...existing, timeZone: guessed ?? existing.timeZone }, now);
   return { ...row, email: row.email ?? email, created: false };
 }
 
@@ -202,33 +224,10 @@ export async function renameMember(email: string, name: string): Promise<Member 
   return { email: renamed.email ?? foldEmail(email), name: renamed.name, picture: renamed.picture };
 }
 
-/** The profile a member keeps: what others may see, and how they want to be reached. */
-export type MemberProfile = Omit<Member, "email"> & {
-  /** Null for a kept record: somebody who never signed in and never had one. */
-  email: string | null;
-  city: string;
-  country: string;
-  timeZone: string;
-  bio: string;
-  showOnline: boolean;
-  emailNotify: boolean;
-  awayFrom: Date | null;
-  awayUntil: Date | null;
-  awayDaysUsed: number;
-  awayYear: number;
-  /** Days a finished game stays in their own list; 0 keeps them all. */
-  keepFinishedDays: number;
-  /** Days of the week they do not play, 0 for Sunday. */
-  daysOff: number[];
-  /** How they like a board dressed. Stored JSON; read it through cleanAppearance. */
-  appearance: unknown;
-  /** Where a new game starts for them. Stored JSON; read it through cleanGameDefaults. */
-  gameDefaults: unknown;
-  /** Their standing choices, by the registry in lib/preferences. Stored JSON; read it through cleanPreferences. */
-  preferences: unknown;
-  createdAt: Date;
-  lastSeenAt: Date;
-};
+/* The stored profile's own shapes live beside this module; see members.types.ts.
+   Re-exported so every caller imports them from where it always did. */
+import type { MemberProfile, ProfileUpdate } from "./members.types";
+export type { MemberProfile, ProfileUpdate };
 
 export async function fetchProfile(email: string): Promise<MemberProfile | null> {
   return prisma.member.findUnique({ where: { email: foldEmail(email) } });
@@ -327,6 +326,10 @@ export const memberRowFor = cache(async (key: string) =>
          on. A column on a row being read anyway, so "are they back" costs two
          comparisons rather than a query — see `xpHabit.ts`. */
       awayUntil: true,
+      /* And where they say they are, which is the third rung of the time-zone
+         order: a member with a country and no zone is guessed rather than left
+         on UTC. Another field off the same row — see `zoneGuess.ts`. */
+      country: true,
     },
   }),
 );
@@ -367,29 +370,6 @@ export async function isBanned(email: string): Promise<boolean> {
   return row?.bannedAt != null;
 }
 
-
-export type ProfileUpdate = Partial<
-  Pick<
-    MemberProfile,
-    | "city"
-    | "country"
-    | "timeZone"
-    | "bio"
-    | "showOnline"
-    | "emailNotify"
-    | "keepFinishedDays"
-    | "daysOff"
-  >
-> & {
-  /*
-   * Read back as unknown JSON but only ever written as a cleaned Appearance.
-   * The asymmetry is the point: what comes out of the column is whatever was
-   * in it, and what goes in has already been checked against the themes and
-   * stone sets that exist.
-   */
-  appearance?: Partial<Appearance>;
-  gameDefaults?: Partial<GameDefaults>;
-};
 
 export async function updateProfile(email: string, update: ProfileUpdate): Promise<void> {
   await prisma.member.update({ where: { email: foldEmail(email) }, data: update });

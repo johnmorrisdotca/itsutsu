@@ -53,7 +53,18 @@ import { XP_DAY_RUN_MAX, backFromAwayAward, dayRunEndingAt, dayStreakAward, isDa
 /** What this rider needs off the member row, all of it already selected. */
 export type VisitingMember = {
   id: string;
-  lastSeenAt: Date;
+  /**
+   * When they were last here, or NULL when they have never been.
+   *
+   * Null rather than "now" for a member whose row was made by the request
+   * asking this, and the difference is a day of XP. `lastSeenAt` is
+   * `@default(now())`, so a freshly created row carries today — which reads
+   * as "already seen today" and refuses the very first visit there is. The
+   * same value cannot mean both "they were here this morning" and "there is
+   * no previous visit", so the second one is null. See AGENTS.md, "Nothing
+   * Answers What It Cannot Answer".
+   */
+  lastSeenAt: Date | null;
   timeZone: string | null;
   /**
    * The end of the member's away spell, or null.
@@ -65,22 +76,43 @@ export type VisitingMember = {
   awayUntil: Date | null;
 };
 
-export async function awardDailyVisit(row: VisitingMember, now: Date): Promise<void> {
-  if (!isNewDay(row.lastSeenAt, now, row.timeZone)) return;
+/**
+ * What this visit is worth, decided and not yet paid — empty on any visit that
+ * does not open a new day for them.
+ *
+ * Separate from the paying below because a visit is not always the only thing
+ * on the batch: the admission that MAKES a member is their joining and their
+ * first day at once, and two `awardXp` calls would be two transactions and two
+ * toasts, the second of which replaces the first. See `admission.ts`.
+ */
+export async function visitAwards(row: VisitingMember, now: Date): Promise<XpAward[]> {
+  const last = row.lastSeenAt;
+  if (last !== null && !isNewDay(last, now, row.timeZone)) return [];
   const today = xpDayKey(now, row.timeZone);
 
   const awards: XpAward[] = [{ type: XP_EVENTS.dailyVisit, subject: today }];
+  /* Both of these are about a previous visit, and there is none to compare
+     with on the first: a member cannot be back from anywhere, and a run that
+     starts today is a run of one. No read, either — see `dayRunMilestone`. */
+  if (last === null) return awards;
+
   const back = backFromAwayAward({
     awayUntil: row.awayUntil,
-    lastSeenAt: row.lastSeenAt,
+    lastSeenAt: last,
     now,
     dayKeyOf: (at) => xpDayKey(at, row.timeZone),
   });
   if (back !== null) awards.push(back);
 
-  const milestone = await dayRunMilestone(row, today);
+  const milestone = await dayRunMilestone(row, last, today);
   if (milestone !== null) awards.push(milestone);
 
+  return awards;
+}
+
+export async function awardDailyVisit(row: VisitingMember, now: Date): Promise<void> {
+  const awards = await visitAwards(row, now);
+  if (awards.length === 0) return;
   await awardXp({ memberId: row.id, awards, now });
 }
 
@@ -102,8 +134,12 @@ export async function awardDailyVisit(row: VisitingMember, now: Date): Promise<v
  * rather than read back. That keeps it to one read instead of a write, a read
  * and a second write.
  */
-async function dayRunMilestone(row: VisitingMember, today: DayKey): Promise<XpAward | null> {
-  const last = xpDayKey(row.lastSeenAt, row.timeZone);
+async function dayRunMilestone(
+  row: VisitingMember,
+  lastSeenAt: Date,
+  today: DayKey,
+): Promise<XpAward | null> {
+  const last = xpDayKey(lastSeenAt, row.timeZone);
   if (!isDayBefore(last, today)) return null;
 
   try {
