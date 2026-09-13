@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { recordAddress } from "./recordAddress";
+import { recordAddress, recordGameRedirect } from "./recordAddress";
 
 describe("recordAddress", () => {
   it("carries a reader's own filters into both the query and the page's own address", () => {
@@ -53,5 +53,65 @@ describe("recordAddress", () => {
     const { query, flat } = recordAddress({ search: ["a", "b"], page: undefined, size: "9" });
     expect(query).toEqual({ size: "9" });
     expect(flat).toEqual({ size: "9" });
+  });
+
+  /*
+   * ON /history THE QUERY'S OWN `?variant=` REACHES THE QUERY, and it used not
+   * to: this function dropped the key whatever the address was, so /history
+   * threw the filter away in silence while `/api/games?variant=` honoured it.
+   *
+   * The page redirects a variant that names a game before this runs, so what
+   * arrives here is a value no game answers to — and a value that reaches the
+   * schema is refused in words on the page, which is the point. Dropped, it
+   * said nothing at all.
+   */
+  it("lets a ?variant= through where the address itself names no game", () => {
+    const { query, flat } = recordAddress({ variant: "not-a-game-here", size: "9" });
+    expect(query.variant).toBe("not-a-game-here");
+    expect(flat.variant).toBe("not-a-game-here");
+  });
+});
+
+describe("recordGameRedirect", () => {
+  it("sends /history?variant=<slug> to that game's own record", () => {
+    expect(recordGameRedirect({ variant: "misere-five" })).toBe("/games/misere-five/history");
+  });
+
+  /*
+   * `GAME_VARIANT_FILTERS` is the list of variant KEYS, so /api/games accepts
+   * either spelling and a redirect that only knew slugs would drop half of
+   * them. The two differ for real: the key `freestyle` lives at /games/gomoku,
+   * because a slug is chosen for how it reads in an address bar.
+   */
+  it("takes the variant KEY too, because the API's own filter does", () => {
+    expect(recordGameRedirect({ variant: "freestyle" })).toBe("/games/gomoku/history");
+    expect(recordGameRedirect({ variant: "misereFive" })).toBe("/games/misere-five/history");
+  });
+
+  it("carries the other filters across, so nothing a reader asked for is lost", () => {
+    expect(recordGameRedirect({ variant: "misere-five", size: "9", outcome: "drawn" })).toBe(
+      "/games/misere-five/history?size=9&outcome=drawn",
+    );
+  });
+
+  it("leaves page and cursor behind — both are positions in the list it is leaving", () => {
+    expect(
+      recordGameRedirect({ variant: "misere-five", page: "4", cursor: "abc", size: "9" }),
+    ).toBe("/games/misere-five/history?size=9");
+  });
+
+  it("redirects nowhere when no variant was asked for", () => {
+    expect(recordGameRedirect({ size: "9" })).toBeNull();
+    expect(recordGameRedirect({})).toBeNull();
+  });
+
+  /*
+   * `all` is what this site calls the absence of a narrowing, and it names no
+   * game — so there is nowhere to send it and the whole record is the answer.
+   */
+  it("redirects nowhere for all, or for a word no game answers to", () => {
+    expect(recordGameRedirect({ variant: "all" })).toBeNull();
+    expect(recordGameRedirect({ variant: "banana" })).toBeNull();
+    expect(recordGameRedirect({ variant: ["freestyle", "renju"] })).toBeNull();
   });
 });
