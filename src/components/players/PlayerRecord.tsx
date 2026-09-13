@@ -50,6 +50,17 @@ export type WonLostDrawn = { wins: number; losses: number; draws: number };
  */
 export type RecordOf = {
   player?: string;
+  /**
+   * Their member id, where the row knows one — the thing the ADDRESS carries.
+   *
+   * The name still decides which games are counted, because a record hangs off a
+   * folded name; the id decides how the link ASKS for them, so that a page
+   * showing "Hanako M." is not also publishing "Hanako Morris" in the href of
+   * every number on it. `gamesHref` says why at length. A row with no member
+   * behind it — a kept record, a name typed in at one screen — leaves it out and
+   * the name is the address, because the name is all it has.
+   */
+  memberId?: string | null;
   /** One game's record, when the table is per game. Left out for every game. */
   variant?: string;
   /**
@@ -72,6 +83,7 @@ function counts(record: WonLostDrawn, of: RecordOf) {
     <GameCount
       count={count}
       player={of.player}
+      memberId={of.memberId}
       variant={of.variant}
       outcome={outcome}
       pool={of.pool}

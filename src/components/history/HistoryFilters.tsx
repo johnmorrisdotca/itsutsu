@@ -138,7 +138,9 @@ export function HistoryFilters({
               <button
                 key={one.key}
                 type="button"
-                onClick={() => update(one.key, "all")}
+                // The parameter actually in the address, which for a player
+                // who arrived by a count's link is `member`, not `player`.
+                onClick={() => update(one.clears ?? one.key, "all")}
                 className="flex items-center gap-1.5 rounded-full border border-rule px-2.5 py-1 hover:border-ink-soft"
                 title={`Stop narrowing to ${one.label}`}
                 data-testid="history-narrowing"

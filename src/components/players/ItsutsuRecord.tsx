@@ -22,6 +22,7 @@ import { shownName } from "@/lib/rating/shownName";
  */
 export function ItsutsuRecord({
   name,
+  memberId,
   record,
   opponents,
   gifts,
@@ -34,6 +35,13 @@ export function ItsutsuRecord({
    * the games behind it, and "their games" needs a name to be their games.
    */
   name: string;
+  /**
+   * Their id, which is what every link here CARRIES — the name decides which
+   * games are counted, the id is how the address asks for them. A page showing
+   * "Hanako M." must not publish "Hanako Morris" in the href of every number on
+   * it; see `gamesHref`.
+   */
+  memberId?: string | null;
   record: PlayerRecord;
   /**
    * Who the opponents in Recent Games are, and what the reader may do about
@@ -104,7 +112,7 @@ export function ItsutsuRecord({
               the link must leave them out too. No `rated` and no `pool` —
               unlike a ladder's row, this number really is all of them.
             */
-            of: { player: name, variant: row.variant },
+            of: { player: name, memberId, variant: row.variant },
             /*
               And the run over exactly those games, worked out in the same pass
               that counted them. It is NOT the streak stored on the rating row:

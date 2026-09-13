@@ -8,7 +8,7 @@ import { RecordText } from "./RecordText";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { historyPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { fetchGameHistoryPage, fetchWholeRecord } from "@/lib/history/gameHistory";
+import { fetchGameHistoryPage, fetchWholeRecord, withMemberResolved } from "@/lib/history/gameHistory";
 import { recordAsText } from "@/lib/history/recordText";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 import { type ImpliedPlayer, recordAddress } from "@/lib/history/recordAddress";
@@ -81,7 +81,24 @@ export async function RecordPage({
    * of no games at all and look like a site with nothing in it.
    */
   if (isRefusal(fallback)) throw new Error(`The record's own address does not parse: ${fallback.error}`);
-  const asked = query ?? fallback;
+  const parsedAsked = query ?? fallback;
+  /*
+   * `?member=<id>` IS RESOLVED HERE, ONCE, AND THAT IS DELIBERATE.
+   *
+   * It is the address form every count on the site now links by — an id rather
+   * than a member's whole name, the 0.133.0 rule `gamesHref` had missed — and
+   * the record filters by the NAME that member's record is counted under, so
+   * a link opens exactly the set the number came from. `withMemberResolved`
+   * does that turn, and both reads below would do it for themselves.
+   *
+   * This page resolves it first because it needs the name anyway: the chip bar
+   * has to say what the record was narrowed to, and a narrowing applied with
+   * nothing on screen to name it is the fault `narrowings.ts` exists to stop.
+   * Resolving once and handing the result to both reads also means one lookup
+   * rather than three.
+   */
+  const asked = await withMemberResolved(parsedAsked);
+  const memberUnknown = parsedAsked.member !== null && asked.member !== null;
   const [page, whole] = await Promise.all([
     fetchGameHistoryPage(asked),
     fetchWholeRecord(asked),
@@ -154,17 +171,37 @@ export async function RecordPage({
             ? null
             : {
                 name: asked.player,
-                memberId: impliedPlayer?.memberId ?? null,
+                /*
+                 * The id the chip's own link is built from, whichever way the
+                 * player arrived: the address implied them (/games/<slug>/me),
+                 * or a count's link named them by `?member=`. Both are ids, and
+                 * a chip that cannot be removed still has to lead somewhere
+                 * real — `playerPath` prefers one for the same reason.
+                 */
+                memberId: impliedPlayer?.memberId ?? parsedAsked.member,
                 // Removable unless the address is the one implying it — a
                 // reader who typed ?player=X into /history can take it off;
                 // /games/<slug>/me cannot mean anything else.
                 removable: impliedPlayer === undefined,
+                // So the chip's "×" deletes the parameter that is really there.
+                ...(impliedPlayer === undefined && parsedAsked.member !== null
+                  ? { via: "member" as const }
+                  : {}),
               }
         }
       />
-      {refused ? (
+      {refused || memberUnknown ? (
         <p className="rounded-xl border border-rule px-4 py-3 text-sm text-muted">
-          Those filters were not valid, so this is the unfiltered record.
+          {memberUnknown && !refused
+            ? /*
+               * A `?member=` naming nobody. Said rather than ignored: the filter
+               * could not be applied, and a page that answered with the whole
+               * record in silence is the same fault as one that narrows without
+               * saying so — either way the reader cannot tell what they are
+               * looking at.
+               */
+              "That member could not be found, so this is the unfiltered record."
+            : "Those filters were not valid, so this is the unfiltered record."}
         </p>
       ) : null}
       <LiveRecord

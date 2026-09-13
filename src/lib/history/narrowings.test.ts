@@ -131,6 +131,20 @@ describe("appliedNarrowings", () => {
     ]);
   });
 
+  /*
+   * THE WAY BACK. A count's link names its player by `?member=<id>` now, so a
+   * "×" that deleted `player` would leave the record exactly as narrowed as it
+   * found it — a filter a reader is invited to take off and cannot.
+   */
+  it("clears member, not player, when the player arrived by id", () => {
+    const byId = { name: "Hanako Morris", memberId: "m-1", removable: true, via: "member" as const };
+    expect(appliedNarrowings({ ...NONE, player: byId })).toEqual([
+      { key: "player", label: "Hanako Morris's games", clears: "member" },
+    ]);
+    const byName = { name: "Alice", memberId: null, removable: true };
+    expect(appliedNarrowings({ ...NONE, player: byName })[0].clears).toBeUndefined();
+  });
+
   it("orders chips player, outcome, pool, rated, verdict", () => {
     const player = { name: "Alice", memberId: "id-1", removable: true };
     const narrowings = appliedNarrowings({

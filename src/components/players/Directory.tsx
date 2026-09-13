@@ -143,7 +143,7 @@ function directoryRow(
      * open, and a link showing the Itsutsu half under a total that includes
      * another site would be quietly wrong about which games it meant.
      */
-    of: { player: entry.name, here: !kept },
+    of: { player: entry.name, memberId: entry.id, here: !kept },
     /*
      * THE RUN OVER EVERY GAME, which is the set this row's count is over —
      * and it exists because this cell showed a dash until it did.

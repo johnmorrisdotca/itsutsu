@@ -22,11 +22,28 @@ export type AppliedPlayer = {
   name: string;
   memberId: string | null;
   removable: boolean;
+  /** Which parameter named them, when it was `?member=<id>` rather than `?player=`. See `Narrowing.clears`. */
+  via?: "member";
 };
 
 export type Narrowing = {
   key: string;
   label: string;
+  /**
+   * The parameter a "×" has to delete, where that is not the chip's own key.
+   *
+   * A PLAYER ARRIVES BY TWO SPELLINGS NOW, and the way back has to know which
+   * one it is looking at. Every count on the site links by `?member=<id>` since
+   * the 0.133.0 rule reached `gamesHref`, and a chip that cleared `player`
+   * would leave the record exactly as narrowed as it found it — a filter a
+   * reader is invited to take off and cannot. "Test the way back, not just the
+   * way there" is a section of AGENTS.md for this shape of bug.
+   *
+   * The key stays `player` either way, because what the chip is ABOUT has not
+   * changed and the bar should not read differently depending on which
+   * spelling brought the reader here.
+   */
+  clears?: string;
   /** Present when this chip leads to the player's own page instead of removing anything. */
   href?: string;
 };
@@ -61,6 +78,7 @@ export function appliedNarrowings(input: {
           key: "player",
           label: `${player.name}'s games`,
           href: player.removable ? undefined : playerPath(player.name, player.memberId),
+          ...(player.via === "member" ? { clears: "member" } : {}),
         },
     outcome === "" || (player === null && outcomeNeedsPlayer(outcome))
       ? null

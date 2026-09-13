@@ -174,7 +174,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
           */}
           <RecordLine
             record={yours}
-            of={{ player: me.name, variant }}
+            of={{ player: me.name, memberId: myId, variant }}
             streak={yours.streak}
             testId="your-game-record-line"
           />

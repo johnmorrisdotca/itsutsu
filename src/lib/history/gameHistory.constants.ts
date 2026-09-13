@@ -173,3 +173,12 @@ export const PLAYER_SUGGEST_MIN_QUERY = 1;
 /** Free-text search is bounded so a pathological query cannot scan the table. */
 export const GAME_SEARCH_MAX = 64;
 export const PLAYER_NAME_MAX = 64;
+
+/**
+ * A member id in a filter, bounded like every other string the record accepts.
+ *
+ * Its own constant rather than `PLAYER_NAME_MAX` sharing a number with it: an
+ * id is a cuid this site generated and a name is text somebody typed, and two
+ * limits that happen to agree today are two limits, not one.
+ */
+export const MEMBER_ID_MAX = 64;
