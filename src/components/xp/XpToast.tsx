@@ -2,9 +2,10 @@
 
 import type { KeyboardEvent, MouseEvent } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 
-import { XP_TOAST_COPY as copy, XP_TOAST_STYLE as style } from "./xp.constants";
+import { xpAmount, XP_LEVEL_UP_KANJI, XP_TOAST_STYLE as style } from "./xp.constants";
 import type { XpToastItem, XpToastPhase } from "./xp.types";
 
 /** Why a toast's clock is stopped. */
@@ -39,8 +40,16 @@ export function XpToast({
   onHold: (id: string, why: XpToastHold) => void;
   onRelease: (id: string, why: XpToastHold) => void;
 }) {
+  const say = useSpeaker();
   const level = item.level;
   const reached = level?.reached === true;
+  /*
+   * "Level up" is a heading, so it keeps its kanji the way every heading on
+   * the site does: the English half switches with the reader's language and
+   * 昇級 stays beside it — and for a reader whose own script that is, the
+   * pairing collapses to the one word, as `SectionTitle` does.
+   */
+  const levelUp = say.pair("xp.levelUp", XP_LEVEL_UP_KANJI);
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "Escape") return;
@@ -71,9 +80,9 @@ export function XpToast({
     >
       <span className={style.points}>
         <span className={style.amount} data-testid="xp-toast-points">
-          {copy.amount(item.points)}
+          {xpAmount(item.points)}
         </span>
-        <span className={style.unit}>{copy.unit}</span>
+        <span className={style.unit}>{say.say("xp.unit")}</span>
       </span>
       <span className={style.body}>
         <span className={style.label} data-testid="xp-toast-label">
@@ -83,19 +92,25 @@ export function XpToast({
         {level === undefined ? null : reached ? (
           <span className={style.levelReached} data-testid="xp-toast-level">
             <span className={style.levelEyebrow}>
-              <Paired en={copy.levelUp.en} kanji={copy.levelUp.kanji} kanjiClassName={style.levelKanji} />
+              {levelUp.kanji === null ? (
+                <span className="font-mincho normal-case tracking-normal">{levelUp.text}</span>
+              ) : (
+                <>
+                  {levelUp.text} <span className={`font-mincho ${style.levelKanji}`}>{levelUp.kanji}</span>
+                </>
+              )}
             </span>
             <span className={style.levelName}>{level.name}</span>
           </span>
         ) : (
           <span className={style.levelNext} data-testid="xp-toast-level">
-            {copy.nextLevel(level.name)}
+            {say.say("xp.nextLevel", { name: level.name })}
           </span>
         )}
       </span>
       <button
         type="button"
-        aria-label={copy.dismiss}
+        aria-label={say.say("xp.dismiss")}
         className={style.dismiss}
         data-testid="xp-toast-dismiss"
         onClick={onButton}

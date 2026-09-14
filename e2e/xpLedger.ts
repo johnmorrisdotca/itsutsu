@@ -115,6 +115,26 @@ export async function seedVisitorWithZone(
   return visitor;
 }
 
+/**
+ * Sets a seeded visitor's standing so the next arrival lands where a spec
+ * wants it: `daysAgo` winds their clock back so the visit is paid, and `xp`
+ * places the total so that payment crosses a level, or falls one short of
+ * one. The row is the spec's own, made by `seedVisitor`; nothing here touches
+ * anybody else's.
+ */
+export async function setVisitorStanding(visitor: Visitor, standing: { daysAgo: number; xp: number }): Promise<void> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.update({
+      where: { id: visitor.id },
+      data: { xp: standing.xp, lastSeenAt: new Date(Date.now() - standing.daysAgo * 86_400_000) },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 /** Every award this member holds, newest first. The ledger itself, not a page's view of it. */
 export async function ledgerFor(memberId: string): Promise<{ type: string; subject: string; points: number }[]> {
   loadEnv();

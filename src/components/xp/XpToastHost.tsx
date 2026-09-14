@@ -8,7 +8,6 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { XpToast, type XpToastHold } from "./XpToast";
 import {
   XP_TOAST_COLLAPSE_MS,
-  XP_TOAST_COPY as copy,
   XP_TOAST_ENTER_MS,
   XP_TOAST_ENTER_STAGGER_MS,
   XP_TOAST_GAP,
@@ -169,7 +168,7 @@ export function XpToastHost({ items, onDismiss }: XpToastHostProps) {
   }, []);
 
   const said = (entry: XpToastEntry) =>
-    announcement(entry.item.points, speaker.pairName(entry.item.label, entry.item.kanji).text, entry.item.level);
+    announcement(speaker, entry.item.points, speaker.pairName(entry.item.label, entry.item.kanji).text, entry.item.level);
 
   return (
     <>
@@ -189,7 +188,7 @@ export function XpToastHost({ items, onDismiss }: XpToastHostProps) {
       </div>
       {shown.length === 0 ? null : (
         <ol
-          aria-label={copy.region}
+          aria-label={speaker.say("xp.pointsEarned")}
           className={style.host}
           style={DURATIONS}
           data-testid="xp-toast-host"
