@@ -511,6 +511,16 @@ describe("imported awards stay on their own side", () => {
     expect(read("src/lib/xp/awardXp.ts")).not.toMatch(/importedXp|IMPORTED_XP/);
   });
 
+  it("reaches a badge beside a name only through xpForBadge, never through a raw xp", () => {
+    // The rivalry board read `levelShown({ xp: row.xp })` when it landed in
+    // 0.183.0, so a kept record's credit would have been missing from exactly one
+    // badge on the site. The badge's total is decided in one place.
+    const rivalry = read("src/lib/record/rivalryRead.ts");
+    expect(rivalry).toMatch(/levelShown\(\{ xp: xpForBadge\(row\) \}\)/);
+    expect(rivalry).not.toMatch(/levelShown\(\{ xp: row\.xp \}\)/);
+    expect(read("src/lib/xp/xpOfMembers.ts")).toMatch(/xpShown\(\{ xp: xpForBadge\(member\) \}\)/);
+  });
+
   it("is left out of the Itsutsu ledger check and ranked only under Everywhere", () => {
     expect(read("src/lib/xp/backfillXp.play.test.ts")).toMatch(/notIn: \[\.\.\.IMPORTED_XP_TYPES\]/);
     expect(XP_SCOPE_COLUMN[RECORD_SCOPES.here]).toBe("xp");

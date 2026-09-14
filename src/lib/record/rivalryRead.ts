@@ -4,6 +4,7 @@ import { pairWhere } from "@/lib/history/gameHistoryQuery";
 import { NOT_A_REFUSED_OFFER } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
 import { levelShown } from "@/lib/xp/levelShown";
+import { xpForBadge } from "@/lib/xp/xpScope";
 
 import { outcomeOfGame, rivalryFrom, rivalryLine } from "./rivalry";
 import type { RivalryMoment, RivalrySeat, RivalryTally, RivalryTallyShown, RivalryView } from "./rivalry.types";
@@ -71,18 +72,22 @@ export async function fetchRivalryView(input: {
     }),
     prisma.member.findMany({
       where: { id: { in: [one, other] } },
-      select: { id: true, name: true, xp: true },
+      /* Both totals, because the badge's one rule — `xpForBadge` — chooses between them. */
+      select: { id: true, name: true, xp: true, xpEverywhere: true },
     }),
   ]);
 
   /*
    * A program stands where its total puts it, like anybody (0.182.0): the level
-   * is read from the total alone, so a rivalry with Dan badges Dan too.
+   * is read from the total alone, so a rivalry with Dan badges Dan too. And the
+   * total is the badge's, decided in one place — `xpForBadge`, which counts a
+   * kept record's credit from another site — so the badge above a pair's games
+   * is the level the same player wears on every other page.
    */
   const seat = (id: string): RivalrySeat | null => {
     const row = members.find((member) => member.id === id);
     if (row === undefined) return null;
-    return { memberId: row.id, name: row.name, level: levelShown({ xp: row.xp }) };
+    return { memberId: row.id, name: row.name, level: levelShown({ xp: xpForBadge(row) }) };
   };
   const first = seat(one);
   const second = seat(other);
