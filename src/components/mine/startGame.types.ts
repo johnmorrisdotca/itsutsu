@@ -1,3 +1,5 @@
+import type { Handicap } from "@/lib/gomoku/gomoku.types";
+
 /** One seat already on the board, as the composer needs to read it. */
 export type SeatOnBoard = {
   id: string;
@@ -5,6 +7,17 @@ export type SeatOnBoard = {
   /** The board it is posted on, so the sentence only offers a seat it describes. */
   size: number;
   moveTimeMs: number | null;
+  /*
+   * The rest of what its game IS, so a seat is only offered to somebody who
+   * chose that game — see `seatIsThisGame`. Without these a Pro chooser was
+   * sat down at a Free seat on the same board and pace.
+   */
+  opening: string;
+  obstacles: string;
+  rated: boolean;
+  handicap: Handicap;
+  clockMode: string;
+  timeoutPenalty: string;
   /** The member sitting in it, as they are named. */
   who: string;
 };
