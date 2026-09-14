@@ -39,6 +39,7 @@ import {
 import { winningLineFor } from "./rules/lines";
 import { stonesLeftInTurn } from "./rules/turns";
 import { rotateQuadrant } from "./rules/twist";
+import { forfeitTurn } from "./rules/seats";
 import type {
   Cell,
   ForbiddenPattern,
@@ -238,7 +239,15 @@ export function mustPass(state: GameState): boolean {
   return !emptyPoints(state).some((point) => isLegalMove(state, point));
 }
 
-/** Whether passing is on offer: forced in a piece game with nothing to lay, free at any point in Go. */
+/**
+ * Whether passing is on offer: forced in a piece game with nothing to lay, free at any point in Go.
+ *
+ * This, and not `mustPass`, is the question anything accepting a pass asks. A
+ * live game once asked only whether the pass was forced, which refused every
+ * chosen pass in Go — a person's click and a computer's choice alike — so a Go
+ * game on the server could never end by two passes, and a programs' game sat
+ * stuck with the engine offering a pass the server would not take.
+ */
 export function canPass(state: GameState): boolean {
   if (mustPass(state)) return true;
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
@@ -262,6 +271,21 @@ export function passTurn(state: GameState): GameState {
     return noPlayLeft(passed, WIN_REASONS.blocked);
   }
   return settleDraw({ ...passed, toPlay: otherStone(state.toPlay) });
+}
+
+/**
+ * A missed turn, as the position the record will replay it to.
+ *
+ * A forfeited turn is written as a pass, and a replay has no way to tell the
+ * two apart — so wherever the rules offer a pass, the forfeit IS that pass,
+ * with everything a pass does: in Go the second in a row ends the game by
+ * count, whether the first was chosen or missed. A claim that settled anything
+ * else would write one result on the row while every page replayed another.
+ * Where no pass is on offer it is `forfeitTurn`, the turn taken away and
+ * nothing decided.
+ */
+export function forfeitOnRecord(state: GameState): GameState {
+  return canPass(state) ? passTurn(state) : forfeitTurn(state);
 }
 
 /**

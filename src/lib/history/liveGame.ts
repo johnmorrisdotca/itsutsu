@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { freeGameId } from "./gameId";
-import { canTwist, createGame, inMovePhase, isLegalMove, movePiece, mustPass, passTurn, pieceMoves, placePiece, playMove, resolvePlacement, twistBoard } from "@/lib/gomoku/engine";
+import { canPass, canTwist, createGame, inMovePhase, isLegalMove, movePiece, passTurn, pieceMoves, placePiece, playMove, resolvePlacement, twistBoard } from "@/lib/gomoku/engine";
 import { replayMoves } from "@/lib/gomoku/rules/record";
 import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
@@ -347,7 +347,8 @@ export async function appendMove(
       },
     });
   } else if (request.kind === MOVE_KINDS.pass) {
-    if (!mustPass(state)) return { ok: false, reason: "illegal" };
+    // Forced, or chosen at any point in Go: `canPass`, never `mustPass`. See why there.
+    if (!canPass(state)) return { ok: false, reason: "illegal" };
     next = passTurn(state);
     write = prisma.move.create({
       data: { gameId: id, number: next.moves.length, row: -1, col: -1, stone, kind: MOVE_KINDS.pass },
