@@ -3,6 +3,7 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { tiersFor } from "@/lib/gomoku/expert/experts";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
+import type { MixLeftOut, MixSizeCap } from "./botMix.types";
 
 /**
  * The computer players, as members.
@@ -178,6 +179,45 @@ export function botsFor(variant: RuleVariant): readonly BotMember[] {
 export function gamesPlayedBy(id: string): readonly RuleVariant[] {
   return RULE_VARIANT_LIST.filter((variant) => botsFor(variant).some((bot) => bot.id === id));
 }
+
+/**
+ * The mixed batch — `BOT_GAMES_MIX=1` on `pnpm bots:play`, planned by
+ * `botMix.ts`. How many games an unplayed game gets, and how many an
+ * undefeated computer player is sent to away from home.
+ */
+export const MIX_UNPLAYED_GAMES = { fewest: 1, most: 2 } as const;
+export const MIX_UNDEFEATED_GAMES = 3;
+
+/**
+ * Games the mixed batch will not plan, each with the reason it prints.
+ *
+ * A game here is one the computer players cannot be trusted to FINISH through
+ * the live path, found by playing it — a batch that writes a game nobody can
+ * end leaves an active row with two programs in it on the live site.
+ */
+export const MIX_LEFT_OUT: readonly MixLeftOut[] = [
+  /*
+   * Go is played to a finish in memory on every size, and cannot be finished
+   * on the live path. The computer players pass in Go by choice, as the game
+   * intends (`goTurns` in opponentTurns.ts, `canPass` in engine.ts) — but
+   * `appendMove` accepts a pass only when `mustPass` says one is forced, and
+   * `mustPass` answers false for Go on every position. So the first pass a
+   * computer chooses is refused as illegal, `playBotTurns` stops, and the game
+   * sits active for ever. Measured on a scratch database: Razryad v Kyu on 9×9,
+   * "stuck at 84 moves", and `appendMove(…, { kind: "pass" })` on that very
+   * position answered "illegal" while `canPass` answered true.
+   *
+   * Remove this row when a live Go game can be passed in.
+   */
+  {
+    variant: "go",
+    reason:
+      "a computer player's pass is refused by the live move path (appendMove accepts only a forced pass, and Go never forces one), so every game stalls at its first pass.",
+  },
+];
+
+/** Board sizes the mixed batch will not draw, because a game there is far too slow on one machine. */
+export const MIX_SIZE_CAPS: readonly MixSizeCap[] = [];
 
 /** Their ids, for the constant-time lookup the clock needs. */
 export const BOT_MEMBER_IDS: ReadonlySet<string> = new Set(
