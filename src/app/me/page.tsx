@@ -186,7 +186,11 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                 harmless while it is visibly a guess, and the control that
                 corrects it is the very next thing on the page.
               */}
-              <DayZoneNote timeZone={member?.timeZone ?? ""} country={member?.country ?? ""} />
+              <DayZoneNote
+                timeZone={member?.timeZone ?? ""}
+                country={member?.country ?? ""}
+                preferences={member?.preferences ?? null}
+              />
               <ProfileForm
                 initial={{
                   awayFrom: member?.awayFrom ? member.awayFrom.toISOString().slice(0, 10) : "",

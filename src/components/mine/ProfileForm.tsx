@@ -123,6 +123,20 @@ export function ProfileForm({
     setFields((current) => ({ ...current, ...patch }));
     setSaved(false);
   };
+  /*
+   * WHETHER THE MEMBER HAS TOUCHED THEIR TIME ZONE, and only then is it sent.
+   * The server records any zone this form sends as the member's own choice, and
+   * nothing automatic writes over a choice — so sending the field on every save
+   * would turn a guess from their country into a "choice" the moment they saved
+   * a new bio. Typing in the box or pressing "use this device's" is touching it,
+   * including when the value it lands on is the one already there: that is
+   * exactly the member who chose the zone we had guessed.
+   */
+  const [zoneTouched, setZoneTouched] = useState(false);
+  const setZone = (timeZone: string) => {
+    setZoneTouched(true);
+    set({ timeZone });
+  };
 
   /*
    * What the country select should be showing.
@@ -148,7 +162,8 @@ export function ProfileForm({
     const response = await fetch("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(fields),
+      // An untouched zone is left out — `undefined` is dropped by JSON — so it is not sent as a choice.
+      body: JSON.stringify(zoneTouched ? fields : { ...fields, timeZone: undefined }),
     });
     setBusy(false);
     if (!response.ok) {
@@ -162,7 +177,7 @@ export function ProfileForm({
 
   const guessZone = () => {
     try {
-      set({ timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      setZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
     } catch {
       // Leave it blank.
     }
@@ -248,7 +263,7 @@ export function ProfileForm({
             <input
               id="profile-zone"
               value={fields.timeZone}
-              onChange={(e) => set({ timeZone: e.target.value })}
+              onChange={(e) => setZone(e.target.value)}
               list="time-zones"
               placeholder="America/Vancouver"
               className={`${INPUT_CLASS} ${WIDTH.zone} min-w-0 font-mono`}

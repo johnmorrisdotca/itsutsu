@@ -1,3 +1,4 @@
+import { ZONE_SOURCE, ZONE_SOURCES } from "@/lib/auth/zoneSource.constants";
 import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
@@ -67,6 +68,27 @@ export const PREFERENCE_SPECS = {
    * `languagePreference.test.ts` holds the two apart on purpose.
    */
   language: { options: OFFERED_LOCALES, fallback: DEFAULT_LOCALE },
+
+  /*
+   * Where the member's time zone came from: chosen on their profile, reported
+   * by their browser, or guessed from their country at sign-in. Kept here
+   * because the zone alone could not say — see `zoneSource.constants.ts`.
+   *
+   * NOT A CHOICE ANYBODY MAKES DIRECTLY, and `/api/me` refuses it by name when
+   * it is asked for on its own: it is written only beside a zone, by the code
+   * that writes the zone, so the record cannot be told something the zone
+   * never did.
+   *
+   * THE FALLBACK IS NOT AN ANSWER, as with `language` above. A row with no
+   * source was written before sources existed, and "not known" is the only
+   * honest reading of it — so nothing reads this through `preferencesFrom`;
+   * `zoneSourceFrom` in `zoneGuess.ts` reads it through `cleanPreferences` and
+   * answers null. The fallback is `chosen` only because the registry needs one
+   * and, if anything ever did misread it, the harm of `chosen` is silence —
+   * nothing automatic would write — where `country` would let a browser
+   * overwrite a member's choice, which is the bug this row exists to close.
+   */
+  timeZoneFrom: { options: ZONE_SOURCES, fallback: ZONE_SOURCE.chosen },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */

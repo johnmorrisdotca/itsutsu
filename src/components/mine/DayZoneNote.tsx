@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ZONE_FROM, zoneStanding } from "@/lib/auth/zoneGuess";
+import { ZONE_FROM, zoneSourceFrom, zoneStanding } from "@/lib/auth/zoneGuess";
 
 /**
  * Which zone this member's days are counted in — said out loud, and said to be a
@@ -22,15 +22,24 @@ import { ZONE_FROM, zoneStanding } from "@/lib/auth/zoneGuess";
  * answer carry the one press that fixes them. **That is what makes a wrong guess
  * harmless**: Canada's guess is Toronto and John is in Vancouver, so the first
  * person to read this will be reading the case it gets wrong.
+ *
+ * Whether it is a guess is READ from where the zone came from, which the member's
+ * `preferences` column records — never re-derived here by comparing the zone
+ * with the country. A member who chose exactly the zone their country guesses is
+ * told it is theirs. Only a row from before sources were kept is still compared,
+ * and `zoneStanding` says why.
  */
 export function DayZoneNote({
   timeZone,
   country,
+  preferences,
 }: {
   timeZone: string | null;
   country: string | null;
+  /** The member's stored preferences, raw: the zone's source is kept there. */
+  preferences: unknown;
 }) {
-  const { zone, from } = zoneStanding({ stored: timeZone, country });
+  const { zone, from } = zoneStanding({ stored: timeZone, country, source: zoneSourceFrom(preferences) });
 
   if (from === ZONE_FROM.member) {
     return (
