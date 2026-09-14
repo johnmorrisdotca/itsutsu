@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { BOT_ALL_TIERS, BOT_PROFILES } from "../src/lib/gomoku/opponent.constants";
 import { shownName } from "../src/lib/rating/shownName";
 import { keptPreferences, putPreferencesBack } from "./members";
+import { suiteOperator } from "./operator";
 
 /**
  * The computer players are findable.
@@ -25,8 +26,8 @@ import { keptPreferences, putPreferencesBack } from "./members";
  * A cookie died with the browser context. An account does not, which is the
  * whole point of it — so "before anybody has said anything" is a state this
  * file has to ESTABLISH rather than assume, and it hands back what it found
- * when it is done, because the operator's account on a developer's machine is
- * John's own and his players page is not this suite's to narrow.
+ * when it is done, because the account is shared by every file signed in as
+ * the operator and what it held is not this file's to change.
  *
  * The remembering itself is `player-filters.spec.ts`'s subject, including
  * setting it, changing it and clearing it — three different tests, and they
@@ -34,10 +35,10 @@ import { keptPreferences, putPreferencesBack } from "./members";
  */
 
 /*
- * Whose account the page writes on: the same expression `auth.setup.ts` mints
- * the session these specs carry with.
+ * Whose account the page writes on: the suite's test operator, from the same
+ * source `auth.setup.ts` mints the session these specs carry with.
  */
-const OPERATOR = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
+const OPERATOR = suiteOperator().email;
 
 /**
  * One program that is always here. A name out of the constants rather than

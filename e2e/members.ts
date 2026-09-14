@@ -234,9 +234,10 @@ export async function phraseSetOn(email: string): Promise<Date | null> {
  *
  * CREATE ONLY, AND THAT IS THE WHOLE POINT — `seedMember` above upserts, and
  * its `update` would write a name, a country and a bio over whatever it found.
- * The operator's address on a developer's machine is a REAL account with a
- * real name on it, so an upsert here would quietly rewrite John's own profile
- * every time the suite ran.
+ * The suite's operator is a test identity now (e2e/operator.ts), but for
+ * months it was the owner's own address, and an upsert here would have quietly
+ * rewritten his profile every time the suite ran. A helper that repairs a
+ * missing row must not edit a present one, whoever that row turns out to be.
  *
  * Why it is needed at all: signing in as the operator does NOT make anybody a
  * member. `/api/session` with `kind: "admin"` mints a session and nothing

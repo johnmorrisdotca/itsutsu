@@ -3,7 +3,14 @@ import { mkdirSync, writeFileSync } from "node:fs";
 
 import { ADMIN_STATE, EMBED_TOKEN_FILE, PLAYER_STATE } from "./support";
 import { ensureMember } from "./members";
-import { clearAbandonedSeats, clearAnonymousGames, clearSeededMembers, clearSuiteGames } from "./tidy";
+import { suiteOperator } from "./operator";
+import {
+  clearAbandonedSeats,
+  clearAnonymousGames,
+  clearSeededMembers,
+  clearSeededRatings,
+  clearSuiteGames,
+} from "./tidy";
 
 /**
  * Signs in once and saves the cookies for every other spec.
@@ -13,7 +20,14 @@ import { clearAbandonedSeats, clearAnonymousGames, clearSeededMembers, clearSuit
  * breaking. `e2e/gate.spec.ts` is the exception: it deliberately runs with no
  * stored session.
  */
-const EMAIL = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
+
+/*
+ * Who the suite signs in as: a test identity, never a real person's account.
+ * Asked first, at load, so a misconfigured run stops with the fix in its
+ * message before the sweep below or anything else has touched the database —
+ * see e2e/operator.ts. It also loads .env, which the token below needs.
+ */
+const OPERATOR = suiteOperator();
 const TOKEN = process.env.ADMIN_TOKEN ?? "local-operator-token";
 
 /*
@@ -28,6 +42,8 @@ setup("clear what the last run left behind", async () => {
    * Games before members: a seat is a plain id with no foreign key behind it,
    * so clearing the members first would leave their games unattributable and
    * therefore unclearable — which is how eight thousand of them accumulated.
+   * Ratings before members for the same reason: a rating row is found by the
+   * member it is anchored to.
    */
   const games = await clearSuiteGames();
   if (games > 0) console.log(`Cleared ${games} game${games === 1 ? "" : "s"} a previous run left unfinished.`);
@@ -35,6 +51,8 @@ setup("clear what the last run left behind", async () => {
   if (loose > 0) console.log(`Cleared ${loose} game${loose === 1 ? "" : "s"} with nobody on either seat.`);
   const gone = await clearAbandonedSeats();
   if (gone > 0) console.log(`Cleared ${gone} abandoned open seat${gone === 1 ? "" : "s"}.`);
+  const ratings = await clearSeededRatings();
+  if (ratings > 0) console.log(`Cleared ${ratings} rating record${ratings === 1 ? "" : "s"} a previous run's members earned.`);
   const members = await clearSeededMembers();
   if (members > 0) console.log(`Cleared ${members} member${members === 1 ? "" : "s"} a previous run invented.`);
 });
@@ -52,22 +70,25 @@ setup("sign in as the operator, and mint a player invite", async ({ request, bas
    * taking a seat, reading your own record, being badged on your own row.
    *
    * It has always been true and never showed, because the shared development
-   * database has held a real row for the operator's address for months. The
-   * first run on a fresh database cost twenty-odd failures across files
-   * testing something else entirely, and the honest reading is that the suite
-   * was asserting things about a row no fixture had made.
+   * database held a real row for the address the suite used to sign in as —
+   * the owner's own. The first run on a fresh database cost twenty-odd
+   * failures across files testing something else entirely, and the honest
+   * reading is that the suite was asserting things about a row no fixture had
+   * made.
    *
-   * Create-only — see `ensureMember`. The operator's address on a developer's
-   * machine is a real account with a real name on it.
+   * The row is the suite's own now, stamped as such, so the sweep above took
+   * last run's away and this makes a fresh one: no profile, zone, preferences
+   * or record carried over from anything an earlier run did as the operator.
    */
-  await ensureMember({ email: EMAIL, name: "Operator" });
+  await ensureMember(OPERATOR);
 
   const signIn = await request.post("/api/session", {
-    data: { kind: "admin", email: EMAIL, token: TOKEN },
+    data: { kind: "admin", email: OPERATOR.email, token: TOKEN },
   });
   expect(
     signIn.ok(),
-    "operator sign-in failed — is ADMIN_EMAILS/ADMIN_TOKEN set in .env?",
+    `operator sign-in as ${OPERATOR.email} answered ${signIn.status()} — the dev server must list it in ` +
+      "ADMIN_EMAILS and share this .env's ADMIN_TOKEN; restart it after editing .env",
   ).toBe(true);
   await request.storageState({ path: ADMIN_STATE });
 

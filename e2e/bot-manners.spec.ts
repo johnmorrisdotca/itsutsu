@@ -1,10 +1,24 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext, type BrowserContext } from "@playwright/test";
 
 import { BOT_PHRASES } from "../src/lib/history/reactions.constants";
+import { memberContext, removeMember } from "./members";
 import { namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
 const under = namesPlayedUnder();
+
+/**
+ * This file's own player, rather than the suite's operator.
+ *
+ * A game against Dan is created rated in the computer pool, and resigning one
+ * records it — on the ladder row of whoever made the game. Made through the
+ * operator's session, that was the operator's row, which on a developer's
+ * machine was the site owner's real record: every run put two more games
+ * against a program on it. A member of its own makes the record this file's,
+ * and the name is handed to `under` so the rows it earned go with the file.
+ */
+const stamp = Date.now().toString(36);
+const PLAYER = { email: `manners-${stamp}@example.test`, name: under(`Manners${stamp}`) };
 
 /**
  * The computer players say hello, and thank you for the game.
@@ -16,7 +30,22 @@ const under = namesPlayedUnder();
  * opponent.
  */
 test.describe("a computer player's manners", () => {
-  async function playDan(request: import("@playwright/test").APIRequestContext) {
+  let player: BrowserContext;
+  /** Every request in this file is the player's, so nothing here is made as the operator. */
+  let request: APIRequestContext;
+
+  test.beforeAll(async ({ browser, baseURL }) => {
+    // An empty state, said out loud: the project would otherwise lay the operator's session underneath.
+    player = await memberContext(browser, baseURL!, PLAYER, { storageState: { cookies: [], origins: [] } });
+    request = player.request;
+  });
+
+  test.afterAll(async () => {
+    await player?.close();
+    await removeMember(PLAYER.email);
+  });
+
+  async function playDan() {
     const started = await request.post("/api/games/live", {
       data: { variant: "freestyle", size: 9, challengeId: "dan", moveTimeMs: null },
     });
@@ -24,10 +53,7 @@ test.describe("a computer player's manners", () => {
     return (await started.json()) as { id: string; blackToken: string };
   }
 
-  async function saidBy(
-    request: import("@playwright/test").APIRequestContext,
-    id: string,
-  ): Promise<string[]> {
+  async function saidBy(id: string): Promise<string[]> {
     const game = (await (await request.get(`/api/games/${id}`)).json()) as {
       reactions?: { stone: string; text: string | null }[];
     };
@@ -35,10 +61,7 @@ test.describe("a computer player's manners", () => {
   }
 
   /** The same, keeping the move each thing was said at. */
-  async function whenSaid(
-    request: import("@playwright/test").APIRequestContext,
-    id: string,
-  ): Promise<{ text: string; moveNumber: number | null }[]> {
+  async function whenSaid(id: string): Promise<{ text: string; moveNumber: number | null }[]> {
     const game = (await (await request.get(`/api/games/${id}`)).json()) as {
       reactions?: { stone: string; text: string | null; moveNumber: number | null }[];
     };
@@ -47,15 +70,15 @@ test.describe("a computer player's manners", () => {
       .map((r) => ({ text: r.text ?? "", moveNumber: r.moveNumber }));
   }
 
-  test("says hello before the first stone it plays, and only once", async ({ request }) => {
-    const game = await playDan(request);
+  test("says hello before the first stone it plays, and only once", async () => {
+    const game = await playDan();
 
     // Black opens; the request that plays it is the one that asks Dan to answer.
     const first = await request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
     });
     expect(first.status()).toBe(201);
-    expect(await saidBy(request, game.id)).toContain(BOT_PHRASES.hello.text);
+    expect(await saidBy(game.id)).toContain(BOT_PHRASES.hello.text);
 
     // Several more moves must not collect a row of hellos.
     for (const [row, col] of [[0, 0], [0, 1], [0, 2]]) {
@@ -63,17 +86,17 @@ test.describe("a computer player's manners", () => {
         data: { token: game.blackToken, row, col },
       });
     }
-    const hellos = (await saidBy(request, game.id)).filter((t) => t === BOT_PHRASES.hello.text);
+    const hellos = (await saidBy(game.id)).filter((t) => t === BOT_PHRASES.hello.text);
     expect(hellos, "Dan said hello more than once").toHaveLength(1);
   });
 
-  test("thanks you for the game when you give it up", async ({ request }) => {
+  test("thanks you for the game when you give it up", async () => {
     /*
      * A resignation is the case nothing else covers: the computer has no move
      * to make, so without asking it explicitly the one game a person is most
      * likely to want a civil word from ends in silence.
      */
-    const game = await playDan(request);
+    const game = await playDan();
     await request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
     });
@@ -82,10 +105,10 @@ test.describe("a computer player's manners", () => {
       data: { token: game.blackToken },
     });
     expect(gone.status()).toBe(200);
-    expect(await saidBy(request, game.id)).toContain(BOT_PHRASES.goodGame.text);
+    expect(await saidBy(game.id)).toContain(BOT_PHRASES.goodGame.text);
   });
 
-  test("says thank you at the move it ended on, not before the first stone", async ({ request }) => {
+  test("says thank you at the move it ended on, not before the first stone", async () => {
     /*
      * John found this on his own game: the record groups what was said by the
      * move it was said at, and the computer's goodbye was filed under BEFORE
@@ -96,13 +119,13 @@ test.describe("a computer player's manners", () => {
      * together, because the fix is only right if it moved one and not the
      * other.
      */
-    const game = await playDan(request);
+    const game = await playDan();
     await request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
     });
     await request.post(`/api/games/${game.id}/resign`, { data: { token: game.blackToken } });
 
-    const said = await whenSaid(request, game.id);
+    const said = await whenSaid(game.id);
     const hello = said.find((one) => one.text === BOT_PHRASES.hello.text);
     const bye = said.find((one) => one.text === BOT_PHRASES.goodGame.text);
 
@@ -116,10 +139,9 @@ test.describe("a computer player's manners", () => {
     expect(bye?.moveNumber ?? 0).toBeGreaterThan(0);
   });
 
-  test("says nothing at all in a game between two people", async ({ request }) => {
+  test("says nothing at all in a game between two people", async () => {
     // The phrases belong to the computer players; a game of two people is
     // theirs to fill or leave quiet.
-    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
       data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9, variant: "freestyle" },
     });

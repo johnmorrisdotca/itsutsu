@@ -1,7 +1,8 @@
 import { test } from "@playwright/test";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type Prisma } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
+import { playerKey } from "../src/lib/rating/playerKey";
 import { removePlayedUnder } from "./members";
 
 /**
@@ -52,6 +53,23 @@ export async function clearAbandonedSeats(): Promise<number> {
 const STALE_MS = 60 * 60 * 1000;
 
 /**
+ * A member this suite made, known by two marks together.
+ *
+ * `invitedWith: "playwright"` is stamped by e2e/members.ts and by nothing else,
+ * and the address is in a reserved example domain no real person can hold.
+ * NEITHER MARK IS ENOUGH ALONE, and the stamp has proved it: the owner's real
+ * row on this machine carries `invitedWith: "playwright"` — the suite used to
+ * sign in as his address, and `ensureMember` stamps a row it makes — so the
+ * stamp alone had every sweep here counting his games as the suite's. A
+ * computer player is refused outright as well.
+ */
+const SUITE_MEMBER: Prisma.MemberWhereInput = {
+  invitedWith: "playwright",
+  botTier: null,
+  OR: [{ email: { endsWith: "@example.com" } }, { email: { endsWith: "@example.test" } }],
+};
+
+/**
  * The games the suite has left behind, which nothing was clearing.
  *
  * `clearAbandonedSeats` takes away open seats with no moves. These are the
@@ -71,10 +89,10 @@ const STALE_MS = 60 * 60 * 1000;
  * this file has always kept is that sweeping by age alone would eventually
  * take away a game somebody was playing on the dev site, and that is still
  * true — so age is never the only test. A game is only a candidate if one of
- * its seats belongs to a member stamped `invitedWith: "playwright"`, which
- * e2e/members.ts writes and nothing else does. Age is the second mark, not
- * the first: it keeps this off a game being played right now, including the
- * suite's own while it runs.
+ * its seats belongs to a member this suite made — `SUITE_MEMBER`, both marks,
+ * because the stamp alone matched the owner's own row and would have taken his
+ * unfinished games. Age is the second mark, not the first: it keeps this off a
+ * game being played right now, including the suite's own while it runs.
  *
  * Order matters, and it is the reason this runs before `clearSeededMembers`.
  * Nothing has a foreign key to Member, so a seat is a plain id string: clear
@@ -88,7 +106,7 @@ export async function clearSuiteGames(): Promise<number> {
   const prisma = new PrismaClient();
   try {
     const theirs = await prisma.member.findMany({
-      where: { invitedWith: "playwright" },
+      where: SUITE_MEMBER,
       select: { id: true },
     });
     if (theirs.length === 0) return 0;
@@ -259,13 +277,12 @@ export function namesPlayedUnder(): (name: string) => string {
  * evening triaging five such failures and called all five noise; two of them
  * were a genuine bug that only a database this size could show.
  *
- * Narrow on purpose, and narrow twice over. `invitedWith` is stamped
- * "playwright" by e2e/members.ts and by nothing else, and the address must be
- * one of the reserved example domains, which no real person can hold. The
- * operator signs in through the session route rather than being seeded, so
- * they carry neither mark and can never be a candidate. A computer player is
- * refused outright as well — belt and braces, since one has already gone
- * missing from a listing once today.
+ * Narrow on purpose, and narrow twice over — see `SUITE_MEMBER`. The suite's
+ * operator is one of these ON PURPOSE: a test address, made by `ensureMember`
+ * with the same stamp, so each run starts from an operator with no profile,
+ * zone, preferences or record left by the last one. A real person's account
+ * cannot carry both marks, and e2e/operator.ts refuses to sign the suite in as
+ * anything that could.
  *
  * Nothing has a foreign key to Member — every reference to one is a plain
  * string — so this cannot cascade into anybody's game, and a finished game
@@ -277,13 +294,49 @@ export async function clearSeededMembers(): Promise<number> {
 
   const prisma = new PrismaClient();
   try {
-    const gone = await prisma.member.deleteMany({
-      where: {
-        invitedWith: "playwright",
-        botTier: null,
-        OR: [{ email: { endsWith: "@example.com" } }, { email: { endsWith: "@example.test" } }],
-      },
-    });
+    const gone = await prisma.member.deleteMany({ where: SUITE_MEMBER });
+    return gone.count;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * The rating records those members earned, which outlive the members.
+ *
+ * A finished rated game writes a `Player` row and a `PlayerVariantRating` row
+ * for each seat, keyed by the name played under and anchored by `memberId` to
+ * the account behind it. `namesPlayedUnder` takes them away where a spec TYPED
+ * the name. Where the name came from an account — a challenge between two
+ * seeded members, a game against a program, anything played as the operator —
+ * nothing did, and every run left some behind: 431 `Again …` and `Foe …` rows
+ * on this machine on 2026-09-13, one rated game each.
+ *
+ * By the anchor, not the name, so a rating goes with the suite member who
+ * earned it. Runs before `clearSeededMembers`, which removes the anchor. A row
+ * whose member an earlier run already removed is not found by this.
+ *
+ * **Never a key a member outside the suite also answers to.** `memberIdForName`
+ * anchors a row to the first member whose name folds to its key, whoever that
+ * is — so a spec that seeds a member called "John Morris" can put its own id on
+ * the owner's rating row. A name held outside the suite breaks the tie toward
+ * keeping the row.
+ */
+export async function clearSeededRatings(): Promise<number> {
+  process.loadEnvFile(".env");
+  if (!isLocalDatabase(process.env.DATABASE_URL)) return 0;
+
+  const prisma = new PrismaClient();
+  try {
+    const seeded = await prisma.member.findMany({ where: SUITE_MEMBER, select: { id: true } });
+    if (seeded.length === 0) return 0;
+    const ids = seeded.map((one) => one.id);
+    const others = await prisma.member.findMany({ where: { id: { notIn: ids } }, select: { name: true } });
+    const heldOutside = [...new Set(others.map((one) => playerKey(one.name)))];
+
+    const where = { memberId: { in: ids }, key: { notIn: heldOutside } };
+    await prisma.playerVariantRating.deleteMany({ where });
+    const gone = await prisma.player.deleteMany({ where });
     return gone.count;
   } finally {
     await prisma.$disconnect();
