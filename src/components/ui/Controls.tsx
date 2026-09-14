@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode, SelectHTMLAttributes } from "react";
+import { createContext, useContext, useId, type ReactNode, type SelectHTMLAttributes } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
@@ -45,6 +45,44 @@ export function Button({
   );
 }
 
+/**
+ * THE HINT IS A DESCRIPTION, NEVER PART OF THE NAME.
+ *
+ * A `<label>` names its control, and everything inside the label is the name.
+ * So a hint written inside one — which is where both of these used to put it —
+ * became part of the control's accessible name. Read off the rendered page
+ * before this change, one of the profile's two switches was called
+ * `checkbox "Show when I am here Listed on the players page while you are on
+ * the site. Off, and nobody sees you come and go."` — a screen reader
+ * announces that whole paragraph as the name of the control, and somebody
+ * driving the site by voice has to say it to reach the box.
+ *
+ * `aria-describedby` is the other half of the pair and exists for exactly
+ * this: the name is the label, the description is read after it, and a reader
+ * skipping through the controls hears the names alone. Nothing moves on
+ * screen — the hint sits under the control, styled as before — so this is a
+ * change to what the page SAYS about itself and to nothing a reader sees.
+ *
+ * The id is carried down in a context rather than written onto whatever
+ * `Field` was handed. `Field` takes its control as `children`, so it cannot
+ * put an attribute on it without reaching into somebody else's element —
+ * `cloneElement` would do it and would break the moment a caller wrapped the
+ * select in anything. Every caller today passes exactly one `<Select>`, which
+ * is in this module and can read the context itself; a caller passing its own
+ * `<select>` or `<input>` can take `aria-describedby` from `useFieldHint()`.
+ *
+ * `useId` rather than a counter or a random: the markup is rendered on the
+ * server and hydrated in the browser, and an id those two do not agree on is
+ * a mismatch that throws the server's tree away. `useId` is the one generator
+ * that promises the same answer in both.
+ */
+const FieldHint = createContext<string | undefined>(undefined);
+
+/** The id of the hint the surrounding `Field` is describing its control with. */
+export function useFieldHint(): string | undefined {
+  return useContext(FieldHint);
+}
+
 /** A labelled select. The label is the control, so the whole row is clickable. */
 export function Field({
   label,
@@ -55,28 +93,51 @@ export function Field({
   hint?: string;
   children: ReactNode;
 }) {
+  const hintId = useId();
   return (
-    <label className="flex flex-col gap-1">
+    /*
+      The label wraps the NAME and the control, and the hint is its sibling
+      rather than its last child. The column and its spacing are the label's
+      old ones, moved out one level, so the two lines sit exactly where they
+      did; what changed is that clicking the hint no longer focuses the
+      control, which is the price of the hint not being its name.
+    */
+    <div className="flex flex-col gap-1">
       {/*
         `min-w-0` on the row and on the label: without it a flex item refuses
         to shrink below its own content, so one long option in a select takes
         the control past the edge of the panel and the panel with it.
       */}
-      <span className="flex min-w-0 items-center justify-between gap-3 text-sm text-ink-soft">
+      <label className="flex min-w-0 items-center justify-between gap-3 text-sm text-ink-soft">
         <span className="min-w-0">{label}</span>
-        {children}
-      </span>
+        <FieldHint.Provider value={hint === undefined ? undefined : hintId}>
+          {children}
+        </FieldHint.Provider>
+      </label>
       {hint !== undefined ? (
-        <span className="text-xs leading-snug text-muted">
+        <span id={hintId} className="text-xs leading-snug text-muted">
           {hint}
         </span>
       ) : null}
-    </label>
+    </div>
   );
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={SELECT_CLASS} />;
+  const hintId = useFieldHint();
+  /*
+   * Both, where a caller describes its select by something of its own as
+   * well: `aria-describedby` is a list of ids, so the field's hint joins the
+   * caller's rather than replacing it.
+   */
+  const describedBy = [props["aria-describedby"], hintId].filter(Boolean).join(" ");
+  return (
+    <select
+      {...props}
+      aria-describedby={describedBy === "" ? undefined : describedBy}
+      className={SELECT_CLASS}
+    />
+  );
 }
 
 export function Toggle({
@@ -93,24 +154,31 @@ export function Toggle({
   /** Greyed and inert, but still shown, so a rule the game fixes stays visible. */
   disabled?: boolean;
 }) {
+  const hintId = useId();
+  /*
+   * The box is rendered here rather than handed in, so the description goes
+   * straight onto it — see `FieldHint` above for why the name is the label
+   * alone and the hint is read after it.
+   */
   return (
-    <label className={`flex flex-col gap-1 ${disabled ? "opacity-55" : ""}`}>
-      <span className="flex items-center justify-between gap-3 text-sm text-ink-soft">
+    <div className={`flex flex-col gap-1 ${disabled ? "opacity-55" : ""}`}>
+      <label className="flex items-center justify-between gap-3 text-sm text-ink-soft">
         {label}
         <input
           type="checkbox"
           checked={checked}
           disabled={disabled}
+          aria-describedby={hint === undefined ? undefined : hintId}
           onChange={(event) => onChange(event.target.checked)}
           className="size-4 accent-ink disabled:cursor-not-allowed"
         />
-      </span>
+      </label>
       {hint !== undefined ? (
-        <span className="text-xs leading-snug text-muted">
+        <span id={hintId} className="text-xs leading-snug text-muted">
           {hint}
         </span>
       ) : null}
-    </label>
+    </div>
   );
 }
 
