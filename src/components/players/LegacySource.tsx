@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Figures } from "@/components/ui/Figures";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { PlayedFigure, RecordFigure } from "./PlayerRecord";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { figuresForSource } from "@/lib/legacy/keptFigures";
@@ -117,7 +118,15 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
             {detail.map((game) => (
               <tr key={game.game} className="border-t border-rule">
                 <td className="py-1.5 pr-3 align-top">
-                  <GameName name={game.game} />
+                  {/*
+                    The board of the game this name is OURS for, through its
+                    alias — and nothing for a name with no game here, rather
+                    than the nearest board to it.
+                  */}
+                  <span className="flex items-center gap-2">
+                    <GameThumb name={game.game} size="table" />
+                    <GameName name={game.game} />
+                  </span>
                   <GameLog game={game} />
                 </td>
                 <ResultCells record={game} />
@@ -214,7 +223,10 @@ function HeadToHead({ source }: { source: LegacySource }) {
                     <tr key={`${game.date}-${index}`} className="border-t border-rule">
                       <td className="py-1.5 pr-3 text-muted">{game.date}</td>
                       <td className="py-1.5 pr-3">
-                        <GameName name={game.game} />
+                        <span className="flex items-center gap-2">
+                          <GameThumb name={game.game} size="table" />
+                          <GameName name={game.game} />
+                        </span>
                       </td>
                       <td className="py-1.5 pr-3 font-mono">{game.result}</td>
                     </tr>

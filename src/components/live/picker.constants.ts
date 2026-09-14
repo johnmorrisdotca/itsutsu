@@ -70,16 +70,19 @@ export const PICK_CARD = `${PICK_BASE} ${PICK_RESTING} ${PICK_CHOSEN}`;
  * this screen is used on an iPad, and "the buttons are too small" is a
  * complaint John has made about two other screens.
  *
- * NARROW, NOT SHORT. Everything tight here is horizontal — `px-1.5`, `gap-1`,
- * a 20px mark — and the 48px height is untouched, so what shrinks is never
- * the thing a finger has to hit. It is measured rather than tasteful: eleven
- * chips at their roomier size wrapped to THREE lines on an iPad, and the
- * third line was 54 of the 33 pixels between the Start button and the bottom
- * of an iPad in Safari. Two lines clears it. Anything that makes a chip wider
- * — a longer family name, a bigger mark — needs that measurement taken again.
+ * A TILE, THE MARK ABOVE THE NAME, since the mark is the family's full size.
+ * It was a chip — a 20px mark beside the name, everything tight horizontally so
+ * eleven fitted in two lines on an iPad. John then asked for the family icon
+ * "larger… and consistent between some pages", which puts `FAMILY_ICON_SIZE`
+ * (56px) here as on /games, and a 56px mark BESIDE a name makes each chip half
+ * again as wide and the row wraps a line deeper. Above the name it costs height
+ * instead of width: a fixed `w-24` tile holds the mark and a two-line name, so
+ * the row stays the same number of tiles across whatever the names say, and a
+ * finger's target grows rather than shrinks. It was measured again for this —
+ * at 400px, 768px and a desk — as the note that stood here asked.
  */
 export const PICK_CHIP =
-  "flex min-h-12 items-center gap-1 rounded-lg border px-1.5 py-1 text-xs transition-colors" +
+  "flex w-24 min-h-12 flex-col items-center justify-start gap-1 rounded-lg border px-1 py-1.5 text-center text-xs leading-tight transition-colors" +
   " outline-none focus-visible:ring-2 focus-visible:ring-moss" +
   " disabled:cursor-not-allowed disabled:opacity-50";
 

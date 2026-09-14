@@ -3,6 +3,7 @@ import Link from "next/link";
 import { GameReplay } from "@/components/history/GameReplay";
 import { appearanceFrom } from "@/components/board/appearance";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import type { Appearance } from "@/components/board/board.types";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { appearanceFor } from "@/lib/auth/members";
@@ -56,6 +57,7 @@ function KeptGame({
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`}>
       <p className="text-sm text-muted">
+        <GameThumb variant={game.variant} size="table" className="mr-2 inline-block align-middle" />
         {game.playedAt} · <GameName variant={game.variant} />, {game.size}×{game.size} · vs{" "}
         <Link href={`/players/${opponentSlug}`} className="font-medium text-ink-soft underline-offset-2 hover:underline">
           {opponentName}

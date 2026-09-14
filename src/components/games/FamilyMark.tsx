@@ -1,3 +1,5 @@
+import { FAMILY_ICON_SIZE } from "./games.constants";
+
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
 
@@ -155,8 +157,17 @@ const MARKS: Record<string, Mark> = {
 
 const PLAIN: Mark = { n: 5, stones: [{ r: 2, c: 2 }] };
 
-/** The family's mark as an inline SVG, sized by the class it is given. */
-export function FamilyMark({ family, className = "size-12" }: { family: string; className?: string }) {
+/**
+ * The family's mark as an inline SVG, at the one size a family's icon is drawn.
+ *
+ * It was sized by whatever class a page handed it, so four pages drew four
+ * sizes — 20px in a chip on /games/new, 40 on a game's page, 48 on /games, 64
+ * on the family's own — and John asked for one, larger. So the size is not the
+ * caller's: `FAMILY_ICON_SIZE`, from the group's constants, and
+ * `gamePictures.coverage.test.ts` refuses a size class at any call site.
+ * `className` is left for placement only.
+ */
+export function FamilyMark({ family, className = "" }: { family: string; className?: string }) {
   const mark = MARKS[family] ?? PLAIN;
   const { n } = mark;
   const cells = mark.cells === true;
@@ -168,8 +179,10 @@ export function FamilyMark({ family, className = "size-12" }: { family: string; 
   return (
     <svg
       viewBox={`${-pad} ${-pad} ${extent + pad * 2} ${extent + pad * 2}`}
-      className={className}
+      className={`${FAMILY_ICON_SIZE} shrink-0 ${className}`.trim()}
       aria-hidden="true"
+      data-testid="family-mark"
+      data-family={family}
     >
       <rect
         x={-pad}

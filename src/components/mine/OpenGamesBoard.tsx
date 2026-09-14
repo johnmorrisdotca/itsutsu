@@ -77,7 +77,7 @@ export function OpenGamesBoard({
               data-testid="open-game"
             >
               {/* Which game the seat is in, at a glance — the same board /play shows. */}
-              <GameThumb variant={game.variant} />
+              <GameThumb variant={game.variant} size="row" />
               <span className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
                 <span className="truncate font-medium">
                   <PlayerName

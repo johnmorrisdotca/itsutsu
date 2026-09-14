@@ -1,5 +1,6 @@
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { siblingsOf } from "@/lib/gomoku/families";
@@ -36,7 +37,7 @@ export function GameFamily({ variant }: { variant: RuleVariant }) {
         Also in this family <span className="font-mincho normal-case tracking-normal">同族</span>
       </h2>
       <div className="flex items-center gap-3">
-        <FamilyMark family={family.title} className="size-10 shrink-0 rounded-md" />
+        <FamilyMark family={family.title} />
         <span className="flex min-w-0 flex-col">
           <span className="flex items-baseline gap-2 text-sm font-semibold">
             {family.title}
@@ -49,12 +50,17 @@ export function GameFamily({ variant }: { variant: RuleVariant }) {
         Each row is the way into that game, not only the words of its name:
         the name is stretched over the row and the arrow says so, the same
         sign the catalogue's cards carry. Out to the panel's edge and back
-        in, so the shaded row under the pointer is a row and not a word.
+        in, so the shaded row under the pointer is a row and not a word. The
+        board beside the name is in flow under the stretched link, so it is
+        part of the row's target and not a stop of its own.
       */}
       <ul className="-mx-2 flex flex-col text-sm">
         {siblings.games.map((game) => (
           <li key={game} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md px-2 py-1`}>
-            <GameName variant={game} kanji stretched />
+            <span className="flex min-w-0 items-center gap-2">
+              <GameThumb variant={game} size="table" />
+              <GameName variant={game} kanji stretched />
+            </span>
             <CardArrow className="size-6" />
           </li>
         ))}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { GameStatsStrip } from "@/components/games/GameStats";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
@@ -20,8 +21,10 @@ import { CATALOGUE_LINK_CLASS } from "./games.constants";
 /**
  * Every game on the site, as plain text: the name, its name in its own script,
  * one line on what it is, what the other sites called it, and everywhere it
- * lives here. No cards, no pictures, no filter. The simplest view there is,
- * for whoever wants to read the whole list at once.
+ * lives here. No cards and no filter — the simplest view there is, for whoever
+ * wants to read the whole list at once. Each name still has its small board
+ * beside it, because a game named in a list shows its picture wherever it is
+ * listed (`gamePictures.coverage.test.ts`), and a plain list is a list.
  *
  * It was a page of its own, /games/all, linked from the colophon. That made
  * the plain list a different RESOURCE from the games rather than a different
@@ -55,8 +58,12 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
               const aliases = aliasesFor(variant);
               return (
                 <div key={variant} className="grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr]" data-testid={`every-game-${variant}`}>
-                  <dt className="font-medium">
-                    {/* Through GameName, so the name leads to the game like every other name on the site. */}
+                  <dt className="flex items-center gap-2 font-medium">
+                    {/*
+                      Its board at a table's size, beside the name that leads to
+                      the game like every other name on the site.
+                    */}
+                    <GameThumb variant={variant} size="table" />
                     <GameName variant={variant} kanji />
                   </dt>
                   <dd className="flex flex-col gap-0.5 text-sm">

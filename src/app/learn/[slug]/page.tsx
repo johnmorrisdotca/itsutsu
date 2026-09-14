@@ -3,6 +3,7 @@ import Link from "next/link";
 import { rulesPath } from "@/lib/gomoku/slugs";
 import { notFound } from "next/navigation";
 
+import { GameThumb } from "@/components/games/GameThumb";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -38,12 +39,14 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
           </h1>
           <p className="text-sm text-muted">{guide.summary}</p>
           <p className="flex flex-wrap gap-2 pt-1 text-xs">
+            {/* Each game the guide is about, with its board at a word's size, as every list naming games draws it. */}
             {guide.variants.map((variant) => (
               <Link
                 key={variant}
                 href={rulesPath(variant)}
-                className="rounded-full border border-rule px-2 py-0.5 underline-offset-2 hover:underline"
+                className="inline-flex items-center gap-1.5 rounded-full border border-rule py-0.5 pr-2 pl-0.5 underline-offset-2 hover:underline"
               >
+                <GameThumb variant={variant} size="chip" className="rounded-full" />
                 {RULE_VARIANT_DISPLAY[variant].label}
               </Link>
             ))}
