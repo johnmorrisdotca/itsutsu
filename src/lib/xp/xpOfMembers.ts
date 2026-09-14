@@ -21,11 +21,10 @@ import { xpShown, type StandingOf } from "./levelShown";
  *   same way `fetchPlayedTallies` counts a page of programs' games and
  *   `toDirectory` finds a page of members' ratings. A ladder page is twenty-five
  *   rows; this is one round trip, keyed on `Member.id`, selecting two columns.
- * - **THE RULE IS `xpShown`, NOT THE COLUMN.** A member's `xp` is read
- *   alongside `botTier`, so a program on the computer-pool standings comes back
- *   as `null` — a dash — and not as the nought it stores. That decision is made
- *   once, in `levelShown.ts`, and this hands the whole member to it rather than
- *   deciding again here.
+ * - **THE RULE IS `xpShown`, NOT THE COLUMN.** The member is handed to
+ *   `levelShown.ts` to decide what its total shows — a nought is a nought, a
+ *   total that is not a number is nothing — rather than this deciding again
+ *   here. A program is a member like anyone: its total is its total.
  * - **A NAME WITH NOBODY BEHIND IT IS ABSENT FROM THE MAP.** A rating row whose
  *   `memberId` is null was earned by a name typed into a game at one screen and
  *   never claimed, or by a kept record from another site. There is no total to
@@ -57,7 +56,7 @@ export async function xpByMemberId(
   if (ids.length === 0) return new Map();
   const members: MemberStanding[] = await prisma.member.findMany({
     where: { id: { in: ids } },
-    select: { id: true, xp: true, botTier: true },
+    select: { id: true, xp: true },
   });
   return standingsOf(members);
 }

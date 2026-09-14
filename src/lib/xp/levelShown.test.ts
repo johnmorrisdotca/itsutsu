@@ -30,33 +30,18 @@ describe("the standing worth printing beside a name", () => {
     expect(xpShown({ xp: 0 })).toBe(0);
   });
 
-  it("says nothing at all for a program, which is not on this ladder", () => {
+  it("puts a program where its total puts it, like anyone — John: bots have XP", () => {
     /*
-     * `awardXp` refuses a program by name and the backfill skips them, so every
-     * bot row carries exactly nought for ever. Under the old rule that fell out
-     * of nought being silence; now nought is level 1, so it is stated. `Lv 1`
-     * beside Meijin, which has played hundreds of games and can never climb a
-     * rung, would be a badge about a thing the ladder is not about — and
-     * `xpBoard.ts` keeps `botTier: null` off the leaderboard for that reason.
-     *
-     * BOTH halves refuse, which is the whole reason the two live in one module:
-     * a rung with no total beside it, or a `0` with no rung, is one fact
-     * disagreeing with itself inside a single row.
+     * This used to answer null for a member with an engine name, and `awardXp`
+     * refused to pay one. John, on the live site: "i still don't see Levels
+     * for all equally and bots don't have XP". A program earns from its games
+     * and stands on the same ladder; there is no second question here about
+     * WHO, so the type no longer carries an engine name at all.
      */
-    expect(levelShown({ xp: 0, botTier: "kyu" })).toBeNull();
-    expect(xpShown({ xp: 0, botTier: "kyu" })).toBeNull();
-    // Even if one ever did earn a point, it is still not a member this is about.
-    expect(levelShown({ xp: 5_000, botTier: "meijin" })).toBeNull();
-    expect(xpShown({ xp: 5_000, botTier: "meijin" })).toBeNull();
-  });
-
-  it("treats a person as a person however their engine column is spelled", () => {
-    // Null is what the database holds for somebody who is not a program, and an
-    // empty string is what a caller gets from `entry.botTier ?? ""`. Neither is
-    // an engine, so neither may cost a person their level.
-    expect(levelShown({ xp: 0, botTier: null })).toBe(1);
-    expect(levelShown({ xp: 0, botTier: "" })).toBe(1);
-    expect(xpShown({ xp: 0, botTier: "" })).toBe(0);
+    expect(levelShown({ xp: 0 })).toBe(1);
+    expect(xpShown({ xp: 0 })).toBe(0);
+    expect(levelShown({ xp: 5_000 })).toBeGreaterThan(1);
+    expect(xpShown({ xp: 5_000 })).toBe(5_000);
   });
 
   it("says nothing for a total that is not a number, rather than level 1", () => {

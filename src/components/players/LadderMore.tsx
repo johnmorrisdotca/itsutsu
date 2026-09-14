@@ -46,9 +46,8 @@ function ladderRow(player: LadderEntry): RecordTableRow {
     /*
       THE LEVEL BESIDE THE NAME AND THE TOTAL IN ITS COLUMN, both from the one
       figure `fetchLadderPage` reads for the page — one query over the page's
-      member ids, never one per row, and already `xpShown`: a program's is null
-      before it reaches here, so this client component never needs a member's
-      `botTier` to draw a dash. The pages after the first arrive with the same
+      member ids, never one per row, and already `xpShown` — a program's is its
+      total like anyone's. The pages after the first arrive with the same
       figure through `/api/ladder`, so a row looks the same however it came.
 
       This table declined the column for two releases — a `Player` row is a
@@ -67,8 +66,8 @@ function ladderRow(player: LadderEntry): RecordTableRow {
     /*
       A NAME WITH NOBODY BEHIND IT IS THE DASH THE MEMBERS LIST CANNOT HAVE. A
       name typed into a game at one screen earns a rating row and no member, so
-      its cell is a dash — and the reason on hover has to be this one, since the
-      cell's own default says "a program", which would be wrong about it.
+      its cell is a dash, and the reason on hover says so. It is the one dash
+      left on the site now that a program's total is its total.
     */
     xpBlankBecause: player.memberId === null ? XP_BLANK_BECAUSE.unclaimedName : undefined,
   };

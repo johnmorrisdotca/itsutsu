@@ -154,8 +154,8 @@ export const XP_SKIP_REASONS = {
   alreadyEarned: "already-earned",
   /** The day's allowance for this type is full. */
   dailyAllowance: "daily-allowance",
-  /** A computer player. They play, they do not climb. */
-  notAPerson: "not-a-person",
+  /** An award for an act a program never performs, asked for a program. See XP_PEOPLE_ONLY. */
+  peopleOnly: "people-only",
   /** No member row answers to that id — the operator, or an unbound seat. */
   noSuchMember: "no-such-member",
 } as const;

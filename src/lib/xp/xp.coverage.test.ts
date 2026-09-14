@@ -13,6 +13,7 @@ import {
   winStreakMilestoneFor,
   xpEventCopy,
 } from "./xp.constants";
+import { XP_PEOPLE_ONLY, earnableByProgram } from "./xp.constants";
 import type { XpEventType } from "./xp.types";
 import { toToasts } from "./xpFlash";
 
@@ -383,5 +384,60 @@ describe("a stored flash, read back", () => {
     expect(toToasts({ at: "x", awards: "not an array" })).toEqual([]);
     expect(toToasts({ at: "x", awards: [null, 7, "no"] })).toEqual([]);
     expect(toToasts("a string")).toEqual([]);
+  });
+});
+
+/**
+ * WHO MAY EARN WHAT. John: the programs earn from their games like anyone, and
+ * "people will have to earn XP through other means which the Robots don't do."
+ * So every award is on one side of the line: for an act only a person performs,
+ * or a fact about a finished game. A new award has to be sorted the day it is
+ * priced, and this is what makes forgetting fail.
+ */
+describe("every award is either people-only or a game result", () => {
+  const XP_EVENT_TYPES = Object.keys(XP_EVENT_SPECS) as XpEventType[];
+  const GAME_RESULTS = [
+    XP_EVENTS.firstGameEver,
+    XP_EVENTS.gameFinished,
+    XP_EVENTS.gameWon,
+    XP_EVENTS.wonVsPerson,
+    XP_EVENTS.revengeWin,
+    XP_EVENTS.longGame,
+    XP_EVENTS.comeback,
+    XP_EVENTS.winStreak3,
+    XP_EVENTS.winStreak5,
+    XP_EVENTS.winStreak10,
+    XP_EVENTS.upsetWin,
+    XP_EVENTS.bigUpsetWin,
+    XP_EVENTS.giantKilled,
+    XP_EVENTS.firstOfVariant,
+    XP_EVENTS.firstWinAtVariant,
+    XP_EVENTS.firstOfFamily,
+    XP_EVENTS.everyFamilyPlayed,
+    XP_EVENTS.everyVariantPlayed,
+    XP_EVENTS.everyVariantWonInFamily,
+    XP_EVENTS.gradeBeaten,
+    XP_EVENTS.everyGradeBeaten,
+    XP_EVENTS.specialistBeaten,
+    XP_EVENTS.weekendGame,
+  ] as const;
+
+  it("sorts every priced award onto exactly one side", () => {
+    for (const type of XP_EVENT_TYPES) {
+      const gameResult = (GAME_RESULTS as readonly string[]).includes(type);
+      expect(
+        XP_PEOPLE_ONLY.has(type) !== gameResult,
+        `${type} is ${XP_PEOPLE_ONLY.has(type) && gameResult ? "on both sides" : "on neither side"} of the people-only line`,
+      ).toBe(true);
+    }
+  });
+
+  it("names nothing that is not a priced award", () => {
+    for (const type of XP_PEOPLE_ONLY) expect(XP_EVENT_TYPES).toContain(type);
+  });
+
+  it("holds a program to the game results and a person to everything", () => {
+    for (const type of GAME_RESULTS) expect(earnableByProgram(type)).toBe(true);
+    for (const type of XP_PEOPLE_ONLY) expect(earnableByProgram(type)).toBe(false);
   });
 });

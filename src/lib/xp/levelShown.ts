@@ -35,27 +35,23 @@ import { xpLevelFor } from "./xpCurve";
  * optional and whose `undefined` means "nobody asked" and draws nothing.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * A PROGRAM HAS NO STANDING, AND THAT IS A RULE ABOUT WHO RATHER THAN WHAT
+ * A PROGRAM STANDS WHERE ITS TOTAL PUTS IT, LIKE ANYONE
  * ─────────────────────────────────────────────────────────────────────────
  *
- * `awardXp` refuses a program by name — `if (member.botTier !== null) return
- * refused(awards, XP_SKIP_REASONS.notAPerson, member.xp)` — and the backfill
- * skips them the same way, so every bot row on every database carries exactly
- * nought and always will. Under the old rule that fell out for free: nought was
- * silence, so the programs were silent without anybody naming them.
+ * This module used to answer `null` for a member with an engine name, and
+ * `awardXp` refused to pay one, so every computer player read "–" on every
+ * table and its page drew no standing at all. That was a reading of John's
+ * "Everyone is level 1 if 0xp." as "everyone who is a person", and he has
+ * since said the opposite, looking at the live site:
  *
- * It no longer falls out, so it is stated. `Lv 1` beside Meijin, which has
- * played hundreds of games and cannot climb a rung however many more it plays,
- * would be a badge about a thing that is not on the ladder at all — and
- * `xpBoard.ts` already keeps `botTier: null` out of the leaderboard for exactly
- * this reason. Here rather than in each table, because "which members have a
- * standing" is one question and three tables asking it separately would be
- * three chances to answer it differently.
+ *   "i still don't see Levels for all equally and bots don't have XP"
  *
- * It is deliberately NOT "programs earn nothing, so they show nothing": that was
- * the old rule's phrasing and it is now indistinguishable from a person who has
- * earned nothing. This says the thing that is actually true — a program is not a
- * member the ladder is about.
+ * So there is no second question here about WHO. A program earns under the
+ * same rules as a person, from the same finished games, and stands on the same
+ * ladder at the rung its total puts it on — Level 1 at nought, like anyone. The
+ * one dash left on the site is a name nobody has claimed, which has no member
+ * behind it to have earned anything; that is said by the table that holds such
+ * rows, not here.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * AND A TOTAL THAT IS NOT A NUMBER IS STILL SILENCE
@@ -71,8 +67,6 @@ import { xpLevelFor } from "./xpCurve";
 /** Enough of a member to decide whether they have a standing, and what it is. */
 export type StandingOf = {
   xp: number;
-  /** The engine that plays this member's seats, when a program does. */
-  botTier?: string | null;
 };
 
 /**
@@ -83,10 +77,7 @@ export type StandingOf = {
  * A row with `Lv 1` and a dash for its total, or a `0` with no rung beside it,
  * would be two halves of one fact contradicting each other in one row.
  */
-function hasStanding({ xp, botTier }: StandingOf): boolean {
-  // A non-empty engine name is a program. `Boolean(member.botTier)` is the same
-  // test the player page makes, so "is this a program" reads one way everywhere.
-  if (typeof botTier === "string" && botTier !== "") return false;
+function hasStanding({ xp }: StandingOf): boolean {
   return Number.isFinite(xp) && xp >= 0;
 }
 

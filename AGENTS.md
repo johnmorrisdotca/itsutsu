@@ -266,38 +266,66 @@ had noticed, including the rules page itself — where every game name on this
 site led at the time, before a game became one address — which reached the
 board and Wikipedia and had no way to the record or the ladder.
 
-### Every Table Of People Shows XP
+### Every Table Of Players Shows XP, And The Programs Are Players
 
 John, 2026-09-14, looking at a site where the members list had an XP column
 and nothing else did: **"Make sure all STATS tables actually show the userXP
 in them too… after the Rating column… This means everywhere in the site. why
 are some pages now showing it???"** It was the third time a column had been
 added to one table and not the rest, and nothing failed, because nothing
-knew that "a table of people's records" was a kind of thing with a rule.
+knew that "a table of players' records" was a kind of thing with a rule.
+
+Then, at 0.178.0, looking at a site where every program read "–" and drew no
+level: **"i still don't see Levels for all equally and bots don't have XP"**.
+That dash was a reading of his earlier "Everyone is level 1 if 0xp." as
+"everyone who is a person", carried through the awarder, the standing rule,
+the board, the rungs and the backfill. He has said the opposite, and added
+how the two kinds of player differ: **"people will have to earn XP through
+other means which the Robots don't do."**
 
 The rule, and where it is kept:
 
+- **A program earns from its games under the same rules as a person, and
+  stands where its total puts it** — Level 1 at nought, like anyone. `awardXp`
+  pays it from the same game-end writes; `levelShown` takes a total and
+  nothing about what kind of member holds it; the board (`xpBoard.ts`) and
+  the rungs (`levelMembers.ts`) list programs among everybody; the backfill
+  replays their finished games too.
+- **What only a person can earn is stated, in `XP_PEOPLE_ONLY`
+  (`src/lib/xp/xp.constants.ts`)**: joined, dailyVisit, the four day-streak
+  milestones, backFromAway, firstBuddy, buddyAdded, wonVsBuddy,
+  challengeSent, challengeAnswered, rematchPlayed, forkPlayed, timeGiven,
+  applauseGiven, nameSet, countrySet, bioSet, wordsSet, seatClaimedElsewhere
+  — each for an act a program never performs. `awardXp` holds these back from
+  a member with an engine name and says why (`peopleOnly`), and the backfill
+  plans none for one, so nothing reaches a program through a path that forgot
+  to ask. Everything else — a finish, a win, a first, a streak, an upset, a
+  grade beaten, a family completed, a weekend game — is a fact about a
+  finished game, and a program earns it. Not a place to invent new
+  people-only awards: that is John's to ask for.
 - **`RecordTable` draws the XP column unless a caller says `xp: false`**, and
-  the only honest reason to is that the rows are not people — a person's
+  the only honest reason to is that the rows are not players — a person's
   by-game breakdown, a per-site total. The column sits directly after
-  Rating, where John put it. A program's cell is "–", never 0 and never
-  "Lv 1": a dash says nothing is there, where a 0 would claim a fact. A
-  person with nought is Level 1 with a 0.
+  Rating, where John put it. The one dash left is a name nobody has claimed,
+  which has no member behind it to have earned anything.
 - **A table built from rating rows reads the total in one query per page**,
   never one per row: `xpByMemberId` in `src/lib/xp/xpOfMembers.ts`, over the
-  page's member ids, already decided by `xpShown`. A name nobody has claimed
-  is a dash that says so on hover.
-- **A person's page opens with their name, their record, and their standing**
+  page's member ids, already decided by `xpShown`.
+- **A player's page opens with their name, their record, and their standing**
   — level number and name, the total, the distance to the next rung — through
-  `MemberLevel`. A program's page shows no block at all, not an empty one.
+  `MemberLevel`, for a program as for a person.
 
 **Enforced by `src/components/players/xpColumn.coverage.test.ts`**, which
 runs in `pnpm test:unit` and fails the build when a `RecordTable` switches
 the column off without being named there with its reason, when a table that
 draws the column never fills it, when a hand-built table with a Rating
-heading has no XP heading after it, or when the person's page draws the
-standing anywhere but under the figures. It reads the source, like the
-dead-end gate, and every exception is a line with a reason beside it.
+heading has no XP heading after it, when the player's page draws the
+standing anywhere but under the figures, or when the standing rule, the
+board, the rungs or the awarder keep programs out again. **And by
+`src/lib/xp/xp.coverage.test.ts`**, which holds every priced award to one
+side of the people-only line, so a new award has to be sorted the day it is
+priced. Both read the source, like the dead-end gate, and every exception is
+a line with a reason beside it.
 
 ### Show The Data, Not The Way To It
 

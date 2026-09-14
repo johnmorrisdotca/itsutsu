@@ -108,10 +108,9 @@ export type RecordTableRow = {
    * folded name. It is drawn as a mark in the subject cell and NOT a column; the
    * head of `RecordTable.tsx` says why.
    *
-   * A PROGRAM HAS NONE, and that is the rule's answer rather than a caller's:
-   * `awardXp` refuses a bot by name, so it can never climb a rung. Since John
-   * settled that nought is level 1, that is a thing `levelShown` has to be told —
-   * it no longer falls out of nought being silence.
+   * A PROGRAM HAS ONE LIKE ANYONE: it earns from its games under the same
+   * rules as a person and stands where its total puts it — John's "i still
+   * don't see Levels for all equally and bots don't have XP".
    */
   level?: number | null;
   /**
@@ -121,16 +120,15 @@ export type RecordTableRow = {
    * `xpShown(member)` is what decides, and it is `levelShown`'s twin for a
    * reason: the rung and the total are one fact seen twice, so a row must not be
    * able to carry one without the other. NOUGHT IS A NUMBER AND PRINTS AS ONE; a
-   * dash here means "no total to be had", which is a program or a name with no
-   * member behind it — never a person who has earned nothing.
+   * dash here means "no total to be had", which is a name with no member behind
+   * it — never a member who has earned nothing, person or program.
    */
   xp?: number | null;
   /**
-   * Why the XP cell is a dash, where the row knows a reason other than "this is
-   * a program" — the ladder's rows are keyed by a folded name, and a name nobody
-   * has claimed has no member to have earned anything. The cell says the
-   * program's reason by default, because that is the dash a reader meets most;
-   * a row with a different reason has to say so, or the hover would be wrong.
+   * Why the XP cell is a dash. There is one reason left on the site — a name
+   * nobody has claimed has no member to have earned anything — and the cell
+   * says it by default; the field stays so a table that knows a reason can
+   * say it on the row rather than trust the default.
    */
   xpBlankBecause?: string;
   /**

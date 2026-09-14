@@ -109,20 +109,22 @@ export async function seedXpMember(
  * `xp` is left at nought on purpose — what every program stores — because the
  * assertion is that the cell reads "–" and not "0" whatever the column holds.
  */
-export async function seedProgram(label: string): Promise<SeededXpMember> {
+export async function seedProgram(label: string, level = 1): Promise<SeededXpMember> {
   loadEnv();
   const prisma = new PrismaClient();
   const email = xpEmail(`bot-${label}`);
   const id = makeMemberId();
   const name = `Xp-bot-${label}-${Math.floor(Math.random() * 1e6)}`;
+  // A program stands on the ladder like anyone, so a spec can put one on a known rung.
+  const xp = xpForLevel(level);
   try {
     await prisma.member.create({
-      data: { email, id, name, picture: "", invitedWith: "playwright", botTier: "xp-spec-program" },
+      data: { email, id, name, picture: "", invitedWith: "playwright", botTier: "xp-spec-program", xp, xpLastAt: new Date() },
     });
   } finally {
     await prisma.$disconnect();
   }
-  return { email, id, name, xp: 0 };
+  return { email, id, name, xp };
 }
 
 /** Takes back exactly the rows a spec made, by the addresses it was given. */

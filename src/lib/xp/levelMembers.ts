@@ -22,12 +22,12 @@ import { levelXpRange } from "./levelLadder";
  * the reason a level is derived from the total rather than stored beside it:
  * there is nothing to migrate and nothing to keep in step.
  *
- * `botTier: null` EXCLUDES THE COMPUTER PLAYERS, in this query and not only in
- * `awardXp`. `XP_DESIGN.md` argues both places: the awarder is where it is TRUE
- * that a program does not climb, and a list is where it would be VISIBLE. Seven
- * of the eleven members on production are programs, all of them on level 1 at
- * zero XP, so without this the first rung of the ladder would be a page about
- * the bots.
+ * THE COMPUTER PLAYERS ARE ON A RUNG LIKE ANYONE. This query used to keep
+ * `botTier: null`, so that the first rung was not a page about seven programs
+ * at nought. John reversed that — "i still don't see Levels for all equally and
+ * bots don't have XP" — and a program now earns from its games and stands where
+ * its total puts it, Level 1 at nought like a person. Narrowing a rung to people
+ * or to programs is the page's filter to offer, not this query's to decide.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * CAPPED, AND THE CAP IS PART OF THE ANSWER
@@ -75,7 +75,7 @@ export async function membersAtLevel(level: number): Promise<LevelRoll> {
   const xp: Prisma.IntFilter = range.to === null ? { gte: range.from } : { gte: range.from, lt: range.to };
 
   const read = await prisma.member.findMany({
-    where: { botTier: null, xp },
+    where: { xp },
     select: { id: true, name: true, xp: true },
     /*
      * Highest first, so whoever is nearest the next rung is at the top — the same

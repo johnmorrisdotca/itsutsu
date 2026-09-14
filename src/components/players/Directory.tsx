@@ -165,10 +165,11 @@ function directoryRow(
      * member row this list already read — `xp` has been on `DirectoryEntry`
      * since the badge, so the column costs no read at all.
      *
-     * `levelShown` and `xpShown` decide together, and a person with nought is
-     * Level 1 with a total of 0: John's "Everyone is level 1 if 0xp." A program
-     * gets neither — no badge and a dash — because a program is not on this
-     * ladder, which is said once in `levelShown.ts` rather than here.
+     * `levelShown` and `xpShown` decide together, and anyone with nought is
+     * Level 1 with a total of 0: John's "Everyone is level 1 if 0xp." — and
+     * everyone includes the programs, since he said so looking at a list that
+     * dashed them: "i still don't see Levels for all equally and bots don't
+     * have XP". Said once in `levelShown.ts` rather than here.
      */
     level: levelShown(entry),
     xp: xpShown(entry),

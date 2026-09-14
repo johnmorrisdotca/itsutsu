@@ -149,7 +149,7 @@ function RatingCell({ rating }: { rating: ShownRating | null }) {
 export function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?: string }) {
   if (xp === null) {
     return (
-      <td className={CELL} title={blankBecause ?? XP_BLANK_BECAUSE.program} data-testid="record-xp">
+      <td className={CELL} title={blankBecause ?? XP_BLANK_BECAUSE.unclaimedName} data-testid="record-xp">
         –
       </td>
     );

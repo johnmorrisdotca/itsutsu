@@ -27,11 +27,12 @@ import { XP_BOARD_SORT_SPEC, type XpBoardSortField } from "./xpBoard.sort";
  * WHO IS ON IT
  * ─────────────────────────────────────────────────────────────────────────
  *
- * **Programs are excluded on `botTier: null`, in this query and not only in
- * `awardXp`.** Two places, because the awarder is where it is TRUE that a
- * program does not climb and the board is where it would be VISIBLE. Seven of
- * the eleven members on production are programs; without this the board would
- * open on a row of bots.
+ * **Programs are on it, like anyone.** This query used to keep `botTier: null`,
+ * with the awarder refusing programs at the other end, so that the board could
+ * not open on a row of bots. John reversed that — "i still don't see Levels
+ * for all equally and bots don't have XP" — so a program earns from its games
+ * and stands where its total puts it. Whether a reader wants people, programs
+ * or everyone is the page's filter to offer, never this query's to decide.
  *
  * **And `xp > 0`, which is the same judgement `ladder.ts` makes about an unplayed
  * rating.** A member who has never earned a point has a true total of nought and
@@ -81,7 +82,7 @@ export type XpBoardPage = PagedEnvelope<XpBoardRow> & {
  * `xp: { gt: 0 }` is a range on the indexed column, so the filter is answered by
  * `Member_xp_idx` rather than in spite of it.
  */
-const ON_THE_BOARD: Prisma.MemberWhereInput = { botTier: null, xp: { gt: 0 } };
+const ON_THE_BOARD: Prisma.MemberWhereInput = { xp: { gt: 0 } };
 
 /** The sort and the page the address asked for, or a refusal naming the column. */
 export function readXpBoardPaging(
@@ -156,7 +157,7 @@ export async function fetchXpBoardPage({
 export async function xpRankOf(xp: number): Promise<number | null> {
   if (xp <= 0) return null;
   const above = await prisma.member.count({
-    where: { botTier: null, xp: { gt: xp } },
+    where: { xp: { gt: xp } },
   });
   return above + 1;
 }

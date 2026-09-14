@@ -294,17 +294,37 @@ describe("a finished game, paid once", () => {
     expect(members.get("a")?.xp).toBe(owed);
   });
 
-  it("asks nothing for a computer player, however many games it finishes", async () => {
-    // The bots are real member rows with real streak columns, and they play
-    // constantly. `awardXp` refuses them at the top; this is the same refusal
-    // seen from the writer, which is where it would otherwise be invisible.
+  it("pays a computer player from the writer like anyone — John: bots have XP", async () => {
+    // This used to assert the writer paid a program nothing. John, on the live
+    // site: "i still don't see Levels for all equally and bots don't have XP".
+    // A program beating a person is paid the finish, the win and the win over
+    // a person, from the same game-end write that pays the person.
     member("person");
     member("meijin", { botTier: "meijin" });
 
     await recordPlayed(finished({ black: "meijin", white: "person", winner: "black" }));
 
-    expect(ledger("meijin")).toEqual([]);
+    expect(ledger("meijin")).toContain("gameWon g1");
+    expect(ledger("meijin")).toContain("wonVsPerson g1");
     expect(ledger("person").length).toBeGreaterThan(0);
+  });
+
+  it("pays a program that beats another program the grade it beat, and never the grade it is", async () => {
+    // A program beating a program is a normal win under the same rules, and
+    // gradeBeaten is keyed on the beaten grade — so Meijin over Kyu is paid
+    // "kyu", and a game a program plays against itself pays no grade at all:
+    // `otherSeat` answers null when both seats are one member.
+    member("meijin", { botTier: "meijin" });
+    member("kyu", { botTier: "kyu" });
+
+    await recordPlayed(finished({ black: "meijin", white: "kyu", winner: "black" }));
+    await recordPlayed(finished({ black: "meijin", white: "meijin", winner: "black", id: "g2" }));
+
+    expect(ledger("meijin")).toContain("gradeBeaten kyu");
+    expect(ledger("meijin")).not.toContain("gradeBeaten meijin");
+    expect(ledger("meijin").filter((one) => one.startsWith("gradeBeaten"))).toEqual(["gradeBeaten kyu"]);
+    // And the program beaten is paid the finish, like anyone who lost.
+    expect(ledger("kyu")).toContain("gameFinished g1");
   });
 });
 

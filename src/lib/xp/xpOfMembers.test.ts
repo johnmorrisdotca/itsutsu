@@ -11,23 +11,20 @@ import { standingsOf } from "./xpOfMembers";
 describe("standingsOf", () => {
   it("answers a person's total, nought included, keyed by their id", () => {
     const map = standingsOf([
-      { id: "a", xp: 1_275, botTier: null },
-      { id: "b", xp: 0, botTier: null },
+      { id: "a", xp: 1_275 },
+      { id: "b", xp: 0 },
     ]);
     expect(map.get("a")).toBe(1_275);
     // Nought is a number and prints as one — John: "Everyone is level 1 if 0xp."
     expect(map.get("b")).toBe(0);
   });
 
-  it("answers null for a program, whatever its row stores", () => {
-    /*
-     * A program's cell is "–", never 0 and never "Lv 1". The rule is `xpShown`'s
-     * and this must hand the whole member to it, `botTier` included: a map built
-     * from the `xp` column alone would print a nought for Meijin.
-     */
-    const map = standingsOf([{ id: "bot", xp: 0, botTier: "dan" }]);
+  it("answers a program's total like anyone's — a nought is a nought", () => {
+    // A program's cell used to be "–" whatever its row stored. John: "bots
+    // don't have XP" — they do now, from their games, and the map says so.
+    const map = standingsOf([{ id: "bot", xp: 0 }]);
     expect(map.has("bot")).toBe(true);
-    expect(map.get("bot")).toBeNull();
+    expect(map.get("bot")).toBe(0);
   });
 
   it("holds nothing for a member it was not handed", () => {
