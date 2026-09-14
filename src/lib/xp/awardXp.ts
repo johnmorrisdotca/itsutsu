@@ -85,16 +85,23 @@ export async function awardXp({
   memberId,
   awards,
   now = new Date(),
+  about,
 }: {
   memberId: string | null | undefined;
   awards: readonly XpAward[];
   now?: Date;
+  /**
+   * The game this batch was paid for, when it was paid for one — kept on the
+   * flash, so the result card over that game can say this batch's XP in place
+   * of the toasts that would otherwise stack over the board it covers.
+   */
+  about?: string;
 }): Promise<XpAwardResult> {
   const nothing: XpAwardResult = { awards: [], points: 0, xp: 0, crossed: null };
   if (!memberId || awards.length === 0) return nothing;
 
   try {
-    return await payAwards({ memberId, awards, now });
+    return await payAwards({ memberId, awards, now, about });
   } catch (problem) {
     /* Logged and swallowed. See the header: the thing that earned this has
        already happened and must not be failed by a ledger write. */
@@ -107,10 +114,12 @@ async function payAwards({
   memberId,
   awards,
   now,
+  about,
 }: {
   memberId: string;
   awards: readonly XpAward[];
   now: Date;
+  about?: string;
 }): Promise<XpAwardResult> {
   const member = await prisma.member.findUnique({
     where: { id: memberId },
@@ -135,7 +144,7 @@ async function payAwards({
      reach one through a path that forgot to ask. */
   const held = member.botTier === null ? [] : awards.filter((award) => !earnableByProgram(award.type));
   const earnable = awards.filter((award) => !held.includes(award));
-  const paid = await payEarnable({ member, awards: earnable, now });
+  const paid = await payEarnable({ member, awards: earnable, now, about });
   return {
     ...paid,
     awards: [...held.map((award) => ({ type: award.type, points: 0, skipped: XP_SKIP_REASONS.peopleOnly })), ...paid.awards],
@@ -147,10 +156,12 @@ async function payEarnable({
   member,
   awards,
   now,
+  about,
 }: {
   member: Recipient;
   awards: readonly XpAward[];
   now: Date;
+  about?: string;
 }): Promise<XpAwardResult> {
   if (awards.length === 0) return { awards: [], points: 0, xp: member.xp, crossed: null };
 
@@ -209,6 +220,9 @@ async function payEarnable({
            gets the newest batch, and the ledger has the rest. */
         xpFlash: {
           at: now.toISOString(),
+          /* The game this batch was for, when the caller said. Left off otherwise,
+             so a batch about nothing in particular reads exactly as it always did. */
+          ...(about !== undefined ? { about } : {}),
           awards: paid.map(({ type, points: p }) => ({ type, points: p })),
           /* The level the toast may mention, decided here because here is where
              both totals are in hand. See `levelNote`. */

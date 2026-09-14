@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AccountMenu, type Who } from "@/components/auth/AccountMenu";
 import { AdminLink } from "@/components/auth/AdminLink";
 import { currentSession } from "@/lib/auth/currentSession";
-import { xpFlashFor } from "@/lib/xp/xpFlash";
+import { xpFlashFor, type XpToastHold } from "@/lib/xp/xpFlash";
 
 import { BrandHero, BrandWordmark } from "./BrandMarks";
 import { LearnTimeZone } from "./LearnTimeZone";
@@ -53,7 +53,14 @@ async function Nav() {
  * once per page rather than twice stacked. The game being played says its own
  * name where it is played, not up here.
  */
-export async function SiteHeader({ hero = false }: { hero?: boolean }) {
+export async function SiteHeader({
+  hero = false,
+  xpHeldBy,
+}: {
+  hero?: boolean;
+  /** A game-end batch of toasts the page's result card is saying instead — see `XpToasts`. */
+  xpHeldBy?: XpToastHold;
+}) {
   if (hero) {
     return (
       <>
@@ -64,7 +71,7 @@ export async function SiteHeader({ hero = false }: { hero?: boolean }) {
           <p className="text-sm text-muted">Five in a row, and the games that grew from it.</p>
           <Nav />
         </header>
-        <XpFlashToasts />
+        <XpFlashToasts heldBy={xpHeldBy} />
       </>
     );
   }
@@ -77,7 +84,7 @@ export async function SiteHeader({ hero = false }: { hero?: boolean }) {
         </Link>
         <Nav />
       </header>
-      <XpFlashToasts />
+      <XpFlashToasts heldBy={xpHeldBy} />
     </>
   );
 }
@@ -111,8 +118,10 @@ export async function SiteHeader({ hero = false }: { hero?: boolean }) {
  * only one of them ever renders — and `xpToastMount.test.ts` is the gate that
  * keeps a second host from appearing anywhere else.
  */
-async function XpFlashToasts() {
+async function XpFlashToasts({ heldBy }: { heldBy?: XpToastHold }) {
   const flash = await xpFlashFor();
   if (flash === null) return null;
-  return <XpToasts at={flash.at} items={flash.toasts} />;
+  // Held only for the exact batch the page's result card read, by its stamp.
+  const holdFor = heldBy !== undefined && heldBy.at === flash.at ? heldBy : null;
+  return <XpToasts at={flash.at} items={flash.toasts} holdFor={holdFor} />;
 }

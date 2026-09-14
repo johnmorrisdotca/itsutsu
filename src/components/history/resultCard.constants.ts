@@ -66,5 +66,8 @@ export const RESULT_CARD_COPY = {
   review: "Review the moves 棋譜",
   close: "Close 閉じる",
   xp: (points: number) => `+${points} XP from this game`,
+  /* The level note the toasts would have carried: a level reached, or the next within a game. */
+  levelUp: (name: string) => `Level up: ${name}`,
+  nextLevel: (name: string) => `Next level: ${name}`,
   waiting: (count: number) => (count === 1 ? "Your move in 1 game" : `Your move in ${count} games`),
 } as const;

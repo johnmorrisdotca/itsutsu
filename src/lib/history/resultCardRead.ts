@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { seatedRivals } from "@/lib/record/rivalry";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { fetchRivalryView } from "@/lib/record/rivalryRead";
+import { flashAboutGame, xpFlashFor } from "@/lib/xp/xpFlash";
 
 import { gameResultFacts } from "./gameResult";
 import { DAY_MS, RESULT_CARD_FRESH_DAYS } from "./gameResult.constants";
@@ -59,7 +60,7 @@ export async function resultCardFor(input: {
   const pair = input.hotSeat
     ? null
     : seatedRivals({ black: game.blackMemberId, white: game.whiteMemberId, readerId: input.viewerId });
-  const [paid, rivalry, queue] = await Promise.all([
+  const [paid, rivalry, queue, flash] = await Promise.all([
     input.viewerId === null
       ? null
       : prisma.xpEvent.aggregate({ where: { memberId: input.viewerId, subject: game.id }, _sum: { points: true } }),
@@ -73,6 +74,8 @@ export async function resultCardFor(input: {
           thisGameId: game.id,
         }),
     fetchMyGames(input.claims, input.viewerId, now, input.keepFinishedDays),
+    /* The masthead's own read of the flash, off the member row it has cached for this request. */
+    input.viewerId === null ? null : xpFlashFor(),
   ]);
 
   const earned = paid?._sum.points ?? 0;
@@ -83,7 +86,12 @@ export async function resultCardFor(input: {
     gameId: game.id,
     facts,
     names: { black: game.blackName, white: game.whiteName },
-    xp: earned > 0 ? earned : null,
+    /*
+     * The game-end batch, where it has not been shown yet, so the card and the
+     * toasts it stands in for are one announcement; the ledger rows keyed to this
+     * game where the batch was already shown on another page.
+     */
+    xp: flashAboutGame(flash, game.id) ?? (earned > 0 ? { points: earned, level: null, heldFlashAt: null } : null),
     rivalry,
     rematch: input.rematchable
       ? { href: setUpLink({ rematch: game.id }), again: false }

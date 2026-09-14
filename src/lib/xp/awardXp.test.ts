@@ -412,6 +412,17 @@ describe("what the caller is told", () => {
 });
 
 describe("the flash the toast host reads", () => {
+  it("names the game a batch was paid for, when the caller says, and nothing otherwise", async () => {
+    // The result card over that game says this batch's XP in place of its toasts.
+    member("m");
+    await awardXp({ memberId: "m", awards: [{ type: XP_EVENTS.gameFinished, subject: "g1" }], now: AT, about: "g1" });
+    expect((members.get("m")?.xpFlash as { about?: unknown }).about).toBe("g1");
+
+    member("n");
+    await awardXp({ memberId: "n", awards: [{ type: XP_EVENTS.gameFinished, subject: "g2" }], now: AT });
+    expect(members.get("n")?.xpFlash).not.toHaveProperty("about");
+  });
+
   it("writes what was just paid, and only what was paid", async () => {
     member("m");
     await awardXp({

@@ -120,7 +120,10 @@ test.describe("a result card over a finished board", () => {
       await expect(won.getByTestId("result-card-reason")).toHaveText("You completed a winning line.");
       await expect(won.getByTestId("result-card-rivalry")).toBeVisible();
       await expect(won.getByTestId("result-card-rematch")).toHaveText(/Rematch/);
-      await shot(black.page, "resultcard-win-light");
+      // The game's XP is said on the card — and not again by toasts stacked over the board while it is open.
+      await expect(won.getByTestId("result-card-xp")).toContainText("XP from this game");
+      await expect(black.page.getByTestId("xp-toast")).toHaveCount(0);
+      await shot(black.page, "resultcard-win-light-2");
 
       // The loser, on whose board the winning stone arrived.
       await theRecord(white.page);
@@ -129,7 +132,9 @@ test.describe("a result card over a finished board", () => {
       await expect(lost).toHaveAttribute("data-outcome", "lost");
       await expect(lost.getByTestId("result-card-reason")).toContainText("completed a winning line.");
       await expect(lost.getByTestId("result-card-reason")).not.toContainText("You");
-      await shot(white.page, "resultcard-loss-dark");
+      await expect(lost.getByTestId("result-card-xp")).toContainText("XP from this game");
+      await expect(white.page.getByTestId("xp-toast")).toHaveCount(0);
+      await shot(white.page, "resultcard-loss-dark-2");
 
       // Rematch never starts a game: it lands on the set-up page, filled in from this one.
       await won.getByTestId("result-card-rematch").click();
@@ -160,9 +165,13 @@ test.describe("a result card over a finished board", () => {
       await theRecord(white.page);
       const lost = white.page.getByTestId("result-card");
       await expect(lost).toBeVisible();
+      await expect(lost.getByTestId("result-card-xp")).toContainText("XP from this game");
+      await expect(white.page.getByTestId("xp-toast")).toHaveCount(0);
       await white.page.getByTestId("result-card-close").click();
       await expect(white.page.getByTestId("replay-scrubber")).toBeVisible();
       await expect(white.page.getByTestId("result-card")).toHaveCount(0);
+      // Closing does not release the toasts over the clean board: the card's XP line was their announcement.
+      await expect(white.page.getByTestId("xp-toast")).toHaveCount(0);
       await shot(white.page, "resultcard-closed-clean-board");
 
       // Escape, on the winner's page.
@@ -178,6 +187,8 @@ test.describe("a result card over a finished board", () => {
         await theRecord(seated);
         await expect(seated.getByTestId("replay-scrubber")).toBeVisible();
         await expect(seated.getByTestId("result-card")).toHaveCount(0);
+        // And the batch was recorded as shown: the flash was cleared, so no toast comes back either.
+        await expect(seated.getByTestId("xp-toast")).toHaveCount(0);
       }
 
       // Somebody who did not play is shown the record, and no card.
