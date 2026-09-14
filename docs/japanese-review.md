@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (28)
+## 1. Written by a machine — please check these (29)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -47,6 +47,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | After earning points — the notice that drops in from the top of the page | Points earned | **獲得ポイント** | Points earned — the points acquired. |  |
 | After earning points — the notice that drops in from the top of the page | {count} to {name} | **{name}まであと{count}** | {count} more to go until {name}. |  |
 | After earning points — the notice that drops in from the top of the page | XP | **経験値** | Experience points. |  |
+| Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Download as SGF | **SGF形式でダウンロード** | Download in SGF format. |  |
 
 `{game}`, `{name}`, `{names}` and `{country}` are filled in when the page is
 drawn — a game's name, a country. They have to survive a correction exactly as

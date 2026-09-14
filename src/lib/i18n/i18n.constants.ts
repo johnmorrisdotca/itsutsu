@@ -166,6 +166,13 @@ export const PHRASES = {
   "xp.toNext": "{count} to {name}",
   "xp.atTheTop": "The top of the ladder.",
   "xp.board": "Where everybody stands by experience",
+
+  /*
+   * The replay's download. SGF stays as the letters in every language: it is
+   * the name of the format, and the name a reader will find it under in any
+   * program that opens one.
+   */
+  "record.downloadSgf": "Download as SGF",
 } as const;
 
 /** A phrase the site can say. */

@@ -178,4 +178,13 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "経験値の順位表",
     back: "The experience-points ranking table.",
   },
+
+  /*
+   * The button that downloads a finished game as an .sgf file. 形式 keeps SGF
+   * reading as a file format rather than a thing being downloaded.
+   */
+  "record.downloadSgf": {
+    text: "SGF形式でダウンロード",
+    back: "Download in SGF format.",
+  },
 };

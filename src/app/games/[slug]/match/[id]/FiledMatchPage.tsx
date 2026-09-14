@@ -339,6 +339,8 @@ function FiledMatch({
         basePath={matchPath(game.variant, game.id)}
         appearance={appearance}
         seated={seated}
+        // A game played here, so it may be taken away as a file — see `SgfDownload`.
+        offerSgf
       />
 
       {/*

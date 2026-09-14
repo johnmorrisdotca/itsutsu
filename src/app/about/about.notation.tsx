@@ -87,11 +87,12 @@ export const NOTATION_SECTION: AboutSection = {
       below is the whole of the difference between them.
     </>,
     <>
-      What the site keeps today is the record itself rather than a file: every finished game is filed, a single
-      game can be copied out of its replay as text, and the whole record can be taken away as a plain listing.
-      There is no <span className="font-mono">.sgf</span> export yet. It would be a small piece of work and it
-      would let a game played here be opened in any go program in the world, which is a good enough reason to do
-      it — but it is a separate question from explaining the notation, and this section is the explanation.
+      Every finished game is filed, a single game can be copied out of its replay as text, and the whole record
+      can be taken away as a plain listing. A finished game of go, Othello, gomoku, renju or Hex can also be
+      downloaded from its replay as an <span className="font-mono">.sgf</span> file and opened in any program
+      that reads that game. The games SGF has no number for — the capture games, Connect6, the drop games,
+      checkers and the rest — offer no file at all, because a file claiming one of those four numbers would be a
+      different game wearing its name.
     </>,
   ],
   figures: { 0: CENTRE, 3: COORDINATES },

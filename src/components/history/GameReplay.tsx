@@ -10,6 +10,7 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { PlayedMoves } from "./PlayedMoves";
+import { SgfDownload } from "./SgfDownload";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
 import { forkOffered } from "@/lib/history/fork";
@@ -23,7 +24,17 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
  * position, and the plain text can be copied in one go.
  */
 /** `current` and `onJump` both speak move numbers (`move.number`), never a timeline position — see replayIndex.ts. */
-function MoveList({ game, current, onJump }: { game: GameDetail; current: number; onJump: (moveNumber: number) => void }) {
+function MoveList({
+  game,
+  current,
+  onJump,
+  offerSgf,
+}: {
+  game: GameDetail;
+  current: number;
+  onJump: (moveNumber: number) => void;
+  offerSgf: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const names = useMemo(() => game.moves.map((move) => (move.kind === "pass" ? "pass" : pointName(game.size, move))), [game]);
   const text = useMemo(() => {
@@ -66,10 +77,12 @@ function MoveList({ game, current, onJump }: { game: GameDetail; current: number
           </span>
         ))}
       </p>
-      <span>
+      <span className="flex flex-wrap gap-2">
         <Button onClick={copy} data-testid="copy-moves">
           {copied ? "Copied" : "Copy as text"}
         </Button>
+        {/* The same record as a file other programs open, where SGF has a type for the game. */}
+        {offerSgf ? <SgfDownload game={game} /> : null}
       </span>
     </details>
   );
@@ -81,6 +94,7 @@ export function GameReplay({
   basePath,
   appearance = DEFAULT_APPEARANCE,
   seated = false,
+  offerSgf = false,
 }: {
   game: GameDetail;
   /**
@@ -107,6 +121,13 @@ export function GameReplay({
    * record with no real row to fork from) never offers one by omission.
    */
   seated?: boolean;
+  /**
+   * Whether the move list offers the game as an .sgf file. Only a game filed
+   * on this site: a kept record (`KeptGames`) was copied down from another
+   * site, and its date and seats are what was written down, not what was
+   * played here. Defaults to false so no caller offers a file by omission.
+   */
+  offerSgf?: boolean;
 }) {
   const timeline = useMemo(() => replayTimeline(game), [game]);
   /*
@@ -321,6 +342,7 @@ export function GameReplay({
             game={game}
             current={moveNumber}
             onJump={(number) => setIndex(timelineIndexForMove(timeline, number))}
+            offerSgf={offerSgf}
           />
         </div>
       </aside>
