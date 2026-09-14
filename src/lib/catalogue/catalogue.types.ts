@@ -23,7 +23,10 @@ export type TopPlayerShown = {
   wins: number;
   losses: number;
   draws: number;
-  /** Their level for the badge beside the name; null for a program or a name with nobody behind it. */
+  /**
+   * Their level for the badge beside the name, a program's included; null for
+   * a name with nobody behind it, and for a reader not shown the name.
+   */
   level: number | null;
 };
 

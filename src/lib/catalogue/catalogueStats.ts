@@ -55,8 +55,9 @@ export async function fetchCatalogueStats(now: Date = new Date()): Promise<Catal
       wins: top.wins,
       losses: top.losses,
       draws: top.draws,
-      // `xpShown` has already answered null for a program; a name with no
-      // member behind it is absent from the map.
+      // A program stands on the XP ladder like anybody, so a top player that is
+      // a program gets its level too. A name with no member behind it is absent
+      // from the map, and has no level to draw.
       level: total === undefined || total === null ? null : levelShown({ xp: total }),
     };
   };
