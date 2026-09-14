@@ -6,8 +6,10 @@ import Link from "next/link";
 import { gamePath } from "@/lib/gomoku/slugs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import { GameStatsStrip } from "@/components/games/GameStats";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, STRETCHED_CARD, STRETCHED_LINK } from "@/components/ui/ui.constants";
+import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import { CARD_LETTERS, GAME_CARD_KINDS } from "./games.constants";
 import type { GameCard } from "./games.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -29,7 +31,20 @@ function initial(label: string): string {
  * GAME, which is what a card with a game's name on it is a reference to, and
  * which now carries the rules as well as everything else about it.
  */
-export function GameCards({ cards }: { cards: GameCard[] }) {
+export function GameCards({
+  cards,
+  stats,
+  signedIn,
+}: {
+  cards: GameCard[];
+  /**
+   * What has been played of each, shaped for this reader already — the same
+   * whole `CatalogueStats` the other two views are handed, so the three views
+   * of one catalogue take one shape.
+   */
+  stats: CatalogueStats;
+  signedIn: boolean;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -97,28 +112,35 @@ export function GameCards({ cards }: { cards: GameCard[] }) {
 
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="game-cards">
         {shown.map((copy) => (
-          <li key={copy.variant}>
-            {/*
-              The card IS the link here, so it carries the mark itself and the
-              arrow answers to it — the same sign the family cards show, so a
-              card opens the same way whichever view a reader is in.
-            */}
-            <Link
-              href={gamePath(copy.variant)}
-              data-card-link=""
-              className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`}
-            >
-              <span className="flex min-w-0 flex-col gap-1">
-                <span className="flex items-baseline gap-2 font-semibold">
-                  <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
-                </span>
-                <span className="text-xs text-muted">{copy.tagline}</span>
-                {copy.inspiredBy !== undefined ? (
-                  <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
-                ) : null}
-              </span>
-              <CardArrow />
-            </Link>
+          /*
+            THE NAME IS THE CARD'S LINK, STRETCHED OVER IT — no longer the card
+            wrapped in one. The card now carries figures that lead elsewhere
+            (games played to the record, a top player's record to those games,
+            their name to them), and a link cannot hold a link. So this is the
+            family cards' construction: the name spread over the face, the
+            arrow answering to it, and every other link raised above.
+          */
+          <li
+            key={copy.variant}
+            className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`}
+            data-testid="game-card"
+            data-variant={copy.variant}
+          >
+            <span className="flex min-w-0 flex-col gap-1">
+              <Link
+                href={gamePath(copy.variant)}
+                data-card-link=""
+                className={`${STRETCHED_LINK} flex items-baseline gap-2 font-semibold`}
+              >
+                <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
+              </Link>
+              <span className="text-xs text-muted">{copy.tagline}</span>
+              {copy.inspiredBy !== undefined ? (
+                <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
+              ) : null}
+              <GameStatsStrip stats={stats.games[copy.variant]} signedIn={signedIn} compact />
+            </span>
+            <CardArrow />
           </li>
         ))}
       </ul>

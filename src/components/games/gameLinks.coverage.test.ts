@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { PHRASES } from "@/lib/i18n/i18n.constants";
+
 /**
  * Nothing is a dead end, and this is what keeps it that way.
  *
@@ -361,22 +363,13 @@ describe("a count of games is the way into those games", () => {
     // /games/all, which is now the plain-list VIEW of /games and lives here.
     "src/components/games/GameList.tsx": "counts rule sets, not matches",
     /*
-     * Two counts, and they are the two the catalogue cannot link.
-     *
-     * "Eight games" in a family heading is rule sets, as above. And the family
-     * line beside it counts REAL games — every match played of anything in
-     * that family — which no page can show: /history filters by ONE game, not
-     * by a family of them, so a link would open a different set from the
-     * number it sits under. That is the fault this rule exists to stop,
-     * wearing a link. It is also inside a <summary>, where a link fights the
-     * toggle it is part of.
-     *
-     * The gap is in what the record can be asked, not in this page. A family
-     * has its own page now, at /games/<slug>/family, and it lists the family's
-     * GAMES — a different thing from the family's matches, and it does not
-     * close this.
+     * GameCatalogue.tsx USED TO BE HERE, for the family line's count of every
+     * match played in a family — a set no page can show, since /history
+     * filters by one game. That line moved into a phrase in `GameStats.tsx`,
+     * and its exception moved with it to PHRASE_EXCEPTIONS below, reason and
+     * all. An exception left on a file that no longer prints the count is a
+     * hole nobody knows is open, so it went.
      */
-    "src/components/games/GameCatalogue.tsx": "rule sets, and a family's matches are a set no page can show",
     // A suggestion in an autocomplete, which is the <option> case wearing
     // different markup: choosing it IS the way to those games.
     "src/components/game/PlayerNameInput.tsx": "a picker's own suggestion",
@@ -505,10 +498,12 @@ describe("a count of games is the way into those games", () => {
      * one of the four failures AGENTS.md names by shape; an exception with its
      * reason beside it is a rule that can be argued with.
      */
-    const BARE_EXCEPTIONS: Record<string, string> = {
-      "src/components/games/GameCatalogue.tsx":
-        "a family's matches: /history filters by one game, so no page can show the set this counts",
-    };
+    /*
+     * Empty since the games index's figures strip: the family line no longer
+     * prints `{family.played}` in JSX but says it through a phrase, and the
+     * phrase check below names it with the same reason.
+     */
+    const BARE_EXCEPTIONS: Record<string, string> = {};
     const counts = BARE_COUNT;
     const offenders = FILES.filter((file) =>
       [...file.source.matchAll(counts)].some(
@@ -534,6 +529,69 @@ describe("a count of games is the way into those games", () => {
     const counts = BARE_COUNT;
     const seen = FILES.filter((file) => [...file.source.matchAll(counts)].length > 0);
     expect(seen.length, "the pattern still matches the shape it is about").toBeGreaterThan(0);
+  });
+});
+
+/**
+ * A count of games SAID THROUGH A PHRASE, which none of the checks above can see.
+ *
+ * Every check above reads JSX for a number printed beside the word "games" or
+ * "played". Since the site speaks two languages, those words live in PHRASES
+ * and the page holds only a key — `say.say("catalogue.playedMany")` — so a
+ * count worded "{count} games played" and filled with plain text would pass
+ * every one of them while leading nowhere. The games index was the first page
+ * to say a count this way, and the gate had to learn to read it before it
+ * shipped rather than after.
+ *
+ * So: every phrase whose English puts a COUNT beside "game", "games" or
+ * "played" must be said with a `<GameCount` right after its key — the link
+ * filling the placeholder — or be named below with the reason it cannot link.
+ * The placeholder is matched by name, because "Every game of {game} played
+ * here" puts a game's NAME there, and that sentence is a hover note.
+ */
+const COUNTED_PHRASE = /\{(?:count|played|games|total)\}\s+(?:games?|played)\b/;
+
+/** How far after a key its link has to be: the call, its values, and the opening of the count. */
+const PHRASE_REACH = 600;
+
+const PHRASE_EXCEPTIONS: Record<string, string> = {
+  /*
+   * The family line on the games index. It counts the matches of every game in
+   * a family, and /history filters by ONE game, so no page shows that set — a
+   * link would open a different set from the number it sits under. The same
+   * reason this file has always given the family line, moved with the line
+   * from JSX into a phrase.
+   */
+  "catalogue.familyPlayedOne": "a family's matches: /history filters by one game, so no page can show the set this counts",
+  "catalogue.familyPlayedMany": "a family's matches: /history filters by one game, so no page can show the set this counts",
+};
+
+describe("a count of games said through a phrase is still the way into those games", () => {
+  const counted = (Object.entries(PHRASES) as [string, string][])
+    .filter(([, english]) => COUNTED_PHRASE.test(english))
+    .map(([key]) => key);
+
+  it("finds phrases that count games, so the check below is not vacuous", () => {
+    expect(counted.length, "no phrase counts games any more — or the pattern stopped seeing them").toBeGreaterThan(0);
+    expect(counted.filter((key) => PHRASE_EXCEPTIONS[key] === undefined).length).toBeGreaterThan(0);
+  });
+
+  it("says each of them beside the link that fills its count", () => {
+    const offenders: string[] = [];
+    for (const key of counted) {
+      if (PHRASE_EXCEPTIONS[key] !== undefined) continue;
+      for (const file of FILES) {
+        for (let at = file.source.indexOf(`"${key}"`); at !== -1; at = file.source.indexOf(`"${key}"`, at + 1)) {
+          if (!file.source.slice(at, at + PHRASE_REACH).includes("<GameCount")) offenders.push(`${file.path}: ${key}`);
+        }
+      }
+    }
+    expect(offenders, "fill the count with <GameCount> — or name the phrase above with why it cannot link").toEqual([]);
+  });
+
+  it("names no exception that is not a phrase counting games", () => {
+    // An exception left behind after its phrase is reworded is a hole nobody knows is open.
+    expect(Object.keys(PHRASE_EXCEPTIONS).filter((key) => !counted.includes(key))).toEqual([]);
   });
 });
 

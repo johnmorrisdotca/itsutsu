@@ -337,4 +337,123 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "rivalry.lead.you": { text: "{name}に{score}でリード", back: "You lead {name} {score}." },
   "rivalry.behind.you": { text: "{name}があなたに{score}でリード", back: "{name} leads you {score}." },
   "rivalry.lead.named": { text: "{leader}が{trailer}に{score}でリード", back: "{leader} leads {trailer} {score}." },
+
+  /*
+   * The figures under every game and family on /games. Japanese does not mark
+   * one against many, so each pair of count phrases is answered the same way
+   * twice. 首位 (first place) is the word for a ladder's top; 系統 is the
+   * word the Families view already uses in its own switch.
+   */
+  "catalogue.playedOne": {
+    text: "対局数 {count}",
+    back: "Games played: {count}",
+  },
+  "catalogue.playedMany": {
+    text: "対局数 {count}",
+    back: "Games played: {count}",
+  },
+  "catalogue.nobodyYet": {
+    text: "まだ誰も対局していません",
+    back: "Nobody has played yet.",
+  },
+  "catalogue.beFirst": {
+    text: "最初の対局者になる →",
+    back: "Become the first to play →",
+  },
+  "catalogue.beFirstStranger": {
+    text: "閲覧は自由です。参加して最初に対局しよう →",
+    back: "Browsing is free. Join, and be the first to play it →",
+  },
+  "catalogue.topPlayer": {
+    text: "首位",
+    back: "First place.",
+  },
+  "catalogue.poolPeople": {
+    text: "対人",
+    back: "Against people.",
+  },
+  "catalogue.poolComputer": {
+    text: "対コンピュータ",
+    back: "Against the computer.",
+  },
+  "catalogue.topMeansPeople": {
+    text: "この種目の対人順位表の首位です。メンバー同士のレーティング対局で、レーティングの高い順。成績はその順位表での勝ち–負け–引き分けです。",
+    back: "This is first place on this game's ladder against people. Rated games between members, highest rating first. The record is wins–losses–draws on that ladder.",
+  },
+  "catalogue.topMeansComputer": {
+    text: "対人の順位はまだないため、コンピュータ相手の順位表の首位です。対人の順位表とは別で、合算しません。成績はその順位表での勝ち–負け–引き分けです。",
+    back: "There is no standing against people yet, so this is first place on the ladder against the computer. It is separate from the people's ladder and never added to it. The record is wins–losses–draws on that ladder.",
+  },
+  "catalogue.noStanding": {
+    text: "レーティング対局はまだありません",
+    back: "No rated games yet.",
+  },
+  "catalogue.joinToSeeWho": {
+    text: "参加すると誰かわかります →",
+    back: "Join, and you will see who →",
+  },
+  "catalogue.standings": {
+    text: "順位表 →",
+    back: "Standings →",
+  },
+  "catalogue.wonTitle": {
+    text: "この順位表で勝ったレーティング対局",
+    back: "The rated games won on this ladder.",
+  },
+  "catalogue.lostTitle": {
+    text: "この順位表で負けたレーティング対局",
+    back: "The rated games lost on this ladder.",
+  },
+  "catalogue.drawnTitle": {
+    text: "この順位表で引き分けたレーティング対局",
+    back: "The rated games drawn on this ladder.",
+  },
+  "catalogue.lastToday": {
+    text: "最終対局：今日",
+    back: "Last game: today.",
+  },
+  "catalogue.lastYesterday": {
+    text: "最終対局：昨日",
+    back: "Last game: yesterday.",
+  },
+  "catalogue.lastDays": {
+    text: "最終対局：{count}日前",
+    back: "Last game: {count} days ago.",
+  },
+  "catalogue.lastMonths": {
+    text: "最終対局：{count}か月前",
+    back: "Last game: {count} months ago.",
+  },
+  "catalogue.lastYears": {
+    text: "最終対局：{count}年前",
+    back: "Last game: {count} years ago.",
+  },
+  "catalogue.familyPlayedOne": {
+    text: "この系統で{count}局",
+    back: "{count} games in this family.",
+  },
+  "catalogue.familyPlayedMany": {
+    text: "この系統で{count}局",
+    back: "{count} games in this family.",
+  },
+  "catalogue.familyTried": {
+    text: "{total}種目中{played}種目で対局あり",
+    back: "Played in {played} of its {total} games.",
+  },
+  "catalogue.crownsHeld": {
+    text: "最多首位",
+    back: "Most first places.",
+  },
+  "catalogue.crownCount": {
+    text: "{total}種目中{count}",
+    back: "{count} of {total} games.",
+  },
+  "catalogue.crownMeans": {
+    text: "首位とは、一つの種目の順位表の一番上のことです。このプレイヤーは、この系統の種目で誰よりも多く首位に立っています。",
+    back: "A first place is the top of one game's ladder. This player stands in first place in more of this family's games than anyone else.",
+  },
+  "catalogue.crownsShared": {
+    text: "{count}人が首位を分け合っています",
+    back: "{count} players share the first places.",
+  },
 };

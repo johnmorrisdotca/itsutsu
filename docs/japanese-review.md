@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (83)
+## 1. Written by a machine — please check these (111)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -47,6 +47,34 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | After earning points — the notice that drops in from the top of the page | Points earned | **獲得ポイント** | Points earned — the points acquired. |  |
 | After earning points — the notice that drops in from the top of the page | {count} to {name} | **{name}まであと{count}** | {count} more to go until {name}. |  |
 | After earning points — the notice that drops in from the top of the page | XP | **経験値** | Experience points. |  |
+| The games index, /games — under every game and every family, in all three views | Be the first to play → | **最初の対局者になる →** | Become the first to play → |  |
+| The games index, /games — under every game and every family, in all three views | Reading is free — join to be the first to play it → | **閲覧は自由です。参加して最初に対局しよう →** | Browsing is free. Join, and be the first to play it → |  |
+| The games index, /games — under every game and every family, in all three views | {count} of {total} | **{total}種目中{count}** | {count} of {total} games. |  |
+| The games index, /games — under every game and every family, in all three views | A crown is the top of one game's ladder, as that game shows it. This player tops more of this family's games than anybody else. | **首位とは、一つの種目の順位表の一番上のことです。このプレイヤーは、この系統の種目で誰よりも多く首位に立っています。** | A first place is the top of one game's ladder. This player stands in first place in more of this family's games than anyone else. |  |
+| The games index, /games — under every game and every family, in all three views | Most crowns | **最多首位** | Most first places. |  |
+| The games index, /games — under every game and every family, in all three views | Crowns shared by {count} players | **{count}人が首位を分け合っています** | {count} players share the first places. |  |
+| The games index, /games — under every game and every family, in all three views | The rated games they drew on this ladder | **この順位表で引き分けたレーティング対局** | The rated games drawn on this ladder. |  |
+| The games index, /games — under every game and every family, in all three views | {count} games played across the family | **この系統で{count}局** | {count} games in this family. |  |
+| The games index, /games — under every game and every family, in all three views | {count} game played across the family | **この系統で{count}局** | {count} games in this family. |  |
+| The games index, /games — under every game and every family, in all three views | {played} of {total} tried here | **{total}種目中{played}種目で対局あり** | Played in {played} of its {total} games. |  |
+| The games index, /games — under every game and every family, in all three views | Join to see who → | **参加すると誰かわかります →** | Join, and you will see who → |  |
+| The games index, /games — under every game and every family, in all three views | Last played {count} days ago | **最終対局：{count}日前** | Last game: {count} days ago. |  |
+| The games index, /games — under every game and every family, in all three views | Last played {count} months ago | **最終対局：{count}か月前** | Last game: {count} months ago. |  |
+| The games index, /games — under every game and every family, in all three views | Last played today | **最終対局：今日** | Last game: today. |  |
+| The games index, /games — under every game and every family, in all three views | Last played {count} years ago | **最終対局：{count}年前** | Last game: {count} years ago. |  |
+| The games index, /games — under every game and every family, in all three views | Last played yesterday | **最終対局：昨日** | Last game: yesterday. |  |
+| The games index, /games — under every game and every family, in all three views | The rated games they lost on this ladder | **この順位表で負けたレーティング対局** | The rated games lost on this ladder. |  |
+| The games index, /games — under every game and every family, in all three views | Nobody has played this yet | **まだ誰も対局していません** | Nobody has played yet. |  |
+| The games index, /games — under every game and every family, in all three views | No rated games yet | **レーティング対局はまだありません** | No rated games yet. |  |
+| The games index, /games — under every game and every family, in all three views | {count} games played | **対局数 {count}** | Games played: {count} |  |
+| The games index, /games — under every game and every family, in all three views | {count} game played | **対局数 {count}** | Games played: {count} |  |
+| The games index, /games — under every game and every family, in all three views | against the computer | **対コンピュータ** | Against the computer. |  |
+| The games index, /games — under every game and every family, in all three views | among people | **対人** | Against people. |  |
+| The games index, /games — under every game and every family, in all three views | Standings → | **順位表 →** | Standings → |  |
+| The games index, /games — under every game and every family, in all three views | Nobody holds a standing among people yet, so this is the top of the ladder against the computer players — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder. | **対人の順位はまだないため、コンピュータ相手の順位表の首位です。対人の順位表とは別で、合算しません。成績はその順位表での勝ち–負け–引き分けです。** | There is no standing against people yet, so this is first place on the ladder against the computer. It is separate from the people's ladder and never added to it. The record is wins–losses–draws on that ladder. |  |
+| The games index, /games — under every game and every family, in all three views | The top of this game's ladder among people: rated games between members, best rating first. The record is won–lost–drawn on that ladder. | **この種目の対人順位表の首位です。メンバー同士のレーティング対局で、レーティングの高い順。成績はその順位表での勝ち–負け–引き分けです。** | This is first place on this game's ladder against people. Rated games between members, highest rating first. The record is wins–losses–draws on that ladder. |  |
+| The games index, /games — under every game and every family, in all three views | Top player | **首位** | First place. |  |
+| The games index, /games — under every game and every family, in all three views | The rated games they won on this ladder | **この順位表で勝ったレーティング対局** | The rated games won on this ladder. |  |
 | Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Download as SGF | **SGF形式でダウンロード** | Download in SGF format. |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | against {name} | **{name}との対戦** | Games against {name}. |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between {one} and {other} has been a draw | **{one}と{other}の対局はすべて引き分け** | Every game between {one} and {other} has been a draw. |  |

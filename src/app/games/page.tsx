@@ -21,7 +21,8 @@ import { seatClaims } from "@/lib/history/seatCookie";
 import { fetchOpponents } from "@/lib/social/opponents";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { fetchHereNow } from "@/lib/social/presence";
-import { fetchPlayedCounts } from "@/lib/history/gameCounts";
+import { fetchCatalogueStats } from "@/lib/catalogue/catalogueStats";
+import { forReader } from "@/lib/catalogue/catalogueReader";
 import { GameCatalogue } from "@/components/games/GameCatalogue";
 import { readCatalogueView, type CatalogueView } from "@/lib/gomoku/catalogueView";
 import type { CatalogueFamily } from "@/components/games/games.types";
@@ -110,9 +111,9 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
   sweepOpenSeats();
 
   const claimed = [...claims.keys()];
-  const [mine, counts, seatGames, here] = await Promise.all([
+  const [mine, stats, seatGames, here] = await Promise.all([
     currentMemberId(),
-    fetchPlayedCounts(),
+    fetchCatalogueStats(),
     fetchOpenSeats(claimed),
     fetchHereNow(),
   ]);
@@ -195,31 +196,6 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
       kanji: RULE_VARIANT_DISPLAY[variant].kanji,
     })),
   }));
-  /*
-   * The catalogue's own view of the same families, with what has been played
-   * of each. Built here because this is where the counts are read; the
-   * component below is handed rows and asks the database nothing.
-   */
-  const families: CatalogueFamily[] = GAME_FAMILIES.map((family) => ({
-    title: family.title,
-    kanji: family.kanji,
-    blurb: family.blurb,
-    played: family.games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0),
-    games: family.games.map((variant) => {
-      const copy = RULE_VARIANT_DISPLAY[variant];
-      const count = counts.get(variant);
-      return {
-        variant,
-        label: copy.label,
-        kanji: copy.kanji,
-        tagline: copy.tagline,
-        inspiredBy: copy.inspiredBy,
-        played: count?.played,
-        last: count?.last ?? undefined,
-      };
-    }),
-  }));
-
   const seats: SeatOnBoard[] = choices.map((game) => ({
     id: game.id,
     variant: game.variant,
@@ -375,10 +351,34 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
           that game — its rules, its record, its standings and a board — and the three ways of
           looking at the list are the same games arranged differently.
         </p>
-        <GameCatalogue view={view} families={families} signedIn />
+        <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn />
       </section>
   </Page>
   );
+}
+
+/**
+ * The catalogue's families, as copy: the same for every reader, from tables in
+ * this repository. What has been played of each travels beside them as
+ * `CatalogueStats`, shaped for the reader by `forReader`.
+ */
+function catalogueFamilies(): CatalogueFamily[] {
+  return GAME_FAMILIES.map((family) => ({
+    key: family.key,
+    title: family.title,
+    kanji: family.kanji,
+    blurb: family.blurb,
+    games: family.games.map((variant) => {
+      const copy = RULE_VARIANT_DISPLAY[variant];
+      return {
+        variant,
+        label: copy.label,
+        kanji: copy.kanji,
+        tagline: copy.tagline,
+        inspiredBy: copy.inspiredBy,
+      };
+    }),
+  }));
 }
 
 /**
@@ -393,36 +393,20 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
  * of it is drawn — and the page would have gone on costing a stranger the
  * whole lobby to render none of it.
  *
- * The families still carry no LAST GAME: it names the two members who played
- * it and links to a match a stranger cannot open, which is exactly the kind
- * of thing this page must not draw and then refuse. `played` is different — a
- * count of finished games names nobody, so it is not the lobby's activity
- * feed, it is the same fact about the catalogue `fetchPlayedCounts` already
- * gives the signed-in path. Printing `0` here regardless of the real number
- * was the falsest possible answer: production holds 116 finished games, and a
- * stranger was told none of it had ever been played, on the one page whose
- * whole job is to invite them in.
+ * The FIGURES are the same ones a member reads, from the same five reads —
+ * John's "see some stuff" is what a stranger is here for, and a count of
+ * finished games names nobody. Printing `0` here regardless of the real number
+ * was once the falsest possible answer: production held 116 finished games,
+ * and a stranger was told none of it had ever been played, on the one page
+ * whose whole job is to invite them in.
+ *
+ * The PEOPLE are not, and `forReader(stats, false)` is where that is decided,
+ * once: no top player's name, no last game's match. The open pages name no
+ * member — `e2e/gate.spec.ts` holds /games to that — so a stranger is told
+ * there is somebody at the top of each game, and invited in to see who.
  */
 async function PublicCatalogue({ view, say }: { view: CatalogueView; say: Speaker }) {
-  const counts = await fetchPlayedCounts();
-  const families: CatalogueFamily[] = GAME_FAMILIES.map((family) => ({
-    title: family.title,
-    kanji: family.kanji,
-    blurb: family.blurb,
-    // A real count, not a fixed nought — see the doc comment above. Summed
-    // from the per-variant counts the same way the signed-in path sums them.
-    played: family.games.reduce((n, game) => n + (counts.get(game)?.played ?? 0), 0),
-    games: family.games.map((variant) => {
-      const copy = RULE_VARIANT_DISPLAY[variant];
-      return {
-        variant,
-        label: copy.label,
-        kanji: copy.kanji,
-        tagline: copy.tagline,
-        inspiredBy: copy.inspiredBy,
-      };
-    }),
-  }));
+  const stats = forReader(await fetchCatalogueStats(), false);
 
   return (
     <Page width="standard">
@@ -477,7 +461,7 @@ async function PublicCatalogue({ view, say }: { view: CatalogueView; say: Speake
           that game, and the three ways of looking at the list are the same games arranged
           differently.
         </p>
-        <GameCatalogue view={view} families={families} signedIn={false} />
+        <GameCatalogue view={view} families={catalogueFamilies()} stats={stats} signedIn={false} />
       </section>
   </Page>
   );

@@ -10,8 +10,15 @@ test.describe("rules and learning", () => {
     // The cards that were the /rules index are a VIEW of /games now.
     await page.goto("/games?view=cards");
     const index = page.getByTestId("game-cards");
-    // One card per game, however many there are today.
-    await expect(index.getByRole("link")).toHaveCount(RULE_VARIANT_LIST.length);
+    /*
+     * One card per game, however many there are today — and each card one way
+     * into its game. Counted as cards and as the link each card's face answers
+     * to, not as every link inside the list: a card carries its figures now
+     * (games played to the record, a top player's record to those games, the
+     * standings), and each of those is a link that leads somewhere else.
+     */
+    await expect(index.getByTestId("game-card")).toHaveCount(RULE_VARIANT_LIST.length);
+    await expect(index.locator("[data-card-link]")).toHaveCount(RULE_VARIANT_LIST.length);
     await expect(page.getByTestId("rules-attribution")).toContainText("trademark");
 
     await page.getByRole("link", { name: /Hot Drop/ }).click();

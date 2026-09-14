@@ -20,23 +20,47 @@ export type PlayedCount = {
  * because production holds no such row yet.
  */
 export async function fetchPlayedCounts(): Promise<Map<string, PlayedCount>> {
-  const [counts, latest] = await Promise.all([
-    prisma.game.groupBy({
-      by: ["variant"],
-      where: { status: "finished", result: { not: "abandoned" } },
-      _count: { _all: true },
-    }),
-    prisma.game.findMany({
-      where: { status: "finished", result: { not: "abandoned" } },
-      orderBy: { playedAt: "desc" },
-      distinct: ["variant"],
-      select: { id: true, variant: true, blackName: true, whiteName: true, playedAt: true },
-    }),
-  ]);
+  /*
+   * TWO READS, EACH ONE ROW PER GAME AT MOST, and that is a fix rather than a
+   * restyle. The latest game used to be `findMany({ distinct: ["variant"] })`,
+   * and Prisma does `distinct` IN MEMORY unless the `nativeDistinct` preview is
+   * on, which it is not here: it fetched every finished game on the site to
+   * keep one per kind. The development database holds seven thousand; the
+   * games index reads this on every render, for strangers too.
+   *
+   * So the count and the date of the latest game come out of one `groupBy`,
+   * and the second read asks only for the games at those dates — a handful of
+   * rows however many games there are.
+   *
+   * Both ask finished and not abandoned, WRITTEN OUT in each. That set is the
+   * record's own `outcome=decided` — `buildGameWhere` keeps finished games
+   * that are not refused offers, and `decided` drops every abandoned one — so
+   * a count from here links to `?outcome=decided` and opens exactly the games
+   * it counted.
+   */
+  const counts = await prisma.game.groupBy({
+    by: ["variant"],
+    where: { status: "finished", result: { not: "abandoned" } },
+    _count: { _all: true },
+    _max: { playedAt: true },
+  });
+  const at = counts.flatMap((row) =>
+    row._max.playedAt === null ? [] : [{ variant: row.variant, playedAt: row._max.playedAt }],
+  );
+  const latest =
+    at.length === 0
+      ? []
+      : await prisma.game.findMany({
+          where: { status: "finished", result: { not: "abandoned" }, OR: at },
+          // Two games of one kind finished in the same millisecond: the id settles it.
+          orderBy: [{ playedAt: "desc" }, { id: "asc" }],
+          select: { id: true, variant: true, blackName: true, whiteName: true, playedAt: true },
+        });
   const result = new Map<string, PlayedCount>();
   for (const row of counts) result.set(row.variant, { played: row._count._all, last: null });
   for (const row of latest) {
     const entry = result.get(row.variant) ?? { played: 0, last: null };
+    if (entry.last !== null) continue;
     entry.last = { id: row.id, blackName: row.blackName, whiteName: row.whiteName, playedAt: row.playedAt.toISOString() };
     result.set(row.variant, entry);
   }
