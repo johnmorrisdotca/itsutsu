@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { memberContext, memberIdFor, removeMember, removePlayedUnder, seedLadderRow } from "./members";
 import { ready } from "./support";
 import { removeGame } from "./tidy";
+import { standingData } from "./xpStanding";
 import { xpForLevel } from "../src/lib/xp/xpCurve";
 
 /**
@@ -39,7 +40,7 @@ test.describe("the waiting room", () => {
       process.loadEnvFile(".env");
       const prisma = new PrismaClient();
       try {
-        await prisma.member.update({ where: { id: memberId }, data: { xp: xpForLevel(7) } });
+        await prisma.member.update({ where: { id: memberId }, data: standingData({ here: xpForLevel(7) }) });
       } finally {
         await prisma.$disconnect();
       }

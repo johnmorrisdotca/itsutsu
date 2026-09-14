@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { keptPreferences, putPreferencesBack } from "./members";
 import { suiteOperator } from "./operator";
 import { removeVisitors } from "./xpLedger";
+import { standingData } from "./xpStanding";
 import { seedProgram, seedXpMember, type SeededXpMember } from "./xpMembers";
 
 /**
@@ -59,7 +60,7 @@ async function writeLedger(member: SeededXpMember, batches: readonly Batch[]): P
     }
     await prisma.member.update({
       where: { id: member.id },
-      data: { xp: total, xpLastAt: batches[batches.length - 1].at },
+      data: { ...standingData({ here: total }), xpLastAt: batches[batches.length - 1].at },
     });
   } finally {
     await prisma.$disconnect();
