@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 
 import {
   BUTTON_BASE,
@@ -69,6 +69,8 @@ export function JoinForm({
   // who has one sees only the button; the code stays out of the way until
   // they say they need it — or until a code arrived with the link.
   const [showInviteCode, setShowInviteCode] = useState(initialCode !== "");
+  // The note under the code box describes it rather than naming it; see below.
+  const codeHintId = useId();
   // Whether there is anything on the page for "Enter" to submit — the same
   // condition the invite-code field itself shows under, plus the operator's
   // door, which always has its own fields.
@@ -184,23 +186,35 @@ export function JoinForm({
 
       {mode === "invite" ? (
         !shut && (!googleReady || pending !== null || showInviteCode) && (
-          <label className="flex flex-col gap-1">
-            <span className="text-sm">Invite code</span>
-            <input
-              className={`${INPUT_CLASS} font-mono`}
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              placeholder="hoshi-kuma-nami"
-              autoComplete="off"
-              autoCapitalize="none"
-              spellCheck={false}
-              autoFocus={showInviteCode}
-              data-testid="invite-code"
-            />
-            <span className="text-xs text-muted">
+          /*
+            The note is the label's SIBLING, not its last child. Everything
+            inside a label is the control's name, so the box used to be called
+            "Invite code Capitals, spaces or hyphens — any of them work." — the
+            fault `Field` in Controls.tsx describes, written out by hand here.
+            The column and its spacing are the label's old ones moved out one
+            level, so nothing moves on screen; the note reaches the box as its
+            description instead.
+          */
+          <div className="flex flex-col gap-1">
+            <label className="flex flex-col gap-1">
+              <span className="text-sm">Invite code</span>
+              <input
+                className={`${INPUT_CLASS} font-mono`}
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+                placeholder="hoshi-kuma-nami"
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                autoFocus={showInviteCode}
+                aria-describedby={codeHintId}
+                data-testid="invite-code"
+              />
+            </label>
+            <span id={codeHintId} className="text-xs text-muted">
               Capitals, spaces or hyphens — any of them work.
             </span>
-          </label>
+          </div>
         )
       ) : (
         <>
