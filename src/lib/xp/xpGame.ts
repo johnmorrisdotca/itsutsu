@@ -4,7 +4,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 import { STREAK_KINDS, type Streak, type StreakOutcome } from "@/lib/rating/streak";
 
-import { XP_EVENTS, XP_LONG_GAME_MOVES, winStreakMilestoneFor } from "./xp.constants";
+import { XP_EVENTS, XP_LONG_GAME_MOVES, resultMilestoneFor, winStreakMilestoneFor } from "./xp.constants";
 import type { XpAward } from "./xp.types";
 import { upsetAwardFor, type RatingsAsTheyStood } from "./xpUpset";
 
@@ -161,6 +161,15 @@ export type PlayedSideFacts = {
    * not.
    */
   weekendWeek: string | null;
+  /**
+   * How many games at THIS game this member has now finished with THIS outcome,
+   * this one included — what a milestone at one game is counted against.
+   *
+   * Null where it was not read, or could not be: a variant this deploy cannot
+   * name, a failed count. Null pays no milestone, which is the safe answer; a
+   * missed one is paid by the replay.
+   */
+  sameResultsAtGame: number | null;
 };
 
 /** Nobody in the other seat, and nothing known about them. For a caller's default. */
@@ -253,8 +262,25 @@ export function gameAwards(game: FinishedGame, side: PlayedSideFacts): XpAward[]
      beside it because a toast should read "a game seen through" before "a game
      won", and because every award that RIDES the allowance has to sit after the
      finish that decides it. */
-  if (side.outcome !== STREAK_KINDS.win) return awards;
-  return [...awards, ...winAwards(game, side, variant)];
+  /* A milestone at this game — ten wins, fifty losses, ten draws — LAST, after
+     everything the game itself paid, so a toast reads "a game won" before "ten
+     wins at this game". Not capped and not riding the allowance: it happens once
+     per game per member however many games are played. */
+  const milestone = resultMilestone(variant, side);
+  if (side.outcome !== STREAK_KINDS.win) return [...awards, ...milestone];
+  return [...awards, ...winAwards(game, side, variant), ...milestone];
+}
+
+/**
+ * The milestone this result reaches at this game, keyed on the game.
+ *
+ * Nothing for a game this deploy cannot name, and nothing where the count was
+ * not read: `sameResultsAtGame` null is the rule declining to measure.
+ */
+function resultMilestone(variant: RuleVariant | null, side: PlayedSideFacts): XpAward[] {
+  if (variant === null || side.sameResultsAtGame === null) return [];
+  const type = resultMilestoneFor(side.outcome, side.sameResultsAtGame);
+  return type === null ? [] : [{ type, subject: variant }];
 }
 
 /**

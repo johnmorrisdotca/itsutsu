@@ -1,3 +1,5 @@
+import type { ImportedFacts } from "@/lib/xp/importedNote";
+
 /**
  * The XP a player just earned, as a toast shows it.
  *
@@ -102,5 +104,11 @@ export type LevelNameProps = {
  */
 export type MemberLevelProps = {
   xp?: number;
+  /**
+   * The credit for another site's record inside `xp`, for the justification line
+   * under the total. Null or absent draws no line — a total with nothing
+   * imported in it has nothing to justify.
+   */
+  imported?: ImportedFacts | null;
   testId?: string;
 };

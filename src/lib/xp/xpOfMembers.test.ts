@@ -11,18 +11,23 @@ import { standingsOf } from "./xpOfMembers";
 describe("standingsOf", () => {
   it("answers a person's total, nought included, keyed by their id", () => {
     const map = standingsOf([
-      { id: "a", xp: 1_275 },
-      { id: "b", xp: 0 },
+      { id: "a", xp: 1_275, xpEverywhere: 1_275 },
+      { id: "b", xp: 0, xpEverywhere: 0 },
     ]);
     expect(map.get("a")).toBe(1_275);
     // Nought is a number and prints as one — John: "Everyone is level 1 if 0xp."
     expect(map.get("b")).toBe(0);
   });
 
+  it("answers the badge's total, which counts another site's credit", () => {
+    // `xpForBadge` decides which total a column shows, once; it is Everywhere.
+    expect(standingsOf([{ id: "chibi", xp: 25, xpEverywhere: 1_008_888 }]).get("chibi")).toBe(1_008_888);
+  });
+
   it("answers a program's total like anyone's — a nought is a nought", () => {
     // A program's cell used to be "–" whatever its row stored. John: "bots
     // don't have XP" — they do now, from their games, and the map says so.
-    const map = standingsOf([{ id: "bot", xp: 0 }]);
+    const map = standingsOf([{ id: "bot", xp: 0, xpEverywhere: 0 }]);
     expect(map.has("bot")).toBe(true);
     expect(map.get("bot")).toBe(0);
   });

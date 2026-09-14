@@ -45,6 +45,7 @@ export function RecordScopeBar({
   query,
   scope,
   label = "How much of this player's record to count",
+  hrefFor,
 }: {
   base: string;
   view?: string;
@@ -58,11 +59,19 @@ export function RecordScopeBar({
   query?: string;
   scope: RecordScope;
   label?: string;
+  /**
+   * The address each chip leads to, for a page that keeps its own rules about
+   * it. The XP board does: its chips always name the scope, so following one is
+   * what gets it remembered on the account, and they drop the board's cursor.
+   */
+  hrefFor?: (scope: RecordScope) => string;
 }) {
   const href = (one: RecordScope) =>
-    query === undefined
-      ? scopeHref(base, view, one)
-      : scopeHrefFrom(base, new URLSearchParams(query), one);
+    hrefFor !== undefined
+      ? hrefFor(one)
+      : query === undefined
+        ? scopeHref(base, view, one)
+        : scopeHrefFrom(base, new URLSearchParams(query), one);
   return (
     <nav
       className="flex flex-wrap items-center gap-1"

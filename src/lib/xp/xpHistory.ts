@@ -5,6 +5,8 @@ import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 import { XP_EVENTS, XP_EVENT_SPECS } from "./xp.constants";
+import { IMPORTED_XP_SPECS, isImportedXpType } from "./importedXp.constants";
+import { stakeOfImportedSubject } from "./importedXp";
 import { XP_SUBJECT_KINDS, type XpAbout, type XpLedgerRow, type XpSubjectKind } from "./xpHistory.types";
 import type { XpEventType } from "./xp.types";
 
@@ -52,6 +54,9 @@ export const XP_SUBJECT_KIND_OF: Record<XpEventType, XpSubjectKind> = {
   dayStreak365: XP_SUBJECT_KINDS.when,
   weekendGame: XP_SUBJECT_KINDS.when,
   backFromAway: XP_SUBJECT_KINDS.when,
+  yearHere: XP_SUBJECT_KINDS.when,
+  yearsHere5: XP_SUBJECT_KINDS.nobody,
+  yearsHere10: XP_SUBJECT_KINDS.nobody,
   // Playing. Every one of these is keyed by the game it happened in.
   firstGameEver: XP_SUBJECT_KINDS.nobody,
   gameFinished: XP_SUBJECT_KINDS.match,
@@ -74,6 +79,19 @@ export const XP_SUBJECT_KIND_OF: Record<XpEventType, XpSubjectKind> = {
   everyFamilyPlayed: XP_SUBJECT_KINDS.nobody,
   everyVariantPlayed: XP_SUBJECT_KINDS.nobody,
   everyVariantWonInFamily: XP_SUBJECT_KINDS.family,
+  // Milestones at one game, keyed on the game.
+  wins10: XP_SUBJECT_KINDS.game,
+  wins100: XP_SUBJECT_KINDS.game,
+  wins250: XP_SUBJECT_KINDS.game,
+  wins500: XP_SUBJECT_KINDS.game,
+  wins1000: XP_SUBJECT_KINDS.game,
+  losses10: XP_SUBJECT_KINDS.game,
+  losses50: XP_SUBJECT_KINDS.game,
+  losses100: XP_SUBJECT_KINDS.game,
+  losses250: XP_SUBJECT_KINDS.game,
+  losses500: XP_SUBJECT_KINDS.game,
+  losses1000: XP_SUBJECT_KINDS.game,
+  draws10: XP_SUBJECT_KINDS.game,
   // The computer ladder. A tier IS a member here — see BOT_MEMBERS.
   gradeBeaten: XP_SUBJECT_KINDS.person,
   everyGradeBeaten: XP_SUBJECT_KINDS.nobody,
@@ -216,6 +234,24 @@ export function xpLedgerRowFor(event: {
   dayKey: string;
   createdAt: Date;
 }): XpLedgerRow | null {
+  /* Credit imported from another site's record explains itself from its own
+     table, and is about the site or the game it names — words, since there is
+     nothing here to link to. Never looked up as an Itsutsu award. */
+  if (isImportedXpType(event.type)) {
+    const imported = IMPORTED_XP_SPECS[event.type];
+    const stake = stakeOfImportedSubject(event.subject);
+    return {
+      id: event.id,
+      type: event.type,
+      points: event.points,
+      label: imported.label,
+      kanji: imported.kanji,
+      blurb: imported.blurb,
+      about: stake === null ? { of: "words", said: event.subject, stale: true } : { of: "words", said: stake },
+      dayKey: event.dayKey,
+      earnedAt: event.createdAt.toISOString(),
+    };
+  }
   const type = event.type as XpEventType;
   const spec = XP_EVENT_SPECS[type];
   if (spec === undefined) return null;

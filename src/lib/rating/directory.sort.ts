@@ -1,4 +1,5 @@
 import type { SortSpec } from "@/lib/api/paging.types";
+import { XP_BADGE_SCOPE, XP_SCOPE_COLUMN, XP_SCOPE_INDEX } from "@/lib/xp/xpScope";
 
 /**
  * WHAT THE MEMBERS DIRECTORY SORTS BY — AND, JUST AS IMPORTANTLY, WHAT IT DOES
@@ -80,6 +81,7 @@ export type DirectorySortField =
   | "lost"
   | "drawn"
   | "xp"
+  | "xpEverywhere"
   | "createdAt";
 
 export const DIRECTORY_SORT_SPEC: SortSpec<DirectorySortField> = {
@@ -153,10 +155,13 @@ export const DIRECTORY_SORT_SPEC: SortSpec<DirectorySortField> = {
        * dash says why rather than claiming a standing.
        */
       param: "xp",
-      field: "xp",
+      /* The column the level badge and the XP cell are read from — `xpForBadge`
+         decides it once, and this reads the same decision — so the table sorts
+         by the number it prints, other sites' credit included. */
+      field: XP_SCOPE_COLUMN[XP_BADGE_SCOPE],
       label: "XP",
       firstPress: "desc",
-      index: "Member_xp_idx",
+      index: XP_SCOPE_INDEX[XP_BADGE_SCOPE],
     },
     {
       /*

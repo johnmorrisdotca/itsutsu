@@ -84,7 +84,7 @@ describe("a member signing in again", () => {
      */
     member();
     await awardAdmission(
-      { id: "m-one", lastSeenAt: new Date("2026-09-11T22:00:00Z"), timeZone: "", awayUntil: null },
+      { id: "m-one", lastSeenAt: new Date("2026-09-11T22:00:00Z"), timeZone: "", awayUntil: null, createdAt: null, played: null },
       new Date("2026-09-12T09:00:00Z"),
     );
     expect(ledger()).toEqual(["dailyVisit"]);
@@ -94,17 +94,17 @@ describe("a member signing in again", () => {
   it("earns nothing on a second sign-in the same day", async () => {
     member();
     const now = new Date("2026-09-12T09:00:00Z");
-    await awardAdmission({ id: "m-one", lastSeenAt: new Date("2026-09-11T22:00:00Z"), timeZone: "", awayUntil: null }, now);
+    await awardAdmission({ id: "m-one", lastSeenAt: new Date("2026-09-11T22:00:00Z"), timeZone: "", awayUntil: null, createdAt: null, played: null }, now);
     /* The second sign-in hands over the stamp the first one wrote, which is what
        a real `admitMember` does once it has updated the row. */
-    await awardAdmission({ id: "m-one", lastSeenAt: now, timeZone: "", awayUntil: null }, new Date("2026-09-12T18:00:00Z"));
+    await awardAdmission({ id: "m-one", lastSeenAt: now, timeZone: "", awayUntil: null, createdAt: null, played: null }, new Date("2026-09-12T18:00:00Z"));
     expect(ledger()).toEqual(["dailyVisit"]);
   });
 
   it("never pays joining to somebody who was already a member", async () => {
     member();
     await awardAdmission(
-      { id: "m-one", lastSeenAt: new Date("2026-09-11T22:00:00Z"), timeZone: "", awayUntil: null },
+      { id: "m-one", lastSeenAt: new Date("2026-09-11T22:00:00Z"), timeZone: "", awayUntil: null, createdAt: null, played: null },
       new Date("2026-09-12T09:00:00Z"),
     );
     expect(ledger()).not.toContain("joined");
@@ -118,14 +118,14 @@ describe("a member signing in again", () => {
      */
     member("America/Vancouver");
     await awardAdmission(
-      { id: "m-one", lastSeenAt: new Date("2026-09-12T05:00:00Z"), timeZone: "America/Vancouver", awayUntil: null },
+      { id: "m-one", lastSeenAt: new Date("2026-09-12T05:00:00Z"), timeZone: "America/Vancouver", awayUntil: null, createdAt: null, played: null },
       new Date("2026-09-12T08:00:00Z"),
     );
     expect(ledger()).toEqual(["dailyVisit"]);
     expect(events[0]?.subject).toBe("2026-09-12");
 
     await awardAdmission(
-      { id: "m-one", lastSeenAt: new Date("2026-09-12T08:00:00Z"), timeZone: "America/Vancouver", awayUntil: null },
+      { id: "m-one", lastSeenAt: new Date("2026-09-12T08:00:00Z"), timeZone: "America/Vancouver", awayUntil: null, createdAt: null, played: null },
       new Date("2026-09-12T20:00:00Z"),
     );
     expect(ledger()).toEqual(["dailyVisit"]);
@@ -144,7 +144,7 @@ describe("a member joining", () => {
      * shown "+5 a new day" having never been told they were paid for joining.
      */
     member();
-    await awardAdmission({ id: "m-one", lastSeenAt: null, timeZone: null, awayUntil: null }, new Date("2026-09-12T09:00:00Z"));
+    await awardAdmission({ id: "m-one", lastSeenAt: null, timeZone: null, awayUntil: null, createdAt: null, played: null }, new Date("2026-09-12T09:00:00Z"));
     expect(ledger()).toEqual(["joined", "dailyVisit"]);
     const flash = members.get("m-one")?.xpFlash as { awards: { type: string }[] };
     expect(flash.awards.map((one) => one.type)).toEqual(["joined", "dailyVisit"]);
@@ -157,7 +157,7 @@ describe("a member joining", () => {
      * on their eighth day, for ever, and nothing would have said why.
      */
     member();
-    await awardAdmission({ id: "m-one", lastSeenAt: null, timeZone: null, awayUntil: null }, new Date("2026-09-12T09:00:00Z"));
+    await awardAdmission({ id: "m-one", lastSeenAt: null, timeZone: null, awayUntil: null, createdAt: null, played: null }, new Date("2026-09-12T09:00:00Z"));
     expect(events.filter((row) => row.type === "dailyVisit").map((row) => row.subject)).toEqual(["2026-09-12"]);
   });
 
@@ -171,7 +171,7 @@ describe("a member joining", () => {
       return [];
     };
     try {
-      await awardAdmission({ id: "m-one", lastSeenAt: null, timeZone: null, awayUntil: null }, new Date("2026-09-12T09:00:00Z"));
+      await awardAdmission({ id: "m-one", lastSeenAt: null, timeZone: null, awayUntil: null, createdAt: null, played: null }, new Date("2026-09-12T09:00:00Z"));
     } finally {
       // Put the fake back, or every case added after this one reads nothing.
       prismaFake.xpEvent.findMany = real;

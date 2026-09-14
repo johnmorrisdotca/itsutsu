@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { xpLevelFor } from "../src/lib/xp/xpCurve";
 import { xpLevelName } from "../src/lib/xp/levelNames";
 import { memberContext } from "./members";
+import { standingData } from "./xpStanding";
 
 /**
  * A MEMBER'S OWN XP LEDGER, DRIVEN THE WAY A MEMBER REACHES IT.
@@ -138,7 +139,9 @@ async function withLedger(browser: Browser, baseURL: string, who: string): Promi
   const rows = ledgerFor(member.id, gameId);
   await prisma.xpEvent.createMany({ data: rows, skipDuplicates: true });
   const total = rows.reduce((sum, row) => sum + row.points, 0);
-  await prisma.member.update({ where: { id: member.id }, data: { xp: total } });
+  /* All three totals: /me reads the badge's total, which is `xpEverywhere`, and
+     a seed writing `xp` alone showed "0 XP" (CI run 34825313782). */
+  await prisma.member.update({ where: { id: member.id }, data: standingData({ here: total }) });
 
   return { context, email, memberId: member.id, gameId, total };
 }

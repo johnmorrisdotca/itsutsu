@@ -4,6 +4,7 @@ import { XP_DAY_STREAK_MILESTONES } from "./xp.constants";
 import { xpDayKey } from "./xpDay";
 import {
   XP_DAY_RUN_MAX,
+  anniversaryAwards,
   backFromAwayAward,
   dayRunEndingAt,
   dayStreakAward,
@@ -22,6 +23,35 @@ import {
  */
 
 const utc = (at: string) => new Date(at);
+
+describe("anniversaries of membership", () => {
+  const joined = "2026-09-09";
+
+  it("pays each year reached since the last visit, keyed on the anniversary's day", () => {
+    expect(anniversaryAwards({ joined, lastSeen: "2027-09-08", today: "2027-09-09", played: 100 })).toEqual([
+      { type: "yearHere", subject: "2027-09-09" },
+    ]);
+    // Away for the whole second year: both are paid on the way back.
+    expect(anniversaryAwards({ joined, lastSeen: "2027-01-01", today: "2028-10-01", played: 100 })).toEqual([
+      { type: "yearHere", subject: "2027-09-09" },
+      { type: "yearHere", subject: "2028-09-09" },
+    ]);
+  });
+
+  it("pays the five- and ten-year milestones once, when they are crossed", () => {
+    const five = anniversaryAwards({ joined, lastSeen: "2031-09-08", today: "2031-09-09", played: 400 });
+    expect(five).toEqual([{ type: "yearHere", subject: "2031-09-09" }, { type: "yearsHere5" }]);
+    expect(anniversaryAwards({ joined, lastSeen: "2031-09-09", today: "2031-09-10", played: 400 })).toEqual([]);
+    expect(anniversaryAwards({ joined, lastSeen: "2036-09-01", today: "2036-09-09", played: 400 })).toContainEqual({ type: "yearsHere10" });
+  });
+
+  it("pays nothing inside the first year, short of a hundred games, or with a fact unread", () => {
+    expect(anniversaryAwards({ joined, lastSeen: null, today: "2027-09-01", played: 500 })).toEqual([]);
+    expect(anniversaryAwards({ joined, lastSeen: "2027-09-08", today: "2027-09-09", played: 99 })).toEqual([]);
+    expect(anniversaryAwards({ joined: null, lastSeen: "2027-09-08", today: "2027-09-09", played: 500 })).toEqual([]);
+    expect(anniversaryAwards({ joined, lastSeen: "2027-09-08", today: "2027-09-09", played: null })).toEqual([]);
+  });
+});
 
 describe("the day before", () => {
   it("steps over the end of a month, a year and February", () => {

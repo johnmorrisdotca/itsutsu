@@ -79,6 +79,22 @@ function plan(input: {
   });
 }
 
+describe("milestones at one game, replayed", () => {
+  it("pays ten wins on the tenth win at that game, and never for wins at another", () => {
+    const games = [
+      ...Array.from({ length: 9 }, (_, index) => beat("a", "b", `2026-02-0${(index % 5) + 2}T0${index}:00:00Z`, { variant: "reversi" })),
+      beat("a", "b", "2026-02-09T12:00:00Z", { variant: "renju" }),
+      beat("a", "b", "2026-02-10T12:00:00Z", { variant: "reversi" }),
+    ].sort((one, two) => one.playedAt.getTime() - two.playedAt.getTime());
+    const result = plan({ members: [member("a"), member("b")], games });
+    const tenth = result.batches.filter((batch) => batch.paying.some((award) => award.type === XP_EVENTS.wins10));
+    expect(tenth.map((batch) => [batch.memberId, batch.at.toISOString()])).toEqual([["a", "2026-02-10T12:00:00.000Z"]]);
+    expect(tenth[0]?.paying.find((award) => award.type === XP_EVENTS.wins10)?.subject).toBe("reversi");
+    // Ten losses at reversi for b: a Good Sport.
+    expect(result.batches.some((batch) => batch.memberId === "b" && batch.paying.some((award) => award.type === XP_EVENTS.losses10))).toBe(true);
+  });
+});
+
 const awardsFor = (made: BackfillPlan, memberId: string) =>
   made.batches.filter((batch) => batch.memberId === memberId).flatMap((batch) => batch.paying);
 

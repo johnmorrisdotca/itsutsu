@@ -1,4 +1,4 @@
-import { XP_EVENTS, dayStreakMilestoneFor } from "./xp.constants";
+import { XP_EVENTS, XP_YEAR_AWARDS, dayStreakMilestoneFor, wholeYearsBetween } from "./xp.constants";
 import type { XpAward } from "./xp.types";
 import { type DayKey } from "./xpDay";
 
@@ -78,6 +78,53 @@ export function dayRunEndingAt(days: readonly DayKey[], today: DayKey): number {
 export function dayStreakAward(run: number, today: DayKey): XpAward | null {
   const milestone = dayStreakMilestoneFor(run);
   return milestone === null ? null : { type: milestone, subject: today };
+}
+
+/**
+ * The anniversaries of membership this visit is the first to see — every year
+ * reached since the previous visit, and a milestone at five or ten.
+ *
+ * NO READ AT ALL, and it fires once per anniversary: the join day, the previous
+ * visit's day and today's are all in hand, so "has a new anniversary arrived" is
+ * whole years to today against whole years to the last visit. A member away for
+ * the whole of their second year is paid for it on their return. The day keys
+ * are the member's own, like every other rule about days.
+ *
+ * NOTHING WITHOUT A HUNDRED GAMES here, which is the guard John approved for
+ * years anywhere: joining and leaving pays nothing. The count is taken on the
+ * day of the visit, so an anniversary reached short of a hundred games is not
+ * paid when the hundredth comes later — the year counted only if the games were
+ * there when it ended.
+ *
+ * Null facts pay nothing: an unread join day or game count is the rule declining
+ * to measure.
+ */
+export function anniversaryAwards({
+  joined,
+  lastSeen,
+  today,
+  played,
+}: {
+  /** The day they joined, in their zone, or null where it was not read. */
+  joined: DayKey | null;
+  /** The previous visit's day, or null for a first visit. */
+  lastSeen: DayKey | null;
+  today: DayKey;
+  played: number | null;
+}): XpAward[] {
+  if (joined === null || played === null || played < XP_YEAR_AWARDS.needGames) return [];
+  const now = wholeYearsBetween(joined, today);
+  if (now === null || now < 1) return [];
+  const before = lastSeen === null ? 0 : (wholeYearsBetween(joined, lastSeen) ?? 0);
+  const awards: XpAward[] = [];
+  for (let year = before + 1; year <= now; year += 1) {
+    /* Keyed on the anniversary's own day, so each year is its own row. */
+    awards.push({ type: XP_YEAR_AWARDS.year, subject: `${Number(joined.slice(0, 4)) + year}${joined.slice(4)}` });
+  }
+  for (const milestone of XP_YEAR_AWARDS.milestones) {
+    if (before < milestone.years && milestone.years <= now) awards.push({ type: milestone.type });
+  }
+  return awards;
 }
 
 /**

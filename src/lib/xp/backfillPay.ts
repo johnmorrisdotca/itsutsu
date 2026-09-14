@@ -76,6 +76,13 @@ export type MemberState = {
   held: Set<string>;
   perDay: Map<string, number>;
   counts: Map<string, number>;
+  /**
+   * Results at each game so far, keyed `variant` and outcome — what the
+   * milestones at one game are counted against. Counted from the games the
+   * replay walks, never seeded from the ledger: a milestone is a count of games,
+   * and the walk sees every decided game from the first.
+   */
+  results: Map<string, number>;
 };
 
 /**
@@ -105,7 +112,7 @@ export function seedStates(held: readonly HeldEvent[]): Map<string, MemberState>
 export function stateIn(states: Map<string, MemberState>, memberId: string): MemberState {
   const held = states.get(memberId);
   if (held !== undefined) return held;
-  const fresh: MemberState = { run: null, held: new Set(), perDay: new Map(), counts: new Map() };
+  const fresh: MemberState = { run: null, held: new Set(), perDay: new Map(), counts: new Map(), results: new Map() };
   states.set(memberId, fresh);
   return fresh;
 }

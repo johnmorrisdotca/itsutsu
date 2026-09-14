@@ -109,7 +109,10 @@ export async function awardFinishedGameXp(
   const names = new Map(sides.map((side) => [side.memberId, side.name]));
 
   for (const side of sides) {
-    const opponent = await opponentFacts(game, side, emails, names);
+    const [opponent, sameResultsAtGame] = await Promise.all([
+      opponentFacts(game, side, emails, names),
+      sameResultsAt(game, side),
+    ]);
     const paid = await awardXp({
       memberId: side.memberId,
       awards: gameAwards(game, {
@@ -119,6 +122,7 @@ export async function awardFinishedGameXp(
         /* Their weekend, not the server's. Null unless it really is one for
            them, so nothing is paid on a guess about whose Sunday it is. */
         weekendWeek: isWeekend(now, side.timeZone) ? xpWeekKey(now, side.timeZone) : null,
+        sameResultsAtGame,
       }),
       now,
       /* Which game this batch was for, so the result card can say it rather than
@@ -131,6 +135,58 @@ export async function awardFinishedGameXp(
     await awardTourBonuses({ memberId: side.memberId, paid, variant: game.variant, now });
     await awardLadderBonus({ memberId: side.memberId, paid, now });
   }
+}
+
+/**
+ * How many games at this game this member has now finished with this outcome,
+ * this one included — for the milestones at one game.
+ *
+ * ONE INDEXED COUNT PER BOUND SEAT PER FINISHED GAME, on `Game_blackMemberId_idx`
+ * and `Game_whiteMemberId_idx`. The ending has already written the row as
+ * finished in its own transaction before `recordPlayed` runs, so the game being
+ * decided is in the count.
+ *
+ * The set is `playedSides`'s set, restated as a where because a count cannot
+ * call a function: a decided game not filed as abandoned, matched by member id
+ * only, and a game against yourself counted once from black. Null for a variant
+ * this deploy cannot name, and for a failed read — never nought, which would be
+ * a count nobody made.
+ */
+async function sameResultsAt(game: { variant: string }, side: XpSide): Promise<number | null> {
+  if (variantOf(game) === null) return null;
+  try {
+    return await prisma.game.count({ where: sameResultsWhere(side.memberId, game.variant, side.outcome) });
+  } catch (problem) {
+    console.error("Could not count results at a game for XP", problem);
+    return null;
+  }
+}
+
+/** The games at one variant where this member had this outcome, as `playedSides` decides it. */
+export function sameResultsWhere(memberId: string, variant: string, outcome: StreakOutcome) {
+  /* White is only counted where black is somebody else: a game against yourself
+     is answered once, from black. `not` alone would drop an unbound black seat,
+     since NULL <> id is not true in SQL, so the null is asked for by name. */
+  const blackIsSomebodyElse = { OR: [{ blackMemberId: null }, { blackMemberId: { not: memberId } }] };
+  const seats =
+    outcome === STREAK_KINDS.draw
+      ? [{ blackMemberId: memberId }, { whiteMemberId: memberId, ...blackIsSomebodyElse }]
+      : outcome === STREAK_KINDS.win
+        ? [
+            { blackMemberId: memberId, winner: STONES.black },
+            { whiteMemberId: memberId, winner: STONES.white, ...blackIsSomebodyElse },
+          ]
+        : [
+            { blackMemberId: memberId, winner: STONES.white },
+            { whiteMemberId: memberId, winner: STONES.black, ...blackIsSomebodyElse },
+          ];
+  return {
+    status: "finished" as const,
+    result: { not: "abandoned" as const },
+    variant,
+    ...(outcome === STREAK_KINDS.draw ? { winner: null } : {}),
+    OR: seats,
+  };
 }
 
 /**

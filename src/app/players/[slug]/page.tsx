@@ -35,6 +35,8 @@ import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { fetchPlayer } from "@/lib/rating/players";
 import { ratingShown, tierShown } from "@/lib/rating/shownRecord";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
+import { importedFactsFor } from "@/lib/xp/importedRecipients";
+import { xpForBadge } from "@/lib/xp/xpScope";
 
 export const metadata = { title: "Player" };
 
@@ -337,7 +339,16 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           nought. A program's page draws it like anyone's — John: "i still
           don't see Levels for all equally and bots don't have XP".
         */}
-        <MemberLevel xp={member?.xp} />
+        {/*
+          The badge's total — Everywhere, other sites' credit included — decided
+          in one place (`xpForBadge`), with the line saying how much of it came
+          from elsewhere. A lookup that did not read both totals draws nothing
+          rather than a guess.
+        */}
+        <MemberLevel
+          xp={member?.xp === undefined || member.xpEverywhere === undefined ? undefined : xpForBadge({ xp: member.xp, xpEverywhere: member.xpEverywhere })}
+          imported={member === null || member.xpImported === undefined ? null : importedFactsFor(member.name, member.xpImported)}
+        />
         {offered && scope === RECORD_SCOPES.everywhere ? (
           <p className="text-xs text-muted" data-testid="counting-everywhere">
             {/*

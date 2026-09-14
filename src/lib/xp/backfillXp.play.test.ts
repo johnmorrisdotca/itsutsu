@@ -106,6 +106,7 @@ import { foldEmail } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 
 import { awardXp } from "./awardXp";
+import { IMPORTED_XP_TYPES } from "./importedXp.constants";
 import { ledgerDisagreements } from "./backfillPay";
 import { XP_BACKFILL_COVERAGE } from "./backfillXp.constants";
 import { buddyLinkFor, planBackfill } from "./backfillXp";
@@ -134,9 +135,18 @@ function server(): string {
   }
 }
 
-/** `sum(XpEvent.points)` per member — the right-hand side of the one check. */
+/**
+ * `sum(XpEvent.points)` per member over the ITSUTSU rows — the right-hand side
+ * of the one check. Imported rows are credit for another site and are summed
+ * into `Member.xpImported`, never `Member.xp`, so counting them here would read
+ * every member with a kept record as a disagreement and refuse the whole run.
+ */
 async function ledgerSums(): Promise<Map<string, number>> {
-  const rows = await prisma.xpEvent.groupBy({ by: ["memberId"], _sum: { points: true } });
+  const rows = await prisma.xpEvent.groupBy({
+    by: ["memberId"],
+    where: { type: { notIn: [...IMPORTED_XP_TYPES] } },
+    _sum: { points: true },
+  });
   return new Map(rows.map((row) => [row.memberId, row._sum.points ?? 0]));
 }
 

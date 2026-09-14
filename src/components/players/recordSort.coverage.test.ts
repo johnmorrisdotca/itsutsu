@@ -158,13 +158,16 @@ describe("the members directory's sortable headings", () => {
   it("presses XP on the index that answers it", () => {
     /*
      * The column John asked for by name. Its sort has to be the directory's own
-     * `xp` word on `Member_xp_idx`; `paging.coverage.test.ts` checks the index
-     * is really in the schema, and this checks the heading reaches that word.
+     * `xp` word on the column the cell prints — `Member.xpEverywhere` since
+     * imported experience, because the badge counts another site's credit
+     * (`XP_BADGE_SCOPE`) and a table must sort by what it shows. If the badge's
+     * scope is ever changed to Itsutsu only, this is where that shows up.
+     * `paging.coverage.test.ts` checks the index is really in the schema.
      */
     expect(by.xp).toBe("xp");
     const column = DIRECTORY_SORT_SPEC.columns.find((one) => one.param === "xp");
-    expect(column?.field).toBe("xp");
-    expect(column?.index).toBe("Member_xp_idx");
+    expect(column?.field).toBe("xpEverywhere");
+    expect(column?.index).toBe("Member_xpEverywhere_idx");
     expect(column?.firstPress).toBe("desc");
   });
 

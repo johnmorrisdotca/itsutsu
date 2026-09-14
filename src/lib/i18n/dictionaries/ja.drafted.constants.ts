@@ -251,6 +251,36 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   },
 
   /*
+   * Credit for another site's record, and which total a board counts. 通算 and
+   * 五つ follow the chips' own "通算" and "五" on the players page, so the
+   * sentence and the chip above it use one word each.
+   */
+  "xp.imported.includes": {
+    text: "{sites}で対局した{games}局の分として、{xp}経験値を含みます。",
+    back: "Includes {xp} experience points as credit for the {games} games played on {sites}.",
+  },
+  "xp.imported.includesElsewhere": {
+    text: "他のサイトで対局した分として、{xp}経験値を含みます。",
+    back: "Includes {xp} experience points as credit for games played on other sites.",
+  },
+  "xp.imported.listLast": {
+    text: "{list}と{last}",
+    back: "{list} and {last}",
+  },
+  "xp.scope.everywhere": {
+    text: "通算で集計：ここで得た経験値に、他のサイトでの対局分を加えています。",
+    back: "Counting in total: the credit for games on other sites is added to the experience points earned here.",
+  },
+  "xp.scope.here": {
+    text: "このサイトのみで集計：ここで得た経験値だけで、他のサイトの分は含みません。",
+    back: "Counting this site only: only the experience points earned here; the credit from other sites is not included.",
+  },
+  "xp.scope.countEverywhere": {
+    text: "通算で数える",
+    back: "Count in total.",
+  },
+
+  /*
    * The button that downloads a finished game as an .sgf file. 形式 keeps SGF
    * reading as a file format rather than a thing being downloaded.
    */

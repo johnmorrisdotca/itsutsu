@@ -9,6 +9,14 @@ import { WhoFilter } from "@/components/players/WhoFilter";
 import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
 import { XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
 import { xpWhoFor } from "@/lib/xp/xpWhoServer";
+import { RecordScopeBar } from "@/components/players/RecordScopeBar";
+import { ImportedXpNote } from "@/components/xp/ImportedXpNote";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { RECORD_SCOPES } from "@/lib/rating/recordScope";
+import { importedFactsFor } from "@/lib/xp/importedRecipients";
+import { importedNoteText } from "@/lib/xp/importedNote";
+import { xpScopeHref } from "@/lib/xp/xpScope";
+import { xpScopeFor } from "@/lib/xp/xpScopeServer";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
@@ -71,9 +79,18 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
   if (rung === null) notFound();
 
   const range = levelXpRange(level)!;
-  // The same three-way choice as the board, on the same memory: one board, one answer.
-  const who = await xpWhoFor(await searchParams);
-  const [roll, viewer] = await Promise.all([membersAtLevel(level, who), viewerXp()]);
+  /* The same two choices as the board — who, and how much is counted — on the
+     same memory: one board, one answer. */
+  const asked = await searchParams;
+  const [who, scope, say] = await Promise.all([xpWhoFor(asked), xpScopeFor(asked), currentSpeaker()]);
+  const [roll, viewer] = await Promise.all([membersAtLevel(level, who, scope), viewerXp()]);
+  const query = new URLSearchParams({ who, scope }).toString();
+  const notes = new Map(
+    roll.members.flatMap((member) => {
+      const facts = importedFactsFor(member.name, member.imported);
+      return facts === null ? [] : [[member.id, <ImportedXpNote key={member.id} note={importedNoteText(say, facts)} />] as const];
+    }),
+  );
 
   return (
     <Page width="standard" gap="gap-6">
@@ -158,17 +175,34 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
           <Paired en="Standing here" kanji="居る" kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(levelPath(level), "", next)} label="Which players the rung lists" />
+          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(levelPath(level), query, next)} label="Which players the rung lists" />
+          <RecordScopeBar
+            base={levelPath(level)}
+            scope={scope}
+            hrefFor={(next) => xpScopeHref(levelPath(level), query, next)}
+            label="How much experience the rung counts"
+          />
           {who !== DIRECTORY_WHO.everyone ? (
             <p className="text-xs text-muted" data-testid="level-narrowed">
               Narrowed to {XP_WHO_SAID[who]}.{" "}
-              <Link href={xpWhoHref(levelPath(level), "", DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
+              <Link href={xpWhoHref(levelPath(level), query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
                 Show everyone
               </Link>
             </p>
           ) : null}
         </div>
-        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} />
+        <p className="text-xs text-muted" data-testid="level-scope-said" data-scope={scope}>
+          {say.say(scope === RECORD_SCOPES.here ? "xp.scope.here" : "xp.scope.everywhere")}
+          {scope === RECORD_SCOPES.here ? (
+            <>
+              {" "}
+              <Link href={xpScopeHref(levelPath(level), query, RECORD_SCOPES.everywhere)} className="underline underline-offset-4">
+                {say.say("xp.scope.countEverywhere")}
+              </Link>
+            </>
+          ) : null}
+        </p>
+        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} />
       </section>
     </Page>
   );
@@ -177,9 +211,9 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
 /**
  * Who is on this rung.
  *
- * **The empty table shows itself.** An empty rung is a true fact about a site
- * where nobody's experience has been backfilled — most of the hundred hold
- * nobody today — so it keeps its headings and its shape and offers the way in.
+ * **The empty table shows itself.** An empty rung is a true fact about the site
+ * — most of the hundred hold nobody today — so it keeps its headings and its
+ * shape and offers the way in.
  * Hiding it would turn a hundred pages into a hundred apologies; showing it
  * turns them into a hundred invitations.
  */
@@ -188,11 +222,14 @@ function WhoIsHere({
   roll,
   viewerId,
   who,
+  notes,
 }: {
   level: number;
   roll: LevelRoll;
   viewerId: string | null;
   who: DirectoryWho;
+  /** The justification under a total that includes another site's credit, by member id. */
+  notes: ReadonlyMap<string, React.ReactNode>;
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -234,6 +271,7 @@ function WhoIsHere({
                     {member.id === viewerId ? (
                       <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>
                     ) : null}
+                    {notes.get(member.id) ?? null}
                   </td>
                   <td className={CELL}>{countText(member.xp)}</td>
                 </tr>

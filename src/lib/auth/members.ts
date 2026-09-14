@@ -58,6 +58,10 @@ export type NamedMember = {
   bio?: string;
   /** Their XP total. Absent means the lookup did not read it — see `MemberLevel`. */
   xp?: number;
+  /** That, plus credit for another site's record — see `xpForBadge`. Absent means not read. */
+  xpEverywhere?: number;
+  /** What of `xpEverywhere` came from another site. Absent means not read. */
+  xpImported?: number;
 };
 
 /** Emails are compared folded; Google gives them in whatever case the user typed once. */
@@ -114,7 +118,7 @@ export async function admitMember(
     /* The day's XP rides this lookup, which was happening anyway. It is the
        member AS THEY WERE — the only moment `lastSeenAt` still says when they
        were last here, since the update below is about to overwrite it. */
-    select: { id: true, email: true, lastSeenAt: true, timeZone: true, awayUntil: true, country: true, preferences: true },
+    select: { id: true, email: true, lastSeenAt: true, timeZone: true, awayUntil: true, country: true, preferences: true, createdAt: true, played: true },
   });
   if (existing === null) {
     const row = await prisma.member.create({
@@ -133,7 +137,7 @@ export async function admitMember(
        today, which would refuse it. See `awardAdmission`. Quiet by construction
        — `awardXp` swallows and logs — because a ledger write must never be able
        to fail a sign-in. */
-    await awardAdmission({ id: row.id, lastSeenAt: null, timeZone: null, awayUntil: null });
+    await awardAdmission({ id: row.id, lastSeenAt: null, timeZone: null, awayUntil: null, createdAt: null, played: null });
     return { email: row.email ?? email, name: row.name, picture: row.picture, created: true };
   }
   // The name is the member's to choose; Google's is only the first suggestion.
@@ -318,11 +322,20 @@ export const memberRowFor = cache(async (key: string) =>
          `src/lib/xp/xpFlash.ts`. `id` comes along because `currentMemberId`
          was paying for a second `findUnique` to get it. */
       xp: true,
+      /* Both other totals, for the badge and the board's Everywhere: see
+         `xpForBadge` in `src/lib/xp/xpScope.ts`. Columns on the same row. */
+      xpEverywhere: true,
+      xpImported: true,
       xpFlash: true,
       /* And the end of their away spell, which is what `backFromAway` is keyed
          on. A column on a row being read anyway, so "are they back" costs two
          comparisons rather than a query — see `xpHabit.ts`. */
       awayUntil: true,
+      /* And when they joined and how many games they have finished, which is
+         all an anniversary needs — comparisons on the same row, see
+         `anniversaryAwards` in `xpHabit.ts`. */
+      createdAt: true,
+      played: true,
       /* And where they say they are, which is the third rung of the time-zone
          order: a member with a country and no zone is guessed rather than left
          on UTC. Another field off the same row — see `zoneGuess.ts`. */
@@ -435,6 +448,8 @@ export async function findMemberById(id: string): Promise<NamedMember | null> {
       timeZone: true,
       bio: true,
       xp: true,
+      xpEverywhere: true,
+      xpImported: true,
     },
   });
   return row;
@@ -463,6 +478,8 @@ export async function findMemberByName(name: string): Promise<NamedMember | null
       timeZone: true,
       bio: true,
       xp: true,
+      xpEverywhere: true,
+      xpImported: true,
     },
   });
   return row;

@@ -168,6 +168,8 @@ export async function fetchComputerPlayers(): Promise<DirectoryEntry[]> {
 
 type MemberRow = Awaited<ReturnType<typeof prisma.member.findMany>>[number];
 
+import { xpForBadge } from "@/lib/xp/xpScope";
+
 /**
  * Whole `Member` rows turned into directory rows, with the rating each name has
  * earned found in one query rather than one per row.
@@ -229,7 +231,9 @@ export async function toDirectory(members: MemberRow[]): Promise<DirectoryEntry[
     elsewhere: keptRecordFor(member.name),
     botTier: member.botTier,
     unclaimableBecause: member.unclaimableBecause,
-    // Off the member's own row, already fetched. See the field's own note.
-    xp: member.xp,
+    /* Off the member's own row, already fetched. See the field's own note. The
+       badge's total, decided in one place — `xpForBadge` — which is the column
+       the directory's XP order sorts by too, so a table sorts by what it prints. */
+    xp: xpForBadge(member),
   }));
 }

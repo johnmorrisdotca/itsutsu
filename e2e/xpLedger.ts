@@ -8,6 +8,7 @@ import {
   expiryInDays,
   signSession,
 } from "../src/lib/auth/session";
+import { standingData } from "./xpStanding";
 
 /**
  * READING THE LEDGER FROM A BROWSER TEST, AND MAKING THE MEMBER IT READS ABOUT.
@@ -128,7 +129,8 @@ export async function setVisitorStanding(visitor: Visitor, standing: { daysAgo: 
   try {
     await prisma.member.update({
       where: { id: visitor.id },
-      data: { xp: standing.xp, lastSeenAt: new Date(Date.now() - standing.daysAgo * 86_400_000) },
+      // All three totals: a toast names the level the badge shows, which is read from xpEverywhere.
+      data: { ...standingData({ here: standing.xp }), lastSeenAt: new Date(Date.now() - standing.daysAgo * 86_400_000) },
     });
   } finally {
     await prisma.$disconnect();

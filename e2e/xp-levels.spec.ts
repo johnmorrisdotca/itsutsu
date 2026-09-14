@@ -13,8 +13,8 @@ import { watchForCrashes } from "./support";
  * would have produced — AGENTS.md's "drive the control, not the mechanism", and
  * the reason the language picker shipped broken while every test of it passed.
  *
- * **It brings its own member.** The development database has nobody with any
- * experience on it, because nothing is backfilled — so a spec that asserted
+ * **It brings its own member.** What a development database holds in experience
+ * is whatever earlier runs happened to leave — so a spec that asserted
  * somebody stands on level 60 would have to skip, and a skip reports green while
  * saying nothing. `seedXpMember` makes the row, the spec asserts about that row
  * and no other, and `removeXpMembers` takes back exactly what it made.

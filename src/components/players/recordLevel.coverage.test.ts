@@ -239,9 +239,13 @@ describe("a person's public page shows their standing through MemberLevel", () =
      * AGENTS.md's own example of a value that happens to be in range standing
      * in for "I do not know". The page must pass the absence through and let
      * the component answer it.
+     *
+     * The total is the badge's since imported experience — `xpForBadge`, one
+     * place — and the absence still passes through as `undefined` when either
+     * column was not read.
      */
     const source = read(PAGE);
-    expect(source).toMatch(/<MemberLevel\s+xp=\{member\?\.xp\}/);
+    expect(source).toMatch(/<MemberLevel\s+xp=\{member\?\.xp === undefined \|\| member\.xpEverywhere === undefined \? undefined : xpForBadge\(/);
     expect(source).not.toMatch(/xp=\{[^}]*\?\?\s*0/);
     /*
      * And whether this is a program, so a bot's own page draws no rung. Since

@@ -63,6 +63,9 @@ export type AdmittedMember = {
   lastSeenAt: Date | null;
   timeZone: string | null;
   awayUntil: Date | null;
+  /** For the anniversaries; null for a row this admission made, which has none. */
+  createdAt: Date | null;
+  played: number | null;
 };
 
 export async function awardAdmission(row: AdmittedMember, now = new Date()): Promise<void> {

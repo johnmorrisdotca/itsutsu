@@ -16,6 +16,59 @@ import {
 import { XP_PEOPLE_ONLY, earnableByProgram } from "./xp.constants";
 import type { XpEventType } from "./xp.types";
 import { toToasts } from "./xpFlash";
+import { readFileSync } from "node:fs";
+
+import { RECORD_SCOPES } from "@/lib/rating/recordScope";
+
+import { IMPORTED_XP_TYPES, isImportedXpType } from "./importedXp.constants";
+import { XP_SCOPE_COLUMN } from "./xpScope";
+import { readdirSync } from "node:fs";
+import { join as joinPath } from "node:path";
+
+/**
+ * Files allowed to write a member's `xp` without `xpEverywhere`, each with its
+ * reason. Empty on purpose: every seed today goes through `standingData`.
+ */
+const XP_SEED_EXCEPTIONS: Record<string, string> = {};
+
+/** Every file that could seed a member: the browser suite, the scripts, and the play runners. */
+function* seedingFiles(): Generator<string> {
+  const walk = function* (dir: string): Generator<string> {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = joinPath(dir, entry.name);
+      if (entry.isDirectory()) yield* walk(path);
+      else yield path;
+    }
+  };
+  for (const path of walk("e2e")) if (/\.(ts|mjs)$/.test(path)) yield path;
+  for (const path of walk("scripts")) if (/\.(ts|mjs)$/.test(path)) yield path;
+  for (const path of walk("src")) if (path.endsWith(".play.test.ts")) yield path;
+}
+
+/**
+ * Every Prisma member write in `source` — create, createMany, update,
+ * updateMany, upsert — whose argument sets an `xp` key (`xp:` or shorthand
+ * `xp,`) and neither writes `xpEverywhere` nor goes through `standingData`.
+ * The argument is taken by matching its parentheses, so a call spread over
+ * many lines is read whole; `xp: true` is a select, not a write.
+ */
+function memberWritesMissingEverywhere(source: string): string[] {
+  const found: string[] = [];
+  const call = /member\.(create|createMany|update|updateMany|upsert)\(/g;
+  for (let match = call.exec(source); match !== null; match = call.exec(source)) {
+    let depth = 1;
+    let end = match.index + match[0].length;
+    while (end < source.length && depth > 0) {
+      if (source[end] === "(") depth += 1;
+      else if (source[end] === ")") depth -= 1;
+      end += 1;
+    }
+    const argument = source.slice(match.index + match[0].length, end - 1);
+    const writesXp = /(^|[{,\s])xp\s*(:(?!\s*true\b)|,|\s*\})/.test(argument);
+    if (writesXp && !/xpEverywhere|standingData\(/.test(argument)) found.push(argument.replace(/\s+/g, " ").trim().slice(0, 120));
+  }
+  return found;
+}
 
 /**
  * The gate on the catalogue, in the shape of `backlog.coverage.test.ts` and
@@ -159,6 +212,10 @@ describe("the economy holds its shape", () => {
       "specialistBeaten", "firstBuddy", "winStreak3", "winStreak5", "winStreak10",
       "revengeWin", "comeback", "nameSet", "countrySet", "bioSet", "wordsSet",
       "seatClaimedElsewhere", "joined",
+      // Once per game per member, and once per anniversary: nothing to farm.
+      "wins10", "wins100", "wins250", "wins500", "wins1000",
+      "losses10", "losses50", "losses100", "losses250", "losses500", "losses1000", "draws10",
+      "yearHere", "yearsHere5", "yearsHere10",
     ];
     for (const type of milestones) {
       expect(XP_EVENT_SPECS[type].cap, `${type} is capped`).toBeUndefined();
@@ -204,6 +261,9 @@ describe("what is priced and not yet paid", () => {
     //
     // Which leaves `comeback`, refused in writing. Every other kind in the
     // catalogue is paid by something.
+    //
+    // John's package of 2026-09-14 added fifteen: the milestones at one game on
+    // `recordPlayed`, and the anniversaries on the first visit of a day.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
     expect(wired.sort()).toEqual([
       "applauseGiven",
@@ -219,6 +279,7 @@ describe("what is priced and not yet paid", () => {
       "dayStreak30",
       "dayStreak365",
       "dayStreak7",
+      "draws10",
       "everyFamilyPlayed",
       "everyGradeBeaten",
       "everyVariantPlayed",
@@ -235,6 +296,12 @@ describe("what is priced and not yet paid", () => {
       "gradeBeaten",
       "joined",
       "longGame",
+      "losses10",
+      "losses100",
+      "losses1000",
+      "losses250",
+      "losses50",
+      "losses500",
       "nameSet",
       "rematchPlayed",
       "revengeWin",
@@ -246,9 +313,17 @@ describe("what is priced and not yet paid", () => {
       "winStreak10",
       "winStreak3",
       "winStreak5",
+      "wins10",
+      "wins100",
+      "wins1000",
+      "wins250",
+      "wins500",
       "wonVsBuddy",
       "wonVsPerson",
       "wordsSet",
+      "yearHere",
+      "yearsHere10",
+      "yearsHere5",
     ]);
   });
 
@@ -427,6 +502,20 @@ describe("every award is either people-only or a game result", () => {
     XP_EVENTS.everyGradeBeaten,
     XP_EVENTS.specialistBeaten,
     XP_EVENTS.weekendGame,
+    /* The milestones at one game — losses and draws too, which are as much a
+       fact about finished games as a win is. */
+    XP_EVENTS.wins10,
+    XP_EVENTS.wins100,
+    XP_EVENTS.wins250,
+    XP_EVENTS.wins500,
+    XP_EVENTS.wins1000,
+    XP_EVENTS.losses10,
+    XP_EVENTS.losses50,
+    XP_EVENTS.losses100,
+    XP_EVENTS.losses250,
+    XP_EVENTS.losses500,
+    XP_EVENTS.losses1000,
+    XP_EVENTS.draws10,
   ] as const;
 
   it("sorts every priced award onto exactly one side", () => {
@@ -446,5 +535,73 @@ describe("every award is either people-only or a game result", () => {
   it("holds a program to the game results and a person to everything", () => {
     for (const type of GAME_RESULTS) expect(earnableByProgram(type)).toBe(true);
     for (const type of XP_PEOPLE_ONLY) expect(earnableByProgram(type)).toBe(false);
+  });
+});
+
+/**
+ * IMPORTED EXPERIENCE IS NEVER ITSUTSU EXPERIENCE. John: "we will show filters,
+ * that show worldwide XP ... and the Itsutsu only XP as well". Itsutsu only is
+ * `Member.xp`, so nothing imported may ever be written there, looked up as an
+ * Itsutsu award, or summed into the Itsutsu ledger check — and each of those is
+ * a line of source a later change could get wrong with nothing else failing.
+ */
+describe("imported awards stay on their own side", () => {
+  const read = (path: string) => readFileSync(path, "utf8");
+
+  it("shares no type with the Itsutsu catalogue", () => {
+    for (const type of IMPORTED_XP_TYPES) {
+      expect(Object.keys(XP_EVENT_SPECS), type).not.toContain(type);
+      expect(isImportedXpType(type)).toBe(true);
+    }
+    for (const type of types) expect(isImportedXpType(type), type).toBe(false);
+  });
+
+  it("is written only to xpImported and xpEverywhere, never to xp", () => {
+    const payer = read("src/lib/xp/importedXpPay.ts");
+    expect(payer).toMatch(/xpImported:\s*\{\s*increment: landed\s*\}/);
+    expect(payer).toMatch(/xpEverywhere:\s*\{\s*increment: landed\s*\}/);
+    expect(payer).not.toMatch(/\bxp:\s*\{/);
+    // And awardXp, the Itsutsu writer, never reaches for the imported catalogue or its payer.
+    expect(read("src/lib/xp/awardXp.ts")).not.toMatch(/importedXp|IMPORTED_XP/);
+  });
+
+  it("reaches a badge beside a name only through xpForBadge, never through a raw xp", () => {
+    // The rivalry board read `levelShown({ xp: row.xp })` when it landed in
+    // 0.183.0, so a kept record's credit would have been missing from exactly one
+    // badge on the site. The badge's total is decided in one place.
+    const rivalry = read("src/lib/record/rivalryRead.ts");
+    expect(rivalry).toMatch(/levelShown\(\{ xp: xpForBadge\(row\) \}\)/);
+    expect(rivalry).not.toMatch(/levelShown\(\{ xp: row\.xp \}\)/);
+    expect(read("src/lib/xp/xpOfMembers.ts")).toMatch(/xpShown\(\{ xp: xpForBadge\(member\) \}\)/);
+  });
+
+  it("is never seeded by a fixture that writes xp without xpEverywhere", () => {
+    // CI run 34825313782: `withLedger` in e2e/xp-history.spec.ts wrote
+    // `{ xp: total }`, /me reads the badge's total (`xpEverywhere`), and the
+    // spec saw "0 XP" where it had seeded 510. A seed must write all three
+    // columns — `standingData` in e2e/xpStanding.ts — or say here why not.
+    const offenders = [...seedingFiles()].flatMap((path) =>
+      Object.hasOwn(XP_SEED_EXCEPTIONS, path) ? [] : memberWritesMissingEverywhere(read(path)).map((call) => `${path}: ${call}`),
+    );
+    expect(offenders, "write the standing through standingData(...) in e2e/xpStanding.ts").toEqual([]);
+    for (const [path, reason] of Object.entries(XP_SEED_EXCEPTIONS)) expect(reason.length, path).toBeGreaterThan(20);
+  });
+
+  it("catches the fixture that broke CI, and passes the one that replaced it", () => {
+    // The proof: the scanner run over withLedger's old line, as it stood at 06b288c5.
+    const old = "await prisma.member.update({ where: { id: member.id }, data: { xp: total } });";
+    expect(memberWritesMissingEverywhere(old)).toHaveLength(1);
+    expect(memberWritesMissingEverywhere("await prisma.member.update({ where: { id }, data: standingData({ here: total }) });")).toEqual([]);
+    // Shorthand and a create spread across lines are caught the same way…
+    expect(memberWritesMissingEverywhere("prisma.member.create({\n  data: { email, id,\n    xp,\n    xpLastAt: new Date() },\n})")).toHaveLength(1);
+    // …and reading a total is not writing one.
+    expect(memberWritesMissingEverywhere("prisma.member.findUnique({ where: { id }, select: { xp: true } })")).toEqual([]);
+    expect(memberWritesMissingEverywhere("prisma.member.update({ where: { id }, data: { name }, select: { xp: true } })")).toEqual([]);
+  });
+
+  it("is left out of the Itsutsu ledger check and ranked only under Everywhere", () => {
+    expect(read("src/lib/xp/backfillXp.play.test.ts")).toMatch(/notIn: \[\.\.\.IMPORTED_XP_TYPES\]/);
+    expect(XP_SCOPE_COLUMN[RECORD_SCOPES.here]).toBe("xp");
+    expect(XP_SCOPE_COLUMN[RECORD_SCOPES.everywhere]).toBe("xpEverywhere");
   });
 });

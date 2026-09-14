@@ -2,7 +2,8 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { xpShown, type StandingOf } from "./levelShown";
+import { xpShown } from "./levelShown";
+import { xpForBadge, type XpTotals } from "./xpScope";
 
 /**
  * THE XP TOTAL FOR A PAGE OF RATING ROWS, IN ONE READ.
@@ -40,8 +41,8 @@ import { xpShown, type StandingOf } from "./levelShown";
  * person, and their total beside each is the truth about that person twice.
  */
 
-/** What this read selects: enough to hand to `xpShown` and nothing more. */
-type MemberStanding = { id: string } & StandingOf;
+/** What this read selects: both totals, so the badge's one rule can choose. */
+type MemberStanding = { id: string } & XpTotals;
 
 /**
  * `memberId → xpShown(member)` for every member among `memberIds`, in one query.
@@ -56,7 +57,7 @@ export async function xpByMemberId(
   if (ids.length === 0) return new Map();
   const members: MemberStanding[] = await prisma.member.findMany({
     where: { id: { in: ids } },
-    select: { id: true, xp: true },
+    select: { id: true, xp: true, xpEverywhere: true },
   });
   return standingsOf(members);
 }
@@ -68,5 +69,8 @@ export async function xpByMemberId(
  * above is `findMany` with a `select`, and everything worth asserting is here.
  */
 export function standingsOf(members: readonly MemberStanding[]): Map<string, number | null> {
-  return new Map(members.map((member) => [member.id, xpShown(member)]));
+  /* The total the badge beside a name is read from, decided in one place —
+     `xpForBadge` — so a ladder's column and the members list's cannot disagree
+     about whether another site's credit counts. */
+  return new Map(members.map((member) => [member.id, xpShown({ xp: xpForBadge(member) })]));
 }

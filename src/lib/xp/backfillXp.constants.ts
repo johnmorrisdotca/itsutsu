@@ -94,6 +94,22 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
     why: "It is keyed on the away spell that ended, and `Member.awayUntil` holds at most the CURRENT one. A spell that ended before today left no row behind.",
   },
 
+  yearHere: {
+    replayed: false,
+    recorded: true,
+    why: "`Member.createdAt` records it, and it is paid live on the first visit after each anniversary, so nothing is left for a replay to find. The oldest member row here was made on 2026-09-09, so nobody has reached one yet.",
+  },
+  yearsHere5: {
+    replayed: false,
+    recorded: true,
+    why: "As `yearHere`: paid live on the first visit after the fifth anniversary.",
+  },
+  yearsHere10: {
+    replayed: false,
+    recorded: true,
+    why: "As `yearHere`: paid live on the first visit after the tenth anniversary.",
+  },
+
   /* ── Playing ───────────────────────────────────────────────────────────── */
 
   weekendGame: {
@@ -150,6 +166,21 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
     replayed: true,
     from: "the replay's `firstWinAtVariant` rows for that family's games, ledger rows included, on the win that completes it — and only for a family of more than one game (`familyToWin`)",
   },
+
+  /* ── Milestones at one game ────────────────────────────────────────────── */
+
+  wins10: { replayed: true, from: "the replay's own count of the member's wins at that game, over every decided game so far" },
+  wins100: { replayed: true, from: "the replay's own count of the member's wins at that game, over every decided game so far" },
+  wins250: { replayed: true, from: "the replay's own count of the member's wins at that game, over every decided game so far" },
+  wins500: { replayed: true, from: "the replay's own count of the member's wins at that game, over every decided game so far" },
+  wins1000: { replayed: true, from: "the replay's own count of the member's wins at that game, over every decided game so far" },
+  losses10: { replayed: true, from: "the replay's own count of the member's losses at that game, over every decided game so far" },
+  losses50: { replayed: true, from: "the replay's own count of the member's losses at that game, over every decided game so far" },
+  losses100: { replayed: true, from: "the replay's own count of the member's losses at that game, over every decided game so far" },
+  losses250: { replayed: true, from: "the replay's own count of the member's losses at that game, over every decided game so far" },
+  losses500: { replayed: true, from: "the replay's own count of the member's losses at that game, over every decided game so far" },
+  losses1000: { replayed: true, from: "the replay's own count of the member's losses at that game, over every decided game so far" },
+  draws10: { replayed: true, from: "the replay's own count of the member's draws at that game, over every decided game so far" },
 
   /* ── The computer ladder ───────────────────────────────────────────────── */
 
