@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import useSWR from "swr";
 
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
@@ -113,6 +113,7 @@ export function AdminSite() {
               />
             ) : (
               <NoteRow
+                label={copy.fieldLabel ?? copy.label}
                 value={state?.value ?? ""}
                 maxLength={spec.maxLength}
                 placeholder={copy.placeholder ?? ""}
@@ -201,8 +202,17 @@ function ChoiceRow({
   );
 }
 
-/** A line of copy the operator types. Emptying it forgets it, which the API does. */
+/**
+ * A line of copy the operator types. Emptying it forgets it, which the API does.
+ *
+ * Named by a visible label pointing at the box by id. The fieldset's legend
+ * names the setting, not the box, so before this the box's only name was its
+ * placeholder — which Chromium falls back to and which vanishes as soon as
+ * somebody types. The label does not wrap the row, so Save is not part of the
+ * name.
+ */
 function NoteRow({
+  label,
   value,
   maxLength,
   placeholder,
@@ -210,6 +220,7 @@ function NoteRow({
   onSave,
   testId,
 }: {
+  label: string;
   value: string;
   maxLength: number;
   placeholder: string;
@@ -218,10 +229,15 @@ function NoteRow({
   testId: string;
 }) {
   const [draft, setDraft] = useState(value);
+  const inputId = useId();
   return (
     <div className="flex flex-col gap-1.5">
+      <label htmlFor={inputId} className="text-sm text-ink-soft">
+        {label}
+      </label>
       <div className="flex gap-2">
         <input
+          id={inputId}
           className={INPUT_CLASS}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}

@@ -192,6 +192,55 @@ test.describe("a hand-written label names its control too", () => {
     await expect(withData, `no checkbox is named exactly "${dataLabel}"`).toHaveCount(1);
   });
 
+  test("the invite note and the embed label, which had a placeholder and no label", async ({ page }) => {
+    /*
+     * A placeholder is not a label: it is gone the moment somebody types, and
+     * a screen reader need not announce it as the box's name. Chromium does
+     * fall back to it when nothing else names a box — read off this page
+     * before the fix, the two were `textbox "Who is it for?"` and
+     * `textbox "Which site is it for?"`, their placeholders and nothing else.
+     * So the name asked for here is deliberately NOT the placeholder's words:
+     * asked for those, the unlabelled boxes would have passed.
+     *
+     * The label is asserted visible as well as naming the box, because a
+     * name only a screen reader hears leaves a sighted reader with the same
+     * vanishing placeholder. Looking at the tab mints no code and issues no
+     * token.
+     */
+    await page.goto("/admin");
+    await expect(page.getByTestId("admin-door")).toBeVisible();
+
+    for (const [panelId, label] of [
+      ["admin-invites", "Who it is for"],
+      ["admin-embeds", "Which site it is for"],
+    ]) {
+      const panel = page.getByTestId(panelId);
+      const box = panel.getByRole("textbox", { name: label, exact: true });
+      await expect(box, `no box is named exactly "${label}"`).toHaveCount(1);
+      await expect(panel.locator("label", { hasText: label })).toBeVisible();
+    }
+  });
+
+  test("the line on the door, on the site tab, which had a placeholder and no label", async ({ page }) => {
+    /*
+     * The same fault in the site settings: the note's box sits in a fieldset
+     * whose legend names the GROUP, not the box, so the box was named by its
+     * placeholder alone. Asked for by words that are not the placeholder, for
+     * the reason above — and written out rather than imported from the copy,
+     * because a name read from a key that does not exist yet is `undefined`,
+     * and `name: undefined` matches any box at all. Reading the tab saves
+     * nothing.
+     */
+    await page.goto("/admin?view=site");
+    await ready(page, "admin-site");
+
+    const label = "What the door says";
+    const panel = page.getByTestId("site-setting-joinNotice");
+    const box = panel.getByRole("textbox", { name: label, exact: true });
+    await expect(box, `no box is named exactly "${label}"`).toHaveCount(1);
+    await expect(panel.locator("label", { hasText: label })).toBeVisible();
+  });
+
   test("the two name boxes beside the practice board, and the stone each seat holds is said after", async ({
     page,
   }) => {

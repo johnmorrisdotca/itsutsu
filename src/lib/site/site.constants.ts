@@ -143,7 +143,13 @@ export const SITE_SETTING_COPY: Record<
     blurb: string;
     /** One per option, for a `choice`. Empty for a `note`. */
     options: Record<string, { label: string; blurb: string; confirm?: string }>;
-    /** Shown in an empty `note` field. */
+    /**
+     * The NAME of a `note`'s box, shown above it. The legend names the
+     * setting as a group, which does not name the box inside it, and a
+     * placeholder is no name at all — it vanishes as soon as somebody types.
+     */
+    fieldLabel?: string;
+    /** Shown in an empty `note` field: an example of what to write, never its name. */
     placeholder?: string;
   }
 > = {
@@ -180,6 +186,7 @@ export const SITE_SETTING_COPY: Record<
     blurb:
       "Shown on the join page, above the buttons. Leave it empty and the door says only what it always says.",
     options: {},
+    fieldLabel: "What the door says",
     placeholder: "Beta — ask John for a code",
   },
 };

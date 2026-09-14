@@ -49,6 +49,7 @@ export function AdminInvites() {
   const [showAll, setShowAll] = useState(false);
   const onceId = useId();
   const onceHintId = useId();
+  const noteId = useId();
 
   if (!isAdmin) return null;
 
@@ -103,18 +104,32 @@ export function AdminInvites() {
         Signed in as {session?.email}. A code lets one person through the door.
       </p>
 
-      <div className="flex gap-2">
-        <input
-          className={INPUT_CLASS}
-          value={note}
-          onChange={(event) => setNote(event.target.value)}
-          placeholder="Who is it for?"
-          maxLength={120}
-          data-testid="invite-note"
-        />
-        <Button onClick={mint} disabled={busy} strong data-testid="mint-invite">
-          {busy ? "…" : "New code"}
-        </Button>
+      {/*
+        A LABEL, NOT ONLY A PLACEHOLDER. The question used to be the box's
+        placeholder and nothing else: gone the moment somebody typed, and the
+        box's name only because Chromium falls back to a placeholder when
+        nothing names a box. The label points at the box by id rather than
+        wrapping it, so the button stays beside the box and not inside the
+        name; the placeholder is now an example of what to write.
+      */}
+      <div className="flex flex-col gap-1">
+        <label htmlFor={noteId} className="text-sm text-ink-soft">
+          Who it is for
+        </label>
+        <div className="flex gap-2">
+          <input
+            id={noteId}
+            className={INPUT_CLASS}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Mum and Dad"
+            maxLength={120}
+            data-testid="invite-note"
+          />
+          <Button onClick={mint} disabled={busy} strong data-testid="mint-invite">
+            {busy ? "…" : "New code"}
+          </Button>
+        </div>
       </div>
       {/*
         NAMED "One person only", DESCRIBED by the rest. The whole sentence used
