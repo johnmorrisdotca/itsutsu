@@ -47,9 +47,11 @@ test.describe("the draughts games beside Checkers", () => {
     await move(page, "Black", "E7", "F6");
     await expect(page.getByTestId("to-play")).toContainText("White");
 
-    // G5 could take F6 on its own and land on E7 — but E5 can take two, so G5 is offered nothing.
-    await piece(page, "G5", "White").click();
-    await expect(empty(page, "E7")).toBeDisabled();
+    // G5 could take F6 on its own and land on E7 — but E5 can take two, so G5 is held back: not
+    // offered at all, E5 marked, and the rule said in words.
+    await expect(piece(page, "G5", "White")).toBeDisabled();
+    await expect(piece(page, "E5", "White")).toHaveAttribute("data-guide", "choice");
+    await expect(page.getByTestId("turn-guide")).toContainText("You must take the most pieces.");
 
     // E5 takes F6, landing on G7, and the capture is not over: still White's move.
     await move(page, "White", "E5", "G7");
@@ -91,9 +93,9 @@ test.describe("the draughts games beside Checkers", () => {
     await move(page, "White", "G5", "H6");
     await move(page, "Black", "H8", "J7");
 
-    // H6 could take G7 and land on F8, but K6 takes two, so H6 is offered nothing.
-    await piece(page, "H6", "White").click();
-    await expect(empty(page, "F8")).toBeDisabled();
+    // H6 could take G7 and land on F8, but K6 takes two, so H6 is not offered at all.
+    await expect(piece(page, "H6", "White")).toBeDisabled();
+    await expect(piece(page, "K6", "White")).toHaveAttribute("data-guide", "choice");
 
     await move(page, "White", "K6", "H8");
     await expect(page.getByTestId("to-play")).toContainText("White");
@@ -135,16 +137,18 @@ test.describe("the draughts games beside Checkers", () => {
 
     /*
      * Four in one move. The man lands on D8, Black's back row, with more to
-     * take, so it goes on (APCA rule 22) — back over E7 and G5 to H4. A king is
-     * drawn only as a ring on the stone, so what is asserted is that the capture
-     * never stopped on the far row.
+     * take, so it goes on (APCA rule 22) — back over E7 and G5 to H4 — and is
+     * not crowned there: a crowned piece is named a king, and this one is still
+     * a stone.
      */
     await move(page, "White", "D4", "B6");
     await move(page, "White", "B6", "D8");
+    await expect(page.getByRole("button", { name: "D8, White stone", exact: true })).toBeVisible();
     await expect(page.getByTestId("to-play")).toContainText("White");
     await move(page, "White", "D8", "F6");
     await expect(page.getByTestId("to-play")).toContainText("White");
     await move(page, "White", "F6", "H4");
+    await expect(page.getByRole("button", { name: "H4, White stone", exact: true })).toBeVisible();
     for (const square of ["C5", "C7", "E7", "G5"]) await expect(empty(page, square)).toBeVisible();
     await expect(page.getByTestId("to-play")).toContainText("Black");
   });

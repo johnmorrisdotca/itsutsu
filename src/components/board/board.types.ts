@@ -1,4 +1,4 @@
-import type { BoardGrid, Cell, GameState, PieceCell, Point, Stone } from "@/lib/gomoku/gomoku.types";
+import type { BoardGrid, Cell, GameState, MoveNarrowing, PieceCell, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import type { BOARD_THEMES, STONE_SETS } from "./Board.constants";
 
 export type BoardTheme = keyof typeof BOARD_THEMES;
@@ -181,10 +181,44 @@ export type IntersectionProps = {
   hole?: boolean;
   /** On a slanted board, undoes the slant so the stone inside is round. */
   unslant?: boolean;
+  /** What this square is under the turn guide, when the guide is showing — see `TurnGuide`. */
+  guide?: SquareGuide | null;
+  /** The guide's outline and veil, chosen for a light or a dark board. */
+  guideColours?: GuideColours;
   stones: StoneSetTokens;
   winningColour: string;
   readOnly: boolean;
   onPlay: (point: Point) => void;
+};
+
+/**
+ * What the board shows a player about their own turn when there is little to
+ * choose from — see `turnGuide`.
+ *
+ * `marked`: the pieces that may move, or the points that may be played.
+ * `unavailable`: the mover's own pieces that may not move this turn, dimmed and
+ * not offered. `veiled`: a placing turn with only a move or two, where
+ * everything but the marked points is veiled. `reason`: the rule that narrowed
+ * the choice, when one did — the only case the words are shown on screen.
+ * `choices`: the marked squares in board order, for naming them in words.
+ */
+export type TurnGuide = {
+  marked: ReadonlySet<number>;
+  unavailable: ReadonlySet<number>;
+  veiled: boolean;
+  reason: MoveNarrowing | null;
+  choices: readonly Point[];
+};
+
+/** One square under the guide: a choice, a piece that may not move, or veiled. */
+export type SquareGuide = "choice" | "unavailable" | "veiled";
+
+/** The guide's outline and veil, one pair for light boards and one for dark. */
+export type GuideColours = { mark: string; veil: string };
+
+export type TurnGuideNoteProps = {
+  guide: TurnGuide | null;
+  size: number;
 };
 
 export type StoneMarkProps = {

@@ -21,10 +21,9 @@ test.describe("checkers", () => {
     await page.getByRole("button", { name: /^D4, empty$/ }).click();
     await expect(page.getByTestId("to-play")).toContainText("Black");
 
-    // Black has a capture on offer, so a different black man with no capture of its own is offered no step.
-    await page.getByRole("button", { name: "B6, Black stone" }).click();
+    // Black has a capture on offer, so a different black man with no capture of its own cannot even be picked up.
+    await expect(page.getByRole("button", { name: "B6, Black stone" })).toBeDisabled();
     await expect(page.getByRole("button", { name: /^A5, empty$/ })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "B6, Black stone" })).toBeVisible();
 
     // The piece that can capture jumps over D4 and lands on C3, taking the white man off the board.
     await page.getByRole("button", { name: "E5, Black stone" }).click();
