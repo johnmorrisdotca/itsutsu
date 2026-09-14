@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { GAME_COPY } from "../src/components/game/game.constants";
-import { ready } from "./support";
+import { PLAYER_STATE, ready } from "./support";
 import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** The games the Play apart case makes, taken away when the file finishes. */
@@ -34,8 +34,18 @@ test.describe("a game played from two devices", () => {
   }) => {
     const game = await startGame(request);
 
-    const black = await browser.newContext();
-    const white = await browser.newContext();
+    /*
+     * AN INVITED BROWSER WITH NO ACCOUNT, not a bare `browser.newContext()`,
+     * which inherits the operator's sign-in. Signed in as the operator, black's
+     * board had the operator's whole queue behind it, and a move carries a
+     * board onward to the next game waiting: on a cold server the trace shows
+     * the stone, one `/api/games/mine`, and a navigation to a stranger's
+     * tic-tac-toe game, where "Waiting" was then looked for and "Your move"
+     * was found. An invite identity's queue is its own seat cookies — this
+     * game and nothing else — as in `give-up-from-the-board.spec.ts`.
+     */
+    const black = await browser.newContext({ storageState: PLAYER_STATE });
+    const white = await browser.newContext({ storageState: PLAYER_STATE });
     const blackPage = await black.newPage();
     const whitePage = await white.newPage();
 
@@ -50,6 +60,9 @@ test.describe("a game played from two devices", () => {
     // fifteen seconds for a move that was never made.
     await ready(blackPage, "shared-game");
     await blackPage.getByRole("button", { name: /^E5, empty$/ }).click();
+    await expect(blackPage, "the board wandered off to another game").toHaveURL(
+      new RegExp(`/games/gomoku/match/${game.id}(/|$)`),
+    );
     await expect(blackPage.getByTestId("turn-banner")).toContainText("Waiting");
 
     // White's board catches up on its own, without a reload.
@@ -144,10 +157,35 @@ test.describe("a game played from two devices", () => {
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await expect(page.getByTestId("shared-times-line")).toContainText("Started");
     await expect(page.getByTestId("shared-times-line")).not.toContainText("finished");
+    /*
+     * HELD, BECAUSE THE BANNER BELOW LIVES FOR A MOMENT. Since 1e8ce53 a board
+     * that sees its game end calls `router.refresh()` at once (`useLiveGame`),
+     * and the page it gets back is the filed record, which has no turn banner.
+     * So "Black wins" and "Finished" are on the page only between the poll that
+     * brings the result and that refresh landing — under a tenth of a second in
+     * the traces — and whether the two assertions saw them depended on where
+     * the 2.5s poll fell against Playwright's retry steps. It failed in full
+     * runs and alone alike (1 of 10, the refresh landing between the two). The
+     * refresh is held here until the settled board has been read, then let
+     * through; the page does nothing it would not do on a slow connection.
+     */
+    const refresh = new RegExp(`/match/${game.id}\\?_rsc=`);
+    let handBack = () => {};
+    const heldUntilRead = new Promise<void>((resolve) => (handBack = resolve));
+    await page.route(refresh, async (route) => {
+      await heldUntilRead;
+      await route.continue();
+    });
     expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status()).toBe(200);
     // The board learns of the end on its next poll, without a reload, and says when it came.
     await expect(page.getByTestId("turn-banner")).toContainText("Black wins", { timeout: 15_000 });
     await expect(page.getByTestId("finished-at")).toContainText("Finished");
+    // Let the hand-back through and wait for it to land, so the reload below
+    // does not cancel a request the route is still holding.
+    const handedBack = page.waitForResponse(refresh);
+    handBack();
+    await handedBack;
+    await page.unroute(refresh);
     // A finished match STAYS at its own address — it does not move to a second
     // one — and the filed view it reloads into says both times in its heading.
     await page.reload();
