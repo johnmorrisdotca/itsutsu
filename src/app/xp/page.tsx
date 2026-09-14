@@ -110,9 +110,14 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
               kanjiClassName="text-sm font-normal opacity-70"
             />
           </h1>
-          <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
-            All {countText(XP_LEVELS)} levels <span className="font-mincho">段位</span>
-          </Link>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <Link href="/xp/promotions" className="text-sm underline underline-offset-4" data-testid="to-promotions">
+              Recent promotions <span className="font-mincho">昇級</span>
+            </Link>
+            <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
+              All {countText(XP_LEVELS)} levels <span className="font-mincho">段位</span>
+            </Link>
+          </div>
         </div>
 
         <p className="max-w-3xl text-sm text-muted">
@@ -126,8 +131,8 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
             {xpLevelName(XP_LEVELS)}
           </Link>
-          . Press a heading to sort by it. Nobody&rsquo;s experience was backfilled, so this
-          ladder started the day it was built.
+          . Press a heading to sort by it. Games finished before the ladder was built were paid
+          for by a backfill on 13 September 2026, so play from before then counts too.
         </p>
 
         {refused ? (

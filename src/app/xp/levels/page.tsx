@@ -58,9 +58,14 @@ export default async function LevelsPage() {
           </h1>
           {/* The leaderboard and the ladder are two halves of one thing, and each
               is the other's way on. See Nothing Is A Dead End. */}
-          <Link href="/xp" className="text-sm underline underline-offset-4" data-testid="to-leaderboard">
-            Who is where <span className="font-mincho">経験値</span>
-          </Link>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <Link href="/xp/promotions" className="text-sm underline underline-offset-4" data-testid="to-promotions">
+              Recent promotions <span className="font-mincho">昇級</span>
+            </Link>
+            <Link href="/xp" className="text-sm underline underline-offset-4" data-testid="to-leaderboard">
+              Who is where <span className="font-mincho">経験値</span>
+            </Link>
+          </div>
         </div>
 
         <p className="max-w-3xl text-sm text-muted">
