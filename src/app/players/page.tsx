@@ -64,6 +64,13 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
   const asked = await searchParams;
   const open = activeTab(TABS, asked.view);
   /*
+   * How this reader likes the directory narrowed, and whether the kind of
+   * player came from their account — asked for only inside the tab that shows
+   * it, so a visit to another tab remembers nothing. It rides the member read
+   * this page makes anyway, so it costs no query.
+   */
+  const shown = open === "members" ? await directoryFilterFor(asked) : null;
+  /*
    * The computer players' rows are written the first time anybody needs them,
    * and until this page did nothing anybody visits needed them — so they
    * existed in the code and not in the database, and the directory that is
@@ -104,16 +111,10 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
 
         <Tabs tabs={TABS} active={open} base="/players" label="Which players to look at" />
 
-        {open === "members" ? (
+        {shown !== null ? (
           <Directory
-            /*
-              How this reader last asked for the directory to be narrowed,
-              kept on their account — and, when the address asks for a
-              narrowing, kept now. It rides the member read this page makes
-              anyway, so it costs no query; asked for inside the tab that
-              shows it, so a visit to another tab remembers nothing.
-            */
-            filter={await directoryFilterFor(asked)}
+            filter={shown.filter}
+            rememberedWho={shown.rememberedWho}
             scope={readRecordScope(asked[SCOPE_PARAM])}
             /*
               The address as it stands, so choosing how much to count keeps

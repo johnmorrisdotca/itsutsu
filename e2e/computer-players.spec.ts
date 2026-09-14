@@ -63,7 +63,8 @@ const named = (page: Page, name: string) =>
  */
 async function forgetDirectoryFilter(page: Page): Promise<void> {
   const response = await page.request.patch("/api/me", {
-    data: { preferences: { playersWho: null, playersSettled: null, playersActive: null } },
+    // Who is the only narrowing the account keeps; the two switches never are.
+    data: { preferences: { playersWho: null } },
   });
   expect([200, 404], `forgetting the filter answered ${response.status()}`).toContain(response.status());
 }

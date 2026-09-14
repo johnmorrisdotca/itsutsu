@@ -66,7 +66,7 @@ describe("reading a member's language", () => {
    * never chose would be answered in English for ever.
    */
   it("says null for a member who has never chosen, where the registry says English", () => {
-    for (const nothing of [null, undefined, {}, { playersActive: true }]) {
+    for (const nothing of [null, undefined, {}, { xpWho: "computers" }]) {
       expect(languageFrom(nothing), JSON.stringify(nothing)).toBeNull();
     }
     // The two halves of the difference, side by side, so nobody "fixes" one
@@ -78,7 +78,7 @@ describe("reading a member's language", () => {
 
   it("leaves a silent member's browser to decide, rather than answering English over it", () => {
     // The consequence, stated as the site would experience it.
-    const silent = { playersActive: true };
+    const silent = { xpWho: "computers" };
     expect(
       resolveLocale(
         { onAccount: languageFrom(silent), accepts: "ja,en;q=0.5" },
@@ -89,9 +89,9 @@ describe("reading a member's language", () => {
 
   it("says null for a language this version no longer speaks, and keeps the rest", () => {
     // Spanish was offered for an afternoon and taken out again.
-    const stored = { language: "es", playersActive: true };
+    const stored = { language: "es", xpWho: "computers" };
     expect(languageFrom(stored)).toBeNull();
-    expect(preferencesFrom(stored).playersActive).toBe(true);
+    expect(preferencesFrom(stored).xpWho).toBe("computers");
   });
 
   it("reads a cleaned partial as happily as the raw column", () => {
@@ -107,8 +107,8 @@ describe("reading a member's language", () => {
 
 describe("keeping it, and taking it back", () => {
   it("writes one name and touches nothing else the member holds", () => {
-    const merged = mergePreferences({ playersActive: true }, languageAsPreferences("ja"));
-    expect(merged).toEqual({ playersActive: true, language: "ja" });
+    const merged = mergePreferences({ xpWho: "computers" }, languageAsPreferences("ja"));
+    expect(merged).toEqual({ xpWho: "computers", language: "ja" });
   });
 
   /*
@@ -120,9 +120,9 @@ describe("keeping it, and taking it back", () => {
    * tests.
    */
   it("forgets the language without forgetting anything else", () => {
-    const stored = mergePreferences({ playersActive: true }, languageAsPreferences("ja"));
+    const stored = mergePreferences({ xpWho: "computers" }, languageAsPreferences("ja"));
     const cleared = mergePreferences(stored, languageForgotten());
-    expect(cleared).toEqual({ playersActive: true });
+    expect(cleared).toEqual({ xpWho: "computers" });
     expect(languageFrom(cleared)).toBeNull();
   });
 

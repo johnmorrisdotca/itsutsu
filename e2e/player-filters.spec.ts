@@ -50,7 +50,8 @@ const named = (page: Page, name: string) =>
  */
 async function forgetDirectoryFilter(page: Page): Promise<void> {
   const response = await page.request.patch("/api/me", {
-    data: { preferences: { playersWho: null, playersSettled: null, playersActive: null } },
+    // Who is the only narrowing the account keeps; the two switches never are.
+    data: { preferences: { playersWho: null } },
   });
   expect([200, 404], `forgetting the filter answered ${response.status()}`).toContain(response.status());
 }
@@ -193,15 +194,11 @@ test.describe("the bar itself", () => {
   test("is made of addresses, so a narrowed list can be sent to somebody", async ({ page }) => {
     /*
      * SAY WHAT THE WORLD IS BEFORE ASSERTING WHAT A LINK SAYS. A bare
-     * `/players` means "however I last asked", and since the narrowing moved
-     * off its cookie and onto the account it is remembered in the DATABASE —
-     * so an earlier case in this file visiting `/players?settled=1` leaves
-     * `settled` on for every case after it, and every link the bar writes then
-     * carries `&settled=1`.
-     *
-     * That is the preference working, not failing: a cookie was reset by each
-     * context, and an account is not. The spec was inheriting state it had not
-     * created — so it now states the whole filter first and owns its world.
+     * `/players` opens with whichever kind of player this account last chose,
+     * remembered in the DATABASE — so an earlier case in this file can leave
+     * a `who` standing for every case after it. The switches are not kept any
+     * more, but the spec states the whole filter first all the same and owns
+     * its world.
      */
     await page.goto("/players?who=everyone&settled=0&active=0");
     await page.getByTestId("who-computers").click();
@@ -227,17 +224,15 @@ test.describe("the bar itself", () => {
   test("says so when nothing answers to all of it, and offers the way back", async ({ page }) => {
     /*
      * An empty table under a full page of headings is the shape of a broken
-     * site. Seeded members have no settled rating, so asking for the settled
-     * programs is a question nobody on a development database answers.
+     * site. It asked for the settled PROGRAMS and skipped wherever one had
+     * earned a settled rating — which, once "settled" meant the rating the
+     * list prints, is any database a batch of bot games has run on, so it
+     * skipped and said nothing. People with a settled rating seen lately is
+     * twenty games between two people: nobody on a development database or a
+     * fresh one. A database that has one fails here by the count, loudly.
      */
-    await page.goto("/players?who=computers&settled=1&active=1");
-    /*
-     * Read the count rather than the row: if the page says nobody is listed
-     * and there is no such row, that is the bug this test is about, and only
-     * a database where a program has earned a settled rating gets a pass.
-     */
-    const listed = (await page.getByTestId("directory-count").textContent()) ?? "";
-    test.skip(!listed.startsWith("0 "), "a computer player has earned a settled rating on this database");
+    await page.goto("/players?who=people&settled=1&active=1");
+    await expect(page.getByTestId("directory-count")).toHaveText(/^0 of \d+ listed$/);
     await expect(page.getByTestId("directory-empty")).toBeVisible();
     await page.getByTestId("directory-clear").click();
     /*
@@ -322,16 +317,24 @@ test.describe("what the page remembers", () => {
     await expect(named(page, A_ROBOT)).toHaveCount(1);
   });
 
-  test("remembers the other two questions as well, not only who", async () => {
-    await page.goto("/players?who=everyone&active=1");
+  test("does not remember the two switches, only who", async () => {
+    /*
+     * REVERSED AT JOHN'S "no player standings": "Settled ratings" and "Seen
+     * lately" were kept on his account from an earlier visit and opened his
+     * list empty. They are questions asked on the day and either can empty a
+     * small list, so a bare address opens with them off. The click-driven
+     * version of this is `members-narrowing.spec.ts`.
+     */
+    await page.goto("/players?who=computers&active=1");
     await page.goto("/players");
-    await expect(page.getByTestId("only-active")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("who-computers")).toHaveAttribute("aria-current", "true");
+    await expect(page.getByTestId("only-active")).toHaveAttribute("aria-pressed", "false");
   });
 
   test("can be taken back to never having asked, through the API", async () => {
     // Setting it, changing it and clearing it are three different tests, and
     // this is the third: a member who forgets is shown the ordinary page.
-    await page.goto("/players?who=computers&active=1");
+    await page.goto("/players?who=computers");
     await forgetDirectoryFilter(page);
     await page.goto("/players");
     await expect(page.getByTestId("who-everyone")).toHaveAttribute("aria-current", "true");

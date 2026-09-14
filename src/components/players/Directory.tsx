@@ -23,8 +23,8 @@ import { RecordScopeBar } from "./RecordScopeBar";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
 import type { RecordSort } from "./recordSort";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
-import type { DirectoryFilter } from "@/lib/rating/directoryFilter";
-import { SHOW_EVERYBODY_HREF } from "@/lib/rating/rememberedFilter";
+import type { DirectoryFilter, DirectoryWho } from "@/lib/rating/directoryFilter";
+import { DirectoryEmpty, DirectoryNarrowed } from "./DirectoryNarrowing";
 import { ignoredEmails } from "@/lib/social/ignores";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
@@ -231,11 +231,14 @@ function ownOrderHref(query: string): string {
  */
 export async function Directory({
   filter,
+  rememberedWho,
   scope,
   query,
   now,
 }: {
   filter: DirectoryFilter;
+  /** The kind of player the page opened with because the account kept it, or null. */
+  rememberedWho: DirectoryWho | null;
   scope: RecordScope;
   /** The address as it stands, so choosing a scope keeps the narrowing. */
   query: string;
@@ -328,6 +331,7 @@ export async function Directory({
         shown={page.matching}
         total={page.total}
       />
+      <DirectoryNarrowed filter={filter} query={query} rememberedWho={rememberedWho} />
       {refused ? (
         <p className="text-sm text-muted" data-testid="directory-sort-refused">
           That was not an order the members list has, so this is the list by who was seen last.
@@ -356,29 +360,13 @@ export async function Directory({
         columns={{ joined: true, actions: "" }}
         sort={sort}
         testId="directory"
-        empty={
-          /*
-           * No testid of its own: `RecordTable` already wraps whatever `empty`
-           * renders in a `<td data-testid="directory-empty">` — the id this
-           * span duplicated from before the tables were unified, when
-           * Directory drew its own empty row and needed one. Two elements
-           * answering to the same test id is a strict-mode violation waiting
-           * to happen, so the outer one is the only one that keeps it now.
-           */
-          <span>
-            Nobody here answers to all of that.{" "}
-            {/*
-              Says "everyone" out loud rather than pointing at the bare page.
-              Now that /players means "however I last asked", a way back that
-              went there would re-apply the very narrowing it offers to remove,
-              and appear to do nothing at all.
-            */}
-            <Link href={SHOW_EVERYBODY_HREF} className="underline underline-offset-4" data-testid="directory-clear">
-              Show everybody again
-            </Link>
-            .
-          </span>
-        }
+        /*
+         * No testid of its own: `RecordTable` already wraps whatever `empty`
+         * renders in a `<td data-testid="directory-empty">`. What it says is
+         * who nobody here is, with each narrowing's way off — see
+         * `DirectoryNarrowing.tsx`.
+         */
+        empty={<DirectoryEmpty filter={filter} query={query} />}
         /*
           What the mark means, said once under the table rather than repeated
           in every row that carries it. Drawn only when a row on this screen

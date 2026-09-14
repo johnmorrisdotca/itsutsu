@@ -342,13 +342,13 @@ describe("what the route refuses, before anything is written", () => {
 
 describe("what a sign-in writes, with its source", () => {
   it("keeps every other preference where it was, and leaves its input untouched", () => {
-    const preferences = { language: "ja", playersActive: true };
+    const preferences = { language: "ja", xpWho: "computers" };
     const assigned = zoneAssignment({ stored: "", country: "Japan", preferences });
     expect(assigned).toEqual({
       timeZone: "Asia/Tokyo",
-      preferences: { language: "ja", playersActive: true, timeZoneFrom: "country" },
+      preferences: { language: "ja", xpWho: "computers", timeZoneFrom: "country" },
     });
-    expect(preferences).toEqual({ language: "ja", playersActive: true });
+    expect(preferences).toEqual({ language: "ja", xpWho: "computers" });
   });
 
   it("writes neither zone nor source where there is nothing to guess from", () => {

@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { tierFor } from "./elo";
+import type { PlayerProfile } from "./players";
+import { tierShown } from "./shownRecord";
+
 /**
  * WHO COUNTS AS HAVING A SETTLED RATING, when the question has to be answered
  * BEFORE a page of members is chosen.
@@ -33,17 +37,34 @@ let players: PlayerRow[] = [];
 let members: MemberRow[] = [];
 const asked: { players: unknown[]; members: unknown[] } = { players: [], members: [] };
 
+/**
+ * Whether one rating row answers a `where` — the shapes the function builds
+ * and nothing else. It THROWS on a clause it does not know, so a clause added
+ * to the read and not here fails loudly rather than being quietly ignored.
+ */
+function answers(where: Record<string, unknown>, row: PlayerRow): boolean {
+  return Object.entries(where).every(([key, value]) => {
+    if (key === "OR") return (value as Record<string, unknown>[]).some((one) => answers(one, row));
+    if (key === "ratedGames" || key === "computerRatedGames") {
+      const count = (key === "ratedGames" ? RATED : COMPUTER)[row.key] ?? 0;
+      const test = value as { gte?: number; lt?: number };
+      if (test.gte === undefined && test.lt === undefined) throw new Error(`Not a count test: ${JSON.stringify(value)}`);
+      return (test.gte === undefined || count >= test.gte) && (test.lt === undefined || count < test.lt);
+    }
+    if (key === "memberId") {
+      const ids = (value as { in: string[] }).in;
+      return row.memberId !== null && ids.includes(row.memberId);
+    }
+    throw new Error(`A clause on "${key}" has been added and this test does not read it.`);
+  });
+}
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     player: {
       findMany: async ({ where }: { where: Record<string, unknown> }) => {
         asked.players.push(where);
-        if ("ratedGames" in where) {
-          const floor = (where.ratedGames as { gte: number }).gte;
-          return players.filter((row) => (RATED[row.key] ?? 0) >= floor);
-        }
-        const ids = (where.memberId as { in: string[] }).in;
-        return players.filter((row) => row.memberId !== null && ids.includes(row.memberId));
+        return players.filter((row) => answers(where, row));
       },
     },
     member: {
@@ -62,8 +83,9 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-/** How many rated games each fixture rating row has. */
+/** How many rated games each fixture rating row has, among people and against the programs. */
 const RATED: Record<string, number> = {};
+const COMPUTER: Record<string, number> = {};
 
 const { membersWithSettledRatings } = await import("./directorySettled");
 
@@ -73,12 +95,24 @@ afterEach(() => {
   asked.players = [];
   asked.members = [];
   for (const key of Object.keys(RATED)) delete RATED[key];
+  for (const key of Object.keys(COMPUTER)) delete COMPUTER[key];
 });
 
-/** A rating row: its folded key, the name it was earned under, and its owner. */
-function rating(key: string, name: string, memberId: string | null, ratedGames: number) {
+/** A rating row: its folded key, the name it was earned under, its owner, and both pools' counts. */
+function rating(key: string, name: string, memberId: string | null, ratedGames: number, computerRatedGames = 0) {
   players.push({ key, name, memberId });
   RATED[key] = ratedGames;
+  COMPUTER[key] = computerRatedGames;
+}
+
+/** The profile the members list would build for those counts — only what `tierShown` reads. */
+function profileFor(ratedGames: number, computerRatedGames: number): PlayerProfile {
+  return {
+    rating: 1600,
+    ratedGames,
+    tier: tierFor(ratedGames),
+    computer: { rating: 1600, ratedGames: computerRatedGames },
+  } as unknown as PlayerProfile;
 }
 
 describe("the members with a settled rating", () => {
@@ -152,5 +186,48 @@ describe("the members with a settled rating", () => {
     rating("nineteen", "Nineteen", "m-19", 19);
     rating("twenty", "Twenty", "m-20", 20);
     expect(await membersWithSettledRatings()).toEqual(["m-20"]);
+  });
+});
+
+/**
+ * SETTLED MEANS THE RATING THE PAGE PRINTS HAS SETTLED.
+ *
+ * The members list prints `ratingShown`: the ladder rating where there is
+ * one, and otherwise the rating earned against the computer players, marked
+ * as such, with that pool's tier. This filter asked about the ladder alone —
+ * so a program with twenty-nine games, whose settled rating the list prints
+ * beside its name, was left out of "Settled ratings", and so was every person
+ * who has only played the programs. On a site where nobody has twenty games
+ * against another person yet, that is everybody: John's "0 of 11 listed".
+ */
+describe("the members whose SHOWN rating has settled", () => {
+  it("lists a computer player whose rating against the programs has settled", async () => {
+    rating("kyu", "Kyu", "m-kyu", 0, 29);
+    expect(await membersWithSettledRatings()).toEqual(["m-kyu"]);
+  });
+
+  it("lists a person who has only played the programs, once that rating has settled", async () => {
+    rating("aki", "Aki", "m-aki", 2, 25);
+    expect(await membersWithSettledRatings()).toEqual(["m-aki"]);
+  });
+
+  it("does not list a person whose ladder rating is provisional, however many games against programs", async () => {
+    // The page prints the ladder rating here, provisional, so settled would be a lie.
+    rating("aki", "Aki", "m-aki", 10, 40);
+    expect(await membersWithSettledRatings()).toEqual([]);
+  });
+
+  it("agrees with the tier the page prints, at every boundary of both pools", async () => {
+    const counts = [0, 3, 4, 19, 20, 29];
+    const expected: string[] = [];
+    for (const people of counts) {
+      for (const programs of counts) {
+        const id = `m-${people}-${programs}`;
+        rating(`k-${people}-${programs}`, `N ${people} ${programs}`, id, people, programs);
+        if (tierShown(profileFor(people, programs)) === "established") expected.push(id);
+      }
+    }
+    expect(expected.length).toBeGreaterThan(0);
+    expect((await membersWithSettledRatings()).sort()).toEqual(expected.sort());
   });
 });
