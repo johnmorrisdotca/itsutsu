@@ -9,6 +9,7 @@ import {
   takeFor,
 } from "@/lib/api/paging.cursor";
 import { prisma } from "@/lib/prisma";
+import { ownedRow } from "@/lib/rating/ownedRow";
 import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
 import { GAME_SORT_SPEC, gameSortChoice } from "./gameHistory.sort";
 import { type FilterSeats, buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
@@ -248,10 +249,11 @@ export async function nameForMember(memberId: string): Promise<string | null> {
   const id = memberId.trim();
   if (id === "") return null;
   const [earned, member] = await Promise.all([
-    prisma.player.findFirst({ where: { memberId: id }, select: { name: true } }),
+    prisma.player.findMany({ where: { memberId: id }, select: { key: true, name: true, updatedAt: true } }),
     prisma.member.findUnique({ where: { id }, select: { name: true } }),
   ]);
-  return earned?.name ?? member?.name ?? null;
+  // The same row `fetchPlayer` shows, chosen the same way — never the database's pick.
+  return ownedRow(earned, member?.name ?? "")?.name ?? member?.name ?? null;
 }
 
 /**

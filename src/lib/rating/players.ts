@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { tierFor, type RatingTier } from "./elo";
+import { ownedRow } from "./ownedRow";
 import { RATING_POOLS } from "./pools";
 import { streakIn, type Streak } from "./streak";
 
@@ -140,7 +141,9 @@ export async function fetchPlayer(name: string, memberId?: string | null): Promi
    * — which is most of what this table holds and must keep working.
    */
   if (memberId != null && memberId !== "") {
-    const owned = await prisma.player.findFirst({ where: { memberId } });
+    // Chosen, not left to the database: a member who played under two names
+    // owns two rows, and `nameForMember` must resolve the same one. See `ownedRow`.
+    const owned = ownedRow(await prisma.player.findMany({ where: { memberId } }), name);
     if (owned !== null) return toProfile(owned);
   }
   const key = playerKey(name);
