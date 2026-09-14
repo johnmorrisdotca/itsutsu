@@ -258,3 +258,33 @@ export const RATED_TILES: readonly RatedTile[] = [
  * no second size to keep in step with it. See BoardPicker.
  */
 export const BOARD_MARK_PX = 70;
+
+/**
+ * The same board, on the last page before a game: the big numbered mark the
+ * block drew, larger, with the board's name under it and no size line.
+ *
+ * John, with the Checkers doorstep in front of him: "Checkers page, and all
+ * pages like it, should use the Board Icon... since this is the last page
+ * before the game... perhaps we use new larger icons? if so we need to always
+ * create a larger set of icons with number too".
+ *
+ * NO SECOND SET OF ICONS, because there is no set: `BoardSizeMark` draws the
+ * lattice from the number and scales the numeral from `px`, so a larger board
+ * with its number in it is this one constant and nothing to keep in step.
+ * Larger than the block by construction — the gate says so — because the
+ * doorstep has one board to show, not a row of them to choose from. 112px is
+ * the block's 70 and a half again, which still leaves room for the opening's
+ * picture beside it inside a 400px phone.
+ */
+export const DOORSTEP_MARK_PX = 112;
+
+/**
+ * The doorstep's pictures in a row, wrapping only if a phone must. Each one is
+ * a figure exactly as wide as its mark (`w-28` is 112px), so the name under it
+ * wraps beneath the picture rather than widening the column past it.
+ */
+export const DOORSTEP_PICTURES = "flex flex-wrap items-start gap-4";
+
+export const DOORSTEP_FIGURE = "m-0 flex w-28 min-w-0 flex-col items-center gap-1.5";
+
+export const DOORSTEP_FIGURE_NAME = "text-center text-xs leading-snug text-ink-soft";

@@ -9,6 +9,7 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";
+import { DoorstepPictures } from "./DoorstepPictures";
 import { RulesStatement } from "./RulesStatement";
 import { DOORSTEP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
 import { useGameBegunHere } from "./doorstepMemory";
@@ -178,6 +179,14 @@ export function Doorstep({
           {problem}
         </p>
       ) : null}
+
+      {/*
+        THE BOARD THAT WAS CHOSEN, AS THE PICTURE THAT CHOSE IT — the big
+        numbered mark from the set-up block, larger, and its name. John: "since
+        this is the last page before the game... perhaps we use new larger
+        icons?" A picture, not a control: nothing on it can be pressed.
+      */}
+      <DoorstepPictures rules={rules} />
 
       {/*
         THE WHOLE GAME IN A PARAGRAPH, which is the form a confirmation takes. A
