@@ -1,21 +1,27 @@
 import { expect, test } from "@playwright/test";
+import { PrismaClient } from "@prisma/client";
 
+import { isLocalDatabase } from "../src/lib/db/localDatabase";
 import { playerSlug } from "../src/lib/rating/playerKey";
 
-import { ensureMember, keptPreferences, putPreferencesBack, removeMember, seedMember } from "./members";
+import { keptPreferences, putPreferencesBack, removeMember, seedMember } from "./members";
+import { suiteOperator } from "./operator";
 
 /**
  * Whose account this file's visits are remembered on.
  *
  * Four cases below open `/players?who=everyone`, and the players filter is
  * kept on the signed-in account rather than in a cookie — so each of those
- * visits writes `playersWho` onto the operator, who on a developer's machine is
- * the site owner. The operator-row check around this file caught exactly that.
- * So the column is read once before anything runs and put back as it was found,
- * the bargain `computer-players.spec.ts` makes; see `keptPreferences` for why it
- * is the column that is read and not the registry.
+ * visits writes `playersWho` onto the operator. That is the suite's own test
+ * identity (e2e/operator.ts), never "the first address in ADMIN_EMAILS", which
+ * on a developer's machine was the site owner's real row and put these visits
+ * onto his players page. The column is still read once before anything runs
+ * and put back as it was found, the bargain `computer-players.spec.ts` makes:
+ * the operator's row is shared by every session on this machine, and a filter
+ * left on it narrows the players page under somebody else's spec. See
+ * `keptPreferences` for why it is the column that is read and not the registry.
  */
-const OPERATOR = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
+const OPERATOR = suiteOperator().email;
 let keptOnOperator: unknown = null;
 
 test.beforeAll(async () => {
@@ -195,41 +201,117 @@ test.describe("a combined record", () => {
  */
 test.describe("how much of a record the page leads with", () => {
   /*
-   * THE ACCOUNT A KEPT RECORD IS LINKED TO, AND NOTHING WRITTEN ONTO IT.
+   * THE ONE THING OF THE SITE OWNER'S THIS FILE STILL BORROWS: HIS NAME.
    *
-   * These cases need a live member who ALSO has a record from before this
-   * site, and the only such row in the data is the one `legacyPlayers.data.ts`
-   * links by name (`linkedKey: "john morris"`). So they cannot bring their own
-   * member: the link is by that name, and a second John Morris made to carry
-   * it would be a second John Morris on the owner's own site, which is the
-   * thing he asked to have removed.
+   * These cases need a player with a record from before this site AND a game
+   * here. The only record from before this site that belongs beside a live
+   * player is the one `legacyPlayers.data.ts` links by the literal
+   * `linkedKey: "john morris"`, and that file is a static array compiled into
+   * the server — nothing a spec can set or seed points the lookup at a record
+   * of its own. A test-only record would be a change to `src/`, and a second
+   * John Morris made to carry his would be a second John Morris on his own
+   * site, which is what he asked to have removed.
    *
-   * On a developer's machine this address is the site owner's REAL account.
-   * The spec used to reach it through `seedMember`, whose upsert wrote a name
-   * and a blank country, city, time zone and bio over his profile on every
-   * run. `ensureMember` is create-only for exactly this (AGENTS.md, "A Fixture
-   * Must Make The Row It Signs In As"): it makes the row on a fresh database,
-   * where the name below is what links it, and leaves a present one alone.
-   * Nothing below asserts his name, country or bio — only the figures the page
-   * leads with and what it says about them.
+   * So the name stays, and nothing else of his is used: no address, and no
+   * member made, read or written. The page is reached by the name, because
+   * the link is keyed by the name. Each case plays its OWN finished game under
+   * it and takes that game away again, and that game is what makes this the
+   * page these cases are about — a chapter here beside the kept one — on any
+   * database, including a fresh one where he has no row at all.
+   *
+   * THE COST THAT REMAINS, said here rather than found later. On a developer's
+   * machine `/players/john-morris` is still the owner's real page: "here"
+   * counts his real games beside the seeded one, and for the length of a case
+   * his record shows one game he never played. It is unrated and written
+   * straight to the games table, so no ladder is recomputed from it and no
+   * Player or rating row moves. The assertions are made so that his history
+   * cannot decide them — the seeded game makes "here" at least one, and what
+   * narrowing takes away is the kept record however many games he has — where
+   * before, the first case passed on his local games rather than on any it
+   * made. The opponent's name is one only this file uses, so a run killed
+   * mid-case leaves a game the next run of this file clears before starting.
    */
-  const LINKED = { email: "john@spxis.com", name: "John Morris" };
+  const LINKED_NAME = "John Morris";
+  const LINKED_PAGE = "/players/john-morris";
+  const OPPONENT_PREFIX = "Whole Linked ";
   const played = async (page: import("@playwright/test").Page) =>
     Number((await page.getByTestId("player-played").innerText()).replace(/[^0-9]/g, ""));
 
+  /** One finished, unrated game under the linked name. Returns its id, for `dropLinkedGames`. */
+  async function playOneUnderTheName(): Promise<string> {
+    const stamp = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const id = `whole-linked-${stamp}`;
+    const prisma = new PrismaClient();
+    try {
+      await prisma.game.create({
+        data: {
+          id,
+          variant: "renju",
+          size: 15,
+          winLength: 5,
+          obstacles: "none",
+          opener: "black",
+          status: "finished",
+          result: "black",
+          winner: "black",
+          moveCount: 9,
+          rated: false,
+          blackName: LINKED_NAME,
+          whiteName: `${OPPONENT_PREFIX}${stamp}`,
+        },
+      });
+    } finally {
+      await prisma.$disconnect();
+    }
+    return id;
+  }
+
+  /** One case's game by id, or — with no id — whatever a killed run of this file left under the name. */
+  async function dropLinkedGames(id?: string): Promise<void> {
+    if (!isLocalDatabase(process.env.DATABASE_URL)) return;
+    const prisma = new PrismaClient();
+    try {
+      await prisma.game.deleteMany({
+        where: id !== undefined ? { id } : { blackName: LINKED_NAME, whiteName: { startsWith: OPPONENT_PREFIX } },
+      });
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
+
+  test.beforeAll(async () => {
+    await dropLinkedGames();
+  });
+
   test("counts every site before anybody asks, and narrows when they do", async ({ page }) => {
-    await ensureMember(LINKED);
-    await page.goto("/players/john-morris");
+    const game = await playOneUnderTheName();
+    try {
+      await page.goto(LINKED_PAGE);
 
-    await expect(page.getByTestId("scope-everywhere")).toHaveAttribute("aria-current", "true");
-    const everywhere = await played(page);
-    expect(everywhere).toBeGreaterThan(1000);
+      await expect(page.getByTestId("scope-everywhere")).toHaveAttribute("aria-current", "true");
+      const everywhere = await played(page);
 
-    await page.getByTestId("scope-here").click();
-    await expect(page).toHaveURL(/scope=here/);
-    // Narrowing has to actually narrow: a toggle that changes the address and
-    // not the figure is the shape of a filter that quietly does nothing.
-    expect(await played(page)).toBeLessThan(everywhere);
+      await page.getByTestId("scope-here").click();
+      await expect(page).toHaveURL(/scope=here/);
+      // The control saying so, not only the address: the address moves before
+      // the figures under it are drawn again.
+      await expect(page.getByTestId("scope-here")).toHaveAttribute("aria-current", "true");
+      const here = await played(page);
+
+      // The game this case played is counted, and is on the page it is counted on.
+      expect(here).toBeGreaterThanOrEqual(1);
+      await expect(page.locator(`a[href$="/${game}"]`).first()).toBeVisible();
+      /*
+       * Narrowing has to actually narrow: a toggle that changes the address and
+       * not the figure is the shape of a filter that quietly does nothing. And
+       * what it took away is the kept record — over a thousand games, whatever
+       * this database holds here — rather than "less than before", which his
+       * own history here would satisfy on its own.
+       */
+      expect(everywhere - here).toBeGreaterThan(1000);
+    } finally {
+      await dropLinkedGames(game);
+    }
   });
 
   test("keeps the snapshot warning beside the figure it is about", async ({ page }) => {
@@ -237,25 +319,38 @@ test.describe("how much of a record the page leads with", () => {
      * The warning used to sit below the tabs, under a figure nobody led with.
      * Now that combined IS the headline, a warning left down there would have
      * become fine print without anybody deciding to make it fine print.
+     *
+     * Its own game first, so the layout measured is a player's with a chapter
+     * here as well as a kept one — the page this is about — and not whatever
+     * shape this database's history happens to draw.
      */
-    await ensureMember(LINKED);
-    await page.goto("/players/john-morris");
+    const game = await playOneUnderTheName();
+    try {
+      await page.goto(LINKED_PAGE);
 
-    const figures = page.getByTestId("player-figures");
-    const note = page.getByTestId("whole-record-snapshot").first();
-    await expect(note).toBeVisible();
-    await expect(note).toContainText("does not update");
+      const figures = page.getByTestId("player-figures");
+      const note = page.getByTestId("whole-record-snapshot").first();
+      await expect(note).toBeVisible();
+      await expect(note).toContainText("does not update");
 
-    const figuresBox = await figures.boundingBox();
-    const noteBox = await note.boundingBox();
-    expect(noteBox!.y - figuresBox!.y).toBeLessThan(200);
+      const figuresBox = await figures.boundingBox();
+      const noteBox = await note.boundingBox();
+      expect(noteBox!.y - figuresBox!.y).toBeLessThan(200);
+    } finally {
+      await dropLinkedGames(game);
+    }
   });
 
   test("never invents a combined rating", async ({ page }) => {
     // Games and wins add up; ratings do not. The space stays empty on purpose.
-    await ensureMember(LINKED);
-    await page.goto("/players/john-morris");
-    await expect(page.getByTestId("counting-everywhere")).toContainText("does not add");
+    // Its own game first, so there is a rating-bearing chapter here to leave out.
+    const game = await playOneUnderTheName();
+    try {
+      await page.goto(LINKED_PAGE);
+      await expect(page.getByTestId("counting-everywhere")).toContainText("does not add");
+    } finally {
+      await dropLinkedGames(game);
+    }
   });
 
   test("offers no choice to somebody who has only ever played here", async ({ page }) => {
