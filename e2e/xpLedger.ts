@@ -84,13 +84,24 @@ export async function seedVisitor(label: string, daysAgo = 1): Promise<Visitor> 
   return { email, id, name };
 }
 
-/** The same, but holding a zone they chose — for the case that must not be touched. */
-export async function seedVisitorWithZone(label: string, timeZone: string, daysAgo = 1): Promise<Visitor> {
+/**
+ * The same, but holding a zone — and a country, where the case is about a guess.
+ *
+ * A row holding exactly what its country would guess reads as a guess, and any
+ * other zone reads as the member's own (`zoneGuess.ts`). So the pair is what
+ * decides which rung a case is on, and a spec about a guess has to set both.
+ */
+export async function seedVisitorWithZone(
+  label: string,
+  timeZone: string,
+  daysAgo = 1,
+  country = "",
+): Promise<Visitor> {
   const visitor = await seedVisitor(label, daysAgo);
   loadEnv();
   const prisma = new PrismaClient();
   try {
-    await prisma.member.update({ where: { id: visitor.id }, data: { timeZone } });
+    await prisma.member.update({ where: { id: visitor.id }, data: { timeZone, country } });
   } finally {
     await prisma.$disconnect();
   }
@@ -147,6 +158,12 @@ export async function visitorContext(
   browser: Browser,
   baseURL: string,
   visitor: Visitor,
+  /**
+   * The zone this browser reports, where a case is about what a device says.
+   * Set rather than inherited, so a spec about a guess being replaced is not a
+   * test about which city the machine running it happens to be in.
+   */
+  device: { timezoneId?: string } = {},
 ): Promise<BrowserContext> {
   const token = await signSession({
     kind: "player",
@@ -164,7 +181,11 @@ export async function visitorContext(
    * cases at this line before reaching the site. The only identity here is the
    * one this function signs.
    */
-  const context = await browser.newContext({ baseURL, storageState: { cookies: [], origins: [] } });
+  const context = await browser.newContext({
+    baseURL,
+    storageState: { cookies: [], origins: [] },
+    ...device,
+  });
   await context.addCookies([
     { name: SESSION_COOKIE, value: token, url: baseURL, httpOnly: true, sameSite: "Lax" },
   ]);

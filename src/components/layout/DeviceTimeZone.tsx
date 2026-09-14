@@ -2,9 +2,11 @@
 
 import { useEffect, useRef } from "react";
 
+import { zoneWorthRecording } from "@/lib/auth/deviceZone";
+
 /**
- * Tells the site what zone this device is in, once, for a member who has never
- * said.
+ * Tells the site what zone this device is in, for a member whose zone is unknown
+ * or only guessed from their country.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * IN AN EFFECT, AND THAT IS THE ONLY PLACE IT MAY BE
@@ -18,30 +20,37 @@ import { useEffect, useRef } from "react";
  * no server render to disagree with. `ProfileForm`'s "use this device's time
  * zone" link reads the same value in its own click handler and must stay there.
  *
- * The server is what decides whether to mount this at all — see
- * `dayZoneUnknown` — so a member who has chosen a zone never renders it, and
- * this cannot overwrite a choice somebody made. Once the write lands, the next
- * page's server render says the zone is known and nothing mounts again: ONE
- * WRITE, EVER, and no polling, no timer, no query.
+ * ─────────────────────────────────────────────────────────────────────────
+ * WHO DECIDES, AND WHY IT WRITES AT MOST ONCE
+ * ─────────────────────────────────────────────────────────────────────────
  *
- * It draws nothing. A zone is not news, and a member who has just been told
- * their day now ends at midnight where they live has been told something they
- * already believed.
+ * The server decides whether to mount this at all — `LearnTimeZone` — so a
+ * member on a zone they chose, or one their browser has already measured, never
+ * renders it and cannot have it overwritten.
+ *
+ * `held` is the guess the row carries, when it carries one. A device that agrees
+ * with it writes nothing: otherwise a member in Toronto with Canada as their
+ * country would send the same value back on every page they opened, because the
+ * row would still read as a guess afterwards — see `zoneWorthRecording`. A
+ * device that disagrees writes once, the row then reads as the member's own, and
+ * nothing mounts again. No polling, no timer, no query.
+ *
+ * It draws nothing. A zone is not news.
  */
 
 /** This device's zone, or null when the browser will not say. */
 function deviceTimeZone(): string | null {
   try {
     const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return typeof zone === "string" && zone.trim() !== "" ? zone.trim() : null;
+    return typeof zone === "string" ? zone : null;
   } catch {
-    /* A browser with no zone of its own. UTC stays the floor rather than a
-       guess being written onto the row — see `dayZoneFor`. */
+    /* A browser with no zone of its own. The row keeps what it has rather than
+       a guess being written onto it — see `dayZoneFor`. */
     return null;
   }
 }
 
-export function DeviceTimeZone() {
+export function DeviceTimeZone({ held }: { held: string | null }) {
   const asked = useRef(false);
   useEffect(() => {
     /* React runs an effect twice in development's strict mode, and this one
@@ -50,19 +59,19 @@ export function DeviceTimeZone() {
     if (asked.current) return;
     asked.current = true;
 
-    const zone = deviceTimeZone();
+    const zone = zoneWorthRecording(deviceTimeZone(), held);
     if (zone === null) return;
 
     /* The profile's own door, so every check it makes — that the platform knows
        this zone, that somebody is signed in, the rate limit — applies exactly as
        it does to a member typing it in. Failure is silence: a zone we could not
-       record leaves the floor in place, which is what was happening anyway. */
+       record leaves the row as it was, which is what was happening anyway. */
     void fetch("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ timeZone: zone }),
     }).catch(() => undefined);
-  }, []);
+  }, [held]);
 
   return null;
 }

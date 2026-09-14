@@ -109,7 +109,9 @@ test.describe("the zone a member's days are counted in", () => {
     made.push(visitor);
     expect((await standingFor(visitor.id))?.timeZone).toBe("");
 
-    const context = await visitorContext(browser, baseURL!, visitor);
+    /* The device's zone is the spec's to choose, so this asserts a literal
+       rather than "whatever city this laptop is in". */
+    const context = await visitorContext(browser, baseURL!, visitor, { timezoneId: "Asia/Tokyo" });
     const page = await context.newPage();
     /* The real request the browser makes, waited for rather than guessed at. */
     const saved = page.waitForResponse(
@@ -123,11 +125,7 @@ test.describe("the zone a member's days are counted in", () => {
     await expect
       .poll(async () => (await standingFor(visitor.id))?.timeZone, { timeout: 10_000 })
       .not.toBe("");
-    /* Whatever zone the machine running this is in — asserted as "a real zone the
-       platform knows" rather than as a literal, because a spec that hard-coded
-       America/Vancouver would be a test about this laptop. */
-    const zone = (await standingFor(visitor.id))?.timeZone ?? "";
-    expect(() => new Intl.DateTimeFormat("en-CA", { timeZone: zone })).not.toThrow();
+    expect((await standingFor(visitor.id))?.timeZone).toBe("Asia/Tokyo");
 
     await context.close();
   });
@@ -155,6 +153,61 @@ test.describe("the zone a member's days are counted in", () => {
 
     expect(patches).toEqual([]);
     expect((await standingFor(visitor.id))?.timeZone).toBe("Asia/Tokyo");
+
+    await context.close();
+  });
+
+  test("replaces a guess from the country with what the device measures", async ({ browser, baseURL }) => {
+    /*
+     * John's own case, end to end. His country is Canada, Canada's guess is
+     * Toronto, and he is in Vancouver. A measurement beats an inference, so the
+     * guess must give way to his browser the first time he opens a page.
+     */
+    const visitor = await seedVisitorWithZone("guess", "America/Toronto", 1, "Canada");
+    made.push(visitor);
+
+    const context = await visitorContext(browser, baseURL!, visitor, { timezoneId: "America/Vancouver" });
+    const page = await context.newPage();
+    const saved = page.waitForResponse(
+      (response) => response.url().includes("/api/me") && response.request().method() === "PATCH",
+      { timeout: 15_000 },
+    );
+    await page.goto("/");
+    await ready(page, "account-menu");
+    await saved;
+
+    await expect
+      .poll(async () => (await standingFor(visitor.id))?.timeZone, { timeout: 10_000 })
+      .toBe("America/Vancouver");
+
+    await context.close();
+  });
+
+  test("does not send back a guess the device agrees with, page after page", async ({ browser, baseURL }) => {
+    /*
+     * THE LOOP. A row holding exactly its country's guess reads as a guess for
+     * ever, so the sender mounts on every page. Before `held` existed, a browser
+     * that agreed with the guess PATCHed the same value on each of them — a
+     * request per page to change nothing. Two pages, because one page cannot
+     * show a loop, and the absence is asserted only after each has hydrated.
+     */
+    const visitor = await seedVisitorWithZone("agrees", "America/Toronto", 1, "Canada");
+    made.push(visitor);
+
+    const context = await visitorContext(browser, baseURL!, visitor, { timezoneId: "America/Toronto" });
+    const page = await context.newPage();
+    const patches: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("/api/me") && request.method() === "PATCH") patches.push(request.url());
+    });
+
+    await page.goto("/");
+    await ready(page, "account-menu");
+    await page.goto("/games");
+    await ready(page, "account-menu");
+
+    expect(patches).toEqual([]);
+    expect((await standingFor(visitor.id))?.timeZone).toBe("America/Toronto");
 
     await context.close();
   });
