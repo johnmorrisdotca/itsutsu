@@ -45,10 +45,13 @@ export type RulesChooser = (typeof RULES_CHOOSERS)[keyof typeof RULES_CHOOSERS];
  * The rules of a shared game, as a form.
  *
  * One form, used twice: on the setup screen, where it edits a draft and no
- * game exists yet, and beside a board, where each change is sent to the
- * server. It knows nothing about either — it is handed a value and gives back
- * the next one — so the two screens cannot come to offer different rules, or
- * the same rule under a different name.
+ * game exists yet, and in Play apart beside a scratch board, where the board
+ * has already chosen the game and the form asks the rest. It knows nothing
+ * about either — it is handed a value and gives back the next one — so the two
+ * screens cannot come to offer different rules, or the same rule under a
+ * different name. Play apart had its own copy of these controls until it
+ * rendered this form, and the copy had already drifted: other hints, another
+ * order, other test ids.
  *
  * Every change goes through `applyRulesChange`, so a setting that cannot sit
  * with another is corrected here, where somebody can watch it happen, rather
@@ -66,6 +69,7 @@ export function RulesForm({
    * which is the whole thing that screen exists to stop.
    */
   showVariant = true,
+  settledByBoard = false,
   variantLabel = "Rules",
   chooser = RULES_CHOOSERS.select,
   refused,
@@ -77,6 +81,22 @@ export function RulesForm({
   disabled?: boolean;
   showOpen?: boolean;
   showVariant?: boolean;
+  /**
+   * The game, its board and its opening were chosen on a board the reader is
+   * already playing at, so this form asks none of the three.
+   *
+   * Play apart sits beside a scratch board whose own settings panel chooses
+   * all three, and its press reads them from that board rather than from this
+   * form. Offering them here as well would be a second place to change the
+   * game — one that could disagree with the board beside it, which is the
+   * same fault `showVariant` exists to stop on the setup screen. The rest (the
+   * clock, the penalty, the rating, resigning, the seat) is not the board's to
+   * decide, and is asked exactly as it is everywhere else.
+   *
+   * Not a third `chooser`: that prop says how the choices are DRAWN and
+   * promises the same set on both screens. This one says which are ASKED.
+   */
+  settledByBoard?: boolean;
   /**
    * What to call the chooser at the top.
    *
@@ -151,7 +171,7 @@ export function RulesForm({
    * Everything else is a setting about a game already chosen, and `fold` is
    * what lets a caller put that distinction on the screen.
    */
-  const head = (
+  const head = settledByBoard ? null : (
     <>
       {showVariant ? (
         chooser === RULES_CHOOSERS.pictures ? (
@@ -241,20 +261,23 @@ export function RulesForm({
    */
   const rest = (
     <>
-      <Field label="Opening">
-        <Select
-          value={value.opening}
-          disabled={disabled}
-          onChange={(event) => change({ opening: event.target.value })}
-          data-testid="shared-rules-opening"
-        >
-          {SHARED_OPENINGS.map((option) => (
-            <option key={option} value={option}>
-              {OPENING_DISPLAY[option].label}
-            </option>
-          ))}
-        </Select>
-      </Field>
+      {/* The opening is the board's too, where a board has settled the game. */}
+      {settledByBoard ? null : (
+        <Field label="Opening">
+          <Select
+            value={value.opening}
+            disabled={disabled}
+            onChange={(event) => change({ opening: event.target.value })}
+            data-testid="shared-rules-opening"
+          >
+            {SHARED_OPENINGS.map((option) => (
+              <option key={option} value={option}>
+                {OPENING_DISPLAY[option].label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      )}
       <Toggle
         label={GAME_COPY.allowResign.label}
         hint={GAME_COPY.allowResignHint}
