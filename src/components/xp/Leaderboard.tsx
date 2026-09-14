@@ -131,6 +131,12 @@ function SortHead({
 }
 
 export type LeaderboardProps = {
+  /**
+   * Who the board is narrowed to, in words, where it is narrowed at all — so
+   * the rank column's title says a rank is a place among those and not among
+   * everyone. Absent for the whole board.
+   */
+  rankAmong?: string;
   rows: readonly XpBoardRow[];
   /** The sort in force, already checked against the spec. */
   current: SortChoice<string>;
@@ -165,6 +171,7 @@ export function Leaderboard({
   viewerId,
   viewerZone,
   empty,
+  rankAmong,
 }: LeaderboardProps) {
   const spec = XP_BOARD_SORT_SPEC as SortSpec<string>;
   const head = { spec, current, at, query };
@@ -176,7 +183,7 @@ export function Leaderboard({
           <tr>
             {/* Rank is the row's place in the order in force, so it is a
                 consequence of the sort and can never be one. See the spec. */}
-            <SortHead {...head} param={null} title="Place in the order shown">
+            <SortHead {...head} param={null} title={rankAmong === undefined ? "Place in the order shown" : `Place in the order shown, among ${rankAmong}`}>
               #
             </SortHead>
             <SortHead {...head} param="name">

@@ -1,25 +1,12 @@
-import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
-import {
-  AWAY_AFTER_DAYS,
-  DIRECTORY_WHO,
-  DIRECTORY_WHO_LIST,
-  filterBarHref,
-  type DirectoryFilter,
-  type DirectoryWho,
-} from "@/lib/rating/directoryFilter";
+import { AWAY_AFTER_DAYS, filterBarHref, type DirectoryFilter } from "@/lib/rating/directoryFilter";
 
-const WHO_DISPLAY: Record<DirectoryWho, { label: string; kanji: string }> = {
-  [DIRECTORY_WHO.people]: { label: "People", kanji: "人" },
-  [DIRECTORY_WHO.computers]: { label: "Computers", kanji: "機械" },
-  [DIRECTORY_WHO.everyone]: { label: "Everyone", kanji: "全員" },
-};
+import { FILTER_CHIP, FILTER_CHIP_OFF, FILTER_CHIP_ON, WhoFilter } from "./WhoFilter";
 
-const BUTTON =
-  "rounded-md border px-2.5 py-1 text-xs transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss";
-const ON = "border-ink bg-ink text-paper";
-const OFF = "border-rule bg-ivory/70 hover:border-rule-strong";
+const BUTTON = FILTER_CHIP;
+const ON = FILTER_CHIP_ON;
+const OFF = FILTER_CHIP_OFF;
 
 /**
  * The three questions people ask of a directory: who is a person, whose
@@ -65,19 +52,7 @@ export function DirectoryFilters({
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-testid="directory-filters">
-      <nav className="flex flex-wrap gap-1" aria-label="Which players to list">
-        {DIRECTORY_WHO_LIST.map((who) => (
-          <Link
-            key={who}
-            href={to({ ...filter, who })}
-            aria-current={filter.who === who ? "true" : undefined}
-            className={`${BUTTON} ${filter.who === who ? ON : OFF}`}
-            data-testid={`who-${who}`}
-          >
-            <Paired en={WHO_DISPLAY[who].label} kanji={WHO_DISPLAY[who].kanji} kanjiClassName="opacity-70" />
-          </Link>
-        ))}
-      </nav>
+      <WhoFilter who={filter.who} hrefFor={(who) => to({ ...filter, who })} />
 
       <nav className="flex flex-wrap gap-1" aria-label="Which of them to leave out">
         <Link

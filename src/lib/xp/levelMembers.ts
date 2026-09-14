@@ -1,9 +1,11 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import type { DirectoryWho } from "@/lib/rating/directoryFilter";
 import type { Prisma } from "@prisma/client";
 
 import { levelXpRange } from "./levelLadder";
+import { XP_WHO_DEFAULT, xpWhoWhere } from "./xpWho";
 
 /**
  * WHO IS STANDING ON ONE RUNG.
@@ -62,8 +64,8 @@ export type LevelRoll = {
   more: boolean;
 };
 
-/** The people on one rung, at most `LEVEL_ROLL` of them, programs excluded. */
-export async function membersAtLevel(level: number): Promise<LevelRoll> {
+/** The players on one rung, at most `LEVEL_ROLL` of them — everyone, or the narrowing asked for. */
+export async function membersAtLevel(level: number, who: DirectoryWho = XP_WHO_DEFAULT): Promise<LevelRoll> {
   const range = levelXpRange(level);
   /*
    * No such level, so nobody is on it — and, importantly, not "everybody". An
@@ -75,7 +77,7 @@ export async function membersAtLevel(level: number): Promise<LevelRoll> {
   const xp: Prisma.IntFilter = range.to === null ? { gte: range.from } : { gte: range.from, lt: range.to };
 
   const read = await prisma.member.findMany({
-    where: { xp },
+    where: { xp, ...xpWhoWhere(who) },
     select: { id: true, name: true, xp: true },
     /*
      * Highest first, so whoever is nearest the next rung is at the top — the same

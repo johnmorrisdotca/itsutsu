@@ -5,6 +5,10 @@ import { Paired } from "@/components/i18n/Paired";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
+import { WhoFilter } from "@/components/players/WhoFilter";
+import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
+import { XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
+import { xpWhoFor } from "@/lib/xp/xpWhoServer";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
@@ -52,7 +56,7 @@ export async function generateMetadata({ params }: PageProps<"/xp/levels/[level]
   };
 }
 
-export default async function LevelPage({ params }: PageProps<"/xp/levels/[level]">) {
+export default async function LevelPage({ params, searchParams }: PageProps<"/xp/levels/[level]">) {
   const level = levelFrom((await params).level);
   if (level === null) notFound();
 
@@ -67,7 +71,9 @@ export default async function LevelPage({ params }: PageProps<"/xp/levels/[level
   if (rung === null) notFound();
 
   const range = levelXpRange(level)!;
-  const [roll, viewer] = await Promise.all([membersAtLevel(level), viewerXp()]);
+  // The same three-way choice as the board, on the same memory: one board, one answer.
+  const who = await xpWhoFor(await searchParams);
+  const [roll, viewer] = await Promise.all([membersAtLevel(level, who), viewerXp()]);
 
   return (
     <Page width="standard" gap="gap-6">
@@ -147,7 +153,18 @@ export default async function LevelPage({ params }: PageProps<"/xp/levels/[level
         <h2 className="flex items-baseline gap-2 text-base font-semibold">
           <Paired en="Standing here" kanji="居る" kanjiClassName="text-sm font-normal opacity-70" />
         </h2>
-        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(levelPath(level), "", next)} label="Which players the rung lists" />
+          {who !== DIRECTORY_WHO.everyone ? (
+            <p className="text-xs text-muted" data-testid="level-narrowed">
+              Narrowed to {XP_WHO_SAID[who]}.{" "}
+              <Link href={xpWhoHref(levelPath(level), "", DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
+                Show everyone
+              </Link>
+            </p>
+          ) : null}
+        </div>
+        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} />
       </section>
     </Page>
   );
@@ -166,10 +183,12 @@ function WhoIsHere({
   level,
   roll,
   viewerId,
+  who,
 }: {
   level: number;
   roll: LevelRoll;
   viewerId: string | null;
+  who: DirectoryWho;
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -189,7 +208,9 @@ function WhoIsHere({
             {roll.members.length === 0 ? (
               <tr className={ROW_CLASS}>
                 <td className="py-3 pr-3 text-sm text-muted" colSpan={2} data-testid="level-empty">
-                  Nobody is standing on level {level} yet.
+                  {who === DIRECTORY_WHO.everyone
+                    ? `Nobody is standing on level ${level} yet.`
+                    : `None of ${XP_WHO_SAID[who]} is standing on level ${level} yet.`}
                 </td>
               </tr>
             ) : (

@@ -10,6 +10,9 @@ import {
 } from "@/lib/api/paging.cursor";
 import type { PagedEnvelope, PagingRefusal, SortChoice } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
+import type { DirectoryWho } from "@/lib/rating/directoryFilter";
+
+import { XP_WHO_DEFAULT, xpWhoWhere } from "./xpWho";
 import type { Prisma } from "@prisma/client";
 
 import { XP_BOARD_SORT_SPEC, type XpBoardSortField } from "./xpBoard.sort";
@@ -101,19 +104,29 @@ export async function fetchXpBoardPage({
   sort,
   limit,
   cursor,
+  who = XP_WHO_DEFAULT,
 }: {
   sort: XpBoardSort;
   limit: number;
   cursor: string | null;
+  /** People, the computer players, or everyone — see `xpWho.ts`. */
+  who?: DirectoryWho;
 }): Promise<XpBoardPage> {
   const after = cursor === null ? null : decodeCursor(cursor, sort);
+  /*
+   * The narrowing is part of the where, so the page, the order, the cursor
+   * and the total are all about the narrowed set — never everyone with rows
+   * dropped afterwards, which would page and count a list the reader is not
+   * looking at.
+   */
+  const onTheBoard: Prisma.MemberWhereInput = { AND: [ON_THE_BOARD, xpWhoWhere(who)] };
   const where: Prisma.MemberWhereInput =
     after === null
-      ? ON_THE_BOARD
-      : { AND: [ON_THE_BOARD, keysetWhere(XP_BOARD_SORT_SPEC, sort, after)] };
+      ? onTheBoard
+      : { AND: [onTheBoard, keysetWhere(XP_BOARD_SORT_SPEC, sort, after)] };
 
   const [total, read] = await Promise.all([
-    prisma.member.count({ where: ON_THE_BOARD }),
+    prisma.member.count({ where: onTheBoard }),
     prisma.member.findMany({
       where,
       select: { id: true, name: true, xp: true, xpLastAt: true },
@@ -154,10 +167,11 @@ export async function fetchXpBoardPage({
  * wants — see `XP_BOARD_SORT_SPEC` on why rank is a consequence of a sort and
  * never an input to one.
  */
-export async function xpRankOf(xp: number): Promise<number | null> {
+export async function xpRankOf(xp: number, who: DirectoryWho = XP_WHO_DEFAULT): Promise<number | null> {
   if (xp <= 0) return null;
+  // Within the narrowing, so a rank printed under a filter is the rank within it.
   const above = await prisma.member.count({
-    where: { xp: { gt: xp } },
+    where: { AND: [{ xp: { gt: xp } }, xpWhoWhere(who)] },
   });
   return above + 1;
 }

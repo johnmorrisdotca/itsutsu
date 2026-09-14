@@ -11,8 +11,12 @@ import { isRefusal } from "@/lib/api/paging";
 import { countText } from "@/lib/rating/figures";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS } from "@/lib/xp/xpCurve";
+import { WhoFilter } from "@/components/players/WhoFilter";
+import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
 import { fetchXpBoardPage, readXpBoardPaging, xpRankOf, type XpBoardPage } from "@/lib/xp/xpBoard";
 import { viewerXp, type ViewerXp } from "@/lib/xp/xpViewer";
+import { XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
+import { xpWhoFor } from "@/lib/xp/xpWhoServer";
 
 export const metadata = {
   title: "XP leaderboard",
@@ -82,7 +86,16 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
     ? (readXpBoardPaging(new URLSearchParams()) as Exclude<typeof wanted, { error: string }>)
     : wanted;
 
-  const [board, viewer] = await Promise.all([fetchXpBoardPage(paging), viewerXp()]);
+  /*
+   * WHO THE BOARD IS ABOUT: people, the computer players, or everyone, since
+   * the programs stand on the ladder like anyone now — John: "filters are the
+   * way to go". In the query, remembered on the board's own key, and applied
+   * in the query itself, so the page, the total and every rank below are
+   * about the narrowed set.
+   */
+  const who = await xpWhoFor(asked);
+  const narrowed = who !== DIRECTORY_WHO.everyone;
+  const [board, viewer] = await Promise.all([fetchXpBoardPage({ ...paging, who }), viewerXp()]);
 
   return (
     <Page width="standard" gap="gap-6">
@@ -123,7 +136,20 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           </p>
         ) : null}
 
-        <YourStanding viewer={viewer} board={board} />
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <WhoFilter who={who} hrefFor={(next) => xpWhoHref("/xp", query, next)} label="Which players the board lists" />
+          {narrowed ? (
+            /* "Every page a link lands on says what it was narrowed to, and lets it be taken off." */
+            <p className="text-xs text-muted" data-testid="xp-narrowed">
+              Narrowed to {XP_WHO_SAID[who]}: {countText(board.total)} on the board.{" "}
+              <Link href={xpWhoHref("/xp", query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
+                Show everyone
+              </Link>
+            </p>
+          ) : null}
+        </div>
+
+        <YourStanding viewer={viewer} board={board} who={who} />
 
         <Leaderboard
           rows={board.items}
@@ -133,8 +159,18 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           from={from}
           viewerId={viewer?.memberId ?? null}
           viewerZone={viewer?.timeZone ?? ""}
+          rankAmong={narrowed ? XP_WHO_SAID[who] : undefined}
           empty={
-            viewer === null ? (
+            narrowed ? (
+              /* An empty narrowed table keeps its shape and says whose it is: the computer
+                 players before any of them has earned, say. */
+              <>
+                None of {XP_WHO_SAID[who]} has earned any experience here yet.{" "}
+                <Link href={xpWhoHref("/xp", query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4" data-testid="xp-show-everyone">
+                  Show everyone
+                </Link>
+              </>
+            ) : viewer === null ? (
               /*
                * A reader with no account. Worded as an invitation and not as the
                * signed-in label: somebody who follows this should feel they were
@@ -175,8 +211,18 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
  * costs a `count`, is only asked for when they are not among the rows on screen.
  * See `xpRankOf`.
  */
-async function YourStanding({ viewer, board }: { viewer: ViewerXp | null; board: XpBoardPage }) {
+async function YourStanding({ viewer, board, who }: { viewer: ViewerXp | null; board: XpBoardPage; who: DirectoryWho }) {
   if (viewer === null) return null;
+
+  /* A reader is a person, and a board narrowed to the computer players is not
+     one they can be on: said, rather than a rank counted among programs. */
+  if (who === DIRECTORY_WHO.computers) {
+    return (
+      <p className="text-sm" data-testid="your-xp">
+        This board is narrowed to the computer players, so you are not among them.
+      </p>
+    );
+  }
 
   const level = viewer.standing.level;
   const shown = board.items.some((row) => row.id === viewer.memberId);
@@ -197,7 +243,7 @@ async function YourStanding({ viewer, board }: { viewer: ViewerXp | null; board:
     );
   }
 
-  const rank = shown ? null : await xpRankOf(viewer.xp);
+  const rank = shown ? null : await xpRankOf(viewer.xp, who);
 
   return (
     <p className="text-sm" data-testid="your-xp" data-rank={rank ?? undefined}>
@@ -213,7 +259,7 @@ async function YourStanding({ viewer, board }: { viewer: ViewerXp | null; board:
            other, and separating them by `id` would be an order nobody can see. */
         <span className="text-muted">
           {" "}
-          — {countText(rank)} of {countText(board.total)} on the board.
+          — {countText(rank)} of {countText(board.total)} {who === DIRECTORY_WHO.people ? "among the people" : "on the board"}.
         </span>
       )}
     </p>

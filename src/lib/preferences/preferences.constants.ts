@@ -1,7 +1,7 @@
 import { ZONE_SOURCE, ZONE_SOURCES } from "@/lib/auth/zoneSource.constants";
 import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
-import { DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
+import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
 
@@ -40,6 +40,14 @@ export const PREFERENCE_SPECS = {
   playersWho: { options: DIRECTORY_WHO_LIST, fallback: NO_FILTER.who },
   playersSettled: { options: FLAG, fallback: NO_FILTER.settled },
   playersActive: { options: FLAG, fallback: NO_FILTER.active },
+
+  /*
+   * Who the XP board and the level pages are about — the same three choices
+   * as `playersWho`, on a key of their own. One board, one memory: choosing
+   * Computers on /xp never changes what /players opens with, or the other way
+   * round. See `src/lib/xp/xpWho.ts`.
+   */
+  xpWho: { options: DIRECTORY_WHO_LIST, fallback: DIRECTORY_WHO.everyone },
 
   /*
    * The language the site speaks to this member, wherever they sign in.
