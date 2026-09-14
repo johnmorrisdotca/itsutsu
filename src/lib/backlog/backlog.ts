@@ -205,6 +205,64 @@ export function changeProblems(change: BacklogChange): string[] {
   return [`Nothing there to change. A change names at least one of: ${CHANGE_FIELDS.join(", ")}.`];
 }
 
+/** A version as `pnpm release:take` writes it: three numbers, nothing else. */
+const SEMVER = /^\d+\.\d+\.\d+$/;
+
+/**
+ * What is wrong with stamping a release onto a row, in words a person can
+ * act on; empty means it may be written.
+ *
+ * The door this guards is narrow on purpose. 109 of production's 189 done
+ * rows carry no `releasedIn`, because they were closed by hand before board
+ * convergence ITS-04 gave the release tool the job of stamping the version
+ * as it closes a row — and `finishItem`, the only writer `releasedIn` ever
+ * had, refuses a row that is already done. So a stamp is not a move: it
+ * writes the two release columns onto a row that is ALREADY done and says
+ * nothing about which release carried it, and it touches nothing else — no
+ * status, no `movedAt`, no claim. BOARD_RULES.md invariants 1 and 9 hold as
+ * they stand: a done row still does not move, and done is still reached by
+ * the release tool alone.
+ *
+ * Three refusals, each its own sentence. A row that is not done has no
+ * release to name, and getting one this way would be a second road to done
+ * without the version bump. A row already stamped has stated a fact about a
+ * release that went out, and a stated release is never rewritten — the same
+ * reason done is terminal. And the version has to be one CHANGELOG.md names:
+ * the changelog is the record of what shipped, and a stamp naming a release
+ * that never went out is a fact nobody established, written where a true
+ * one would go.
+ */
+export function stampProblems(
+  item: Pick<BacklogItem, "status" | "releasedIn">,
+  version: string,
+  releasedVersions: readonly string[],
+): string[] {
+  const problems: string[] = [];
+  if (item.status !== BACKLOG_STATUSES.done) {
+    problems.push(`Only a done row can be stamped with the release that carried it; this one is "${item.status}".`);
+  }
+  if (item.releasedIn !== null) {
+    problems.push(`This row already says it shipped in ${item.releasedIn}; a release that has been stated is never rewritten.`);
+  }
+  if (!SEMVER.test(version)) {
+    problems.push("releasedIn must be a version like 1.2.3.");
+  } else if (!releasedVersions.includes(version)) {
+    problems.push(`${version} is not a release CHANGELOG.md names; a row can only be stamped with a release that went out.`);
+  }
+  return problems;
+}
+
+/**
+ * The condition a stamp is written under: the row is still done, and still
+ * unstamped. Two stamps racing for one row write once — the database decides,
+ * as it does for a move (BOARD_RULES.md invariant 4) — and a `count` of zero
+ * is the store's cue to re-read and say which of the two it was. No claim
+ * clause: a stamp neither reads nor writes a hold.
+ */
+export function stampWhere(id: string, status: BacklogStatus): { id: string; status: BacklogStatus; releasedIn: null } {
+  return { id, status, releasedIn: null };
+}
+
 /** Whether an item at `from` may be moved to `to`. */
 export function canMove(from: BacklogStatus, to: BacklogStatus): boolean {
   return STATUS_MOVES[from].includes(to);

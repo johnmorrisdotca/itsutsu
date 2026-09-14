@@ -422,7 +422,17 @@ pnpm task drop <key> --by "<who>"      -> dropped
 pnpm task reopen <key> --by "<who>"    dropped -> open
 pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none
 pnpm task edit <key> [--title "…"] [--detail "…"]   the text, through the API's own door
+pnpm task stamp <key> --release 0.x.y [--at <ISO>] --by "<who>"
+                                       the release onto a done row that has none
 ```
+
+`stamp` is the one thing that may be written onto a row already done, and it
+is not a move: `stampRelease` writes `releasedIn` and `releasedAt` and touches
+nothing else, refusing a row that is not done, one already stamped, and any
+version `CHANGELOG.md` does not name. It exists for the rows closed by hand
+before `release:take` could close them — see
+`docs/plans/board-convergence/released-in-backfill.md` — and `done` itself is
+still reached by the release tool alone.
 
 In progress is a claim with a six-hour lease (board convergence ITS-01), not
 only a status: `claim` on a row somebody else holds is refused with their

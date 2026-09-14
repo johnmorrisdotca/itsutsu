@@ -21,6 +21,8 @@ import {
   normalizeDraft,
   openCount,
   sortItems,
+  stampProblems,
+  stampWhere,
   tally,
 } from "./backlog";
 import {
@@ -402,5 +404,56 @@ describe("a claim's lease", () => {
       status: "open",
       OR: [{ claimedBy: null }, { claimedBy: "Sora" }, { claimedAt: { lt: staleBefore } }],
     });
+  });
+});
+
+/**
+ * The stamp: the one thing that may be written onto a row already done, and
+ * not a move. Each refusal is its own case because each is its own sentence
+ * to a caller, and the 4xx the route answers with is built from them.
+ */
+describe("stamping a release onto a done row", () => {
+  const RELEASED = ["0.150.1", "0.151.0"];
+
+  it("allows a done row with no release, stamped with a version the changelog names", () => {
+    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "0.150.1", RELEASED)).toEqual([]);
+  });
+
+  it("refuses a row that is not done, naming where it stands", () => {
+    const problems = stampProblems({ status: BACKLOG_STATUSES.open, releasedIn: null }, "0.150.1", RELEASED);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("Only a done row");
+    expect(problems[0]).toContain('"open"');
+    expect(stampProblems({ status: BACKLOG_STATUSES.inProgress, releasedIn: null }, "0.150.1", RELEASED)).toHaveLength(1);
+    expect(stampProblems({ status: BACKLOG_STATUSES.dropped, releasedIn: null }, "0.150.1", RELEASED)).toHaveLength(1);
+  });
+
+  it("never rewrites a release that has been stated, even to the same version", () => {
+    const problems = stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: "0.150.1" }, "0.151.0", RELEASED);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("already says it shipped in 0.150.1");
+    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: "0.150.1" }, "0.150.1", RELEASED)).toHaveLength(1);
+  });
+
+  it("refuses a version the changelog does not name", () => {
+    const problems = stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "9.9.9", RELEASED);
+    expect(problems).toEqual(["9.9.9 is not a release CHANGELOG.md names; a row can only be stamped with a release that went out."]);
+  });
+
+  it("refuses something that is not a version at all, before asking the changelog", () => {
+    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "latest", RELEASED)).toEqual(["releasedIn must be a version like 1.2.3."]);
+    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "0.150", RELEASED)).toHaveLength(1);
+  });
+
+  it("refuses a changelog that could not be read as it refuses an unknown version — silence over a guess", () => {
+    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "0.150.1", [])).toHaveLength(1);
+  });
+
+  it("says every reason at once, so a caller is not refused twice", () => {
+    expect(stampProblems({ status: BACKLOG_STATUSES.open, releasedIn: "0.1.0" }, "9.9.9", RELEASED)).toHaveLength(3);
+  });
+
+  it("is written only onto a row still done and still unstamped, with no claim clause", () => {
+    expect(stampWhere("id-1", BACKLOG_STATUSES.done)).toEqual({ id: "id-1", status: "done", releasedIn: null });
   });
 });

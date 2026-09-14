@@ -36,11 +36,19 @@ const finishItem = vi.fn<(id: string, release: { version: string; at: Date }, ac
   }),
 );
 
+const stampRelease = vi.fn<(id: string, release: { version: string; at: Date | null }) => Promise<MoveOutcome>>(
+  async (id, release) => ({
+    ok: true,
+    item: { id, key: "a-request", status: "done", claimedBy: null, releasedIn: release.version, releasedAt: release.at?.toISOString() },
+  }),
+);
+
 const currentAdmin = vi.fn<() => Promise<{ name?: string; email?: string } | null>>(async () => null);
 
 vi.mock("@/lib/backlog/backlogStore", () => ({
   changeItem: (...args: Parameters<typeof changeItem>) => changeItem(...args),
   finishItem: (...args: Parameters<typeof finishItem>) => finishItem(...args),
+  stampRelease: (...args: Parameters<typeof stampRelease>) => stampRelease(...args),
 }));
 vi.mock("@/lib/api/rateLimit", () => ({ overLimit: () => null }));
 vi.mock("@/lib/auth/requireAdmin", () => ({ currentAdmin: () => currentAdmin() }));
@@ -61,6 +69,7 @@ function patch(body: unknown, headers: Record<string, string> = {}) {
 beforeEach(() => {
   changeItem.mockClear();
   finishItem.mockClear();
+  stampRelease.mockClear();
   currentAdmin.mockReset().mockResolvedValue(null);
   process.env.BOARD_TOKEN = "right-token";
 });
@@ -123,7 +132,7 @@ describe("PATCH /api/backlog/[id] with a board token", () => {
  */
 describe("PATCH /api/backlog/[id] with nothing it can write", () => {
   it("answers 422 naming every field a change may carry, and writes nothing", async () => {
-    const response = await patch({ releasedIn: "1.2.3", nonsense: true }, AUTH);
+    const response = await patch({ nonsense: true }, AUTH);
     expect(response.status).toBe(422);
     expect(changeItem).not.toHaveBeenCalled();
 
@@ -140,11 +149,89 @@ describe("PATCH /api/backlog/[id] with nothing it can write", () => {
     expect(changeItem).not.toHaveBeenCalled();
   });
 
-  it("applies the one field it accepts and ignores the rest, when a body carries both", async () => {
-    const response = await patch({ priority: "low", releasedIn: "1.2.3", nonsense: true }, AUTH);
+  it("applies the one field it accepts and ignores an invented one beside it", async () => {
+    const response = await patch({ priority: "low", nonsense: true }, AUTH);
     expect(response.status).toBe(200);
-    // The accepted field lands; nothing the board does not write goes to the store.
-    expect(changeItem).toHaveBeenCalledWith("item-1", { priority: "low", releasedIn: "1.2.3" }, "Claude (session abc)");
+    // The accepted field lands; a key the schema does not name never reaches the store.
+    expect(changeItem).toHaveBeenCalledWith("item-1", { priority: "low" }, "Claude (session abc)");
+  });
+});
+
+/**
+ * The stamp door: `releasedIn` (and `releasedAt`) with no status, for a row
+ * already done that says nothing about which release carried it. Open to a
+ * session actor as well as the token, unlike `done`; the store is mocked, so
+ * what these pin is the route's own checks and which store function it
+ * reaches — never `changeItem`, never `finishItem`.
+ */
+describe("PATCH /api/backlog/[id] with a release stamp and no status", () => {
+  it("reaches stampRelease with the parsed version and instant, for a token actor", async () => {
+    const response = await patch({ releasedIn: "0.61.0", releasedAt: "2026-09-08T18:17:29.000Z" }, AUTH);
+    expect(response.status).toBe(200);
+    expect(stampRelease).toHaveBeenCalledTimes(1);
+    const [id, release] = stampRelease.mock.calls[0]!;
+    expect(id).toBe("item-1");
+    expect(release.version).toBe("0.61.0");
+    expect(release.at?.toISOString()).toBe("2026-09-08T18:17:29.000Z");
+    expect(changeItem).not.toHaveBeenCalled();
+    expect(finishItem).not.toHaveBeenCalled();
+  });
+
+  it("reaches stampRelease for the operator's session too", async () => {
+    currentAdmin.mockResolvedValue({ name: "John" });
+    const response = await patch({ releasedIn: "0.61.0" });
+    expect(response.status).toBe(200);
+    expect(stampRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes a null instant when releasedAt is not sent, rather than now", async () => {
+    await patch({ releasedIn: "0.61.0" }, AUTH);
+    const [, release] = stampRelease.mock.calls[0]!;
+    expect(release.at).toBeNull();
+  });
+
+  it("refuses releasedAt alone: there is no stamp without the version", async () => {
+    const response = await patch({ releasedAt: "2026-09-08T18:17:29.000Z" }, AUTH);
+    expect(response.status).toBe(422);
+    expect(stampRelease).not.toHaveBeenCalled();
+  });
+
+  it("refuses releasedIn that is not a version", async () => {
+    const response = await patch({ releasedIn: "latest" }, AUTH);
+    expect(response.status).toBe(422);
+    expect(stampRelease).not.toHaveBeenCalled();
+  });
+
+  it("refuses releasedAt that is not a date", async () => {
+    const response = await patch({ releasedIn: "0.61.0", releasedAt: "yesterday" }, AUTH);
+    expect(response.status).toBe(400);
+    expect(stampRelease).not.toHaveBeenCalled();
+  });
+
+  it("refuses a stamp travelling with a grade or a move, whole, rather than dropping either half", async () => {
+    const graded = await patch({ releasedIn: "0.61.0", priority: "low" }, AUTH);
+    expect(graded.status).toBe(422);
+    expect(stampRelease).not.toHaveBeenCalled();
+    expect(changeItem).not.toHaveBeenCalled();
+    // A stamp beside a status is not a stamp: `done` goes to its own branch, anything else to the move rules.
+    const moved = await patch({ releasedIn: "0.61.0", status: "open" }, AUTH);
+    expect(moved.status).toBe(200);
+    expect(stampRelease).not.toHaveBeenCalled();
+    expect(changeItem).toHaveBeenCalledTimes(1);
+  });
+
+  it("answers 422 with the store's reason when the row is not done or already stamped", async () => {
+    stampRelease.mockResolvedValueOnce({ ok: false, reason: "illegal", problems: ['Only a done row can be stamped with the release that carried it; this one is "open".'] });
+    const response = await patch({ releasedIn: "0.61.0" }, AUTH);
+    expect(response.status).toBe(422);
+    const body = (await response.json()) as { error: string };
+    expect(body.error).toContain("Only a done row");
+  });
+
+  it("answers 404 when the store says the row is missing", async () => {
+    stampRelease.mockResolvedValueOnce({ ok: false, reason: "missing" });
+    const response = await patch({ releasedIn: "0.61.0" }, AUTH);
+    expect(response.status).toBe(404);
   });
 });
 

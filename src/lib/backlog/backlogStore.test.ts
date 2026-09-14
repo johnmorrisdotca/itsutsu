@@ -60,20 +60,32 @@ type ClaimOr = { claimedBy: string | null } | { claimedAt: { lt: Date } };
  * that matched no row would tell a real caller.
  */
 const updateMany = vi.fn(
-  async ({ where, data }: { where: { id: string; status: string; OR: ClaimOr[] }; data: Partial<Row> }) => {
+  async ({ where, data }: { where: { id: string; status: string; OR?: ClaimOr[]; releasedIn?: null }; data: Partial<Row> }) => {
     const row = rows.find((one) => one.id === where.id && one.status === where.status);
-    const matches =
-      row !== undefined &&
-      where.OR.some((clause) =>
-        "claimedBy" in clause
-          ? row.claimedBy === clause.claimedBy
-          : row.claimedAt !== null && row.claimedAt.getTime() < clause.claimedAt.lt.getTime(),
-      );
+    if (row === undefined) return { count: 0 };
+    // A stamp's `where` (stampWhere) carries the release column and no claim clause.
+    if (where.OR === undefined) {
+      if ("releasedIn" in where && row.releasedIn !== where.releasedIn) return { count: 0 };
+      Object.assign(row, data);
+      return { count: 1 };
+    }
+    const matches = where.OR.some((clause) =>
+      "claimedBy" in clause
+        ? row.claimedBy === clause.claimedBy
+        : row.claimedAt !== null && row.claimedAt.getTime() < clause.claimedAt.lt.getTime(),
+    );
     if (!matches) return { count: 0 };
     Object.assign(row, data);
     return { count: 1 };
   },
 );
+
+/** CHANGELOG.md, as the store reads it: the versions the stamp door may name. */
+const releasesRead = vi.fn(async () => [
+  { version: "0.150.1", date: null, notes: ["A fix."] },
+  { version: "0.151.0", date: "2026-09-13", notes: ["A feature."] },
+]);
+vi.mock("./releasesFile", () => ({ readReleases: () => releasesRead() }));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -116,7 +128,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const { addItem, changeItem, editItem, finishItem, moveItem } = await import("./backlogStore");
+const { addItem, changeItem, editItem, finishItem, moveItem, stampRelease } = await import("./backlogStore");
 
 function row(over: Partial<Row> = {}): Row {
   return {
@@ -423,5 +435,97 @@ describe("a row still filed under the board's older words", () => {
     expect(outcome.ok).toBe(false);
     if (outcome.ok) return;
     expect(outcome.reason, "open cannot reach done directly; that is the table talking").toBe("illegal");
+  });
+});
+
+/**
+ * The stamp door: the only thing that may be written onto a row already done.
+ * It is not a move, so what these pin above all is what it does NOT touch —
+ * the status, `movedAt`, and the claim all read exactly as before.
+ */
+describe("stampRelease", () => {
+  const AT = new Date("2026-09-08T18:17:29.000Z");
+  const doneRow = (over: Partial<Row> = {}) =>
+    row({ status: "done", movedAt: new Date("2026-09-09T09:18:19.000Z"), claimedBy: null, claimedAt: null, ...over });
+
+  beforeEach(() => {
+    releasesRead.mockClear();
+  });
+
+  it("writes the two release columns onto a done, unstamped row and nothing else", async () => {
+    rows = [doneRow()];
+    const before = { ...rows[0] };
+    const outcome = await stampRelease("a", { version: "0.150.1", at: AT });
+    expect(outcome.ok).toBe(true);
+    expect(rows[0].releasedIn).toBe("0.150.1");
+    expect(rows[0].releasedAt).toEqual(AT);
+    expect(rows[0].status).toBe("done");
+    expect(rows[0].movedAt).toEqual(before.movedAt);
+    expect(rows[0].claimedBy).toBeNull();
+    expect(rows[0].claimedAt).toBeNull();
+    expect(updateMany).toHaveBeenCalledTimes(1);
+    const [{ where, data }] = updateMany.mock.calls[0]!;
+    expect(where).toEqual({ id: "a", status: "done", releasedIn: null });
+    expect(Object.keys(data).sort()).toEqual(["releasedAt", "releasedIn"]);
+  });
+
+  it("leaves releasedAt null when no instant is known, rather than inventing one", async () => {
+    rows = [doneRow()];
+    const outcome = await stampRelease("a", { version: "0.150.1", at: null });
+    expect(outcome.ok).toBe(true);
+    expect(rows[0].releasedIn).toBe("0.150.1");
+    expect(rows[0].releasedAt).toBeNull();
+  });
+
+  it("refuses a row that is not done, and writes nothing", async () => {
+    rows = [row({ status: "open" })];
+    const outcome = await stampRelease("a", { version: "0.150.1", at: AT });
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect((outcome as { problems: string[] }).problems[0]).toContain("Only a done row");
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(rows[0].releasedIn).toBeNull();
+  });
+
+  it("refuses a row already stamped, whatever version is offered, and writes nothing", async () => {
+    rows = [doneRow({ releasedIn: "0.150.1", releasedAt: AT })];
+    const outcome = await stampRelease("a", { version: "0.151.0", at: AT });
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect((outcome as { problems: string[] }).problems[0]).toContain("already says it shipped in 0.150.1");
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(rows[0].releasedIn).toBe("0.150.1");
+  });
+
+  it("refuses a version the changelog does not name, having read the changelog", async () => {
+    rows = [doneRow()];
+    const outcome = await stampRelease("a", { version: "9.9.9", at: AT });
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect((outcome as { problems: string[] }).problems[0]).toContain("9.9.9 is not a release CHANGELOG.md names");
+    expect(releasesRead).toHaveBeenCalledTimes(1);
+    expect(updateMany).not.toHaveBeenCalled();
+  });
+
+  it("refuses every version when the changelog cannot be read — silence, not a guess", async () => {
+    rows = [doneRow()];
+    releasesRead.mockResolvedValueOnce([]);
+    const outcome = await stampRelease("a", { version: "0.150.1", at: AT });
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect(updateMany).not.toHaveBeenCalled();
+  });
+
+  it("is missing rather than illegal when the row is gone", async () => {
+    expect(await stampRelease("nope", { version: "0.150.1", at: AT })).toEqual({ ok: false, reason: "missing" });
+  });
+
+  it("loses a race to another stamp and says so, rather than writing over it", async () => {
+    rows = [doneRow()];
+    // Somebody else's stamp lands between this read and this write.
+    updateMany.mockImplementationOnce(async () => {
+      rows[0].releasedIn = "0.151.0";
+      return { count: 0 };
+    });
+    const outcome = await stampRelease("a", { version: "0.150.1", at: AT });
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect((outcome as { problems: string[] }).problems[0]).toContain("already says it shipped in 0.151.0");
+    expect(rows[0].releasedIn).toBe("0.151.0");
   });
 });
