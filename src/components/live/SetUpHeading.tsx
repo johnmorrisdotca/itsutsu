@@ -1,13 +1,13 @@
 import Link from "next/link";
 
 import { Paired } from "@/components/i18n/Paired";
-import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { rulesPath, setUpLink } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { SET_UP_COPY } from "./live.constants";
+import { RematchSwap, RematchTitle } from "./RematchHeading";
 import { stillARematch } from "./setUpStart";
-import type { SetUpFrom } from "./setUp.types";
+import type { HeadingTitle, RematchHeadingState, SetUpFrom } from "./setUp.types";
 
 /**
  * WHAT THIS SETUP SCREEN IS FOR, SAID AT THE TOP OF IT.
@@ -26,6 +26,12 @@ import type { SetUpFrom } from "./setUp.types";
  * A pre-filled screen also offers the way OUT of being pre-filled. A reader who
  * followed Play from somebody's page and then thought better of the opponent
  * should not have to work out that the plain screen is at a shorter address.
+ *
+ * A REMATCH'S TITLE AND SWAPPED COLOUR FOLLOW THE CHOICES BELOW, not only the
+ * address the page opened with: choose somebody else and it reads as a new game
+ * against them, choose the player from last time again and it reads as a rematch
+ * again, with no reload either way. The server draws the address's answer, and
+ * `RematchTitle` and `RematchSwap` carry on from there.
  */
 export function SetUpHeading({
   from,
@@ -36,17 +42,23 @@ export function SetUpHeading({
   variant: RuleVariant | null;
 }) {
   const copy = variant === null ? null : RULE_VARIANT_DISPLAY[variant];
+  const plain: HeadingTitle = copy !== null ? { en: copy.label, kanji: copy.kanji } : { en: "Set up a game", kanji: "対局設定" };
 
-  const title =
-    from.again !== null
-      ? { en: SET_UP_COPY.again(from.again.opponent.name), kanji: "再戦" }
-      : from.fork !== null
-        ? { en: SET_UP_COPY.fork(from.fork.move), kanji: "分岐" }
-        : from.opponent !== null
-          ? { en: SET_UP_COPY.against(from.opponent.name), kanji: "対局" }
-          : copy !== null
-            ? { en: copy.label, kanji: copy.kanji }
-            : { en: "Set up a game", kanji: "対局設定" };
+  const title: HeadingTitle =
+    from.fork !== null
+      ? { en: SET_UP_COPY.fork(from.fork.move), kanji: "分岐" }
+      : from.opponent !== null
+        ? { en: SET_UP_COPY.against(from.opponent.name), kanji: "対局" }
+        : plain;
+
+  /* What the address the page opened with says about the rematch: where its heading starts. */
+  const rematch: RematchHeadingState | null =
+    from.again === null
+      ? null
+      : {
+          repeat: stillARematch({ rules: from.initial, source: from.asPlayed, opponent: from.opponent, again: from.again }),
+          opponent: from.opponent === null ? null : { name: from.opponent.name },
+        };
 
   /*
    * The lead under the title. A game named by the address says what the game is
@@ -65,7 +77,11 @@ export function SetUpHeading({
   return (
     <div className="flex flex-col gap-1">
       <h1 className="text-2xl font-semibold" data-testid="set-up-title">
-        <Paired en={title.en} kanji={title.kanji} kanjiClassName="text-lg font-normal opacity-70" />
+        {from.again !== null && rematch !== null ? (
+          <RematchTitle id={from.again.id} againName={from.again.opponent.name} plain={plain} initial={rematch} />
+        ) : (
+          <Paired en={title.en} kanji={title.kanji} kanjiClassName="text-lg font-normal opacity-70" />
+        )}
       </h1>
       {lead !== null ? (
         <p className="max-w-prose text-sm text-muted">
@@ -93,17 +109,9 @@ export function SetUpHeading({
           <Link href={setUpLink({})} className="underline underline-offset-4" data-testid="set-up-fresh">
             {SET_UP_COPY.startOver}
           </Link>
-          {/*
-            The swapped colour only while the address still describes a rematch:
-            a changed one, or one against somebody else, is a new game that swaps
-            nothing, and naming the swap over it would be the promise Begin broke.
-          */}
-          {from.again !== null &&
-          stillARematch({ rules: from.initial, source: from.asPlayed, opponent: from.opponent, again: from.again }) ? (
-            <>
-              {" · "}
-              {`you take ${STONE_DISPLAY[from.again.colour].label}`}
-            </>
+          {/* The swapped colour, only while it is still a rematch — see `swapNote`. */}
+          {from.again !== null && rematch !== null ? (
+            <RematchSwap id={from.again.id} colour={from.again.colour} initial={rematch} />
           ) : null}
         </p>
       ) : null}
