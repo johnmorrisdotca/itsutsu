@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isNewDay, isWeekend, xpDayKey, xpWeekKey } from "./xpDay";
+import { XP_FALLBACK_ZONE, dayZoneFor, isNewDay, isWeekend, xpDayKey, xpWeekKey } from "./xpDay";
 
 /**
  * The day, for somebody.
@@ -107,5 +107,53 @@ describe("whether it is the weekend", () => {
     const fridayEvening = new Date("2026-09-11T16:00:00.000Z");
     expect(isWeekend(fridayEvening, "Asia/Tokyo")).toBe(true);
     expect(isWeekend(fridayEvening)).toBe(false);
+  });
+});
+
+/**
+ * Whose day it is, and whether anybody ever said.
+ *
+ * This is the half that was missing rather than wrong. The UTC fallback was
+ * deliberate and documented; what nothing could do was TELL it apart from a
+ * member who had chosen UTC, so no page could say which day it was counting and
+ * nothing could go and ask the browser. `theirs` is that missing bit.
+ */
+describe("the zone a day is reckoned in", () => {
+  it("says UTC is only the floor when nobody has told us", () => {
+    // `Member.timeZone` is `@default("")`, so this is what almost every member
+    // carries — and it was indistinguishable from a choice.
+    expect(dayZoneFor("")).toEqual({ zone: XP_FALLBACK_ZONE, theirs: false });
+    expect(dayZoneFor(null)).toEqual({ zone: XP_FALLBACK_ZONE, theirs: false });
+    expect(dayZoneFor(undefined)).toEqual({ zone: XP_FALLBACK_ZONE, theirs: false });
+    expect(dayZoneFor("   ")).toEqual({ zone: XP_FALLBACK_ZONE, theirs: false });
+  });
+
+  it("says a zone the member chose is theirs", () => {
+    expect(dayZoneFor("America/Vancouver")).toEqual({ zone: "America/Vancouver", theirs: true });
+    // Including UTC itself, chosen: the same day key, a different fact about it.
+    expect(dayZoneFor("UTC")).toEqual({ zone: "UTC", theirs: true });
+  });
+
+  it("falls to the floor for a zone no platform knows, and says so", () => {
+    // A profile field a member typed. Never a throw: a day key a few hours out
+    // costs one streak day, an exception costs them the page.
+    expect(dayZoneFor("Mars/Olympus")).toEqual({ zone: XP_FALLBACK_ZONE, theirs: false });
+  });
+
+  it("is what a member with no zone was actually losing", () => {
+    /*
+     * THE BUG, AS A CASE. Both instants are Saturday the 12th in UTC and they
+     * straddle midnight in Vancouver, where the owner is — so with no zone on
+     * the row the site saw one day and he had lived two. His day rolled at
+     * 17:00, which is exactly what xpDay.ts's header warned about.
+     */
+    const beforeMidnightThere = new Date("2026-09-12T05:00:00.000Z");
+    const afterMidnightThere = new Date("2026-09-12T08:00:00.000Z");
+
+    expect(isNewDay(beforeMidnightThere, afterMidnightThere, "")).toBe(false);
+    expect(isNewDay(beforeMidnightThere, afterMidnightThere, "America/Vancouver")).toBe(true);
+
+    expect(xpDayKey(beforeMidnightThere, "America/Vancouver")).toBe("2026-09-11");
+    expect(xpDayKey(afterMidnightThere, "America/Vancouver")).toBe("2026-09-12");
   });
 });

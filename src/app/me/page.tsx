@@ -10,6 +10,7 @@ import { NameForm } from "@/components/mine/NameForm";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { Page } from "@/components/layout/Page";
 import { PhraseSetup } from "@/components/mine/PhraseSetup";
+import { DayZoneNote } from "@/components/mine/DayZoneNote";
 import { ProfileForm } from "@/components/mine/ProfileForm";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
@@ -179,6 +180,13 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
 
           {open === "profile" ? (
             <div className="flex flex-col gap-3" data-testid="my-profile">
+              {/*
+                WHICH ZONE IS IN FORCE, AND WHETHER ANYBODY CHOSE IT. Above the
+                form rather than inside it: a guess from the country is only
+                harmless while it is visibly a guess, and the control that
+                corrects it is the very next thing on the page.
+              */}
+              <DayZoneNote timeZone={member?.timeZone ?? ""} country={member?.country ?? ""} />
               <ProfileForm
                 initial={{
                   awayFrom: member?.awayFrom ? member.awayFrom.toISOString().slice(0, 10) : "",

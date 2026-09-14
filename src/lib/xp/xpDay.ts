@@ -20,37 +20,75 @@
 export type DayKey = string;
 
 /**
- * The day an instant falls on, in a member's own zone.
+ * The day boundary a member gets when nobody has ever told us theirs.
  *
- * `timeZone` is `Member.timeZone`, which is `@default("")` — so empty is the
- * ordinary case, not an error, and it means UTC. An UNKNOWN zone also means
- * UTC, because the alternative is throwing on a profile field a member typed:
- * a day key that is off by a few hours costs somebody one streak day, where an
+ * A FLOOR AND NOT A DEFAULT, which is the distinction that cost a day of
+ * nobody earning anything. UTC is the one zone that is wrong for everybody by
+ * a knowable amount rather than wrong for somebody by a guess — see
+ * `dayZoneFor`, which is the only thing allowed to reach for it.
+ */
+export const XP_FALLBACK_ZONE = "UTC";
+
+/**
+ * The zone a member's day is reckoned in, and whether it is actually THEIRS.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * THE SECOND HALF OF THIS RETURN VALUE IS THE WHOLE POINT
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * `Member.timeZone` is `@default("")`, so "" is what every member who has
+ * never opened their profile carries — and the header of this file has warned
+ * since the day it was written that a fixed zone "would end somebody's day in
+ * the afternoon". It then did exactly that: the site's owner is in Vancouver,
+ * his column was "", so his day rolled at 17:00 and the whole XP ledger stayed
+ * empty on the day it shipped.
+ *
+ * The bug was not the fallback. The bug was that NOTHING COULD TELL the
+ * fallback apart from a zone somebody chose: `xpDayKey("")` and
+ * `xpDayKey("UTC")` returned the same string, so no surface could say which it
+ * was and nothing could go and ask. That is the shape AGENTS.md calls a guard
+ * returning a plausible value for "I do not know" — a perfectly valid day key
+ * that also means "we have no idea when this person's day ends".
+ *
+ * So this answers both questions at once, and `theirs: false` is what the rest
+ * of the site reads to know it is working off a floor: `dayZoneUnknown` sends
+ * the browser to go and find out (`src/lib/auth/memberZone.ts`), and the XP
+ * page says out loud which zone the days were counted in.
+ *
+ * `theirs: false` for an UNRECOGNISED zone as well as an empty one, because a
+ * profile field a member typed is not a zone this platform necessarily knows:
+ * a day key off by a few hours costs somebody one streak day, where an
  * exception costs them the page.
+ */
+export function dayZoneFor(timeZone?: string | null): { zone: string; theirs: boolean } {
+  const named = timeZone?.trim() ?? "";
+  if (named === "") return { zone: XP_FALLBACK_ZONE, theirs: false };
+  try {
+    new Intl.DateTimeFormat("en-CA", { timeZone: named });
+  } catch {
+    return { zone: XP_FALLBACK_ZONE, theirs: false };
+  }
+  return { zone: named, theirs: true };
+}
+
+/**
+ * The day an instant falls on, in a member's own zone.
  *
  * Built from `Intl.DateTimeFormat` with `en-CA`, which formats as `YYYY-MM-DD`
  * natively. The locale is named rather than left to the machine on purpose:
  * this string is a stored key, and a key that reads `2026-09-12` on one deploy
  * and `12/09/2026` on another is a key nothing can group by.
+ *
+ * Which zone that is — and whether it is one the member ever chose — is
+ * `dayZoneFor`'s answer and not restated here.
  */
 export function xpDayKey(now: Date, timeZone?: string | null): DayKey {
-  const zone = timeZone && timeZone.length > 0 ? timeZone : "UTC";
-  try {
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: zone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(now);
-  } catch {
-    /* An unrecognised zone. See above: UTC rather than a throw. */
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: "UTC",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(now);
-  }
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: dayZoneFor(timeZone).zone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
 }
 
 /**

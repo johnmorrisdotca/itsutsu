@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
+import { DayZoneNote } from "./DayZoneNote";
 import { GameName } from "@/components/games/GameName";
 import { Paired } from "@/components/i18n/Paired";
 import { PlayerName } from "@/components/players/PlayerName";
@@ -354,6 +355,7 @@ export async function MyXp({
   return (
     <div className="flex flex-col gap-4" data-testid="my-xp">
       <Standing xp={row.xp} />
+      <DayZoneNote timeZone={row.timeZone} country={row.country} />
 
       {isRefusal(page) ? (
         /*
