@@ -2,7 +2,29 @@ import { expect, test } from "@playwright/test";
 
 import { playerSlug } from "../src/lib/rating/playerKey";
 
-import { ensureMember, removeMember, seedMember } from "./members";
+import { ensureMember, keptPreferences, putPreferencesBack, removeMember, seedMember } from "./members";
+
+/**
+ * Whose account this file's visits are remembered on.
+ *
+ * Four cases below open `/players?who=everyone`, and the players filter is
+ * kept on the signed-in account rather than in a cookie — so each of those
+ * visits writes `playersWho` onto the operator, who on a developer's machine is
+ * the site owner. The operator-row check around this file caught exactly that.
+ * So the column is read once before anything runs and put back as it was found,
+ * the bargain `computer-players.spec.ts` makes; see `keptPreferences` for why it
+ * is the column that is read and not the registry.
+ */
+const OPERATOR = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
+let keptOnOperator: unknown = null;
+
+test.beforeAll(async () => {
+  keptOnOperator = await keptPreferences(OPERATOR);
+});
+
+test.afterAll(async () => {
+  await putPreferencesBack(OPERATOR, keptOnOperator);
+});
 
 /**
  * Everything somebody has played, on the page about them.
