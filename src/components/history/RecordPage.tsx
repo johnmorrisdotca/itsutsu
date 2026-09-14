@@ -8,7 +8,8 @@ import { RecordText } from "./RecordText";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { historyPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { fetchGameHistoryPage, fetchWholeRecord, withMemberResolved } from "@/lib/history/gameHistory";
+import { fetchGameHistoryPage, fetchWholeRecord } from "@/lib/history/gameHistory";
+import { resolveMember } from "@/lib/history/recordMember";
 import { recordAsText } from "@/lib/history/recordText";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 import { type ImpliedPlayer, recordAddress } from "@/lib/history/recordAddress";
@@ -88,17 +89,15 @@ export async function RecordPage({
    * It is the address form every count on the site now links by — an id rather
    * than a member's whole name, the 0.133.0 rule `gamesHref` had missed — and
    * the record filters by the NAME that member's record is counted under, so
-   * a link opens exactly the set the number came from. `withMemberResolved`
-   * does that turn, and both reads below would do it for themselves.
+   * a link opens exactly the set the number came from. `resolveMember` does that
+   * turn and settles `member` either way, so neither read below asks again.
    *
-   * This page resolves it first because it needs the name anyway: the chip bar
+   * This page resolves it first because it needs the answer anyway: the chip bar
    * has to say what the record was narrowed to, and a narrowing applied with
-   * nothing on screen to name it is the fault `narrowings.ts` exists to stop.
-   * Resolving once and handing the result to both reads also means one lookup
-   * rather than three.
+   * nothing on screen to name it is the fault `narrowings.ts` exists to stop. An
+   * id naming nobody used to stay on the query and be looked up three times.
    */
-  const asked = await withMemberResolved(parsedAsked);
-  const memberUnknown = parsedAsked.member !== null && asked.member !== null;
+  const { query: asked, unknown: memberUnknown } = await resolveMember(parsedAsked);
   const [page, whole] = await Promise.all([
     fetchGameHistoryPage(asked),
     fetchWholeRecord(asked),

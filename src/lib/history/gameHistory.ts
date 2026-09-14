@@ -9,13 +9,13 @@ import {
   takeFor,
 } from "@/lib/api/paging.cursor";
 import { prisma } from "@/lib/prisma";
-import { ownedRow } from "@/lib/rating/ownedRow";
 import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
 import { GAME_SORT_SPEC, gameSortChoice } from "./gameHistory.sort";
 import { type FilterSeats, buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
 import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
 import { REACTIONS_KEPT } from "./reactions.constants";
+import { withMemberResolved } from "./recordMember";
 import type {
   GameDetail,
   GameHistoryPage,
@@ -219,62 +219,6 @@ async function filterSeats(query: GameHistoryQuery): Promise<FilterSeats> {
     membersNamed(query.player),
   ]);
   return { computers, named };
-}
-
-/**
- * The name a member's record is counted under, for a `?member=<id>` filter.
- *
- * THE ANSWER TO THE SHORTCOMING `membersNamed` ADMITS TO, one paragraph above:
- * "a link that could not be ambiguous would carry an id". Every count behind
- * `GameCount` used to put the member's WHOLE NAME in the address instead —
- * `/history?player=Hanako%20Morris` under a row reading "Hanako M." — which is
- * the rule 0.133.0 wrote for `playerPath` and nobody carried across to the
- * other builder that puts a person in a URL.
- *
- * IT RESOLVES TO A NAME RATHER THAN FILTERING ON THE ID, and that is the whole
- * of why this is a lookup and not a where-clause. A record is counted on the
- * `Player` row, which is keyed by the FOLDED NAME: `player.ratedGames` is every
- * rated game played under that name, whoever was signed in. Narrowing by the id
- * alone would open a shorter list than the number it came from — the same fault
- * as a longer one, and harder to notice, because a short list reads as an
- * honest answer. So `?member=` becomes exactly `?player=<their name>`, and the
- * two addresses are then the same question asked two ways.
- *
- * The `Player` row first and the `Member` row second, in that order, because
- * that is the order `players/[slug]` decides the name it counts by — a rating
- * keeps the name it was earned under when somebody renames, and the count on
- * screen belongs to that one.
- */
-export async function nameForMember(memberId: string): Promise<string | null> {
-  const id = memberId.trim();
-  if (id === "") return null;
-  const [earned, member] = await Promise.all([
-    prisma.player.findMany({ where: { memberId: id }, select: { key: true, name: true, updatedAt: true } }),
-    prisma.member.findUnique({ where: { id }, select: { name: true } }),
-  ]);
-  // The same row `fetchPlayer` shows, chosen the same way — never the database's pick.
-  return ownedRow(earned, member?.name ?? "")?.name ?? member?.name ?? null;
-}
-
-/**
- * The query with `member` turned into the name it stands for.
- *
- * Called by both reads, so the API honours `?member=` exactly as the page does
- * — and `RecordPage` resolves it once itself and hands the result down, because
- * it needs the name anyway for the chip that says what the record was narrowed
- * to. A query whose `member` is already null passes straight through, so
- * nothing is looked up twice.
- *
- * An id that names nobody keeps `member` set and adds no player, which means no
- * narrowing at all from this filter. The page says so — `RecordPage` shows its
- * "those filters were not valid" line — rather than quietly answering with the
- * whole record, which is what a silently dropped filter always looks like.
- */
-export async function withMemberResolved(query: GameHistoryQuery): Promise<GameHistoryQuery> {
-  if (query.member === null) return query;
-  const name = await nameForMember(query.member);
-  if (name === null) return query;
-  return { ...query, player: name, member: null };
 }
 
 /**
