@@ -6,6 +6,14 @@
  * run and handed to one process, and an injected `DATABASE_URL` that wins over
  * whatever `.env` says.
  *
+ * IT RECONCILES FIRST. The deploy applies the migration that fills
+ * `xpEverywhere` before the new code is live, and for those minutes the old
+ * `awardXp` moves `xp` alone — so anybody who earned anything then has an
+ * Everywhere total short by what they earned. The runner lists every such
+ * member with both figures; with the run asked for, it sets them back to
+ * `xp + xpImported`, reads them again, and pays nothing while any disagrees.
+ * One authorised run covers the repair and the payment.
+ *
  * AND IT STILL WRITES NOTHING WITHOUT BEING ASKED TWICE:
  *
  *   node scripts/xp-imported-prod.mjs                     what production would be paid

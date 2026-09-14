@@ -107,15 +107,16 @@ export function recipientsOf(members: readonly ImportedCandidate[]): {
 export type TotalsRow = { id: string; name: string; xp: number; xpImported: number; xpEverywhere: number };
 
 /**
- * Every member whose totals do not agree with their ledger or with each other.
+ * Every member whose two ledger totals do not agree with their ledger.
  *
- * The backfill's one check — `Member.xp` equals the sum of its rows — made three:
- * `xp` against the Itsutsu rows, `xpImported` against the imported rows, and
- * `xpEverywhere` against the two added up. A member with no rows reads as nought
- * rather than missing, because a total over an empty ledger is exactly the
- * disagreement being looked for.
+ * The backfill's one check — `Member.xp` equals the sum of its rows — made two:
+ * `xp` against the Itsutsu rows and `xpImported` against the imported rows. A
+ * member with no rows reads as nought rather than missing, because a total over
+ * an empty ledger is exactly the disagreement being looked for. A disagreement
+ * here is not something the payer can repair: the ledger is the record, and a
+ * total that disagrees with it is a question for a person.
  */
-export function totalsDisagreements(
+export function ledgerTotalsDisagreements(
   members: readonly TotalsRow[],
   itsutsu: ReadonlyMap<string, number>,
   imported: ReadonlyMap<string, number>,
@@ -127,9 +128,48 @@ export function totalsDisagreements(
     const problems: string[] = [];
     if (member.xp !== here) problems.push(`${who}: xp ${member.xp}, Itsutsu ledger ${here}`);
     if (member.xpImported !== elsewhere) problems.push(`${who}: xpImported ${member.xpImported}, imported ledger ${elsewhere}`);
-    if (member.xpEverywhere !== member.xp + member.xpImported) {
-      problems.push(`${who}: xpEverywhere ${member.xpEverywhere}, xp + xpImported ${member.xp + member.xpImported}`);
-    }
     return problems;
   });
+}
+
+/** A member whose Everywhere total is not their two totals added up. */
+export type EverywhereDrift = { id: string; name: string; xpEverywhere: number; should: number };
+
+/**
+ * EVERY MEMBER WHOSE `xpEverywhere` HAS DRIFTED FROM `xp + xpImported`.
+ *
+ * It has one known cause, and it is the deploy. `vercel-deploy.yml` applies the
+ * migration — which fills `xpEverywhere` from `xp` — BEFORE the new code is
+ * built and live, and in those minutes the old `awardXp` still serves and moves
+ * `xp` alone. Anybody who earns anything in that window (a game, a daily visit,
+ * a bot batch) is left with an Everywhere total short by exactly what they
+ * earned, and the badges and the Everywhere board read it.
+ *
+ * Unlike a ledger disagreement this one CAN be repaired, because both halves it
+ * is made of are right: `xp` is checked against its rows and `xpImported`
+ * against its. So the payer's runner reconciles it first — see
+ * `reconcileEverywhere` in `importedXpPay.ts`.
+ */
+export function everywhereDrift(members: readonly TotalsRow[]): EverywhereDrift[] {
+  return members.flatMap((member) =>
+    member.xpEverywhere === member.xp + member.xpImported
+      ? []
+      : [{ id: member.id, name: member.name || member.id, xpEverywhere: member.xpEverywhere, should: member.xp + member.xpImported }],
+  );
+}
+
+/**
+ * Every member whose totals do not agree with their ledger or with each other:
+ * the two ledger checks and the Everywhere sum, per member. What the runner
+ * asks after it writes, when any disagreement at all is a fault the run made.
+ */
+export function totalsDisagreements(
+  members: readonly TotalsRow[],
+  itsutsu: ReadonlyMap<string, number>,
+  imported: ReadonlyMap<string, number>,
+): string[] {
+  return members.flatMap((member) => [
+    ...ledgerTotalsDisagreements([member], itsutsu, imported),
+    ...everywhereDrift([member]).map((drift) => `${drift.name}: xpEverywhere ${drift.xpEverywhere}, xp + xpImported ${drift.should}`),
+  ]);
 }

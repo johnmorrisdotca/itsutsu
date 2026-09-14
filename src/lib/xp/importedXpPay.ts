@@ -6,7 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { IMPORTED_XP_RULES, IMPORTED_XP_TYPES } from "./importedXp.constants";
 import { importedXpFor, planImportedPay } from "./importedXp";
 import type { ImportedPlan, ImportedXpReckoning, ImportedXpRules } from "./importedXp.types";
-import { recipientsOf, type ImportedRecipient, type ImportedRefusal } from "./importedRecipients";
+import {
+  everywhereDrift,
+  recipientsOf,
+  type EverywhereDrift,
+  type ImportedRecipient,
+  type ImportedRefusal,
+} from "./importedRecipients";
 import { xpDayKey } from "./xpDay";
 
 /**
@@ -110,7 +116,43 @@ export async function payImportedXp({
   return { memberId, reckoning, plan, paid };
 }
 
-/** The whole run: every member a kept record belongs to, and every record refused. */
+/** Every member whose `xpEverywhere` is not `xp + xpImported`. One read of three columns a row. */
+export async function readEverywhereDrift(): Promise<EverywhereDrift[]> {
+  const members = await prisma.member.findMany({
+    select: { id: true, name: true, xp: true, xpImported: true, xpEverywhere: true },
+  });
+  return everywhereDrift(members);
+}
+
+/**
+ * RECONCILE: PUT EVERY DRIFTED EVERYWHERE TOTAL BACK TO `xp + xpImported`.
+ *
+ * The deploy applies the migration minutes before the code that keeps the
+ * column in step goes live, and the old `awardXp` moves `xp` alone in between —
+ * see `everywhereDrift`. So the payer's run repairs that before it pays.
+ *
+ * ONE STATEMENT, EXACTLY THOSE ROWS, FROM THEIR CURRENT VALUES. Postgres reads
+ * `xp` and `xpImported` from the row as it locks it, so an award landing at the
+ * same moment is either before the statement (and counted) or after it (and
+ * moves both columns itself); nothing read earlier is written back over it.
+ * Rows that already agree are not touched. It then reads the drift again and
+ * hands back whatever is left, which the caller must see empty before it pays.
+ */
+export async function reconcileEverywhere(): Promise<{ repaired: number; remaining: EverywhereDrift[] }> {
+  const repaired = await prisma.$executeRaw`UPDATE "Member" SET "xpEverywhere" = "xp" + "xpImported" WHERE "xpEverywhere" <> "xp" + "xpImported"`;
+  return { repaired, remaining: await readEverywhereDrift() };
+}
+
+/**
+ * The whole run: every member a kept record belongs to, and every record refused.
+ *
+ * REFUSES TO PAY WHILE ANY EVERYWHERE TOTAL HAS DRIFTED. Paying moves
+ * `xpEverywhere` by increment, so a row already short would stay short by the
+ * same amount after a perfectly good payment — and a total the runner cannot
+ * check afterwards is the one thing it exists not to leave. With drift present
+ * a writing run pays nothing and says why; the plans are still worked out, so
+ * the report shows what would be paid once the drift is reconciled.
+ */
 export async function payImportedXpForEveryone({
   write,
   rules = IMPORTED_XP_RULES,
@@ -119,7 +161,17 @@ export async function payImportedXpForEveryone({
   write: boolean;
   rules?: ImportedXpRules;
   now?: Date;
-}): Promise<{ recipients: ImportedRecipient[]; refused: ImportedRefusal[]; payments: ImportedPayment[] }> {
+}): Promise<{
+  recipients: ImportedRecipient[];
+  refused: ImportedRefusal[];
+  payments: ImportedPayment[];
+  /** Every drifted Everywhere total found before paying. */
+  drift: EverywhereDrift[];
+  /** True when a writing run paid nothing because `drift` was not empty. */
+  refusedForDrift: boolean;
+}> {
+  const drift = await readEverywhereDrift();
+  const refusedForDrift = write && drift.length > 0;
   const members = await prisma.member.findMany({
     where: { botTier: null },
     select: { id: true, name: true, botTier: true, unclaimableBecause: true },
@@ -129,7 +181,9 @@ export async function payImportedXpForEveryone({
   /* One member at a time: two batches racing for one row would each have read
      the ledger the other was about to change. */
   for (const recipient of recipients) {
-    payments.push(await payImportedXp({ memberId: recipient.memberId, legacies: recipient.legacies, rules, write, now }));
+    payments.push(
+      await payImportedXp({ memberId: recipient.memberId, legacies: recipient.legacies, rules, write: write && !refusedForDrift, now }),
+    );
   }
-  return { recipients, refused, payments };
+  return { recipients, refused, payments, drift, refusedForDrift };
 }

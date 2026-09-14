@@ -329,6 +329,17 @@ other experience."** The rule, and where it is kept:
   a column because the board pages, ranges and ranks over an index. Both writers
   move `xpEverywhere` in the same update, and the payer's runner checks all three
   against the ledger before and after it writes.
+- **The deploy window drifts it, and the runner repairs that first.**
+  `vercel-deploy.yml` runs `prisma migrate deploy` before the new build is
+  live, so for those minutes the OLD `awardXp` moves `xp` and not
+  `xpEverywhere`: anybody who earns then is left short on every badge. The
+  payer's runner RECONCILES before it pays — it lists every member whose
+  `xpEverywhere` is not `xp + xpImported` with both figures, and with the run
+  asked for sets exactly those rows back from their own current values, reads
+  again, and refuses to pay while any still disagrees. So after this deploy,
+  one authorised run of `node scripts/xp-imported-prod.mjs` repairs and pays
+  together. Any later migration that adds a column the old code cannot keep
+  has the same window, and needs the same step.
 - **Imported awards are their own types** (`IMPORTED_XP_TYPES` in
   `importedXp.constants.ts`), never an `XpEventType`, and the backfill's ledger
   check leaves them out. Their subject is `stake@figure=points`, so a second run
