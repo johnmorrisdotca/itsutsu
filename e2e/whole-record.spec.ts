@@ -1,6 +1,30 @@
 import { expect, test } from "@playwright/test";
 
-import { seedMember } from "./members";
+import { playerSlug } from "../src/lib/rating/playerKey";
+
+import { ensureMember, keptPreferences, putPreferencesBack, removeMember, seedMember } from "./members";
+
+/**
+ * Whose account this file's visits are remembered on.
+ *
+ * Four cases below open `/players?who=everyone`, and the players filter is
+ * kept on the signed-in account rather than in a cookie — so each of those
+ * visits writes `playersWho` onto the operator, who on a developer's machine is
+ * the site owner. The operator-row check around this file caught exactly that.
+ * So the column is read once before anything runs and put back as it was found,
+ * the bargain `computer-players.spec.ts` makes; see `keptPreferences` for why it
+ * is the column that is read and not the registry.
+ */
+const OPERATOR = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
+let keptOnOperator: unknown = null;
+
+test.beforeAll(async () => {
+  keptOnOperator = await keptPreferences(OPERATOR);
+});
+
+test.afterAll(async () => {
+  await putPreferencesBack(OPERATOR, keptOnOperator);
+});
 
 /**
  * Everything somebody has played, on the page about them.
@@ -138,9 +162,26 @@ test.describe("a combined record", () => {
 
   test("says nothing at all about somebody who has played nothing", async ({ page }) => {
     // No zeroes, no empty panel: a person with no games has no record to add.
-    await seedMember({ email: "whole-none@example.test", name: "Whole None" });
-    await page.goto("/players/whole-none");
-    await expect(page.getByTestId("whole-record")).toHaveCount(0);
+    /*
+     * Its own member under a name nobody else holds, taken away afterwards. A
+     * fixed address is a row every earlier run has already written to, which
+     * makes "has played nothing" a claim about this machine's history.
+     */
+    const stamp = Date.now().toString(36);
+    const none = { email: `whole-none-${stamp}@example.test`, name: `Whole None ${stamp}` };
+    await seedMember(none);
+    try {
+      await page.goto(`/players/${playerSlug(none.name)}`);
+      /*
+       * The page first. An absence asked of a page that has not answered yet —
+       * or of a 404, which has no panel either — is green whatever the code
+       * does.
+       */
+      await expect(page.getByTestId("player-no-games")).toBeVisible();
+      await expect(page.getByTestId("whole-record")).toHaveCount(0);
+    } finally {
+      await removeMember(none.email);
+    }
   });
 });
 
@@ -153,12 +194,31 @@ test.describe("a combined record", () => {
  * narrowing to this site is what somebody asks for.
  */
 test.describe("how much of a record the page leads with", () => {
-  const OPERATOR = { email: "john@spxis.com", name: "John Morris" };
+  /*
+   * THE ACCOUNT A KEPT RECORD IS LINKED TO, AND NOTHING WRITTEN ONTO IT.
+   *
+   * These cases need a live member who ALSO has a record from before this
+   * site, and the only such row in the data is the one `legacyPlayers.data.ts`
+   * links by name (`linkedKey: "john morris"`). So they cannot bring their own
+   * member: the link is by that name, and a second John Morris made to carry
+   * it would be a second John Morris on the owner's own site, which is the
+   * thing he asked to have removed.
+   *
+   * On a developer's machine this address is the site owner's REAL account.
+   * The spec used to reach it through `seedMember`, whose upsert wrote a name
+   * and a blank country, city, time zone and bio over his profile on every
+   * run. `ensureMember` is create-only for exactly this (AGENTS.md, "A Fixture
+   * Must Make The Row It Signs In As"): it makes the row on a fresh database,
+   * where the name below is what links it, and leaves a present one alone.
+   * Nothing below asserts his name, country or bio — only the figures the page
+   * leads with and what it says about them.
+   */
+  const LINKED = { email: "john@spxis.com", name: "John Morris" };
   const played = async (page: import("@playwright/test").Page) =>
     Number((await page.getByTestId("player-played").innerText()).replace(/[^0-9]/g, ""));
 
   test("counts every site before anybody asks, and narrows when they do", async ({ page }) => {
-    await seedMember(OPERATOR);
+    await ensureMember(LINKED);
     await page.goto("/players/john-morris");
 
     await expect(page.getByTestId("scope-everywhere")).toHaveAttribute("aria-current", "true");
@@ -178,7 +238,7 @@ test.describe("how much of a record the page leads with", () => {
      * Now that combined IS the headline, a warning left down there would have
      * become fine print without anybody deciding to make it fine print.
      */
-    await seedMember(OPERATOR);
+    await ensureMember(LINKED);
     await page.goto("/players/john-morris");
 
     const figures = page.getByTestId("player-figures");
@@ -193,7 +253,7 @@ test.describe("how much of a record the page leads with", () => {
 
   test("never invents a combined rating", async ({ page }) => {
     // Games and wins add up; ratings do not. The space stays empty on purpose.
-    await seedMember(OPERATOR);
+    await ensureMember(LINKED);
     await page.goto("/players/john-morris");
     await expect(page.getByTestId("counting-everywhere")).toContainText("does not add");
   });
@@ -201,10 +261,17 @@ test.describe("how much of a record the page leads with", () => {
   test("offers no choice to somebody who has only ever played here", async ({ page }) => {
     // Both answers would be the same games, and a control that cannot change
     // anything promises a chapter that is not there.
-    const only = { email: `only-here-${Date.now().toString(36)}@example.test`, name: `Only Here ${Date.now().toString(36)}` };
+    const stamp = Date.now().toString(36);
+    const only = { email: `only-here-${stamp}@example.test`, name: `Only Here ${stamp}` };
     await seedMember(only);
-    await page.goto(`/players/${only.name.toLowerCase().replace(/ /g, "-")}`);
-    await expect(page.getByTestId("record-scope")).toHaveCount(0);
+    try {
+      await page.goto(`/players/${playerSlug(only.name)}`);
+      // The page first, for the reason the case above gives.
+      await expect(page.getByTestId("player-profile")).toBeVisible();
+      await expect(page.getByTestId("record-scope")).toHaveCount(0);
+    } finally {
+      await removeMember(only.email);
+    }
   });
 });
 

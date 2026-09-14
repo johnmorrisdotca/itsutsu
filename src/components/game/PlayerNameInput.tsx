@@ -15,11 +15,17 @@ const DEBOUNCE_MS = 180;
  * rather than being rebuilt.
  */
 export function PlayerNameInput({
+  id,
+  describedBy,
   value,
   placeholder,
   className,
   onChange,
 }: {
+  /** For a `<label htmlFor>` that names the box without wrapping it. */
+  id?: string;
+  /** The id of whatever describes the box, read after its name. */
+  describedBy?: string;
   value: string;
   placeholder: string;
   className: string;
@@ -63,6 +69,8 @@ export function PlayerNameInput({
   return (
     <>
       <input
+        id={id}
+        aria-describedby={describedBy}
         type="text"
         value={value}
         placeholder={placeholder}

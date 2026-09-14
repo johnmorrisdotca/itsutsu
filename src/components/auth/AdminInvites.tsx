@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import useSWR from "swr";
 
@@ -47,6 +47,8 @@ export function AdminInvites() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const onceId = useId();
+  const onceHintId = useId();
 
   if (!isAdmin) return null;
 
@@ -114,15 +116,31 @@ export function AdminInvites() {
           {busy ? "…" : "New code"}
         </Button>
       </div>
-      <label className="flex items-center gap-2 text-xs text-muted">
+      {/*
+        NAMED "One person only", DESCRIBED by the rest. The whole sentence used
+        to sit inside the label, which made all of it the box's name — the
+        fault `Field` in Controls.tsx describes. The label points at the box
+        by id rather than wrapping it: wrapping would make the name and the
+        note two flex items that wrap separately, and this way the sentence is
+        still one run of text beside the box, exactly where it was.
+      */}
+      <div className="flex items-center gap-2 text-xs text-muted">
         <input
+          id={onceId}
           type="checkbox"
           checked={onceOnly}
           onChange={(event) => setOnceOnly(event.target.checked)}
+          aria-describedby={onceHintId}
           data-testid="invite-once"
         />
-        One person only — the code is spent as soon as it is used. Otherwise it stays good for anyone who has it.
-      </label>
+        <span>
+          <label htmlFor={onceId}>One person only</label>
+          {" — "}
+          <span id={onceHintId}>
+            the code is spent as soon as it is used. Otherwise it stays good for anyone who has it.
+          </span>
+        </span>
+      </div>
 
       {minted !== null ? (
         <div
