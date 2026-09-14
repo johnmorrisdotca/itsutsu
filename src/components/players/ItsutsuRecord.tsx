@@ -122,7 +122,14 @@ export function ItsutsuRecord({
             */
             streak: row.streak,
           }))}
-          columns={{ rating: false }}
+          /*
+            `xp: false` BECAUSE THE ROWS ARE GAMES, NOT PEOPLE. The XP column is
+            on by default on every table of people; this is one person's record
+            game by game, and their one total repeated beside every game would
+            be a figure about the page's subject rather than about the row. It
+            is in the header of this page, where the person is.
+          */
+          columns={{ rating: false, xp: false }}
           testId="player-by-variant"
           empty={<>No finished games here yet.</>}
         />

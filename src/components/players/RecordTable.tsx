@@ -52,8 +52,8 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  * THE COLUMN ORDER, AND WHY IT IS THIS ONE
  * ─────────────────────────────────────────────────────────────────────────
  *
- *   [#] · SUBJECT · PLAYED · W · L · D · WIN RATE · STREAK · RATING · TIER ·
- *   XP · JOINED · (actions)
+ *   [#] · SUBJECT · PLAYED · W · L · D · WIN RATE · STREAK · RATING · XP ·
+ *   TIER · JOINED · (actions)
  *
  * It is written down here because the next person will want to reorder it, and
  * a column order with no argument behind it gets reordered by whoever cares
@@ -79,15 +79,22 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  *   ordering that is the same sentence on every page — and it is what settles
  *   the disagreement, since the ladder had rating second and the members list
  *   had it seventh.
- * - **TIER immediately after RATING**, because it says how much that rating
- *   can be trusted and means nothing away from it.
- * - **XP AFTER BOTH OF THEM**, because it is a conclusion about something else.
- *   Everything to the left of the rating is what happened at the board and the
- *   rating is what the site concluded from it; experience is what the site has
- *   recorded of the whole membership — games, yes, but also turning up, filling
- *   in a profile, making a buddy. It cannot sit among the game figures without
- *   reading as one of them, and it cannot come before the rating without putting
- *   the site's smaller conclusion in front of its main one.
+ * - **XP DIRECTLY AFTER RATING**, because John put it there — "display
+ *   directly after the Played column... never mind after the Rating column for
+ *   now" — and because it is the site's other conclusion. Everything to the
+ *   left of the rating is what happened at the board and the rating is what the
+ *   site concluded from it; experience is what the site has recorded of the
+ *   whole membership — games, yes, but also turning up, filling in a profile,
+ *   making a buddy. It cannot sit among the game figures without reading as one
+ *   of them, and it cannot come before the rating without putting the site's
+ *   smaller conclusion in front of its main one. It sat after Tier for two
+ *   releases, on the argument that Tier belongs against the rating it
+ *   qualifies; the owner's placement wins, and the two conclusions now stand
+ *   together with the rating's caveat one column further on.
+ * - **TIER after them**, because it says how much that rating can be trusted.
+ *   One column away from the rating is still beside it: on most tables of
+ *   people the two are read together, and on the tables that carry no tier the
+ *   rating and XP are simply the last two figures.
  * - **JOINED last of the facts**, because it is not about playing at all.
  * - **Actions last**, because they are not facts.
  *
@@ -184,6 +191,11 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  *   player's own by-game breakdown counts every finished game, rated or not,
  *   across both pools, and no one rating belongs to such a row. A column of
  *   dashes is not a smaller truth, it is a column that says nothing.
+ * - `xp` off only on a table whose rows are not people — the same by-game
+ *   breakdown, and a per-site total — since nobody is on the row to have
+ *   earned anything. On by default everywhere else, and
+ *   `xpColumn.coverage.test.ts` holds every `xp: false` to a written reason:
+ *   this column was added to one table and not the rest, and John asked why.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * EVERY ROW IS THE SAME HEIGHT, AND IT TAKES BOTH OF THESE

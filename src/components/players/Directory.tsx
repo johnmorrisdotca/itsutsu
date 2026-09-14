@@ -350,7 +350,9 @@ export async function Directory({
       <RecordTable
         subject="Member"
         rows={people.map((entry) => directoryRow(entry, scope, actions))}
-        columns={{ xp: true, joined: true, actions: "" }}
+        // XP is on by default on every table of people; only `joined` and the
+        // controls are this table's own.
+        columns={{ joined: true, actions: "" }}
         sort={sort}
         testId="directory"
         empty={

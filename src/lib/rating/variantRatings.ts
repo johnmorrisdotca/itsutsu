@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { xpByMemberId } from "@/lib/xp/xpOfMembers";
 import { playerKey } from "./playerKey";
 import { tierFor, type GameScore, type RatingTier } from "./elo";
 import { POOL_COLUMNS, RATING_POOLS, standingIn, type RatingPool } from "./pools";
@@ -58,6 +59,18 @@ export type VariantStanding = {
   pool: RatingPool;
 };
 
+/**
+ * A standing on a game's LADDER, which is a table of people: the standing and
+ * what the member behind it has earned on the site.
+ *
+ * `xp` is the XP column — `xpShown` of the member, read once for the whole
+ * ladder by `xpByMemberId` — or null where there is nothing to print: a
+ * program on the computer-pool ladder, or a name with no member behind it. A
+ * player's OWN standings (`fetchVariantStandings`) stay plain `VariantStanding`
+ * rows: on that table the rows are games and the person is the page.
+ */
+export type LadderStanding = VariantStanding & { xp: number | null };
+
 type StandingRow = {
   key: string;
   name: string;
@@ -100,7 +113,7 @@ export async function fetchVariantLeaders(
   variant: string,
   limit: number,
   pool: RatingPool = RATING_POOLS.people,
-): Promise<VariantStanding[]> {
+): Promise<LadderStanding[]> {
   const columns = POOL_COLUMNS[pool];
   const rows = await prisma.playerVariantRating.findMany({
     /*
@@ -121,7 +134,13 @@ export async function fetchVariantLeaders(
     ] as never,
     take: limit,
   });
-  return rows.map((row) => toStanding(row, pool));
+  // The XP column, in one further read over this ladder's member ids — see
+  // `xpOfMembers.ts` for why it is one query and what a null means.
+  const xp = await xpByMemberId(rows.map((row) => row.memberId));
+  return rows.map((row) => ({
+    ...toStanding(row, pool),
+    xp: row.memberId === null ? null : (xp.get(row.memberId) ?? null),
+  }));
 }
 
 /**

@@ -10,6 +10,7 @@ import {
 import { isRefusal, parseCursor, parseLimit, parseSort } from "@/lib/api/paging";
 import type { PagedEnvelope, PagingRefusal, SortChoice } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
+import { xpByMemberId } from "@/lib/xp/xpOfMembers";
 import type { Prisma } from "@prisma/client";
 
 import { LADDER_SORT_SPEC, type LadderSortField } from "./ladder.sort";
@@ -61,7 +62,20 @@ export const LADDER_PAGE_MAX = 100;
 
 export type LadderSort = SortChoice<LadderSortField>;
 
-export type LadderPage = PagedEnvelope<PlayerProfile> & {
+/**
+ * One line of the ladder: a name's standing, and what the member behind it
+ * has earned on the site.
+ *
+ * `xp` is what the XP column prints — `xpShown` of the member, read in one
+ * query for the whole page by `xpByMemberId` — or null where there is nothing
+ * to print: a program, or a name with no member behind it. It is decided here
+ * rather than in the browser so that the pages arriving through `/api/ladder`
+ * carry exactly what the first page carried, and `LadderMore` never has to
+ * know a member's `botTier` to draw a dash.
+ */
+export type LadderEntry = PlayerProfile & { xp: number | null };
+
+export type LadderPage = PagedEnvelope<LadderEntry> & {
   /**
    * How many players are on the ladder at all.
    *
@@ -115,5 +129,16 @@ export async function fetchLadderPage({
   ]);
 
   const { rows, next } = nextCursorFrom(LADDER_SORT_SPEC, sort, read, limit);
-  return { items: rows.map(toProfile), next, total };
+  /*
+   * The XP column, from one further read over this page's member ids — never
+   * one per row, and never sorted by: XP is on `Member`, the ladder is ordered
+   * over `Player`, and the two are joined by an id with no relation between
+   * them, so the XP heading here is plain text. The Members tab orders by it.
+   */
+  const xp = await xpByMemberId(rows.map((row) => row.memberId));
+  const items: LadderEntry[] = rows.map((row) => ({
+    ...toProfile(row),
+    xp: row.memberId === null ? null : (xp.get(row.memberId) ?? null),
+  }));
+  return { items, next, total };
 }
