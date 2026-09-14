@@ -438,8 +438,8 @@ so nothing today would catch this.
 
 ### Every Landed Commit Bumps The Version
 
-**`pnpm release:take` takes the number, immediately before pushing, chained
-with `&&` so a red gate stops the push before any file is touched:**
+**`pnpm release:take` takes the number and commits it, immediately before
+pushing, chained with `&&` so a refusal or a red gate stops the push:**
 
 ```sh
 pnpm release:take --summary "A new game a player would notice." && \
@@ -455,6 +455,23 @@ needs no summary at all — pass one anyway and it still gets a changelog line.
 see board convergence ITS-04 and the Board Gate section above. `done` has no
 other door: the page and `pnpm task` cannot offer it, and a row already done
 does not move again.
+
+**The tool commits the release; there is no commit step to remember.** It
+writes `package.json` and `CHANGELOG.md` and commits exactly those two, as
+`0.x.y — <first summary>` with the co-author trailer, so the commit the push
+carries is the one that names the version. It used to stop at writing, and
+the step it printed went straight to the push. On 2026-09-14 that step was
+followed to the letter: the merge `4c96876` reached `main` at 0.173.3 with
+0.173.4 still uncommitted in the tree, and `563d2bd` had to follow carrying
+nothing but the number. A printed hint is a habit, and a habit fails once.
+
+It refuses before writing anything if either file already has changes of its
+own, or a merge is still open — the commit takes those two paths as they
+stand, so it would sweep somebody's edit into the release, and git will not
+make a partial commit mid-merge. A write or commit that fails puts both files
+back and says so. And if the gate goes red after it has committed,
+`git reset --keep HEAD~1` takes the release commit back off, leaves every
+other edit where it is, and the next run takes the same number again.
 
 This replaces two things that used to go wrong by hand, both written down
 here because this file is the one you open when you are already thinking
