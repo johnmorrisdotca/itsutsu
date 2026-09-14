@@ -402,4 +402,19 @@ describe("resolveAgainst — continuing a position", () => {
       error: "No such game.",
     });
   });
+
+  /*
+   * A SWAP OPENING DOES NOT RIDE A FORK INTO A LIVE GAME. The request's own
+   * opening is checked by its schema; the carried one arrived after that check,
+   * so a fork of a practice game filed under swap2 made a clocked live board
+   * waiting on a colour choice a seat token cannot hold.
+   */
+  it("refuses a position from a game played under an opening a shared game cannot use", async () => {
+    origin = { ...ORIGIN, opening: "swap2" };
+
+    expect(await refusal({ from: { id: "origin-1", move: 2 } })).toMatchObject({
+      status: 422,
+      error: expect.stringContaining("opening a shared game cannot use"),
+    });
+  });
 });

@@ -100,8 +100,31 @@ export function resign(state: GameState, loser: Stone): GameState {
  * `forfeitOnRecord` in engine.ts decides, since only the engine knows.
  */
 export function forfeitTurn(state: GameState): GameState {
-  if (state.status !== GAME_STATUS.playing || state.pendingTwist) return state;
+  if (state.status !== GAME_STATUS.playing) return state;
   if (state.opening.stage === OPENING_STAGES.choosing) return state;
   const move: Move = { ...NO_POINT, stone: state.toPlay, kind: MOVE_KINDS.forfeit };
-  return { ...state, moves: [...state.moves, move], toPlay: otherStone(state.toPlay) };
+  /*
+   * A MISSED TURN ENDS WHATEVER HALF OF A MOVE IT INTERRUPTS, and both halves
+   * used to outlive it.
+   *
+   * - A capture chain: the captures already made stand, and the chain ends
+   *   with the turn. Left set, `chainAt` bound the other side to go on jumping
+   *   from a square holding the absent side's piece, which gave them no legal
+   *   move at all — a game neither side could play on.
+   * - A twist still owed: the stone stays and the quarter is left unturned.
+   *   This refused a pending twist before, so a claim wrote nothing and a
+   *   player who never turned a quarter held a timed twist game for ever. No
+   *   line is left unread by skipping it: `settleStone` decides any line the
+   *   stone made before a twist is owed, so the only thing left to settle is a
+   *   board with no room left, which `twistBoard` reads as a draw and so does this.
+   */
+  const lost: GameState = {
+    ...state,
+    moves: [...state.moves, move],
+    toPlay: otherStone(state.toPlay),
+    chainAt: null,
+    pendingTwist: false,
+  };
+  if (state.pendingTwist && !state.board.includes(null)) return { ...lost, status: GAME_STATUS.draw };
+  return lost;
 }

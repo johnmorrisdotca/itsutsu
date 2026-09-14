@@ -220,3 +220,83 @@ describe("a forfeit on the record of a game with no clock", () => {
     expect(await appendMove("g1", "black-token", { kind: "place", row: 7, col: 8 })).toEqual({ ok: false, reason: "not-your-turn" });
   });
 });
+
+/**
+ * A TIMEOUT CLAIMED WHILE SWAP2 WAITS ON ITS COLOUR CHOICE ALWAYS RESOLVES.
+ *
+ * A live game cannot be created under swap2 — a seat token is a colour — but
+ * the claim is written against the rule rather than against how the row got
+ * here. Under the lose-the-turn penalty the choice is made as the replay makes
+ * it and the turn is forfeited; under either lose-the-game penalty the game is
+ * lost on time. Before, the claim wrote nothing and answered "finished".
+ */
+describe.each([
+  { penalty: "turn", finished: false },
+  { penalty: "game", finished: true },
+  { penalty: "game-strict", finished: true },
+])("a timeout claimed during swap2's colour choice, under the $penalty penalty", ({ penalty, finished }) => {
+  it(finished ? "loses the game on time" : "forfeits the chooser's turn, and the record replays it", async () => {
+    row = liveRow("freestyle", 15, { opening: "swap2", timeoutPenalty: penalty, lastMoveAt: hourAgo(), deadlineAt: hourAgo() });
+    row.moves.push(
+      stored({ number: 1, row: 7, col: 7, stone: STONES.black, kind: MOVE_KINDS.place }),
+      stored({ number: 2, row: 7, col: 8, stone: STONES.white, kind: MOVE_KINDS.place }),
+      stored({ number: 3, row: 8, col: 8, stone: STONES.black, kind: MOVE_KINDS.place }),
+    );
+    const waiting = replayed();
+    expect(waiting.opening.stage).toBe("choosing");
+    expect(waiting.toPlay).toBe(STONES.white);
+
+    expect((await claimTimeout("g1", "black-token")).ok).toBe(true);
+
+    const written = gameWrites[gameWrites.length - 1];
+    if (finished) {
+      expect(row.moves).toHaveLength(3);
+      expect(written).toMatchObject({ status: "finished", winner: STONES.black, deadlineAt: null });
+      return;
+    }
+    expect(row.moves.map((move) => [move.number, move.stone, move.kind])).toEqual([
+      [1, STONES.black, MOVE_KINDS.place],
+      [2, STONES.white, MOVE_KINDS.place],
+      [3, STONES.black, MOVE_KINDS.place],
+      [4, STONES.white, MOVE_KINDS.forfeit],
+    ]);
+    const after = replayed();
+    expect(after.moves).toHaveLength(4);
+    expect(after.opening.stage).toBe("done");
+    expect(after.toPlay).toBe(STONES.black);
+    expect(written).toMatchObject({ status: "active", moveCount: 4, whiteForfeits: 1, ...settledTurn(after) });
+    // And the game goes on: black's next stone is move five.
+    expect(await appendMove("g1", "black-token", place(firstLegal(after)))).toEqual({ ok: true, game: { id: "g1" } });
+  });
+});
+
+/**
+ * A TIMEOUT CLAIMED WHILE A TWIST IS STILL OWED RESOLVES TOO.
+ *
+ * A twist game's move is a stone and then a separate quarter turn, so a live row
+ * can stand between the two with the clock running on the player who owes the
+ * twist. The claim wrote nothing there and answered "finished". Now the stone
+ * stays, the quarter is left unturned, and the turn is forfeited.
+ */
+describe("a timeout claimed while a twist is owed", () => {
+  it("forfeits the rest of the turn, keeps the stone, and the game goes on", async () => {
+    row = liveRow("twistFive", 6, { lastMoveAt: hourAgo(), deadlineAt: hourAgo() });
+    row.moves.push(stored({ number: 1, row: 0, col: 0, stone: STONES.black, kind: MOVE_KINDS.place }));
+    const owing = replayed();
+    expect(owing.pendingTwist).toBe(true);
+    expect(owing.toPlay).toBe(STONES.black);
+
+    expect((await claimTimeout("g1", "white-token")).ok).toBe(true);
+
+    expect(row.moves.map((move) => [move.number, move.stone, move.kind])).toEqual([
+      [1, STONES.black, MOVE_KINDS.place],
+      [2, STONES.black, MOVE_KINDS.forfeit],
+    ]);
+    const after = replayed();
+    expect(after.pendingTwist).toBe(false);
+    expect(after.toPlay).toBe(STONES.white);
+    expect(after.board[0]).toBe(STONES.black);
+    expect(gameWrites[gameWrites.length - 1]).toMatchObject({ status: "active", moveCount: 2, blackForfeits: 1, ...settledTurn(after) });
+    expect(await appendMove("g1", "white-token", place(firstLegal(after)))).toEqual({ ok: true, game: { id: "g1" } });
+  });
+});
