@@ -57,6 +57,7 @@ export function Doorstep({
   begin,
   signedIn,
   problem,
+  lineage,
 }: {
   variant: string;
   /**
@@ -93,6 +94,11 @@ export function Doorstep({
   signedIn: boolean;
   /** Why the address could not be honoured in full, when it could not. */
   problem: string | null;
+  /**
+   * Whether this is playing an earlier game again, where it came from a rematch —
+   * still one, changed, or a new game against somebody else. Null otherwise.
+   */
+  lineage: string | null;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -205,6 +211,17 @@ export function Doorstep({
         paragraph: a rematch swaps the colours, and finding that out from the board
         three moves in is how it used to go.
       */}
+      {/*
+        Whether this is playing an earlier game again, where it came from a
+        rematch. Said on its own line because the set-up screen lets a rematch's
+        player be changed, and a new game against somebody else must not read as
+        the rematch it started from.
+      */}
+      {lineage !== null ? (
+        <p className="text-sm leading-relaxed text-ink-soft" data-testid="doorstep-lineage">
+          {lineage}
+        </p>
+      ) : null}
       <p className="text-sm leading-relaxed text-ink-soft" data-testid="doorstep-colours">
         {seating}
       </p>

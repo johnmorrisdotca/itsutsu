@@ -10,7 +10,7 @@ import { parseHandicap } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
 import { SET_UP_UNREAD } from "./live.constants";
-import { RANDOM_COMPUTER } from "./opponentOptions";
+import { ANYONE, RANDOM_COMPUTER } from "./opponentOptions";
 import { plainDraft, silentDraft } from "./plainDraft";
 import { draftFromGame, type RulesDraft } from "./rulesDraft";
 import { boardAsked, readSetUpAsked, type SetUpAsked } from "./setUpAsked";
@@ -201,7 +201,17 @@ async function fromFinishedGame(
     return { ...blank, problem: "Whoever you played that game against cannot be reached for another." };
   }
 
-  const again: SetUpAgain = { id: origin.id, colour };
+  const again: SetUpAgain = { id: origin.id, colour, opponent: them };
+  /*
+   * WHO THIS GAME IS AGAINST, which the address may have changed.
+   *
+   * The set-up screen offers "Who you play" on a rematch and writes a different
+   * choice into `against` — and this used to read straight past it, so the
+   * doorstep and Begin went on with the player from last time. It is honoured
+   * now, and anybody but `them` makes this a new game with the same rules rather
+   * than a rematch: `stillARematch` decides, from the same two values.
+   */
+  const chosen = await opponentChosen(want.against, them);
   /*
    * TWO DRAFTS, ANSWERING DIFFERENT QUESTIONS.
    *
@@ -228,13 +238,41 @@ async function fromFinishedGame(
      * changed on the way must not read as one nobody touched.
      */
     boardChosen: boardAsked(want, asPlayed.variant as RuleVariant),
-    opponent: them,
-    drawComputer: false,
+    opponent: chosen.opponent,
+    drawComputer: chosen.drawComputer,
     again,
     fork: null,
     carry: carriedFrom(origin),
-    problem: withUnread(null, unreadAsked(asked, want, initial, false)),
+    problem: withUnread(chosen.problem, unreadAsked(asked, want, initial, false)),
   };
+}
+
+/**
+ * Who a rematch's address asks the new game to be against.
+ *
+ * Silence, or the player from last time, is that player. `anyone` said out loud
+ * is a seat posted for whoever answers; `random-computer` is a program drawn when
+ * Begin creates the game; an id is the person or program it names. Somebody who
+ * cannot be reached for a game is said rather than swallowed, and the game stays
+ * against the player from last time — the one answer here that nobody has to
+ * have chosen twice.
+ */
+async function opponentChosen(
+  against: string | null,
+  them: SetUpOpponent,
+): Promise<{ opponent: SetUpOpponent | null; drawComputer: boolean; problem: string | null }> {
+  if (against === null || against === them.id) return { opponent: them, drawComputer: false, problem: null };
+  if (against === ANYONE) return { opponent: null, drawComputer: false, problem: null };
+  if (against === RANDOM_COMPUTER) return { opponent: null, drawComputer: true, problem: null };
+  const named = await personNamed(against);
+  if (named === null) {
+    return {
+      opponent: them,
+      drawComputer: false,
+      problem: `Whoever that link named cannot be reached for a game, so this is still against ${them.name}.`,
+    };
+  }
+  return { opponent: named, drawComputer: false, problem: null };
 }
 
 /**

@@ -7,7 +7,7 @@ import {
   STONES,
 } from "@/lib/gomoku/gomoku.constants";
 import { RATING_REFUSALS, RATING_REFUSED_WORD } from "@/lib/rating/rateable.constants";
-import { describeGameProse, describeSeating, type DoorstepWho } from "./doorstepSays";
+import { describeGameProse, describeLineage, describeSeating, type DoorstepWho } from "./doorstepSays";
 import type { RulesDraft } from "./rulesDraft";
 
 /**
@@ -218,5 +218,37 @@ describe("who plays which colour, said on the doorstep", () => {
     const said = describeSeating(draft, { ...who, mine: null });
     expect(said).toContain("settled when the game is made");
     expect(said).not.toContain("you are black");
+  });
+});
+
+/*
+ * WHETHER IT IS PLAYING THAT GAME AGAIN. The set-up screen lets a rematch's player
+ * be changed, and this page went on describing the rematch — so it says which of
+ * three things the game now is, always naming the player from last time.
+ */
+describe("what the doorstep says about a game set up from a rematch", () => {
+  const again = { opponent: { name: "Bob Tester", computer: false } };
+
+  it("says nothing where the game did not come from one", () => {
+    expect(describeLineage(null, { repeat: false, sameOpponent: false })).toBeNull();
+  });
+
+  it("calls a rematch a rematch, with the colours swapped", () => {
+    const said = describeLineage(again, { repeat: true, sameOpponent: true });
+    expect(said).toContain("A rematch");
+    expect(said).toContain("swapped");
+  });
+
+  it("says a rematch set up against somebody else is a new game and not a rematch", () => {
+    const said = describeLineage(again, { repeat: false, sameOpponent: false });
+    expect(said).toContain("not a rematch");
+    expect(said).toContain("somebody else");
+    expect(said).toContain("not swapped");
+  });
+
+  it("says a changed rematch against the same player is not a rematch either", () => {
+    const said = describeLineage(again, { repeat: false, sameOpponent: true });
+    expect(said).toContain("not a rematch");
+    expect(said).toContain("rules differ");
   });
 });

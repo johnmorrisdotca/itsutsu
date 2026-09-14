@@ -59,6 +59,37 @@ function sameHandicap(one: Handicap, two: Handicap): boolean {
   return HANDICAP_RULES.every((rule) => one[rule] === two[rule]);
 }
 
+/**
+ * WHETHER A REMATCH IS STILL ONE: the same rules, AND the same player.
+ *
+ * The rules half was always here. The player half was not, and the set-up screen
+ * shows "Who you play" openly on a rematch — so somebody could press a different
+ * opponent, see it chosen, and have the doorstep and Begin carry on with the
+ * player from last time, because a rematch request takes its opponent from the
+ * old game and nothing from the form. A page that accepts a choice and quietly
+ * drops it.
+ *
+ * So choosing somebody else — another person, a computer player, one drawn at
+ * random, or a seat for anyone (`opponent` is null for the last two) — stops it
+ * being a rematch exactly as changing a rule does. It becomes a new game with the
+ * same rules: nothing that marks a rematch is asked for, so the colours do not
+ * swap and the rematch's own award (`rematchPlayed`) is not claimed for it.
+ */
+export function stillARematch({
+  rules,
+  source,
+  opponent,
+  again,
+}: {
+  rules: RulesDraft;
+  source: RulesDraft | null;
+  opponent: SetUpOpponent | null;
+  again: SetUpAgain | null;
+}): boolean {
+  if (again === null || source === null || opponent === null) return false;
+  return opponent.id === again.opponent.id && sameRules(rules, source);
+}
+
 export function creationFor({
   rules,
   source,
@@ -78,11 +109,11 @@ export function creationFor({
   carry: Record<string, unknown>;
 }): SetUpCreation {
   /*
-   * Still the same game, so ask for the rematch itself and let the route carry
-   * every part of it — including the ones this form has no row for and the
-   * colour swap, which no other request can express.
+   * Still the same game against the same player, so ask for the rematch itself
+   * and let the route carry every part of it — including the ones this form has
+   * no row for and the colour swap, which no other request can express.
    */
-  if (again !== null && source !== null && sameRules(rules, source)) {
+  if (again !== null && stillARematch({ rules, source, opponent, again })) {
     return { body: { rematch: again.id }, repeat: true };
   }
 
@@ -130,7 +161,10 @@ export function creationFor({
  * of creation puts the asker somewhere the route decides, not somewhere chance
  * does.
  *
- *  - A REMATCH swaps, and `colourAfterSwap` has already said which way round.
+ *  - A REMATCH swaps, and `colourAfterSwap` has already said which way round —
+ *    while it is still one. A rematch somebody changed, by a rule or by the
+ *    player, is asked for as a new game, so its caller passes `again` as null
+ *    here (see `stillARematch`); the doorstep used to promise the swap either way.
  *  - A FORK keeps the colour that played the position, because the position
  *    belongs to the colours that were in it.
  *  - A CHALLENGE gives the challenger black — see `askingSomebody` in

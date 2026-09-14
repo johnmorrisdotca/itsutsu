@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { RulesDraft } from "@/components/live/rulesDraft";
+import { creationFor } from "@/components/live/setUpStart";
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
-import { STONES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
 
 /**
  * The awards that are about other people, driven through the writers that pay
@@ -163,6 +165,38 @@ describe("which of the three a creation was", () => {
     // all for a null rather than falling back to the cheapest award.
     expect(createdGameKind({})).toBeNull();
     expect(createdGameKind({ challenge: undefined, challengeId: undefined })).toBeNull();
+  });
+
+  /*
+   * A REMATCH SET UP AGAINST SOMEBODY ELSE IS PAID AS WHAT IT IS. The set-up
+   * screen lets a rematch's player be changed, and `rematchPlayed` is for playing
+   * the same player again — so the body the doorstep sends is read here as the
+   * route reads it: a rematch only while the player is the one from last time, an
+   * ask of the player chosen otherwise, and nothing at all for a seat for anyone.
+   */
+  it("pays a rematch set up against somebody else as an ask, never as a rematch", () => {
+    const rules: RulesDraft = {
+      variant: RULE_VARIANTS.freestyle,
+      size: 9,
+      obstacles: "none",
+      opening: "free",
+      moveTimeMs: null,
+      timeoutPenalty: "turn",
+      clockMode: "move",
+      rated: true,
+      allowResign: true,
+      open: false,
+      handicap: NO_HANDICAP,
+    };
+    const bob = { id: "m-bob", name: "Bob", computer: false };
+    const again = { id: "g1", colour: STONES.white, opponent: bob };
+    const sent = (opponent: typeof bob | null) =>
+      creationFor({ rules, source: rules, opponent, again, fork: null, carry: {} }).body;
+    expect(createdGameKind(sent(bob))).toBe(CREATED_GAME_KINDS.rematch);
+    expect(createdGameKind(sent({ id: "m-carol", name: "Carol", computer: false }))).toBe(
+      CREATED_GAME_KINDS.challenge,
+    );
+    expect(createdGameKind(sent(null))).toBeNull();
   });
 
   it("pays the asker once per game, and again for the next one", async () => {

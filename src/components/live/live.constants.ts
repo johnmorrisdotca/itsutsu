@@ -73,6 +73,14 @@ export const SET_UP_COPY = {
   /** Said when a rematch has been altered, because then it is not one. */
   againChanged:
     "You have changed something, so this starts a new game against the same player rather than a repeat of the last one. The colours are drawn the ordinary way: you open.",
+  /**
+   * Said when a rematch's player has been changed. Then it is a new game with
+   * these rules and not a rematch, and nothing a rematch is — the swap, the award —
+   * comes with it. `chosen` is null for a seat for anyone or a program drawn at
+   * random, neither of which has a name yet.
+   */
+  againElsewhere: (them: string, chosen: string | null) =>
+    `You have chosen ${chosen ?? `not to play ${them} again`}, so this is a new game with these rules — not a rematch of your last game against ${them}, and the colours are not swapped.`,
   /** The heading and lead for a fork. */
   fork: (move: number) => `Play on from move ${move}`,
   forkHint: (move: number, who: string) =>
@@ -206,6 +214,16 @@ export const DOORSTEP_COPY = {
   made: "You have already begun this game. The button below opens its board rather than making a second one.",
   another: "Begin another like this one",
   refused: "That game could not be started.",
+  /*
+   * WHERE THE GAME CAME FROM A REMATCH, what it is now — see `describeLineage`.
+   * `them` is always the player from last time: the one a rematch repeats, and the
+   * one a new game against somebody else is not a rematch of.
+   */
+  rematchOf: (them: string) => `A rematch of your last game against ${them}, with the colours swapped.`,
+  rematchChanged: (them: string) =>
+    `A new game against ${them}, not a rematch: the rules differ from your last game, so the colours are not swapped.`,
+  notRematch: (them: string) =>
+    `A new game, not a rematch of your last game against ${them}: you chose somebody else to play, so the colours are not swapped.`,
   /**
    * The seat went between this page being drawn and Begin being pressed.
    *

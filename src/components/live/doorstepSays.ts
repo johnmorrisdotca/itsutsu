@@ -14,6 +14,7 @@ import { MEMBER_KIND_DISPLAY, MEMBER_KINDS } from "@/lib/auth/memberKind";
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { shownName } from "@/lib/rating/shownName";
 import type { RulesDraft } from "./rulesDraft";
+import { DOORSTEP_COPY } from "./live.constants";
 import { describeHandicap, describeSettings } from "./rulesSummary";
 
 /**
@@ -202,6 +203,27 @@ export function describeGameProse(rules: RulesDraft, refused: RatingRefusal | nu
   const handicap = describeHandicap(rules.handicap);
   if (handicap !== null) sentences.push(`${handicap}.`);
   return sentences.join(" ");
+}
+
+/**
+ * WHETHER THIS IS PLAYING THAT GAME AGAIN, said wherever it came from a rematch.
+ *
+ * A rematch swaps the colours and is paid as a rematch. A game set up from one
+ * and then changed — another rule, or another player — does neither, and the
+ * doorstep is the last page that can say which before Begin makes it. The set-up
+ * screen let somebody choose another opponent on a rematch and this page went on
+ * describing the old one, so it says the lineage out loud rather than leaving it
+ * to be inferred from the seating. Null where the game did not come from a
+ * rematch at all.
+ */
+export function describeLineage(
+  again: { opponent: { name: string; computer: boolean } } | null,
+  { repeat, sameOpponent }: { repeat: boolean; sameOpponent: boolean },
+): string | null {
+  if (again === null) return null;
+  const them = playerWord(again.opponent.name, again.opponent.computer);
+  if (repeat) return DOORSTEP_COPY.rematchOf(them);
+  return sameOpponent ? DOORSTEP_COPY.rematchChanged(them) : DOORSTEP_COPY.notRematch(them);
 }
 
 /** "an 8×8", "a 19×19". English, from the digit that is actually spoken. */

@@ -40,6 +40,12 @@ export type SetUpNoticesProps = {
   again: SetUpAgain | null;
   /** A rematch nobody has changed, which is still a repeat of the game it came from. */
   repeat: boolean;
+  /**
+   * The player chosen is still the one from last time. False once somebody else
+   * is chosen, which makes a new game rather than a changed rematch — and the
+   * screen says which of those two it is.
+   */
+  sameOpponent: boolean;
   /** The name of the player chosen, for a rematch's sentence. */
   chosenName: string | null;
   fork: SetUpFork | null;
@@ -105,6 +111,17 @@ export type SetUpAgain = {
    * moves in.
    */
   colour: Stone;
+  /**
+   * WHO THAT GAME WAS AGAINST — the person a rematch repeats.
+   *
+   * Kept apart from `SetUpFrom.opponent`, which is who THIS game will be against
+   * and which the set-up screen lets somebody change. One value standing for both
+   * is how a different opponent was accepted on the set-up screen and quietly
+   * dropped by the doorstep and Begin. A rematch is only a rematch while the two
+   * are the same player: choose somebody else and it is a new game with the same
+   * rules — see `stillARematch`.
+   */
+  opponent: SetUpOpponent;
 };
 
 /** A position being carried out of another game into a new one. */
