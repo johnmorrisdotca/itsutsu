@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { expect, test, type Browser, type BrowserContext, type Locator, type Page } from "@playwright/test";
 
 import { slugFor } from "../src/lib/gomoku/slugs";
-import { memberContext, removeMember } from "./members";
+import { memberContext, removeMember, seatTokensFor, seedMember } from "./members";
 import { playAt, ready } from "./support";
 import { gamesMade, namesPlayedUnder } from "./tidy";
 
@@ -198,6 +198,121 @@ test.describe("a result card over a finished board", () => {
       await expect(watch.page.getByTestId("result-card")).toHaveCount(0);
     } finally {
       await goodbye(black, white, watch);
+    }
+  });
+
+  /*
+   * OPENING THE CARD MOVES NOTHING.
+   *
+   * It took focus with a plain `focus()`, which scrolls the focused element into
+   * view — so a finished game opened from a link jumped 736px down to the board
+   * the moment the browser took the page over, and "Play again as White" at the
+   * top went off the screen. On a busy CI runner that jump landed between a
+   * press being aimed and being made, and the press went nowhere: three
+   * set-up-again and rematch specs sat on the finished game with the card open.
+   * A player aiming at the same link met the same page moving under them.
+   */
+  test("opening the card does not scroll the page, so a link at the top stays where it was aimed", async ({
+    browser,
+    baseURL,
+  }) => {
+    const { black, white, names } = await twoPlayers(browser, baseURL!, "s");
+    try {
+      const game = await newGame(black.page, names);
+      const blackBoard = await seat(black.page, game.id, game.blackToken);
+      const whiteBoard = await seat(white.page, game.id, game.whiteToken);
+      await blackTakesTheTopRow(black.page, blackBoard, white.page, whiteBoard);
+      await theRecord(black.page);
+      await expect(black.page.getByRole("dialog", { name: /You won/ })).toBeVisible();
+
+      // The finished game opened again at the top, as from a link: nobody closed the card, so it opens here too.
+      const again = await black.context.newPage();
+      await again.goto(`/games/${SLUG}/match/${game.id}`);
+      await theRecord(again);
+      await expect(again.getByRole("dialog", { name: /You won/ })).toBeFocused();
+      expect(await again.evaluate(() => window.scrollY), "opening the card scrolled the page").toBe(0);
+
+      const playAgain = again.getByRole("link", { name: /Play again as/ });
+      await expect(playAgain).toBeInViewport();
+      await playAgain.click();
+      await again.waitForURL(new RegExp(`/games/new\\?rematch=${game.id}`));
+      await ready(again, "set-up-game");
+    } finally {
+      await goodbye(black, white);
+    }
+  });
+
+  /*
+   * XP TOASTS NEVER TAKE A CLICK MEANT FOR THE PAGE UNDER THEM.
+   *
+   * The stack sits over the top of every page, and each card took every press
+   * that landed on it: with a game's XP waiting, the header's Play and New game
+   * and a game's name under the heading could not be pressed until the toasts
+   * went. A notice must not stand between a player and what they came to do, so
+   * a press on a card now reaches what is under it, and the card is dismissed by
+   * its own button, which is still there.
+   */
+  test("XP toasts over a header link let a press reach the link", async ({ browser, baseURL }) => {
+    const stamp = `${Date.now().toString(36)}t`;
+    const me = { email: `result-toast-${stamp}@example.test`, name: under(`Toast${stamp} Result`) };
+    const them = { email: `result-toast-foe-${stamp}@example.test`, name: under(`Foe${stamp} Result`) };
+    await seedMember(me);
+    await seedMember(them);
+    const context = await memberContext(browser, baseURL!, me);
+    const theirs = await memberContext(browser, baseURL!, them);
+    try {
+      // A game won through the API, away from any page, so its XP is waiting as toasts for the next one.
+      const made = await context.request.post("/api/games/live", {
+        data: { challenge: them.email, variant: VARIANT, size: SIZE, moveTimeMs: null },
+      });
+      expect(made.status(), await made.text()).toBe(201);
+      const { id } = (await made.json()) as { id: string };
+      mine(id);
+      const accepted = await theirs.request.post(`/api/games/${id}/offer/accept`, {});
+      expect(accepted.status(), await accepted.text()).toBe(200);
+      const tokens = await seatTokensFor(id);
+      for (const [index, [row, col]] of [
+        [0, 0],
+        [1, 0],
+        [0, 1],
+        [1, 1],
+        [0, 2],
+      ].entries()) {
+        const played = await context.request.post(`/api/games/${id}/moves`, {
+          data: { token: index % 2 === 0 ? tokens.blackToken : tokens.whiteToken, row, col },
+        });
+        expect(played.status(), await played.text()).toBe(201);
+      }
+
+      const page = await context.newPage();
+      await page.goto("/play");
+      await ready(page, "xp-toast-host");
+      await expect(page.locator('[data-testid="xp-toast"][data-phase="shown"]').first()).toBeVisible();
+      const newGameLink = page.getByRole("navigation").locator('a[href="/games/new"]').first();
+      await expect(newGameLink).toBeVisible();
+
+      const where = await newGameLink.evaluate((link) => {
+        const r = link.getBoundingClientRect();
+        const x = r.left + r.width / 2;
+        const y = r.top + r.height / 2;
+        const under = [...document.querySelectorAll('[data-testid="xp-toast"]')].some((toast) => {
+          const t = toast.getBoundingClientRect();
+          return x >= t.left && x <= t.right && y >= t.top && y <= t.bottom;
+        });
+        const hit = document.elementFromPoint(x, y);
+        return { under, reaches: hit !== null && link.contains(hit) };
+      });
+      // A toast really is over the link — or this would say nothing about toasts at all.
+      expect(where.under, "no toast is over the New game link at this width").toBe(true);
+      expect(where.reaches, "a press on the New game link lands on the toast instead").toBe(true);
+
+      await newGameLink.click();
+      await page.waitForURL(/\/games\/new(\?|$)/);
+    } finally {
+      await context.close();
+      await theirs.close();
+      await removeMember(me.email);
+      await removeMember(them.email);
     }
   });
 

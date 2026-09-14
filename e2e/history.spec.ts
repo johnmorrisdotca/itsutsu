@@ -14,6 +14,18 @@ test.describe("the game record", () => {
 
     await playSequence(page, 15, winningSequence());
     await expect(page.getByText(/wins in 9 moves/)).toBeVisible();
+    /*
+     * AND STORED, BEFORE THIS PAGE IS LEFT. The win is drawn from the board in
+     * the browser, and the mirror posts the last stone behind it — the address
+     * only names the final position once the server holds it (`GameView`). The
+     * next line leaves the page, and leaving cancels a post still waiting in
+     * the mirror's queue: on a busy runner the game was never finished on the
+     * server, so the record rightly listed nothing for thirty seconds and on
+     * the retry. Measured locally, the address caught up 22–27ms after the win
+     * was drawn. So this waits for what the page itself says, as a player
+     * reading the address bar would see it.
+     */
+    await expect(page).toHaveURL(/\/games\/gomoku\/match\/[^/]+\/9$/, { timeout: 30_000 });
 
     /*
      * A board is written to the server by a mirror running in the background,

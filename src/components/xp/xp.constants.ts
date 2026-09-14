@@ -97,10 +97,19 @@ export const XP_KANJI = "経験";
  * hairline border and a soft shadow, squared off enough to hold three lines.
  */
 export const XP_TOAST_STYLE = {
-  /** The stack: pinned to the top under the notch, centred, and no part of it takes a click except the cards. */
+  /**
+   * The stack: pinned to the top under the notch, centred, and NO PART OF IT
+   * TAKES A PRESS EXCEPT EACH CARD'S DISMISS BUTTON.
+   *
+   * The cards used to take every press that landed on them, and the stack sits
+   * over the top of every page: with a game's XP waiting, the header's Play and
+   * New game and a game's name under a heading could not be pressed until the
+   * toasts had gone. A notice must not stand between a player and what they came
+   * to do, so a press on a card reaches whatever is under it.
+   */
   host: "xp-toast-host pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-[60] flex flex-col items-center px-3",
   slot: "xp-toast-slot w-[min(24rem,100%)]",
-  card: "xp-toast pointer-events-auto relative flex items-start gap-3 rounded-2xl border px-4 py-3 pr-10 text-left shadow-[0_16px_40px_-16px_rgba(0,0,0,0.4)] backdrop-blur-sm outline-none",
+  card: "xp-toast pointer-events-none relative flex items-start gap-3 rounded-2xl border px-4 py-3 pr-10 text-left shadow-[0_16px_40px_-16px_rgba(0,0,0,0.4)] backdrop-blur-sm outline-none",
   cardPlain: "border-rule-strong/80 bg-ivory/95",
   cardLevel: "border-moss bg-moss-soft/95",
   /** Wide enough for three digits, so the labels of a stack line up whatever each award paid. */
@@ -116,5 +125,5 @@ export const XP_TOAST_STYLE = {
   levelKanji: "font-normal tracking-normal",
   levelName: "text-lg leading-tight font-semibold text-ink",
   levelNext: "mt-1 text-xs text-muted",
-  dismiss: "absolute top-1.5 right-1.5 inline-flex size-7 items-center justify-center rounded-full text-base leading-none text-muted transition-colors outline-none hover:bg-shade hover:text-ink focus-visible:ring-2 focus-visible:ring-moss",
+  dismiss: "pointer-events-auto absolute top-1.5 right-1.5 inline-flex size-7 items-center justify-center rounded-full text-base leading-none text-muted transition-colors outline-none hover:bg-shade hover:text-ink focus-visible:ring-2 focus-visible:ring-moss",
 } as const;
