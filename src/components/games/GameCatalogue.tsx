@@ -6,6 +6,7 @@ import { GameCards } from "@/components/games/GameCards";
 import { GameList } from "@/components/games/GameList";
 import { GameName } from "@/components/games/GameName";
 import { FamilyStatsLine, GameStatsStrip } from "@/components/games/GameStats";
+import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
@@ -135,7 +136,7 @@ function Families({
         <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family" open={index === 0}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
             <span className="flex min-w-0 items-center gap-3">
-              <FamilyMark family={family.title} className="size-12 shrink-0 rounded-md" />
+              <FamilyMark family={family.title} />
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="flex items-baseline gap-2 font-semibold">
                   {family.title}
@@ -182,7 +183,14 @@ function Families({
                 className={`${STRETCHED_CARD} flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm`}
                 data-testid="family-game"
               >
-                <span className="flex min-w-0 flex-col gap-1">
+                {/*
+                  The game's board, the way /games/new's picker and every list
+                  of games draws it. John: "Looks like we aren't showing the
+                  icons for all the variant games in a family!" In flow under
+                  the stretched name, so a tap on it opens the card.
+                */}
+                <GameThumb variant={game.variant} size="card" />
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="font-medium">
                     <GameName variant={game.variant} kanji stretched />
                   </span>

@@ -164,7 +164,7 @@ export function GamePicker({
               data-family={entry.title}
               data-open={showing ? "true" : "false"}
             >
-              <FamilyMark family={entry.title} className="size-5 shrink-0 rounded-sm" />
+              <FamilyMark family={entry.title} />
               {/*
                 The kanji goes below a laptop, and only for a reader of
                 English. Eleven chips carrying both scripts wrap to three
@@ -242,7 +242,7 @@ export function GamePicker({
                 onChange={() => onChange(game)}
                 className="peer sr-only"
               />
-              <GameThumb variant={game} className="size-10" />
+              <GameThumb variant={game} size="row" />
               {/*
                 THE BOARD AND THE NAME, and not the tagline.
 

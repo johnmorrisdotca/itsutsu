@@ -272,6 +272,17 @@ had noticed, including the rules page itself — where every game name on this
 site led at the time, before a game became one address — which reached the
 board and Wikipedia and had no way to the record or the ladder.
 
+**And a game named in a list shows its picture.** A card, a row or a table
+cell that names a game draws that game's board beside the name, through
+`GameThumb` at one of `GAME_PICTURE_SIZE`'s named sizes, and a family's icon
+is drawn at `FAMILY_ICON_SIZE` on every page that shows a family. John: "Looks
+like we aren't showing the icons for all the variant games in a family!…
+Strange how we don't see icons in the Player pages, etc... that's a BUG too."
+**Enforced by `src/components/games/gamePictures.coverage.test.ts`**, which
+fails the build for a name with no picture near it and for either picture at
+a size of its own; a page title, a heading or a sentence naming a game is an
+exception written there by line, with its reason.
+
 ### Every Table Of Players Shows XP, And The Programs Are Players
 
 John, 2026-09-14, looking at a site where the members list had an XP column

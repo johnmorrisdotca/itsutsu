@@ -1,6 +1,9 @@
 import type { FamilyStats, GameStats } from "@/lib/catalogue/catalogue.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
+/** Where a game's picture sits, which decides its size. See `GAME_PICTURE_SIZE`. */
+export type GamePictureSize = "card" | "row" | "table" | "chip";
+
 /** What a game is won by: a line of this many, or turning discs. Derived from its spec. */
 export type GameCardKind = "3" | "4" | "5" | "6" | "flips";
 

@@ -172,7 +172,7 @@ export async function MyRecord({ name }: { name: string }) {
           subject: (
             <>
               {/* The standing rule: a game's name leads to that game. */}
-              <GameThumb variant={row.variant} className="mr-2 inline-block size-6 align-middle" />
+              <GameThumb variant={row.variant} size="table" className="mr-2 inline-block align-middle" />
               <GameName variant={row.variant as RuleVariant} />
               {/*
                 A game somebody has played in both pools is two lines and not

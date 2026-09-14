@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { DayZoneNote } from "./DayZoneNote";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { Paired } from "@/components/i18n/Paired";
 import { PlayerName } from "@/components/players/PlayerName";
 import { familyPath, matchPath } from "@/lib/gomoku/slugs";
@@ -99,7 +100,14 @@ function Earned({ row }: { row: XpLedgerRow }) {
  * an oversight.
  */
 function About({ about }: { about: XpAbout }) {
-  if (about.of === "game") return <GameName variant={about.variant} />;
+  if (about.of === "game") {
+    return (
+      <>
+        <GameThumb variant={about.variant} size="table" className="mr-1.5 inline-block align-middle" />
+        <GameName variant={about.variant} />
+      </>
+    );
+  }
 
   if (about.of === "match") {
     if (about.variant === null) {
@@ -120,6 +128,7 @@ function About({ about }: { about: XpAbout }) {
      */
     return (
       <>
+        <GameThumb variant={about.variant} size="table" className="mr-1.5 inline-block align-middle" />
         <GameName variant={about.variant} />
         <span className="text-muted"> · </span>
         <Link href={matchPath(about.variant, about.gameId)} className="underline underline-offset-4">
@@ -170,6 +179,7 @@ function About({ about }: { about: XpAbout }) {
   if (about.of === "rivalry") {
     return (
       <>
+        <GameThumb variant={about.variant} size="table" className="mr-1.5 inline-block align-middle" />
         <GameName variant={about.variant} />
         <span className="text-muted"> · </span>
         <Link href={playerPath("", about.memberId)} className="underline underline-offset-4">

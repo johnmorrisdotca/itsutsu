@@ -7,6 +7,7 @@ import { gamePath } from "@/lib/gomoku/slugs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { GameStatsStrip } from "@/components/games/GameStats";
+import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, STRETCHED_CARD, STRETCHED_LINK } from "@/components/ui/ui.constants";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
@@ -126,7 +127,9 @@ export function GameCards({
             data-testid="game-card"
             data-variant={copy.variant}
           >
-            <span className="flex min-w-0 flex-col gap-1">
+            {/* The game's board beside its card, as every list that names a game draws it. */}
+            <GameThumb variant={copy.variant} size="card" />
+            <span className="flex min-w-0 flex-1 flex-col gap-1">
               <Link
                 href={gamePath(copy.variant)}
                 data-card-link=""

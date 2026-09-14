@@ -10,6 +10,7 @@ import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { GAME_COPY } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
@@ -113,8 +114,9 @@ function GameBrowser({
                     }`}
                     data-testid={`game-card-${option}`}
                   >
-                    <h3 className="flex items-baseline justify-between gap-2">
-                      <span className="flex items-baseline gap-2 text-base font-semibold">
+                    <h3 className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 text-base font-semibold">
+                        <GameThumb variant={option} size="card" />
                         {/*
                           A NAME INSIDE A CHOOSER IS A CHOICE, NOT A REFERENCE.
                           This dialog is where a game is picked, over a board

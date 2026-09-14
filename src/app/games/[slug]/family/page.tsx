@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
@@ -63,7 +64,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
       </header>
 
       <div className="flex items-center gap-4">
-        <FamilyMark family={family.title} className="size-16 shrink-0 rounded-lg" />
+        <FamilyMark family={family.title} />
         <p className="text-sm text-muted">
           {family.games.length} {family.games.length === 1 ? "game" : "games"} in this family, including{" "}
           {/* The game you came from, named and still clickable — it is a game like the rest. */}
@@ -88,7 +89,8 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
               }`}
               data-testid={`family-game-${game}`}
             >
-              <span className="flex min-w-0 flex-col gap-1">
+              <GameThumb variant={game} size="card" />
+              <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="flex items-baseline gap-2 font-semibold">
                   <GameName variant={game} kanji stretched />
                   {game === variant ? <span className="text-xs font-normal text-muted">— the one you came from</span> : null}

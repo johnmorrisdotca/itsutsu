@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { GameName } from "@/components/games/GameName";
+import { GameThumb } from "@/components/games/GameThumb";
 import { PlayerActions } from "./PlayerActions";
 import { RecordTable } from "./RecordTable";
 import type { NamedMember } from "@/lib/auth/members";
@@ -104,7 +105,17 @@ export function ItsutsuRecord({
           subject="Game"
           rows={record.byVariant.map((row) => ({
             key: row.variant,
-            subject: <GameName variant={row.variant} />,
+            /*
+              Its board beside its name, in the flex row RecordTable's own note
+              asks anything beside a subject to join — a picture as a plain
+              sibling would be a second line.
+            */
+            subject: (
+              <span className="flex items-center gap-2">
+                <GameThumb variant={row.variant} size="table" />
+                <GameName variant={row.variant} />
+              </span>
+            ),
             record: row,
             /*
               Every finished game of this one game, which is what "decided"
@@ -140,8 +151,10 @@ export function ItsutsuRecord({
           <h3 className={SECTION_TITLE}>Recent games</h3>
           <ul className="flex flex-col divide-y divide-rule text-sm">
             {record.recent.map((game) => (
-              <li key={game.id} className="flex items-center justify-between gap-3 py-1.5">
-                <span>
+              <li key={game.id} className="flex items-center justify-between gap-3 py-1.5" data-testid="player-recent-game">
+                <span className="flex min-w-0 items-center gap-2">
+                  <GameThumb variant={game.variant} size="table" />
+                  <span>
                   <GameName variant={game.variant} /> · vs{" "}
                   {game.opponent ? (
                     <Link
@@ -157,6 +170,7 @@ export function ItsutsuRecord({
                   ) : (
                     "anonymous"
                   )}
+                  </span>
                 </span>
                 <span className="flex flex-wrap items-center justify-end gap-3">
                   <span className="font-mono text-xs tabular-nums">{game.outcome}</span>
