@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 
 import { PrismaClient } from "@prisma/client";
 
-import { memberContext, removeMember, removePlayedUnder } from "./members";
-import { gamesMade } from "./tidy";
+import { memberContext, removeMember } from "./members";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 import { ready } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
 
@@ -25,6 +25,12 @@ import { shownName } from "../src/lib/rating/shownName";
 test.describe("keeping finished games in your own list", () => {
   /* The games this file makes, taken away when it finishes. See `gamesMade`. */
   const tidyAway = gamesMade();
+  /**
+   * And the names they were played under, which outlive the games. See
+   * `namesPlayedUnder`. Registered where each name is made rather than swept on
+   * a test's last line, so a run that goes red part-way takes them away too.
+   */
+  const under = namesPlayedUnder();
 
   /** One game's row in the queue, wherever it has been sorted to. */
   function row(page: import("@playwright/test").Page, id: string) {
@@ -72,7 +78,7 @@ test.describe("keeping finished games in your own list", () => {
     const opponent = `Broom ${stamp}`;
 
     const started = await request.post("/api/games/live", {
-      data: { blackName: me.name, whiteName: opponent, size: 9 },
+      data: { blackName: under(me.name), whiteName: under(opponent), size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; whiteToken: string };
@@ -112,7 +118,7 @@ test.describe("keeping finished games in your own list", () => {
     const me = { email: `keeper3-${stamp}@example.test`, name: `Duster${stamp} Tester` };
 
     const started = await request.post("/api/games/live", {
-      data: { blackName: me.name, whiteName: `Cloth${stamp} Tester`, size: 9 },
+      data: { blackName: under(me.name), whiteName: under(`Cloth${stamp} Tester`), size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; whiteToken: string };
@@ -182,8 +188,8 @@ test.describe("keeping finished games in your own list", () => {
     baseURL,
   }) => {
     const stamp = Date.now().toString(36);
-    const me = { email: `keeper4-${stamp}@example.test`, name: `Keeps${stamp} Tester` };
-    const against = { lately: `Fresh${stamp} Tester`, ancient: `Stale${stamp} Tester` };
+    const me = { email: `keeper4-${stamp}@example.test`, name: under(`Keeps${stamp} Tester`) };
+    const against = { lately: under(`Fresh${stamp} Tester`), ancient: under(`Stale${stamp} Tester`) };
     const context = await memberContext(browser, baseURL!, me);
     const page = await context.newPage();
 
@@ -254,7 +260,6 @@ test.describe("keeping finished games in your own list", () => {
 
     await context.close();
     await removeMember(me.email);
-    await removePlayedUnder([me.name, against.lately, against.ancient]);
   });
 
   /**
@@ -297,7 +302,8 @@ test.describe("keeping finished games in your own list", () => {
     baseURL,
   }) => {
     const stamp = Date.now().toString(36);
-    const me = { email: `keeper5-${stamp}@example.test`, name: `Pager${stamp} Tester` };
+    const me = { email: `keeper5-${stamp}@example.test`, name: under(`Pager${stamp} Tester`) };
+    const turned = under(`Turned${stamp} Tester`);
     const context = await memberContext(browser, baseURL!, me);
     const page = await context.newPage();
 
@@ -345,7 +351,7 @@ test.describe("keeping finished games in your own list", () => {
             obstacles: "none",
             opener: "black",
             blackName: me.name,
-            whiteName: `Turned${stamp} Tester`,
+            whiteName: turned,
             blackMemberId: mine!.id,
             playedAt: when,
             lastMoveAt: when,
@@ -419,6 +425,5 @@ test.describe("keeping finished games in your own list", () => {
 
     await context.close();
     await removeMember(me.email);
-    await removePlayedUnder([me.name, `Turned${stamp} Tester`]);
   });
 });

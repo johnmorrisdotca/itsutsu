@@ -1,10 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { openBoardRules, watchForCrashes } from "./support";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. */
+const under = namesPlayedUnder();
+
+/** Distinct per game, so two made in one millisecond are still two names. */
+let made = 0;
 
 /**
  * THE RULES OF A GAME NOBODY HAS ANSWERED YET.
@@ -51,8 +56,10 @@ async function startGame(
   request: Page["request"],
   data: Record<string, unknown>,
 ): Promise<Started> {
+  made += 1;
+  const stamp = `${Date.now().toString(36)}${made}`;
   const started = await request.post("/api/games/live", {
-    data: { blackName: "Poster", whiteName: "", size: 9, ...data },
+    data: { blackName: under(`Poster ${stamp}`), whiteName: "", size: 9, ...data },
   });
   expect(started.status(), await started.text()).toBe(201);
   const game = (await started.json()) as Started;

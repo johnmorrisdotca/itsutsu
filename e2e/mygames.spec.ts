@@ -1,11 +1,20 @@
 import { expect, request as playwrightRequest, test } from "@playwright/test";
 
 import { PLAYER_STATE, readyHere } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
+
+/** Distinct per game, so two made in one millisecond are still two names. */
+let made = 0;
 
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(request: import("@playwright/test").APIRequestContext) {
+  made += 1;
+  const stamp = `${Date.now().toString(36)}${made}`;
   const response = await request.post("/api/games/live", {
-    data: { blackName: "Kai", whiteName: "Mio", size: 9 },
+    data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9 },
   });
   expect(response.status()).toBe(201);
   return response.json() as Promise<{ id: string; blackToken: string; whiteToken: string }>;
@@ -105,8 +114,15 @@ test.describe("open seats", () => {
     const signedIn = await host.post("/api/session", { data: { kind: "invite", code } });
     expect(signedIn.ok()).toBe(true);
 
+    /*
+     * One word, stamp and all, so the noticeboard prints it whole — `shownName`
+     * shortens every word after the first to an initial — and the rows below
+     * are found by the name THIS run gave its seat, not by a word every earlier
+     * run's seat carried too.
+     */
+    const hostName = under(`Host${Date.now().toString(36)}`);
     const created = await host.post("/api/games/live", {
-      data: { blackName: "Host", size: 9, open: true },
+      data: { blackName: hostName, size: 9, open: true },
     });
     expect(created.status()).toBe(201);
     const game = (await created.json()) as { id: string; blackToken: string };
@@ -121,7 +137,7 @@ test.describe("open seats", () => {
     const guest = await browser.newContext({ storageState: PLAYER_STATE });
     const page = await guest.newPage();
     await page.goto("/games");
-    const row = page.getByTestId("open-game").filter({ hasText: "Host" });
+    const row = page.getByTestId("open-game").filter({ hasText: hostName });
     await expect(row).toBeVisible();
     // Taking a seat posts to the API from the browser, so the button does
     // nothing at all until React is holding it.
@@ -132,14 +148,15 @@ test.describe("open seats", () => {
 
     // The seat is gone from the board, and a second taker is refused.
     await page.goto("/games");
-    await expect(page.getByTestId("open-game").filter({ hasText: "Host" })).toHaveCount(0);
+    await expect(page.getByTestId("open-game").filter({ hasText: hostName })).toHaveCount(0);
     expect((await request.post(`/api/games/${game.id}/sit`)).status()).toBe(409);
     await guest.close();
   });
 
   test("a game set up with no resigning refuses it", async ({ request }) => {
+    const stamp = Date.now().toString(36);
     const created = await request.post("/api/games/live", {
-      data: { blackName: "Kai", whiteName: "Mio", size: 9, allowResign: false },
+      data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9, allowResign: false },
     });
     const game = (await created.json()) as { id: string; whiteToken: string };
     const refused = await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });

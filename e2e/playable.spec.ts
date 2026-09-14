@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { namesPlayedUnder } from "./tidy";
+
 /**
  * Games that can actually be won, resigned and finished.
  *
@@ -20,12 +22,20 @@ import { expect, test } from "@playwright/test";
 
 type Made = { id: string; blackToken: string; whiteToken: string };
 
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
+
+/** Distinct per game, so two made in one millisecond are still two names. */
+let games = 0;
+
 async function start(
   request: import("@playwright/test").APIRequestContext,
   body: Record<string, unknown>,
 ): Promise<Made> {
+  games += 1;
+  const stamp = `${Date.now().toString(36)}${games}`;
   const made = await request.post("/api/games/live", {
-    data: { blackName: "Aki", whiteName: "Bo", opener: "black", rated: false, ...body },
+    data: { blackName: under(`Aki ${stamp}`), whiteName: under(`Bo ${stamp}`), opener: "black", rated: false, ...body },
   });
   expect(made.status(), await made.text()).toBe(201);
   return (await made.json()) as Made;
@@ -83,8 +93,14 @@ test.describe("a game can be played to its end", () => {
     const first = await start(request, { variant: "tictactoe", size: 3 });
     await play(request, first, "black", 0, 0);
 
+    const stamp = Date.now().toString(36);
     const again = await request.post("/api/games/live", {
-      data: { from: { id: first.id, move: 1 }, blackName: "Aki", whiteName: "Bo", rated: false },
+      data: {
+        from: { id: first.id, move: 1 },
+        blackName: under(`Aki ${stamp}`),
+        whiteName: under(`Bo ${stamp}`),
+        rated: false,
+      },
     });
     expect(again.status(), await again.text()).toBe(201);
     const forked = (await again.json()) as Made;
@@ -101,13 +117,14 @@ test.describe("a game can be played to its end", () => {
      * door rather than of the function — a game that cannot be won is
      * refused with a reason, not written and discovered six moves later.
      */
+    const stamp = Date.now().toString(36);
     const refused = await request.post("/api/games/live", {
       data: {
         variant: "freestyle",
         size: 9,
         winLength: 19,
-        blackName: "Aki",
-        whiteName: "Bo",
+        blackName: under(`Aki ${stamp}`),
+        whiteName: under(`Bo ${stamp}`),
         opener: "black",
         rated: false,
       },

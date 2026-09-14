@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { openBoardRules } from "./support";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. */
+const under = namesPlayedUnder();
 
 /**
  * The rules of a game being played are said, never offered.
@@ -22,13 +24,18 @@ const tidyAway = gamesMade();
  * every stage, and folds what it states under a line saying what it is.
  */
 test.describe("the rules beside a board", () => {
+  /** Distinct per game, so two made in one millisecond are still two names. */
+  let made = 0;
+
   async function game(request: import("@playwright/test").APIRequestContext) {
+    made += 1;
+    const stamp = `${Date.now().toString(36)}${made}`;
     const response = await request.post("/api/games/live", {
       data: {
         variant: "freestyle",
         size: 9,
-        blackName: `Kaya ${Date.now().toString(36)}`,
-        whiteName: "Sumi",
+        blackName: under(`Kaya ${stamp}`),
+        whiteName: under(`Sumi ${stamp}`),
         moveTimeMs: 300000,
         timeoutPenalty: "turn",
         allowResign: false,

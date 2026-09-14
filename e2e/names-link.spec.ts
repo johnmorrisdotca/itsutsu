@@ -2,6 +2,10 @@ import { expect, request as playwrightRequest, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /*
  * Names are matched by what the site PRINTS, through the same function the
@@ -40,7 +44,7 @@ test.describe("a person's name leads to their page", () => {
     const page = await context.newPage();
 
     const made = await context.request.post("/api/games/live", {
-      data: { blackName: me.name, whiteName: them.name, size: 9, winLength: 3 },
+      data: { blackName: under(me.name), whiteName: under(them.name), size: 9, winLength: 3 },
     });
     expect(made.status()).toBe(201);
     const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };

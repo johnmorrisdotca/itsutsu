@@ -9,10 +9,12 @@ import {
   startAndBegin,
 } from "./support";
 import { memberContext } from "./members";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. */
+const under = namesPlayedUnder();
 
 /**
  * The board is chosen before the game exists.
@@ -141,7 +143,7 @@ test.describe("choosing the board before the game exists", () => {
       name: "Board Waiting",
     });
     const waited = await waiting.request.post("/api/games/live", {
-      data: { variant: "freestyle", size: 9, blackName: `Waiting ${stamp}`, moveTimeMs: WEEK, open: true },
+      data: { variant: "freestyle", size: 9, blackName: under(`Waiting ${stamp}`), moveTimeMs: WEEK, open: true },
     });
     tidyAway(((await waited.json()) as { id: string }).id);
     await waiting.close();
@@ -165,7 +167,7 @@ test.describe("choosing the board before the game exists", () => {
       name: "Board Poster",
     });
     const posted = await poster.request.post("/api/games/live", {
-      data: { variant: "freestyle", size: 9, blackName: `Poster ${stamp}`, moveTimeMs: WEEK, open: true },
+      data: { variant: "freestyle", size: 9, blackName: under(`Poster ${stamp}`), moveTimeMs: WEEK, open: true },
     });
     expect(posted.status()).toBe(201);
     tidyAway(((await posted.json()) as { id: string }).id);

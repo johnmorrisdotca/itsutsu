@@ -2,15 +2,22 @@ import { expect, test } from "@playwright/test";
 
 import { GAME_COPY } from "../src/components/game/game.constants";
 import { ready } from "./support";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** The games the Play apart case makes, taken away when the file finishes. */
 const tidyAway = gamesMade();
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
+
+/** Distinct per game, so two made in one millisecond are still two names. */
+let made = 0;
 
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(request: import("@playwright/test").APIRequestContext) {
+  made += 1;
+  const stamp = `${Date.now().toString(36)}${made}`;
   const response = await request.post("/api/games/live", {
-    data: { blackName: "Kai", whiteName: "Mio", size: 9 },
+    data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9 },
   });
   expect(response.status()).toBe(201);
   return response.json() as Promise<{

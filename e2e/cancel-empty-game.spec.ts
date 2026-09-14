@@ -1,5 +1,16 @@
 import { expect, test } from "@playwright/test";
 
+import { namesPlayedUnder } from "./tidy";
+
+/**
+ * The name black plays under, which outlives the game. Only black's: white is
+ * Dan, the computer player this file is about, and his standing is his own.
+ */
+const under = namesPlayedUnder();
+
+/** Distinct per game, so two made in one millisecond are still two names. */
+let games = 0;
+
 /**
  * Calling off a game nothing has happened in.
  *
@@ -11,11 +22,13 @@ import { expect, test } from "@playwright/test";
  * never rates the game at all. That is what these check.
  */
 async function emptyGameAgainstDan(request: import("@playwright/test").APIRequestContext) {
+  games += 1;
+  const stamp = `${Date.now().toString(36)}${games}`;
   const made = await request.post("/api/games/live", {
     data: {
       variant: "freestyle",
       size: 9,
-      blackName: "Someone",
+      blackName: under(`Someone ${stamp}`),
       whiteName: "Dan",
       opener: "black",
       rated: true,

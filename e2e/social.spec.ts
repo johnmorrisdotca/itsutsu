@@ -4,14 +4,23 @@ import { playerSlug } from "../src/lib/rating/playerKey";
 import { removePlayedUnder } from "./members";
 import { RATED_TO_SETTLE, playAt, playRatedGames, ready } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
+
+/** Distinct per game, so two made in one millisecond are still two names. */
+let made = 0;
 
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(
   request: import("@playwright/test").APIRequestContext,
   extra: Record<string, unknown> = {},
 ) {
+  made += 1;
+  const stamp = `${Date.now().toString(36)}${made}`;
   const response = await request.post("/api/games/live", {
-    data: { blackName: "Kai", whiteName: "Mio", size: 9, ...extra },
+    data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9, ...extra },
   });
   expect(response.status()).toBe(201);
   return response.json() as Promise<{ id: string; blackToken: string; whiteToken: string }>;

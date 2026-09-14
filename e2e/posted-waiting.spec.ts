@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-import { removeGame } from "./tidy";
+import { namesPlayedUnder, removeGame } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * A seat posted for anyone reads as waiting, not as a game under way.
@@ -16,7 +19,13 @@ import { removeGame } from "./tidy";
 test.describe("a seat posted for anyone", () => {
   test("says it is waiting, and says the first move is optional", async ({ page }) => {
     const started = await page.request.post("/api/games/live", {
-      data: { blackName: "Waiting Poster", variant: "freestyle", size: 9, open: true, moveTimeMs: null },
+      data: {
+        blackName: under(`Waiting Poster ${Date.now().toString(36)}`),
+        variant: "freestyle",
+        size: 9,
+        open: true,
+        moveTimeMs: null,
+      },
     });
     expect(started.status(), await started.text()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
@@ -41,7 +50,13 @@ test.describe("a seat posted for anyone", () => {
 
   test("goes back to saying whose move it is once somebody sits down", async ({ page, browser, baseURL }) => {
     const started = await page.request.post("/api/games/live", {
-      data: { blackName: "Answered Poster", variant: "freestyle", size: 9, open: true, moveTimeMs: null },
+      data: {
+        blackName: under(`Answered Poster ${Date.now().toString(36)}`),
+        variant: "freestyle",
+        size: 9,
+        open: true,
+        moveTimeMs: null,
+      },
     });
     const game = (await started.json()) as { id: string; blackToken: string };
 

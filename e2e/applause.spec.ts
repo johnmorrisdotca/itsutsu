@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
 import { ready } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * A finished game is something anyone may say was worth playing.
@@ -10,7 +14,7 @@ test.describe("applause on a finished game", () => {
   test("anyone signed in may leave one mark, change it, and take it back", async ({ browser, baseURL, request }) => {
     const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { blackName: `Clap ${stamp}`, whiteName: `Foil ${stamp}`, size: 9 },
+      data: { blackName: under(`Clap ${stamp}`), whiteName: under(`Foil ${stamp}`), size: 9 },
     });
     const game = (await started.json()) as { id: string; whiteToken: string };
     expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status()).toBe(200);
@@ -45,7 +49,10 @@ test.describe("applause on a finished game", () => {
   });
 
   test("a game still being played takes none, and a stranger is asked to sign in", async ({ page, request }) => {
-    const started = await request.post("/api/games/live", { data: { blackName: "A", whiteName: "B", size: 9 } });
+    const stamp = Date.now().toString(36);
+    const started = await request.post("/api/games/live", {
+      data: { blackName: under(`A ${stamp}`), whiteName: under(`B ${stamp}`), size: 9 },
+    });
     const game = (await started.json()) as { id: string };
     const early = await request.post(`/api/games/${game.id}/applause`, { data: { emoji: "👏" } });
     expect(early.status()).toBe(422);

@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. */
+const under = namesPlayedUnder();
 
 /**
  * A shared game is played on a board it has.
@@ -16,8 +18,9 @@ const tidyAway = gamesMade();
  */
 test.describe("the board a game is played on", () => {
   test("the panel offers a Reversi game only the board Reversi has", async ({ page, request }) => {
+    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { variant: "reversi", blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 8 },
+      data: { variant: "reversi", blackName: under(`Kaya ${stamp}`), whiteName: under(`Sumi ${stamp}`), size: 8 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
@@ -47,8 +50,9 @@ test.describe("the board a game is played on", () => {
      * — the one where a panel offering a list could disagree with the board being
      * drawn. It states the board instead, which cannot.
      */
+    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { variant: "freestyle", blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 15 },
+      data: { variant: "freestyle", blackName: under(`Kaya ${stamp}`), whiteName: under(`Sumi ${stamp}`), size: 15 },
     });
     const game = (await started.json()) as { id: string; blackToken: string };
     tidyAway(game.id);
@@ -60,8 +64,9 @@ test.describe("the board a game is played on", () => {
   });
 
   test("a size the game does not have is not written down, whoever asks", async ({ request }) => {
+    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { variant: "reversi", blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 8 },
+      data: { variant: "reversi", blackName: under(`Kaya ${stamp}`), whiteName: under(`Sumi ${stamp}`), size: 8 },
     });
     const game = (await started.json()) as { id: string; blackToken: string };
     tidyAway(game.id);
@@ -91,8 +96,9 @@ test.describe("the board a game is played on", () => {
   });
 
   test("and a game asked for on the wrong board is created on the right one", async ({ request }) => {
+    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { variant: "reversi", blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 19 },
+      data: { variant: "reversi", blackName: under(`Kaya ${stamp}`), whiteName: under(`Sumi ${stamp}`), size: 19 },
     });
     const game = (await started.json()) as { id: string };
     tidyAway(game.id);

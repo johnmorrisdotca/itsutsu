@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. */
+const under = namesPlayedUnder();
 
 /**
  * A game somebody plays against themselves says so.
@@ -20,7 +22,7 @@ test.describe("a game against yourself", () => {
     // differently on purpose: the ladder folds them together and so does this.
     const name = `Solo ${Date.now().toString(36)}`;
     const started = await request.post("/api/games/live", {
-      data: { blackName: name, whiteName: `  ${name.toUpperCase()} `, size: 9 },
+      data: { blackName: under(name), whiteName: `  ${name.toUpperCase()} `, size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
@@ -58,7 +60,7 @@ test.describe("a game against yourself", () => {
   test("says nothing of the kind about a game between two people", async ({ page, request }) => {
     const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { blackName: `Kaya ${stamp}`, whiteName: `Sumi ${stamp}`, size: 9 },
+      data: { blackName: under(`Kaya ${stamp}`), whiteName: under(`Sumi ${stamp}`), size: 9 },
     });
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
     tidyAway(game.id);

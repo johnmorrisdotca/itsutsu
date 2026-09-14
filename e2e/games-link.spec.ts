@@ -3,6 +3,10 @@ import { expect, test } from "@playwright/test";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_DISPLAY } from "../src/lib/gomoku/variants.constants";
 import { slugFor } from "../src/lib/gomoku/slugs";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * Every game's name on the site leads to that game.
@@ -116,12 +120,13 @@ test.describe("a game's name leads to that game", () => {
      * same answer at a better address: the rules are a document, and where the
      * games went is a question about the game.
      */
+    const stamp = Date.now().toString(36);
     const made = await request.post("/api/games/live", {
       data: {
         variant: "tictactoe",
         size: 3,
-        blackName: "Aki",
-        whiteName: "Bo",
+        blackName: under(`Aki ${stamp}`),
+        whiteName: under(`Bo ${stamp}`),
         opener: "black",
         rated: false,
       },

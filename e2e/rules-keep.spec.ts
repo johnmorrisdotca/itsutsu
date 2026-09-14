@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /**
  * Changing one rule changes one rule.
@@ -20,8 +20,10 @@ import { gamesMade } from "./tidy";
  */
 test.describe("a rules change keeps what it was not asked about", () => {
   const mine = gamesMade();
+  /** And the names they were played under, which outlive the games. See `namesPlayedUnder`. */
+  const under = namesPlayedUnder();
 
-  const change = (id: string, token: string, variant: string) => ({
+  const change =(id: string, token: string, variant: string) => ({
     token,
     variant,
     size: 15,
@@ -35,13 +37,14 @@ test.describe("a rules change keeps what it was not asked about", () => {
 
   for (const asked of [4, 6]) {
     test(`keeps a line of ${asked} that the game was set to`, async ({ request }) => {
+      const stamp = Date.now().toString(36);
       const made = await request.post("/api/games/live", {
         data: {
           variant: "freestyle",
           size: 15,
           winLength: asked,
-          blackName: "Keeper Black",
-          whiteName: "Keeper White",
+          blackName: under(`Keeper Black ${stamp}`),
+          whiteName: under(`Keeper White ${stamp}`),
         },
       });
       expect(made.status()).toBe(201);
@@ -69,12 +72,13 @@ test.describe("a rules change keeps what it was not asked about", () => {
      * clock, with a draw limit and a posted seat came back rated, resignable,
      * per-move, unlimited and off the board, in one press.
      */
+    const stamp = Date.now().toString(36);
     const made = await request.post("/api/games/live", {
       data: {
         variant: "freestyle",
         size: 9,
-        blackName: "Keeper Black",
-        whiteName: "Keeper White",
+        blackName: under(`Keeper Black ${stamp}`),
+        whiteName: under(`Keeper White ${stamp}`),
         rated: false,
         allowResign: false,
         clockMode: "game",
@@ -136,13 +140,14 @@ test.describe("a rules change keeps what it was not asked about", () => {
      * not a game a request may argue with. Tournament Gomoku is exactly five,
      * so asking for six is refused at the door and refused again here.
      */
+    const stamp = Date.now().toString(36);
     const made = await request.post("/api/games/live", {
       data: {
         variant: "standard",
         size: 15,
         winLength: 6,
-        blackName: "Keeper Black",
-        whiteName: "Keeper White",
+        blackName: under(`Keeper Black ${stamp}`),
+        whiteName: under(`Keeper White ${stamp}`),
       },
     });
     expect(made.status()).toBe(201);

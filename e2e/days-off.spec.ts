@@ -3,6 +3,10 @@ import { PrismaClient } from "@prisma/client";
 
 import { memberContext, seedMember } from "./members";
 import { ready } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * The days of the week somebody does not play.
@@ -74,8 +78,8 @@ test.describe("days I do not play", () => {
 
     const started = await request.post("/api/games/live", {
       data: {
-        blackName: sleeper.name,
-        whiteName: `Waker ${stamp}`,
+        blackName: under(sleeper.name),
+        whiteName: under(`Waker ${stamp}`),
         size: 9,
         moveTimeMs: 86_400_000,
       },

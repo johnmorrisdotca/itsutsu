@@ -1,5 +1,9 @@
 import { expect, request as playwrightRequest, test } from "@playwright/test";
 import { ready } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * An embedded board reading live data from the server.
@@ -114,12 +118,12 @@ test.describe("an embed reading server data", () => {
 
   test("reports a named player's record", async ({ request, browser }) => {
     const dataToken = await mint(request, "data");
-    const name = `Sim${Date.now()}`;
+    const name = under(`Sim${Date.now()}`);
 
     // Record a finished game under a known name, through the operator session.
     const recorded = await request.post("/api/games", {
       data: {
-        blackName: name, whiteName: "Opponent", size: 15, winLength: 5,
+        blackName: name, whiteName: under(`Opponent ${Date.now().toString(36)}`), size: 15, winLength: 5,
         variant: "freestyle", obstacles: "none", opener: "black",
         result: "black", winner: "black",
         moves: [

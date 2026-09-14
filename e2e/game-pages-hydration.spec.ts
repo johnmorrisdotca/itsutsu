@@ -10,6 +10,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { removeMember, seedMember } from "./members";
 import { ADMIN_STATE, ready, watchForCrashes } from "./support";
+import { namesPlayedUnder } from "./tidy";
 
 /**
  * A GAME'S PAGES MUST NOT DISAGREE WITH THEMSELVES FOR A READER ELSEWHERE.
@@ -45,6 +46,13 @@ const READERS = [
 
 type Reader = (typeof READERS)[number];
 type Made = { id: string; blackToken: string; whiteToken: string };
+
+/**
+ * The names this file's games are played under, which outlive the games: most
+ * of them are resigned, and a rated result writes a `Player` row keyed by each
+ * seat's name. See `namesPlayedUnder`.
+ */
+const under = namesPlayedUnder();
 
 async function makeGame(request: APIRequestContext, data: Record<string, unknown>): Promise<Made> {
   const made = await request.post("/api/games/live", { data: { size: 9, ...data } });
@@ -114,8 +122,8 @@ for (const reader of READERS) {
        * which a day-long clock would only show at a minute boundary.
        */
       const game = await makeGame(request, {
-        blackName: `Clock ${stamp}`,
-        whiteName: `Hand ${stamp}`,
+        blackName: under(`Clock ${stamp}`),
+        whiteName: under(`Hand ${stamp}`),
         moveTimeMs: 5 * 60_000,
       });
       const context = await readerContext(browser, reader, true);
@@ -143,7 +151,7 @@ for (const reader of READERS) {
       const away = { email: `away-${stamp}@example.test`, name: `Away ${stamp}` };
       await seedMember(away);
       const prisma = new PrismaClient();
-      const game = await makeGame(request, { blackName: `Stay ${stamp}`, whiteName: away.name });
+      const game = await makeGame(request, { blackName: under(`Stay ${stamp}`), whiteName: under(away.name) });
       const context = await readerContext(browser, reader, true);
       try {
         /*
@@ -179,7 +187,7 @@ for (const reader of READERS) {
 
     test("a finished game's replay, at its end and at its start", async ({ browser, request }) => {
       const stamp = Date.now().toString(36);
-      const game = await finishedGame(request, { blackName: `Filed ${stamp}`, whiteName: `Kept ${stamp}` });
+      const game = await finishedGame(request, { blackName: under(`Filed ${stamp}`), whiteName: under(`Kept ${stamp}`) });
       const context = await readerContext(browser, reader, true);
       try {
         const end = await hydratesCleanly(
@@ -221,7 +229,7 @@ for (const reader of READERS) {
 
     test("the record of games", async ({ browser, request }) => {
       const stamp = Date.now().toString(36);
-      await finishedGame(request, { blackName: `Listed ${stamp}`, whiteName: `Rowed ${stamp}` });
+      await finishedGame(request, { blackName: under(`Listed ${stamp}`), whiteName: under(`Rowed ${stamp}`) });
       const context = await readerContext(browser, reader, true);
       try {
         /*

@@ -8,6 +8,10 @@ import {
   openSetUpPage,
   startAndBegin,
 } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /*
  * This file was called "starting a game is one sentence" and tested a one-line
@@ -102,13 +106,13 @@ test.describe("asking for a game", () => {
 
     const theirs = await browser.newContext({ storageState: PLAYER_STATE });
     const posted = await theirs.request.post("/api/games/live", {
-      data: { blackName: `Beside ${stamp}`, variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
+      data: { blackName: under(`Beside ${stamp}`), variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
     });
     expect(posted.status()).toBe(201);
 
     // And mine, posted after theirs, so it is the newer of the two.
     const own = await request.post("/api/games/live", {
-      data: { blackName: `Mine ${stamp}`, variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
+      data: { blackName: under(`Mine ${stamp}`), variant: "trapThree", moveTimeMs: Number(SEVEN_DAYS), open: true },
     });
     expect(own.status()).toBe(201);
 

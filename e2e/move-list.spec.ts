@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
 import { ready } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
+
+/** Distinct per game, so two made in one millisecond are still two names. */
+let games = 0;
 
 /**
  * The moves of a game, where a game is read.
@@ -12,12 +19,14 @@ import { ready } from "./support";
  * of the pages a real game is read on.
  */
 async function playedGame(request: import("@playwright/test").APIRequestContext) {
+  games += 1;
+  const stamp = `${Date.now().toString(36)}${games}`;
   const made = await request.post("/api/games/live", {
     data: {
       variant: "tictactoe",
       size: 3,
-      blackName: "Aki",
-      whiteName: "Bo",
+      blackName: under(`Aki ${stamp}`),
+      whiteName: under(`Bo ${stamp}`),
       opener: "black",
       rated: false,
     },

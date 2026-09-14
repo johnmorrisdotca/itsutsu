@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { PLAYER_STATE } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * A seat's link is only shown while that seat is still to be given out.
@@ -18,7 +22,7 @@ import { PLAYER_STATE } from "./support";
 test.describe("seat links", () => {
   test("both are offered while both seats are empty, and the taken one goes", async ({ browser, request }) => {
     const started = await request.post("/api/games/live", {
-      data: { blackName: "Poster", whiteName: "", size: 9 },
+      data: { blackName: under(`Poster ${Date.now().toString(36)}`), whiteName: "", size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
@@ -57,7 +61,7 @@ test.describe("seat links", () => {
      * only a credential for somebody to read over your shoulder.
      */
     const started = await request.post("/api/games/live", {
-      data: { blackName: "Poster", whiteName: "", size: 9 },
+      data: { blackName: under(`Poster ${Date.now().toString(36)}`), whiteName: "", size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
@@ -85,7 +89,7 @@ test.describe("seat links", () => {
     // An open game's whole purpose is that its seat is still going out, so
     // the backfill and the rule both have to leave a posted seat alone.
     const started = await request.post("/api/games/live", {
-      data: { blackName: "Poster", whiteName: "", size: 9, open: true },
+      data: { blackName: under(`Poster ${Date.now().toString(36)}`), whiteName: "", size: 9, open: true },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };

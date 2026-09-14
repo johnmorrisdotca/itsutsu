@@ -3,6 +3,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { playerSlug } from "../src/lib/rating/playerKey";
 import { memberContext } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /*
  * Names are matched by what the site PRINTS, through the same function the
@@ -81,7 +85,7 @@ test.describe("every name leads to the player", () => {
 
     // A shared game, resigned, so both names have a record and a standing.
     const started = await request.post("/api/games/live", {
-      data: { blackName: me.name, whiteName: opponent, size: 9 },
+      data: { blackName: under(me.name), whiteName: under(opponent), size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; whiteToken: string };

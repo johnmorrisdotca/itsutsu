@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * What you can do about somebody, on the page about them.
@@ -93,7 +95,7 @@ test.describe("the actions on a player's page", () => {
 
     // Give them a finished game, so there is something to read down through.
     const started = await request.post("/api/games/live", {
-      data: { blackName: them.name, whiteName: `Other ${stamp}`, size: 9 },
+      data: { blackName: under(them.name), whiteName: under(`Other ${stamp}`), size: 9 },
     });
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
     tidyAway(game.id);
