@@ -4,7 +4,11 @@ import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import type { Opponent } from "@/lib/social/opponents";
 
+import type { RulesDraft } from "./rulesDraft";
 import type { SetUpOpponent } from "./setUp.types";
+
+/** The last page before a game draws the board, and the opening, the set-up chose. */
+export type DoorstepPicturesProps = { rules: RulesDraft };
 
 /**
  * The shapes behind the set-up screen's tile pickers — the opening, whether it

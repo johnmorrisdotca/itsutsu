@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { BOARD_MARK_PX, DOORSTEP_MARK_PX } from "@/components/live/picker.constants";
 import { ALL_BOARD_SIZES, BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 
 /**
@@ -27,7 +28,13 @@ import { ALL_BOARD_SIZES, BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constan
  * - the board picker draws one mark, at the one big size, then the name,
  *   with nothing inside the block decided by how many sizes there are;
  * - the old small mark and the old lone-board mark are gone, since there is
- *   only one size of mark to draw;
+ *   only one size of mark on the set-up screen;
+ * - the last page before a game — the doorstep, at /games/<game>/begin, for
+ *   every game and every way in — draws the chosen board the same way,
+ *   larger: the mark, then the name, no size line. John: "Checkers page, and
+ *   all pages like it, should use the Board Icon... since this is the last
+ *   page before the game... perhaps we use new larger icons?" It is held to
+ *   the rule here rather than excused from it;
  * - every size a game is played on has a name to print under its number.
  */
 
@@ -41,6 +48,9 @@ import { ALL_BOARD_SIZES, BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constan
 const SIZE_TEXT_BESIDE_MARK: Record<string, string> = {};
 
 const PICKER = "src/components/live/BoardPicker.tsx";
+/** The pictures on the last page before a game, and the page that draws them. */
+const DOORSTEP_PICTURES = "src/components/live/DoorstepPictures.tsx";
+const DOORSTEP = "src/components/live/Doorstep.tsx";
 
 function filesUnder(dir: string): string[] {
   const out: string[] = [];
@@ -65,14 +75,18 @@ const SOURCES = filesUnder("src")
   .filter((path) => !path.endsWith(".test.ts") && !path.endsWith(".test.tsx"))
   .map((path) => ({ path, source: code(readFileSync(path, "utf8")) }));
 
-/** `{size}×{size}`, `${side}×${side}` — a size printed as text, whatever the variable is called. */
-const SIZE_TEXT = /\$?\{([\w.]+)\}×\$?\{\1\}/;
+/**
+ * `{size}×{size}`, `${side}×${side}`, `{size} × {size}` — a size printed as
+ * text, whatever the variable is called and however it is spaced.
+ */
+const SIZE_TEXT = /\$?\{([\w.]+)\}\s*×\s*\$?\{\1\}/;
 
 describe("no board-size mark has its size printed beside it", () => {
   const callers = SOURCES.filter((file) => file.source.includes("<BoardSizeMark"));
 
   it("finds the callers it is checking", () => {
     expect(callers.map((file) => file.path)).toContain(PICKER);
+    expect(callers.map((file) => file.path)).toContain(DOORSTEP_PICTURES);
   });
 
   it.each(callers.map((file) => [file.path, file.source] as const))("%s draws the big number and no size line", (path, source) => {
@@ -130,6 +144,41 @@ describe("the board picker draws one block, whatever the number of sizes", () =>
       const using = SOURCES.filter((file) => file.source.includes(retired)).map((file) => file.path);
       expect(using, retired).toEqual([]);
     }
+  });
+});
+
+describe("the last page before a game draws the chosen board the same way, larger", () => {
+  const pictures = SOURCES.find((file) => file.path === DOORSTEP_PICTURES)?.source ?? "";
+  const doorstep = SOURCES.find((file) => file.path === DOORSTEP)?.source ?? "";
+
+  it("has the pictures to check", () => {
+    expect(pictures.length, `${DOORSTEP_PICTURES} has moved`).toBeGreaterThan(200);
+  });
+
+  it("is drawn on the doorstep, not merely present in the tree", () => {
+    expect(doorstep, `${DOORSTEP} no longer draws the chosen board`).toMatch(/<DoorstepPictures\b/);
+  });
+
+  it("draws the board once, as the big numbered mark at the doorstep's size", () => {
+    const marks = pictures.match(/<BoardSizeMark\b[^>]*>/g) ?? [];
+    expect(marks).toHaveLength(1);
+    expect(marks[0]).toMatch(/\bpx=\{DOORSTEP_MARK_PX\}/);
+    expect(marks[0]).toContain('words="none"');
+  });
+
+  it("is larger than the block the reader pressed, and is not a second set of icons", () => {
+    expect(DOORSTEP_MARK_PX).toBeGreaterThan(BOARD_MARK_PX);
+  });
+
+  it("draws the mark, then the board's name, with no size line", () => {
+    const mark = pictures.indexOf("<BoardSizeMark");
+    const name = pictures.indexOf("<Paired", mark);
+    expect(mark, "the mark").toBeGreaterThanOrEqual(0);
+    expect(name, "the name after the mark").toBeGreaterThan(mark);
+    // Between the mark and its name: nothing printed but the caption's own markup.
+    const between = pictures.slice(pictures.indexOf("/>", mark) + 2, name);
+    expect(between, "text between the doorstep's board and its name").not.toMatch(/>\s*\{(?!\/\*)[^}]*\}\s*</);
+    expect(pictures, "a size line beside the doorstep's board").not.toMatch(SIZE_TEXT);
   });
 });
 
