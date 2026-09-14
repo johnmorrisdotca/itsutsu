@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 
+import type { XpToastHold } from "@/lib/xp/xpFlash";
+
 /** Where this browser remembers a result card was closed, one entry per game. */
 const KEY_PREFIX = "itsutsu.result-card.v1:";
 
@@ -29,6 +31,39 @@ function rememberClosed(gameId: string): void {
   } catch {
     // Forgetting is survivable: the card shows once more next time.
   }
+}
+
+/**
+ * Per batch of toasts (its flash stamp), whether this page held it for the card.
+ * Decided at the first look and kept, so closing the card — which marks the game
+ * closed — does not then release the toasts over the board the reader is looking
+ * at: the card's XP line has already said them.
+ */
+const holds = new Map<string, boolean>();
+
+function holdDecided(hold: XpToastHold): boolean {
+  const known = holds.get(hold.at);
+  if (known !== undefined) return known;
+  const decided = !closedBefore(hold.gameId);
+  holds.set(hold.at, decided);
+  return decided;
+}
+
+/**
+ * WHETHER THE MASTHEAD HOLDS A GAME-END BATCH OF TOASTS, because the result card
+ * over that game is saying the same XP.
+ *
+ * Held on the server and while hydrating, so the toasts never flash up before the
+ * browser can tell. In the browser, held exactly when the card will open: a card
+ * this browser closed on an earlier visit does not open, and then the toasts are
+ * shown as they always were, so nothing is lost.
+ */
+export function useToastsHeldForCard(hold: XpToastHold | null): boolean {
+  return useSyncExternalStore(
+    never,
+    () => (hold === null ? false : holdDecided(hold)),
+    () => hold !== null,
+  );
 }
 
 /**

@@ -76,7 +76,8 @@ describe("the toast host is mounted once", () => {
     const from = header.indexOf("export async function SiteHeader");
     const body = header.slice(from, header.indexOf("\n}\n", from));
     expect(from).toBeGreaterThan(-1);
-    const mounts = body.match(/<XpFlashToasts\s*\/>/g) ?? [];
+    // With or without the batch a page's result card holds: a prop is not a second mount.
+    const mounts = body.match(/<XpFlashToasts\b[^>]*\/>/g) ?? [];
     const returns = body.match(/return \(/g) ?? [];
     expect(returns.length).toBeGreaterThan(1);
     expect(mounts.length).toBe(returns.length);

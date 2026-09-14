@@ -271,7 +271,10 @@ function FiledMatch({
 
   return (
     <Page width="wide" gap="gap-6">
-      <SiteHeader />
+      {/* The game-end toasts are said by the result card, where it opens — see `XpToasts`. */}
+      <SiteHeader
+        xpHeldBy={card?.xp?.heldFlashAt ? { gameId: card.gameId, at: card.xp.heldFlashAt } : undefined}
+      />
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">

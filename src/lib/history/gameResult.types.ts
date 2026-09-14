@@ -52,8 +52,15 @@ export type ResultCardData = {
   facts: GameResultFacts;
   /** The two names as the page shows them. */
   names: { black: string; white: string };
-  /** XP this reader was paid for this game, or null where there is none to say. */
-  xp: number | null;
+  /**
+   * XP this reader was paid for this game, or null where there is none to say.
+   *
+   * Where the game-end batch has not been shown yet, this IS that batch — the same
+   * total and level note its toasts would have announced — and `heldFlashAt` names
+   * it, so the masthead holds those toasts while the card says them. Otherwise it
+   * is the ledger rows keyed to this game, and `heldFlashAt` is null.
+   */
+  xp: { points: number; level: { name: string; reached: boolean } | null; heldFlashAt: string | null } | null;
   /** Where these two stand now, this game included; null where there is no pair to read. */
   rivalry: RivalryView | null;
   /**

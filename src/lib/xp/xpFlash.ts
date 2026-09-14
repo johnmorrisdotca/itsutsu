@@ -61,6 +61,8 @@ import type { XpEventType } from "./xp.types";
 export type XpFlash = {
   /** When the newest award in it landed, so a clear can be reasoned about. */
   at: string;
+  /** The game this batch was paid for, when it was paid for one. See `flashAboutGame`. */
+  about?: string;
   awards: { type: string; points: number }[];
   /**
    * The level this batch crossed, or the one it left the member within one game
@@ -93,8 +95,33 @@ export type XpToastItem = {
   level?: { name: string; reached: boolean };
 };
 
-/** What the masthead hands its host: the toasts, and the stamp that clears them. */
-export type XpFlashToShow = { at: string; toasts: XpToastItem[] };
+/** What the masthead hands its host: the toasts, the stamp that clears them, and the game they are about. */
+export type XpFlashToShow = { at: string; about: string | null; toasts: XpToastItem[] };
+
+/** A batch of toasts the result card is saying instead: which game, and the stamp that names the batch. */
+export type XpToastHold = { gameId: string; at: string };
+
+/**
+ * THE XP A GAME-END BATCH PAID, AS THE RESULT CARD SAYS IT — or null where the
+ * flash is not about this game.
+ *
+ * The toasts and the card are then the same announcement: the same batch, which
+ * is the ledger rows the game's end wrote, summed as the toasts would have shown
+ * them (awards this deploy cannot explain are dropped by `toToasts` from both),
+ * with the level the batch crossed or came within a game of. `heldFlashAt` is the
+ * stamp the masthead holds those toasts by while the card stands in for them.
+ */
+export function flashAboutGame(
+  flash: XpFlashToShow | null,
+  gameId: string,
+): { points: number; level: { name: string; reached: boolean } | null; heldFlashAt: string } | null {
+  if (flash === null || flash.about !== gameId || flash.toasts.length === 0) return null;
+  return {
+    points: flash.toasts.reduce((total, toast) => total + toast.points, 0),
+    level: flash.toasts.find((toast) => toast.level !== undefined)?.level ?? null,
+    heldFlashAt: flash.at,
+  };
+}
 
 /**
  * The toasts this member is owed, or null if they are owed none.
@@ -121,7 +148,7 @@ export async function xpFlashFor(): Promise<XpFlashToShow | null> {
   const row = await memberRowFor(email);
   const flash = row?.xpFlash as Partial<XpFlash> | null | undefined;
   if (!flash || typeof flash.at !== "string") return null;
-  return { at: flash.at, toasts: toToasts(flash) };
+  return { at: flash.at, about: typeof flash.about === "string" ? flash.about : null, toasts: toToasts(flash) };
 }
 
 /**

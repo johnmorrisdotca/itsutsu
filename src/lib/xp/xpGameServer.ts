@@ -121,6 +121,9 @@ export async function awardFinishedGameXp(
         weekendWeek: isWeekend(now, side.timeZone) ? xpWeekKey(now, side.timeZone) : null,
       }),
       now,
+      /* Which game this batch was for, so the result card can say it rather than
+         a stack of toasts over that game's board. See `flashAboutGame`. */
+      about: game.id,
     });
     /* AFTER the batch, and only because of what it paid. A first game of a
        variant is what can complete the set of thirty-nine, so the question is

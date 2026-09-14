@@ -74,8 +74,15 @@ export function ResultCard({ gameId, facts, names, xp, rivalry, rematch, newGame
             </p>
           ) : null}
           {xp !== null ? (
-            <p className="text-xs font-semibold text-moss" data-testid="result-card-xp">
-              {RESULT_CARD_COPY.xp(xp)}
+            <p
+              className="text-xs font-semibold text-moss"
+              data-testid="result-card-xp"
+              data-level={xp.level === null ? undefined : xp.level.reached ? "reached" : "next"}
+            >
+              {RESULT_CARD_COPY.xp(xp.points)}
+              {xp.level === null
+                ? null
+                : ` · ${xp.level.reached ? RESULT_CARD_COPY.levelUp(xp.level.name) : RESULT_CARD_COPY.nextLevel(xp.level.name)}`}
             </p>
           ) : null}
           {rivalry !== null ? (
