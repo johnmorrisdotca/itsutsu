@@ -1,9 +1,10 @@
-import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
-import { IgnoreButton } from "@/components/mine/IgnoreButton";
 import { RowActions } from "@/components/ui/Controls";
+import { shownName } from "@/lib/rating/shownName";
 import { recencyOf } from "@/lib/social/presence";
 import type { DirectoryEntry } from "@/lib/rating/directoryRows";
+
+import { RowMore } from "./RowMore";
 
 /**
  * What the reader may do about each member of the directory, and how recently
@@ -17,6 +18,10 @@ import type { DirectoryEntry } from "@/lib/rating/directoryRows";
  * gate when the directory learned to sort and page, and this was the seam: it
  * is the one part of a row that is about the READER rather than about the
  * member, and it is the only part with no opinion about the columns.
+ *
+ * THE OFFER OF A GAME IN PLAIN SIGHT, BUDDY AND IGNORE BEHIND "⋯". All three at
+ * the end of every row ran "Challenge" 81 pixels past the table's edge at 1280 —
+ * see `RowMore`, which says what it measured and why this is the shape.
  */
 export function directoryActions(
   me: { email?: string | null } | null,
@@ -31,8 +36,6 @@ export function directoryActions(
       const email = entry.email;
       return (
         <RowActions>
-          <BuddyButton email={email} isBuddy={buddies.has(email)} />
-          <IgnoreButton email={email} ignoring={ignored.has(email)} />
           {/*
             By id, and to the setup screen rather than into a game. A directory
             row is the most likely place for an accidental press on this whole
@@ -40,6 +43,12 @@ export function directoryActions(
             it used to create a game of Gomoku on the spot.
           */}
           <ChallengeButton memberId={entry.id} />
+          <RowMore
+            email={email}
+            name={shownName(entry.name)}
+            isBuddy={buddies.has(email)}
+            ignoring={ignored.has(email)}
+          />
         </RowActions>
       );
     },

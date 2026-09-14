@@ -231,6 +231,7 @@ function OpponentActions({
     <PlayerActions
       compact
       testId="opponent-actions"
+      name={name}
       email={them.email}
       memberId={them.id}
       isBuddy={them.email !== null && opponents.buddies.has(them.email)}

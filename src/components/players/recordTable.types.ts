@@ -56,6 +56,15 @@ export type RecordColumns = {
   actions?: string;
 };
 
+/** A row's lesser actions, behind "⋯": whose row it is, and where they stand with the reader. */
+export type RowMoreProps = {
+  email: string;
+  /** The name as the row shows it (`shownName`), for the button's accessible name. */
+  name: string;
+  isBuddy: boolean;
+  ignoring: boolean;
+};
+
 /** A rating as a row shows it: the number, and which ladder earned it. */
 export type ShownRating = { rating: number; pool: RatingPool };
 
