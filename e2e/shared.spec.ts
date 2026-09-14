@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { GAME_COPY } from "../src/components/game/game.constants";
-import { ready } from "./support";
+import { PLAYER_STATE, ready } from "./support";
 import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** The games the Play apart case makes, taken away when the file finishes. */
@@ -34,8 +34,18 @@ test.describe("a game played from two devices", () => {
   }) => {
     const game = await startGame(request);
 
-    const black = await browser.newContext();
-    const white = await browser.newContext();
+    /*
+     * AN INVITED BROWSER WITH NO ACCOUNT, not a bare `browser.newContext()`,
+     * which inherits the operator's sign-in. Signed in as the operator, black's
+     * board had the operator's whole queue behind it, and a move carries a
+     * board onward to the next game waiting: on a cold server the trace shows
+     * the stone, one `/api/games/mine`, and a navigation to a stranger's
+     * tic-tac-toe game, where "Waiting" was then looked for and "Your move"
+     * was found. An invite identity's queue is its own seat cookies — this
+     * game and nothing else — as in `give-up-from-the-board.spec.ts`.
+     */
+    const black = await browser.newContext({ storageState: PLAYER_STATE });
+    const white = await browser.newContext({ storageState: PLAYER_STATE });
     const blackPage = await black.newPage();
     const whitePage = await white.newPage();
 
@@ -50,6 +60,9 @@ test.describe("a game played from two devices", () => {
     // fifteen seconds for a move that was never made.
     await ready(blackPage, "shared-game");
     await blackPage.getByRole("button", { name: /^E5, empty$/ }).click();
+    await expect(blackPage, "the board wandered off to another game").toHaveURL(
+      new RegExp(`/games/gomoku/match/${game.id}(/|$)`),
+    );
     await expect(blackPage.getByTestId("turn-banner")).toContainText("Waiting");
 
     // White's board catches up on its own, without a reload.
