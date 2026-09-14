@@ -69,24 +69,19 @@ export const XP_TOAST_MAX_SHOWN = 4;
 export const XP_TOAST_GAP = "0.5rem";
 
 /**
- * What a toast says beyond what the award brought with it.
- *
- * The English is fixed and the kanji sits beside it the way every heading's
- * does, through `Paired`. When the dictionary gains these, they move to
- * `PHRASES` and this table goes; until then they are here rather than inline
- * so there is one place to look.
+ * The points as the toast prints them. The only wording that lives here: it
+ * is a number with a sign, the same in every language. Everything else the
+ * toast says — the unit, the level lines, the button, the stack's name — is a
+ * phrase in `PHRASES` (`xp.*`), said in the reader's language. The five used
+ * to be a fixed English table here, which paid a Japanese reader in their
+ * own language and told them about it in somebody else's.
  */
-export const XP_TOAST_COPY = {
-  /** The unit as the toast spells it; the catalogue is what names the currency. */
-  unit: "XP",
-  amount: (points: number) => `+${points}`,
-  /** The stack's name for a screen reader. */
-  region: "Points earned",
-  dismiss: "Dismiss",
-  /** 昇級 — promotion, going up a grade; shown alone to a Japanese reader. */
-  levelUp: { en: "Level up", kanji: "昇級" },
-  nextLevel: (name: string) => `Next level: ${name}`,
-} as const;
+export function xpAmount(points: number): string {
+  return `+${points}`;
+}
+
+/** The kanji beside "Level up", the way every heading on the site keeps one. */
+export const XP_LEVEL_UP_KANJI = "昇級";
 
 /**
  * The look. Colours are the Itsutsu tokens, which already carry their dark

@@ -126,4 +126,33 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "{game}をウィキペディアで読む ↗",
     back: "Read about {game} on Wikipedia ↗",
   },
+
+  /*
+   * The XP toast: the notice that drops in from the top of the page when
+   * points land. 昇級 is the kanji the toast has shown beside "Level up"
+   * since 0.158.4 and still shows there as the heading's mark; it is on this
+   * side of the line because a session wrote it, not John. 経験値 is the
+   * word Japanese games use for experience points; the letters "XP" would
+   * be a name only an English reader knows.
+   */
+  "xp.unit": {
+    text: "経験値",
+    back: "Experience points.",
+  },
+  "xp.pointsEarned": {
+    text: "獲得ポイント",
+    back: "Points earned — the points acquired.",
+  },
+  "xp.dismiss": {
+    text: "閉じる",
+    back: "Close.",
+  },
+  "xp.levelUp": {
+    text: "昇級",
+    back: "Promotion — going up a grade.",
+  },
+  "xp.nextLevel": {
+    text: "次のレベル：{name}",
+    back: "Next level: {name}",
+  },
 };

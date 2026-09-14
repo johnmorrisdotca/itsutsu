@@ -1,5 +1,7 @@
+import type { Speaker } from "@/lib/i18n/i18n";
+
 import {
-  XP_TOAST_COPY as copy,
+  xpAmount,
   XP_TOAST_DWELL_MS,
   XP_TOAST_LEVEL_DWELL_MS,
   XP_TOAST_LINGER_MS,
@@ -114,10 +116,10 @@ export function resumeAfter(remaining: number): number {
  * label, and the level when one was reached. The sentence is on the card for
  * anyone who looks; the announcement is for anyone who cannot.
  */
-export function announcement(points: number, label: string, level?: XpToastItem["level"]): string {
-  const head = `${copy.amount(points)} ${copy.unit}: ${label}.`;
+export function announcement(say: Speaker, points: number, label: string, level?: XpToastItem["level"]): string {
+  const head = `${xpAmount(points)} ${say.say("xp.unit")}: ${label}.`;
   if (level === undefined) return head;
   return level.reached
-    ? `${head} ${copy.levelUp.en}: ${level.name}.`
-    : `${head} ${copy.nextLevel(level.name)}.`;
+    ? `${head} ${say.say("xp.levelUp")}: ${level.name}.`
+    : `${head} ${say.say("xp.nextLevel", { name: level.name })}.`;
 }

@@ -22,6 +22,7 @@ const MET: readonly { prefix: string; seen: string; place: string }[] = [
   { prefix: "site.", seen: "Every screen", place: "footer" },
   { prefix: "filter.", seen: "Most list pages", place: "filter bars on the record and players pages" },
   { prefix: "rules.", seen: "39 rules pages", place: "one per game" },
+  { prefix: "xp.", seen: "After earning points", place: "the notice that drops in from the top of the page" },
 ];
 
 function metBy(key: PhraseKey): { rank: number; seen: string; place: string } {

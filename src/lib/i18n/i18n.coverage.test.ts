@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { DICTIONARIES, OFFERED_LOCALES, languageOptions, speaks } from "./dictionaries";
@@ -186,5 +187,51 @@ describe("the English catalogue", () => {
       expect(PHRASES[key]).not.toContain("Itsutsu");
       expect(PHRASES[key]).not.toContain("五つ");
     }
+  });
+});
+
+/*
+ * The XP toast, which shipped speaking English to everybody.
+ *
+ * 0.158.4 landed it with five fixed strings in `xp.constants.ts` — "XP",
+ * "Level up", "Next level:", "Dismiss", "Points earned" — beside a site that
+ * had a dictionary for exactly this. A reader on ?lang=ja was paid in their
+ * own language and told about it in somebody else's, and nothing here could
+ * see it: the catalogue gate reads what the catalogue HAS, and a word that
+ * never entered it was never missing from it.
+ *
+ * So this reads the toast's own source, comments stripped, and holds it to
+ * two things: every one of its phrases is a catalogue key it actually says,
+ * and nothing it hands a screen reader or prints is a fixed English literal.
+ * Narrow on purpose — the toast is the thing that slipped past — and cheap
+ * to widen to another component the day one does the same.
+ */
+describe("the XP toast speaks from the catalogue", () => {
+  const TOAST_FILES = [
+    "src/components/xp/XpToast.tsx",
+    "src/components/xp/XpToastHost.tsx",
+    "src/components/xp/xpToastQueue.ts",
+    "src/components/xp/xp.constants.ts",
+  ];
+  const TOAST_PHRASES = ["xp.unit", "xp.pointsEarned", "xp.dismiss", "xp.levelUp", "xp.nextLevel"] as const;
+  const source = TOAST_FILES.map((file) => withoutComments(readFileSync(file, "utf8"))).join("\n");
+
+  it("has a phrase for each of the five things it says", () => {
+    for (const key of TOAST_PHRASES) expect(PHRASE_KEYS).toContain(key);
+  });
+
+  it("says each of them through the catalogue", () => {
+    for (const key of TOAST_PHRASES) expect(source, `the toast never says "${key}"`).toContain(`"${key}"`);
+  });
+
+  it("keeps none of the five as fixed English", () => {
+    for (const english of ["XP", "Level up", "Next level", "Dismiss", "Points earned"]) {
+      expect(source, `"${english}" is still a literal in the toast`).not.toContain(`"${english}`);
+    }
+  });
+
+  /* A screen reader's name for a control is copy too, and the easiest to leave in English. */
+  it("names nothing for a screen reader in a fixed string", () => {
+    expect(source).not.toMatch(/aria-label=["']/);
   });
 });

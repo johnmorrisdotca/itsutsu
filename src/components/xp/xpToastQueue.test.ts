@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { speaker } from "@/lib/i18n/i18n";
+
 import {
   XP_TOAST_DWELL_MS,
   XP_TOAST_LEVEL_DWELL_MS,
@@ -168,16 +170,30 @@ describe("how long a toast stays", () => {
 });
 
 describe("what is announced", () => {
+  const english = speaker("en");
+
   it("says the points and the label, once", () => {
-    expect(announcement(25, "First win at Reversi")).toBe("+25 XP: First win at Reversi.");
+    expect(announcement(english, 25, "First win at Reversi")).toBe("+25 XP: First win at Reversi.");
   });
 
   it("adds the level when one was reached, and the next one when it was only approached", () => {
-    expect(announcement(50, "Win at Gomoku", { name: "Shodan", reached: true })).toBe(
+    expect(announcement(english, 50, "Win at Gomoku", { name: "Shodan", reached: true })).toBe(
       "+50 XP: Win at Gomoku. Level up: Shodan.",
     );
-    expect(announcement(50, "Win at Gomoku", { name: "Nidan", reached: false })).toBe(
+    expect(announcement(english, 50, "Win at Gomoku", { name: "Nidan", reached: false })).toBe(
       "+50 XP: Win at Gomoku. Next level: Nidan.",
     );
+  });
+
+  /*
+   * The toast shipped with its five words fixed in English, so a Japanese
+   * reader heard "+50 XP … Level up" from a site otherwise speaking to them.
+   * The unit, the level lines and nothing else come from the dictionary; the
+   * label is the award's own and arrives already in the reader's script.
+   */
+  it("says it in the reader's language", () => {
+    const japanese = speaker("ja");
+    expect(announcement(japanese, 50, "初勝利", { name: "初段", reached: true })).toBe("+50 経験値: 初勝利. 昇級: 初段.");
+    expect(announcement(japanese, 50, "初勝利", { name: "二段", reached: false })).toBe("+50 経験値: 初勝利. 次のレベル：二段.");
   });
 });

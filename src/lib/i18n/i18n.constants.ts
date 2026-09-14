@@ -142,6 +142,18 @@ export const PHRASES = {
   "rules.playThis": "Play {game} →",
   "rules.everyGamePlayed": "Every game of {game} played here",
   "rules.wikipedia": "Read about {game} on Wikipedia ↗",
+
+  /*
+   * The XP toast. It shipped in 0.158.4 with these five as fixed English in
+   * `xp.constants.ts`, so a Japanese reader was paid in their own language
+   * and told about it in somebody else's. The unit is spelt out rather than
+   * left as the letters: "XP" is a name only to an English reader.
+   */
+  "xp.unit": "XP",
+  "xp.pointsEarned": "Points earned",
+  "xp.dismiss": "Dismiss",
+  "xp.levelUp": "Level up",
+  "xp.nextLevel": "Next level: {name}",
 } as const;
 
 /** A phrase the site can say. */
