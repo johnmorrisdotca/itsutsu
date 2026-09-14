@@ -266,7 +266,7 @@ export async function chooseOpening(page: Page, opening: string) {
   await expect(tile).toHaveAttribute("data-chosen", "true");
 }
 
-/** The opening tile that is chosen — or, at a game with one opening, the one stated. */
+/** The opening tile that is chosen — at a game with one opening, the one tile, checked like any chosen one. */
 export function chosenOpening(page: Page) {
   return page.locator('[data-testid="set-up-opening"][data-chosen="true"]');
 }

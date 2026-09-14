@@ -7,7 +7,7 @@ import type { OpeningRule } from "@/lib/gomoku/gomoku.types";
 
 import { OpeningMark } from "./OpeningMark";
 import { PickMark } from "./PickMark";
-import { OPENING_MARK_PX, PICK_CARD, PICK_FACT, PICK_TILES } from "./picker.constants";
+import { OPENING_MARK_PX, PICK_CARD, PICK_TILES } from "./picker.constants";
 import type { OpeningPickerProps } from "./picker.types";
 import { openingsOffered } from "./rulesDraft";
 
@@ -34,23 +34,23 @@ import { openingsOffered } from "./rulesDraft";
 export function OpeningPicker({ value, variant, size, onChange, disabled = false }: OpeningPickerProps) {
   const say = useSpeaker().say;
   const offered = openingsOffered(variant);
-  const only = offered.length === 1 ? offered[0] : null;
+  const only = offered.length === 1;
 
+  /*
+   * ONE OPENING IS A CHOSEN OPENING, drawn as one. A game with a single
+   * opening — Reversi, Halma — was shown as a plain card with no radio and no
+   * check, a fact rather than a picker of one. That is the sole-board fault
+   * John reported on Checkers ("if there is only one board, it should be
+   * checked... like boards with > 1 game type") wearing an opening: beside a
+   * game whose chosen opening carries the check, the lone card read as
+   * unchosen. So a sole opening is the same tile as a chosen opening among
+   * three — the chosen style, the check, a radio group of one that is checked
+   * and announced as such — and `data-only` still says which case it is.
+   */
   return (
     <fieldset className="flex min-w-0 flex-col gap-1.5" data-testid="shared-rules-opening">
       <legend className="mb-0.5 text-sm text-ink-soft">{say("setup.opening")}</legend>
-      {only !== null ? (
-        <div
-          className={`${PICK_FACT} gap-2.5 p-2 sm:max-w-sm`}
-          data-testid="set-up-opening"
-          data-opening={only}
-          data-chosen="true"
-          data-only="true"
-        >
-          <OpeningMark opening={only} size={size} px={OPENING_MARK_PX} />
-          <OpeningWords opening={only} />
-        </div>
-      ) : (
+      {
         <div className={PICK_TILES}>
           {offered.map((opening) => (
             <label
@@ -59,7 +59,7 @@ export function OpeningPicker({ value, variant, size, onChange, disabled = false
               data-testid="set-up-opening"
               data-opening={opening}
               data-chosen={opening === value ? "true" : "false"}
-              data-only="false"
+              data-only={only ? "true" : "false"}
             >
               <input
                 type="radio"
@@ -76,7 +76,7 @@ export function OpeningPicker({ value, variant, size, onChange, disabled = false
             </label>
           ))}
         </div>
-      )}
+      }
     </fieldset>
   );
 }
