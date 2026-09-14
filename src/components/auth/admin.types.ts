@@ -16,7 +16,7 @@ export type WordsSubject = {
    *
    * A date, never the hash. It is what the modal asks the replace question
    * with, and "there is already one" without a date is a question nobody can
-   * weigh — see `ADMIN_WORDS_COPY.replaceQuestion`.
+   * weigh — see `ADMIN_WORDS_COPY.replaceSetOn`.
    */
   phraseSetAt: string | null;
 };

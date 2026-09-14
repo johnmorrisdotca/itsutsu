@@ -61,6 +61,15 @@ describe("resolveMember", () => {
     expect(resolved).toMatchObject({ unknown: false, query: { member: null, player: "Hanako", outcome: "won" } });
   });
 
+  /*
+   * DROPPING AN UNKNOWN ID WIDENED THE ANSWER TO EVERY GAME. A read handed an
+   * unresolved `?member=` naming nobody now says so, rather than reading the
+   * whole record as though the filter had been applied.
+   */
+  it("throws when a read is handed an unresolved id that names nobody", async () => {
+    await expect(withMemberResolved(query("?member=nobody-here"))).rejects.toThrow(/member/);
+  });
+
   it("asks nothing when no member was named", async () => {
     const resolved = await resolveMember(query("?player=Alice"));
     expect(resolved).toMatchObject({ unknown: false, query: { player: "Alice", member: null } });

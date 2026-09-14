@@ -4,6 +4,7 @@ import { CELL, HEAD } from "./PlayerRecord";
 import { Paired } from "@/components/i18n/Paired";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RowActions } from "@/components/ui/Controls";
+import { LocalTime } from "@/components/ui/LocalTime";
 import { SortableHead, type RecordSort } from "./recordSort";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { countText } from "@/lib/rating/figures";
@@ -263,7 +264,13 @@ export function TrailingCells({
             "–"
           ) : (
             <>
-              {new Date(row.joined.at).toLocaleDateString()}
+              {/*
+                Through `LocalTime`, never `toLocaleDateString()` in render: the
+                server drew this in its own language and zone and the browser in
+                the reader's, so the members list disagreed with itself on every
+                load. The first drawing is the UTC date, the same on both sides.
+              */}
+              <LocalTime at={row.joined.at} style="date" />
               {/*
                 A COLOURED MARK AND NOT A PILL, AND THE XP COLUMN IS WHY. The
                 pill was 8 pixels of padding each side and an 8-pixel gap, which

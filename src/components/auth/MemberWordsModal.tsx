@@ -14,7 +14,9 @@ import { WordTiles } from "@/components/mine/WordTiles";
 import { BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP } from "@/components/ui/ui.constants";
 import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 
-import { ADMIN_WORDS_COPY, wordsDate } from "./admin.constants";
+import { LocalTime } from "@/components/ui/LocalTime";
+
+import { ADMIN_WORDS_COPY } from "./admin.constants";
 import type { AdminDrawFields, MemberWordsModalProps } from "./admin.types";
 
 /**
@@ -249,7 +251,14 @@ export function MemberWordsModal({ member, onClose, onSaved }: MemberWordsModalP
             <WordTiles words={emptyArrangement()} mode="kept" />
             <p className="text-base font-semibold">{ADMIN_WORDS_COPY.replaceTitle}</p>
             <p className="text-sm text-ink-soft">
-              {ADMIN_WORDS_COPY.replaceQuestion(setAt === null ? "" : wordsDate(setAt))}
+              {/*
+                The date through `LocalTime`, so it is said in the reader's zone
+                once the browser has the page and never formatted in a render
+                the server also draws.
+              */}
+              {ADMIN_WORDS_COPY.replaceSetOn}
+              {setAt === null ? null : <LocalTime at={setAt} style="date" />}
+              {ADMIN_WORDS_COPY.replaceTakesAway}
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <button
