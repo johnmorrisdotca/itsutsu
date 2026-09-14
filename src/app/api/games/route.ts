@@ -10,6 +10,7 @@ import {
 import { isRefusal } from "@/lib/api/paging";
 import { fetchGameHistoryPage } from "@/lib/history/gameHistory";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
+import { memberUnknownRefusal, resolveMember } from "@/lib/history/recordMember";
 import { gameRecordSchema, recordGame } from "@/lib/history/gameRecord";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 
@@ -41,8 +42,31 @@ export async function GET(request: Request) {
     const tooMany = overLimit(request, "games", RATE_LIMITS.read);
     if (tooMany !== null) return tooMany;
 
-    const query = toGameHistoryQuery(new URL(request.url));
-    if (isRefusal(query)) return badRequest(query.error);
+    const parsed = toGameHistoryQuery(new URL(request.url));
+    if (isRefusal(parsed)) return badRequest(parsed.error);
+
+    /*
+     * AN ID THAT NAMES NOBODY IS REFUSED, and by name, the way an unknown sort
+     * column is.
+     *
+     * It used to be dropped: `?member=<an id nobody has>` resolved to no name,
+     * the query went on with neither `member` nor `player`, and the answer was
+     * EVERY game — a narrowing lost in silence, with a 200 saying it had been
+     * honoured. A caller reading that cannot tell "this member's record" from
+     * "the whole record", which is the one thing a filter's answer must make
+     * plain.
+     *
+     * Refused rather than answered with an empty page, because an empty page is
+     * a plausible answer too — "this member has played nothing" — and the id
+     * names no member to have played nothing. A 400 is what this route already
+     * says to a value it cannot honour.
+     *
+     * The /history PAGE degrades instead (`RecordPage`): it shows the record
+     * with a line saying the member could not be found, for the reason its own
+     * comment gives. Two readers, two right answers, one lookup each.
+     */
+    const { query, unknown } = await resolveMember(parsed);
+    if (unknown) return badRequest(memberUnknownRefusal(parsed.member ?? ""));
 
     return NextResponse.json(await fetchGameHistoryPage(query), {
       status: 200,

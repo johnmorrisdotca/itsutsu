@@ -58,7 +58,26 @@ export async function resolveMember(query: GameHistoryQuery): Promise<ResolvedMe
   return { query: { ...query, player: name, member: null }, unknown: false };
 }
 
-/** The resolved query alone, for a read that has not been handed one already. */
+/** What `/api/games` says to `?member=<id>` when the id names nobody. */
+export function memberUnknownRefusal(id: string): string {
+  return `No member has the id "${id.trim()}", so these listing filters are not valid: member.`;
+}
+
+/**
+ * The resolved query alone, for a read that has not been handed one already.
+ *
+ * AN ID NAMING NOBODY IS THROWN, NOT DROPPED. Dropping it is what this used to
+ * do, and it widened the answer to every game with nothing to say so — the
+ * fault `/api/games` was answering 200 with. Both callers that can meet an
+ * address resolve first and decide what to say (`RecordPage` degrades with a
+ * line, the route refuses), so reaching here with an unknown id is a caller
+ * that skipped that decision, and a thrown error is the honest report of it.
+ * A plausible whole record would not be.
+ */
 export async function withMemberResolved(query: GameHistoryQuery): Promise<GameHistoryQuery> {
-  return (await resolveMember(query)).query;
+  const resolved = await resolveMember(query);
+  if (resolved.unknown) {
+    throw new Error(`Resolve ?member= before reading the record: ${memberUnknownRefusal(query.member ?? "")}`);
+  }
+  return resolved.query;
 }

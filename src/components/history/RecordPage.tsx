@@ -116,7 +116,11 @@ export async function RecordPage({
   const api = new URLSearchParams();
   for (const [key, value] of Object.entries(queryParams)) {
     // Both are positions rather than filters, and the cursor is the scroller's own.
-    if (key !== "page" && key !== "cursor") api.set(key, value);
+    if (key === "page" || key === "cursor") continue;
+    // A `member` naming nobody was not applied to the page above, and the API
+    // refuses it outright — so the next page asks for the record this one shows.
+    if (key === "member" && memberUnknown) continue;
+    api.set(key, value);
   }
   const endpoint = `/api/games?${api.toString()}`;
 
