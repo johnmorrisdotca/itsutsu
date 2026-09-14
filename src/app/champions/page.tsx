@@ -7,7 +7,11 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerLink, TierMark } from "@/components/players/Standings";
+import { XP_BLANK_BECAUSE } from "@/components/players/players.constants";
+import { XpCell } from "@/components/players/recordTrailing";
+import { LevelName } from "@/components/xp/LevelName";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { levelShown } from "@/lib/xp/levelShown";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { standingsPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -35,15 +39,36 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
         </span>
       </td>
       {champion === undefined ? (
-        <td className="py-1.5 pr-3 text-xs text-muted" colSpan={5}>
+        <td className="py-1.5 pr-3 text-xs text-muted" colSpan={6}>
           No rated games yet
         </td>
       ) : (
         <>
           <td className="py-1.5 pr-3">
-            <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} />
+            {/*
+              The champion's level beside their name and their XP after the
+              rating, exactly as every table of people draws them: a champion
+              is a person on a stats table, and John asked for XP on all of
+              those. The level goes through `levelShown` from the total
+              `fetchChampions` read — null for a name with nobody behind it.
+            */}
+            <span className="flex min-w-0 items-baseline gap-2">
+              <PlayerLink name={champion.leader.name} memberId={champion.leader.memberId} />
+              {champion.leader.xp === null ? null : (
+                <LevelName
+                  level={levelShown({ xp: champion.leader.xp }) ?? 1}
+                  compact
+                  className="text-muted"
+                  testId="champion-level"
+                />
+              )}
+            </span>
           </td>
           <td className="py-1.5 pr-3 font-mono tabular-nums">{champion.leader.rating}</td>
+          <XpCell
+            xp={champion.leader.xp}
+            blankBecause={champion.leader.memberId === null ? XP_BLANK_BECAUSE.unclaimedName : undefined}
+          />
           <td className="py-1.5 pr-3">
             <TierMark tier={champion.leader.tier} />
           </td>
@@ -101,6 +126,10 @@ export default async function ChampionsPage() {
               <th className="py-1 pr-3">Game</th>
               <th className="py-1 pr-3">Champion</th>
               <th className="py-1 pr-3">Rating</th>
+              {/* Directly after Rating, where John put it on every stats table. */}
+              <th className="py-1 pr-3" title="Experience 経験 — what this member has earned on Itsutsu">
+                XP
+              </th>
               <th className="py-1 pr-3">Tier</th>
               <th className="py-1 pr-3">Players</th>
               <th className="py-1 pr-3">Games</th>
@@ -109,7 +138,7 @@ export default async function ChampionsPage() {
           {GAME_FAMILIES.map((family) => (
             <tbody key={family.title} data-testid="champions-family">
               <tr>
-                <th colSpan={6} className="pt-5 pb-1 text-left text-base font-semibold">
+                <th colSpan={7} className="pt-5 pb-1 text-left text-base font-semibold">
                   <Paired en={family.title} kanji={family.kanji} kanjiClassName="text-sm font-normal opacity-70" />
                 </th>
               </tr>

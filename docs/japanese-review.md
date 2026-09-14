@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (24)
+## 1. Written by a machine — please check these (28)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -38,10 +38,14 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | 39 rules pages — one per game | Inspired by {name}. The name belongs to its owner; this is our own version of the rules. | **{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。** | This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules. |  |
 | 39 rules pages — one per game | Play {game} → | **{game}で遊ぶ →** | Play {game} → |  |
 | 39 rules pages — one per game | Read about {game} on Wikipedia ↗ | **{game}をウィキペディアで読む ↗** | Read about {game} on Wikipedia ↗ |  |
+| After earning points — the notice that drops in from the top of the page | The top of the ladder. | **最高レベルです。** | This is the highest level. |  |
+| After earning points — the notice that drops in from the top of the page | Where everybody stands by experience | **経験値の順位表** | The experience-points ranking table. |  |
 | After earning points — the notice that drops in from the top of the page | Dismiss | **閉じる** | Close. |  |
+| After earning points — the notice that drops in from the top of the page | Level | **レベル** | Level. |  |
 | After earning points — the notice that drops in from the top of the page | Level up | **昇級** | Promotion — going up a grade. |  |
 | After earning points — the notice that drops in from the top of the page | Next level: {name} | **次のレベル：{name}** | Next level: {name} |  |
 | After earning points — the notice that drops in from the top of the page | Points earned | **獲得ポイント** | Points earned — the points acquired. |  |
+| After earning points — the notice that drops in from the top of the page | {count} to {name} | **{name}まであと{count}** | {count} more to go until {name}. |  |
 | After earning points — the notice that drops in from the top of the page | XP | **経験値** | Experience points. |  |
 
 `{game}`, `{name}`, `{names}` and `{country}` are filled in when the page is

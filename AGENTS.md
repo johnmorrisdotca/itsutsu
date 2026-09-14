@@ -266,6 +266,39 @@ had noticed, including the rules page itself — where every game name on this
 site led at the time, before a game became one address — which reached the
 board and Wikipedia and had no way to the record or the ladder.
 
+### Every Table Of People Shows XP
+
+John, 2026-09-14, looking at a site where the members list had an XP column
+and nothing else did: **"Make sure all STATS tables actually show the userXP
+in them too… after the Rating column… This means everywhere in the site. why
+are some pages now showing it???"** It was the third time a column had been
+added to one table and not the rest, and nothing failed, because nothing
+knew that "a table of people's records" was a kind of thing with a rule.
+
+The rule, and where it is kept:
+
+- **`RecordTable` draws the XP column unless a caller says `xp: false`**, and
+  the only honest reason to is that the rows are not people — a person's
+  by-game breakdown, a per-site total. The column sits directly after
+  Rating, where John put it. A program's cell is "–", never 0 and never
+  "Lv 1": a dash says nothing is there, where a 0 would claim a fact. A
+  person with nought is Level 1 with a 0.
+- **A table built from rating rows reads the total in one query per page**,
+  never one per row: `xpByMemberId` in `src/lib/xp/xpOfMembers.ts`, over the
+  page's member ids, already decided by `xpShown`. A name nobody has claimed
+  is a dash that says so on hover.
+- **A person's page opens with their name, their record, and their standing**
+  — level number and name, the total, the distance to the next rung — through
+  `MemberLevel`. A program's page shows no block at all, not an empty one.
+
+**Enforced by `src/components/players/xpColumn.coverage.test.ts`**, which
+runs in `pnpm test:unit` and fails the build when a `RecordTable` switches
+the column off without being named there with its reason, when a table that
+draws the column never fills it, when a hand-built table with a Rating
+heading has no XP heading after it, or when the person's page draws the
+standing anywhere but under the figures. It reads the source, like the
+dead-end gate, and every exception is a line with a reason beside it.
+
 ### Show The Data, Not The Way To It
 
 The companion rule to the one above, and it pulls the other way: a count must

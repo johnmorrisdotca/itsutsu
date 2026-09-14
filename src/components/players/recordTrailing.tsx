@@ -146,7 +146,7 @@ function RatingCell({ rating }: { rating: ShownRating | null }) {
  * carries the same columns as the table of people beside it is one table, which
  * is the whole reason `RecordTable` exists.
  */
-function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?: string }) {
+export function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?: string }) {
   if (xp === null) {
     return (
       <td className={CELL} title={blankBecause ?? XP_BLANK_BECAUSE.program} data-testid="record-xp">

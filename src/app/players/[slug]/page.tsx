@@ -12,7 +12,7 @@ import { Whereabouts } from "@/components/players/Whereabouts";
 import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
 import { KEPT_RECORD_COPY, PlayedEverywhere, keptRecordTail } from "@/components/players/LegacyRecord";
 import { LegacySourcePanel } from "@/components/players/LegacySource";
-import { Figures } from "@/components/ui/Figures";
+import { PlayerFigures } from "@/components/players/PlayerFigures";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMemberById, findMemberByName, findMembersByNames } from "@/lib/auth/members";
@@ -26,15 +26,13 @@ import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
 import { findLegacyPlayer, foldedInto, legaciesForName } from "@/lib/legacy/legacyPlayers.data";
 import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
-import { PlayedFigure, RecordFigure } from "@/components/players/PlayerRecord";
 import { TwoPools } from "@/components/players/TwoPools";
-import { figuresOf, winRateText } from "@/lib/rating/figures";
+import { figuresOf } from "@/lib/rating/figures";
 import { playerKey, playerKeysFromSlug } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { fetchPlayer } from "@/lib/rating/players";
-import { RATING_POOLS } from "@/lib/rating/pools";
 import { ratingShown } from "@/lib/rating/shownRecord";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
@@ -225,7 +223,13 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
     <Page width="standard" gap="gap-6">
       <SiteHeader />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-profile">
-        <h1 className="flex items-baseline gap-2 text-lg font-semibold">
+        {/*
+          THE NAME, AT THE SIZE A PAGE ABOUT A PERSON DESERVES. John asked for
+          "a better header with the Name of the person, Stats/Record and XP +
+          XP level Name", and the name led that list: it is the size a game's
+          own page gives its title, above the record and the standing below.
+        */}
+        <h1 className="flex flex-wrap items-baseline gap-2 text-2xl font-semibold">
           {shownName(wholeName)}
           {/*
             Where they are, said in full here because there is room for it —
@@ -251,12 +255,6 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
               legacyKind: keptRecord?.kind ?? null,
             })}
           />
-          {/*
-            Their standing, on the line that says who this is. `undefined` is a
-            kept record with no member row and is not a nought; `botTier` says a
-            program is not on this ladder. `MemberLevel` holds both arguments.
-          */}
-          <MemberLevel xp={member?.xp} botTier={member?.botTier} />
         </h1>
         {/*
           Where their playing happened, for somebody whose record was made
@@ -302,19 +300,6 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           </p>
         ) : null}
         {/*
-          Two ratings, side by side, because there are two pools and hiding
-          one behind the other is how a number stops meaning anything. The
-          ladder rating is what somebody has earned against people; the
-          computer one is earned against the programs and never touches
-          it, which is the whole point of keeping them apart.
-
-          Played and the record beside them count every finished game, of
-          either kind — including a game somebody played against themselves,
-          which is a game that happened and is not a game that counts. The
-          note under the row says so rather than leaving the arithmetic to be
-          reverse-engineered.
-        */}
-        {/*
           Which of somebody's playing the row below is counting. Everywhere by
           default: four thousand games on ItsYourTurn and twenty here is a life
           of playing, and leading with the twenty tells the smaller truth
@@ -322,59 +307,31 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           the two answers are the same games.
         */}
         {offered ? <RecordScopeBar base={`/players/${slug}`} view={openTab} scope={scope} /> : null}
-        <Figures
-          testId="player-figures"
-          figures={[
-            {
-              label: "Rating",
-              value: (
-                <>
-                  {rating === null ? "—" : rating.rating}
-                  {rating?.pool === RATING_POOLS.computer ? (
-                    <span
-                      className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                      title="Earned against the computer players, which are rated in a pool of their own."
-                      data-testid="player-rating-computer"
-                    >
-                      機械
-                    </span>
-                  ) : null}
-                </>
-              ),
-              testId: "player-rating",
-            },
-            ...(player !== null && player.computer.ratedGames > 0
-              ? [{ label: "Vs computer", value: player.computer.rating, testId: "player-computer-rating" }]
-              : []),
-            /*
-              Counting everywhere means counting games this site never saw, so
-              those two figures lead nowhere; counting here means every one of
-              them is a way into the games behind it. `here` carries that,
-              rather than the page having two versions of the same row.
-            */
-            {
-              label: "Played",
-              value: (
-                <PlayedFigure
-                  record={{ wins: counted.won, losses: counted.lost, draws: counted.drawn }}
-                  of={{ player: wholeName, memberId: member?.id, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
-                />
-              ),
-              testId: "player-played",
-            },
-            {
-              label: "Won · Lost · Drawn",
-              value: (
-                <RecordFigure
-                  record={{ wins: counted.won, losses: counted.lost, draws: counted.drawn }}
-                  of={{ player: wholeName, memberId: member?.id, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
-                />
-              ),
-              testId: "player-record",
-            },
-            { label: "Win rate", value: winRateText(counted.winRate) },
-          ]}
+        {/*
+          The figures: the two pools' ratings, then played, the record and the
+          rate, over whichever games the scope above says. Played and the
+          record count every finished game, of either kind — including a game
+          somebody played against themselves, which is a game that happened
+          and is not a game that counts. `here` says whether those games are
+          on this site to be opened, rather than the page having two versions
+          of the same row; `PlayerFigures` has the rest of the argument.
+        */}
+        <PlayerFigures
+          rating={rating}
+          computer={player === null ? null : player.computer}
+          counted={counted}
+          of={{ player: wholeName, memberId: member?.id, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
         />
+        {/*
+          THEIR STANDING, UNDER THE RECORD AND AS PROMINENT AS IT. The name,
+          then the record, then the level and the XP — John's order for this
+          header. It was a badge on the name's line; it is a block now, and
+          `MemberLevel` holds both arguments about when there is nothing to
+          draw: `undefined` is a kept record with no member row and is not a
+          nought, and `botTier` says a program is not on this ladder at all, so
+          a program's page shows no block rather than an empty one.
+        */}
+        <MemberLevel xp={member?.xp} botTier={member?.botTier} />
         {offered && scope === RECORD_SCOPES.everywhere ? (
           <p className="text-xs text-muted" data-testid="counting-everywhere">
             {/*
