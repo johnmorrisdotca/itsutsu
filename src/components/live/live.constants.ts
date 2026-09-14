@@ -7,6 +7,38 @@
  */
 
 /**
+ * HOW OFTEN A LIVE BOARD ASKS. Numbers rather than words, but the same group:
+ * `useLiveGame` spends them and `pollCadence.ts` decides between them.
+ */
+
+/** How often a waiting board asks whether the other side has moved. */
+export const POLL_MS = 2500;
+
+/**
+ * How often it asks while the tab is in the background.
+ *
+ * The board must still be current when a phone is unlocked or a tab is
+ * brought forward, but nobody is reading it in the meantime, so it need not
+ * be current every two and a half seconds. At that rate one forgotten tab on
+ * an unfinished game asks the server thirty-four thousand times a day, and
+ * every ask is a database read no cache can stand in front of.
+ */
+export const BACKGROUND_POLL_MS = 30_000;
+
+/**
+ * How long a background tab keeps asking about a game where nothing is
+ * happening, before it stops asking altogether.
+ *
+ * These are games played over days. A tab left open on one where neither side
+ * has moved for an hour is not waiting for anything, and thirty seconds is
+ * still two and a half thousand questions a day to be told the same thing.
+ * Nothing is lost by stopping: `revalidateOnFocus` fetches the moment the tab
+ * is looked at again, so the board a person comes back to is current whether
+ * it was asking or not. A move landing resets the hour.
+ */
+export const IDLE_STOP_MS = 60 * 60 * 1000;
+
+/**
  * SETTLING A GAME BEFORE IT EXISTS, IN WORDS.
  *
  * Every way of starting a game on this site leads here now, and each arrives

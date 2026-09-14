@@ -6,6 +6,8 @@ import useSWR, { type KeyedMutator } from "swr";
 
 import { settledSinceRendered } from "@/lib/history/settle";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
+import { IDLE_STOP_MS } from "./live.constants";
+import { pollInterval } from "./pollCadence";
 
 /**
  * Keeping a board current.
@@ -16,32 +18,12 @@ import type { GameDetail } from "@/lib/history/gameHistory.types";
  * would need, and it survives a phone locking and waking up.
  */
 
-/** How often a waiting board asks whether the other side has moved. */
-const POLL_MS = 2500;
-
-/**
- * How often it asks while the tab is in the background.
- *
- * The board must still be current when a phone is unlocked or a tab is
- * brought forward, but nobody is reading it in the meantime, so it need not
- * be current every two and a half seconds. At that rate one forgotten tab on
- * an unfinished game asks the server thirty-four thousand times a day, and
- * every ask is a database read no cache can stand in front of.
+/*
+ * The three numbers this spends — how often in front, how often behind, and
+ * how long a background tab asks about a game where nothing happens — live in
+ * `live.constants.ts` with their reasons, and the choice between them is
+ * `pollInterval` in `pollCadence.ts`, where a unit test holds it.
  */
-const BACKGROUND_POLL_MS = 30_000;
-
-/**
- * How long a background tab keeps asking about a game where nothing is
- * happening, before it stops asking altogether.
- *
- * These are games played over days. A tab left open on one where neither side
- * has moved for an hour is not waiting for anything, and thirty seconds is
- * still two and a half thousand questions a day to be told the same thing.
- * Nothing is lost by stopping: `revalidateOnFocus` fetches the moment the tab
- * is looked at again, so the board a person comes back to is current whether
- * it was asking or not. A move landing resets the hour.
- */
-const IDLE_STOP_MS = 60 * 60 * 1000;
 
 const fetcher = async (url: string): Promise<GameDetail> => {
   const response = await fetch(url);
@@ -124,7 +106,7 @@ export function useLiveGame(initial: GameDetail): {
 
   const { data, mutate } = useSWR(`/api/games/${initial.id}`, fetcher, {
     fallbackData: initial,
-    refreshInterval: polling && awake ? (visible ? POLL_MS : BACKGROUND_POLL_MS) : 0,
+    refreshInterval: pollInterval({ polling, awake, visible }),
     onSuccess: (latest) => {
       setPolling(latest.status === "active");
       // A move landing starts the idle hour again.

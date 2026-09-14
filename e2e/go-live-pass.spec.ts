@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { memberContext, removeMember } from "./members";
 import { gamesMade, namesPlayedUnder } from "./tidy";
@@ -77,6 +77,45 @@ test.describe("passing in a live game of Go", () => {
       await expect(whiteBoard.getByTestId("live-moves")).toContainText("pass");
       const whitePass = whiteBoard.getByRole("button", { name: "Pass", exact: true });
       await expect(whitePass).toBeEnabled();
+
+      /*
+       * HELD, BECAUSE THE RESULT BANNER LIVES FOR A MOMENT — on both boards.
+       *
+       * A board that sees its game end hands itself back to the server at once
+       * (`useLiveGame`), and what comes back is the filed record, which has no
+       * turn banner. So "wins" is on each board only between the answer that
+       * settles it and that hand-back landing: about half a second in CI's
+       * traces, shorter than Playwright's one-second retry step.
+       *
+       * This spec used to wait for black's banner with nothing held, and it was
+       * read as waiting out a thirty-second background poll. It was not: black's
+       * page read `visible` and asked every two and a half seconds. It failed
+       * both attempts at 0.184.0 and 5 of 5 on a dev server because black's page
+       * had already BECOME the record — the banner came and went between two
+       * retries, and the rest of the wait was spent on a page with no banner.
+       *
+       * The same hold as `shared.spec.ts`, on a wider address: a board that has
+       * had a move land since it loaded hands back from /match/<id>/<n>, not
+       * /match/<id>. Released once the settled board has been read.
+       */
+      const handBack = new RegExp(`/match/${game.id}(/\\d+)?\\?_rsc=`);
+      const holdHandBack = async (page: Page) => {
+        let letGo = () => {};
+        const read = new Promise<void>((resolve) => (letGo = resolve));
+        await page.route(handBack, async (route) => {
+          await read;
+          await route.continue();
+        });
+        return async () => {
+          const landed = page.waitForResponse(handBack);
+          letGo();
+          await landed;
+          await page.unroute(handBack);
+        };
+      };
+      const releaseWhite = await holdHandBack(white);
+      const releaseBlack = await holdHandBack(black);
+
       await whitePass.click();
       await expect(whiteBoard.getByTestId("turn-banner")).toContainText("wins");
 
@@ -90,6 +129,16 @@ test.describe("passing in a live game of Go", () => {
 
       // And black, still on the board they passed from, is told without reloading.
       await expect(blackBoard.getByTestId("turn-banner")).toContainText("wins", { timeout: 30_000 });
+
+      /*
+       * Then both hand-backs are let through and waited for, so neither board is
+       * left holding a request when its browser closes. What each board becomes
+       * afterwards is not asserted here: at the time of writing the hand-back
+       * reloads one board and is lost on the other, which is its own fault with
+       * its own spec (`settled-in-place.spec.ts`), not this file's subject.
+       */
+      await releaseWhite();
+      await releaseBlack();
     } finally {
       await blackContext.close();
       await whiteContext.close();
