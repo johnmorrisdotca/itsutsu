@@ -71,14 +71,18 @@ export async function fetchRivalryView(input: {
     }),
     prisma.member.findMany({
       where: { id: { in: [one, other] } },
-      select: { id: true, name: true, xp: true, botTier: true },
+      select: { id: true, name: true, xp: true },
     }),
   ]);
 
+  /*
+   * A program stands where its total puts it, like anybody (0.182.0): the level
+   * is read from the total alone, so a rivalry with Dan badges Dan too.
+   */
   const seat = (id: string): RivalrySeat | null => {
     const row = members.find((member) => member.id === id);
     if (row === undefined) return null;
-    return { memberId: row.id, name: row.name, level: levelShown({ xp: row.xp, botTier: row.botTier }) };
+    return { memberId: row.id, name: row.name, level: levelShown({ xp: row.xp }) };
   };
   const first = seat(one);
   const second = seat(other);

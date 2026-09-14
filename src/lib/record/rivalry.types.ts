@@ -78,7 +78,7 @@ export type RivalrySeat = {
   memberId: string;
   /** The whole name, which `PlayerName` shortens and links. */
   name: string;
-  /** The level to badge beside them, or null for a program, which has none. */
+  /** The level to badge beside them — a program's as much as a person's — or null for a total that is not a number. */
   level: number | null;
 };
 
