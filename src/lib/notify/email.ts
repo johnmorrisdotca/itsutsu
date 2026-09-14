@@ -11,9 +11,15 @@ import "server-only";
  * place and the day it is switched on nothing else has to change.
  */
 
+/*
+ * A notice about a game names the member it is FOR. Who that is gets decided
+ * where the seats are known — `noticeRecipient` in `gameNotices.ts` — and never
+ * here: a program's seat, a typed name and a board at one screen are never
+ * asked for at all, rather than asked for and found to have no address.
+ */
 export type EmailEvent =
-  | { kind: "your-turn"; gameId: string; stone: "black" | "white" }
-  | { kind: "game-over"; gameId: string; winner: "black" | "white" | null }
+  | { kind: "your-turn"; gameId: string; stone: "black" | "white"; memberId: string }
+  | { kind: "game-over"; gameId: string; winner: "black" | "white" | null; stone: "black" | "white"; memberId: string }
   | { kind: "invite"; gameId: string; stone: "black" | "white" }
   | { kind: "deadline-near"; gameId: string; stone: "black" | "white"; dueAt: string };
 
@@ -30,9 +36,9 @@ export function emailProvider(): string | null {
 }
 
 /**
- * Records that an email would have been sent. Addresses do not exist yet —
- * there are no accounts — so every event ends here with a receipt saying so.
- * When a provider and an address book exist, this is where `deliver` goes.
+ * Records that an email would have been sent. No address is looked up for the
+ * member yet, so every event ends here with a receipt saying so. When a
+ * provider and an address book exist, this is where `deliver` goes.
  */
 export async function sendEmail(event: EmailEvent): Promise<EmailReceipt> {
   const reason = emailProvider() === null ? "no-provider" : "no-address";

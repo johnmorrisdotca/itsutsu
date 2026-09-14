@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/lib/notify/email";
+import { noticeGameOver } from "@/lib/notify/gameNotices";
 import { activeLimitRefusal, memberOverActiveLimit } from "./activeGames";
 import { nextDeadline } from "./deadline";
 import { OFFER_ACTIONS, type OfferOutcome } from "./offers.types";
@@ -208,13 +208,18 @@ async function endOffer(
   });
   /*
    * The offerer hears about a decline — the queue shows it, and this is the
-   * same no-op notifier every other ending goes through, so wiring a real
-   * provider one day reaches this path with the rest. Nothing is sent for a
+   * same notifier every other ending goes through, so wiring a real provider
+   * one day reaches this path with the rest. Nothing is sent for a
    * withdrawal: the person who did it knows, and the person who was asked
    * never agreed to hear from this game at all.
+   *
+   * Through the same rule as every other ending, and it names the offerer
+   * without being told to: the offered seat carries no member id while it is
+   * an offer (`offerLiftedOff`), so the one seat a person holds is theirs. And
+   * never a board at one screen, which `offerLiftedOff` never makes an offer of.
    */
   if (action === OFFER_ACTIONS.decline) {
-    await sendEmail({ kind: "game-over", gameId: id, winner: null });
+    await noticeGameOver({ ...row, hotSeat: false }, id, null);
   }
   return { ok: true, seat: seat ?? STONES.white, variant: row.variant };
 }
