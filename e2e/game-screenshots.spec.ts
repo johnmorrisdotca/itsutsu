@@ -18,8 +18,10 @@ const SCENES: Record<
     moves: [number, number][];
     twists?: [number, boolean][];
     colours?: ("black" | "white")[];
-    /** The race games: pieces already down, so the scene is a run of moves, black first. */
+    /** The race games: pieces already down, so the scene is a run of moves, the opener first. */
     slides?: [[number, number], [number, number]][];
+    /** Who makes the first slide: Black, unless the game gives the first move to White, as international draughts does. */
+    opener?: "Black" | "White";
   }
 > = {
   freestyle: { size: 15, moves: [[7, 7], [7, 8], [8, 8], [6, 6], [6, 8], [8, 6], [9, 9], [5, 5]] },
@@ -73,6 +75,25 @@ const SCENES: Record<
       [[1, 2], [2, 1]], [[6, 1], [5, 0]], [[3, 4], [4, 5]],
     ],
   },
+  // The international family: White opens, and each scene ends on a capture, since taking is what these games are.
+  internationalDraughts: {
+    size: 10,
+    moves: [],
+    opener: "White",
+    slides: [[[6, 1], [5, 2]], [[3, 8], [4, 7]], [[6, 9], [5, 8]], [[4, 7], [6, 9]]],
+  },
+  brazilianDraughts: {
+    size: 8,
+    moves: [],
+    opener: "White",
+    slides: [[[5, 0], [4, 1]], [[2, 3], [3, 2]], [[4, 1], [2, 3]], [[1, 4], [3, 2]]],
+  },
+  canadianCheckers: {
+    size: 12,
+    moves: [],
+    opener: "White",
+    slides: [[[7, 0], [6, 1]], [[4, 3], [5, 2]], [[6, 1], [4, 3]], [[3, 4], [5, 2]]],
+  },
   chineseCheckers: {
     size: 17,
     moves: [],
@@ -121,8 +142,9 @@ test.describe("game screenshots", () => {
           if (await control.count()) await control.click();
         }
       }
+      const first = scene.opener ?? "Black";
       for (const [index, [from, to]] of (scene.slides ?? []).entries()) {
-        const colour = index % 2 === 0 ? "Black" : "White";
+        const colour = index % 2 === 0 ? first : first === "Black" ? "White" : "Black";
         await page.getByRole("button", { name: `${COLUMN_LETTERS[from[1]]}${scene.size - from[0]}, ${colour} stone` }).click();
         await page.getByRole("button", { name: new RegExp(`^${COLUMN_LETTERS[to[1]]}${scene.size - to[0]}, empty$`) }).click();
       }

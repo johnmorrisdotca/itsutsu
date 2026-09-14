@@ -38,7 +38,8 @@ describe("reading a member's starting point", () => {
   });
 
   it("drops one bad field and keeps the rest", () => {
-    expect(cleanGameDefaults({ size: 12, timeControl: "blitz" })).toEqual({ timeControl: "blitz" });
+    // 18: no game here is played on it. (12 was the example until Canadian checkers made it a real board.)
+    expect(cleanGameDefaults({ size: 18, timeControl: "blitz" })).toEqual({ timeControl: "blitz" });
   });
 
   it("refuses anything that is not a set of defaults at all", () => {
@@ -65,7 +66,7 @@ describe("reading a member's starting point", () => {
     for (const size of ALL_BOARD_SIZES) {
       expect(cleanGameDefaults({ size })).toEqual({ size });
     }
-    for (const size of [0, 2, 12, 14, 20, 100]) {
+    for (const size of [0, 2, 14, 18, 20, 100]) {
       expect(cleanGameDefaults({ size }), `${size}`).toEqual({});
     }
   });

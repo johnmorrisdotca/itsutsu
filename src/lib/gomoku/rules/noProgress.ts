@@ -74,6 +74,16 @@ export type ProgressMeasure = (typeof PROGRESS_MEASURES)[keyof typeof PROGRESS_M
 
 export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, { plies: number; measure: ProgressMeasure }>> = {
   [RULE_VARIANTS.checkers]: { plies: 80, measure: PROGRESS_MEASURES.taking },
+  /*
+   * The international family writes its own count, and it is this one exactly:
+   * moves in which only kings have moved, with nothing taken and no man
+   * stepping. Twenty-five each on the FMJD's 10×10 board (article 6.2), twenty
+   * each on Brazil's 8×8 (CBJD art. 97). Canadian checkers has no published
+   * count anybody could find, so it borrows the FMJD's, and says so.
+   */
+  [RULE_VARIANTS.internationalDraughts]: { plies: 50, measure: PROGRESS_MEASURES.taking },
+  [RULE_VARIANTS.brazilianDraughts]: { plies: 40, measure: PROGRESS_MEASURES.taking },
+  [RULE_VARIANTS.canadianCheckers]: { plies: 50, measure: PROGRESS_MEASURES.taking },
   [RULE_VARIANTS.halma]: { plies: 400, measure: PROGRESS_MEASURES.racing },
   /*
    * squareFour is four pieces a side and then, as the spec puts it, "a turn

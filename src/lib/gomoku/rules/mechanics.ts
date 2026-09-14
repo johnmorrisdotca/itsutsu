@@ -11,7 +11,7 @@ import type { Cell, GameState, Move, Point, Stone } from "../gomoku.types";
 import { settleDraw } from "./drawLimit";
 import { cellAtPoint, indexOf, isOnBoard, isStone, otherStone, stepFrom } from "./board";
 import { campFilled, campMoves, campSquares } from "./camps";
-import { applyCheckersMove, checkersHasAnyMove, checkersMoves } from "./checkers";
+import { applyCheckersMove, checkersHasAnyMove, checkersMoves, checkersRulesFor } from "./checkers";
 import { STAR_RADIUS, starCampSquares, starFilled, starMoves } from "./chineseCheckers";
 import { dropTarget } from "./drop";
 import { hexConnection } from "./hex";
@@ -241,6 +241,7 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
       move.captured = [result.captured];
       move.capturedWasKing = result.capturedWasKing;
     }
+    if (result.crowned) move.crowned = true;
     const captures =
       result.captured !== null
         ? { ...state.captures, [toPlay]: state.captures[toPlay] + 1 }
@@ -257,7 +258,7 @@ export function movePiece(state: GameState, from: Point, to: Point): GameState {
     if (result.continues) return moved;
 
     const other = otherStone(toPlay);
-    if (!checkersHasAnyMove(result.board, result.kings, settings.size, other)) {
+    if (!checkersHasAnyMove(result.board, result.kings, settings.size, other, checkersRulesFor(settings))) {
       return won(moved, toPlay, WIN_REASONS.blocked, []);
     }
     return settleDraw({ ...moved, toPlay: other });

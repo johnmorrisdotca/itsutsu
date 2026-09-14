@@ -265,22 +265,24 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
   /* ── The tour ───────────────────────────────────────────────────────────
      Thirty-nine games and eleven families, most of them barely played. A first
      of anything is cheap and the SETS are dear: every game played is 5,000, a
-     family won is 300, and a single first win is John's 10. The six come to
+     family won is 300, and a single first win is John's 10. The six came to
      13,390 XP of the 23,440 available once-only — 2.3% of the ladder, a
-     ceiling rather than a treadmill. */
+     ceiling rather than a treadmill — and to 13,870 of 23,920 once the three
+     draughts games joined Checkers, which the climb table in XP_DESIGN.md has
+     not yet been redone for. */
 
   firstOfVariant: {
     points: 50,
     label: "A game you had not played",
     kanji: "初手合",
-    blurb: "For your first game of a game. There are thirty-nine of them.",
+    blurb: "For your first game of a game. There are forty-two of them.",
     sentence: "A game you had never played.",
   },
   firstWinAtVariant: {
     points: 10,
     label: "First win at a game",
     kanji: "初勝",
-    blurb: "For your first win at one of the thirty-nine.",
+    blurb: "For your first win at one of the forty-two.",
     sentence: "Your first win at this one.",
   },
   firstOfFamily: {
@@ -301,19 +303,20 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     points: 5000,
     label: "Every game played",
     kanji: "全種",
-    blurb: "For playing all thirty-nine games on the site.",
-    sentence: "All thirty-nine games played.",
+    blurb: "For playing all forty-two games on the site.",
+    sentence: "All forty-two games played.",
   },
   /* A family won is 300 — twice `firstOfFamily` — and the balance John left to us
      ("winning a while famly? i dunno, look at balance and determine"). Winning
      every game in a family is far harder than playing one game of it, so the 20
      it first paid, John's "double" a first win, left the harder feat paying less
      than the easier one; twice a family met makes it plainly the bigger
-     achievement. NOT paid for a family of one game (Hex, Checkers, Go): that is
+     achievement. NOT paid for a family of one game (Hex, Go): that is
      no completion, its one win is already paid by `firstWinAtVariant` and
      `firstOfFamily`, and 300 more would make a single win worth about 510 XP.
      `familyToWin` in `xpGame.ts` is that rule, live and in the replay alike.
-     Eight families can be won, 2,400 XP between them. */
+     Nine families can be won, 2,700 XP between them — Checkers joined them
+     when the draughts games did. */
   everyVariantWonInFamily: {
     points: 300,
     label: "A family won",

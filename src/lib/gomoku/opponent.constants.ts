@@ -405,6 +405,13 @@ export const EVAL_WEIGHTS = {
    */
   man: 100,
   king: 180,
+  /**
+   * A king that flies, in the international family: three men, as draughts
+   * players have long reckoned it. One that crosses the board in a move and
+   * takes at any distance is not the short-stepping English king, and scoring
+   * it as one would have a computer trade it for a man and a half.
+   */
+  flyingKing: 300,
   crowning: 6,
   /** How much the line reading counts against everything else. */
   shape: 1,

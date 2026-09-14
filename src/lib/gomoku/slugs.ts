@@ -48,6 +48,9 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   halma: "halma",
   hex: "hex",
   checkers: "checkers",
+  internationalDraughts: "international-draughts",
+  brazilianDraughts: "brazilian-draughts",
+  canadianCheckers: "canadian-checkers",
   chineseCheckers: "chinese-checkers",
   go: "go",
 };

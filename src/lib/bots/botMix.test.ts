@@ -68,7 +68,8 @@ describe("the mixed plan: games nobody has played", () => {
   it("gives every unplayed game one or two games, and over many seeds both counts occur", () => {
     const seen = new Set<number>();
     const unplayed = RULE_VARIANT_LIST.filter((variant) => (LIVE.finishedByVariant[variant] ?? 0) === 0);
-    expect(unplayed).toHaveLength(28);
+    // Twenty-eight on the live site as read, and the three draughts games added since, which nobody has played.
+    expect(unplayed).toHaveLength(31);
     for (const seed of SEEDS) {
       const plan = planMix(LIVE, options({ seed }));
       for (const variant of unplayed) {

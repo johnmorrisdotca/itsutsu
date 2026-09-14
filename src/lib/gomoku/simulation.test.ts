@@ -6,6 +6,7 @@ import type { Stone } from "./gomoku.types";
 import { GAME_STATUS, RULE_VARIANTS, VARIANT_SPECS } from "./gomoku.constants";
 import { rulesFor } from "./rules/handicap";
 import { bruteForceWinner, playOut } from "./simulation.support";
+import { isCheckers } from "./simulation.checkers";
 
 describe("simulated games", () => {
   const GAMES = 120;
@@ -64,9 +65,9 @@ describe("simulated games", () => {
     for (const variant of Object.values(RULE_VARIANTS)) {
       // The flipping games pass a stuck colour by, so one colour may move twice; restated by hand.
       if (["reversi", "classicReversi", "antiReversi", "miniReversi", "grandReversi"].includes(variant)) continue;
-      // Checkers plays a whole capture chain as several moves by the same colour before the turn
-      // passes; checkCheckersMove restates that rule by hand, move by move, instead.
-      if (variant === "checkers") continue;
+      // The checkers family plays a whole capture chain as several moves by the same colour before the
+      // turn passes; checkCheckersMove restates that rule by hand, move by move, instead.
+      if (isCheckers(variant)) continue;
       for (let seed = 1; seed <= 12; seed += 1) {
         const final = playOut({ size: 9, variant }, seed * 11 + variant.length);
 

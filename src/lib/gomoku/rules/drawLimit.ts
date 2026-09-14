@@ -5,6 +5,7 @@ import {
   VARIANT_SPECS,
 } from "../gomoku.constants";
 import type { GameSettings, GameState } from "../gomoku.types";
+import { drawnByCheckersRule } from "./checkersDraws";
 import { stalled } from "./noProgress";
 
 /**
@@ -119,8 +120,14 @@ export function settleDraw(state: GameState): GameState {
    * The agreed length is a share of the board, for games that fill it.
    * `stalled` is for the games that fill nothing — pieces that move rather
    * than land — where the board bounds nothing and a game can run for ever.
+   *
+   * And a third, which is neither of those: the draws a game of the checkers
+   * family writes into its own rules — a position come round too often, an
+   * ending not won inside its count. Those are results the game's federation
+   * defines, not backstops this site added, and `drawnByCheckersRule` answers
+   * false for every game whose rules name none.
    */
-  if (reachedDrawLimit(state) || stalled(state)) {
+  if (reachedDrawLimit(state) || stalled(state) || drawnByCheckersRule(state)) {
     return { ...state, status: GAME_STATUS.draw };
   }
   return state;

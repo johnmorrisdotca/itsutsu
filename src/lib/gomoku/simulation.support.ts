@@ -57,8 +57,14 @@ function rng(seed: number): () => number {
   };
 }
 
-/** Plays one game to its end, checking every move on the way. */
-function playOut(settings: Partial<GameSettings>, seed: number): GameState {
+/**
+ * Plays one game to its end, checking every move on the way.
+ *
+ * `slideCap` calls off a game of moving pieces after that many turns; the
+ * shared cap suits a sweep of every game, and a suite that means to see a
+ * game of draughts through to its result asks for a longer one.
+ */
+function playOut(settings: Partial<GameSettings>, seed: number, slideCap: number = SLIDE_CAP): GameState {
   const random = rng(seed);
   let state = createGame({ allowUndo: true, ...settings }, random());
   let guard = 0;
@@ -123,7 +129,7 @@ function playOut(settings: Partial<GameSettings>, seed: number): GameState {
       // against the slide cap the way an ordinary turn does, or a long chain
       // could be cut off mid-move.
       if (after.chainAt === null) slides += 1;
-      if (slides >= SLIDE_CAP) break;
+      if (slides >= slideCap) break;
       continue;
     }
 

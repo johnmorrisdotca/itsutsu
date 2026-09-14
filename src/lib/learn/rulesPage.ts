@@ -1,9 +1,11 @@
 import {
   LINE_RULES,
   PLACEMENTS,
+  STONE_DISPLAY,
   VARIANT_SPECS,
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
+import { checkersBoardLine, checkersDrawLines, checkersPlayLines } from "./rulesPage.checkers";
 import { gameArtPath } from "@/lib/gomoku/artwork";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
@@ -164,9 +166,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.camps) {
     board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
   }
-  if (spec.checkers) {
-    board.push("Played on the dark squares only, thirty-two of the sixty-four. Each side starts with twelve men filling its own three rows.");
-  }
+  if (spec.checkers) board.push(checkersBoardLine(variant, sizes[0]));
   if (spec.chineseCheckers) {
     board.push("A hexagram: a centre hexagon with six triangular points, 121 cells in all. Each side's ten pieces start filling one point, black at the top and white at the bottom, shaded on the board; the far point is the one to fill.");
   }
@@ -212,11 +212,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     play.push("A piece carries both colours, so it can finish a line for either side; the line's owner wins whoever laid it, and a line for each at once is a draw.");
     play.push("If nothing fits, the turn passes; two passes in a row end the game as a draw.");
   } else if (spec.checkers) {
-    play.push("A turn moves one piece: a man steps one square diagonally forward, onto an empty square.");
-    play.push("Capturing is a jump over an adjacent enemy piece into the empty square beyond, and it is forced: if any of your pieces can capture, you must play a capture rather than a step, though you may choose which one.");
-    play.push("A piece that captures and can capture again from where it lands keeps jumping in the same move. A man crowned partway through always stops there — only a king may carry a chain on, and only on a later move.");
-    play.push("A man reaching the far row is crowned a king, and may then step and capture backward as well as forward.");
-    play.push("The game ends the moment a colour has no piece that can move: none left, or every one shut in.");
+    play.push(...checkersPlayLines(variant));
   } else if (spec.go) {
     play.push("Players take turns placing one stone on any empty intersection. Black opens; stones never move once played.");
     play.push("A stone touches its four orthogonal neighbours, not the diagonals. Play a stone that leaves an adjacent enemy group with no liberty left anywhere and the whole group comes off the board at once.");
@@ -263,7 +259,12 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
       );
     }
   }
-  house.push(spec.allowFirstPlayerChoice ? "Either colour may open, or the first stone may be drawn by lot." : "Black always opens.");
+  house.push(
+    spec.allowFirstPlayerChoice
+      ? "Either colour may open, or the first stone may be drawn by lot."
+      : `${STONE_DISPLAY[spec.firstStone].label} always opens.`,
+  );
+  if (spec.checkers) house.push(...checkersDrawLines(variant));
   if (spec.openings.length > 1) {
     house.push(`Openings on offer: ${spec.openings.map((opening) => OPENING_DISPLAY[opening].label).join(", ")}.`);
   }
