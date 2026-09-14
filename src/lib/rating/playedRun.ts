@@ -10,7 +10,9 @@ import {
   type StreakOutcome,
 } from "./streak";
 import { outcomeFor } from "./pools";
-import { gameRatingRefusal } from "./rateable";
+import type { Handicap } from "@/lib/gomoku/gomoku.types";
+
+import { countsOnLadder } from "./countsOnLadder";
 
 /**
  * The run over every finished game a member has played here.
@@ -140,30 +142,25 @@ export type DecidedGame = DecidedSeats & {
    * rather than quietly paying an upset over a game the ladder never counted.
    */
   hotSeat: boolean;
+  /**
+   * The handicap it was played under, PARSED — `parseHandicap(row.handicap)`.
+   *
+   * REQUIRED for the reason `hotSeat` is: no row carries it in this shape, since
+   * the column is JSON, so an ending that forgot it does not compile rather than
+   * rating a game with a handicap on it. See `handicapRefusal`.
+   */
+  handicap: Handicap;
   /** The names the ladder is keyed by, for `gameRatingRefusal`. */
   blackName: string;
   whiteName: string;
 };
 
 /**
- * Whether the ladder counts this game: asked to be rated, and not refused by
- * the ladder's own rule.
- *
- * The same condition every ending applies before `recordResult` — hot seat
- * first, then the names — asked through `gameRatingRefusal` so the two cannot
- * drift. That function answers null for an UNRATED game, because a friendly is
- * not a refusal; so `rated` is checked here too, and a friendly counts for
- * nothing. The XP upset bonus is paid only where this is true: a rating gap no
- * rated game ever tested is not a gap anybody overturned.
+ * Whether the ladder counts this game — the rule every ending asks before
+ * `recordResult`, kept in `countsOnLadder.ts` and read here for the upset bonus.
+ * Re-exported for the tests that have always asked it of this module.
  */
-export function countsOnLadder(game: {
-  rated: boolean;
-  hotSeat: boolean;
-  blackName: string;
-  whiteName: string;
-}): boolean {
-  return game.rated && gameRatingRefusal(game) === null;
-}
+export { countsOnLadder };
 
 /**
  * The winner, or a refusal.

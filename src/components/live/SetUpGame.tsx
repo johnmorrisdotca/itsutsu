@@ -10,7 +10,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { Opponent } from "@/lib/social/opponents";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
-import { RATING_REFUSALS } from "@/lib/rating/rateable.constants";
+import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { HandicapChoice } from "./HandicapChoice";
@@ -241,10 +241,11 @@ export function SetUpGame({
 
   /*
    * WHETHER THE GAME THIS BUTTON LEADS TO COULD EVER COUNT, read from `seatsFor`
-   * — the function the doorstep asks — so the two pages cannot disagree about one
-   * press. True of one shape: a fork with nobody to hand the second seat to.
+   * — the function the doorstep asks — and `draftRatingRefusal`, which it asks too,
+   * so the two pages cannot disagree about one press. True of two shapes: a fork
+   * with nobody to hand the second seat to, and a handicap on either colour.
    */
-  const refused = seatsFor({ again, fork }).screen ? RATING_REFUSALS.hotSeat : null;
+  const refused = draftRatingRefusal({ screen: seatsFor({ again, fork }).screen, handicap: settled.handicap });
 
   /*
    * THE WAY ON, WHICH CREATES NOTHING. Continue carries the draft to

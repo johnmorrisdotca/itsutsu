@@ -9,6 +9,7 @@ import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
 import { recordResult } from "@/lib/rating/recordResult";
 import { recordPlayed } from "@/lib/rating/playedRun";
+import { countsOnLadder } from "@/lib/rating/countsOnLadder";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat } from "@/lib/bots/bots";
 import { noticeGameOver, noticeYourTurn } from "@/lib/notify/gameNotices";
@@ -17,7 +18,7 @@ import type { MoveOutcome, MoveRequest } from "./liveGame.types";
 import { nextDeadline } from "./deadline";
 import { settledTurn } from "./settledTurn";
 import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
-import { GAME_ROW, isHotSeat, replay, stoneForToken } from "./liveGameRow";
+import { GAME_ROW, isHotSeat, ladderFacts, replay, stoneForToken } from "./liveGameRow";
 import { isOffered } from "./offers";
 
 /*
@@ -228,9 +229,10 @@ export async function appendMove(
     // The count AFTER this move, which is the one the XP ledger asks about: the
     // row's own `moveCount` is written in the same transaction and `GAME_ROW`
     // does not read it back, so `next` is the only thing here that knows.
-    await recordPlayed({ ...row, hotSeat: isHotSeat(row), winner: next.winner, moveCount: next.moves.length });
-    // A game at one screen is filed, never rated: the site cannot tell who was playing. Nor is a friendly.
-    if (!isHotSeat(row) && row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
+    const facts = ladderFacts(row);
+    await recordPlayed({ ...row, ...facts, winner: next.winner, moveCount: next.moves.length });
+    // Rated only where the ladder's own rule says: never a game at one screen, a friendly or a handicap. See `countsOnLadder`.
+    if (countsOnLadder({ ...row, ...facts })) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     // To the people seated only: never a program, a typed name or a board at one screen. See `gameNotices.ts`.
     await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
   } else if (next.toPlay !== stone) {

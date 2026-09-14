@@ -19,7 +19,7 @@ import { currentEmail } from "@/lib/auth/currentSession";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { fixedOpener } from "@/lib/gomoku/rules/creation";
-import { RATING_REFUSALS } from "@/lib/rating/rateable.constants";
+import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export const dynamic = "force-dynamic";
@@ -171,10 +171,14 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
    * the seating sentence — so both halves of this page read the same fact, and
    * neither can print "Rated" two lines under "Both seats are yours".
    *
+   * AND A HANDICAP ON EITHER COLOUR, which moves nobody's rating either — asked
+   * through `draftRatingRefusal`, the function the set-up screen asks, so the
+   * notice there and the statement here say the same thing about one press.
+   *
    * Null otherwise, and that is not a guess: every other press makes a game
    * between two people, where the rating is a choice and the draft holds it.
    */
-  const refused = screen ? RATING_REFUSALS.hotSeat : null;
+  const refused = draftRatingRefusal({ screen, handicap: rules.handicap });
 
   const begin: BeginAction =
     seat !== null

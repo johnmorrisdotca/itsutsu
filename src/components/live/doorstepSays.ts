@@ -168,13 +168,14 @@ export function offerNote(who: DoorstepWho): string {
  * left out of the one-line statement: the ordinary answer to a question nobody
  * asked is not worth a sentence.
  *
- * `refused` is `hotSeat` where `who.screen` is true and null otherwise, and it
- * is a parameter rather than something read off the draft because the draft
- * cannot know it: whether both seats end up in front of one person is a fact
+ * `refused` is what `draftRatingRefusal` answers — `hotSeat` where `who.screen`
+ * is true, `handicap` where the draft has one, and null otherwise — and it is a
+ * parameter rather than something read off the draft because the draft cannot
+ * know all of it: whether both seats end up in front of one person is a fact
  * about the SEATS. It matters here because this paragraph is the last thing read
- * before a game is written — and a board at one screen will move no rating
- * whatever the draft says, so "Rated." above "Both seats are yours" would be
- * this page contradicting itself in two sentences.
+ * before a game is written — and a board at one screen or a handicap game will
+ * move no rating whatever the draft says, so "Rated." above either would be this
+ * page contradicting itself in two sentences.
  */
 export function describeGameProse(rules: RulesDraft, refused: RatingRefusal | null): string {
   const variant = rules.variant as RuleVariant;

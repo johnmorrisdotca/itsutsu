@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
 import { isHotSeat } from "@/lib/history/liveGame";
 import { gameRatingRefusal, isRateable, ratingImpossible, ratingRefusal } from "./rateable";
 import { RATING_REFUSALS, RATING_REFUSAL_DISPLAY, RATING_REFUSED_WORD } from "./rateable.constants";
+
+/** A game played straight: what every case below is, unless it says otherwise. */
+const straight = { handicap: NO_HANDICAP };
+/** A handicap on black, the stronger player's own seat in the case John described. */
+const handicapped = { handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true } };
 
 describe("ratingRefusal", () => {
   it("says yes to two different people", () => {
@@ -76,8 +82,8 @@ describe("ratingImpossible", () => {
     expect(ratingImpossible({ hotSeat: false, blackName: "Aki", whiteName: "Sumi" })).toBeNull();
   });
 
-  it("is the whole of what gameRatingRefusal does once the flag says yes", () => {
-    // Two functions, one rule: the split is the flag and nothing else, so a
+  it("is the whole of what gameRatingRefusal does once the flag says yes, for a game played straight", () => {
+    // Two functions, one rule: the split is the flag and the handicap, so a
     // future change to either cannot leave the audit and the pages disagreeing.
     for (const [black, white, hotSeat] of [
       ["Aki", "Sumi", false],
@@ -86,10 +92,23 @@ describe("ratingImpossible", () => {
       ["", "Sumi", false],
       ["Chibi", "Aki", false],
     ] as const) {
-      expect(gameRatingRefusal({ rated: true, hotSeat, blackName: black, whiteName: white })).toBe(
+      expect(gameRatingRefusal({ rated: true, hotSeat, blackName: black, whiteName: white, ...straight })).toBe(
         ratingImpossible({ hotSeat, blackName: black, whiteName: white }),
       );
     }
+  });
+
+  /*
+   * THE AUDIT IS BLIND TO A HANDICAP, ON PURPOSE. It writes `rated: false` onto
+   * the finished rows it refuses, and a handicap game finished before a
+   * handicap was refused did move both players' ratings. Nothing existing is
+   * rewritten by this change — so the audit's question takes no handicap at
+   * all, and the pages' does.
+   */
+  it("never refuses a handicap, which the pages do and the audit must not", () => {
+    const names = { hotSeat: false, blackName: "Aki", whiteName: "Sumi" };
+    expect(ratingImpossible(names)).toBeNull();
+    expect(gameRatingRefusal({ rated: true, ...names, ...handicapped })).toBe(RATING_REFUSALS.handicap);
   });
 });
 
@@ -103,12 +122,18 @@ describe("ratingImpossible", () => {
 describe("gameRatingRefusal", () => {
   it("says nothing for a game never asked to count, hot seat or not", () => {
     // A friendly is a choice, not a refusal — it gets its own badge, not this one.
-    expect(gameRatingRefusal({ rated: false, hotSeat: false, blackName: "Aki", whiteName: "Sumi" })).toBeNull();
-    expect(gameRatingRefusal({ rated: false, hotSeat: true, blackName: "Aki", whiteName: "Sumi" })).toBeNull();
+    expect(
+      gameRatingRefusal({ rated: false, hotSeat: false, blackName: "Aki", whiteName: "Sumi", ...straight }),
+    ).toBeNull();
+    expect(
+      gameRatingRefusal({ rated: false, hotSeat: true, blackName: "Aki", whiteName: "Sumi", ...straight }),
+    ).toBeNull();
   });
 
   it("counts an ordinary rated game between two different people", () => {
-    expect(gameRatingRefusal({ rated: true, hotSeat: false, blackName: "Aki", whiteName: "Sumi" })).toBeNull();
+    expect(
+      gameRatingRefusal({ rated: true, hotSeat: false, blackName: "Aki", whiteName: "Sumi", ...straight }),
+    ).toBeNull();
   });
 
   it("refuses a hot-seat game even between two ordinary, different names", () => {
@@ -116,7 +141,7 @@ describe("gameRatingRefusal", () => {
     // distinct names, so `ratingRefusal` alone would wrongly say this counts.
     const hotSeat = isHotSeat({ blackToken: "same-token", whiteToken: "same-token" });
     expect(hotSeat).toBe(true);
-    expect(gameRatingRefusal({ rated: true, hotSeat, blackName: "Aki", whiteName: "Sumi" })).toBe(
+    expect(gameRatingRefusal({ rated: true, hotSeat, blackName: "Aki", whiteName: "Sumi", ...straight })).toBe(
       RATING_REFUSALS.hotSeat,
     );
   });
@@ -129,24 +154,65 @@ describe("gameRatingRefusal", () => {
     const hotSeat = isHotSeat({ blackToken: "token-a", whiteToken: "token-b" });
     expect(hotSeat).toBe(false);
     expect(
-      gameRatingRefusal({ rated: true, hotSeat, blackName: "John Morris", whiteName: "  john   morris " }),
+      gameRatingRefusal({
+        rated: true,
+        hotSeat,
+        blackName: "John Morris",
+        whiteName: "  john   morris ",
+        ...straight,
+      }),
     ).toBe(RATING_REFUSALS.onePlayer);
   });
 
   it("calls a hot-seat game hot-seat even when the shared name would also refuse it", () => {
     // Checked in the write path's own order: hot seat is decided, and
     // `recordResult` — so `ratingRefusal` — is never reached at all.
-    expect(gameRatingRefusal({ rated: true, hotSeat: true, blackName: "Aki", whiteName: "Aki" })).toBe(
+    expect(gameRatingRefusal({ rated: true, hotSeat: true, blackName: "Aki", whiteName: "Aki", ...straight })).toBe(
       RATING_REFUSALS.hotSeat,
     );
   });
 
   it("passes the other refusals through unchanged when the seats are not hot seat", () => {
     expect(
-      gameRatingRefusal({ rated: true, hotSeat: false, blackName: "", whiteName: "Sumi" }),
+      gameRatingRefusal({ rated: true, hotSeat: false, blackName: "", whiteName: "Sumi", ...straight }),
     ).toBe(RATING_REFUSALS.unnamed);
     expect(
-      gameRatingRefusal({ rated: true, hotSeat: false, blackName: "Chibi", whiteName: "Aki" }),
+      gameRatingRefusal({ rated: true, hotSeat: false, blackName: "Chibi", whiteName: "Aki", ...straight }),
     ).toBe(RATING_REFUSALS.keptRecord);
+  });
+});
+
+/**
+ * A HANDICAP GAME MOVES NOBODY'S RATING. John, asked whether a game with a
+ * handicap should move both players' ratings: "Fine don't".
+ */
+describe("gameRatingRefusal and a handicap", () => {
+  const people = { hotSeat: false, blackName: "Aki", whiteName: "Sumi" };
+
+  it("refuses a rated game between two different people with a handicap on either colour", () => {
+    expect(gameRatingRefusal({ rated: true, ...people, ...handicapped })).toBe(RATING_REFUSALS.handicap);
+    const onWhite = { handicap: { ...NO_HANDICAP, stone: STONES.white, longerLine: true } };
+    expect(gameRatingRefusal({ rated: true, ...people, ...onWhite })).toBe(RATING_REFUSALS.handicap);
+  });
+
+  it("gives the reason whatever the flag says, because a handicap game has no friendly to choose", () => {
+    // The set-up screen shows the fact where the Rated and Friendly tiles were,
+    // and creation stores it unrated — so the flag is nobody's decision, and the
+    // filed game still owes its reader the reason.
+    expect(gameRatingRefusal({ rated: false, ...people, ...handicapped })).toBe(RATING_REFUSALS.handicap);
+  });
+
+  it("says a refusal the write path would have met first, first", () => {
+    expect(gameRatingRefusal({ rated: true, ...people, hotSeat: true, ...handicapped })).toBe(
+      RATING_REFUSALS.hotSeat,
+    );
+    expect(
+      gameRatingRefusal({ rated: true, ...people, blackName: "John", whiteName: "john", ...handicapped }),
+    ).toBe(RATING_REFUSALS.onePlayer);
+  });
+
+  it("leaves a game played straight exactly as it was", () => {
+    expect(gameRatingRefusal({ rated: true, ...people, ...straight })).toBeNull();
+    expect(gameRatingRefusal({ rated: false, ...people, ...straight })).toBeNull();
   });
 });

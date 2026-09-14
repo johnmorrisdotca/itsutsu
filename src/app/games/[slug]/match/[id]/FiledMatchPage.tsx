@@ -178,6 +178,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
       : gameRatingRefusal({
           rated: game.rated,
           hotSeat: members !== null && isHotSeat(members),
+          handicap: game.handicap,
           blackName: game.playedAs.black,
           whiteName: game.playedAs.white,
         });

@@ -198,6 +198,46 @@ describe("the two ladders cannot disagree", () => {
     expect(reached.length).toBeGreaterThanOrEqual(5);
   });
 
+  /**
+   * AND EVERY CALL TO IT ASKS THE LADDER'S OWN RULE FIRST.
+   *
+   * Each ending once wrote its own `!isHotSeat(row) && row.rated` in front of
+   * the writer: four copies of one rule, and not one of them could see a
+   * handicap, so a game with one moved both players' ratings. John, asked
+   * whether it should: "Fine don't". The endings ask `countsOnLadder` now,
+   * which asks `gameRatingRefusal` — the question the pages ask — and this
+   * fails any call to the writer that is not behind it, so the next refusal is
+   * added in one function and reaches every writer.
+   *
+   * By line, like the rest of this file: the call, and the `if (` on its line
+   * or up to two above it where the condition wraps.
+   */
+  it("rates a result only where countsOnLadder says the ladder counts it", () => {
+    const guarded: string[] = [];
+    const unguarded: string[] = [];
+    for (const file of SOURCES) {
+      if (file.path === WRITER) continue;
+      const lines = file.source.split("\n");
+      lines.forEach((line, index) => {
+        const code = line.trim();
+        if (!/\brecordResult\(/.test(code) || code.startsWith("*") || code.startsWith("//")) return;
+        const condition = lines.slice(Math.max(0, index - 2), index + 1).join("\n");
+        (condition.includes("countsOnLadder(") ? guarded : unguarded).push(`${file.path}:${index + 1}`);
+      });
+    }
+    expect(unguarded).toEqual([]);
+    // The presence, not only the absence: a pattern that matched nothing would pass over no writer at all.
+    expect(guarded.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("asks gameRatingRefusal from countsOnLadder, so the pages and the writers ask one question", () => {
+    const source = SOURCES.find((file) => file.path === "src/lib/rating/countsOnLadder.ts")?.source ?? "";
+    const from = source.indexOf("export function countsOnLadder(");
+    expect(from).toBeGreaterThan(-1);
+    const body = source.slice(from, source.indexOf("\n}\n", from));
+    expect(body).toContain("gameRatingRefusal(game)");
+  });
+
   it("reaches the one writer from the endings and from nowhere else", () => {
     const importers = SOURCES.filter((file) => file.source.includes('from "@/lib/rating/recordResult"'));
     expect(importers.map((file) => file.path).sort()).toEqual([

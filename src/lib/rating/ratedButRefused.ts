@@ -40,6 +40,18 @@ import type { RatingRefusal } from "./rateable.constants";
  * final stone, and never again; whatever was refused then is refused for good.
  * So `false` is not a guess about a finished row, it is what happened — and
  * that is exactly the line an audit may write to.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * AND NOT A HANDICAP, WHICH THE PAGES REFUSE AND THIS DOES NOT
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * A handicap game moves no rating now (`handicapRefusal`), but a finished one
+ * from before that DID move both players' ratings, and its `rated: true` was
+ * the truth when it was written. Listing those here would have the next run of
+ * this audit rewrite rows that were never wrong — and the change that made a
+ * handicap unrated was to touch no existing production row. So this reads
+ * `ratingImpossible`, which asks the seats and the names only: the refusals the
+ * write path has always applied.
  */
 export type AuditedGame = {
   rated: boolean;

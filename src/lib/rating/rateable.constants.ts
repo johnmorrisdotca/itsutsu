@@ -27,6 +27,18 @@ export const RATING_REFUSALS = {
    * `rateable.ts`, which is the only place this reason is produced.
    */
   hotSeat: "hot-seat",
+  /**
+   * A HANDICAP ON EITHER COLOUR. A game with one was rated like any other, so
+   * both players' ratings moved over a game one of them had agreed to play on
+   * harder rules. John, asked whether it should: "Fine don't".
+   *
+   * Not "friendly" either, for the reason hot seat is not: nobody chose it, and
+   * no choice can undo it while the handicap stands. Produced by
+   * `handicapRefusal`, which asks the engine's own `hasHandicap` — so a
+   * head-start handicap is refused by the same check the day it joins that
+   * function, without anybody finding this one.
+   */
+  handicap: "handicap",
 } as const;
 
 export type RatingRefusal = (typeof RATING_REFUSALS)[keyof typeof RATING_REFUSALS];
@@ -89,5 +101,13 @@ export const RATING_REFUSAL_DISPLAY: Record<
     sentence:
       "Both seats were played from one screen, so there is no way to tell the two of you apart from a login. A rating is an exchange between two separate players, and hot-seat play cannot give the site one — however the two names read.",
     short: `${RATING_REFUSED_WORD} — one screen`,
+  },
+  [RATING_REFUSALS.handicap]: {
+    playing: "This game will not count",
+    filed: "This game did not count",
+    kanji: "手合割",
+    sentence:
+      "One side took a handicap, so the two of you are not playing by the same rules. A rating is an exchange between two players on equal terms, and a handicap game cannot give the site one — so it is filed and replayed like any other, but no rating moves.",
+    short: `${RATING_REFUSED_WORD} — a handicap`,
   },
 };

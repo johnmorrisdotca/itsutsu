@@ -1,3 +1,6 @@
+import type { HandicapTerms } from "@/lib/gomoku/gomoku.types";
+import { hasHandicap } from "@/lib/gomoku/rules/handicap";
+
 /**
  * WHETHER A GAME BEING CREATED IS STORED AS ONE THAT COUNTS.
  *
@@ -16,11 +19,11 @@
  * **The seats first, and they are not negotiable.** Two seats on one screen
  * share one token, and every write path checks that before it records a
  * result: `appendMove`, `settleEnded`, `claimTimeout` and `resignGame` each
- * ask `isHotSeat` before `recordResult`. A game's two tokens are written once
- * at creation and never rewritten, so a board that is one screen today is one
- * screen for as long as it exists. `rated: true` on such a row is therefore
- * not a preference the site might honour later — it is a claim about the
- * result that can never come true.
+ * ask `countsOnLadder`, which asks `isHotSeat`, before `recordResult`. A game's
+ * two tokens are written once at creation and never rewritten, so a board that
+ * is one screen today is one screen for as long as it exists. `rated: true` on
+ * such a row is therefore not a preference the site might honour later — it is
+ * a claim about the result that can never come true.
  *
  * OFFERS DID NOT MOVE THAT CASE, and it is worth saying because it looks as
  * though it might have: a fork against a known person is an OFFER now rather
@@ -36,6 +39,14 @@
  * path stopped DEFAULTING a hot-seat game to rated in 0.145.2; a fork went on
  * INHERITING it from the game it was taken out of, which is how one bad row
  * could make another.
+ *
+ * **A handicap, for the same reason.** A game with a handicap on either colour
+ * moves nobody's rating (`handicapRefusal`; John: "Fine don't"), so storing it
+ * rated would be the same claim that cannot come true — and it would put the
+ * game in every "rated games" list a ladder's count links to, a count it is not
+ * in. Asked through `hasHandicap`, so a head start is stored the same way the
+ * day it joins that function. This decides new games only: a handicap game
+ * already filed keeps the flag it was written with, because it was rated then.
  *
  * **Then what the game this one came out of said.** A rematch is the same
  * game and a fork continues a position, so what they carry beats what the
@@ -56,14 +67,17 @@
  * the fault this codebase calls a report that cannot answer: it is exactly how
  * an absent `rated` used to become a rated game.
  */
-export function ratedAtCreation(asked: {
-  /** What the request said, or undefined where it said nothing at all. */
-  requested: boolean | undefined;
-  /** What the forked or rematched game said, or undefined where there is none. */
-  carried: boolean | undefined;
-  /** Two seats, one screen, one token — see `isHotSeat`. */
-  hotSeat: boolean;
-}): boolean {
+export function ratedAtCreation(
+  asked: HandicapTerms & {
+    /** What the request said, or undefined where it said nothing at all. */
+    requested: boolean | undefined;
+    /** What the forked or rematched game said, or undefined where there is none. */
+    carried: boolean | undefined;
+    /** Two seats, one screen, one token — see `isHotSeat`. */
+    hotSeat: boolean;
+  },
+): boolean {
   if (asked.hotSeat) return false;
+  if (hasHandicap(asked)) return false;
   return asked.carried ?? asked.requested ?? true;
 }

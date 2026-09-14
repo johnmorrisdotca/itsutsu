@@ -282,6 +282,16 @@ export type Handicap = {
 export type HandicapRule = Exclude<keyof Handicap, "stone" | "secondStoneExclusion">;
 
 /**
+ * EVERYTHING THAT MAKES A GAME UNEVEN ON PURPOSE, as `hasHandicap` reads it.
+ *
+ * Today that is the per-colour handicap alone. A head start joins this type,
+ * and every question that takes it — whether a rating may move, on the pages,
+ * the set-up screen and the writers — then has to be handed it, so none of
+ * them can go on rating a game that has one.
+ */
+export type HandicapTerms = Pick<GameSettings, "handicap">;
+
+/**
  * The rules one colour actually plays under: the variant's spec for that
  * colour with the handicap laid over it. Everything in the engine that asks
  * "may this colour…" reads one of these, never the spec directly.
