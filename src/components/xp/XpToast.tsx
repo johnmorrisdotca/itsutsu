@@ -19,10 +19,12 @@ export type XpToastHold = "pointer" | "focus" | "hidden";
  * why runs under, quieter. A level reached gets its own line and its own
  * tint, because that is the one a player will want to show somebody.
  *
- * It is a notice, not a modal. The card takes a tap anywhere to go, the
- * button in its corner is the same thing for a keyboard and a screen reader,
- * and Escape works while focus is on it. Resting a pointer or focus on it
- * holds it still, which is how a screenshot gets taken.
+ * It is a notice, not a modal, and it takes no press meant for the page: a
+ * press anywhere on the card reaches whatever is under it (see
+ * `XP_TOAST_STYLE.host`). The button in its corner closes it, for a pointer, a
+ * keyboard and a screen reader alike, and Escape works while focus is on it.
+ * Resting the pointer on that button, or focus anywhere in the card, holds it
+ * still, which is how a screenshot gets taken.
  */
 export function XpToast({
   item,
@@ -71,10 +73,7 @@ export function XpToast({
       data-id={item.id}
       data-phase={phase}
       data-level={level === undefined ? undefined : reached ? "reached" : "next"}
-      onClick={() => onDismiss(item.id)}
       onKeyDown={onKeyDown}
-      onPointerEnter={() => onHold(item.id, "pointer")}
-      onPointerLeave={() => onRelease(item.id, "pointer")}
       onFocus={() => onHold(item.id, "focus")}
       onBlur={() => onRelease(item.id, "focus")}
     >
@@ -114,6 +113,8 @@ export function XpToast({
         className={style.dismiss}
         data-testid="xp-toast-dismiss"
         onClick={onButton}
+        onPointerEnter={() => onHold(item.id, "pointer")}
+        onPointerLeave={() => onRelease(item.id, "pointer")}
       >
         <span aria-hidden="true">×</span>
       </button>

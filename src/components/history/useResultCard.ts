@@ -115,7 +115,17 @@ export function useResultCard(
     if (!open) return;
     const active = document.activeElement;
     returnTo.current = active instanceof HTMLElement && active !== document.body ? active : null;
-    dialog.current?.focus();
+    /*
+     * WITHOUT SCROLLING. A plain `focus()` scrolls what it focuses into view, and
+     * the card opens only once the browser has the page — so a finished game
+     * opened from a link jumped down to the board (736px at 1280×720) a moment
+     * after it appeared, taking "Play again" and the header with it. A press being
+     * aimed at them in that moment went nowhere: a player met the page moving
+     * under the pointer, and on a busy CI runner three set-up-again and rematch
+     * specs sat on the finished game. The card is still focused, so it is still
+     * announced; the page stays where the reader left it.
+     */
+    dialog.current?.focus({ preventScroll: true });
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       event.preventDefault();
