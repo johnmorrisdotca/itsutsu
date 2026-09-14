@@ -152,7 +152,7 @@ export async function memberSummaryFor(email: string): Promise<MemberSummary | n
  * The limit itself is honest rather than wrong: the caller reports the true
  * total beside what it shows, so an operator is told what was left out.
  */
-export async function listMembers(limit = 200, you: string | null = null): Promise<MemberSummary[]> {
+export async function listMembers(limit = 200, youId: string | null = null): Promise<MemberSummary[]> {
   const [recent, computers] = await Promise.all([
     prisma.member.findMany({
       orderBy: { lastSeenAt: "desc" },
@@ -161,7 +161,7 @@ export async function listMembers(limit = 200, you: string | null = null): Promi
     }),
     prisma.member.findMany({ where: { botTier: { not: null } }, select: MEMBER_SUMMARY_SELECT }),
   ]);
-  return toSummary(alwaysListed(recent, computers), you);
+  return toSummary(alwaysListed(recent, computers), youId);
 }
 
 /** Exactly the columns MEMBER_SUMMARY_SELECT asks for, and nothing else. */
@@ -180,8 +180,12 @@ type SummaryRow = {
   botTier: string | null;
 };
 
-function toSummary(rows: SummaryRow[], you: string | null): MemberSummary[] {
-  const mine = you === null ? null : foldEmail(you);
+/**
+ * `youId` is the operator's MEMBER ID, not their address: which row is the
+ * reader's own is a question about who somebody is, and the site answers that
+ * by id. Null when the operator has no member row — then no row is theirs.
+ */
+function toSummary(rows: SummaryRow[], youId: string | null): MemberSummary[] {
   return rows.map(({ unclaimableBecause, botTier, phraseSetAt, ...row }) => ({
     ...row,
     createdAt: row.createdAt.toISOString(),
@@ -196,7 +200,7 @@ function toSummary(rows: SummaryRow[], you: string | null): MemberSummary[] {
       isOperator: isAdminEmail(row.email),
       legacyKind: legacyKindOf(row.name),
     }),
-    isYou: mine !== null && row.email !== null && foldEmail(row.email) === mine,
+    isYou: youId !== null && row.id === youId,
   }));
 }
 

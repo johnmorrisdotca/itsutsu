@@ -1,12 +1,12 @@
 import { connection } from "next/server";
 import Link from "next/link";
 
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { findMembersByNames, type NamedMember } from "@/lib/auth/members";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { playerKey } from "@/lib/rating/playerKey";
-import { buddyEmails } from "@/lib/social/buddies";
-import { ignoredEmails } from "@/lib/social/ignores";
+import { buddyMemberIds } from "@/lib/social/buddies";
+import { ignoredMemberIds } from "@/lib/social/ignores";
 
 import { GameCount } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
@@ -64,10 +64,14 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
    * who joined with a code rather than with Google. A stranger is told about
    * the playing half once, by the ladder panel beside this one, rather than
    * twice by two panels saying the same thing.
+   *
+   * The ACTIONS beside each person are an account's, since the routes behind
+   * them refuse a caller with no address — so `mine` is the address only where
+   * there is an account, and who is who is decided by member id below.
    */
-  const session = await currentSession();
-  if (session === null) return null;
-  const mine = session.email ? session.email.trim().toLowerCase() : null;
+  const reader = await currentReader();
+  if (!reader.signedIn) return null;
+  const mine = reader.hasAccount ? reader.email : null;
 
   const [played, counts] = await Promise.all([recentGamesOf(variant), fetchPlayedCounts()]);
 
@@ -96,8 +100,8 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
     names.length === 0
       ? Promise.resolve(new Map<string, NamedMember>())
       : (findMembersByNames(names) as Promise<Map<string, NamedMember>>),
-    mine === null ? Promise.resolve(new Set<string>()) : buddyEmails(mine),
-    mine === null ? Promise.resolve(new Set<string>()) : ignoredEmails(mine),
+    mine === null ? Promise.resolve(new Set<string>()) : buddyMemberIds(mine),
+    mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),
   ]);
   /*
    * Only names with an account behind them. A name typed into a game at one
@@ -199,11 +203,11 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
                   name={name}
                   email={member.email}
                   memberId={member.id}
-                  isBuddy={member.email !== null && buddies.has(member.email)}
-                  ignoring={member.email !== null && ignored.has(member.email)}
+                  isBuddy={member.id !== undefined && buddies.has(member.id)}
+                  ignoring={member.id !== undefined && ignored.has(member.id)}
                   isComputer={Boolean(member.botTier)}
-                  isYou={member.email !== null && member.email === mine}
-                  signedIn={mine !== null}
+                  isYou={member.id !== undefined && member.id === reader.memberId}
+                  canAsk={reader.hasAccount}
                 />
               </li>
             ))}

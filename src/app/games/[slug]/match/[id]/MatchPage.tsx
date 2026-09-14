@@ -30,6 +30,7 @@ import { seatCookieName } from "@/lib/history/seatCookie";
 import { seatPickList } from "@/lib/phrase/seatPick";
 import { markSeatTaken, resolveSeat, seatIsFree } from "@/lib/history/seats";
 import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
 import { prisma } from "@/lib/prisma";
@@ -144,9 +145,9 @@ export async function MatchPage({
   });
   if (tokens !== null && isHotSeat(tokens) && claim !== null) {
     // The member's own board, so a phone and a laptop set out the same one.
-    const mine = await currentEmail();
-    const board = await appearanceFor(mine);
-    const defaults = await gameDefaultsFor(mine);
+    const reader = await currentReader();
+    const board = await appearanceFor(reader.email);
+    const defaults = await gameDefaultsFor(reader.email);
     return (
       <Page width="wide">
         <SiteHeader />
@@ -156,7 +157,8 @@ export async function MatchPage({
           trackPath
           match={{ game, at: move }}
           appearance={board}
-          signedIn={mine !== null}
+          // An account to write the board back to, not a session — see /games/<slug>/play.
+          savesToAccount={reader.hasAccount}
           defaults={defaults}
         />
       </Page>

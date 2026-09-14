@@ -72,6 +72,7 @@ export function SetUpGame({
   opponents,
   seats = [],
   signedIn,
+  canAsk,
   chooseGame = false,
   opponent = null,
   again = null,
@@ -96,7 +97,14 @@ export function SetUpGame({
    * for sits down at theirs instead of posting a second one beside it.
    */
   seats?: SeatOnBoard[];
+  /** Holding a session — `Reader.signedIn`: enough to post a seat for anyone and Continue. */
   signedIn: boolean;
+  /**
+   * An account — `Reader.hasAccount`: what naming a person or a program needs,
+   * because that is a challenge and the route refuses one from a caller with no
+   * address. An invite holder has the session and not this.
+   */
+  canAsk: boolean;
   /**
    * Offer the game itself as the first choice: set at /games/new, where nothing
    * has been chosen yet, and left alone at /games/<game>/new, where the address
@@ -332,6 +340,7 @@ export function SetUpGame({
                   named={named}
                   disabled={busy}
                   signedIn={signedIn}
+                  canAsk={canAsk}
                 />
               ) : null,
             /*
@@ -365,7 +374,18 @@ export function SetUpGame({
             'Continue'". Where somebody is already waiting at exactly this game it
             says whose seat it continues to, because that is a different act.
           */}
-          <Button onClick={start} disabled={busy || !signedIn} strong data-testid="set-up-start">
+          {/*
+            A session continues with a seat for anyone; naming somebody is a
+            challenge, which needs an account. An invite holder who arrives
+            with a person or a program already chosen — a link typed or sent —
+            is not carried on to a Begin the route would refuse.
+          */}
+          <Button
+            onClick={start}
+            disabled={busy || !signedIn || (!canAsk && against !== ANYONE)}
+            strong
+            data-testid="set-up-start"
+          >
             {busy
               ? SET_UP_COPY.continuing
               : waiting !== undefined

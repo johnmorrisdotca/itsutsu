@@ -47,6 +47,15 @@ export type StartGameProps = {
   families: GameGroup[];
   seats: SeatOnBoard[];
   opponents: Opponent[];
-  /** A signed-out browser can still play at one screen, and nothing else. */
+  /**
+   * Holding a session — `Reader.signedIn`. A signed-out browser can still play
+   * at one screen, and nothing else; a signed-in one can post a seat for anyone.
+   */
   signedIn: boolean;
+  /**
+   * An account to ask with — `Reader.hasAccount`. Naming a member or a computer
+   * player sends a challenge, which the route refuses to a caller with no
+   * address, so an invite holder is not offered them.
+   */
+  canAsk: boolean;
 };

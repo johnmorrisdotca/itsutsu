@@ -23,7 +23,8 @@ import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { ResultCard } from "@/components/history/ResultCard";
 import { resolveSeat } from "@/lib/history/seats";
 import { cookies } from "next/headers";
-import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { currentSession } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { Conversation } from "@/components/history/Conversation";
 import { fetchApplause, type ApplauseTally } from "@/lib/history/applause";
 import { ignoredEmails } from "@/lib/social/ignores";
@@ -68,9 +69,8 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * computer player does not have, and a game against one is where wanting
    * another immediately is the ordinary case rather than the rare one.
    */
-  const [me, myId, members, applause] = await Promise.all([
-    currentSession(),
-    currentMemberId(),
+  const [reader, members, applause] = await Promise.all([
+    currentReader(),
     prisma.game.findUnique({
       where: { id },
       select: {
@@ -88,7 +88,9 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
     }),
     currentSession().then((session) => fetchApplause(id, session?.email ?? null)),
   ]);
-  const mine = me?.email ?? null;
+  const myId = reader.memberId;
+  // By address, for the reads still KEPT by address: the ignore list, the account's board, how long it keeps a finished game.
+  const mine = reader.email;
   /*
    * By the member's id, not by their address.
    *
@@ -220,7 +222,8 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
       hidden={hidden}
       verdict={seatColour === null ? undefined : verdict}
       applause={applause}
-      signedIn={mine !== null}
+      signedIn={reader.signedIn}
+      hasAccount={reader.hasAccount}
       silenced={silenced}
       refusal={refusal}
       appearance={appearance}
@@ -238,6 +241,7 @@ function FiledMatch({
   verdict,
   applause,
   signedIn,
+  hasAccount,
   silenced,
   refusal,
   appearance,
@@ -260,7 +264,10 @@ function FiledMatch({
   /** The viewer's own read on their play, when they held a seat; undefined for a reader. */
   verdict?: Verdict;
   applause: ApplauseTally;
+  /** Holding a session — `Reader.signedIn`. */
   signedIn: boolean;
+  /** An account — `Reader.hasAccount` — which leaving a mark needs. */
+  hasAccount: boolean;
 }) {
   const result = GAME_RESULT_DISPLAY[game.result];
   /*
@@ -374,7 +381,7 @@ function FiledMatch({
       {verdict !== undefined ? <SelfVerdict id={game.id} initial={verdict} /> : null}
 
       {/* Anybody may say the game was worth playing, not only the two who played it. */}
-      <Applause gameId={game.id} initial={applause} signedIn={signedIn} />
+      <Applause gameId={game.id} initial={applause} signedIn={signedIn} hasAccount={hasAccount} />
 
       <GameReplay
         game={game}

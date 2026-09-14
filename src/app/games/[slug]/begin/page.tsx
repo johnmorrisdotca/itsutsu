@@ -15,7 +15,8 @@ import { readSetUpAsked } from "@/components/live/setUpAsked";
 import { setUpFrom } from "@/components/live/setUpFrom";
 import { creationFor, openerIn, seatsFor } from "@/components/live/setUpStart";
 import { sittingAt } from "@/components/live/sittingAt";
-import { currentEmail, currentSession } from "@/lib/auth/currentSession";
+import { currentEmail } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { fixedOpener } from "@/lib/gomoku/rules/creation";
@@ -233,7 +234,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
           Sit down brings here: asked by address, Begin was disabled for everybody
           John invites. The routes behind it still decide who may do what.
         */
-        signedIn={(await currentSession()) !== null}
+        signedIn={(await currentReader()).signedIn}
         problem={problem}
         lineage={lineage}
       />

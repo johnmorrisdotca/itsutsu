@@ -94,5 +94,8 @@ export type OpponentChoiceProps = {
   /** Somebody the address named, so they are offered even when the list would not have them. */
   named: SetUpOpponent | null;
   disabled?: boolean;
+  /** Holding a session: enough to post a seat for anyone. */
   signedIn: boolean;
+  /** An account: what naming a person or a program needs, because that sends a challenge. */
+  canAsk: boolean;
 };

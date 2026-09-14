@@ -12,11 +12,11 @@ import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor }
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { fetchVariantLeaders, type VariantStanding } from "@/lib/rating/variantRatings";
 import { RATING_POOLS } from "@/lib/rating/pools";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { findMembersByNames, type NamedMember } from "@/lib/auth/members";
 import { playerKey } from "@/lib/rating/playerKey";
-import { buddyEmails } from "@/lib/social/buddies";
-import { ignoredEmails } from "@/lib/social/ignores";
+import { buddyMemberIds } from "@/lib/social/buddies";
+import { ignoredMemberIds } from "@/lib/social/ignores";
 
 export const metadata = { title: "Standings 名人" };
 
@@ -55,32 +55,33 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
    * actions — so the affordance moved here rather than being dropped, which
    * would have quietly retired a rule the whole site is held to.
    *
-   * The SESSION decides, not the address: an invite holder is in, and is asked
-   * nothing they have no address to answer with.
+   * An ACCOUNT decides, which is neither the session nor the address alone: an
+   * invite holder is in, and is asked nothing they have no address to answer
+   * with — the challenge, buddy and ignore routes all refuse them — so for them
+   * nothing is looked up at all. Who is who is then decided by member id.
    */
-  const session = await currentSession();
-  const mine = session?.email ? session.email.trim().toLowerCase() : null;
+  const reader = await currentReader();
   const named = [...standings, ...againstComputers].map((one) => one.name);
   const [members, buddies, ignored] =
-    session === null
+    !reader.hasAccount || reader.email === null
       ? [new Map<string, NamedMember>(), new Set<string>(), new Set<string>()]
       : await Promise.all([
           findMembersByNames(named) as Promise<Map<string, NamedMember>>,
-          mine === null ? Promise.resolve(new Set<string>()) : buddyEmails(mine),
-          mine === null ? Promise.resolve(new Set<string>()) : ignoredEmails(mine),
+          buddyMemberIds(reader.email),
+          ignoredMemberIds(reader.email),
         ]);
   const actionsFor = (standing: VariantStanding) => {
     const member = members.get(playerKey(standing.name));
-    const email = member?.email ?? null;
+    const id = member?.id;
     return (
       <PlayerActions
-        email={email}
-        memberId={member?.id}
-        isBuddy={email !== null && buddies.has(email)}
-        ignoring={email !== null && ignored.has(email)}
+        email={member?.email ?? null}
+        memberId={id}
+        isBuddy={id !== undefined && buddies.has(id)}
+        ignoring={id !== undefined && ignored.has(id)}
         isComputer={Boolean(member?.botTier)}
-        isYou={email !== null && email === mine}
-        signedIn={mine !== null}
+        isYou={id !== undefined && id === reader.memberId}
+        canAsk={reader.hasAccount}
         compact
         testId="ladder-actions"
         name={standing.name}
@@ -122,7 +123,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
           yet... and that's a change to have a link saying - be the first to
           play!" See Show The Data, Not The Way To It in AGENTS.md.
         */}
-        <StandingsTable standings={standings} actions={mine === null ? undefined : actionsFor} actionsLabel="Ask" />
+        <StandingsTable standings={standings} actions={reader.hasAccount ? actionsFor : undefined} actionsLabel="Ask" />
         {standings.length === 0 ? (
           <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="standings-empty">
             <span className="text-muted">
@@ -172,7 +173,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
             standings={againstComputers}
             pool="computer"
             testId="computer-standings-table"
-            actions={mine === null ? undefined : actionsFor}
+            actions={reader.hasAccount ? actionsFor : undefined}
             actionsLabel="Ask"
           />
           {againstComputers.length === 0 ? (

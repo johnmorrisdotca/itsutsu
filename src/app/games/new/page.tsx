@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SetUpGame } from "@/components/live/SetUpGame";
 import { SetUpHeading } from "@/components/live/SetUpHeading";
 import { setUpFrom } from "@/components/live/setUpFrom";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
@@ -41,10 +41,11 @@ export const metadata: Metadata = { title: "Set up a game" };
  * a game would have settled the one field he wanted open.
  */
 export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/games/new">) {
-  const [asked, email] = await Promise.all([searchParams, currentEmail()]);
+  const [asked, reader] = await Promise.all([searchParams, currentReader()]);
   const [defaults, opponents, seats] = await Promise.all([
-    gameDefaultsFor(email),
-    fetchOpponents(email),
+    // Kept on the account, so an invite holder — no account — opens at the site's own.
+    gameDefaultsFor(reader.email),
+    fetchOpponents(reader),
     seatsToSitAt(),
   ]);
   /*
@@ -61,7 +62,13 @@ export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/gam
         defaults={{ size: defaults.size, moveTimeMs: defaults.moveTimeMs }}
         opponents={opponents}
         seats={seats}
-        signedIn={email !== null}
+        /*
+          A SESSION lets somebody continue; an ACCOUNT lets them name who. An
+          invite holder can post a seat for anyone and was shown every tile inert
+          and Continue disabled, because this asked for an address.
+        */
+        signedIn={reader.signedIn}
+        canAsk={reader.hasAccount}
         chooseGame
         opponent={from.opponent}
         again={from.again}

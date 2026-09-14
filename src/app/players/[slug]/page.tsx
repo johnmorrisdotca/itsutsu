@@ -16,11 +16,11 @@ import { PlayerFigures } from "@/components/players/PlayerFigures";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMemberById, findMemberByName, findMembersByNames } from "@/lib/auth/members";
-import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
-import { fetchBuddies } from "@/lib/social/buddies";
-import { ignoredEmails } from "@/lib/social/ignores";
+import { buddyMemberIds } from "@/lib/social/buddies";
+import { ignoredMemberIds } from "@/lib/social/ignores";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
 import { findLegacyPlayer, foldedInto, legaciesForName } from "@/lib/legacy/legacyPlayers.data";
@@ -117,11 +117,17 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * directory knows both and the page a directory row leads to did not, which
    * is why it could offer nothing.
    */
-  const me = await currentSession();
-  const myId = await currentMemberId();
+  const reader = await currentReader();
+  /*
+   * BY MEMBER ID. The lists are kept by address and read with it, but whether
+   * this player is on them — and whether this player is the reader — is decided
+   * by id: an invite holder has no address, and an address is only how somebody
+   * signs in, never who they are.
+   */
+  const mine = reader.hasAccount ? reader.email : null;
   const [myBuddies, myIgnored] = await Promise.all([
-    me?.email ? fetchBuddies(me.email) : Promise.resolve([]),
-    me?.email ? ignoredEmails(me.email) : Promise.resolve(new Set<string>()),
+    mine === null ? Promise.resolve(new Set<string>()) : buddyMemberIds(mine),
+    mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),
   ]);
   // A member has a page from the day they join, before they have finished a
   // game: every list that prints their name links to it, and a link that
@@ -153,8 +159,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * invitation, and offering one would be offering a game that cannot happen.
    */
   const askable =
-    Boolean(me?.email) &&
-    me?.email !== member?.email &&
+    reader.hasAccount &&
+    member?.id !== reader.memberId &&
     (member?.botTier ? member.id !== undefined : Boolean(member?.email));
 
   /*
@@ -171,13 +177,13 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * checklist, and this list named ten people and offered nothing about any
    * of them.
    */
-  const opponents = me?.email
+  const opponents = reader.hasAccount
     ? {
         members: await findMembersByNames(record.recent.map((one) => one.opponent)),
-        buddies: new Set(myBuddies.map((buddy) => buddy.email).filter((one): one is string => Boolean(one))),
+        buddies: myBuddies,
         ignored: myIgnored,
-        mine: me.email,
-        signedIn: true,
+        me: reader.memberId,
+        canAsk: reader.hasAccount,
       }
     : undefined;
   /*
@@ -301,11 +307,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         <PlayerActions
           email={member?.email ?? null}
           memberId={member?.id}
-          isBuddy={myBuddies.some((buddy) => buddy.email === member?.email)}
-          ignoring={member?.email !== null && member?.email !== undefined && myIgnored.has(member.email)}
+          isBuddy={member?.id !== undefined && myBuddies.has(member.id)}
+          ignoring={member?.id !== undefined && myIgnored.has(member.id)}
           isComputer={Boolean(member?.botTier)}
-          isYou={me?.email !== undefined && me.email !== null && me.email === member?.email}
-          signedIn={Boolean(me?.email)}
+          isYou={member?.id !== undefined && member.id === reader.memberId}
+          canAsk={reader.hasAccount}
         />
         {/*
           What somebody says about themselves. Written into the profile form
@@ -424,7 +430,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label="Where this player's record was kept, and how their XP was earned" />
 
       {earner !== null && open === XP_HISTORY_TAB ? (
-        <PlayerXpHistory memberId={earner} isYou={earner === myId} asked={asked} at={`/players/${slug}`} />
+        <PlayerXpHistory memberId={earner} isYou={earner === reader.memberId} asked={asked} at={`/players/${slug}`} />
       ) : shown === null ? (
         <>
           <ItsutsuRecord

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { renameMember } from "@/lib/auth/members";
 import { countMembers, listMembers, setBanned } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
@@ -31,8 +32,15 @@ export async function GET(request: Request) {
      * told, in the heading, that there were two hundred.
      */
     const [items, total] = await Promise.all([
-      // Their own address, so their own row can be told from everybody else's.
-      listMembers(MEMBERS_SHOWN, me.email ?? null),
+      /*
+       * Their own member id, so their own row can be told from everybody
+       * else's. It was their address, compared against each row's — a question
+       * about who somebody is, which the site answers by id. Whether they MAY
+       * see this list is still the address, through `currentAdmin` above: the
+       * operator is named by address in the deployment, and that is not an
+       * identity check but an allowlist.
+       */
+      listMembers(MEMBERS_SHOWN, await currentMemberId()),
       countMembers(),
     ]);
     /*

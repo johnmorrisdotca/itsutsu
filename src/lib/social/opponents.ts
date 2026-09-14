@@ -1,19 +1,23 @@
 import "server-only";
 
+import type { Reader } from "@/lib/auth/reader.types";
+
 import { fetchBuddies } from "./buddies";
-import { ignoredEmails } from "./ignores";
+import { ignoredMemberIds } from "./ignores";
 import { fetchHereNow } from "./presence";
 
 /** Somebody a game can be offered to. */
 export type Opponent = {
   /**
-   * Their member id, which is how a game against them is asked for.
+   * Their member id, which is how a game against them is asked for — and how
+   * this list decides who is the reader, who is ignored, and who is already
+   * listed.
    *
-   * The address is still here because the ignore list is kept by address and
-   * this list is filtered against it — but nothing that OFFERS a game reads it
-   * any more. A computer player has no address at all, so the id was always
-   * the form that works for everybody, and it keeps members' addresses out of
-   * the markup of every page with a chooser on it.
+   * The address is still here because the ignore and buddy lists are KEPT by
+   * address — but nothing that offers a game or tells two people apart reads it
+   * any more. A computer player has no address at all, so the id was always the
+   * form that works for everybody, and it keeps members' addresses out of the
+   * markup of every page with a chooser on it.
    */
   id: string;
   email: string;
@@ -30,21 +34,26 @@ export type Opponent = {
  * name and a history and no address, so it is nobody to challenge — that is
  * why this is keyed on the address being there at all.
  *
+ * NOBODY FOR A READER WITH NO ACCOUNT. An invite holder is signed in and has no
+ * address, so there is no buddy list to read and a challenge they sent would
+ * be refused; the list is empty rather than a room full of offers the route
+ * turns down.
+ *
  * Gathered here rather than on a page because two pages ask it now: the games
  * page, where a game is started in a sentence, and the setup screen, where it
  * is settled in full. One list, so the same people are offered by both.
  */
-export async function fetchOpponents(email: string | null): Promise<Opponent[]> {
-  if (email === null) return [];
+export async function fetchOpponents(reader: Pick<Reader, "email" | "memberId" | "hasAccount">): Promise<Opponent[]> {
+  if (!reader.hasAccount || reader.email === null) return [];
   const [here, buddies, ignored] = await Promise.all([
     fetchHereNow(),
-    fetchBuddies(email),
-    ignoredEmails(email),
+    fetchBuddies(reader.email),
+    ignoredMemberIds(reader.email),
   ]);
-  const hereEmails = new Set(here.map((entry) => entry.email));
+  const hereIds = new Set(here.map((entry) => entry.id));
   return [
     ...here
-      .filter((entry) => entry.email !== null && entry.email !== email && !ignored.has(entry.email))
+      .filter((entry) => entry.email !== null && entry.id !== reader.memberId && !ignored.has(entry.id))
       .map((entry) => ({
         id: entry.id,
         email: entry.email as string,
@@ -52,7 +61,7 @@ export async function fetchOpponents(email: string | null): Promise<Opponent[]> 
         here: true,
       })),
     ...buddies
-      .filter((buddy) => buddy.email !== null && !hereEmails.has(buddy.email) && !ignored.has(buddy.email))
+      .filter((buddy) => buddy.email !== null && !hereIds.has(buddy.id) && !ignored.has(buddy.id))
       .map((buddy) => ({
         id: buddy.id,
         email: buddy.email as string,

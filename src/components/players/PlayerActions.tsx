@@ -32,7 +32,7 @@ export function PlayerActions({
   ignoring,
   isComputer,
   isYou,
-  signedIn,
+  canAsk,
   compact = false,
   testId = "player-actions",
   name,
@@ -45,8 +45,19 @@ export function PlayerActions({
   isBuddy: boolean;
   ignoring: boolean;
   isComputer: boolean;
+  /** Decided by member id: the reader's own row, where there is nothing to offer. */
   isYou: boolean;
-  signedIn: boolean;
+  /**
+   * Whether the READER has an account to ask with — `Reader.hasAccount`.
+   *
+   * Not "signed in", which it was called. A reader who came in by invite code
+   * is signed in and has no address, and every route behind these three buttons
+   * — the challenge, the buddy list, the ignore list — answers 401 to a caller
+   * with no address. Offering them would be offering a press the site then
+   * refuses two screens later, so they are offered to an account and nobody
+   * else, and the name says so.
+   */
+  canAsk: boolean;
   /**
    * For a row rather than a page heading.
    *
@@ -67,7 +78,7 @@ export function PlayerActions({
    */
   testId?: string;
 }) {
-  if (isYou || !signedIn) return null;
+  if (isYou || !canAsk) return null;
   if (isComputer) {
     if (memberId === undefined) return null;
     return (
