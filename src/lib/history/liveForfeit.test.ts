@@ -269,3 +269,34 @@ describe.each([
     expect(await appendMove("g1", "black-token", place(firstLegal(after)))).toEqual({ ok: true, game: { id: "g1" } });
   });
 });
+
+/**
+ * A TIMEOUT CLAIMED WHILE A TWIST IS STILL OWED RESOLVES TOO.
+ *
+ * A twist game's move is a stone and then a separate quarter turn, so a live row
+ * can stand between the two with the clock running on the player who owes the
+ * twist. The claim wrote nothing there and answered "finished". Now the stone
+ * stays, the quarter is left unturned, and the turn is forfeited.
+ */
+describe("a timeout claimed while a twist is owed", () => {
+  it("forfeits the rest of the turn, keeps the stone, and the game goes on", async () => {
+    row = liveRow("twistFive", 6, { lastMoveAt: hourAgo(), deadlineAt: hourAgo() });
+    row.moves.push(stored({ number: 1, row: 0, col: 0, stone: STONES.black, kind: MOVE_KINDS.place }));
+    const owing = replayed();
+    expect(owing.pendingTwist).toBe(true);
+    expect(owing.toPlay).toBe(STONES.black);
+
+    expect((await claimTimeout("g1", "white-token")).ok).toBe(true);
+
+    expect(row.moves.map((move) => [move.number, move.stone, move.kind])).toEqual([
+      [1, STONES.black, MOVE_KINDS.place],
+      [2, STONES.black, MOVE_KINDS.forfeit],
+    ]);
+    const after = replayed();
+    expect(after.pendingTwist).toBe(false);
+    expect(after.toPlay).toBe(STONES.white);
+    expect(after.board[0]).toBe(STONES.black);
+    expect(gameWrites[gameWrites.length - 1]).toMatchObject({ status: "active", moveCount: 2, blackForfeits: 1, ...settledTurn(after) });
+    expect(await appendMove("g1", "white-token", place(firstLegal(after)))).toEqual({ ok: true, game: { id: "g1" } });
+  });
+});
