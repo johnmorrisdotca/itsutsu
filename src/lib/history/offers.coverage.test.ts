@@ -94,6 +94,10 @@ for (const path of ROOTS.flatMap(filesUnder)) {
  */
 const SAFE_BECAUSE = new Map([
   [
+    "src/lib/bots/botMixRun.ts",
+    "lists no game to anybody: it counts every row to say which database a bot batch reached, and counts finished games per variant — with NOT_A_REFUSED_OFFER spread in — to decide which games the computer players should play",
+  ],
+  [
     "src/lib/history/verdicts.ts",
     "requires a non-null verdict on a seat — a private read of your own play, which nobody ever left on an offer they refused",
   ],

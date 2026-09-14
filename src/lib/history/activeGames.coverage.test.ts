@@ -56,6 +56,10 @@ const EXEMPT = new Map<string, string>([
     "src/lib/bots/botSeats.ts",
     "A computer player taking a seat. Exempt by design — they exist to always have a seat open, and `memberOverActiveLimit` skips bot ids anyway, so a check here would be a call that can only ever answer null.",
   ],
+  [
+    "src/lib/bots/botSeriesGame.ts",
+    "The bot batch writing a game between two computer players, run in process by `pnpm bots:play` and never reached by a request. Both seats are programs, which `memberOverActiveLimit` skips, so a check here could only ever answer null.",
+  ],
 ]);
 
 function filesUnder(dir: string): string[] {

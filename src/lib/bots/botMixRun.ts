@@ -4,6 +4,7 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import { matchPath } from "@/lib/gomoku/slugs";
+import { NOT_A_REFUSED_OFFER } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
 import { playerKey } from "@/lib/rating/playerKey";
 import { MIX_ALL_PLAYERS, isUndefeated, mixSeedFrom, planMix } from "./botMix";
@@ -32,7 +33,8 @@ const KNOWN = new Set<string>(RULE_VARIANT_LIST);
 export async function readMixFacts(): Promise<MixFacts> {
   const finished = await prisma.game.groupBy({
     by: ["variant"],
-    where: { status: "finished" },
+    // A declined or withdrawn offer is not a game anybody played, and must not hide an unplayed one.
+    where: { status: "finished", ...NOT_A_REFUSED_OFFER },
     _count: { _all: true },
   });
   const finishedByVariant: Partial<Record<RuleVariant, number>> = {};

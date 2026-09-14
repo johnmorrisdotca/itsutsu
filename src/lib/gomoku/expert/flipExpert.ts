@@ -1,6 +1,6 @@
 import { GAME_STATUS, STONES, WRAP_MODES } from "../gomoku.constants";
 import { otherStone } from "../engine";
-import { flipsAt } from "../rules/flips";
+import { flipsAt, inLayingPhase } from "../rules/flips";
 import { DECIDED_SCORE, DRAW_SCORE } from "../opponent.constants";
 import { EXPERT_KINDS, EXPERT_SEARCH, FLIP_SQUARE, FLIP_WEIGHTS } from "./expert.constants";
 import type { Cell, GameState, Point, Stone, VariantSpec } from "../gomoku.types";
@@ -258,6 +258,16 @@ export function squareValue(size: number, point: Point): number {
  * being asked before any flip is possible.
  */
 export function flipCandidates(state: GameState, limit: number): Point[] {
+  /*
+   * NOTHING WHILE THE CENTRE IS BEING LAID. Classic Reversi opens with the
+   * players laying the four centre discs, where no disc flips and only those
+   * four squares are legal — so a reading of flips has nothing true to say.
+   * This used to offer a flipping move anyway: Tamenoki chose it, the rules
+   * refused it, and a live game stalled at move 2 with nobody able to move.
+   * Offering nothing makes the search decline, and the shared chooser — which
+   * only ever offers what the engine accepts — lays the disc instead.
+   */
+  if (inLayingPhase(state)) return [];
   const board = state.board;
   const { size } = state.settings;
   const mover = state.toPlay;
