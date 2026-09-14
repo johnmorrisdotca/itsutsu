@@ -195,6 +195,12 @@ that is missing any of them fails the build rather than shipping quietly.
   `RULES_ATTRIBUTION`.
 - **It belongs to a family.** Add it to `GAME_FAMILIES` in `families.ts`. A game in no
   family appears on no index page, so nobody will ever meet it.
+- **It decides its names on other sites.** A kept record prints the source site's own
+  name for a game, and `GAME_ALIASES` in `src/lib/legacy/gameAliases.ts` is what turns
+  that name into a link; `NO_GAME_HERE` names the ones with no game here, each with its
+  reason. `src/lib/legacy/gameAliases.coverage.test.ts` (the alias gate) fails when a
+  recorded name is in neither, when a record uses a name one of our games goes by
+  without leading to it, or when a name is in both — Checkers shipped without one.
 - **It has an end-to-end test.** One Playwright case that opens the game and plays the
   move that shows its rule working.
 
