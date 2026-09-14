@@ -15,7 +15,7 @@ import { readSetUpAsked } from "@/components/live/setUpAsked";
 import { setUpFrom } from "@/components/live/setUpFrom";
 import { creationFor, openerIn, seatsFor } from "@/components/live/setUpStart";
 import { sittingAt } from "@/components/live/sittingAt";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentEmail, currentSession } from "@/lib/auth/currentSession";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { fixedOpener } from "@/lib/gomoku/rules/creation";
@@ -226,7 +226,14 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
         seating={seating}
         change={changeLink(from.initial, known)}
         begin={begin}
-        signedIn={email !== null}
+        /*
+          A SESSION, NOT AN ADDRESS, is what lets somebody press Begin — the same
+          question /games asks of its lobby. A reader who joined by invite code
+          holds a session and no address, and is exactly who the waiting room's
+          Sit down brings here: asked by address, Begin was disabled for everybody
+          John invites. The routes behind it still decide who may do what.
+        */
+        signedIn={(await currentSession()) !== null}
         problem={problem}
         lineage={lineage}
       />

@@ -1,6 +1,6 @@
 import { expect, request as playwrightRequest, test } from "@playwright/test";
 
-import { PLAYER_STATE, readyHere } from "./support";
+import { PLAYER_STATE, ready, readyHere } from "./support";
 import { namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
@@ -139,10 +139,15 @@ test.describe("open seats", () => {
     await page.goto("/games");
     const row = page.getByTestId("open-game").filter({ hasText: hostName });
     await expect(row).toBeVisible();
-    // Taking a seat posts to the API from the browser, so the button does
-    // nothing at all until React is holding it.
-    await readyHere(row.getByTestId("sit"));
+    /*
+     * Sit down is a link to the page that states the seat's game before anybody
+     * sits at it; Begin there takes the seat. That button posts from the browser,
+     * so it does nothing at all until React is holding it.
+     */
     await row.getByTestId("sit").click();
+    await expect(page).toHaveURL(new RegExp(`/begin\\?.*sit=${game.id}`));
+    await ready(page, "doorstep");
+    await page.getByTestId("doorstep-begin").click();
     await expect(page).toHaveURL(new RegExp(`/games/gomoku/match/${game.id}`));
     await expect(page.getByTestId("turn-banner")).toContainText("Waiting");
 

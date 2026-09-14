@@ -71,6 +71,16 @@ export const MY_GAMES_COPY = {
     hint: "Games somebody has posted for anyone. Sit down and it is yours.",
     /** The hover on a poster's rating that the computer players earned, which is not a place on the ladder. */
     computerPool: "Earned against the computer players, which are rated in a pool of their own.",
+    /** Beside every row's game: the way to what it is and how a turn goes. */
+    rules: "Rules",
+    /** The press on a row. It leads to the page that states the seat's game, and takes the seat from there. */
+    sitDown: "Sit down",
+    /** Under the player's name: the colour the reader would take. */
+    youPlay: (colour: string) => `You would play ${colour}`,
+    /** The empty room, which keeps its headings and invites the first seat. */
+    nobodyWaiting: "Nobody is waiting for a game right now.",
+    postFirst: "Post the first seat",
+    postFirstAfter: "and it waits here for whoever comes in next.",
   },
   sit: { label: "Sit as White", kanji: "着席" },
   sitTaken: "Somebody else just took that seat.",
@@ -242,8 +252,6 @@ export const START_COPY = {
    * discover the extra step, so the hint says it.
    */
   nextIsSetUp: "You confirm the rules on the next screen; nothing is started until you do.",
-  noSeats:
-    "Nobody is asking for a game right now. Post a seat above and yours is first on the board.",
   onlyMine: "Only yours so far. It stays until somebody sits down or you withdraw it.",
   nobodyHere: "Nobody else is here just now. A seat posted above waits for whoever comes in next.",
 } as const;
