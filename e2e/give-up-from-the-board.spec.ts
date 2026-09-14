@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { PLAYER_STATE, playAt, ready } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * Giving a game up from the board a player is actually looking at.
@@ -33,8 +37,9 @@ test.describe("giving up, from the board", () => {
     browser,
     request,
   }) => {
+    const stamp = Date.now().toString(36);
     const made = await request.post("/api/games/live", {
-      data: { blackName: "Kai", whiteName: "Mio", size: 9 },
+      data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9 },
     });
     expect(made.status()).toBe(201);
     const game = (await made.json()) as { id: string; blackToken: string };

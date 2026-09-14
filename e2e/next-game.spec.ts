@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { PLAYER_STATE, playAt, ready } from "./support";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /**
  * After a move, on to the next game that is waiting.
@@ -42,10 +42,17 @@ type Game = { id: string; blackToken: string; whiteToken: string };
  * question is the whole point of the case below.
  */
 const mine = gamesMade();
+/** And the names they were played under, which outlive the games. */
+const under = namesPlayedUnder();
+
+/** Distinct per game, so two made in one millisecond are still two names. */
+let made = 0;
 
 async function start(request: import("@playwright/test").APIRequestContext): Promise<Game> {
+  made += 1;
+  const stamp = `${Date.now().toString(36)}${made}`;
   const response = await request.post("/api/games/live", {
-    data: { blackName: "Kai", whiteName: "Mio", size: 9, variant: "freestyle" },
+    data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9, variant: "freestyle" },
   });
   expect(response.status(), await response.text()).toBe(201);
   const game = (await response.json()) as Game;

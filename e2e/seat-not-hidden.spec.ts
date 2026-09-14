@@ -3,6 +3,10 @@ import { expect, test } from "@playwright/test";
 import { chooseGame, openMoreSettings, openSetUpPage } from "./support";
 
 import { memberContext } from "./members";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * My own seat does not hide somebody else's.
@@ -33,7 +37,7 @@ test.describe("a seat somebody else is waiting on", () => {
     });
     const theirs = await them.request.post("/api/games/live", {
       data: {
-        blackName: `Waiting ${stamp}`,
+        blackName: under(`Waiting ${stamp}`),
         variant: "notakto",
         size: 3,
         moveTimeMs: Number(pace),
@@ -45,7 +49,13 @@ test.describe("a seat somebody else is waiting on", () => {
 
     // Then I post one exactly like it, which is the case that broke.
     const mine = await page.request.post("/api/games/live", {
-      data: { blackName: "Me", variant: "notakto", size: 3, moveTimeMs: Number(pace), open: true },
+      data: {
+        blackName: under(`Me ${stamp}`),
+        variant: "notakto",
+        size: 3,
+        moveTimeMs: Number(pace),
+        open: true,
+      },
     });
     expect(mine.status()).toBe(201);
 

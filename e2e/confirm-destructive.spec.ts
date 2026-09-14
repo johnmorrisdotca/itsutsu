@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { readyHere } from "./support";
+import { namesPlayedUnder } from "./tidy";
 
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * Nothing destructive happens on one click.
@@ -13,8 +16,9 @@ import { readyHere } from "./support";
  */
 test.describe("asking before something cannot be undone", () => {
   test("resigning asks, and says no leaves the game alone", async ({ browser, request }) => {
+    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { blackName: "Careful", whiteName: "Rash", size: 9 },
+      data: { blackName: under(`Careful ${stamp}`), whiteName: under(`Rash ${stamp}`), size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };

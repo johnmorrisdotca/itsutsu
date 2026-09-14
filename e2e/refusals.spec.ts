@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /**
  * A refusal is a refusal: the row is exactly as it was.
@@ -48,15 +48,22 @@ async function unchangedBy(
 
 test.describe("a refusal changes nothing", () => {
   const mine = gamesMade();
+  /** And the names they were played under, which outlive the games. */
+  const under = namesPlayedUnder();
+
+  /** Distinct per game, so two made in one millisecond are still two names. */
+  let games = 0;
 
   async function aGame(request: APIRequestContext) {
+    games += 1;
+    const stamp = `${Date.now().toString(36)}${games}`;
     const made = await request.post("/api/games/live", {
       data: {
         variant: "freestyle",
         size: 9,
         winLength: 6,
-        blackName: "Refusal Black",
-        whiteName: "Refusal White",
+        blackName: under(`Refusal Black ${stamp}`),
+        whiteName: under(`Refusal White ${stamp}`),
         rated: false,
         allowResign: false,
         clockMode: "game",

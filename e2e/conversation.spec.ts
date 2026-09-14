@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. */
+const under = namesPlayedUnder();
 
 /**
  * What the players said, kept with the game.
@@ -13,9 +15,14 @@ const tidyAway = gamesMade();
  * the talk still being there against the moves it belongs to.
  */
 test.describe("the conversation in a finished game", () => {
+  /** Distinct per game, so two made in one millisecond are still two names. */
+  let made = 0;
+
   async function playedAndTalked(request: import("@playwright/test").APIRequestContext) {
+    made += 1;
+    const stamp = `${Date.now().toString(36)}${made}`;
     const started = await request.post("/api/games/live", {
-      data: { blackName: `Kaya ${Date.now().toString(36)}`, whiteName: "Sumi", size: 9 },
+      data: { blackName: under(`Kaya ${stamp}`), whiteName: under(`Sumi ${stamp}`), size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
@@ -75,8 +82,9 @@ test.describe("the conversation in a finished game", () => {
      *
      * Both seats speak, because one seat may only say twenty things a minute.
      */
+    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { blackName: `Chatty ${Date.now().toString(36)}`, whiteName: "Sumi", size: 9 },
+      data: { blackName: under(`Chatty ${stamp}`), whiteName: under(`Sumi ${stamp}`), size: 9 },
     });
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
     tidyAway(game.id);
@@ -105,8 +113,9 @@ test.describe("the conversation in a finished game", () => {
   });
 
   test("says nothing at all when nobody spoke", async ({ page, request }) => {
+    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { blackName: `Quiet ${Date.now().toString(36)}`, whiteName: "Also quiet", size: 9 },
+      data: { blackName: under(`Quiet ${stamp}`), whiteName: under(`Also quiet ${stamp}`), size: 9 },
     });
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
     tidyAway(game.id);

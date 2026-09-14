@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
 import { ready, startAndBegin } from "./support";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /**
  * Every game this file makes, taken away when it finishes.
@@ -15,6 +15,8 @@ import { gamesMade } from "./tidy";
  * fails other specs for reasons that have nothing to do with the code.
  */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * Playing that game again.
@@ -147,8 +149,9 @@ test.describe("a finished game offers to be played again", () => {
   });
 
   test("is not offered to somebody who only watched", async ({ page, request }) => {
+    const stamp = Date.now().toString(36);
     const made = await request.post("/api/games/live", {
-      data: { blackName: "One", whiteName: "Two", size: 9, winLength: 3 },
+      data: { blackName: under(`One ${stamp}`), whiteName: under(`Two ${stamp}`), size: 9, winLength: 3 },
     });
     expect(made.status()).toBe(201);
     const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };
@@ -188,8 +191,9 @@ test.describe("a finished game offers to be played again", () => {
   test("refuses at the door too, not only on the page", async ({ request }) => {
     // Hiding a control whose route still answers is how the seat links went
     // wrong; the refusal belongs on the route.
+    const stamp = Date.now().toString(36);
     const made = await request.post("/api/games/live", {
-      data: { blackName: "One", whiteName: "Two", size: 9, winLength: 3 },
+      data: { blackName: under(`One ${stamp}`), whiteName: under(`Two ${stamp}`), size: 9, winLength: 3 },
     });
     const game = (await made.json()) as { id: string };
     const refused = await request.post("/api/games/live", { data: { variant: "freestyle", rematch: game.id } });

@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext, removeMember } from "./members";
 import { ready } from "./support";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * THE MASTHEAD DOES NOT MOVE ONCE THE PAGE IS LIVE.
@@ -50,7 +54,7 @@ test.describe("the masthead", () => {
          * Its Own World".
          */
         const made = await context.request.post("/api/games/live", {
-          data: { blackName: "Kai", whiteName: me.name, size: 9 },
+          data: { blackName: under(`Kai ${stamp}`), whiteName: me.name, size: 9 },
         });
         expect(made.status(), "could not start a game to wait on").toBe(201);
         const game = (await made.json()) as { id: string; blackToken: string; whiteToken: string };

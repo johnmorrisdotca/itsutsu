@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext } from "./members";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * A seat nobody is sitting in cannot be late.
@@ -16,7 +20,7 @@ test.describe("a game still waiting for somebody to sit down", () => {
   test("refuses a timeout claim against the empty seat", async ({ request }) => {
     const started = await request.post("/api/games/live", {
       data: {
-        blackName: "Poster",
+        blackName: under(`Poster ${Date.now().toString(36)}`),
         whiteName: "",
         size: 9,
         moveTimeMs: 86_400_000,
@@ -80,7 +84,7 @@ test.describe("a game still waiting for somebody to sit down", () => {
   }) => {
     const started = await request.post("/api/games/live", {
       data: {
-        blackName: "Poster",
+        blackName: under(`Poster ${Date.now().toString(36)}`),
         whiteName: "",
         size: 9,
         moveTimeMs: 86_400_000,

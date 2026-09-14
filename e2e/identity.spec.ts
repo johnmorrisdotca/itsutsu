@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
+import { namesPlayedUnder } from "./tidy";
+
+/**
+ * The names this file's games are played under, which outlive the games. See
+ * `namesPlayedUnder`. Only the invented ones: "Chibi" is a remembered player,
+ * refused before any game is written, and is the subject rather than litter.
+ */
+const under = namesPlayedUnder();
 
 /**
  * A name is how the site addresses a person, and on this site it is also
@@ -22,9 +30,9 @@ test.describe("a name is not free for the taking", () => {
     expect(reserved.status()).toBe(409);
 
     // A name that has finished a rated game has a record behind it.
-    const played = `Played ${stamp}`;
+    const played = under(`Played ${stamp}`);
     const started = await request.post("/api/games/live", {
-      data: { blackName: played, whiteName: `Other ${stamp}`, size: 9 },
+      data: { blackName: played, whiteName: under(`Other ${stamp}`), size: 9 },
     });
     const game = (await started.json()) as { id: string; whiteToken: string };
     expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status()).toBe(200);

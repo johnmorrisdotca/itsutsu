@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import { BOT_PHRASES } from "../src/lib/history/reactions.constants";
+import { namesPlayedUnder } from "./tidy";
+
+/** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * The computer players say hello, and thank you for the game.
@@ -115,8 +119,9 @@ test.describe("a computer player's manners", () => {
   test("says nothing at all in a game between two people", async ({ request }) => {
     // The phrases belong to the computer players; a game of two people is
     // theirs to fill or leave quiet.
+    const stamp = Date.now().toString(36);
     const started = await request.post("/api/games/live", {
-      data: { blackName: "Kai", whiteName: "Mio", size: 9, variant: "freestyle" },
+      data: { blackName: under(`Kai ${stamp}`), whiteName: under(`Mio ${stamp}`), size: 9, variant: "freestyle" },
     });
     const game = (await started.json()) as { id: string; blackToken: string };
     await request.post(`/api/games/${game.id}/moves`, {
