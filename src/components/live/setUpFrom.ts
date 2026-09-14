@@ -4,17 +4,12 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import type { GameDefaults } from "@/components/game/gameDefaults";
 import { isBotId } from "@/lib/bots/bots";
 import { gamesPlayedBy } from "@/lib/bots/bots.constants";
-import {
-  DEFAULT_SETTINGS,
-  NO_HANDICAP,
-  OPENING_RULES,
-  boardSizesFor,
-  sizeForVariant,
-} from "@/lib/gomoku/gomoku.constants";
+import { DEFAULT_SETTINGS, boardSizesFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { parseHandicap } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
+import { plainDraft } from "./plainDraft";
 import { applyRulesChange, draftFromGame, type RulesDraft } from "./rulesDraft";
 import { boardAsked, readSetUpAsked, type SetUpAsked } from "./setUpAsked";
 import type { SetUpAgain, SetUpFork, SetUpFrom, SetUpOpponent } from "./setUp.types";
@@ -86,19 +81,16 @@ export async function setUpFrom({
    */
   const settledBoard = boardAsked(want, chosen);
   const liked = settledBoard ?? defaults.size;
-  const initial: RulesDraft = {
+  /*
+   * The plain pre-fill, from the one place it is stated — the lobby sentence
+   * names a waiting seat only where this screen will offer it, and decides that
+   * against the same draft (`plainDraft`, `seatsTheSentenceOffers`).
+   */
+  const initial: RulesDraft = plainDraft({
     variant: chosen,
     size: sizeForVariant(chosen, sizes.includes(liked) ? liked : sizes[0]),
-    obstacles: "none",
-    opening: OPENING_RULES.free,
     moveTimeMs: want.pace === null ? defaults.moveTimeMs : want.pace.ms,
-    timeoutPenalty: "turn",
-    clockMode: "move",
-    rated: true,
-    allowResign: true,
-    open: true,
-    handicap: NO_HANDICAP,
-  };
+  });
 
   return {
     initial: askedOver(initial, want),
@@ -406,19 +398,7 @@ function blankFrom(variant: RuleVariant | null): SetUpFrom {
   const chosen = variant ?? (DEFAULT_SETTINGS.variant as RuleVariant);
   const sizes = boardSizesFor(chosen);
   return {
-    initial: {
-      variant: chosen,
-      size: sizeForVariant(chosen, sizes[0]),
-      obstacles: "none",
-      opening: OPENING_RULES.free,
-      moveTimeMs: null,
-      timeoutPenalty: "turn",
-      clockMode: "move",
-      rated: true,
-      allowResign: true,
-      open: true,
-      handicap: NO_HANDICAP,
-    },
+    initial: plainDraft({ variant: chosen, size: sizeForVariant(chosen, sizes[0]), moveTimeMs: null }),
     asPlayed: null,
     /* Nothing was filled in at all, so nothing about the board was settled. */
     boardChosen: null,

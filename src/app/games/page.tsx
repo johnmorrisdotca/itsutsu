@@ -17,7 +17,8 @@ import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { ratingsByName } from "@/lib/rating/players";
 import { playerKey } from "@/lib/rating/playerKey";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
-import { seatOnBoard } from "@/lib/history/seatsToSitAt";
+import { seatsTheSentenceOffers } from "@/lib/history/lobbySeats";
+import { seatOnBoard } from "@/lib/history/seatOnBoard";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { fetchOpponents } from "@/lib/social/opponents";
 import { ignoredMemberIds } from "@/lib/social/ignores";
@@ -170,7 +171,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
    * a whole kind whenever the one kept was the reader's own.
    */
   const usable = seatGames.filter(theirs);
-  const choices = oneOfEachKind(usable);
+  const choices = oneOfEachKind(seatsTheSentenceOffers(usable));
 
   /*
    * The rating a reader asked to filter posters by. Looked up once, for
