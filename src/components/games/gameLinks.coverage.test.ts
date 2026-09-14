@@ -217,7 +217,32 @@ function namesPrinted(source: string): number[] {
   return found;
 }
 
+/**
+ * Files where a game's name is printed as a CHOICE, by name with the reason.
+ *
+ * The same argument as `<option>`, `<label>` and `<button>` above, for a chooser
+ * whose markup is none of those: a name inside it is what you pick, and a link
+ * on it would take the reader away from the thing they are in the middle of.
+ * Named by file rather than widened into a pattern, so a list that is not a
+ * chooser cannot borrow the exception.
+ */
+const CHOOSERS: Record<string, string> = {
+  /*
+   * The games browser over the practice board. The widened matcher found its
+   * forty names and the first answer was to link them — which made each one a
+   * way off the board in the middle of choosing, with nothing set kept. Picking
+   * is the Play button; reading about the focused game is the openings heading,
+   * which does go through `GameName`.
+   */
+  "src/components/game/GameBrowser.tsx": "a chooser over the board: the name is what you pick, not a way out",
+};
+
 describe("a game's name is the way into that game", () => {
+  it("every chooser exception is a file that still exists", () => {
+    const known = new Set(FILES.map((file) => file.path));
+    expect(Object.keys(CHOOSERS).filter((path) => !known.has(path))).toEqual([]);
+  });
+
   it("has files to check, so a passing run means something", () => {
     // A glob that quietly matched nothing would pass every case below.
     expect(FILES.length).toBeGreaterThan(40);
@@ -273,7 +298,9 @@ describe("a game's name is the way into that game", () => {
            */
           !(inside("h1", file.source, at) && file.source.includes("gamePath(")),
       ),
-    ).map((file) => file.path);
+    )
+      .map((file) => file.path)
+      .filter((path) => CHOOSERS[path] === undefined);
 
     expect(offenders, "render the name through GameName, which links it").toEqual([]);
   });
