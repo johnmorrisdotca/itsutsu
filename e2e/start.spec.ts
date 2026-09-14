@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import {
   PLAYER_STATE,
   chooseGame,
+  chooseOpponent,
   openGamesPage,
   openMoreSettings,
   openSetUpPage,
@@ -45,7 +46,7 @@ async function askFor(page: import("@playwright/test").Page, variant: string) {
 test.describe("asking for a game", () => {
   test("posts a seat when nobody is asking, and the seat is a real game", async ({ page }) => {
     await askFor(page, "trapThree");
-    await page.getByTestId("set-up-with").selectOption("anyone");
+    await chooseOpponent(page, "anyone");
 
     const button = page.getByTestId("set-up-start");
     await expect(button).toBeVisible();

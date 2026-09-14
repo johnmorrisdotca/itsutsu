@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 import {
+  aComputerOpponent,
   chooseBoard,
   chooseGame,
+  chooseOpponent,
   chosenBoard,
   openMoreSettings,
   openSetUpPage,
@@ -108,16 +110,7 @@ test.describe("choosing the board before the game exists", () => {
      * — the board would be the poster's rather than this one.
      */
     await openMoreSettings(page);
-    const opponents = page.getByTestId("set-up-with");
-    const computer = (
-      await opponents
-        .locator("option")
-        .evaluateAll((options) =>
-          options.map((option) => (option as HTMLOptionElement).value).filter((value) => value.startsWith("c:")),
-        )
-    )[0];
-    expect(computer).toBeDefined();
-    await opponents.selectOption(computer);
+    await chooseOpponent(page, await aComputerOpponent(page));
     await startAndBegin(page);
 
     await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9-]+/, { timeout: 30_000 });
@@ -150,7 +143,7 @@ test.describe("choosing the board before the game exists", () => {
 
     await setUp(page, "freestyle");
     await openMoreSettings(page);
-    await page.getByTestId("set-up-with").selectOption("anyone");
+    await chooseOpponent(page, "anyone");
     await page.getByTestId("shared-rules-move-time").selectOption(String(WEEK));
 
     // Nobody has touched the board, and it has found them.
@@ -175,7 +168,7 @@ test.describe("choosing the board before the game exists", () => {
 
     await setUp(page, "freestyle");
     await openMoreSettings(page);
-    await page.getByTestId("set-up-with").selectOption("anyone");
+    await chooseOpponent(page, "anyone");
     await page.getByTestId("shared-rules-move-time").selectOption(String(WEEK));
 
     // Asking for their board offers their seat…

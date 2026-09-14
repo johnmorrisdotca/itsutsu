@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
-import { openMoreSettings, ready, startAndBegin } from "./support";
+import { chosenOpponent, openMoreSettings, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -74,7 +74,7 @@ test.describe("a handicap is chosen where the rest of the rules are", () => {
     await page.goto(`/games/gomoku/new?against=${theirId}`);
     await ready(page, "set-up-game");
     await openMoreSettings(page);
-    await expect(page.getByTestId("set-up-with")).toHaveValue(`m:${theirId}`);
+    await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${theirId}`);
 
     // The stronger player takes on the rules of a harder game. Black is the
     // challenger's own seat, which is the case John described.

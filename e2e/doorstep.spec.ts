@@ -1,7 +1,19 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
-import { chooseBoard, chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
+import {
+  aComputerOpponent,
+  chooseBoard,
+  chooseGame,
+  chooseOpening,
+  chooseOpponent,
+  chooseRated,
+  chosenBoard,
+  chosenOpening,
+  chosenRated,
+  openMoreSettings,
+  ready,
+} from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -80,7 +92,7 @@ test.describe("the doorstep, between the setup screen and the board", () => {
     await ready(page, "set-up-game");
     await chooseGame(page, "reversi");
     await openMoreSettings(page);
-    await page.getByTestId("set-up-with").selectOption(`m:${theirId}`);
+    await chooseOpponent(page, `m:${theirId}`);
     await page.getByTestId("shared-rules-move-time").selectOption("none");
 
     expect(await gamesOf(context), "a fresh member who has only chosen has no games").toBe(0);
@@ -139,8 +151,8 @@ test.describe("the doorstep, between the setup screen and the board", () => {
     await chooseGame(page, "freestyle");
     await chooseBoard(page, 19);
     await openMoreSettings(page);
-    await page.getByTestId("shared-rules-opening").selectOption("pro");
-    await page.getByTestId("shared-rules-rated").selectOption("friendly");
+    await chooseOpening(page, "pro");
+    await chooseRated(page, false);
     await page.getByTestId("shared-rules-move-time").selectOption("none");
 
     await page.getByTestId("set-up-start").click();
@@ -159,8 +171,8 @@ test.describe("the doorstep, between the setup screen and the board", () => {
       "freestyle",
     );
     await openMoreSettings(page);
-    await expect(page.getByTestId("shared-rules-opening")).toHaveValue("pro");
-    await expect(page.getByTestId("shared-rules-rated")).toHaveValue("friendly");
+    await expect(chosenOpening(page)).toHaveAttribute("data-opening", "pro");
+    await expect(chosenRated(page)).toHaveAttribute("data-rated", "friendly");
     await expect(page.getByTestId("shared-rules-move-time")).toHaveValue("none");
 
     expect(await gamesOf(context), "walking there and back creates nothing").toBe(0);
@@ -254,16 +266,11 @@ test.describe("the doorstep, between the setup screen and the board", () => {
     await chooseGame(page, "reversi");
     await openMoreSettings(page);
     /*
-     * A program, found by its prefix in the select's own options rather than by
-     * name: the grades are copy and the order is the page's business, and a spec
+     * A program, found by what its own tile says it is rather than by name:
+     * the grades are copy and the order is the page's business, and a spec
      * that hard-codes either is a spec about this week's ladder.
      */
-    const chooser = page.getByTestId("set-up-with");
-    const computer = (await chooser.locator("option").evaluateAll((options) =>
-      (options as HTMLOptionElement[]).map((option) => option.value).filter((value) => value.startsWith("c:")),
-    ))[0];
-    expect(computer, "the setup screen offers no computer player at Reversi").toBeTruthy();
-    await chooser.selectOption(computer);
+    await chooseOpponent(page, await aComputerOpponent(page));
     await page.getByTestId("set-up-start").click();
     const first = await doorstep(page);
     await expect(first.colours).toContainText(/black|white/i);

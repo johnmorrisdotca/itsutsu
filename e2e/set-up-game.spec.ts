@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { chooseBoard, chosenBoard, openMoreSettings, ready, startAndBegin } from "./support";
+import { chooseBoard, chooseRated, chosenBoard, openMoreSettings, ready, startAndBegin } from "./support";
 
 
 /**
@@ -32,7 +32,7 @@ test.describe("setting a game up before it exists", () => {
     // been created by any of it.
     await chooseBoard(page, 19);
     await openMoreSettings(page);
-    await page.getByTestId("shared-rules-rated").selectOption("friendly");
+    await chooseRated(page, false);
     await page.getByTestId("shared-rules-move-time").selectOption({ index: 1 });
 
     const after = await (await request.get("/api/games/mine")).json();
@@ -55,7 +55,7 @@ test.describe("setting a game up before it exists", () => {
     await ready(page, "set-up-game");
     await chooseBoard(page, 19);
     await openMoreSettings(page);
-    await page.getByTestId("shared-rules-rated").selectOption("friendly");
+    await chooseRated(page, false);
     await expect(page.getByTestId("set-up-summary")).toContainText("19×19");
 
     await startAndBegin(page);
