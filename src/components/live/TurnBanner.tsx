@@ -4,6 +4,7 @@ import { discCount } from "@/lib/gomoku/engine";
 import { STONE_DISPLAY, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { replayGame } from "@/lib/gomoku/replay";
+import { LocalTime } from "@/components/ui/LocalTime";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 
 /**
@@ -64,7 +65,7 @@ export function TurnBanner({
                 : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
         {finishedAt !== null ? (
           <span className="block text-xs font-normal opacity-80" data-testid="finished-at">
-            Finished {new Date(finishedAt).toLocaleString()}
+            Finished <LocalTime at={finishedAt} />
           </span>
         ) : null}
       </p>

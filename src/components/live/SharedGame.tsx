@@ -21,6 +21,7 @@ import {
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
 import { Button, SectionTitle } from "@/components/ui/Controls";
+import { LocalTime } from "@/components/ui/LocalTime";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
 import { shownName } from "@/lib/rating/shownName";
 import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
@@ -462,9 +463,11 @@ export function SharedGame({
           You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
           <span className="font-medium text-ink">{shownName(opponent.name)}</span>
           {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
-          {opponent.awayUntil
-            ? ` Away until ${new Date(opponent.awayUntil).toLocaleDateString()}; their deadline waits.`
-            : ""}
+          {opponent.awayUntil ? (
+            <>
+              {" "}Away until <LocalTime at={opponent.awayUntil} style="date" />; their deadline waits.
+            </>
+          ) : null}
         </p>
       ) : null}
       <ReactionLog reactions={shown} />

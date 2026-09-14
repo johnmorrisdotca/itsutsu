@@ -7,6 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
 import { Button, SectionTitle } from "@/components/ui/Controls";
+import { LocalTime } from "@/components/ui/LocalTime";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { PlayedMoves } from "./PlayedMoves";
 import { replayTimeline } from "@/lib/gomoku/replay";
@@ -213,14 +214,18 @@ export function GameReplay({
                 {/* The line is always there, so the slider does not jump as the times come and go.
                     The last move is when the game ended, paired with move 0's "started" below. */}
                 <span className="block text-xs" data-testid="move-made-at">
-                  {current.createdAt
-                    ? `${moveNumber === game.moveCount ? "ended" : "made"} ${new Date(current.createdAt).toLocaleString()}`
-                    : "\u00a0"}
+                  {current.createdAt ? (
+                    <>
+                      {moveNumber === game.moveCount ? "ended" : "made"} <LocalTime at={current.createdAt} />
+                    </>
+                  ) : (
+                    "\u00a0"
+                  )}
                 </span>
               </>
             ) : (
               <span className="block text-xs" data-testid="replay-started-at">
-                started {new Date(game.playedAt).toLocaleString()}
+                started <LocalTime at={game.playedAt} />
               </span>
             )}
           </p>

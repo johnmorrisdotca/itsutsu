@@ -5,6 +5,7 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { PlayerName } from "@/components/players/PlayerName";
 import { CardArrow } from "@/components/ui/CardArrow";
+import { LocalTime } from "@/components/ui/LocalTime";
 import { RAISED_LINK, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
 
@@ -12,13 +13,6 @@ import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-function playedOn(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
 /** One row per game. The whole row is the link into the replay. */
 export function HistoryTable({ items }: { items: GameSummary[] }) {
   if (items.length === 0) {
@@ -52,7 +46,14 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
                 href={matchPath(game.variant, game.id)}
                 data-card-link=""
                 className="absolute inset-0 rounded-xl"
-                aria-label={`Replay: ${game.blackName.trim() || SEAT_DISPLAY.one.label} vs ${game.whiteName.trim() || SEAT_DISPLAY.two.label}, ${playedOn(game.playedAt)}`}
+                aria-label={`Replay: ${game.blackName.trim() || SEAT_DISPLAY.one.label} vs ${game.whiteName.trim() || SEAT_DISPLAY.two.label}`}
+                /*
+                  When it was played is the row's own date, pointed at rather
+                  than copied into the name: an attribute cannot wait for the
+                  browser the way LocalTime does, so a date spelled into it
+                  was drawn in the server's zone and hydrated in the reader's.
+                */
+                aria-describedby={`played-${game.id}`}
               />
               <span className="flex items-center gap-3">
                 {/* The board, in the cell the names share, so the grid keeps its four columns. */}
@@ -63,7 +64,9 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
                     <span className="px-2 text-muted">vs</span>
                     <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={linkable} className={RAISED_LINK} testId="history-player" />
                   </span>
-                  <span className="text-xs text-muted">{playedOn(game.playedAt)}</span>
+                  <span className="text-xs text-muted" id={`played-${game.id}`}>
+                    <LocalTime at={game.playedAt} />
+                  </span>
                 </span>
               </span>
 

@@ -5,6 +5,7 @@ import type { KeyedMutator } from "swr";
 import { GAME_COPY } from "@/components/game/game.constants";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button } from "@/components/ui/Controls";
+import { LocalTime } from "@/components/ui/LocalTime";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
@@ -64,14 +65,20 @@ export function MatchClock({
         <span>
           {STONE_DISPLAY[state.toPlay].label} {GAME_COPY.mustMoveBy}{" "}
           <span className="font-mono tabular-nums">
-            {deadline.toLocaleTimeString()}
+            <LocalTime at={deadline.toISOString()} style="time" />
           </span>
           {" · "}
+          {/*
+            Blank, at the width it will have, until the browser has the page.
+            How long is left depends on whose clock is asking: the server's
+            answer is a second or two old by the time the browser checks it,
+            and the browser's clock is the one this countdown ticks on.
+          */}
           <span
-            className="font-mono tabular-nums"
+            className="inline-block min-w-[7ch] font-mono tabular-nums"
             data-testid="deadline-remaining"
           >
-            {describeRemaining(deadline, new Date(now))}
+            {now === null ? "\u00a0" : describeRemaining(deadline, new Date(now))}
           </span>
           {detail.timeoutPenalty === "turn" &&
           (detail.forfeits.black > 0 || detail.forfeits.white > 0) ? (
