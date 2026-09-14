@@ -2,40 +2,50 @@ import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
 import { CountryMark } from "@/components/players/CountryMark";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
+import { XpCell } from "@/components/players/recordTrailing";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { LevelName } from "@/components/xp/LevelName";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { describeMoveTime } from "@/lib/history/deadline";
+import { rulesPath } from "@/lib/gomoku/slugs";
+import { describeClock } from "@/lib/history/deadline";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { posterOf, type OpenSeatFilter } from "@/lib/history/openSeatsFilter";
 import { posterKeyOf } from "@/lib/history/posterStanding";
 import type { PosterStanding } from "@/lib/history/posterStanding.types";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { RATING_POOLS } from "@/lib/rating/pools";
-import { MY_GAMES_COPY, OPEN_SEATS_FILTER_COPY, START_COPY } from "./mine.constants";
+import { MY_GAMES_COPY, OPEN_SEATS_FILTER_COPY } from "./mine.constants";
 import { OpenSeatsFilters } from "./OpenSeatsFilters";
 import { PlayerName } from "@/components/players/PlayerName";
-import { SitButton } from "./SitButton";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
+import { byGameName, sitDownHref, waitingRoomSays } from "./waitingRoom";
+
+/** How many columns the table has, for the span of its one empty row. */
+const COLUMNS = 7;
 
 /**
- * The noticeboard: games somebody has posted with a seat for anyone. It sits
- * beside the room, and an empty board says so rather than disappearing —
- * "nobody is asking" is the thing a person needs to know before they ask.
- * A game this browser is already in is never on it; you cannot sit across
- * from yourself.
+ * THE WAITING ROOM: every seat somebody has posted, across every game, in one
+ * table — John, pointing at ItsYourTurn's: "We don't have a specific waiting room
+ * do we?" A waiting room is "let me choose my opponent", so every row is a real
+ * person: the game and its rules, the time limit in words, the player with their
+ * level, rating, XP and country, and a Sit down that states the seat's game
+ * before anybody is sat at it. Sorted by game name, so one game's seats sit
+ * together. See `waitingRoom.ts` for the three decisions and why.
  *
- * `games` is the page the board actually shows — narrowed by the filter and
- * cut to `OPEN_GAMES_SHOWN`. `shown` is how many seats matched the filter
- * before that cut, and `total` is how many were on offer before the filter
- * itself, so the count beside the filters can say what narrowed the list
- * rather than only what fits on screen.
+ * `games` is the page the board shows — narrowed by the filter and cut to
+ * `OPEN_GAMES_SHOWN`, newest first. `shown` is how many seats matched the filter
+ * before that cut, and `total` how many were on offer before the filter itself,
+ * so the count beside the filters can say what narrowed the list rather than
+ * only what fits on screen. A seat of the reader's own, or of somebody they
+ * ignore, is never here (the page takes both out by member id).
  *
- * Each poster is shown with their strength — the rating the ladder would print,
- * from the right pool and with its tier, and their XP level — so a reader can
- * pick an opponent of their own strength before sitting down. The rating filter
- * above reads the same figures (`posterStanding.ts`).
+ * THE EMPTY ROOM KEEPS ITS HEADINGS. Nobody waiting is a fact about the site and
+ * the table says it, with the way to post the first seat; a filter that leaves
+ * nothing says that instead, with the way to take the filter off. The room is
+ * only drawn for somebody signed in — a stranger's /games shows the catalogue —
+ * so its invitation is the signed-in one.
  */
 export function OpenGamesBoard({
   games,
@@ -49,10 +59,11 @@ export function OpenGamesBoard({
   shown: number;
   filter: OpenSeatFilter;
   total: number;
-  /** Each poster's rating, level and country, by `posterKeyOf`. */
+  /** Each poster's rating, level, XP and country, by `posterKeyOf`. */
   standings: ReadonlyMap<string, PosterStanding>;
 }) {
   const copy = MY_GAMES_COPY.openBoard;
+  const says = waitingRoomSays({ total, shown });
 
   return (
     <section id="open-seats" className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="open-games">
@@ -61,81 +72,128 @@ export function OpenGamesBoard({
         {games.length > 0 ? <span className="font-normal tracking-normal">{games.length}</span> : null}
       </h2>
       {total > 0 ? <OpenSeatsFilters filter={filter} shown={shown} total={total} /> : null}
-      <p className="text-xs text-muted">
-        {total === 0 ? (
-          START_COPY.noSeats
-        ) : shown === 0 ? (
-          <>
-            {OPEN_SEATS_FILTER_COPY.empty}{" "}
-            <Link href="/games#open-seats" className="underline underline-offset-4" data-testid="open-seats-clear">
-              {OPEN_SEATS_FILTER_COPY.clear}
-            </Link>
-            .
-          </>
-        ) : (
-          copy.hint
-        )}
-      </p>
-      <ul className="flex flex-col gap-1.5">
-        {games.map((game) => {
-          const poster = posterOf(game);
-          const standing = standings.get(posterKeyOf(poster)) ?? null;
-          return (
-            <li
-              key={game.id}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-rule px-3 py-2 text-sm"
-              data-testid="open-game"
-            >
-              {/* Which game the seat is in, at a glance — the same board /play shows. */}
-              <GameThumb variant={game.variant} size="row" />
-              <span className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
-                <span className="truncate font-medium">
-                  {/* By id, so the link carries no surname the line itself shortened away. */}
-                  <PlayerName
-                    name={poster.name}
-                    memberId={poster.memberId}
-                    fallback={game.openSeat === "black" ? SEAT_DISPLAY.two.label : SEAT_DISPLAY.one.label}
-                  />
-                  {/* Where they are, which is most of why they answer at four in the morning. */}
-                  <CountryMark country={standing?.country ?? null} className="ml-1 text-xs" />
-                  <span className="px-1 text-muted">is waiting for someone to play</span>
-                  {game.openSeat === "black" ? STONE_DISPLAY.black.label : STONE_DISPLAY.white.label}
-                </span>
-                {/* How strong they are, on its own line so it is never truncated away. */}
-                <PosterStrength standing={standing} />
-                <span className="text-xs text-muted">
-                  <GameName variant={game.variant} raised /> · {game.size}×{game.size} · {describeMoveTime(game.moveTimeMs)}
-                  {game.allowResign ? "" : " · no resigning"}
-                </span>
-              </span>
-              <SitButton id={game.id} />
-            </li>
-          );
-        })}
-      </ul>
+      {says === "seats" ? <p className="text-xs text-muted">{copy.hint}</p> : null}
+
+      <div className="overflow-x-auto">
+        <table className={TABLE_CLASS} data-testid="waiting-room">
+          <thead className={TABLE_HEAD_CLASS}>
+            <tr>
+              <th className={HEAD} scope="col">
+                Game
+              </th>
+              <th className={HEAD} scope="col">
+                Time limit
+              </th>
+              <th className={HEAD} scope="col">
+                Player
+              </th>
+              <th className={HEAD} scope="col">
+                Rating
+              </th>
+              <th className={HEAD} scope="col">
+                XP
+              </th>
+              <th className={HEAD} scope="col">
+                Location
+              </th>
+              <th className={HEAD} scope="col">
+                <span className="sr-only">{copy.sitDown}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {says !== "seats" ? (
+              <tr className={ROW_CLASS}>
+                <td className="py-3 pr-3 text-sm" colSpan={COLUMNS} data-testid="waiting-room-empty">
+                  {says === "nobody-waiting" ? (
+                    <>
+                      {copy.nobodyWaiting}{" "}
+                      <Link href="/games/new" className="underline underline-offset-4" data-testid="waiting-room-post-first">
+                        {copy.postFirst}
+                      </Link>{" "}
+                      {copy.postFirstAfter}
+                    </>
+                  ) : (
+                    <>
+                      {OPEN_SEATS_FILTER_COPY.empty}{" "}
+                      <Link href="/games#open-seats" className="underline underline-offset-4" data-testid="open-seats-clear">
+                        {OPEN_SEATS_FILTER_COPY.clear}
+                      </Link>
+                      .
+                    </>
+                  )}
+                </td>
+              </tr>
+            ) : (
+              byGameName(games).map((game) => (
+                <SeatRow key={game.id} game={game} standing={standings.get(posterKeyOf(posterOf(game))) ?? null} />
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
 
-/**
- * A poster's level and rating, the way the tables of players print them: the
- * level as a compact badge leading to its rung, and the rating with its tier and,
- * where the computer players earned it, the mark that says so. A poster with no
- * settled rating reads Unrated, never a starting figure nobody earned.
- */
-function PosterStrength({ standing }: { standing: PosterStanding | null }) {
+/** One person waiting, and the way to sit down with them. */
+function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStanding | null }) {
+  const copy = MY_GAMES_COPY.openBoard;
+  const poster = posterOf(game);
   const rating = standing?.rating ?? null;
   return (
-    <span className="flex flex-wrap items-baseline gap-x-2 text-xs text-muted" data-testid="open-game-standing">
-      {standing?.level != null ? <LevelName level={standing.level} compact testId="open-game-level" /> : null}
-      <span className="font-mono tabular-nums" data-testid="open-game-rating">
+    <tr className={ROW_CLASS} data-testid="open-game" data-member={poster.memberId ?? undefined}>
+      <td className="py-1.5 pr-3">
+        <span className="flex items-center gap-2">
+          {/* Which game the seat is in, at a glance — the same board /play shows. */}
+          <GameThumb variant={game.variant} size="row" />
+          <span className="flex flex-col">
+            <GameName variant={game.variant} raised />
+            <Link href={rulesPath(game.variant)} className="text-xs text-muted underline underline-offset-4" data-testid="open-game-rules">
+              {copy.rules}
+            </Link>
+          </span>
+        </span>
+      </td>
+      <td className="py-1.5 pr-3 text-xs" data-testid="open-game-clock">
+        {describeClock(game.clockMode, game.moveTimeMs)}
+        <span className="block text-muted">
+          {game.size}×{game.size}
+          {game.allowResign ? "" : " · no resigning"}
+        </span>
+      </td>
+      <td className="py-1.5 pr-3">
+        {/* By id, so the link carries no surname the line itself shortened away. */}
+        <PlayerName
+          name={poster.name}
+          memberId={poster.memberId}
+          fallback={game.openSeat === "black" ? SEAT_DISPLAY.two.label : SEAT_DISPLAY.one.label}
+        />
+        {standing?.level != null ? (
+          <LevelName level={standing.level} compact className="ml-2 text-muted" testId="open-game-level" />
+        ) : null}
+        <span className="block text-xs text-muted">
+          {copy.youPlay(game.openSeat === "black" ? STONE_DISPLAY.black.label : STONE_DISPLAY.white.label)}
+        </span>
+      </td>
+      <td className={CELL} data-testid="open-game-rating">
         {rating === null ? TIER_DISPLAY.unrated.label : `${rating.rating} · ${TIER_DISPLAY[rating.tier].label}`}
         {rating !== null && rating.pool === RATING_POOLS.computer ? (
-          <span className="ml-1 font-mincho" title={MY_GAMES_COPY.openBoard.computerPool} data-testid="rating-pool-computer">
+          <span className="ml-1 font-mincho" title={copy.computerPool} data-testid="rating-pool-computer">
             機械
           </span>
         ) : null}
-      </span>
-    </span>
+      </td>
+      <XpCell xp={standing?.xp ?? null} />
+      <td className="py-1.5 pr-3 text-xs" data-testid="open-game-location">
+        {standing?.country != null ? <CountryMark country={standing.country} showName /> : <span className="text-muted">—</span>}
+      </td>
+      <td className="py-1.5 text-right">
+        {/* The doorstep for this seat: its game is stated before anybody sits down. */}
+        <Link href={sitDownHref(game)} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-2 py-1 text-xs whitespace-nowrap`} data-testid="sit">
+          {copy.sitDown}
+        </Link>
+      </td>
+    </tr>
   );
 }

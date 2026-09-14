@@ -2,7 +2,7 @@ import { ownedRow } from "@/lib/rating/ownedRow";
 import { playerKey } from "@/lib/rating/playerKey";
 import type { PlayerProfile } from "@/lib/rating/players";
 import { ratingShown } from "@/lib/rating/shownRecord";
-import { levelShown } from "@/lib/xp/levelShown";
+import { levelShown, xpShown } from "@/lib/xp/levelShown";
 
 import type { PosterRatingRow, PosterRef, PosterStanding } from "./posterStanding.types";
 
@@ -62,6 +62,7 @@ export function standingOf({
   return {
     rating: ratingShown(profile),
     level: member === null ? null : levelShown({ xp: member.xp }),
+    xp: member === null ? null : xpShown({ xp: member.xp }),
     country: member === null || member.country === "" ? null : member.country,
   };
 }

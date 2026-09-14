@@ -54,7 +54,7 @@ describe("which rating row is the poster's", () => {
 describe("what a poster's line shows", () => {
   it("shows the ladder rating with its tier, and the level their total stands on", () => {
     const standing = standingOf({ profile: profile(), member: { xp: xpForLevel(7), country: "JP" } });
-    expect(standing).toEqual({ rating: { rating: 1712, pool: "people", tier: "established" }, level: 7, country: "JP" });
+    expect(standing).toEqual({ rating: { rating: 1712, pool: "people", tier: "established" }, level: 7, xp: xpForLevel(7), country: "JP" });
   });
 
   /*

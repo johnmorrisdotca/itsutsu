@@ -266,16 +266,15 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
             The game, the board, the pace and who it is against — settled before it exists.
           </span>
         </div>
-        <div className="grid gap-4 md:grid-cols-[3fr_2fr]">
-          <OpenGamesBoard
-            games={openSeats}
-            shown={narrowed.length}
-            total={usable.length}
-            filter={filter}
-            standings={standings}
-          />
-          <HereNowPanel here={here} me={email} />
-        </div>
+        {/* The waiting room is one table across every game, so it takes the page's width; the room of who is here follows it. */}
+        <OpenGamesBoard
+          games={openSeats}
+          shown={narrowed.length}
+          total={usable.length}
+          filter={filter}
+          standings={standings}
+        />
+        <HereNowPanel here={here} me={email} />
       </section>
 
       {/*
