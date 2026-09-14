@@ -132,8 +132,17 @@ export const PICK_GRID =
   " md:grid-cols-3 md:grid-rows-[repeat(3,3rem)]" +
   " xl:grid-cols-4 xl:grid-rows-[repeat(2,3rem)]";
 
-/** The boards a game is played on, side by side rather than stacked. */
-export const PICK_BLOCKS = "flex flex-wrap gap-2";
+/**
+ * The boards a game is played on, side by side rather than stacked.
+ *
+ * A GRID OF EQUAL COLUMNS, not a wrapping flex row. With every block the big
+ * number, four blocks do not fit across a 400px phone. A flex row wrapped them
+ * three and one, and `flex-1` stretched the one left over across the whole
+ * panel — the banner a lone board is kept from becoming. `auto-fit` over a
+ * 6rem minimum shares a wide row evenly, as `flex-1` did, and on a narrow one
+ * puts the fourth block in a column exactly as wide as the three above it.
+ */
+export const PICK_BLOCKS = "grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] gap-2";
 
 /**
  * A setting stated rather than offered — the one opening a game has, or a
@@ -238,17 +247,14 @@ export const RATED_TILES: readonly RatedTile[] = [
   { rated: false, word: "friendly", phrase: "setup.friendly", means: "setup.friendlyMeans" },
 ];
 
-/** The board's picture in a block among several, with "13×13" in text under it. */
-export const BOARD_BLOCK_MARK_PX = 48;
-
 /**
- * The board's picture in a lone block, which carries its number in the picture
- * instead of a line of text under it.
+ * The board's picture in every board block, one board or four: the big
+ * numbered mark, with the board's name under it and no size line.
  *
- * Larger by exactly what it replaces — the 16px line of "8×8" and the 6px gap
- * above it — so a one-board game's panel is the same height as a four-board
- * game's. Measured rather than assumed: 128.2px for both before this change,
- * and 128.2px for both after it. See the note at the end of BoardPicker for
- * why that height is worth holding.
+ * It is the size the lone block used to have alone — the 48px mark plus the
+ * 16px "8×8" line and 6px gap that block went without — which is the block
+ * John pointed at: "Like checkers, just the big number now. easier to read".
+ * One number for every block, so every block is the same height and there is
+ * no second size to keep in step with it. See BoardPicker.
  */
-export const BOARD_ONLY_MARK_PX = BOARD_BLOCK_MARK_PX + 16 + 6;
+export const BOARD_MARK_PX = 70;
