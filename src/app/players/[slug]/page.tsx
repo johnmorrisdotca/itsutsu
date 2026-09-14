@@ -33,7 +33,7 @@ import { shownName } from "@/lib/rating/shownName";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { fetchPlayer } from "@/lib/rating/players";
-import { ratingShown } from "@/lib/rating/shownRecord";
+import { ratingShown, tierShown } from "@/lib/rating/shownRecord";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
 export const metadata = { title: "Player" };
@@ -174,7 +174,6 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         signedIn: true,
       }
     : undefined;
-  const tier = player === null ? null : TIER_DISPLAY[player.tier];
   /*
    * THE SAME RULE `Directory.tsx` APPLIES TO THE SAME PROFILE. `player.rating`
    * is the people-pool column alone, and it defaults to the untouched schema
@@ -183,8 +182,15 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * because none of them has ever played a person-versus-person game.
    * `ratingShown` is silence where nothing has been earned, and falls back to
    * the computer rating, marked, where that is the only one there is.
+   *
+   * AND THE TIER COMES FROM THE SAME POOL. `player.tier` is the people pool's
+   * alone, so every program read "Unrated · Fewer than four rated games"
+   * beside a computer-pool figure the Computers tab called Provisional.
+   * `tierShown` is the tier of whichever pool the figure came from, and
+   * unrated where there is no figure — which still says why.
    */
   const rating = ratingShown(player);
+  const tier = player === null ? null : TIER_DISPLAY[tierShown(player)];
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
   const whole = wholeRecord(linked, { won: record.wins, lost: record.losses, drawn: record.draws });
 
@@ -357,7 +363,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           <TwoPools name={wholeName} memberId={member?.id} profile={player} />
         ) : null}
         {tier !== null ? (
-          <p className="text-xs text-muted">
+          <p className="text-xs text-muted" data-testid="player-tier">
             <span className="font-medium text-ink-soft">{tier.label}</span>{" "}
             <span className="font-mincho">{tier.kanji}</span> · {tier.note}
           </p>

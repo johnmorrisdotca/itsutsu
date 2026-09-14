@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { gamesPlayed, ratingShown } from "./shownRecord";
+import { gamesPlayed, ratingShown, tierShown } from "./shownRecord";
 import { RATING_POOLS } from "./pools";
 import { tierFor } from "./elo";
 import type { PlayerProfile } from "./players";
@@ -78,5 +78,37 @@ describe("what a list prints for somebody who plays in two pools", () => {
     expect(ratingShown(null)).toBeNull();
     expect(ratingShown(profile()), "a starting value is not a rating").toBeNull();
     expect(ratingShown(profile({ computer: { ratedGames: 1 } })), "one game is not a rating either").toBeNull();
+  });
+});
+
+/**
+ * The tier beside the rating is the tier OF THE POOL THE RATING CAME FROM.
+ * A program's page used to take it from the people pool — nought games, so
+ * "Unrated" — beside a computer-pool figure the Computers tab called
+ * "Provisional"; and the Computers tab printed a number from the first rated
+ * game where the Members tab printed a dash until the fourth.
+ */
+describe("tierShown: the tier of the pool the shown rating came from", () => {
+  it("is the people pool's tier where the people pool is what is shown", () => {
+    expect(tierShown(profile({ ratedGames: 25 }))).toBe("established");
+    expect(tierShown(profile({ ratedGames: 7, computer: { ratedGames: 40 } }))).toBe("provisional");
+  });
+
+  it("is the computer pool's tier for somebody who has only played the programs — a program, say", () => {
+    expect(tierShown(profile({ computer: { ratedGames: 7 } }))).toBe("provisional");
+    expect(tierShown(profile({ computer: { ratedGames: 20 } }))).toBe("established");
+  });
+
+  it("is unrated where there is nothing to show, which is true of both pools at once", () => {
+    expect(tierShown(null)).toBe("unrated");
+    expect(tierShown(profile())).toBe("unrated");
+    expect(tierShown(profile({ computer: { ratedGames: 3 } }))).toBe("unrated");
+    expect(tierShown(profile({ ratedGames: 3, computer: { ratedGames: 3 } }))).toBe("unrated");
+  });
+
+  it("never pairs one pool's number with the other pool's word", () => {
+    const onlyBots = profile({ computer: { rating: 1584, ratedGames: 7 } });
+    expect(ratingShown(onlyBots)?.pool).toBe(RATING_POOLS.computer);
+    expect(tierShown(onlyBots)).toBe(ratingShown(onlyBots)?.tier);
   });
 });

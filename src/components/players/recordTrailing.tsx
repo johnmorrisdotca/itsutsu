@@ -256,7 +256,7 @@ export function TrailingCells({
       {columns.rating !== false ? <RatingCell rating={row.rating ?? null} /> : null}
       {columns.xp !== false ? <XpCell xp={row.xp ?? null} blankBecause={row.xpBlankBecause} /> : null}
       {columns.tier === true ? (
-        <td className="py-1.5 pr-3">
+        <td className="py-1.5 pr-3" data-testid="record-tier">
           {row.tier === undefined ? (
             "–"
           ) : (
