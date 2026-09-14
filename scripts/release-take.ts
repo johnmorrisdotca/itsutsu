@@ -3,6 +3,10 @@
  * shipped — in one pass, refusing rather than guessing.
  *
  *   pnpm release:take --summary "<one line a player reads>" [--summary "…"] [--patch] [--done <key>]...
+ *   pnpm release:take --done <key>...   retry closing rows at the release HEAD already is
+ *
+ * The second form takes no number: see `planRetry` for how it knows HEAD is
+ * a release commit, and why it refuses when it cannot be sure.
  *
  * Why this exists, from AGENTS.md, "Every Landed Commit Bumps The Version":
  * the number used to be claimed by hand, in the merge commit, because a
@@ -41,6 +45,7 @@ import {
   releaseRefusal,
   UNDO_HINT,
   type ReleaseIo,
+  type ReleaseOut,
 } from "./release-commit.ts";
 
 // ---------------------------------------------------------------------------
@@ -159,6 +164,183 @@ export function planRelease(input: PlanInput): PlanResult {
 }
 
 // ---------------------------------------------------------------------------
+// Retrying --done. When closing a row fails, the release commit already
+// exists and is right; what is left is the rows. The advice used to be
+// "re-run with only --done", and that run was planned as a minor with no
+// summary and refused before it reached a row — advice that could never work.
+// So a run with --done and nothing else is its own mode: it closes the rows at
+// the release HEAD already is, and takes no number, writes no file, and makes
+// no commit.
+// ---------------------------------------------------------------------------
+
+/** A release commit's subject: `0.x.y — <summary>`, or `0.x.y` alone for a patch with none. */
+const RELEASE_SUBJECT = /^(\d+\.\d+\.\d+)(?: — .+)?$/;
+
+/** The version a commit subject names in the release form, or null when it is not one. */
+export function releaseVersionOfSubject(subject: string): string | null {
+  return RELEASE_SUBJECT.exec(subject.trim())?.[1] ?? null;
+}
+
+/**
+ * Whether this run only retries closing rows: `--done` and no `--summary` or
+ * `--patch`. Any of those two means a new release was asked for, and that run
+ * is planned exactly as before — so no run that used to take a number stops
+ * taking one. The only run this changes is the one that was always refused.
+ */
+export function isRetryRun(run: { summaries: readonly string[]; patch: boolean; doneKeys: readonly string[] }): boolean {
+  return run.doneKeys.length > 0 && run.summaries.length === 0 && !run.patch;
+}
+
+export type RetryState = {
+  /** `git log -1 --format=%s HEAD`. */
+  headSubject: string;
+  /** package.json's version at HEAD; null when it cannot be read. */
+  headVersion: string | null;
+  /** package.json's version at HEAD's first parent; null when HEAD has none. */
+  parentVersion: string | null;
+  /** Tracked paths with changes, staged or not. Untracked files are not counted: no push carries them. */
+  changes: readonly string[];
+  /** origin/main after a fetch: its version, and whether HEAD is already in it. */
+  origin: { version: string; hasHead: boolean };
+};
+
+export type RetryPlan = { ok: true; version: string } | { ok: false; error: string };
+
+const NOTHING_CLOSED = "No row was closed and nothing was written.";
+
+/**
+ * The version to close rows at, or why there is none. Every check is a way
+ * the version could be something other than the release HEAD is:
+ *
+ * - HEAD's subject must be in the release form. It is the only place the
+ *   release and the commit are tied together; a work commit on top of a
+ *   release carries work that release does not.
+ * - package.json at HEAD must hold the version the subject names, and HEAD's
+ *   parent must hold an older one — so HEAD is the commit that moved the
+ *   number, not a commit that merely reads like one.
+ * - The tracked tree must be clean. Uncommitted changes are work that is not
+ *   in HEAD, and an edited package.json would make "the version" two answers.
+ * - If HEAD is not yet on origin/main, origin/main must not have reached the
+ *   version since: that number now belongs to somebody else's push, and this
+ *   release has to be taken again rather than rows stamped with it.
+ */
+export function planRetry(state: RetryState): RetryPlan {
+  const named = releaseVersionOfSubject(state.headSubject);
+  if (named === null) {
+    return {
+      ok: false,
+      error:
+        `HEAD is not a release commit ("${state.headSubject}"). A run with only --done closes rows at the release HEAD ` +
+        `already is, and takes no number; to take a new release, pass --summary (or --patch) with --done. ${NOTHING_CLOSED}`,
+    };
+  }
+  if (state.changes.length > 0) {
+    return {
+      ok: false,
+      error:
+        `${state.changes.join(", ")} ${state.changes.length === 1 ? "has" : "have"} uncommitted changes, so the tree is ` +
+        `not the ${named} release commit. Commit or put them back, then retry. ${NOTHING_CLOSED}`,
+    };
+  }
+  if (state.headVersion !== named) {
+    return {
+      ok: false,
+      error: `HEAD's subject names ${named} but its package.json holds ${state.headVersion ?? "no version"}. ${NOTHING_CLOSED}`,
+    };
+  }
+  if (state.parentVersion !== null && compareVersions(named, state.parentVersion) <= 0) {
+    return {
+      ok: false,
+      error:
+        `HEAD names ${named} but did not take it: its parent already holds ${state.parentVersion}. ` +
+        `Only the commit that moved the number is a release commit. ${NOTHING_CLOSED}`,
+    };
+  }
+  if (!state.origin.hasHead && compareVersions(state.origin.version, named) >= 0) {
+    return {
+      ok: false,
+      error:
+        `origin/main already holds ${state.origin.version}, so ${named} has been taken by another push since this release ` +
+        "commit was made. Take the release again — `git reset --keep HEAD~1`, then release:take with its --summary and " +
+        `--done — rather than stamping rows with a number that is not this one. ${NOTHING_CLOSED}`,
+    };
+  }
+  return { ok: true, version: named };
+}
+
+/** What a failed close prints: the exact command that retries it, and what that command will and will not do. */
+export function retryAdvice(version: string, doneKeys: readonly string[]): string {
+  const command = ["pnpm release:take", ...doneKeys.map((key) => `--done ${key}`)].join(" ");
+  return (
+    `The release commit is correct either way. To retry closing, run \`${command}\` with ${version}'s release commit ` +
+    `as HEAD and a clean tree: it closes the rows at ${version} and takes no new number.`
+  );
+}
+
+/** How a retry touches the world. There is no write: a retry has nothing to write. */
+export type RetryIo = {
+  /** Runs git and returns its stdout; throws when git exits non-zero. */
+  git(args: readonly string[]): string;
+  /** Closes every row at the version; false when any of them was not closed. */
+  close(keys: readonly string[], version: string, releasedAt: string): Promise<boolean>;
+};
+
+function gitOrNull(io: RetryIo, args: readonly string[]): string | null {
+  try {
+    return io.git(args);
+  } catch {
+    return null;
+  }
+}
+
+function versionInPackageJson(raw: string | null): string | null {
+  if (raw === null) return null;
+  try {
+    return (JSON.parse(raw) as { version?: string }).version ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The retry run, start to finish. True when every row closed. `releasedAt`
+ * is HEAD's commit time rather than now: the release happened when its
+ * commit was made, and a retry an hour later should not move that.
+ */
+export async function retryDone(io: RetryIo, out: ReleaseOut, doneKeys: readonly string[]): Promise<boolean> {
+  io.git(["fetch", "origin", "--quiet"]);
+  const originVersion = versionInPackageJson(gitOrNull(io, ["show", "origin/main:package.json"]));
+  if (originVersion === null) {
+    out.error(`Could not read origin/main:package.json. Fetch, and check the remote. ${NOTHING_CLOSED}`);
+    return false;
+  }
+
+  const hasHead = gitOrNull(io, ["merge-base", "--is-ancestor", "HEAD", "origin/main"]) !== null;
+  const plan = planRetry({
+    headSubject: io.git(["log", "-1", "--format=%s", "HEAD"]).trim(),
+    headVersion: versionInPackageJson(gitOrNull(io, ["show", "HEAD:package.json"])),
+    parentVersion: versionInPackageJson(gitOrNull(io, ["show", "HEAD~1:package.json"])),
+    changes: dirtyReleaseFiles(io.git(["status", "--porcelain", "--untracked-files=no"])),
+    origin: { version: originVersion, hasHead },
+  });
+  if (!plan.ok) {
+    out.error(plan.error);
+    return false;
+  }
+
+  const releasedAt = new Date(io.git(["log", "-1", "--format=%cI", "HEAD"]).trim()).toISOString();
+  out.log(`HEAD is the ${plan.version} release commit. Closing ${doneKeys.join(", ")} at ${plan.version}; no number is taken.`);
+  const closed = await io.close(doneKeys, plan.version, releasedAt);
+  // Not pushed yet, so the chain still has its push to make.
+  if (!hasHead) {
+    out.log(NEXT_STEP);
+    out.log(UNDO_HINT);
+  }
+  if (!closed) out.log(retryAdvice(plan.version, doneKeys));
+  return closed;
+}
+
+// ---------------------------------------------------------------------------
 // IO. Everything below touches git, the filesystem, or the network, and only
 // `main()` (guarded at the bottom) calls into it.
 // ---------------------------------------------------------------------------
@@ -233,16 +415,39 @@ function mergeInProgress(): boolean {
   }
 }
 
+/** Closes every row through the API at one version. False when any was not closed, having said why. */
+async function closeRows(keys: readonly string[], version: string, releasedAt: string): Promise<boolean> {
+  if (BOARD_TOKEN === "") {
+    console.error("BOARD_TOKEN is not set, so the rows named with --done were not closed.");
+    return false;
+  }
+  const actor = process.env.BOARD_ACTOR ?? "release:take";
+  let allClosed = true;
+  for (const key of keys) {
+    const closed = await closeRow(key, version, releasedAt, actor);
+    if (!closed) allClosed = false;
+  }
+  return allClosed;
+}
+
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   const summaries = flags("summary", argv);
-  const step: ReleaseStep = hasFlag("patch", argv) ? "patch" : "minor";
+  const patch = hasFlag("patch", argv);
+  const step: ReleaseStep = patch ? "patch" : "minor";
   const doneKeys = flags("done", argv);
 
   const io: ReleaseIo = {
     git: (args, input) => execFileSync("git", [...args], { encoding: "utf8", input, stdio: ["pipe", "pipe", "pipe"] }),
     write: (path, content) => writeFileSync(path, content),
   };
+  const out: ReleaseOut = { log: (line) => console.log(line), error: (line) => console.error(line) };
+
+  if (isRetryRun({ summaries, patch, doneKeys })) {
+    const closed = await retryDone({ git: (args) => io.git(args), close: closeRows }, out, doneKeys);
+    if (!closed) process.exitCode = 1;
+    return;
+  }
 
   // Before the fetch, before anything is read for the plan: the release
   // commit takes these two files as they stand, so either one already
@@ -290,7 +495,7 @@ async function main(): Promise<void> {
 
   const committed = commitRelease(
     io,
-    { log: (line) => console.log(line), error: (line) => console.error(line) },
+    out,
     {
       version: plan.version,
       published,
@@ -301,25 +506,12 @@ async function main(): Promise<void> {
   );
   if (!committed) process.exit(1);
 
-  let anyClosingFailed = false;
-  if (doneKeys.length > 0) {
-    if (BOARD_TOKEN === "") {
-      console.error("BOARD_TOKEN is not set, so the rows named with --done were not closed.");
-      anyClosingFailed = true;
-    } else {
-      const actor = process.env.BOARD_ACTOR ?? "release:take";
-      const releasedAt = now.toISOString();
-      for (const key of doneKeys) {
-        const closed = await closeRow(key, plan.version, releasedAt, actor);
-        if (!closed) anyClosingFailed = true;
-      }
-    }
-  }
+  const allClosed = doneKeys.length === 0 || (await closeRows(doneKeys, plan.version, now.toISOString()));
 
   console.log(NEXT_STEP);
   console.log(UNDO_HINT);
-  if (anyClosingFailed) {
-    console.log("The release commit above is correct either way — re-run with only --done to retry closing a row.");
+  if (!allClosed) {
+    console.log(retryAdvice(plan.version, doneKeys));
     process.exitCode = 1;
   }
 }
