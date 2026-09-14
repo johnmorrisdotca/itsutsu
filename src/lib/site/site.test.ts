@@ -318,4 +318,20 @@ describe("the registry is complete", () => {
       expect(SITE_SETTING_COPY[key].placeholder?.length ?? 0).toBeGreaterThan(0);
     }
   });
+
+  /*
+   * A placeholder is an example, not a name: it vanishes as soon as somebody
+   * types. So every note's box is named by a label of its own, and that label
+   * is not the placeholder's words — or the box would read exactly as it did
+   * when the placeholder was all it had.
+   */
+  it("names every note's box by a label, which is not its placeholder", () => {
+    for (const key of SITE_SETTING_KEYS) {
+      const spec = SITE_SETTING_SPECS[key];
+      if (spec.kind !== "note") continue;
+      const copy = SITE_SETTING_COPY[key];
+      expect(copy.fieldLabel?.length ?? 0, `${key}'s box has no label`).toBeGreaterThan(0);
+      expect(copy.fieldLabel, `${key}'s label is only its placeholder`).not.toBe(copy.placeholder);
+    }
+  });
 });

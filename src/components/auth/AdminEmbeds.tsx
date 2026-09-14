@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import useSWR from "swr";
 
 import { Button, SectionTitle } from "@/components/ui/Controls";
@@ -39,6 +39,7 @@ export function AdminEmbeds() {
   const [minted, setMinted] = useState<MintedEmbed | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const labelId = useId();
 
   if (session?.admin !== true) return null;
 
@@ -93,18 +94,30 @@ export function AdminEmbeds() {
         Also let it read games played and player names
       </label>
 
-      <div className="flex gap-2">
-        <input
-          className={INPUT_CLASS}
-          value={label}
-          onChange={(event) => setLabel(event.target.value)}
-          placeholder="Which site is it for?"
-          maxLength={120}
-          data-testid="embed-label"
-        />
-        <Button onClick={mint} disabled={busy || label.trim() === ""} strong>
-          {busy ? "…" : "New embed"}
-        </Button>
+      {/*
+        Named by a label, the same way and for the same reason as the invite
+        note beside it in AdminInvites.tsx: a placeholder vanishes as soon as
+        somebody types and is no name to rely on. The placeholder stays, as an
+        example of what to write.
+      */}
+      <div className="flex flex-col gap-1">
+        <label htmlFor={labelId} className="text-sm text-ink-soft">
+          Which site it is for
+        </label>
+        <div className="flex gap-2">
+          <input
+            id={labelId}
+            className={INPUT_CLASS}
+            value={label}
+            onChange={(event) => setLabel(event.target.value)}
+            placeholder="The family blog"
+            maxLength={120}
+            data-testid="embed-label"
+          />
+          <Button onClick={mint} disabled={busy || label.trim() === ""} strong>
+            {busy ? "…" : "New embed"}
+          </Button>
+        </div>
       </div>
 
       {minted !== null ? (
