@@ -41,7 +41,7 @@ const ASKS_THE_RULE = /\bmemberOverActiveLimit\s*\(/;
  */
 const EXEMPT = new Map<string, string>([
   [
-    "src/lib/history/liveGame.ts",
+    "src/lib/history/liveGameCreate.ts",
     "Writes the row. It is called by the doors and takes the seats already decided — checking here would be the rule asked after the answer mattered, and it has no request to refuse.",
   ],
   [

@@ -1,36 +1,33 @@
 import "server-only";
 
-import { randomBytes } from "node:crypto";
-
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { freeGameId } from "./gameId";
-import { canPass, canTwist, createGame, inMovePhase, isLegalMove, movePiece, passTurn, pieceMoves, placePiece, playMove, resolvePlacement, twistBoard } from "@/lib/gomoku/engine";
-import { replayMoves } from "@/lib/gomoku/rules/record";
-import { fixedOpener } from "@/lib/gomoku/rules/creation";
-import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
-import { seedFromRoll } from "@/lib/gomoku/rules/random";
-import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
+import { canPass, canTwist, inMovePhase, isLegalMove, movePiece, passTurn, pieceMoves, placePiece, playMove, resolvePlacement, twistBoard } from "@/lib/gomoku/engine";
+import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
 import { recordResult } from "@/lib/rating/recordResult";
 import { recordPlayed } from "@/lib/rating/playedRun";
-import { UnwinnableGame, unwinnableBecause } from "./winnableGame";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat } from "@/lib/bots/bots";
 import { noticeGameOver, noticeYourTurn } from "@/lib/notify/gameNotices";
 import { awardAnsweredChallenge } from "@/lib/xp/xpSocial";
-import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
-import { OFFER_SELECT, isOffered } from "./offers";
-import type {
-  CreatedGame,
-  LiveGameSettings,
-  MoveOutcome,
-  MoveRequest,
-} from "./liveGame.types";
+import type { MoveOutcome, MoveRequest } from "./liveGame.types";
 import { nextDeadline } from "./deadline";
-import { UNSETTLED, settledTurn } from "./settledTurn";
-import { toGameMove } from "./gameHistory";
+import { settledTurn } from "./settledTurn";
+import { GAME_ROW, isHotSeat, replay, stoneForToken } from "./liveGameRow";
+import { isOffered } from "./offers";
+
+/*
+ * Playing a move on a live game. The row shape, the replay and the seat lookups
+ * are in `liveGameRow.ts`, and making a game is in `liveGameCreate.ts`; both
+ * are re-exported here so every caller that imported them from this file still
+ * does, and neither of them imports this file back.
+ */
+export { GAME_ROW, isHotSeat, replay, seatForToken, stoneForToken } from "./liveGameRow";
+export type { GameRow } from "./liveGameRow";
+export { createLiveGame } from "./liveGameCreate";
 
 /*
  * Changing a game's rules moved to `liveGameSettings.ts`, which imports from
@@ -42,241 +39,6 @@ import { toGameMove } from "./gameHistory";
 
 /** Prisma's code for "a unique constraint was violated". */
 const UNIQUE_VIOLATION = "P2002";
-
-export const GAME_ROW = {
-  id: true,
-  status: true,
-  size: true,
-  winLength: true,
-  variant: true,
-  obstacles: true,
-  opener: true,
-  opening: true,
-  handicap: true,
-  seed: true,
-  blackName: true,
-  whiteName: true,
-  moveTimeMs: true,
-  timeoutPenalty: true,
-  // Read as well as written now: a rules change that says nothing about the
-  // length has to be able to leave the length alone.
-  drawLimit: true,
-  lastMoveAt: true,
-  blackForfeits: true,
-  whiteForfeits: true,
-  allowResign: true,
-  clockMode: true,
-  blackTimeMs: true,
-  whiteTimeMs: true,
-  deadlineAt: true,
-  extraMs: true,
-  rated: true,
-  openSeat: true,
-  openedAt: true,
-  blackClaimedAt: true,
-  whiteClaimedAt: true,
-  blackToken: true,
-  whiteToken: true,
-  blackMemberId: true,
-  whiteMemberId: true,
-  /*
-   * An offer is a game nothing may be done to until it is answered. Read on
-   * the one select every live-game function shares, so the guard below and the
-   * four in `liveGameEndings.ts` all ask the same columns — a select that
-   * forgot them would answer "not an offer" for every row, which is the
-   * plausible-looking wrong answer.
-   */
-  ...OFFER_SELECT,
-  moves: {
-    orderBy: { number: "asc" },
-    select: {
-      number: true,
-      row: true,
-      col: true,
-      stone: true,
-      kind: true,
-      fromRow: true,
-      fromCol: true,
-      twistQuadrant: true,
-      twistClockwise: true,
-      cells: true,
-      createdAt: true,
-    },
-  },
-} satisfies Prisma.GameSelect;
-
-export type GameRow = Prisma.GameGetPayload<{ select: typeof GAME_ROW }>;
-
-/**
- * A hot-seat game: two people at one screen, so one token holds both chairs.
- * The server still checks every move; it simply lets that token play whichever
- * colour is to move.
- */
-export function isHotSeat(row: { blackToken: string; whiteToken: string }): boolean {
-  return row.blackToken === row.whiteToken;
-}
-
-/**
- * Rebuilds the position by replaying the stored moves through the engine.
- *
- * The database keeps a move list, never a board. Replaying is what guarantees
- * a shared game obeys exactly the same rules as a local one — there is no
- * second implementation of "who has won" on the server.
- */
-export function replay(row: GameRow): GameState {
-  const start = createGame({
-    size: row.size,
-    winLength: row.winLength,
-    variant: row.variant as GameState["settings"]["variant"],
-    obstacles: row.obstacles as GameState["settings"]["obstacles"],
-    opening: row.opening as GameState["settings"]["opening"],
-    handicap: parseHandicap(row.handicap),
-    seed: row.seed,
-    firstPlayer: row.opener as Stone,
-    // A shared game is played from two devices, so neither side may rewind it.
-    allowUndo: false,
-    allowSwap: false,
-  });
-
-  // A clock is what lets a turn lost to it replay; see `replayMoves`.
-  const timeline = replayMoves(start, row.moves.map(toGameMove), [], { clocked: row.moveTimeMs !== null });
-  return timeline[timeline.length - 1];
-}
-
-/**
- * Starts an empty game and mints a key for each seat. A hot-seat game gets
- * one key for both, and keeps the seed the browser drew, so the board it has
- * already shown is the board the record replays.
- */
-export async function createLiveGame(
-  input: LiveGameSettings & {
-    blackName: string;
-    whiteName: string;
-    winLength: number;
-    opener: Stone;
-    hotSeat?: boolean;
-    seed?: number;
-    /** The accounts holding each seat, for a challenge sent to a named member. */
-    blackMemberId?: string;
-    whiteMemberId?: string;
-    /**
-     * The member this game is being PROPOSED to, whose seat is offered rather
-     * than bound, and when they were asked. Both or neither — the pair is set
-     * together by the creation route, and an offer with no timestamp would be
-     * a proposal nobody can date. Every other way of making a game leaves
-     * both off.
-     */
-    offeredToMemberId?: string;
-    offeredAt?: Date;
-    /** A position to start from: the first `moves` moves of another game are copied in. */
-    from?: { id: string; moves: number };
-  },
-): Promise<CreatedGame> {
-  const { handicap, open, hotSeat = false, seed, from, clockMode = "move", rated, ...rest } = input;
-  const token = randomBytes(18).toString("base64url");
-  const startedAt = new Date();
-  const budget = clockMode === "game" ? rest.moveTimeMs : null;
-
-  /*
-   * Refuse a game nobody could win, before it is written.
-   *
-   * The choke point, on purpose: every path that makes a game comes through
-   * here, so one check covers the lobby, a challenge, a rematch, a fork, the
-   * bot batch, and whatever is written next. A rematch once stored a
-   * three-by-three board needing five in a row and nothing objected — John
-   * played six moves before finding that his winning move did nothing.
-   *
-   * Against the size that will actually be STORED rather than the one asked
-   * for. A game with a board of its own is created on that board whatever the
-   * request said, and a check that read the request would refuse games this
-   * very function was about to correct.
-   */
-  const board = sizeForVariant(rest.variant as RuleVariant, rest.size);
-  const cannot = unwinnableBecause({ variant: rest.variant, size: board, winLength: rest.winLength });
-  if (cannot !== null) throw new UnwinnableGame(cannot);
-
-  const game = await prisma.game.create({
-    data: {
-      id: await freeGameId(),
-      ...rest,
-      // The opener the engine will replay, where the rules fix it — see `fixedOpener`.
-      opener: fixedOpener(rest.variant, rest.opening) ?? rest.opener,
-      // A game with a board of its own is created on it, whatever was asked for.
-      size: sizeForVariant(rest.variant as RuleVariant, rest.size),
-      clockMode,
-      rated,
-      blackTimeMs: budget,
-      whiteTimeMs: budget,
-      /*
-       * NO CLOCK RUNS AGAINST AN OFFER. A game proposed to somebody is waiting
-       * on an answer, not on a move, and a deadline stamped here would be a
-       * clock ticking against a seat nobody has agreed to sit in — the same
-       * reasoning `deadlineFor` gives for a seat still posted on the
-       * noticeboard. `acceptOffer` stamps the first deadline at the moment
-       * there is somebody to play against, so the opener gets their whole
-       * period however long the offer sat unanswered.
-       *
-       * Written as null rather than left for `deadlineFor` to ignore: a stored
-       * value nothing may read is one somebody will eventually read.
-       */
-      deadlineAt:
-        rest.moveTimeMs === null || rest.offeredAt !== undefined
-          ? null
-          : new Date(startedAt.getTime() + rest.moveTimeMs),
-      handicap: storedHandicap(handicap) ?? undefined,
-      ...(hotSeat ? { blackToken: token, whiteToken: token } : {}),
-      // An open game posts its white seat for anyone; the creator sits as black.
-      openSeat: open && !hotSeat ? STONES.white : null,
-      openedAt: open && !hotSeat ? new Date() : null,
-      // The server draws the seed: the two players must see the same board.
-      seed: hotSeat && seed !== undefined ? seed : seedFromRoll(Math.random(), SEED_RANGE),
-      // The first deadline runs from the moment the game exists.
-      lastMoveAt: startedAt,
-      status: "active",
-      result: "abandoned",
-      moveCount: 0,
-    },
-    select: { id: true, blackToken: true, whiteToken: true },
-  });
-  if (from !== undefined && from.moves > 0) {
-    const moves = await prisma.move.findMany({
-      where: { gameId: from.id, number: { lte: from.moves } },
-      orderBy: { number: "asc" },
-    });
-    await prisma.$transaction([
-      prisma.move.createMany({
-        data: moves.map(({ id: _id, gameId: _gameId, ...move }) => {
-          void _id;
-          void _gameId;
-          return { ...move, gameId: game.id, cells: move.cells ?? undefined };
-        }),
-      }),
-      /*
-       * And says nothing about whose turn it is. A fork copies move ROWS
-       * across without ever building a position out of them, so nothing here
-       * holds a settled state — and the new game's rules need not be the old
-       * one's, so the fact the source row stored is not this game's fact. Null
-       * is the honest answer and sends the reader to a replay; a colour copied
-       * from somewhere would be a turn nobody had worked out.
-       *
-       * Written out rather than left to the column default, so that a default
-       * added to the schema one day cannot quietly become a forked game's
-       * answer.
-       */
-      prisma.game.update({ where: { id: game.id }, data: { moveCount: moves.length, ...UNSETTLED } }),
-    ]);
-  }
-  return game;
-}
-
-
-
-/** The seat a token holds, or null when the token belongs to neither. */
-export function stoneForToken(row: GameRow, token: string): Stone | null {
-  if (token === row.blackToken) return STONES.black;
-  if (token === row.whiteToken) return STONES.white;
-  return null;
-}
 
 /**
  * Plays one stone on a shared game.
@@ -477,23 +239,3 @@ function spendClock(
   const remaining = Math.max(0, left - taken);
   return mover === STONES.black ? { blackTimeMs: remaining, whiteTimeMs } : { blackTimeMs, whiteTimeMs: remaining };
 }
-
-
-/** The colour a token holds, for a page deciding which seat the reader is in. */
-export async function seatForToken(
-  id: string,
-  token: string | undefined,
-): Promise<Stone | null> {
-  if (token === undefined || token === "") return null;
-  const row = await prisma.game.findUnique({
-    where: { id },
-    select: { blackToken: true, whiteToken: true },
-  });
-  if (row === null) return null;
-  if (token === row.blackToken) return STONES.black;
-  if (token === row.whiteToken) return STONES.white;
-  return null;
-}
-
-
-
