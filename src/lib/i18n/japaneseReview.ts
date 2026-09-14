@@ -23,6 +23,7 @@ const MET: readonly { prefix: string; seen: string; place: string }[] = [
   { prefix: "filter.", seen: "Most list pages", place: "filter bars on the record and players pages" },
   { prefix: "rules.", seen: "39 rules pages", place: "one per game" },
   { prefix: "xp.", seen: "After earning points", place: "the notice that drops in from the top of the page" },
+  { prefix: "catalogue.", seen: "The games index, /games", place: "under every game and every family, in all three views" },
   { prefix: "record.", seen: "Finished games of go, Othello, gomoku, renju and Hex", place: "beside Copy as text, in the move list under the replay" },
 ];
 

@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { GameName } from "@/components/games/GameName";
+import { GameStatsStrip } from "@/components/games/GameStats";
+import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import {
@@ -26,7 +28,7 @@ import { CATALOGUE_LINK_CLASS } from "./games.constants";
  * way of looking at them — two indexes to keep in step, and a footer link as
  * the only way to the second. It is a view now, at /games?view=list.
  */
-export function GameList() {
+export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn: boolean }) {
   return (
     <div className="flex flex-col gap-8" data-testid="every-game">
       <p className="max-w-prose text-sm text-muted">
@@ -65,6 +67,12 @@ export function GameList() {
                     {aliases.length > 0 ? (
                       <span className="text-xs text-muted">Also known as {aliases.join(", ")}</span>
                     ) : null}
+                    {/*
+                      The row's own figures. John: "The List View shows no row
+                      info either". The whole strip, since a plain list has the
+                      width a card does not.
+                    */}
+                    <GameStatsStrip stats={stats.games[variant]} signedIn={signedIn} />
                     <span className="flex flex-wrap gap-x-3 text-xs">
                       <Link href={playPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
                       <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>

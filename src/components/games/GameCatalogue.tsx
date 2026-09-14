@@ -3,11 +3,12 @@ import { Suspense } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameCards } from "@/components/games/GameCards";
-import { GameCount } from "@/components/games/GameCount";
 import { GameList } from "@/components/games/GameList";
 import { GameName } from "@/components/games/GameName";
+import { FamilyStatsLine, GameStatsStrip } from "@/components/games/GameStats";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
+import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import {
   CATALOGUE_VIEWS,
   CATALOGUE_VIEW_DISPLAY,
@@ -17,7 +18,6 @@ import {
 } from "@/lib/gomoku/catalogueView";
 import { RULE_VARIANT_LIST, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
-import { matchPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 import type { CatalogueFamily, GameCard, GameCardKind } from "./games.types";
@@ -37,31 +37,34 @@ import type { CatalogueFamily, GameCard, GameCardKind } from "./games.types";
 export function GameCatalogue({
   view,
   families,
+  stats,
   signedIn,
 }: {
   view: CatalogueView;
   families: CatalogueFamily[];
   /**
-   * Whether the reader is a member.
-   *
-   * This page is open without an invite, and the family rows name the two
-   * people who played the last game of each kind — and link to that match,
-   * which is not open. So a stranger gets the counts, which are facts about
-   * the catalogue, and not the people, which are not.
+   * What has been played of every game and family, ALREADY SHAPED FOR THIS
+   * READER by `forReader` — a stranger's copy names nobody. Every view draws
+   * what it is handed and none of them asks who is reading.
+   */
+  stats: CatalogueStats;
+  /**
+   * Whether the reader is a member: the way into a game nobody has played is
+   * its board for a member and the door for anybody else.
    */
   signedIn: boolean;
 }) {
   return (
     <section className="flex flex-col gap-4" data-testid="game-catalogue">
       <ViewSwitch chosen={view} />
-      {view === CATALOGUE_VIEWS.list ? <GameList /> : null}
+      {view === CATALOGUE_VIEWS.list ? <GameList stats={stats} signedIn={signedIn} /> : null}
       {view === CATALOGUE_VIEWS.cards ? (
         // The filters read the query on the client, so they render once that is known.
         <Suspense>
-          <GameCards cards={CARDS} />
+          <GameCards cards={CARDS} stats={stats} signedIn={signedIn} />
         </Suspense>
       ) : null}
-      {view === CATALOGUE_VIEWS.families ? <Families families={families} signedIn={signedIn} /> : null}
+      {view === CATALOGUE_VIEWS.families ? <Families families={families} stats={stats} signedIn={signedIn} /> : null}
 
       {/*
         WHOSE NAMES THESE GAMES ARE, and it is here because the page that
@@ -117,22 +120,38 @@ function ViewSwitch({ chosen }: { chosen: CatalogueView }) {
 }
 
 /** Grouped by what they have in common — the view a newcomer should meet first. */
-function Families({ families, signedIn }: { families: CatalogueFamily[]; signedIn: boolean }) {
+function Families({
+  families,
+  stats,
+  signedIn,
+}: {
+  families: CatalogueFamily[];
+  stats: CatalogueStats;
+  signedIn: boolean;
+}) {
   return (
     <div className="flex flex-col gap-4">
       {families.map((family, index) => (
         <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family" open={index === 0}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-            <span className="flex items-center gap-3">
+            <span className="flex min-w-0 items-center gap-3">
               <FamilyMark family={family.title} className="size-12 shrink-0 rounded-md" />
-              <span className="flex flex-col">
+              <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="flex items-baseline gap-2 font-semibold">
                   {family.title}
                   <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
+                  <span className="text-xs font-normal text-muted">
+                    {family.games.length} {family.games.length === 1 ? "game" : "games"}
+                  </span>
                 </span>
-                <span className="text-xs font-normal text-muted">
-                  {family.games.length} {family.games.length === 1 ? "game" : "games"} · {family.played} played here
-                </span>
+                {/*
+                  In the summary, so a folded family still says what has
+                  happened in it. The one link it can hold — the name of whoever
+                  holds most of its crowns — follows the link rather than
+                  toggling the family, which is what a link inside a summary
+                  does.
+                */}
+                <FamilyStatsLine stats={stats.families[family.key]} />
               </span>
             </span>
             <span className="text-xs text-muted group-open:hidden">show</span>
@@ -163,35 +182,22 @@ function Families({ families, signedIn }: { families: CatalogueFamily[]; signedI
                 className={`${STRETCHED_CARD} flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm`}
                 data-testid="family-game"
               >
-                <span className="flex min-w-0 flex-col">
+                <span className="flex min-w-0 flex-col gap-1">
                   <span className="font-medium">
                     <GameName variant={game.variant} kanji stretched />
                   </span>
                   <span className="text-xs text-muted">{game.tagline}</span>
-                  {signedIn && game.played !== undefined && game.played > 0 && game.last !== undefined ? (
-                    <span className="text-[0.7rem] text-muted">
-                      {/*
-                        Two links, because there are two facts here. The number
-                        leads to those games; the game beside it leads to that
-                        game.
-                      */}
-                      <GameCount
-                        count={game.played}
-                        variant={game.variant}
-                        title={`Every game of ${game.label} played here`}
-                        raised
-                      />{" "}
-                      played ·{" "}
-                      <Link
-                        href={matchPath(game.variant, game.last.id)}
-                        className={`${RAISED_LINK} underline-offset-2 hover:underline`}
-                      >
-                        last {game.last.blackName.trim() || "Black"} vs {game.last.whiteName.trim() || "White"}
-                      </Link>
-                    </span>
-                  ) : game.inspiredBy !== undefined ? (
+                  {game.inspiredBy !== undefined ? (
                     <span className="text-[0.7rem] text-muted italic">Inspired by {game.inspiredBy}</span>
                   ) : null}
+                  {/*
+                    What has been played of it, and who is best at it. It
+                    replaces "12 played · last Kyu vs Dan", which was the last
+                    game's two names and nothing about the game; the date of
+                    that game is in the strip, and for a member it still opens
+                    the game.
+                  */}
+                  <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
                 </span>
                 <CardArrow />
               </li>
