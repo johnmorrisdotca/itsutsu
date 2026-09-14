@@ -1,3 +1,4 @@
+import { LocalTime } from "@/components/ui/LocalTime";
 import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
@@ -117,10 +118,12 @@ export function SharedRules({
         */}
         <RulesStatement rules={draftFromGame(game)} note={SHARED_RULES_COPY.settled} refusal={refusal} />
         <p className="text-xs text-muted" data-testid="shared-times-line">
-          Started {new Date(game.playedAt).toLocaleString()}
-          {game.status === "finished" && game.lastMoveAt !== null
-            ? ` · finished ${new Date(game.lastMoveAt).toLocaleString()}`
-            : ""}
+          Started <LocalTime at={game.playedAt} />
+          {game.status === "finished" && game.lastMoveAt !== null ? (
+            <>
+              {" "}· finished <LocalTime at={game.lastMoveAt} />
+            </>
+          ) : null}
         </p>
       </MoreSettings>
     </section>
