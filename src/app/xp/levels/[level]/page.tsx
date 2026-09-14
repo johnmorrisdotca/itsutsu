@@ -141,9 +141,13 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
           <Link href="/xp/levels" className="underline underline-offset-4" data-testid="to-ladder">
             the hundred levels
           </Link>
-          , and who is where is on{" "}
+          , who is where is on{" "}
           <Link href="/xp" className="underline underline-offset-4" data-testid="to-leaderboard">
             the leaderboard
+          </Link>
+          , and who went up a level lately is on{" "}
+          <Link href="/xp/promotions" className="underline underline-offset-4" data-testid="to-promotions">
+            recent promotions
           </Link>
           .
         </p>
