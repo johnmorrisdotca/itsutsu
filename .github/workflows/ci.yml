@@ -6,20 +6,51 @@ on:
     branches:
       - main
 
-# One CI run per ref at a time, QUEUED rather than cancelled.
+# Every commit pushed to main gets a CI run of its own, and nothing cancels it.
 #
-# The browser suite is an hour's ceiling, and until this existed every push
-# started another one with nothing to stop it — a night of ten merges had five
-# overlapping runs testing trees nobody cared about any more, all competing for
-# the same free runners.
+# A superseded TEST RUN is evidence: it is the only record of whether the
+# commit it was started for was sound, and on a bisect it is the thing you go
+# looking for. That is the opposite of vercel-deploy.yml, where a superseded
+# DEPLOY is worthless and cancel-in-progress rightly kills it.
 #
-# `cancel-in-progress: false` on purpose, and it is the opposite of what
-# vercel-deploy.yml wants. A superseded DEPLOY is worthless, so that one kills
-# its predecessor. A superseded TEST RUN is evidence: it is the only record of
-# whether the commit it was started for was sound, and on a bisect it is the
-# thing you go looking for.
+# This used to be ONE group per branch, `ci-${{ github.ref }}`, with
+# `cancel-in-progress: false`, under a comment saying runs were QUEUED. They
+# were not. GitHub keeps at most one running and ONE pending run per group,
+# and a newly queued run cancels the pending one whatever cancel-in-progress
+# says — that flag only decides whether the RUNNING one dies too:
+# https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
+# With the browser suite taking about forty minutes, every push that landed
+# behind a running suite was cancelled the second the next push arrived, with
+# no job ever started. On the night of 2026-09-14 that was 0.174.0, .1, .3,
+# .4, .6, .7, .8, 0.175.0 and 0.176.0: no verdict at all, each `cancelled` in
+# `gh run list` exactly as though somebody had pressed the button. A run that
+# is `cancelled` with no jobs was replaced, not stopped.
+#
+# So a push is grouped by its commit. No run waits behind another, so none can
+# be replaced. That gives up what the old group was for — one browser suite at
+# a time — on purpose, and here is what it costs:
+#
+#   - Money: nothing. This repository is public, and Actions on standard
+#     GitHub-hosted runners is free for public repositories (see e2e.yml for
+#     why the suite must stay on one).
+#   - Runners: overlapping runs share the account's concurrent-job limit, 20
+#     on the Free plan. Six pushes in forty minutes, the busiest stretch so
+#     far, is at most a dozen CI jobs beside the deploy's few. A job past the
+#     limit waits for a runner; it is neither cancelled nor billed.
+#   - Nothing shared: each e2e job gets its own throwaway Postgres on its own
+#     runner, so overlapping suites cannot touch each other's rows.
+#
+# `queue: max` would keep one-at-a-time AND lose nothing, and it was the
+# alternative weighed. It does not keep up: one forty-minute run at a time
+# against a push every ten minutes leaves the verdict for a night's last merge
+# hours behind it, which is a verdict nobody is still waiting for.
+#
+# A PULL REQUEST keeps one group per PR on the default queue: the run already
+# going finishes, and a later push replaces a run that has not started,
+# because only a PR's newest head is ever going to merge. A PR run can
+# therefore read `cancelled` with no jobs, and that is this, not a person.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.event_name == 'pull_request' && format('ci-pr-{0}', github.ref) || format('ci-push-{0}', github.sha) }}
   cancel-in-progress: false
 
 jobs:

@@ -923,9 +923,16 @@ reads it out of the page and needs no credential.
 
 The same distinction decides the two concurrency groups, which are deliberately
 opposite. `vercel-deploy.yml` cancels in progress, because **a superseded
-deploy is worthless**. `ci.yml` queues instead, because **a superseded test run
-is evidence** — it is the only record of whether the commit it was started for
-was sound, and it is the thing a bisect goes looking for.
+deploy is worthless**. `ci.yml` gives every push to main a group of its own,
+because **a superseded test run is evidence** — it is the only record of
+whether the commit it was started for was sound, and it is the thing a bisect
+goes looking for. It used to share one group per branch with
+`cancel-in-progress: false`, which reads as queuing and is not: GitHub keeps
+one running and one PENDING run per group, and a new run cancels the pending
+one whatever that flag says. On 2026-09-14 that left most releases `cancelled`
+with no job ever started. A CI run reading `cancelled` with no jobs was
+replaced, not stopped; pull requests still share a group per PR, where a
+push may replace a run that has not started.
 
 ### An Absence Is Only Meaningful After A Presence Has Been Waited For
 
