@@ -16,6 +16,7 @@ import { sittingAt } from "@/components/live/sittingAt";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
+import { fixedOpener } from "@/lib/gomoku/rules/creation";
 import { RATING_REFUSALS } from "@/lib/rating/rateable.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
@@ -101,7 +102,8 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
     opponent: seat !== null ? seat.who : (from.opponent?.name ?? null),
     computer: seat === null && (from.opponent?.computer ?? false),
     mine: seat?.mine ?? mine,
-    opener: seat?.opener ?? openerIn(from.carry),
+    // A game whose rules fix who opens is stated that way, whatever a carried game says.
+    opener: seat?.opener ?? fixedOpener(rules.variant, rules.opening) ?? openerIn(from.carry),
     screen,
   });
 

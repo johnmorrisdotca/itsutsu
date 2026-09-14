@@ -422,6 +422,10 @@ export function threatScore(
  */
 function checkersScore(state: GameState, stone: Stone): number {
   const { size } = state.settings;
+  // Read from the game's rules, never its name: a king is worth what it can do.
+  const king = VARIANT_SPECS[state.settings.variant].checkersRules?.flyingKings
+    ? EVAL_WEIGHTS.flyingKing
+    : EVAL_WEIGHTS.king;
   let score = 0;
   state.board.forEach((cell, index) => {
     if (!isStone(cell)) return;
@@ -429,7 +433,7 @@ function checkersScore(state: GameState, stone: Stone): number {
     // A man's own crowning row is the far one from where its colour started.
     const towards = cell === STONES.black ? point.row : size - 1 - point.row;
     const worth = isKingAt(state.kings, point)
-      ? EVAL_WEIGHTS.king
+      ? king
       : EVAL_WEIGHTS.man + towards * EVAL_WEIGHTS.crowning;
     score += cell === stone ? worth : -worth;
   });

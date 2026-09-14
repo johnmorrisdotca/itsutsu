@@ -217,6 +217,8 @@ export const GAME_COPY = {
   winsBySquare: (who: string) => `${who} wins with a square`,
   drawBothLines: "Draw. Both made a line at once.",
   drawByLength: "Draw. The game ran to the length it was given.",
+  drawByRepetition: "Draw by repetition: the same position came round again, with the same side to move.",
+  drawByEndgameCount: "Draw. The ending was not won within the moves its rules allow.",
   /*
    * Not "draw" first, because this is not a result. The game got nowhere for
    * long enough that it had to be stopped, and saying so plainly is what

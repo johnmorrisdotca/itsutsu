@@ -590,6 +590,64 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "8×8, played on the dark squares only — thirty-two of the sixty-four. Twelve pieces a side, filling the first three rows.",
   },
+  /*
+   * The international family. Every rule below was read against the rulebook
+   * that governs the game, and each origin names it: the FMJD's official rules
+   * for the 10×10 game, the Brazilian confederation's for the 8×8 one. Canadian
+   * checkers has no rulebook anybody could reach, and says so.
+   */
+  internationalDraughts: {
+    label: "International Draughts",
+    kanji: "国際ドラフツ",
+    tagline: "Draughts on a 10×10 board: men take backward, kings fly, and you must take the most you can.",
+    origin: "Played on a ten-by-ten board in the Netherlands by about 1550, by the historian Arie van der Stoep's account, and with twenty men a side from the late seventeenth century. Its old name, Polish draughts, is said to follow a Dutch habit of calling any novel idea Polish. The FMJD, founded in 1947 by the French, Dutch, Belgian and Swiss federations, governs it worldwide; the rules here are the FMJD's official rules (Annex 1, 2018, and the Annexes of 2024).",
+    alsoKnownAs: ["Polish Draughts", "International Checkers", "Continental Draughts"],
+    country: "NL",
+    wikipedia: "International draughts",
+    rules: [
+      "Each side has twenty men on the dark squares of its own four rows. White moves first.",
+      "A man steps one square diagonally forward. It captures by jumping an adjacent enemy piece into the empty square beyond it, forward or backward.",
+      "Capturing is forced, and so is taking the most you can: only a capture that takes the greatest number of pieces may be played, a king counting as one piece like a man.",
+      "A capture carries on, turning corners, while there is more to take. The pieces it takes come off the board only when it is over, and none may be jumped twice.",
+      "A man is crowned a king only when its move ends on the far row; crossing that row partway through a capture does not count. A king flies: it moves any distance along an open diagonal, and takes a piece at any distance, landing on any empty square beyond it.",
+      "A side with no piece that can move has lost. It is a draw when a position comes round a third time with the same side to move, after twenty-five moves each in which only kings have moved and nothing was taken, or when three pieces against a lone king are not won in sixteen moves each, or two pieces against one in five.",
+    ],
+    board: "10×10, played on the dark squares only — fifty of the hundred. Twenty men a side fill the first four rows, and the two middle rows start empty. Each player has a dark square in the near left-hand corner.",
+  },
+  brazilianDraughts: {
+    label: "Brazilian Draughts",
+    kanji: "ブラジルチェッカー",
+    tagline: "The international rules on the 8×8 board: men take backward, kings fly, and the longest capture is compulsory.",
+    origin: "International draughts on the smaller board and with the twelve men of American checkers, as it is played in Brazil and, since 1985, at the world championships of 8×8 draughts. The rules here are those of Brazil's draughts confederation (CBJD, Regras Oficiais), whose draws differ from the FMJD's rules for the 8×8 board; where the two disagree, this game follows Brazil's.",
+    alsoKnownAs: ["Damas", "Brazilian Checkers", "Minor Polish Draughts"],
+    country: "BR",
+    wikipedia: "Brazilian draughts",
+    rules: [
+      "Each side has twelve men on the dark squares of its own three rows. White moves first.",
+      "A man steps one square diagonally forward, and captures by jumping an adjacent enemy piece into the empty square beyond it, forward or backward.",
+      "Capturing is forced, and so is taking the most you can, a king counting as one piece like a man. A capture carries on while there is more to take; the pieces it takes come off only when it is over, and none may be jumped twice.",
+      "A man is crowned only when its move ends on the far row. A king flies: it moves any distance along an open diagonal, and takes a piece at any distance, landing on any empty square beyond it.",
+      "A side with no piece that can move has lost. It is a draw when a position comes round a third time with the same side to move, after twenty moves each in which only kings have moved and nothing was taken, or when an ending of two kings against two, two kings against one or against a king and a man, or a king against a king or against a king and a man is not won in five moves each.",
+    ],
+    board: "8×8, played on the dark squares only — thirty-two of the sixty-four. Twelve men a side fill the first three rows. The long diagonal runs from each player's left.",
+  },
+  canadianCheckers: {
+    label: "Canadian Checkers",
+    kanji: "カナディアンチェッカー",
+    tagline: "The international rules on a 12×12 board, with thirty men a side.",
+    origin: "The grand jeu de dames of French Quebec: the international game on a board of 144 squares. Boards that size were on sale in London by 1805, and the Canadian championship dropped the huff — the old forfeit of a piece that failed to capture — in 1880 (H. J. R. Murray, 1978). Little is played now, and no federation's draw rules for it could be found, so the draws here are the FMJD's, borrowed from international draughts.",
+    alsoKnownAs: ["Canadian Draughts", "Grand Jeu de Dames", "Dames Canadiennes"],
+    country: "CA",
+    wikipedia: "Canadian checkers",
+    rules: [
+      "Each side has thirty men on the dark squares of its own five rows. White moves first.",
+      "A man steps one square diagonally forward, and captures by jumping an adjacent enemy piece into the empty square beyond it, forward or backward.",
+      "Capturing is forced, and so is taking the most you can, a king counting as one piece like a man. A capture carries on while there is more to take; the pieces it takes come off only when it is over, and none may be jumped twice.",
+      "A man is crowned only when its move ends on the far row. A king flies: it moves any distance along an open diagonal, and takes a piece at any distance, landing on any empty square beyond it.",
+      "A side with no piece that can move has lost. The draws are international draughts': a third repetition, twenty-five moves each of kings alone with nothing taken, and the sixteen- and five-move counts for three or two pieces against a lone king.",
+    ],
+    board: "12×12, played on the dark squares only — seventy-two of the 144. Thirty men a side fill the first five rows, and the two middle rows start empty.",
+  },
   chineseCheckers: {
     label: "Chinese Checkers",
     kanji: "ダイヤモンドゲーム",

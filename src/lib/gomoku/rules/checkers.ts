@@ -1,15 +1,33 @@
-import type { Cell, GameState, Point, Stone } from "../gomoku.types";
-import { cellAtPoint, indexOf, isOnBoard, otherStone, samePoint, stepFrom } from "./board";
+import { ENGLISH_CHECKERS_RULES, VARIANT_SPECS } from "../gomoku.constants";
+import type { Cell, CheckersRules, GameSettings, GameState, Point, Stone } from "../gomoku.types";
+import { indexOf, isOnBoard, otherStone, samePoint } from "./board";
+import {
+  DIAGONALS,
+  afterLanding,
+  farRow,
+  forwardDiagonals,
+  jumpsFrom,
+  takesMaximum,
+  weighedJumps,
+} from "./checkersCaptures";
+import type { CaptureGround, CheckersMoveResult, Jump } from "./checkers.types";
+
+export type { CheckersMoveResult } from "./checkers.types";
 
 /**
- * Checkers: pieces stand on the board from the start and move diagonally,
- * one square at a time. Capturing is a jump over an adjacent enemy piece
- * into the empty square beyond, and it is forced — a colour with any capture
- * available may not play a plain step instead. A piece that captures and can
- * capture again from where it lands keeps going in the same move, but a man
- * that is crowned partway through always stops there; only a king may carry
- * a chain on past its own promotion, on a later move. A colour with no legal
- * move, whether it has no pieces left or every one is shut in, has lost.
+ * The checkers family: pieces stand on the board from the start and move
+ * diagonally. Capturing is a jump over an enemy piece into an empty square
+ * beyond it, and it is forced — a colour with any capture available may not
+ * play a plain step instead. A piece that captures and can capture again from
+ * where it lands keeps going in the same move. A colour with no legal move,
+ * whether it has no pieces left or every one is shut in, has lost.
+ *
+ * What differs between the games of the family — how many rows of men, whether
+ * a man takes backward, whether a king flies, whether the longest capture must
+ * be chosen, and what crowning does to a capture under way — is the game's
+ * `CheckersRules`, read from its spec. The functions that take a board rather
+ * than a game default to the English rules, which is what they did before the
+ * family had more than one game in it.
  */
 
 /** Checkers is played on one colour of square only: the board's own dark squares. */
@@ -17,36 +35,34 @@ export function isDarkSquare(point: Point): boolean {
   return (point.row + point.col) % 2 === 1;
 }
 
-/** The row a man of `stone` is crowned on reaching. */
-function farRow(size: number, stone: Stone): number {
-  return stone === "black" ? size - 1 : 0;
+/**
+ * The rules this game of the family is played by.
+ *
+ * Throws for a game outside the family rather than answering with a default:
+ * a caller asking this of Gomoku is a fault, and English rules handed back
+ * would play a game nobody chose.
+ */
+export function checkersRulesFor(settings: GameSettings): CheckersRules {
+  const rules = VARIANT_SPECS[settings.variant].checkersRules;
+  if (rules === null) throw new Error(`${settings.variant} is not a game of the checkers family`);
+  return rules;
 }
 
-/** Every piece on the board when the game starts: three rows of dark squares, each side. */
-export function checkersStartingPieces(size: number): { point: Point; stone: Stone }[] {
+/** Every piece on the board when the game starts: `rows` rows of dark squares, each side. */
+export function checkersStartingPieces(
+  size: number,
+  rows: number = ENGLISH_CHECKERS_RULES.menRows,
+): { point: Point; stone: Stone }[] {
   const pieces: { point: Point; stone: Stone }[] = [];
   for (let row = 0; row < size; row += 1) {
     for (let col = 0; col < size; col += 1) {
       const point = { row, col };
       if (!isDarkSquare(point)) continue;
-      if (row < 3) pieces.push({ point, stone: "black" });
-      else if (row >= size - 3) pieces.push({ point, stone: "white" });
+      if (row < rows) pieces.push({ point, stone: "black" });
+      else if (row >= size - rows) pieces.push({ point, stone: "white" });
     }
   }
   return pieces;
-}
-
-const DIAGONALS: readonly Point[] = [
-  { row: -1, col: -1 },
-  { row: -1, col: 1 },
-  { row: 1, col: -1 },
-  { row: 1, col: 1 },
-];
-
-/** The diagonals open to a piece: every way for a king, forward only for a man. */
-function directionsFor(stone: Stone, isKing: boolean): readonly Point[] {
-  if (isKing) return DIAGONALS;
-  return DIAGONALS.filter((step) => (stone === "black" ? step.row === 1 : step.row === -1));
 }
 
 /** Whether the piece at `at`, if any, is a king. */
@@ -54,17 +70,35 @@ export function isKingAt(kings: readonly Point[], at: Point): boolean {
   return kings.some((point) => samePoint(point, at));
 }
 
-/** Where a piece at `from` may step with no capture: an empty diagonal neighbour. */
+/**
+ * Where a piece at `from` may step with no capture: an empty diagonal neighbour
+ * forward for a man; for a king, an empty neighbour either way, or — where kings
+ * fly — any empty square along an open diagonal.
+ */
 export function checkersSteps(
   board: Cell[],
   size: number,
   from: Point,
   stone: Stone,
   isKing: boolean,
+  rules: CheckersRules = ENGLISH_CHECKERS_RULES,
 ): Point[] {
-  return directionsFor(stone, isKing)
-    .map((step) => stepFrom(from, step, 1))
-    .filter((point) => isOnBoard(size, point) && cellAtPoint(board, size, point) === null);
+  const flying = isKing && rules.flyingKings;
+  const points: Point[] = [];
+  for (const step of isKing ? DIAGONALS : forwardDiagonals(stone)) {
+    for (let distance = 1; ; distance += 1) {
+      const point = { row: from.row + step.row * distance, col: from.col + step.col * distance };
+      if (!isOnBoard(size, point) || board[indexOf(size, point)] !== null) break;
+      points.push(point);
+      if (!flying) break;
+    }
+  }
+  return points;
+}
+
+/** The ground a piece standing at `at` captures from, with nothing yet taken. */
+function groundAt(board: readonly Cell[], size: number, at: Point): CaptureGround {
+  return { board, size, lifted: indexOf(size, at), taken: new Set<number>() };
 }
 
 /** The jumps a piece at `from` may make: the enemy piece taken, and where the jump lands. */
@@ -74,18 +108,18 @@ export function checkersCaptures(
   size: number,
   from: Point,
   stone: Stone,
-): { to: Point; captured: Point }[] {
-  const isKing = isKingAt(kings, from);
-  const enemy = otherStone(stone);
-  const jumps: { to: Point; captured: Point }[] = [];
-  for (const step of directionsFor(stone, isKing)) {
-    const over = stepFrom(from, step, 1);
-    const to = stepFrom(from, step, 2);
-    if (!isOnBoard(size, to) || cellAtPoint(board, size, to) !== null) continue;
-    if (cellAtPoint(board, size, over) !== enemy) continue;
-    jumps.push({ to, captured: over });
+  rules: CheckersRules = ENGLISH_CHECKERS_RULES,
+): Jump[] {
+  return jumpsFrom(groundAt(board, size, from), from, stone, isKingAt(kings, from), rules);
+}
+
+/** The points holding a piece of `stone`. */
+function piecesOf(board: readonly Cell[], size: number, stone: Stone): Point[] {
+  const points: Point[] = [];
+  for (let index = 0; index < board.length; index += 1) {
+    if (board[index] === stone) points.push({ row: Math.floor(index / size), col: index % size });
   }
-  return jumps;
+  return points;
 }
 
 /** Whether any of `stone`'s pieces on the board has a capture available right now. */
@@ -94,15 +128,11 @@ export function checkersHasCapture(
   kings: readonly Point[],
   size: number,
   stone: Stone,
+  rules: CheckersRules = ENGLISH_CHECKERS_RULES,
 ): boolean {
-  for (let row = 0; row < size; row += 1) {
-    for (let col = 0; col < size; col += 1) {
-      const point = { row, col };
-      if (board[indexOf(size, point)] !== stone) continue;
-      if (checkersCaptures(board, kings, size, point, stone).length > 0) return true;
-    }
-  }
-  return false;
+  return piecesOf(board, size, stone).some(
+    (point) => checkersCaptures(board, kings, size, point, stone, rules).length > 0,
+  );
 }
 
 /** Whether `stone` has any legal move at all: a capture first, or failing that, a step. */
@@ -111,16 +141,95 @@ export function checkersHasAnyMove(
   kings: readonly Point[],
   size: number,
   stone: Stone,
+  rules: CheckersRules = ENGLISH_CHECKERS_RULES,
 ): boolean {
-  for (let row = 0; row < size; row += 1) {
-    for (let col = 0; col < size; col += 1) {
-      const point = { row, col };
-      if (board[indexOf(size, point)] !== stone) continue;
-      if (checkersCaptures(board, kings, size, point, stone).length > 0) return true;
-      if (checkersSteps(board, size, point, stone, isKingAt(kings, point)).length > 0) return true;
-    }
+  return piecesOf(board, size, stone).some(
+    (point) =>
+      checkersCaptures(board, kings, size, point, stone, rules).length > 0 ||
+      checkersSteps(board, size, point, stone, isKingAt(kings, point), rules).length > 0,
+  );
+}
+
+/**
+ * The squares of the pieces the capture under way has already taken.
+ *
+ * Derived from the record, never stored: a chain is the last move and every
+ * move before it that continued one, so walking back until a move did not
+ * continue a chain finds exactly the pieces this one has jumped.
+ */
+function takenInChain(state: GameState): Set<number> {
+  const taken = new Set<number>();
+  if (state.chainAt === null) return taken;
+  const { size } = state.settings;
+  for (let at = state.moves.length - 1; at >= 0; at -= 1) {
+    const move = state.moves[at];
+    for (const point of move.captured ?? []) taken.add(indexOf(size, point));
+    if (move.continuedChain !== true) break;
   }
-  return false;
+  return taken;
+}
+
+/** The entries worth the most, where a game makes the longest capture compulsory. */
+function mostOf<T extends { worth: number }>(entries: T[], rules: CheckersRules): T[] {
+  if (!takesMaximum(rules) || entries.length === 0) return entries;
+  const best = Math.max(...entries.map((entry) => entry.worth));
+  return entries.filter((entry) => entry.worth === best);
+}
+
+/**
+ * Every move the colour to move may make, by the square it starts from.
+ *
+ * Worked out once per position and kept against it. A caller asks this piece by
+ * piece — the board asks for the one picked up, and the computer players ask for
+ * every piece they own on every position they weigh — and under the majority
+ * rule the answer for one piece depends on every other piece's best capture, so
+ * asking afresh each time would repeat the whole board's search once per piece.
+ * A position is never changed in place, so the answer kept for it cannot go stale.
+ */
+const LEGAL_MOVES = new WeakMap<GameState, Map<number, Point[]>>();
+
+function legalMoves(state: GameState): Map<number, Point[]> {
+  const known = LEGAL_MOVES.get(state);
+  if (known !== undefined) return known;
+  const worked = workOutMoves(state);
+  LEGAL_MOVES.set(state, worked);
+  return worked;
+}
+
+function workOutMoves(state: GameState): Map<number, Point[]> {
+  const { board, kings, chainAt, toPlay } = state;
+  const { size } = state.settings;
+  const rules = checkersRulesFor(state.settings);
+  const moves = new Map<number, Point[]>();
+  const add = (from: Point, to: Point) => {
+    const index = indexOf(size, from);
+    moves.set(index, [...(moves.get(index) ?? []), to]);
+  };
+
+  // A piece already mid-chain may only go on capturing, and only that piece may move at all.
+  if (chainAt !== null) {
+    const ground = { board, size, lifted: indexOf(size, chainAt), taken: takenInChain(state) };
+    for (const one of mostOf(weighedJumps(ground, chainAt, toPlay, isKingAt(kings, chainAt), rules), rules)) {
+      add(chainAt, one.jump.to);
+    }
+    return moves;
+  }
+
+  const captures = piecesOf(board, size, toPlay).flatMap((from) =>
+    weighedJumps(groundAt(board, size, from), from, toPlay, isKingAt(kings, from), rules).map((one) => ({
+      from,
+      ...one,
+    })),
+  );
+  // The forced-capture rule: any capture on the board rules out every step.
+  if (captures.length > 0) {
+    for (const one of mostOf(captures, rules)) add(one.from, one.jump.to);
+    return moves;
+  }
+  for (const from of piecesOf(board, size, toPlay)) {
+    for (const to of checkersSteps(board, size, from, toPlay, isKingAt(kings, from), rules)) add(from, to);
+  }
+  return moves;
 }
 
 /**
@@ -129,51 +238,39 @@ export function checkersHasAnyMove(
  * A piece already mid-chain may only continue capturing, and only that piece
  * may move at all. Otherwise, if any of the colour's pieces can capture, only
  * a capture is offered, from whichever pieces have one — the forced-capture
- * rule. Failing both, a plain step.
+ * rule — narrowed to the longest where the game says so. Failing both, a step.
  */
 export function checkersMoves(state: GameState, from: Point): Point[] {
-  const { board, kings, chainAt, toPlay } = state;
   const { size } = state.settings;
-  if (board[indexOf(size, from)] !== toPlay) return [];
-  if (chainAt !== null) {
-    if (!samePoint(from, chainAt)) return [];
-    return checkersCaptures(board, kings, size, from, toPlay).map((jump) => jump.to);
-  }
-  if (checkersHasCapture(board, kings, size, toPlay)) {
-    return checkersCaptures(board, kings, size, from, toPlay).map((jump) => jump.to);
-  }
-  return checkersSteps(board, size, from, toPlay, isKingAt(kings, from));
+  if (!isOnBoard(size, from) || state.board[indexOf(size, from)] !== state.toPlay) return [];
+  return [...(legalMoves(state).get(indexOf(size, from)) ?? [])];
 }
 
-/** What a step or a capture from `from` to `to` does to the board and the kings on it. */
-export type CheckersMoveResult = {
-  board: Cell[];
-  kings: Point[];
-  /** The enemy square taken, if this was a capture. */
-  captured: Point | null;
-  /** Whether the captured piece was itself a king, for undo. */
-  capturedWasKing: boolean;
-  /** Whether the moving piece was already a king before this move, for undo. */
-  wasKing: boolean;
-  /** Whether this move continued a chain already under way, for undo. */
-  continuedChain: boolean;
-  /** Whether the same piece must go on capturing before the turn can pass. */
-  continues: boolean;
-};
+/** The one piece of `enemy` standing on the diagonal strictly between `from` and `to`, if any. */
+function pieceBetween(board: readonly Cell[], size: number, from: Point, to: Point, enemy: Stone): Point | null {
+  const rows = to.row - from.row;
+  const cols = to.col - from.col;
+  if (Math.abs(rows) !== Math.abs(cols)) return null;
+  const step = { row: Math.sign(rows), col: Math.sign(cols) };
+  for (let distance = 1; distance < Math.abs(rows); distance += 1) {
+    const point = { row: from.row + step.row * distance, col: from.col + step.col * distance };
+    if (board[indexOf(size, point)] === enemy) return point;
+  }
+  return null;
+}
 
 export function applyCheckersMove(state: GameState, from: Point, to: Point): CheckersMoveResult {
   const { board: prevBoard, kings: prevKings, toPlay, chainAt } = state;
   const { size } = state.settings;
+  const rules = checkersRulesFor(state.settings);
   const wasKing = isKingAt(prevKings, from);
-  const isCapture = Math.abs(from.row - to.row) === 2;
+  const captured = pieceBetween(prevBoard, size, from, to, otherStone(toPlay));
 
   const board = prevBoard.slice();
   board[indexOf(size, from)] = null;
   board[indexOf(size, to)] = toPlay;
-  let captured: Point | null = null;
   let capturedWasKing = false;
-  if (isCapture) {
-    captured = { row: (from.row + to.row) / 2, col: (from.col + to.col) / 2 };
+  if (captured !== null) {
     capturedWasKing = isKingAt(prevKings, captured);
     board[indexOf(size, captured)] = null;
   }
@@ -181,12 +278,21 @@ export function applyCheckersMove(state: GameState, from: Point, to: Point): Che
   let kings = prevKings.filter(
     (point) => !samePoint(point, from) && (captured === null || !samePoint(point, captured)),
   );
-  const crownedNow = !wasKing && to.row === farRow(size, toPlay);
-  if (wasKing || crownedNow) kings = [...kings, to];
 
-  // A man that is crowned on this very jump always stops: only a king may carry a chain on.
-  const continues =
-    isCapture && !crownedNow && checkersCaptures(board, kings, size, to, toPlay).length > 0;
+  let crowned = !wasKing && to.row === farRow(size, toPlay);
+  let continues = false;
+  if (captured !== null) {
+    const landed = afterLanding(size, to, toPlay, wasKing, rules);
+    if (!landed.stops) {
+      const taken = takenInChain(state);
+      taken.add(indexOf(size, captured));
+      const ground = { board, size, lifted: indexOf(size, to), taken };
+      continues = jumpsFrom(ground, to, toPlay, landed.king, rules).length > 0;
+      // Crowned on the far row unless the game makes a man carry on uncrowned, and it does.
+      crowned = crowned && (landed.king || !continues);
+    }
+  }
+  if (wasKing || crowned) kings = [...kings, to];
 
   return {
     board,
@@ -194,6 +300,7 @@ export function applyCheckersMove(state: GameState, from: Point, to: Point): Che
     captured,
     capturedWasKing,
     wasKing,
+    crowned,
     continuedChain: chainAt !== null && samePoint(chainAt, from),
     continues,
   };

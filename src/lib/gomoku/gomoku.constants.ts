@@ -2,6 +2,10 @@ import type {
   WrapMode,
   Blocked,
   BoardGrid,
+  CaptureChoice,
+  CheckersRules,
+  CrownMidCapture,
+  PieceTally,
   DrawLimit,
   FirstPlayer,
   Hot,
@@ -83,6 +87,9 @@ export const RULE_VARIANTS = {
   halma: "halma",
   hex: "hex",
   checkers: "checkers",
+  internationalDraughts: "internationalDraughts",
+  brazilianDraughts: "brazilianDraughts",
+  canadianCheckers: "canadianCheckers",
   chineseCheckers: "chineseCheckers",
   go: "go",
 } as const satisfies Record<RuleVariant, RuleVariant>;
@@ -143,6 +150,9 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.halma,
   RULE_VARIANTS.hex,
   RULE_VARIANTS.checkers,
+  RULE_VARIANTS.internationalDraughts,
+  RULE_VARIANTS.brazilianDraughts,
+  RULE_VARIANTS.canadianCheckers,
   RULE_VARIANTS.chineseCheckers,
   RULE_VARIANTS.go,
 ] as const satisfies readonly RuleVariant[];
@@ -287,6 +297,140 @@ const HALMA_SIZES = [16, 10, 8] as const;
 const HEX_SIZES = [11, 13, 19] as const;
 /** Checkers: the 8×8 board draughts is played on everywhere. */
 const CHECKERS_SIZES = [8] as const;
+
+export const CAPTURE_CHOICES = {
+  free: "free",
+  maximum: "maximum",
+} as const satisfies Record<CaptureChoice, CaptureChoice>;
+
+export const CROWN_MID_CAPTURE = {
+  stops: "stops",
+  continues: "continues",
+  passes: "passes",
+} as const satisfies Record<CrownMidCapture, CrownMidCapture>;
+
+/**
+ * English draughts, American checkers: three rows of men, a man takes forward
+ * only, a king moves one square, any capture may be chosen, and a man crowned
+ * by a capture ends the move there. Exactly what rules/checkers.ts did before
+ * any of this was data, and the Checkers tests that predate it still say so.
+ */
+export const ENGLISH_CHECKERS_RULES: CheckersRules = {
+  menRows: 3,
+  menCaptureBackward: false,
+  flyingKings: false,
+  captureChoice: CAPTURE_CHOICES.free,
+  crownMidCapture: CROWN_MID_CAPTURE.stops,
+  /*
+   * None, and that is this game as it has always been played HERE, not the
+   * English rulebook: the WCDF also draws a threefold repetition. Declared as
+   * absent rather than added in passing, so that changing how an existing game
+   * ends is a decision somebody takes on its own, not a side effect of adding
+   * its relatives. Its long-running backstop is the forty-move count in
+   * rules/noProgress.ts.
+   */
+  repetitionDraw: null,
+  endgameCounts: [],
+};
+
+/** International draughts' own board, as the FMJD plays it. */
+const INTERNATIONAL_DRAUGHTS_SIZES = [10] as const;
+/** Brazilian draughts: the international rules on the 8×8 board. */
+const BRAZILIAN_DRAUGHTS_SIZES = [8] as const;
+/** Canadian checkers: the international rules on a 12×12 board. */
+const CANADIAN_CHECKERS_SIZES = [12] as const;
+
+/** A lone king: what every endgame count below is counted against. */
+const LONE_KING: PieceTally = { kings: 1, men: 0 };
+
+/**
+ * International draughts, from the FMJD's official rules (Annex 1, 2018, and
+ * the 2024 Annexes). Men take both ways (4.1), kings fly (3.9, 4.3), the
+ * capture taking the most pieces is compulsory with a king counting as one
+ * piece (4.13), a man crossing the far row mid-capture stays a man (4.15), and
+ * taken pieces come off only once the capture is over and may not be jumped
+ * twice (4.8, 4.11).
+ *
+ * The draws of article 6: a third repetition with the same side to move
+ * (6.1); three pieces, one at least a king, against a lone king, sixteen more
+ * moves each (6.3); two kings, a king and a man, or a king against a lone king,
+ * five more moves each (6.4). The twenty-five-move kings-only count (6.2) is
+ * the no-progress rule in rules/noProgress.ts.
+ *
+ * NOT APPLIED: the 2024 clause that cuts 6.3's sixteen moves to five when the
+ * lone king "solely occupies" the long diagonal. The text does not say whether
+ * the king must hold the diagonal from the start of the count or at its end,
+ * nor what leaving it does, and a rule this site cannot read exactly must not
+ * fire. Without it those endings run to sixteen moves each, which is the older
+ * rule and the generous side of the new one.
+ */
+export const INTERNATIONAL_DRAUGHTS_RULES: CheckersRules = {
+  menRows: 4,
+  menCaptureBackward: true,
+  flyingKings: true,
+  captureChoice: CAPTURE_CHOICES.maximum,
+  crownMidCapture: CROWN_MID_CAPTURE.passes,
+  repetitionDraw: 3,
+  endgameCounts: [
+    {
+      endings: [
+        [{ kings: 3, men: 0 }, LONE_KING],
+        [{ kings: 2, men: 1 }, LONE_KING],
+        [{ kings: 1, men: 2 }, LONE_KING],
+      ],
+      movesEach: 16,
+    },
+    {
+      endings: [
+        [{ kings: 2, men: 0 }, LONE_KING],
+        [{ kings: 1, men: 1 }, LONE_KING],
+        [LONE_KING, LONE_KING],
+      ],
+      movesEach: 5,
+    },
+  ],
+};
+
+/**
+ * Brazilian draughts: the international rules of capture and crowning on 8×8,
+ * with twelve men, and the draws of the Brazilian confederation's own rules
+ * (CBJD, Regras Oficiais) rather than the FMJD's 8×8 set, which differs. A
+ * third repetition (art. 98), and five moves each for the small endings of
+ * art. 99: two kings against two, two kings against one, two kings against a
+ * king and a man, a king against a king, a king against a king and a man. Its
+ * twenty-move kings-only count is in rules/noProgress.ts.
+ *
+ * NOT APPLIED: art. 100, five moves for three pieces against a lone king on the
+ * long diagonal, for the same reason as the FMJD's version of it above. With
+ * it left out, those endings are bounded by the kings-only count instead.
+ */
+export const BRAZILIAN_DRAUGHTS_RULES: CheckersRules = {
+  ...INTERNATIONAL_DRAUGHTS_RULES,
+  menRows: 3,
+  endgameCounts: [
+    {
+      endings: [
+        [{ kings: 2, men: 0 }, { kings: 2, men: 0 }],
+        [{ kings: 2, men: 0 }, LONE_KING],
+        [{ kings: 2, men: 0 }, { kings: 1, men: 1 }],
+        [LONE_KING, LONE_KING],
+        [LONE_KING, { kings: 1, men: 1 }],
+      ],
+      movesEach: 5,
+    },
+  ],
+};
+
+/**
+ * Canadian checkers: the international rules on 12×12, thirty men a side in
+ * five rows. No federation's draw rules for it could be found — the Quebec
+ * association's own site did not answer — so its draws are the FMJD's,
+ * borrowed, and its rules page says so.
+ */
+export const CANADIAN_CHECKERS_RULES: CheckersRules = {
+  ...INTERNATIONAL_DRAUGHTS_RULES,
+  menRows: 5,
+};
 /** Chinese Checkers: the standard 121-hole hexagram, embedded in its own 17×17 square. */
 const CHINESE_CHECKERS_SIZES = [17] as const;
 /** Go's own three sizes: 19×19 as it is played seriously, 13 and 9 for a shorter game. */
@@ -308,6 +452,7 @@ function plain(overrides: SpecOverrides): VariantSpec {
     firstTurnStones: 1,
     winLength: WIN_LENGTH,
     allowFirstPlayerChoice: false,
+    firstStone: STONES.black,
     openings: GOMOKU_OPENINGS,
     placement: PLACEMENTS.free,
     loseLength: null,
@@ -334,6 +479,7 @@ function plain(overrides: SpecOverrides): VariantSpec {
     camps: false,
     connects: false,
     checkers: false,
+    checkersRules: null,
     chineseCheckers: false,
     go: false,
     ...overrides,
@@ -359,6 +505,24 @@ function flipping(overrides: Partial<VariantSpec> = {}): VariantSpec {
 /** The games that are not gomoku: a small board of their own and no opening protocol. */
 function small(overrides: SpecOverrides & { boardSizes: readonly number[] }): VariantSpec {
   return plain({ allowFirstPlayerChoice: true, openings: FREE_ONLY, ...overrides });
+}
+
+/**
+ * A draughts game played by the international rules, on its own board: in the
+ * squares, with no reading of lines, and White to move first as every
+ * federation of these games writes it (FMJD 3.3, CBJD). Not a choice at the
+ * board, because the rulebook does not make it one.
+ */
+function internationalRules(rules: CheckersRules, boardSizes: readonly number[]): VariantSpec {
+  return small({
+    grid: BOARD_GRIDS.cells,
+    checkers: true,
+    checkersRules: rules,
+    boardSizes,
+    analysis: false,
+    allowFirstPlayerChoice: false,
+    firstStone: STONES.white,
+  });
 }
 
 /**
@@ -512,7 +676,22 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * read from `captures` or `captureSizes`, which belong to the flanking
    * capture of the Ninuki family and mean nothing here.
    */
-  checkers: small({ grid: BOARD_GRIDS.cells, checkers: true, boardSizes: CHECKERS_SIZES, analysis: false }),
+  checkers: small({
+    grid: BOARD_GRIDS.cells,
+    checkers: true,
+    checkersRules: ENGLISH_CHECKERS_RULES,
+    boardSizes: CHECKERS_SIZES,
+    analysis: false,
+  }),
+  /*
+   * The international family: men that take backward, kings that fly, the
+   * longest capture compulsory, and no crown for a man only passing the far row.
+   * One set of rules on three boards — see INTERNATIONAL_DRAUGHTS_RULES for the
+   * articles, and where Brazil's and Canada's differ.
+   */
+  internationalDraughts: internationalRules(INTERNATIONAL_DRAUGHTS_RULES, INTERNATIONAL_DRAUGHTS_SIZES),
+  brazilianDraughts: internationalRules(BRAZILIAN_DRAUGHTS_RULES, BRAZILIAN_DRAUGHTS_SIZES),
+  canadianCheckers: internationalRules(CANADIAN_CHECKERS_RULES, CANADIAN_CHECKERS_SIZES),
   /*
    * Chinese Checkers: a hexagram, not a square — see rules/chineseCheckers.ts
    * for how it is embedded in a Point{row,col} grid at all. Otherwise a race
@@ -632,7 +811,7 @@ export const OBSTACLE_LAYOUT_DISPLAY: Record<
 export const BOARD_SIZES = [9, 13, 15, 19] as const;
 
 /** Every size any game here is played on, for the schemas at the API edge. */
-export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 19] as const;
+export const ALL_BOARD_SIZES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 19] as const;
 
 export const BOARD_SIZE_DISPLAY: Record<
   number,
@@ -643,9 +822,10 @@ export const BOARD_SIZE_DISPLAY: Record<
   5: { label: "Five", kanji: "五路", note: "Trap Three, Square Four" },
   6: { label: "Six", kanji: "六路", note: "Twist Five, Mini Reversi" },
   7: { label: "Seven", kanji: "七路", note: "Drop Four" },
-  8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma, Checkers" },
-  10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi, Halma" },
+  8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma, Checkers, Brazilian Draughts" },
+  10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi, Halma, International Draughts" },
   11: { label: "Eleven", kanji: "十一路", note: "Hex" },
+  12: { label: "Twelve", kanji: "十二路", note: "Canadian Checkers" },
   16: { label: "Sixteen", kanji: "十六路", note: "Halma" },
   17: { label: "Seventeen", kanji: "十七路", note: "Chinese Checkers" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },

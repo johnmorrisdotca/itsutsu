@@ -177,7 +177,7 @@ export const XP_VARIANTS_TO_PLAY = RULE_VARIANT_LIST.length;
  *
  * Two, because a family of one game is not a completion: its only win is already
  * paid by `firstWinAtVariant`, and its first game by `firstOfFamily`, so 300 more
- * would make one win at Hex, Checkers or Go worth about 510 XP. See
+ * would make one win at Hex or Go worth about 510 XP. See
  * `everyVariantWonInFamily` in `xp.constants.ts`.
  */
 export const XP_FAMILY_WON_MIN_GAMES = 2;

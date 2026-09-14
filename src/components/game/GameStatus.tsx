@@ -5,6 +5,7 @@ import {
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
 import { couldNotFinish } from "@/lib/gomoku/rules/noProgress";
+import { endingRanOut, repeatedTooOften } from "@/lib/gomoku/rules/checkersDraws";
 import {
   campSize,
   discCount,
@@ -56,11 +57,15 @@ function ToPlay({ session }: { session: GameSession }) {
      */
     const why = couldNotFinish(state)
       ? GAME_COPY.drawUnfinishable
-      : drawnByLength(state)
-        ? GAME_COPY.drawByLength
-        : state.board.includes(null)
-          ? GAME_COPY.drawBothLines
-          : "Draw. The board is full.";
+      : repeatedTooOften(state)
+        ? GAME_COPY.drawByRepetition
+        : endingRanOut(state)
+          ? GAME_COPY.drawByEndgameCount
+          : drawnByLength(state)
+            ? GAME_COPY.drawByLength
+            : state.board.includes(null)
+              ? GAME_COPY.drawBothLines
+              : "Draw. The board is full.";
     return (
       <p className="text-lg font-semibold" data-testid="to-play">
         {why}

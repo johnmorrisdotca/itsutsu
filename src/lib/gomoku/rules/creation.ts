@@ -1,10 +1,9 @@
 import { startingPieces } from "./camps";
-import { checkersStartingPieces } from "./checkers";
+import { checkersRulesFor, checkersStartingPieces } from "./checkers";
 import { STAR_RADIUS, starStartingPieces } from "./chineseCheckers";
 import { startingDiscs } from "./flips";
 import {
   DEFAULT_SETTINGS,
-  FIRST_STONE,
   FIRST_PLAYERS,
   GAME_STATUS,
   OPENING_RULES,
@@ -87,11 +86,34 @@ export function startingBoard(settings: GameSettings): Cell[] {
   for (const disc of startingDiscs(settings)) place(disc);
   // A race game begins with both camps full, likewise part of the position.
   if (spec.camps) for (const piece of startingPieces(settings)) place(piece);
-  // Checkers begins with both sides' men filling their three rows, likewise.
-  if (spec.checkers) for (const piece of checkersStartingPieces(settings.size)) place(piece);
+  // Checkers begins with both sides' men filling their own rows — three, four or five, as the game says — likewise.
+  if (spec.checkers) {
+    for (const piece of checkersStartingPieces(settings.size, checkersRulesFor(settings).menRows)) place(piece);
+  }
   // Chinese Checkers begins with both points full, likewise.
   if (spec.chineseCheckers) for (const piece of starStartingPieces(STAR_RADIUS)) place(piece);
   return board;
+}
+
+/**
+ * The colour a game must open with whatever anybody asked for, or null where
+ * the players may choose.
+ *
+ * Fixed where the game gives no choice — and then it is the game's own first
+ * colour, which is White for the draughts games whose rules say so — and fixed
+ * under any opening protocol, which always starts from that colour. Asked by
+ * the engine when it builds a game, and by anything that WRITES a game down
+ * before the engine has seen it: a stored opener the engine would overrule is
+ * a row whose seats and names disagree with its own board.
+ *
+ * Null for a variant this deploy does not know, since there is nothing to fix
+ * it to and the caller's own answer is the only one there is.
+ */
+export function fixedOpener(variant: string, opening: string): Stone | null {
+  const spec = VARIANT_SPECS[variant as keyof typeof VARIANT_SPECS] as (typeof VARIANT_SPECS)[keyof typeof VARIANT_SPECS] | undefined;
+  if (spec === undefined) return null;
+  if (!spec.allowFirstPlayerChoice || opening !== OPENING_RULES.free) return spec.firstStone;
+  return null;
 }
 
 /**
@@ -100,8 +122,8 @@ export function startingBoard(settings: GameSettings): Cell[] {
  * constrain black, and every opening protocol, put black on move one.
  */
 export function resolveOpener(settings: GameSettings, roll = 0): Stone {
-  if (!VARIANT_SPECS[settings.variant].allowFirstPlayerChoice) return FIRST_STONE;
-  if (settings.opening !== OPENING_RULES.free) return FIRST_STONE;
+  const fixed = fixedOpener(settings.variant, settings.opening);
+  if (fixed !== null) return fixed;
   if (settings.firstPlayer === FIRST_PLAYERS.random) {
     return roll < 0.5 ? STONES.black : STONES.white;
   }

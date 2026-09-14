@@ -2,146 +2,140 @@ import { expect } from "vitest";
 import { cellAt, otherStone } from "./engine";
 import { undoMove } from "./rules/record";
 import { GAME_STATUS } from "./gomoku.constants";
-import type { Cell, GameState, Point, Stone } from "./gomoku.types";
+import type { GameState, Point } from "./gomoku.types";
+import {
+  HAND_RULES,
+  anyMoveByHand,
+  bestAnywhereByHand,
+  bestByHand,
+  drawReasonByHand,
+  farRowByHand,
+  hopsByHand,
+  isKingByHand,
+} from "./simulation.checkersByHand";
 
 /**
- * The checkers family, restated by hand: forced capture, chained jumps,
- * crowning and the no-move win, worked out fresh here rather than read from
- * rules/checkers.ts, so a wrong table there cannot agree with itself.
+ * The checkers family, checked move by move against the rules restated by hand
+ * in simulation.checkersByHand.ts: the forced capture, the longest capture
+ * where a game demands it, men taking backward, kings flying, a captured piece
+ * standing in the way until the capture is over, crowning in the middle of a
+ * capture, the no-move win, and every draw the game's own rules write down.
  */
 
 export function isCheckers(variant: string): boolean {
-  return variant === "checkers";
+  return Object.prototype.hasOwnProperty.call(HAND_RULES, variant);
 }
 
-const CHECKER_DIAGONALS: readonly Point[] = [
-  { row: -1, col: -1 },
-  { row: -1, col: 1 },
-  { row: 1, col: -1 },
-  { row: 1, col: 1 },
-];
-
-/** The diagonals open to a piece, worked out from scratch rather than read from the rule module. */
-function checkerDirections(stone: Stone, king: boolean): Point[] {
-  if (king) return [...CHECKER_DIAGONALS];
-  return CHECKER_DIAGONALS.filter((step) => (stone === "black" ? step.row === 1 : step.row === -1));
-}
-
-function checkerCellAt(board: readonly Cell[], size: number, row: number, col: number): Cell | undefined {
-  return row < 0 || col < 0 || row >= size || col >= size ? undefined : board[row * size + col];
-}
-
-function isKingByHand(kings: readonly Point[], at: Point): boolean {
-  return kings.some((point) => point.row === at.row && point.col === at.col);
-}
-
-/** Every jump a piece at `from` could make, computed independently of rules/checkers.ts. */
-function jumpsByHand(
-  board: readonly Cell[],
-  kings: readonly Point[],
-  size: number,
-  from: Point,
-  stone: Stone,
-): { to: Point; captured: Point }[] {
-  const enemy = otherStone(stone);
-  const king = isKingByHand(kings, from);
-  const jumps: { to: Point; captured: Point }[] = [];
-  for (const step of checkerDirections(stone, king)) {
-    const captured = { row: from.row + step.row, col: from.col + step.col };
-    const to = { row: from.row + step.row * 2, col: from.col + step.col * 2 };
-    if (checkerCellAt(board, size, to.row, to.col) !== null) continue;
-    if (checkerCellAt(board, size, captured.row, captured.col) !== enemy) continue;
-    jumps.push({ to, captured });
-  }
-  return jumps;
-}
-
-function anyJumpByHand(board: readonly Cell[], kings: readonly Point[], size: number, stone: Stone): boolean {
-  for (let row = 0; row < size; row += 1) {
-    for (let col = 0; col < size; col += 1) {
-      if (board[row * size + col] !== stone) continue;
-      if (jumpsByHand(board, kings, size, { row, col }, stone).length > 0) return true;
-    }
-  }
-  return false;
-}
-
-function anyMoveByHand(board: readonly Cell[], kings: readonly Point[], size: number, stone: Stone): boolean {
-  for (let row = 0; row < size; row += 1) {
-    for (let col = 0; col < size; col += 1) {
-      if (board[row * size + col] !== stone) continue;
-      const point = { row, col };
-      if (jumpsByHand(board, kings, size, point, stone).length > 0) return true;
-      for (const step of checkerDirections(stone, isKingByHand(kings, point))) {
-        const to = { row: row + step.row, col: col + step.col };
-        if (checkerCellAt(board, size, to.row, to.col) === null) return true;
-      }
-    }
-  }
-  return false;
-}
+/**
+ * The squares of the pieces a capture under way has already taken, as this
+ * checker saw them taken — kept against each position it has passed through,
+ * rather than read back from the engine's record the way the engine does.
+ */
+const TAKEN = new WeakMap<GameState, number[]>();
 
 function sortedPoints(points: readonly Point[]): Point[] {
   return [...points].sort((a, b) => a.row - b.row || a.col - b.col);
 }
 
-/**
- * What must hold after a checkers move: a step or a capture, the forced-
- * capture rule honoured, crowning on the far row, a chain that keeps the
- * turn exactly when another capture is waiting, and a no-move win that
- * really is one.
- */
 export function checkCheckersMove(before: GameState, after: GameState, from: Point, to: Point, seed: number) {
-  const where = `checkers seed ${seed}, move ${from.row},${from.col} to ${to.row},${to.col}`;
+  const variant = after.settings.variant;
+  const hand = HAND_RULES[variant];
+  const where = `${variant} seed ${seed}, move ${from.row},${from.col} to ${to.row},${to.col}`;
   const size = after.settings.size;
+  expect(size, `${where}: played on the wrong board`).toBe(hand.size);
   const mover = before.toPlay;
+  const enemy = otherStone(mover);
+  const index = (point: Point) => point.row * size + point.col;
 
-  const distance = Math.max(Math.abs(from.row - to.row), Math.abs(from.col - to.col));
-  expect([1, 2], `${where}: moved neither one square nor a jump`).toContain(distance);
+  const rows = to.row - from.row;
+  const cols = to.col - from.col;
+  const distance = Math.abs(rows);
+  expect(distance > 0 && Math.abs(cols) === distance, `${where}: not a diagonal move`).toBe(true);
   expect(cellAt(after, from), `${where}: piece still at its origin`).toBeNull();
   expect(cellAt(after, to), `${where}: piece did not arrive`).toBe(mover);
 
-  const isCapture = distance === 2;
-  const forced = anyJumpByHand(before.board, before.kings, size, mover);
-  expect(isCapture || !forced, `${where}: a capture was available and this move was not one`).toBe(true);
-
-  let captured: Point | null = null;
-  if (isCapture) {
-    captured = { row: (from.row + to.row) / 2, col: (from.col + to.col) / 2 };
-    expect(cellAt(before, captured), `${where}: nothing to capture at the midpoint`).toBe(otherStone(mover));
-    expect(cellAt(after, captured), `${where}: the captured piece is still on the board`).toBeNull();
-  }
-  const changed = after.board.filter((cell, index) => cell !== before.board[index]).length;
-  expect(changed, `${where}: more cells changed than a step or a capture explains`).toBe(isCapture ? 3 : 2);
-  const takenTally = after.captures[mover] - before.captures[mover];
-  expect(takenTally, `${where}: captures tally does not match the piece lifted`).toBe(isCapture ? 1 : 0);
-
   const wasKing = isKingByHand(before.kings, from);
-  const farRow = mover === "black" ? size - 1 : 0;
-  const crownedNow = !wasKing && to.row === farRow;
-  expect(isKingByHand(after.kings, to), `${where}: king status at the landing square is wrong`).toBe(
-    wasKing || crownedNow,
-  );
-  expect(isKingByHand(after.kings, from), `${where}: a king was left behind at the square it moved from`).toBe(false);
+  const flies = wasKing && hand.flying;
+  const between: Point[] = [];
+  for (let step = 1; step < distance; step += 1) {
+    between.push({ row: from.row + Math.sign(rows) * step, col: from.col + Math.sign(cols) * step });
+  }
+  const standing = between.filter((point) => cellAt(before, point) !== null);
+  expect(standing.every((point) => cellAt(before, point) === enemy), `${where}: jumped a piece of its own`).toBe(true);
+  expect(standing.length, `${where}: passed more than one piece`).toBeLessThanOrEqual(1);
+  const over = standing[0] ?? null;
+  if (!flies) expect(distance, `${where}: went further than its piece may`).toBe(over === null ? 1 : 2);
+  if (over === null && !wasKing) {
+    expect(Math.sign(rows), `${where}: a man stepped backward`).toBe(mover === "black" ? 1 : -1);
+  }
 
-  // A chain keeps the turn only on a capture that did not just crown the piece, and only when another is waiting.
-  const wouldContinue =
-    isCapture && !crownedNow && jumpsByHand(after.board, after.kings, size, to, mover).length > 0;
-  if (wouldContinue) {
+  const taken = before.chainAt === null ? [] : TAKEN.get(before);
+  expect(taken, `${where}: carried on a capture this checker never saw begin`).toBeDefined();
+  const takenNow = taken ?? [];
+  expect(
+    [...between, to].some((point) => takenNow.includes(index(point))),
+    `${where}: passed or landed where a piece was already taken`,
+  ).toBe(false);
+  if (before.chainAt !== null) {
+    expect(from, `${where}: another piece moved mid-capture`).toEqual(before.chainAt);
+    expect(over, `${where}: a capture stopped for a step`).not.toBeNull();
+  }
+
+  const available =
+    before.chainAt !== null
+      ? bestByHand(before.board, size, from, mover, wasKing, hand, takenNow, index(from))
+      : bestAnywhereByHand(before.board, before.kings, size, mover, hand);
+  expect(over !== null || available === 0, `${where}: a capture was available and this move was not one`).toBe(true);
+
+  const reaches = !wasKing && to.row === farRowByHand(size, mover);
+  let crowned = reaches;
+  let continues = false;
+  if (over !== null) {
+    const stops = reaches && hand.crown === "stops";
+    const kingOn = wasKing || (reaches && hand.crown === "continues");
+    const afterTaken = [...takenNow, index(over)];
+    const rest = stops ? 0 : bestByHand(before.board, size, to, mover, kingOn, hand, afterTaken, index(from));
+    if (hand.most) expect(1 + rest, `${where}: did not take the most pieces it could`).toBe(available);
+    continues = rest > 0;
+    if (flies && !continues) {
+      const elsewhere = hopsByHand(before.board, size, from, mover, true, hand, takenNow, index(from)).filter(
+        (hop) => hop.over.row === over.row && hop.over.col === over.col && (hop.to.row !== to.row || hop.to.col !== to.col),
+      );
+      expect(
+        elsewhere.some((hop) => bestByHand(before.board, size, hop.to, mover, true, hand, afterTaken, index(from)) > 0),
+        `${where}: landed where the capture ends while another landing went on taking`,
+      ).toBe(false);
+    }
+    crowned = reaches && (hand.crown !== "passes" || !continues);
+    expect(cellAt(after, over), `${where}: the captured piece is still on the board`).toBeNull();
+  }
+
+  const changed = after.board.filter((cell, at) => cell !== before.board[at]).length;
+  expect(changed, `${where}: more cells changed than a step or a capture explains`).toBe(over === null ? 2 : 3);
+  expect(after.captures[mover] - before.captures[mover], `${where}: captures tally does not match`).toBe(over === null ? 0 : 1);
+  expect(isKingByHand(after.kings, to), `${where}: king status at the landing square is wrong`).toBe(wasKing || crowned);
+  expect(isKingByHand(after.kings, from), `${where}: a king was left behind at the square it moved from`).toBe(false);
+  expect(after.moves[after.moves.length - 1].crowned === true, `${where}: the record says the wrong thing about crowning`).toBe(crowned);
+
+  if (continues && over !== null) {
     expect(after.chainAt, `${where}: a waiting capture did not keep the turn`).toEqual(to);
-    expect(after.toPlay, `${where}: the turn passed mid-chain`).toBe(mover);
-    expect(after.status, `${where}: the game ended mid-chain`).toBe(GAME_STATUS.playing);
+    expect(after.toPlay, `${where}: the turn passed mid-capture`).toBe(mover);
+    expect(after.status, `${where}: the game ended mid-capture`).toBe(GAME_STATUS.playing);
+    TAKEN.set(after, [...takenNow, index(over)]);
   } else {
-    expect(after.chainAt, `${where}: the chain did not close`).toBeNull();
-    if (after.status === GAME_STATUS.playing) {
-      expect(after.toPlay, `${where}: the turn did not pass`).toBe(otherStone(mover));
-    } else if (after.status === GAME_STATUS.won) {
+    expect(after.chainAt, `${where}: the capture did not close`).toBeNull();
+    if (!anyMoveByHand(after.board, after.kings, size, enemy, hand)) {
+      expect(after.status, `${where}: the other side has no move and the game went on`).toBe(GAME_STATUS.won);
       expect(after.winBy, `${where}: won by something other than being blocked`).toBe("blocked");
       expect(after.winner, `${where}: the wrong side won`).toBe(mover);
-      expect(
-        anyMoveByHand(after.board, after.kings, size, otherStone(mover)),
-        `${where}: declared the other side blocked, but it has a move`,
-      ).toBe(false);
+    } else {
+      const reason = drawReasonByHand(after, hand);
+      expect(after.status, `${where}: by hand, ${reason ?? "no draw rule applies"}`).toBe(
+        reason === null ? GAME_STATUS.playing : GAME_STATUS.draw,
+      );
+      if (after.status === GAME_STATUS.playing) {
+        expect(after.toPlay, `${where}: the turn did not pass`).toBe(enemy);
+      }
     }
   }
 
@@ -150,9 +144,7 @@ export function checkCheckersMove(before: GameState, after: GameState, from: Poi
     expect(undone.board, `${where}: undo did not restore the board`).toEqual(before.board);
     expect(undone.toPlay, `${where}: undo did not restore the turn`).toBe(before.toPlay);
     // The kings are a set, not a sequence, so only the membership has to match.
-    expect(sortedPoints(undone.kings), `${where}: undo did not restore the kings`).toEqual(
-      sortedPoints(before.kings),
-    );
+    expect(sortedPoints(undone.kings), `${where}: undo did not restore the kings`).toEqual(sortedPoints(before.kings));
     expect(undone.chainAt, `${where}: undo did not restore the chain`).toEqual(before.chainAt);
   }
 }

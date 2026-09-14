@@ -80,7 +80,7 @@ export const GAME_FAMILIES: { key: string; title: string; kanji: string; blurb: 
     title: "Checkers",
     kanji: "チェッカー",
     blurb: "No lines, no queue, no board full of stones. Jump the other side's pieces off, or be left with no move at all.",
-    games: ["checkers"],
+    games: ["checkers", "internationalDraughts", "brazilianDraughts", "canadianCheckers"],
   },
   {
     key: "territory",

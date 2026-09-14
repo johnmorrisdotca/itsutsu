@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { freeGameId } from "./gameId";
 import { canPass, canTwist, createGame, inMovePhase, isLegalMove, movePiece, passTurn, pieceMoves, placePiece, playMove, resolvePlacement, twistBoard } from "@/lib/gomoku/engine";
 import { replayMoves } from "@/lib/gomoku/rules/record";
+import { fixedOpener } from "@/lib/gomoku/rules/creation";
 import { GAME_STATUS, MOVE_KINDS, SEED_RANGE, STONES, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { GameState, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
@@ -198,6 +199,8 @@ export async function createLiveGame(
     data: {
       id: await freeGameId(),
       ...rest,
+      // The opener the engine will replay, where the rules fix it — see `fixedOpener`.
+      opener: fixedOpener(rest.variant, rest.opening) ?? rest.opener,
       // A game with a board of its own is created on it, whatever was asked for.
       size: sizeForVariant(rest.variant as RuleVariant, rest.size),
       clockMode,

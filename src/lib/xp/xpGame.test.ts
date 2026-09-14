@@ -342,8 +342,9 @@ describe("the families a win can complete", () => {
     expect(familyToWin("somethingRetired")).toBeNull();
   });
 
-  it("counts eight families that can be won today", () => {
-    expect(GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null)).toHaveLength(8);
+  it("counts nine families that can be won today", () => {
+    // Nine since Checkers gained International, Brazilian and Canadian draughts beside it.
+    expect(GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null)).toHaveLength(9);
   });
 });
 
@@ -359,7 +360,7 @@ describe("the tour covers the site", () => {
     // game or a new family moves the target rather than leaving somebody holding
     // a set that is complete and unpaid.
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length);
-    expect(XP_VARIANTS_TO_PLAY).toBe(39);
+    expect(XP_VARIANTS_TO_PLAY).toBe(42);
     expect(GAME_FAMILIES.length).toBe(11);
   });
 

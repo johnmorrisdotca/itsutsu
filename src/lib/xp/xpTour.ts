@@ -140,7 +140,7 @@ export async function awardTourBonuses({
  * cannot complete it and a game added to one reopens nobody's award — it stays
  * paid, because a ledger records what was paid.
  *
- * A family of one game — Hex, Checkers, Go — pays no family award at all:
+ * A family of one game — Hex, Go — pays no family award at all:
  * `familyToWin` answers null for it, because its only win is already paid twice
  * over and completes nothing.
  */
