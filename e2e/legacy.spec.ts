@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 import { seedMember } from "./members";
+import { RULE_VARIANTS } from "../src/lib/gomoku/gomoku.constants";
+import { gamePath } from "../src/lib/gomoku/slugs";
 
 /**
  * The rule John set: if a page lists a game, it links to that game. A legacy
@@ -34,7 +36,15 @@ test.describe("a legacy record's games link to what they are", () => {
     // otherwise match too.
     const goMoku = detail.getByRole("link", { name: "Go-Moku", exact: true });
     await expect(goMoku).toBeVisible();
-    await expect(goMoku).toHaveAttribute("href", "/games/gomoku/rules");
+    /*
+     * To the game's own page, which is where every game name on the site leads
+     * since "A game is one address" made /games/<game> the front door and the
+     * rules one document under it. This asserted `/games/gomoku/rules` and was
+     * missed by that change, so it had been red on every database since. The
+     * address is asked of the same `gamePath` GameName builds its link with,
+     * so the next move of the front door moves this with it.
+     */
+    await expect(goMoku).toHaveAttribute("href", gamePath(RULE_VARIANTS.freestyle));
 
     /*
      * Backgammon has no Itsutsu equivalent. It must render, not as a link,
