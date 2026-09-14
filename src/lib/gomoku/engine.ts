@@ -16,7 +16,7 @@ import { indexOf, isOnBoard, otherStone, pointOf, samePoint } from "./rules/boar
 import { capturesFrom, removeStones, stonesIn } from "./rules/captures";
 import { forbiddenAt } from "./rules/forbidden";
 import { areaWinner, goLegal, playGoMove } from "./rules/go";
-import { applyOpeningChoice, openingAfterMove, openingAllows } from "./rules/opening";
+import { applyOpeningChoice, canChooseColour, openingAfterMove, openingAllows } from "./rules/opening";
 import {
   blockedByGiveaway,
   clearBottomRow,
@@ -226,6 +226,13 @@ export function placePiece(state: GameState, cells: readonly PieceCell[]): GameS
  */
 export function mustPass(state: GameState): boolean {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
+  /*
+   * A colour to choose is a move, never a pass. While a swap opening waits on
+   * its decision every point is refused, so the test below read "nothing to
+   * play" — and the automatic pass took the chooser's turn in swap2, swap, the
+   * renju swaps and tarannikov (the 0.192.0 regression, variants.spec.ts:63).
+   */
+  if (canChooseColour(state)) return false;
   const spec = VARIANT_SPECS[state.settings.variant];
   // Go passes by choice, never by compulsion: there is always a point to play.
   if (spec.go) return false;
