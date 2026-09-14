@@ -51,7 +51,7 @@ import { createLiveGame } from "@/lib/history/liveGame";
 import { prisma } from "@/lib/prisma";
 import { BOT_ALL_TIERS, BOT_TIERS, TIER_SPECS } from "@/lib/gomoku/opponent.constants";
 import { boardSizesFor, DEFAULT_SETTINGS, STONES, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
-import { variantFor } from "@/lib/gomoku/slugs";
+import { matchPath, variantFor } from "@/lib/gomoku/slugs";
 import { playsAsExpert } from "@/lib/gomoku/expert/experts";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -61,6 +61,42 @@ const run = process.env.BOT_GAMES_RUN === "1";
 const all = process.env.BOT_GAMES_ALL === "1";
 /** How many games each pairing plays. Colours alternate, so an even count is fairest. */
 const each = Math.max(1, Number(process.env.BOT_GAMES_EACH ?? "1"));
+
+/**
+ * What every game in the series is, apart from its board and its players.
+ *
+ * ONE PLACE, so that what the run writes and what it says it wrote cannot
+ * drift: the summary at the end and the report at the start both read
+ * `SERIES.rated` rather than restating it. The first version wrote these
+ * unrated, was made rated in 74c5259, and kept printing "all unrated" for
+ * a week afterwards — a claim about a batch that nothing tied to the batch.
+ *
+ * Rated, because an unrated game is invisible to the thing this exists to
+ * fill. `liveGame.ts` only calls `recordResult` when the row says rated, so
+ * a batch of these written unrated plays out perfectly, files perfectly —
+ * and leaves the computer ladder exactly as empty as it found it. That was
+ * the first version, and it would have been a hundred and sixty games played
+ * to prove nothing.
+ *
+ * Safe because the pool is decided by the seats, not by this flag: two
+ * programs make a computer-pool game, so these move the ratings the computer
+ * ladder reads and can never touch where a person stands among people. That
+ * separation is the whole point of `poolFor`.
+ */
+const SERIES = {
+  // No clock: nobody is waiting, and a deadline would end these on time
+  // rather than on the board.
+  moveTimeMs: null,
+  open: false,
+  rated: true,
+  // Nobody can be late and nobody will resign, so these carry the ordinary
+  // answers rather than anything special.
+  timeoutPenalty: "turn",
+  allowResign: true,
+} as const;
+
+/** The one word the report and the summary use for what `SERIES.rated` says. */
+const RATED_WORD = SERIES.rated ? "rated" : "unrated";
 
 /**
  * Which players, and which boards. Both are options; both have a default that
@@ -196,7 +232,7 @@ const matches = all ? [...specialistMatches(), ...ladderMatches()] : specialistM
 
 describe("computers playing computers, for somebody to watch", () => {
   it.skipIf(!ASKED)("plays them", async () => {
-    console.log(`${matches.length} game(s) to play${all ? "" : " (specialists only — set BOT_GAMES_ALL=1 for every pairing)"}.`);
+    console.log(`${matches.length} ${RATED_WORD} game(s) to play${all ? "" : " (specialists only — set BOT_GAMES_ALL=1 for every pairing)"}.`);
 for (const m of matches) {
   console.log(`  ${m.variant} ${m.size}x${m.size}: ${BOT_MEMBERS[m.black].name} (black) vs ${BOT_MEMBERS[m.white].name}`);
 }
@@ -266,35 +302,14 @@ for (const m of matches) {
     opening: DEFAULT_SETTINGS.opening,
     handicap: DEFAULT_SETTINGS.handicap,
     drawLimit: DEFAULT_SETTINGS.drawLimit,
-    // No clock: nobody is waiting, and a deadline would end these on time
-    // rather than on the board.
-    moveTimeMs: null,
-    open: false,
-    /*
-     * Rated, because an unrated game is invisible to the thing this exists to
-     * fill. `liveGame.ts` only calls `recordResult` when the row says rated,
-     * so a batch of these written unrated plays out perfectly, files perfectly
-     * — and leaves the computer ladder exactly as empty as it found it. That
-     * was the first version, and it would have been a hundred and sixty games
-     * played to prove nothing.
-     *
-     * Safe because the pool is decided by the seats, not by this flag: two
-     * programs make a computer-pool game, so these move the ratings the
-     * computer ladder reads and can never touch where a person stands among
-     * people. That separation is the whole point of `poolFor`.
-     */
-    rated: true,
-    // Nobody can be late and nobody will resign, so these carry the ordinary
-    // answers rather than anything special.
-    timeoutPenalty: "turn",
-    allowResign: true,
+    ...SERIES,
   });
   const outcome = await playOut(created.id);
   played += 1;
-  console.log(`  /games/${m.variant}/${created.id}  ${black.name} vs ${white.name} — ${outcome}`);
+  console.log(`  ${matchPath(m.variant, created.id)}  ${black.name} vs ${white.name} — ${outcome}`);
 }
 
-    console.log(`\nPlayed ${played} game(s), all unrated. Open one at /games/<variant>/<id>.`);
+    console.log(`\nPlayed ${played} game(s), all ${RATED_WORD}. Open one at an address above.`);
     expect(played).toBe(matches.length);
     await prisma.$disconnect();
   }, 3_600_000);
