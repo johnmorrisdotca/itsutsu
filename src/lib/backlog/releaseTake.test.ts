@@ -134,12 +134,32 @@ describe("planRelease", () => {
     expect(plan.changelog).toContain("## 0.150.1 — 2026-09-12");
   });
 
-  it("plans a patch with no summary: the version moves, and the changelog is untouched", () => {
+  it("refuses a patch with no summary, as it refuses a minor — 0.186.1 shipped with no heading that way", () => {
     const plan = planRelease({ published: "0.150.0", changelog: CHANGELOG, packageJson: PACKAGE_JSON, step: "patch", summaries: [], now: NOW });
+    expect(plan.ok).toBe(false);
+    if (plan.ok) return;
+    expect(plan.error).toContain("Every release needs at least one --summary, a patch as much as a minor");
+  });
+
+  it("refuses a patch whose only summary is blank", () => {
+    const plan = planRelease({ published: "0.150.0", changelog: CHANGELOG, packageJson: PACKAGE_JSON, step: "patch", summaries: ["  "], now: NOW });
+    expect(plan).toMatchObject({ ok: false });
+  });
+
+  it("gives a patch its dated heading and its line, above the release before it", () => {
+    const plan = planRelease({
+      published: "0.150.0",
+      changelog: CHANGELOG,
+      packageJson: PACKAGE_JSON,
+      step: "patch",
+      summaries: ["the Go pass test reads each result before the board hands itself back"],
+      now: NOW,
+    });
     expect(plan.ok).toBe(true);
     if (!plan.ok) return;
-    expect(plan.version).toBe("0.150.1");
-    expect(plan.changelog).toBe(CHANGELOG);
+    expect(plan.changelog).toContain(
+      "## 0.150.1 — 2026-09-12\n- The Go pass test reads each result before the board hands itself back\n\n## 0.150.0",
+    );
     expect(plan.packageJson).toContain('"version": "0.150.1"');
   });
 
@@ -324,7 +344,7 @@ describe("planRetry", () => {
     expect(plan.ok).toBe(false);
     if (plan.ok) return;
     expect(plan.error).toContain('HEAD is not a release commit ("Some work on top of the release")');
-    expect(plan.error).toContain("pass --summary (or --patch)");
+    expect(plan.error).toContain("pass --summary (and --patch for a fix)");
     expect(plan.error).toContain("No row was closed");
   });
 

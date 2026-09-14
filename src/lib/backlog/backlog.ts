@@ -16,6 +16,7 @@ import {
   TITLE_MAX,
   TITLE_MIN,
 } from "./backlog.constants";
+import { unnamedReleaseProblem } from "./releases";
 import type {
   BacklogChange,
   BacklogDraft,
@@ -246,8 +247,9 @@ export function stampProblems(
   }
   if (!SEMVER.test(version)) {
     problems.push("releasedIn must be a version like 1.2.3.");
-  } else if (!releasedVersions.includes(version)) {
-    problems.push(`${version} is not a release CHANGELOG.md names; a row can only be stamped with a release that went out.`);
+  } else {
+    const unnamed = unnamedReleaseProblem(version, releasedVersions);
+    if (unnamed !== null) problems.push(unnamed);
   }
   return problems;
 }

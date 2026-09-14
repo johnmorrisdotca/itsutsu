@@ -522,7 +522,11 @@ A **minor** (the default) is something a player would notice — a game, an
 opening, a page, a capability — and needs at least one `--summary`, written
 for the person reading `/releases`, not for whoever picks the ticket up next.
 A **patch** (`--patch`) is a fix, a rewording, a refactor or a chore, and
-needs no summary at all — pass one anyway and it still gets a changelog line.
+**needs a `--summary` too**: every release writes its dated heading and at least
+one line. A patch used to need none and got no heading, and 0.186.1 shipped
+that way — in `package.json`, missing from `/releases`, and closed onto a row
+at a version the changelog never named. A stock line would restore the heading
+and say nothing true, so the tool refuses a release without one instead.
 `--done <key>` marks a row done through the API with the version just taken;
 see board convergence ITS-04 and the Board Gate section above. `done` has no
 other door: the page and `pnpm task` cannot offer it, and a row already done

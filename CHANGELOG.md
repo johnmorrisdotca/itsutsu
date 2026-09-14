@@ -1,6 +1,6 @@
 # Changelog
 
-What changed, in a player's words. Versions follow semver as the site reads it: a **minor** bump is something a player would notice — a new game, opening, page or capability — and a **patch** is a fix, a rewording, a refactor or a chore. The first **major** is reserved for the day the invite gate comes down. Patch-only versions are not listed.
+What changed, in a player's words. Versions follow semver as the site reads it: a **minor** bump is something a player would notice — a new game, opening, page or capability — and a **patch** is a fix, a rewording, a refactor or a chore. The first **major** is reserved for the day the invite gate comes down. Until 0.186.1 a patch with nothing to say was not listed; since then every release, patch or minor, has its own dated heading and at least one line.
 
 The site calls itself **Beta** whatever the number says: real accounts and persisted ratings are past alpha.
 
@@ -11,6 +11,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 ## 0.186.2 — 2026-09-14
 - When a game ends while you watch, your board turns into the finished record in place, without reloading or getting stuck.
+
+## 0.186.1 — 2026-09-14
+- The Go pass test reads each result before the board hands itself back.
 
 ## 0.186.0 — 2026-09-14
 - The last page before a game now shows a larger picture of the board you chose, with its big number.

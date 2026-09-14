@@ -177,19 +177,25 @@ export function planRelease(input: PlanInput): PlanResult {
   }
 
   const summaries = input.summaries.map((line) => line.trim()).filter((line) => line.length > 0);
-  if (input.step === "minor" && summaries.length === 0) {
+  if (summaries.length === 0) {
     return {
       ok: false,
       error:
-        "A minor release needs at least one --summary: a player-noticeable release says what it is. " +
+        "Every release needs at least one --summary, a patch as much as a minor: it is the dated line /releases shows, " +
+        "and a release with no line is not on that page at all — 0.186.1 went out that way. " +
         'Write it in lower case, continuing the title\'s dash, with proper nouns keeping their capitals: --summary "the member filter refuses, two dates move, and a gate holds the line".',
     };
   }
 
-  const changelog =
-    summaries.length === 0
-      ? input.changelog
-      : insertEntry(input.changelog, composeEntry(version, input.now.toISOString().slice(0, 10), summaries));
+  /*
+   * EVERY RELEASE WRITES ITS HEADING, WITH ITS DATE. A patch with no summary used
+   * to write none, on the old rule that patch-only versions go unlisted — and
+   * 0.186.1 went out exactly so: package.json said it, CHANGELOG.md never did,
+   * /releases skipped it, and the row closed at it named a release the history
+   * does not hold. A stock line for such a patch would put the heading back and
+   * say nothing true about what shipped, so the line is asked for instead.
+   */
+  const changelog = insertEntry(input.changelog, composeEntry(version, input.now.toISOString().slice(0, 10), summaries));
 
   const from = `"version": "${input.published}"`;
   if (!input.packageJson.includes(from)) {
@@ -213,7 +219,11 @@ export function planRelease(input: PlanInput): PlanResult {
 // no commit.
 // ---------------------------------------------------------------------------
 
-/** A release commit's subject: `0.x.y — <summary>`, or `0.x.y` alone for a patch with none. */
+/**
+ * A release commit's subject: `0.x.y — <summary>`, or `0.x.y` alone — how a
+ * patch with no summary was committed before every release needed one
+ * (0.186.1 is one), and still a release commit to retry closing rows at.
+ */
 const RELEASE_SUBJECT = /^(\d+\.\d+\.\d+)(?: — .+)?$/;
 
 /** The version a commit subject names in the release form, or null when it is not one. */
@@ -271,7 +281,7 @@ export function planRetry(state: RetryState): RetryPlan {
       ok: false,
       error:
         `HEAD is not a release commit ("${state.headSubject}"). A run with only --done closes rows at the release HEAD ` +
-        `already is, and takes no number; to take a new release, pass --summary (or --patch) with --done. ${NOTHING_CLOSED}`,
+        `already is, and takes no number; to take a new release, pass --summary (and --patch for a fix) with --done. ${NOTHING_CLOSED}`,
     };
   }
   if (state.changes.length > 0) {

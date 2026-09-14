@@ -38,9 +38,10 @@ const HEADING = /^##\s+(\d+\.\d+\.\d+)(?:\s+[—-]\s+(\d{4}-\d{2}-\d{2}))?\s*$/;
 /**
  * Every release in the changelog, newest first, as the file lists them.
  *
- * A heading with no notes under it is not a release — the file's own rule is
- * that patch-only versions are not listed, so an empty one is a mistake or a
- * half-written entry, and either way there is nothing to show for it.
+ * A heading with no notes under it is not a release — every release is written
+ * with at least one line (`planRelease` refuses one without), so an empty one
+ * is a mistake or a half-written entry, and either way there is nothing to
+ * show for it.
  */
 export function parseReleases(markdown: string): Release[] {
   const releases: Release[] = [];
@@ -78,12 +79,11 @@ export function versionParts(version: string): number[] {
 /**
  * Which listed release the running edition belongs to.
  *
- * The running version is often not a heading in the file, and that is the
- * file's own rule rather than an oversight: patch-only versions are not
- * listed, because a fix or a chore is not news a player would read. So an
- * exact match finds nothing the moment a patch ships, and the list stops
- * saying which edition is being served — which is the one thing a reader
- * comes to it for.
+ * The running version is not always a heading in the file: until 0.186.1 a
+ * patch with nothing to say was not listed, on the view that a fix or a chore
+ * is not news a player would read. So an exact match found nothing the moment
+ * such a patch shipped, and the list stopped saying which edition was being
+ * served — which is the one thing a reader comes to it for.
  *
  * The edition being served is therefore the newest release at or below the
  * running version: on 0.64.1 that is 0.64.0, and everything in it is running.
@@ -109,4 +109,47 @@ export function compareVersions(a: string, b: string): number {
     if (difference !== 0) return difference;
   }
   return 0;
+}
+
+/**
+ * Why a row may not say it shipped in `version` because CHANGELOG.md does not
+ * name it, or null when it does. The one statement of that rule, asked by both
+ * doors a release reaches a row through: `stampProblems`, which backfills a
+ * done row, and `finishReleaseProblems`, which the release tool's close asks.
+ */
+export function unnamedReleaseProblem(version: string, releasedVersions: readonly string[]): string | null {
+  return releasedVersions.includes(version)
+    ? null
+    : `${version} is not a release CHANGELOG.md names; a row can only carry a release that went out.`;
+}
+
+/**
+ * Why a row may not be marked done at `version`, as far as the changelog this
+ * server holds can tell.
+ *
+ * NOT THE STAMP'S RULE UNCHANGED, AND THE DIFFERENCE IS TIMING. `pnpm
+ * release:take` closes its rows through the live board BEFORE the push that
+ * carries the release: it commits, closes the rows, and only then prints the
+ * push. The server answering has not been deployed with that release, so its
+ * changelog cannot name it yet — the stamp's rule here would refuse every
+ * release the tool takes. A version newer than every release this changelog
+ * names is that release on its way, and is let through.
+ *
+ * What it refuses is a version the history has already passed without naming
+ * — at or behind the newest release here and not one of them — which is a
+ * release that went out with no entry, through `unnamedReleaseProblem`, the
+ * same refusal a stamp gets. That would not have stopped 0.186.1 at the moment
+ * its row closed, when it was still ahead; what stops a release going out with
+ * no entry is that every release now writes one (`planRelease`). A changelog
+ * that cannot be read names nothing and so refuses every version: a row left
+ * open can be closed later, and a row closed on a guess cannot be taken back.
+ */
+export function finishReleaseProblems(version: string, releasedVersions: readonly string[]): string[] {
+  const newest = releasedVersions.reduce<string | null>(
+    (best, one) => (best === null || compareVersions(one, best) > 0 ? one : best),
+    null,
+  );
+  if (newest !== null && compareVersions(version, newest) > 0) return [];
+  const unnamed = unnamedReleaseProblem(version, releasedVersions);
+  return unnamed === null ? [] : [unnamed];
 }
