@@ -17,6 +17,11 @@ describe("game aliases", () => {
     expect(aliasedVariant("Zero G Four in a Row")).toBe(RULE_VARIANTS.edgeDrop);
   });
 
+  it("links Checkers to our Checkers, and Halma 10x10 to our Halma rather than to a board", () => {
+    expect(aliasedVariant("Checkers")).toBe(RULE_VARIANTS.checkers);
+    expect(aliasedVariant("Halma 10x10")).toBe(RULE_VARIANTS.halma);
+  });
+
   it("does not alias a game from an unrelated family, even with a matching prefix", () => {
     // "Anti-Checkers" is Checkers, not a flipping game — must not fall out
     // of "Anti-" matching Anti-Reversi's name.
