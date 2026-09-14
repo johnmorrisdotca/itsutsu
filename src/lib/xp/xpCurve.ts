@@ -5,51 +5,67 @@
  * independent. A **rating** says how well you play: it is pooled, per variant,
  * and only rated games move it. XP says you turned up and tried things, which
  * is why an unrated hot-seat game pays it and a game you lost still pays for
- * being finished. Neither ladder can be bought with the other.
+ * being finished. Neither ladder can be bought with the other — though beating
+ * somebody rated well above you is worth more XP, which is the one place the
+ * rating is READ (`xpUpset.ts`), and nothing ever writes one from the other.
  *
- * **Two parts.** Levels 1-10 are a flat ramp - 20, 40, 60 up to 200 - because
- * early progress should be quick and legible rather than clever. A casual
- * player reaches level 11 inside their first month, which is what makes
- * somebody keep going; a ladder whose first rungs already compound gives a new
- * member nothing to hold on to.
+ * **The top is exactly 999,999 XP, and Level 100 is the last rung.** John: "you
+ * need 999,999 to get to the top level". Every other cost ends in 0 or 5, which
+ * reads as a number somebody chose — but that is this generator's rounding, not
+ * his rule, and where the two disagree his number wins. So rounding lands the
+ * table on 999,995 and LEVEL 100's OWN RUNG takes the last four: it costs
+ * 61,404, the one cost here that does not end in 0 or 5. `xpForLevel(100)` is
+ * 999,999, `xpLevelFor(999_998)` is 99, and there is no level 101 —
+ * `xpForLevel` clamps at the top.
  *
- * From level 11 the cost compounds at 2.415% a level, doubling every 29. The
- * rate is not chosen, it is solved: level 11 continues the ramp at 220 so there
- * is no step down at the handoff, and the rate is whatever carries the
- * remaining ninety levels to the target total from there. Setting the flat part
- * and the compounding part independently is how UmaKuma once produced a level
- * 10 costing 250 followed by a level 11 costing 83 - a ladder that got *easier*
- * at the exact moment it was supposed to start biting.
+ * **Three parts, and each boundary is a step he named** — "need to get harder
+ * after 10, 20 etc":
  *
- * **The total is 68,155, and it is calibrated against a person rather than an
- * average.** `docs/plans/xp/XP_DESIGN.md` sets out the two players it was
- * solved for, from the event catalogue in `xp.constants.ts`:
+ * - **Reaching levels 2-10 is a flat ramp**: 50, 100, up to 450, which is 2,250
+ *   XP in all and a quarter of one percent of the ladder. Quick and legible,
+ *   because a ladder whose first rungs already compound gives a new member
+ *   nothing to hold on to.
+ * - **Level 11 costs 700**, half as much again as level 10, and from there
+ *   every level compounds. The first hardening, and one a player can feel.
+ * - **Level 21 costs a quarter more than level 20**, the second, and the rate
+ *   keeps rising — 2.47% a level at 12, climbing steadily to 7.41% at 100. A
+ *   RISING rate is what makes the last stretch a climb rather than more of the
+ *   same: the last ten levels cost 457,000 XP, 46% of the whole ladder.
  *
- * - **Committed** - signs in daily, finishes about two games a day and wins
- *   half: roughly 60 XP a day, 21,900 a year. Reaches level 64 in a year, 86 in
- *   two and **100 at about three years**, which is the target.
- * - **Casual** - four days a week, three finished games a week: roughly 100 XP
- *   a week, 5,200 a year. Level 11 in a month, 33 in a year, 58 at three years
- *   - a real standing that never maxes, which is the point of having a top.
+ * **The rate is solved, not chosen.** `docs/plans/xp/curve.py` fixes the ramp,
+ * the two steps and how far the rate rises, and solves the starting rate so the
+ * rounded table lands on the target. Setting the parts independently is how
+ * UmaKuma once produced a level 10 costing 250 followed by a level 11 costing 83
+ * - a ladder that got *easier* at the moment it was supposed to start biting.
  *
- * The one-off awards - a first game of each of the 39 variants, each of the 11
- * families, each computer grade - come to 3,740 XP, which is level 21 on its
- * own. That is deliberate rather than incidental: most of the games here have
- * barely been played, and the economy is pointed at that.
+ * **What it takes, at the prices in `xp.constants.ts`** — the working, and the
+ * trade John was asked to see, is in `docs/plans/xp/XP_DESIGN.md`:
  *
- * **Every cost ends in a 0 or a 5.** John's rule on UmaKuma, and it earns its
- * place: a level costing 1,447 reads as a number a machine produced, where
- * 1,445 reads as a number somebody chose. Rounding can flatten two neighbours
- * into equality, so any cost that lands at or below the one before it is nudged
- * up five - which is why the table is stored rather than computed, and why
- * `xpCurve.test.ts` asserts the whole sequence strictly increases rather than
- * trusting the generator that made it.
+ * - A won game against a person pays 100 and the day's allowance is six games,
+ *   so the fastest honest climb is about 222,000 XP a year. Level 100 is four
+ *   and a half years of winning six games against people every single day.
+ * - A committed member — daily, two games a day, winning half — earns about
+ *   50,000 a year after the first. Level 50 in about a year, level 75 in four,
+ *   level 100 in roughly nineteen. That is the arithmetic of 999,999 at these
+ *   prices, and it is stated rather than hidden: the top is a lifetime's standing,
+ *   which is what a figure with six nines in it asks for.
+ *
+ * **Rounded so the shape shows.** Costs round to 5 below 1,000, to 25 below
+ * 10,000 and to 50 above: 61,437 reads as a machine's arithmetic and 61,400 as a
+ * decision. Rounding can flatten two neighbours into equality, so a cost landing
+ * at or below the one before it is nudged up a step, and the few fives rounding
+ * leaves between the table and the target are laid on the cheapest compounding
+ * rows, where 5 is the natural unit; what is left below five goes on Level 100's
+ * own rung, as above. That is why the table is stored rather than
+ * computed, and why `xpCurve.test.ts` asserts the whole sequence strictly
+ * increases rather than trusting the generator that made it.
  *
  * **Held as a table so it can be retuned by editing numbers.** There is no
  * migration behind it, and a curve nobody can adjust is a curve that stays
- * wrong. `docs/plans/xp/curve.py` regenerates the whole sequence from a target
- * total; change the target and paste, rather than hand-editing one row - the
- * shape is the decision, and a single edited row is not a shape.
+ * wrong. Run `python3 docs/plans/xp/curve.py` and paste what it prints, rather
+ * than hand-editing one row - the shape is the decision, and a single edited row
+ * is not a shape. A retune moves every member's LEVEL at once and no member's XP:
+ * the level is derived from `Member.xp`, which is a sum of what was paid.
  *
  * **The names are somewhere else, on purpose.** `levelNames.constants.ts` says
  * what each level is called. Retuning the economy renames nobody, and renaming
@@ -59,18 +75,24 @@
 /** The top of the ladder. */
 export const XP_LEVELS = 100;
 
-/** Cost of reaching each level, level 1 first. */
+/**
+ * One entry per level-up: the price of reaching level 2, then level 3, and so on
+ * up to level 100. NINETY-NINE rungs — level 1 is free and there is no level 101
+ * — so the table's plain sum is the top, exactly 999,999. A hundredth entry would
+ * be the price of a rung that does not exist: a number in range that means
+ * nothing, and one an honest sum of this table would read as part of the climb.
+ */
 export const XP_LEVEL_COST: readonly number[] = [
-  20, 40, 60, 80, 100, 120, 140, 160, 180, 200,
-  220, 225, 230, 235, 240, 250, 255, 260, 265, 275,
-  280, 285, 295, 300, 305, 315, 320, 330, 340, 345,
-  355, 365, 370, 380, 390, 400, 410, 420, 430, 440,
-  450, 460, 470, 485, 495, 505, 520, 530, 545, 560,
-  570, 585, 600, 615, 630, 645, 660, 675, 690, 710,
-  725, 745, 760, 780, 800, 815, 835, 855, 880, 900,
-  920, 945, 965, 990, 1015, 1035, 1060, 1090, 1115, 1140,
-  1170, 1195, 1225, 1255, 1285, 1315, 1350, 1380, 1415, 1450,
-  1485, 1520, 1555, 1595, 1630, 1670, 1710, 1755, 1795, 1840,
+  50, 100, 150, 200, 250, 300, 350, 400, 450, 700,
+  720, 740, 755, 775, 795, 815, 840, 865, 890, 1100,
+  1150, 1175, 1225, 1250, 1300, 1350, 1375, 1425, 1475, 1525,
+  1600, 1650, 1700, 1775, 1850, 1900, 1975, 2075, 2150, 2250,
+  2325, 2425, 2525, 2650, 2750, 2875, 3000, 3150, 3300, 3450,
+  3600, 3775, 3950, 4150, 4350, 4575, 4800, 5050, 5325, 5600,
+  5875, 6200, 6525, 6875, 7275, 7675, 8100, 8550, 9050, 9575,
+  10150, 10750, 11350, 12050, 12800, 13550, 14400, 15300, 16250, 17300,
+  18400, 19550, 20850, 22200, 23700, 25250, 26950, 28800, 30750, 32900,
+  35200, 37650, 40300, 43150, 46300, 49600, 53250, 57150, 61404,
 ];
 
 /** Running total to reach a level, so a progress bar needs no loop. */

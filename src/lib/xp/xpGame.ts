@@ -1,11 +1,12 @@
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import { familyKeyOf } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyKeyOf } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 import { STREAK_KINDS, type Streak, type StreakOutcome } from "@/lib/rating/streak";
 
 import { XP_EVENTS, XP_LONG_GAME_MOVES, winStreakMilestoneFor } from "./xp.constants";
 import type { XpAward } from "./xp.types";
+import { upsetAwardFor, type RatingsAsTheyStood } from "./xpUpset";
 
 /**
  * What one finished game pays one member, decided without a database.
@@ -95,6 +96,14 @@ export type FinishedGame = {
   variant: string;
   /** How many moves the finished game holds. See `longGame`. */
   moveCount: number;
+  /**
+   * Whether the ladder counts this game: rated, and not refused by the ladder's
+   * own rule (`countsOnLadder` in `playedRun.ts`). Only then may an upset bonus
+   * be paid — a friendly costs its loser nothing, so a gap no rated game tested
+   * is not one anybody overturned. NULL where it is not known, which is the
+   * replay, and null pays no upset.
+   */
+  ladderCounts: boolean | null;
 };
 
 /** Who was in the other seat, as far as this member's awards are concerned. */
@@ -117,6 +126,13 @@ export type Opponent = {
    * could not be read.
    */
   beatenMeBefore: boolean | null;
+  /**
+   * Both players' standing on the ladder of people as they went INTO the game,
+   * for the upset bonus. Null where nothing was read — a loss, a program, a
+   * failed read, or a replay, which cannot know them — and null pays nothing.
+   * See `xpUpset.ts`.
+   */
+  ratings: RatingsAsTheyStood | null;
 };
 
 /** One member's half of one finished game. */
@@ -148,7 +164,7 @@ export type PlayedSideFacts = {
 };
 
 /** Nobody in the other seat, and nothing known about them. For a caller's default. */
-export const NO_OPPONENT: Opponent = { id: null, tier: null, buddy: null, beatenMeBefore: null };
+export const NO_OPPONENT: Opponent = { id: null, tier: null, buddy: null, beatenMeBefore: null, ratings: null };
 
 /** The variant keys, as a set, so an unknown string can be refused in one step. */
 const VARIANTS: ReadonlySet<string> = new Set<string>(RULE_VARIANT_LIST);
@@ -156,8 +172,32 @@ const VARIANTS: ReadonlySet<string> = new Set<string>(RULE_VARIANT_LIST);
 /** Every game on the site: what `everyVariantPlayed` is counted against. */
 export const XP_VARIANTS_TO_PLAY = RULE_VARIANT_LIST.length;
 
+/**
+ * The fewest games a family must hold for winning all of them to be a family won.
+ *
+ * Two, because a family of one game is not a completion: its only win is already
+ * paid by `firstWinAtVariant`, and its first game by `firstOfFamily`, so 300 more
+ * would make one win at Hex, Checkers or Go worth about 510 XP. See
+ * `everyVariantWonInFamily` in `xp.constants.ts`.
+ */
+export const XP_FAMILY_WON_MIN_GAMES = 2;
+
+/**
+ * The family a win at this variant could complete, or null.
+ *
+ * Null for a variant in no family, one this deploy cannot name, and a family of
+ * fewer than `XP_FAMILY_WON_MIN_GAMES` games. One answer for the live award
+ * (`xpTour.ts`) and the replay (`backfillXp.ts`) alike, so the two cannot
+ * disagree about which families can be won.
+ */
+export function familyToWin(variant: string): (typeof GAME_FAMILIES)[number] | null {
+  const family = GAME_FAMILIES.find((one) => (one.games as readonly string[]).includes(variant));
+  if (family === undefined || family.games.length < XP_FAMILY_WON_MIN_GAMES) return null;
+  return family;
+}
+
 /** The variant a stored row names, or null when it names nothing this deploy has. */
-export function variantOf(game: FinishedGame): RuleVariant | null {
+export function variantOf(game: Pick<FinishedGame, "variant">): RuleVariant | null {
   return VARIANTS.has(game.variant) ? (game.variant as RuleVariant) : null;
 }
 
@@ -241,6 +281,15 @@ function winAwards(
     /* True only. Null is "could not be read" and false is "not a buddy", and
        neither of them is a buddy beaten. */
     if (opponent.buddy === true) awards.push({ type: XP_EVENTS.wonVsBuddy, subject: game.id });
+
+    /* ── BEATING SOMEBODY BETTER THAN YOU ───────────────────────────────
+       John's rule. One band or none, from both ratings as they stood; keyed
+       on the game, so one game pays one band. It is only ever ADDED: a win
+       over somebody weaker pays every award above and nothing less. After
+       the finish, because it rides the day's allowance like the rest. */
+    /* Only on a game the ladder counts, and true only: null is "not known". */
+    const upset = game.ladderCounts === true ? upsetAwardFor(opponent.ratings) : null;
+    if (upset !== null) awards.push({ type: upset, subject: game.id });
   }
 
   if (variant !== null) {

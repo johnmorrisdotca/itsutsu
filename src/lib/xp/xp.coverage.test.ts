@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { GAME_FAMILIES } from "@/lib/gomoku/families";
+
 import {
   XP_DAY_STREAK_MILESTONES,
   XP_EVENTS,
@@ -83,11 +85,15 @@ describe("the economy holds its shape", () => {
   });
 
   it("adds the once-only awards up to the figure the curve was solved against", () => {
-    // 3,740, which is level 21 on its own. The curve's month-and-year claims in
-    // XP_DESIGN.md rest on this number, so if it moves they have to be redone
-    // rather than left standing.
+    // 23,440, which is level 30 on its own and 2.3% of the ladder — the
+    // ceiling of everything that cannot repeat, a treadmill nobody can run. The
+    // climb table in XP_DESIGN.md rests on this number, so if it moves it has to
+    // be redone rather than left standing.
     const perVariant = 39;
     const perFamily = 11;
+    // A family won is only for a family of more than one game.
+    const familiesToWin = GAME_FAMILIES.filter((family) => family.games.length > 1).length;
+    expect(familiesToWin).toBe(8);
     const grades = 5;
     const specialists = 2;
     const total =
@@ -98,6 +104,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.firstOfFamily.points * perFamily +
       XP_EVENT_SPECS.everyFamilyPlayed.points +
       XP_EVENT_SPECS.everyVariantPlayed.points +
+      XP_EVENT_SPECS.everyVariantWonInFamily.points * familiesToWin +
       XP_EVENT_SPECS.gradeBeaten.points * grades +
       XP_EVENT_SPECS.everyGradeBeaten.points +
       XP_EVENT_SPECS.specialistBeaten.points * specialists +
@@ -106,7 +113,33 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(3740);
+    expect(total).toBe(23_440);
+  });
+
+  it("prices nothing at or below zero, so no award can ever take XP away", () => {
+    // John: "You can never lose XP of course." A penalty award would be one row
+    // in this table, so this is the half of the rule the catalogue owns;
+    // `awardXp.test.ts` gates the writer, which only ever increments.
+    for (const type of types) expect(XP_EVENT_SPECS[type].points, type).toBeGreaterThan(0);
+  });
+
+  it("puts the big money in the hard things, and keeps the routine small", () => {
+    // A won game against a person is the routine ceiling. The things that take
+    // an afternoon, or a stronger opponent, each pay more than one of those.
+    const wonGame =
+      XP_EVENT_SPECS.gameFinished.points + XP_EVENT_SPECS.gameWon.points + XP_EVENT_SPECS.wonVsPerson.points;
+    const hard: XpEventType[] = ["upsetWin", "bigUpsetWin", "giantKilled", "gradeBeaten", "everyGradeBeaten", "specialistBeaten"];
+    for (const type of hard) expect(XP_EVENT_SPECS[type].points, type).toBeGreaterThanOrEqual(wonGame);
+    expect(XP_EVENT_SPECS.dailyVisit.points).toBeLessThan(XP_EVENT_SPECS.gameFinished.points);
+  });
+
+  it("prices a first win at a game as John asked, and a family won above a family met", () => {
+    // "something like five or 10" for a first win. A family won was left to us
+    // to balance: winning every game of a family is harder than playing one of
+    // it, so it pays twice `firstOfFamily`. See the note on the row.
+    expect(XP_EVENT_SPECS.firstWinAtVariant.points).toBeGreaterThanOrEqual(5);
+    expect(XP_EVENT_SPECS.firstWinAtVariant.points).toBeLessThanOrEqual(10);
+    expect(XP_EVENT_SPECS.everyVariantWonInFamily.points).toBe(XP_EVENT_SPECS.firstOfFamily.points * 2);
   });
 
   it("caps only what can be farmed, and never a milestone", () => {
@@ -114,7 +147,7 @@ describe("the economy holds its shape", () => {
     // not protecting an economy — it is only there to punish the day it does.
     const milestones: XpEventType[] = [
       "firstGameEver", "firstOfVariant", "firstWinAtVariant", "firstOfFamily",
-      "everyFamilyPlayed", "everyVariantPlayed", "gradeBeaten", "everyGradeBeaten",
+      "everyFamilyPlayed", "everyVariantPlayed", "everyVariantWonInFamily", "gradeBeaten", "everyGradeBeaten",
       "specialistBeaten", "firstBuddy", "winStreak3", "winStreak5", "winStreak10",
       "revengeWin", "comeback", "nameSet", "countrySet", "bioSet", "wordsSet",
       "seatClaimedElsewhere", "joined",
@@ -158,12 +191,16 @@ describe("what is priced and not yet paid", () => {
     // `lastSeenAt` write (`dailyVisit.ts`), and the weekend on the finish.
     // XP-06 added the ones about other people and about who you are.
     //
+    // The rebalance added four, all paid on `recordPlayed`: the three upset
+    // bands and a family won.
+    //
     // Which leaves `comeback`, refused in writing. Every other kind in the
     // catalogue is paid by something.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
     expect(wired.sort()).toEqual([
       "applauseGiven",
       "backFromAway",
+      "bigUpsetWin",
       "bioSet",
       "buddyAdded",
       "challengeAnswered",
@@ -177,6 +214,7 @@ describe("what is priced and not yet paid", () => {
       "everyFamilyPlayed",
       "everyGradeBeaten",
       "everyVariantPlayed",
+      "everyVariantWonInFamily",
       "firstBuddy",
       "firstGameEver",
       "firstOfFamily",
@@ -185,6 +223,7 @@ describe("what is priced and not yet paid", () => {
       "forkPlayed",
       "gameFinished",
       "gameWon",
+      "giantKilled",
       "gradeBeaten",
       "joined",
       "longGame",
@@ -194,6 +233,7 @@ describe("what is priced and not yet paid", () => {
       "seatClaimedElsewhere",
       "specialistBeaten",
       "timeGiven",
+      "upsetWin",
       "weekendGame",
       "winStreak10",
       "winStreak3",

@@ -39,10 +39,11 @@ import type {
  *
  * **Why restate anything at all.** A plan that cannot say what it would pay is
  * not a plan. A dry run has to print a total before anybody agrees to a write,
- * and the three biggest awards on the site — `everyVariantPlayed` at 500,
- * `everyGradeBeaten` at 250, `everyFamilyPlayed` at 200 — are decided by
- * counting ledger rows as of the game that completed the set. Omitting them
- * would make the dry run's total quietly low by up to 950 a member.
+ * and the set awards — `everyVariantPlayed` and `everyGradeBeaten` at 5,000,
+ * `everyFamilyPlayed` at 2,000, a family won at 300 for each of eight — are
+ * decided by counting ledger rows as of the game that completed the set.
+ * Omitting them would make the dry run's total quietly low by up to 14,400 a
+ * member.
  *
  * **Why it is safe.** It is not load-bearing. The runner hands `awardXp` the
  * FULL list of awards history asked for and lets the real index and the real

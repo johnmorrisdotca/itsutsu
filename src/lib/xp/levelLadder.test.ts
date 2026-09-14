@@ -4,7 +4,7 @@ import { LEVEL_MILESTONES, ladderRung, levelLadder, levelXpRange } from "./level
 import { XP_LEVELS, XP_LEVEL_COST, xpForLevel, xpLevelFor } from "./xpCurve";
 
 /**
- * The join between the hundred names and the hundred costs.
+ * The join between the hundred names and the ninety-nine costs of climbing them.
  *
  * Two tables that are deliberately independent meet here, and the thing that can
  * go wrong is an index: the costs array is "cost of reaching each level, level 1
@@ -69,8 +69,8 @@ describe("ladderRung", () => {
     const rung = ladderRung(2)!;
     expect(rung.level).toBe(2);
     expect(rung.name).toBe("Press Start");
-    expect(rung.toReach).toBe(20);
-    expect(rung.step).toBe(20);
+    expect(rung.toReach).toBe(XP_LEVEL_COST[0]);
+    expect(rung.step).toBe(XP_LEVEL_COST[0]);
   });
 
   it("charges nothing for level 1, because nobody climbed to it", () => {

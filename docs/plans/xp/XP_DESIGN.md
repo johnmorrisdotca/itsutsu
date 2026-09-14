@@ -9,6 +9,42 @@ shape. Every departure is argued below rather than left as a difference.
 Read this before XP-03 to XP-10. If this file and the code disagree, the code
 moved after the file was written; say so in the board row and follow the code.
 
+## Rebalanced to a 999,999 top, 2026-09-13
+
+The ladder below is the second one. The first topped out at 68,155 XP, and John
+read it and said so:
+
+> "Also the increments are way too generous. Need to get harder after 10, 20 etc"
+> "Level 100 should probably be 10,000,000" / "Or maybe 9,999,999" / "Or 999,999"
+> "So see which one can be easier. Maybe 999,999"
+> "So a rebalancing is needed to achieve that"
+> "If you beat someone better than you with a high rank you earn more XP. You can never lose XP of course."
+> "If you have your first win in any sort of variant, you should earn something like five or 10 and the last variant you complete in a group should earn you even more perhaps double that."
+
+And, answering the three questions the first draft of this ladder put to him:
+
+> "you need 999,999 to get to the top level (which is Level 100 right?)"
+> "winning a while famly? i dunno, look at balance and determine"
+> "rebalance history? if necessary sure, otherwise I can drop a level I don't mind. ITS is new so ok for all to be low if that's what the case is."
+
+What changed, each argued in its own section below:
+
+- **The curve** reaches Level 100 — the top, and the last rung — at exactly
+  **999,999** XP, and hardens in two visible steps, at 11 and at 21, with a rate
+  that keeps rising after. See "The curve".
+- **Every award was repriced** so the routine economy stays small and steady and
+  the big money is in the hard things. See "The event catalogue", which shows
+  each price and the reason for it.
+- **Beating somebody better than you pays more**, in three capped bands, and
+  never over a newcomer. See "Beating somebody better than you".
+- **A first win at a game pays 10**, John's number, and **a family won pays 300**,
+  the balance he left to us, never for a family of one game.
+- **Nothing can take XP away**, and that is now a gated rule rather than a fact
+  nobody checked. See "Nothing can take XP away".
+- **History is not repriced.** Rows already in the ledger keep what they paid and
+  everybody's level drops, which John chose. See "What a rebalance does to rows
+  already paid" before anybody writes an `UPDATE`.
+
 ## What UmaKuma does, and what of it survives the trip
 
 UmaKuma's XP is fifty-odd modules and a balance simulator. The parts worth
@@ -22,8 +58,8 @@ copying and the parts worth leaving are not obvious, so they are listed.
   play and is pooled, per variant, and rated-only. XP must not be a second
   rating. It is earned by *turning up and trying things*, which is why an
   unrated hot-seat game pays XP and a lost game still pays for being finished.
-- **A stored curve, not a formula in code.** `xpCurve.ts` holds one hundred
-  costs as a table so the economy can be retuned by editing numbers. Every
+- **A stored curve, not a formula in code.** `xpCurve.ts` holds the ninety-nine
+  costs of climbing as a table so the economy can be retuned by editing numbers. Every
   cost ends in a 0 or a 5, which is John's rule there and reads as a number
   somebody chose rather than one a machine produced.
 - **The names are held apart from the costs.** `xpRanks.ts` reads a data file
@@ -80,7 +116,7 @@ chosen so that the event happens exactly as often as it should:
 | once a day | the day key | `dailyVisit`, `dayStreak7` |
 | once per game | the game id | `gameFinished`, `gameWon` |
 | once per variant | the variant key | `firstOfVariant` |
-| once per family | the family title | `firstOfFamily` |
+| once per family | the family's key | `firstOfFamily`, `everyVariantWonInFamily` |
 | once per grade | the bot tier | `gradeBeaten` |
 | once per person | their member id | `buddyAdded` |
 | once per rivalry | `<opponentId>:<variant>` | `revengeWin` |
@@ -113,52 +149,83 @@ months later.
 `cap` is the day's allowance in **events**, not points, and is absent where an
 award cannot be farmed.
 
+**The unit this document counts in is a won game against a person: 100 XP** —
+`gameFinished` 25, `gameWon` 50, `wonVsPerson` 25. The day's allowance is six of
+them. Everything below is priced against that.
+
+**How the rebalance priced it**, three rules John's brief set and one this site
+adds:
+
+1. **The routine stays small and steady.** The finish, the win, the visit and
+   the social awards went up about two and a half times together, so their
+   proportions to each other are exactly what the first design argued, and the
+   ramp of the first ten levels went up by the same factor so a new member's
+   first fortnight feels the same as it did.
+2. **The big money is in the hard things.** A grade beaten is five won games; all
+   five grades is fifty; beating somebody 300 points above you is seven and a
+   half. These went up ten to twenty times.
+3. **The one-off firsts are ceilings, not a treadmill.** They cannot repeat, so
+   they can be generous; a first win at a game is John's 10, and a family won is
+   300, twice a family met.
+4. **Anything that can be manufactured stays modest, however hard it sounds.** A
+   win streak counts every finished game, an empty seat's included, so three in a
+   row can be had against nobody. The streaks went up three times, not twenty.
+
 ### Arriving and coming back
 
-| Type | Points | Subject | Cap | Why this many |
-|---|---|---|---|---|
-| `joined` | 25 | `""` | — | The first line in your history should not be blank. Small, because turning up is not an achievement. |
-| `dailyVisit` | 5 | day key | — | The habit. Deliberately the smallest repeatable award: the site must not reward opening a tab over playing. |
-| `dayStreak7` | 30 | day key | — | A week of days. The first one that takes holding. |
-| `dayStreak30` | 100 | day key | — | |
-| `dayStreak100` | 300 | day key | — | |
-| `dayStreak365` | 1000 | day key | — | Repeats, so it is worth repeating for. |
-| `weekendGame` | 5 | ISO week | — | John asked for it. Once a weekend, not once a game, or it is just a second `gameFinished` with a calendar. |
-| `backFromAway` | 25 | `awayUntil` date | — | The away dates are already on the profile (`Member.awayFrom`/`awayUntil`). Coming back is the moment a site either keeps somebody or does not. |
+| Type | Points | Was | Subject | Cap | Why this many |
+|---|---|---|---|---|---|
+| `joined` | 50 | 25 | `""` | — | The first line in your history should not be blank. Small, because turning up is not an achievement. |
+| `dailyVisit` | 10 | 5 | day key | — | The habit, and the smallest repeatable award: the site must never pay more for opening a tab than for playing. |
+| `dayStreak7` | 150 | 30 | day key | — | A week of days, one and a half won games. |
+| `dayStreak30` | 750 | 100 | day key | — | |
+| `dayStreak100` | 3,000 | 300 | day key | — | |
+| `dayStreak365` | 15,000 | 1,000 | day key | — | A year without missing a day: the largest single award on the site, because no afternoon can buy it. **Paid when a run reaches exactly 365**, so once per unbroken run — the first design said it repeats, and the code (`dayStreakMilestoneFor`) pays at 365 and not at 730. The code wins. |
+| `weekendGame` | 25 | 5 | ISO week | — | John asked for it. Once a weekend, not once a game. |
+| `backFromAway` | 100 | 25 | `awayUntil` date | — | Coming back is the moment a site either keeps somebody or does not. |
 
 ### Playing
 
-| Type | Points | Subject | Cap | Why this many |
-|---|---|---|---|---|
-| `firstGameEver` | 50 | `""` | — | Twice the biggest single-game award. The first game is the whole conversion. |
-| `gameFinished` | 10 | game id | 6/day | A lost game still counts — finishing is the courtesy correspondence play depends on. Capped because hot-seat tic-tac-toe against yourself takes ten seconds. |
-| `gameWon` | 20 | game id | 6/day | Twice a finish. Winning is better; it is not four times better, or the site rewards only the strong. |
-| `wonVsPerson` | 10 | game id | 6/day | On top. A person is harder than a bot and this is a site for playing people. |
-| `wonVsBuddy` | 15 | game id | 6/day | On top again. John's list names it; beating a friend is the point of a family site. |
-| `revengeWin` | 30 | `<opponentId>:<variant>` | — | John's "winning after losing to a friend". Once per rivalry per game, so it is the turn-around that pays and not every subsequent win. |
-| `longGame` | 10 | game id | 6/day | Past `XP_LONG_GAME_MOVES` (60). A game that went the distance. |
-| `comeback` | 30 | game id | — | Won from a position the engine had you losing. **Conditional on XP-05** finding an honest measure — see "What must not be guessed". |
+| Type | Points | Was | Subject | Cap | Why this many |
+|---|---|---|---|---|---|
+| `firstGameEver` | 250 | 50 | `""` | — | Two and a half won games. The first game is the whole conversion. |
+| `gameFinished` | 25 | 10 | game id | 6/day | A lost game still counts — finishing is the courtesy correspondence play depends on. Capped because hot-seat tic-tac-toe against yourself takes ten seconds. |
+| `gameWon` | 50 | 20 | game id | 6/day | Twice a finish. Better, not four times better, or the site rewards only the strong. |
+| `wonVsPerson` | 25 | 10 | game id | 6/day | On top. A person is harder than a bot, and this is a site for playing people. |
+| `wonVsBuddy` | 40 | 15 | game id | 6/day | On top again. Beating a friend is the point of a family site. |
+| `upsetWin` | 100 | new | game id | 3/day | On top, for an established opponent rated at least 100 above you: doubles the won game. |
+| `bigUpsetWin` | 250 | new | game id | 2/day | Instead, at 200 above. |
+| `giantKilled` | 750 | new | game id | 1/day | Instead, at 300 above **and** an opponent rated 1,700 or more — John's "high rank". See "Beating somebody better than you". |
+| `revengeWin` | 150 | 30 | `<opponentId>:<variant>` | — | John's "winning after losing to a friend". Once per rivalry per game. |
+| `longGame` | 25 | 10 | game id | 6/day | Past `XP_LONG_GAME_MOVES` (60). |
+| `comeback` | 150 | 30 | game id | — | Priced and **not paid** — see "What must not be guessed". |
+| `winStreak3` | 75 | 25 | game id | — | Modest on purpose: see rule 4 above. |
+| `winStreak5` | 200 | 60 | game id | — | |
+| `winStreak10` | 600 | 200 | game id | — | |
 
 ### The tour: thirty-nine games nobody has met
 
-This is the part that is not a copy of UmaKuma, and it is the reason to build
-XP here at all. There are 39 variants in `RULE_VARIANTS` and 11 families in
-`GAME_FAMILIES`, and most of them have barely been played. XP is the site's
-tour guide.
+There are 39 variants in `RULE_VARIANTS` and 11 families in `GAME_FAMILIES`, and
+most of them have barely been played. XP is the site's tour guide.
 
-| Type | Points | Subject | Cap | Why this many |
-|---|---|---|---|---|
-| `firstOfVariant` | 25 | variant key | — | 39 × 25 = 975. Two and a half games' worth for trying one new thing. |
-| `firstWinAtVariant` | 20 | variant key | — | 39 × 20 = 780. Trying is rewarded; understanding is rewarded again. |
-| `firstOfFamily` | 50 | family title | — | 11 × 50 = 550. A family is a bigger step than a sibling variant. |
-| `everyFamilyPlayed` | 200 | `""` | — | All eleven. Reachable in a fortnight by somebody curious. |
-| `everyVariantPlayed` | 500 | `""` | — | All thirty-nine. The largest single award on the site, and it should be. |
+| Type | Points | Was | Subject | Cap | Why this many |
+|---|---|---|---|---|---|
+| `firstOfVariant` | 50 | 25 | variant key | — | 39 × 50 = 1,950. Twice a finish for trying one new thing. |
+| `firstWinAtVariant` | 10 | 20 | variant key | — | 39 × 10 = 390. **John's "five or 10", and 10 rather than 5**: at 5 a first win at a game you had never beaten would pay half of simply looking in for the day, and it fires at most thirty-nine times in a life, so the dearer of his two is still a small ceiling. |
+| `firstOfFamily` | 150 | 50 | family key | — | 11 × 150 = 1,650. A family is a bigger step than a sibling variant. |
+| `everyVariantWonInFamily` | 300 | new | family key | — | 8 × 300 = 2,400. Twice `firstOfFamily`: winning every game in a family is far harder than playing one of it, so it has to pay plainly more — the 20 first priced, John's "double" a first win, left the harder feat paying less. **Not paid for a family of one game** (Hex, Checkers, Go): that is no completion, its one win is already paid by `firstWinAtVariant` and `firstOfFamily`, and 300 more would make one win worth about 510 XP. `familyToWin` decides, live and in the replay. |
+| `everyFamilyPlayed` | 2,000 | 200 | `""` | — | All eleven. |
+| `everyVariantPlayed` | 5,000 | 500 | `""` | — | All thirty-nine. Level 1 to level 13 on its own. |
 
-**Families have no key.** `GAME_FAMILIES` in `families.ts` is an array of
-anonymous objects identified by `title`, so the subject for `firstOfFamily` is
-the title string. XP-03 may add a `key` to each family; until it does, a
-retitled family re-awards, and that is the honest trade of using a display
-string as an identity. Flagged rather than hidden.
+**A family won was left to us, and it is 300.** John: "winning a while famly? i
+dunno, look at balance and determine". The first draft paid 20, his "double" a
+first win, which made winning every game in a family pay less than playing one
+game of it (150). At 300 it is twice a family met and plainly the bigger feat,
+and the eight families that can be won come to 2,400 XP.
+
+**A family's subject is its KEY.** `GAME_FAMILIES` gained a stable `key` in
+0.162.0 for exactly this: a retitled family must not re-award. `xpHistory.ts`
+reads a family subject by key, and by title for anything written before.
 
 ### The computer ladder
 
@@ -166,164 +233,326 @@ string as an identity. Flagged rather than hidden.
 `guoshou`. `BOT_SPECIALIST_LIST` is `tamenoki` and `meritalu`, who play one game
 each and are deliberately **not** on the ladder.
 
-| Type | Points | Subject | Cap | Why this many |
-|---|---|---|---|---|
-| `gradeBeaten` | 40 | bot tier | — | 5 × 40 = 200. Twice a win over a person, because a grade can only be beaten once. |
-| `everyGradeBeaten` | 250 | `""` | — | John named it. Beating Guoshou is a real afternoon; beating all five is the site's hardest ordinary goal. |
-| `specialistBeaten` | 50 | bot tier | — | 2 × 50 = 100. More than a grade because there is no ladder to climb to them — you have to go and find their game. |
+| Type | Points | Was | Subject | Cap | Why this many |
+|---|---|---|---|---|---|
+| `gradeBeaten` | 500 | 40 | bot tier | — | 5 × 500 = 2,500. Five won games against people for each grade, and each can be beaten for the first time only once. |
+| `everyGradeBeaten` | 5,000 | 250 | `""` | — | Beating Guoshou is a real afternoon; beating all five is the site's hardest ordinary goal. |
+| `specialistBeaten` | 1,000 | 50 | bot tier | — | 2 × 1,000. You have to go and find their game. |
 
 ### People
 
-| Type | Points | Subject | Cap | Why this many |
-|---|---|---|---|---|
-| `firstBuddy` | 50 | `""` | — | John's list names it. A site with one person on it is a demo. |
-| `buddyAdded` | 10 | buddy member id | 3/day | Small and capped: a buddy list is not a score. |
-| `challengeSent` | 5 | game id | 3/day | Asking is cheap, and should be — but it is the thing that starts everything. |
-| `challengeAnswered` | 10 | game id | 6/day | Answering is what actually makes a game. **There is no accept route** — see "Where the seams are". |
-| `rematchPlayed` | 10 | game id | 6/day | A rematch is the sign a game was worth playing. |
-| `forkPlayed` | 15 | game id | 6/day | More than a rematch: a fork is somebody studying a position. |
-| `timeGiven` | 10 | game id | 3/day | `TimeGift` already records courtesy time. Sportsmanship is worth paying for and almost impossible to farm. |
-| `applauseGiven` | 5 | game id | 3/day | `Applause` is one row per member per game. |
+| Type | Points | Was | Subject | Cap | Why this many |
+|---|---|---|---|---|---|
+| `firstBuddy` | 100 | 50 | `""` | — | A site with one person on it is a demo. |
+| `buddyAdded` | 25 | 10 | buddy member id | 3/day | Small and capped: a buddy list is not a score. |
+| `challengeSent` | 10 | 5 | game id | 3/day | Asking is cheap, and should be. |
+| `challengeAnswered` | 25 | 10 | game id | 6/day | Answering is what actually makes a game. |
+| `rematchPlayed` | 25 | 10 | game id | 6/day | A rematch is the sign a game was worth playing. |
+| `forkPlayed` | 40 | 15 | game id | 6/day | Somebody studying a position. |
+| `timeGiven` | 25 | 10 | game id | 3/day | Sportsmanship, and almost impossible to farm. |
+| `applauseGiven` | 10 | 5 | game id | 3/day | |
 
 ### Who you are
 
-| Type | Points | Subject | Cap | Why this many |
-|---|---|---|---|---|
-| `nameSet` | 10 | `""` | — | |
-| `countrySet` | 10 | `""` | — | John's list names it. |
-| `bioSet` | 20 | `""` | — | More, because it takes writing something. |
-| `wordsSet` | 20 | `""` | — | The four words. |
-| `seatClaimedElsewhere` | 25 | game id | — | John's list names it: a seat claimed on somebody else's device with the words. The site's cleverest feature, and nothing currently celebrates it. |
+| Type | Points | Was | Subject | Cap | Why this many |
+|---|---|---|---|---|---|
+| `nameSet` | 25 | 10 | `""` | — | |
+| `countrySet` | 25 | 10 | `""` | — | |
+| `bioSet` | 50 | 20 | `""` | — | More, because it takes writing something. |
+| `wordsSet` | 50 | 20 | `""` | — | The four words. |
+| `seatClaimedElsewhere` | 50 | 25 | game id | — | The site's cleverest feature. |
 
-**One-off total: 3,740 XP** — `joined` 25, `firstGameEver` 50,
-`firstOfVariant` 975, `firstWinAtVariant` 780, `firstOfFamily` 550,
-`everyFamilyPlayed` 200, `everyVariantPlayed` 500, `gradeBeaten` 200,
-`everyGradeBeaten` 250, `specialistBeaten` 100, `firstBuddy` 50, identity 60.
+**One-off total: 23,440 XP** — `joined` 50, `firstGameEver` 250,
+`firstOfVariant` 1,950, `firstWinAtVariant` 390, `firstOfFamily` 1,650,
+`everyVariantWonInFamily` 2,400, `everyFamilyPlayed` 2,000, `everyVariantPlayed`
+5,000, `gradeBeaten` 2,500, `everyGradeBeaten` 5,000, `specialistBeaten` 2,000,
+`firstBuddy` 100, identity 150.
 
-That is a deliberate figure: **playing one game of everything, meeting every
-family and beating every computer is worth level 21 on its own.** The tour is a
-fifth of the ladder. Thirty-nine games nobody has played is the problem this
-site actually has, and the economy should be pointed at it.
+**Playing everything, winning at everything, completing every family and beating
+every computer is level 30, and 2.3% of the ladder.** The first design made the
+tour a fifth of its ladder; at a 999,999 top that would be 200,000 XP of
+one-offs, and the rest of the economy would have nothing left to do. The tour
+still carries a new member a long way up the early ladder — level 30 is most of
+a committed member's first quarter — and then stops, which is what a ceiling is.
 
 ### How the day's allowance works, and what it must say
 
 The allowance gates the *result* awards and nothing else: `gameFinished`,
-`gameWon`, `wonVsPerson`, `wonVsBuddy`, `longGame`, and the social ones with a
-cap in the table. **It never gates a first-time or milestone award.** This is
-UmaKuma's reasoning and it holds here: beating Guoshou for the first time on
-your seventh game of the day is not the thing worth rationing, and telling
-somebody nothing happened is the failure the cap exists to prevent, not to
-cause.
+`gameWon`, `wonVsPerson`, `wonVsBuddy`, `longGame`, the three upset bands, and
+the social ones with a cap in the table. **It never gates a first-time or
+milestone award.** Beating Guoshou for the first time on your seventh game of
+the day is not the thing worth rationing, and telling somebody nothing happened
+is the failure the cap exists to prevent, not to cause.
 
 So the rule is one sentence: **the result awards for a game fire only if that
 game's `gameFinished` was actually paid.** One test, one place, and a game that
 falls outside the day's allowance is silent as a whole rather than paying for
 being won but not for being finished.
 
-**And where it is silent, something must say so.** UmaKuma shipped that exact
-hole. XP-05 records what a game paid and why it paid nothing, and XP-09 prints
-it. A 0 with a reason beside it is information; a 0 alone is indistinguishable
-from broken.
+**And where it is silent, something must say so.** A 0 with a reason beside it
+is information; a 0 alone is indistinguishable from broken.
 
 ### What must not be guessed
 
-`comeback` is in the table with a condition on it, and the condition is the
-whole of AGENTS.md's "Nothing Answers What It Cannot Answer". The award needs a
-position the engine can call losing. If `analysis.ts` / `winChance.ts` cannot
-answer for a variant — and it cannot for several: `analysis: false` is set on
-the twists, the flips and more — then **the award does not fire for that
-variant**. It does not fire at a default. A distance measure that returned 0 for
-"I cannot read this board" would have drawn every game of a variant for a
-reason that was never true; a comeback bonus that treats "no reading" as "was
-losing" pays everybody for every win.
-
-Silence is the safe answer. XP-05 must state which variants can earn `comeback`
-and the rules page must say so, or the award must be dropped.
+`comeback` is in the table and is not paid. The award needs a position the
+engine can call losing, and `analysis: false` is set on the twists, the flips,
+the races and more — so for those variants there is no reading at all. A
+comeback bonus that treated "no reading" as "was losing" would pay everybody
+for every win. `xpGame.ts` has the whole refusal; `XP_UNWIRED` is what tells a
+page it is not yet paid. Silence is the safe answer.
 
 ### Bots do not earn XP, and this is not an oversight
 
 The computer players are real `Member` rows with real ratings and real streak
-columns. `recordPlayed` — the write XP rides for a finished game — carries
-their `playedStreak` forward today and filters only on the seat being bound.
+columns, and a naive `awardXp` would put Meijin at the top of the leaderboard.
+So `awardXp` refuses a member whose `botTier` is not null, and the leaderboard
+filters on it again — twice, because the awarder is where it is true and the
+leaderboard is where it would be visible.
 
-**A naive `awardXp` would put Meijin on the XP leaderboard.** Worse, it would
-put Meijin at the top of it, because bots play constantly.
+## Beating somebody better than you
 
-So `awardXp` refuses a member whose `botTier` is not null, at the top, before
-reading anything. Stated in the constants file, tested in XP-02, and the
-leaderboard filters on it again in XP-08 — twice, because the leaderboard is
-where it would be visible and the awarder is where it would be true.
+John: *"If you beat someone better than you with a high rank you earn more XP.
+You can never lose XP of course."* The rule is `src/lib/xp/xpUpset.ts`, pure and
+tested beside its source; `xpGame.ts` adds its answer to a win over a person.
+
+**Three bands, each a priced award.** One of them or none, never two, keyed on
+the game:
+
+| Band | The opponent stood at least | And their own rating | Elo's chance of this win | Pays | Cap |
+|---|---|---|---|---|---|
+| `upsetWin` | 100 above you | — | 36% | 100 | 3/day |
+| `bigUpsetWin` | 200 above you | — | 24% | 250 | 2/day |
+| `giantKilled` | 300 above you | 1,700 or more | 15% | 750 | 1/day |
+
+**The cap is the top price.** No win adds more than 750, and a band is a number
+somebody chose rather than a formula over a rating difference — which is a
+lottery, and a clamped formula is a lottery with a ceiling somebody must remember
+to keep. It also leaves the ledger's contract alone: one price per type, so
+`awardXp` and the backfill's prediction did not have to learn that a type can be
+worth two amounts.
+
+**"Better than you with a high rank" is two things, and both are read.** The GAP
+decides whether a win is an upset and how big. The opponent's OWN rating decides
+only the top band: a 1,200 beating a 1,500 is a real upset between two people
+still finding their feet and pays `bigUpsetWin`; a 1,500 beating a 1,800 is
+beating somebody near the top of this site, and only that pays the most.
+
+**A gap only means something when both numbers do, and the two seats are held to
+different standards on purpose.**
+
+- **The opponent must be established** — twenty rated games or more, `tierFor`'s
+  line. This is the guard against farming and it is the load-bearing one: a
+  newcomer sits at 1,600 whatever their strength, so an upset over a provisional
+  opponent is a win over somebody new, which is the opposite of what was asked.
+- **The winner must be rated at all** — four rated games or more. Not established:
+  a winner cannot farm by being new, and twenty games would only delay the award
+  for the members the early levels are for. But an unrated winner's figure is the
+  1,600 nobody earned, and a gap measured off it is not a gap.
+- **A missing rating is null and pays nothing** — no `Player` row, or a failed
+  read. It is never read as 1,600, which would pay an upset over every stranger.
+
+**The people pool, never a program's number.** The ratings read are
+`POOL_COLUMNS.people`, and only on a win over a person. Beating a computer is
+`gradeBeaten`'s job, once per grade, and a bot's rating lives in the other pool.
+
+**"As they stood" is true because of where it is read.** XP rides `recordPlayed`,
+and every ending calls `recordPlayed` *before* `recordResult` exchanges the
+ratings, so the `Player` rows still hold what the two carried into the game.
+`xpUpset.test.ts` pins that order in the endings' source: if it ever flipped, the
+bonus would be read off ratings that already include the upset it pays for.
+
+**What it costs.** One indexed read on `Player.memberId`, in the same
+`Promise.all` as the buddy and rivalry reads, on a win over a person in a game
+the ladder counts, and on nothing else — the same rows `recordResult` reads a moment later for a rated
+game. Nothing per move, nothing per page.
+
+**Only a game the ladder counts.** An upset is paid only where the game is rated
+**and** `gameRatingRefusal` would not refuse it — not played at one screen, two
+different names, no kept record — which is exactly the set of games the ladder
+itself counts (`countsOnLadder` in `playedRun.ts`). A friendly costs its loser
+nothing, so two people could otherwise agree to trade upsets across a gap no
+rated game ever tested; on a rated game every throw costs the loser rating and
+shrinks the gap that pays. Every ending hands `recordPlayed` the facts, and
+`hotSeat` — the one no row carries — is required, so an ending that forgets does
+not compile. The ratings are not even read for a game the ladder does not count.
+The daily caps still bound what is left: at most 3 × 100 + 2 × 250 + 1 × 750 =
+1,550 XP a day from upsets, each needing a real established opponent.
+
+**Reproducibility: the replay does not pay it, and says why.** An Elo figure
+cannot be rebuilt — each exchange depended on both ratings at that moment, and
+nothing stored them. Recording them on the game from now on would help no game
+already played, which is every game a replay exists for, and there is no "what a
+game paid" column on `Game` to carry it. Paying history off today's ratings would
+be wrong in both directions — a member who has since climbed would be denied
+upsets they really made, and one who has since fallen paid for upsets that never
+were — in a ledger nobody could check. So `backfillXp.ts` hands the rule no
+ratings, it answers nothing, and `XP_BACKFILL_COVERAGE` marks all three bands
+`replayed: false, recorded: false` with the reason, printed by every run.
+
+## Nothing can take XP away
+
+John's second sentence is now a rule of the system, gated in two places because
+either half could be broken by an innocent edit and nothing else would notice:
+
+- **No price in the catalogue is at or below zero.** `xp.coverage.test.ts`. A
+  penalty award would be one row in the table.
+- **`Member.xp` is written in one place, and only as an increment of what was
+  just paid.** `awardXp.test.ts` asserts the source has exactly one write to the
+  column and it is `{ increment: points }`, and drives every award in the
+  catalogue at a member, repeatedly and out of order, asserting the total never
+  once goes down and still equals its ledger at the end.
+
+And the two cases the rule is about: **beating a weaker player** pays every
+ordinary win award and no less — the upset rule only adds — and **losing** pays
+exactly what it paid before, the finish.
+
+**What CAN go down, and must be said: the level a member sees, when the curve is
+retuned.** The level is derived from `Member.xp` through the table, so a retune
+moves every member's level at once and nobody's XP. The 68,155 ladder put 1,335
+XP at level 12; this one puts the same 1,335 at level 7. Nobody lost a point; the
+rungs moved. A future retune should say the same thing to the people it moves.
+
+## What a rebalance does to rows already paid
+
+`XpEvent.points` is **what was paid at the time**, and the schema's own comment
+says so: "Repricing an award must not rewrite anybody's history." So after this
+rebalance every row written before it keeps its old amount, `Member.xp` still
+equals the sum of its rows, and the backfill's refusal to write over a total that
+disagrees with its ledger still holds. **That is correct, and nobody should "fix"
+it by updating old rows' points** — an `UPDATE` to `XpEvent.points` without the
+same change to `Member.xp` in the same transaction is exactly the disagreement
+the backfill refuses to write on top of, and one with it is history rewritten.
+
+**The decision taken: history is not repriced.** Production's ledger held 71
+rows when this was decided, all from the backfill at the old amounts (John
+1,335, Hanachan 200, Chibi 25, Kyokosan 25). They keep what they paid, nothing
+is cleared, and the backfill is not re-run. Everybody's level drops on the new
+curve — John's own 1,335 XP was level 12 and is now level 7 — and he chose
+that, in his words: *"rebalance history? if necessary sure, otherwise I can drop
+a level I don't mind. ITS is new so ok for all to be low if that's what the case
+is."*
+
+**The option nobody took**, kept written down only so that it is a known path
+rather than an improvisation, should anybody ever want history paid at new
+amounts. It is not planned:
+
+1. Take a Neon branch first (`before-xp-reprice-<date>`), as for a migration.
+2. Delete **only the rows the backfill wrote** — those types it replays
+   (`XP_BACKFILL_REPLAYED`), identified by the run's `createdAt` — and subtract
+   exactly their sum from each member's `Member.xp` in the same transaction.
+   Rows earned live since (a daily visit, a buddy added) are not replayable, and
+   deleting them would take XP the replay can never give back.
+3. Check `Member.xp` equals `sum(XpEvent.points)` for every member, then run
+   `pnpm xp:backfill:prod` to look and `XP_BACKFILL_RUN=1` to pay.
 
 ## The curve
 
-One hundred levels. Held as a table in `src/lib/xp/xpCurve.ts`, every cost
-ending in a 0 or a 5, strictly increasing, with a test asserting the sequence
-rather than trusting the generator that made it.
-
-**Two parts.** Levels 1–10 are a flat ramp — 20, 40, 60 … 200 — so early
-progress is quick and legible. Level 11 continues the ramp at 220 so there is
-no step down at the handoff, and from there the cost compounds at **2.415% a
-level, doubling every 29**. The rate is solved, not chosen: it is whatever
-carries the remaining ninety levels from 220 to the target total.
+One hundred levels. Held as a table in `src/lib/xp/xpCurve.ts`, every cost but
+the last ending in a 0 or a 5, strictly increasing, with a test asserting the sequence
+rather than trusting the generator that made it. `XP_LEVEL_COST[i]` is the price
+of reaching level `i + 2` — ONE RUNG, not a running total — so there are
+ninety-nine rows, one per level-up, and their plain sum is the total to level 100.
 
 ```
- 20,   40,   60,   80,  100,  120,  140,  160,  180,  200,
-220,  225,  230,  235,  240,  250,  255,  260,  265,  275,
-280,  285,  295,  300,  305,  315,  320,  330,  340,  345,
-355,  365,  370,  380,  390,  400,  410,  420,  430,  440,
-450,  460,  470,  485,  495,  505,  520,  530,  545,  560,
-570,  585,  600,  615,  630,  645,  660,  675,  690,  710,
-725,  745,  760,  780,  800,  815,  835,  855,  880,  900,
-920,  945,  965,  990, 1015, 1035, 1060, 1090, 1115, 1140,
-1170, 1195, 1225, 1255, 1285, 1315, 1350, 1380, 1415, 1450,
-1485, 1520, 1555, 1595, 1630, 1670, 1710, 1755, 1795, 1840,
+   50,   100,   150,   200,   250,   300,   350,   400,   450,   700,
+  720,   740,   755,   775,   795,   815,   840,   865,   890,  1100,
+ 1150,  1175,  1225,  1250,  1300,  1350,  1375,  1425,  1475,  1525,
+ 1600,  1650,  1700,  1775,  1850,  1900,  1975,  2075,  2150,  2250,
+ 2325,  2425,  2525,  2650,  2750,  2875,  3000,  3150,  3300,  3450,
+ 3600,  3775,  3950,  4150,  4350,  4575,  4800,  5050,  5325,  5600,
+ 5875,  6200,  6525,  6875,  7275,  7675,  8100,  8550,  9050,  9575,
+10150, 10750, 11350, 12050, 12800, 13550, 14400, 15300, 16250, 17300,
+18400, 19550, 20850, 22200, 23700, 25250, 26950, 28800, 30750, 32900,
+35200, 37650, 40300, 43150, 46300, 49600, 53250, 57150, 61404,
 ```
 
-Total to level 100: **68,155 XP**.
+Total to reach Level 100 — the top, and the last rung: **999,999 XP.** There is no
+Level 101.
 
-### What a player actually reaches, which is the reason for the numbers
+**Exactly 999,999, and how.** John: "you need 999,999 to get to the top level".
+Every other cost ends in 0 or 5 — the generator's rounding, which reads as a
+number somebody chose — so the rounded table lands on 999,995, and **Level 100's
+own rung takes the last four**: it costs 61,404, the one cost that does not end
+in 0 or 5. The rounding is a convenience and his number is the requirement, so
+where they disagree the last rung gives way. `xpCurve.test.ts` asserts
+`xpForLevel(100)` is 999,999, `xpLevelFor(999_999)` is 100 and
+`xpLevelFor(999_998)` is 99.
 
-A day's repeatable earning, from the catalogue above:
+**Three parts, and each boundary is a step John named.**
 
-- **Committed** — signs in daily, a few games running, finishes about two a day
-  and wins half: `dailyVisit` 5 + two `gameFinished` 20 + one `gameWon` 20 +
-  `wonVsPerson` 10 = **55 a day**, about 60 with the weekend and the day-streak
-  milestones amortised in. **~21,900 a year.**
-- **Casual** — four days a week, finishes three games a week, wins half: **~100
-  a week, ~5,200 a year.**
+- **Reaching levels 2-10 is a flat ramp** — 50, 100, up to 450. 2,250 XP in all,
+  0.23% of the ladder: twenty-two won games. Quick and legible, because a ladder
+  whose first rungs already compound gives a new member nothing to hold on to.
+- **Level 11 costs 700**, half as much again as level 10, and from there every
+  level compounds — "harder after 10".
+- **Level 21 costs a quarter more than level 20** — "harder after 20" — and the
+  compounding rate keeps rising, from 2.47% a level at 12 to 7.41% at 100. A
+  rising rate is what makes the last stretch a climb rather than more of the same:
+  the last ten levels cost 456,904 XP, 46% of the whole ladder.
 
-| | XP | Level |
-|---|---|---|
-| Casual, first month (with the first few tour awards) | ~1,275 | **11** |
-| Casual, first year | ~7,700 | **33** |
-| Casual, three years | ~20,000 | **58** |
-| Committed, first month | ~3,300 | **20** |
-| Committed, first year | ~25,000 | **64** |
-| Committed, two years | ~47,000 | **86** |
-| Committed, three years | ~69,000 | **100** |
-| The tour alone, no repeatable play | 3,740 | **21** |
+**How to retune.** `python3 docs/plans/xp/curve.py` prints the table above. It
+fixes the ramp, the two steps, how far the rate rises and the target, and solves
+the starting rate so the *rounded* table lands on the target; costs round to 5
+below 1,000, 25 below 10,000 and 50 above, and the few fives rounding leaves are
+laid on the cheapest compounding rows, where 5 is the natural unit, and what is
+left below five goes on Level 100's own rung. Change a
+decision, run it, paste. Do not hand-edit one row — the test asserts strict
+increase and will catch it, but the shape is the decision and a single edited row
+is not a shape.
 
-Four decisions fall out of that table, and they are the design:
+### What it takes, which is the reason for the numbers
 
-1. **Level 11 in the first month for a casual player.** Ten levels in four
-   weeks is what makes somebody keep going. UmaKuma learned this the hard way:
-   a ladder whose first rungs already compound gives a new member nothing to
-   hold on to.
-2. **Level 100 at three years of committed play**, the same target UmaKuma
-   calibrated to. John's parents played on ItsYourTurn for years; three years is
-   the right order for a family correspondence site.
-3. **A casual player never maxes, and that is correct.** Level 58 after three
-   years of a few games a week is a real standing, and the top of the ladder
-   should mean something.
-4. **The back half is where it bites.** Level 64 arrives in a committed year;
-   the last 36 levels cost 43,000 XP, 63% of the whole ladder. Generous early,
-   demanding late.
+A won game against a person is 100 XP and the allowance is six of them a day.
+Four players, at the catalogue above:
 
-**How to retune.** The table is generated by solving for a target total;
-`docs/plans/xp/curve.py` holds the twenty lines that do it. Change the target,
-regenerate, paste. Do not hand-edit one row — the test asserts strict increase
-and will catch it, but the shape is the decision and a single edited row is not
-a shape.
+- **Committed** — signs in every day, finishes two games a day, wins half against
+  people: 135 a day, about 50,000 a year, plus the day-streak milestones and the
+  one-offs in the first two years.
+- **Casual** — four days a week, three finished games a week, wins half: about
+  12,000 a year, plus some one-offs.
+- **At the allowance** — wins six games against people every single day: about
+  224,000 a year. The fastest honest climb there is.
+- **Upsets** — a win over somebody 100 above you is 200 instead of 100.
+
+**Every XP figure in this table is CUMULATIVE** — the total a member holds on
+reaching that level, `xpForLevel` — and not the price of that one rung, which is
+`XP_LEVEL_COST`. Level 100 is the top, at exactly 999,999; there is no Level 101.
+
+| Level | Total XP to reach (cumulative) | (was) | Won games against people | Wins over a stronger opponent | Committed | Casual | At the allowance |
+|---|---|---|---|---|---|---|---|
+| 10 | 2,250 | 900 | 22 | 11 | the first fortnight | about six weeks | the first week |
+| 20 | 10,145 | 3,280 | 101 | 51 | about six weeks | about six and a half months | a fortnight |
+| 25 | 16,045 | 4,715 | 160 | 80 | about ten weeks | about ten months | three weeks |
+| 50 | 68,420 | 15,090 | 684 | 342 | about ten months | about four years | about three months |
+| 75 | 237,045 | 33,945 | 2,370 | 1,185 | about four years | about seventeen years | eleven months |
+| **100 — the top** | **999,999** | 68,155 | 10,000 | 5,000 | **about nineteen years** | about seventy-seven years | **about four years** |
+
+### The trade, which John asked to see
+
+He asked which of 10,000,000, 9,999,999 and 999,999 is easier. **999,999 is — by
+a factor of ten — and it still makes level 100 a lifetime's standing at these
+prices.** That is stated rather than hidden. Four decisions fall out of the table:
+
+1. **The first ten levels are a fortnight for a committed member and a few weeks
+   for a casual one.** Unchanged in feel from the first ladder, on purpose.
+2. **The middle is a real climb.** Level 50 is most of a committed year; level 75
+   is four.
+3. **Level 100 is not a three-year target any more.** The first ladder put it at
+   three years of committed play. This one puts it at about nineteen, and at four
+   for somebody who wins six games against people every day — which is what a
+   figure with six nines in it asks for.
+4. **10,000,000 is not reachable at all.** At the allowance's ceiling it is forty-four
+   years; nobody would ever stand at level 100.
+
+**If level 100 should be reachable by a committed member in about five years**,
+there are two honest levers, and they are John's call:
+
+- **Lower the top, keep the prices.** A ladder of about 333,000 puts level 100 at
+  roughly six committed years and about sixteen months at the allowance. One number
+  in `curve.py`.
+- **Keep 999,999, pay the routine more.** Doubling the won game to 200 (and the
+  ramp with it, so the first ten levels still take a fortnight) puts level 100 at
+  about ten committed years. Every routine price in `xp.constants.ts`.
 
 ## The hundred level names
 
@@ -694,6 +923,10 @@ check that `Member.xp` equals `sum(XpEvent.points)` for every member. That is on
 query, it belongs in the backfill script, and it is the only way to know a replay
 landed.
 
+**It has since run.** `backfillXp.play.test.ts` replayed production's history on
+2026-09-13 at the amounts before the rebalance, and the check held. What that
+means for those rows now is "What a rebalance does to rows already paid" above.
+
 ## Where the seams are
 
 Every award rides a write that already happens. Nothing is called from a page.
@@ -702,7 +935,7 @@ Every award rides a write that already happens. Nothing is called from a page.
 |---|---|---|
 | `dailyVisit`, `dayStreak*`, `backFromAway` | the `lastSeenAt` write | `src/lib/auth/members.ts` → `touchMember` |
 | `joined` | `admitMember`'s create branch | `src/lib/auth/members.ts:97` |
-| `gameFinished`, `gameWon`, `wonVs*`, `revengeWin`, `longGame`, `winStreak*`, `firstOf*`, `gradeBeaten`, `comeback` | **`recordPlayed`** | `src/lib/rating/playedRun.ts:132` |
+| `gameFinished`, `gameWon`, `wonVs*`, `upsetWin` / `bigUpsetWin` / `giantKilled`, `revengeWin`, `longGame`, `winStreak*`, `firstOf*`, `everyVariantWonInFamily`, `gradeBeaten`, `comeback` | **`recordPlayed`** | `src/lib/rating/playedRun.ts` |
 | `challengeSent`, `rematchPlayed`, `forkPlayed` | `createLiveGame`'s three branches | `src/app/api/games/live/route.ts` |
 | `challengeAnswered` | the challenged side's first move | `src/lib/history/liveGame.ts` → `appendMove` |
 | `seatClaimedElsewhere` | `bindSeat` / `markSeatTaken` | `src/app/games/[slug]/match/[id]/seat/[token]/route.ts` |
@@ -849,12 +1082,16 @@ inherit it.
 
 And: *"You will show XP in a person's profile, XP history, etc."*
 
+And on 2026-09-13, having read the first ladder, the rebalance — quoted in full
+under "Rebalanced to a 999,999 top" at the head of this file.
+
 **Every item in that list is in the catalogue.** The additions — "fill out any
 things that I've missed" — are: the tour bonuses for every variant and every
 family, the computer grades and the specialists, the courtesy awards on
 `TimeGift` and `Applause`, `challengeSent`/`challengeAnswered`,
 `rematchPlayed`, `forkPlayed`, `longGame`, `comeback`, and the identity five.
 
-**100 levels, not 64.** The curve reaches it with a committed player at three
-years and the names file is specified at exactly one hundred rows. Nothing about
-the arithmetic made 64 the easier answer.
+**100 levels, not 64.** The names file is specified at exactly one hundred rows,
+and nothing about the arithmetic made 64 the easier answer. The first ladder
+reached level 100 at three committed years; the rebalanced one, at John's
+999,999, reaches it at about nineteen — see "The trade, which John asked to see".

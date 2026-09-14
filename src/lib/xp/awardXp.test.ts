@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { XP_EVENTS, XP_EVENT_SPECS, xpPointsFor } from "./xp.constants";
@@ -118,7 +121,10 @@ describe("every event type in the catalogue", () => {
     const again = await awardXp({ memberId: "m", awards: [{ type, subject: "s" }], now: AT });
 
     expect(again.points).toBe(0);
-    expect(again.awards).toEqual([{ type, points: 0, skipped: XP_SKIP_REASONS.alreadyEarned }]);
+    /* A kind allowed once a day is stopped by the allowance before the index is
+       asked — `giantKilled` is the one. Either way it is the rule refusing it. */
+    const reason = XP_EVENT_SPECS[type].cap === 1 ? XP_SKIP_REASONS.dailyAllowance : XP_SKIP_REASONS.alreadyEarned;
+    expect(again.awards).toEqual([{ type, points: 0, skipped: reason }]);
     // The total moved once, and the ledger holds one row. Either alone would
     // pass over a drift between them, which is the failure the single writer
     // and the single transaction exist to prevent.
@@ -196,7 +202,8 @@ describe("the subject decides how often", () => {
     const same = await awardXp({ memberId: "m", awards: [{ type: XP_EVENTS.dailyVisit, subject: "2026-09-14" }], now: monday });
     const next = await awardXp({ memberId: "m", awards: [{ type: XP_EVENTS.dailyVisit, subject: "2026-09-15" }], now: tuesday });
 
-    expect([first.points, same.points, next.points]).toEqual([5, 0, 5]);
+    const visit = xpPointsFor(XP_EVENTS.dailyVisit);
+    expect([first.points, same.points, next.points]).toEqual([visit, 0, visit]);
   });
 
   it("defaults a missing subject to the once-ever empty string", async () => {
@@ -243,7 +250,7 @@ describe("the day's allowance", () => {
     member("m");
     for (let game = 1; game <= 6; game += 1) {
       const paid = await awardXp({ memberId: "m", awards: [{ type: XP_EVENTS.gameFinished, subject: `g${game}` }], now: AT });
-      expect(paid.points).toBe(10);
+      expect(paid.points).toBe(xpPointsFor(XP_EVENTS.gameFinished));
     }
     const seventh = await awardXp({ memberId: "m", awards: [{ type: XP_EVENTS.gameFinished, subject: "g7" }], now: AT });
     expect(seventh.points).toBe(0);
@@ -257,7 +264,7 @@ describe("the day's allowance", () => {
     }
     const tomorrow = new Date("2026-09-13T18:30:00.000Z");
     const fresh = await awardXp({ memberId: "m", awards: [{ type: XP_EVENTS.gameFinished, subject: "g7" }], now: tomorrow });
-    expect(fresh.points).toBe(10);
+    expect(fresh.points).toBe(xpPointsFor(XP_EVENTS.gameFinished));
   });
 
   it("silences a whole game rather than paying for the win but not the finish", async () => {
@@ -302,7 +309,7 @@ describe("the day's allowance", () => {
     });
 
     expect(seventh.points).toBe(xpPointsFor(XP_EVENTS.gradeBeaten));
-    expect(seventh.awards[1]).toEqual({ type: XP_EVENTS.gradeBeaten, points: 40 });
+    expect(seventh.awards[1]).toEqual({ type: XP_EVENTS.gradeBeaten, points: xpPointsFor(XP_EVENTS.gradeBeaten) });
   });
 
   it("does not let one batch spend a cap of one twice", async () => {
@@ -341,11 +348,12 @@ describe("what the caller is told", () => {
     });
 
     expect(result.awards).toEqual([
-      { type: XP_EVENTS.gameFinished, points: 10 },
-      { type: XP_EVENTS.gameWon, points: 20 },
+      { type: XP_EVENTS.gameFinished, points: xpPointsFor(XP_EVENTS.gameFinished) },
+      { type: XP_EVENTS.gameWon, points: xpPointsFor(XP_EVENTS.gameWon) },
     ]);
-    expect(result.points).toBe(30);
-    expect(result.xp).toBe(30);
+    const both = xpPointsFor(XP_EVENTS.gameFinished) + xpPointsFor(XP_EVENTS.gameWon);
+    expect(result.points).toBe(both);
+    expect(result.xp).toBe(both);
   });
 
   it("tells apart a zero from the cap and a zero from having had it already", async () => {
@@ -358,7 +366,7 @@ describe("what the caller is told", () => {
   it("says when an award moved the level, and says nothing when it did not", async () => {
     member("m");
     const first = await awardXp({ memberId: "m", awards: [{ type: XP_EVENTS.joined }], now: AT });
-    // 25 XP: level 2 costs 20, so joining crosses it.
+    // Joining pays 50 and level 2 costs 50, so joining crosses it.
     expect(first.crossed).toEqual({ from: 1, to: 2 });
 
     const small = await awardXp({ memberId: "m", awards: [{ type: XP_EVENTS.dailyVisit, subject: "d" }], now: AT });
@@ -395,8 +403,8 @@ describe("the flash the toast host reads", () => {
     expect(members.get("m")?.xpFlash).toEqual({
       at: AT.toISOString(),
       awards: [
-        { type: XP_EVENTS.gameFinished, points: 10 },
-        { type: XP_EVENTS.gameWon, points: 20 },
+        { type: XP_EVENTS.gameFinished, points: xpPointsFor(XP_EVENTS.gameFinished) },
+        { type: XP_EVENTS.gameWon, points: xpPointsFor(XP_EVENTS.gameWon) },
       ],
       // 30 XP from nothing reaches level 2, which costs 20. Level 3 wants 60.
       level: { level: 2, reached: true },
@@ -494,5 +502,42 @@ describe("it never fails the thing that earned it", () => {
 
     broken.mockRestore();
     noise.mockRestore();
+  });
+});
+
+describe("nothing can take XP away", () => {
+  /*
+   * John: "You can never lose XP of course." A rule of the system now, and gated
+   * rather than merely true. Two halves: no price in the catalogue is below one
+   * (`xp.coverage.test.ts`), and the one write to `Member.xp` is an increment of
+   * what was just paid. Either could be broken by an innocent edit — a penalty
+   * award, a `set` where an `increment` was — and neither would fail anything
+   * else, so both are asserted here.
+   */
+  it("never lowers a total, whatever is asked, however often, in whatever order", async () => {
+    member("m", { xp: 1_000 });
+    const types = Object.keys(XP_EVENT_SPECS) as XpEventType[];
+    let before = 1_000;
+    for (let round = 0; round < 3; round += 1) {
+      for (const type of types) {
+        for (const subject of ["same", `r${round}`]) {
+          const result = await awardXp({ memberId: "m", awards: [{ type, subject }], now: AT });
+          const after = members.get("m")?.xp ?? Number.NaN;
+          expect(after, `${type} about ${subject}`).toBeGreaterThanOrEqual(before);
+          expect(result.points).toBeGreaterThanOrEqual(0);
+          expect(result.awards.every((award) => award.points >= 0)).toBe(true);
+          before = after;
+        }
+      }
+    }
+    // And the total is still exactly what it started at plus its ledger.
+    expect(before).toBe(1_000 + events.reduce((sum, row) => sum + row.points, 0));
+  });
+
+  it("writes Member.xp in one place, and only ever as an increment", () => {
+    const source = readFileSync(join(process.cwd(), "src/lib/xp/awardXp.ts"), "utf8");
+    const writes = [...source.matchAll(/\bxp:\s*\{([^}]*)\}/g)].map((hit) => hit[1].trim());
+    expect(writes).toEqual(["increment: points"]);
+    expect(source).not.toMatch(/decrement/);
   });
 });

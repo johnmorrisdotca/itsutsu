@@ -117,6 +117,22 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
   winStreak5: { replayed: true, from: "the run rebuilt by `extendStreak` over the games so far" },
   winStreak10: { replayed: true, from: "the run rebuilt by `extendStreak` over the games so far" },
 
+  upsetWin: {
+    replayed: false,
+    recorded: false,
+    why: "It is paid from the ratings both players carried INTO a game, and those were never stored: `Player.rating` is today's figure, and an Elo rating cannot be rebuilt from the games because every exchange depended on both ratings at that moment. Paying history off today's ratings would deny upsets a member really made and pay for ones that never were, in a ledger nobody could check. Live games pay it; see `xpUpset.ts`.",
+  },
+  bigUpsetWin: {
+    replayed: false,
+    recorded: false,
+    why: "As `upsetWin`: the ratings as they stood at each game were never recorded.",
+  },
+  giantKilled: {
+    replayed: false,
+    recorded: false,
+    why: "As `upsetWin`: the ratings as they stood at each game were never recorded.",
+  },
+
   comeback: {
     replayed: false,
     recorded: false,
@@ -130,6 +146,10 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
   firstOfFamily: { replayed: true, from: "`familyKeyOf(variant)` at the earliest game in that family" },
   everyFamilyPlayed: { replayed: true, from: "the replay's count of `firstOfFamily`, ledger rows included" },
   everyVariantPlayed: { replayed: true, from: "the replay's count of `firstOfVariant`, ledger rows included" },
+  everyVariantWonInFamily: {
+    replayed: true,
+    from: "the replay's `firstWinAtVariant` rows for that family's games, ledger rows included, on the win that completes it — and only for a family of more than one game (`familyToWin`)",
+  },
 
   /* ── The computer ladder ───────────────────────────────────────────────── */
 

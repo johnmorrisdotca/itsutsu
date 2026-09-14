@@ -6,10 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { awardXp } from "./awardXp";
 import { XP_EVENTS } from "./xp.constants";
 import type { XpAwardResult, XpEventType } from "./xp.types";
-import { XP_VARIANTS_TO_PLAY } from "./xpGame";
+import { XP_VARIANTS_TO_PLAY, familyToWin } from "./xpGame";
 
 /**
- * The tour's two big bonuses: every game played, and every family met.
+ * The tour's three set bonuses: every game played, every family met, and every
+ * game in one family WON.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * THE LEDGER IS THE COLLECTION, SO NOTHING ELSE COUNTS THE GAMES
@@ -30,8 +31,10 @@ import { XP_VARIANTS_TO_PLAY } from "./xpGame";
  * The count runs only when the finish just paid a `firstOfVariant` — which
  * happens at most thirty-nine times in a member's life, and eleven for the
  * families. Every other finished game asks nothing. That is the whole cost of
- * these two awards: two counts on the index, on the handful of games that could
- * possibly have completed the set.
+ * these awards: a count on the index, on the handful of games that could
+ * possibly have completed the set. A family won is asked the same way, off
+ * `firstWinAtVariant` — at most thirty-nine times in a life — and counts only
+ * that family's games.
  *
  * Asking on every finish would be one query per game per member for an answer
  * that cannot have moved, which is the fault taken off the landing page in
@@ -85,10 +88,13 @@ export async function awardCollected({
 export async function awardTourBonuses({
   memberId,
   paid,
+  variant,
   now,
 }: {
   memberId: string;
   paid: XpAwardResult;
+  /** The finished game's variant, as the row holds it. Only a family won reads it. */
+  variant: string;
   now?: Date;
 }): Promise<void> {
   try {
@@ -110,9 +116,49 @@ export async function awardTourBonuses({
         now,
       });
     }
+    if (justPaid(paid, XP_EVENTS.firstWinAtVariant)) {
+      await awardFamilyWon({ memberId, variant, now });
+    }
   } catch (problem) {
     /* The tour's bonus is not worth failing a finished game for. `awardXp`
        swallows its own; this covers the counts, which are this module's. */
     console.error("Could not settle the tour bonuses", memberId, problem);
   }
+}
+
+/**
+ * A family won: the first win at the last game in a family that had not yet
+ * been won.
+ *
+ * 300 XP, twice `firstOfFamily` — the catalogue says why. Keyed on the family's
+ * KEY, never its title, so a family renamed tomorrow is not a family nobody has
+ * won and nobody is paid for it twice; the unique index does the rest.
+ *
+ * The collection is the ledger again: one `firstWinAtVariant` row exists per
+ * variant this member has won, so counting that family's rows IS the question.
+ * Only the family's CURRENT games are counted, so a game retired from a family
+ * cannot complete it and a game added to one reopens nobody's award — it stays
+ * paid, because a ledger records what was paid.
+ *
+ * A family of one game — Hex, Checkers, Go — pays no family award at all:
+ * `familyToWin` answers null for it, because its only win is already paid twice
+ * over and completes nothing.
+ */
+export async function awardFamilyWon({
+  memberId,
+  variant,
+  now,
+}: {
+  memberId: string;
+  variant: string;
+  now?: Date;
+}): Promise<void> {
+  const family = familyToWin(variant);
+  /* No family, a variant this deploy cannot name, or a family of one game. */
+  if (family === null) return;
+  const won = await prisma.xpEvent.count({
+    where: { memberId, type: XP_EVENTS.firstWinAtVariant, subject: { in: family.games } },
+  });
+  if (won < family.games.length) return;
+  await awardXp({ memberId, awards: [{ type: XP_EVENTS.everyVariantWonInFamily, subject: family.key }], now });
 }

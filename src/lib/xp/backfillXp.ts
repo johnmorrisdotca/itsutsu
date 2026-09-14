@@ -9,6 +9,7 @@ import {
   NO_OPPONENT,
   XP_GRADES_TO_BEAT,
   XP_VARIANTS_TO_PLAY,
+  familyToWin,
   gameAwards,
   otherSeat,
   variantOf,
@@ -204,7 +205,9 @@ function playedBy({
   beaten: ReadonlySet<string>;
 }): PlannedBatch[] {
   const weekend = isWeekend(game.playedAt, member.timeZone);
-  const awards = gameAwards(game, {
+  /* `ladderCounts: null`. The replay reads neither whether a game counted nor
+     the ratings it was played at, so it pays no upset — see `XP_BACKFILL_COVERAGE`. */
+  const awards = gameAwards({ ...game, ladderCounts: null }, {
     outcome: side.outcome,
     run: state.run,
     opponent: opponentFor({ game, member, side, members, buddies, beaten }),
@@ -233,6 +236,27 @@ function playedBy({
       state,
     });
     if (bonus !== null) out.push(bonus);
+  }
+
+  /* A family won — `awardFamilyWon`'s rule, asked on `awardTourBonuses`'s guard:
+     only when this batch paid a first win, and only that family's own games
+     counted, ledger rows included, and never a family of one game. Keyed on the
+     family's key. */
+  if (batch.paying.some((award) => award.type === XP_EVENTS.firstWinAtVariant)) {
+    const family = familyToWin(game.variant);
+    const complete =
+      family !== null &&
+      family.games.every((variant) => state.held.has(heldKey(XP_EVENTS.firstWinAtVariant, variant)));
+    if (family !== null && complete) {
+      const bonus = predict({
+        member,
+        at: game.playedAt,
+        reason: { kind: "collected", gameId: game.id },
+        awards: [{ type: XP_EVENTS.everyVariantWonInFamily, subject: family.key }],
+        state,
+      });
+      if (bonus !== null) out.push(bonus);
+    }
   }
   return out;
 }
@@ -292,7 +316,11 @@ function opponentFor({
   const beatenMeBefore =
     variantOf(game) === null ? null : beaten.has(rivalryKey(side.memberId, id, game.variant));
 
-  return { id, tier: null, buddy, beatenMeBefore };
+  /* No ratings, ever, and so no upset bonus. The ratings each side carried INTO
+     a past game were never stored and an Elo figure cannot be rebuilt, so the
+     replay does not guess them from today's — see `XP_BACKFILL_COVERAGE` and
+     `xpUpset.ts`. Null is the rule declining to measure, not a zero. */
+  return { id, tier: null, buddy, beatenMeBefore, ratings: null };
 }
 
 /**

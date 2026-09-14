@@ -4,6 +4,7 @@ import { foldEmail } from "@/lib/auth/members";
 import { botTierFor } from "@/lib/bots/bots";
 import { prisma } from "@/lib/prisma";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
+import { ownedRow } from "@/lib/rating/ownedRow";
 import { STREAK_KINDS, type Streak, type StreakOutcome } from "@/lib/rating/streak";
 
 import { awardXp } from "./awardXp";
@@ -19,6 +20,7 @@ import {
   type Opponent,
 } from "./xpGame";
 import { awardCollected, awardTourBonuses, justPaid } from "./xpTour";
+import type { RatingsAsTheyStood } from "./xpUpset";
 
 /**
  * Paying a finished game, one bound seat at a time.
@@ -39,16 +41,22 @@ import { awardCollected, awardTourBonuses, justPaid } from "./xpTour";
  * count, the run it is writing, and the other seat's id — and whether that id is
  * a program is answered by `botTierFor`, which is pure and asks nothing.
  *
- * **Two reads for a win over a person**, run together: whether they are on this
- * member's buddy list, and whether they had beaten this member at this game
- * before. Neither can be derived from anything in hand. They are the price of
- * `wonVsBuddy` and `revengeWin`, they are bounded per GAME rather than per move
- * or per page, and both are indexed — the buddy pair is a unique key and a game's
- * seats are indexed columns.
+ * **Up to three reads for a win over a person**, run together: whether they are
+ * on this member's buddy list, whether they had beaten this member at this game
+ * before, and — only on a game the ladder counts — both players' ratings on
+ * the ladder of people. None can be
+ * derived from anything in hand. They are the price of `wonVsBuddy`,
+ * `revengeWin` and the upset bonus, they are bounded per GAME rather than per
+ * move or per page, and all three are indexed — the buddy pair is a unique key,
+ * a game's seats are indexed columns, and `Player.memberId` is indexed. The
+ * ratings are the same `Player` rows `recordResult` reads a moment later for a
+ * rated game; they are read HERE, before it, because that is what makes them
+ * the ratings the players carried into the game rather than out of it.
  *
  * **One count on the handful of games that could complete a set**: the tour's
- * thirty-nine and eleven (see `xpTour.ts`) and the five computer grades. Asked
- * only when the batch just paid the first-of award that could have completed it.
+ * thirty-nine and eleven, a family's games all won (see `xpTour.ts`), and the
+ * five computer grades. Asked only when the batch just paid the first-of award
+ * that could have completed it.
  *
  * Nothing here is on a page, and nothing here is per move.
  */
@@ -64,6 +72,12 @@ export type XpSide = {
    * known" rather than as "not a buddy".
    */
   email: string | null;
+  /**
+   * Their current name, or null. Carried so the upset read chooses among a
+   * member's `Player` rows exactly as the player page does — `ownedRow` prefers
+   * the row keyed by the name they go by now.
+   */
+  name: string | null;
   outcome: StreakOutcome;
   /** The run this result made, from the columns the writer is writing. */
   run: Streak | null;
@@ -92,9 +106,10 @@ export async function awardFinishedGameXp(
   now: Date = new Date(),
 ): Promise<void> {
   const emails = new Map(sides.map((side) => [side.memberId, side.email]));
+  const names = new Map(sides.map((side) => [side.memberId, side.name]));
 
   for (const side of sides) {
-    const opponent = await opponentFacts(game, side, emails);
+    const opponent = await opponentFacts(game, side, emails, names);
     const paid = await awardXp({
       memberId: side.memberId,
       awards: gameAwards(game, {
@@ -110,7 +125,7 @@ export async function awardFinishedGameXp(
     /* AFTER the batch, and only because of what it paid. A first game of a
        variant is what can complete the set of thirty-nine, so the question is
        worth asking exactly when one was just paid for and at no other time. */
-    await awardTourBonuses({ memberId: side.memberId, paid, now });
+    await awardTourBonuses({ memberId: side.memberId, paid, variant: game.variant, now });
     await awardLadderBonus({ memberId: side.memberId, paid, now });
   }
 }
@@ -122,9 +137,10 @@ export async function awardFinishedGameXp(
  * the two reads happen only for the one case that can pay for them.
  */
 async function opponentFacts(
-  game: { blackMemberId: string | null; whiteMemberId: string | null; id: string; variant: string },
+  game: { blackMemberId: string | null; whiteMemberId: string | null; id: string; variant: string; ladderCounts: boolean | null },
   side: XpSide,
   emails: ReadonlyMap<string, string | null>,
+  names: ReadonlyMap<string, string | null>,
 ): Promise<Opponent> {
   const id = otherSeat(game, side.memberId);
   if (id === null) return NO_OPPONENT;
@@ -135,11 +151,57 @@ async function opponentFacts(
     return { ...NO_OPPONENT, id, tier };
   }
 
-  const [buddy, beatenMeBefore] = await Promise.all([
+  const [buddy, beatenMeBefore, ratings] = await Promise.all([
     onMyBuddyList(side.email, emails.get(id) ?? null),
     hadBeatenMe({ me: side.memberId, them: id, game }),
+    /* Only where the ladder counts the game, because only there can an upset be
+       paid — an unrated or one-screen win asks nothing about ratings at all. */
+    game.ladderCounts === true
+      ? ratingsAsTheyStood({ id: side.memberId, name: side.name }, { id, name: names.get(id) ?? null })
+      : Promise.resolve(null),
   ]);
-  return { id, tier: null, buddy, beatenMeBefore };
+  return { id, tier: null, buddy, beatenMeBefore, ratings };
+}
+
+/**
+ * Both players' standing on the ladder of people, as they went into the game.
+ *
+ * `rating` and `ratedGames` are `POOL_COLUMNS.people` — the ladder of people,
+ * never the computer pool — and this is only asked on a win over a PERSON, so a
+ * program's number is never read for an upset. `xpGameServer.test.ts` pins the
+ * column names against `POOL_COLUMNS` so a renamed pool cannot quietly point
+ * this at the wrong ladder.
+ *
+ * "As they went into the game" is true because XP rides `recordPlayed`, which
+ * every ending calls before `recordResult` exchanges the ratings;
+ * `xpUpset.test.ts` pins that order in the endings' source.
+ *
+ * A member can hold more than one `Player` row — a record is keyed by the name
+ * it was earned under — and `ownedRow` chooses which is theirs, the same choice
+ * the player page makes, so an upset reads the rating a reader can see. No row
+ * is null, which `xpUpset.ts` reads as "not rated" and pays nothing on; so is
+ * a failed read.
+ */
+async function ratingsAsTheyStood(
+  me: { id: string; name: string | null },
+  them: { id: string; name: string | null },
+): Promise<RatingsAsTheyStood | null> {
+  try {
+    const rows = await prisma.player.findMany({
+      where: { memberId: { in: [me.id, them.id] } },
+      select: { memberId: true, key: true, updatedAt: true, rating: true, ratedGames: true },
+    });
+    const theirs = (who: { id: string; name: string | null }) => {
+      const row = ownedRow(rows.filter((one) => one.memberId === who.id), who.name ?? "");
+      return row === null ? null : { rating: row.rating, ratedGames: row.ratedGames };
+    };
+    return { mine: theirs(me), theirs: theirs(them) };
+  } catch (problem) {
+    /* Null rather than two starting ratings: a read that failed has not
+       established anybody's standing, and 1600 would be a plausible guess. */
+    console.error("Could not read the ratings for XP", problem);
+    return null;
+  }
 }
 
 /**
@@ -194,7 +256,7 @@ async function hadBeatenMe({
 }): Promise<boolean | null> {
   /* A variant this deploy cannot name is a rivalry it cannot key, so there is
      nothing to establish. */
-  if (variantOf({ ...game, moveCount: 0 }) === null) return null;
+  if (variantOf(game) === null) return null;
   try {
     const loss = await prisma.game.findFirst({
       where: {

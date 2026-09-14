@@ -44,11 +44,15 @@ export const XP_EVENTS = {
   winStreak3: "winStreak3",
   winStreak5: "winStreak5",
   winStreak10: "winStreak10",
+  upsetWin: "upsetWin",
+  bigUpsetWin: "bigUpsetWin",
+  giantKilled: "giantKilled",
   firstOfVariant: "firstOfVariant",
   firstWinAtVariant: "firstWinAtVariant",
   firstOfFamily: "firstOfFamily",
   everyFamilyPlayed: "everyFamilyPlayed",
   everyVariantPlayed: "everyVariantPlayed",
+  everyVariantWonInFamily: "everyVariantWonInFamily",
   gradeBeaten: "gradeBeaten",
   everyGradeBeaten: "everyGradeBeaten",
   specialistBeaten: "specialistBeaten",
@@ -74,56 +78,56 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      the site must never pay more for opening a tab than for playing a game. */
 
   joined: {
-    points: 25,
+    points: 50,
     label: "Joined",
     kanji: "入会",
     blurb: "For being here at all. Once, ever.",
     sentence: "Welcome to Itsutsu.",
   },
   dailyVisit: {
-    points: 5,
+    points: 10,
     label: "A new day",
     kanji: "毎日",
     blurb: "For looking in, once a day.",
     sentence: "Good to see you again.",
   },
   dayStreak7: {
-    points: 30,
+    points: 150,
     label: "Seven days running",
     kanji: "七日",
     blurb: "For a week of days without missing one.",
     sentence: "Seven days in a row.",
   },
   dayStreak30: {
-    points: 100,
+    points: 750,
     label: "Thirty days running",
     kanji: "三十日",
     blurb: "For a month of days without missing one.",
     sentence: "Thirty days in a row.",
   },
   dayStreak100: {
-    points: 300,
+    points: 3000,
     label: "A hundred days running",
     kanji: "百日",
     blurb: "For a hundred days without missing one.",
     sentence: "A hundred days in a row.",
   },
   dayStreak365: {
-    points: 1000,
+    points: 15000,
     label: "A year running",
     kanji: "一年",
     blurb: "For a whole year without missing a day. It repeats, so it is worth repeating for.",
     sentence: "A year without missing a day.",
   },
   weekendGame: {
-    points: 5,
+    points: 25,
     label: "Weekend game",
     kanji: "週末",
     blurb: "For finishing a game at the weekend. Once a weekend.",
     sentence: "A game at the weekend.",
   },
   backFromAway: {
-    points: 25,
+    points: 100,
     label: "Back from away",
     kanji: "帰還",
     blurb: "For coming back after time away.",
@@ -136,14 +140,14 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      times better, or the site only rewards the strong. */
 
   firstGameEver: {
-    points: 50,
+    points: 250,
     label: "Your first game",
     kanji: "初局",
     blurb: "For finishing your very first game here.",
     sentence: "Your first game on Itsutsu.",
   },
   gameFinished: {
-    points: 10,
+    points: 25,
     label: "Game finished",
     kanji: "終局",
     blurb: "For seeing a game through, won or lost.",
@@ -151,7 +155,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     cap: 6,
   },
   gameWon: {
-    points: 20,
+    points: 50,
     label: "Game won",
     kanji: "勝利",
     blurb: "For winning one, on top of what finishing it paid.",
@@ -160,7 +164,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     ridesAllowance: true,
   },
   wonVsPerson: {
-    points: 10,
+    points: 25,
     label: "Won against a person",
     kanji: "対人",
     blurb: "On top of the win, for beating somebody rather than something.",
@@ -169,7 +173,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     ridesAllowance: true,
   },
   wonVsBuddy: {
-    points: 15,
+    points: 40,
     label: "Won against a buddy",
     kanji: "友人",
     blurb: "On top again, for beating somebody on your buddy list.",
@@ -178,14 +182,14 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     ridesAllowance: true,
   },
   revengeWin: {
-    points: 30,
+    points: 150,
     label: "Turned it around",
     kanji: "復讐",
     blurb: "For beating somebody at a game they had beaten you at. Once per rivalry.",
     sentence: "You turned that one around.",
   },
   longGame: {
-    points: 10,
+    points: 25,
     label: "A long game",
     kanji: "長局",
     blurb: "For a game that went the distance.",
@@ -194,95 +198,151 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     ridesAllowance: true,
   },
   comeback: {
-    points: 30,
+    points: 150,
     label: "A comeback",
     kanji: "逆転",
     blurb: "For winning a game you were losing.",
     sentence: "Won from behind.",
   },
   winStreak3: {
-    points: 25,
+    points: 75,
     label: "Three in a row",
     kanji: "三連勝",
     blurb: "For three wins without a loss between them.",
     sentence: "Three wins in a row.",
   },
   winStreak5: {
-    points: 60,
+    points: 200,
     label: "Five in a row",
     kanji: "五連勝",
     blurb: "For five wins without a loss between them.",
     sentence: "Five wins in a row.",
   },
   winStreak10: {
-    points: 200,
+    points: 600,
     label: "Ten in a row",
     kanji: "十連勝",
     blurb: "For ten wins without a loss between them.",
     sentence: "Ten wins in a row.",
   },
 
+  /* ── Beating somebody better than you ───────────────────────────────────
+     John's rule. One of the three, never two, chosen by `xpUpset.ts` from both
+     ratings as they stood going into the game — the gap, and for the top band
+     the opponent's own standing too. Priced as bands rather than worked out from
+     the gap, so the most a win can add is the top price. Capped and riding the
+     allowance because they are paid per game: two friends could otherwise
+     trade them, and the cap is what bounds that. */
+
+  upsetWin: {
+    points: 100,
+    label: "An upset",
+    kanji: "番狂わせ",
+    blurb: "On top of the win, for beating an established player rated at least a hundred above you.",
+    sentence: "You beat somebody better than you.",
+    cap: 3,
+    ridesAllowance: true,
+  },
+  bigUpsetWin: {
+    points: 250,
+    label: "A big upset",
+    kanji: "大番狂わせ",
+    blurb: "On top of the win, for beating an established player rated at least two hundred above you.",
+    sentence: "You beat somebody far better than you.",
+    cap: 2,
+    ridesAllowance: true,
+  },
+  giantKilled: {
+    points: 750,
+    label: "A giant killed",
+    kanji: "大物食い",
+    blurb: "On top of the win, for beating a highly ranked player rated at least three hundred above you.",
+    sentence: "You beat one of the best players here.",
+    cap: 1,
+    ridesAllowance: true,
+  },
+
   /* ── The tour ───────────────────────────────────────────────────────────
-     Thirty-nine games and eleven families, most of them barely played. These
-     five are 2,025 XP of the 3,740 available once-only, which is the economy
-     pointed at the problem the site actually has. */
+     Thirty-nine games and eleven families, most of them barely played. A first
+     of anything is cheap and the SETS are dear: every game played is 5,000, a
+     family won is 300, and a single first win is John's 10. The six come to
+     13,390 XP of the 23,440 available once-only — 2.3% of the ladder, a
+     ceiling rather than a treadmill. */
 
   firstOfVariant: {
-    points: 25,
+    points: 50,
     label: "A game you had not played",
     kanji: "初手合",
     blurb: "For your first game of a game. There are thirty-nine of them.",
     sentence: "A game you had never played.",
   },
   firstWinAtVariant: {
-    points: 20,
+    points: 10,
     label: "First win at a game",
     kanji: "初勝",
     blurb: "For your first win at one of the thirty-nine.",
     sentence: "Your first win at this one.",
   },
   firstOfFamily: {
-    points: 50,
+    points: 150,
     label: "A family you had not met",
     kanji: "初族",
     blurb: "For your first game from one of the eleven families.",
     sentence: "A whole family you had not met.",
   },
   everyFamilyPlayed: {
-    points: 200,
+    points: 2000,
     label: "Every family played",
     kanji: "全族",
     blurb: "For playing a game from all eleven families.",
     sentence: "All eleven families played.",
   },
   everyVariantPlayed: {
-    points: 500,
+    points: 5000,
     label: "Every game played",
     kanji: "全種",
-    blurb: "For playing all thirty-nine games on the site. The largest single award here.",
+    blurb: "For playing all thirty-nine games on the site.",
     sentence: "All thirty-nine games played.",
+  },
+  /* A family won is 300 — twice `firstOfFamily` — and the balance John left to us
+     ("winning a while famly? i dunno, look at balance and determine"). Winning
+     every game in a family is far harder than playing one game of it, so the 20
+     it first paid, John's "double" a first win, left the harder feat paying less
+     than the easier one; twice a family met makes it plainly the bigger
+     achievement. NOT paid for a family of one game (Hex, Checkers, Go): that is
+     no completion, its one win is already paid by `firstWinAtVariant` and
+     `firstOfFamily`, and 300 more would make a single win worth about 510 XP.
+     `familyToWin` in `xpGame.ts` is that rule, live and in the replay alike.
+     Eight families can be won, 2,400 XP between them. */
+  everyVariantWonInFamily: {
+    points: 300,
+    label: "A family won",
+    kanji: "一族制覇",
+    blurb: "For winning at every game in a family of more than one game. Paid on the win that completes it.",
+    sentence: "You have won at every game in this family.",
   },
 
   /* ── The computer ladder ────────────────────────────────────────────────
-     Five graded grades and two specialists. Twice a win over a person, because
-     a grade can only be beaten for the first time once. */
+     Five graded grades and two specialists. Five times a won game against a
+     person, because each grade can be beaten for the first time only once and
+     beating Guoshou is a real afternoon — the hard things are where the money is. */
 
   gradeBeaten: {
-    points: 40,
+    points: 500,
     label: "A grade beaten",
     kanji: "撃破",
     blurb: "For your first win against one of the five computer grades.",
     sentence: "A computer grade beaten.",
   },
   everyGradeBeaten: {
-    points: 250,
+    points: 5000,
     label: "Every grade beaten",
     kanji: "全段",
     blurb: "For beating all five computer grades. The hardest ordinary goal here.",
     sentence: "All five grades beaten.",
   },
   specialistBeaten: {
-    points: 50,
+    points: 1000,
     label: "A specialist beaten",
     kanji: "名手",
     blurb: "For beating one of the two specialists at their own game.",
@@ -294,14 +354,14 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      should cost nothing to be worth doing. */
 
   firstBuddy: {
-    points: 50,
+    points: 100,
     label: "Your first buddy",
     kanji: "初友",
     blurb: "For adding somebody to your buddy list for the first time.",
     sentence: "Your first buddy.",
   },
   buddyAdded: {
-    points: 10,
+    points: 25,
     label: "A buddy added",
     kanji: "友達",
     blurb: "For adding somebody to your buddy list.",
@@ -309,7 +369,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     cap: 3,
   },
   challengeSent: {
-    points: 5,
+    points: 10,
     label: "Challenge sent",
     kanji: "挑戦",
     blurb: "For asking somebody for a game.",
@@ -317,7 +377,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     cap: 3,
   },
   challengeAnswered: {
-    points: 10,
+    points: 25,
     label: "Challenge answered",
     kanji: "応戦",
     blurb: "For answering somebody's challenge with a move.",
@@ -325,7 +385,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     cap: 6,
   },
   rematchPlayed: {
-    points: 10,
+    points: 25,
     label: "A rematch",
     kanji: "再戦",
     blurb: "For taking a rematch. A game worth playing twice.",
@@ -333,7 +393,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     cap: 6,
   },
   forkPlayed: {
-    points: 15,
+    points: 40,
     label: "A fork",
     kanji: "分岐",
     blurb: "For playing a position on from the middle of a finished game.",
@@ -341,7 +401,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     cap: 6,
   },
   timeGiven: {
-    points: 10,
+    points: 25,
     label: "Time given",
     kanji: "情け",
     blurb: "For giving your opponent more time when they needed it.",
@@ -349,7 +409,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     cap: 3,
   },
   applauseGiven: {
-    points: 5,
+    points: 10,
     label: "Applause given",
     kanji: "拍手",
     blurb: "For applauding a game somebody played.",
@@ -363,35 +423,35 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      nothing celebrating it. */
 
   nameSet: {
-    points: 10,
+    points: 25,
     label: "A name set",
     kanji: "名前",
     blurb: "For choosing what you are called here.",
     sentence: "Your name is set.",
   },
   countrySet: {
-    points: 10,
+    points: 25,
     label: "A country set",
     kanji: "国",
     blurb: "For saying where you are playing from.",
     sentence: "Your country is set.",
   },
   bioSet: {
-    points: 20,
+    points: 50,
     label: "Something about you",
     kanji: "紹介",
     blurb: "For writing a line about yourself on your page.",
     sentence: "Your page says something about you.",
   },
   wordsSet: {
-    points: 20,
+    points: 50,
     label: "Four words set",
     kanji: "四語",
     blurb: "For setting the four words that let you take a seat on any device.",
     sentence: "Your four words are set.",
   },
   seatClaimedElsewhere: {
-    points: 25,
+    points: 50,
     label: "A seat on another device",
     kanji: "着席",
     blurb: "For taking your seat on somebody else's screen with your four words.",
@@ -428,11 +488,15 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
   winStreak3: "the game id that completed the run, so a later run earns it again",
   winStreak5: "the game id that completed the run",
   winStreak10: "the game id that completed the run",
+  upsetWin: "the game id, so one game pays one band",
+  bigUpsetWin: "the game id, so one game pays one band",
+  giantKilled: "the game id, so one game pays one band",
   firstOfVariant: "the RuleVariant key",
   firstWinAtVariant: "the RuleVariant key",
-  firstOfFamily: "the family title, until GAME_FAMILIES has keys",
+  firstOfFamily: "the family's key in GAME_FAMILIES, which the family title is not",
   everyFamilyPlayed: "",
   everyVariantPlayed: "",
+  everyVariantWonInFamily: "the family's key in GAME_FAMILIES, which the family title is not — once per family, and only a family of more than one game",
   gradeBeaten: "the BotTier",
   everyGradeBeaten: "",
   specialistBeaten: "the BotTier",
@@ -483,10 +547,10 @@ export const XP_LONG_GAME_MOVES = 60;
  * is a number nobody can act on: 8% of the way to go means nothing, and one more
  * game means play one more game.
  *
- * It also stays honest at both ends of the ladder. Early levels cost 20 to 200,
- * so 30 is a real fraction of one; level 100 costs 1,840, so the nudge appears
- * only when it is genuinely one game away rather than for the last two hundred
- * points of a long climb.
+ * It also stays honest at both ends of the ladder. The first rungs cost 50 to
+ * 450, so 75 is a real fraction of one; the last cost tens of thousands, so there
+ * the nudge appears only when it is genuinely one game away rather than for the
+ * last stretch of a long climb.
  */
 export const XP_ONE_MORE_GAME =
   XP_EVENT_SPECS.gameFinished.points + XP_EVENT_SPECS.gameWon.points;
