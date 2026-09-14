@@ -292,6 +292,22 @@ export type ColourRules = {
 export type GameStatus = "playing" | "won" | "draw";
 
 /**
+ * A rule that has narrowed the moves on offer below what the pieces could
+ * make: a capture that must be made, or carried on, instead of a step; or —
+ * where the game takes the most — the capture taking the most pieces, over
+ * shorter ones the pieces also have.
+ */
+export type MoveNarrowing = "capture" | "mostCaptured";
+
+/** Whether a turn moves a piece already on the board, or places on a point. */
+export type TurnChoiceKind = "move" | "place";
+
+/** What the colour to move may do this turn, as the engine answers it — see `turnChoices`. */
+export type TurnChoices =
+  | { kind: "move"; pieces: Point[]; count: number; narrowedBy: MoveNarrowing | null }
+  | { kind: "place"; points: Point[]; count: number };
+
+/**
  * Who opens. `random` is resolved once when the game is created — the engine
  * stays pure by taking the roll as an argument, see `resolveOpener`.
  */

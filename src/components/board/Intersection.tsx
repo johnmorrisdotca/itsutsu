@@ -44,6 +44,21 @@ function Obstacle() {
   );
 }
 
+/**
+ * The turn guide's mark on a piece that may move or a point that may be played:
+ * a dashed, rounded square — a shape none of the advice marks use, so it reads
+ * without its colour, and stays square on the board turned either way round.
+ */
+function GuideOutline({ colour }: { colour: string }) {
+  return (
+    <span
+      className="pointer-events-none absolute inset-[3%] rounded-[22%] border-dashed"
+      style={{ borderWidth: "0.2em", borderColor: colour }}
+      aria-hidden="true"
+    />
+  );
+}
+
 function Mark({ mark }: { mark: BoardMark }) {
   const { colour, shape } = MARK_STYLE[mark.kind];
 
@@ -94,6 +109,8 @@ export function Intersection({
   hideBlocked = false,
   hole = false,
   unslant = false,
+  guide = null,
+  guideColours,
   stones,
   winningColour,
   readOnly,
@@ -109,6 +126,7 @@ export function Intersection({
       onPointerLeave={onHover === undefined ? undefined : () => onHover(null)}
       disabled={!playable}
       aria-label={label}
+      data-guide={guide ?? undefined}
       className="group relative flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-default"
     >
       {/*
@@ -116,10 +134,19 @@ export function Intersection({
         * is what makes the hit area right; the stone inside leans back so it
         * is a circle again. HEX_LATTICE's inverse, exactly — the board's own
         * fitting scale is uniform and never made a circle into anything else.
+        *
+        * A piece the turn guide holds back is dimmed here, whole: it is still
+        * on the board and still the player's, only not a move this turn. "Ever
+        * so slightly", in John's words — at 45% a black man all but vanished
+        * into the dark squares of the ink board, which is dimming it off the
+        * board rather than out of the choice.
         */}
       <span
         className="pointer-events-none absolute inset-0 flex items-center justify-center"
-        style={unslant ? { transform: HEX_LATTICE.unslant } : undefined}
+        style={{
+          ...(unslant ? { transform: HEX_LATTICE.unslant } : {}),
+          ...(guide === "unavailable" ? { opacity: 0.6 } : {}),
+        }}
       >
       {camp !== null ? (
         <span
@@ -154,6 +181,10 @@ export function Intersection({
         <Hole />
       ) : null}
       {mark !== null ? <Mark mark={mark} /> : null}
+      {guide === "choice" && guideColours !== undefined ? <GuideOutline colour={guideColours.mark} /> : null}
+      {guide === "veiled" && guideColours !== undefined ? (
+        <span className="pointer-events-none absolute inset-0" style={{ background: guideColours.veil }} aria-hidden="true" />
+      ) : null}
       </span>
     </button>
   );

@@ -1,5 +1,5 @@
-import { ENGLISH_CHECKERS_RULES, VARIANT_SPECS } from "../gomoku.constants";
-import type { Cell, CheckersRules, GameSettings, GameState, Point, Stone } from "../gomoku.types";
+import { ENGLISH_CHECKERS_RULES, MOVE_NARROWINGS, VARIANT_SPECS } from "../gomoku.constants";
+import type { Cell, CheckersRules, GameSettings, GameState, MoveNarrowing, Point, Stone } from "../gomoku.types";
 import { indexOf, isOnBoard, otherStone, samePoint } from "./board";
 import {
   DIAGONALS,
@@ -244,6 +244,37 @@ export function checkersMoves(state: GameState, from: Point): Point[] {
   const { size } = state.settings;
   if (!isOnBoard(size, from) || state.board[indexOf(size, from)] !== state.toPlay) return [];
   return [...(legalMoves(state).get(indexOf(size, from)) ?? [])];
+}
+
+/**
+ * Which rule, if any, narrowed the moves the colour to move is offered below
+ * what its pieces could make.
+ *
+ * `capture` when a capture is compulsory: a chain under way, or a capture
+ * anywhere on the board ruling out every step. `mostCaptured` when, beyond that,
+ * the game takes the most and a capture some piece could make was refused
+ * because another takes more. Null when nothing was held back.
+ *
+ * A reading of `legalMoves` against the raw jumps, not a second rule: whatever
+ * the moves are, they were decided above.
+ */
+export function checkersNarrowing(state: GameState): MoveNarrowing | null {
+  if (state.chainAt !== null) return MOVE_NARROWINGS.capture;
+  const { board, kings, toPlay } = state;
+  const { size } = state.settings;
+  const rules = checkersRulesFor(state.settings);
+  const jumps = piecesOf(board, size, toPlay).flatMap((from) =>
+    checkersCaptures(board, kings, size, from, toPlay, rules).map((jump) => ({ from, to: jump.to })),
+  );
+  if (jumps.length === 0) return null;
+  if (takesMaximum(rules)) {
+    const legal = legalMoves(state);
+    const refused = jumps.some(
+      ({ from, to }) => !(legal.get(indexOf(size, from)) ?? []).some((point) => samePoint(point, to)),
+    );
+    if (refused) return MOVE_NARROWINGS.mostCaptured;
+  }
+  return MOVE_NARROWINGS.capture;
 }
 
 /** The one piece of `enemy` standing on the diagonal strictly between `from` and `to`, if any. */

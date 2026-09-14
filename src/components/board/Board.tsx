@@ -4,35 +4,35 @@ import { useMemo, useState } from "react";
 
 import { canTwist, forbiddenPoints, inMovePhase, indexOf, legalPoints, pieceMoves, pointOf, resolvePlacement, campOf, STAR_RADIUS, starCampOf } from "@/lib/gomoku/engine";
 import { lastMove } from "@/lib/gomoku/rules/record";
+import { turnChoices } from "@/lib/gomoku/rules/choices";
 import {
-  BLOCKED,
   BOARD_GRIDS,
   GAME_STATUS,
-  HOT,
-  WORM,
   PLACEMENTS,
-  STONE_DISPLAY,
   VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
-import { columnLetter, pointName, rowNumber } from "@/lib/gomoku/notation";
-import type { Cell, GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
-import { BOARD_THEMES, LABEL_GUTTER, LATTICE_TRANSFORM, RHOMBUS_CLIP, STONE_SETS } from "./Board.constants";
+import { columnLetter, rowNumber } from "@/lib/gomoku/notation";
+import type { GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
+import {
+  BOARD_THEMES,
+  GUIDE_COLOURS,
+  LABEL_GUTTER,
+  LATTICE_TRANSFORM,
+  RHOMBUS_CLIP,
+  SQUARE_GUIDES,
+  STONE_SETS,
+} from "./Board.constants";
 import { gridFor } from "./appearance";
 import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { Intersection } from "./Intersection";
 import { labelTracks, latticeLabelTracks, playingAreaInset } from "./margin";
+import { squareLabel } from "./squareLabel";
+import { squareGuide, turnGuide } from "./turnGuide";
+import { TurnGuideNote } from "./TurnGuideNote";
 import { TwistControls } from "./TwistControls";
 import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
-
-function cellDescription(cell: Cell, forbidden: boolean): string {
-  if (cell === BLOCKED) return "blocked";
-  if (cell === HOT) return "hotspot";
-  if (cell === WORM) return "wormhole";
-  if (cell === null) return forbidden ? "forbidden" : "empty";
-  return `${STONE_DISPLAY[cell].label} stone`;
-}
 
 /**
  * The coordinate strips sit outside the board's own box, so the rim that
@@ -166,6 +166,14 @@ export function Board({
         : new Set<number>(),
     [selected, size, sliding, state],
   );
+  /*
+   * The turn guide: on the player's own turn, the few things they may do,
+   * marked, and the rest dimmed — see turnGuide.ts. Read from the engine's
+   * answer once per position, and only on a board being played, so a replay,
+   * an embed or somebody else's turn draws exactly as before.
+   */
+  const guide = useMemo(() => (live ? turnGuide(state, turnChoices(state)) : null), [live, state]);
+  const guideColours = theme.dark ? GUIDE_COLOURS.dark : GUIDE_COLOURS.light;
   const overlays = markByIndex(size, [
     ...Array.from(forbidden, (index) => ({ ...pointOf(size, index), kind: "forbidden" as const })),
     ...Array.from(destinations, (index) => ({ ...pointOf(size, index), kind: "target" as const })),
@@ -293,7 +301,9 @@ export function Board({
               const playable = legal === null || legal.has(index);
               // In a drop game any empty cell of a column with room plays that column.
               const routed = dropping && cell === null && legal !== null && legal.has(landingIndex);
-              const ownPiece = sliding && cell === state.toPlay;
+              const guided = squareGuide(guide, index, cell);
+              // A piece the guide holds back is not offered: it cannot be picked up at all this turn.
+              const ownPiece = sliding && cell === state.toPlay && guided !== SQUARE_GUIDES.unavailable;
               const target = destinations.has(index);
               const inFootprint = footprint.has(index);
               // In a piece game a corner can be laid wherever the piece fits.
@@ -303,7 +313,10 @@ export function Board({
                   key={index}
                   point={point}
                   cell={cell}
-                  label={`${pointName(size, point)}, ${cellDescription(cell, forbidden.has(index))}`}
+                  label={squareLabel(size, point, cell, {
+                    forbidden: forbidden.has(index),
+                    king: spec.checkers && kings.has(index),
+                  })}
                   isLast={index === lastIndex}
                   isWinning={winningIndices.has(index)}
                   ghost={(playable || target) && !piecing ? ghost : null}
@@ -317,6 +330,8 @@ export function Board({
                   isKing={spec.checkers ? kings.has(index) : false}
                   hideBlocked={spec.chineseCheckers}
                   hole={spec.chineseCheckers && cell === null}
+                  guide={guided}
+                  guideColours={guideColours}
                   stones={stones}
                   winningColour={theme.winning}
                   readOnly={readOnly}
@@ -330,6 +345,7 @@ export function Board({
           ) : null}
         </div>
       </div>
+      {live ? <TurnGuideNote guide={guide} size={size} /> : null}
     </div>
   );
 }

@@ -6,7 +6,9 @@ import type {
   CheckersRules,
   CrownMidCapture,
   EndgameCountKind,
+  MoveNarrowing,
   PieceTally,
+  TurnChoiceKind,
   DrawLimit,
   FirstPlayer,
   Hot,
@@ -318,6 +320,16 @@ export const ENDGAME_COUNT_KINDS = {
   endings: "endings",
   balance: "balance",
 } as const satisfies Record<EndgameCountKind, EndgameCountKind>;
+
+export const MOVE_NARROWINGS = {
+  capture: "capture",
+  mostCaptured: "mostCaptured",
+} as const satisfies Record<MoveNarrowing, MoveNarrowing>;
+
+export const TURN_CHOICE_KINDS = {
+  move: "move",
+  place: "place",
+} as const satisfies Record<TurnChoiceKind, TurnChoiceKind>;
 
 /**
  * English draughts, American checkers: three rows of men, a man takes forward

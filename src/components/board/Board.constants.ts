@@ -3,6 +3,8 @@ import type {
   BoardMarkKind,
   BoardThemeTokens,
   GridStyle,
+  GuideColours,
+  SquareGuide,
   StoneSetTokens,
 } from "./board.types";
 
@@ -236,6 +238,42 @@ export const MARK_STYLE: Record<
   forbidden: { colour: "#b91c1c", shape: "cross" },
   selected: { colour: "#0ea5e9", shape: "ring" },
   target: { colour: "#0ea5e9", shape: "dot" },
+};
+
+/**
+ * THE TURN GUIDE — see turnGuide.ts.
+ *
+ * How few legal moves a turn has before the board marks them and dims the
+ * rest. John's own number: "when there's only 1 possible move, or two". Named,
+ * so that nobody has to find a 2 in a component to change it.
+ */
+export const FEW_LEGAL_MOVES = 2;
+
+export const SQUARE_GUIDES = {
+  choice: "choice",
+  unavailable: "unavailable",
+  veiled: "veiled",
+} as const satisfies Record<SquareGuide, SquareGuide>;
+
+/**
+ * The guide's dashed outline and its veil, per kind of board. A deep blue
+ * outline on the light woods and paper, a pale gold one on ink, dark wood and
+ * tea — each well away from the surface it sits on and from both stone
+ * colours. The veil pales a light board and darkens a dark one, so what is not
+ * on offer recedes into its own surface rather than into a grey.
+ */
+export const GUIDE_COLOURS: Record<"light" | "dark", GuideColours> = {
+  light: { mark: "#1e3a8a", veil: "rgba(250, 245, 235, 0.55)" },
+  dark: { mark: "#fde68a", veil: "rgba(0, 0, 0, 0.45)" },
+};
+
+/** The guide in words: the rule on screen, and the choices by name for a screen reader. */
+export const TURN_GUIDE_COPY = {
+  capture: "You must capture.",
+  mostCaptured: "You must take the most pieces.",
+  onlyMoves: (count: number, listed: string) => `${count === 1 ? "Only one move" : `Only ${count} moves`}: ${listed}.`,
+  piecesThatMayMove: (count: number, listed: string) =>
+    `${count === 1 ? "The piece that may move" : "The pieces that may move"}: ${listed}.`,
 };
 
 /**
