@@ -121,21 +121,24 @@ export function posterOf(
 /**
  * Narrows a noticeboard's seats to the ones asked for.
  *
- * `ratingOf` is a lookup already built from the database — one query for
- * every name on the board, rather than one per seat — so this stays pure and
- * checkable without either a page or a database of its own.
+ * `ratingOf` is a lookup already built from the database — one read for every
+ * poster on the board, rather than one per seat — so this stays pure and
+ * checkable without either a page or a database of its own. It is handed the
+ * POSTER, member id and name, rather than the name alone: a rating row does not
+ * move when somebody renames, so a lookup by today's name found nothing for a
+ * renamed poster, and the rating beside their name is read the same way.
  */
 export function filterOpenSeats(
   seats: readonly GameSummary[],
   filter: OpenSeatFilter,
-  ratingOf: (posterName: string) => number | null,
+  ratingOf: (poster: { name: string; memberId: string | null }) => number | null,
 ): GameSummary[] {
   return seats.filter((seat) => {
     if (filter.pace !== undefined && seat.moveTimeMs !== filter.pace) return false;
     if (filter.penalty !== "any" && seat.timeoutPenalty !== filter.penalty) return false;
     if (filter.rating === SEAT_RATING.any) return true;
 
-    const rating = ratingOf(posterOf(seat).name);
+    const rating = ratingOf(posterOf(seat));
     if (filter.rating === SEAT_RATING.unrated) return rating === null;
     if (rating === null) return false;
     return filter.rating === SEAT_RATING.under ? rating < RATING_SPLIT : rating >= RATING_SPLIT;

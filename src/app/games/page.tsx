@@ -11,11 +11,11 @@ import { StartGame } from "@/components/mine/StartGame";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { GameGroup, SeatOnBoard } from "@/components/mine/startGame.types";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
-import { OPEN_GAMES_SHOWN, fetchOpenSeats, fetchPosterCountries, oneOfEachKind } from "@/lib/history/openGames";
-import { SEAT_RATING, filterOpenSeats, posterOf, readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
+import { OPEN_GAMES_SHOWN, fetchOpenSeats, oneOfEachKind } from "@/lib/history/openGames";
+import { filterOpenSeats, posterOf, readOpenSeatFilter } from "@/lib/history/openSeatsFilter";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
-import { ratingsByName } from "@/lib/rating/players";
-import { playerKey } from "@/lib/rating/playerKey";
+import { posterKeyOf } from "@/lib/history/posterStanding";
+import { fetchPosterStandings } from "@/lib/history/posterStandingRead";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
 import { seatsTheSentenceOffers } from "@/lib/history/lobbySeats";
 import { seatOnBoard } from "@/lib/history/seatOnBoard";
@@ -174,19 +174,17 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
   const choices = oneOfEachKind(seatsTheSentenceOffers(usable));
 
   /*
-   * The rating a reader asked to filter posters by. Looked up once, for
-   * every name on the board, only when the filter actually asks for a
-   * rating — a filter left at "any" has nothing to gain from a query the
-   * narrowing itself never reads.
+   * EVERY POSTER'S STRENGTH, read once for the whole board — their rating from
+   * the right pool with its tier, their XP level, and where they are — so a
+   * reader can pick an opponent of their own strength. Two queries whatever the
+   * board holds. Read for every seat the reader could sit in, before the rating
+   * filter narrows them, because the filter reads the same figure the line
+   * beside the name prints: by member first and name after, so a poster who
+   * renamed is neither shown one rating nor filtered by another.
    */
-  const ratingsByKey =
-    filter.rating === SEAT_RATING.any
-      ? new Map<string, number | null>()
-      : await ratingsByName(usable.map((game) => posterOf(game).name));
-  const narrowed = filterOpenSeats(usable, filter, (name) => ratingsByKey.get(playerKey(name)) ?? null);
+  const standings = await fetchPosterStandings(usable.map((game) => posterOf(game)));
+  const narrowed = filterOpenSeats(usable, filter, (poster) => standings.get(posterKeyOf(poster))?.rating?.rating ?? null);
   const openSeats = narrowed.slice(0, OPEN_GAMES_SHOWN);
-  // The flag beside a name, for exactly the rows this page is about to show.
-  const countryByMemberId = await fetchPosterCountries(openSeats.map((game) => posterOf(game).memberId));
 
   // The sentence reads the same lists the page below it shows.
   const groups: GameGroup[] = GAME_FAMILIES.map((family) => ({
@@ -274,7 +272,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
             shown={narrowed.length}
             total={usable.length}
             filter={filter}
-            countryByMemberId={countryByMemberId}
+            standings={standings}
           />
           <HereNowPanel here={here} me={email} />
         </div>

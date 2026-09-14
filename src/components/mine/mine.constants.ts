@@ -65,7 +65,13 @@ export const MY_GAMES_COPY = {
   cancel: { label: "Cancel", kanji: "取消" },
   cancelConfirm: "Call off this game? Nothing has been played, so nobody wins and no rating moves.",
   localGame: { label: "Your game", kanji: "続き" },
-  openBoard: { label: "Open seats", kanji: "対局募集", hint: "Games somebody has posted for anyone. Sit down and it is yours." },
+  openBoard: {
+    label: "Open seats",
+    kanji: "対局募集",
+    hint: "Games somebody has posted for anyone. Sit down and it is yours.",
+    /** The hover on a poster's rating that the computer players earned, which is not a place on the ladder. */
+    computerPool: "Earned against the computer players, which are rated in a pool of their own.",
+  },
   sit: { label: "Sit as White", kanji: "着席" },
   sitTaken: "Somebody else just took that seat.",
   continueGame: "Continue",
