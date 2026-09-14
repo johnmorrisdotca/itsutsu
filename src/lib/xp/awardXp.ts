@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { XP_EVENT_SPECS, XP_ONE_MORE_GAME, earnableByProgram, xpPointsFor } from "./xp.constants";
 import { xpDayKey } from "./xpDay";
 import { levelCrossed, xpLevelFor, xpStanding } from "./xpCurve";
+import { xpForBadge } from "./xpScope";
 import { XP_SKIP_REASONS, type XpAward, type XpAwardResult, type XpAwarded } from "./xp.types";
 
 /**
@@ -53,7 +54,7 @@ import { XP_SKIP_REASONS, type XpAward, type XpAwardResult, type XpAwarded } fro
  */
 
 /** What is read about a member before anything is paid. Four columns, one row. */
-type Recipient = { id: string; botTier: string | null; timeZone: string; xp: number };
+type Recipient = { id: string; botTier: string | null; timeZone: string; xp: number; xpEverywhere: number };
 
 /**
  * One award after the allowance has been applied, with its subject still on it.
@@ -114,7 +115,7 @@ async function payAwards({
 }): Promise<XpAwardResult> {
   const member = await prisma.member.findUnique({
     where: { id: memberId },
-    select: { id: true, botTier: true, timeZone: true, xp: true },
+    select: { id: true, botTier: true, timeZone: true, xp: true, xpEverywhere: true },
   });
 
   /* No row answers to that id. The operator has no Member row, and a game can
@@ -195,10 +196,17 @@ async function payEarnable({
     /* Nothing was owed: every row already existed. */
     if (points === 0) return null;
 
+    /* The level a toast names is the level the badge beside the member's name
+       shows — `xpForBadge`, the one place that decides which total that is — so
+       "Level up" and the badge a page draws a moment later cannot disagree. */
+    const badgeBefore = xpForBadge(member);
     const updated = await tx.member.update({
       where: { id: member.id },
       data: {
         xp: { increment: points },
+        /* The Everywhere total moves with every point earned here, in the same
+           update, so it is always `xp + xpImported`. See `Member.xpEverywhere`. */
+        xpEverywhere: { increment: points },
         /* The leaderboard's other sort column, written here for nothing rather
            than answered by `max(createdAt) group by memberId` — which as a SORT
            is a full scan of the ledger on every click. */
@@ -212,13 +220,13 @@ async function payEarnable({
           awards: paid.map(({ type, points: p }) => ({ type, points: p })),
           /* The level the toast may mention, decided here because here is where
              both totals are in hand. See `levelNote`. */
-          ...(levelNote(member.xp, member.xp + points) ?? {}),
+          ...(levelNote(badgeBefore, badgeBefore + points) ?? {}),
         },
       },
-      select: { xp: true },
+      select: { xp: true, xpEverywhere: true },
     });
 
-    return { paid, points, xp: updated.xp };
+    return { paid, points, xp: updated.xp, badgeBefore, badgeAfter: xpForBadge(updated) };
   });
 
   if (written === null) {
@@ -239,7 +247,7 @@ async function payEarnable({
     awards: allowed.map((award) => reported(award, paidKeys.has(keyOf(award)))),
     points: written.points,
     xp: written.xp,
-    crossed: levelCrossed(written.xp - written.points, written.xp),
+    crossed: levelCrossed(written.badgeBefore, written.badgeAfter),
   };
 }
 

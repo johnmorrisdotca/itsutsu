@@ -6,7 +6,7 @@ import { pagingSpecProblems, sortWords } from "./paging";
 import type { SortSpec } from "./paging.types";
 import { GAME_SORT_SPEC } from "@/lib/history/gameHistory.sort";
 import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
-import { XP_BOARD_SORT_SPEC } from "@/lib/xp/xpBoard.sort";
+import { XP_BOARD_EVERYWHERE_SORT_SPEC, XP_BOARD_SORT_SPEC } from "@/lib/xp/xpBoard.sort";
 import { XP_LEDGER_SORT } from "@/lib/xp/xpHistory.sort";
 import { DIRECTORY_SORT_SPEC } from "@/lib/rating/directory.sort";
 import { MY_FINISHED_SORT } from "@/lib/history/myFinished.sort";
@@ -48,6 +48,8 @@ const SPECS: { of: string; spec: SortSpec<string> }[] = [
    * XpEvent's.
    */
   { of: "the XP leaderboard", spec: XP_BOARD_SORT_SPEC as SortSpec<string> },
+  /* The same board counted Everywhere, on `Member_xpEverywhere_idx`. */
+  { of: "the XP leaderboard, counted everywhere", spec: XP_BOARD_EVERYWHERE_SORT_SPEC as SortSpec<string> },
   /*
    * The members directory on /players, and the last list on the site to join
    * this convention. It was declined once, with the reason written into the
@@ -162,6 +164,6 @@ describe("every sort declaration", () => {
    * reminder to add the line rather than a reason to loosen it.
    */
   it("is the whole list of them", () => {
-    expect(SPECS).toHaveLength(6);
+    expect(SPECS).toHaveLength(7);
   });
 });

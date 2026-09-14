@@ -1,4 +1,5 @@
-import type { SortSpec } from "@/lib/api/paging.types";
+import type { SortColumn, SortSpec } from "@/lib/api/paging.types";
+import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
 
 /**
  * WHAT THE XP LEADERBOARD SORTS BY, AND THE INDEX BEHIND EACH COLUMN.
@@ -46,7 +47,7 @@ import type { SortSpec } from "@/lib/api/paging.types";
  *   NAME   IS sortable, and is the one column with no index — see below. It is a
  *          tie-break and a small-N convenience and must never be the default.
  */
-export type XpBoardSortField = "xp" | "xpLastAt" | "name";
+export type XpBoardSortField = "xp" | "xpEverywhere" | "xpLastAt" | "name";
 
 export const XP_BOARD_SORT_SPEC: SortSpec<XpBoardSortField> = {
   of: "the XP leaderboard",
@@ -109,3 +110,27 @@ export const XP_BOARD_SORT_SPEC: SortSpec<XpBoardSortField> = {
    */
   tiebreak: "id",
 };
+
+/**
+ * THE SAME BOARD, COUNTED EVERYWHERE.
+ *
+ * The same four words — a reader who has learned the board's headings has
+ * learned both — with XP and Level reading `Member.xpEverywhere` and its own
+ * index. A chip changing the count drops the cursor (`xpScopeHref`), because a
+ * position in one ordering means nothing in the other.
+ */
+export const XP_BOARD_EVERYWHERE_SORT_SPEC: SortSpec<XpBoardSortField> = {
+  ...XP_BOARD_SORT_SPEC,
+  of: "the XP leaderboard, counted everywhere",
+  columns: XP_BOARD_SORT_SPEC.columns.map(
+    (column): SortColumn<XpBoardSortField> =>
+      column.field === "xp"
+        ? { param: column.param, field: "xpEverywhere", label: column.label, firstPress: column.firstPress, index: "Member_xpEverywhere_idx" }
+        : column,
+  ),
+};
+
+/** The sort declaration for a board counted this way. */
+export function xpBoardSortSpec(scope: RecordScope): SortSpec<XpBoardSortField> {
+  return scope === RECORD_SCOPES.here ? XP_BOARD_SORT_SPEC : XP_BOARD_EVERYWHERE_SORT_SPEC;
+}

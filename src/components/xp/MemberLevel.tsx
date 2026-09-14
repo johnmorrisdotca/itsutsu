@@ -10,6 +10,9 @@ import { levelShown } from "@/lib/xp/levelShown";
 import { xpStanding } from "@/lib/xp/xpCurve";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { importedNoteText } from "@/lib/xp/importedNote";
+
+import { ImportedXpNote } from "./ImportedXpNote";
 import { LevelName } from "./LevelName";
 import { XP_KANJI } from "./xp.constants";
 
@@ -77,7 +80,7 @@ import type { MemberLevelProps } from "./xp.types";
  * so this carries `readyMark`, and a spec waits on it before asserting either
  * a figure here or, for a program, that there is no block beside the figures.
  */
-export function MemberLevel({ xp, testId = "member-level" }: MemberLevelProps) {
+export function MemberLevel({ xp, imported = null, testId = "member-level" }: MemberLevelProps) {
   const say = useSpeaker();
   const hydrated = useHydrated();
   if (xp === undefined) return null;
@@ -130,6 +133,8 @@ export function MemberLevel({ xp, testId = "member-level" }: MemberLevelProps) {
             {/* Written the way every count on the site is written — see `countText`. */}
             {countText(xp)}
           </Link>
+          {/* John's "justification that they have put in their time or mileage on other sites". */}
+          {imported === null ? null : <ImportedXpNote note={importedNoteText(say, imported)} testId={`${testId}-imported`} />}
         </dd>
       </div>
       <div className="flex min-w-40 grow flex-col gap-1.5">

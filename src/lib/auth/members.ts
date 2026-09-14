@@ -58,6 +58,10 @@ export type NamedMember = {
   bio?: string;
   /** Their XP total. Absent means the lookup did not read it — see `MemberLevel`. */
   xp?: number;
+  /** That, plus credit for another site's record — see `xpForBadge`. Absent means not read. */
+  xpEverywhere?: number;
+  /** What of `xpEverywhere` came from another site. Absent means not read. */
+  xpImported?: number;
 };
 
 /** Emails are compared folded; Google gives them in whatever case the user typed once. */
@@ -318,6 +322,10 @@ export const memberRowFor = cache(async (key: string) =>
          `src/lib/xp/xpFlash.ts`. `id` comes along because `currentMemberId`
          was paying for a second `findUnique` to get it. */
       xp: true,
+      /* Both other totals, for the badge and the board's Everywhere: see
+         `xpForBadge` in `src/lib/xp/xpScope.ts`. Columns on the same row. */
+      xpEverywhere: true,
+      xpImported: true,
       xpFlash: true,
       /* And the end of their away spell, which is what `backFromAway` is keyed
          on. A column on a row being read anyway, so "are they back" costs two
@@ -440,6 +448,8 @@ export async function findMemberById(id: string): Promise<NamedMember | null> {
       timeZone: true,
       bio: true,
       xp: true,
+      xpEverywhere: true,
+      xpImported: true,
     },
   });
   return row;
@@ -468,6 +478,8 @@ export async function findMemberByName(name: string): Promise<NamedMember | null
       timeZone: true,
       bio: true,
       xp: true,
+      xpEverywhere: true,
+      xpImported: true,
     },
   });
   return row;

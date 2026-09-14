@@ -27,7 +27,7 @@ type Row = { memberId: string; type: string; points: number; subject: string; da
 let events: Row[] = [];
 const members = new Map<
   string,
-  { id: string; botTier: string | null; timeZone: string; xp: number; xpFlash: unknown; xpLastAt: Date | null }
+  { id: string; botTier: string | null; timeZone: string; xp: number; xpEverywhere?: number; xpFlash: unknown; xpLastAt: Date | null }
 >();
 
 function keyOf(row: { memberId: string; type: string; subject: string }): string {
@@ -37,11 +37,17 @@ function keyOf(row: { memberId: string; type: string; subject: string }): string
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     member: {
-      findUnique: async ({ where }: { where: { id: string } }) => members.get(where.id) ?? null,
+      /* The row as the schema has it: a member who has imported nothing stands
+         at the same total Everywhere as here. */
+      findUnique: async ({ where }: { where: { id: string } }) => {
+        const row = members.get(where.id);
+        return row === undefined ? null : Object.assign(row, { xpEverywhere: row.xpEverywhere ?? row.xp });
+      },
       update: async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
         const row = members.get(where.id);
         if (row === undefined) throw new Error("no member");
         const increment = (data.xp as { increment?: number } | undefined)?.increment ?? 0;
+        row.xpEverywhere = (row.xpEverywhere ?? row.xp) + ((data.xpEverywhere as { increment?: number } | undefined)?.increment ?? 0);
         row.xp += increment;
         if ("xpFlash" in data) row.xpFlash = data.xpFlash;
         if ("xpLastAt" in data) row.xpLastAt = data.xpLastAt as Date | null;

@@ -1,5 +1,6 @@
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { XpEventType } from "./xp.types";
+import type { ImportedXpType } from "./importedXp.types";
 
 /**
  * The shapes of a member's own XP ledger.
@@ -83,7 +84,8 @@ export type XpAbout =
 export type XpLedgerRow = {
   /** `XpEvent.id`. The cursor's tiebreaker, and React's key. */
   id: string;
-  type: XpEventType;
+  /** An award earned here, or credit imported from another site's record. */
+  type: XpEventType | ImportedXpType;
   /** What was paid AT THE TIME, which is not what the type is worth now. */
   points: number;
   /** From the catalogue, so the browser never ships forty rows of copy. */

@@ -16,6 +16,12 @@ import {
 import { XP_PEOPLE_ONLY, earnableByProgram } from "./xp.constants";
 import type { XpEventType } from "./xp.types";
 import { toToasts } from "./xpFlash";
+import { readFileSync } from "node:fs";
+
+import { RECORD_SCOPES } from "@/lib/rating/recordScope";
+
+import { IMPORTED_XP_TYPES, isImportedXpType } from "./importedXp.constants";
+import { XP_SCOPE_COLUMN } from "./xpScope";
 
 /**
  * The gate on the catalogue, in the shape of `backlog.coverage.test.ts` and
@@ -475,5 +481,39 @@ describe("every award is either people-only or a game result", () => {
   it("holds a program to the game results and a person to everything", () => {
     for (const type of GAME_RESULTS) expect(earnableByProgram(type)).toBe(true);
     for (const type of XP_PEOPLE_ONLY) expect(earnableByProgram(type)).toBe(false);
+  });
+});
+
+/**
+ * IMPORTED EXPERIENCE IS NEVER ITSUTSU EXPERIENCE. John: "we will show filters,
+ * that show worldwide XP ... and the Itsutsu only XP as well". Itsutsu only is
+ * `Member.xp`, so nothing imported may ever be written there, looked up as an
+ * Itsutsu award, or summed into the Itsutsu ledger check — and each of those is
+ * a line of source a later change could get wrong with nothing else failing.
+ */
+describe("imported awards stay on their own side", () => {
+  const read = (path: string) => readFileSync(path, "utf8");
+
+  it("shares no type with the Itsutsu catalogue", () => {
+    for (const type of IMPORTED_XP_TYPES) {
+      expect(Object.keys(XP_EVENT_SPECS), type).not.toContain(type);
+      expect(isImportedXpType(type)).toBe(true);
+    }
+    for (const type of types) expect(isImportedXpType(type), type).toBe(false);
+  });
+
+  it("is written only to xpImported and xpEverywhere, never to xp", () => {
+    const payer = read("src/lib/xp/importedXpPay.ts");
+    expect(payer).toMatch(/xpImported:\s*\{\s*increment: landed\s*\}/);
+    expect(payer).toMatch(/xpEverywhere:\s*\{\s*increment: landed\s*\}/);
+    expect(payer).not.toMatch(/\bxp:\s*\{/);
+    // And awardXp, the Itsutsu writer, never reaches for the imported catalogue or its payer.
+    expect(read("src/lib/xp/awardXp.ts")).not.toMatch(/importedXp|IMPORTED_XP/);
+  });
+
+  it("is left out of the Itsutsu ledger check and ranked only under Everywhere", () => {
+    expect(read("src/lib/xp/backfillXp.play.test.ts")).toMatch(/notIn: \[\.\.\.IMPORTED_XP_TYPES\]/);
+    expect(XP_SCOPE_COLUMN[RECORD_SCOPES.here]).toBe("xp");
+    expect(XP_SCOPE_COLUMN[RECORD_SCOPES.everywhere]).toBe("xpEverywhere");
   });
 });

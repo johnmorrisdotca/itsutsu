@@ -159,7 +159,7 @@ export function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?:
       <Link
         href="/xp"
         className="underline-offset-2 hover:underline"
-        title="Experience earned on Itsutsu. Opens the board that ranks everybody by it."
+        title="Experience earned on Itsutsu, with credit for games on other sites where a record of them is kept here. Opens the board that ranks everybody by it."
         data-testid="record-xp-link"
       >
         {countText(xp)}

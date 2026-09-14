@@ -4,19 +4,27 @@ import { Paired } from "@/components/i18n/Paired";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { ImportedXpNote } from "@/components/xp/ImportedXpNote";
 import { Leaderboard } from "@/components/xp/Leaderboard";
 import { LevelName } from "@/components/xp/LevelName";
 import type { SortChoice } from "@/lib/api/paging.types";
 import { isRefusal } from "@/lib/api/paging";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { countText } from "@/lib/rating/figures";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
-import { XP_LEVELS } from "@/lib/xp/xpCurve";
+import { XP_LEVELS, xpLevelFor } from "@/lib/xp/xpCurve";
 import { WhoFilter } from "@/components/players/WhoFilter";
+import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
+import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
+import { importedFactsFor } from "@/lib/xp/importedRecipients";
+import { importedNoteText } from "@/lib/xp/importedNote";
 import { fetchXpBoardPage, readXpBoardPaging, xpRankOf, type XpBoardPage } from "@/lib/xp/xpBoard";
 import { viewerXp, type ViewerXp } from "@/lib/xp/xpViewer";
 import { XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
 import { xpWhoFor } from "@/lib/xp/xpWhoServer";
+import { xpScopeHref, xpTotalIn } from "@/lib/xp/xpScope";
+import { xpScopeFor } from "@/lib/xp/xpScopeServer";
 
 export const metadata = {
   title: "XP leaderboard",
@@ -54,11 +62,10 @@ function startsAt(raw: string | string[] | undefined): number {
 /**
  * THE XP LEADERBOARD.
  *
- * Ranked by `Member.xp` descending, which is also ranked by level — the curve is
- * monotonic, so the two are one ordering and nothing is stored to make the Level
- * heading sortable. Programs are excluded in the query, not only in the awarder.
- * `xpBoard.ts` holds the read and `xpBoard.sort.ts` the four columns a reader may
- * press, each with the index that answers it.
+ * Ranked by the total the reader has chosen — Everywhere (`Member.xpEverywhere`)
+ * or Itsutsu only (`Member.xp`) — which is also ranked by level, since the curve
+ * is monotonic. `xpBoard.ts` holds the read and `xpBoard.sort.ts` the four columns
+ * a reader may press, each with the index that answers it.
  *
  * **The page after the first is a plain link and there is no API behind it.**
  * The board is twenty-five rows on a site with four people on it, so a live
@@ -73,7 +80,17 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
   const params = new URLSearchParams(query);
   const from = startsAt(asked.from);
 
-  const wanted = readXpBoardPaging(params);
+  /*
+   * HOW MUCH THE BOARD COUNTS, and WHO IT IS ABOUT. John, on the first: "we will
+   * show filters, that show worldwide XP with a justification that they have put
+   * in their time or mileage on other sites) and the Itsutsu only XP as well".
+   * On the second: "filters are the way to go". Both in the query, both
+   * remembered on the board's own keys, and both applied in the query itself,
+   * so the page, the total and every rank below are about the narrowed set.
+   */
+  const [who, scope, say] = await Promise.all([xpWhoFor(asked), xpScopeFor(asked), currentSpeaker()]);
+
+  const wanted = readXpBoardPaging(params, scope);
   /*
    * A refused sort gets the board's own order and a line saying so, which is the
    * choice `/players` makes one page over. A 400 in the middle of a page would be
@@ -83,19 +100,19 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
    */
   const refused = isRefusal(wanted);
   const paging = refused
-    ? (readXpBoardPaging(new URLSearchParams()) as Exclude<typeof wanted, { error: string }>)
+    ? (readXpBoardPaging(new URLSearchParams(), scope) as Exclude<typeof wanted, { error: string }>)
     : wanted;
 
-  /*
-   * WHO THE BOARD IS ABOUT: people, the computer players, or everyone, since
-   * the programs stand on the ladder like anyone now — John: "filters are the
-   * way to go". In the query, remembered on the board's own key, and applied
-   * in the query itself, so the page, the total and every rank below are
-   * about the narrowed set.
-   */
-  const who = await xpWhoFor(asked);
   const narrowed = who !== DIRECTORY_WHO.everyone;
-  const [board, viewer] = await Promise.all([fetchXpBoardPage({ ...paging, who }), viewerXp()]);
+  const [board, viewer] = await Promise.all([fetchXpBoardPage({ ...paging, who, scope }), viewerXp()]);
+
+  /* The justification under every total that includes another site's credit. */
+  const notes = new Map(
+    board.items.flatMap((row) => {
+      const facts = importedFactsFor(row.name, row.imported);
+      return facts === null ? [] : [[row.id, <ImportedXpNote key={row.id} note={importedNoteText(say, facts)} />] as const];
+    }),
+  );
 
   return (
     <Page width="standard" gap="gap-6">
@@ -126,8 +143,10 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
             {xpLevelName(XP_LEVELS)}
           </Link>
-          . Press a heading to sort by it. Nobody&rsquo;s experience was backfilled, so this
-          ladder started the day it was built.
+          . Press a heading to sort by it. The games finished here before the ladder existed were
+          paid for when it was built, so it reaches back to the first game on the site — and a
+          record kept from another site is credited too, which Everywhere counts and Itsutsu only
+          leaves out.
         </p>
 
         {refused ? (
@@ -138,6 +157,12 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <WhoFilter who={who} hrefFor={(next) => xpWhoHref("/xp", query, next)} label="Which players the board lists" />
+          <RecordScopeBar
+            base="/xp"
+            scope={scope}
+            hrefFor={(next) => xpScopeHref("/xp", query, next)}
+            label="How much experience the board counts"
+          />
           {narrowed ? (
             /* "Every page a link lands on says what it was narrowed to, and lets it be taken off." */
             <p className="text-xs text-muted" data-testid="xp-narrowed">
@@ -148,11 +173,14 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
             </p>
           ) : null}
         </div>
+        <ScopeSaid scope={scope} say={say} href={xpScopeHref("/xp", query, RECORD_SCOPES.everywhere)} />
 
-        <YourStanding viewer={viewer} board={board} who={who} />
+        <YourStanding viewer={viewer} board={board} who={who} scope={scope} />
 
         <Leaderboard
           rows={board.items}
+          scope={scope}
+          notes={notes}
           current={paging.sort as SortChoice<string>}
           at="/xp"
           query={query}
@@ -203,15 +231,48 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
 }
 
 /**
+ * What the board is counting, said in words under the chips — and under Itsutsu
+ * only, the way back to Everywhere, since "every page a link lands on says what
+ * it was narrowed to, and lets it be taken off."
+ */
+function ScopeSaid({ scope, say, href }: { scope: RecordScope; say: Awaited<ReturnType<typeof currentSpeaker>>; href: string }) {
+  if (scope === RECORD_SCOPES.here) {
+    return (
+      <p className="text-xs text-muted" data-testid="xp-scope-said" data-scope={scope}>
+        {say.say("xp.scope.here")}{" "}
+        <Link href={href} className="underline underline-offset-4" data-testid="xp-count-everywhere">
+          {say.say("xp.scope.countEverywhere")}
+        </Link>
+      </p>
+    );
+  }
+  return (
+    <p className="text-xs text-muted" data-testid="xp-scope-said" data-scope={scope}>
+      {say.say("xp.scope.everywhere")}
+    </p>
+  );
+}
+
+/**
  * Where the reader stands, above the board.
  *
  * "Show The Data, Not The Way To It": the fact a member came for is their own
  * place, so it is on the page. Their row is marked in the table as well, and
  * when it is on this page that marking is the whole answer — so the RANK, which
  * costs a `count`, is only asked for when they are not among the rows on screen.
- * See `xpRankOf`.
+ * See `xpRankOf`. Their total is the one the board is counting.
  */
-async function YourStanding({ viewer, board, who }: { viewer: ViewerXp | null; board: XpBoardPage; who: DirectoryWho }) {
+async function YourStanding({
+  viewer,
+  board,
+  who,
+  scope,
+}: {
+  viewer: ViewerXp | null;
+  board: XpBoardPage;
+  who: DirectoryWho;
+  scope: RecordScope;
+}) {
   if (viewer === null) return null;
 
   /* A reader is a person, and a board narrowed to the computer players is not
@@ -224,10 +285,11 @@ async function YourStanding({ viewer, board, who }: { viewer: ViewerXp | null; b
     );
   }
 
-  const level = viewer.standing.level;
+  const total = xpTotalIn(viewer, scope);
+  const level = xpLevelFor(total);
   const shown = board.items.some((row) => row.id === viewer.memberId);
 
-  if (viewer.xp <= 0) {
+  if (total <= 0) {
     return (
       <p className="text-sm" data-testid="your-xp">
         You are on{" "}
@@ -243,11 +305,11 @@ async function YourStanding({ viewer, board, who }: { viewer: ViewerXp | null; b
     );
   }
 
-  const rank = shown ? null : await xpRankOf(viewer.xp, who);
+  const rank = shown ? null : await xpRankOf(total, who, scope);
 
   return (
     <p className="text-sm" data-testid="your-xp" data-rank={rank ?? undefined}>
-      You have {countText(viewer.xp)} XP and stand at <LevelName level={level} linkable={false} />
+      You have {countText(total)} XP and stand at <LevelName level={level} linkable={false} />
       {", "}
       <Link href={levelPath(level)} className="underline underline-offset-4">
         {xpLevelName(level)}

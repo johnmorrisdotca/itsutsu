@@ -315,6 +315,48 @@ The rule, and where it is kept:
   — level number and name, the total, the distance to the next rung — through
   `MemberLevel`, for a program as for a person.
 
+**Credit for another site is experience too, and it is kept apart.** John,
+2026-09-14: **"people that are imported from other sites should get that XP!
+but of course, we will show filters, that show worldwide XP with a
+justification that they have put in their time or mileage on other sites) and
+the Itsutsu only XP as well.. this means on import we will calculate and assign
+XP for people too. another reason to use ITS site since we give you credit for
+other experience."** The rule, and where it is kept:
+
+- **Two totals, three columns.** `Member.xp` is Itsutsu only and stays what it
+  was — `awardXp` is its one writer. `Member.xpImported` is the credit for a kept
+  record, written only by `importedXpPay.ts`. `Member.xpEverywhere` is the sum,
+  a column because the board pages, ranges and ranks over an index. Both writers
+  move `xpEverywhere` in the same update, and the payer's runner checks all three
+  against the ledger before and after it writes.
+- **Imported awards are their own types** (`IMPORTED_XP_TYPES` in
+  `importedXp.constants.ts`), never an `XpEventType`, and the backfill's ledger
+  check leaves them out. Their subject is `stake@figure=points`, so a second run
+  pays nothing, grown figures pay the growth, and a record that now comes to less
+  is reported, never clawed back.
+- **The amounts John approved** are the site's own prices: ordinary games 25 and
+  wins 50 with no daily cap, tournaments at 1.5 times, a year on a site at a
+  year's price with 10,000 at five and 25,000 at ten (counted only with a hundred
+  games there), and the milestones at one game read from the record's by-game
+  detail. Anniversaries of membership pay the same year awards here. Games come
+  from a class's `record`; milestones from its `detail`, which understates where
+  `detailComplete` is false — the safe direction.
+- **Eligibility is one function**, `importedXpEligible`: there is no verification
+  in this code, and John said "all people on the site right now are verified",
+  so every curated record is eligible.
+- **"On import" means the payer runs after the import.** A record is imported by
+  a commit to `legacyPlayers.data.ts`; its last step is
+  `XP_IMPORTED=1 pnpm exec vitest run src/lib/xp/importedXpPay.play.test.ts`
+  (and `node scripts/xp-imported-prod.mjs` for the live site, with John's word
+  and a Neon branch first).
+- **Showing it.** `/xp` and the rungs offer Everywhere 通算 / Itsutsu only 五
+  beside People / Computers / Everyone, remembered on `xpScope`. Wherever a total
+  includes imported credit, `ImportedXpNote` says how much, for how many games,
+  and where — the games count drawn with `here={false}`. The level badge beside
+  a name everywhere else reads `xpForBadge` in `xpScope.ts`, which is Everywhere;
+  the directory's XP order reads the same column, so a table sorts by what it
+  prints.
+
 **Enforced by `src/components/players/xpColumn.coverage.test.ts`**, which
 runs in `pnpm test:unit` and fails the build when a `RecordTable` switches
 the column off without being named there with its reason, when a table that
@@ -324,8 +366,10 @@ standing anywhere but under the figures, or when the standing rule, the
 board, the rungs or the awarder keep programs out again. **And by
 `src/lib/xp/xp.coverage.test.ts`**, which holds every priced award to one
 side of the people-only line, so a new award has to be sorted the day it is
-priced. Both read the source, like the dead-end gate, and every exception is
-a line with a reason beside it.
+priced — and holds every imported award to its own side: no shared type, no
+write to `Member.xp`, no place in the Itsutsu ledger check. Both read the
+source, like the dead-end gate, and every exception is a line with a reason
+beside it.
 
 ### Show The Data, Not The Way To It
 

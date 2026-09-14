@@ -671,6 +671,28 @@ model Member {
   /// and nothing reports it.
   xp      Int   @default(0)
 
+  /// Experience CREDITED FOR PLAY ON ANOTHER SITE, from a kept record —
+  /// denormalised from the XpEvent rows whose type is imported (see
+  /// `IMPORTED_XP_TYPES` in src/lib/xp/importedXp.constants.ts).
+  ///
+  /// KEPT APART FROM `xp`, which stays the Itsutsu total. John: "we will show
+  /// filters, that show worldwide XP ... and the Itsutsu only XP as well". A sum
+  /// of its own rows, checkable the way `xp` is, and written only by the
+  /// importer (`importedXpPay.ts`), in the transaction that writes those rows.
+  xpImported Int @default(0)
+
+  /// `xp + xpImported`: the Everywhere total, which the XP board ranks by under
+  /// Everywhere and the level badge beside a name is read from.
+  ///
+  /// A COLUMN AND NOT AN EXPRESSION IN THE QUERY, for the reason every sortable
+  /// column on this model gives: the board pages by cursor over an indexed
+  /// column, a level's page reads a range over one, and a rank is a count of
+  /// the rows above a value. None of those can be answered by `xp + xpImported`
+  /// with an index, and an ORDER BY no index can answer is a full scan per click.
+  /// Written in the same update as whichever half moved — `awardXp` and the
+  /// importer — so the three can be checked against each other and the ledger.
+  xpEverywhere Int @default(0)
+
   /// XP earned that this member has not been shown yet.
   ///
   /// A courtesy, not a record — the ledger is XpEvent, and a missed toast is
@@ -704,6 +726,8 @@ model Member {
   /// this column and the curve is monotonic, so sorting by level is sorting by
   /// this — there is nothing to index for it, and nothing to store.
   @@index([xp])
+  /// The same, for the board and the rungs under Everywhere, and the directory's XP order.
+  @@index([xpEverywhere])
   /// The leaderboard's other sort, and how "who is actually climbing" is read.
   @@index([xpLastAt])
 

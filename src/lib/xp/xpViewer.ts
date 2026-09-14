@@ -4,6 +4,7 @@ import { currentEmail } from "@/lib/auth/currentSession";
 import { memberRowFor } from "@/lib/auth/members";
 
 import { xpStanding, type XpStanding } from "./xpCurve";
+import { xpForBadge } from "./xpScope";
 
 /**
  * WHERE THE READER STANDS, FOR NO QUERY AT ALL.
@@ -43,7 +44,13 @@ import { xpStanding, type XpStanding } from "./xpCurve";
 export type ViewerXp = {
   /** The member's opaque id, for marking their own row in a list. */
   memberId: string;
+  /** Experience earned on Itsutsu. */
   xp: number;
+  /** That, plus credit for another site's kept record. */
+  xpEverywhere: number;
+  /** What of `xpEverywhere` came from another site. */
+  xpImported: number;
+  /** Where the badge beside their name puts them — read from `xpForBadge`. */
   standing: XpStanding;
   /** Their zone, for a date drawn in their own terms. Empty means UTC. */
   timeZone: string;
@@ -58,7 +65,9 @@ export async function viewerXp(): Promise<ViewerXp | null> {
   return {
     memberId: row.id,
     xp: row.xp,
-    standing: xpStanding(row.xp),
+    xpEverywhere: row.xpEverywhere,
+    xpImported: row.xpImported,
+    standing: xpStanding(xpForBadge(row)),
     timeZone: row.timeZone,
   };
 }

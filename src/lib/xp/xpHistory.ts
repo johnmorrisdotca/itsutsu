@@ -5,6 +5,8 @@ import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 import { XP_EVENTS, XP_EVENT_SPECS } from "./xp.constants";
+import { IMPORTED_XP_SPECS, isImportedXpType } from "./importedXp.constants";
+import { stakeOfImportedSubject } from "./importedXp";
 import { XP_SUBJECT_KINDS, type XpAbout, type XpLedgerRow, type XpSubjectKind } from "./xpHistory.types";
 import type { XpEventType } from "./xp.types";
 
@@ -232,6 +234,24 @@ export function xpLedgerRowFor(event: {
   dayKey: string;
   createdAt: Date;
 }): XpLedgerRow | null {
+  /* Credit imported from another site's record explains itself from its own
+     table, and is about the site or the game it names — words, since there is
+     nothing here to link to. Never looked up as an Itsutsu award. */
+  if (isImportedXpType(event.type)) {
+    const imported = IMPORTED_XP_SPECS[event.type];
+    const stake = stakeOfImportedSubject(event.subject);
+    return {
+      id: event.id,
+      type: event.type,
+      points: event.points,
+      label: imported.label,
+      kanji: imported.kanji,
+      blurb: imported.blurb,
+      about: stake === null ? { of: "words", said: event.subject, stale: true } : { of: "words", said: stake },
+      dayKey: event.dayKey,
+      earnedAt: event.createdAt.toISOString(),
+    };
+  }
   const type = event.type as XpEventType;
   const spec = XP_EVENT_SPECS[type];
   if (spec === undefined) return null;

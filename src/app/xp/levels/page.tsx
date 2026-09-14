@@ -10,6 +10,7 @@ import { LEVEL_MILESTONES, levelLadder } from "@/lib/xp/levelLadder";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS, xpForLevel } from "@/lib/xp/xpCurve";
 import { viewerXp } from "@/lib/xp/xpViewer";
+import { xpForBadge } from "@/lib/xp/xpScope";
 
 export const metadata = {
   title: "The hundred levels",
@@ -96,7 +97,8 @@ export default async function LevelsPage() {
         ) : (
           <YourRung
             level={standing!.level}
-            xp={viewer.xp}
+            /* The badge's total, the one `standing` was read from — see `xpForBadge`. */
+            xp={xpForBadge(viewer)}
             into={standing!.into}
             span={standing!.span}
             toNext={standing!.toNext}

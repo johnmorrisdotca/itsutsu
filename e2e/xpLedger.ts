@@ -128,7 +128,8 @@ export async function setVisitorStanding(visitor: Visitor, standing: { daysAgo: 
   try {
     await prisma.member.update({
       where: { id: visitor.id },
-      data: { xp: standing.xp, lastSeenAt: new Date(Date.now() - standing.daysAgo * 86_400_000) },
+      // Both totals: a toast names the level the badge shows, which is read from xpEverywhere.
+      data: { xp: standing.xp, xpEverywhere: standing.xp, lastSeenAt: new Date(Date.now() - standing.daysAgo * 86_400_000) },
     });
   } finally {
     await prisma.$disconnect();

@@ -255,16 +255,20 @@ describe("a person's own page shows their standing where a stranger reads it", (
      * The header John asked for: "the Name of the person, Stats/Record and XP
      * + XP level Name". The name is the `<h1>`, the record is `PlayerFigures`,
      * and the standing follows it — after, not inside the heading, and from
-     * `member?.xp` untouched so that a member whose XP was never read draws
+     * the member row untouched so that a member whose XP was never read draws
      * nothing rather than a nought. `recordLevel.coverage.test.ts` holds the
      * component itself to its three answers.
+     *
+     * Since imported experience, the total is the badge's (`xpForBadge`, which
+     * counts another site's credit) and is still undefined — never a nought —
+     * when the lookup did not read both columns.
      */
     const page = code(readFileSync("src/app/players/[slug]/page.tsx", "utf8"));
     const figures = page.indexOf("<PlayerFigures");
     const standing = page.indexOf("<MemberLevel");
     expect(figures).toBeGreaterThan(-1);
     expect(standing).toBeGreaterThan(figures);
-    expect(page).toMatch(/<MemberLevel\s+xp=\{member\?\.xp\}\s*\/>/);
+    expect(page).toMatch(/<MemberLevel\s+xp=\{member\?\.xp === undefined \|\| member\.xpEverywhere === undefined \? undefined : xpForBadge\(/);
   });
 
   it("draws it for a program too, so nothing hands the rule an engine name to refuse on", () => {

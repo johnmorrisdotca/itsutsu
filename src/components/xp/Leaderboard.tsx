@@ -5,8 +5,9 @@ import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/componen
 import { ariaSort, sortHref } from "@/lib/api/paging";
 import type { SortChoice, SortColumn, SortSpec } from "@/lib/api/paging.types";
 import { countText } from "@/lib/rating/figures";
+import type { RecordScope } from "@/lib/rating/recordScope";
 import type { XpBoardRow } from "@/lib/xp/xpBoard";
-import { XP_BOARD_SORT_SPEC } from "@/lib/xp/xpBoard.sort";
+import { xpBoardSortSpec } from "@/lib/xp/xpBoard.sort";
 import { xpDayKey } from "@/lib/xp/xpDay";
 import { xpLevelFor } from "@/lib/xp/xpCurve";
 
@@ -138,6 +139,13 @@ export type LeaderboardProps = {
    */
   rankAmong?: string;
   rows: readonly XpBoardRow[];
+  /** Everywhere or Itsutsu only: which total the XP and Level headings sort by. */
+  scope: RecordScope;
+  /**
+   * The justification under a name whose total includes another site's credit,
+   * by member id — worded by the page, in the reader's language.
+   */
+  notes?: ReadonlyMap<string, React.ReactNode>;
   /** The sort in force, already checked against the spec. */
   current: SortChoice<string>;
   /** The address the headings press, and the rest of the query they keep. */
@@ -172,8 +180,10 @@ export function Leaderboard({
   viewerZone,
   empty,
   rankAmong,
+  scope,
+  notes,
 }: LeaderboardProps) {
-  const spec = XP_BOARD_SORT_SPEC as SortSpec<string>;
+  const spec = xpBoardSortSpec(scope) as SortSpec<string>;
   const head = { spec, current, at, query };
 
   return (
@@ -204,10 +214,10 @@ export function Leaderboard({
           {rows.length === 0 ? (
             /*
              * The headings are drawn whether or not there is anybody under them.
-             * An empty board is a true fact about a site where nobody's
-             * experience is backfilled, and hiding the table would teach a reader
-             * nothing about what is kept here and read as an apology. See "Show
-             * The Data, Not The Way To It".
+             * An empty board is a true fact — a narrowing nobody is in yet, a
+             * fresh database — and hiding the table would teach a reader nothing
+             * about what is kept here and read as an apology. See "Show The Data,
+             * Not The Way To It".
              */
             <tr className={ROW_CLASS}>
               <td className="py-3 pr-3 text-sm" colSpan={5} data-testid="xp-board-empty">
@@ -230,6 +240,7 @@ export function Leaderboard({
                     {you ? (
                       <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>
                     ) : null}
+                    {notes?.get(row.id) ?? null}
                   </td>
                   <td className="py-1.5 pr-3">
                     <LevelName level={xpLevelFor(row.xp)} />

@@ -13,8 +13,8 @@ import { xpForLevel } from "../src/lib/xp/xpCurve";
  * anything about a name, a count or a row it did not itself create.**
  *
  * The development database is starved of exactly the rows these pages are
- * about: nobody's experience is backfilled, so every member on it stands on
- * level 1 with nothing. A spec that asserted "somebody is on level 60" against
+ * about: nearly every member on it stands on level 1 with little or nothing,
+ * and what the rest hold is whatever earlier runs left. A spec that asserted "somebody is on level 60" against
  * that database would either skip — which reports green and says nothing — or
  * assert about whichever row happened to be there. It makes its own instead.
  *
@@ -86,6 +86,8 @@ export async function seedXpMember(
         picture: "",
         invitedWith: "playwright",
         xp,
+        // Both totals, as awardXp keeps them: a member who has imported nothing stands at the same place either way.
+        xpEverywhere: xp,
         xpLastAt: new Date(),
       },
     });
@@ -119,12 +121,50 @@ export async function seedProgram(label: string, level = 1): Promise<SeededXpMem
   const xp = xpForLevel(level);
   try {
     await prisma.member.create({
-      data: { email, id, name, picture: "", invitedWith: "playwright", botTier: "xp-spec-program", xp, xpLastAt: new Date() },
+      data: { email, id, name, picture: "", invitedWith: "playwright", botTier: "xp-spec-program", xp, xpEverywhere: xp, xpLastAt: new Date() },
     });
   } finally {
     await prisma.$disconnect();
   }
   return { email, id, name, xp };
+}
+
+/**
+ * A KEPT RECORD with credit imported from another site, and nothing earned here.
+ *
+ * A kept-record row, as the migration makes Chibi's, holding `xpImported` and
+ * the `xpEverywhere` it makes — the two columns the importer writes — and an
+ * Itsutsu total of nought. So under Everywhere it stands on `level`, and under
+ * Itsutsu only it is on no board at all, which is the difference the chips are
+ * for. Its name matches no record in `legacyPlayers.data.ts`, so its
+ * justification line is the one that names no site; the site-naming wording is
+ * pinned by `importedNote`'s own unit tests.
+ */
+export async function seedImportedMember(level: number, label: string): Promise<SeededXpMember & { imported: number }> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  const email = xpEmail(`kept-${label}`);
+  const id = makeMemberId();
+  const name = `Xp-kept-${label}-${Math.floor(Math.random() * 1e6)}`;
+  const imported = xpForLevel(level);
+  try {
+    await prisma.member.create({
+      data: {
+        email,
+        id,
+        name,
+        picture: "",
+        invitedWith: "playwright",
+        unclaimableBecause: "kept-record",
+        xp: 0,
+        xpImported: imported,
+        xpEverywhere: imported,
+      },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+  return { email, id, name, xp: imported, imported };
 }
 
 /** Takes back exactly the rows a spec made, by the addresses it was given. */

@@ -2,6 +2,7 @@ import { ZONE_SOURCE, ZONE_SOURCES } from "@/lib/auth/zoneSource.constants";
 import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
+import { RECORD_SCOPES, RECORD_SCOPE_LIST } from "@/lib/rating/recordScope";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
 
@@ -48,6 +49,14 @@ export const PREFERENCE_SPECS = {
    * round. See `src/lib/xp/xpWho.ts`.
    */
   xpWho: { options: DIRECTORY_WHO_LIST, fallback: DIRECTORY_WHO.everyone },
+
+  /*
+   * How much the XP board and the level pages count: Everywhere, with credit
+   * for another site's kept record, or Itsutsu only. The players page's two
+   * answers on a key of the board's own, so choosing one here never changes what
+   * /players counts. See `src/lib/xp/xpScope.ts`.
+   */
+  xpScope: { options: RECORD_SCOPE_LIST, fallback: RECORD_SCOPES.everywhere },
 
   /*
    * The language the site speaks to this member, wherever they sign in.

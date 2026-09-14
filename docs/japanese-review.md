@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (111)
+## 1. Written by a machine — please check these (117)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -41,10 +41,16 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | After earning points — the notice that drops in from the top of the page | The top of the ladder. | **最高レベルです。** | This is the highest level. |  |
 | After earning points — the notice that drops in from the top of the page | Where everybody stands by experience | **経験値の順位表** | The experience-points ranking table. |  |
 | After earning points — the notice that drops in from the top of the page | Dismiss | **閉じる** | Close. |  |
+| After earning points — the notice that drops in from the top of the page | Includes {xp} XP for {games} games played on {sites}. | **{sites}で対局した{games}局の分として、{xp}経験値を含みます。** | Includes {xp} experience points as credit for the {games} games played on {sites}. |  |
+| After earning points — the notice that drops in from the top of the page | Includes {xp} XP credited for games played on other sites. | **他のサイトで対局した分として、{xp}経験値を含みます。** | Includes {xp} experience points as credit for games played on other sites. |  |
+| After earning points — the notice that drops in from the top of the page | {list} and {last} | **{list}と{last}** | {list} and {last} |  |
 | After earning points — the notice that drops in from the top of the page | Level | **レベル** | Level. |  |
 | After earning points — the notice that drops in from the top of the page | Level up | **昇級** | Promotion — going up a grade. |  |
 | After earning points — the notice that drops in from the top of the page | Next level: {name} | **次のレベル：{name}** | Next level: {name} |  |
 | After earning points — the notice that drops in from the top of the page | Points earned | **獲得ポイント** | Points earned — the points acquired. |  |
+| After earning points — the notice that drops in from the top of the page | Count everywhere | **通算で数える** | Count in total. |  |
+| After earning points — the notice that drops in from the top of the page | Counting everywhere: experience earned here, plus credit for games played on other sites. | **通算で集計：ここで得た経験値に、他のサイトでの対局分を加えています。** | Counting in total: the credit for games on other sites is added to the experience points earned here. |  |
+| After earning points — the notice that drops in from the top of the page | Counting this site only: experience earned here, and nothing credited from elsewhere. | **このサイトのみで集計：ここで得た経験値だけで、他のサイトの分は含みません。** | Counting this site only: only the experience points earned here; the credit from other sites is not included. |  |
 | After earning points — the notice that drops in from the top of the page | {count} to {name} | **{name}まであと{count}** | {count} more to go until {name}. |  |
 | After earning points — the notice that drops in from the top of the page | XP | **経験値** | Experience points. |  |
 | The games index, /games — under every game and every family, in all three views | Be the first to play → | **最初の対局者になる →** | Become the first to play → |  |
