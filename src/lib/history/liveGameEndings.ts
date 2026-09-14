@@ -2,7 +2,7 @@ import "server-only";
 
 import { Prisma } from "@prisma/client";
 
-import { forfeitTurn, resign, winOnTime } from "@/lib/gomoku/engine";
+import { forfeitOnRecord, resign, winOnTime } from "@/lib/gomoku/engine";
 import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
 import { fetchTimeOff, timeOffGraceMs } from "@/lib/social/vacation";
 import { prisma } from "@/lib/prisma";
@@ -129,7 +129,7 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   const forfeits = (absent === STONES.black ? row.blackForfeits : row.whiteForfeits) + 1;
   // Out of time for the whole game is out of time: the budget cannot forfeit a turn and go on.
   const strict = row.timeoutPenalty !== "turn" || row.clockMode === "game" || forfeits >= FORFEITS_TO_LOSE;
-  const next = strict ? winOnTime(state, absent) : forfeitTurn(state);
+  const next = strict ? winOnTime(state, absent) : forfeitOnRecord(state);
   if (next === state) return { ok: false, reason: "finished" };
   const finished = next.status !== GAME_STATUS.playing;
 
