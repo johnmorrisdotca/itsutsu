@@ -103,6 +103,30 @@ export const DEBT_ONLY = {
   ],
 } as const satisfies Prisma.GameWhereInput;
 
+/**
+ * The games the games-at-once limit counts: still being played, with this member
+ * in a seat. ONE DEFINITION, read by the count and by the list that count links to.
+ *
+ * `activeGameCount` counts this, and `/play?all=seated` lists it through the same
+ * queue read, so the number in a seat-refused notice and the rows it opens cannot
+ * come to disagree. They did, when the count was a link to all of `/play`: that
+ * page is the BROWSER's queue — seats held by cookie, games offered to the reader,
+ * finished games it keeps — and a count opening a longer list than it counted is
+ * the fault AGENTS.md calls no link at all, wearing a link.
+ *
+ * Offers the reader has been sent are not here and must not be: nobody is seated
+ * until they accept, which is also why the limit does not count them.
+ */
+export function seatedLive(memberId: string): Prisma.GameWhereInput {
+  return { status: "active", OR: [{ blackMemberId: memberId }, { whiteMemberId: memberId }] };
+}
+
+/** The `?all=` word for that narrowing on `/play` — not a group, a set a count promised. */
+export const SEATED_ONLY = "seated";
+
+/** Where a count of `seatedLive` games leads. */
+export const SEATED_LIVE_PATH = `/play?all=${SEATED_ONLY}`;
+
 /** The one order this list has. Nobody may ask for another, so nothing parses one. */
 const NEWEST_FIRST: SortChoice<MyFinishedField> = {
   column: MY_FINISHED_SORT.columns[0],

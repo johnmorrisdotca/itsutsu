@@ -146,6 +146,13 @@ function guardedBy(query: Query): string | null {
    * fact rather than a hole, exactly as for `buildGameWhere`.
    */
   if (/FINISHED_ONLY/.test(query.source)) return "filters built from FINISHED_ONLY";
+  /*
+   * OR THROUGH `seatedLive`, the games the games-at-once limit counts — shared by
+   * `activeGameCount` and `/play?all=seated` so a count and the list it links to
+   * cannot disagree. It asks `status: "active"`, which is answer 1 above, and the
+   * assertion at the foot of this describe keeps that a checked fact.
+   */
+  if (/seatedLive\(/.test(query.source)) return "filters built from seatedLive, which asks for active games";
   if (/status:\s*"active"/.test(query.source)) return "asks for active games only";
   if (/result:\s*\{\s*not:\s*"abandoned"\s*\}/.test(query.source)) return "excludes abandoned results";
   return null;
@@ -206,6 +213,18 @@ describe("no listing shows a refused offer as a game", () => {
     const source = readFileSync("src/lib/history/myFinished.ts", "utf8");
     expect(source).toContain("NOT_A_REFUSED_OFFER");
     expect(source).toMatch(/export const FINISHED_ONLY[\s\S]{0,600}NOT_A_REFUSED_OFFER/);
+  });
+
+  it("keeps the limit's set active-only, since its count and its list both read it", () => {
+    /*
+     * `seatedLive` is what `activeGameCount` counts and what `/play?all=seated`
+     * lists, and `guardedBy` accepts it as an answer because it asks for active
+     * games. A refused offer is filed finished, so that is enough — and if this
+     * ever fails, the fix is to put `status: "active"` back, not to add a clause:
+     * without it the limit would count declined offers as boards being played.
+     */
+    const source = readFileSync("src/lib/history/myFinished.ts", "utf8");
+    expect(source).toMatch(/export function seatedLive[\s\S]{0,300}status:\s*"active"/);
   });
 });
 

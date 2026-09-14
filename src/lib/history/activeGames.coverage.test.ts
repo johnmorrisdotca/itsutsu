@@ -111,43 +111,33 @@ describe("every door a member gets a board through asks the limit", () => {
   });
 
   /*
-   * THE CAP'S COUNT AND THE QUEUE ARE TWO QUESTIONS, AND NOTHING MAY HAND A
-   * READER ONE AS THE OTHER.
+   * THE CAP'S COUNT IS A LINK, TO EXACTLY THE GAMES IT COUNTED.
    *
-   * `activeGameCount` counts games still being played with a MEMBER in a seat:
-   * that is what the limit is about, and an anonymous cookie seat belongs to no
-   * member to be over it. /play is the BROWSER's queue — those seats AND any
-   * this browser holds by cookie, plus games offered to them, plus the finished
-   * ones it keeps. Both are right about their own question and neither can
-   * move.
+   * It went wrong twice. First it linked to all of /play, the BROWSER's queue —
+   * cookie seats, offers, finished games kept — which opened a longer list than
+   * it counted. Then it was printed plain, which kept that promise by breaking
+   * the rule that a count of games is a link. The answer the rule asks for is
+   * the page: `/play?all=seated` lists `seatedLive`, the where the count reads.
    *
-   * `SeatFullNotice` quoted the cap's number and made it a link to /play, so
-   * the number opened a longer list than it counted — the fault AGENTS.md calls
-   * "the same fault as no link at all, wearing a link", and here the worst
-   * possible place for it: the number is quoted precisely so a reader does not
-   * have to wonder whether the site miscounted, and following it would have
-   * shown them more rows than the sentence claimed.
-   *
-   * Checked as "no link in this file has an interpolation in it", because that
-   * is what a linked COUNT is and nothing else looks like it. The way to /play
-   * is still offered, in words: a link whose text is written out makes no claim
-   * about a number.
+   * So three things, each of which one of the two wrong versions failed: every
+   * file quoting the count links a number to `SEATED_LIVE_PATH`; the count reads
+   * `seatedLive`; and the queue narrows by `seatedLive` too — one definition on
+   * both sides, so the number and the rows it opens cannot come apart.
    */
-  it("never makes the cap's count a link, because /play holds more than it counted", () => {
+  it("links the cap's count to the /play narrowing that lists exactly what it counted", () => {
     const quoting = ["src/app", "src/components"]
       .flatMap(filesUnder)
       .map((path) => ({ path, source: readFileSync(path, "utf8") }))
       .filter((file) => /\bactiveGameCount\s*\(/.test(file.source));
     expect(quoting.length, "nothing quotes the cap's count — find where the notice went").toBeGreaterThan(0);
     for (const file of quoting) {
-      const linkedNumber = /<Link\b[^>]*>[\s\S]{0,200}?\{[^}]+\}[\s\S]{0,80}?<\/Link>/.test(file.source);
       expect(
-        linkedNumber,
-        `${file.path} links a number beside the cap's count. /play shows a browser's whole queue — ` +
-          `offers and finished games included — so the count would open a longer list than it counted. ` +
-          `Print it plainly and offer /play in words.`,
-      ).toBe(false);
+        /<Link\b[^>]*href=\{SEATED_LIVE_PATH\}[^>]*>[\s\S]{0,200}?\{[^}]+\}[\s\S]{0,80}?<\/Link>/.test(file.source),
+        `${file.path} quotes the cap's count without linking it to SEATED_LIVE_PATH — the page listing exactly those games.`,
+      ).toBe(true);
     }
+    expect(readFileSync("src/lib/history/activeGames.ts", "utf8")).toMatch(/count\(\{\s*where:\s*seatedLive\(/);
+    expect(readFileSync("src/lib/history/myGames.ts", "utf8")).toMatch(/\?\s*seatedLive\(memberId\)/);
   });
 
   it("keeps the counting in one place, so no door grows its own", () => {

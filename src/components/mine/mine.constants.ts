@@ -116,6 +116,17 @@ export const MY_GAMES_COPY = {
   showOlder: "Older finished games",
   /** And back to the caps, so an opened group is not a one-way trip. */
   showFewer: "Show fewer",
+  /**
+   * `/play?all=seated`: the games the games-at-once limit counts, and nothing
+   * else. A seat-refused notice links its count here, so the page has to say
+   * what it was narrowed to and offer the way back to the whole list.
+   */
+  seated: {
+    label: "Still being played, with you in a seat",
+    hint:
+      "Narrowed to the games the limit on games at once counts. Games offered to you, games held in this browser without your account, and finished games are left out.",
+    back: "All your games",
+  },
   /** Where a capped group with more behind it sends a signed-in reader. */
   seeRecord: "See your record",
 } as const;

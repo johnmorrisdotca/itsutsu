@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { activeGameCount, activeGameLimit } from "@/lib/history/activeGames";
+import { SEATED_LIVE_PATH } from "@/lib/history/myFinished";
 
 /**
  * Why a seat link did not seat you, on the page it sent you to.
@@ -37,36 +38,27 @@ export async function SeatFullNotice({ shown }: { shown: boolean }) {
       ) : (
         <>
           {/*
-            THE NUMBER DOES NOT LINK, AND THAT IS THE RULE KEPT RATHER THAN
-            BROKEN. It used to lead to /play, which shows a LONGER list than
-            this number counted — "a count must link to the set it counted, not
-            a set that contains it", which AGENTS.md calls the same fault as no
-            link at all, wearing a link.
+            THE NUMBER LEADS TO EXACTLY THE GAMES IT COUNTED.
 
-            The two really are different questions, and both are right about
-            their own. This number is the CAP's: `activeGameCount` counts games
-            still being played with this MEMBER in a seat, because that is what
-            the limit is about and what it refused on — an anonymous seat
-            belongs to no member to be over it. /play is the BROWSER's queue:
-            the member's seats AND any this browser holds by cookie, plus games
-            offered to them, plus the finished ones it keeps. So a reader who
-            followed the number and counted the rows would find more than the
-            sentence said and conclude the site had miscounted — which is the
-            one thing the count is quoted here to prevent.
-
-            No page shows exactly the set this counted, so it is a plain number
-            with the reason beside it, and the way to act on it is in words at
-            the end. Named in `gameLinks.coverage.test.ts`'s exceptions with
-            this reason, rather than left looking like an oversight.
+            It is the CAP's: `activeGameCount` counts games still being played
+            with this MEMBER in a seat, which is what the limit refused on. It
+            once led to all of /play, which is the BROWSER's queue — seats held
+            by cookie, games offered to the reader, finished ones it keeps — so
+            it opened a longer list than it counted. Then it was a plain number,
+            which kept the promise by breaking the rule that a count of games is
+            a link. The answer was to build the page: `/play?all=seated` lists
+            `seatedLive`, the same where this count reads, and says on the page
+            what it was narrowed to.
           */}
           You are seated at{" "}
-          <span
-            className="font-medium"
-            title="Games still being played with you in a seat. Your games list also holds games offered to you and ones already over."
+          <Link
+            href={SEATED_LIVE_PATH}
+            className="font-medium underline underline-offset-4"
+            title="The games still being played with you in a seat — the ones the limit counts."
             data-testid="seat-full-held"
           >
             {held} games still being played
-          </span>
+          </Link>
           , and {activeGameLimit()} at once is the limit here, so it was not claimed for you.
         </>
       )}{" "}

@@ -2,6 +2,7 @@ import "server-only";
 
 import { isBotId } from "@/lib/bots/bots";
 import { prisma } from "@/lib/prisma";
+import { seatedLive } from "./myFinished";
 
 /**
  * How many games in progress is too many for one member to be holding at
@@ -41,14 +42,14 @@ export function activeGameLimit(): number {
   return ACTIVE_GAME_LIMIT * Math.floor(relief);
 }
 
-/** How many games this member is seated in that are still being played. */
+/**
+ * How many games this member is seated in that are still being played.
+ *
+ * The where is `seatedLive`, shared with `/play?all=seated`, so a count quoted
+ * anywhere can link to exactly the games it counted.
+ */
 export async function activeGameCount(memberId: string): Promise<number> {
-  return prisma.game.count({
-    where: {
-      status: "active",
-      OR: [{ blackMemberId: memberId }, { whiteMemberId: memberId }],
-    },
-  });
+  return prisma.game.count({ where: seatedLive(memberId) });
 }
 
 /**

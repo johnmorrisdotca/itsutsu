@@ -415,27 +415,6 @@ describe("a count of games is the way into those games", () => {
      * "the 12 games you judged" now links, because `verdict` was added.
      */
     "src/components/players/ItsutsuRecord.tsx": "the gift count includes unfinished games; the record is finished ones",
-    /*
-     * The twenty-game cap's own count, in the refusal it refused on.
-     *
-     * It DID link, to /play, and that was the fault rather than the fix: /play
-     * is the BROWSER's queue — the member's seats and any this browser holds by
-     * cookie, plus games offered to them, plus the finished ones it keeps —
-     * while `activeGameCount` counts games still being played with this MEMBER
-     * in a seat, which is what the limit is about and what it turned the seat
-     * link away on. So the number opened a longer list than it counted, and a
-     * reader who followed it and counted rows would decide the site had
-     * miscounted the very thing the number is quoted to settle.
-     *
-     * Neither definition is wrong and neither can move: an anonymous cookie
-     * seat belongs to no member to be over the limit, and /play must show a
-     * browser with no account the games it is holding. No page shows exactly
-     * the set the cap counted, so this is the exception the rule has always
-     * had — a link that cannot keep its promise is worse than a plain number —
-     * and the notice offers the way to act on it in words instead.
-     */
-    "src/app/games/[slug]/match/[id]/SeatFullNotice.tsx":
-      "the cap counts a member's live seats; /play counts a browser's queue, which holds more",
   };
 
   it("nobody prints a number of games as words, with nothing behind it", () => {

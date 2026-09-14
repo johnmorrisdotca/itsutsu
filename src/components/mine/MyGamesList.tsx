@@ -19,6 +19,8 @@ import { seatClaims } from "@/lib/history/seatCookie";
 import { playerPath } from "@/lib/rating/playerKey";
 import { MY_GAMES_COPY } from "./mine.constants";
 import { Row } from "./MyGameRow";
+import { SEATED_ONLY } from "@/lib/history/myFinished";
+import { SeatedNarrowing } from "./SeatedNarrowing";
 
 /**
  * How many of each group the lobby prints BY DEFAULT — and every one of them
@@ -136,12 +138,21 @@ export async function MyGamesList({
 } = {}) {
   const claims = seatClaims((await cookies()).getAll());
   const email = await currentEmail();
-  if (claims.size === 0 && email === null) return null;
+  /*
+   * `?all=seated` IS NOT A GROUP, IT IS A SET A COUNT PROMISED: the games the
+   * games-at-once limit counts, which a seat-refused notice links its number to.
+   * No cookie claims and a window that keeps everything, so the queue read
+   * returns exactly `seatedLive` and nothing the count counted is dropped.
+   */
+  const seated = showAll === SEATED_ONLY;
+  if (claims.size === 0 && email === null && !seated) return null;
   const now = new Date();
   const memberId = await currentMemberId();
   const opened = openedGroup(showAll);
   const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor } : {};
-  const queue = await fetchMyGames(claims, memberId, now, await keepFinishedDaysFor(email), paging);
+  const queue = seated
+    ? await fetchMyGames(new Map(), memberId, now, 0, {}, { only: SEATED_ONLY })
+    : await fetchMyGames(claims, memberId, now, await keepFinishedDaysFor(email), paging);
   const { groups } = queue;
   const shown = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   /*
@@ -152,7 +163,7 @@ export async function MyGamesList({
    * panel below says for itself. Without this a stale cursor would tell somebody
    * holding twenty games that nothing is waiting on them.
    */
-  if (shown === 0 && opened === null) {
+  if (shown === 0 && opened === null && !seated) {
     if (email === null) return null;
     return (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-empty">
@@ -184,10 +195,19 @@ export async function MyGamesList({
       <h2 className="flex items-baseline gap-2 text-lg font-semibold">
         <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
+      {seated ? <SeatedNarrowing total={shown} /> : null}
       {MY_GAME_GROUPS.map((group) => {
         const open = group === opened;
-        const bucket =
-          group === "finished"
+        const bucket = seated
+          ? /*
+             * NARROWED, EVERY ROW IS SHOWN — a branch of its own rather than a
+             * flag folded into `open`, because it is not "open every group".
+             * The set is `seatedLive`, which the games-at-once limit bounds, and
+             * a count elsewhere promised exactly that many rows; a cap here
+             * would show fewer than the number that led the reader in.
+             */
+            shownGroup(groups[group], groups[group].length)
+          : group === "finished"
             ? /*
                * A PAGE, so the total comes from the database and not from the
                * list's own length. See `pagedGroup`: the finished list is five
