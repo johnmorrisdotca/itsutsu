@@ -564,8 +564,8 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     country: "DK",
     wikipedia: "Hex (board game)",
     rules: [
-      "The board is a rhombus of hexagons; each one touches six others. Black owns the top and bottom sides, White the left and right.",
-      "Players take turns placing one stone on any empty cell. Nothing ever moves, and nothing is ever taken.",
+      "The board is a rhombus ruled as a triangular lattice; a stone sits where the lines cross, and each point touches six others. Black owns the top and bottom sides, White the left and right.",
+      "Players take turns placing one stone on any empty point. Nothing ever moves, and nothing is ever taken.",
       "The first to join their own two sides with an unbroken chain of their stones wins.",
       "A full board always has exactly one winner, so there are no draws: the two chains cannot both cross, and they cannot both fail.",
       "Black has the advantage of the first stone, so the swap opening is offered: White may take Black's opening move as their own instead of answering it.",

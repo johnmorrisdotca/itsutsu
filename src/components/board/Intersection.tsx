@@ -1,5 +1,5 @@
 import { BLOCKED, HOT, WORM } from "@/lib/gomoku/gomoku.constants";
-import { MARK_STYLE } from "./Board.constants";
+import { HEX_LATTICE, MARK_STYLE } from "./Board.constants";
 import { StoneMark } from "./StoneMark";
 import type { BoardMark, IntersectionProps } from "./board.types";
 
@@ -112,14 +112,14 @@ export function Intersection({
       className="group relative flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-default"
     >
       {/*
-        * On the slanted board the cell is a rhombus, which is what makes the
-        * hit area right; the stone inside leans back so it is a circle again.
-        * Only the shear is undone — the board's scale is uniform and never
-        * made a circle into anything else.
+        * On the lattice the cell is a rhombus centred on its crossing, which
+        * is what makes the hit area right; the stone inside leans back so it
+        * is a circle again. HEX_LATTICE's inverse, exactly — the board's own
+        * fitting scale is uniform and never made a circle into anything else.
         */}
       <span
         className="pointer-events-none absolute inset-0 flex items-center justify-center"
-        style={unslant ? { transform: "skewX(-26.565deg)" } : undefined}
+        style={unslant ? { transform: HEX_LATTICE.unslant } : undefined}
       >
       {camp !== null ? (
         <span

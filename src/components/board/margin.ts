@@ -1,4 +1,4 @@
-import { EDGE_LINE_WIDTH } from "./Board.constants";
+import { EDGE_LINE_WIDTH, HEX_LATTICE } from "./Board.constants";
 
 /**
  * The rim of bare board surface around the playing area.
@@ -88,5 +88,24 @@ export function labelEdge(size: number, inset: number): number {
  */
 export function labelTracks(size: number, inset: number): string {
   const edge = labelEdge(size, inset);
+  return `${edge}fr repeat(${size}, minmax(0, 1fr)) ${edge}fr`;
+}
+
+/**
+ * The same strips for a board on the hexagon lattice, whose rows and columns
+ * do not span the box the way a square board's do — see HEX_LATTICE. Along
+ * the top, the first row of points starts a quarter of a cell in and runs
+ * two thirds of the width, the rest being the shear of the rows below. Down
+ * the side, the rows are packed closer and sit centred in a box taller than
+ * they are. Both in cells, as `fr`, for the reason `labelTracks` gives.
+ */
+export function latticeLabelTracks(size: number, axis: "columns" | "rows"): string {
+  const { width, height } = HEX_LATTICE;
+  if (axis === "columns") {
+    // The first row's points sit half a cell down, so the shear moves them a quarter along.
+    const lead = 0.25;
+    return `${lead}fr repeat(${size}, minmax(0, 1fr)) ${(width - 1) * size - lead}fr`;
+  }
+  const edge = ((width - height) / (2 * height)) * size;
   return `${edge}fr repeat(${size}, minmax(0, 1fr)) ${edge}fr`;
 }

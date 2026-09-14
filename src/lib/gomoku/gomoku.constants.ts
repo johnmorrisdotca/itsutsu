@@ -504,8 +504,8 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   miniReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: MINI_REVERSI_SIZES }),
   grandReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: GRAND_REVERSI_SIZES }),
   halma: small({ grid: BOARD_GRIDS.cells, camps: true, analysis: false, boardSizes: HALMA_SIZES }),
-  // A stone fills its hexagon: a cell, not a crossing.
-  hex: small({ grid: BOARD_GRIDS.cells, connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
+  // On the crossings of a triangular lattice, as a wooden Hex board is ruled: see HEX_LATTICE.
+  hex: small({ grid: BOARD_GRIDS.lines, connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
   /*
    * Checkers: no lines, no captures-to-win tally of its own — the capture is
    * the whole of the move, worked out fresh by rules/checkers.ts rather than
