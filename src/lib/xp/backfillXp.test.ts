@@ -512,13 +512,24 @@ describe("the replay pays the weekend once a weekend", () => {
 });
 
 describe("the replay pays nobody it should not", () => {
-  it("pays a computer player nothing at all, joined included", () => {
+  it("pays a computer player its game awards like anyone, and never joined", () => {
+    // John: bots have XP, and "people will have to earn XP through other
+    // means which the Robots don't do" — the replay pays a program what its
+    // finished games are worth and plans no people-only award for it.
     const made = plan({
       members: [member("a"), member("kyu", { botTier: "kyu" })],
       games: [beat("kyu", "a", "2026-02-01T00:00:00Z")],
     });
-    expect(made.batches.filter((batch) => batch.memberId === "kyu")).toEqual([]);
-    expect(made.perMember.has("kyu")).toBe(false);
+    const kyus = made.batches.filter((batch) => batch.memberId === "kyu");
+    expect(kyus.length).toBeGreaterThan(0);
+    const types = kyus.flatMap((batch) => batch.paying.map((award) => award.type));
+    expect(types).toContain(XP_EVENTS.gameWon);
+    expect(types).toContain(XP_EVENTS.wonVsPerson);
+    expect(types).not.toContain(XP_EVENTS.joined);
+    expect(made.perMember.has("kyu")).toBe(true);
+    // The person it beat is still paid a finish, and is still paid for joining.
+    const as = made.batches.filter((batch) => batch.memberId === "a").flatMap((batch) => batch.paying.map((award) => award.type));
+    expect(as).toContain(XP_EVENTS.joined);
   });
 
   it("pays nothing for a seat bound to an id no member row answers to", () => {

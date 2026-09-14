@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { XP_EVENT_SPECS, XP_ONE_MORE_GAME, xpPointsFor } from "./xp.constants";
+import { XP_EVENT_SPECS, XP_ONE_MORE_GAME, earnableByProgram, xpPointsFor } from "./xp.constants";
 import { xpDayKey } from "./xpDay";
 import { levelCrossed, xpLevelFor, xpStanding } from "./xpCurve";
 import { XP_SKIP_REASONS, type XpAward, type XpAwardResult, type XpAwarded } from "./xp.types";
@@ -123,13 +123,36 @@ async function payAwards({
      same reason. */
   if (member === null) return refused(awards, XP_SKIP_REASONS.noSuchMember, 0);
 
-  /* ── THE COMPUTER PLAYERS DO NOT CLIMB ──────────────────────────────────
-     The bots are real Member rows with real ratings and real streak columns,
-     and `recordPlayed` carries their played run forward today. So the one thing
-     standing between Meijin and the top of the XP leaderboard is this line. It
-     is checked again in the leaderboard's own query — twice, because here is
-     where it would be TRUE and there is where it would be VISIBLE. */
-  if (member.botTier !== null) return refused(awards, XP_SKIP_REASONS.notAPerson, member.xp);
+  /* ── THE COMPUTER PLAYERS CLIMB LIKE ANYONE, FROM THEIR GAMES ───────────
+     This used to refuse a member with a `botTier` outright. John, looking at
+     the live site: "i still don't see Levels for all equally and bots don't
+     have XP". So a program is paid under the same rules as a person, from the
+     same game-end writes — and held back from exactly the awards that are for
+     acts a program never performs, which John put the other way round:
+     "people will have to earn XP through other means which the Robots don't
+     do." That list is XP_PEOPLE_ONLY, stated in the catalogue; a people-only
+     award asked for a program is refused here with its reason, so nothing can
+     reach one through a path that forgot to ask. */
+  const held = member.botTier === null ? [] : awards.filter((award) => !earnableByProgram(award.type));
+  const earnable = awards.filter((award) => !held.includes(award));
+  const paid = await payEarnable({ member, awards: earnable, now });
+  return {
+    ...paid,
+    awards: [...held.map((award) => ({ type: award.type, points: 0, skipped: XP_SKIP_REASONS.peopleOnly })), ...paid.awards],
+  };
+}
+
+/** The awards a member may earn, paid: the allowance asked, the ledger written, the total moved. */
+async function payEarnable({
+  member,
+  awards,
+  now,
+}: {
+  member: Recipient;
+  awards: readonly XpAward[];
+  now: Date;
+}): Promise<XpAwardResult> {
+  if (awards.length === 0) return { awards: [], points: 0, xp: member.xp, crossed: null };
 
   const dayKey = xpDayKey(now, member.timeZone);
   const allowed = await withinAllowance({ member, awards, dayKey });

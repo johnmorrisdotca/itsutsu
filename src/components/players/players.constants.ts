@@ -12,13 +12,13 @@
 /**
  * Why an XP cell is a dash, by the kind of row it is on.
  *
- * Two dashes, two reasons, and the hover has to say the right one: the cell's
- * own default is the program's, because that is the dash a reader meets most —
- * on the members list, the Computers tab and the operator's Bots tab. A rating
- * row keyed by a name nobody has claimed is the other, and only a table keyed
- * by a folded name — the site ladder, a game's standings — can hold one.
+ * One dash, one reason, and the hover says it. There used to be two — the
+ * other was "a program does not earn experience" — until John settled that a
+ * program earns from its games and stands where its total puts it, like
+ * anyone. What is left is a rating row keyed by a name nobody has claimed,
+ * which only a table keyed by a folded name — the site ladder, a game's
+ * standings — can hold.
  */
 export const XP_BLANK_BECAUSE = {
-  program: "A program does not earn experience — the ladder is for the people here.",
   unclaimedName: "A name nobody has claimed: there is no member behind it to have earned anything.",
 } as const;

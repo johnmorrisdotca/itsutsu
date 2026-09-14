@@ -148,21 +148,15 @@ export async function AdminBots() {
       rating: shown === null ? null : { rating: shown.rating, pool: shown.pool },
       tier: tierShown(entry.profile),
       /*
-       * NO BADGE ON A PROGRAM, BECAUSE A PROGRAM IS NOT ON THIS LADDER. It used
-       * to fall out of nought being silence; John has since settled that nought
-       * is Level 1 for a person, so `levelShown` is told the row's `botTier` and
-       * answers null for every program by name. `awardXp` refuses a bot, so it
-       * can never climb a rung, and "Lv 1" beside Meijin's two hundred games
-       * would be a badge about a thing that is not on the ladder at all.
-       *
-       * Wired rather than left out, so this table draws a level by the site's
-       * one rule instead of by a local decision to have none.
-       *
-       * AND THE XP COLUMN, A DASH ON EVERY LINE — the same decision the
-       * Computers tab records beside its rows: John asked for XP on every stats
-       * table and said what a program's cell reads, "–", never 0 and never
-       * "Lv 1". The operator's table is the same table as the players page's,
-       * column for column, which is what makes it worth reading as one.
+       * THE LEVEL BESIDE THE NAME AND THE TOTAL IN ITS COLUMN, by the one rule
+       * every table follows — `levelShown` and `xpShown`, handed the row. A
+       * program stands where its total puts it, Level 1 at nought like anyone:
+       * this table used to draw a dash and no badge for every program, on a
+       * reading of "Everyone is level 1 if 0xp." as "everyone who is a person",
+       * and John has since said the opposite — "i still don't see Levels for
+       * all equally and bots don't have XP". A program earns from its games
+       * under the same rules as a person, and the split of what only a person
+       * can earn is XP_PEOPLE_ONLY, stated in the catalogue.
        */
       level: levelShown(entry),
       xp: xpShown(entry),

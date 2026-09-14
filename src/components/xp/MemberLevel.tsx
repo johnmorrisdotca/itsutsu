@@ -59,10 +59,13 @@ import type { MemberLevelProps } from "./xp.types";
  * That reversal is exactly why the TYPE still has to keep `undefined` apart from
  * `0`: `?? 0` at the call site would print "Level 1" for a person whose XP was
  * never read — a claim invented out of a narrow `select`. `levelShown` is asked
- * here rather than the raw curve for the other half of the same care: a program
- * is not on this ladder, so a bot's page draws NO BLOCK AT ALL — not an empty
- * one — and `botTier` is passed through to say so. John: "For a program, the
- * header shows no XP or level block at all, rather than an empty one."
+ * here rather than the raw curve so the rung and the total cannot disagree.
+ *
+ * A program's page draws this block like anyone's. It used to draw none, on a
+ * reading of "Everyone is level 1 if 0xp." as "everyone who is a person"; John
+ * has since said the opposite — "i still don't see Levels for all equally and
+ * bots don't have XP" — and a program earns from its games and stands where
+ * its total puts it.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * A CLIENT COMPONENT, FOR TWO REASONS
@@ -74,11 +77,11 @@ import type { MemberLevelProps } from "./xp.types";
  * so this carries `readyMark`, and a spec waits on it before asserting either
  * a figure here or, for a program, that there is no block beside the figures.
  */
-export function MemberLevel({ xp, botTier, testId = "member-level" }: MemberLevelProps) {
+export function MemberLevel({ xp, testId = "member-level" }: MemberLevelProps) {
   const say = useSpeaker();
   const hydrated = useHydrated();
   if (xp === undefined) return null;
-  const level = levelShown({ xp, botTier });
+  const level = levelShown({ xp });
   if (level === null) return null;
 
   const standing = xpStanding(xp);

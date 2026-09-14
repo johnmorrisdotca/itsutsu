@@ -24,7 +24,7 @@ import { describe, expect, it } from "vitest";
  *   for a person — John: "Everyone is level 1 if 0xp." — but a PROGRAM is not on
  *   this ladder at all, and `xpLevelFor` cannot know that: handed a bot's nought
  *   it answers 1 and badges Meijin with a rung it can never climb. `levelShown`
- *   is the rule, it is handed the whole member so it can see `botTier`, and a
+ *   is the rule, it is handed the whole member so the rule and not the caller decides, and a
  *   caller reaching past it to `xpLevelFor` — or handing it `entry.xp` alone —
  *   has skipped it.
  *
@@ -141,7 +141,7 @@ describe("every list that shows a level asks levelShown for it", () => {
         expect(source).toMatch(/level:\s*levelShown\(/);
       });
 
-      it("hands the rule the whole member, so it can see a program", () => {
+      it("hands the rule the whole member, so the rule and not the caller decides", () => {
         /*
          * `levelShown(entry.xp)` was the call before nought became level 1, and
          * it would still typecheck against a looser signature. Handed only the
@@ -248,7 +248,7 @@ describe("a person's public page shows their standing through MemberLevel", () =
      * nought became level 1 this is the only thing between Meijin's page and an
      * "Insert Coin" badge.
      */
-    expect(source).toMatch(/<MemberLevel[^>]*botTier=\{member\?\.botTier\}/);
+    expect(source).not.toMatch(/<MemberLevel[^>]*botTier/);
   });
 
   it("prints no level of its own anywhere on the page", () => {
@@ -278,7 +278,7 @@ describe("a person's public page shows their standing through MemberLevel", () =
      * draws nothing either. A nought is neither refusal: it draws Level 1.
      */
     expect(source).toMatch(/if \(xp === undefined\) return null;/);
-    expect(source).toMatch(/levelShown\(\{\s*xp,\s*botTier\s*\}\)/);
+    expect(source).toMatch(/levelShown\(\{\s*xp\s*\}\)/);
     expect(source).toMatch(/if \(level === null\) return null;/);
     // And the level reaches the screen only through the badge.
     expect(source).toMatch(/<LevelName level=\{level\}/);
@@ -334,7 +334,7 @@ describe("the XP total is one column, drawn by recordTrailing", () => {
      * The programs' tables print a dash on every line, and that is John's
      * answer for a program — "–", never 0 and never "Lv 1" — on a table that
      * otherwise reads exactly like the members list. `xpShown` decides the
-     * dash, handed the whole entry so it can see `botTier`.
+     * dash, handed the whole entry so the rule and not the caller decides.
      */
     for (const path of WITH_LEVELS) {
       const source = read(path);

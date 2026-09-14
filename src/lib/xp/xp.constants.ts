@@ -552,6 +552,53 @@ export const XP_LONG_GAME_MOVES = 60;
  * the nudge appears only when it is genuinely one game away rather than for the
  * last stretch of a long climb.
  */
+/**
+ * WHAT ONLY A PERSON CAN EARN.
+ *
+ * John, settling how the computer players stand on the ladder: they earn from
+ * their games like anyone, and "people will have to earn XP through other
+ * means which the Robots don't do." So the split is stated rather than left to
+ * fall out of what a program happens never to trigger: every award here is
+ * for an act a program never performs — arriving, signing in, keeping a
+ * streak of days, having a buddy, asking for or answering a game, giving
+ * time, applauding, filling in a profile, claiming a seat elsewhere. `awardXp`
+ * holds these back from a member with an engine name and says why; the
+ * backfill plans none of them for one. Everything not here is a fact about a
+ * finished game, and a program earns it under the same rules as a person.
+ *
+ * Not a place to invent new people-only awards: that is John's to ask for.
+ * `xp.coverage.test.ts` holds every type to one side of this line or the
+ * other, so a new award has to be sorted the day it is priced.
+ */
+export const XP_PEOPLE_ONLY: ReadonlySet<XpEventType> = new Set<XpEventType>([
+  XP_EVENTS.joined,
+  XP_EVENTS.dailyVisit,
+  XP_EVENTS.dayStreak7,
+  XP_EVENTS.dayStreak30,
+  XP_EVENTS.dayStreak100,
+  XP_EVENTS.dayStreak365,
+  XP_EVENTS.backFromAway,
+  XP_EVENTS.firstBuddy,
+  XP_EVENTS.buddyAdded,
+  XP_EVENTS.wonVsBuddy,
+  XP_EVENTS.challengeSent,
+  XP_EVENTS.challengeAnswered,
+  XP_EVENTS.rematchPlayed,
+  XP_EVENTS.forkPlayed,
+  XP_EVENTS.timeGiven,
+  XP_EVENTS.applauseGiven,
+  XP_EVENTS.nameSet,
+  XP_EVENTS.countrySet,
+  XP_EVENTS.bioSet,
+  XP_EVENTS.wordsSet,
+  XP_EVENTS.seatClaimedElsewhere,
+]);
+
+/** Whether this award may reach a member with an engine name. */
+export function earnableByProgram(type: XpEventType): boolean {
+  return !XP_PEOPLE_ONLY.has(type);
+}
+
 export const XP_ONE_MORE_GAME =
   XP_EVENT_SPECS.gameFinished.points + XP_EVENT_SPECS.gameWon.points;
 

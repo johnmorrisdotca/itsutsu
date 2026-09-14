@@ -156,24 +156,47 @@ describe("every event type in the catalogue", () => {
 });
 
 describe("who may earn", () => {
-  it("refuses a computer player, so Meijin never tops the leaderboard", async () => {
-    // The bots are real Member rows with real ratings and real streak columns,
-    // and recordPlayed carries their played run forward. This line is the only
-    // thing standing between them and the top of the XP ladder.
+  it("pays a computer player a game award like anyone — John: bots have XP", async () => {
+    // This used to refuse a program outright, "so Meijin never tops the
+    // leaderboard". John, on the live site: "i still don't see Levels for all
+    // equally and bots don't have XP". A program earns from its games.
     member("meijin", { botTier: "meijin" });
     const result = await awardXp({ memberId: "meijin", awards: [{ type: XP_EVENTS.gameWon, subject: "g1" }] });
 
+    expect(result.points).toBe(XP_EVENT_SPECS.gameWon.points);
+    expect(result.awards[0]?.points).toBe(XP_EVENT_SPECS.gameWon.points);
+    expect(events).toHaveLength(1);
+    expect(members.get("meijin")?.xp).toBe(XP_EVENT_SPECS.gameWon.points);
+  });
+
+  it("holds a people-only award back from a program, says why, and writes nothing for it", async () => {
+    // "people will have to earn XP through other means which the Robots don't
+    // do" — XP_PEOPLE_ONLY. Joining is an act a program never performed.
+    member("meijin", { botTier: "meijin", xp: 400 });
+    const result = await awardXp({ memberId: "meijin", awards: [{ type: XP_EVENTS.joined }] });
     expect(result.points).toBe(0);
-    expect(result.awards[0]?.skipped).toBe(XP_SKIP_REASONS.notAPerson);
+    expect(result.awards[0]?.skipped).toBe(XP_SKIP_REASONS.peopleOnly);
+    // And the total reported is the real one, not a nought that also means "nobody here".
+    expect(result.xp).toBe(400);
     expect(events).toHaveLength(0);
   });
 
-  it("reports a refused bot's real total rather than zero", async () => {
-    // A refusal that said 0 for a member holding 400 would be a plausible
-    // number that also means "nobody here" — the shape AGENTS.md warns about.
-    member("meijin", { botTier: "meijin", xp: 400 });
-    const result = await awardXp({ memberId: "meijin", awards: [{ type: XP_EVENTS.gameWon, subject: "g1" }] });
-    expect(result.xp).toBe(400);
+  it("pays the game half of a mixed batch to a program and holds back the people-only half", async () => {
+    member("meijin", { botTier: "meijin" });
+    const result = await awardXp({
+      memberId: "meijin",
+      awards: [{ type: XP_EVENTS.gameWon, subject: "g1" }, { type: XP_EVENTS.challengeAnswered, subject: "g1" }],
+    });
+    expect(result.points).toBe(XP_EVENT_SPECS.gameWon.points);
+    expect(result.awards.find((one) => one.type === XP_EVENTS.challengeAnswered)?.skipped).toBe(XP_SKIP_REASONS.peopleOnly);
+    expect(result.awards.find((one) => one.type === XP_EVENTS.gameWon)?.points).toBe(XP_EVENT_SPECS.gameWon.points);
+    expect(events.map((one) => one.type)).toEqual([XP_EVENTS.gameWon]);
+  });
+
+  it("pays a person a people-only award as before", async () => {
+    member("a");
+    const result = await awardXp({ memberId: "a", awards: [{ type: XP_EVENTS.joined }] });
+    expect(result.points).toBe(XP_EVENT_SPECS.joined.points);
   });
 
   it("says nothing for a member id no row answers to", async () => {

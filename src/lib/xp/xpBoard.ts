@@ -10,6 +10,9 @@ import {
 } from "@/lib/api/paging.cursor";
 import type { PagedEnvelope, PagingRefusal, SortChoice } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
+import type { DirectoryWho } from "@/lib/rating/directoryFilter";
+
+import { XP_WHO_DEFAULT, xpWhoWhere } from "./xpWho";
 import type { Prisma } from "@prisma/client";
 
 import { XP_BOARD_SORT_SPEC, type XpBoardSortField } from "./xpBoard.sort";
@@ -27,11 +30,12 @@ import { XP_BOARD_SORT_SPEC, type XpBoardSortField } from "./xpBoard.sort";
  * WHO IS ON IT
  * ─────────────────────────────────────────────────────────────────────────
  *
- * **Programs are excluded on `botTier: null`, in this query and not only in
- * `awardXp`.** Two places, because the awarder is where it is TRUE that a
- * program does not climb and the board is where it would be VISIBLE. Seven of
- * the eleven members on production are programs; without this the board would
- * open on a row of bots.
+ * **Programs are on it, like anyone.** This query used to keep `botTier: null`,
+ * with the awarder refusing programs at the other end, so that the board could
+ * not open on a row of bots. John reversed that — "i still don't see Levels
+ * for all equally and bots don't have XP" — so a program earns from its games
+ * and stands where its total puts it. Whether a reader wants people, programs
+ * or everyone is the page's filter to offer, never this query's to decide.
  *
  * **And `xp > 0`, which is the same judgement `ladder.ts` makes about an unplayed
  * rating.** A member who has never earned a point has a true total of nought and
@@ -81,7 +85,7 @@ export type XpBoardPage = PagedEnvelope<XpBoardRow> & {
  * `xp: { gt: 0 }` is a range on the indexed column, so the filter is answered by
  * `Member_xp_idx` rather than in spite of it.
  */
-const ON_THE_BOARD: Prisma.MemberWhereInput = { botTier: null, xp: { gt: 0 } };
+const ON_THE_BOARD: Prisma.MemberWhereInput = { xp: { gt: 0 } };
 
 /** The sort and the page the address asked for, or a refusal naming the column. */
 export function readXpBoardPaging(
@@ -100,19 +104,29 @@ export async function fetchXpBoardPage({
   sort,
   limit,
   cursor,
+  who = XP_WHO_DEFAULT,
 }: {
   sort: XpBoardSort;
   limit: number;
   cursor: string | null;
+  /** People, the computer players, or everyone — see `xpWho.ts`. */
+  who?: DirectoryWho;
 }): Promise<XpBoardPage> {
   const after = cursor === null ? null : decodeCursor(cursor, sort);
+  /*
+   * The narrowing is part of the where, so the page, the order, the cursor
+   * and the total are all about the narrowed set — never everyone with rows
+   * dropped afterwards, which would page and count a list the reader is not
+   * looking at.
+   */
+  const onTheBoard: Prisma.MemberWhereInput = { AND: [ON_THE_BOARD, xpWhoWhere(who)] };
   const where: Prisma.MemberWhereInput =
     after === null
-      ? ON_THE_BOARD
-      : { AND: [ON_THE_BOARD, keysetWhere(XP_BOARD_SORT_SPEC, sort, after)] };
+      ? onTheBoard
+      : { AND: [onTheBoard, keysetWhere(XP_BOARD_SORT_SPEC, sort, after)] };
 
   const [total, read] = await Promise.all([
-    prisma.member.count({ where: ON_THE_BOARD }),
+    prisma.member.count({ where: onTheBoard }),
     prisma.member.findMany({
       where,
       select: { id: true, name: true, xp: true, xpLastAt: true },
@@ -153,10 +167,11 @@ export async function fetchXpBoardPage({
  * wants — see `XP_BOARD_SORT_SPEC` on why rank is a consequence of a sort and
  * never an input to one.
  */
-export async function xpRankOf(xp: number): Promise<number | null> {
+export async function xpRankOf(xp: number, who: DirectoryWho = XP_WHO_DEFAULT): Promise<number | null> {
   if (xp <= 0) return null;
+  // Within the narrowing, so a rank printed under a filter is the rank within it.
   const above = await prisma.member.count({
-    where: { botTier: null, xp: { gt: xp } },
+    where: { AND: [{ xp: { gt: xp } }, xpWhoWhere(who)] },
   });
   return above + 1;
 }

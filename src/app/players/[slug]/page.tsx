@@ -332,12 +332,12 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           THEIR STANDING, UNDER THE RECORD AND AS PROMINENT AS IT. The name,
           then the record, then the level and the XP — John's order for this
           header. It was a badge on the name's line; it is a block now, and
-          `MemberLevel` holds both arguments about when there is nothing to
+          `MemberLevel` holds the one argument about when there is nothing to
           draw: `undefined` is a kept record with no member row and is not a
-          nought, and `botTier` says a program is not on this ladder at all, so
-          a program's page shows no block rather than an empty one.
+          nought. A program's page draws it like anyone's — John: "i still
+          don't see Levels for all equally and bots don't have XP".
         */}
-        <MemberLevel xp={member?.xp} botTier={member?.botTier} />
+        <MemberLevel xp={member?.xp} />
         {offered && scope === RECORD_SCOPES.everywhere ? (
           <p className="text-xs text-muted" data-testid="counting-everywhere">
             {/*

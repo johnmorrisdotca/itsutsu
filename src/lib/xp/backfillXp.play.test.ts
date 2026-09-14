@@ -202,7 +202,7 @@ describe("backfilling the XP ledger", () => {
       ]);
 
       say(`\nDatabase: ${server()}`);
-      say(`  ${members.length} members (${members.filter((one) => one.botTier === null).length} of them people)`);
+      say(`  ${members.length} members (${members.filter((one) => one.botTier !== null).length} of them programs, paid like anyone)`);
       say(`  ${games.length} decided games`);
       say(`  ${held.length} XP events already in the ledger, ${[...sums.values()].reduce((a, b) => a + b, 0)} XP paid`);
       say(`  ${buddyRows.length} buddy links`);

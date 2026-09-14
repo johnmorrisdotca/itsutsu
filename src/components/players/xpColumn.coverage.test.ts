@@ -264,6 +264,54 @@ describe("a person's own page shows their standing where a stranger reads it", (
     const standing = page.indexOf("<MemberLevel");
     expect(figures).toBeGreaterThan(-1);
     expect(standing).toBeGreaterThan(figures);
-    expect(page).toMatch(/<MemberLevel\s+xp=\{member\?\.xp\}\s+botTier=\{member\?\.botTier\}/);
+    expect(page).toMatch(/<MemberLevel\s+xp=\{member\?\.xp\}\s*\/>/);
+  });
+
+  it("draws it for a program too, so nothing hands the rule an engine name to refuse on", () => {
+    /*
+     * John, on the live site: "i still don't see Levels for all equally and
+     * bots don't have XP". A program's page draws the block like anyone's, so
+     * the page passes the total and nothing that says what kind of member it
+     * is — and `MemberLevel` takes nothing of the sort.
+     */
+    const page = code(readFileSync("src/app/players/[slug]/page.tsx", "utf8"));
+    expect(page).not.toMatch(/<MemberLevel[^>]*botTier/);
+    const block = code(readFileSync("src/components/xp/MemberLevel.tsx", "utf8"));
+    expect(block).not.toContain("botTier");
+  });
+});
+
+/**
+ * A PROGRAM'S CELL SHOWS ITS XP. It read "–" for two releases, on a reading of
+ * "Everyone is level 1 if 0xp." as "everyone who is a person"; John, on the
+ * live site: "i still don't see Levels for all equally and bots don't have XP".
+ * So the rule that decides a standing takes a total and nothing about what
+ * kind of member holds it, the awarder pays a program from its games, and the
+ * board and the rungs list programs among everybody. This reads the source of
+ * those four places so the old exclusion cannot come back in one of them
+ * without failing here.
+ */
+describe("a program stands where its total puts it, like anyone", () => {
+  it("the standing rule takes a total and no engine name", () => {
+    const rule = code(readFileSync("src/lib/xp/levelShown.ts", "utf8"));
+    expect(rule).not.toContain("botTier");
+  });
+
+  it("the board and the rungs do not keep programs out in the query", () => {
+    for (const path of ["src/lib/xp/xpBoard.ts", "src/lib/xp/levelMembers.ts"]) {
+      const source = code(readFileSync(path, "utf8"));
+      expect(source, `${path} filters programs out of a list everybody is on`).not.toMatch(/botTier:\s*null/);
+    }
+  });
+
+  it("the awarder refuses a program only what a person-only award is, never everything", () => {
+    const awarder = code(readFileSync("src/lib/xp/awardXp.ts", "utf8"));
+    expect(awarder).not.toContain("notAPerson");
+    expect(awarder).toContain("earnableByProgram");
+  });
+
+  it("no cell explains a dash by saying the row is a program", () => {
+    const reasons = code(readFileSync("src/components/players/players.constants.ts", "utf8"));
+    expect(reasons).not.toMatch(/program:/);
   });
 });

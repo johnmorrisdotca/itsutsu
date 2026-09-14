@@ -3,7 +3,7 @@ import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { playedSides, type PlayedSide } from "@/lib/rating/playedRun";
 import { STREAK_KINDS, extendStreak } from "@/lib/rating/streak";
 
-import { XP_EVENTS } from "./xp.constants";
+import { XP_EVENTS, earnableByProgram } from "./xp.constants";
 import { isWeekend, xpWeekKey } from "./xpDay";
 import {
   NO_OPPONENT,
@@ -145,9 +145,10 @@ export function planBackfill(input: BackfillInput): BackfillPlan {
       state.run = extendStreak(state.run, side.outcome);
 
       const member = members.get(side.memberId);
-      /* No row answers to that id, or it answers to a program: `awardXp` pays
-         neither, so the plan must not claim it would. */
-      if (member === undefined || member.botTier !== null) continue;
+      /* No row answers to that id: `awardXp` pays nobody, so the plan must not
+         claim it would. A program's row is a member like anyone's, and is paid
+         under the same rules — John: "bots don't have XP". */
+      if (member === undefined) continue;
       batches.push(...playedBy({ game, side, member, state, members, buddies, beaten }));
     }
     /* AFTER every award for this game. A turn-around is a fact about what came
@@ -161,7 +162,10 @@ export function planBackfill(input: BackfillInput): BackfillPlan {
      the walk above. A kept record whose row was made after the games it holds
      therefore has its `joined` land after them, which is what the row says. */
   const joined = input.members.flatMap((member) => {
-    if (member.botTier !== null) return [];
+    /* Joining is an act a program never performed — John: "people will have to
+       earn XP through other means which the Robots don't do" — so `joined` is
+       people-only (XP_PEOPLE_ONLY) and the plan claims none for one. */
+    if (member.botTier !== null && !earnableByProgram(XP_EVENTS.joined)) return [];
     const batch = predict({
       member,
       at: member.createdAt,
@@ -215,7 +219,11 @@ function playedBy({
   });
 
   const reason: BackfillReason = { kind: "game", gameId: game.id, variant: game.variant };
-  const batch = predict({ member, at: game.playedAt, reason, awards, state });
+  /* The same line `awardXp` draws: a program is paid what a finished game is
+     worth and nothing that is for an act it never performs. Filtered here so
+     the dry run's numbers are the numbers the run would write. */
+  const earnable = member.botTier === null ? awards : awards.filter((award) => earnableByProgram(award.type));
+  const batch = predict({ member, at: game.playedAt, reason, awards: earnable, state });
   if (batch === null) return [];
 
   const out = [batch];

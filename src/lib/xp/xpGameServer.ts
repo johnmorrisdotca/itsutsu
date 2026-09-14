@@ -155,8 +155,12 @@ async function opponentFacts(
     onMyBuddyList(side.email, emails.get(id) ?? null),
     hadBeatenMe({ me: side.memberId, them: id, game }),
     /* Only where the ladder counts the game, because only there can an upset be
-       paid — an unrated or one-screen win asks nothing about ratings at all. */
-    game.ladderCounts === true
+       paid — an unrated or one-screen win asks nothing about ratings at all.
+       And never for a program's own side: an upset is read off the PEOPLE
+       pool, and a program's people-pool rating is the untouched default, since
+       it never plays a person-against-person game. A rule that cannot measure
+       must not fire — null is the rule declining, not a zero. */
+    game.ladderCounts === true && botTierFor(side.memberId) === null
       ? ratingsAsTheyStood({ id: side.memberId, name: side.name }, { id, name: names.get(id) ?? null })
       : Promise.resolve(null),
   ]);

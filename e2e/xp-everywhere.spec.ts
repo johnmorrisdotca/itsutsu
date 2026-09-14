@@ -26,20 +26,24 @@ import { removeXpMembers, seedProgram, seedXpMember, type SeededXpMember } from 
  * that nobody has claimed, and one standing at a game nobody else touches —
  * every row this asserts about is one it made. The program matters most: the
  * seven real ones are somebody else's rows, a development database may hold
- * none, and the whole claim about a program is that its cell reads "–" and not
- * "0" — John: never 0 and never "Lv 1" — which cannot be shown on a table with
- * no program on it.
+ * none, and the claim about a program is that it stands on the ladder LIKE
+ * ANYONE — its total in the cell and its rung beside its name, on every table
+ * and on its own page. It read "–" for two releases; John, on the live site:
+ * "i still don't see Levels for all equally and bots don't have XP". So the
+ * program is seeded on a known rung, as the person is, and read the same way.
  *
- * Every wait is on something PRESENT before anything is read as absent: the
- * row is found by the id in the link on its name, so the dash and the missing
- * badge are statements about a rendered row and not about the speed of the
- * request; the ladder waits on its ready marker; and the standing block on a
- * person's page carries one of its own, so the program's page waits on the
- * figures beside where the block would be before saying there is none.
+ * Every wait is on something PRESENT before anything is read: the row is
+ * found by the id in the link on its name, so a figure is a statement about a
+ * rendered row and not about the speed of the request; the ladder waits on
+ * its ready marker; and the standing block on a person's or a program's page
+ * carries one of its own.
  */
 
 /** The rung the member stands on. Wii, when this was written; read from the catalogue either way. */
 const LEVEL = 60;
+
+/** The rung the program stands on: low, so the two are told apart on every table. */
+const PROGRAM_LEVEL = 3;
 
 /** A game nothing else seeds or clears, so the standing is the only one there. */
 const VARIANT = "wormDrop";
@@ -60,10 +64,11 @@ test.describe("XP on every stats table, and on a person's page", () => {
   let unclaimed = "";
   let standingKey = "";
   const shown = () => person.xp.toLocaleString("en-GB");
+  const botShown = () => program.xp.toLocaleString("en-GB");
 
   test.beforeEach(async () => {
     person = await seedXpMember(LEVEL, "everywhere");
-    program = await seedProgram("everywhere");
+    program = await seedProgram("everywhere", PROGRAM_LEVEL);
     /*
      * Ratings high enough to sit on the first page of a ladder sorted by
      * rating, whatever a development database holds — and distinct, so the
@@ -98,18 +103,17 @@ test.describe("XP on every stats table, and on a person's page", () => {
     await expect(bot, "the seeded program is not pinned to the first page").toHaveCount(1);
     await expect(mine.getByTestId("record-xp")).toHaveText(shown());
     await expect(mine.getByTestId("record-level")).toHaveAttribute("data-level", String(LEVEL));
-    // A program: a dash, never a nought, and no rung beside its name.
-    await expect(bot.getByTestId("record-xp")).toHaveText("–");
-    await expect(bot.getByTestId("record-level")).toHaveCount(0);
+    // A program: its total and its rung, like anyone — John: "bots don't have XP" no longer.
+    await expect(bot.getByTestId("record-xp")).toHaveText(botShown());
+    await expect(bot.getByTestId("record-level")).toHaveAttribute("data-level", String(PROGRAM_LEVEL));
 
-    // The Computers tab, by its tab: every row a program, every cell a dash.
+    // The Computers tab, by its tab: every row a program, every cell its own total.
     await openTab(page, "Computers");
     const computers = page.getByTestId("computer-players-table");
     const botRow = rowFor(computers, program);
     await expect(botRow, "the seeded program is not on the Computers tab").toHaveCount(1);
-    await expect(botRow.getByTestId("record-xp")).toHaveText("–");
-    await expect(botRow.getByTestId("record-xp")).toHaveAttribute("title", /program/);
-    await expect(botRow.getByTestId("record-level")).toHaveCount(0);
+    await expect(botRow.getByTestId("record-xp")).toHaveText(botShown());
+    await expect(botRow.getByTestId("record-level")).toHaveAttribute("data-level", String(PROGRAM_LEVEL));
     // And in its place: directly after the rating, before the tier.
     const headings = await computers.locator("thead th").allInnerTexts();
     const rating = headings.findIndex((one) => /^rating/i.test(one.trim()));
@@ -162,14 +166,14 @@ test.describe("XP on every stats table, and on a person's page", () => {
     await expect(page.getByTestId("xp-leaderboard")).toBeVisible();
   });
 
-  test("the operator's Bots tab prints a dash for a program, never a nought", async ({ page }) => {
+  test("the operator's Bots tab prints a program's total and rung, like any table", async ({ page }) => {
     await page.goto("/admin");
     await openTab(page, "The bots");
     const bots = page.getByTestId("admin-bots-table");
     const row = rowFor(bots, program);
     await expect(row, "the seeded program is not on the Bots tab").toHaveCount(1);
-    await expect(row.getByTestId("record-xp")).toHaveText("–");
-    await expect(row.getByTestId("record-level")).toHaveCount(0);
+    await expect(row.getByTestId("record-xp")).toHaveText(botShown());
+    await expect(row.getByTestId("record-level")).toHaveAttribute("data-level", String(PROGRAM_LEVEL));
     const headings = await bots.locator("thead th").allInnerTexts();
     const rating = headings.findIndex((one) => /^rating/i.test(one.trim()));
     expect(headings[rating + 1]?.trim(), `headings: ${headings.join(" | ")}`).toMatch(/^xp/i);
@@ -204,11 +208,14 @@ test.describe("XP on every stats table, and on a person's page", () => {
     await expect(page.getByTestId("xp-leaderboard")).toBeVisible();
   });
 
-  test("a program's page shows no standing block at all, rather than an empty one", async ({ page }) => {
+  test("a program's page opens with its level and total, like a person's", async ({ page }) => {
     await page.goto(`/players/${program.id}`);
-    // Present first: the figures the block would sit under. Then the absence means something.
-    await expect(page.getByTestId("player-figures")).toBeVisible();
+    await ready(page, "member-level");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(program.name);
-    await expect(page.getByTestId("member-level")).toHaveCount(0);
+    await expect(page.getByTestId("player-figures")).toBeVisible();
+    const standing = page.getByTestId("member-level");
+    await expect(standing).toHaveAttribute("data-level", String(PROGRAM_LEVEL));
+    await expect(standing.getByTestId("member-level-name")).toContainText(`${PROGRAM_LEVEL} · ${xpLevelName(PROGRAM_LEVEL)}`);
+    await expect(standing.getByTestId("member-level-total")).toHaveText(botShown());
   });
 });
