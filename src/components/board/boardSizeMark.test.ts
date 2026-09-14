@@ -32,7 +32,12 @@ function draw(size: number, words: BoardSizeMarkWords, px = 48): string {
   return renderToStaticMarkup(createElement(BoardSizeMark, { size, px, words }));
 }
 
-/** The two sides the picker draws: a block among several, and a lone board. */
+/**
+ * The side the picker draws every block's mark at (70, `BOARD_MARK_PX`), and a
+ * smaller one. The picker has one size since every block took the big number;
+ * the smaller side stays in the sweep so the numeral's scale is checked at
+ * more than the one size that happens to be in use.
+ */
 const PICKER_SIZES_PX = [48, 70] as const;
 
 describe("boardSizeMarkVoice", () => {

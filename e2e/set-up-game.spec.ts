@@ -79,17 +79,23 @@ test.describe("setting a game up before it exists", () => {
     await expect(page.getByTestId("shared-rules-variant")).toHaveCount(0);
     /*
      * Reversi is 8×8 and nothing else, so there is no CHOICE of board — and
-     * since 0.158.7 the board is shown anyway, as one block that cannot be
-     * pressed. John asked for that in as many words: "the Reversi games don't
-     * even have a board size… they should! It should show the board size
+     * since 0.158.7 the board is shown anyway, as one block, checked like any
+     * chosen board. John asked for that in as many words: "the Reversi games
+     * don't even have a board size… they should! It should show the board size
      * (default) being used." A picker with one option is not a choice, and the
      * board is still a fact about the game somebody is about to play.
      *
      * So the claim is the stronger one rather than the absence this used to
-     * assert: the block is there, it says 8×8, and it is marked as the only one.
+     * assert: the block is there, its picture says 8 — the big number, as every
+     * board block is, with no "8×8" line under it — and it is marked as the
+     * only one. The summary below still says "8×8": it is a sentence about the
+     * game, not a caption under the picture.
      */
     const board = chosenBoard(page);
     await expect(board).toHaveAttribute("data-size", "8");
+    await expect(board.getByRole("img", { name: "8 by 8 board" })).toHaveText("8");
+    await expect(board.getByTestId("set-up-size-name")).toContainText("Eight");
+    await expect(board).not.toContainText("×");
     await expect(board).toHaveAttribute("data-only", "true");
     await expect(page.getByTestId("set-up-size")).toHaveCount(1);
     await expect(page.getByTestId("set-up-summary")).toContainText("Reversi");

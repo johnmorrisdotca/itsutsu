@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import {
   aComputerOpponent,
@@ -30,9 +30,54 @@ const under = namesPlayedUnder();
  */
 const WEEK = 604800000;
 
-async function setUp(page: import("@playwright/test").Page, variant: string) {
+async function setUp(page: Page, variant: string) {
   await openSetUpPage(page);
   await chooseGame(page, variant);
+}
+
+/** What a reader reads under each board's big number: its name. */
+const BOARD_NAMES: Record<number, string> = {
+  8: "Eight",
+  9: "Mini",
+  13: "Medium",
+  15: "Standard",
+  19: "Go board",
+};
+
+/** The side every block's mark is drawn at — `BOARD_MARK_PX`. */
+const BIG_MARK_PX = 70;
+
+/**
+ * The Board row holds exactly these blocks, and every one of them is drawn as
+ * Checkers' lone block was: the big numbered picture, which names the size
+ * for a screen reader, then the board's name, then the check — and NO
+ * "N×N" line. The same helper for one block and for three is the claim.
+ */
+async function expectBlocks(page: Page, sizes: readonly number[]) {
+  const blocks = page.getByTestId("set-up-size");
+  await expect(blocks).toHaveCount(sizes.length);
+  const heights = new Set<number>();
+  for (const [at, size] of sizes.entries()) {
+    const block = blocks.nth(at);
+    await expect(block).toHaveAttribute("data-size", String(size));
+    const mark = block.getByRole("img", { name: `${size} by ${size} board` });
+    await expect(mark).toHaveText(String(size));
+    const box = await mark.boundingBox();
+    expect(box?.width, `${size}×${size}: the big mark`).toBe(BIG_MARK_PX);
+    await expect(block.getByTestId("set-up-size-name")).toContainText(BOARD_NAMES[size]);
+    // The radio is named by the mark first, so the size is heard once.
+    await expect(block.getByRole("radio", { name: new RegExp(`^${size} by ${size} board`) })).toHaveCount(1);
+    const order = await block.evaluate((el) =>
+      Array.from(el.children)
+        .map((child) => child.getAttribute("data-testid"))
+        .filter((id) => id !== null),
+    );
+    expect(order, `${size}×${size}: picture, name, check`).toEqual(["board-size-mark", "set-up-size-name", "pick-mark"]);
+    // Absent, asked only now that the block's picture and name have been read.
+    await expect(block).not.toContainText("×");
+    heights.add(Math.round((await block.boundingBox())?.height ?? 0));
+  }
+  expect([...heights], "every block the same height").toHaveLength(1);
 }
 
 test.describe("choosing the board before the game exists", () => {
@@ -41,33 +86,24 @@ test.describe("choosing the board before the game exists", () => {
     const board = page.getByTestId("shared-rules-size");
     await expect(board).toBeVisible();
     /*
-     * Big blocks with the numbers on them, in the order the boards grow.
-     *
-     * Read block by block rather than as one list of strings starting "9×9":
-     * the block's first text is now the number drawn INSIDE the picture, so a
-     * `^` match on the caption would fail for a reason that has nothing to do
-     * with the order being tested here.
+     * Big blocks with the numbers on them, in the order the boards grow. The
+     * number is in the picture and nowhere else in the block.
      */
-    const blocks = page.getByTestId("set-up-size");
-    await expect(blocks).toHaveCount(4);
-    for (const [at, size] of [9, 13, 15, 19].entries()) {
-      await expect(blocks.nth(at)).toHaveAttribute("data-size", String(size));
-      await expect(blocks.nth(at)).toContainText(`${size}×${size}`);
-    }
+    await expectBlocks(page, [9, 13, 15, 19]);
   });
 
-  test("shows a one-board game its board, and asks nothing about it", async ({ page }) => {
+  test("shows a one-board game its board, chosen, as the only one", async ({ page }) => {
     await setUp(page, "reversi");
     /*
      * Reversi is 8×8 and nothing else, so there is no decision to put to
      * anybody — and since 0.158.7 the board is SHOWN rather than hidden, as one
-     * block with no tick on it and nothing to press. This case used to assert
-     * the absence, which was the right claim when a one-option picker hid
-     * itself and is the wrong one now: John's words were "the Reversi games
-     * don't even have a board size… they should!"
+     * block, checked like any chosen board. This case used to assert the
+     * absence, which was the right claim when a one-option picker hid itself
+     * and is the wrong one now: John's words were "the Reversi games don't
+     * even have a board size… they should!"
      *
      * The two halves are separate assertions because they are separate facts:
-     * the board is stated, and it is not a choice.
+     * the board is stated, and it is the only one.
      */
     await expect(page.getByTestId("more-settings-open")).toBeVisible();
     await expect(page.getByTestId("set-up-size")).toHaveCount(1);
@@ -75,48 +111,28 @@ test.describe("choosing the board before the game exists", () => {
     await expect(chosenBoard(page)).toHaveAttribute("data-only", "true");
   });
 
-  test("puts every board's number in its picture, and says a lone one in words", async ({ page }) => {
+  test("draws every board block as the big number, one board or three, there and back", async ({ page }) => {
+    /*
+     * John: "Remember I don't want the 9x9 size under every board... i want
+     * consistency. Like checkers, just the big number now. easier to read"
+     *
+     * Every block — Reversi's one, Domino Five's three — is the big numbered
+     * picture and the board's name, with no "N×N" line under it, and every
+     * block is the same height.
+     *
+     * Driven the way a reader meets it: the generic set-up screen, waited on
+     * through its ready marker, a game with one board, a game with three, and
+     * back — by clicking the game picker each time and never reloading, since
+     * the way back is where a block left drawn the other way would show.
+     */
     await setUp(page, "reversi");
-    /*
-     * John: "a second set of images where we actually put in the number of the
-     * size in the middle of that image… if you don't have the size below it in
-     * text it is incorporated directly in the image."
-     *
-     * The lone block drops its "8×8" line, so two things have to be true at
-     * once: the 8 is on the screen, IN the picture, and somebody who cannot see
-     * the picture still gets the size — by the image's name, and so by the
-     * radio's, which is what a screen reader announces on arriving at it.
-     */
-    const lone = chosenBoard(page);
-    const mark = lone.getByRole("img", { name: "8 by 8 board" });
-    await expect(mark).toBeVisible();
-    await expect(mark).toHaveText("8");
-    await expect(page.getByRole("radio", { name: /^8 by 8 board/ })).toBeChecked();
+    await expectBlocks(page, [8]);
 
-    /*
-     * And a game with a CHOICE draws the same picture in every block, number
-     * and all. It used to draw the plain lattice there, which is the
-     * inconsistency John came back about: "I thought I already asked for the
-     * 9x9, 15x15 etc board images to also have a set with the Number directly
-     * centered in the board… I see it's done for some options but not
-     * consistently for all."
-     *
-     * What still differs is the TEXT: "9×9" sits under the picture and names
-     * the radio, so each mark stays silent to a screen reader rather than
-     * saying the size a second time. The four blocks are waited for BEFORE
-     * that absence is asserted, so the absence is a statement about a drawn
-     * row rather than an early one.
-     */
-    await chooseGame(page, "freestyle");
-    await expect(page.getByTestId("set-up-size")).toHaveCount(4);
-    const marks = page.getByTestId("shared-rules-size").getByTestId("board-size-mark");
-    await expect(marks).toHaveCount(4);
-    for (const [at, size] of [9, 13, 15, 19].entries()) {
-      await expect(marks.nth(at)).toHaveAttribute("data-size", String(size));
-      await expect(marks.nth(at)).toHaveText(String(size));
-      await expect(marks.nth(at)).toHaveAttribute("aria-hidden", "true");
-    }
-    await expect(page.getByTestId("shared-rules-size").getByRole("img")).toHaveCount(0);
+    await chooseGame(page, "dominoFive");
+    await expectBlocks(page, [13, 15, 19]);
+
+    await chooseGame(page, "reversi");
+    await expectBlocks(page, [8]);
   });
 
   test("starts the game on the board that was chosen", async ({ page, request }) => {

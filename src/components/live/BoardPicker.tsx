@@ -5,7 +5,7 @@ import { Paired } from "@/components/i18n/Paired";
 import { BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 
 import { PickMark } from "./PickMark";
-import { BOARD_BLOCK_MARK_PX, BOARD_ONLY_MARK_PX, PICK_BLOCKS, PICK_CARD } from "./picker.constants";
+import { BOARD_MARK_PX, PICK_BLOCKS, PICK_CARD } from "./picker.constants";
 
 /**
  * The board, as big blocks in a row. John: "for the board sizes, make it more
@@ -19,8 +19,7 @@ import { BOARD_BLOCK_MARK_PX, BOARD_ONLY_MARK_PX, PICK_BLOCKS, PICK_CARD } from 
  * the only real difference between them — so density is what is drawn.
  *
  * The picture is `BoardSizeMark`, which is the one place a board size is
- * drawn, and it carries the size as a numeral in every block — among several
- * boards and on a board that stands alone alike.
+ * drawn, and it carries the size as a big numeral in every block.
  *
  * The blocks sit in a row and wrap only if they must — there are at most four
  * of them — because a stack of four is a list and John asked for a row.
@@ -60,6 +59,10 @@ export function BoardPicker({
    *
    * Not `disabled`, which would grey it out. Greying says "this is off", and
    * the board is not off — it is the board.
+   *
+   * `only` decides the block's WIDTH and says `data-only`, and nothing else.
+   * What is inside the block is the same for one board and for four — see
+   * below, and `boardSizeMark.coverage.test.ts`, which holds it there.
    */
   const only = sizes.length === 1;
   return (
@@ -72,15 +75,16 @@ export function BoardPicker({
             <label
               key={size}
               /*
-               * `flex-1` while there is a choice, so two, three or four
-               * blocks share the row evenly. A LONE block does not stretch:
-               * filling the panel edge to edge made Reversi's 8×8 read as a
-               * banner rather than as one board among the sizes it might
-               * have had, and a block four times the width of everybody
-               * else's looks like an announcement.
+               * While there is a choice, the grid's equal columns share the
+               * row between two, three or four blocks (`PICK_BLOCKS`). A LONE
+               * block does not stretch: filling the panel edge to edge made
+               * Reversi's 8×8 read as a banner rather than as one board among
+               * the sizes it might have had, and a block four times the width
+               * of everybody else's looks like an announcement. A fixed width
+               * in its one column keeps it the size of a block.
                */
               className={`${PICK_CARD} min-w-24 cursor-pointer flex-col justify-center gap-1.5 p-2 ${
-                only ? "w-40" : "flex-1"
+                only ? "w-40" : ""
               }`}
               data-testid="set-up-size"
               data-size={size}
@@ -97,52 +101,42 @@ export function BoardPicker({
                 className="peer sr-only"
               />
               {/*
-                The board itself, at the density its number means, WITH ITS
-                NUMBER IN IT — in every block, whether the game offers one
-                board or four.
+                EVERY BLOCK IS DRAWN THE WAY CHECKERS' LONE BLOCK WAS: the
+                board with its number set big in the middle of it, then what
+                that board is called ("Eight 八路"), then the check. No
+                "8×8" line under the picture — in a game with one board or a
+                game with four.
 
-                It used to be drawn into the lone block only, on the argument
-                that a number in the picture and the same number printed under
-                it says one thing twice. John read the row and did not agree:
-                "so the 9x9 board has a white 9 in the middle of the board, so
-                that it's even more visible from the outside, and also the icon
-                alone tells you the size. I see it's done for some options but
-                not consistently for all." The picture is what the eye lands on
-                from across the room; the line under it is for reading. So the
-                number is in both, and no block is drawn a second way.
+                It was two drawings. A lone board got the big numbered mark
+                and its name; a board among several got a smaller mark, a
+                "13×13" line and its name. John saw the two side by side and
+                asked why the size sat under the icon in some places and not
+                others; the first answer put the line under every block, and
+                he came back: "Remember I don't want the 9x9 size under every
+                board... i want consistency. Like checkers, just the big
+                number now. easier to read"
 
-                What still differs between the two blocks is the TEXT, and with
-                it what a screen reader hears. AMONG SEVERAL, "13×13" sits
-                under the picture and names the radio, so the mark is
-                decoration (`words="beside"`, aria-hidden) and its numeral is
-                not read out a second time. ALONE, the block drops that line,
-                so the mark says the size in words itself (`words="none"`) and
-                the radio is named by it. John, earlier and still true: "if you
-                don't have the size below it in text it is incorporated
-                directly in the image."
+                So the number in the picture IS the size, for everyone who can
+                see it, and the mark says it in words for everyone who cannot
+                (`words="none"`: an image named "8 by 8 board"). That name is
+                the first thing in the label, so the radio is announced with
+                the size once, then the board's name — and nothing printed
+                beside it says the size a second time.
 
-                The lone mark is bigger by exactly the line it replaces
-                (`BOARD_ONLY_MARK_PX`), so a one-board game's panel stays the
-                height of a four-board one's and the Start button does not move
-                between them.
+                One mark size, `BOARD_MARK_PX`, so every block is the same
+                height by construction and the Start button does not move from
+                one game to the next.
               */}
-              {only ? (
-                <BoardSizeMark size={size} px={BOARD_ONLY_MARK_PX} words="none" />
-              ) : (
-                <>
-                  <BoardSizeMark size={size} px={BOARD_BLOCK_MARK_PX} words="beside" />
-                  <span className="text-base leading-none font-semibold">
-                    {size}×{size}
-                  </span>
-                </>
-              )}
+              <BoardSizeMark size={size} px={BOARD_MARK_PX} words="none" />
               {/*
                 What that board is FOR — "Mini", "Tournament size" — which is
                 the part a number alone cannot say to somebody meeting these
-                games for the first time.
+                games for the first time. Every size a game is played on has
+                one; the coverage test says so, so no block quietly goes
+                without.
               */}
               {copy !== undefined ? (
-                <span className="text-center text-[0.7rem] leading-none text-muted">
+                <span className="text-center text-[0.7rem] leading-none text-muted" data-testid="set-up-size-name">
                   <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="opacity-70" />
                 </span>
               ) : null}

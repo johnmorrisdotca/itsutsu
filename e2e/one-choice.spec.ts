@@ -31,6 +31,21 @@ function sizeTiles(page: Page): Locator {
   return page.getByTestId("set-up-size");
 }
 
+/**
+ * A board tile is the big number and the board's name, and no size line —
+ * the sole one as much as one among several. John: "Remember I don't want the
+ * 9x9 size under every board... i want consistency. Like checkers, just the
+ * big number now. easier to read"
+ */
+async function expectBigNumber(tile: Locator) {
+  const size = await tile.getAttribute("data-size");
+  const mark = tile.getByRole("img", { name: `${size} by ${size} board` });
+  await expect(mark).toHaveText(String(size));
+  await expect(tile.getByTestId("set-up-size-name")).not.toBeEmpty();
+  // Absent, asked only after the picture and the name above were read.
+  await expect(tile).not.toContainText("×");
+}
+
 test.describe("a sole option is drawn as a chosen one", () => {
   test("Checkers' one board is checked, Go's chosen board is checked the same way, and back", async ({ page }) => {
     // The generic set-up screen, which offers the game picker; a page whose
@@ -41,19 +56,24 @@ test.describe("a sole option is drawn as a chosen one", () => {
     const sole = sizeTiles(page).first();
     await expect(sole).toHaveAttribute("data-only", "true");
     await expectMarked(sole);
+    await expectBigNumber(sole);
+    await expect(sole.getByTestId("set-up-size-name")).toContainText("Eight");
 
-    // Several boards: the chosen one carries the same check, the others none.
+    // Several boards: the chosen one carries the same check, the others none,
+    // and every one of them is the big number, as the sole one is.
     await chooseGame(page, "go");
     await expect(sizeTiles(page)).toHaveCount(3);
     const chosen = page.locator('[data-testid="set-up-size"][data-chosen="true"]');
     await expect(chosen).toHaveCount(1);
     await expectMarked(chosen);
     await expect(page.locator('[data-testid="set-up-size"][data-chosen="false"]').first().getByTestId("pick-mark")).toHaveCSS("opacity", "0");
+    for (const at of [0, 1, 2]) await expectBigNumber(sizeTiles(page).nth(at));
 
-    // The way back: one board again, still checked.
+    // The way back: one board again, still checked, still the big number.
     await chooseGame(page, "checkers");
     await expect(sizeTiles(page)).toHaveCount(1);
     await expectMarked(sizeTiles(page).first());
+    await expectBigNumber(sizeTiles(page).first());
   });
 
   test("Reversi's one opening is a checked tile like any chosen opening, and back", async ({ page }) => {
