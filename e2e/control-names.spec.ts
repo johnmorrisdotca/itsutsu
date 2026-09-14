@@ -1,6 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
 
-import { GAME_COPY } from "../src/components/game/game.constants";
 import { SET_UP_COPY } from "../src/components/live/live.constants";
 import { SEAT_DISPLAY, SEATS, STONE_DISPLAY } from "../src/lib/gomoku/gomoku.constants";
 
@@ -112,20 +111,20 @@ test.describe("a control is named by its label", () => {
      */
     await openSetUpPage(page, "gomoku");
     /*
-     * The handicap lives in the fold, and a role query does not see a control
-     * inside a shut `<details>` at all — which is worth knowing, because the
-     * first version of this case asked before opening it and failed with
-     * "no select is named exactly Handicap", the same message a broken name
-     * would have given.
+     * The handicap is in plain sight under its own "Handicap" heading, so its
+     * select is named for what it asks — "Harder rules for" a colour — rather
+     * than repeating the heading. A role query does not see a control inside a
+     * shut `<details>`, which is why this used to open the fold first; it now
+     * only waits for the rules to be drawn.
      */
     await openMoreSettings(page);
     const panel = page.getByTestId("set-up-handicap");
     await expect(panel).toBeVisible();
     const handicap = panel.getByRole("combobox", {
-      name: GAME_COPY.handicap.label,
+      name: SET_UP_COPY.handicapFor,
       exact: true,
     });
-    await expect(handicap, `no select is named exactly "${GAME_COPY.handicap.label}"`).toHaveCount(1);
+    await expect(handicap, `no select is named exactly "${SET_UP_COPY.handicapFor}"`).toHaveCount(1);
     expect(await descriptionOf(handicap)).toBe(SET_UP_COPY.handicapHint);
   });
 });

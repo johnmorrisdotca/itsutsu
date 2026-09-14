@@ -79,6 +79,8 @@ export const SET_UP_COPY = {
     `A second game from the position after move ${move}, against ${who}. Both games go on. The board, the game and the opening come with the position and cannot change; the clock and whether it counts are this game's own.`,
   forkAlone:
     "Nobody held the other seat in the game this comes from, so this is a board at one screen: start it and hand the other seat out from there.",
+  /** The handicap's colour select, under the Handicap heading: who takes on the harder rules. */
+  handicapFor: "Harder rules for",
   /** What a handicap is for, where somebody is choosing one. */
   handicapHint:
     "One colour plays under extra restrictions and the other plays the plain game — how the elder sites let a stronger player give a weaker one a start. Leave it at none for an even game.",

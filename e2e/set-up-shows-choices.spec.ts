@@ -1,6 +1,6 @@
 import { join } from "node:path";
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { memberContext, memberIdFor, removeMember, seedMember, seenDaysAgo } from "./members";
 import { chooseOpponent, chooseRated, chosenOpponent, chosenRated, ready } from "./support";
@@ -31,6 +31,55 @@ const SHOTS = process.env.SHOTS_DIR;
 
 async function shot(page: Page, name: string) {
   if (SHOTS !== undefined) await page.screenshot({ path: join(SHOTS, `${name}.png`), fullPage: true });
+}
+
+/** Waits for every CSS transition and animation on the page to finish. */
+async function settled(page: Page) {
+  await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished)));
+}
+
+/**
+ * How legible an element is as drawn: the product of every opacity from it to the
+ * root, and the contrast of its text colour against the ground it actually sits on
+ * — its own background composited over each ancestor's until one is opaque.
+ * Colours are read through a canvas, so `oklab()` and `color-mix` values from the
+ * stylesheet come back as plain sRGB like any other.
+ */
+async function legibility(target: Locator): Promise<{ opacity: number; contrast: number }> {
+  return target.evaluate((element) => {
+    const context = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
+    const rgba = (css: string): [number, number, number, number] => {
+      context.clearRect(0, 0, 1, 1);
+      context.fillStyle = "#000";
+      context.fillStyle = css;
+      context.fillRect(0, 0, 1, 1);
+      const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data;
+      return [r, g, b, a / 255];
+    };
+    let opacity = 1;
+    const grounds: [number, number, number, number][] = [];
+    for (let at: Element | null = element; at !== null; at = at.parentElement) {
+      const style = getComputedStyle(at);
+      opacity *= Number(style.opacity);
+      const ground = rgba(style.backgroundColor);
+      if (ground[3] > 0 && (grounds.length === 0 || grounds[grounds.length - 1][3] < 1)) grounds.push(ground);
+    }
+    // Composite from the deepest opaque ground outwards to the element's own.
+    let [r, g, b] = [255, 255, 255];
+    for (const [gr, gg, gb, ga] of grounds.reverse()) {
+      r = gr * ga + r * (1 - ga);
+      g = gg * ga + g * (1 - ga);
+      b = gb * ga + b * (1 - ga);
+    }
+    const [tr, tg, tb] = rgba(getComputedStyle(element).color);
+    const channel = (value: number) => {
+      const c = value / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = (x: number, y: number, z: number) => 0.2126 * channel(x) + 0.7152 * channel(y) + 0.0722 * channel(z);
+    const [light, dark] = [luminance(tr, tg, tb), luminance(r, g, b)].sort((one, two) => two - one);
+    return { opacity, contrast: (light + 0.05) / (dark + 0.05) };
+  });
 }
 
 /** Every RSC payload or document the page asks for after this point. */
@@ -97,12 +146,6 @@ test.describe("who you play and every rule are on the set-up screen", () => {
       ).filter((name) => name !== "A random computer player");
       await expect(page.locator('[data-testid="set-up-opponent"][data-opponent="random-computer"]')).toBeVisible();
 
-      await page.emulateMedia({ colorScheme: "light" });
-      await shot(page, "setupchoices-desktop-light");
-      await page.emulateMedia({ colorScheme: "dark" });
-      await shot(page, "setupchoices-desktop-dark");
-      await page.emulateMedia({ colorScheme: "light" });
-
       // A clock and Friendly, and no press asks the server anything.
       const asked = watchServer(page);
       const clock = page.getByTestId("shared-rules-move-time");
@@ -161,6 +204,60 @@ test.describe("who you play and every rule are on the set-up screen", () => {
       await removeMember(me.email);
       await removeMember(buddy.email);
       await removeMember(named.email);
+    }
+  });
+
+  test("light and dark: the chosen tiles and Continue are legible, and nothing is dimmed", async ({
+    browser,
+    baseURL,
+  }) => {
+    /*
+     * A dark screenshot of this page once showed every tile and Continue a washed-out
+     * grey, as though disabled. Each scheme is opened fresh here, in its own
+     * context, and measured rather than looked at: nothing on the path to a chosen
+     * tile or the button is faded, and its text meets 4.5:1 against the ground it
+     * is actually drawn on.
+     */
+    for (const colorScheme of ["light", "dark"] as const) {
+      const stamp = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
+      const me = { email: `scheme-${colorScheme}-${stamp}@example.test`, name: `Scheme ${stamp}` };
+      const context = await memberContext(browser, baseURL!, me, { colorScheme });
+      const page = await context.newPage();
+      try {
+        await page.goto("/games/new?game=halma");
+        await ready(page, "set-up-game");
+        await settled(page);
+        const button = page.getByTestId("set-up-start");
+        await expect(button).toBeEnabled();
+        for (const [what, target] of [
+          ["Continue", button],
+          ["the chosen board", page.locator('[data-testid="set-up-size"][data-chosen="true"]')],
+          ["the chosen opponent", chosenOpponent(page)],
+          ["the chosen rating", chosenRated(page)],
+        ] as const) {
+          const seen = await legibility(target);
+          expect(seen.opacity, `${colorScheme}: ${what} is faded`).toBe(1);
+          expect(seen.contrast, `${colorScheme}: ${what} text against its ground`).toBeGreaterThanOrEqual(4.5);
+        }
+        await shot(page, `setupchoices-desktop-${colorScheme}`);
+
+        /*
+         * WHAT THE GREY SCREENSHOT WAS, kept as evidence when screenshots are asked
+         * for: the old spec switched a light page to dark and shot it at once, and
+         * the tiles and the button carry `transition-colors`, so they were caught
+         * halfway between their light and dark colours while the page ground, which
+         * has no transition, was already dark.
+         */
+        if (SHOTS !== undefined && colorScheme === "light") {
+          await page.emulateMedia({ colorScheme: "dark" });
+          const running = await page.evaluate(() => document.getAnimations().length);
+          await shot(page, "setupchoices-dark-caught-mid-transition");
+          console.log(`colour transitions running just after switching to dark: ${running}`);
+        }
+      } finally {
+        await context.close();
+        await removeMember(me.email);
+      }
     }
   });
 
