@@ -89,6 +89,62 @@ describe("appliedNarrowings", () => {
     expect(appliedNarrowings({ ...NONE, rated: "yes" })).toEqual([{ key: "rated", label: "Rated" }]);
   });
 
+  /*
+   * `all` IS THE ABSENCE OF A NARROWING, AND IT USED TO DRAW A CHIP SAYING SO
+   * IN THE ADDRESS'S OWN WORDS.
+   *
+   * Every one of these four fell back to the raw parameter, so `/history?pool=all`
+   * printed a chip reading "all" — over a record the query had narrowed by
+   * nothing, since `buildGameWhere` skips each filter whose value is `all` and
+   * the filter bar DELETES the parameter when a reader chooses Any. A chip is
+   * this page's promise that it can say what it was narrowed to; "all" is a
+   * query string where a sentence goes, and it is announcing a filter that never
+   * ran.
+   */
+  it("shows no chip for all, which is what this site calls no narrowing", () => {
+    expect(appliedNarrowings({ ...NONE, pool: "all" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, rated: "all" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, outcome: "all" })).toEqual([]);
+    const player = { name: "Alice", memberId: "id-1", removable: true };
+    expect(appliedNarrowings({ ...NONE, player, outcome: "all" })).toEqual([
+      { key: "player", label: "Alice's games" },
+    ]);
+    expect(appliedNarrowings({ ...NONE, player, verdict: "all" })).toEqual([
+      { key: "player", label: "Alice's games" },
+    ]);
+  });
+
+  /*
+   * The same rule for a value nobody wrote. `toGameHistoryQuery` refuses these
+   * outright — they are not in the enum — so the record is unfiltered and a chip
+   * would be naming a narrowing that was actually REFUSED. The old fallback
+   * printed them verbatim, which is a reader's own typing quoted back as though
+   * the site had agreed to it.
+   */
+  it("shows no chip for a value this site has no word for", () => {
+    expect(appliedNarrowings({ ...NONE, pool: "banana" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, rated: "maybe" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, outcome: "decided-ish" })).toEqual([]);
+    const player = { name: "Alice", memberId: "id-1", removable: true };
+    expect(appliedNarrowings({ ...NONE, player, verdict: "sideways" })).toEqual([
+      { key: "player", label: "Alice's games" },
+    ]);
+  });
+
+  /*
+   * THE WAY BACK. A count's link names its player by `?member=<id>` now, so a
+   * "×" that deleted `player` would leave the record exactly as narrowed as it
+   * found it — a filter a reader is invited to take off and cannot.
+   */
+  it("clears member, not player, when the player arrived by id", () => {
+    const byId = { name: "Hanako Morris", memberId: "m-1", removable: true, via: "member" as const };
+    expect(appliedNarrowings({ ...NONE, player: byId })).toEqual([
+      { key: "player", label: "Hanako Morris's games", clears: "member" },
+    ]);
+    const byName = { name: "Alice", memberId: null, removable: true };
+    expect(appliedNarrowings({ ...NONE, player: byName })[0].clears).toBeUndefined();
+  });
+
   it("orders chips player, outcome, pool, rated, verdict", () => {
     const player = { name: "Alice", memberId: "id-1", removable: true };
     const narrowings = appliedNarrowings({

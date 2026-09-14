@@ -27,7 +27,7 @@ import { findLegacyPlayer, foldedInto, legaciesForName } from "@/lib/legacy/lega
 import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { PlayedFigure, RecordFigure } from "@/components/players/PlayerRecord";
-import { GameCount } from "@/components/games/GameCount";
+import { TwoPools } from "@/components/players/TwoPools";
 import { figuresOf, winRateText } from "@/lib/rating/figures";
 import { playerKey, playerKeysFromSlug } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
@@ -357,7 +357,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
               value: (
                 <PlayedFigure
                   record={{ wins: counted.won, losses: counted.lost, draws: counted.drawn }}
-                  of={{ player: wholeName, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
+                  of={{ player: wholeName, memberId: member?.id, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
                 />
               ),
               testId: "player-played",
@@ -367,7 +367,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
               value: (
                 <RecordFigure
                   record={{ wins: counted.won, losses: counted.lost, draws: counted.drawn }}
-                  of={{ player: wholeName, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
+                  of={{ player: wholeName, memberId: member?.id, here: !(offered && scope === RECORD_SCOPES.everywhere) }}
                 />
               ),
               testId: "player-record",
@@ -397,16 +397,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         */}
         {offered && scope === RECORD_SCOPES.everywhere && whole.kept ? <SnapshotWarning /> : null}
         {player !== null && player.computer.ratedGames > 0 ? (
-          <p className="text-xs text-muted" data-testid="two-pools">
-            Played and the record beside it count every finished game. The ratings are kept in two:{" "}
-            <GameCount count={player.ratedGames} player={wholeName} pool={RATING_POOLS.people} rated="yes"
-              className="font-medium text-ink-soft" title="Rated games against other people" testId="player-rated-people" />{" "}
-            against people, and{" "}
-            <GameCount count={player.computer.ratedGames} player={wholeName} pool={RATING_POOLS.computer} rated="yes"
-              className="font-medium text-ink-soft" title="Rated games against the computer players" testId="player-rated-computer" />{" "}
-            against the computer players. A game against a program never moves where you stand among the people, and
-            a game against yourself counts as neither.
-          </p>
+          <TwoPools name={wholeName} memberId={member?.id} profile={player} />
         ) : null}
         {tier !== null ? (
           <p className="text-xs text-muted">
@@ -434,6 +425,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           <WholeRecordPanel
             whole={whole}
             name={wholeName}
+            memberId={member?.id}
             showFigures={!(offered && scope === RECORD_SCOPES.everywhere)}
           />
         </section>
@@ -445,6 +437,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         <>
           <ItsutsuRecord
             name={wholeName}
+            memberId={member?.id}
             record={record}
             opponents={opponents}
             gifts={gifts}

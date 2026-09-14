@@ -87,16 +87,20 @@ export async function MatchPage({
   const game = await fetchGameDetail(id);
   if (game === null) notFound();
   /*
-   * The address names the game as well as the match, and either player may
-   * change the game until the first stone is down. So the slug in the address
-   * goes stale the moment somebody does — and this said "there is no page at
-   * this address" about the board they were sitting at, because it had just
-   * stopped being a game of that name.
+   * The address names the game as well as the match, and the slug in it can
+   * disagree with the row: a link typed or edited by hand, or one sent out
+   * before 0.170.6, when a seat holder could still change the game on a board
+   * nobody had moved on. That door is shut now — `changesTheGame` refuses any
+   * change of variant, so the game is decided when the match is made and only
+   * the board, opening, clock, pace and ratings may move before the first
+   * stone. This used to say "either player may change the game until the
+   * first stone is down", which stopped being true then.
    *
-   * The id is the identity; the slug is how the address reads. A real game
-   * reached by the name it used to go under leads to the game, at the address
-   * it goes under now — which also mends every link anybody sent out before
-   * the rules were settled.
+   * The reason for the redirect survives the door closing. The id is the
+   * identity; the slug is how the address reads. A real game reached under a
+   * name that is not its own leads to the game, at the address it goes under,
+   * rather than "there is no page at this address" about a board that exists —
+   * which also mends every link anybody sent out while the door was open.
    */
   if (slugFor(game.variant) !== slug) redirect(matchPath(game.variant, id, move));
   if (move !== undefined && (!Number.isInteger(move) || move < 0 || move > game.moveCount)) {

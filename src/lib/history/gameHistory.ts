@@ -15,6 +15,7 @@ import { type FilterSeats, buildGameOrderBy, buildGameWhere } from "./gameHistor
 import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
 import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
 import { REACTIONS_KEPT } from "./reactions.constants";
+import { withMemberResolved } from "./recordMember";
 import type {
   GameDetail,
   GameHistoryPage,
@@ -241,8 +242,11 @@ async function filterSeats(query: GameHistoryQuery): Promise<FilterSeats> {
  * link, and starting the record again is exactly right. See `decodeCursor`.
  */
 export async function fetchGameHistoryPage(
-  query: GameHistoryQuery,
+  asked: GameHistoryQuery,
 ): Promise<GameHistoryPage> {
+  // `?member=<id>` is the same narrowing as `?player=<name>` with nobody's name
+  // in the address; it becomes one before any clause is built. See `nameForMember`.
+  const query = await withMemberResolved(asked);
   const filters = buildGameWhere(query, await filterSeats(query));
   const sort = gameSortChoice(query);
   const after = query.cursor === null ? null : decodeCursor(query.cursor, sort);
@@ -306,8 +310,9 @@ export async function fetchGameHistoryPage(
  * the rows so the text can say what it left out rather than just stopping.
  */
 export async function fetchWholeRecord(
-  query: GameHistoryQuery,
+  asked: GameHistoryQuery,
 ): Promise<{ items: GameSummary[]; total: number }> {
+  const query = await withMemberResolved(asked);
   const where = buildGameWhere(query, await filterSeats(query));
   const [total, rows] = await Promise.all([
     prisma.game.count({ where }),

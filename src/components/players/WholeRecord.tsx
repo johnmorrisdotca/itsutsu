@@ -46,11 +46,14 @@ export function SnapshotWarning() {
 export function WholeRecordPanel({
   whole,
   name,
+  memberId,
   showFigures = true,
 }: {
   whole: Whole;
   /** Whose record, so this site's own row can lead to the games behind it. */
   name?: string;
+  /** Their id, which is what the links carry rather than the name. See `gamesHref`. */
+  memberId?: string | null;
   showFigures?: boolean;
 }) {
   if (whole.figures.played === 0) return null;
@@ -80,7 +83,7 @@ export function WholeRecordPanel({
                     losses: whole.figures.lost,
                     draws: whole.figures.drawn,
                   }}
-                  of={{ player: name, here: !whole.kept }}
+                  of={{ player: name, memberId, here: !whole.kept }}
                 />
               ),
               testId: "whole-played",
@@ -99,7 +102,7 @@ export function WholeRecordPanel({
                     losses: whole.figures.lost,
                     draws: whole.figures.drawn,
                   }}
-                  of={{ player: name, here: !whole.kept }}
+                  of={{ player: name, memberId, here: !whole.kept }}
                 />
               ),
               testId: "whole-record-line",
@@ -168,7 +171,7 @@ export function WholeRecordPanel({
             copied down once from a site that is still standing and still
             counting — true, and with nothing behind them here.
           */
-          of: { player: name, here: source.here },
+          of: { player: name, memberId, here: source.here },
           streak: null,
           streakBlankBecause:
             "These rows are one site's totals, and a run is an order — the games of two sites interleave in time, so no site's row is a run of anything.",

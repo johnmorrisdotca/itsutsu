@@ -35,6 +35,29 @@ export function gamesHref(options: {
   variant?: string;
   /** Whose games, by name — an exact match, as a record counts them. */
   player?: string;
+  /**
+   * Whose games, BY ID, which is what goes in the address when there is one.
+   *
+   * THE 0.133.0 RULE, AND THIS WAS THE BUILDER THAT MISSED IT. "A name shown
+   * publicly must be the name the site means to show, in the links as well as
+   * in the text" — `playerPath` was fixed then, and this function, the other
+   * one that puts a person in a URL, went on writing `?player=<whole name>`.
+   * So a member's page showed "Hanako M." and every count under it carried
+   * /history?player=Hanako%20Morris in the markup: her surname on a page a
+   * stranger may read, put there by the very links that exist to keep a
+   * promise.
+   *
+   * Not a shortened name instead, for the reason `playerPath` gives: "Hanako
+   * Morris" and "Hanako Mori" both shorten to "Hanako M.", so an address built
+   * from the shown name is an address that can mean two people.
+   *
+   * The SET IS THE SAME EITHER WAY, which is what makes this a safe swap rather
+   * than a narrower link. The record resolves `member=` to the name that
+   * member's record is counted under and applies the ordinary name filter —
+   * `nameForMember` says why at length, and a link narrowing by the id alone
+   * would open a shorter list than the count it came from.
+   */
+  memberId?: string | null;
   /** How they went for that player. */
   outcome?: GameOutcome;
   /**
@@ -51,7 +74,18 @@ export function gamesHref(options: {
 }): string {
   const base = options.variant === undefined ? "/history" : historyPath(options.variant);
   const query = new URLSearchParams();
-  if (options.player !== undefined && options.player.trim() !== "") {
+  /*
+   * The id when there is one, exactly as `playerPath` prefers it. An opaque id
+   * says nothing about anybody and collides with nobody; a name in an address
+   * is a more permanent, more sharable thing than a screen, and it ends up in
+   * server logs. The name stays the answer for a record with NO member behind
+   * it — a name typed into a game at one screen, a record kept from another
+   * site — because the name is all it has.
+   */
+  const id = options.memberId?.trim() ?? "";
+  if (id !== "") {
+    query.set("member", id);
+  } else if (options.player !== undefined && options.player.trim() !== "") {
     query.set("player", options.player.trim());
   }
   if (options.outcome !== undefined) query.set("outcome", options.outcome);
@@ -66,6 +100,7 @@ export function GameCount({
   count,
   variant,
   player,
+  memberId,
   outcome,
   pool,
   rated,
@@ -80,6 +115,8 @@ export function GameCount({
   count: ReactNode;
   variant?: string;
   player?: string;
+  /** Their id, which is what the address carries when there is one. See `gamesHref`. */
+  memberId?: string | null;
   outcome?: GameOutcome;
   pool?: GamePoolFilter;
   rated?: GameRatedFilter;
@@ -110,7 +147,7 @@ export function GameCount({
   }
   return (
     <Link
-      href={gamesHref({ variant, player, outcome, pool, rated, verdict })}
+      href={gamesHref({ variant, player, memberId, outcome, pool, rated, verdict })}
       className={`underline-offset-2 hover:underline ${raised ? RAISED_LINK : ""} ${className}`}
       title={title}
       data-testid={testId ?? "game-count"}

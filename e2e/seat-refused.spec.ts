@@ -33,13 +33,13 @@ test.describe("a seat link that cannot seat you", () => {
      * The number is the reader's OWN count, read by the page rather than
      * carried on the address — a number in a query is one a reader can edit,
      * and the page would be quoting their guess back at them.
+     *
+     * And it says WHICH games it counted. The cap counts games still being
+     * played with this member in a seat; /play holds more than that, so a
+     * sentence saying only "games on the go" over a link to /play was a number
+     * promising a longer list than it came from.
      */
-    await expect(notice).toContainText(/You have \d+ games on the go/);
-
-    // And it leads to the games it counted, which is this site's rule about
-    // any number that refers to games. It is also the only useful thing to do
-    // about the refusal: the game to finish is in that list.
-    await expect(notice.locator("a").first()).toHaveAttribute("href", "/play");
+    await expect(notice).toContainText(/You are seated at \d+ games still being played/);
 
     // The site is around it, which is what the hand-written document lacked.
     await expect(page.locator("[data-chrome]").first()).toBeVisible();
@@ -47,6 +47,35 @@ test.describe("a seat link that cannot seat you", () => {
     // And it says the invitation survives, because a refusal that reads as a
     // dead end sends somebody away from a game they were invited to.
     await expect(notice).toContainText("has not been used up");
+
+    /*
+     * THE COUNT LEADS TO EXACTLY THE GAMES IT COUNTED — driven by a click, not
+     * read off an href. It once led to all of /play, which holds more than the
+     * cap counts; the narrowing it leads to now lists `seatedLive`, the same
+     * where the count reads.
+     *
+     * WHAT THIS DOES NOT ASSERT, AND WHY. The notice's number and the page's
+     * number are two reads of a count this spec did not create: the suite signs
+     * in as one operator, every other run on the shared database starts and
+     * ends that operator's games, and the count was measured moving from 255 to
+     * 267 between two reads with nothing of this spec running — so comparing
+     * them failed on a 257 against a 256 that were both true. That the count and
+     * the list are ONE definition is asserted where it can be, in
+     * `activeGames.coverage.test.ts`. What a browser can say for certain is
+     * inside one render: the narrowed page's number is the rows it lists.
+     */
+    const held = notice.getByTestId("seat-full-held");
+    await expect(held).toHaveAttribute("href", "/play?all=seated");
+    await held.click();
+    await expect(page).toHaveURL(/\/play\?all=seated$/);
+    await expect(page.getByTestId("my-games-seated")).toBeVisible();
+    const listed = Number(await page.getByTestId("my-games-seated-count").innerText());
+    await expect(page.getByTestId("my-games").locator("li")).toHaveCount(listed);
+
+    // And the way back takes the narrowing off.
+    await page.getByTestId("my-games-seated-back").click();
+    await expect(page).toHaveURL(/\/play$/);
+    await expect(page.getByTestId("my-games-seated")).toHaveCount(0);
   });
 
   test("is not shown to somebody who simply opened the match", async ({ page, request }) => {

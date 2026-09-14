@@ -62,6 +62,25 @@ export type GameHistoryQuery = {
   sortAsked: boolean;
   search: string | null;
   player: string | null;
+  /**
+   * Whose games, BY MEMBER ID — the same narrowing as `player`, asked without
+   * putting anybody's name in an address.
+   *
+   * The 0.133.0 rule is that a URL carries a member's id and never a typed
+   * name: the screen shows "Hanako M." and an address built from the name put a
+   * twelve-year-old's surname in the markup of every page that counted her
+   * games. `playerPath` was fixed then; `gamesHref` — the OTHER builder that
+   * puts a person in a URL — went on writing `?player=<whole name>` behind
+   * every count on her own page.
+   *
+   * It resolves to a NAME before any query runs, and that is what keeps the
+   * promise rather than a detail of it. A record is counted on a `Player` row
+   * keyed by the FOLDED NAME, so "this member's games" and "the games played
+   * under this member's name" are not the same set — narrowing by the id alone
+   * would open a SHORTER list than the count it came from, which is the same
+   * fault as a longer one. See `nameForMember`.
+   */
+  member: string | null;
   result: GameResultFilter;
   /** How the games went for `player`. Read against that name, and ignored without one. */
   outcome: GameOutcomeFilter;

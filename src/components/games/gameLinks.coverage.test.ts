@@ -47,9 +47,34 @@ function filesUnder(dir: string): string[] {
   return out;
 }
 
+/**
+ * The file with its comments blanked out, character for character.
+ *
+ * EVERY CHECK BELOW READS THIS RATHER THAN THE FILE, and it was a hole rather
+ * than a nicety: `GamePicker.tsx` explains its own exception in prose that
+ * quotes the idiom — "this one goes through `<Paired en={copy.label}>` as a
+ * prop" — so the widened matcher found the SENTENCE ABOUT a game name and
+ * reported the file. A gate that reads the explanation of the rule as a breach
+ * of it is a gate people delete. Worse in the other direction: the same file's
+ * prose mentions "an <a> inside the <label>" with no closing tag, which is
+ * enough to make a tag-counting check believe every name after it sits inside
+ * a form control.
+ *
+ * Blanked rather than removed, so every offset is still an offset into the
+ * real file and the line a failure names is the line somebody has to open.
+ * `//` is only a comment where the character before it is not a word
+ * character or a colon — `https://` is an address, not a comment.
+ */
+function code(source: string): string {
+  const blank = (text: string) => text.replace(/[^\n]/g, " ");
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, blank)
+    .replace(/(^|[^\w:])\/\/[^\n]*/g, (match, lead: string) => lead + blank(match.slice(lead.length)));
+}
+
 const FILES = ROOTS.flatMap(filesUnder).map((path) => ({
   path,
-  source: readFileSync(path, "utf8"),
+  source: code(readFileSync(path, "utf8")),
 }));
 
 /**
@@ -76,13 +101,107 @@ function clickable(source: string, at: number): boolean {
 }
 
 /**
+ * Whether this sits inside a form control — an element a link cannot live in.
+ *
+ * UNBOUNDED, unlike `inside` above, and the difference is the argument rather
+ * than a convenience. A LINK has to wrap the name closely to be that name's
+ * link, so four hundred characters is the whole of what could honestly vouch
+ * for it. "I am inside a `<label>`" is not a claim about nearness: it is true
+ * however much markup and prose intervenes, and in `GamePicker` the label
+ * opens forty lines and two measured arguments above the name it is for.
+ *
+ * `<label>` and `<button>` join `<option>` for the reason the rule already
+ * gave `<option>`: choosing one IS the way to that game, which is the same
+ * promise kept another way, and an `<a>` inside either would swallow the click
+ * that chooses.
+ *
+ * Walked as a depth rather than counted as two totals, because a SELF-CLOSING
+ * control closes itself: `ProfileForm.tsx` writes `<option … />` for a list a
+ * datalist fills, and a pair of totals would read that as one more open tag
+ * than close and then believe every name after it in the file sits inside a
+ * select. One stray tag quietly exempting the rest of a file is the shape of
+ * hole this whole gate is about.
+ */
+const CONTROL_TAG = /<(\/?)(option|label|button)\b([^>]*)>/g;
+
+function insideControl(source: string, at: number): boolean {
+  let depth = 0;
+  for (const match of source.slice(0, at).matchAll(CONTROL_TAG)) {
+    const [, closing, , attributes] = match;
+    if (closing === "/") depth -= 1;
+    else if (!attributes.trimEnd().endsWith("/")) depth += 1;
+  }
+  return depth > 0;
+}
+
+/**
+ * Which local names in a file hold a GAME's display copy, at one position.
+ *
+ * Read backwards from where the name is printed to the nearest binding of it,
+ * because `copy` is not one thing: `GameBrowser.tsx` uses that name for a
+ * game's row and then for an OPENING's forty lines later, and a file-wide
+ * list of names would demand a link to a game for the name of an opening.
+ * A gate that cries wolf is one people learn to edit rather than obey.
+ *
+ * Two ways a binding is a game, and no third:
+ *
+ *   - assigned from `RULE_VARIANT_DISPLAY[…]`, which is the table of games.
+ *     Assigned from any other `…_DISPLAY[…]` it is something else — an
+ *     opening, a status, a tier — and not this rule's business.
+ *   - bound as a callback parameter over a list, AND read for its `.variant`
+ *     somewhere in the file. A row carrying a variant key beside its label is
+ *     a game however the list was typed, which is what the /games cards hand
+ *     `GameCards` and what no chain of `.filter`s could be followed through.
+ */
+function isGameName(source: string, expression: string, at: number): boolean {
+  if (/^variantLabel\(/.test(expression)) return true;
+  if (/^RULE_VARIANT_DISPLAY\[/.test(expression)) return true;
+  const held = /^([A-Za-z_$][\w$]*)\.label$/.exec(expression)?.[1];
+  if (held === undefined) return false;
+  const before = source.slice(0, at);
+  let table: string | null = null;
+  let assignedAt = -1;
+  for (const match of before.matchAll(new RegExp(`\\b${held}\\s*=\\s*([A-Za-z_$][\\w$]*)\\s*\\[`, "g"))) {
+    table = match[1];
+    assignedAt = match.index;
+  }
+  let paramAt = -1;
+  for (const match of before.matchAll(new RegExp(`[(,]\\s*${held}\\s*(?:,|\\)|=>|:)`, "g"))) {
+    paramAt = match.index;
+  }
+  if (paramAt > assignedAt) return new RegExp(`\\b${held}\\.variant\\b`).test(source);
+  return table === "RULE_VARIANT_DISPLAY";
+}
+
+/**
  * Every place a file prints a game's name into the page.
  *
  * `${...}` is left out on purpose. A name inside a template string is a name
  * inside a SENTENCE — a hover note, a page title, a line of advice — and a
  * link cannot live in a string. Those are the exception the rule always had:
  * "a game named inside a sentence of copy is not a link and cannot be."
+ *
+ * THE THIRD PATTERN IS THE ONE THE SITE ACTUALLY USES NOW, and adding it is
+ * this gate catching up with its own subject rather than covering a new case.
+ * `<Paired en={…} kanji={…}>` is how a name and its kanji are written since
+ * there were two languages — the /games cards do it, the game picker does it,
+ * the champions table does it — and a name handed over as a PROP was invisible
+ * to a matcher looking for a name in a text position. So the gate held for the
+ * idiom the site was leaving and saw nothing of the one it had moved to: it
+ * would have passed a page that named forty games through `Paired` outside a
+ * link, which is exactly the fault it exists to fail.
+ *
+ * `Paired` is also the RIGHT thing to gate on rather than a convenient one. It
+ * pairs a word with its kanji, which is a LABEL position by construction — the
+ * name of something, in a heading, a cell or a card. The sibling idiom this
+ * deliberately does NOT add is the bare `{copy.label}` of a variant binding:
+ * in JSX that form is indistinguishable from prose, and eight of the thirteen
+ * places it appears are sentences — "games of {copy.label} between two named
+ * members" — so matching it would mean exempting whole files for reasons that
+ * have nothing to do with the rule.
  */
+const PAIRED_NAME = /<Paired\b[^>]{0,240}?\ben=\{\s*([^{}]{1,80}?)\s*\}/g;
+
 function namesPrinted(source: string): number[] {
   const patterns = [
     /(?<!\$)\{\s*variantLabel\(/g,
@@ -92,10 +211,38 @@ function namesPrinted(source: string): number[] {
   for (const pattern of patterns) {
     for (const match of source.matchAll(pattern)) found.push(match.index);
   }
+  for (const match of source.matchAll(PAIRED_NAME)) {
+    if (isGameName(source, match[1], match.index)) found.push(match.index);
+  }
   return found;
 }
 
+/**
+ * Files where a game's name is printed as a CHOICE, by name with the reason.
+ *
+ * The same argument as `<option>`, `<label>` and `<button>` above, for a chooser
+ * whose markup is none of those: a name inside it is what you pick, and a link
+ * on it would take the reader away from the thing they are in the middle of.
+ * Named by file rather than widened into a pattern, so a list that is not a
+ * chooser cannot borrow the exception.
+ */
+const CHOOSERS: Record<string, string> = {
+  /*
+   * The games browser over the practice board. The widened matcher found its
+   * forty names and the first answer was to link them — which made each one a
+   * way off the board in the middle of choosing, with nothing set kept. Picking
+   * is the Play button; reading about the focused game is the openings heading,
+   * which does go through `GameName`.
+   */
+  "src/components/game/GameBrowser.tsx": "a chooser over the board: the name is what you pick, not a way out",
+};
+
 describe("a game's name is the way into that game", () => {
+  it("every chooser exception is a file that still exists", () => {
+    const known = new Set(FILES.map((file) => file.path));
+    expect(Object.keys(CHOOSERS).filter((path) => !known.has(path))).toEqual([]);
+  });
+
   it("has files to check, so a passing run means something", () => {
     // A glob that quietly matched nothing would pass every case below.
     expect(FILES.length).toBeGreaterThan(40);
@@ -104,6 +251,22 @@ describe("a game's name is the way into that game", () => {
   it("finds the names that are printed, so the check below is not vacuous", () => {
     // If the patterns ever stop matching, every file becomes compliant at once.
     expect(FILES.filter((file) => namesPrinted(file.source).length > 0).length).toBeGreaterThan(3);
+  });
+
+  it("sees a name written through Paired, which is how the site writes them now", () => {
+    /*
+     * The vacuity guard for the pattern this gate was blind to, kept separate
+     * from the one above so that the OLD idiom disappearing cannot hide the new
+     * one disappearing too. Both counts were non-zero when this was written —
+     * five `Paired` names across five files — and a nought here means the
+     * matcher has stopped seeing the way the site names a game.
+     */
+    const paired = FILES.filter((file) =>
+      [...file.source.matchAll(PAIRED_NAME)].some((match) =>
+        isGameName(file.source, match[1], match.index),
+      ),
+    );
+    expect(paired.length, "a game's name through <Paired en={…}> is still matched").toBeGreaterThan(0);
   });
 
   it("nobody prints a game's name with nothing behind it", () => {
@@ -117,12 +280,27 @@ describe("a game's name is the way into that game", () => {
       namesPrinted(file.source).some(
         (at) =>
           !clickable(file.source, at) &&
-          // A value in a select. An <option> cannot hold a link, and choosing
-          // one is itself the way to that game — the same promise kept
-          // another way.
-          !inside("option", file.source, at),
+          // A value in a select, a radio's own label, a button. None of the
+          // three can hold a link, and choosing one is itself the way to that
+          // game — the same promise kept another way. See `insideControl`.
+          !insideControl(file.source, at) &&
+          /*
+           * THE PAGE'S OWN TITLE, on a page that leads to the game anyway.
+           *
+           * /games/<slug>/standings names its game in an `<h1>`, which is the
+           * "page title" AGENTS.md already lists beside a hover note and a line
+           * of advice as something that is not a link and cannot be: a reader is
+           * inside that game's address, so the name is what they are looking at
+           * rather than somewhere to go. The `gamePath(` is what keeps this from
+           * being a blanket hole — the breadcrumb one line above the heading
+           * links up to the game, on every facet page, and a page that names a
+           * game in its heading and offers no way to it is still caught.
+           */
+          !(inside("h1", file.source, at) && file.source.includes("gamePath(")),
       ),
-    ).map((file) => file.path);
+    )
+      .map((file) => file.path)
+      .filter((path) => CHOOSERS[path] === undefined);
 
     expect(offenders, "render the name through GameName, which links it").toEqual([]);
   });
@@ -372,6 +550,35 @@ describe("the components the rules are kept in", () => {
     expect(source).toContain("gamePath");
     // The exception has to look like an exception, or the rule is a lie.
     expect(source).toContain("game-not-here");
+  });
+
+  it("nobody writes a second GameName, GameCount or PlayerName of their own", () => {
+    /*
+     * A COPY OF THE OWNER IS THE ONE WAY PAST EVERY CHECK ABOVE, and it is not
+     * a hypothetical: `LegacySource.tsx` had its own `GameName`, twenty lines
+     * that did everything the shared one does and linked to `rulesPath`. It was
+     * right when the rules page was the front door, and it stopped being right
+     * the moment the address move pointed every other name at /games/<slug> —
+     * so one page went on sending readers to the old door with nothing failing.
+     *
+     * Nothing else could have found it. Every check above asks whether a name
+     * is inside a link, and a local component that renders a `<Link>` passes
+     * them all; the assertions below read `GameName.tsx` and would never open
+     * the copy. The rule those assertions enforce — where a game's name leads —
+     * is only worth enforcing in one place if there IS only one place.
+     */
+    const shadows = FILES.filter((file) =>
+      [...file.source.matchAll(/\bfunction (GameName|GameCount|PlayerName)\s*\(/g)].some(
+        // Its own file is where it is SUPPOSED to be. `OWNERS` already keeps
+        // GameName.tsx and GameCount.tsx out of `FILES`; PlayerName.tsx is in
+        // them, because it prints names and counts like any other page.
+        (match) => !file.path.endsWith(`/${match[1]}.tsx`),
+      ),
+    ).map((file) => file.path);
+    expect(
+      shadows,
+      "import GameName / GameCount / PlayerName rather than writing another one",
+    ).toEqual([]);
   });
 
   it("GameCount carries the filter that was counted", () => {

@@ -48,9 +48,24 @@ export const GAME_OUTCOME_DISPLAY: Record<
   decided: { label: "Won, lost or drawn", kanji: "決着" },
 };
 
-/** The same lookup from an address, where the word has not been checked yet. */
-export function outcomeLabel(value: string): string {
-  return (GAME_OUTCOME_DISPLAY as Record<string, { label: string } | undefined>)[value]?.label ?? value;
+/**
+ * The same lookup from an address, where the word has not been checked yet —
+ * and NULL where this site has no word for what the address said.
+ *
+ * It used to fall back to the raw parameter, which put the address's own text
+ * on the screen as though it were copy somebody wrote: `/history?outcome=all`
+ * drew a chip reading "all", and `?outcome=banana` one reading "banana". Both
+ * are values the query applies NOTHING for — `all` is the absence of a
+ * narrowing, and the schema refuses anything it does not know — so the chip was
+ * announcing a filter that had never run, in a word nobody chose.
+ *
+ * Null rather than an empty string or the value itself: "I have no word for
+ * this" is a different answer from any label, and a caller that cannot tell the
+ * two apart is the fault AGENTS.md names by shape — a guard returning a
+ * plausible value for "I do not know". `narrowings.ts` reads it as "no chip".
+ */
+export function outcomeLabel(value: string): string | null {
+  return (GAME_OUTCOME_DISPLAY as Record<string, { label: string } | undefined>)[value]?.label ?? null;
 }
 
 /**
@@ -84,10 +99,10 @@ export const GAME_VERDICT_DISPLAY: Record<
 /** Every game they gave a verdict on, either way. */
 export const GAME_VERDICT_ANY = "judged";
 
-/** The same lookup from an address, where the word has not been checked yet. */
-export function verdictLabel(value: string): string {
+/** The same lookup, and null where there is no word for it. See `outcomeLabel`. */
+export function verdictLabel(value: string): string | null {
   if (value === GAME_VERDICT_ANY) return "Judged";
-  return (GAME_VERDICT_DISPLAY as Record<string, { label: string } | undefined>)[value]?.label ?? value;
+  return (GAME_VERDICT_DISPLAY as Record<string, { label: string } | undefined>)[value]?.label ?? null;
 }
 
 /**
@@ -158,3 +173,12 @@ export const PLAYER_SUGGEST_MIN_QUERY = 1;
 /** Free-text search is bounded so a pathological query cannot scan the table. */
 export const GAME_SEARCH_MAX = 64;
 export const PLAYER_NAME_MAX = 64;
+
+/**
+ * A member id in a filter, bounded like every other string the record accepts.
+ *
+ * Its own constant rather than `PLAYER_NAME_MAX` sharing a number with it: an
+ * id is a cuid this site generated and a name is text somebody typed, and two
+ * limits that happen to agree today are two limits, not one.
+ */
+export const MEMBER_ID_MAX = 64;

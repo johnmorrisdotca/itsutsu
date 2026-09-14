@@ -17,8 +17,21 @@ test.describe("rule variants", () => {
     }
     await expect(browser.getByTestId("game-card-renju")).toContainText("double three");
 
+    /*
+     * A NAME IN THE CHOOSER IS A CHOICE, NOT A WAY OFF THE BOARD. The cards are
+     * already visible above, so this absence is about a rendered dialog rather
+     * than one that has not arrived yet.
+     */
+    await expect(browser.getByTestId("game-card-renju").getByRole("link")).toHaveCount(0);
+
     await browser.getByTestId("play-renju").click();
     await expect(browser).toBeHidden();
+    /*
+     * Choosing chose, and it went where choosing goes: the practice board's
+     * address names its game, so picking Renju is the Renju board — not the
+     * Renju rules page a link on the name would have opened mid-choice.
+     */
+    await expect(page).toHaveURL(/\/games\/renju\/play$/);
     await expect(page.getByTestId("rules")).toHaveValue("renju");
     await expect(page.getByTestId("first-player")).toBeDisabled();
   });

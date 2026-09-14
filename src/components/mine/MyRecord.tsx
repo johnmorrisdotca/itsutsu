@@ -135,7 +135,7 @@ export async function MyRecord({ name }: { name: string }) {
             */}
             <RecordLine
               record={here}
-              of={{ player: name }}
+              of={{ player: name, memberId: mineId }}
               /*
                * THE RUN OVER THE VERY ROWS THIS LINE COUNTED, and nothing
                * stored. `fetchPlayerRecord` reads every finished game this
@@ -196,7 +196,7 @@ export async function MyRecord({ name }: { name: string }) {
             </>
           ),
           record: row,
-          of: { player: name, variant: row.variant, pool: row.pool, rated: "yes" },
+          of: { player: name, memberId: mineId, variant: row.variant, pool: row.pool, rated: "yes" },
           // One row is one pool of one game, so its run is that pool's run —
           // the only streak on the row that the counts beside it account for.
           streak: row.streak,
@@ -234,9 +234,9 @@ export async function MyRecord({ name }: { name: string }) {
             already spoken for by `outcome`.
           */}
           Your own read: you thought you played well in{" "}
-          <GameCount count={tally.up} player={name} verdict="up" title="The games you thought you played well" /> of
+          <GameCount count={tally.up} player={name} memberId={mineId} verdict="up" title="The games you thought you played well" /> of
           the{" "}
-          <GameCount count={tally.answered} player={name} verdict="judged" title="Every game you judged" /> games you judged
+          <GameCount count={tally.answered} player={name} memberId={mineId} verdict="judged" title="Every game you judged" /> games you judged
           {tally.upWins > 0 || tally.downWins > 0
             ? `, and won ${tally.upWins} of the ${tally.up} you felt good about and ${tally.downWins} of the ${tally.down} you did not`
             : ""}

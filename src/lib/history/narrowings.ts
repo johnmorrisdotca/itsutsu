@@ -22,11 +22,28 @@ export type AppliedPlayer = {
   name: string;
   memberId: string | null;
   removable: boolean;
+  /** Which parameter named them, when it was `?member=<id>` rather than `?player=`. See `Narrowing.clears`. */
+  via?: "member";
 };
 
 export type Narrowing = {
   key: string;
   label: string;
+  /**
+   * The parameter a "×" has to delete, where that is not the chip's own key.
+   *
+   * A PLAYER ARRIVES BY TWO SPELLINGS NOW, and the way back has to know which
+   * one it is looking at. Every count on the site links by `?member=<id>` since
+   * the 0.133.0 rule reached `gamesHref`, and a chip that cleared `player`
+   * would leave the record exactly as narrowed as it found it — a filter a
+   * reader is invited to take off and cannot. "Test the way back, not just the
+   * way there" is a section of AGENTS.md for this shape of bug.
+   *
+   * The key stays `player` either way, because what the chip is ABOUT has not
+   * changed and the bar should not read differently depending on which
+   * spelling brought the reader here.
+   */
+  clears?: string;
   /** Present when this chip leads to the player's own page instead of removing anything. */
   href?: string;
 };
@@ -61,14 +78,37 @@ export function appliedNarrowings(input: {
           key: "player",
           label: `${player.name}'s games`,
           href: player.removable ? undefined : playerPath(player.name, player.memberId),
+          ...(player.via === "member" ? { clears: "member" } : {}),
         },
     outcome === "" || (player === null && outcomeNeedsPlayer(outcome))
       ? null
-      : { key: "outcome", label: outcomeLabel(outcome) },
-    pool === "" ? null : { key: "pool", label: GAME_POOL_DISPLAY[pool]?.label ?? pool },
-    rated === "" ? null : { key: "rated", label: GAME_RATED_DISPLAY[rated]?.label ?? rated },
+      : named("outcome", outcomeLabel(outcome)),
+    named("pool", pool === "" ? null : (GAME_POOL_DISPLAY[pool]?.label ?? null)),
+    named("rated", rated === "" ? null : (GAME_RATED_DISPLAY[rated]?.label ?? null)),
     // Unlike outcome, verdict has no player-independent reading at all — see verdictWhere.
-    verdict === "" || player === null ? null : { key: "verdict", label: verdictLabel(verdict) },
+    verdict === "" || player === null ? null : named("verdict", verdictLabel(verdict)),
   ];
   return list.filter((one): one is Narrowing => one !== null);
+}
+
+/**
+ * A chip, or none at all where this site has no word for what was asked.
+ *
+ * IN THE SITE'S OWN WORDS OR NOT AT ALL, never in the address's. Each of these
+ * four used to fall back to the raw parameter — `?pool=all` drew a chip reading
+ * "all", `?rated=all` one reading "all", and any value the schema does not know
+ * drew itself — which is the same fault twice over. It printed a query string
+ * where a sentence goes, and it printed it for exactly the two cases where the
+ * query applies NOTHING: `all` is what this site calls the absence of a
+ * narrowing (the filter bar deletes the parameter when you choose it), and an
+ * unrecognised value is refused outright.
+ *
+ * So the chip bar was claiming a narrowing that had not happened, which is the
+ * one thing this module exists to prevent, and the reason it reads
+ * `outcomeNeedsPlayer` rather than guessing. A missing word is the same kind of
+ * answer: the query did not narrow anything, so there is nothing to announce
+ * and nothing for a "×" to take off.
+ */
+function named(key: string, label: string | null): Narrowing | null {
+  return label === null ? null : { key, label };
 }

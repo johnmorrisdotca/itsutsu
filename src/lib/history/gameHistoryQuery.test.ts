@@ -502,3 +502,28 @@ describe("buildGameOrderBy", () => {
     });
   });
 });
+
+/*
+ * `?member=<id>` is how every count's link names its player since `gamesHref`
+ * learned the 0.133.0 rule. The query only has to carry it; `withMemberResolved`
+ * turns it into the name the record is counted under before any clause is built.
+ */
+describe("the member filter", () => {
+  it("reads ?member= and trims it", () => {
+    expect(parse("?member=%20cm-hanako%20").member).toBe("cm-hanako");
+  });
+
+  it("is null when absent or blank, so nothing is narrowed by it", () => {
+    expect(parse("").member).toBeNull();
+    expect(parse("?member=").member).toBeNull();
+  });
+
+  it("refuses an id longer than any this site makes, by name", () => {
+    expect(refusedBy(`?member=${"x".repeat(65)}`)).toContain("member");
+  });
+
+  it("does not narrow by itself — a name is what the record counts by", () => {
+    const where = buildGameWhere(parse("?member=cm-hanako"));
+    expect(JSON.stringify(where)).not.toContain("cm-hanako");
+  });
+});

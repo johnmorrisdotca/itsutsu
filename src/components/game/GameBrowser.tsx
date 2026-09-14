@@ -115,6 +115,16 @@ function GameBrowser({
                   >
                     <h3 className="flex items-baseline justify-between gap-2">
                       <span className="flex items-baseline gap-2 text-base font-semibold">
+                        {/*
+                          A NAME INSIDE A CHOOSER IS A CHOICE, NOT A REFERENCE.
+                          This dialog is where a game is picked, over a board
+                          the reader is setting up; a link on the name would
+                          leave the board mid-choice and lose what was set.
+                          Choosing is the Play button, and the way to READ about
+                          the focused game is the openings heading below, which
+                          does go through `GameName`. Plain words here, named in
+                          `gameLinks.coverage.test.ts`'s chooser exception.
+                        */}
                         <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-sm font-normal opacity-70" />
                       </span>
                       {current ? (

@@ -110,6 +110,36 @@ describe("every door a member gets a board through asks the limit", () => {
     }
   });
 
+  /*
+   * THE CAP'S COUNT IS A LINK, TO EXACTLY THE GAMES IT COUNTED.
+   *
+   * It went wrong twice. First it linked to all of /play, the BROWSER's queue —
+   * cookie seats, offers, finished games kept — which opened a longer list than
+   * it counted. Then it was printed plain, which kept that promise by breaking
+   * the rule that a count of games is a link. The answer the rule asks for is
+   * the page: `/play?all=seated` lists `seatedLive`, the where the count reads.
+   *
+   * So three things, each of which one of the two wrong versions failed: every
+   * file quoting the count links a number to `SEATED_LIVE_PATH`; the count reads
+   * `seatedLive`; and the queue narrows by `seatedLive` too — one definition on
+   * both sides, so the number and the rows it opens cannot come apart.
+   */
+  it("links the cap's count to the /play narrowing that lists exactly what it counted", () => {
+    const quoting = ["src/app", "src/components"]
+      .flatMap(filesUnder)
+      .map((path) => ({ path, source: readFileSync(path, "utf8") }))
+      .filter((file) => /\bactiveGameCount\s*\(/.test(file.source));
+    expect(quoting.length, "nothing quotes the cap's count — find where the notice went").toBeGreaterThan(0);
+    for (const file of quoting) {
+      expect(
+        /<Link\b[^>]*href=\{SEATED_LIVE_PATH\}[^>]*>[\s\S]{0,200}?\{[^}]+\}[\s\S]{0,80}?<\/Link>/.test(file.source),
+        `${file.path} quotes the cap's count without linking it to SEATED_LIVE_PATH — the page listing exactly those games.`,
+      ).toBe(true);
+    }
+    expect(readFileSync("src/lib/history/activeGames.ts", "utf8")).toMatch(/count\(\{\s*where:\s*seatedLive\(/);
+    expect(readFileSync("src/lib/history/myGames.ts", "utf8")).toMatch(/\?\s*seatedLive\(memberId\)/);
+  });
+
   it("keeps the counting in one place, so no door grows its own", () => {
     /*
      * The other half of "one rule, one place". A door that reimplemented the

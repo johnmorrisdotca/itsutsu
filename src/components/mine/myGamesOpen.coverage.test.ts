@@ -72,6 +72,22 @@ describe("opening a capped group", () => {
   });
 
   /*
+   * THE ONE PLACE EVERY GROUP IS UNCAPPED, AND WHY IT IS NOT THE PAGE ABOVE.
+   *
+   * `?all=seated` narrows the whole queue to `seatedLive` — the games the
+   * games-at-once limit counts — because a seat-refused notice links its count
+   * there and must open exactly that many rows. That set is bounded by the
+   * limit, so showing all of it is not the fifty-row reminder the caps exist to
+   * prevent. It is its own branch, keyed on the narrowing alone, so it cannot
+   * become a flag that opens every group of the ordinary queue.
+   */
+  it("uncaps every group only on the seated narrowing, as its own branch", () => {
+    expect(LIST).toMatch(/const seated = showAll === SEATED_ONLY;/);
+    expect(LIST).toMatch(/const bucket = seated\s*\?[\s\S]{0,600}?shownGroup\(groups\[group\], groups\[group\]\.length\)/);
+    expect(LIST).not.toMatch(/open \|\| seated/);
+  });
+
+  /*
    * A group that could be opened and not closed is the one-directional fault only
    * a return trip finds — AGENTS.md's own example is a language you cannot get
    * out of. The way back is drawn only on the group that is open, so it is not a

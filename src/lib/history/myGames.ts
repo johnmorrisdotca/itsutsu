@@ -8,7 +8,7 @@ import type { Cursor } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
 import { currentNamesFor } from "./currentNames";
 import { toSummary } from "./gameHistory";
-import { DEBT_ONLY, myFinishedPage, myFinishedTotal } from "./myFinished";
+import { DEBT_ONLY, SEATED_ONLY, myFinishedPage, myFinishedTotal, seatedLive } from "./myFinished";
 import { MY_FINISHED_PAGE } from "./myFinished.sort";
 import { QUEUE_SELECT, positionOf, replaysFor } from "./myGamesRows";
 import { waitingFirst } from "./nextGame";
@@ -187,6 +187,15 @@ export async function fetchMyGames(
    * `FilterSeats` is named for the same reason and says it at more length.
    */
   finished: { limit?: number; cursor?: Cursor | null } = {},
+  /**
+   * The queue narrowed to one set a count elsewhere promised, or the whole of it.
+   *
+   * `seated` is `seatedLive`: the games the games-at-once limit counts. Its rows
+   * go through every per-row decision below exactly as the full queue's do, so
+   * they look the same; the caller passes no cookie claims and a window that
+   * keeps everything, so nothing the count counted is dropped on the way.
+   */
+  narrowed: { only?: typeof SEATED_ONLY } = {},
 ): Promise<MyQueue> {
   const groups: MyGames = {
     offered: [],
@@ -197,7 +206,7 @@ export async function fetchMyGames(
     hotSeat: [],
     finished: [],
   };
-  if (claims.size === 0 && memberId === null) {
+  if ((claims.size === 0 || narrowed.only === SEATED_ONLY) && memberId === null) {
     return { groups, finished: { total: 0, next: null } };
   }
 
@@ -224,7 +233,7 @@ export async function fetchMyGames(
    * WHICH GAMES ARE THIS READER'S — the one definition, built once and handed to
    * both halves of the read below, so the two cannot come to disagree about it.
    */
-  const seats: Prisma.GameWhereInput = {
+  const browserSeats: Prisma.GameWhereInput = {
     OR: [
       { id: { in: [...claims.keys()] } },
       /*
@@ -243,6 +252,8 @@ export async function fetchMyGames(
           ]),
     ],
   };
+  const seats: Prisma.GameWhereInput =
+    narrowed.only === SEATED_ONLY && memberId !== null ? seatedLive(memberId) : browserSeats;
 
   /*
    * ─────────────────────────────────────────────────────────────────────────
