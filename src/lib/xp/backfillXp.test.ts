@@ -351,6 +351,65 @@ describe("the replay completes a set on the game that completed it", () => {
     expect(countOf(made, "a", XP_EVENTS.everyVariantPlayed)).toBe(1);
   });
 
+  it("pays a family won on the win that completes it, and on that game", () => {
+    const captures = GAME_FAMILIES.find((family) => family.key === "captures");
+    expect(captures).toBeDefined();
+    const [first, second] = captures?.games ?? ["", ""];
+    const wins = [
+      game({ blackMemberId: "a", winner: "black", variant: first, playedAt: AT("2026-03-01T12:00:00Z") }),
+      game({ blackMemberId: "a", winner: "black", variant: second, playedAt: AT("2026-03-02T12:00:00Z") }),
+      game({ blackMemberId: "a", winner: "black", variant: first, playedAt: AT("2026-03-03T12:00:00Z") }),
+    ];
+    const made = plan({ members: [member("a")], games: wins });
+    expect(countOf(made, "a", XP_EVENTS.everyVariantWonInFamily)).toBe(1);
+    expect(paidOn(made, "a", XP_EVENTS.everyVariantWonInFamily)).toEqual([wins[1].id]);
+    const award = awardsFor(made, "a").find((one) => one.type === XP_EVENTS.everyVariantWonInFamily);
+    expect(award?.subject).toBe("captures");
+    expect(award?.points).toBe(300);
+  });
+
+  it("pays no family won for the win at a family of one game", () => {
+    const made = plan({
+      members: [member("a")],
+      games: [game({ blackMemberId: "a", winner: "black", variant: "hex", playedAt: AT(WED) })],
+    });
+    expect(countOf(made, "a", XP_EVENTS.firstWinAtVariant)).toBe(1);
+    expect(countOf(made, "a", XP_EVENTS.everyVariantWonInFamily)).toBe(0);
+  });
+
+  it("does not pay a family won where one of its games was lost rather than won", () => {
+    const [first, second] = GAME_FAMILIES.find((family) => family.key === "captures")?.games ?? ["", ""];
+    const made = plan({
+      members: [member("a")],
+      games: [
+        game({ blackMemberId: "a", winner: "black", variant: first, playedAt: AT("2026-03-01T12:00:00Z") }),
+        game({ blackMemberId: "a", winner: "white", variant: second, playedAt: AT("2026-03-02T12:00:00Z") }),
+      ],
+    });
+    expect(countOf(made, "a", XP_EVENTS.everyVariantWonInFamily)).toBe(0);
+  });
+
+  it("counts first wins already in the ledger towards a family won", () => {
+    const [first, second] = GAME_FAMILIES.find((family) => family.key === "captures")?.games ?? ["", ""];
+    const made = plan({
+      members: [member("a")],
+      games: [game({ blackMemberId: "a", winner: "black", variant: second, playedAt: AT(WED) })],
+      held: [{ memberId: "a", type: XP_EVENTS.firstWinAtVariant, subject: first, dayKey: "2026-01-01" }],
+    });
+    expect(countOf(made, "a", XP_EVENTS.everyVariantWonInFamily)).toBe(1);
+  });
+
+  it("never plans an upset, because the ratings as they stood were never kept", () => {
+    const games = Array.from({ length: 6 }, (_, index) =>
+      beat("a", "b", `2026-03-0${index + 1}T12:00:00Z`),
+    );
+    const made = plan({ members: [member("a"), member("b")], games });
+    for (const band of [XP_EVENTS.upsetWin, XP_EVENTS.bigUpsetWin, XP_EVENTS.giantKilled]) {
+      expect(countOf(made, "a", band)).toBe(0);
+      expect(XP_BACKFILL_COVERAGE[band].replayed).toBe(false);
+    }
+  });
+
   it("pays everyGradeBeaten on the fifth grade and nothing for a specialist", () => {
     const grades = ["razryad", "kyu", "dan", "meijin", "guoshou"];
     const games = grades.map((tier, index) =>

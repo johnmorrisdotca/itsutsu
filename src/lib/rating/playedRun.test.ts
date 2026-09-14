@@ -41,6 +41,11 @@ type Row = {
   variant: string;
   /** What `longGame` is measured against. */
   moveCount: number;
+  /** Required since the upset bonus: whether the LADDER counts this game. */
+  rated: boolean;
+  hotSeat: boolean;
+  blackName: string;
+  whiteName: string;
 };
 
 /** Every finished, non-abandoned game the fake database holds, oldest first. */
@@ -55,6 +60,13 @@ let transactions = 0;
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    /* The ratings read behind the XP upset bonus. Nobody here holds a rated
+       record, so it answers with none. Answered rather than left missing: a
+       read that throws is caught and LOGGED, and a suite that passes while
+       printing an error teaches everybody to ignore errors. */
+    player: {
+      findMany: async () => [],
+    },
     game: {
       findMany: async () => stored,
       /* The rivalry read behind `revengeWin`: nobody here has beaten anybody
@@ -115,7 +127,7 @@ vi.mock("@/lib/xp/awardXp", () => ({
   },
 }));
 
-const { playedSides, recordPlayed } = await import("./playedRun");
+const { countsOnLadder, playedSides, recordPlayed } = await import("./playedRun");
 const { fetchPlayedTallies } = await import("@/lib/history/playerRecord");
 
 let nextGameId = 0;
@@ -135,6 +147,12 @@ function game(
        naming nothing would quietly assert the case where they do not fire. */
     variant: "reversi",
     moveCount: 10,
+    /* A rated game at two screens between two names, so the ladder counts it —
+       the ordinary case, and the one the upset bonus is allowed to read. */
+    rated: true,
+    hotSeat: false,
+    blackName: `Black ${black ?? "nobody"}`,
+    whiteName: `White ${white ?? "nobody"}`,
   };
 }
 
@@ -428,6 +446,23 @@ describe("what recording one costs", () => {
  * only whether the right member was asked for the right awards about the right
  * game.
  */
+describe("the games the ladder counts, which are the only ones an upset is paid on", () => {
+  const counted = { rated: true, hotSeat: false, blackName: "Hanako", whiteName: "Taro" };
+
+  it("counts a rated game between two names at two screens", () => {
+    expect(countsOnLadder(counted)).toBe(true);
+  });
+
+  it("does not count a friendly, a game at one screen, or one name on both seats", () => {
+    // A friendly is not a refusal to `gameRatingRefusal`, which is exactly why
+    // `rated` is asked here as well.
+    expect(countsOnLadder({ ...counted, rated: false })).toBe(false);
+    expect(countsOnLadder({ ...counted, hotSeat: true })).toBe(false);
+    expect(countsOnLadder({ ...counted, whiteName: "Hanako" })).toBe(false);
+    expect(countsOnLadder({ ...counted, blackName: "" })).toBe(false);
+  });
+});
+
 describe("the XP a decided game asks for", () => {
   it("pays the winner for finishing and for winning, and the loser for finishing", async () => {
     // A lost game still pays. Seeing a game through is the courtesy
@@ -535,6 +570,10 @@ describe("the XP a decided game asks for", () => {
       winner: "abandoned",
       variant: "reversi",
       moveCount: 10,
+      rated: true,
+      hotSeat: false,
+      blackName: "A",
+      whiteName: "B",
     });
 
     expect(asked).toEqual([]);

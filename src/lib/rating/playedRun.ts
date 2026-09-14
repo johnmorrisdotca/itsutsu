@@ -10,6 +10,7 @@ import {
   type StreakOutcome,
 } from "./streak";
 import { outcomeFor } from "./pools";
+import { gameRatingRefusal } from "./rateable";
 
 /**
  * The run over every finished game a member has played here.
@@ -124,7 +125,45 @@ export type DecidedGame = DecidedSeats & {
    * what stops a caller passing the count from before its own last move.
    */
   moveCount: number;
+  /**
+   * Whether the row asked to be rated. Read with the three below for one
+   * question only — does the LADDER count this game — because that is the one
+   * kind of game an XP upset bonus may be paid on. See `countsOnLadder`.
+   */
+  rated: boolean;
+  /**
+   * Both seats held by one device: `isHotSeat` in `liveGame.ts`.
+   *
+   * REQUIRED, and the one of these four that NO ROW CARRIES. Every ending
+   * spreads its row, which supplies `rated` and the names, so this is the field
+   * a forgotten ending would leave out — and leaving it out does not compile,
+   * rather than quietly paying an upset over a game the ladder never counted.
+   */
+  hotSeat: boolean;
+  /** The names the ladder is keyed by, for `gameRatingRefusal`. */
+  blackName: string;
+  whiteName: string;
 };
+
+/**
+ * Whether the ladder counts this game: asked to be rated, and not refused by
+ * the ladder's own rule.
+ *
+ * The same condition every ending applies before `recordResult` — hot seat
+ * first, then the names — asked through `gameRatingRefusal` so the two cannot
+ * drift. That function answers null for an UNRATED game, because a friendly is
+ * not a refusal; so `rated` is checked here too, and a friendly counts for
+ * nothing. The XP upset bonus is paid only where this is true: a rating gap no
+ * rated game ever tested is not a gap anybody overturned.
+ */
+export function countsOnLadder(game: {
+  rated: boolean;
+  hotSeat: boolean;
+  blackName: string;
+  whiteName: string;
+}): boolean {
+  return game.rated && gameRatingRefusal(game) === null;
+}
 
 /**
  * The winner, or a refusal.
@@ -227,7 +266,7 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
 
   const rows = await prisma.member.findMany({
     where: { id: { in: sides.map((side) => side.memberId) } },
-    /* `email` and `timeZone` ride this read for the XP ledger. The buddy list is
+    /* `email`, `name` and `timeZone` ride this read for the XP ledger. The buddy list is
        keyed by address and this function is keyed by id, so `wonVsBuddy` would
        otherwise need a query to turn one into the other; and whether a game
        finished at the WEEKEND is a question about the member's own zone, not the
@@ -235,6 +274,7 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
     select: {
       id: true,
       email: true,
+      name: true,
       timeZone: true,
       playedStreakKind: true,
       playedStreakCount: true,
@@ -314,7 +354,7 @@ async function awardGameXp(
   game: DecidedGame,
   sides: readonly PlayedSide[],
   read: {
-    byId: ReadonlyMap<string, { email: string | null; timeZone: string | null }>;
+    byId: ReadonlyMap<string, { email: string | null; name: string | null; timeZone: string | null }>;
     runs: ReadonlyMap<string, Streak | null>;
   },
 ): Promise<void> {
@@ -323,12 +363,16 @@ async function awardGameXp(
       id: game.id,
       variant: game.variant,
       moveCount: game.moveCount,
+      /* Decided here, where the row's own facts are, so the upset bonus counts
+         exactly the games the ladder counts. */
+      ladderCounts: countsOnLadder(game),
       blackMemberId: game.blackMemberId,
       whiteMemberId: game.whiteMemberId,
     },
     sides.map((side) => ({
       memberId: side.memberId,
       email: read.byId.get(side.memberId)?.email ?? null,
+      name: read.byId.get(side.memberId)?.name ?? null,
       timeZone: read.byId.get(side.memberId)?.timeZone ?? null,
       outcome: side.outcome,
       run: read.runs.get(side.memberId) ?? null,

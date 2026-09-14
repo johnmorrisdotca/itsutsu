@@ -5,6 +5,8 @@ import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 
+import { POOL_COLUMNS } from "@/lib/rating/pools";
+
 import { XP_EVENT_SPECS } from "./xp.constants";
 
 /**
@@ -35,6 +37,8 @@ let events: Event[] = [];
 let past: Past[] = [];
 /** `owner\0buddy`, both addresses, as the Buddy table's unique key really is. */
 let buddies: Set<string> = new Set();
+/** `Player` rows on the ladder of people, for the upset bonus. A member may hold two. */
+let players: { memberId: string; rating: number; ratedGames: number; key?: string; updatedAt?: Date }[] = [];
 const members = new Map<
   string,
   {
@@ -55,6 +59,12 @@ function keyOf(row: { memberId: string; type: string; subject: string }): string
 }
 
 const prismaFake = {
+  player: {
+    findMany: async ({ where }: { where: { memberId: { in: string[] } } }) =>
+      players
+        .filter((row) => where.memberId.in.includes(row.memberId))
+        .map((row, index) => ({ key: `row-${index}`, updatedAt: new Date(0), ...row })),
+  },
   buddy: {
     findUnique: async ({ where }: { where: { owner_buddy: { owner: string; buddy: string } } }) =>
       buddies.has(`${where.owner_buddy.owner}\0${where.owner_buddy.buddy}`)
@@ -128,8 +138,13 @@ const prismaFake = {
       }
       return [...counts.entries()].map(([type, count]) => ({ type, _count: { _all: count } }));
     },
-    count: async ({ where }: { where: { memberId: string; type: string } }) =>
-      events.filter((row) => row.memberId === where.memberId && row.type === where.type).length,
+    count: async ({ where }: { where: { memberId: string; type: string; subject?: { in: string[] } } }) =>
+      events.filter(
+        (row) =>
+          row.memberId === where.memberId &&
+          row.type === where.type &&
+          (where.subject === undefined || where.subject.in.includes(row.subject)),
+      ).length,
   },
   $transaction: async (input: unknown) =>
     typeof input === "function"
@@ -167,6 +182,8 @@ function finished(input: {
   variant?: string;
   moveCount?: number;
   id?: string;
+  rated?: boolean;
+  hotSeat?: boolean;
 }) {
   nextId += 1;
   return {
@@ -176,6 +193,12 @@ function finished(input: {
     winner: input.winner,
     variant: input.variant ?? RULE_VARIANTS.reversi,
     moveCount: input.moveCount ?? 10,
+    /* Rated, at two screens, between two names: a game the ladder counts,
+       unless a case says otherwise. */
+    rated: input.rated ?? true,
+    hotSeat: input.hotSeat ?? false,
+    blackName: `Black ${input.black ?? "nobody"}`,
+    whiteName: `White ${input.white ?? "nobody"}`,
   };
 }
 
@@ -206,6 +229,7 @@ beforeEach(() => {
   events = [];
   past = [];
   buddies = new Set();
+  players = [];
   members.clear();
   nextId = 0;
 });
@@ -373,7 +397,7 @@ describe("winning, through the writer", () => {
     expect(paid("me", "revengeWin")).toBe(2);
   });
 
-  it("reads two things, and only for a win over a person", async () => {
+  it("reads three things, and only for a win over a person", async () => {
     /*
      * WHAT A FINISHED GAME COSTS BEYOND THE WRITES IT ALREADY MADE, counted
      * rather than claimed. The buddy list and the rivalry are the two facts a
@@ -395,6 +419,11 @@ describe("winning, through the writer", () => {
       reads += 1;
       return rivalryRead(args);
     };
+    const ratingsRead = prismaFake.player.findMany;
+    prismaFake.player.findMany = async (args) => {
+      reads += 1;
+      return ratingsRead(args);
+    };
 
     await recordPlayed(finished({ black: "me", white: "them", winner: null, id: "drawn" }));
     const afterDraw = reads;
@@ -404,11 +433,13 @@ describe("winning, through the writer", () => {
 
     prismaFake.buddy.findUnique = buddyRead;
     prismaFake.game.findFirst = rivalryRead;
+    prismaFake.player.findMany = ratingsRead;
     // Two seats, neither of which won: nothing to ask about the other one.
     expect(afterDraw).toBe(0);
     expect(afterBot).toBe(0);
-    // One buddy read and one rivalry read, for the one side that beat a person.
-    expect(reads).toBe(2);
+    // One buddy read, one rivalry read and one read of both ratings, for the one
+    // side that beat a person.
+    expect(reads).toBe(3);
   });
 });
 
@@ -498,7 +529,7 @@ describe("a game at the weekend", () => {
   const wednesday = new Date("2026-09-09T12:00:00Z");
 
   function side(memberId: string, timeZone: string) {
-    return { memberId, email: null, timeZone, outcome: "win" as const, run: null };
+    return { memberId, email: null, name: null, timeZone, outcome: "win" as const, run: null };
   }
   const game = {
     id: "weekend",
@@ -506,6 +537,7 @@ describe("a game at the weekend", () => {
     moveCount: 8,
     blackMemberId: "player",
     whiteMemberId: null,
+    ladderCounts: null,
   };
 
   it("pays once a weekend, not once a game", async () => {
@@ -593,11 +625,13 @@ describe("the tour's two bonuses", () => {
   it("counts nothing on a game that met nothing new", async () => {
     // The count runs only when a first-of was just paid, which is at most
     // thirty-nine times in a member's life. Every other finished game asks
-    // nothing at all.
+    // nothing at all. Three on this member's first game, because it was a WIN:
+    // a first game of a variant, of a family, and a first win at a variant —
+    // the one that can complete a family won.
     member("regular");
     const before = prismaFake.xpEvent.count;
     let counts = 0;
-    prismaFake.xpEvent.count = async (args: { where: { memberId: string; type: string } }) => {
+    prismaFake.xpEvent.count = async (args: { where: { memberId: string; type: string; subject?: { in: string[] } } }) => {
       counts += 1;
       return before(args);
     };
@@ -607,7 +641,173 @@ describe("the tour's two bonuses", () => {
     await recordPlayed(finished({ black: "regular", white: null, winner: "black" }));
 
     prismaFake.xpEvent.count = before;
-    expect(afterFirst).toBe(2);
+    expect(afterFirst).toBe(3);
     expect(counts).toBe(afterFirst);
+  });
+});
+
+describe("beating somebody better than you, through the writer", () => {
+  const ESTABLISHED = 20;
+  const BANDS = ["upsetWin", "bigUpsetWin", "giantKilled"];
+
+  it("pays the band off the ratings the two carried into the game, and takes nothing from the loser", async () => {
+    member("me");
+    member("strong");
+    players = [
+      { memberId: "me", rating: 1500, ratedGames: ESTABLISHED },
+      { memberId: "strong", rating: 1850, ratedGames: ESTABLISHED },
+    ];
+
+    await recordPlayed(finished({ black: "me", white: "strong", winner: "black", id: "upset" }));
+
+    expect(ledger("me")).toContain("giantKilled upset");
+    expect(paid("strong", "gameFinished")).toBe(1);
+    expect(events.every((row) => row.points > 0)).toBe(true);
+    for (const who of ["me", "strong"]) {
+      const owed = events.filter((row) => row.memberId === who).reduce((sum, row) => sum + row.points, 0);
+      expect(members.get(who)?.xp, who).toBe(owed);
+    }
+  });
+
+  it("pays nothing over a newcomer, however high their rating sits", async () => {
+    member("me");
+    member("new");
+    players = [
+      { memberId: "me", rating: 1400, ratedGames: ESTABLISHED },
+      { memberId: "new", rating: 1900, ratedGames: 5 },
+    ];
+
+    await recordPlayed(finished({ black: "me", white: "new", winner: "black" }));
+
+    for (const band of BANDS) expect(paid("me", band), band).toBe(0);
+    expect(paid("me", "wonVsPerson")).toBe(1);
+  });
+
+  it("reads the member's own record, as the player page does, when a member holds two", async () => {
+    // A record is keyed by the name it was earned under, so a member who played
+    // under two names owns two rows. `ownedRow` chooses, for this read and the
+    // player page alike: here the row touched most recently, so an old name's
+    // record from long ago loses to the one played under since.
+    member("me");
+    member("them");
+    players = [
+      { memberId: "me", rating: 1500, ratedGames: ESTABLISHED },
+      { memberId: "them", key: "old-name", rating: 2400, ratedGames: 40, updatedAt: new Date("2026-01-01T00:00:00Z") },
+      { memberId: "them", key: "new-name", rating: 1520, ratedGames: 20, updatedAt: new Date("2026-09-01T00:00:00Z") },
+    ];
+
+    await recordPlayed(finished({ black: "me", white: "them", winner: "black" }));
+
+    for (const band of BANDS) expect(paid("me", band), band).toBe(0);
+  });
+
+  it("pays the win and no bonus when the ratings cannot be read", async () => {
+    member("me");
+    member("them");
+    const read = prismaFake.player.findMany;
+    prismaFake.player.findMany = async () => {
+      throw new Error("the database is down");
+    };
+    const quiet = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    await recordPlayed(finished({ black: "me", white: "them", winner: "black" }));
+
+    prismaFake.player.findMany = read;
+    quiet.mockRestore();
+    expect(paid("me", "wonVsPerson")).toBe(1);
+    for (const band of BANDS) expect(paid("me", band), band).toBe(0);
+  });
+
+  it("an unrated win over a much stronger established opponent pays the ordinary win and no upset", async () => {
+    // The open door this closes: two people agreeing to play friendlies could
+    // otherwise trade up to 1,550 XP a day across a gap no rated game tested.
+    member("me");
+    member("strong");
+    players = [
+      { memberId: "me", rating: 1300, ratedGames: ESTABLISHED },
+      { memberId: "strong", rating: 2100, ratedGames: ESTABLISHED },
+    ];
+    let ratingReads = 0;
+    const read = prismaFake.player.findMany;
+    prismaFake.player.findMany = async (args) => {
+      ratingReads += 1;
+      return read(args);
+    };
+
+    await recordPlayed(finished({ black: "me", white: "strong", winner: "black", id: "friendly", rated: false }));
+
+    prismaFake.player.findMany = read;
+    expect(ledger("me")).toEqual(
+      expect.arrayContaining(["gameFinished friendly", "gameWon friendly", "wonVsPerson friendly"]),
+    );
+    for (const band of BANDS) expect(paid("me", band), band).toBe(0);
+    // Not even asked: a game the ladder does not count reads no ratings.
+    expect(ratingReads).toBe(0);
+  });
+
+  it("pays no upset on a rated game the ladder refuses: one screen, or one name on both seats", async () => {
+    member("me");
+    member("strong");
+    players = [
+      { memberId: "me", rating: 1300, ratedGames: ESTABLISHED },
+      { memberId: "strong", rating: 2100, ratedGames: ESTABLISHED },
+    ];
+
+    await recordPlayed(finished({ black: "me", white: "strong", winner: "black", id: "one-screen", hotSeat: true }));
+    await recordPlayed({
+      ...finished({ black: "me", white: "strong", winner: "black", id: "one-name" }),
+      blackName: "Twin",
+      whiteName: "Twin",
+    });
+
+    for (const band of BANDS) expect(paid("me", band), band).toBe(0);
+    expect(paid("me", "wonVsPerson")).toBe(2);
+  });
+
+  it("reads the ladder of people, by the pool's own column names", () => {
+    // `ratingsAsTheyStood` selects `rating` and `ratedGames`. If the people
+    // pool ever moves to other columns, this is what says the read moved too.
+    expect(POOL_COLUMNS.people.rating).toBe("rating");
+    expect(POOL_COLUMNS.people.ratedGames).toBe("ratedGames");
+  });
+});
+
+describe("a family won, through the writer", () => {
+  it("pays on the win that completes a family, once, keyed on the family", async () => {
+    member("me");
+    const captures = GAME_FAMILIES.find((family) => family.key === "captures");
+    expect(captures).toBeDefined();
+    const games = captures?.games ?? [];
+
+    for (const variant of games) {
+      await recordPlayed(finished({ black: "me", white: null, winner: "black", variant }));
+    }
+    await recordPlayed(finished({ black: "me", white: null, winner: "black", variant: games[0] }));
+
+    expect(paid("me", "everyVariantWonInFamily")).toBe(1);
+    expect(ledger("me")).toContain("everyVariantWonInFamily captures");
+    expect(events.find((row) => row.type === "everyVariantWonInFamily")?.points).toBe(300);
+  });
+
+  it("pays nothing for a family played through but not won through", async () => {
+    member("me");
+    const games = GAME_FAMILIES.find((family) => family.key === "captures")?.games ?? [];
+
+    await recordPlayed(finished({ black: "me", white: null, winner: "black", variant: games[0] }));
+    await recordPlayed(finished({ black: "me", white: null, winner: "white", variant: games[1] }));
+
+    expect(paid("me", "firstOfFamily")).toBe(1);
+    expect(paid("me", "everyVariantWonInFamily")).toBe(0);
+  });
+
+  it("pays no family award for the win at a family of one game", async () => {
+    // Hex is the whole of Connections. Its one win is paid by the first win and
+    // the family met; it completes nothing, and 300 more would make it ~510 XP.
+    member("me");
+
+    await recordPlayed(finished({ black: "me", white: null, winner: "black", variant: RULE_VARIANTS.hex }));
+
+    expect(ledger("me")).toContain("firstWinAtVariant hex");
+    expect(paid("me", "everyVariantWonInFamily")).toBe(0);
   });
 });

@@ -8,8 +8,10 @@ import { STREAK_KINDS, type Streak } from "@/lib/rating/streak";
 import { XP_LONG_GAME_MOVES, XP_WIN_STREAK_MILESTONES } from "./xp.constants";
 import {
   NO_OPPONENT,
+  XP_FAMILY_WON_MIN_GAMES,
   XP_GRADES_TO_BEAT,
   XP_VARIANTS_TO_PLAY,
+  familyToWin,
   gameAwards,
   otherSeat,
   variantOf,
@@ -27,7 +29,8 @@ import {
  * every case below asserts the subject and not merely the type.
  */
 
-const game = { id: "k3m9-p2qx", variant: RULE_VARIANTS.reversi as string, moveCount: 12 };
+/* A game the ladder counts, so the upset cases below are about the gap. */
+const game = { id: "k3m9-p2qx", variant: RULE_VARIANTS.reversi as string, moveCount: 12, ladderCounts: true as boolean | null };
 
 /**
  * Nobody in the other seat: an unbound chair, or a member playing themselves.
@@ -43,7 +46,7 @@ const alone: PlayedSideFacts = {
   weekendWeek: null,
 };
 /** A person, known not to be a buddy and known never to have won before. */
-const person: Opponent = { id: "m-they", tier: null, buddy: false, beatenMeBefore: false };
+const person: Opponent = { id: "m-they", tier: null, buddy: false, beatenMeBefore: false, ratings: null };
 
 const won: PlayedSideFacts = { ...alone, outcome: STREAK_KINDS.win };
 const lost: PlayedSideFacts = { ...alone, outcome: STREAK_KINDS.loss };
@@ -170,6 +173,55 @@ describe("winning against somebody", () => {
   });
 });
 
+describe("beating somebody better than you", () => {
+  /* Both established, so the only thing that differs between cases is the gap.
+     The tiers themselves are `xpUpset.test.ts`'s cases. */
+  const rated = (mine: number, theirs: number) => ({
+    mine: { rating: mine, ratedGames: 20 },
+    theirs: { rating: theirs, ratedGames: 20 },
+  });
+  const BANDS = ["upsetWin", "bigUpsetWin", "giantKilled"];
+
+  it("adds one band beside the person, keyed on the game, and changes nothing else", () => {
+    const awards = gameAwards(game, beat({ ratings: rated(1500, 1650) }));
+    expect(awards.find((award) => award.type === "upsetWin")).toEqual({ type: "upsetWin", subject: game.id });
+    expect(awards.map((award) => award.type)).toEqual(
+      types(beat()).flatMap((type) => (type === "wonVsPerson" ? [type, "upsetWin"] : [type])),
+    );
+  });
+
+  it("pays a weaker or equal person exactly what a win always paid, never less", () => {
+    expect(types(beat({ ratings: rated(1700, 1500) }))).toEqual(types(beat()));
+    expect(types(beat({ ratings: rated(1600, 1600) }))).toEqual(types(beat()));
+  });
+
+  it("pays no upset on a game the ladder does not count, nor where that is not known", () => {
+    for (const ladderCounts of [false, null]) {
+      const order = gameAwards({ ...game, ladderCounts }, beat({ ratings: rated(1200, 2000) })).map(
+        (award) => award.type,
+      );
+      for (const band of BANDS) expect(order, String(ladderCounts)).not.toContain(band);
+      expect(order).toContain("wonVsPerson");
+    }
+  });
+
+  it("comes after the finish, because it rides the day's allowance", () => {
+    const order = types(beat({ ratings: rated(1200, 1900) }));
+    expect(order.indexOf("giantKilled")).toBeGreaterThan(order.indexOf("gameFinished"));
+  });
+
+  it("never reads a program's rating, and pays nothing on a loss or a draw", () => {
+    // A grade is paid by `gradeBeaten`, once; its rating lives in the other pool.
+    const bot = types(beat({ tier: BOT_TIERS.meijin, ratings: rated(1200, 2000) }));
+    for (const band of BANDS) expect(bot).not.toContain(band);
+    const strong = { ...person, ratings: rated(1200, 2000) };
+    for (const band of BANDS) {
+      expect(types({ ...lost, opponent: strong })).not.toContain(band);
+      expect(types({ ...drawn, opponent: strong })).not.toContain(band);
+    }
+  });
+});
+
 describe("the turn-around", () => {
   it("pays once for beating somebody who had beaten you", () => {
     const awards = gameAwards(game, beat({ beatenMeBefore: true }));
@@ -270,6 +322,28 @@ describe("a variant the deploy does not know", () => {
     expect(variantOf({ ...game, variant: "shogi" })).toBeNull();
     expect(types(won, { ...game, variant: "shogi" })).toEqual(["gameFinished", "firstGameEver", "gameWon"]);
     expect(types(won, { ...game, variant: "" })).not.toContain("firstOfVariant");
+  });
+});
+
+describe("the families a win can complete", () => {
+  it("is every family of more than one game, and no family of one", () => {
+    for (const family of GAME_FAMILIES) {
+      for (const variant of family.games) {
+        const answer = familyToWin(variant);
+        if (family.games.length >= XP_FAMILY_WON_MIN_GAMES) expect(answer?.key, variant).toBe(family.key);
+        else expect(answer, variant).toBeNull();
+      }
+    }
+    expect(familyToWin(RULE_VARIANTS.hex)).toBeNull();
+    expect(familyToWin(RULE_VARIANTS.ninuki)?.key).toBe("captures");
+  });
+
+  it("answers nothing for a variant this deploy cannot name", () => {
+    expect(familyToWin("somethingRetired")).toBeNull();
+  });
+
+  it("counts eight families that can be won today", () => {
+    expect(GAME_FAMILIES.filter((family) => familyToWin(family.games[0]) !== null)).toHaveLength(8);
   });
 });
 
