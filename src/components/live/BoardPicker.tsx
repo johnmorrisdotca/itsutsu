@@ -1,10 +1,11 @@
 "use client";
 
+import { BoardSizeMark } from "@/components/board/BoardSizeMark";
 import { Paired } from "@/components/i18n/Paired";
 import { BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 
 import { PickMark } from "./PickMark";
-import { PICK_BLOCKS, PICK_CARD } from "./picker.constants";
+import { BOARD_BLOCK_MARK_PX, BOARD_ONLY_MARK_PX, PICK_BLOCKS, PICK_CARD } from "./picker.constants";
 
 /**
  * The board, as big blocks in a row. John: "for the board sizes, make it more
@@ -17,9 +18,8 @@ import { PICK_BLOCKS, PICK_CARD } from "./picker.constants";
  * board here is square, so the proportion is always one to one and density is
  * the only real difference between them — so density is what is drawn.
  *
- * Two repeating gradients rather than a picture or an SVG: no file to fetch,
- * no element per line, and the line count follows the number it is drawn from,
- * so a board size nobody has thought of yet draws itself correctly.
+ * The picture is `BoardSizeMark`, which is the one place the lattice is drawn —
+ * plain here among several boards, numbered on a board that stands alone.
  *
  * The blocks sit in a row and wrap only if they must — there are at most four
  * of them — because a stack of four is a list and John asked for a row.
@@ -93,24 +93,37 @@ export function BoardPicker({
                 className="peer sr-only"
               />
               {/*
-                The board itself, at the density its number means. Decorative:
-                the number under it is the same fact in words, and a screen
-                reader hearing "grid" and then "nineteen by nineteen" has been
-                told one thing twice.
+                The board itself, at the density its number means.
+
+                AMONG SEVERAL, the plain picture with the size in text under
+                it. The picture is decorative there: the number under it is the
+                same fact in words, and a screen reader hearing "grid" and then
+                "nineteen by nineteen" has been told one thing twice. A number
+                drawn into each picture as well would say every size twice to
+                the eye too, in a row whose whole job is telling 13 from 15.
+
+                ALONE, THE NUMBER GOES INTO THE PICTURE. A one-board game's
+                block is a statement, and "8×8" over "Eight" was one number
+                said twice in words. John: "if you don't have the size below it
+                in text it is incorporated directly in the image." So the lone
+                block draws the numbered mark and drops the line — and because
+                the text is gone, the mark says the size in words itself
+                (`words="none"`), which is what the radio is then named by.
+
+                Bigger by exactly the line it replaces (`BOARD_ONLY_MARK_PX`),
+                so a one-board game's panel stays the height of a four-board
+                one's and the Start button does not move between them.
               */}
-              <span
-                aria-hidden="true"
-                className="size-12 shrink-0 rounded-md border border-rule-strong bg-ivory"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(to right, var(--rule-strong) 1px, transparent 1px)," +
-                    "linear-gradient(to bottom, var(--rule-strong) 1px, transparent 1px)",
-                  backgroundSize: `${100 / size}% ${100 / size}%`,
-                }}
-              />
-              <span className="text-base leading-none font-semibold">
-                {size}×{size}
-              </span>
+              {only ? (
+                <BoardSizeMark size={size} form="numbered" px={BOARD_ONLY_MARK_PX} words="none" />
+              ) : (
+                <>
+                  <BoardSizeMark size={size} form="plain" px={BOARD_BLOCK_MARK_PX} words="beside" />
+                  <span className="text-base leading-none font-semibold">
+                    {size}×{size}
+                  </span>
+                </>
+              )}
               {/*
                 What that board is FOR — "Mini", "Tournament size" — which is
                 the part a number alone cannot say to somebody meeting these

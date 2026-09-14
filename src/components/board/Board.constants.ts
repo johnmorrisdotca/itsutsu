@@ -184,3 +184,49 @@ export const MARK_STYLE: Record<
   selected: { colour: "#0ea5e9", shape: "ring" },
   target: { colour: "#0ea5e9", shape: "dot" },
 };
+
+/**
+ * THE BOARD-SIZE MARK — a little board at the density its number means, drawn
+ * by `BoardSizeMark` and nowhere else.
+ *
+ * Two repeating gradients rather than a picture or an SVG: no file to fetch,
+ * no element per line, and the line count follows the number it is drawn from,
+ * so a board size nobody has thought of yet draws itself correctly.
+ */
+export const BOARD_SIZE_MARK_CLASS =
+  "relative inline-flex shrink-0 items-center justify-center rounded-md border border-rule-strong bg-ivory";
+
+export const BOARD_SIZE_LATTICE =
+  "linear-gradient(to right, var(--rule-strong) 1px, transparent 1px)," +
+  "linear-gradient(to bottom, var(--rule-strong) 1px, transparent 1px)";
+
+/**
+ * The number, set in the middle of the lattice.
+ *
+ * ON A PLATE, because the number sits on the lines. A 19×19 at 48px has a
+ * line every two and a half pixels, which runs straight through the strokes
+ * of a digit and turns "19" into texture. The plate is the board's own ivory,
+ * nearly opaque, so it reads as a patch of board left clear for the number
+ * rather than a label stuck on — in both themes, since `--ivory` and `--ink`
+ * swap together. The lattice still shows round it, which is what keeps a 3
+ * looking coarser than a 19.
+ *
+ * Mono and `tabular-nums`, the way the site sets the figures it prints
+ * (`Figures`, the move numbers on a stone): a 13 and a 19 take the same width,
+ * so a row of them does not shimmer.
+ */
+export const BOARD_SIZE_NUMERAL_CLASS =
+  "rounded-[0.18em] bg-ivory/90 px-[0.12em] py-[0.04em] font-mono font-semibold leading-none text-ink tabular-nums";
+
+/**
+ * The numeral's size as a share of the mark's side, for a number of up to two
+ * digits: a two-digit plate comes to about two-thirds of the mark, which leaves
+ * a ring of lattice round it and keeps the digits past 22px at 48px.
+ *
+ * 0.42 was tried first and looked at: legible, but small in a 70px board —
+ * a label on the picture rather than the number being the picture.
+ */
+export const BOARD_SIZE_NUMERAL_SCALE = 0.46;
+
+/** The size in words, for a mark with nothing beside it saying so. */
+export const boardSizeWords = (size: number) => `${size} by ${size} board`;

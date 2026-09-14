@@ -199,3 +199,37 @@ export type StoneMarkProps = {
   /** Whether this stone has been crowned, in checkers. */
   isKing?: boolean;
 };
+
+/**
+ * The two ways a board size is drawn as a mark. `plain` is the lattice alone,
+ * at the density its number means; `numbered` is the same lattice with the
+ * number of the size set large in the middle of it, for a place that does not
+ * also say the size in words.
+ */
+export type BoardSizeMarkForm = "plain" | "numbered";
+
+/**
+ * Whether the size is already said in words next to the mark.
+ *
+ * `beside`: it is ("19×19" under the block), so the mark is decoration and a
+ * screen reader skips it — hearing the size from the picture and then from
+ * the text is being told one thing twice.
+ *
+ * `none`: nothing beside the mark says it, so the mark says it in words itself
+ * ("19 by 19 board"), or the size reaches a sighted reader and nobody else.
+ *
+ * Required, with no default. Whether the text is there is a fact about the
+ * CALLER's layout, and a guess made here would be wrong for half of them —
+ * silently, since both answers draw the same picture.
+ */
+export type BoardSizeMarkWords = "beside" | "none";
+
+export type BoardSizeMarkProps = {
+  /** The length of one side: 3 for tic-tac-toe, 19 for a go board. */
+  size: number;
+  form: BoardSizeMarkForm;
+  /** The side of the mark in CSS pixels. The numeral is scaled from it. */
+  px: number;
+  words: BoardSizeMarkWords;
+  className?: string;
+};
