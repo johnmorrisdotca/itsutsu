@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -18,12 +18,15 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { HandicapChoice } from "./HandicapChoice";
 import { OpponentChoice } from "./OpponentChoice";
-import { ANYONE, idIn, valueFor } from "./opponentOptions";
+import { ANYONE, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
 import { describeRules } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
-import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
+import { readSetUpAsked } from "./setUpAsked";
+import { keptBoardChosen, keptDraft, keptParams, queryRecord } from "./setUpKept";
+import type { KeptBase, KeptDefaults, SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
+import { useKeptAddress } from "./useKeptAddress";
 import { matchSeat } from "./seatMatch";
 import { sameRules, seatsFor } from "./setUpStart";
 import { foldedWords } from "./setUpWords";
@@ -67,9 +70,9 @@ import { foldedWords } from "./setUpWords";
  * pre-filled screen is a plain address — see `SET_UP_PARAMS`.
  */
 export function SetUpGame({
-  initial,
+  defaults,
+  game = null,
   asPlayed = null,
-  boardChosen: boardSettled = null,
   opponents,
   seats = [],
   signedIn,
@@ -79,7 +82,10 @@ export function SetUpGame({
   fork = null,
   problem = null,
 }: {
-  initial: RulesDraft;
+  /** The member's standing board and clock: what silence opens a game at. */
+  defaults: KeptDefaults;
+  /** The game the path names, at /games/<game>/new; null where the game is a choice. */
+  game?: RuleVariant | null;
   /**
    * The game this was filled in from, as it was PLAYED — null where nothing was.
    *
@@ -89,16 +95,6 @@ export function SetUpGame({
    * and comparing a changed draft against itself would always say "unchanged".
    */
   asPlayed?: RulesDraft | null;
-  /**
-   * The board the ADDRESS settled, or null where the draft's board is only the
-   * default this screen opened at. See `SetUpFrom.boardChosen`.
-   *
-   * It seeds the same state a click on the board picker writes, because it is
-   * the same fact arriving by a different door: `?board=19` is a choice
-   * somebody made, in a link they followed, and `matchSeat` already knows that
-   * a chosen board does not follow a seat on the noticeboard.
-   */
-  boardChosen?: number | null;
   opponents: Opponent[];
   /**
    * The seats already posted, so asking for a game somebody is already asking
@@ -138,10 +134,38 @@ export function SetUpGame({
   problem?: string | null;
 }) {
   const router = useRouter();
-  const [rules, setRules] = useState<RulesDraft>(initial);
-  const [against, setAgainst] = useState<string>(
-    opponent === null ? ANYONE : valueFor(opponent),
-  );
+  /*
+   * EVERY CHOICE STARTS FROM THE ADDRESS AND IS WRITTEN BACK TO IT. John: "We
+   * need Memory when viewing Gaming pages... a refresh loses the Checkers
+   * selections". Read here rather than taken from props, because a Back into
+   * this screen is answered from the router's cache, which holds the props of
+   * its first render. See `setUpKept.ts`. The board the address settled seeds
+   * the same state a click on the board picker writes: `?board=19` is a choice.
+   */
+  const query = useSearchParams();
+  const base: KeptBase = {
+    asPlayed,
+    forked: fork !== null,
+    defaults,
+    pathVariant: game,
+    silentOpponent: again !== null ? (opponent?.id ?? null) : null,
+  };
+  const [arrived] = useState(() => {
+    const asked = readSetUpAsked(queryRecord(query));
+    const draft = keptDraft(base, asked);
+    return {
+      draft,
+      board: keptBoardChosen(base, asked, draft),
+      against: againstFromAddress(fork === null ? asked.against : null, {
+        computers: botsFor(draft.variant as RuleVariant),
+        opponents,
+        named: opponent,
+        absent: (again !== null || fork !== null) && opponent !== null ? valueFor(opponent) : ANYONE,
+      }),
+    };
+  });
+  const [rules, setRules] = useState<RulesDraft>(arrived.draft);
+  const [against, setAgainst] = useState<string>(arrived.against);
   /*
    * Pressed, and on the way. There is nothing here that can fail any more — the
    * request that could moved to the doorstep — so this screen has no error to
@@ -196,7 +220,7 @@ export function SetUpGame({
    * matched the game and the pace, which is why a busy database never showed it
    * and a fresh one always did.
    */
-  const [boardChosen, setBoardChosen] = useState<number | null>(boardSettled);
+  const [boardChosen, setBoardChosen] = useState<number | null>(arrived.board);
 
   /*
    * Whether somebody is already asking for exactly this, and which board to show
@@ -211,6 +235,9 @@ export function SetUpGame({
     boardChosen,
     matchable: again === null && fork === null,
   });
+
+  /* Every choice into the address as it is made, without asking the server — see `useKeptAddress`. */
+  useKeptAddress(keptParams(base, { rules, boardChosen, against: chosenId, chooseGame }));
 
   /*
    * WHETHER THIS IS STILL A REPEAT of the game it was filled in from.
@@ -452,32 +479,4 @@ export function SetUpGame({
       ) : null}
     </section>
   );
-}
-
-/**
- * Who a chosen value names, looked up where it can honestly be found.
- *
- * The order matters. A program is only itself at a game it plays — away from
- * its own board a specialist is somebody else under a second name — so the list
- * of programs offered at THIS game is asked first, and an opponent the address
- * named is only honoured as a program while that list still holds them.
- */
-function whoIs(
-  id: string,
-  computers: readonly { id: string; name: string }[],
-  opponents: readonly Opponent[],
-  named: SetUpOpponent | null,
-): SetUpOpponent | null {
-  const bot = computers.find((one) => one.id === id);
-  if (bot !== undefined) return { id: bot.id, name: bot.name, computer: true };
-  const person = opponents.find((one) => one.id === id);
-  if (person !== undefined) return { id: person.id, name: person.name, computer: false };
-  /*
-   * Somebody the address named who is on neither list — a player met in the
-   * directory, who is nobody's buddy and is not here now. Honoured, because
-   * dropping them would answer "play this person" with a seat posted for
-   * anyone; but never for a program, which the list above is the authority on.
-   */
-  if (named !== null && named.id === id && !named.computer) return named;
-  return null;
 }

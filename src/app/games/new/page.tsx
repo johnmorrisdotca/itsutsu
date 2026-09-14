@@ -58,7 +58,7 @@ export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/gam
       <SiteHeader />
       <SetUpHeading from={from} variant={null} />
       <SetUpGame
-        initial={from.initial}
+        defaults={{ size: defaults.size, moveTimeMs: defaults.moveTimeMs }}
         opponents={opponents}
         seats={seats}
         signedIn={email !== null}
@@ -67,7 +67,6 @@ export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/gam
         again={from.again}
         fork={from.fork}
         asPlayed={from.asPlayed}
-        boardChosen={from.boardChosen}
         problem={from.problem}
       />
     </Page>

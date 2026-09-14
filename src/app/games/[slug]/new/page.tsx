@@ -62,7 +62,8 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
       <SiteHeader />
       <SetUpHeading from={from} variant={variant} />
       <SetUpGame
-        initial={from.initial}
+        defaults={{ size: defaults.size, moveTimeMs: defaults.moveTimeMs }}
+        game={variant}
         opponents={opponents}
         seats={seats}
         signedIn={email !== null}
@@ -70,7 +71,6 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
         again={from.again}
         fork={from.fork}
         asPlayed={from.asPlayed}
-        boardChosen={from.boardChosen}
         problem={from.problem}
       />
     </Page>

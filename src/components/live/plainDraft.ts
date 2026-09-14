@@ -1,6 +1,8 @@
-import { NO_HANDICAP, OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, OPENING_RULES, boardSizesFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 import type { RulesDraft } from "./rulesDraft";
+import type { KeptDefaults } from "./setUp.types";
 
 /**
  * THE SET-UP SCREEN'S PLAIN PRE-FILL: a game somebody has not changed anything
@@ -40,4 +42,23 @@ export function plainDraft({
     open: true,
     handicap: NO_HANDICAP,
   };
+}
+
+/**
+ * WHAT SILENCE OPENS A GAME AT, FOR THIS READER: the plain game, on their own
+ * standing board where the game has it and the game's first board where it does
+ * not, at their own usual clock.
+ *
+ * Stated once because two places have to agree on it exactly. `setUpFrom` opens
+ * the screen with it, and the screen leaves out of its own address every choice
+ * that equals it (`keptParams`) — a choice left out is a choice silence has to
+ * give back, so the two cannot be allowed to differ by a board.
+ */
+export function silentDraft({ variant, defaults }: { variant: RuleVariant; defaults: KeptDefaults }): RulesDraft {
+  const sizes = boardSizesFor(variant);
+  return plainDraft({
+    variant,
+    size: sizeForVariant(variant, sizes.includes(defaults.size) ? defaults.size : sizes[0]),
+    moveTimeMs: defaults.moveTimeMs,
+  });
 }
