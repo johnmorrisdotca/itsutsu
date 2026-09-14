@@ -442,7 +442,7 @@ so nothing today would catch this.
 pushing, chained with `&&` so a refusal or a red gate stops the push:**
 
 ```sh
-pnpm release:take --summary "A new game a player would notice." && \
+pnpm release:take --summary "a new game a player would notice." && \
   pnpm preflight:prod && git fetch origin && git push origin HEAD:main
 ```
 
@@ -454,7 +454,11 @@ needs no summary at all — pass one anyway and it still gets a changelog line.
 `--done <key>` marks a row done through the API with the version just taken;
 see board convergence ITS-04 and the Board Gate section above. `done` has no
 other door: the page and `pnpm task` cannot offer it, and a row already done
-does not move again.
+does not move again. If closing a row fails, the release commit is still
+right: run `pnpm release:take --done <key>` again with nothing beside it, on
+that release commit with a clean tree. It takes no number and closes the row
+at the release HEAD already is, and it refuses, closing nothing, when HEAD is
+not a release commit.
 
 **The tool commits the release; there is no commit step to remember.** It
 writes `package.json` and `CHANGELOG.md` and commits exactly those two, as

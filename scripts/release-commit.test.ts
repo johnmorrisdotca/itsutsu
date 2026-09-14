@@ -5,6 +5,7 @@ import {
   commitRelease,
   dirtyReleaseFiles,
   RELEASE_CO_AUTHOR,
+  releaseCoAuthor,
   releaseCommitMessage,
   releaseRefusal,
   writeAndCommit,
@@ -87,25 +88,56 @@ describe("releaseRefusal", () => {
   });
 });
 
+describe("releaseCoAuthor", () => {
+  it("falls back to the constant when RELEASE_CO_AUTHOR is not set, or is blank", () => {
+    expect(releaseCoAuthor({})).toBe(RELEASE_CO_AUTHOR);
+    expect(releaseCoAuthor({ RELEASE_CO_AUTHOR: "" })).toBe(RELEASE_CO_AUTHOR);
+    expect(releaseCoAuthor({ RELEASE_CO_AUTHOR: "   " })).toBe(RELEASE_CO_AUTHOR);
+  });
+
+  it("uses a whole trailer from the environment as it is given, trimmed", () => {
+    expect(releaseCoAuthor({ RELEASE_CO_AUTHOR: "  Co-Authored-By: Claude Next <noreply@anthropic.com>\n" })).toBe(
+      "Co-Authored-By: Claude Next <noreply@anthropic.com>",
+    );
+  });
+
+  it("puts the key on a value given as a name and address alone", () => {
+    expect(releaseCoAuthor({ RELEASE_CO_AUTHOR: "Claude Next <noreply@anthropic.com>" })).toBe(
+      "Co-Authored-By: Claude Next <noreply@anthropic.com>",
+    );
+  });
+
+  it("reads only RELEASE_CO_AUTHOR, never who is committing", () => {
+    expect(releaseCoAuthor({ GIT_AUTHOR_NAME: "John Morris", GIT_AUTHOR_EMAIL: "someone@example.invalid" })).toBe(
+      RELEASE_CO_AUTHOR,
+    );
+  });
+});
+
 describe("releaseCommitMessage", () => {
   it("is the version and the first summary, then the co-author trailer", () => {
-    expect(releaseCommitMessage("0.151.0", ["A new game a player would notice"])).toBe(
+    expect(releaseCommitMessage("0.151.0", ["A new game a player would notice"], RELEASE_CO_AUTHOR)).toBe(
       `0.151.0 — A new game a player would notice\n\n${RELEASE_CO_AUTHOR}\n`,
     );
   });
 
   it("drops a summary's closing full stop from the subject only", () => {
-    expect(releaseCommitMessage("0.151.0", ["A fix."]).split("\n")[0]).toBe("0.151.0 — A fix");
+    expect(releaseCommitMessage("0.151.0", ["A fix."], RELEASE_CO_AUTHOR).split("\n")[0]).toBe("0.151.0 — A fix");
   });
 
   it("lists every summary in the body when there is more than one, in the order given", () => {
-    expect(releaseCommitMessage("0.151.0", ["First thing", "  ", "Second thing"])).toBe(
+    expect(releaseCommitMessage("0.151.0", ["First thing", "  ", "Second thing"], RELEASE_CO_AUTHOR)).toBe(
       `0.151.0 — First thing\n\n- First thing\n- Second thing\n\n${RELEASE_CO_AUTHOR}\n`,
     );
   });
 
   it("names a patch with no summary by its number alone", () => {
-    expect(releaseCommitMessage("0.150.1", [])).toBe(`0.150.1\n\n${RELEASE_CO_AUTHOR}\n`);
+    expect(releaseCommitMessage("0.150.1", [], RELEASE_CO_AUTHOR)).toBe(`0.150.1\n\n${RELEASE_CO_AUTHOR}\n`);
+  });
+
+  it("ends with whatever trailer it is given", () => {
+    const trailer = "Co-Authored-By: Claude Next <noreply@anthropic.com>";
+    expect(releaseCommitMessage("0.151.0", ["New"], trailer)).toBe(`0.151.0 — New\n\n${trailer}\n`);
   });
 });
 
@@ -159,7 +191,14 @@ describe("writeAndCommit", () => {
 });
 
 describe("commitRelease", () => {
-  const release = { version: "0.151.0", published: "0.150.0", before: BEFORE, after: AFTER, summaries: ["New"] };
+  const release = {
+    version: "0.151.0",
+    published: "0.150.0",
+    before: BEFORE,
+    after: AFTER,
+    summaries: ["New"],
+    coAuthor: RELEASE_CO_AUTHOR,
+  };
 
   it("prints that it committed only after the commit exists: write → commit → print", () => {
     const { io, events } = fakeIo();
@@ -179,6 +218,14 @@ describe("commitRelease", () => {
     ]);
   });
 
+  it("commits with the trailer the run was given, not the constant", () => {
+    const { io, inputs } = fakeIo();
+    const { out } = fakeOut();
+    const trailer = "Co-Authored-By: Claude Next <noreply@anthropic.com>";
+    expect(commitRelease(io, out, { ...release, coAuthor: trailer })).toBe(true);
+    expect(inputs[0]).toBe(`0.151.0 — New\n\n${trailer}\n`);
+  });
+
   it("prints no success line when the commit fails, only what the tree now holds", () => {
     const { io } = fakeIo({ git: "commit" });
     const { out, lines } = fakeOut();
@@ -195,6 +242,7 @@ describe("commitFailureReport", () => {
       "0.151.0",
       { ok: false, error: "fatal: no", restored: false, restoreError: "EACCES" },
       `0.151.0 — New\n\n${RELEASE_CO_AUTHOR}\n`,
+      RELEASE_CO_AUTHOR,
     );
     expect(lines).toContain(`  git commit --only -m "0.151.0 — New" -m "${RELEASE_CO_AUTHOR}" -- CHANGELOG.md package.json`);
     expect(lines).toContain("  git checkout -- CHANGELOG.md package.json");
