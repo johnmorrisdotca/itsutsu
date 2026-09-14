@@ -124,13 +124,22 @@ describe("kept up: judged on the member's own turns, at the day's end", () => {
   });
 
   it("ends the day in the member's own zone, across a clock change", () => {
-    // Vancouver falls back on 2026-11-01: a twenty-five-hour day.
-    const { start, end } = dayBounds("2026-11-01", "America/Vancouver");
-    expect(start.toISOString()).toBe("2026-11-01T07:00:00.000Z");
-    expect(end.toISOString()).toBe("2026-11-02T08:00:00.000Z");
+    /*
+     * PAST clock changes only. A future one is a guess about law nobody has
+     * finished making: British Columbia's rule differs between tz releases, and
+     * a newer Node answered 07:00Z for a 2026 date this case once asserted as
+     * 08:00Z. The code is right to trust Intl; what it is tested on must be a
+     * day no tz release will rewrite.
+     */
+    // Vancouver fell back on 2024-11-03: a twenty-five-hour day.
+    const { start, end } = dayBounds("2024-11-03", "America/Vancouver");
+    expect(start.toISOString()).toBe("2024-11-03T07:00:00.000Z");
+    expect(end.toISOString()).toBe("2024-11-04T08:00:00.000Z");
     expect(end.getTime() - start.getTime()).toBe(25 * HOUR);
-    // And springs forward on 2026-03-08: a twenty-three-hour day.
-    const spring = dayBounds("2026-03-08", "America/Vancouver");
+    // And sprang forward on 2024-03-10: a twenty-three-hour day.
+    const spring = dayBounds("2024-03-10", "America/Vancouver");
+    expect(spring.start.toISOString()).toBe("2024-03-10T08:00:00.000Z");
+    expect(spring.end.toISOString()).toBe("2024-03-11T07:00:00.000Z");
     expect(spring.end.getTime() - spring.start.getTime()).toBe(23 * HOUR);
     // Tokyo has no clock change and is ahead of UTC.
     expect(dayBounds("2026-09-12", "Asia/Tokyo").start.toISOString()).toBe("2026-09-11T15:00:00.000Z");
