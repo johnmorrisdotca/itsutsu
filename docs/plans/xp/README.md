@@ -37,9 +37,12 @@ file.
 ## Two things that decide whether this is any good
 
 **The site's problem is that thirty-nine games have barely been played.** The
-catalogue is pointed at that: a first game of each variant, each family, and a
-bonus for all of them, come to 2,025 XP of the 3,740 available once-only — level
-21 of 100 for touring the site. XP is the tour guide, not a second rating.
+catalogue is pointed at that: a first game and a first win at each variant, each
+family played and won, and a bonus for all of them, come to 13,390 XP of the
+23,440 available once-only — level 30 of 100, 2.3% of the rebalanced ladder,
+for touring the site. XP is the tour guide, not a second rating, and the tour is
+a ceiling rather than a treadmill: see "Rebalanced to a 999,999 top" in
+`XP_DESIGN.md`.
 
 **Nothing may cost a query per row.** A level beside a name, a leaderboard
 ranked by XP, a member's total on their own page: all of them read
