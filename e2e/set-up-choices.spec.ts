@@ -157,15 +157,20 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
     await chooseOpening(page, "pro");
 
     /*
-     * Reversi is played with the free opening and nothing else, so it is a
-     * fact rather than a picker of one — and the draft follows it, since Pro
-     * carried over would be made as Free anyway and the summary would be lying.
+     * Reversi is played with the free opening and nothing else — and the draft
+     * follows it, since Pro carried over would be made as Free anyway and the
+     * summary would be lying. It used to be drawn as a plain card with no
+     * radio, a fact rather than a picker of one; John read the same shape on
+     * Checkers' sole board as "unchosen", so a sole opening is now a checked
+     * radio tile like a chosen opening among several, and says it is sole.
      */
     await chooseGame(page, "reversi");
     const only = chosenOpening(page);
     await expect(only).toHaveAttribute("data-only", "true");
     await expect(only).toHaveAttribute("data-opening", "free");
-    await expect(page.getByTestId("shared-rules-opening").locator('input[type="radio"]')).toHaveCount(0);
+    const radios = page.getByTestId("shared-rules-opening").locator('input[type="radio"]');
+    await expect(radios).toHaveCount(1);
+    await expect(radios.first()).toBeChecked();
     await expect(page.getByTestId("more-settings-summary")).toContainText("Free opening");
 
     await chooseGame(page, "freestyle");

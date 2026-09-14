@@ -43,17 +43,20 @@ export function BoardPicker({
   disabled?: boolean;
 }) {
   /*
-   * A game with one board is a STATEMENT, not a choice.
+   * A GAME WITH ONE BOARD IS DRAWN AS A CHOSEN BOARD, because that is what it
+   * is. Fourteen of the thirty-nine games have one board, and it is drawn —
+   * the same block, the same picture at its own density — because the reader
+   * is about to play on it and hiding it told them nothing.
    *
-   * It is still drawn — the same block, the same number, the same picture of
-   * the board at its own density — because the reader is about to play on it
-   * and hiding it told them nothing. Fourteen of the thirty-nine games have
-   * one board, so this was better than a third of the catalogue saying
-   * nothing at all about what it would be played on.
-   *
-   * What changes is that it stops pretending to be pressable: no pointer and
-   * no check mark. A radio group of one cannot be unchecked anyway, so the
-   * control was already inert; this only makes it look as inert as it is.
+   * It used to be drawn with no pointer and no check mark, on the argument
+   * that a radio group of one is inert and should look it. John, with
+   * Checkers' single 8×8 beside Go's checked 19×19, read that as a board
+   * nobody had chosen: "if there is only one board, it should be checked...
+   * like boards with > 1 game type." He is right: the chosen style and the
+   * check are what say "this is the one", and a sole board is the one. So a
+   * sole option is drawn exactly as a chosen option among several — one
+   * design, on this picker, the opening picker and the game picker alike —
+   * and its radio is checked, so it is announced as chosen too.
    *
    * Not `disabled`, which would grey it out. Greying says "this is off", and
    * the board is not off — it is the board.
@@ -76,8 +79,8 @@ export function BoardPicker({
                * have had, and a block four times the width of everybody
                * else's looks like an announcement.
                */
-              className={`${PICK_CARD} min-w-24 flex-col justify-center gap-1.5 p-2 ${
-                only ? "w-40 cursor-default" : "flex-1 cursor-pointer"
+              className={`${PICK_CARD} min-w-24 cursor-pointer flex-col justify-center gap-1.5 p-2 ${
+                only ? "w-40" : "flex-1"
               }`}
               data-testid="set-up-size"
               data-size={size}
@@ -144,11 +147,16 @@ export function BoardPicker({
                 </span>
               ) : null}
               {/*
-                The check is what says "this one", among several. With one
-                block there is no among, so a tick on the only thing in the
-                row marks it out from nothing.
+                THE CHECK, ALONE OR AMONG SEVERAL. It used to be dropped from a
+                lone block, on the argument that a tick on the only thing in
+                the row marks it out from nothing — and John, with Checkers'
+                one 8×8 beside Go's checked 19×19, read exactly that: a sole
+                board that looked unchosen. "if there is only one board, it
+                should be checked... like boards with > 1 game type." A sole
+                option is drawn as a chosen option is, one design, and its
+                radio is checked the same way, so it is announced the same way.
               */}
-              {only ? null : <PickMark className="absolute top-1.5 right-1.5 size-6" />}
+              <PickMark className="absolute top-1.5 right-1.5 size-6" />
             </label>
           );
         })}
@@ -163,9 +171,9 @@ export function BoardPicker({
         for fourteen of the thirty-nine games. Every game now has the same
         panel, which is both a better property and easier to keep.
 
-        What it was explaining is already said by the thing itself: one block,
-        no check mark, no pointer. The board is the fact; "there is nothing to
-        choose" is a remark about the control, and the control is making it.
+        What it was explaining is already said by the thing itself: one
+        block, checked. The board is the fact; "there is nothing to choose" is
+        a remark about the control, and the control is making it.
       */}
     </fieldset>
   );
