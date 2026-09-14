@@ -1,5 +1,6 @@
 import "server-only";
 
+import { adminEmails } from "@/lib/auth/admin";
 import { isBotId } from "@/lib/bots/bots";
 import { prisma } from "@/lib/prisma";
 import { seatedLive } from "./myFinished";
@@ -13,20 +14,21 @@ import { seatedLive } from "./myFinished";
  * plays in a week on a site where a game can take days between moves — a
  * twenty-first is not the one that was waiting on them.
  *
- * It said "fixed rather than configurable" when it was written, and that was
- * right about the site and wrong about the suite, which found out the hard
- * way: the end-to-end run drives the whole site as one member and starts a
- * game in most of four hundred tests, so it reached twenty within the first
- * few files and then failed everything after them with a message about a
- * limit that has nothing to do with what was being tested. Tidying between
- * runs cannot help — the games are real, two-seated and still being played;
- * it is one member playing four hundred games that the site never expected.
+ * TWENTY FOR EVERY MEMBER, IN EVERY ENVIRONMENT. It was relieved for the
+ * end-to-end suite by `RATE_LIMIT_RELIEF`, the same variable as the rate
+ * limits — one knob rather than two — because the suite drives the whole site
+ * as one member and starts a game in most of four hundred tests, so it reached
+ * twenty within a few files. That made the cap four hundred on every server
+ * the suite drives, which meant no browser test could ever reach it, and one
+ * written anyway would have passed over nothing.
  *
- * So it is relieved exactly the way the rate limits are, by the same variable
- * for the same reason, and with the same two things it can never do: it is
- * ignored outright in production, and a relief nobody set changes nothing.
- * One knob rather than two, because a second one is a second thing to forget
- * in a fresh clone — see `RATE_LIMIT_RELIEF` in AGENTS.md.
+ * So the knob is split, and not into a second knob. What the suite needs is
+ * room for ONE member — its operator, who plays every one of those games — and
+ * the deployment already says who that is: `ADMIN_EMAILS`, which the suite
+ * cannot start without. Outside production an operator's address is let past
+ * the cap (see `operatorsLetPast`); everybody else meets the real twenty, which
+ * is what lets `e2e/active-game-cap.spec.ts` reach it with a member of its own.
+ * In production nobody is let past, however the variable is set.
  *
  * The computer players are left out of it. They exist to always have a seat
  * open, the directory says so, and a batch of games started against one on
@@ -34,12 +36,28 @@ import { seatedLive } from "./myFinished";
  */
 export const ACTIVE_GAME_LIMIT = 20;
 
-/** The limit as it applies here and now: the number above, unless relieved for the suite. */
-export function activeGameLimit(): number {
-  if (process.env.NODE_ENV === "production") return ACTIVE_GAME_LIMIT;
-  const relief = Number(process.env.RATE_LIMIT_RELIEF ?? "1");
-  if (!Number.isFinite(relief) || relief < 1) return ACTIVE_GAME_LIMIT;
-  return ACTIVE_GAME_LIMIT * Math.floor(relief);
+/**
+ * The members among these whose address is an operator's, where that lets them
+ * past the cap: outside production, and nowhere else.
+ *
+ * WHY AN OPERATOR, and not a multiplier: a multiplier moves the cap for
+ * everybody on the server, so the one test that matters — somebody meeting the
+ * real twenty — could never be written. Letting one named account past it
+ * leaves the number true for every other member on the same server.
+ *
+ * Production asks nothing at all, so the check a real member meets costs
+ * exactly what it did. Outside production it is one read, of at most the two
+ * seats a door binds, and none when no operator is configured.
+ */
+async function operatorsLetPast(memberIds: readonly string[]): Promise<Set<string>> {
+  if (process.env.NODE_ENV === "production") return new Set();
+  const operators = adminEmails();
+  if (operators.length === 0 || memberIds.length === 0) return new Set();
+  const rows = await prisma.member.findMany({
+    where: { id: { in: [...memberIds] }, email: { in: operators } },
+    select: { id: true },
+  });
+  return new Set(rows.map((row) => row.id));
 }
 
 /**
@@ -64,7 +82,7 @@ export type OverTheLimit = {
   memberId: string;
   /** How many they are actually holding, as counted at the moment of the check. */
   count: number;
-  /** The limit as it applied then — the relief moves it, so it is not always twenty. */
+  /** The limit the check applied, carried so the sentence quotes the number that was used. */
   limit: number;
 };
 
@@ -73,11 +91,11 @@ export type OverTheLimit = {
  * games, or null when none of them are.
  *
  * Takes every seat an acquisition could bind rather than only the person
- * asking: a challenge fills the other seat too, and the member on the
- * receiving end is just as unable to keep up with a twenty-first board as
- * the member sending it. Anonymous seats and computer players never trip it
- * — an anonymous seat belongs to no member to be over the limit, and a
- * computer player is exempt by design (see `ACTIVE_GAME_LIMIT`).
+ * asking: a game against a program fills both seats, and a creation that binds
+ * two members binds two boards. Anonymous seats and computer players never trip
+ * it — an anonymous seat belongs to no member to be over the limit, and a
+ * computer player is exempt by design (see `ACTIVE_GAME_LIMIT`) — and outside
+ * production neither does an operator (see `operatorsLetPast`).
  *
  * This is the ONLY place the question is decided, and every door a member can
  * acquire a board through calls it: creating a game, posting an open seat,
@@ -124,11 +142,12 @@ export type OverTheLimit = {
 export async function memberOverActiveLimit(
   memberIds: readonly (string | null | undefined)[],
 ): Promise<OverTheLimit | null> {
-  const limit = activeGameLimit();
   const candidates = [...new Set(memberIds.filter((id): id is string => !!id && !isBotId(id)))];
+  const letPast = await operatorsLetPast(candidates);
   for (const memberId of candidates) {
+    if (letPast.has(memberId)) continue;
     const count = await activeGameCount(memberId);
-    if (count >= limit) return { memberId, count, limit };
+    if (count >= ACTIVE_GAME_LIMIT) return { memberId, count, limit: ACTIVE_GAME_LIMIT };
   }
   return null;
 }
@@ -141,9 +160,9 @@ export async function memberOverActiveLimit(
  * miscounted, and they cannot check without going and counting boards. Their
  * own total answers that in the sentence that refuses them.
  *
- * Both numbers are quoted rather than the word "twenty", because the limit is
- * not always twenty — the suite relieves it — and a message naming a number
- * the check is not using is a message that will eventually be wrong.
+ * Both numbers are quoted from the answer rather than written into the words,
+ * so the sentence says the limit the check actually applied — the one place a
+ * number and a rule could otherwise drift apart.
  */
 export function activeLimitRefusal(over: OverTheLimit): string {
   return (

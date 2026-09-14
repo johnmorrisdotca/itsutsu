@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { activeGameCount, activeGameLimit } from "@/lib/history/activeGames";
+import { ACTIVE_GAME_LIMIT, activeGameCount } from "@/lib/history/activeGames";
 import { SEATED_LIVE_PATH } from "@/lib/history/myFinished";
 
 /**
@@ -59,7 +59,8 @@ export async function SeatFullNotice({ shown }: { shown: boolean }) {
           >
             {held} games still being played
           </Link>
-          , and {activeGameLimit()} at once is the limit here, so it was not claimed for you.
+          {/* The cap no longer moves with the suite's relief, so the constant is the number the check used. */}
+          , and {ACTIVE_GAME_LIMIT} at once is the limit here, so it was not claimed for you.
         </>
       )}{" "}
       Finish or resign one in{" "}
