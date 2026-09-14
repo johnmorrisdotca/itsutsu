@@ -1,4 +1,4 @@
-import { CAPTURE_CHOICES, CROWN_MID_CAPTURE, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { CAPTURE_CHOICES, CROWN_MID_CAPTURE, ENDGAME_COUNT_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { CheckersRules, EndgameCount, PieceTally, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { NO_PROGRESS_RULES, PROGRESS_MEASURES } from "@/lib/gomoku/rules/noProgress";
 
@@ -22,6 +22,11 @@ export function inWords(count: number): string {
   if (count < 20) return SMALL[count];
   const unit = count % 10;
   return unit === 0 ? TENS[Math.floor(count / 10)] : `${TENS[Math.floor(count / 10)]}-${SMALL[unit]}`;
+}
+
+/** A short list in words: "a", "a or b", "a, b or c". */
+function either(items: string[]): string {
+  return items.length === 1 ? items[0] : `${items.slice(0, -1).join(", ")} or ${items[items.length - 1]}`;
 }
 
 function rulesOf(variant: RuleVariant): CheckersRules {
@@ -79,21 +84,37 @@ export function checkersPlayLines(variant: RuleVariant): string[] {
   return lines;
 }
 
-/** A side's pieces in words: "two kings and a man", "a lone king". */
+/** A side's pieces in words: "two kings and a man", "a king". */
 function tallyWords(tally: PieceTally): string {
   const part = (count: number, one: string, many: string) =>
     count === 0 ? null : count === 1 ? `a ${one}` : `${inWords(count)} ${many}`;
   return [part(tally.kings, "king", "kings"), part(tally.men, "man", "men")].filter((word) => word !== null).join(" and ");
 }
 
-/** The endings a count covers, in one clause. */
-function endingsWords(count: EndgameCount): string {
-  const list = (items: string[]) =>
-    items.length === 1 ? items[0] : `${items.slice(0, -1).join(", ")} or ${items[items.length - 1]}`;
-  const against = count.endings[0][1];
-  const sameOpponent = count.endings.every(([, other]) => other.kings === against.kings && other.men === against.men);
-  if (sameOpponent) return `${list(count.endings.map(([one]) => tallyWords(one)))} against ${tallyWords(against)}`;
-  return list(count.endings.map(([one, other]) => `${tallyWords(one)} against ${tallyWords(other)}`));
+/**
+ * The named endings of a count, in one clause. A run of kings against the same
+ * lone opponent that climbs one king at a time to the most a side can hold is
+ * "three or more kings", which is what it means.
+ */
+function endingsWords(endings: readonly (readonly [PieceTally, PieceTally])[]): string {
+  const against = endings[0][1];
+  const sameOpponent = endings.every(([, other]) => other.kings === against.kings && other.men === against.men);
+  if (!sameOpponent) return either(endings.map(([one, other]) => `${tallyWords(one)} against ${tallyWords(other)}`));
+  const firsts = endings.map(([one]) => one);
+  const climbing =
+    firsts.length >= 3 && firsts.every((one, at) => one.men === 0 && one.kings === firsts[0].kings + at);
+  if (climbing) return `${inWords(firsts[0].kings)} or more kings against ${tallyWords(against)}`;
+  return `${either(firsts.map(tallyWords))} against ${tallyWords(against)}`;
+}
+
+/** One count, as a sentence. */
+function countLine(count: EndgameCount): string {
+  if (count.kind === ENDGAME_COUNT_KINDS.balance) {
+    return `It is a draw when, in an ending of ${either(count.pieces.map(inWords))} pieces with a king on each side, ${inWords(count.movesEach)} moves each go by with nothing taken and no man crowned.`;
+  }
+  return `It is a draw when ${endingsWords(count.endings)} is not won within ${inWords(count.movesEach)} more moves each${
+    count.restartsOnChange ? ", counted afresh whenever a piece is taken or crowned" : " of that ending arising"
+  }.`;
 }
 
 /** The ways the game can be drawn, as this site applies them. */
@@ -107,8 +128,6 @@ export function checkersDrawLines(variant: RuleVariant): string[] {
   if (rules.repetitionDraw !== null) {
     lines.push("It is a draw when the same position comes round for the third time with the same side to move.");
   }
-  for (const count of rules.endgameCounts) {
-    lines.push(`It is a draw when ${endingsWords(count)} is not won within ${inWords(count.movesEach)} more moves each of that ending arising.`);
-  }
+  for (const count of rules.endgameCounts) lines.push(countLine(count));
   return lines;
 }

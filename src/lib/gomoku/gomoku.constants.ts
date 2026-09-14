@@ -5,6 +5,7 @@ import type {
   CaptureChoice,
   CheckersRules,
   CrownMidCapture,
+  EndgameCountKind,
   PieceTally,
   DrawLimit,
   FirstPlayer,
@@ -90,6 +91,8 @@ export const RULE_VARIANTS = {
   internationalDraughts: "internationalDraughts",
   brazilianDraughts: "brazilianDraughts",
   canadianCheckers: "canadianCheckers",
+  russianDraughts: "russianDraughts",
+  poolCheckers: "poolCheckers",
   chineseCheckers: "chineseCheckers",
   go: "go",
 } as const satisfies Record<RuleVariant, RuleVariant>;
@@ -153,6 +156,8 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.internationalDraughts,
   RULE_VARIANTS.brazilianDraughts,
   RULE_VARIANTS.canadianCheckers,
+  RULE_VARIANTS.russianDraughts,
+  RULE_VARIANTS.poolCheckers,
   RULE_VARIANTS.chineseCheckers,
   RULE_VARIANTS.go,
 ] as const satisfies readonly RuleVariant[];
@@ -309,6 +314,11 @@ export const CROWN_MID_CAPTURE = {
   passes: "passes",
 } as const satisfies Record<CrownMidCapture, CrownMidCapture>;
 
+export const ENDGAME_COUNT_KINDS = {
+  endings: "endings",
+  balance: "balance",
+} as const satisfies Record<EndgameCountKind, EndgameCountKind>;
+
 /**
  * English draughts, American checkers: three rows of men, a man takes forward
  * only, a king moves one square, any capture may be chosen, and a man crowned
@@ -373,6 +383,8 @@ export const INTERNATIONAL_DRAUGHTS_RULES: CheckersRules = {
   repetitionDraw: 3,
   endgameCounts: [
     {
+      kind: ENDGAME_COUNT_KINDS.endings,
+      restartsOnChange: false,
       endings: [
         [{ kings: 3, men: 0 }, LONE_KING],
         [{ kings: 2, men: 1 }, LONE_KING],
@@ -381,6 +393,8 @@ export const INTERNATIONAL_DRAUGHTS_RULES: CheckersRules = {
       movesEach: 16,
     },
     {
+      kind: ENDGAME_COUNT_KINDS.endings,
+      restartsOnChange: false,
       endings: [
         [{ kings: 2, men: 0 }, LONE_KING],
         [{ kings: 1, men: 1 }, LONE_KING],
@@ -409,6 +423,8 @@ export const BRAZILIAN_DRAUGHTS_RULES: CheckersRules = {
   menRows: 3,
   endgameCounts: [
     {
+      kind: ENDGAME_COUNT_KINDS.endings,
+      restartsOnChange: false,
       endings: [
         [{ kings: 2, men: 0 }, { kings: 2, men: 0 }],
         [{ kings: 2, men: 0 }, LONE_KING],
@@ -430,6 +446,91 @@ export const BRAZILIAN_DRAUGHTS_RULES: CheckersRules = {
 export const CANADIAN_CHECKERS_RULES: CheckersRules = {
   ...INTERNATIONAL_DRAUGHTS_RULES,
   menRows: 5,
+};
+
+/** Russian draughts and Pool checkers: both on the 8×8 board. */
+const RUSSIAN_DRAUGHTS_SIZES = [8] as const;
+const POOL_CHECKERS_SIZES = [8] as const;
+
+/**
+ * Russian draughts (shashki), from the Russian Draughts Federation's rules
+ * (ФШР, shashki.ru) and the FMJD/IDF rules for 8×8 draughts: men take both ways,
+ * kings fly, any capture may be chosen whatever it takes (FMJD-64 4.13), and a
+ * man that reaches the far row in the middle of a capture is crowned there and
+ * carries on capturing as a king (4.14).
+ *
+ * Draws, as the federation writes them: a third repetition with the same side
+ * to move; three kings or more that have not taken a lone king by their
+ * fifteenth move, counted from when that balance arose; and any ending in which
+ * both sides have a king and nothing is taken or crowned for five moves (two or
+ * three pieces on the board), thirty (four or five) or sixty (six or seven).
+ * Fifteen moves of kings alone is rules/noProgress.ts.
+ *
+ * NOT APPLIED: the five-move count for three pieces against a lone king on the
+ * main road, for the reason given at INTERNATIONAL_DRAUGHTS_RULES; the "clearly
+ * drawn position", which is an arbiter's judgement and not a count; and the
+ * three-kings rule's "or kings and men", which the federation's own text leaves
+ * unclear. It is read as kings alone, the narrower reading, so it never draws a
+ * game it might not apply to.
+ */
+export const RUSSIAN_DRAUGHTS_RULES: CheckersRules = {
+  menRows: 3,
+  menCaptureBackward: true,
+  flyingKings: true,
+  captureChoice: CAPTURE_CHOICES.free,
+  crownMidCapture: CROWN_MID_CAPTURE.continues,
+  repetitionDraw: 3,
+  endgameCounts: [
+    {
+      kind: ENDGAME_COUNT_KINDS.endings,
+      restartsOnChange: true,
+      // Three kings or more — up to the twelve a side can have — against a lone king.
+      endings: Array.from({ length: 10 }, (_, extra) => [{ kings: 3 + extra, men: 0 }, LONE_KING] as const),
+      movesEach: 15,
+    },
+    { kind: ENDGAME_COUNT_KINDS.balance, pieces: [2, 3], movesEach: 5 },
+    { kind: ENDGAME_COUNT_KINDS.balance, pieces: [4, 5], movesEach: 30 },
+    { kind: ENDGAME_COUNT_KINDS.balance, pieces: [6, 7], movesEach: 60 },
+  ],
+};
+
+/**
+ * Pool checkers, from the American Pool Checker Association's Tournament Rules
+ * of Play (2016): men take both ways (rule 14), kings fly (15, 18), any capture
+ * may be chosen — "not compelled to take the greater or lesser number" (20) —
+ * and a capture once begun is completed (21). A man that must jump on out of
+ * the king row stays a man, and one whose move ends there is crowned (22, 23).
+ * Black moves first (7).
+ *
+ * The one count of the APCA's this site can read is the thirteen count (27):
+ * three kings against a lone king, all four kings, drawn once the lone king has
+ * made thirteen moves. Counted here as thirteen moves each, which is that
+ * exactly when the lone king moves second in the ending and one move later for
+ * the stronger side when it moves first — the generous side. There is no
+ * repetition rule: the APCA has none outside its thirty-move rule.
+ *
+ * NOT APPLIED: the thirty-move rule (26), which the weaker side announces and
+ * counts, in endgames the players themselves identify. Nobody announces
+ * anything here, and a count that fired unasked would be a different rule. Nor
+ * the five-move count for a lone king on the long line (28), as above. A game
+ * going nowhere is ended instead by the site's own forty-move count in
+ * rules/noProgress.ts, the same as Checkers', and the rules page says so.
+ */
+export const POOL_CHECKERS_RULES: CheckersRules = {
+  menRows: 3,
+  menCaptureBackward: true,
+  flyingKings: true,
+  captureChoice: CAPTURE_CHOICES.free,
+  crownMidCapture: CROWN_MID_CAPTURE.passes,
+  repetitionDraw: null,
+  endgameCounts: [
+    {
+      kind: ENDGAME_COUNT_KINDS.endings,
+      restartsOnChange: false,
+      endings: [[{ kings: 3, men: 0 }, LONE_KING]],
+      movesEach: 13,
+    },
+  ],
 };
 /** Chinese Checkers: the standard 121-hole hexagram, embedded in its own 17×17 square. */
 const CHINESE_CHECKERS_SIZES = [17] as const;
@@ -508,12 +609,13 @@ function small(overrides: SpecOverrides & { boardSizes: readonly number[] }): Va
 }
 
 /**
- * A draughts game played by the international rules, on its own board: in the
- * squares, with no reading of lines, and White to move first as every
- * federation of these games writes it (FMJD 3.3, CBJD). Not a choice at the
+ * A draughts game played as its federation writes it, on its own board: in the
+ * squares, with no reading of lines, and the first move where the rulebook puts
+ * it — White in international, Brazilian, Canadian and Russian draughts (FMJD
+ * 3.3, CBJD, FSR), Black in pool checkers (APCA rule 7). Not a choice at the
  * board, because the rulebook does not make it one.
  */
-function internationalRules(rules: CheckersRules, boardSizes: readonly number[]): VariantSpec {
+function federationDraughts(rules: CheckersRules, boardSizes: readonly number[], firstStone: Stone): VariantSpec {
   return small({
     grid: BOARD_GRIDS.cells,
     checkers: true,
@@ -521,7 +623,7 @@ function internationalRules(rules: CheckersRules, boardSizes: readonly number[])
     boardSizes,
     analysis: false,
     allowFirstPlayerChoice: false,
-    firstStone: STONES.white,
+    firstStone,
   });
 }
 
@@ -689,9 +791,18 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * One set of rules on three boards — see INTERNATIONAL_DRAUGHTS_RULES for the
    * articles, and where Brazil's and Canada's differ.
    */
-  internationalDraughts: internationalRules(INTERNATIONAL_DRAUGHTS_RULES, INTERNATIONAL_DRAUGHTS_SIZES),
-  brazilianDraughts: internationalRules(BRAZILIAN_DRAUGHTS_RULES, BRAZILIAN_DRAUGHTS_SIZES),
-  canadianCheckers: internationalRules(CANADIAN_CHECKERS_RULES, CANADIAN_CHECKERS_SIZES),
+  internationalDraughts: federationDraughts(INTERNATIONAL_DRAUGHTS_RULES, INTERNATIONAL_DRAUGHTS_SIZES, STONES.white),
+  brazilianDraughts: federationDraughts(BRAZILIAN_DRAUGHTS_RULES, BRAZILIAN_DRAUGHTS_SIZES, STONES.white),
+  canadianCheckers: federationDraughts(CANADIAN_CHECKERS_RULES, CANADIAN_CHECKERS_SIZES, STONES.white),
+  /*
+   * The free-choice games: kings fly and men take backward as in the
+   * international family, but any capture may be chosen. Russian draughts
+   * crowns a man mid-capture and lets it take on as a king; pool checkers does
+   * not crown it unless the capture ends there. See RUSSIAN_DRAUGHTS_RULES and
+   * POOL_CHECKERS_RULES for the articles.
+   */
+  russianDraughts: federationDraughts(RUSSIAN_DRAUGHTS_RULES, RUSSIAN_DRAUGHTS_SIZES, STONES.white),
+  poolCheckers: federationDraughts(POOL_CHECKERS_RULES, POOL_CHECKERS_SIZES, STONES.black),
   /*
    * Chinese Checkers: a hexagram, not a square — see rules/chineseCheckers.ts
    * for how it is embedded in a Point{row,col} grid at all. Otherwise a race
@@ -822,7 +933,7 @@ export const BOARD_SIZE_DISPLAY: Record<
   5: { label: "Five", kanji: "五路", note: "Trap Three, Square Four" },
   6: { label: "Six", kanji: "六路", note: "Twist Five, Mini Reversi" },
   7: { label: "Seven", kanji: "七路", note: "Drop Four" },
-  8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma, Checkers, Brazilian Draughts" },
+  8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma, Checkers and the 8×8 draughts games" },
   10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi, Halma, International Draughts" },
   11: { label: "Eleven", kanji: "十一路", note: "Hex" },
   12: { label: "Twelve", kanji: "十二路", note: "Canadian Checkers" },

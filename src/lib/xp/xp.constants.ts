@@ -267,7 +267,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      of anything is cheap and the SETS are dear: every game played is 5,000, a
      family won is 300, and a single first win is John's 10. The six came to
      13,390 XP of the 23,440 available once-only — 2.3% of the ladder, a
-     ceiling rather than a treadmill — and to 13,870 of 23,920 once the three
+     ceiling rather than a treadmill — and to 13,990 of 24,040 once the five
      draughts games joined Checkers, which the climb table in XP_DESIGN.md has
      not yet been redone for. */
 
@@ -275,14 +275,14 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     points: 50,
     label: "A game you had not played",
     kanji: "初手合",
-    blurb: "For your first game of a game. There are forty-two of them.",
+    blurb: "For your first game of a game. There are forty-four of them.",
     sentence: "A game you had never played.",
   },
   firstWinAtVariant: {
     points: 10,
     label: "First win at a game",
     kanji: "初勝",
-    blurb: "For your first win at one of the forty-two.",
+    blurb: "For your first win at one of the forty-four.",
     sentence: "Your first win at this one.",
   },
   firstOfFamily: {
@@ -303,8 +303,8 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     points: 5000,
     label: "Every game played",
     kanji: "全種",
-    blurb: "For playing all forty-two games on the site.",
-    sentence: "All forty-two games played.",
+    blurb: "For playing all forty-four games on the site.",
+    sentence: "All forty-four games played.",
   },
   /* A family won is 300 — twice `firstOfFamily` — and the balance John left to us
      ("winning a while famly? i dunno, look at balance and determine"). Winning

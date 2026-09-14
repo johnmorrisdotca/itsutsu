@@ -91,12 +91,13 @@ describe("the economy holds its shape", () => {
     // can run. The climb table in XP_DESIGN.md rests on this number, so if it
     // moves it has to be redone rather than left standing.
     //
-    // 23,920 since International, Brazilian and Canadian draughts joined Checkers:
-    // three more first games (150), three more first wins (30), and Checkers
-    // became a family that can be won (300). XP_DESIGN.md's climb table has NOT
-    // been redone for that — it is the XP owner's to redo, and it is said so here
-    // rather than the old figure being left to pass.
-    const perVariant = 42;
+    // 24,040 since International, Brazilian, Canadian and Russian draughts and
+    // Pool checkers joined Checkers: five more first games (250), five more
+    // first wins (50), and Checkers became a family that can be won (300).
+    // XP_DESIGN.md's climb table has NOT been redone for that — it is the XP
+    // owner's to redo, and it is said so here rather than the old figure being
+    // left to pass.
+    const perVariant = 44;
     const perFamily = 11;
     // A family won is only for a family of more than one game.
     const familiesToWin = GAME_FAMILIES.filter((family) => family.games.length > 1).length;
@@ -120,7 +121,7 @@ describe("the economy holds its shape", () => {
       XP_EVENT_SPECS.countrySet.points +
       XP_EVENT_SPECS.bioSet.points +
       XP_EVENT_SPECS.wordsSet.points;
-    expect(total).toBe(23_920);
+    expect(total).toBe(24_040);
   });
 
   it("prices nothing at or below zero, so no award can ever take XP away", () => {

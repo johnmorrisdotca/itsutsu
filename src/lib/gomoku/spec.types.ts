@@ -110,16 +110,33 @@ export type CheckersRules = {
 /** A side's pieces, as an endgame count names them. */
 export type PieceTally = { kings: number; men: number };
 
+/** The two shapes an endgame count is written in — see `EndgameCount`. */
+export type EndgameCountKind = "endings" | "balance";
+
 /**
- * An ending that must be won within so many moves or it is a draw.
+ * An ending that must be won within so many moves or it is a draw, once each
+ * player has made `movesEach` more moves inside it.
  *
- * `endings` are the pairings it covers, either side holding either half: three
- * kings against one king, a king and a man against a king. While the position
- * stays inside any of them — whether a man moves or a piece is taken inside the
- * set — the count runs, and once each player has made `movesEach` more moves
- * since the position first entered it, the game is drawn.
+ * `endings`: named pairings, either side holding either half — three kings
+ * against one king, a king and a man against a king. `restartsOnChange` says
+ * what a capture or a crowning that keeps the position inside the set does:
+ * lets the count run on (FMJD 6.3, the Brazilian confederation's art. 99), or
+ * starts it again, as a count "from when that balance arose" does.
+ *
+ * `balance`: any ending of one of these numbers of pieces in which both sides
+ * have a king, counted while the pieces stay exactly as they are — a capture or
+ * a crowning always starts it again. The Russian federation's rule, which no
+ * list of pairings could state without naming dozens of them.
  */
-export type EndgameCount = {
-  endings: readonly (readonly [PieceTally, PieceTally])[];
-  movesEach: number;
-};
+export type EndgameCount =
+  | {
+      kind: "endings";
+      endings: readonly (readonly [PieceTally, PieceTally])[];
+      restartsOnChange: boolean;
+      movesEach: number;
+    }
+  | {
+      kind: "balance";
+      pieces: readonly number[];
+      movesEach: number;
+    };

@@ -135,6 +135,8 @@ export const SGF_TYPES: Record<RuleVariant, SgfTypeRow> = {
   internationalDraughts: { gm: null, why: `${NO_NUMBER}: it numbers chess, shogi and Chinese chess, and not draughts.` },
   brazilianDraughts: { gm: null, why: `${NO_NUMBER}: it numbers chess, shogi and Chinese chess, and not draughts.` },
   canadianCheckers: { gm: null, why: `${NO_NUMBER}: it numbers chess, shogi and Chinese chess, and not draughts.` },
+  russianDraughts: { gm: null, why: `${NO_NUMBER}: it numbers chess, shogi and Chinese chess, and not draughts.` },
+  poolCheckers: { gm: null, why: `${NO_NUMBER}: it numbers chess, shogi and Chinese chess, and not draughts.` },
   chineseCheckers: { gm: null, why: `Marbles race across a star-shaped board. ${NO_NUMBER}.` },
   hex: { gm: SGF_GAME_TYPES.hex, rules: null },
   go: { gm: SGF_GAME_TYPES.go, rules: null },

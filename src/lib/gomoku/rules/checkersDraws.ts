@@ -1,4 +1,4 @@
-import { STONES, VARIANT_SPECS } from "../gomoku.constants";
+import { ENDGAME_COUNT_KINDS, STONES, VARIANT_SPECS } from "../gomoku.constants";
 import type { EndgameCount, GameState, Move, PieceTally, Stone } from "../gomoku.types";
 import { otherStone } from "./board";
 
@@ -73,8 +73,19 @@ function sameTally(a: PieceTally, b: PieceTally): boolean {
   return a.kings === b.kings && a.men === b.men;
 }
 
-/** Whether these pieces are one of the count's endings, either side holding either half. */
-function inEnding(count: EndgameCount, tallies: Tallies): boolean {
+function piecesIn(tallies: Tallies): number {
+  return tallies.black.kings + tallies.black.men + tallies.white.kings + tallies.white.men;
+}
+
+/**
+ * Whether these pieces are inside the count: one of its named endings, either
+ * side holding either half, or a balance of one of its sizes with a king on
+ * each side.
+ */
+function insideCount(count: EndgameCount, tallies: Tallies): boolean {
+  if (count.kind === ENDGAME_COUNT_KINDS.balance) {
+    return count.pieces.includes(piecesIn(tallies)) && tallies.black.kings > 0 && tallies.white.kings > 0;
+  }
   return count.endings.some(
     ([one, other]) =>
       (sameTally(tallies.black, one) && sameTally(tallies.white, other)) ||
@@ -82,25 +93,32 @@ function inEnding(count: EndgameCount, tallies: Tallies): boolean {
   );
 }
 
-/** The most pieces any of the count's endings holds, so a fuller board is passed over without a walk. */
-function largestEnding(count: EndgameCount): number {
+/** The most pieces any position inside the count holds, so a fuller board is passed over without a walk. */
+function largestInside(count: EndgameCount): number {
+  if (count.kind === ENDGAME_COUNT_KINDS.balance) return Math.max(...count.pieces);
   return Math.max(...count.endings.map(([one, other]) => one.kings + one.men + other.kings + other.men));
 }
 
+/** Whether a capture or a crowning that keeps the position inside the count starts it again. */
+function restartsOnChange(count: EndgameCount): boolean {
+  return count.kind === ENDGAME_COUNT_KINDS.balance || count.restartsOnChange;
+}
+
 /**
- * How many turns have been played since the position entered one of this
- * count's endings, or null when it is not in one of them now.
+ * How many turns have been played since the count began, or null when the
+ * position is not inside it now.
  *
  * Walked back from now, taking each move's effect off the tallies — a captured
  * piece returned to its side, a crowning undone — until the position before a
- * move was not in the ending: that move is the one that entered it, and every
- * turn after it is counted.
+ * move was outside the count, or, for a count that starts again on any change,
+ * held different pieces from now: that move is the one that began the count,
+ * and every turn after it is counted.
  */
 export function turnsInEnding(state: GameState, count: EndgameCount): number | null {
-  if (count.endings.length === 0) return null;
   const tallies = talliesOf(state);
-  const pieces = tallies.black.kings + tallies.black.men + tallies.white.kings + tallies.white.men;
-  if (pieces > largestEnding(count) || !inEnding(count, tallies)) return null;
+  if (piecesIn(tallies) > largestInside(count) || !insideCount(count, tallies)) return null;
+  const now: Tallies = { black: { ...tallies.black }, white: { ...tallies.white } };
+  const restarts = restartsOnChange(count);
   let turns = 0;
   for (let at = state.moves.length - 1; at >= 0; at -= 1) {
     const move = state.moves[at];
@@ -114,7 +132,10 @@ export function turnsInEnding(state: GameState, count: EndgameCount): number | n
       tallies[move.stone].kings -= 1;
       tallies[move.stone].men += 1;
     }
-    if (!inEnding(count, tallies)) break;
+    const stillInside = restarts
+      ? sameTally(tallies.black, now.black) && sameTally(tallies.white, now.white)
+      : insideCount(count, tallies);
+    if (!stillInside) break;
     if (move.from !== undefined && move.continuedChain !== true) turns += 1;
   }
   return turns;
