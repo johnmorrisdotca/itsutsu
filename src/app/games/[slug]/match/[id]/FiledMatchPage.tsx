@@ -16,14 +16,18 @@ import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { HideGameButton } from "@/components/history/HideGameButton";
 import { SelfVerdict, type Verdict } from "@/components/history/SelfVerdict";
-import { seatCookieName } from "@/lib/history/seatCookie";
+import { seatClaims, seatCookieName } from "@/lib/history/seatCookie";
+import { resultCardFor } from "@/lib/history/resultCardRead";
+import type { ResultCardData } from "@/lib/history/gameResult.types";
+import type { Stone } from "@/lib/gomoku/gomoku.types";
+import { ResultCard } from "@/components/history/ResultCard";
 import { resolveSeat } from "@/lib/history/seats";
 import { cookies } from "next/headers";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { Conversation } from "@/components/history/Conversation";
 import { fetchApplause, type ApplauseTally } from "@/lib/history/applause";
 import { ignoredEmails } from "@/lib/social/ignores";
-import { appearanceFor } from "@/lib/auth/members";
+import { appearanceFor, keepFinishedDaysFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
 import type { Appearance } from "@/components/board/board.types";
 import { gameRatingRefusal } from "@/lib/rating/rateable";
@@ -191,6 +195,21 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
   const seatColour = myColour ?? claim?.seat ?? null;
   const verdict = (seatColour === "black" ? members?.blackVerdict : seatColour === "white" ? members?.whiteVerdict : null) as Verdict;
 
+  /*
+   * THE RESULT CARD, for a player opening a game that has just finished — in front
+   * of them, which hands the page back to this render, or while they were away.
+   * Null for a watcher and for a game past being news; see `resultCardFor`.
+   */
+  const card = await resultCardFor({
+    game,
+    seat: seatColour as Stone | null,
+    hotSeat: members !== null && isHotSeat(members),
+    viewerId: myId,
+    rematchable: againIn !== null,
+    claims: seatClaims((await cookies()).getAll()),
+    keepFinishedDays: await keepFinishedDaysFor(mine),
+  });
+
   return (
     <FiledMatch
       game={game}
@@ -204,6 +223,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
       silenced={silenced}
       refusal={refusal}
       appearance={appearance}
+      card={card}
     />
   );
 }
@@ -220,6 +240,7 @@ function FiledMatch({
   silenced,
   refusal,
   appearance,
+  card,
 }: {
   game: GameDetail;
   move: number;
@@ -233,6 +254,8 @@ function FiledMatch({
   refusal: RatingRefusal | null;
   /** How this reader likes a board dressed. */
   appearance: Appearance;
+  /** The result card over the board, when this reader played a game that has just finished. */
+  card: ResultCardData | null;
   /** The viewer's own read on their play, when they held a seat; undefined for a reader. */
   verdict?: Verdict;
   applause: ApplauseTally;
@@ -357,6 +380,7 @@ function FiledMatch({
         seated={seated}
         // A game played here, so it may be taken away as a file — see `SgfDownload`.
         offerSgf
+        overlay={card === null ? null : <ResultCard {...card} />}
       />
 
       {/*
