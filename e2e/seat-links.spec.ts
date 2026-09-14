@@ -18,6 +18,13 @@ const under = namesPlayedUnder();
  * This is the mitigation rather than the whole cure — a-taken-seat-still-
  * hands-out-its-link carries the rest, which is making a claimed token stop
  * working — so the test is about what is on screen.
+ *
+ * EVERY BROWSER HERE HOLDS AN INVITE AND NO ACCOUNT, said on each context.
+ * `browser.newContext()` inherits the project's stored sign-in, so a bare one
+ * was the operator: following a seat link signed in binds that seat to the
+ * account, and the empty white seat of the first case was filled in with the
+ * operator's own name — which on a developer's machine was the site owner's.
+ * The token is the credential under test, and it needs no account to work.
  */
 test.describe("seat links", () => {
   test("both are offered while both seats are empty, and the taken one goes", async ({ browser, request }) => {
@@ -28,7 +35,7 @@ test.describe("seat links", () => {
     const game = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
 
     // Black takes their own seat by following their link, as the creator does.
-    const black = await browser.newContext();
+    const black = await browser.newContext({ storageState: PLAYER_STATE });
     const blackPage = await black.newPage();
     await blackPage.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await expect(blackPage.getByTestId("seat-invite")).toHaveCount(1);
@@ -37,7 +44,7 @@ test.describe("seat links", () => {
     await expect(blackPage.getByTestId("seat-invite")).toHaveAttribute("data-stone", "white");
 
     // White answers it.
-    const white = await browser.newContext();
+    const white = await browser.newContext({ storageState: PLAYER_STATE });
     const whitePage = await white.newPage();
     await whitePage.goto(`/games/gomoku/match/${game.id}/seat/${game.whiteToken}`);
 
@@ -66,7 +73,7 @@ test.describe("seat links", () => {
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
 
-    const black = await browser.newContext();
+    const black = await browser.newContext({ storageState: PLAYER_STATE });
     const page = await black.newPage();
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     // White's seat is still going out, so its link is there.
@@ -94,7 +101,7 @@ test.describe("seat links", () => {
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; blackToken: string };
 
-    const black = await browser.newContext();
+    const black = await browser.newContext({ storageState: PLAYER_STATE });
     const page = await black.newPage();
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await expect(page.getByTestId("seat-invite")).toHaveAttribute("data-stone", "white");

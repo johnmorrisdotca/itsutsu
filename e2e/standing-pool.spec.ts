@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { clearComputerStandings, seedComputerStandings } from "./members";
+import { suiteOperator } from "./operator";
 
 /**
  * A game somebody has only ever played against the programs.
@@ -28,7 +29,7 @@ async function myKey(): Promise<string> {
   process.loadEnvFile(".env");
   const prisma = new PrismaClient();
   try {
-    const email = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
+    const { email } = suiteOperator();
     const me = await prisma.member.findFirst({ where: { email }, select: { name: true } });
     return (me?.name ?? "").trim().toLowerCase().replace(/\s+/g, " ");
   } finally {

@@ -1,9 +1,16 @@
 import { expect, test } from "@playwright/test";
 
-import { seedMember } from "./members";
+import { ensureMember, seedMember } from "./members";
+import { suiteOperator } from "./operator";
 
-/** The address this deployment treats as the operator, and the one the tests sign in as. */
-const OPERATOR = "john@spxis.com";
+/**
+ * The address the tests sign in as, which this deployment's ADMIN_EMAILS lists:
+ * the suite's test operator, never a real account. The setup makes its row;
+ * `ensureMember` makes it again only for a run that skipped the setup, and
+ * never edits it — `seedMember` here used to write "John Morris" and a blank
+ * profile over the owner's own row every run.
+ */
+const OPERATOR = suiteOperator().email;
 
 /**
  * What kind of member somebody is, and what may be done about them.
@@ -16,7 +23,7 @@ test.describe("a member's row says what kind of member they are", () => {
   test("the operator is badged as the operator, on their own row", async ({ page }) => {
     // The operator has a member row in production; give the dev database one
     // too, or there is nothing on this list that is them.
-    await seedMember({ email: OPERATOR, name: "John Morris" });
+    await ensureMember(suiteOperator());
     await page.goto("/admin?view=members");
 
     const mine = page.getByTestId("admin-member").filter({ has: page.getByText(OPERATOR) });
@@ -45,7 +52,7 @@ test.describe("a member's row says what kind of member they are", () => {
   test("a badge does not change the height of the row it is on", async ({ page }) => {
     // The standing rule: a row's height belongs to the table, not to what
     // happens to be in that row.
-    await seedMember({ email: OPERATOR, name: "John Morris" });
+    await ensureMember(suiteOperator());
     await page.goto("/admin?view=members");
     const rows = page.getByTestId("admin-member");
     // The list arrives from the API, so wait for it rather than counting an
@@ -73,7 +80,7 @@ test.describe("a member's row says what kind of member they are", () => {
  */
 test.describe("shutting an account", () => {
   test("is not offered on the operator's own row", async ({ page }) => {
-    await seedMember({ email: OPERATOR, name: "John Morris" });
+    await ensureMember(suiteOperator());
     await page.goto("/admin?view=members");
     const mine = page.getByTestId("admin-member").filter({ has: page.getByText(OPERATOR) });
     await expect(mine.getByTestId("cannot-shut-yourself")).toBeVisible();
@@ -81,7 +88,7 @@ test.describe("shutting an account", () => {
   });
 
   test("is refused by the API too, not only hidden on the page", async ({ page, request }) => {
-    await seedMember({ email: OPERATOR, name: "John Morris" });
+    await ensureMember(suiteOperator());
     const refused = await request.patch("/api/members", { data: { email: OPERATOR, banned: true } });
     expect(refused.status()).toBe(400);
     expect(await refused.text()).toContain("cannot shut your own account");

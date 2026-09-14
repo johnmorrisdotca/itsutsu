@@ -679,11 +679,14 @@ pnpm exec playwright test e2e/<one>.spec.ts --no-deps --output /tmp/<scratch>
 the shared database; `--output` somewhere private keeps `test-results/` out of
 another run's way. The spec still needs a signed-in state, so mint
 `.auth/admin.json` yourself with a throwaway script that posts to
-`/api/session` — never by running the setup project. Two caveats, and the
+`/api/session` — never by running the setup project. Mint it as
+`operator@example.test` (listed in your worktree's `ADMIN_EMAILS`), never as a
+real address, and give that address a member row with `ensureMember` first, as
+the setup would. Two caveats, and the
 second is the one to say out loud when reporting: a spec that creates rows
 still creates them, so read what it seeds before running it against a
-database holding real accounts (the profile specs `PATCH /api/me`, which on
-this machine is John's own row); and **a spec run this way has not been run
+database holding real accounts (the profile specs `PATCH /api/me` on the
+operator's row, which every session on this machine shares); and **a spec run this way has not been run
 by the runner** — it verifies the behaviour, and it is not the same claim as a
 green suite. Say which one you are making.
 
@@ -886,6 +889,18 @@ a bio over whatever it finds — so on a developer's machine it would have
 quietly rewritten the owner's own profile on every run. `ensureMember` is
 create-only, with a deliberately empty `update`, for that reason. **A fixture
 that repairs a missing row must not also edit a present one.**
+
+**And the row it signs in as must be nobody's.** The suite used to sign in as
+the first `ADMIN_EMAILS` entry, which on a developer's machine is the owner, so
+every spec signed in as the operator wrote to his real row: a test city and bio
+from the profile specs, his zone moved by a test Chromium, games against Dan on
+his ladder row, his name on a seat another spec claimed. Create-only protected
+nothing, because the writes came through the API as him. The operator is now
+`operator@example.test` (`suiteOperator()` in `e2e/operator.ts`, overridable by
+`E2E_OPERATOR_EMAIL` within `@example.test`), its row is swept and remade each
+run, and `auth.setup.ts` refuses to start when that address is not in
+`ADMIN_EMAILS` — add it to the END of your `.env`'s list. A spec needing the
+operator's address reads `suiteOperator()`, never `ADMIN_EMAILS` or a literal.
 
 ### A Killed Job Reports As Cancelled, Not Failed
 

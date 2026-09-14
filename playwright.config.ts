@@ -23,6 +23,16 @@ export default defineConfig({
     baseURL,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
+    /*
+     * The zone a test browser reports is a declared fact, not the machine's.
+     * Left to the laptop, a page opened as a member whose zone is only a
+     * country's guess had `DeviceTimeZone` write wherever the developer
+     * happened to be onto that account — which is how a test Chromium moved a
+     * real row from Asia/Tokyo to America/Vancouver. UTC is what CI's runner
+     * reports anyway. A spec about what a device says sets its own on the
+     * context it opens (`xp-earning`, `game-pages-hydration`), which wins.
+     */
+    timezoneId: "UTC",
   },
   projects: [
     // Signs in once; every other project reuses the cookies it saves.

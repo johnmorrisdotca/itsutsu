@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext, seedMember } from "./members";
+import { suiteOperator } from "./operator";
 import { ready } from "./support";
 
 /**
@@ -23,11 +24,11 @@ import { ready } from "./support";
 
 /**
  * Who a move written by the signed-in operator's session claims a row for.
- * Mirrors `e2e/auth.setup.ts`'s own computation of the address it signs in
- * as — the admin sign-in this suite uses has no Google name behind it, so
- * the route's `me.name ?? me.email` falls all the way to the email.
+ * The address `e2e/auth.setup.ts` signs in as, from the same source — the
+ * admin sign-in this suite uses has no Google name behind it, so the route's
+ * `me.name ?? me.email` falls all the way to the email.
  */
-const OPERATOR_NAME = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "john@spxis.com";
+const OPERATOR_NAME = suiteOperator().email;
 
 /** Titles this file has created, deleted at the end whatever happened. */
 const created: string[] = [];

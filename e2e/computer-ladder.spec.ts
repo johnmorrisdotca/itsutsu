@@ -2,8 +2,9 @@ import { expect, test } from "@playwright/test";
 
 import {
   clearAllComputerStandings,
-  clearComputerPlayer,
   clearComputerStandings,
+  memberContext,
+  removeMember,
   seedComputerPlayerFor,
   seedComputerStandings,
   seedPeopleStanding,
@@ -12,6 +13,19 @@ import {
   seenLongAgo,
   seenAt,
 } from "./members";
+import { suiteOperator } from "./operator";
+import { gamesMade, namesPlayedUnder } from "./tidy";
+
+/** The games this file finishes, and the names they were played under, which outlive them. */
+const mine = gamesMade();
+const under = namesPlayedUnder();
+
+/**
+ * Whose record the `/me` cases read and seed: the suite's test operator. It was
+ * the owner's address written out, which seeded computer-pool figures onto his
+ * real `Player` row and then zeroed its computer columns on the way out.
+ */
+const OPERATOR_EMAIL = suiteOperator().email;
 
 /**
  * The ladder for games against the computer players, per game.
@@ -201,7 +215,7 @@ test.describe("the ladder against the computer players", () => {
     }
   });
 
-  test("shows a member their own record when all of it was against programs", async ({ page }) => {
+  test("shows a member their own record when all of it was against programs", async ({ browser, baseURL }) => {
     /*
      * THE SAME BUG ON THE PAGE WHERE IT MATTERS MOST. A member's own Record
      * tab read the ladder columns alone, so somebody whose games had all been
@@ -210,16 +224,40 @@ test.describe("the ladder against the computer players", () => {
      * record. That is the members-directory fault of this morning, on the one
      * page a person visits to find THEIR OWN figures.
      *
-     * Seeded on the global Player row rather than a variant one, because that
-     * is what the overall line reads.
+     * ITS OWN MEMBER, WITH A GAME OF ITS OWN. The overall line is gated on
+     * finished GAMES, not on the rating row (`hasPlayedAnyGames` in MyRecord),
+     * so figures seeded onto somebody with no games rightly draw "No games
+     * yet". This case seeded them onto the operator and leaned on whatever
+     * games that account already had: the owner's real row locally, hundreds
+     * of them, and in CI whatever other files had happened to finish as the
+     * operator first. So it finishes one game against a program as its own
+     * member, and only then seeds the figures that game would grow into.
      */
-    const key = await seedComputerPlayerFor("john@spxis.com", {
-      rating: 1639,
-      games: 5,
-      wins: 3,
-      losses: 2,
-    });
+    const stamp = Date.now().toString(36);
+    const member = { email: `ladder-self-${stamp}@example.test`, name: under(`LadderSelf${stamp}`) };
+    const context = await memberContext(browser, baseURL!, member, { storageState: { cookies: [], origins: [] } });
     try {
+      const made = await context.request.post("/api/games/live", {
+        data: { challengeId: "kyu", variant: "freestyle", size: 9, moveTimeMs: null },
+      });
+      expect(made.status(), await made.text()).toBe(201);
+      const game = (await made.json()) as { id: string; blackToken: string };
+      mine(game.id);
+      // A stone first: before one, giving up calls the game off rather than finishing it.
+      const played = await context.request.post(`/api/games/${game.id}/moves`, {
+        data: { token: game.blackToken, row: 4, col: 4 },
+      });
+      expect(played.status(), await played.text()).toBe(201);
+      const resigned = await context.request.post(`/api/games/${game.id}/resign`, {
+        data: { token: game.blackToken },
+      });
+      expect(resigned.status(), await resigned.text()).toBe(200);
+
+      // Seeded on the global Player row rather than a variant one, because that
+      // is what the overall line reads.
+      await seedComputerPlayerFor(member.email, { rating: 1639, games: 5, wins: 3, losses: 2 });
+
+      const page = await context.newPage();
       await page.goto("/me?view=record");
       const rating = page.getByTestId("my-rating");
       await expect(rating).toContainText("1639");
@@ -227,7 +265,8 @@ test.describe("the ladder against the computer players", () => {
       await expect(page.getByTestId("my-rating-computer")).toBeVisible();
       await expect(page.getByTestId("my-record")).not.toContainText("No games yet");
     } finally {
-      await clearComputerPlayer(key);
+      await context.close();
+      await removeMember(member.email);
     }
   });
 
@@ -274,7 +313,7 @@ test.describe("the ladder against the computer players", () => {
      * listed twice with different numbers — and adding the two together is the
      * one operation the pools exist to forbid.
      */
-    const key = await seedComputerStandingFor("john@spxis.com", "reversi", {
+    const key = await seedComputerStandingFor(OPERATOR_EMAIL, "reversi", {
       rating: 1639,
       games: 5,
       wins: 3,
@@ -309,7 +348,7 @@ test.describe("the ladder against the computer players", () => {
      * adding them is the one thing the pools forbid; one mark, on the line
      * that needs it; and the two ratings side by side, unsummed.
      */
-    const key = await seedComputerStandingFor("john@spxis.com", "reversi", {
+    const key = await seedComputerStandingFor(OPERATOR_EMAIL, "reversi", {
       rating: 1639,
       games: 5,
       wins: 3,
