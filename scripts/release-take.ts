@@ -110,8 +110,12 @@ export function versionAlreadyTaken(changelog: string, version: string): boolean
   return new RegExp(`^##\\s+${escaped}\\b`, "m").test(changelog);
 }
 
-/** A first word of plain lower-case letters, optionally ending in one mark of punctuation. */
-const PLAIN_FIRST_WORD = /^[a-z]+[,;:.!?]?$/;
+/**
+ * A first word of plain lower-case letters, optionally ending in one mark of
+ * punctuation. A straight or curly apostrophe between lower-case letters is
+ * prose too ("everyone's", "doesn’t"), so it does not stop the capital.
+ */
+const PLAIN_FIRST_WORD = /^[a-z]+(?:['’][a-z]+)*[,;:.!?]?$/;
 
 /**
  * A summary as its changelog bullet. The summary is written in lower case for

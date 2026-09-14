@@ -7,9 +7,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
 ## 0.174.0 — 2026-09-14
-- the experience ladder now runs to 999,999 points at Level 100, and gets harder after Level 10 and again after Level 20
-- everyone's level drops with this change: past experience keeps what it paid, and the new rungs are steeper
-- winning every game in a family now pays, and beating somebody rated above you pays more
+- The experience ladder now runs to 999,999 points at Level 100, and gets harder after Level 10 and again after Level 20
+- Everyone's level drops with this change: past experience keeps what it paid, and the new rungs are steeper
+- Winning every game in a family now pays, and beating somebody rated above you pays more
 
 ## 0.173.8 — 2026-09-14
 - a note beside a control is now its description rather than part of its name, so a screen reader says "Invite code" and then the note

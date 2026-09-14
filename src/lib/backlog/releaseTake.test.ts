@@ -252,6 +252,18 @@ describe("a summary's case: the title as written, the changelog bullet capitalis
     expect(changelogBullet("")).toBe("");
   });
 
+  it("capitalises a first word with an apostrophe between lower-case letters, straight or curly", () => {
+    expect(changelogBullet("everyone's level drops with this change")).toBe("Everyone's level drops with this change");
+    expect(changelogBullet("everyone’s level drops with this change")).toBe("Everyone’s level drops with this change");
+    expect(changelogBullet("doesn't draw the board twice")).toBe("Doesn't draw the board twice");
+    // "o'clock" has the same shape as "doesn't", so it is capitalised too, which
+    // is right at the start of a sentence.
+    expect(changelogBullet("o'clock is when the day ends")).toBe("O'clock is when the day ends");
+    // An apostrophe that is not between lower-case letters is not prose.
+    expect(changelogBullet("'quoted' names stay as written")).toBe("'quoted' names stay as written");
+    expect(changelogBullet("rules' pages stay as written")).toBe("rules' pages stay as written");
+  });
+
   it("capitalises every bullet of a release with more than one summary", () => {
     const plan = planRelease({
       published: "0.150.0",
