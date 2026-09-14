@@ -7,7 +7,7 @@ import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { PlayerName } from "@/components/players/PlayerName";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
-import { levelShown } from "@/lib/xp/levelShown";
+import { levelShown, xpShown } from "@/lib/xp/levelShown";
 import { RowActions } from "@/components/ui/Controls";
 import { BOT_ALL_TIERS, BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.constants";
 import { tierFor } from "@/lib/rating/elo";
@@ -145,13 +145,16 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
        * Wired rather than left out, so this table draws a level by the site's
        * one rule instead of by a local decision to have none.
        *
-       * AND NO XP COLUMN, which is `columns` leaving `xp` off below. Every row
-       * here is a program, so `xpShown` would answer null for all of them and the
-       * column would be a dash on every line — a column that says nothing, which
-       * `RecordTable` refuses to be. The members directory carries the column,
-       * where a program's dash sits among people who do have a total.
+       * AND THE XP COLUMN, A DASH ON EVERY LINE. It was switched off here for
+       * two releases on the argument that a column of dashes says nothing, and
+       * John reversed that when he asked for XP on every stats table and said
+       * what a program's cell reads: "–", never 0 and never "Lv 1". The column
+       * is the same column the members list draws, in the same place after the
+       * rating, so a reader comparing the two tabs finds the two tables agree
+       * about their shape — and the dash is `xpShown`'s answer, not a local one.
        */
       level: levelShown(entry),
+      xp: xpShown(entry),
       actions: (
         <RowActions>
           {/*

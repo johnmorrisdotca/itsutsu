@@ -84,6 +84,13 @@ export function xpAmount(points: number): string {
 export const XP_LEVEL_UP_KANJI = "昇級";
 
 /**
+ * The kanji beside "XP" wherever the site pairs it — the members list's lead
+ * paragraph and the XP heading's hover say "XP 経験", and a person's standing
+ * block says the same, from the one place the pairing is spelt.
+ */
+export const XP_KANJI = "経験";
+
+/**
  * The look. Colours are the Itsutsu tokens, which already carry their dark
  * values, so nothing here has a `dark:` twin. The card is UmaKuma's pill
  * grown up: the same translucent surface at the top of the page with a

@@ -205,7 +205,14 @@ export async function MyRecord({ name }: { name: string }) {
           rating: row.tier === "unrated" ? null : { rating: row.rating, pool: row.pool },
           tier: row.tier,
         }))}
-        columns={{ tier: true }}
+        /*
+          `xp: false` BECAUSE THE ROWS ARE GAMES, NOT PEOPLE. Every table of
+          people on the site carries the XP column by default; this one is one
+          person's standing at each game, and their one total beside every game
+          would be the same number down the column — a figure about the reader,
+          not about the row. Their standing is the XP tab beside this one.
+        */
+        columns={{ tier: true, xp: false }}
         testId="me-standings"
         empty={
           <>

@@ -9,6 +9,7 @@ import { SortableHead, type RecordSort } from "./recordSort";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { countText } from "@/lib/rating/figures";
 
+import { XP_BLANK_BECAUSE } from "./players.constants";
 import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.types";
 
 /**
@@ -34,11 +35,12 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  * WHAT A CALLER MAY SWITCH OFF, AND WHAT THAT COSTS
  * ─────────────────────────────────────────────────────────────────────────
  *
- * The nine canonical columns are always drawn. Of these five, `rating` is ON
- * unless switched off and the other four are OFF unless switched on — which is
- * not an inconsistency but the honest default in each case: every table of
- * records has a rating to show except the ones that say so, and most of them
- * have no rank, no tier, no join date and no XP total to show at all.
+ * The nine canonical columns are always drawn. Of these five, `rating` and
+ * `xp` are ON unless switched off and the other three are OFF unless switched
+ * on — which is not an inconsistency but the honest default in each case:
+ * every table of records has a rating and an XP total to show except the ones
+ * that say so, and most of them have no rank, no tier and no join date to show
+ * at all.
  *
  * A column is only switched off where it would be MEANINGLESS on that table —
  * never because it is inconvenient:
@@ -49,9 +51,10 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  *   player's own by-game breakdown counts every finished game, rated or not,
  *   across both pools, and no one rating belongs to such a row. A column of
  *   dashes is not a smaller truth, it is a column that says nothing.
- * - `xp` off on every table whose rows cannot reach a `Member`, and on the two
- *   tables of PROGRAMS — see `XpCell`, which argues the second one, since it is
- *   the case a reader would expect to be on.
+ * - `xp` off only where the rows are NOT PEOPLE — a game, a site — so there is
+ *   nobody on the row to have earned anything. It stays on for the tables of
+ *   programs, where every cell is a dash: see `XpCell` for why that dash is an
+ *   answer and not a column of nothing.
  */
 
 /**
@@ -125,26 +128,28 @@ function RatingCell({ rating }: { rating: ShownRating | null }) {
  * is a fact about them where an em dash would read as "not known" — which is
  * what a dash means in the rating and streak cells of the very same row.
  *
- * `null` is the other thing entirely, and on this column it has one cause: a
- * PROGRAM, which `awardXp` refuses by name and which therefore sits at nought
- * for ever without being on the ladder at all. `xpShown` decides that, not this
- * cell, and the dash says so on hover — because an unexplained blank beside
- * Meijin's two hundred games reads as a bug, and this one is an answer.
+ * `null` is the other thing entirely, and on this column it has two causes. The
+ * usual one is a PROGRAM, which `awardXp` refuses by name and which therefore
+ * sits at nought for ever without being on the ladder at all; `xpShown` decides
+ * that, not this cell. The other is a rating row keyed by a name that no member
+ * has ever claimed, which the ladder can hold and the members list cannot — and
+ * the row says so through `xpBlankBecause`, since the program's reason would
+ * be wrong about it. Either way the dash explains itself on hover, because an
+ * unexplained blank beside Meijin's two hundred games reads as a bug, and this
+ * one is an answer.
  *
- * That is also why the two tables of programs switch the column OFF rather than
- * filling it with dashes: on those the dash would be every row, and a column of
- * dashes says nothing. On the members directory it is the handful of programs
- * pinned to the first page, among people who do have a standing, where the
- * contrast is the information.
+ * THE TABLES OF PROGRAMS KEEP THE COLUMN, DASHES AND ALL. They switched it off
+ * for a while on the argument that a column of dashes says nothing — and John
+ * answered that argument when he asked for XP on every stats table and said
+ * what a program's cell should read: "–", never 0 and never "Lv 1". A dash says
+ * nothing is there, where a 0 would claim a fact; and a table of programs that
+ * carries the same columns as the table of people beside it is one table, which
+ * is the whole reason `RecordTable` exists.
  */
-function XpCell({ xp }: { xp: number | null }) {
+export function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?: string }) {
   if (xp === null) {
     return (
-      <td
-        className={CELL}
-        title="A program does not earn experience — the ladder is for the people here."
-        data-testid="record-xp"
-      >
+      <td className={CELL} title={blankBecause ?? XP_BLANK_BECAUSE.program} data-testid="record-xp">
         –
       </td>
     );
@@ -173,8 +178,8 @@ function XpCell({ xp }: { xp: number | null }) {
 export function trailingWidth(columns: RecordColumns): number {
   return (
     (columns.rating !== false ? 1 : 0) +
+    (columns.xp !== false ? 1 : 0) +
     (columns.tier === true ? 1 : 0) +
-    (columns.xp === true ? 1 : 0) +
     (columns.joined === true ? 1 : 0) +
     (columns.actions === undefined ? 0 : 1)
   );
@@ -201,13 +206,13 @@ export function trailingHeadings({
           Rating
         </SortableHead>
       ) : null}
-      {columns.tier === true ? (
-        <SortableHead sort={sort} slot="tier">
-          Tier
-        </SortableHead>
-      ) : null}
-      {columns.xp === true ? (
+      {columns.xp !== false ? (
         /*
+         * DIRECTLY AFTER RATING, which is where John put it: "display directly
+         * after the Played column... never mind after the Rating column for
+         * now." It sat after Tier for two releases; the head of `RecordTable.tsx`
+         * has the order and the argument.
+         *
          * "XP" and not "XP 経験", which every other heading on this table would
          * also have to grow for the pairing to read as the site's rather than as
          * one column's. `LevelName` settled the same question the same way for
@@ -221,6 +226,11 @@ export function trailingHeadings({
           title="Experience 経験 — what this member has earned on Itsutsu"
         >
           XP
+        </SortableHead>
+      ) : null}
+      {columns.tier === true ? (
+        <SortableHead sort={sort} slot="tier">
+          Tier
         </SortableHead>
       ) : null}
       {columns.joined === true ? (
@@ -244,6 +254,7 @@ export function TrailingCells({
   return (
     <>
       {columns.rating !== false ? <RatingCell rating={row.rating ?? null} /> : null}
+      {columns.xp !== false ? <XpCell xp={row.xp ?? null} blankBecause={row.xpBlankBecause} /> : null}
       {columns.tier === true ? (
         <td className="py-1.5 pr-3">
           {row.tier === undefined ? (
@@ -257,7 +268,6 @@ export function TrailingCells({
           )}
         </td>
       ) : null}
-      {columns.xp === true ? <XpCell xp={row.xp ?? null} /> : null}
       {columns.joined === true ? (
         <td className="py-1.5 pr-3 text-xs text-muted">
           {row.joined === undefined ? (

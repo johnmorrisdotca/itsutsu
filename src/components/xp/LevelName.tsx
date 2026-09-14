@@ -71,6 +71,7 @@ export function LevelName({
   level,
   linkable = true,
   compact = false,
+  size = "xs",
   className = "",
   testId = "level-name",
 }: LevelNameProps) {
@@ -86,7 +87,7 @@ export function LevelName({
   );
 
   const skin =
-    `inline-flex items-baseline gap-1 whitespace-nowrap font-mono text-xs tabular-nums ${className}`.trim();
+    `inline-flex items-baseline gap-1 whitespace-nowrap font-mono ${size === "lg" ? "text-lg" : "text-xs"} tabular-nums ${className}`.trim();
 
   if (!linkable || href === null) {
     return (

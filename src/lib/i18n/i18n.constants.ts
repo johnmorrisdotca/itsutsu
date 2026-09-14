@@ -154,6 +154,18 @@ export const PHRASES = {
   "xp.dismiss": "Dismiss",
   "xp.levelUp": "Level up",
   "xp.nextLevel": "Next level: {name}",
+
+  /*
+   * A person's standing on their own page — the level and the total, under
+   * their record. John: "View Person should always show this prominent info…
+   * the Name of the person, Stats/Record and XP + XP level Name." The words a
+   * table heading already says in English ("XP", "Level") are said here in the
+   * reader's language, since this is a sentence about somebody and not a column.
+   */
+  "xp.level": "Level",
+  "xp.toNext": "{count} to {name}",
+  "xp.atTheTop": "The top of the ladder.",
+  "xp.board": "Where everybody stands by experience",
 } as const;
 
 /** A phrase the site can say. */

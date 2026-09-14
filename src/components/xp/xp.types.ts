@@ -77,6 +77,15 @@ export type LevelNameProps = {
    * reader who cannot hover — it is only the pixels that are short.
    */
   compact?: boolean;
+  /**
+   * How big the badge is drawn. `xs` for a cell beside a name, which is where
+   * it usually sits; `lg` for the standing block on a person's page, where the
+   * level is the headline. A prop rather than a `text-*` in `className`,
+   * because two font-size utilities on one element are settled by the
+   * stylesheet's order and not by the caller — the block asked for `text-lg`
+   * and got the badge's own `text-xs`.
+   */
+  size?: "xs" | "lg";
   className?: string;
   testId?: string;
 };

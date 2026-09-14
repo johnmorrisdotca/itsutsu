@@ -69,9 +69,12 @@ export type RecordSortSlots = {
   tier?: string;
   /**
    * The XP total, on the one table whose rows are `Member` rows and can order by
-   * `Member_xp_idx` — the members directory. Every other table leaves it out:
-   * the ladder's rows are `Player` rows keyed by a folded name, and the two
-   * tables of programs do not draw the column at all.
+   * `Member_xp_idx` — the members directory. Every table of people draws the
+   * column now; the ladder's rows are `Player` rows keyed by a folded name and
+   * joined to a member by an id with no relation behind it, so the database
+   * cannot order them by a column on `Member`, and its XP heading is plain text
+   * pointing at the Members tab — the mirror of the directory's own refusal to
+   * sort by rating, which points at the ladder.
    */
   xp?: string;
   joined?: string;

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { xpByMemberId } from "@/lib/xp/xpOfMembers";
 import { playerKey } from "./playerKey";
 import { tierFor, type GameScore, type RatingTier } from "./elo";
 import { POOL_COLUMNS, RATING_POOLS, standingIn, type RatingPool } from "./pools";
@@ -58,6 +59,18 @@ export type VariantStanding = {
   pool: RatingPool;
 };
 
+/**
+ * A standing on a game's LADDER, which is a table of people: the standing and
+ * what the member behind it has earned on the site.
+ *
+ * `xp` is the XP column — `xpShown` of the member, read once for the whole
+ * ladder by `xpByMemberId` — or null where there is nothing to print: a
+ * program on the computer-pool ladder, or a name with no member behind it. A
+ * player's OWN standings (`fetchVariantStandings`) stay plain `VariantStanding`
+ * rows: on that table the rows are games and the person is the page.
+ */
+export type LadderStanding = VariantStanding & { xp: number | null };
+
 type StandingRow = {
   key: string;
   name: string;
@@ -100,7 +113,7 @@ export async function fetchVariantLeaders(
   variant: string,
   limit: number,
   pool: RatingPool = RATING_POOLS.people,
-): Promise<VariantStanding[]> {
+): Promise<LadderStanding[]> {
   const columns = POOL_COLUMNS[pool];
   const rows = await prisma.playerVariantRating.findMany({
     /*
@@ -121,7 +134,13 @@ export async function fetchVariantLeaders(
     ] as never,
     take: limit,
   });
-  return rows.map((row) => toStanding(row, pool));
+  // The XP column, in one further read over this ladder's member ids — see
+  // `xpOfMembers.ts` for why it is one query and what a null means.
+  const xp = await xpByMemberId(rows.map((row) => row.memberId));
+  return rows.map((row) => ({
+    ...toStanding(row, pool),
+    xp: row.memberId === null ? null : (xp.get(row.memberId) ?? null),
+  }));
 }
 
 /**
@@ -194,7 +213,8 @@ export async function fetchVariantStandings(
 /** One game's standing at a glance: who leads it, and how much play is behind that. */
 export type VariantChampion = {
   variant: string;
-  leader: VariantStanding;
+  /** The standing at the top, with the XP column's figure once `fetchChampions` has read it. */
+  leader: LadderStanding;
   /** Names with a standing in this game. */
   players: number;
   /** Rated games played under it. A game moves two standings, so it is counted once here. */
@@ -211,7 +231,13 @@ export function championsOf(standings: readonly VariantStanding[]): Map<string, 
   for (const standing of standings) {
     const entry = champions.get(standing.variant);
     if (entry === undefined) {
-      champions.set(standing.variant, { variant: standing.variant, leader: standing, players: 1, games: standing.ratedGames });
+      // `xp: null` until `fetchChampions` reads it: a standing alone cannot know it.
+      champions.set(standing.variant, {
+        variant: standing.variant,
+        leader: { ...standing, xp: null },
+        players: 1,
+        games: standing.ratedGames,
+      });
     } else {
       entry.players += 1;
       entry.games += standing.ratedGames;
@@ -237,5 +263,17 @@ export async function fetchChampions(): Promise<Map<string, VariantChampion>> {
     where: { ratedGames: { gt: 0 } },
     orderBy: [{ rating: "desc" }, { ratedGames: "desc" }],
   });
-  return championsOf(rows.map((row) => toStanding(row)));
+  const champions = championsOf(rows.map((row) => toStanding(row)));
+  /*
+   * The champions' XP, in one read over the forty-odd leaders' member ids — a
+   * champion is a person with a rating on a stats table, and John asked for XP
+   * after the rating on every one of those. Null stays null for a name with no
+   * member behind it; `xpShown` answers null for a program.
+   */
+  const xp = await xpByMemberId([...champions.values()].map((one) => one.leader.memberId));
+  for (const champion of champions.values()) {
+    const { memberId } = champion.leader;
+    champion.leader.xp = memberId === null ? null : (xp.get(memberId) ?? null);
+  }
+  return champions;
 }

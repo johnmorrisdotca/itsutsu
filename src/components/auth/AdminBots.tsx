@@ -7,7 +7,7 @@ import type { BotTier } from "@/lib/gomoku/opponent.types";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { lastPlayedByMember } from "@/lib/history/lastPlayed";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
-import { levelShown } from "@/lib/xp/levelShown";
+import { levelShown, xpShown } from "@/lib/xp/levelShown";
 import { tierFor } from "@/lib/rating/elo";
 import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { RATING_POOLS } from "@/lib/rating/pools";
@@ -160,13 +160,14 @@ export async function AdminBots() {
        * Wired rather than left out, so this table draws a level by the site's
        * one rule instead of by a local decision to have none.
        *
-       * AND NO XP COLUMN, which is `columns` leaving `xp` off below. Every row
-       * here is a program, so `xpShown` would answer null for all of them and the
-       * column would be a dash on every line — a column that says nothing, which
-       * `RecordTable` refuses to be. The members directory carries the column,
-       * where a program's dash sits among people who do have a total.
+       * AND THE XP COLUMN, A DASH ON EVERY LINE — the same decision the
+       * Computers tab records beside its rows: John asked for XP on every stats
+       * table and said what a program's cell reads, "–", never 0 and never
+       * "Lv 1". The operator's table is the same table as the players page's,
+       * column for column, which is what makes it worth reading as one.
        */
       level: levelShown(entry),
+      xp: xpShown(entry),
     };
   });
 

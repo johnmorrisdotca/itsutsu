@@ -34,16 +34,22 @@ export type RecordColumns = {
    */
   rating?: boolean;
   /**
-   * What this member has earned on the site. Members only, and only where the
-   * row can reach a `Member`.
+   * What each person has earned on the site.
    *
-   * OFF BY DEFAULT, unlike the nine canonical columns and like `rank`, `tier`
-   * and `joined`: most tables of records genuinely cannot fill it. A ladder row
-   * is a `Player` keyed by a folded name, a standings row is a
-   * `VariantStanding`, and a row whose subject is a GAME has no total at all —
-   * so on by default would mean a column of em dashes on more tables than not,
-   * and `RecordTable`'s head has the answer to that: a column of dashes is not a
-   * smaller truth, it is a column that says nothing.
+   * ON BY DEFAULT, like `rating` and unlike `rank`, `tier` and `joined` — and it
+   * was off by default until John asked why some tables showed it and others
+   * did not: *"Make sure all STATS tables actually show the userXP in them
+   * too… This means everywhere in the site. why are some pages now showing
+   * it???"* A switch that is off unless somebody remembers it is exactly how
+   * one table came to have the column and the rest did not, three times over.
+   * So a table of PEOPLE gets the column without asking, and only a table whose
+   * rows are not people — a player's own by-game breakdown, a per-site total —
+   * switches it off, with `xp: false` and the reason beside it.
+   * `xpColumn.coverage.test.ts` holds every `xp: false` to that.
+   *
+   * The tables of programs keep the column: every cell is a dash, and that is
+   * the answer John gave for a program — "–", never 0 and never "Lv 1" — on a
+   * table that otherwise reads exactly like the members list.
    */
   xp?: boolean;
   /** The heading over the actions column; absent means there are no actions. */
@@ -115,10 +121,18 @@ export type RecordTableRow = {
    * `xpShown(member)` is what decides, and it is `levelShown`'s twin for a
    * reason: the rung and the total are one fact seen twice, so a row must not be
    * able to carry one without the other. NOUGHT IS A NUMBER AND PRINTS AS ONE; a
-   * dash here means "no total to be had", which is a program, a rating row or a
-   * game — never a person who has earned nothing.
+   * dash here means "no total to be had", which is a program or a name with no
+   * member behind it — never a person who has earned nothing.
    */
   xp?: number | null;
+  /**
+   * Why the XP cell is a dash, where the row knows a reason other than "this is
+   * a program" — the ladder's rows are keyed by a folded name, and a name nobody
+   * has claimed has no member to have earned anything. The cell says the
+   * program's reason by default, because that is the dash a reader meets most;
+   * a row with a different reason has to say so, or the hover would be wrong.
+   */
+  xpBlankBecause?: string;
   /**
    * `data-*` attributes on the row, for identifying it rather than drawing it.
    *

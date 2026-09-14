@@ -155,4 +155,27 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "次のレベル：{name}",
     back: "Next level: {name}",
   },
+
+  /*
+   * The standing block on a person's page. レベル follows the toast's own
+   * "次のレベル" so the same word is the same word two screens apart; the
+   * distance line reads "{name} まであと {count}" because Japanese puts the
+   * goal first and the remaining amount last.
+   */
+  "xp.level": {
+    text: "レベル",
+    back: "Level.",
+  },
+  "xp.toNext": {
+    text: "{name}まであと{count}",
+    back: "{count} more to go until {name}.",
+  },
+  "xp.atTheTop": {
+    text: "最高レベルです。",
+    back: "This is the highest level.",
+  },
+  "xp.board": {
+    text: "経験値の順位表",
+    back: "The experience-points ranking table.",
+  },
 };

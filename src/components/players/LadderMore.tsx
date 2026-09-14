@@ -4,13 +4,15 @@ import Link from "next/link";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
-import type { PlayerProfile } from "@/lib/rating/players";
+import type { LadderEntry } from "@/lib/rating/ladder";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { useLiveScroll } from "@/lib/ui/useLiveScroll";
+import { levelShown } from "@/lib/xp/levelShown";
 
 import { PlayerLink } from "./Standings";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
+import { XP_BLANK_BECAUSE } from "./players.constants";
 import type { RecordSort } from "./recordSort";
 
 /**
@@ -20,7 +22,7 @@ import type { RecordSort } from "./recordSort";
  * imports `server-only` through `fetchLadderPage` — a row builder shared across
  * that boundary would pull the server module into the browser bundle.
  */
-function ladderRow(player: PlayerProfile): RecordTableRow {
+function ladderRow(player: LadderEntry): RecordTableRow {
   return {
     key: player.key,
     subject: <PlayerLink name={player.name} memberId={player.memberId} />,
@@ -42,27 +44,33 @@ function ladderRow(player: PlayerProfile): RecordTableRow {
     rating: { rating: player.rating, pool: RATING_POOLS.people },
     tier: player.tier,
     /*
-      NO `level` AND NO `xp`, AND BOTH ARE ABSENCES WITH A REASON. The members
-      list badges a member's XP level beside their name and prints their total
-      in a column; this table does neither, and the reason was weighed rather
-      than assumed when John asked for XP on every table with a record in it.
+      THE LEVEL BESIDE THE NAME AND THE TOTAL IN ITS COLUMN, both from the one
+      figure `fetchLadderPage` reads for the page — one query over the page's
+      member ids, never one per row, and already `xpShown`: a program's is null
+      before it reaches here, so this client component never needs a member's
+      `botTier` to draw a dash. The pages after the first arrive with the same
+      figure through `/api/ladder`, so a row looks the same however it came.
 
-      A `PlayerProfile` is a `Player` row — a NAME's standing — and XP lives on
-      `Member`. `memberId` is on the row, but `fetchLadderPage` resolves no member
-      from it: it reads `Player` and nothing else. So XP here is not "the member
-      row it already has", it is a SECOND read per page — and it would have to
-      cross into this client component through `/api/ladder` as well, since the
-      pages after the first arrive from there. Worse than the cost, the figure
-      would not be about the row: `memberId` is null for a name with nobody
-      behind it, and two rating rows can belong to one member after a rename, so
-      one person's total could appear twice on the ladder beside two names.
+      This table declined the column for two releases — a `Player` row is a
+      NAME's standing and XP lives on `Member`, so the figure cost a read the
+      table did not make and could sit beside two names after a rename. John
+      settled it when he asked for XP on every stats table: the read is one
+      bounded query, and one person's total beside each of their two names is
+      the truth about that person twice. `xpOfMembers.ts` has the argument.
 
-      So it is declined, and the reader is not left at a dead end: the Members
-      tab one click away is the same people with their XP, sortable by it on
-      `Member_xp_idx` — the mirror of the directory's refusal to sort by rating,
-      which points back here. Said in the source because an absence and an
-      oversight are identical in a diff.
+      `levelShown` is handed a member-shaped object rather than the raw curve so
+      the rung and the total cannot disagree — a null total is no rung, and a
+      nought is Level 1, by the one rule every table follows.
     */
+    level: player.xp === null ? null : levelShown({ xp: player.xp }),
+    xp: player.xp,
+    /*
+      A NAME WITH NOBODY BEHIND IT IS THE DASH THE MEMBERS LIST CANNOT HAVE. A
+      name typed into a game at one screen earns a rating row and no member, so
+      its cell is a dash — and the reason on hover has to be this one, since the
+      cell's own default says "a program", which would be wrong about it.
+    */
+    xpBlankBecause: player.memberId === null ? XP_BLANK_BECAUSE.unclaimedName : undefined,
   };
 }
 
@@ -94,7 +102,7 @@ export function LadderMore({
   sort,
 }: {
   /** The page the server rendered, under the same sort. */
-  first: readonly PlayerProfile[];
+  first: readonly LadderEntry[];
   /** Where that page ended, or null when the ladder fitted in one. */
   from: string | null;
   total: number;
@@ -103,7 +111,7 @@ export function LadderMore({
   sort: RecordSort;
 }) {
   const hydrated = useHydrated();
-  const { more, next, loading, failed, sentinel } = useLiveScroll<PlayerProfile>({
+  const { more, next, loading, failed, sentinel } = useLiveScroll<LadderEntry>({
     endpoint,
     from,
   });

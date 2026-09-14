@@ -176,7 +176,13 @@ export function WholeRecordPanel({
           streakBlankBecause:
             "These rows are one site's totals, and a run is an order — the games of two sites interleave in time, so no site's row is a run of anything.",
         }))}
-        columns={{ rating: false }}
+        /*
+          `xp: false` BECAUSE THE ROWS ARE SITES, NOT PEOPLE. The XP column is
+          on by default on every table of people; a row here is one site a
+          person played on, and experience is earned on this one only — it is
+          in the header of this page, where the person is.
+        */
+        columns={{ rating: false, xp: false }}
         testId="whole-record-sources"
         empty={<>Nothing has been recorded under this name anywhere yet.</>}
       />

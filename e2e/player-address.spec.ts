@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import { memberIdFor, removeMember, seedMember } from "./members";
 import { removeXpMembers, seedXpMember } from "./xpMembers";
 import { xpLevelName } from "../src/lib/xp/levelNames";
+import { countText } from "../src/lib/rating/figures";
 
 /**
  * A link to a person carries their id, not their name.
@@ -104,14 +105,24 @@ test.describe("a member's address", () => {
       const standing = page.getByTestId("member-level");
       await expect(standing).toBeVisible();
 
-      // The level's NAME, and the rung it leads to — not `Level 5`.
-      const badge = standing.getByTestId("level-name");
+      /*
+       * The level's NAME, and the rung it leads to — not `Level 5`. The badge
+       * is drawn under the block's own id, `member-level-name`, since the
+       * header names every part of itself after `member-level`; the kanji,
+       * where a level has one, is a sibling element and no longer part of
+       * the badge's text.
+       */
+      const badge = standing.getByTestId("member-level-name");
       await expect(badge).toHaveText(`Lv 5 · ${xpLevelName(5)}`);
       await expect(badge).toHaveAttribute("href", "/xp/levels/5");
-      // And the total, which is the half a profile has room for and a table does not.
-      await expect(standing.getByTestId("member-level-total")).toHaveText(
-        `${seeded.xp.toLocaleString("en-US")} XP`,
-      );
+      /*
+       * And the total, which is the half a profile has room for and a table
+       * does not: the number alone, written as every count on the site is
+       * (`countText`), under an XP heading of its own, linking to the board.
+       */
+      const total = standing.getByTestId("member-level-total");
+      await expect(total).toHaveText(countText(seeded.xp));
+      await expect(total).toHaveAttribute("href", "/xp");
     } finally {
       await removeXpMembers([seeded.email]);
     }
@@ -131,10 +142,10 @@ test.describe("a member's address", () => {
        */
       const standing = page.getByTestId("member-level");
       await expect(standing).toBeVisible();
-      const badge = standing.getByTestId("level-name");
+      const badge = standing.getByTestId("member-level-name");
       await expect(badge).toHaveText(`Lv 1 · ${xpLevelName(1)}`);
       await expect(badge).toHaveAttribute("href", "/xp/levels/1");
-      await expect(standing.getByTestId("member-level-total")).toHaveText("0 XP");
+      await expect(standing.getByTestId("member-level-total")).toHaveText(countText(0));
     } finally {
       await removeMember(email);
     }

@@ -147,11 +147,6 @@ const EXCEPTIONS: Record<string, { calls: number; reason: string }> = {
     calls: 2,
     reason: "integer counts with an explicit en-US locale, in a server component",
   },
-  /* The same count, for the same reasons: rendered by `/players/<slug>`, a server page. */
-  "src/components/xp/MemberLevel.tsx": {
-    calls: 1,
-    reason: "an integer count with an explicit en-US locale, in a server component",
-  },
 };
 
 describe("a moment is never formatted in a render the server also draws", () => {

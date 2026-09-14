@@ -95,6 +95,36 @@ export async function seedXpMember(
   return { email, id, name: whole, xp };
 }
 
+/**
+ * A PROGRAM of the spec's own, for the cases about what a program's cell reads.
+ *
+ * The seven real programs are somebody else's rows — a spec asserting anything
+ * about Dan is a spec about this database's history — and a development
+ * database may hold none of them at all, in which case a case about programs
+ * would skip and report green. So it makes one: a member with a `botTier`,
+ * which is the whole of what makes a row a program to `levelShown`, the
+ * Computers tab and the operator's Bots tab. The tier is a name no engine
+ * answers to, so nothing can offer it a game or sort it among the real ones.
+ *
+ * `xp` is left at nought on purpose — what every program stores — because the
+ * assertion is that the cell reads "–" and not "0" whatever the column holds.
+ */
+export async function seedProgram(label: string): Promise<SeededXpMember> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  const email = xpEmail(`bot-${label}`);
+  const id = makeMemberId();
+  const name = `Xp-bot-${label}-${Math.floor(Math.random() * 1e6)}`;
+  try {
+    await prisma.member.create({
+      data: { email, id, name, picture: "", invitedWith: "playwright", botTier: "xp-spec-program" },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+  return { email, id, name, xp: 0 };
+}
+
 /** Takes back exactly the rows a spec made, by the addresses it was given. */
 export async function removeXpMembers(emails: readonly string[]): Promise<void> {
   if (emails.length === 0) return;

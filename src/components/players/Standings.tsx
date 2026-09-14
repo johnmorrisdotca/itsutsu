@@ -6,9 +6,12 @@ import Link from "next/link";
 
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import type { RatingTier } from "@/lib/rating/elo";
-import type { VariantStanding } from "@/lib/rating/variantRatings";
+import type { LadderStanding, VariantStanding } from "@/lib/rating/variantRatings";
+import { levelShown } from "@/lib/xp/levelShown";
 import type { ReactNode } from "react";
 import { shownName } from "@/lib/rating/shownName";
+
+import { XP_BLANK_BECAUSE } from "./players.constants";
 
 /** A player's name, leading to their page. */
 export function PlayerLink({ name, memberId }: { name: string; memberId?: string | null }) {
@@ -45,7 +48,7 @@ export function StandingsTable({
   testId = "standings-table",
   empty = "Nobody has a rated game of this yet.",
 }: {
-  standings: VariantStanding[];
+  standings: LadderStanding[];
   /**
    * Which ladder these figures came from, so the counts lead to the games
    * behind THEM and not to a wider set.
@@ -89,13 +92,16 @@ export function StandingsTable({
         rating: { rating: standing.rating, pool },
         tier: standing.tier,
         /*
-          No `level` and no `xp` column, for the site ladder's reason one file
-          over (`LadderMore.tsx` sets it out in full): a `VariantStanding` is a
-          rating row keyed by a folded name and XP is on `Member`, so either
-          would cost a read this table does not make, for a figure that is about
-          a person rather than about this row. Stated rather than omitted, since
-          the two look the same in a diff.
+          The level beside the name and the total in its column, for the site
+          ladder's reason one file over (`LadderMore.tsx` sets it out in full):
+          `fetchVariantLeaders` reads the figure once for the whole ladder and
+          it arrives already `xpShown`, so a program on the computer-pool ladder
+          is a dash here before this table sees it. A name with no member behind
+          it is the other dash, and says why on hover.
         */
+        level: standing.xp === null ? null : levelShown({ xp: standing.xp }),
+        xp: standing.xp,
+        xpBlankBecause: standing.memberId === null ? XP_BLANK_BECAUSE.unclaimedName : undefined,
         actions: actions === undefined ? undefined : actions(standing),
       }))}
       columns={{ rank: true, tier: true, actions: actions === undefined ? undefined : actionsLabel }}

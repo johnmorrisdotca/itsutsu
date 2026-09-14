@@ -43,15 +43,14 @@ const WITH_LEVELS = [
 ];
 
 /**
- * The tables of people whose rows cannot know an XP total.
- *
- * Both build from rating rows — a `Player` or a `VariantStanding`, keyed by a
- * folded name — and XP is on `Member`. They are listed here so that the absence
- * is a decision this test can see: if one of them ever passes a level, it has to
- * pass it through `levelShown` like everything else, and if the reason changes
- * the file has to say so.
+ * The tables of people built from RATING rows — a `Player` or a
+ * `VariantStanding`, keyed by a folded name — whose XP total arrives already
+ * decided: `fetchLadderPage` and `fetchVariantLeaders` read it in one query
+ * over the page's member ids through `xpByMemberId`, which asks `xpShown`, so
+ * a program's total is null before it reaches the table. These files pass the
+ * level through `levelShown` from that total, and never past it to the curve.
  */
-const WITHOUT_LEVELS = [
+const FROM_RATING_ROWS = [
   "src/components/players/LadderMore.tsx",
   "src/components/players/Standings.tsx",
 ];
@@ -176,25 +175,21 @@ describe("every list that shows a level asks levelShown for it", () => {
   }
 });
 
-describe("a table of people that shows no level says why", () => {
-  for (const path of WITHOUT_LEVELS) {
-    it(`${path} states the absence rather than leaving it to look like an oversight`, () => {
+describe("a table built from rating rows draws its level from the decided total", () => {
+  for (const path of FROM_RATING_ROWS) {
+    it(`${path} passes the level through levelShown, guarded on a null total`, () => {
       /*
-       * "No level" and "nobody remembered the level" are identical in a diff,
-       * which is the whole reason this codebase writes an absence down — the
-       * same argument as `of={{ here: false }}` for a figure that cannot link.
-       * So: either the file passes a level through the rule, or it names the
-       * rule in a comment explaining why it does not.
+       * The total is `xpShown` already — null for a program, null for a name
+       * with nobody behind it — so the rung follows it exactly: no total, no
+       * rung; a nought, Level 1. Handed to `levelShown` as a member-shaped
+       * object rather than to the raw curve, so the two halves of one fact
+       * cannot disagree, and `xpLevelFor` never appears here.
        */
       const source = read(path);
       expect(source.length).toBeGreaterThan(500);
-      const passes = /level:\s*levelShown\(/.test(source);
-      const explains = source.includes("levelShown") || /No `level`|NO `level`/.test(source);
-      expect(passes || explains).toBe(true);
-      // And if it does pass one, it goes through the rule like everywhere else.
-      if (source.includes("level:")) {
-        expect(source).not.toContain("xpLevelFor");
-      }
+      expect(source).toContain('from "@/lib/xp/levelShown"');
+      expect(source).toMatch(/level:\s*\w+\.xp === null \? null : levelShown\(\{ xp: \w+\.xp \}\)/);
+      expect(source).not.toContain("xpLevelFor");
     });
   }
 });
@@ -218,22 +213,23 @@ describe("a person's public page shows their standing through MemberLevel", () =
     expect(read(COMPONENT).length).toBeGreaterThan(500);
   });
 
-  it("draws the standing on the line that names the person, not in a section of its own", () => {
+  it("draws the standing in the header, under the record, as a block of its own", () => {
     /*
-     * "Show The Data, Not The Way To It" decides the placement: a person's page
-     * is where their XP belongs, and the line that already carries their
-     * country and what kind of member they are is where the page says who they
-     * are. So the tag sits inside the `<h1>`, not after it.
+     * "Show The Data, Not The Way To It" decides that it is on the page at all;
+     * John decided where: "a better header with the Name of the person,
+     * Stats/Record and XP + XP level Name" — in that order. So the tag follows
+     * the `<h1>` and the record figures, inside the profile section, and is
+     * not a badge on the heading's line any more. `xpColumn.coverage.test.ts`
+     * holds it to following `PlayerFigures`.
      */
     const source = read(PAGE);
     expect(source).toContain('import { MemberLevel } from "@/components/xp/MemberLevel"');
-    const opened = source.indexOf("<h1");
     const closed = source.indexOf("</h1>");
     const at = source.indexOf("<MemberLevel");
-    expect(opened).toBeGreaterThan(-1);
-    expect(at, "the page does not draw MemberLevel at all").toBeGreaterThan(-1);
-    expect(at).toBeGreaterThan(opened);
-    expect(at).toBeLessThan(closed);
+    const section = source.indexOf("</section>", closed);
+    expect(closed).toBeGreaterThan(-1);
+    expect(at, "the page does not draw MemberLevel at all").toBeGreaterThan(closed);
+    expect(at).toBeLessThan(section);
   });
 
   it("hands the total over untouched, never defaulted to nought", () => {
@@ -315,42 +311,45 @@ describe("the XP total is one column, drawn by recordTrailing", () => {
      * because the runner has no DOM.
      */
     const source = read(TRAILING);
-    expect(source).toMatch(/<XpCell xp=\{row\.xp \?\? null\} \/>/);
+    expect(source).toMatch(/<XpCell xp=\{row\.xp \?\? null\} blankBecause=\{row\.xpBlankBecause\} \/>/);
     expect(source).toMatch(/href="\/xp"/);
     expect(source).toMatch(/countText\(xp\)/);
   });
 
-  it("switches the column on and sorts it only through the declared switch", () => {
-    const source = read(TRAILING);
-    expect(source).toMatch(/columns\.xp === true \? <XpCell/);
-    expect(source).toMatch(/slot="xp"/);
-    expect(source).toMatch(/columns\.xp === true \? 1 : 0/);
-  });
-
-  it("is on the members directory, from xpShown", () => {
-    const source = read("src/components/players/Directory.tsx");
-    expect(source).toMatch(/xp:\s*xpShown\(entry\)/);
-    expect(source).toMatch(/columns=\{\{[^}]*xp: true/);
-  });
-
-  it("is off on the two tables of programs, and each says why", () => {
+  it("is on unless a caller switches it off, and sorts only through the declared slot", () => {
     /*
-     * Every row there is a program, so `xpShown` is null on every line and the
-     * column would be a dash all the way down — the column of dashes
-     * `RecordTable` refuses. Off, and stated beside the rows.
+     * ON BY DEFAULT since John asked why some tables had it and others did
+     * not: a switch that is off unless remembered is how one table came to
+     * carry the column and the rest did not. `xpColumn.coverage.test.ts`
+     * holds every `xp: false` to a reason.
      */
-    for (const path of ["src/components/players/ComputerPlayers.tsx", "src/components/auth/AdminBots.tsx"]) {
+    const source = read(TRAILING);
+    expect(source).toMatch(/columns\.xp !== false \? <XpCell/);
+    expect(source).toMatch(/slot="xp"/);
+    expect(source).toMatch(/columns\.xp !== false \? 1 : 0/);
+  });
+
+  it("is on the members directory and both tables of programs, from xpShown", () => {
+    /*
+     * The programs' tables print a dash on every line, and that is John's
+     * answer for a program — "–", never 0 and never "Lv 1" — on a table that
+     * otherwise reads exactly like the members list. `xpShown` decides the
+     * dash, handed the whole entry so it can see `botTier`.
+     */
+    for (const path of WITH_LEVELS) {
       const source = read(path);
-      expect(source, path).not.toMatch(/columns=\{\{[^}]*xp: true/);
-      expect(source, path).toContain("AND NO XP COLUMN");
+      expect(source, path).toMatch(/xp:\s*xpShown\(entry\)/);
+      expect(source, path).not.toMatch(/columns=\{\{[^}]*xp: false/);
     }
   });
 
-  for (const path of WITHOUT_LEVELS) {
-    it(`${path} states why it shows no XP either`, () => {
+  for (const path of FROM_RATING_ROWS) {
+    it(`${path} prints the total the read decided, and says why a name may have none`, () => {
       const source = read(path);
-      expect(source).toMatch(/no `xp`/i);
-      expect(source).not.toMatch(/xp:\s*xpShown\(/);
+      expect(source).toMatch(/xp:\s*\w+\.xp,/);
+      // A name nobody has claimed is the dash the members list cannot have, and
+      // the hover has to say that rather than "a program".
+      expect(source).toContain("XP_BLANK_BECAUSE.unclaimedName");
     });
   }
 });

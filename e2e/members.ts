@@ -470,7 +470,20 @@ export async function clearComputerStandings(variant: string, keys: readonly str
  */
 export async function seedPeopleStanding(
   variant: string,
-  standing: { key: string; name: string; rating: number; games: number; wins: number; losses: number },
+  standing: {
+    key: string;
+    name: string;
+    rating: number;
+    games: number;
+    wins: number;
+    losses: number;
+    /**
+     * Whose standing it is, for a case about what a table reads off the member
+     * behind a rating row — the XP column, which is on `Member`. Left off, the
+     * row is a name nobody has claimed, which is also a real state.
+     */
+    memberId?: string;
+  },
 ): Promise<string> {
   loadEnv();
   const prisma = new PrismaClient();
@@ -482,6 +495,7 @@ export async function seedPeopleStanding(
       wins: standing.wins,
       losses: standing.losses,
       draws: 0,
+      memberId: standing.memberId ?? null,
     };
     await prisma.playerVariantRating.upsert({
       where: { key_variant: { key: standing.key, variant } },
@@ -489,6 +503,44 @@ export async function seedPeopleStanding(
       update: figures,
     });
     return standing.key;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+/**
+ * A place on the SITE ladder — the `Player` row, people pool — for a name,
+ * with or without a member behind it.
+ *
+ * The ladder is a table of rating rows keyed by a folded name, and what its XP
+ * column reads depends on `memberId`: a member's total where there is one, a
+ * dash for a name nobody has claimed. A case about that column has to be able
+ * to make both kinds of row, and `seedComputerPlayerFor` writes the other pool.
+ * Cleared with `removePlayedUnder`, by name, like every row keyed this way.
+ */
+export async function seedLadderRow(standing: {
+  name: string;
+  rating: number;
+  games: number;
+  wins: number;
+  losses: number;
+  memberId?: string;
+}): Promise<string> {
+  loadEnv();
+  const prisma = new PrismaClient();
+  try {
+    const key = playerKey(standing.name);
+    const wrote = {
+      name: standing.name,
+      rating: standing.rating,
+      ratedGames: standing.games,
+      wins: standing.wins,
+      losses: standing.losses,
+      draws: 0,
+      memberId: standing.memberId ?? null,
+    };
+    await prisma.player.upsert({ where: { key }, create: { key, ...wrote }, update: wrote });
+    return key;
   } finally {
     await prisma.$disconnect();
   }
