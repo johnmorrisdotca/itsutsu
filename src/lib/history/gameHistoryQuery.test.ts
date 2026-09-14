@@ -3,8 +3,10 @@ import {
   buildGameOrderBy,
   buildGameWhere,
   outcomeNeedsPlayer,
+  pairWhere,
   toGameHistoryQuery,
 } from "./gameHistoryQuery";
+import { NOT_A_REFUSED_OFFER } from "./offers";
 import { isRefusal } from "@/lib/api/paging";
 import { GAME_PAGE_SIZE_DEFAULT, GAME_PAGE_SIZE_MAX } from "./gameHistory.constants";
 import type { GameHistoryQuery } from "./gameHistory.types";
@@ -525,5 +527,59 @@ describe("the member filter", () => {
   it("does not narrow by itself — a name is what the record counts by", () => {
     const where = buildGameWhere(parse("?member=cm-hanako"));
     expect(JSON.stringify(where)).not.toContain("cm-hanako");
+  });
+});
+
+describe("a pair of members", () => {
+  const pair = { member: "cm-john", against: "cm-dan" };
+
+  it("reads ?against= and trims it, and leaves the pair itself to the resolver", () => {
+    const query = parse("?member=cm-john&against=%20cm-dan%20");
+    expect(query.against).toBe("cm-dan");
+    expect(query.between).toBeNull();
+  });
+
+  it("refuses an against id longer than any this site makes, by name", () => {
+    expect(refusedBy(`?member=cm-john&against=${"x".repeat(65)}`)).toContain("against");
+  });
+
+  /*
+   * `against` is only an address until `resolveMember` has found both people.
+   * A query that never went through it narrows nothing — so an id naming
+   * nobody cannot quietly narrow the record to no games.
+   */
+  it("narrows nothing by an against that was never resolved into a pair", () => {
+    expect(JSON.stringify(buildGameWhere(parse("?member=cm-john&against=cm-dan")))).not.toContain("cm-dan");
+  });
+
+  it("is the games with these two ids on the two seats, either way round, and replaces the name clause", () => {
+    const where = buildGameWhere({ ...parse(""), player: "John Morris", between: pair });
+    expect(where).toEqual({ AND: [{ status: "finished" }, NOT_A_REFUSED_OFFER, pairWhere(pair)] });
+    expect(pairWhere(pair)).toEqual({
+      OR: [
+        { blackMemberId: "cm-john", whiteMemberId: "cm-dan" },
+        { blackMemberId: "cm-dan", whiteMemberId: "cm-john" },
+      ],
+    });
+  });
+
+  it("reads won from the member's side of the pair, by the seats", () => {
+    const where = JSON.stringify(buildGameWhere({ ...parse("?outcome=won"), player: "John Morris", between: pair }));
+    expect(where).toContain(JSON.stringify({ blackMemberId: "cm-john", whiteMemberId: "cm-dan", result: "black" }));
+    expect(where).toContain(JSON.stringify({ blackMemberId: "cm-dan", whiteMemberId: "cm-john", result: "white" }));
+    expect(where).not.toContain("John Morris");
+  });
+
+  it("reads lost as the mirror of won", () => {
+    const where = JSON.stringify(buildGameWhere({ ...parse("?outcome=lost"), player: "John Morris", between: pair }));
+    expect(where).toContain(JSON.stringify({ blackMemberId: "cm-john", whiteMemberId: "cm-dan", result: "white" }));
+    expect(where).toContain(JSON.stringify({ blackMemberId: "cm-dan", whiteMemberId: "cm-john", result: "black" }));
+  });
+
+  it("counts decided and drawn the same way with or without a pair", () => {
+    const decided = buildGameWhere({ ...parse("?outcome=decided"), between: pair });
+    expect(JSON.stringify(decided)).toContain(JSON.stringify({ result: { not: "abandoned" } }));
+    const drawn = buildGameWhere({ ...parse("?outcome=drawn"), between: pair });
+    expect(JSON.stringify(drawn)).toContain(JSON.stringify({ result: "draw" }));
   });
 });

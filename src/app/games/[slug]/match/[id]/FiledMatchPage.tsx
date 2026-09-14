@@ -31,6 +31,8 @@ import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateabl
 import { isHotSeat } from "@/lib/history/liveGame";
 import { prisma } from "@/lib/prisma";
 import { GameName } from "@/components/games/GameName";
+import { RivalryPanel } from "@/components/history/RivalryPanel";
+import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 
 /**
  * A match that has been filed: the replay, at the address the match has always
@@ -310,6 +312,20 @@ function FiledMatch({
           </Link>
         </span>
       </div>
+
+      {/*
+        Where these two stand now, THIS GAME INCLUDED — "Dan leads 3–2", "your
+        first win against Dan". Read when this page renders. Not for an
+        abandoned game, which is not a result and changed nothing between them.
+      */}
+      {named ? (
+        <RivalryPanel
+          of={{ seats: { black: game.blackMemberId, white: game.whiteMemberId } }}
+          variant={game.variant}
+          moment={RIVALRY_MOMENTS.after}
+          thisGameId={game.id}
+        />
+      ) : null}
 
       {/*
         Above everything the game itself offers, because it answers a question

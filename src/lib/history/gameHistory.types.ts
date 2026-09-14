@@ -28,6 +28,9 @@ export type GameRatedFilter = (typeof GAME_RATED_FILTERS)[number];
 export type GameVariantFilter = (typeof GAME_VARIANT_FILTERS)[number];
 export type GameSizeFilter = (typeof GAME_SIZE_FILTERS)[number];
 
+/** Two members, by id: `member` is whose side an outcome is read from. */
+export type GamePair = { member: string; against: string };
+
 /** A parsed, validated listing request. Nulls mean "no filter". */
 export type GameHistoryQuery = {
   /**
@@ -81,6 +84,26 @@ export type GameHistoryQuery = {
    * fault as a longer one. See `nameForMember`.
    */
   member: string | null;
+  /**
+   * The OTHER member of a pair, by id: `?member=<A>&against=<B>` is the games
+   * between A and B and nobody else — John's rivalry, as a list.
+   *
+   * It needs `member`. "Games against B" with nobody named on the other side
+   * is just B's games, and that already has an address; without a member it is
+   * not applied, the way an outcome without a player is not.
+   */
+  against: string | null;
+  /**
+   * The pair both ids name, once `resolveMember` has found that each belongs to
+   * somebody. Null straight out of the parser, and null for a pair that could
+   * not be read.
+   *
+   * THE WHERE-CLAUSE NARROWS TO A PAIR ONLY THROUGH THIS, never through
+   * `against`, so an id that names nobody cannot narrow anything by accident —
+   * and a pair is read by member id on BOTH seats, exactly as the rivalry
+   * scoreboard counts it (`pairWhere`), so the count and the list are one set.
+   */
+  between: GamePair | null;
   result: GameResultFilter;
   /** How the games went for `player`. Read against that name, and ignored without one. */
   outcome: GameOutcomeFilter;

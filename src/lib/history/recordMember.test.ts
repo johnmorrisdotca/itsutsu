@@ -77,6 +77,54 @@ describe("resolveMember", () => {
   });
 });
 
+describe("resolveMember with a pair", () => {
+  it("settles a pair when both ids name somebody, and says who the other one is", async () => {
+    memberFindUnique.mockImplementationOnce(async () => ({ name: "John Morris" }));
+    memberFindUnique.mockImplementationOnce(async () => ({ name: "Dan" }));
+    const resolved = await resolveMember(query("?member=cm-john&against=cm-dan&outcome=won"));
+    expect(resolved).toMatchObject({
+      unknown: false,
+      againstUnknown: false,
+      againstName: "Dan",
+      query: { player: "John Morris", member: null, between: { member: "cm-john", against: "cm-dan" } },
+    });
+  });
+
+  /*
+   * The other half naming nobody. The pair is NOT applied — `between` stays
+   * null, so the where-clause narrows to nothing it cannot name — and the
+   * resolver says so, so the page can say it and the API can refuse it.
+   */
+  it("applies no pair, and says so, when the other id names nobody", async () => {
+    memberFindUnique.mockImplementationOnce(async () => ({ name: "John Morris" }));
+    memberFindUnique.mockImplementationOnce(async () => null);
+    const resolved = await resolveMember(query("?member=cm-john&against=nobody-here"));
+    expect(resolved).toMatchObject({ unknown: false, againstUnknown: true, againstName: null, query: { between: null } });
+  });
+
+  it("throws when a read is handed a pair whose other id names nobody", async () => {
+    memberFindUnique.mockImplementationOnce(async () => ({ name: "John Morris" }));
+    memberFindUnique.mockImplementationOnce(async () => null);
+    await expect(withMemberResolved(query("?member=cm-john&against=nobody-here"))).rejects.toThrow(/against/);
+  });
+
+  it("is no pair, and asks nothing more, for one member against themselves", async () => {
+    member = { name: "John Morris" };
+    const resolved = await resolveMember(query("?member=cm-john&against=cm-john"));
+    expect(resolved).toMatchObject({ againstUnknown: false, query: { between: null } });
+    expect(memberFindUnique).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps a settled pair through a second resolve, which asks nothing", async () => {
+    memberFindUnique.mockImplementationOnce(async () => ({ name: "John Morris" }));
+    memberFindUnique.mockImplementationOnce(async () => ({ name: "Dan" }));
+    const resolved = await resolveMember(query("?member=cm-john&against=cm-dan"));
+    const again = await withMemberResolved(resolved.query);
+    expect(again.between).toEqual({ member: "cm-john", against: "cm-dan" });
+    expect(memberFindUnique).toHaveBeenCalledTimes(2);
+  });
+});
+
 /*
  * TWO `Player` ROWS FOR ONE MEMBER. `findFirst` with no order let the database
  * choose; the row that should win is listed SECOND here, so a "first row" rule

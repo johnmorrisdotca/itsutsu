@@ -154,6 +154,34 @@ html[data-bare="true"] [data-strippable] aside {
   display: none;
 }
 
+/*
+ * THE RIVALRY BOARD — components/history/RivalryBoard. The VS badge lands and
+ * the two scores rise to meet it, once, when the board is drawn. Nothing
+ * loops: a scoreboard that kept moving would be asking to be looked at after
+ * it had been read. The block below stills both for a reader who asks for
+ * less motion, and the board only asks for them under `motion-safe:` besides.
+ */
+@keyframes rivalry-land {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-12deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+@keyframes rivalry-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

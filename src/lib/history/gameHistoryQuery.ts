@@ -21,7 +21,7 @@ import {
 } from "./gameHistory.constants";
 import { NOT_A_REFUSED_OFFER } from "./offers";
 import { GAME_SORT_SPEC, gameSortChoice, readGamePaging } from "./gameHistory.sort";
-import type { GameHistoryQuery, GameOutcome } from "./gameHistory.types";
+import type { GameHistoryQuery, GameOutcome, GamePair } from "./gameHistory.types";
 
 /**
  * Reading, filtering and ordering game history.
@@ -41,6 +41,7 @@ const querySchema = z.object({
   search: z.string().max(GAME_SEARCH_MAX).optional(),
   player: z.string().max(PLAYER_NAME_MAX).optional(),
   member: z.string().max(MEMBER_ID_MAX).optional(),
+  against: z.string().max(MEMBER_ID_MAX).optional(),
   result: z.enum(GAME_RESULT_FILTERS).default("all"),
   outcome: z.enum(GAME_OUTCOME_FILTERS).default("all"),
   pool: z.enum(GAME_POOL_FILTERS).default("all"),
@@ -84,6 +85,7 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | PagingRefusal {
     search: get("search"),
     player: get("player"),
     member: get("member"),
+    against: get("against"),
     result: get("result"),
     outcome: get("outcome"),
     pool: get("pool"),
@@ -119,6 +121,9 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | PagingRefusal {
     search: trimmed(data.search),
     player: trimmed(data.player),
     member: trimmed(data.member),
+    against: trimmed(data.against),
+    // Only `resolveMember` may say a pair names two real people. See `between`.
+    between: null,
     result: data.result,
     outcome: data.outcome,
     pool: data.pool,
@@ -189,6 +194,42 @@ function seatIs(
       ? { blackMemberId: { in: [...named] } }
       : { whiteMemberId: { in: [...named] } };
   return { OR: [byName, byId] };
+}
+
+/**
+ * THE GAMES BETWEEN TWO MEMBERS, by id on both seats, either way round.
+ *
+ * The one definition of a pair on this site. The record's `?member=A&against=B`
+ * narrows by it, and the rivalry scoreboard (`rivalryRead.ts`) counts by it, so
+ * "4 – 4" and the list that number links to are the same games and cannot come
+ * apart. By id and never by name: a seat that is only a typed name is nobody's
+ * rivalry, and matching it by name would count a stranger at a kitchen table
+ * who happened to type "Dan".
+ */
+export function pairWhere(pair: GamePair): Prisma.GameWhereInput {
+  return {
+    OR: [
+      { blackMemberId: pair.member, whiteMemberId: pair.against },
+      { blackMemberId: pair.against, whiteMemberId: pair.member },
+    ],
+  };
+}
+
+/**
+ * An outcome from `member`'s side of a pair, by id — the pair's own version of
+ * `outcomeWhere`, so "the games A won against B" asks the seats rather than a
+ * name. `decided` and `drawn` are the same question with or without a pair.
+ */
+function pairOutcomeWhere(outcome: GameOutcome, pair: GamePair): Prisma.GameWhereInput {
+  if (outcome === "decided") return { result: { not: "abandoned" } };
+  if (outcome === "drawn") return { result: "draw" };
+  const won = outcome === "won";
+  return {
+    OR: [
+      { blackMemberId: pair.member, whiteMemberId: pair.against, result: won ? "black" : "white" },
+      { blackMemberId: pair.against, whiteMemberId: pair.member, result: won ? "white" : "black" },
+    ],
+  };
 }
 
 /**
@@ -342,14 +383,27 @@ export function buildGameWhere(
       ],
     });
   }
-  if (query.player !== null) {
+  /*
+   * A PAIR REPLACES THE PLAYER CLAUSE rather than joining it. The pair is read
+   * by member id on both seats and already says whose games these are; adding
+   * the name clause on top would be a second, looser definition of the same
+   * person ANDed onto the first — and the first time the two disagreed (a name
+   * `nameForMember` resolves differently from the member row), the list would
+   * be shorter than the rivalry count that links to it.
+   */
+  if (query.between !== null) {
+    conditions.push(pairWhere(query.between));
+  } else if (query.player !== null) {
     conditions.push({
       OR: [seatIs("black", query.player, named), seatIs("white", query.player, named)],
     });
   }
   if (query.result !== "all") conditions.push({ result: query.result });
   if (query.outcome !== "all") {
-    const side = outcomeWhere(query.outcome, query.player, named);
+    const side =
+      query.between !== null
+        ? pairOutcomeWhere(query.outcome, query.between)
+        : outcomeWhere(query.outcome, query.player, named);
     if (side !== null) conditions.push(side);
   }
   if (query.pool !== "all") {

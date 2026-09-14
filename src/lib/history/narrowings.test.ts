@@ -158,6 +158,32 @@ describe("appliedNarrowings", () => {
     expect(appliedNarrowings({ ...NONE, player: single })[0].label).toBe("Alice's games");
   });
 
+  /*
+   * A pair's record. The other member gets a chip of their own, in the
+   * reader's language through its phrase, and taking the player off takes the
+   * pair with it — `against` with nobody on the other side would sit in the
+   * address narrowing nothing.
+   */
+  it("says a pair the query applied, and takes it off with the player", () => {
+    const player = {
+      name: "Hanako Morris",
+      memberId: "id-1",
+      removable: true,
+      via: "member" as const,
+      against: { name: "Dan", memberId: "id-2" },
+    };
+    expect(appliedNarrowings({ ...NONE, player, outcome: "won" })).toEqual([
+      { key: "player", label: "Hanako M.'s games", clears: "member", alsoClears: ["against"] },
+      { key: "against", label: "against Dan", phrase: { key: "rivalry.against", vars: { name: "Dan" } } },
+      { key: "outcome", label: "Won" },
+    ]);
+  });
+
+  it("claims no pair where none was applied", () => {
+    const player = { name: "Alice", memberId: "id-1", removable: true };
+    expect(appliedNarrowings({ ...NONE, player }).map((one) => one.key)).toEqual(["player"]);
+  });
+
   it("orders chips player, outcome, pool, rated, verdict", () => {
     const player = { name: "Alice", memberId: "id-1", removable: true };
     const narrowings = appliedNarrowings({

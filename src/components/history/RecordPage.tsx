@@ -13,6 +13,8 @@ import { resolveMember } from "@/lib/history/recordMember";
 import { recordAsText } from "@/lib/history/recordText";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 import { type ImpliedPlayer, recordAddress } from "@/lib/history/recordAddress";
+import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
+import { RivalryPanel } from "./RivalryPanel";
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -97,7 +99,12 @@ export async function RecordPage({
    * nothing on screen to name it is the fault `narrowings.ts` exists to stop. An
    * id naming nobody used to stay on the query and be looked up three times.
    */
-  const { query: asked, unknown: memberUnknown } = await resolveMember(parsedAsked);
+  const {
+    query: asked,
+    unknown: memberUnknown,
+    againstUnknown,
+    againstName,
+  } = await resolveMember(parsedAsked);
   const [page, whole] = await Promise.all([
     fetchGameHistoryPage(asked),
     fetchWholeRecord(asked),
@@ -120,6 +127,8 @@ export async function RecordPage({
     // A `member` naming nobody was not applied to the page above, and the API
     // refuses it outright — so the next page asks for the record this one shows.
     if (key === "member" && memberUnknown) continue;
+    // The same for the other half of a pair, which the API would refuse as well.
+    if (key === "against" && (memberUnknown || againstUnknown)) continue;
     api.set(key, value);
   }
   const endpoint = `/api/games?${api.toString()}`;
@@ -167,6 +176,18 @@ export async function RecordPage({
         </p>
       </div>
 
+      {/*
+        THE SCORE BEFORE THE GAMES, when this record is about two people: a pair
+        (`?member=A&against=B`), or one member set against the reader. Every
+        number on it opens exactly the games it counted, through the pair filter.
+        `member` is the id the address named, and only when it named somebody.
+      */}
+      <RivalryPanel
+        of={{ record: { between: asked.between, member: memberUnknown ? null : parsedAsked.member } }}
+        variant={variant ?? null}
+        moment={RIVALRY_MOMENTS.record}
+      />
+
       <HistoryFilters
         variant={variant ?? null}
         appliedPlayer={
@@ -190,12 +211,16 @@ export async function RecordPage({
                 ...(impliedPlayer === undefined && parsedAsked.member !== null
                   ? { via: "member" as const }
                   : {}),
+                // Only a pair the query applied gets a chip: `between` is that fact.
+                ...(asked.between !== null && againstName !== null
+                  ? { against: { name: againstName, memberId: asked.between.against } }
+                  : {}),
               }
         }
       />
-      {refused || memberUnknown ? (
+      {refused || memberUnknown || againstUnknown ? (
         <p className="rounded-xl border border-rule px-4 py-3 text-sm text-muted">
-          {memberUnknown && !refused
+          {(memberUnknown || againstUnknown) && !refused
             ? /*
                * A `?member=` naming nobody. Said rather than ignored: the filter
                * could not be applied, and a page that answered with the whole

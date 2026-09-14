@@ -45,6 +45,16 @@ describe("gamesHref", () => {
     expect(gamesHref({ player: "Someone Typed In" })).toBe("/history?player=Someone+Typed+In");
   });
 
+  it("carries the other member of a pair beside the member, and only beside one", () => {
+    expect(gamesHref({ variant: "freestyle", memberId: "cm-john", against: "cm-dan", outcome: "won" })).toBe(
+      "/games/gomoku/history?member=cm-john&against=cm-dan&outcome=won",
+    );
+    // A name with no member behind it is nobody's rivalry: the pair is dropped.
+    expect(gamesHref({ player: "Someone Typed In", against: "cm-dan" })).toBe("/history?player=Someone+Typed+In");
+    // One member twice is not a pair.
+    expect(gamesHref({ memberId: "cm-john", against: "cm-john" })).toBe("/history?member=cm-john");
+  });
+
   it("names nobody when nobody was counted", () => {
     expect(gamesHref({ variant: "freestyle" })).toBe("/games/gomoku/history");
   });
