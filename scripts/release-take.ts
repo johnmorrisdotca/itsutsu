@@ -17,17 +17,31 @@
  *
  * This fixes all three by taking the number immediately before pushing, the
  * one moment it is actually knowable, and writing everything from it: the
- * changelog heading, `package.json`, and — through the API, with `--done`,
- * never through Prisma — the rows that shipped.
+ * changelog heading, `package.json`, the release commit that carries both,
+ * and — through the API, with `--done`, never through Prisma — the rows that
+ * shipped. It commits the two files itself rather than printing a step that
+ * says to: see `release-commit.ts` for the night the printed step was
+ * followed and the version was left behind.
  *
- * Self-contained like `scripts/tasks.ts`: no imports from `src/`, `fetch`
- * for the board, `node:child_process`/`node:fs` for git and the two files.
+ * Self-contained like `scripts/tasks.ts`: no imports from `src/` (its one
+ * import is its sibling `release-commit.ts`), `fetch` for the board,
+ * `node:child_process`/`node:fs` for git and the two files.
  * Everything is computed first and nothing is written until all of it can
  * be — a release that refuses halfway must leave the tree exactly as it
  * found it, not a version bumped with no changelog line, or the reverse.
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
+
+import {
+  commitRelease,
+  dirtyReleaseFiles,
+  NEXT_STEP,
+  RELEASE_FILES,
+  releaseRefusal,
+  UNDO_HINT,
+  type ReleaseIo,
+} from "./release-commit.ts";
 
 // ---------------------------------------------------------------------------
 // Pure planning. Exported for release-take.test.ts, which is the only reason
@@ -209,11 +223,38 @@ async function closeRow(key: string, version: string, releasedAt: string, actor:
   return true;
 }
 
+/** Whether git is part-way through a merge — a partial commit is refused until it is finished. */
+function mergeInProgress(): boolean {
+  try {
+    execFileSync("git", ["rev-parse", "-q", "--verify", "MERGE_HEAD"], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   const summaries = flags("summary", argv);
   const step: ReleaseStep = hasFlag("patch", argv) ? "patch" : "minor";
   const doneKeys = flags("done", argv);
+
+  const io: ReleaseIo = {
+    git: (args, input) => execFileSync("git", [...args], { encoding: "utf8", input, stdio: ["pipe", "pipe", "pipe"] }),
+    write: (path, content) => writeFileSync(path, content),
+  };
+
+  // Before the fetch, before anything is read for the plan: the release
+  // commit takes these two files as they stand, so either one already
+  // changed would carry somebody's edit into it.
+  const refusal = releaseRefusal({
+    dirty: dirtyReleaseFiles(io.git(["status", "--porcelain", "--", ...RELEASE_FILES])),
+    merging: mergeInProgress(),
+  });
+  if (refusal !== null) {
+    console.error(refusal);
+    process.exit(1);
+  }
 
   execFileSync("git", ["fetch", "origin", "--quiet"], { stdio: "inherit" });
 
@@ -247,9 +288,18 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  writeFileSync("CHANGELOG.md", plan.changelog);
-  writeFileSync("package.json", plan.packageJson);
-  console.log(`${plan.version} written to CHANGELOG.md and package.json. Published was ${published}.`);
+  const committed = commitRelease(
+    io,
+    { log: (line) => console.log(line), error: (line) => console.error(line) },
+    {
+      version: plan.version,
+      published,
+      before: { changelog: localChangelog, packageJson: localPackageJson },
+      after: { changelog: plan.changelog, packageJson: plan.packageJson },
+      summaries,
+    },
+  );
+  if (!committed) process.exit(1);
 
   let anyClosingFailed = false;
   if (doneKeys.length > 0) {
@@ -266,9 +316,10 @@ async function main(): Promise<void> {
     }
   }
 
-  console.log("Now: pnpm preflight:prod && git fetch origin && git push origin HEAD:main");
+  console.log(NEXT_STEP);
+  console.log(UNDO_HINT);
   if (anyClosingFailed) {
-    console.log("The files above are correct either way — re-run with only --done to retry closing a row.");
+    console.log("The release commit above is correct either way — re-run with only --done to retry closing a row.");
     process.exitCode = 1;
   }
 }
