@@ -42,6 +42,7 @@ import {
   dirtyReleaseFiles,
   NEXT_STEP,
   RELEASE_FILES,
+  releaseCoAuthor,
   releaseRefusal,
   UNDO_HINT,
   type ReleaseIo,
@@ -502,6 +503,7 @@ async function main(): Promise<void> {
       before: { changelog: localChangelog, packageJson: localPackageJson },
       after: { changelog: plan.changelog, packageJson: plan.packageJson },
       summaries,
+      coAuthor: releaseCoAuthor(process.env),
     },
   );
   if (!committed) process.exit(1);

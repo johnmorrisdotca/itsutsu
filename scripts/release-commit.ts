@@ -30,8 +30,31 @@
  * (write → commit → report) is tested with a fake rather than trusted.
  */
 
-/** The trailer the repository's commits carry — see any `0.x.y — …` commit on main. */
+/**
+ * The co-author trailer a release commit carries when `RELEASE_CO_AUTHOR` is
+ * not set in the environment. It names the assistant that made the release,
+ * not the person committing it, which is why it is never read from git
+ * config.
+ *
+ * Update this line whenever the attribution line the sessions are given
+ * changes: copy the `Co-Authored-By:` line from the end of the newest
+ * ordinary commit on main. Until it is updated, set `RELEASE_CO_AUTHOR` for
+ * the run instead, because a stale trailer fails nothing and simply goes into
+ * history under the wrong name.
+ */
 export const RELEASE_CO_AUTHOR = "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>";
+
+/**
+ * The trailer for this run: `RELEASE_CO_AUTHOR` from the environment when it
+ * is set and not blank, otherwise the constant above. A value given as
+ * `Name <email>` gets the `Co-Authored-By: ` prefix, so a trailer is never
+ * written without the key git reads it by.
+ */
+export function releaseCoAuthor(env: Readonly<Record<string, string | undefined>>): string {
+  const value = env.RELEASE_CO_AUTHOR?.trim() ?? "";
+  if (value === "") return RELEASE_CO_AUTHOR;
+  return /^co-authored-by:/i.test(value) ? value : `Co-Authored-By: ${value}`;
+}
 
 /** The only two paths a release commit may contain, in the order they are written. */
 export const RELEASE_FILES = ["CHANGELOG.md", "package.json"] as const;
@@ -79,11 +102,11 @@ export function releaseRefusal(state: { dirty: readonly string[]; merging: boole
  * every one in the body as the changelog lists them; a patch with none is
  * named by its number alone, since there is nothing else true to say.
  */
-export function releaseCommitMessage(version: string, summaries: readonly string[]): string {
+export function releaseCommitMessage(version: string, summaries: readonly string[], coAuthor: string): string {
   const lines = summaries.map((line) => line.trim()).filter((line) => line.length > 0);
   const subject = lines.length === 0 ? version : `${version} — ${lines[0]!.replace(/\.$/, "")}`;
   const body = lines.length > 1 ? `${lines.map((line) => `- ${line}`).join("\n")}\n\n` : "";
-  return `${subject}\n\n${body}${RELEASE_CO_AUTHOR}\n`;
+  return `${subject}\n\n${body}${coAuthor}\n`;
 }
 
 export type CommitOutcome =
@@ -128,7 +151,12 @@ export function writeAndCommit(
 }
 
 /** What a failed commit prints, so the tree it leaves is never a mystery. */
-export function commitFailureReport(version: string, outcome: Extract<CommitOutcome, { ok: false }>, message: string): string[] {
+export function commitFailureReport(
+  version: string,
+  outcome: Extract<CommitOutcome, { ok: false }>,
+  message: string,
+  coAuthor: string,
+): string[] {
   const head = [`Could not commit ${version}: ${outcome.error}`];
   if (outcome.restored) {
     return [
@@ -143,7 +171,7 @@ export function commitFailureReport(version: string, outcome: Extract<CommitOutc
     ...head,
     `Putting the files back failed too (${outcome.restoreError}).`,
     `The tree may hold ${version} in package.json and CHANGELOG.md, uncommitted, and no row was closed. Either:`,
-    `  git commit --only -m "${subject.replace(/"/g, '\\"')}" -m "${RELEASE_CO_AUTHOR}" -- ${RELEASE_FILES.join(" ")}`,
+    `  git commit --only -m "${subject.replace(/"/g, '\\"')}" -m "${coAuthor}" -- ${RELEASE_FILES.join(" ")}`,
     `or take the release back off:`,
     `  git checkout -- ${RELEASE_FILES.join(" ")}`,
   ];
@@ -165,12 +193,14 @@ export function commitRelease(
     before: ReleaseFileContents;
     after: ReleaseFileContents;
     summaries: readonly string[];
+    /** The trailer, from `releaseCoAuthor(process.env)` — required, so no caller falls back by forgetting it. */
+    coAuthor: string;
   },
 ): boolean {
-  const message = releaseCommitMessage(release.version, release.summaries);
+  const message = releaseCommitMessage(release.version, release.summaries, release.coAuthor);
   const outcome = writeAndCommit(io, release.before, release.after, message);
   if (!outcome.ok) {
-    for (const line of commitFailureReport(release.version, outcome, message)) out.error(line);
+    for (const line of commitFailureReport(release.version, outcome, message, release.coAuthor)) out.error(line);
     return false;
   }
   out.log(
