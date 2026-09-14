@@ -1,10 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * The international family of draughts, at the board: each game opened at its
- * own address, White moving first as its rules say, and one sequence played
- * that shows a rule the English Checkers beside it does not have — a man
- * taking backward, and the longest capture being the only one offered.
+ * The draughts games beside Checkers, at the board: each game opened at its
+ * own address, the first move where its rulebook puts it, and one sequence
+ * played that shows a rule the English Checkers beside it does not have — a
+ * man taking backward, the longest capture being the only one offered, or,
+ * in Russian and pool, any capture being allowed.
  *
  * Every sequence starts from the real opening position and was checked
  * against the engine before it was written here. The practice board is
@@ -32,7 +33,7 @@ async function move(page: Page, colour: "Black" | "White", from: string, to: str
   await expect(piece(page, to, colour)).toBeVisible();
 }
 
-test.describe("the international family of draughts", () => {
+test.describe("the draughts games beside Checkers", () => {
   test("International Draughts: White opens, and only the capture taking the most is offered", async ({ page }) => {
     await openBoard(page, "international-draughts");
     // Twenty men a side on 10×10: Black's four rows at the top, White's at the bottom, and White to move.
@@ -99,6 +100,52 @@ test.describe("the international family of draughts", () => {
     await move(page, "White", "H8", "F6");
     await expect(empty(page, "J7")).toBeVisible();
     await expect(empty(page, "G7")).toBeVisible();
+    await expect(page.getByTestId("to-play")).toContainText("Black");
+  });
+
+  test("Russian Draughts: the shorter capture may be chosen where a longer one is on the board", async ({ page }) => {
+    await openBoard(page, "russian-draughts");
+    await expect(page.getByTestId("to-play")).toContainText("White");
+
+    await move(page, "White", "A3", "B4");
+    await move(page, "Black", "F6", "E5");
+    await move(page, "White", "E3", "D4");
+    await move(page, "Black", "D6", "C5");
+
+    // B4 could take two — C5, then back over E5 — but D4 takes E5 alone, and in Russian draughts that is allowed.
+    // Brazilian or international draughts would offer D4 nothing here.
+    await move(page, "White", "D4", "F6");
+    await expect(empty(page, "E5")).toBeVisible();
+    await expect(piece(page, "B4", "White")).toBeVisible();
+    await expect(page.getByTestId("to-play")).toContainText("Black");
+  });
+
+  test("Pool Checkers: Black opens, and a man captures on through the far row without stopping", async ({ page }) => {
+    await openBoard(page, "pool-checkers");
+    // APCA rule 7: Black moves first.
+    await expect(page.getByTestId("to-play")).toContainText("Black");
+
+    await move(page, "Black", "F6", "G5");
+    await move(page, "White", "G3", "H4");
+    await move(page, "Black", "B6", "C5");
+    await move(page, "White", "H4", "F6");
+    await move(page, "Black", "E7", "G5");
+    await move(page, "White", "C3", "D4");
+    await move(page, "Black", "D8", "E7");
+
+    /*
+     * Four in one move. The man lands on D8, Black's back row, with more to
+     * take, so it goes on (APCA rule 22) — back over E7 and G5 to H4. A king is
+     * drawn only as a ring on the stone, so what is asserted is that the capture
+     * never stopped on the far row.
+     */
+    await move(page, "White", "D4", "B6");
+    await move(page, "White", "B6", "D8");
+    await expect(page.getByTestId("to-play")).toContainText("White");
+    await move(page, "White", "D8", "F6");
+    await expect(page.getByTestId("to-play")).toContainText("White");
+    await move(page, "White", "F6", "H4");
+    for (const square of ["C5", "C7", "E7", "G5"]) await expect(empty(page, square)).toBeVisible();
     await expect(page.getByTestId("to-play")).toContainText("Black");
   });
 });

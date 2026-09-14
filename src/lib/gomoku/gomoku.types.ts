@@ -12,6 +12,7 @@ export type {
   CheckersRules,
   CrownMidCapture,
   EndgameCount,
+  EndgameCountKind,
   ForbiddenPattern,
   LineRule,
   PieceTally,
@@ -183,6 +184,8 @@ export type RuleVariant =
   | "internationalDraughts"
   | "brazilianDraughts"
   | "canadianCheckers"
+  | "russianDraughts"
+  | "poolCheckers"
   | "chineseCheckers"
   | "go";
 

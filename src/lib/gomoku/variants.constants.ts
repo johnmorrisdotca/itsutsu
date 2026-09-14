@@ -648,6 +648,45 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "12×12, played on the dark squares only — seventy-two of the 144. Thirty men a side fill the first five rows, and the two middle rows start empty.",
   },
+  /*
+   * The free-choice games: the Russian federation's rules for shashki, and the
+   * American Pool Checker Association's for pool. Each origin names its
+   * rulebook, and says what of it this site does not apply.
+   */
+  russianDraughts: {
+    label: "Russian Draughts",
+    kanji: "ロシアチェッカー",
+    tagline: "Draughts on 8×8 with flying kings: men take backward, any capture may be chosen, and a man crowned mid-capture takes on as a king.",
+    origin: "Official rules were first printed in Russia in 1884, and the first Russian championship was held in 1894; Soviet championships followed from 1924, and world championships from 1993, under the FMJD's section for the 8×8 game. The rules here are the Russian Draughts Federation's (ФШР), draws included, except the two that cannot be counted: a lone king holding the main road, and a position an arbiter calls clearly drawn.",
+    alsoKnownAs: ["Shashki", "Шашки", "Russian Checkers", "Russian Shashki"],
+    country: "RU",
+    wikipedia: "Russian draughts",
+    rules: [
+      "Each side has twelve men on the dark squares of its own three rows. White moves first.",
+      "A man steps one square diagonally forward, and captures by jumping an adjacent enemy piece into the empty square beyond it, forward or backward.",
+      "Capturing is forced, but which capture is yours to choose — the longer or the shorter. A capture once begun is carried on while there is more to take; the pieces it takes come off only when it is over, and none may be jumped twice.",
+      "A man that reaches the far row is crowned at once, even in the middle of a capture, and goes on capturing as a king. A king flies: it moves any distance along an open diagonal, and takes a piece at any distance, landing on any empty square beyond it — one from which it can take again, where there is one.",
+      "A side with no piece that can move has lost. It is a draw when a position comes round a third time with the same side to move; after fifteen moves each in which only kings have moved and nothing was taken; when three or more kings have not taken a lone king within fifteen moves; or when an ending with a king on each side goes unchanged — nothing taken, nothing crowned — for five moves each with two or three pieces on the board, thirty with four or five, or sixty with six or seven.",
+    ],
+    board: "8×8, played on the dark squares only — thirty-two of the sixty-four. Twelve men a side fill the first three rows, and the long diagonal, the main road, runs from each player's left.",
+  },
+  poolCheckers: {
+    label: "Pool Checkers",
+    kanji: "プールチェッカー",
+    tagline: "American pool: men take backward, kings fly, and you choose which capture to make.",
+    origin: "The checkers of the American South, traditionally played by African American players, and in Puerto Rico and Jamaica too. Its origin is undocumented; Vladimir Kaplan traced it to Spanish checkers. The American Pool Checker Association has kept its rules since the 1960s, and the rules here are the association's Tournament Rules of Play (2016). Its thirty-move rule is announced and counted by a player, and nobody announces anything here, so a game going nowhere is ended by this site's own forty-move count instead.",
+    alsoKnownAs: ["American Pool Checkers", "Spanish Pool Checkers"],
+    country: "US",
+    wikipedia: "American Pool Checkers",
+    rules: [
+      "Each side has twelve men on the dark squares of its own three rows. Black moves first.",
+      "A man steps one square diagonally forward, and captures by jumping an adjacent enemy piece, forward or backward.",
+      "Capturing is forced, but you are not made to take the most: choose any capture. Once begun it is carried to the end; the pieces it takes come off only when it is over, and none may be jumped twice.",
+      "A man is crowned only if its move ends on the far row: one that must jump on out of it stays a man. A king flies, and captures a piece at any distance, landing on any empty square beyond it.",
+      "A side with no piece that can move, or none left, has lost. Three kings must take a lone king before it has made thirteen moves, or the game is drawn. And as in Checkers here — this site's rule, not the association's — forty moves each with only kings moving and nothing taken is a draw.",
+    ],
+    board: "8×8, played on the dark squares only — thirty-two of the sixty-four, with a dark square in each player's near left-hand corner. Twelve men a side fill the first three rows.",
+  },
   chineseCheckers: {
     label: "Chinese Checkers",
     kanji: "ダイヤモンドゲーム",

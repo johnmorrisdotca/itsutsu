@@ -94,6 +94,19 @@ const SCENES: Record<
     opener: "White",
     slides: [[[7, 0], [6, 1]], [[4, 3], [5, 2]], [[6, 1], [4, 3]], [[3, 4], [5, 2]]],
   },
+  russianDraughts: {
+    size: 8,
+    moves: [],
+    opener: "White",
+    slides: [[[5, 0], [4, 1]], [[2, 3], [3, 2]], [[4, 1], [2, 3]], [[1, 4], [3, 2]]],
+  },
+  // Pool checkers gives the first move to Black.
+  poolCheckers: {
+    size: 8,
+    moves: [],
+    opener: "Black",
+    slides: [[[2, 3], [3, 4]], [[5, 6], [4, 5]], [[3, 4], [5, 6]], [[6, 7], [4, 5]]],
+  },
   chineseCheckers: {
     size: 17,
     moves: [],

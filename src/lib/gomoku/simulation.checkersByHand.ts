@@ -23,14 +23,22 @@ export type HandRules = {
   /** Plies of kings moving with nothing taken before a draw. */
   idlePlies: number;
   repetition: number | null;
-  /** Each side's pieces written K for a king and M for a man, kings first. */
-  endings: { pairs: [string, string][]; movesEach: number }[];
+  /**
+   * Named endings, each side written K for a king and M for a man, kings
+   * first, with `restarts` when a capture or crowning inside them starts the
+   * count again; or a balance — any ending of so many pieces with a king on
+   * each side, counted while nothing is taken or crowned.
+   */
+  endings: (
+    | { kind: "endings"; pairs: [string, string][]; restarts: boolean; movesEach: number }
+    | { kind: "balance"; pieces: number[]; movesEach: number }
+  )[];
 };
 
 /** FMJD article 6.3 and 6.4. */
 const FMJD_ENDINGS: HandRules["endings"] = [
-  { pairs: [["KKK", "K"], ["KKM", "K"], ["KMM", "K"]], movesEach: 16 },
-  { pairs: [["KK", "K"], ["KM", "K"], ["K", "K"]], movesEach: 5 },
+  { kind: "endings", pairs: [["KKK", "K"], ["KKM", "K"], ["KMM", "K"]], restarts: false, movesEach: 16 },
+  { kind: "endings", pairs: [["KK", "K"], ["KM", "K"], ["K", "K"]], restarts: false, movesEach: 5 },
 ];
 
 export const HAND_RULES: Record<string, HandRules> = {
@@ -46,9 +54,38 @@ export const HAND_RULES: Record<string, HandRules> = {
     idlePlies: 40,
     repetition: 3,
     // CBJD art. 99.
-    endings: [{ pairs: [["KK", "KK"], ["KK", "K"], ["KK", "KM"], ["K", "K"], ["K", "KM"]], movesEach: 5 }],
+    endings: [{ kind: "endings", pairs: [["KK", "KK"], ["KK", "K"], ["KK", "KM"], ["K", "K"], ["K", "KM"]], restarts: false, movesEach: 5 }],
   },
   canadianCheckers: { size: 12, rows: 5, backward: true, flying: true, most: true, crown: "passes", idlePlies: 50, repetition: 3, endings: FMJD_ENDINGS },
+  russianDraughts: {
+    size: 8,
+    rows: 3,
+    backward: true,
+    flying: true,
+    most: false,
+    crown: "continues",
+    idlePlies: 30,
+    repetition: 3,
+    // The Russian federation's counts: three to twelve kings against one, and the balance of two–three, four–five, six–seven pieces.
+    endings: [
+      { kind: "endings", pairs: Array.from({ length: 10 }, (_, n): [string, string] => ["K".repeat(n + 3), "K"]), restarts: true, movesEach: 15 },
+      { kind: "balance", pieces: [2, 3], movesEach: 5 },
+      { kind: "balance", pieces: [4, 5], movesEach: 30 },
+      { kind: "balance", pieces: [6, 7], movesEach: 60 },
+    ],
+  },
+  // The APCA's thirteen count; its forty-move backstop is the site's own.
+  poolCheckers: {
+    size: 8,
+    rows: 3,
+    backward: true,
+    flying: true,
+    most: false,
+    crown: "passes",
+    idlePlies: 80,
+    repetition: null,
+    endings: [{ kind: "endings", pairs: [["KKK", "K"]], restarts: false, movesEach: 13 }],
+  },
 };
 
 const EVERY_WAY: readonly Point[] = [
@@ -230,9 +267,18 @@ export function drawReasonByHand(state: GameState, hand: HandRules): string | nu
     const kings = new Set(state.kings.map(index));
     const inIt = () => {
       const tally = talliesByHand(board, kings);
+      if (ending.kind === "balance") {
+        return ending.pieces.includes(tally.black.length + tally.white.length) && tally.black.includes("K") && tally.white.includes("K");
+      }
       return ending.pairs.some(([one, other]) => (tally.black === one && tally.white === other) || (tally.white === one && tally.black === other));
     };
     if (!inIt()) continue;
+    const started = talliesByHand(board, kings);
+    const restarts = ending.kind === "balance" || ending.restarts;
+    const unchanged = () => {
+      const tally = talliesByHand(board, kings);
+      return tally.black === started.black && tally.white === started.white;
+    };
     let turns = 0;
     for (let at = moves.length - 1; at >= 0; at -= 1) {
       const move = moves[at];
@@ -245,7 +291,7 @@ export function drawReasonByHand(state: GameState, hand: HandRules): string | nu
         board[index(point)] = move.stone === "black" ? "white" : "black";
         if (move.capturedWasKing === true) kings.add(index(point));
       }
-      if (!inIt()) break;
+      if (restarts ? !unchanged() : !inIt()) break;
       if (move.continuedChain !== true) turns += 1;
     }
     if (turns >= ending.movesEach * 2) return `an ending ran ${turns} turns`;

@@ -26,6 +26,8 @@ const FAMILY: RuleVariant[] = [
   RULE_VARIANTS.internationalDraughts,
   RULE_VARIANTS.brazilianDraughts,
   RULE_VARIANTS.canadianCheckers,
+  RULE_VARIANTS.russianDraughts,
+  RULE_VARIANTS.poolCheckers,
 ];
 
 describe("the checkers family, played to its end", () => {

@@ -360,7 +360,7 @@ describe("the tour covers the site", () => {
     // game or a new family moves the target rather than leaving somebody holding
     // a set that is complete and unpaid.
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length);
-    expect(XP_VARIANTS_TO_PLAY).toBe(42);
+    expect(XP_VARIANTS_TO_PLAY).toBe(44);
     expect(GAME_FAMILIES.length).toBe(11);
   });
 

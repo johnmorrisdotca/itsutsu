@@ -84,6 +84,18 @@ export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, { plies: number; mea
   [RULE_VARIANTS.internationalDraughts]: { plies: 50, measure: PROGRESS_MEASURES.taking },
   [RULE_VARIANTS.brazilianDraughts]: { plies: 40, measure: PROGRESS_MEASURES.taking },
   [RULE_VARIANTS.canadianCheckers]: { plies: 50, measure: PROGRESS_MEASURES.taking },
+  /*
+   * Russian draughts: fifteen moves in which only kings have moved and nothing
+   * was taken (the Russian federation's rule 7), read as fifteen each, as the
+   * FMJD/IDF 8×8 rules count it.
+   *
+   * Pool checkers has no such count of its own — the APCA's thirty-move rule is
+   * announced and counted by a player, and nobody announces anything here — so
+   * it takes Checkers' forty moves each as the site's backstop, and its rules
+   * page says that is the site's rule and not the association's.
+   */
+  [RULE_VARIANTS.russianDraughts]: { plies: 30, measure: PROGRESS_MEASURES.taking },
+  [RULE_VARIANTS.poolCheckers]: { plies: 80, measure: PROGRESS_MEASURES.taking },
   [RULE_VARIANTS.halma]: { plies: 400, measure: PROGRESS_MEASURES.racing },
   /*
    * squareFour is four pieces a side and then, as the spec puts it, "a turn
