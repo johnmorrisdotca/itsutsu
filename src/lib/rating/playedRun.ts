@@ -276,6 +276,9 @@ export async function recordPlayed(game: DecidedGame): Promise<void> {
       email: true,
       name: true,
       timeZone: true,
+      /* When they last earned XP, read before this game pays: a first finished
+         game of a new day judges the days before it for a full board. */
+      xpLastAt: true,
       playedStreakKind: true,
       playedStreakCount: true,
     },
@@ -354,7 +357,7 @@ async function awardGameXp(
   game: DecidedGame,
   sides: readonly PlayedSide[],
   read: {
-    byId: ReadonlyMap<string, { email: string | null; name: string | null; timeZone: string | null }>;
+    byId: ReadonlyMap<string, { email: string | null; name: string | null; timeZone: string | null; xpLastAt?: Date | null }>;
     runs: ReadonlyMap<string, Streak | null>;
   },
 ): Promise<void> {
@@ -374,6 +377,7 @@ async function awardGameXp(
       email: read.byId.get(side.memberId)?.email ?? null,
       name: read.byId.get(side.memberId)?.name ?? null,
       timeZone: read.byId.get(side.memberId)?.timeZone ?? null,
+      xpLastAt: read.byId.get(side.memberId)?.xpLastAt,
       outcome: side.outcome,
       run: read.runs.get(side.memberId) ?? null,
     })),

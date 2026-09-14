@@ -20,6 +20,8 @@ function keyOf(row: { memberId: string; type: string; subject: string }): string
 }
 
 const prismaFake = {
+  /* The full-board judgement's first question: fewer than twenty games, so nothing more is read. */
+  game: { count: async () => 0 },
   member: {
     findUnique: async ({ where }: { where: { id: string } }) => members.get(where.id) ?? null,
     update: async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {

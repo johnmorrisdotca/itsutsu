@@ -67,6 +67,18 @@ export type XpEventType =
   | "losses500"
   | "losses1000"
   | "draws10"
+  // A full board of games, kept moving.
+  | "fullHouse"
+  | "cleanSweepFirst"
+  | "cleanSweep"
+  | "fullHouseCombo7"
+  | "fullHouseCombo15"
+  | "fullHouseCombo30"
+  | "fullHouseCombo60"
+  | "fullHouseCombo120"
+  | "fullHouseCombo250"
+  | "fullHouseCombo500"
+  | "fullHouseCombo1000"
   // The computer ladder.
   | "gradeBeaten"
   | "everyGradeBeaten"

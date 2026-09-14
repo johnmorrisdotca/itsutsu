@@ -45,6 +45,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 
 import { awardXp } from "./awardXp";
+import { fullBoardAwardsFor } from "./fullBoardServer";
 import { XP_EVENTS } from "./xp.constants";
 import type { XpAward } from "./xp.types";
 import { isNewDay, xpDayKey, type DayKey } from "./xpDay";
@@ -123,6 +124,11 @@ export async function visitAwards(row: VisitingMember, now: Date): Promise<XpAwa
 
   const milestone = await dayRunMilestone(row, last, today);
   if (milestone !== null) awards.push(milestone);
+
+  /* A full board kept moving, judged over the days since the last visit —
+     nothing at all unless the member could have held twenty games. See
+     `fullBoardServer.ts`. In this batch, so the toasts read as one stack. */
+  awards.push(...(await fullBoardAwardsFor({ memberId: row.id, timeZone: row.timeZone, lastActionAt: last, now })));
 
   return awards;
 }
