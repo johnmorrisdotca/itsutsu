@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -96,8 +96,16 @@ export function GameReplay({
   appearance = DEFAULT_APPEARANCE,
   seated = false,
   offerSgf = false,
+  overlay = null,
 }: {
   game: GameDetail;
+  /**
+   * Something drawn over the board and nothing else — the result card, the first
+   * time a player opens a game that has just finished. Positioned inside the
+   * board's own box, so it cannot move the page and always covers the board it
+   * is about.
+   */
+  overlay?: ReactNode;
   /**
    * The MOVE to open at — a stone count, matching `game.moveCount` and the
    * number `matchPath` puts on the address — not a position in the engine's
@@ -205,7 +213,8 @@ export function GameReplay({
       {...readyMark(useHydrated())}
     >
       <div className="w-full min-w-0 flex-1">
-        <div className="mx-auto w-full max-w-[min(100%,38rem)]">
+        <div className="relative mx-auto w-full max-w-[min(100%,38rem)]">
+          {overlay}
           <Board
             state={state}
             /*
