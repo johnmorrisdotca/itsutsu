@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
@@ -29,6 +29,29 @@ const FIRST = GAME_FAMILIES[0].games[0];
 const COPY = RULE_VARIANT_DISPLAY[FIRST];
 const GAME = `/games/${slugFor(FIRST)}`;
 
+/**
+ * A click on the CARD at the centre of something drawn on it — what a finger
+ * does, and the only click that reaches the card's face.
+ *
+ * Everything on the card that is not a link sits UNDER the stretched name:
+ * that is the whole design, so a press anywhere lands on the one link. And it
+ * is exactly why Playwright will not click the tagline or the chevron as
+ * elements — it checks that the element it was asked to click is the one that
+ * would receive the press, finds the name's face on top, and retries until the
+ * test times out. That refusal is Playwright being right about the page, not
+ * the page being wrong: the face covering the words is what was built.
+ */
+async function clickThrough(card: Locator, drawn: Locator, what: string): Promise<void> {
+  await expect(drawn, `the card shows its ${what}`).toBeVisible();
+  const at = await drawn.boundingBox();
+  const from = await card.boundingBox();
+  expect(at, `the ${what} has a box`).not.toBeNull();
+  expect(from, "the card has a box").not.toBeNull();
+  await card.click({
+    position: { x: at!.x + at!.width / 2 - from!.x, y: at!.y + at!.height / 2 - from!.y },
+  });
+}
+
 test.describe("a game's card opens the game", () => {
   test("from its tagline, which is not the name", async ({ page }) => {
     await page.goto("/games");
@@ -40,28 +63,24 @@ test.describe("a game's card opens the game", () => {
      * (to that match), and neither of those is a second way to the game.
      */
     await expect(card.locator(`a[href="${GAME}"]`)).toHaveCount(1);
-    await card.getByText(COPY.tagline, { exact: true }).click();
+    /*
+     * Clicked THROUGH, for the reason on `clickThrough`. This case used to call
+     * `.click()` on the tagline itself and could never pass: Playwright waited
+     * two minutes for the name's face to stop covering the words, which it
+     * never does, on every database — CI and a developer's alike.
+     */
+    await clickThrough(card, card.getByText(COPY.tagline, { exact: true }), "tagline");
     await expect(page).toHaveURL(GAME);
   });
 
   test("from the chevron, which is a sign and not a second link", async ({ page }) => {
     await page.goto("/games");
     const card = page.getByTestId("family-game").first();
-    const arrow = card.getByTestId("card-arrow");
-    await expect(arrow).toBeVisible();
     /*
-     * Clicked THROUGH rather than clicked. The chevron passes pointer events
-     * to the card's face — it is a sign, not a control — so Playwright would
-     * refuse to click it directly as an element that receives no events. A
-     * click on the CARD at the chevron's centre is what a finger does.
+     * The chevron passes pointer events to the card's face — it is a sign, not
+     * a control — so it is clicked through the card, like the tagline.
      */
-    const at = await arrow.boundingBox();
-    const from = await card.boundingBox();
-    expect(at, "the chevron has a box").not.toBeNull();
-    expect(from, "the card has a box").not.toBeNull();
-    await card.click({
-      position: { x: at!.x + at!.width / 2 - from!.x, y: at!.y + at!.height / 2 - from!.y },
-    });
+    await clickThrough(card, card.getByTestId("card-arrow"), "chevron");
     await expect(page).toHaveURL(GAME);
   });
 
