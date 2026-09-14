@@ -140,7 +140,7 @@ describe("the four ways a stored turn can go stale are each answered", () => {
   const paths: { file: string; fn: string; how: string }[] = [
     { file: "liveGame.ts", fn: "appendMove", how: "a move applied" },
     { file: "hotSeat.ts", fn: "truncateMoves", how: "a takeback, which moves the turn backwards" },
-    { file: "liveGame.ts", fn: "createLiveGame", how: "a fork, which copies move rows without replaying them" },
+    { file: "liveGameCreate.ts", fn: "createLiveGame", how: "a fork, which copies move rows without replaying them" },
     { file: "liveGameSettings.ts", fn: "updateLiveGameSettings", how: "a rules change, which can re-decide who opens" },
     { file: "liveGameEndings.ts", fn: "claimTimeout", how: "a forfeited turn, passed without a move" },
     { file: "liveGameEndings.ts", fn: "settleEnded", how: "a position the engine ended and nothing wrote down" },
