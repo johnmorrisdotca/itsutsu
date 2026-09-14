@@ -117,26 +117,27 @@ describe("filterOpenSeats", () => {
     expect(shown.map((s) => s.id)).toEqual(["b"]);
   });
 
-  it("asks the rating lookup by the poster's name, not the seat that is open", () => {
-    const asked: string[] = [];
-    const ratingOf = (name: string) => {
-      asked.push(name);
-      return name === "Strong" ? 2000 : 1200;
+  it("asks the rating lookup about the poster, name and member id, not the seat that is open", () => {
+    const asked: { name: string; memberId: string | null }[] = [];
+    const ratingOf = (poster: { name: string; memberId: string | null }) => {
+      asked.push(poster);
+      return poster.name === "Strong" ? 2000 : 1200;
     };
-    const seats = [seat({ id: "a", openSeat: "white", blackName: "Strong" })];
+    const seats = [seat({ id: "a", openSeat: "white", blackName: "Strong", blackMemberId: "strong-id" })];
     filterOpenSeats(seats, { ...NO_SEAT_FILTER, rating: "over" }, ratingOf);
-    expect(asked).toEqual(["Strong"]);
+    // The id travels with the name, so a poster who renamed is still found.
+    expect(asked).toEqual([{ name: "Strong", memberId: "strong-id" }]);
   });
 
   it("splits under and over at the rating that starts a new member", () => {
-    const ratingOf = (name: string) => (name === "weak" ? RATING_SPLIT - 1 : RATING_SPLIT);
+    const ratingOf = ({ name }: { name: string }) => (name === "weak" ? RATING_SPLIT - 1 : RATING_SPLIT);
     const seats = [seat({ id: "a", blackName: "weak" }), seat({ id: "b", blackName: "strong" })];
     expect(filterOpenSeats(seats, { ...NO_SEAT_FILTER, rating: "under" }, ratingOf).map((s) => s.id)).toEqual(["a"]);
     expect(filterOpenSeats(seats, { ...NO_SEAT_FILTER, rating: "over" }, ratingOf).map((s) => s.id)).toEqual(["b"]);
   });
 
   it("keeps only the posters with no settled rating at all, for 'unrated'", () => {
-    const ratingOf = (name: string) => (name === "fresh" ? null : 1600);
+    const ratingOf = ({ name }: { name: string }) => (name === "fresh" ? null : 1600);
     const seats = [seat({ id: "a", blackName: "fresh" }), seat({ id: "b", blackName: "seasoned" })];
     const shown = filterOpenSeats(seats, { ...NO_SEAT_FILTER, rating: "unrated" }, ratingOf);
     expect(shown.map((s) => s.id)).toEqual(["a"]);
@@ -154,7 +155,7 @@ describe("filterOpenSeats", () => {
       seat({ id: "wrong-pace", moveTimeMs: 300_000, timeoutPenalty: "turn", blackName: "strong" }),
       seat({ id: "wrong-rating", moveTimeMs: 60_000, timeoutPenalty: "turn", blackName: "weak" }),
     ];
-    const ratingOf = (name: string) => (name === "strong" ? 2000 : 1200);
+    const ratingOf = ({ name }: { name: string }) => (name === "strong" ? 2000 : 1200);
     const filter: OpenSeatFilter = { pace: 60_000, rating: "over", penalty: "turn" };
     expect(filterOpenSeats(seats, filter, ratingOf).map((s) => s.id)).toEqual(["match"]);
   });
