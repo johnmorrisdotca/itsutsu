@@ -10,8 +10,12 @@
  * with proper nouns keeping their capitals:
  * `0.173.5 — the member filter refuses, two dates move, and a gate holds the line`,
  * `0.173.1 — Play apart renders the shared rules panel instead of copying it`.
- * The tool passes it through as written and never changes its case, because it
- * cannot tell Hex, John, XP or `release:take` from an ordinary first word.
+ * The title takes it exactly as written: lower-casing would mangle Hex, John,
+ * XP or `release:take`, which the tool cannot tell from an ordinary first word.
+ * The changelog bullet capitalises the first letter instead, but only when the
+ * first word is plain lower-case letters, so `/releases` keeps its capitalised
+ * bullets and an identifier such as `xpCurve` is never turned into a typo.
+ * See `changelogBullet`.
  *
  * The second form takes no number: see `planRetry` for how it knows HEAD is
  * a release commit, and why it refuses when it cannot be sure.
@@ -106,9 +110,30 @@ export function versionAlreadyTaken(changelog: string, version: string): boolean
   return new RegExp(`^##\\s+${escaped}\\b`, "m").test(changelog);
 }
 
+/** A first word of plain lower-case letters, optionally ending in one mark of punctuation. */
+const PLAIN_FIRST_WORD = /^[a-z]+[,;:.!?]?$/;
+
+/**
+ * A summary as its changelog bullet. The summary is written in lower case for
+ * the commit title, and every bullet on `/releases` starts with a capital, so
+ * the bullet capitalises the first letter, but only when the first word (up
+ * to the first whitespace) is plain lower-case letters: "the member filter
+ * refuses" becomes "The member filter refuses".
+ *
+ * Every other first word is left exactly as written, because it is either
+ * already capitalised or is an identifier that a capital would turn into a
+ * typo nothing flags: `xpCurve` and `iOS` (a capital inside), `proxy.ts` and
+ * `release:take` (a dot or colon inside), a digit, or a backtick. Upper-casing
+ * plain prose is the safe direction: a proper noun already has its capital.
+ */
+export function changelogBullet(summary: string): string {
+  const firstWord = summary.split(/\s/, 1)[0] ?? "";
+  return PLAIN_FIRST_WORD.test(firstWord) ? `${summary[0]!.toUpperCase()}${summary.slice(1)}` : summary;
+}
+
 /** The heading and its bullets, in the shape `releases.ts` parses back. */
 function composeEntry(version: string, day: string, summaries: readonly string[]): string {
-  return `## ${version} — ${day}\n${summaries.map((line) => `- ${line}`).join("\n")}\n\n`;
+  return `## ${version} — ${day}\n${summaries.map((line) => `- ${changelogBullet(line)}`).join("\n")}\n\n`;
 }
 
 /** The changelog with one new entry inserted above the first existing heading. */

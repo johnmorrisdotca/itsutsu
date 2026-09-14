@@ -4,7 +4,9 @@ import { describe, expect, it } from "vitest";
 // this reaches it by relative path rather than the @/ alias, which only
 // resolves under src/. Importing it runs nothing but the pure functions
 // below: main() is guarded to fire only when the file is the entry point.
+import { RELEASE_CO_AUTHOR, releaseCommitMessage } from "../../../scripts/release-commit.ts";
 import {
+  changelogBullet,
   compareVersions,
   higherVersion,
   isRetryRun,
@@ -180,6 +182,86 @@ describe("planRelease", () => {
     expect(plan.ok).toBe(true);
     if (!plan.ok) return;
     expect(plan.changelog).toContain("## 0.151.0 — 2026-09-12\n- First thing\n- Second thing\n");
+  });
+});
+
+/** The title and the changelog entry one summary becomes, from the two functions that make them. */
+function titleAndEntry(summary: string): { title: string; changelog: string } {
+  const plan = planRelease({
+    published: "0.150.0",
+    changelog: CHANGELOG,
+    packageJson: PACKAGE_JSON,
+    step: "minor",
+    summaries: [summary],
+    now: NOW,
+  });
+  if (!plan.ok) throw new Error(plan.error);
+  return { title: releaseCommitMessage(plan.version, [summary], RELEASE_CO_AUTHOR).split("\n")[0]!, changelog: plan.changelog };
+}
+
+describe("a summary's case: the title as written, the changelog bullet capitalised", () => {
+  it("gives a lower-case summary a lower-case title and a capitalised bullet, proper nouns untouched", () => {
+    const { title, changelog } = titleAndEntry("the Paired gate sees every name");
+    expect(title).toBe("0.151.0 — the Paired gate sees every name");
+    expect(changelog).toContain("## 0.151.0 — 2026-09-12\n- The Paired gate sees every name\n");
+  });
+
+  it("leaves a summary starting with a backtick-quoted identifier unchanged in both", () => {
+    const { title, changelog } = titleAndEntry("`release:take` commits what it writes");
+    expect(title).toBe("0.151.0 — `release:take` commits what it writes");
+    expect(changelog).toContain("\n- `release:take` commits what it writes\n");
+  });
+
+  it("leaves a summary starting with a digit unchanged in both", () => {
+    const { title, changelog } = titleAndEntry("3 games at once is the cap");
+    expect(title).toBe("0.151.0 — 3 games at once is the cap");
+    expect(changelog).toContain("\n- 3 games at once is the cap\n");
+  });
+
+  it("leaves an already-capitalised summary unchanged in both", () => {
+    const { title, changelog } = titleAndEntry("Hex drawn on its own board");
+    expect(title).toBe("0.151.0 — Hex drawn on its own board");
+    expect(changelog).toContain("\n- Hex drawn on its own board\n");
+  });
+
+  it.each([
+    "xpCurve now tops at 999,999",
+    "recordResult writes the standing once",
+    "proxy.ts is the gate",
+    "iOS draws the board at its own size",
+    "release:take commits what it writes",
+  ])("leaves a summary opening with the identifier in %j unchanged in both", (summary) => {
+    const { title, changelog } = titleAndEntry(summary);
+    expect(title).toBe(`0.151.0 — ${summary}`);
+    expect(changelog).toContain(`\n- ${summary}\n`);
+  });
+
+  it.each([
+    ["a note beside a control is now its description", "A note beside a control is now its description"],
+    ["the member filter refuses, and two dates move", "The member filter refuses, and two dates move"],
+  ])("capitalises the plain sentence %j in the bullet only", (summary, bullet) => {
+    const { title, changelog } = titleAndEntry(summary);
+    expect(title).toBe(`0.151.0 — ${summary}`);
+    expect(changelog).toContain(`\n- ${bullet}\n`);
+  });
+
+  it("capitalises a plain first word that ends in punctuation, and leaves a hyphenated or empty one alone", () => {
+    expect(changelogBullet("finally, the queue pages")).toBe("Finally, the queue pages");
+    expect(changelogBullet("self-play is rated in the computer pool")).toBe("self-play is rated in the computer pool");
+    expect(changelogBullet("fixed")).toBe("Fixed");
+    expect(changelogBullet("")).toBe("");
+  });
+
+  it("capitalises every bullet of a release with more than one summary", () => {
+    const plan = planRelease({
+      published: "0.150.0",
+      changelog: CHANGELOG,
+      packageJson: PACKAGE_JSON,
+      step: "minor",
+      summaries: ["first thing", "second thing"],
+      now: NOW,
+    });
+    expect(plan.ok && plan.changelog).toContain("- First thing\n- Second thing\n");
   });
 });
 

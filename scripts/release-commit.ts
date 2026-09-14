@@ -99,7 +99,7 @@ export function releaseRefusal(state: { dirty: readonly string[]; merging: boole
 
 /**
  * `0.x.y — <first summary>`, in the house form. More than one summary puts
- * every one in the body as the changelog lists them; a patch with none is
+ * every one in the body as written, in the changelog's order; a patch with none is
  * named by its number alone, since there is nothing else true to say.
  */
 export function releaseCommitMessage(version: string, summaries: readonly string[], coAuthor: string): string {
@@ -108,8 +108,8 @@ export function releaseCommitMessage(version: string, summaries: readonly string
   // nouns keeping their capitals: `0.173.3 — the Paired gate sees every name, and
   // the six number faults`. It goes in exactly as written. Changing case here
   // would mangle Hex, John, XP or an identifier, which this cannot tell from an
-  // ordinary first word. The same line also becomes the CHANGELOG.md bullet, and
-  // every bullet written before this tool starts with a capital.
+  // ordinary first word. The CHANGELOG.md bullet made from the same line is
+  // capitalised instead: see `changelogBullet` in release-take.ts.
   const subject = lines.length === 0 ? version : `${version} — ${lines[0]!.replace(/\.$/, "")}`;
   const body = lines.length > 1 ? `${lines.map((line) => `- ${line}`).join("\n")}\n\n` : "";
   return `${subject}\n\n${body}${coAuthor}\n`;
