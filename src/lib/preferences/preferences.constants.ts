@@ -26,20 +26,22 @@ import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.
  * browser is a different feature wearing the same name.
  */
 
-/** The two answers a switch can give. */
-export const FLAG = [false, true] as const;
-
 export const PREFERENCE_SPECS = {
   /*
-   * How the players page was last narrowed: the three questions its filter
-   * bar asks, one preference each, so that a `who` this version no longer
-   * offers falls back on its own and leaves the other two alone. The first
-   * thing kept here, and the reason the store exists — it shipped on a cookie
-   * because there was nowhere honest for it to go.
+   * Which kind of player the players page lists: People, Computers or
+   * Everyone. The first thing kept here, and the reason the store exists — it
+   * shipped on a cookie because there was nowhere honest for it to go.
+   *
+   * ITS TWO SWITCHES WERE KEPT BESIDE IT, as `playersSettled` and
+   * `playersActive`, until John's list opened empty at 0.187.3 — "no player
+   * standings" — on switches pressed some earlier visit. They are questions
+   * asked on the day and are carried by the address alone now; see
+   * `rememberedFilter.ts`. Removed from the registry rather than left declared
+   * and unread: a preference `/api/me` would accept and nothing would honour
+   * is a promise with nothing behind it. A value an account still holds under
+   * either name is a key the registry does not know, which it ignores.
    */
   playersWho: { options: DIRECTORY_WHO_LIST, fallback: NO_FILTER.who },
-  playersSettled: { options: FLAG, fallback: NO_FILTER.settled },
-  playersActive: { options: FLAG, fallback: NO_FILTER.active },
 
   /*
    * Who the XP board and the level pages are about — the same three choices

@@ -1,9 +1,35 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 
-import { PROVISIONAL_BELOW } from "./elo";
+import { PROVISIONAL_BELOW, UNRATED_BELOW } from "./elo";
 import { playerKey } from "./playerKey";
+
+/**
+ * A rating row whose SHOWN rating has settled — the one `ratingShown` prints
+ * beside a name, with the tier `tierShown` prints beside that.
+ *
+ * The members list prints the ladder rating where a person has one (four
+ * rated games among people), and otherwise the rating earned against the
+ * computer players, marked as such. So "settled" is: twenty games among
+ * people; or, with fewer than four there, twenty against the programs.
+ *
+ * This asked about the ladder alone until 0.187.3, on the reasoning that the
+ * old `PlayerProfile.tier` was the ladder's — written before the rating column
+ * learned to show the other pool. It left out every computer player, whose
+ * settled rating the list prints, and every person who has only played them.
+ * On a site where nobody has twenty games against another person yet that is
+ * everybody, which is how John's list read "0 of 11 listed". The precedence
+ * is checked against `tierShown` at every boundary by `directorySettled.test.ts`.
+ */
+export const SETTLED_AS_SHOWN: Prisma.PlayerWhereInput = {
+  OR: [
+    { ratedGames: { gte: PROVISIONAL_BELOW } },
+    { ratedGames: { lt: UNRATED_BELOW }, computerRatedGames: { gte: PROVISIONAL_BELOW } },
+  ],
+};
 
 /**
  * WHICH MEMBERS HAVE A SETTLED RATING, AS A LIST OF IDS.
@@ -49,15 +75,8 @@ import { playerKey } from "./playerKey";
  * `fetchDirectoryPage` does not call this otherwise.
  */
 export async function membersWithSettledRatings(): Promise<string[]> {
-  /*
-   * Every established rating row. `ratedGames` is the PEOPLE pool's count,
-   * which is what `PlayerProfile.tier` is worked out from — see `toProfile`.
-   * The computer pool has a tier of its own and the directory's filter has
-   * never asked about it; matching that is deliberate rather than an oversight,
-   * because `filterDirectory` reads `entry.profile?.tier`.
-   */
   const established = await prisma.player.findMany({
-    where: { ratedGames: { gte: PROVISIONAL_BELOW } },
+    where: SETTLED_AS_SHOWN,
     select: { key: true, name: true, memberId: true },
   });
   if (established.length === 0) return [];
@@ -92,8 +111,8 @@ export async function membersWithSettledRatings(): Promise<string[]> {
 
   /*
    * A member reached only by name does not qualify if they have a rating row of
-   * their own, because that row is the one the page would show — and it is not
-   * established, or it would already be in `bound`.
+   * their own, because that row is the one the page would show — and what it
+   * shows has not settled, or it would already be in `bound`.
    */
   const haveTheirOwn = await prisma.player.findMany({
     where: { memberId: { in: named.map((member) => member.id) } },

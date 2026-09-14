@@ -3,32 +3,36 @@ import "server-only";
 import { currentEmail } from "@/lib/auth/currentSession";
 import { preferencesFor, rememberPreferences } from "@/lib/preferences/memberPreferences";
 
-import type { DirectoryFilter } from "./directoryFilter";
-import { addressSaysFilter, filterAsPreferences, filterFor } from "./rememberedFilter";
+import {
+  addressSaysWho,
+  filterAsPreferences,
+  filterFor,
+  whoFromMemory,
+  type ShownDirectoryFilter,
+} from "./rememberedFilter";
 
 /**
- * The filter the players page shows this reader, and the one place it is
- * remembered.
+ * The filter the players page shows this reader, and the one place its kind
+ * of player is remembered.
  *
- * What the address asks for wins and is kept; a silent address gets what this
- * reader last asked for, or the ordinary page if they never have. An address
- * that asks is a choice made — clicked, typed, or followed from somebody's
- * message — which is what the cookie took it for, and what the tests that
- * drive this by address rely on.
+ * What the address asks for wins; a silent address gets the kind of player this
+ * reader last chose, with both switches off — see `rememberedFilter.ts` for
+ * why the switches are never kept. An address that names who is a choice made —
+ * clicked, typed, or followed from somebody's message — and is kept.
  *
  * NO QUERY OF ITS OWN. The read rides the one every server-rendered page
  * already makes to say who is here — `memberRowFor`, kept for the rest of
  * the request — so a bare visit costs the page nothing it was not paying. A
- * visit that asks for a narrowing writes once, by primary key, and only when
- * the answer differs from what is kept: re-following a link already chosen
- * writes nothing.
+ * visit that names who writes once, by primary key, and only when the answer
+ * differs from what is kept: re-following a link already chosen writes nothing.
  *
  * REMEMBERED WHILE THE PAGE RENDERS, NOT IN THE PROXY. The gate file cannot
  * reach the database without carrying Prisma on every request to the site.
  * And it answers a prefetch like any other request, so a cookie set there
  * remembered whichever of the bar's links had last come into view — a
  * narrowing nobody chose. A page body is only rendered when the page is
- * actually asked for, so a choice kept here is one somebody made.
+ * actually asked for (a dynamic page with no loading boundary is prefetched as
+ * its route tree alone), so a choice kept here is one somebody made.
  *
  * A preference that cannot be kept — a database that would not take the
  * write — is logged and does not break the page: what was asked for is still
@@ -38,13 +42,14 @@ import { addressSaysFilter, filterAsPreferences, filterFor } from "./rememberedF
  */
 export async function directoryFilterFor(
   query: Record<string, string | string[] | undefined>,
-): Promise<DirectoryFilter> {
+): Promise<ShownDirectoryFilter> {
   const email = await currentEmail();
-  const filter = filterFor(query, await preferencesFor(email));
-  if (email !== null && addressSaysFilter(query)) {
+  const preferences = await preferencesFor(email);
+  const filter = filterFor(query, preferences);
+  if (email !== null && addressSaysWho(query)) {
     await rememberPreferences(email, filterAsPreferences(filter)).catch((error: unknown) => {
       console.error("Could not remember the players filter.", error);
     });
   }
-  return filter;
+  return { filter, rememberedWho: whoFromMemory(query, preferences) };
 }

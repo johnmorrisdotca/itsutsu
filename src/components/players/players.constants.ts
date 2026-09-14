@@ -22,3 +22,14 @@
 export const XP_BLANK_BECAUSE = {
   unclaimedName: "A name nobody has claimed: there is no member behind it to have earned anything.",
 } as const;
+
+/**
+ * What the members list says about each way it can be narrowed: the chip's
+ * name, matching the switch it takes off, and the clause for the sentence
+ * an empty list prints. `who` is named from `WHO_DISPLAY`, the chips' own words.
+ */
+export const NARROWING_WORDS = {
+  settled: { chip: "Settled ratings", clause: "has a settled rating" },
+  active: { chip: "Seen lately", clause: (days: number) => `has been seen in the last ${days} days` },
+  remembered: "as you chose last time",
+} as const;

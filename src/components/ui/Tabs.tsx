@@ -7,6 +7,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { Paired } from "@/lib/i18n/i18n.types";
 
 import { FOCUS_RING } from "./ui.constants";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { tabHref, type Tab } from "@/lib/ui/tabs";
 
 /**
@@ -61,9 +62,15 @@ export function Tabs({
   label: string;
 }) {
   const say = useSpeaker();
+  /*
+   * Marked, because a tab is a link a spec clicks to reach a page's bare
+   * address — and a click in the moment before React attaches is a whole
+   * document load rather than the client navigation a reader gets.
+   */
+  const hydrated = useHydrated();
   if (tabs.length === 0) return null;
   return (
-    <nav aria-label={label} className="-mx-1 overflow-x-auto" data-testid="tabs">
+    <nav aria-label={label} className="-mx-1 overflow-x-auto" data-testid="tabs" {...readyMark(hydrated)}>
       <ul className="flex min-w-full gap-1 border-b border-rule px-1">
         {tabs.map((tab) => {
           const open = tab.key === active;
