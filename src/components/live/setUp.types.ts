@@ -102,6 +102,34 @@ export type SetUpOpponent = {
 };
 
 /** A finished game being played again. */
+/**
+ * WHERE A REMATCH'S HEADING STANDS NOW: still a repeat of the game it came from,
+ * and who this game is against. Published by the set-up screen as its choices
+ * change, so the heading follows them without a reload — see `setUpHeadingState`.
+ */
+export type RematchHeadingState = { repeat: boolean; opponent: { name: string } | null };
+
+/** A heading's words: the English and the kanji beside it. */
+export type HeadingTitle = { en: string; kanji: string };
+
+export type RematchTitleProps = {
+  /** The finished game the rematch repeats, which keys the heading's live state. */
+  id: string;
+  /** Who that game was against. */
+  againName: string;
+  /** The title with nobody in particular chosen: the game's own, or the plain one. */
+  plain: HeadingTitle;
+  /** What the address the page opened with said, which the heading starts from. */
+  initial: RematchHeadingState;
+};
+
+export type RematchSwapProps = {
+  id: string;
+  /** The colour a rematch hands the asker, which a new game does not. */
+  colour: Stone;
+  initial: RematchHeadingState;
+};
+
 export type SetUpAgain = {
   id: string;
   /**

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -29,6 +29,7 @@ import { SettingWords } from "./SettingWords";
 import { seatsFor, stillARematch } from "./setUpStart";
 import { recapWords } from "./setUpWords";
 import type { KeptBase, KeptDefaults, SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
+import { forgetRematchHeading, publishRematchHeading } from "./setUpHeadingState";
 import { useKeptAddress } from "./useKeptAddress";
 
 /**
@@ -219,6 +220,24 @@ export function SetUpGame({
   const opponentNow = random ? null : chosen;
   const sameOpponent = again !== null && opponentNow !== null && opponentNow.id === again.opponent.id;
   const repeat = stillARematch({ rules: settled, source: asPlayed, opponent: opponentNow, again });
+
+  /*
+   * AND THE HEADING ABOVE SAYS THE SAME, without a reload. It is drawn by the page
+   * from the address the page opened with, so choosing somebody else left it
+   * reading "Play them again, you take White" over a notice saying it was a new
+   * game. The same decision is handed up to it as it changes — see
+   * `setUpHeadingState`.
+   */
+  const nowName = opponentNow?.name ?? null;
+  const againId = again?.id ?? null;
+  useEffect(() => {
+    if (againId === null) return;
+    publishRematchHeading(againId, { repeat, opponent: nowName === null ? null : { name: nowName } });
+  }, [againId, repeat, nowName]);
+  useEffect(() => {
+    if (againId === null) return;
+    return () => forgetRematchHeading(againId);
+  }, [againId]);
 
   /*
    * WHETHER THE GAME THIS BUTTON LEADS TO COULD EVER COUNT, read from `seatsFor`
