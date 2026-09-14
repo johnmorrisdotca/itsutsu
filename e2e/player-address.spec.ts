@@ -145,7 +145,9 @@ test.describe("a member's address", () => {
       const badge = standing.getByTestId("member-level-name");
       await expect(badge).toHaveText(`Lv 1 · ${xpLevelName(1)}`);
       await expect(badge).toHaveAttribute("href", "/xp/levels/1");
+      // A nought is exactly the total a page might draw as plain text; it links to the board like any other.
       await expect(standing.getByTestId("member-level-total")).toHaveText(countText(0));
+      await expect(standing.getByTestId("member-level-total")).toHaveAttribute("href", "/xp");
     } finally {
       await removeMember(email);
     }
