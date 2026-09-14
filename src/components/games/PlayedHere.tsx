@@ -196,6 +196,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
                 <PlayerActions
                   compact
                   testId="played-here-actions"
+                  name={name}
                   email={member.email}
                   memberId={member.id}
                   isBuddy={member.email !== null && buddies.has(member.email)}

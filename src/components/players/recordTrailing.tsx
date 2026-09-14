@@ -238,10 +238,34 @@ export function trailingHeadings({
           Joined
         </SortableHead>
       ) : null}
-      {columns.actions === undefined ? null : <th className={HEAD}>{columns.actions}</th>}
+      {/*
+        Held to the right edge of the table's own scroll box, with the cells under
+        it — see `ACTIONS_CELL` below.
+      */}
+      {columns.actions === undefined ? null : <th className={`${HEAD} ${ACTIONS_CELL}`}>{columns.actions}</th>}
     </>
   );
 }
+
+/**
+ * THE ACTIONS COLUMN HOLDS TO THE RIGHT EDGE OF THE TABLE'S OWN SCROLL BOX.
+ *
+ * A table of records is wider than a phone and, on the members list, wider than
+ * its box at 1280 whenever a long name or a big XP total arrives — and the
+ * actions were the last column, so they were what fell off the edge ("Challe…").
+ * Every earlier fix found the room somewhere else, and each was spent by the next
+ * column. Held here, the actions are whole at every width whatever the columns
+ * ask for; the figures scroll beneath them and every one is still reached by
+ * scrolling the table, which is what its `overflow-x-auto` is for.
+ *
+ * THE GROUND IS THE PANEL'S, AND OPAQUE. Every table with actions sits in a
+ * `PANEL_CLASS` panel, which is `bg-ivory/60` over the page's paper — so a plain
+ * `bg-paper` or `bg-ivory` cell drew the column as a stripe of a different colour
+ * down the table, in both schemes. This is that same sixty-per-cent mix, made
+ * solid, so the column matches the panel and what slides beneath does not show
+ * through it.
+ */
+const ACTIONS_CELL = "sticky right-0 bg-[color-mix(in_srgb,var(--color-ivory)_60%,var(--color-paper))]";
 
 /** The cells for those same columns, in that same order, for one row. */
 export function TrailingCells({
@@ -306,7 +330,7 @@ export function TrailingCells({
         </td>
       ) : null}
       {columns.actions === undefined ? null : (
-        <td className="py-1.5 text-right">
+        <td className={`py-1.5 text-right ${ACTIONS_CELL}`}>
           {/*
             An empty `RowActions` where a row offers nothing, so the space a
             control would have taken is held rather than the absence patched —

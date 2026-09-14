@@ -83,6 +83,7 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
         signedIn={mine !== null}
         compact
         testId="ladder-actions"
+        name={standing.name}
       />
     );
   };

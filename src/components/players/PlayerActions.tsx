@@ -1,6 +1,9 @@
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
+import { shownName } from "@/lib/rating/shownName";
+
+import { RowMore } from "./RowMore";
 
 /**
  * What you can do about somebody, on the page about them.
@@ -32,7 +35,10 @@ export function PlayerActions({
   signedIn,
   compact = false,
   testId = "player-actions",
+  name,
 }: {
+  /** Whose actions these are, for the ⋯ button's accessible name in a row. */
+  name?: string;
   /** Null for a kept record and for a computer player: neither has one. */
   email: string | null;
   memberId?: string;
@@ -71,6 +77,20 @@ export function PlayerActions({
     );
   }
   if (email === null) return null;
+
+  /*
+   * IN A ROW, THE OFFER OF A GAME AND "⋯" FOR THE REST. Play, Buddy and Ignore at
+   * the end of a standings row ran past the table's edge at 768 and 400 — see
+   * `RowMore`. The page heading keeps all three in full, where there is room.
+   */
+  if (compact) {
+    return (
+      <div className="flex items-center justify-end gap-1" data-testid={testId}>
+        {memberId === undefined ? null : <ChallengeButton memberId={memberId} label="Play 対局" />}
+        <RowMore email={email} name={shownName(name ?? "")} isBuddy={isBuddy} ignoring={ignoring} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
