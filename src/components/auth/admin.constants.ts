@@ -15,11 +15,6 @@
  * anybody's existing words are taken away.
  */
 
-/** A day and month a person reads, in the zone they are reading it in. */
-export function wordsDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-}
-
 export const ADMIN_WORDS_COPY = {
   link: "Words",
   linkKanji: "合言葉",
@@ -42,8 +37,15 @@ export const ADMIN_WORDS_COPY = {
   save: "Set these four words",
   /** The replace question. The date is what makes it answerable. */
   replaceTitle: "This member already has four words",
-  replaceQuestion: (date: string) =>
-    `Four words were set on this account ${date}. Setting new ones takes those away, and whoever is using them will not be able to sit down with them again until somebody tells them the new four.`,
+  /*
+   * The question in two halves around its date, because the date is drawn by
+   * `LocalTime` and a component cannot sit inside a string. It used to be
+   * `wordsDate`, `toLocaleDateString("en-GB")` with no zone, which promised
+   * "the zone they are reading it in" and kept that promise only in a browser.
+   */
+  replaceSetOn: "Four words were set on this account ",
+  replaceTakesAway:
+    ". Setting new ones takes those away, and whoever is using them will not be able to sit down with them again until somebody tells them the new four.",
   replaceYes: "Replace them",
   replaceNo: "Leave them alone",
   savedFor: (name: string) => `Four words are set for ${name}.`,

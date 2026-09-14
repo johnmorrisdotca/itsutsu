@@ -75,8 +75,14 @@ describe("nothing in the operator's modal is typed", () => {
 describe("replacing somebody's words is asked about first", () => {
   it("asks before it draws, and the question carries the date they were set", () => {
     expect(sources.modal).toContain('data-testid="member-words-replace"');
-    expect(sources.modal).toContain("replaceQuestion");
-    expect(sources.copy).toMatch(/replaceQuestion: \(date: string\)/);
+    /*
+     * The date sits between the question's two halves, drawn by `LocalTime` so
+     * it is said in the reader's zone and never formatted in a render the server
+     * also draws. A question with its date dropped is the one nobody can weigh.
+     */
+    expect(sources.modal).toMatch(/replaceSetOn\}[\s\S]{0,80}<LocalTime at=\{setAt\}[\s\S]{0,80}replaceTakesAway\}/);
+    expect(sources.copy).toMatch(/replaceSetOn: "Four words were set on this account "/);
+    expect(sources.copy).toContain("replaceTakesAway:");
   });
 
   it("offers both answers, so leaving them alone is as easy as replacing them", () => {
