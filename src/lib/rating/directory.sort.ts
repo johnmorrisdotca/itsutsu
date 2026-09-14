@@ -18,7 +18,7 @@ import type { SortSpec } from "@/lib/api/paging.types";
  *
  * ─────────────────────────────────────────────────────────────────────────
  *   SORTABLE — a column on `Member`, ordered in SQL, every one indexed:
- *     the member's name · played · W · L · D · joined · last seen
+ *     the member's name · played · W · L · D · XP · joined · last seen
  *
  *   NOT SORTABLE, and why each:
  *
@@ -79,6 +79,7 @@ export type DirectorySortField =
   | "won"
   | "lost"
   | "drawn"
+  | "xp"
   | "createdAt";
 
 export const DIRECTORY_SORT_SPEC: SortSpec<DirectorySortField> = {
@@ -130,6 +131,32 @@ export const DIRECTORY_SORT_SPEC: SortSpec<DirectorySortField> = {
       label: "D",
       firstPress: "desc",
       index: "Member_drawn_idx",
+    },
+    {
+      /*
+       * WHAT THEY HAVE EARNED, which John asked to see on this table by name:
+       * "should also show your experience points and site level". A column on
+       * `Member` with its own index, `Member_xp_idx` — the same index the XP
+       * leaderboard's own default order runs on, so this sort costs the database
+       * nothing it was not already built to answer.
+       *
+       * Most first, because the interesting end of a total is the top. There is
+       * no separate `level` word here, unlike `XP_BOARD_SORT_SPEC`: this table has
+       * no Level heading to press — the level is a badge beside the name — and a
+       * word nothing on the page reaches is what `recordSort.coverage.test.ts`
+       * refuses. Ordering by level would be this same order anyway; the curve is
+       * monotonic.
+       *
+       * A program sorts at nought among the people with nought, and draws a dash
+       * rather than a 0 — `xpShown` decides that, since a program is not on this
+       * ladder. That is an honest place for it: it has earned nothing, and the
+       * dash says why rather than claiming a standing.
+       */
+      param: "xp",
+      field: "xp",
+      label: "XP",
+      firstPress: "desc",
+      index: "Member_xp_idx",
     },
     {
       /*

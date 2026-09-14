@@ -22,7 +22,7 @@ import { RECORD_SCOPES, scopeWorthAsking, type RecordScope } from "@/lib/rating/
 import { RecordScopeBar } from "./RecordScopeBar";
 import { RecordTable, type RecordTableRow } from "./RecordTable";
 import type { RecordSort } from "./recordSort";
-import { levelShown } from "@/lib/xp/levelShown";
+import { levelShown, xpShown } from "@/lib/xp/levelShown";
 import type { DirectoryFilter } from "@/lib/rating/directoryFilter";
 import { SHOW_EVERYBODY_HREF } from "@/lib/rating/rememberedFilter";
 import { ignoredEmails } from "@/lib/social/ignores";
@@ -161,13 +161,17 @@ function directoryRow(
     streak: entry.playedStreak,
     rating,
     /*
-     * The XP level beside the name, off the member row this list already read.
-     * `levelShown` is what decides whether there is one worth printing: nought
-     * answers null, so nobody who has earned nothing wears a badge — and the
-     * programs, which `awardXp` refuses by name, are omitted by that same rule
-     * rather than by a check on `botTier`.
+     * The XP level beside the name and the total in its column, both off the
+     * member row this list already read — `xp` has been on `DirectoryEntry`
+     * since the badge, so the column costs no read at all.
+     *
+     * `levelShown` and `xpShown` decide together, and a person with nought is
+     * Level 1 with a total of 0: John's "Everyone is level 1 if 0xp." A program
+     * gets neither — no badge and a dash — because a program is not on this
+     * ladder, which is said once in `levelShown.ts` rather than here.
      */
-    level: levelShown(entry.xp),
+    level: levelShown(entry),
+    xp: xpShown(entry),
     joined: { at: entry.joinedAt, isNew: entry.isNew },
     note: kept ? (
       /*
@@ -266,7 +270,7 @@ export async function Directory({
     spec: DIRECTORY_SORT_SPEC,
     current: paging.sort,
     /*
-     * The six headings the database can order by, named against the slots
+     * The seven headings the database can order by, named against the slots
      * `RecordTable` draws. `subject` is the Member heading, which sorts by name
      * — the only table on the site whose subject column can be ordered by. Win
      * rate, streak, rating and tier are left out, which is what makes them plain
@@ -279,6 +283,7 @@ export async function Directory({
       won: "won",
       lost: "lost",
       drawn: "drawn",
+      xp: "xp",
       joined: "joined",
     },
   };
@@ -297,7 +302,13 @@ export async function Directory({
     <div className="flex flex-col gap-4" data-testid="directory-section">
       <p className="text-sm text-muted">
         The members, most recently seen first, with the record their name has earned. Press a
-        heading to sort by it. New members are marked for two weeks; challenge one, and the game
+        heading to sort by it. The number beside a name is the level each one stands on, and XP{" "}
+        <span className="font-mincho">経験</span> is the experience that got them there — follow it to
+        the{" "}
+        <Link href="/xp" className="underline underline-offset-4" data-testid="directory-xp-board">
+          board
+        </Link>{" "}
+        that ranks everybody by it. New members are marked for two weeks; challenge one, and the game
         is in their list the moment you start it.
       </p>
       {/*
@@ -339,7 +350,7 @@ export async function Directory({
       <RecordTable
         subject="Member"
         rows={people.map((entry) => directoryRow(entry, scope, actions))}
-        columns={{ joined: true, actions: "" }}
+        columns={{ xp: true, joined: true, actions: "" }}
         sort={sort}
         testId="directory"
         empty={

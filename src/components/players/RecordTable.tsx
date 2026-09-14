@@ -10,11 +10,8 @@ import {
   type RecordOf,
 } from "./PlayerRecord";
 import { LevelName } from "@/components/xp/LevelName";
-import { Paired } from "@/components/i18n/Paired";
-import { RowActions } from "@/components/ui/Controls";
 import { SortableHead, type RecordSort } from "./recordSort";
-import { RATING_POOLS } from "@/lib/rating/pools";
-import { TIER_DISPLAY } from "@/lib/rating/elo";
+import { TrailingCells, trailingHeadings, trailingWidth } from "./recordTrailing";
 /*
  * The row's shape is `recordTable.types.ts` and re-exported here, because four
  * files import `RecordTableRow` from this module and a type with two doors is a
@@ -56,7 +53,7 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  * ─────────────────────────────────────────────────────────────────────────
  *
  *   [#] · SUBJECT · PLAYED · W · L · D · WIN RATE · STREAK · RATING · TIER ·
- *   JOINED · (actions)
+ *   XP · JOINED · (actions)
  *
  * It is written down here because the next person will want to reorder it, and
  * a column order with no argument behind it gets reordered by whoever cares
@@ -84,29 +81,93 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  *   had it seventh.
  * - **TIER immediately after RATING**, because it says how much that rating
  *   can be trusted and means nothing away from it.
+ * - **XP AFTER BOTH OF THEM**, because it is a conclusion about something else.
+ *   Everything to the left of the rating is what happened at the board and the
+ *   rating is what the site concluded from it; experience is what the site has
+ *   recorded of the whole membership — games, yes, but also turning up, filling
+ *   in a profile, making a buddy. It cannot sit among the game figures without
+ *   reading as one of them, and it cannot come before the rating without putting
+ *   the site's smaller conclusion in front of its main one.
  * - **JOINED last of the facts**, because it is not about playing at all.
  * - **Actions last**, because they are not facts.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * THE LEVEL IS A MARK IN THE SUBJECT CELL AND NOT AN ELEVENTH COLUMN
+ * THE LEVEL IS A MARK IN THE SUBJECT CELL; THE XP TOTAL IS A COLUMN
  * ─────────────────────────────────────────────────────────────────────────
  *
- * A member's XP level goes beside their NAME, in the cell the name is already
- * in, as `LevelName`'s compact badge. The reason it is not a column is measured
- * rather than aesthetic: the members list fits `/players` EXACTLY — 1,118 pixels
- * of table in 1,118 of box at both 1280 and 1216 — so there is no slack for an
- * eleventh column to come out of, and taking it would cut "Challenge" off the
- * end again, the fault 0.164.2 had just finished fixing. The badge instead rides
- * the room the subject column already has: that cell is 274 pixels wide and the
- * compact badge is about thirty of them, so the table's width does not move at
- * all. Both figures are in the section below, re-measured for this change.
+ * John asked for both by name — *"I love our leaderboard that have your win loss
+ * tie record should also show your experience points and site level"* — and they
+ * are drawn in two different places, which is the decision this section is here
+ * to argue rather than an inconsistency.
  *
- * It belongs there on the merits too. A level is not a figure compared DOWN a
- * column the way Played and Rating are — nothing sorts by it and nothing adds it
- * up — it is part of how this site refers to a person, like the flag and the
- * ROBOT badge already in that cell. `LevelName`'s compact form is what makes it
- * fit, and its own comment argues why the NUMBER survives and the name drops to
- * the `title`: this is the call site it was written for.
+ * A member's LEVEL goes beside their NAME, in the cell the name is already in, as
+ * `LevelName`'s compact badge. A level is not a figure compared DOWN a column the
+ * way Played and Rating are — nothing adds levels up, and ordering by one is
+ * ordering by the total behind it, which `xpBoard.sort.ts` says in so many words
+ * — it is part of how this site refers to a person, like the flag and the ROBOT
+ * badge already in that cell. `LevelName`'s compact form is what makes it fit,
+ * and its own comment argues why the NUMBER survives and the name drops to the
+ * `title`: this is the call site it was written for.
+ *
+ * The XP TOTAL is a column, because it is the opposite kind of thing: a figure
+ * read down the page, ordered by, and indexed for it (`Member_xp_idx`, pressed
+ * through `SortableHead` like every other sortable heading here). A total hidden
+ * inside the subject cell could not be sorted by at all, which is the half of
+ * John's sentence that a badge alone does not answer — he called this a
+ * leaderboard, and a leaderboard is a thing you order.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * WHAT THE COLUMN COST, MEASURED, BECAUSE THERE WAS NO SLACK TO SPEND
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * The members list fits `/players` EXACTLY — 1,118 pixels of table in 1,118 of
+ * box at both 1280 and 1216 — and an over-subscribed table cuts "Challenge" off
+ * the right-hand end, which is the fault 0.164.2 fixed and the one John had
+ * already complained about. So the column was measured before it was added,
+ * rather than after.
+ *
+ * The figure that decides it is the table's MIN-CONTENT width, read at 390
+ * pixels where every column sits at its narrowest: 1,061 before, in a box of
+ * 1,118 — so there were 57 pixels of real slack, and the table was being
+ * stretched to fill its box rather than squeezed to fit it. (At 1280 each column
+ * was exactly 1.054 times its narrow self, which is the stretch.)
+ *
+ * THE COLUMN DID NOT FIT, and it was predicted to. An XP cell at min-content is
+ * at most six characters — the top of the curve is 69,995 — and was estimated at
+ * 51 pixels; measured with a member seeded AT the top, it was 62. Min-content went
+ * to 1,123 and "Challenge" sat 5 pixels past the right-hand edge on every row, at
+ * both 1280 and 1216: the exact fault, from a column added under a comment saying
+ * it fitted. That is why this section now carries measurements rather than
+ * estimates, and why the seed was the widest total the column can print rather
+ * than a typical one.
+ *
+ * THE ROOM CAME FROM JOINED, and from the part of it that was chrome. Per column,
+ * what drives each width was measured rather than guessed: JOINED was 142 pixels
+ * for a nine-character date, because the "New 新人" pill beside it carried 8
+ * pixels of padding each side and an 8-pixel gap. It is a coloured mark now — the
+ * same words, kanji, colour and weight — and gives back 18 pixels whatever rows a
+ * page holds. `recordTrailing.tsx` says so beside it.
+ *
+ * What was weighed and not done, each on the same measurement:
+ *
+ * - DROPPING JOINED would have paid twice over, and taken the "New 新人" mark the
+ *   paragraph over this table promises — a welcome to every new member, spent to
+ *   buy 18 pixels.
+ * - WIN RATE and STREAK are as wide as their HEADINGS, not their figures, and
+ *   both are drawn by `RecordCells` for every table here; narrowing them on this
+ *   table alone would make it a different table, the drift this file exists for.
+ * - MOVING THE NEW MARK beside the name saves nothing: the widest names on a page
+ *   are as likely as any to be new members.
+ * - WRITING XP WITHOUT A THOUSANDS SEPARATOR would have saved one character by
+ *   spelling one count differently from every count beside it.
+ * - FOLDING XP INTO THE SUBJECT CELL costs no width, and cannot be sorted by.
+ *
+ * RE-MEASURED AFTER BOTH CHANGES, with a member seeded at 69,995: min-content
+ * 1,105, so 13 pixels of slack — enough for a seven-character total. At 1280 and
+ * at 1216 the box is 1,118, the table is 1,118, the overflow is NOUGHT and every
+ * row is 45 pixels, with and without `sort=xp` in force; the page never scrolls
+ * sideways, and at 390 the table scrolls inside its own box. Read these before
+ * adding anything to this table. Thirteen pixels is not a column.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * WHAT A CALLER MAY SWITCH OFF, AND WHAT THAT COSTS
@@ -200,33 +261,6 @@ import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.t
  */
 
 
-/**
- * A rating with the mark that says which pool earned it.
- *
- * Drawn here rather than by each caller, because the mark is the whole reason
- * the number is safe to print: an unlabelled 1639 beside a name reads as a
- * place on the ladder of people, and for somebody who has only played the
- * programs it is not one. Two pages drew this mark for themselves and a third
- * did not draw it at all.
- */
-function RatingCell({ rating }: { rating: ShownRating | null }) {
-  if (rating === null) return <td className={CELL} data-testid="record-rating">–</td>;
-  return (
-    <td className={CELL} data-testid="record-rating">
-      {rating.rating}
-      {rating.pool === RATING_POOLS.computer ? (
-        <span
-          className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-          title="Earned against the computer players, which are rated in a pool of their own."
-          data-testid="rating-pool-computer"
-        >
-          機械
-        </span>
-      ) : null}
-    </td>
-  );
-}
-
 export function RecordTable({
   subject,
   rows,
@@ -281,20 +315,18 @@ export function RecordTable({
    */
   sort?: RecordSort;
 }) {
-  const showRating = columns.rating !== false;
   /*
    * Counted rather than written down, so a column added above cannot leave the
    * empty row spanning the wrong width — which is the sort of thing that looks
-   * fine until the one day there are no rows.
+   * fine until the one day there are no rows. The optional columns count
+   * themselves, in the same module that draws them: two places counting one set
+   * of switches is how they come to disagree.
    */
   const width =
     (columns.rank === true ? 1 : 0) +
     1 + // the subject
     6 + // played, W, L, D, win rate, streak
-    (showRating ? 1 : 0) +
-    (columns.tier === true ? 1 : 0) +
-    (columns.joined === true ? 1 : 0) +
-    (columns.actions === undefined ? 0 : 1);
+    trailingWidth(columns);
 
   return (
     <div className="flex flex-col gap-2">
@@ -324,28 +356,7 @@ export function RecordTable({
               <RecordHeadings
                 playedTitle={playedScope === undefined ? undefined : playedScopeNote(playedScope)}
                 sort={sort}
-                trailing={
-                  <>
-                    {showRating ? (
-                      <SortableHead sort={sort} slot="rating">
-                        Rating
-                      </SortableHead>
-                    ) : null}
-                    {columns.tier === true ? (
-                      <SortableHead sort={sort} slot="tier">
-                        Tier
-                      </SortableHead>
-                    ) : null}
-                    {columns.joined === true ? (
-                      <SortableHead sort={sort} slot="joined">
-                        Joined
-                      </SortableHead>
-                    ) : null}
-                    {columns.actions === undefined ? null : (
-                      <th className={HEAD}>{columns.actions}</th>
-                    )}
-                  </>
-                }
+                trailing={trailingHeadings({ columns, sort })}
               />
             </tr>
           </thead>
@@ -395,50 +406,7 @@ export function RecordTable({
                   streak={row.streak}
                   streakBlankBecause={row.streakBlankBecause}
                   note={row.note}
-                  trailing={
-                    <>
-                      {showRating ? <RatingCell rating={row.rating ?? null} /> : null}
-                      {columns.tier === true ? (
-                        <td className="py-1.5 pr-3">
-                          {row.tier === undefined ? (
-                            "–"
-                          ) : (
-                            <Paired
-                              en={TIER_DISPLAY[row.tier].label}
-                              kanji={TIER_DISPLAY[row.tier].kanji}
-                              kanjiClassName="text-muted"
-                            />
-                          )}
-                        </td>
-                      ) : null}
-                      {columns.joined === true ? (
-                        <td className="py-1.5 pr-3 text-xs text-muted">
-                          {row.joined === undefined ? (
-                            "–"
-                          ) : (
-                            <>
-                              {new Date(row.joined.at).toLocaleDateString()}
-                              {row.joined.isNew ? (
-                                <span className="ml-2 rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">
-                                  New 新人
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </td>
-                      ) : null}
-                      {columns.actions === undefined ? null : (
-                        <td className="py-1.5 text-right">
-                          {/*
-                            An empty `RowActions` where a row offers nothing, so
-                            the space a control would have taken is held rather
-                            than the absence patched — see the head of this file.
-                          */}
-                          {row.actions ?? <RowActions />}
-                        </td>
-                      )}
-                    </>
-                  }
+                  trailing={<TrailingCells row={row} columns={columns} />}
                 />
               </tr>
             ))}

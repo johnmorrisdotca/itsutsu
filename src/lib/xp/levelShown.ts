@@ -1,56 +1,113 @@
 import { xpLevelFor } from "./xpCurve";
 
 /**
- * THE LEVEL WORTH PRINTING BESIDE A NAME, OR NULL.
+ * WHO HAS A STANDING WORTH PRINTING, AND WHAT IT IS.
  *
- * The twin of `ratingShown` in `src/lib/rating/shownRecord.ts`, and it exists
- * for that function's reason word for word: a figure nobody has earned is not a
- * small version of one, it is silence, and a list is better for saying nothing
- * than for saying a default. `ratingShown` returns null rather than 1600 for
- * somebody with no settled rating; this returns null rather than 1 for somebody
- * with no XP.
- *
- * A RULE AND NOT A COMPONENT'S BUSINESS, which is why it is a pure module with
- * its own test rather than a ternary inside `RecordTable`. The same judgement is
- * made on three tables — the members directory, the computers tab and the
- * operator's bots tab — and a rule written three times is a rule that will read
- * three ways within a fortnight.
+ * Two questions with one answer, which is why they are one module: the level
+ * beside somebody's name and the XP figure in the column are the same fact seen
+ * twice, and a member either has a standing or has not. Asked in three places —
+ * the members directory, a person's public page, and every table of records —
+ * and a rule written three times is a rule that will read three ways within a
+ * fortnight.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * WHY NOUGHT IS SILENCE AND NOT LEVEL ONE
+ * NOUGHT IS LEVEL ONE. JOHN SAID SO, AND THIS REVERSES WHAT WAS HERE
  * ─────────────────────────────────────────────────────────────────────────
  *
- * A member with no XP genuinely IS on level 1, so printing it would not be
- * false — it would be useless, and `xpBoard.ts` has already had this argument
- * and settled it. The leaderboard is `botTier: null, xp: { gt: 0 }`, and its own
- * comment says why: *"two hundred rows of 'Lv 1 · Insert Coin · 0' would be a
- * table about a default rather than about anybody's play."* A column of
- * identical badges down the members list is that table, sideways. Nobody's XP is
- * backfilled on any database today, so without this rule the mark would land on
- * every row on the site and mean nothing on any of them.
+ * This module used to answer `null` for a member with no XP, on the argument
+ * `xpBoard.ts` makes about the leaderboard: *"two hundred rows of 'Lv 1 · Insert
+ * Coin · 0' would be a table about a default rather than about anybody's play."*
+ * That reasoning is sound about WHO THE LEADERBOARD IS A LIST OF and wrong about
+ * a badge beside a name, and the site's owner settled it in five words:
  *
- * It is a statement about the DATA and not about a kind of member, which is what
- * makes it right rather than convenient: the day the backfill runs, the mark
- * appears for everybody it has something to say about, and on nobody else.
+ *   "Everyone is level 1 if 0xp."
+ *
+ * He is right, and the reason is worth keeping because it is the general case of
+ * a mistake this file made: **a level is not a claim about somebody's play, it
+ * is where they stand on a ladder everybody is on.** Level 1 is called Insert
+ * Coin precisely because it is where a person starts. Hiding it does not spare a
+ * reader a meaningless badge; it tells them the ladder does not include them,
+ * which is the one thing it must not say to somebody who has just arrived.
+ *
+ * So the silence is gone and, with it, the trap the old rule set: a member with
+ * nought was INDISTINGUISHABLE from a member whose XP nobody had read. That
+ * distinction now lives where it belongs — in `MemberLevel`, whose `xp` is
+ * optional and whose `undefined` means "nobody asked" and draws nothing.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * AND IT IS WHY THE PROGRAMS NEED NO SPECIAL CASE
+ * A PROGRAM HAS NO STANDING, AND THAT IS A RULE ABOUT WHO RATHER THAN WHAT
  * ─────────────────────────────────────────────────────────────────────────
  *
  * `awardXp` refuses a program by name — `if (member.botTier !== null) return
  * refused(awards, XP_SKIP_REASONS.notAPerson, member.xp)` — and the backfill
  * skips them the same way, so every bot row on every database carries exactly
- * nought. The rule above therefore omits the mark beside Meijin and Kyu without
- * knowing that a program is a program, and a level-1 badge beside a grade that
- * has played two hundred games never appears.
+ * nought and always will. Under the old rule that fell out for free: nought was
+ * silence, so the programs were silent without anybody naming them.
  *
- * That is deliberately not a `botTier` check. The bots are excluded because they
- * have earned nothing, which is true and is the reason; excluding them because
- * they are bots would be a second rule saying the same thing in a way that could
- * disagree with the first. If a program ever did earn a point, the mark would
- * appear and would be correct.
+ * It no longer falls out, so it is stated. `Lv 1` beside Meijin, which has
+ * played hundreds of games and cannot climb a rung however many more it plays,
+ * would be a badge about a thing that is not on the ladder at all — and
+ * `xpBoard.ts` already keeps `botTier: null` out of the leaderboard for exactly
+ * this reason. Here rather than in each table, because "which members have a
+ * standing" is one question and three tables asking it separately would be
+ * three chances to answer it differently.
+ *
+ * It is deliberately NOT "programs earn nothing, so they show nothing": that was
+ * the old rule's phrasing and it is now indistinguishable from a person who has
+ * earned nothing. This says the thing that is actually true — a program is not a
+ * member the ladder is about.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * AND A TOTAL THAT IS NOT A NUMBER IS STILL SILENCE
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * `xpLevelFor` floors a NaN, an infinity and a negative to 1, which is a
+ * perfectly valid level that also means "nobody has earned anything yet" — the
+ * shape AGENTS.md names: *a rule that cannot measure must not fire; silence is
+ * the safe answer, zero is the dangerous one.* Nought is a real total and gets a
+ * real answer; nonsense gets none.
  */
-export function levelShown(xp: number): number | null {
-  if (!Number.isFinite(xp) || xp <= 0) return null;
-  return xpLevelFor(xp);
+
+/** Enough of a member to decide whether they have a standing, and what it is. */
+export type StandingOf = {
+  xp: number;
+  /** The engine that plays this member's seats, when a program does. */
+  botTier?: string | null;
+};
+
+/**
+ * Whether this member is one the XP ladder is about at all.
+ *
+ * Private, and the reason both exported functions are in this file: the level
+ * and the total must never disagree about whether there is anything to show.
+ * A row with `Lv 1` and a dash for its total, or a `0` with no rung beside it,
+ * would be two halves of one fact contradicting each other in one row.
+ */
+function hasStanding({ xp, botTier }: StandingOf): boolean {
+  // A non-empty engine name is a program. `Boolean(member.botTier)` is the same
+  // test the player page makes, so "is this a program" reads one way everywhere.
+  if (typeof botTier === "string" && botTier !== "") return false;
+  return Number.isFinite(xp) && xp >= 0;
+}
+
+/** The level to badge beside this member's name, or null for one with no standing. */
+export function levelShown(member: StandingOf): number | null {
+  if (!hasStanding(member)) return null;
+  return xpLevelFor(member.xp);
+}
+
+/**
+ * The XP total to print in this member's column, or null for one with no
+ * standing.
+ *
+ * NOUGHT IS A NUMBER AND PRINTS AS ONE. A person who has earned nothing has
+ * earned nothing, which is a fact about them and reads as one in a column of
+ * tabular figures — where an em dash would read as "this is not known", the
+ * thing a dash means in every other cell of the same table. Null is reserved for
+ * a row where the figure genuinely cannot be had: a program, a rating row keyed
+ * by a folded name, a row whose subject is a game.
+ */
+export function xpShown(member: StandingOf): number | null {
+  if (!hasStanding(member)) return null;
+  return member.xp;
 }

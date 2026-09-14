@@ -135,19 +135,23 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
           : { rating: computer.rating, pool: RATING_POOLS.computer },
       tier: tierFor(computer?.ratedGames ?? 0),
       /*
-       * NO BADGE ON A PROGRAM, AND NOT BECAUSE IT IS A PROGRAM. `awardXp`
-       * refuses a bot by name, so every one of these rows carries exactly
-       * nought XP and `levelShown` answers null for all of them — the same rule
-       * that keeps a badge off a member who has earned nothing. "Lv 1 · Insert
-       * Coin" beside Meijin, who has played hundreds of games, would read as a
-       * fact about its play and is not one; `xpBoard.ts` had this argument for
-       * the leaderboard and settled it the same way.
+       * NO BADGE ON A PROGRAM, BECAUSE A PROGRAM IS NOT ON THIS LADDER. It used
+       * to fall out of nought being silence; John has since settled that nought
+       * is Level 1 for a person, so `levelShown` is told the row's `botTier` and
+       * answers null for every program by name. `awardXp` refuses a bot, so it
+       * can never climb a rung, and "Lv 1" beside Meijin's two hundred games
+       * would be a badge about a thing that is not on the ladder at all.
        *
        * Wired rather than left out, so this table draws a level by the site's
-       * one rule instead of by a local decision to have none. If a program ever
-       * did earn a point the badge would appear, and it would be right.
+       * one rule instead of by a local decision to have none.
+       *
+       * AND NO XP COLUMN, which is `columns` leaving `xp` off below. Every row
+       * here is a program, so `xpShown` would answer null for all of them and the
+       * column would be a dash on every line — a column that says nothing, which
+       * `RecordTable` refuses to be. The members directory carries the column,
+       * where a program's dash sits among people who do have a total.
        */
-      level: levelShown(entry.xp),
+      level: levelShown(entry),
       actions: (
         <RowActions>
           {/*

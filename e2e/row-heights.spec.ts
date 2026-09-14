@@ -53,9 +53,11 @@ import { removeXpMembers, seedXpMember } from "./xpMembers";
  * The level badge went into the subject cell and made 36 of the 209 rows on
  * /players 53 pixels against the other 45 — this exact fault, one release after
  * it was fixed. THIS SPEC PASSED THROUGHOUT, and could not have done otherwise:
- * `seedMember` and `seedKeptRecord` make members with no XP, `levelShown`
- * answers null for nought, so not one of the three rows above has ever had a
- * badge in it. The spec was comparing three rows that all lacked the thing that
+ * `seedMember` and `seedKeptRecord` made members with no XP, and `levelShown`
+ * answered null for nought at the time, so not one of the three rows above had
+ * a badge in it. (Nought is Level 1 now, so they all do — which is exactly why
+ * the seeded row below stands on a rung with a real total rather than relying on
+ * that rule to put a badge where the spec needs one.) The spec was comparing three rows that all lacked the thing that
  * broke. It was found by measuring the page by hand.
  *
  * That is the shape AGENTS.md calls a spec that does not bring its own world,
@@ -95,10 +97,11 @@ test.describe("every row in a table is the same height", () => {
     const kept = await seedKeptRecord({ name: keptName, country: "Japan" });
     await seedMember(other);
     /*
-     * Level 5 rather than level 1: `levelShown` gives a level-1 member with no
-     * XP no badge at all, so seeding one would have reproduced the blind spot
-     * this row exists to close. A rung with a real total is a row that really
-     * carries the mark.
+     * Level 5 rather than level 1: when this was written `levelShown` gave a
+     * member with no XP no badge at all, so a level-1 seed reproduced the blind
+     * spot this row exists to close. Nought is Level 1 now, but a rung with a
+     * real total still does not depend on that rule to carry the mark — and a
+     * two-digit total is also wider in the XP column beside it.
      */
     const levelled = await seedXpMember(5, "rowheights");
 

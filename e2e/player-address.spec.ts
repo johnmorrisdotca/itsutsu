@@ -78,10 +78,17 @@ test.describe("a member's address", () => {
    * AND THE PAGE SAYS WHERE THEY STAND
    * ─────────────────────────────────────────────────────────────────────────
    *
-   * Both directions, because one of them is the fault. A page that drew the
-   * badge for everybody would put "Level 1 · Insert Coin" on a stranger who has
-   * never played, and the only test that can tell that apart from the feature
-   * working is the one that visits somebody with no XP.
+   * Both directions. This used to assert that somebody with no XP got NO badge,
+   * on the argument that "Level 1 · Insert Coin" on a stranger who has never
+   * played is a badge about a default. John reversed it — "Everyone is level 1
+   * if 0xp." — because level 1 is where a person starts, and hiding it tells a
+   * new member the ladder does not include them. So the second case below visits
+   * somebody with nought and asserts the rung and the 0, which is the only test
+   * that can tell the rule apart from a page that forgot to ask.
+   *
+   * A program's page draws no rung at all — `awardXp` refuses one, so it is not
+   * on this ladder. That is decided in `levelShown` and unit-tested there, rather
+   * than asserted here against a computer player this spec did not make.
    *
    * Straight to `/players/<id>`, not through the members list: that list is
    * capped at the 200 most recently seen and this database holds four hundred,
@@ -110,20 +117,24 @@ test.describe("a member's address", () => {
     }
   });
 
-  test("says nothing about a level for somebody who has never earned any", async ({ page }) => {
+  test("puts somebody who has never earned any on level 1, with a total of 0", async ({ page }) => {
     const email = `addr-noxp-${Date.now()}@example.test`;
     await seedMember({ email, name: `Nought Tester${Date.now()}` });
     try {
       await page.goto(`/players/${await memberIdFor(email)}`);
-      /*
-       * THE PRESENCE FIRST, or this assertion is about how fast the request was
-       * rather than about the page. An absence is only meaningful after
-       * something that IS there has been waited for — here the panel the badge
-       * would have been inside, and the heading it would have been on.
-       */
       await expect(page.getByTestId("player-profile")).toBeVisible();
-      await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
-      await expect(page.getByTestId("member-level")).toHaveCount(0);
+      /*
+       * A PRESENCE, and the rung it names. Not "a badge exists": the first rung
+       * by its own name and the nought beside it, so a page that defaulted a
+       * missing read to 0 and a page that asked are still told apart by what
+       * `seedMember` wrote — a row with `xp` at its default of nought.
+       */
+      const standing = page.getByTestId("member-level");
+      await expect(standing).toBeVisible();
+      const badge = standing.getByTestId("level-name");
+      await expect(badge).toHaveText(`Lv 1 · ${xpLevelName(1)}`);
+      await expect(badge).toHaveAttribute("href", "/xp/levels/1");
+      await expect(standing.getByTestId("member-level-total")).toHaveText("0 XP");
     } finally {
       await removeMember(email);
     }

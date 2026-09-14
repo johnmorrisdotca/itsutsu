@@ -20,10 +20,13 @@ import { describe, expect, it } from "vitest";
  *   every surface on this site did until 0.164.0 — the toasts, the ledger and
  *   this table's own callers. `LevelName` carries the link to `/xp/levels/<n>`
  *   and is the only thing that may put a level on screen.
- * - **A level printed where nobody has earned one.** `xpLevelFor(0)` is 1, so a
- *   table handed raw XP draws "Lv 1" on every row of a site whose XP is not
- *   backfilled — a column about a default. `levelShown` is the rule and returns
- *   null for nought; a caller reaching past it to `xpLevelFor` has skipped it.
+ * - **A level printed for something that has no standing.** Nought IS level 1
+ *   for a person — John: "Everyone is level 1 if 0xp." — but a PROGRAM is not on
+ *   this ladder at all, and `xpLevelFor` cannot know that: handed a bot's nought
+ *   it answers 1 and badges Meijin with a rung it can never climb. `levelShown`
+ *   is the rule, it is handed the whole member so it can see `botTier`, and a
+ *   caller reaching past it to `xpLevelFor` — or handing it `entry.xp` alone —
+ *   has skipped it.
  *
  * Crude on purpose, in the shape this codebase already checks `.tsx` files with:
  * read the source and look for the shape that goes wrong. These components are
@@ -139,6 +142,18 @@ describe("every list that shows a level asks levelShown for it", () => {
         expect(source).toMatch(/level:\s*levelShown\(/);
       });
 
+      it("hands the rule the whole member, so it can see a program", () => {
+        /*
+         * `levelShown(entry.xp)` was the call before nought became level 1, and
+         * it would still typecheck against a looser signature. Handed only the
+         * number, the rule cannot tell Meijin's nought from a new member's, and
+         * every program on this table would wear "Lv 1".
+         */
+        const source = read(path);
+        expect(source).toMatch(/level:\s*levelShown\(entry\)/);
+        expect(source).not.toMatch(/levelShown\(\s*entry\.xp/);
+      });
+
       it("does not reach past the rule to the raw curve", () => {
         /*
          * `xpLevelFor` answers 1 for nought, so a caller using it directly
@@ -232,6 +247,12 @@ describe("a person's public page shows their standing through MemberLevel", () =
     const source = read(PAGE);
     expect(source).toMatch(/<MemberLevel\s+xp=\{member\?\.xp\}/);
     expect(source).not.toMatch(/xp=\{[^}]*\?\?\s*0/);
+    /*
+     * And whether this is a program, so a bot's own page draws no rung. Since
+     * nought became level 1 this is the only thing between Meijin's page and an
+     * "Insert Coin" badge.
+     */
+    expect(source).toMatch(/<MemberLevel[^>]*botTier=\{member\?\.botTier\}/);
   });
 
   it("prints no level of its own anywhere on the page", () => {
@@ -254,13 +275,82 @@ describe("a person's public page shows their standing through MemberLevel", () =
     const source = read(COMPONENT);
     expect(source).toContain('import { LevelName } from "./LevelName"');
     expect(source).toContain('from "@/lib/xp/levelShown"');
-    // Nobody asked, and nothing earned: two refusals, not one.
+    /*
+     * Two refusals, and they are about different things. `undefined` is nobody
+     * having asked, and draws nothing. `levelShown` answering null is a member
+     * with no standing — a program, since nought is level 1 for a person — and
+     * draws nothing either. A nought is neither refusal: it draws Level 1.
+     */
     expect(source).toMatch(/if \(xp === undefined\) return null;/);
-    expect(source).toMatch(/levelShown\(xp\)/);
+    expect(source).toMatch(/levelShown\(\{\s*xp,\s*botTier\s*\}\)/);
     expect(source).toMatch(/if \(level === null\) return null;/);
     // And the level reaches the screen only through the badge.
     expect(source).toMatch(/<LevelName level=\{level\}/);
     expect(source).not.toContain("xpLevelFor");
     expect(source).not.toMatch(/`Level \$\{/);
   });
+});
+
+/**
+ * THE XP TOTAL IS A COLUMN, DRAWN IN ONE PLACE, ON THE TABLES THAT CAN FILL IT.
+ *
+ * The twin of the level checks above for the other half of John's sentence —
+ * "should also show your experience points and site level". The level is a
+ * badge beside the name; the total is a column, because it is sorted by. What
+ * can go wrong with it is the same three things that go wrong with any figure
+ * here: printed by hand somewhere, leading nowhere, or shown on a table whose
+ * rows cannot know it.
+ */
+describe("the XP total is one column, drawn by recordTrailing", () => {
+  const TRAILING = "src/components/players/recordTrailing.tsx";
+
+  it("has the module to check", () => {
+    expect(read(TRAILING).length).toBeGreaterThan(2_000);
+  });
+
+  it("draws the cell from the row's xp, and leads every total to the board", () => {
+    /*
+     * `/xp`, one destination on every table — `XpCell`'s own comment argues it
+     * against the reader's ledger and the level's page. Asserted on the source
+     * because the runner has no DOM.
+     */
+    const source = read(TRAILING);
+    expect(source).toMatch(/<XpCell xp=\{row\.xp \?\? null\} \/>/);
+    expect(source).toMatch(/href="\/xp"/);
+    expect(source).toMatch(/countText\(xp\)/);
+  });
+
+  it("switches the column on and sorts it only through the declared switch", () => {
+    const source = read(TRAILING);
+    expect(source).toMatch(/columns\.xp === true \? <XpCell/);
+    expect(source).toMatch(/slot="xp"/);
+    expect(source).toMatch(/columns\.xp === true \? 1 : 0/);
+  });
+
+  it("is on the members directory, from xpShown", () => {
+    const source = read("src/components/players/Directory.tsx");
+    expect(source).toMatch(/xp:\s*xpShown\(entry\)/);
+    expect(source).toMatch(/columns=\{\{[^}]*xp: true/);
+  });
+
+  it("is off on the two tables of programs, and each says why", () => {
+    /*
+     * Every row there is a program, so `xpShown` is null on every line and the
+     * column would be a dash all the way down — the column of dashes
+     * `RecordTable` refuses. Off, and stated beside the rows.
+     */
+    for (const path of ["src/components/players/ComputerPlayers.tsx", "src/components/auth/AdminBots.tsx"]) {
+      const source = read(path);
+      expect(source, path).not.toMatch(/columns=\{\{[^}]*xp: true/);
+      expect(source, path).toContain("AND NO XP COLUMN");
+    }
+  });
+
+  for (const path of WITHOUT_LEVELS) {
+    it(`${path} states why it shows no XP either`, () => {
+      const source = read(path);
+      expect(source).toMatch(/no `xp`/i);
+      expect(source).not.toMatch(/xp:\s*xpShown\(/);
+    });
+  }
 });

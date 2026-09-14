@@ -67,6 +67,13 @@ export type RecordSortSlots = {
   streak?: string;
   rating?: string;
   tier?: string;
+  /**
+   * The XP total, on the one table whose rows are `Member` rows and can order by
+   * `Member_xp_idx` — the members directory. Every other table leaves it out:
+   * the ladder's rows are `Player` rows keyed by a folded name, and the two
+   * tables of programs do not draw the column at all.
+   */
+  xp?: string;
   joined?: string;
 };
 

@@ -252,11 +252,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
             })}
           />
           {/*
-            Their standing, on the line that says who this is. `undefined` here
-            is a kept record with no member row, and is not a nought —
-            `MemberLevel` holds that argument and draws nothing for either.
+            Their standing, on the line that says who this is. `undefined` is a
+            kept record with no member row and is not a nought; `botTier` says a
+            program is not on this ladder. `MemberLevel` holds both arguments.
           */}
-          <MemberLevel xp={member?.xp} />
+          <MemberLevel xp={member?.xp} botTier={member?.botTier} />
         </h1>
         {/*
           Where their playing happened, for somebody whose record was made
