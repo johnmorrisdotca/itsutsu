@@ -104,6 +104,12 @@ export function releaseRefusal(state: { dirty: readonly string[]; merging: boole
  */
 export function releaseCommitMessage(version: string, summaries: readonly string[], coAuthor: string): string {
   const lines = summaries.map((line) => line.trim()).filter((line) => line.length > 0);
+  // The summary continues the dash, so the convention is lower case with proper
+  // nouns keeping their capitals: `0.173.3 — the Paired gate sees every name, and
+  // the six number faults`. It goes in exactly as written. Changing case here
+  // would mangle Hex, John, XP or an identifier, which this cannot tell from an
+  // ordinary first word. The same line also becomes the CHANGELOG.md bullet, and
+  // every bullet written before this tool starts with a capital.
   const subject = lines.length === 0 ? version : `${version} — ${lines[0]!.replace(/\.$/, "")}`;
   const body = lines.length > 1 ? `${lines.map((line) => `- ${line}`).join("\n")}\n\n` : "";
   return `${subject}\n\n${body}${coAuthor}\n`;

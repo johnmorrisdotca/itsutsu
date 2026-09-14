@@ -5,6 +5,14 @@
  *   pnpm release:take --summary "<one line a player reads>" [--summary "…"] [--patch] [--done <key>]...
  *   pnpm release:take --done <key>...   retry closing rows at the release HEAD already is
  *
+ * The first --summary becomes the commit title after the dash, and the house
+ * convention is to write it in lower case, as a continuation of that dash,
+ * with proper nouns keeping their capitals:
+ * `0.173.5 — the member filter refuses, two dates move, and a gate holds the line`,
+ * `0.173.1 — Play apart renders the shared rules panel instead of copying it`.
+ * The tool passes it through as written and never changes its case, because it
+ * cannot tell Hex, John, XP or `release:take` from an ordinary first word.
+ *
  * The second form takes no number: see `planRetry` for how it knows HEAD is
  * a release commit, and why it refuses when it cannot be sure.
  *
@@ -143,7 +151,9 @@ export function planRelease(input: PlanInput): PlanResult {
   if (input.step === "minor" && summaries.length === 0) {
     return {
       ok: false,
-      error: "A minor release needs at least one --summary: a player-noticeable release says what it is.",
+      error:
+        "A minor release needs at least one --summary: a player-noticeable release says what it is. " +
+        'Write it in lower case, continuing the title\'s dash, with proper nouns keeping their capitals: --summary "the member filter refuses, two dates move, and a gate holds the line".',
     };
   }
 
