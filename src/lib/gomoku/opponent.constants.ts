@@ -346,8 +346,42 @@ export const EVAL_WEIGHTS = {
   corner: 240,
   /** Per square of mobility — how many replies the position leaves each side. */
   mobility: 6,
-  /** Per piece already home, in the race games. */
-  home: 400,
+  /**
+   * Per piece already home, in the race games: four steps of the march, and
+   * no more.
+   *
+   * It was 400, eighty steps, and that single number made the two gentlest
+   * grades play a race at random. Their noise is scaled to the spread of what
+   * they are choosing between — see `chooseTurn` — and once any piece is home,
+   * the worst thing on offer is to walk it back out of the camp, at minus four
+   * hundred. So the spread was always about four hundred and twenty, the noise
+   * over it about two hundred either way, and the best move on the board was
+   * worth five or ten. Measured late in a real game: Kyu's best gain +5, its
+   * noise ±191, thirty of its sixty candidates below −300. Everything short of
+   * leaving the camp was a coin, including stepping backwards.
+   *
+   * A cliff that big was never needed to keep a piece home. Stepping out costs
+   * the home weight AND the step, so any positive weight already makes it the
+   * worse move; what the size bought was only the noise. Measured in process on
+   * 16×16, ten games a pairing, colours alternating:
+   *
+   *                          at 400                     at 20
+   *     級 v разряд    median 1,186 plies, 3 drawn    median 421, none drawn
+   *     разряд v разряд  median 1,589, 9 of 10 drawn  median 587, none drawn
+   *     段 v 級         median 364                   median 263
+   *     名人 v 段 (12)   11-1                          11-1
+   *
+   * Every drawn game there was the no-progress rule calling off a game nobody
+   * could finish, which is what a thousand plies of coin tosses looks like.
+   * 10 and 40 measure the same as 20 to within the dice, so this is not a
+   * knife edge. It reaches Chinese Checkers too, the other race, where 級 v
+   * разряд fell from a median of 596 plies to 196 — and where 段 got better
+   * at the game as well, taking four of sixteen off 名人 where it had taken
+   * none. Still an order; a narrower one.
+   *
+   * No work was added: this is a constant, and the reading is the same reading.
+   */
+  home: 20,
   /** Per step of the whole army's remaining distance, in the race games. */
   advance: 5,
   /** Per stone captured, where a game captures. */
