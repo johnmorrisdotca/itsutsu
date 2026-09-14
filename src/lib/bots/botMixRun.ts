@@ -134,7 +134,10 @@ function printFacts(facts: MixFacts, plan: MixPlan): void {
   for (let at = 0; at < counts.length; at += 6) console.log(`  ${counts.slice(at, at + 6).join(" · ")}`);
   console.log(`\n${plan.unplayed.length} game(s) with no finished games: ${plan.unplayed.join(", ") || "none"}.`);
   for (const one of plan.unplayedLeftOut) console.log(`  LEFT OUT ${one.variant}: ${one.reason}`);
-  for (const cap of MIX_SIZE_CAPS) console.log(`  NOT DRAWN ${cap.variant} ${cap.size}x${cap.size}: ${cap.reason}`);
+  for (const cap of MIX_SIZE_CAPS) {
+    const whom = cap.tiers === undefined ? "for anybody" : `with ${cap.tiers.map(name).join(", ")} in either seat`;
+    console.log(`  NOT DRAWN ${cap.variant} ${cap.size}x${cap.size} ${whom}: ${cap.reason}`);
+  }
 
   console.log("\nComputer players' rated records, as read:");
   for (const one of facts.records) {

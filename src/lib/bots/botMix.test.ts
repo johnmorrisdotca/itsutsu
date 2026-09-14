@@ -4,6 +4,7 @@ import { RULE_VARIANT_LIST, SEED_RANGE, boardSizesFor } from "@/lib/gomoku/gomok
 import { playsAsExpert } from "@/lib/gomoku/expert/experts";
 import { BOT_TIERS, TIER_SPECS } from "@/lib/gomoku/opponent.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type { BotTier } from "@/lib/gomoku/opponent.types";
 import {
   MIX_ALL_PLAYERS,
   drawableSizes,
@@ -14,6 +15,7 @@ import {
   playableVariants,
 } from "./botMix";
 import type { MixFacts, MixOptions, MixRecord } from "./botMix.types";
+import { MIX_LEFT_OUT, MIX_SIZE_CAPS } from "./bots.constants";
 
 const EMPTY: MixFacts = { finishedByVariant: {}, records: [] };
 
@@ -123,7 +125,7 @@ describe("the mixed plan: games nobody has played", () => {
         expect(match.variant === "go" && match.size === 19).toBe(false);
       }
     }
-    expect(drawableSizes("go", { sizeCaps })).toEqual([13, 9]);
+    expect(drawableSizes("go", { sizeCaps }, { black: "kyu", white: "meijin" })).toEqual([13, 9]);
   });
 
   it("leaves out a game it is told cannot be finished, and says why, rather than dropping it silently", () => {
@@ -131,7 +133,7 @@ describe("the mixed plan: games nobody has played", () => {
     const plan = planMix(LIVE, options({ leftOut }));
     expect(plan.matches.some((one) => one.variant === "chineseCheckers")).toBe(false);
     expect(plan.unplayedLeftOut).toEqual(leftOut);
-    expect(playableVariants({ leftOut, sizeCaps: [] })).not.toContain("chineseCheckers");
+    expect(playableVariants({ leftOut, sizeCaps: [], players: MIX_ALL_PLAYERS })).not.toContain("chineseCheckers");
   });
 
   it("leaves out a game whose every size is capped, with that as the reason", () => {
@@ -140,6 +142,123 @@ describe("the mixed plan: games nobody has played", () => {
     expect(plan.matches.some((one) => one.variant === "checkers")).toBe(false);
     expect(plan.unplayedLeftOut.map((one) => one.variant)).toEqual(["checkers"]);
     expect(plan.unplayedLeftOut[0].reason).toMatch(/capped/);
+  });
+});
+
+describe("the mixed plan: a size capped for some players only", () => {
+  const SEARCHING: BotTier[] = ["meijin", "guoshou", "tamenoki", "meritalu"];
+  const perTier = [{ variant: "go" as RuleVariant, size: 19, reason: "too slow for a searching grade", tiers: SEARCHING }];
+  const seatedBy = (match: { black: BotTier; white: BotTier }, tiers: readonly BotTier[]) =>
+    tiers.includes(match.black) || tiers.includes(match.white);
+
+  it("closes the size to a pairing with a named player in either seat, and leaves it open to everyone else", () => {
+    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "razryad" })).toEqual([19, 13, 9]);
+    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "dan" })).toEqual([19, 13, 9]);
+    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "meijin", white: "kyu" })).toEqual([13, 9]);
+    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "guoshou" })).toEqual([13, 9]);
+  });
+
+  it("never plans the capped size with a named player seated, and does plan it without one", () => {
+    let openDrawn = 0;
+    for (const seed of SEEDS) {
+      const plan = planMix(EMPTY, options({ seed, sizeCaps: perTier, unplayedGames: { fewest: 2, most: 2 } }));
+      for (const match of plan.matches.filter((one) => one.variant === "go")) {
+        if (match.size === 19) {
+          expect(seatedBy(match, SEARCHING)).toBe(false);
+          openDrawn += 1;
+        }
+      }
+    }
+    // The quick grades still get 19×19: a per-tier cap must not become a whole-game one.
+    expect(openDrawn).toBeGreaterThan(0);
+  });
+
+  it("still plans the game for a player the cap names, at a size left open to it", () => {
+    const sizes = new Set<number>();
+    for (const seed of SEEDS) {
+      for (const match of planMix(EMPTY, options({ seed, sizeCaps: perTier })).matches) {
+        if (match.variant === "go" && seatedBy(match, SEARCHING)) sizes.add(match.size);
+      }
+    }
+    expect([...sizes].sort((a, b) => a - b)).toEqual([9, 13]);
+  });
+
+  it("sends an undefeated player the cap names to that game only at a size open to it", () => {
+    const record: MixRecord = { tier: "guoshou", ratedGames: 5, wins: 5, losses: 0, draws: 0, variants: ["freestyle"] };
+    const leftOut = RULE_VARIANT_LIST.filter((one) => one !== "go" && one !== "hex" && one !== "halma").map(
+      (variant) => ({ variant, reason: "test" }),
+    );
+    for (const seed of SEEDS) {
+      const plan = planMix({ finishedByVariant: {}, records: [record] }, options({ seed, leftOut, sizeCaps: perTier }));
+      const sent = plan.matches.filter((one) => one.why.kind === "undefeated");
+      expect(sent.map((one) => one.variant).sort()).toEqual(["go", "halma", "hex"]);
+      for (const match of sent.filter((one) => one.variant === "go")) expect(match.size).not.toBe(19);
+    }
+  });
+
+  it("leaves a game out when every size is capped for everybody who could be drawn, and keeps it for the rest", () => {
+    const everySize = [19, 13, 9].map((size) => ({ variant: "go" as RuleVariant, size, reason: "too slow", tiers: SEARCHING }));
+    const onlySearching = planMix(EMPTY, options({ sizeCaps: everySize, players: SEARCHING }));
+    expect(onlySearching.matches.some((one) => one.variant === "go")).toBe(false);
+    expect(onlySearching.unplayedLeftOut.map((one) => one.variant)).toEqual(["go"]);
+    expect(onlySearching.unplayedLeftOut[0].reason).toMatch(/capped/);
+
+    for (const seed of SEEDS) {
+      const mixed = planMix(EMPTY, options({ seed, sizeCaps: everySize }));
+      for (const match of mixed.matches.filter((one) => one.variant === "go")) {
+        expect(seatedBy(match, SEARCHING)).toBe(false);
+      }
+      expect(mixed.unplayedLeftOut).toEqual([]);
+    }
+  });
+});
+
+describe("the mixed plan: Go, with the constants the batch ships with", () => {
+  const SHIPPED = { leftOut: MIX_LEFT_OUT, sizeCaps: MIX_SIZE_CAPS };
+
+  it("does not leave Go out, now a live Go game can be passed", () => {
+    expect(MIX_LEFT_OUT.map((one) => one.variant)).not.toContain("go");
+    expect(playableVariants({ ...SHIPPED, players: MIX_ALL_PLAYERS })).toContain("go");
+  });
+
+  it("plans Go on an empty database, and every size it is played on is drawn for somebody", () => {
+    const sizes = new Set<number>();
+    for (const seed of SEEDS) {
+      const plan = planMix(EMPTY, options({ seed, ...SHIPPED }));
+      expect(plan.unplayedLeftOut.map((one) => one.variant)).not.toContain("go");
+      const go = plan.matches.filter((one) => one.variant === "go");
+      expect(go.length).toBeGreaterThan(0);
+      for (const match of go) sizes.add(match.size);
+    }
+    expect([...sizes].sort((a, b) => a - b)).toEqual([...boardSizesFor("go")].sort((a, b) => a - b));
+  });
+
+  it("honours every shipped cap for the players it names, in either seat", () => {
+    for (const seed of SEEDS) {
+      for (const match of planMix(LIVE, options({ seed, ...SHIPPED, unplayedGames: { fewest: 2, most: 2 } })).matches) {
+        for (const cap of MIX_SIZE_CAPS.filter((one) => one.variant === match.variant && one.size === match.size)) {
+          expect(cap.tiers).toBeDefined();
+          expect(cap.tiers?.includes(match.black) || cap.tiers?.includes(match.white)).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("caps no size for a grade that finished it when measured", () => {
+    // Razryad, Kyu and Dan finished Go at every size inside a minute (see MIX_SIZE_CAPS).
+    for (const cap of MIX_SIZE_CAPS.filter((one) => one.variant === "go")) {
+      expect(cap.tiers).toBeDefined();
+      for (const quick of ["razryad", "kyu", "dan"] as const) expect(cap.tiers).not.toContain(quick);
+    }
+  });
+
+  it("reproduces a plan with Go in it from its seed", () => {
+    const first = planMix(LIVE, options({ seed: 20260914, ...SHIPPED }));
+    expect(planMix(LIVE, options({ seed: 20260914, ...SHIPPED }))).toEqual(first);
+    const withGo = SEEDS.map((seed) => planMix(EMPTY, options({ seed, ...SHIPPED })));
+    for (const [at, plan] of withGo.entries()) {
+      expect(planMix(EMPTY, options({ seed: SEEDS[at], ...SHIPPED }))).toEqual(plan);
+    }
   });
 });
 

@@ -31,8 +31,20 @@ export type MixFacts = {
 /** A game the computer players cannot be trusted to finish, and why. */
 export type MixLeftOut = { variant: RuleVariant; reason: string };
 
-/** A board size too slow to draw for a game on one machine, and why. */
-export type MixSizeCap = { variant: RuleVariant; size: number; reason: string };
+/**
+ * A board size too slow to draw for a game on one machine, and why.
+ *
+ * `tiers` narrows the cap to a game with one of those computer players in it,
+ * in either seat — for a size the quick grades finish in seconds and the
+ * searching grades take minutes over, which is Go at 19×19. Absent means
+ * the size is too slow whoever plays, and is drawn for nobody. A cap names
+ * tiers only where they were measured slow: taking a size away from a grade
+ * that finishes it would be a guess written down as a finding.
+ */
+export type MixSizeCap = { variant: RuleVariant; size: number; reason: string; tiers?: readonly BotTier[] };
+
+/** Two different computer players at one game: the first takes black. */
+export type MixSeating = { black: BotTier; white: BotTier };
 
 /** Why a game is in the plan. */
 export type MixWhy =

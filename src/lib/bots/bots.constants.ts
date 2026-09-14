@@ -197,27 +197,73 @@ export const MIX_UNDEFEATED_GAMES = 3;
  */
 export const MIX_LEFT_OUT: readonly MixLeftOut[] = [
   /*
-   * Go is played to a finish in memory on every size, and cannot be finished
-   * on the live path. The computer players pass in Go by choice, as the game
-   * intends (`goTurns` in opponentTurns.ts, `canPass` in engine.ts) — but
-   * `appendMove` accepts a pass only when `mustPass` says one is forced, and
-   * `mustPass` answers false for Go on every position. So the first pass a
-   * computer chooses is refused as illegal, `playBotTurns` stops, and the game
-   * sits active for ever. Measured on a scratch database: Razryad v Kyu on 9×9,
-   * "stuck at 84 moves", and `appendMove(…, { kind: "pass" })` on that very
-   * position answered "illegal" while `canPass` answered true.
+   * Empty, and Go is the reason it is worth reading.
    *
-   * Remove this row when a live Go game can be passed in.
+   * Go sat here from 0.181.0 to 0.182.1. The computer players pass in Go by
+   * choice, as the game intends (`goTurns` in opponentTurns.ts), and the live
+   * move path refused any pass it did not think forced — so the first pass a
+   * computer chose was answered "illegal", `playBotTurns` stopped, and the game
+   * sat active for ever ("stuck at 84 moves", Razryad v Kyu on 9×9).
+   *
+   * 0.182.1 made `appendMove` ask `canPass`, and two passes in a row end a live
+   * Go game by count. Measured through `createLiveGame` and `playBotTurns` on a
+   * scratch database afterwards, every Go game tried finished by two passes,
+   * at every size and with every grade. The searching grades at 19×19 finish
+   * too, only slowly — a speed problem rather than a finishing one — so they
+   * are capped in MIX_SIZE_CAPS below, with the numbers, not left out here.
+   */
+];
+
+/**
+ * Board sizes the mixed batch will not draw, because a game there is far too slow on one machine.
+ *
+ * A cap that names tiers closes the size only to a game with one of them in
+ * either seat; the rest still draw it. A size is capped for a player only where
+ * that player was measured slow there, never on a guess.
+ */
+export const MIX_SIZE_CAPS: readonly MixSizeCap[] = [
+  /*
+   * Go at 19×19, for the searching grades. Every Go game below FINISHED, by
+   * two passes, through `createLiveGame` and `playBotTurns` on a scratch
+   * database (2026-09-14, 0.182.1, one machine running several at once). The
+   * cap is about time, not about finishing.
+   *
+   *   size   players (black v white)   moves  passes  seconds
+   *    9     Razryad v Kyu            90–111    2       1–2
+   *    9     Kyu v Dan / Dan v Kyu    98, 194  2, 15    2, 4
+   *    9     Meijin v Guoshou (both)  102, 124  2, 4   13, 17
+   *   13     Razryad v Kyu (both)     133, 254  2, 3    2, 5
+   *   13     Kyu v Dan (both)         258, 193  6, 2    8, 6
+   *   13     Meijin v Guoshou (both)  358, 337    2    103, 98
+   *   19     Razryad v Kyu (both)      44, 270  2, 3    1, 7
+   *   19     Kyu v Dan                   532      2      47
+   *   19     Dan v Razryad               503      3      45
+   *   19     Kyu v Meijin                106      2      25
+   *   19     Dan v Meijin               1368      2     533
+   *   19     Kyu v Guoshou (both)     824, 479    2     232, 123
+   *   19     Meijin v Guoshou            722      2     386
+   *
+   * A searching grade thinks about half a second a move on 19×19 against a
+   * fiftieth of that for Kyu, and a 19×19 game runs anywhere from a hundred
+   * moves to nearly fourteen hundred — so one game with a searching grade in it
+   * cost from 25 seconds to nine minutes, with nothing but `playOut`'s
+   * 2,400-move bound above that. At 13×13 the same players take under two
+   * minutes, and the three grades that do not search finish 19×19 inside one.
+   *
+   * So 19×19 is closed to a game with Meijin, Guoshou or either specialist in
+   * it, and left open to Razryad, Kyu and Dan, who finish it in under a minute.
+   * The specialists are named because at Go neither has studied anything — no
+   * expert applies to its spec — so each plays it with Guoshou's settings, and
+   * Guoshou's numbers are theirs. They still play Go at 13×13 and 9×9.
    */
   {
     variant: "go",
+    size: 19,
+    tiers: [BOT_TIERS.meijin, BOT_TIERS.guoshou, BOT_TIERS.tamenoki, BOT_TIERS.meritalu],
     reason:
-      "a computer player's pass is refused by the live move path (appendMove accepts only a forced pass, and Go never forces one), so every game stalls at its first pass.",
+      "a searching grade thinks about half a second a move here and a game runs 100–1,400 moves: measured 25 s to 9 min a game, against under a minute for Razryad, Kyu and Dan and under two minutes for the searching grades at 13×13.",
   },
 ];
-
-/** Board sizes the mixed batch will not draw, because a game there is far too slow on one machine. */
-export const MIX_SIZE_CAPS: readonly MixSizeCap[] = [];
 
 /** Their ids, for the constant-time lookup the clock needs. */
 export const BOT_MEMBER_IDS: ReadonlySet<string> = new Set(
