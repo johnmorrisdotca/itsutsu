@@ -144,10 +144,35 @@ test.describe("a game played from two devices", () => {
     await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
     await expect(page.getByTestId("shared-times-line")).toContainText("Started");
     await expect(page.getByTestId("shared-times-line")).not.toContainText("finished");
+    /*
+     * HELD, BECAUSE THE BANNER BELOW LIVES FOR A MOMENT. Since 1e8ce53 a board
+     * that sees its game end calls `router.refresh()` at once (`useLiveGame`),
+     * and the page it gets back is the filed record, which has no turn banner.
+     * So "Black wins" and "Finished" are on the page only between the poll that
+     * brings the result and that refresh landing — under a tenth of a second in
+     * the traces — and whether the two assertions saw them depended on where
+     * the 2.5s poll fell against Playwright's retry steps. It failed in full
+     * runs and alone alike (1 of 10, the refresh landing between the two). The
+     * refresh is held here until the settled board has been read, then let
+     * through; the page does nothing it would not do on a slow connection.
+     */
+    const refresh = new RegExp(`/match/${game.id}\\?_rsc=`);
+    let handBack = () => {};
+    const heldUntilRead = new Promise<void>((resolve) => (handBack = resolve));
+    await page.route(refresh, async (route) => {
+      await heldUntilRead;
+      await route.continue();
+    });
     expect((await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } })).status()).toBe(200);
     // The board learns of the end on its next poll, without a reload, and says when it came.
     await expect(page.getByTestId("turn-banner")).toContainText("Black wins", { timeout: 15_000 });
     await expect(page.getByTestId("finished-at")).toContainText("Finished");
+    // Let the hand-back through and wait for it to land, so the reload below
+    // does not cancel a request the route is still holding.
+    const handedBack = page.waitForResponse(refresh);
+    handBack();
+    await handedBack;
+    await page.unroute(refresh);
     // A finished match STAYS at its own address — it does not move to a second
     // one — and the filed view it reloads into says both times in its heading.
     await page.reload();
