@@ -277,8 +277,9 @@ describe("a claimed timeout that writes a pass", () => {
     const outcome = await claimTimeout("g1", "black-token");
 
     expect(outcome.ok).toBe(true);
+    // Written as a forfeit: a pass here is one the rules refuse, and the replay would stop at it. See liveForfeit.test.ts.
     expect(moveWrites).toEqual([
-      { gameId: "g1", number: 2, row: -1, col: -1, stone: STONES.white, kind: MOVE_KINDS.pass },
+      { gameId: "g1", number: 2, row: -1, col: -1, stone: STONES.white, kind: MOVE_KINDS.forfeit },
     ]);
     expect(gameWrites[0]).toMatchObject({ status: "active", moveCount: 2, whiteForfeits: 1 });
     expect(recordPlayed).not.toHaveBeenCalled();

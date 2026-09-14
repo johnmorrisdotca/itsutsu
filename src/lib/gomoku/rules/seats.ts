@@ -91,13 +91,17 @@ export function resign(state: GameState, loser: Stone): GameState {
 
 /**
  * Takes the turn away from the colour to move without a stone: the graceful
- * penalty for a missed deadline. It is a pass on the record, so a replay
- * changes hands at the same point the game did. Unlike a pass in the piece
+ * penalty for a missed deadline. It is a FORFEIT on the record, not a pass,
+ * so a replay changes hands at the same point the game did — a pass the rules
+ * do not offer would stop the replay there instead. Unlike a pass in the piece
  * games, two of these in a row do not end anything; the forfeit count does.
+ *
+ * Where the rules DO offer a pass, a missed turn is that pass and not this:
+ * `forfeitOnRecord` in engine.ts decides, since only the engine knows.
  */
 export function forfeitTurn(state: GameState): GameState {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return state;
   if (state.opening.stage === OPENING_STAGES.choosing) return state;
-  const move: Move = { ...NO_POINT, stone: state.toPlay, kind: MOVE_KINDS.pass };
+  const move: Move = { ...NO_POINT, stone: state.toPlay, kind: MOVE_KINDS.forfeit };
   return { ...state, moves: [...state.moves, move], toPlay: otherStone(state.toPlay) };
 }

@@ -44,6 +44,8 @@ function requestFor(
   anyColour: boolean,
 ): Request | null {
   if (kind === MOVE_KINDS.pass) return { pass: true };
+  // Only a claimed timeout writes a forfeit. There is no request for one, so a record holding one is not mirrored.
+  if (kind === MOVE_KINDS.forfeit) return null;
   if (kind === MOVE_KINDS.piece) return { cells };
   if (kind === MOVE_KINDS.move) return { row, col, from: { row: from?.row, col: from?.col } };
   if (kind === MOVE_KINDS.place || kind === MOVE_KINDS.skip) {

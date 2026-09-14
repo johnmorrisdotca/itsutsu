@@ -276,16 +276,26 @@ export function passTurn(state: GameState): GameState {
 /**
  * A missed turn, as the position the record will replay it to.
  *
- * A forfeited turn is written as a pass, and a replay has no way to tell the
- * two apart — so wherever the rules offer a pass, the forfeit IS that pass,
- * with everything a pass does: in Go the second in a row ends the game by
- * count, whether the first was chosen or missed. A claim that settled anything
- * else would write one result on the row while every page replayed another.
- * Where no pass is on offer it is `forfeitTurn`, the turn taken away and
- * nothing decided.
+ * Wherever the rules offer a pass, the missed turn IS that pass, with
+ * everything a pass does: in Go the second in a row ends the game by count,
+ * whether the first was chosen or missed. Where no pass is on offer it is
+ * `forfeitTurn`, the turn taken away and nothing decided — written as its own
+ * kind, because a pass there is one the rules refuse and a replay stops at.
+ * The claim writes whichever kind this settled, so the row and the replay
+ * cannot disagree.
  */
 export function forfeitOnRecord(state: GameState): GameState {
   return canPass(state) ? passTurn(state) : forfeitTurn(state);
+}
+
+/**
+ * Whether a recorded forfeit could have been written here: only where the
+ * clock had no pass to write instead. The replay's half of `forfeitOnRecord`,
+ * and the reason a forfeit where a pass was on offer is refused rather than
+ * read — it is a record the claim could not have made.
+ */
+export function canForfeit(state: GameState): boolean {
+  return !canPass(state) && forfeitTurn(state) !== state;
 }
 
 /**

@@ -37,6 +37,7 @@ function game(overrides: Partial<SgfSource>): SgfSource {
     result: "black",
     blackName: "Hanako",
     whiteName: "Taro",
+    moveTimeMs: null,
     moves: [],
     ...overrides,
   };
@@ -218,6 +219,30 @@ describe("a Hex game", () => {
 
   it("counts columns past z the way Hex's definition does", () => {
     expect([0, 25, 26, 27, 51, 52].map(hexColumn)).toEqual(["a", "z", "aa", "ab", "az", "ba"]);
+  });
+});
+
+describe("a turn lost on time", () => {
+  const forfeit = (number: number, stone: "black" | "white") => move(number, -1, -1, stone, "forfeit");
+  const timedOut = game({
+    moveTimeMs: 86_400_000,
+    moves: [move(1, 7, 7, "black"), forfeit(2, "white"), move(3, 7, 8, "black"), move(4, 8, 8, "white")],
+  });
+
+  it("is never written as a pass, and is said in the game comment instead", () => {
+    const [root, ...moves] = readSgf(text(timedOut));
+    // Black twice running is what happened to the board; B[] or W[] would be a pass nobody made.
+    expect(moves).toEqual([{ B: ["hh"] }, { B: ["ih"] }, { W: ["ii"] }]);
+    expect(root?.GC?.[0]).toContain(
+      "1 turn was lost on time. SGF has no move for a turn lost on time, so none is written, and the other colour moves twice running.",
+    );
+  });
+
+  it("counts every one of them, and still says nothing about passes", () => {
+    const twice = game({ moveTimeMs: 86_400_000, moves: [move(1, 7, 7, "black"), forfeit(2, "white"), move(3, 7, 8, "black"), forfeit(4, "white")] });
+    const [root] = readSgf(text(twice));
+    expect(root?.GC?.[0]).toContain("2 turns were lost on time.");
+    expect(root?.GC?.[0]).not.toContain("without a stone");
   });
 });
 

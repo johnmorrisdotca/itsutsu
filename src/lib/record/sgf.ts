@@ -22,6 +22,7 @@ import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.co
 import { replayGame } from "@/lib/gomoku/replay";
 import { startingDiscs } from "@/lib/gomoku/rules/flips";
 import { scoreArea } from "@/lib/gomoku/rules/go";
+import { leavesNoStone } from "@/lib/gomoku/rules/stoneless";
 import { slugFor } from "@/lib/gomoku/slugs";
 import type { GameMove } from "@/lib/history/gameHistory.types";
 import {
@@ -89,7 +90,8 @@ function checked(game: SgfSource): { refused: SgfRefusal } | { type: SgfMappedRo
 
   for (const move of game.moves) {
     if (move.stone !== STONES.black && move.stone !== STONES.white) return { refused: SGF_REFUSALS.unreadableMove };
-    if (move.kind === MOVE_KINDS.pass) continue;
+    // Neither a pass nor a turn lost on time has a point to check. See `nodeFor` for how each is written.
+    if (leavesNoStone(move.kind)) continue;
     // A sliding piece, a laid domino or a twist is a move no type here can hold.
     if (!placed(move) || move.from !== undefined || move.cells !== undefined || move.twist !== undefined) {
       return { refused: SGF_REFUSALS.unreadableMove };
@@ -184,7 +186,7 @@ function handicapLine(handicap: Handicap): string | null {
 }
 
 /** What the game was played under that no SGF property can hold, in words. */
-function commentFor(game: SgfSource, spec: SgfTypeSpec, unwrittenPasses: number): string[] {
+function commentFor(game: SgfSource, spec: SgfTypeSpec, unwrittenPasses: number, forfeits: number): string[] {
   const lines: string[] = [];
   if (spec.rulesComment !== null) lines.push(spec.rulesComment);
   if (game.opening !== OPENING_RULES.free) {
@@ -207,11 +209,31 @@ function commentFor(game: SgfSource, spec: SgfTypeSpec, unwrittenPasses: number)
         "SGF has no pass for this game, so none is written, and the colour that did not pass moves twice running.",
     );
   }
+  if (forfeits > 0) {
+    lines.push(
+      `${forfeits} ${forfeits === 1 ? "turn was" : "turns were"} lost on time. ` +
+        "SGF has no move for a turn lost on time, so none is written, and the other colour moves twice running.",
+    );
+  }
   return lines;
 }
 
+/**
+ * One move as a node, or null for a turn the file says in its comment instead.
+ *
+ * WHAT SGF CAN SAY ABOUT A TURN LOST ON TIME: nothing, as a move. FF[4]'s
+ * empty move (`B[]`, and Hex's `B[pass]`) is a PASS — a choice the rules
+ * offered — and a reader replaying one in Go counts it towards the two passes
+ * that end the game. BL, WL, OB and OW record time LEFT, not a turn taken
+ * away, and RE's `+T` is a whole game lost on time. So a forfeit is never
+ * written as a node: that would be a pass the player did not make, in a game
+ * whose rules may not even have one. It is left out and counted in GC, the way
+ * a pass the type cannot write already is, and the other colour's two stones
+ * in a row are honest about what happened to the board.
+ */
 function nodeFor(move: GameMove, spec: SgfTypeSpec): string | null {
   const who = colour(move.stone);
+  if (move.kind === MOVE_KINDS.forfeit) return null;
   if (move.kind !== MOVE_KINDS.pass) return `;${who}[${pointFor(spec, move)}]`;
   if (spec.passes === "empty") return `;${who}[]`;
   if (spec.passes === "word") return `;${who}[pass]`;
@@ -237,7 +259,8 @@ export function writeSgf(game: SgfSource, playedOn: string | null): SgfWritten {
   if (spec.komi !== null) props.push(`KM[${spec.komi}]`);
 
   const unwrittenPasses = spec.passes === "unwritable" ? game.moves.filter((move) => move.kind === MOVE_KINDS.pass).length : 0;
-  const comment = commentFor(game, spec, unwrittenPasses);
+  const forfeits = game.moves.filter((move) => move.kind === MOVE_KINDS.forfeit).length;
+  const comment = commentFor(game, spec, unwrittenPasses, forfeits);
   if (comment.length > 0) props.push(`GC[${text(comment.join("\n"))}]`);
   if (game.opener === STONES.white) props.push("PL[W]");
 

@@ -3,7 +3,7 @@ import "server-only";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
-import { STONES } from "@/lib/gomoku/gomoku.constants";
+import { MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { isIgnoring } from "@/lib/social/ignores";
@@ -238,6 +238,21 @@ async function continuingAPosition(
   if (origin === null) return { refused: NO_SUCH_GAME };
   if (from.move > origin.moveCount) {
     return { refused: { status: 400, error: "That game has fewer moves." } };
+  }
+  /*
+   * A TURN LOST ON TIME REPLAYS ONLY IN A GAME WITH A CLOCK. The copied rows
+   * come across as they are, and a forfeit among them in a game with no clock
+   * is a record the replay refuses — the new game would stop at that turn and
+   * never be playable. Refused here, with the reason, rather than written.
+   */
+  const clock = asked.said.has("moveTimeMs") ? asked.data.moveTimeMs : origin.moveTimeMs;
+  if (clock === null) {
+    const lost = await prisma.move.count({
+      where: { gameId: origin.id, number: { lte: from.move }, kind: MOVE_KINDS.forfeit },
+    });
+    if (lost > 0) {
+      return { refused: { status: 422, error: "A turn in that position was lost on time, so it can only be continued with a clock." } };
+    }
   }
 
   const source: Record<string, unknown> = {

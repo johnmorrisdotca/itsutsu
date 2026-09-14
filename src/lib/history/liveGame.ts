@@ -137,7 +137,8 @@ export function replay(row: GameRow): GameState {
     allowSwap: false,
   });
 
-  const timeline = replayMoves(start, row.moves.map(toGameMove));
+  // A clock is what lets a turn lost to it replay; see `replayMoves`.
+  const timeline = replayMoves(start, row.moves.map(toGameMove), [], { clocked: row.moveTimeMs !== null });
   return timeline[timeline.length - 1];
 }
 

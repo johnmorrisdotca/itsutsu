@@ -6,6 +6,7 @@ import {
 import { VARIANT_SPECS } from "../gomoku.constants";
 import type { Cell, GameState, Move, Point } from "../gomoku.types";
 import { emptyBoard } from "../obstacles";
+import { leavesNoStone } from "./stoneless";
 
 /**
  * Changing the board size mid-game, in either direction.
@@ -138,7 +139,7 @@ export function ringHoldsMoves(state: GameState, margin: number): boolean {
 
   return state.moves.some(
     (move) =>
-      (move.kind !== "pass" && outside(move)) ||
+      (!leavesNoStone(move.kind) && outside(move)) ||
       (move.from !== undefined && outside(move.from)) ||
       (move.cells !== undefined && move.cells.some(outside)),
   );

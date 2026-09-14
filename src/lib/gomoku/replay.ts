@@ -15,6 +15,12 @@ type StoredGame = {
   seed?: number;
   /** See DrawLimit. Games recorded before it existed carry "none", as they were played. */
   drawLimit?: string;
+  /**
+   * The clock, or null for none. Required rather than optional: a turn lost to
+   * the clock replays only on a record that had one, and a reader that forgot
+   * to pass it would cut every such game short at the turn that was lost.
+   */
+  moveTimeMs: number | null;
   moves: MoveInput[];
 };
 
@@ -42,7 +48,7 @@ export function replayTimeline(game: StoredGame): GameState[] {
     allowUndo: false,
     allowSwap: false,
   });
-  return replayMoves(start, game.moves);
+  return replayMoves(start, game.moves, [], { clocked: game.moveTimeMs !== null });
 }
 
 /** The position as it stands now. */

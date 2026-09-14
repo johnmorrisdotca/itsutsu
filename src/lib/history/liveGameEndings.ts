@@ -3,7 +3,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 
 import { forfeitOnRecord, resign, winOnTime } from "@/lib/gomoku/engine";
-import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import { fetchTimeOff, timeOffGraceMs } from "@/lib/social/vacation";
 import { prisma } from "@/lib/prisma";
 import { recordResult } from "@/lib/rating/recordResult";
@@ -92,7 +92,8 @@ export async function giveTime(id: string, token: string, now = new Date()): Pro
 /**
  * Claims a missed deadline. Only the player waiting may claim, and only once
  * the other side's time is up. Under the graceful penalty the absent colour
- * forfeits the turn — a pass on the record — and three in a row lose the
+ * forfeits the turn — a pass on the record where the rules offer one, a
+ * forfeit where they do not — and three in a row lose the
  * game; under the strict one the game is lost at once. Not claiming is the
  * "pass it back": the game simply waits.
  */
@@ -135,9 +136,17 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
 
   const writes: Prisma.PrismaPromise<unknown>[] = [];
   if (!strict) {
+    /*
+     * The kind the engine settled, never one decided here. A pass where the
+     * rules offer one, a forfeit where they do not — and this used to write a
+     * pass either way, which in any game with no pass to offer is a move the
+     * replay refuses: the record stopped a turn short of the game, and the
+     * other side's next move collided with the row the claim had written.
+     */
+    const missed = next.moves[next.moves.length - 1];
     writes.push(
       prisma.move.create({
-        data: { gameId: id, number: next.moves.length, row: -1, col: -1, stone: absent, kind: MOVE_KINDS.pass },
+        data: { gameId: id, number: next.moves.length, row: -1, col: -1, stone: absent, kind: missed.kind },
       }),
     );
   }

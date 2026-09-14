@@ -96,7 +96,9 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                   <span className="font-mono">
                     {move.kind === MOVE_KINDS.pass
                       ? GAME_COPY.pass.label
-                      : pointName(state.settings.size, move)}
+                      : move.kind === MOVE_KINDS.forfeit
+                        ? GAME_COPY.forfeit.label
+                        : pointName(state.settings.size, move)}
                     {move.kind === MOVE_KINDS.piece && move.cells !== undefined
                       ? ` ×${move.cells.length}`
                       : ""}

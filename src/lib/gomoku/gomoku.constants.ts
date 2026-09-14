@@ -572,7 +572,15 @@ export const MOVE_KINDS = {
   move: "move",
   piece: "piece",
   pass: "pass",
+  // Written by a claimed timeout alone. See MoveKind.
+  forfeit: "forfeit",
 } as const satisfies Record<MoveKind, MoveKind>;
+
+/** How a written move list says the two moves that have no point. */
+export const STONELESS_WORDS = {
+  pass: "pass",
+  forfeit: "timed out",
+} as const satisfies Partial<Record<MoveKind, string>>;
 
 export const SEATS = {
   one: "one",

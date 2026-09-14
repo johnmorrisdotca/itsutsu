@@ -2,6 +2,7 @@
 
 import { MOVE_KINDS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { pointName } from "@/lib/gomoku/notation";
+import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 import type { GameMove } from "@/lib/history/gameHistory.types";
 
 /**
@@ -108,7 +109,8 @@ export function PlayedMoves({
  * Halma move reads as the square somebody left, not the one they arrived at.
  */
 function wordFor(size: number, move: GameMove): string {
-  if (move.kind === MOVE_KINDS.pass) return "pass";
+  const without = stonelessWord(move.kind);
+  if (without !== null) return without;
   const to = pointName(size, move);
   if (move.kind === MOVE_KINDS.move && move.from !== undefined) {
     return `${pointName(size, move.from)}→${to}`;

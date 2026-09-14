@@ -12,9 +12,11 @@ import {
   STONES,
   VARIANT_SPECS,
 } from "../gomoku.constants";
-import type { GameState, MoveInput, OpeningChoice, Point } from "../gomoku.types";
+import type { GameState, MoveInput, OpeningChoice, Point, ReplayFacts } from "../gomoku.types";
 import {
+  canForfeit,
   emptyPoints,
+  forfeitTurn,
   inMovePhase,
   isLegalMove,
   movePiece,
@@ -22,6 +24,10 @@ import {
   placePiece,
   playMove,
 } from "../engine";
+import { leavesNoStone } from "./stoneless";
+
+/** A record nothing says ran a clock: a forfeit on it is refused. */
+const NO_CLOCK: ReplayFacts = { clocked: false };
 
 /**
  * What can be done to a game's record rather than to its position: burning a
@@ -102,7 +108,7 @@ export function undoMove(state: GameState): GameState {
   if (last.cleared !== undefined) board = restoreBottomRow(board, size, last.cleared);
   if (last.kind === MOVE_KINDS.piece) {
     for (const cell of last.cells ?? []) board[indexOf(size, cell)] = null;
-  } else if (last.kind !== MOVE_KINDS.pass) {
+  } else if (!leavesNoStone(last.kind)) {
     board[indexOf(size, last)] = null;
   }
   if (last.from !== undefined) board[indexOf(size, last.from)] = last.stone;
@@ -145,7 +151,20 @@ export function undoMove(state: GameState): GameState {
 
 export function lastMove(state: GameState): Point | null {
   const last = state.moves[state.moves.length - 1];
-  return last === undefined || last.kind === MOVE_KINDS.pass ? null : last;
+  return last === undefined || leavesNoStone(last.kind) ? null : last;
+}
+
+/**
+ * A recorded forfeit, applied only where the claim that writes one could have.
+ *
+ * Two things must both be true, and a record where either is false is one no
+ * game here produced — so the replay stops, rather than skipping a turn nobody
+ * lost. The record ran a clock, since nothing else takes a turn away; and the
+ * rules had no pass to offer, since where they did the clock wrote that pass.
+ */
+function replayForfeit(state: GameState, facts: ReplayFacts): GameState {
+  if (!facts.clocked || !canForfeit(state)) return state;
+  return forfeitTurn(state);
 }
 
 /**
@@ -155,12 +174,15 @@ export function lastMove(state: GameState): Point | null {
  * kept their colour, which is all a store without seat data can say.
  *
  * Stops at the first move that will not replay, since the record no longer
- * fits the rules from there.
+ * fits the rules from there. `facts` says what the moves cannot: a record
+ * read without them is taken to have had no clock, and a forfeit on it stops
+ * the replay like any other move the rules refuse.
  */
 export function replayMoves(
   start: GameState,
   moves: readonly MoveInput[],
   choices: readonly OpeningChoice[] = [],
+  facts: ReplayFacts = NO_CLOCK,
 ): GameState[] {
   const timeline = [start];
   let pending = 0;
@@ -178,7 +200,9 @@ export function replayMoves(
     let next =
       move.kind === MOVE_KINDS.pass
         ? passTurn(current)
-        : move.cells !== undefined
+        : move.kind === MOVE_KINDS.forfeit
+          ? replayForfeit(current, facts)
+          : move.cells !== undefined
           ? placePiece(current, move.cells)
           : move.from !== undefined
             ? movePiece(current, { row: move.from.row, col: move.from.col }, point)
