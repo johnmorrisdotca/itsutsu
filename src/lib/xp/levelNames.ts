@@ -6,7 +6,7 @@ import { XP_LEVELS } from "./xpCurve";
  * DOOR TO EITHER.
  *
  * `levelNames.constants.ts` is a catalogue of a hundred rows and
- * `xpCurve.ts` is a table of a hundred costs, and the two are kept apart on
+ * `xpCurve.ts` is a table of ninety-nine costs, one per level-up, and the two are kept apart on
  * purpose: retuning the economy renames nobody, and renaming a level moves no
  * number. What they need between them is one lookup, and this is it.
  *
@@ -70,7 +70,7 @@ export function levelNameRow(level: number): LevelName | null {
  * What a level is called: the catalogue's name, or `Level 42` when it has none.
  *
  * The one lookup every badge, toast and table cell goes through. It is a read of
- * a hundred-element array in memory, so a list showing a level beside every name
+ * a ninety-nine-rung table in memory, so a list showing a level beside every name
  * costs nothing — which is the reason the level is derived from `Member.xp` and
  * never stored beside it.
  */

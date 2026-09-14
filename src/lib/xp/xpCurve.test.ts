@@ -22,8 +22,15 @@ import {
  */
 
 describe("the shape of the curve", () => {
-  it("has one cost per level", () => {
-    expect(XP_LEVEL_COST).toHaveLength(XP_LEVELS);
+  it("has one cost per level-up, and summing it gives the true top", () => {
+    // Ninety-nine rungs: reaching level 2, then 3, and so on up to level 100.
+    // Level 1 is free and there is no level 101, so a hundredth entry would be
+    // the price of a rung that does not exist — and it did exist once, and an
+    // honest sum of the table read a wrong level for John because of it.
+    const sum = XP_LEVEL_COST.reduce((total, cost) => total + cost, 0);
+    expect(XP_LEVEL_COST).toHaveLength(XP_LEVELS - 1);
+    expect(sum).toBe(999_999);
+    expect(sum).toBe(xpForLevel(XP_LEVELS));
   });
 
   it("costs more at every level than at the one before", () => {
@@ -40,23 +47,57 @@ describe("the shape of the curve", () => {
   it("prices every level in a number somebody chose", () => {
     // John's rule from UmaKuma: a cost ending in 0 or 5 reads as a decision,
     // where 1,447 reads as a machine's arithmetic.
-    for (const cost of XP_LEVEL_COST) expect(cost % 5).toBe(0);
+    // All but one: Level 100's own rung takes the four that make the top exactly
+    // 999,999, which is John's number and outranks the rounding. See the header.
+    const top = XP_LEVELS - 2;
+    XP_LEVEL_COST.forEach((cost, index) => {
+      if (index !== top) expect(cost % 5, `the rung into level ${index + 2}`).toBe(0);
+    });
+    expect(XP_LEVEL_COST[top] % 5).toBe(4);
   });
 
-  it("does not step down at the handoff from the flat ramp", () => {
-    // Levels 1-10 are a flat ramp and 11 onward compound. Setting the two
-    // independently is how UmaKuma once produced a level 10 costing 250
-    // followed by a level 11 costing 83.
-    expect(XP_LEVEL_COST[9]).toBe(200);
-    expect(XP_LEVEL_COST[10]).toBe(220);
+  it("gets harder after 10, and again after 20, in steps a player can feel", () => {
+    // John: "need to get harder after 10, 20 etc". `XP_LEVEL_COST[level - 2]`
+    // is the price of reaching `level`, so [8] is level 10, [9] level 11, [18]
+    // level 20 and [19] level 21. Setting the parts independently is how UmaKuma
+    // once produced a level 10 costing 250 followed by a level 11 costing 83.
+    const reach = (level: number) => XP_LEVEL_COST[level - 2];
+    for (let level = 3; level <= 10; level += 1) {
+      expect(reach(level) - reach(level - 1), `the ramp at ${level}`).toBe(50);
+    }
+    expect(reach(11)).toBeGreaterThanOrEqual(reach(10) * 1.5);
+    expect(reach(21)).toBeGreaterThanOrEqual(reach(20) * 1.2);
   });
 
-  it("reaches the total the two reference players were solved against", () => {
-    // A committed player earns about 21,900 a year, so ~69,000 in three years
-    // plus the 3,740 of one-off awards. If this number moves, the claims in
-    // XP_DESIGN.md about what a month and a year reach are no longer true and
-    // have to be recomputed rather than left standing.
-    expect(xpForLevel(XP_LEVELS)).toBe(68155);
+  it("keeps steepening, so the last stretch is a climb and not more of the same", () => {
+    // A rising rate, asserted as one: the growth from level 99 to 100 is more
+    // than twice the growth from 12 to 13, and the last ten levels cost more
+    // than two-fifths of the whole ladder.
+    const growth = (level: number) => XP_LEVEL_COST[level - 2] / XP_LEVEL_COST[level - 3] - 1;
+    expect(growth(100)).toBeGreaterThan(growth(13) * 2);
+    expect(xpForLevel(100) - xpForLevel(90)).toBeGreaterThan(xpForLevel(100) * 0.4);
+  });
+
+  it("lets the first ten levels come quickly", () => {
+    // Under one percent of the ladder. A new member should feel the first
+    // few rungs in an afternoon and reach ten inside a fortnight of play.
+    expect(xpForLevel(10)).toBeLessThan(xpForLevel(XP_LEVELS) * 0.01);
+    expect(xpForLevel(10)).toBe(2250);
+  });
+
+  it("reaches Level 100 at exactly 999,999 XP, and Level 100 is the last rung", () => {
+    // John: "you need 999,999 to get to the top level". `XP_LEVEL_COST` holds the
+    // price of EACH rung; `xpForLevel` is the running total, and it is the running
+    // total that must be his number. If this moves, the climb table in
+    // XP_DESIGN.md is no longer true and has to be recomputed.
+    expect(XP_LEVELS).toBe(100);
+    expect(xpForLevel(100)).toBe(999_999);
+    expect(xpLevelFor(999_999)).toBe(100);
+    expect(xpLevelFor(999_998)).toBe(99);
+    // No level 101: more XP stands on the same top rung, and the price of a rung
+    // past the top is the top.
+    expect(xpLevelFor(5_000_000)).toBe(100);
+    expect(xpForLevel(101)).toBe(999_999);
   });
 });
 
@@ -129,8 +170,9 @@ describe("whether an award moved somebody's level", () => {
   });
 
   it("reports one crossing when a big award carries somebody through several levels", () => {
-    // everyVariantPlayed is 500 XP, which is four early levels at once. The
-    // caller is told where they arrived, and `from` lets it name every rung.
+    // A first game ever, a first game of a variant and a new family come to
+    // 450 on one finish, which is several early levels at once. The caller is
+    // told where they arrived, and `from` lets it name every rung.
     const crossed = levelCrossed(0, 500);
     expect(crossed).not.toBeNull();
     expect(crossed?.from).toBe(1);

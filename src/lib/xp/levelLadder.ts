@@ -18,7 +18,7 @@ import { XP_LEVELS, xpForLevel } from "./xpCurve";
  *
  * `XP_LEVEL_COST[level - 2]` is the cost of climbing from `level - 1`, and that
  * off-by-two is exactly the kind of index nobody gets right twice: the array is
- * "cost of reaching each level, level 1 first" while `xpForLevel(1)` is 0, so the
+ * one entry per level-up, ninety-nine of them, while `xpForLevel(1)` is 0, so the
  * first entry is the price of level TWO. Subtracting two cumulative totals says
  * the same thing with no index in it at all, and it is right at both ends
  * without a special case — level 1 costs nothing because nobody climbed to it,
@@ -62,7 +62,7 @@ export const LEVEL_MILESTONES: readonly number[] = [10, 25, 50, 75, 100];
  * rather than two calls to `xpForLevel` at the call site. `xpForLevel` CLAMPS its
  * argument to the top of the ladder, so `xpForLevel(101)` answers
  * `xpForLevel(100)` — a perfectly valid number that, used as a ceiling, would
- * make level 100's range `[68155, 68155)` and empty. Every member at the top of
+ * make level 100's range `[999999, 999999)` and empty. Every member at the top of
  * the ladder would vanish from their own level's page, with nothing failing and
  * the page looking complete.
  *
@@ -99,7 +99,7 @@ export function ladderRung(level: number): LadderRung | null {
  * The whole ladder, level 1 first.
  *
  * Built rather than stored, so it cannot drift from the two files it is made of.
- * It is a hundred objects over a hundred-element array in memory and the page
+ * It is a hundred objects over a ninety-nine-rung table in memory and the page
  * that draws it is server-rendered, so this is not a cost worth caching — and a
  * cached copy of a table meant to be retuned is the fault `xpCurve.ts` refuses
  * for the level itself.
