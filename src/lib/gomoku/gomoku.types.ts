@@ -116,6 +116,12 @@ export type Move = Point & {
    * entered its ending, and a man becoming a king changes which ending it is.
    */
   crowned?: boolean;
+  /**
+   * On a pass: whether it was forced — the colour had nothing it could play —
+   * rather than chosen, as a pass in Go is. Set by `passTurn` when the pass is
+   * made, so a replay of the record sets it again; never stored.
+   */
+  forced?: boolean;
   /** The ko point in force just before this move, so undo can put it back. Go only. */
   koPointBefore?: Point | null;
 };

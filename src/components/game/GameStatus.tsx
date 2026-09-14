@@ -6,6 +6,8 @@ import {
 } from "@/lib/gomoku/analysis.constants";
 import { couldNotFinish } from "@/lib/gomoku/rules/noProgress";
 import { endingRanOut, repeatedTooOften } from "@/lib/gomoku/rules/checkersDraws";
+import { endedWithNoMoves } from "@/lib/gomoku/rules/forcedPass";
+import { passedTurnWords } from "./passedTurn";
 import {
   campSize,
   discCount,
@@ -57,6 +59,8 @@ function ToPlay({ session }: { session: GameSession }) {
      */
     const why = couldNotFinish(state)
       ? GAME_COPY.drawUnfinishable
+      : endedWithNoMoves(state)
+        ? GAME_COPY.drawNoMoves
       : repeatedTooOften(state)
         ? GAME_COPY.drawByRepetition
         : endingRanOut(state)
@@ -116,6 +120,12 @@ function ToPlay({ session }: { session: GameSession }) {
         <span className="ml-2 text-sm font-normal text-muted">
           {label} {kanji}
         </span>
+        {/* Two people at one screen, or one against the computer: whose turn passed, by colour. */}
+        {passedTurnWords(state, null) !== null ? (
+          <span className="block text-sm font-normal" data-testid="turn-passed">
+            {passedTurnWords(state, null)}
+          </span>
+        ) : null}
       </span>
     </p>
   );
@@ -229,7 +239,7 @@ function VariantLine({ session }: { session: GameSession }) {
     if (session.hand.piece !== null) {
       lines.push(
         session.hand.mustPass
-          ? GAME_COPY.mustPass
+          ? GAME_COPY.noMoveLeft
           : session.hand.layingSingle
             ? GAME_COPY.singlePrompt
             : GAME_COPY.piecePrompt,

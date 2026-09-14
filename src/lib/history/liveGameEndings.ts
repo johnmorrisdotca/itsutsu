@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 
 import { forfeitOnRecord, resign, winOnTime } from "@/lib/gomoku/engine";
+import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
 import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import { fetchTimeOff, timeOffGraceMs } from "@/lib/social/vacation";
 import { prisma } from "@/lib/prisma";
@@ -130,7 +131,8 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
   const forfeits = (absent === STONES.black ? row.blackForfeits : row.whiteForfeits) + 1;
   // Out of time for the whole game is out of time: the budget cannot forfeit a turn and go on.
   const strict = row.timeoutPenalty !== "turn" || row.clockMode === "game" || forfeits >= FORFEITS_TO_LOSE;
-  const next = strict ? winOnTime(state, absent) : forfeitOnRecord(state);
+  // A lost turn can leave the claimant with nothing to play too: the passes it owes are written with it.
+  const next = strict ? winOnTime(state, absent) : passesOwed(forfeitOnRecord(state));
   if (next === state) return { ok: false, reason: "finished" };
   const finished = next.status !== GAME_STATUS.playing;
 
@@ -142,13 +144,16 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
      * pass either way, which in any game with no pass to offer is a move the
      * replay refuses: the record stopped a turn short of the game, and the
      * other side's next move collided with the row the claim had written.
+     *
+     * The missed turn first, then any pass it left owed, each its own row.
      */
-    const missed = next.moves[next.moves.length - 1];
-    writes.push(
-      prisma.move.create({
-        data: { gameId: id, number: next.moves.length, row: -1, col: -1, stone: absent, kind: missed.kind },
-      }),
-    );
+    next.moves.slice(state.moves.length).forEach((missed, at) => {
+      writes.push(
+        prisma.move.create({
+          data: { gameId: id, number: state.moves.length + at + 1, row: -1, col: -1, stone: missed.stone, kind: missed.kind },
+        }),
+      );
+    });
   }
   writes.push(
     prisma.game.update({

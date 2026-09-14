@@ -16,6 +16,7 @@ import { awardAnsweredChallenge } from "@/lib/xp/xpSocial";
 import type { MoveOutcome, MoveRequest } from "./liveGame.types";
 import { nextDeadline } from "./deadline";
 import { settledTurn } from "./settledTurn";
+import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
 import { GAME_ROW, isHotSeat, replay, stoneForToken } from "./liveGameRow";
 import { isOffered } from "./offers";
 
@@ -144,6 +145,24 @@ export async function appendMove(
       },
     });
   }
+  /*
+   * THE PASSES THIS MOVE LEAVES OWED, written with it.
+   *
+   * A move can leave the other side with nothing it may play — no place its
+   * piece fits, every point forbidden to it. That side used to be sent a "your
+   * move" for a turn with nothing in it, and the game waited for a click on
+   * Pass or for the clock. Now the pass is recorded here, in the same
+   * transaction, as the row it always was; and if the mover is then stuck too,
+   * the second pass ends the game. Nobody with a move is ever passed, and Go's
+   * pass, a choice, is never owed. See `rules/forcedPass.ts`.
+   */
+  const moved = next;
+  next = passesOwed(moved);
+  const passes = next.moves.slice(moved.moves.length).map((pass, at) =>
+    prisma.move.create({
+      data: { gameId: id, number: moved.moves.length + at + 1, row: -1, col: -1, stone: pass.stone, kind: MOVE_KINDS.pass },
+    }),
+  );
   const finished = next.status !== GAME_STATUS.playing;
   const now = new Date();
   const clock = spendClock(row, stone, now);
@@ -156,6 +175,7 @@ export async function appendMove(
        * the loser is told to reload rather than silently overwriting.
        */
       write,
+      ...passes,
       prisma.game.update({
         where: { id },
         data: {
@@ -214,6 +234,7 @@ export async function appendMove(
     // To the people seated only: never a program, a typed name or a board at one screen. See `gameNotices.ts`.
     await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
   } else if (next.toPlay !== stone) {
+    // Never to a side whose turn passed itself: when the pass came back to the mover, nobody is sent anything.
     await noticeYourTurn({ ...row, hotSeat: isHotSeat(row) }, id, next.toPlay);
   }
 

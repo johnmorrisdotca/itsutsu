@@ -4,6 +4,9 @@ import { discCount } from "@/lib/gomoku/engine";
 import { STONE_DISPLAY, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { replayGame } from "@/lib/gomoku/replay";
+import { endedWithNoMoves } from "@/lib/gomoku/rules/forcedPass";
+import { GAME_COPY } from "@/components/game/game.constants";
+import { passedTurnWords } from "@/components/game/passedTurn";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 
@@ -49,7 +52,9 @@ export function TurnBanner({
     return (
       <p className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${TONE_CLASS.great}`} data-testid="turn-banner">
         {won === null
-          ? "Draw. The board is full."
+          ? endedWithNoMoves(state)
+            ? GAME_COPY.drawNoMoves
+            : "Draw. The board is full."
           : state.winBy === WIN_REASONS.resign
             ? `${STONE_DISPLAY[won].label} wins by resignation.`
             : state.winBy === null
@@ -151,6 +156,12 @@ export function TurnBanner({
       {yourTurn
         ? `Your move — you are ${STONE_DISPLAY[seat].label}.`
         : `Waiting for ${STONE_DISPLAY[state.toPlay].label}…`}
+      {/* A turn that passed itself is said on both boards, so neither player is left wondering where it went. */}
+      {passedTurnWords(state, seat) !== null ? (
+        <span className="block text-xs font-normal" data-testid="turn-passed">
+          {passedTurnWords(state, seat)}
+        </span>
+      ) : null}
     </p>
   );
 }
