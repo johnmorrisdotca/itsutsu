@@ -71,7 +71,7 @@ describe("appliedNarrowings", () => {
     const [chip] = appliedNarrowings({ ...NONE, player });
     expect(chip).toEqual({
       key: "player",
-      label: "Hanako Morris's games",
+      label: "Hanako M.'s games",
       href: "/players/member-id-1",
     });
   });
@@ -139,10 +139,23 @@ describe("appliedNarrowings", () => {
   it("clears member, not player, when the player arrived by id", () => {
     const byId = { name: "Hanako Morris", memberId: "m-1", removable: true, via: "member" as const };
     expect(appliedNarrowings({ ...NONE, player: byId })).toEqual([
-      { key: "player", label: "Hanako Morris's games", clears: "member" },
+      { key: "player", label: "Hanako M.'s games", clears: "member" },
     ]);
     const byName = { name: "Alice", memberId: null, removable: true };
     expect(appliedNarrowings({ ...NONE, player: byName })[0].clears).toBeUndefined();
+  });
+
+  /*
+   * THE CHIP PRINTS A NAME THE WAY EVERY LIST DOES. The rows under it read
+   * "Hanako M." by the 0.133.0 rule, so a chip reading "Hanako Morris's games"
+   * put the whole name on display in the one place the page says who it is
+   * about. It asks `shownName`, so a program keeps its whole name here too.
+   */
+  it("labels a player by first name and initial, as every list shows them", () => {
+    const person = { name: "Hanako Morris", memberId: "m-1", removable: true };
+    expect(appliedNarrowings({ ...NONE, player: person })[0].label).toBe("Hanako M.'s games");
+    const single = { name: "Alice", memberId: null, removable: true };
+    expect(appliedNarrowings({ ...NONE, player: single })[0].label).toBe("Alice's games");
   });
 
   it("orders chips player, outcome, pool, rated, verdict", () => {

@@ -1,4 +1,5 @@
 import { playerPath } from "@/lib/rating/playerKey";
+import { shownName } from "@/lib/rating/shownName";
 import {
   GAME_POOL_DISPLAY,
   GAME_RATED_DISPLAY,
@@ -76,7 +77,15 @@ export function appliedNarrowings(input: {
       ? null
       : {
           key: "player",
-          label: `${player.name}'s games`,
+          /*
+           * THE NAME AS EVERY LIST PRINTS IT, not as the record keeps it. A row
+           * reads "Hanako M." by the 0.133.0 rule, and the chip over the same
+           * record used to read "Hanako Morris's games" — the one place on the
+           * page that put the whole name on display. `shownName` is the rule,
+           * so the chip asks it rather than spelling it out a second time; the
+           * full name still narrows the query, which is not what is shown.
+           */
+          label: `${shownName(player.name)}'s games`,
           href: player.removable ? undefined : playerPath(player.name, player.memberId),
           ...(player.via === "member" ? { clears: "member" } : {}),
         },
