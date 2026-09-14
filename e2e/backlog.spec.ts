@@ -201,12 +201,15 @@ test.describe("backlog", () => {
   /*
    * A PATCH that names nothing the board writes used to be answered 200.
    *
-   * `releasedIn` is in the route's schema for the release tool's own branch,
-   * and `changeItem` has never written it — so a body of that field alone
-   * passed every rule that had an opinion, composed an empty update, and came
-   * back as a change that had happened. The unit tests pin the route's answer
-   * with the store mocked; this drives the real address against the real
-   * table, which is the only thing that can say the row was left alone.
+   * `releasedIn` alone used to be the example: it was in the route's schema
+   * for the release tool's own branch and `changeItem` never wrote it, so a
+   * body of that field alone passed every rule that had an opinion, composed
+   * an empty update, and came back as a change that had happened. It is a
+   * door of its own now — a release stamp for a row already done — so the
+   * example here is an invented field, and the stamp gets its own case
+   * below. The unit tests pin the route's answer with the store mocked; this
+   * drives the real address against the real table, which is the only thing
+   * that can say the row was left alone.
    */
   test("the API refuses a body it could write nothing from, and leaves the row as it was", async ({ request }) => {
     const title = newTitle("A request an empty PATCH must not touch");
@@ -216,7 +219,7 @@ test.describe("backlog", () => {
     expect(added.status()).toBe(201);
     const item = (await added.json()) as { id: string; movedAt: string };
 
-    const nothing = await request.patch(`/api/backlog/${item.id}`, { data: { releasedIn: "9.9.9" } });
+    const nothing = await request.patch(`/api/backlog/${item.id}`, { data: { nonsense: true } });
     expect(nothing.status()).toBe(422);
     // The refusal names what a change may carry, rather than only saying no.
     const refusal = (await nothing.json()) as { error: string };
@@ -224,9 +227,8 @@ test.describe("backlog", () => {
       expect(refusal.error).toContain(field);
     }
 
-    // One accepted field beside it still lands, and the release stamp is
-    // still nobody's to set but the release tool's.
-    const mixed = await request.patch(`/api/backlog/${item.id}`, { data: { priority: "low", releasedIn: "9.9.9" } });
+    // One accepted field beside an invented one still lands.
+    const mixed = await request.patch(`/api/backlog/${item.id}`, { data: { priority: "low", nonsense: true } });
     expect(mixed.status()).toBe(200);
 
     const board = await request.get("/api/backlog");
@@ -237,6 +239,40 @@ test.describe("backlog", () => {
     expect(row!.priority).toBe("low");
     expect(row!.releasedIn).toBeNull();
     // A grade is not movement, so nothing above moved the row either.
+    expect(row!.movedAt).toBe(item.movedAt);
+  });
+
+  /*
+   * The release stamp, against the real table. A row this spec makes is open
+   * and can never be done here — done is the release tool's — so what this
+   * can drive is every refusal the door gives an open row: the stamp is
+   * refused as not done, a stamp beside a grade is refused whole, and in
+   * both cases the row reads exactly as it did. The happy path — a done,
+   * unstamped row taking a version the changelog names — is pinned in
+   * backlogStore.test.ts and exercised end to end by `pnpm task stamp`
+   * against a scratch board; see released-in-backfill.md.
+   */
+  test("a release stamp on a row that is not done is refused, and leaves the row as it was", async ({ request }) => {
+    const title = newTitle("A request a stamp must not touch");
+    const added = await request.post("/api/backlog", {
+      data: { title, detail: "A stamp is for done rows only.", kind: "fix", askedBy: "Playwright" },
+    });
+    expect(added.status()).toBe(201);
+    const item = (await added.json()) as { id: string; movedAt: string };
+
+    const notDone = await request.patch(`/api/backlog/${item.id}`, { data: { releasedIn: "0.61.0" } });
+    expect(notDone.status()).toBe(422);
+    expect(((await notDone.json()) as { error: string }).error).toContain("Only a done row");
+
+    const beside = await request.patch(`/api/backlog/${item.id}`, { data: { priority: "low", releasedIn: "0.61.0" } });
+    expect(beside.status()).toBe(422);
+
+    const board = await request.get("/api/backlog");
+    const { items } = (await board.json()) as { items: Array<{ id: string; priority: string | null; releasedIn: string | null; movedAt: string }> };
+    const row = items.find((each) => each.id === item.id);
+    expect(row).toBeDefined();
+    expect(row!.releasedIn).toBeNull();
+    expect(row!.priority).toBeNull();
     expect(row!.movedAt).toBe(item.movedAt);
   });
 

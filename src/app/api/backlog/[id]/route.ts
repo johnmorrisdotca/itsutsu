@@ -8,10 +8,11 @@ import {
   BACKLOG_PRIORITY_VALUES,
   BACKLOG_STATUS_VALUES,
   changeProblems,
+  changedFields,
 } from "@/lib/backlog/backlog";
 import { BACKLOG_STATUSES, CLAIMED_BY_MAX } from "@/lib/backlog/backlog.constants";
 import { boardActor } from "@/lib/backlog/boardActor";
-import { changeItem, finishItem } from "@/lib/backlog/backlogStore";
+import { changeItem, finishItem, stampRelease } from "@/lib/backlog/backlogStore";
 import type { BacklogChange } from "@/lib/backlog/backlog.types";
 import { overLimit } from "@/lib/api/rateLimit";
 
@@ -53,12 +54,16 @@ const SEMVER = /^\d+\.\d+\.\d+$/;
  * a claim is written by the store from the actor this route already knows —
  * see `changeItem` and BOARD_RULES.md invariant 2.
  *
- * `releasedIn`/`releasedAt` are here for exactly one caller: `pnpm
- * release:take`, sending `status: "done"` with the version it just took and
- * the instant it took it. Nothing else may send `done` at all — see the PATCH
+ * `releasedIn`/`releasedAt` are here for exactly two callers. `pnpm
+ * release:take` sends `status: "done"` with the version it just took and the
+ * instant it took it; nothing else may send `done` at all — see the PATCH
  * handler below, which checks the actor and the two fields before `status`
  * ever reaches `changeItem`, where `done` is simply not a destination
- * `STATUS_MOVES` names (board convergence ITS-04).
+ * `STATUS_MOVES` names (board convergence ITS-04). And a release STAMP sends
+ * `releasedIn` (with `releasedAt` if it is known) and no status at all, for
+ * a row that is already done and says nothing about which release carried
+ * it — the 109 closed by hand before the release tool existed. That goes to
+ * `stampRelease`, which moves nothing; see the handler.
  */
 const patchSchema = z
   .object({
@@ -115,6 +120,45 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/backlog/[i
 
     const { id } = await ctx.params;
     const actor = who.name.trim().slice(0, CLAIMED_BY_MAX) || "operator";
+
+    /*
+     * A release stamp: `releasedIn`, `releasedAt` if known, and nothing else.
+     *
+     * Its own door rather than a field a change may carry, because it is
+     * not a change to the row's standing — `stampRelease` writes the two
+     * release columns onto a row that is already done and touches nothing
+     * else, so a done row still does not move. Open to the operator's
+     * session and to the board token alike: unlike `done`, it takes no
+     * version only the release tool could know, only one the changelog
+     * already names, and the store refuses any other.
+     *
+     * It travels alone. A body carrying a stamp AND a grade or a move is
+     * refused whole rather than half-applied — the alternative was what this
+     * route used to do with `releasedIn`, which was drop it without a word.
+     */
+    const { releasedIn, releasedAt, status } = parsed.data;
+    if (status === undefined && (releasedIn !== undefined || releasedAt !== undefined)) {
+      const change = parsed.data as BacklogChange;
+      if (changedFields(change).length > 0) {
+        return unprocessable("A release stamp travels on its own: send releasedIn, and releasedAt if it is known, with nothing else.");
+      }
+      if (releasedIn === undefined) {
+        return unprocessable("A release stamp needs releasedIn: the version that carried this row.");
+      }
+      if (!SEMVER.test(releasedIn)) {
+        return unprocessable("releasedIn must be a version like 1.2.3.");
+      }
+      const at = releasedAt === undefined ? null : new Date(releasedAt);
+      if (at !== null && Number.isNaN(at.getTime())) return badRequest("releasedAt must be a valid date.");
+
+      const stamped = await stampRelease(id, { version: releasedIn, at });
+      if (!stamped.ok) {
+        if (stamped.reason === "missing") return notFound("No such item.");
+        if (stamped.reason === "held") return conflict(`Held by ${stamped.heldBy}. Ask them to release it.`);
+        return unprocessable(stamped.problems[0], stamped.problems);
+      }
+      return NextResponse.json(stamped.item, { headers: NO_STORE });
+    }
 
     /*
      * `done` is the release tool's alone (BOARD_RULES.md invariant 9). Every

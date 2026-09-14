@@ -12,10 +12,13 @@ import {
   moveWhere,
   normalizeDraft,
   revisedDraft,
+  stampProblems,
+  stampWhere,
   statusFrom,
 } from "./backlog";
 import { BACKLOG_STATUSES } from "./backlog.constants";
 import { BACKLOG_SEED } from "./backlog.seed.data";
+import { readReleases } from "./releasesFile";
 import type {
   BacklogChange,
   BacklogDraft,
@@ -384,6 +387,67 @@ export async function finishItem(
       reason: "illegal",
       problems: [`This row is "${fresh.status}" now, not "${current.status}" — read it again and try the move from there.`],
     };
+  }
+
+  const row = await prisma.backlogItem.findUniqueOrThrow({ where: { id }, select: SELECT });
+  return { ok: true, item: toItem(row) };
+}
+
+/**
+ * Stamps the release that carried a row onto a row that is already done and
+ * carries none. The door the backfill needed and did not have — see
+ * docs/plans/board-convergence/released-in-backfill.md, which measured that
+ * `finishItem` refuses a done row and `changeItem` never wrote the field.
+ *
+ * NOT A MOVE. It writes `releasedIn` and `releasedAt` and nothing else: no
+ * status, no `movedAt`, no claim. A done row still does not move
+ * (BOARD_RULES.md invariant 1) and done is still reached by the release tool
+ * alone (invariant 9); this only lets a row that is already there say which
+ * release it was. The rules are `stampProblems`, asked here so an in-process
+ * caller is refused the same way the route refuses — a row that is not done,
+ * a row already stamped, a version the changelog does not name.
+ *
+ * No actor, and that is deliberate rather than an omission. Every MOVE has
+ * one because a move can write a claim (invariant 5); a stamp reads no hold
+ * and writes none, so there is nothing here for a name to go into. The route
+ * still admits nobody anonymous — `boardActor` decides who may knock — the
+ * store simply has no column to record who did.
+ *
+ * `at` may be null. The backfill knows the instant a version was bumped and
+ * passes it; a person stamping an old release from the CLI does not, and
+ * the row's own wording already tells "shipped in" from "marked done in" by
+ * whether `releasedAt` is set. An instant nobody measured is not invented.
+ *
+ * Conditional like every other write that decides something: two stamps for
+ * one row write once, and the second is told the row is already stamped.
+ */
+export async function stampRelease(
+  id: string,
+  release: { version: string; at: Date | null },
+): Promise<MoveOutcome> {
+  const current = await prisma.backlogItem.findUnique({ where: { id }, select: SELECT });
+  if (current === null) return { ok: false, reason: "missing" };
+  const item = toItem(current);
+
+  /*
+   * The record of what shipped, read at the moment of asking. A changelog
+   * that cannot be read comes back empty, and every version is then refused
+   * as unknown — the safe direction: a stamp not written can be written
+   * later, and one written on a guess cannot be taken back.
+   */
+  const released = (await readReleases()).map((one) => one.version);
+  const problems = stampProblems(item, release.version, released);
+  if (problems.length > 0) return { ok: false, reason: "illegal", problems };
+
+  const stamped = await prisma.backlogItem.updateMany({
+    where: stampWhere(id, current.status as BacklogStatus),
+    data: { releasedIn: release.version, releasedAt: release.at },
+  });
+
+  if (stamped.count === 0) {
+    const fresh = await prisma.backlogItem.findUnique({ where: { id }, select: { status: true, releasedIn: true } });
+    if (fresh === null) return { ok: false, reason: "missing" };
+    return { ok: false, reason: "illegal", problems: stampProblems({ status: statusFrom(fresh.status), releasedIn: fresh.releasedIn }, release.version, released) };
   }
 
   const row = await prisma.backlogItem.findUniqueOrThrow({ where: { id }, select: SELECT });

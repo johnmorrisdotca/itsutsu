@@ -28,43 +28,24 @@
  * /api/backlog/:id` with the board token, exactly as `scripts/release-take.ts`
  * does for a row it closes.
  *
- * ═══════════════════════════════════════════════════════════════════════════
- * THERE IS NO DOOR FOR THIS YET, AND THIS SCRIPT PROVES IT RATHER THAN
- * ASSUMING IT.
+ * THE DOOR. `PATCH /api/backlog/:id` with `releasedIn`/`releasedAt` and no
+ * `status` is a release stamp: `stampRelease` in `backlogStore.ts` writes the
+ * two release columns onto a row that is already done and unstamped, and
+ * nothing else — no status, no `movedAt`, no claim. The API refuses a row
+ * that is not done, a row already stamped, and a version CHANGELOG.md does
+ * not name, each as a 4xx with its reason. Before that door existed this
+ * script was a report and said so: the same PATCH used to be answered 200
+ * with nothing written, and a backfill that trusted the 200 would have
+ * reported every row stamped and stamped none. `--run` still re-reads every
+ * row it writes and stops on the first that did not take, because a 200 is
+ * cheaper to check than to believe.
  *
- * `finishItem` is the only thing that has ever written `releasedIn`, and it
- * refuses a row that is not `inProgress` — which every row here is not, being
- * done already. `changeItem` takes no such field: `PATCH` with `releasedIn`
- * and no `status` falls through to it, `releasedIn` lands in the `...edit`
- * rest, `editProblems` has no opinion on it, and the write it composes is
- * `{ ...textData, ...gradeData }` — both empty. **So the API answers 200 and
- * changes nothing.** A backfill written to trust that 200 would report every
- * row stamped and stamp none, which is the worst of the shapes AGENTS.md
- * names: a gate answering a question it cannot answer.
- *
- * So `--run` re-reads every row it wrote and compares. The first row that
- * comes back unstamped after a 200 stops the whole run, because that is the
- * API telling us the door is not there yet — and one row quietly not written
- * is indistinguishable from all of them.
- *
- * The addition that opens it, for whoever takes that decision (it is a change
- * to the board's contract, so it wants the operator's word, not a script's):
- *
- *   1. `src/lib/backlog/backlogStore.ts` — a `stampRelease(id, release, actor)`
- *      beside `finishItem`, writing `releasedIn`/`releasedAt` and NOTHING else
- *      on a row that is already `done` and unstamped. Not a move: no `status`,
- *      no `movedAt`, no claim. BOARD_RULES.md invariant 1 ("a done row does not
- *      move") and 9 ("the release tool writes `done`") both hold — this moves
- *      nothing and grants no new way to REACH done. Refuse a row that is not
- *      done, and refuse one already stamped, so it can never rewrite a release
- *      that has been stated.
- *   2. `src/app/api/backlog/[id]/route.ts` — before the `status === done`
- *      branch, route a body carrying `releasedIn`/`releasedAt` and NO `status`
- *      to `stampRelease`, token actors only (`who.via !== "token"` → 422), with
- *      the same `SEMVER` and date checks the done branch already makes.
- *
- * Until that lands this script is a report, and says so.
- * ═══════════════════════════════════════════════════════════════════════════
+ * A WRITE IS ASKED FOR TWICE, the way `bots:play` is. `--run` says write, and
+ * BOARD_URL set in the environment says where: the default board is the live
+ * site, which is fine for a report and not for a write, so `--run` with no
+ * BOARD_URL named refuses rather than assuming production was meant. It
+ * prints the board and how many done rows it holds before writing anything;
+ * read that line — production and a scratch board are not close in size.
  */
 import { readFileSync } from "node:fs";
 
@@ -122,7 +103,7 @@ async function stamp(row: BoardRow, mapping: Mapping): Promise<{ ok: true } | { 
   if (after.releasedIn !== mapping.releasedIn) {
     return {
       ok: false,
-      why: `the API answered ${response.status} and the row still reads releasedIn=${after.releasedIn === null ? "null" : `"${after.releasedIn}"`}. This is the missing door described at the top of this file, not a bad mapping: PATCH accepts releasedIn without a status, validates nothing, writes nothing, and reports success`,
+      why: `the API answered ${response.status} and the row still reads releasedIn=${after.releasedIn === null ? "null" : `"${after.releasedIn}"`}. A 200 that stamped nothing: the board this was sent to does not have the stamp door`,
     };
   }
   return { ok: true };
@@ -162,6 +143,15 @@ async function main(): Promise<void> {
     console.error("--board rehearses against a file and --run writes to a board; they cannot both be meant. Drop one.");
     process.exit(1);
   }
+  /*
+   * A write is asked for twice: `--run`, and the board named by hand. Refused
+   * here, before a single request is made, so a `--run` that forgot the board
+   * never so much as reads the default one.
+   */
+  if (run && process.env.BOARD_URL === undefined) {
+    console.error("--run writes to a board, so name it: BOARD_URL=<the board> pnpm board:released-in --run. Nothing was read or written.");
+    process.exit(1);
+  }
 
   const plan = JSON.parse(readFileSync(PLAN_PATH, "utf8")) as { mapped: Mapping[]; generatedAt?: string };
   const certain = plan.mapped.filter((mapping) => mapping.confidence === "certain");
@@ -190,7 +180,7 @@ async function main(): Promise<void> {
   console.log(`\n${toStamp.length} row(s) would be stamped; ${verdicts.length - toStamp.length} skipped.`);
 
   if (!run) {
-    console.log("\nReport only — nothing was written. Pass --run to apply.");
+    console.log("\nReport only — nothing was written. Pass --run, with BOARD_URL named, to apply.");
     return;
   }
   if (toStamp.length === 0) {

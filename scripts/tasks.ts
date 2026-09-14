@@ -9,6 +9,14 @@
  *   pnpm task reopen <key> --by "<who>"    dropped -> open
  *   pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none
  *   pnpm task edit <key> [--title "…"] [--detail "…"]   the text, through the API's own door
+ *   pnpm task stamp <key> --release 0.x.y [--at <ISO>] --by "<who>"
+ *                                          the release onto a done row that has none
+ *
+ * `stamp` is for the rows closed before `pnpm release:take` existed to close
+ * them: it writes releasedIn (and releasedAt, if you know the instant) onto a
+ * row that is already done and unstamped, and the API refuses anything else —
+ * a row not done, a row already stamped, a version CHANGELOG.md does not name.
+ * It moves nothing. `done` itself is still not a destination this CLI offers.
  *
  * Reads BOARD_URL (default https://itsutsu.com), BOARD_TOKEN and BOARD_ACTOR
  * (overridden by --by) from the environment — `node --env-file=.env` loads
@@ -87,6 +95,7 @@ function usage(): never {
       '  pnpm task reopen <key> --by "<who>"',
       "  pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none",
       '  pnpm task edit <key> [--title "…"] [--detail "…"]',
+      '  pnpm task stamp <key> --release 0.x.y [--at <ISO>] --by "<who>"',
     ].join("\n"),
   );
   process.exit(2);
@@ -280,6 +289,16 @@ async function main(): Promise<void> {
       if (detail !== undefined) data.detail = detail;
       const item = await patchItem(key, actor, data);
       console.log(`${item.key} edited on ${BOARD_URL}`);
+      break;
+    }
+
+    case "stamp": {
+      const [key] = rest;
+      const release = flag("release", rest);
+      if (key === undefined || release === undefined) usage();
+      const at = flag("at", rest);
+      const item = await patchItem(key, actor, { releasedIn: release, ...(at === undefined ? {} : { releasedAt: at }) });
+      console.log(`${item.key} stamped ${item.releasedIn}${item.releasedAt === null ? "" : ` at ${item.releasedAt}`} on ${BOARD_URL}`);
       break;
     }
 
