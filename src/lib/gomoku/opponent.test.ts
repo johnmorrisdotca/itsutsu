@@ -254,6 +254,35 @@ describe("the race games are played towards the camp", () => {
     const state = playOut(RULE_VARIANTS.halma, BOT_TIERS.dan, BOT_TIERS.kyu, 1234);
     expect(state.status).toBe(GAME_STATUS.won);
   }, 30_000);
+
+  it("finishes a race between the gentlest grades in hundreds of plies, not a thousand", () => {
+    /*
+     * Found on production: 級 against разряд on a 16×16 Halma board ran to
+     * 1,023 moves. Measured in process, ten games of that pairing ran 888 to
+     * 1,581 plies and three were called off by the no-progress rule; разряд
+     * against itself was called off nine times in ten.
+     *
+     * It was the home weight in the race reading. Their noise is scaled to
+     * the spread of the candidates, and a home piece stepping back out of the
+     * camp was worth minus four hundred — so the spread was always about four
+     * hundred, the noise about two hundred either way, and the best step on
+     * the board, worth five, was a coin. See `EVAL_WEIGHTS.home`.
+     *
+     * The bound is a length a game of this size can honestly reach: the same
+     * pairings now run 346 to 735 plies, and before the fix the shortest game
+     * of the thirty was 888. These seeds were 1,183, 1,371 and 1,512 before.
+     */
+    for (const [black, white, seed] of [
+      [BOT_TIERS.kyu, BOT_TIERS.razryad, 1_000],
+      [BOT_TIERS.razryad, BOT_TIERS.kyu, 1_037],
+      [BOT_TIERS.razryad, BOT_TIERS.razryad, 1_037],
+    ] as [BotTier, BotTier, number][]) {
+      const state = playOut(RULE_VARIANTS.halma, black, white, seed);
+      const game = `${black} v ${white}, seed ${seed}`;
+      expect(state.status, `${game}: not won after ${state.moves.length} plies`).toBe(GAME_STATUS.won);
+      expect(state.moves.length, `${game}: a race this long is a random walk`).toBeLessThan(800);
+    }
+  }, 30_000);
 });
 
 describe("what every grade sees", () => {
