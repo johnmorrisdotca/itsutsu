@@ -218,10 +218,11 @@ gate and not a habit.
 **Before a page that lists games or players is done**, walk this list by eye —
 it is short, and every line on it has been missed at least once:
 
-- **Every game's name leads to that game**, through `GameName`. It goes to the
-  rules page, which is the game's own front door and carries the way on to the
-  record and the ladder. A name in a list is a reference to the game, not an
-  instruction to start one.
+- **Every game's name leads to that game**, through `GameName`. It goes to
+  the game's own page — the address `gamePath` in `slugs.ts` builds, and the
+  one place that builds it — which is the front door, with the rules, the
+  record and the ladder each one document under it. A name in a list is a
+  reference to the game, not an instruction to start one.
 - **Every count of games leads to those games**, through `GameCount`, filtered
   to exactly what was counted — that player, that game, how it went, and which
   ladder was counting.
@@ -261,9 +262,9 @@ the test with their reason written beside them, rather than a pattern loose
 enough to let a real one through.
 
 It earned its place the hour it was written: it found six more dead ends nobody
-had noticed, including the rules page itself — the destination every game name
-on this site now points at — which reached the board and Wikipedia and had no
-way to the record or the ladder.
+had noticed, including the rules page itself — where every game name on this
+site led at the time, before a game became one address — which reached the
+board and Wikipedia and had no way to the record or the ladder.
 
 ### Show The Data, Not The Way To It
 
