@@ -77,7 +77,7 @@ const MAY_NAME_A_FORFEIT_KIND = new Map([
 describe("the moves that have no point", () => {
   it("are both accounted for wherever a move's kind is asked about", () => {
     const forgotten = files
-      .filter(({ path, text }) => ASKS_FOR_A_PASS.test(text) && !ACCOUNTS_FOR_A_FORFEIT.test(text))
+      .filter(({ text }) => ASKS_FOR_A_PASS.test(text) && !ACCOUNTS_FOR_A_FORFEIT.test(text))
       .map(({ path }) => path)
       .filter((path) => !PASS_AND_ONLY_A_PASS.has(path));
     expect(forgotten, "these ask whether a move is a pass and say nothing of a forfeit").toEqual([]);
