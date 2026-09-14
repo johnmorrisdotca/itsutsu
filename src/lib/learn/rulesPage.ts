@@ -159,7 +159,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.wormholes > 0) board.push("Two squares, chosen at random when the game starts, are the mouths of a wormhole. Nothing can land on a mouth, and a line that reaches one continues from the other in the same direction.");
   if (spec.pieces !== null) board.push(`Each player has ${spec.pieces} pieces.`);
   if (spec.connects) {
-    board.push("A rhombus of hexagons, eleven a side by default. Black owns the top and bottom edges, marked dark; White owns the left and right, marked pale. The two corners between a dark edge and a pale one belong to both.");
+    board.push("A rhombus ruled as a triangular lattice, eleven points a side by default, with the stones on the crossings. Black owns the top and bottom edges, marked dark; White owns the left and right, marked pale. The two corners between a dark edge and a pale one belong to both.");
   }
   if (spec.camps) {
     board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
@@ -183,8 +183,8 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
 
   const play: string[] = [];
   if (spec.connects) {
-    play.push("Players take turns placing one stone on any empty cell. Nothing ever moves and nothing is ever taken.");
-    play.push("The board is a rhombus of hexagons, so a cell touches six others: the four beside it, and two of the corners — the ones along the board's own slant.");
+    play.push("Players take turns placing one stone on any empty point. Nothing ever moves and nothing is ever taken.");
+    play.push("Three families of lines cross at every point, so each one touches six others: two along its row, two along its slanted column, and two along the board's short diagonal.");
     play.push("The game ends the moment one colour's chain reaches from one of their sides to the other.");
   } else if (spec.camps) {
     play.push("A turn moves one piece. It may step to any neighbouring empty square, in any of the eight directions.");

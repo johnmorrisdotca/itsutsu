@@ -16,13 +16,13 @@ import {
 } from "@/lib/gomoku/gomoku.constants";
 import { columnLetter, pointName, rowNumber } from "@/lib/gomoku/notation";
 import type { Cell, GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
-import { BOARD_THEMES, LABEL_GUTTER, STONE_SETS } from "./Board.constants";
+import { BOARD_THEMES, LABEL_GUTTER, LATTICE_TRANSFORM, RHOMBUS_CLIP, STONE_SETS } from "./Board.constants";
 import { gridFor } from "./appearance";
 import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { Intersection } from "./Intersection";
-import { labelTracks, playingAreaInset } from "./margin";
+import { labelTracks, latticeLabelTracks, playingAreaInset } from "./margin";
 import { TwistControls } from "./TwistControls";
 import type { BoardMark, BoardProps, BoardThemeTokens } from "./board.types";
 
@@ -46,14 +46,16 @@ type LabelStripProps = {
   flipped: boolean;
   /** The board's rim, as a fraction of its width; zero on a board drawn on the lines. */
   inset: number;
+  /** A board on the hexagon lattice, whose rows and columns do not span the box. */
+  lattice: boolean;
 };
 
-function ColumnLabels({ size, theme, flipped, inset }: LabelStripProps) {
+function ColumnLabels({ size, theme, flipped, inset, lattice }: LabelStripProps) {
   return (
     <div
       className="grid text-center text-[0.65rem] font-medium select-none"
       style={{
-        gridTemplateColumns: labelTracks(size, inset),
+        gridTemplateColumns: lattice ? latticeLabelTracks(size, "columns") : labelTracks(size, inset),
         color: theme.coordinate,
       }}
       aria-hidden="true"
@@ -67,12 +69,12 @@ function ColumnLabels({ size, theme, flipped, inset }: LabelStripProps) {
   );
 }
 
-function RowLabels({ size, theme, flipped, inset }: LabelStripProps) {
+function RowLabels({ size, theme, flipped, inset, lattice }: LabelStripProps) {
   return (
     <div
       className="grid text-right text-[0.65rem] font-medium select-none"
       style={{
-        gridTemplateRows: labelTracks(size, inset),
+        gridTemplateRows: lattice ? latticeLabelTracks(size, "rows") : labelTracks(size, inset),
         color: theme.coordinate,
       }}
       aria-hidden="true"
@@ -109,9 +111,6 @@ function markByIndex(
  * The playing surface: coordinate gutters, the board with its lines, and one
  * button per intersection laid over them.
  */
-/** Half a cell per row, in degrees: the slant that turns a square grid into a hexagon lattice. */
-const SLANT = (Math.atan(0.5) * 180) / Math.PI;
-
 export function Board({
   state,
   appearance,
@@ -175,12 +174,13 @@ export function Board({
   ]);
   const twisting = live && onTwist !== undefined && canTwist(state) && spec.quadrantSize !== null;
   const dropping = spec.placement === PLACEMENTS.drop;
-  // A rhombus of hexagons, drawn as a slanted square grid: Hex's own board shape.
+  // A rhombus, ruled as a triangular lattice: Hex's own board shape.
   const rhombus = spec.connects;
   /*
-   * Any board on the same hex lattice needs the same skew to read as hexagons
-   * rather than a sheared square grid — Hex's rhombus and Chinese Checkers'
-   * star both stand on it, even though only Hex is actually a rhombus.
+   * Any board on the hexagon lattice takes the same shear — HEX_LATTICE in
+   * Board.constants.ts — or its six neighbours do not sit at one distance.
+   * Hex's rhombus and Chinese Checkers' star both stand on it, even though
+   * only Hex is actually a rhombus.
    */
   const hexSkew = spec.connects || spec.chineseCheckers;
   /*
@@ -228,12 +228,12 @@ export function Board({
     >
       <div />
       {appearance.showCoordinates ? (
-        <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} />
+        <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} />
       ) : (
         <div />
       )}
       {appearance.showCoordinates ? (
-        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} />
+        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} />
       ) : (
         <div />
       )}
@@ -244,8 +244,7 @@ export function Board({
           // A rhombus is the board here, not a square with one drawn on it, so
           // the paper is cut to the same shape the grid is slanted into.
           ...(rhombus
-            ? // A little wider than the rhombus itself, so a stone on an edge is not shaved.
-              { clipPath: "polygon(-2% 14%, 69% 14%, 102% 86%, 31% 86%)" }
+            ? { clipPath: RHOMBUS_CLIP }
             : { boxShadow: `0 0 0 0.4rem ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)` }),
         }}
       >
@@ -261,11 +260,14 @@ export function Board({
           */}
           <div className="absolute" style={{ inset: `${inset * 100}%` }}>
           {/*
-            * The connection game is played on a rhombus of hexagons. A hexagon
-            * lattice is a square grid with every row shifted half a cell, so
-            * that is exactly what this does — skew the grid, squeeze it back
-            * into the square the board already occupies, and undo both on each
-            * cell so the stones stay round.
+            * The connection game is played on a rhombus ruled as a triangular
+            * lattice, with the stones on the crossings. A hexagon lattice is a
+            * square grid with every row slid half a cell along and the rows
+            * packed closer, so that is exactly what this does — shear the
+            * grid, fit it back into the square the board already occupies,
+            * and undo the shear on each cell so the stones stay round. The
+            * lines take the same transform in BoardLines, which is what keeps
+            * a stone on its crossing.
             */}
           <BoardLines
             size={size}
@@ -280,7 +282,7 @@ export function Board({
             className="absolute inset-0 grid"
             style={{
               gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
-              ...(hexSkew ? { transform: `translateY(16.667%) skewX(${SLANT}deg) scale(${1 / 1.5})`, transformOrigin: "top left" } : {}),
+              ...(hexSkew ? { transform: LATTICE_TRANSFORM, transformOrigin: "top left" } : {}),
             }}
           >
             {layoutOrder(state.board.length, flipped).map((index) => {

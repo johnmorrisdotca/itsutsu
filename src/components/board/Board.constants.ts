@@ -161,6 +161,59 @@ export const LINE_WIDTH = 0.045;
 export const EDGE_LINE_WIDTH = 0.08;
 export const STAR_RADIUS = 0.11;
 
+/**
+ * The hexagon lattice, as a transform of the square grid every board here
+ * is laid out on: each row slid half a cell along and the rows packed to
+ * √3⁄2 of a cell, so every point has six neighbours at one distance — two
+ * beside it on its row, two on its slanted column, and two along the
+ * board's other diagonal. Hex's rhombus and Chinese Checkers' star both
+ * stand on it, and the engine's `NEIGHBOURS` in rules/hex.ts are exactly
+ * these six.
+ *
+ * Drawn as a lattice of LINES with the stones on the crossings, the way a
+ * wooden Hex board is ruled and a go board is: three families of parallel
+ * lines at 0°, 60° and 120°. Not honeycomb cells — John's decision when the
+ * row was filed. The rows and the slanted columns are the ordinary rules a
+ * board on the lines already gets, sheared; the third family is the one
+ * BoardLines adds for the rhombus.
+ *
+ * `slant` takes the grid to the lattice and `unslant` is its exact inverse,
+ * for what must stay round inside a cell. A grid comes out `width` times as
+ * wide as it was drawn and `height` as tall.
+ */
+export const HEX_LATTICE = {
+  slant: "skewX(30deg) scaleY(0.8660254)",
+  unslant: "scaleY(1.1547005) skewX(-30deg)",
+  /** Half a cell of shear per row of the grid. */
+  width: 1.5,
+  /** The rows packed to √3⁄2: cos 30°. */
+  height: Math.sqrt(3) / 2,
+} as const;
+
+/** Where the lattice's top edge lands, as a fraction of the square box it is drawn in, once fitted to that box's width and centred. */
+const LATTICE_TOP = (1 - HEX_LATTICE.height / HEX_LATTICE.width) / 2;
+
+/**
+ * The whole square box turned into the lattice: fitted to the box's width
+ * and centred in its height. The lines and the stones are two boxes kept
+ * exactly over each other, so both take this one string and nothing else.
+ */
+export const LATTICE_TRANSFORM = `translateY(${(LATTICE_TOP * 100).toFixed(4)}%) scale(${1 / HEX_LATTICE.width}) ${HEX_LATTICE.slant}`;
+
+/**
+ * The rhombus the lattice makes of a square box, cut a little wider than
+ * itself so a stone on an edge is not shaved: the paper of the connection
+ * game, since a rhombus is the board there rather than a square with one
+ * drawn on it.
+ */
+export const RHOMBUS_CLIP = (() => {
+  const top = LATTICE_TOP * 100;
+  const bottom = 100 - top;
+  const right = 100 / HEX_LATTICE.width;
+  const shear = right / 2;
+  return `polygon(-2% ${(top - 2.7).toFixed(2)}%, ${(right + 2).toFixed(2)}% ${(top - 2.7).toFixed(2)}%, 102% ${(bottom + 2.7).toFixed(2)}%, ${(shear - 2).toFixed(2)}% ${(bottom + 2.7).toFixed(2)}%)`;
+})();
+
 /** Width of the coordinate-label gutter along the top and left edges. */
 export const LABEL_GUTTER = "1.5rem";
 
