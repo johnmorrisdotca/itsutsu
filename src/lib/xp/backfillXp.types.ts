@@ -98,7 +98,7 @@ export type PlannedAward = { type: XpEventType; subject: string; points: number 
 export type BackfillReason =
   | { kind: "joined" }
   | { kind: "game"; gameId: string; variant: string }
-  /** A set completed by the game named. The tour's two, and the ladder's. */
+  /** A set completed by the game named. The tour's three, and the ladder's. */
   | { kind: "collected"; gameId: string };
 
 /**

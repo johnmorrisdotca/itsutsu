@@ -41,12 +41,16 @@ export type XpEventType =
   | "winStreak3"
   | "winStreak5"
   | "winStreak10"
+  | "upsetWin"
+  | "bigUpsetWin"
+  | "giantKilled"
   // The tour: thirty-nine games and eleven families.
   | "firstOfVariant"
   | "firstWinAtVariant"
   | "firstOfFamily"
   | "everyFamilyPlayed"
   | "everyVariantPlayed"
+  | "everyVariantWonInFamily"
   // The computer ladder.
   | "gradeBeaten"
   | "everyGradeBeaten"

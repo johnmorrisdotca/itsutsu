@@ -64,12 +64,16 @@ export const XP_SUBJECT_KIND_OF: Record<XpEventType, XpSubjectKind> = {
   winStreak3: XP_SUBJECT_KINDS.match,
   winStreak5: XP_SUBJECT_KINDS.match,
   winStreak10: XP_SUBJECT_KINDS.match,
+  upsetWin: XP_SUBJECT_KINDS.match,
+  bigUpsetWin: XP_SUBJECT_KINDS.match,
+  giantKilled: XP_SUBJECT_KINDS.match,
   // The tour.
   firstOfVariant: XP_SUBJECT_KINDS.game,
   firstWinAtVariant: XP_SUBJECT_KINDS.game,
   firstOfFamily: XP_SUBJECT_KINDS.family,
   everyFamilyPlayed: XP_SUBJECT_KINDS.nobody,
   everyVariantPlayed: XP_SUBJECT_KINDS.nobody,
+  everyVariantWonInFamily: XP_SUBJECT_KINDS.family,
   // The computer ladder. A tier IS a member here — see BOT_MEMBERS.
   gradeBeaten: XP_SUBJECT_KINDS.person,
   everyGradeBeaten: XP_SUBJECT_KINDS.nobody,
@@ -119,16 +123,21 @@ function asBot(value: string): { memberId: string; name: string } | null {
 }
 
 /**
- * A game in the family with this title, which is how a family is addressed.
+ * The family a subject names: by its KEY, which is what the awarder has written
+ * since `GAME_FAMILIES` gained keys (0.162.0), and by its title for any row
+ * written before that.
  *
- * `GAME_FAMILIES` is an array of anonymous objects identified by `title` and
- * `/games/<slug>/family` is reached through one of its games, so there is no
- * address for a family that holds no game we still have. Null for a family
- * whose title has changed since the award, which the design flags as the honest
- * cost of using a display string as an identity.
+ * Read by title alone, every `firstOfFamily` row — keyed "flips", not "Flips" —
+ * named no family and linked nowhere. `/games/<slug>/family` is reached through
+ * one of its games, so there is no address for a family that holds no game we
+ * still have, and null stays null for a subject naming neither.
  */
-function familyThrough(title: string): RuleVariant | null {
-  return GAME_FAMILIES.find((family) => family.title === title)?.games[0] ?? null;
+function familyNamed(subject: string): (typeof GAME_FAMILIES)[number] | null {
+  return (
+    GAME_FAMILIES.find((family) => family.key === subject) ??
+    GAME_FAMILIES.find((family) => family.title === subject) ??
+    null
+  );
 }
 
 /**
@@ -163,7 +172,8 @@ export function xpAboutFor(type: XpEventType, subject: string): XpAbout {
   }
 
   if (kind === XP_SUBJECT_KINDS.family) {
-    return { of: "family", title: subject, through: familyThrough(subject) };
+    const family = familyNamed(subject);
+    return { of: "family", title: family?.title ?? subject, through: family?.games[0] ?? null };
   }
 
   if (kind === XP_SUBJECT_KINDS.person) {
