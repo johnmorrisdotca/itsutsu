@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { makeMemberId } from "../src/lib/auth/memberId";
 import { xpForLevel } from "../src/lib/xp/xpCurve";
+import { standingData } from "./xpStanding";
 
 /**
  * MEMBERS WITH EXPERIENCE, MADE BY THE SPEC THAT ASSERTS ABOUT THEM.
@@ -85,9 +86,8 @@ export async function seedXpMember(
         name: whole,
         picture: "",
         invitedWith: "playwright",
-        xp,
-        // Both totals, as awardXp keeps them: a member who has imported nothing stands at the same place either way.
-        xpEverywhere: xp,
+        // All three totals, as the site keeps them — see `standingData`.
+        ...standingData({ here: xp }),
         xpLastAt: new Date(),
       },
     });
@@ -121,7 +121,7 @@ export async function seedProgram(label: string, level = 1): Promise<SeededXpMem
   const xp = xpForLevel(level);
   try {
     await prisma.member.create({
-      data: { email, id, name, picture: "", invitedWith: "playwright", botTier: "xp-spec-program", xp, xpEverywhere: xp, xpLastAt: new Date() },
+      data: { email, id, name, picture: "", invitedWith: "playwright", botTier: "xp-spec-program", ...standingData({ here: xp }), xpLastAt: new Date() },
     });
   } finally {
     await prisma.$disconnect();
@@ -156,9 +156,7 @@ export async function seedImportedMember(level: number, label: string): Promise<
         picture: "",
         invitedWith: "playwright",
         unclaimableBecause: "kept-record",
-        xp: 0,
-        xpImported: imported,
-        xpEverywhere: imported,
+        ...standingData({ here: 0, imported }),
       },
     });
   } finally {

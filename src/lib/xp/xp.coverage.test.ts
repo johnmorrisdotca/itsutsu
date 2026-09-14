@@ -22,6 +22,53 @@ import { RECORD_SCOPES } from "@/lib/rating/recordScope";
 
 import { IMPORTED_XP_TYPES, isImportedXpType } from "./importedXp.constants";
 import { XP_SCOPE_COLUMN } from "./xpScope";
+import { readdirSync } from "node:fs";
+import { join as joinPath } from "node:path";
+
+/**
+ * Files allowed to write a member's `xp` without `xpEverywhere`, each with its
+ * reason. Empty on purpose: every seed today goes through `standingData`.
+ */
+const XP_SEED_EXCEPTIONS: Record<string, string> = {};
+
+/** Every file that could seed a member: the browser suite, the scripts, and the play runners. */
+function* seedingFiles(): Generator<string> {
+  const walk = function* (dir: string): Generator<string> {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = joinPath(dir, entry.name);
+      if (entry.isDirectory()) yield* walk(path);
+      else yield path;
+    }
+  };
+  for (const path of walk("e2e")) if (/\.(ts|mjs)$/.test(path)) yield path;
+  for (const path of walk("scripts")) if (/\.(ts|mjs)$/.test(path)) yield path;
+  for (const path of walk("src")) if (path.endsWith(".play.test.ts")) yield path;
+}
+
+/**
+ * Every Prisma member write in `source` — create, createMany, update,
+ * updateMany, upsert — whose argument sets an `xp` key (`xp:` or shorthand
+ * `xp,`) and neither writes `xpEverywhere` nor goes through `standingData`.
+ * The argument is taken by matching its parentheses, so a call spread over
+ * many lines is read whole; `xp: true` is a select, not a write.
+ */
+function memberWritesMissingEverywhere(source: string): string[] {
+  const found: string[] = [];
+  const call = /member\.(create|createMany|update|updateMany|upsert)\(/g;
+  for (let match = call.exec(source); match !== null; match = call.exec(source)) {
+    let depth = 1;
+    let end = match.index + match[0].length;
+    while (end < source.length && depth > 0) {
+      if (source[end] === "(") depth += 1;
+      else if (source[end] === ")") depth -= 1;
+      end += 1;
+    }
+    const argument = source.slice(match.index + match[0].length, end - 1);
+    const writesXp = /(^|[{,\s])xp\s*(:(?!\s*true\b)|,|\s*\})/.test(argument);
+    if (writesXp && !/xpEverywhere|standingData\(/.test(argument)) found.push(argument.replace(/\s+/g, " ").trim().slice(0, 120));
+  }
+  return found;
+}
 
 /**
  * The gate on the catalogue, in the shape of `backlog.coverage.test.ts` and
@@ -519,6 +566,30 @@ describe("imported awards stay on their own side", () => {
     expect(rivalry).toMatch(/levelShown\(\{ xp: xpForBadge\(row\) \}\)/);
     expect(rivalry).not.toMatch(/levelShown\(\{ xp: row\.xp \}\)/);
     expect(read("src/lib/xp/xpOfMembers.ts")).toMatch(/xpShown\(\{ xp: xpForBadge\(member\) \}\)/);
+  });
+
+  it("is never seeded by a fixture that writes xp without xpEverywhere", () => {
+    // CI run 34825313782: `withLedger` in e2e/xp-history.spec.ts wrote
+    // `{ xp: total }`, /me reads the badge's total (`xpEverywhere`), and the
+    // spec saw "0 XP" where it had seeded 510. A seed must write all three
+    // columns — `standingData` in e2e/xpStanding.ts — or say here why not.
+    const offenders = [...seedingFiles()].flatMap((path) =>
+      Object.hasOwn(XP_SEED_EXCEPTIONS, path) ? [] : memberWritesMissingEverywhere(read(path)).map((call) => `${path}: ${call}`),
+    );
+    expect(offenders, "write the standing through standingData(...) in e2e/xpStanding.ts").toEqual([]);
+    for (const [path, reason] of Object.entries(XP_SEED_EXCEPTIONS)) expect(reason.length, path).toBeGreaterThan(20);
+  });
+
+  it("catches the fixture that broke CI, and passes the one that replaced it", () => {
+    // The proof: the scanner run over withLedger's old line, as it stood at 06b288c5.
+    const old = "await prisma.member.update({ where: { id: member.id }, data: { xp: total } });";
+    expect(memberWritesMissingEverywhere(old)).toHaveLength(1);
+    expect(memberWritesMissingEverywhere("await prisma.member.update({ where: { id }, data: standingData({ here: total }) });")).toEqual([]);
+    // Shorthand and a create spread across lines are caught the same way…
+    expect(memberWritesMissingEverywhere("prisma.member.create({\n  data: { email, id,\n    xp,\n    xpLastAt: new Date() },\n})")).toHaveLength(1);
+    // …and reading a total is not writing one.
+    expect(memberWritesMissingEverywhere("prisma.member.findUnique({ where: { id }, select: { xp: true } })")).toEqual([]);
+    expect(memberWritesMissingEverywhere("prisma.member.update({ where: { id }, data: { name }, select: { xp: true } })")).toEqual([]);
   });
 
   it("is left out of the Itsutsu ledger check and ranked only under Everywhere", () => {
