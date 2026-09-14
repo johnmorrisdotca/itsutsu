@@ -152,6 +152,10 @@ describe("the economy holds its shape", () => {
       "specialistBeaten", "firstBuddy", "winStreak3", "winStreak5", "winStreak10",
       "revengeWin", "comeback", "nameSet", "countrySet", "bioSet", "wordsSet",
       "seatClaimedElsewhere", "joined",
+      // Once per game per member, and once per anniversary: nothing to farm.
+      "wins10", "wins100", "wins250", "wins500", "wins1000",
+      "losses10", "losses50", "losses100", "losses250", "losses500", "losses1000", "draws10",
+      "yearHere", "yearsHere5", "yearsHere10",
     ];
     for (const type of milestones) {
       expect(XP_EVENT_SPECS[type].cap, `${type} is capped`).toBeUndefined();
@@ -197,6 +201,9 @@ describe("what is priced and not yet paid", () => {
     //
     // Which leaves `comeback`, refused in writing. Every other kind in the
     // catalogue is paid by something.
+    //
+    // John's package of 2026-09-14 added fifteen: the milestones at one game on
+    // `recordPlayed`, and the anniversaries on the first visit of a day.
     const wired = types.filter((type) => !XP_UNWIRED.includes(type));
     expect(wired.sort()).toEqual([
       "applauseGiven",
@@ -212,6 +219,7 @@ describe("what is priced and not yet paid", () => {
       "dayStreak30",
       "dayStreak365",
       "dayStreak7",
+      "draws10",
       "everyFamilyPlayed",
       "everyGradeBeaten",
       "everyVariantPlayed",
@@ -228,6 +236,12 @@ describe("what is priced and not yet paid", () => {
       "gradeBeaten",
       "joined",
       "longGame",
+      "losses10",
+      "losses100",
+      "losses1000",
+      "losses250",
+      "losses50",
+      "losses500",
       "nameSet",
       "rematchPlayed",
       "revengeWin",
@@ -239,9 +253,17 @@ describe("what is priced and not yet paid", () => {
       "winStreak10",
       "winStreak3",
       "winStreak5",
+      "wins10",
+      "wins100",
+      "wins1000",
+      "wins250",
+      "wins500",
       "wonVsBuddy",
       "wonVsPerson",
       "wordsSet",
+      "yearHere",
+      "yearsHere10",
+      "yearsHere5",
     ]);
   });
 
@@ -420,6 +442,20 @@ describe("every award is either people-only or a game result", () => {
     XP_EVENTS.everyGradeBeaten,
     XP_EVENTS.specialistBeaten,
     XP_EVENTS.weekendGame,
+    /* The milestones at one game — losses and draws too, which are as much a
+       fact about finished games as a win is. */
+    XP_EVENTS.wins10,
+    XP_EVENTS.wins100,
+    XP_EVENTS.wins250,
+    XP_EVENTS.wins500,
+    XP_EVENTS.wins1000,
+    XP_EVENTS.losses10,
+    XP_EVENTS.losses50,
+    XP_EVENTS.losses100,
+    XP_EVENTS.losses250,
+    XP_EVENTS.losses500,
+    XP_EVENTS.losses1000,
+    XP_EVENTS.draws10,
   ] as const;
 
   it("sorts every priced award onto exactly one side", () => {

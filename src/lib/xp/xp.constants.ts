@@ -1,3 +1,5 @@
+import type { StreakOutcome } from "@/lib/rating/streak";
+
 import type { XpEventSpec, XpEventType } from "./xp.types";
 
 /**
@@ -33,6 +35,9 @@ export const XP_EVENTS = {
   dayStreak365: "dayStreak365",
   weekendGame: "weekendGame",
   backFromAway: "backFromAway",
+  yearHere: "yearHere",
+  yearsHere5: "yearsHere5",
+  yearsHere10: "yearsHere10",
   firstGameEver: "firstGameEver",
   gameFinished: "gameFinished",
   gameWon: "gameWon",
@@ -53,6 +58,18 @@ export const XP_EVENTS = {
   everyFamilyPlayed: "everyFamilyPlayed",
   everyVariantPlayed: "everyVariantPlayed",
   everyVariantWonInFamily: "everyVariantWonInFamily",
+  wins10: "wins10",
+  wins100: "wins100",
+  wins250: "wins250",
+  wins500: "wins500",
+  wins1000: "wins1000",
+  losses10: "losses10",
+  losses50: "losses50",
+  losses100: "losses100",
+  losses250: "losses250",
+  losses500: "losses500",
+  losses1000: "losses1000",
+  draws10: "draws10",
   gradeBeaten: "gradeBeaten",
   everyGradeBeaten: "everyGradeBeaten",
   specialistBeaten: "specialistBeaten",
@@ -132,6 +149,33 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     kanji: "帰還",
     blurb: "For coming back after time away.",
     sentence: "Welcome back.",
+  },
+  /* A year of membership, and the milestones at five and ten. John approved
+     them, 2026-09-14, as the same awards a kept record earns for its years on
+     another site: "every year on a site gives you something like 1000? with a 5
+     year membership bonus 10000? and a 10 year membership 25000?" — applied to
+     Itsutsu itself so that a member who never played anywhere else is not worse
+     off. They count only with a hundred games played here (`XP_YEAR_AWARDS`). */
+  yearHere: {
+    points: 1000,
+    label: "A year on Itsutsu",
+    kanji: "一周年",
+    blurb: "For every year since you joined, with a hundred games played here.",
+    sentence: "Another year on Itsutsu.",
+  },
+  yearsHere5: {
+    points: 10000,
+    label: "Five years on Itsutsu",
+    kanji: "五周年",
+    blurb: "For five years since you joined, with a hundred games played here. Once.",
+    sentence: "Five years on Itsutsu.",
+  },
+  yearsHere10: {
+    points: 25000,
+    label: "Ten years on Itsutsu",
+    kanji: "十周年",
+    blurb: "For ten years since you joined, with a hundred games played here. Once.",
+    sentence: "Ten years on Itsutsu.",
   },
 
   /* ── Playing ────────────────────────────────────────────────────────────
@@ -322,6 +366,101 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     sentence: "You have won at every game in this family.",
   },
 
+  /* ── Milestones at one game ─────────────────────────────────────────────
+     John, 2026-09-14: "we can also give awards for EACH variant, like 10 WINS,
+     100 WINS, 250 wins, 500 wins, 1000 wins - having them also be really
+     rewarding. also we should be nice to people with losses maybe. like 100
+     losses bonus or something funny. not as much points but something to show
+     appreciation for helping out the winners lol". Keyed on the game, once per
+     game per member, uncapped because each can happen only once. A fact about
+     finished games, so the programs earn them too. The amounts are the
+     controller's proposal, AWAITING JOHN'S YES. */
+
+  wins10: {
+    points: 250,
+    label: "Ten wins at a game",
+    kanji: "十勝",
+    blurb: "For your tenth win at one of the games. Once per game.",
+    sentence: "Ten wins at this game.",
+  },
+  wins100: {
+    points: 2500,
+    label: "A hundred wins at a game",
+    kanji: "百勝",
+    blurb: "For your hundredth win at one of the games. Once per game.",
+    sentence: "A hundred wins at this game.",
+  },
+  wins250: {
+    points: 6000,
+    label: "Two hundred and fifty wins",
+    kanji: "二百五十勝",
+    blurb: "For two hundred and fifty wins at one of the games. Once per game.",
+    sentence: "Two hundred and fifty wins at this game.",
+  },
+  wins500: {
+    points: 12500,
+    label: "Five hundred wins at a game",
+    kanji: "五百勝",
+    blurb: "For five hundred wins at one of the games. Once per game.",
+    sentence: "Five hundred wins at this game.",
+  },
+  wins1000: {
+    points: 25000,
+    label: "A thousand wins at a game",
+    kanji: "千勝",
+    blurb: "For a thousand wins at one of the games. Once per game.",
+    sentence: "A thousand wins at this game.",
+  },
+  losses10: {
+    points: 50,
+    label: "Good Sport",
+    kanji: "善戦",
+    blurb: "For ten losses at one game. Somebody needed a game worth winning.",
+    sentence: "Ten losses at this game. A good sport.",
+  },
+  losses50: {
+    points: 150,
+    label: "Sparring Partner",
+    kanji: "稽古台",
+    blurb: "For fifty losses at one game. Everybody gets better against you.",
+    sentence: "Fifty losses at this game. A sparring partner.",
+  },
+  losses100: {
+    points: 300,
+    label: "Stepping Stone",
+    kanji: "踏み台",
+    blurb: "For a hundred losses at one game. Winners climbed on you, and thank you.",
+    sentence: "A hundred losses at this game. A stepping stone.",
+  },
+  losses250: {
+    points: 750,
+    label: "Worthy Opponent",
+    kanji: "好敵手",
+    blurb: "For two hundred and fifty losses at one game, and still sitting down to play.",
+    sentence: "Two hundred and fifty losses at this game. A worthy opponent.",
+  },
+  losses500: {
+    points: 1500,
+    label: "Never Gives Up",
+    kanji: "不屈",
+    blurb: "For five hundred losses at one game. Nobody could make you stop.",
+    sentence: "Five hundred losses at this game. You never give up.",
+  },
+  losses1000: {
+    points: 3000,
+    label: "Legend of Grit",
+    kanji: "根性",
+    blurb: "For a thousand losses at one game. A legend of grit.",
+    sentence: "A thousand losses at this game. A legend of grit.",
+  },
+  draws10: {
+    points: 250,
+    label: "Stalemate Artist",
+    kanji: "引分名人",
+    blurb: "For ten drawn games at one game. Nobody got past you, and you got past nobody.",
+    sentence: "Ten draws at this game. A stalemate artist.",
+  },
+
   /* ── The computer ladder ────────────────────────────────────────────────
      Five graded grades and two specialists. Five times a won game against a
      person, because each grade can be beaten for the first time only once and
@@ -477,6 +616,9 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
   dayStreak365: "the day key it was reached on",
   weekendGame: "the ISO week, so it is once a weekend and not once a game",
   backFromAway: "the awayUntil date that ended",
+  yearHere: "the date of the anniversary, so it is once per year of membership",
+  yearsHere5: "",
+  yearsHere10: "",
   firstGameEver: "",
   gameFinished: "the game id",
   gameWon: "the game id",
@@ -497,6 +639,18 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
   everyFamilyPlayed: "",
   everyVariantPlayed: "",
   everyVariantWonInFamily: "the family's key in GAME_FAMILIES, which the family title is not — once per family, and only a family of more than one game",
+  wins10: "the RuleVariant key, so it is once per game per member",
+  wins100: "the RuleVariant key, so it is once per game per member",
+  wins250: "the RuleVariant key, so it is once per game per member",
+  wins500: "the RuleVariant key, so it is once per game per member",
+  wins1000: "the RuleVariant key, so it is once per game per member",
+  losses10: "the RuleVariant key, so it is once per game per member",
+  losses50: "the RuleVariant key, so it is once per game per member",
+  losses100: "the RuleVariant key, so it is once per game per member",
+  losses250: "the RuleVariant key, so it is once per game per member",
+  losses500: "the RuleVariant key, so it is once per game per member",
+  losses1000: "the RuleVariant key, so it is once per game per member",
+  draws10: "the RuleVariant key, so it is once per game per member",
   gradeBeaten: "the BotTier",
   everyGradeBeaten: "",
   specialistBeaten: "the BotTier",
@@ -578,6 +732,10 @@ export const XP_PEOPLE_ONLY: ReadonlySet<XpEventType> = new Set<XpEventType>([
   XP_EVENTS.dayStreak100,
   XP_EVENTS.dayStreak365,
   XP_EVENTS.backFromAway,
+  /* Anniversaries ride the first visit of a day, which a program never makes. */
+  XP_EVENTS.yearHere,
+  XP_EVENTS.yearsHere5,
+  XP_EVENTS.yearsHere10,
   XP_EVENTS.firstBuddy,
   XP_EVENTS.buddyAdded,
   XP_EVENTS.wonVsBuddy,
@@ -608,6 +766,83 @@ export const XP_WIN_STREAK_MILESTONES: readonly { wins: number; type: XpEventTyp
   { wins: 5, type: XP_EVENTS.winStreak5 },
   { wins: 10, type: XP_EVENTS.winStreak10 },
 ];
+
+/**
+ * YEARS: ON ITSUTSU, AND ON ANOTHER SITE, PRICED ONCE.
+ *
+ * The same three awards pay a member's anniversaries here and a kept record's
+ * years on another site, so the amounts are the `yearHere`, `yearsHere5` and
+ * `yearsHere10` rows above and nothing restates them. `needGames` is the
+ * fairness guard John approved: years somewhere count only with at least a
+ * hundred games played there, so joining and leaving pays nothing.
+ */
+export const XP_YEAR_AWARDS = {
+  year: XP_EVENTS.yearHere,
+  milestones: [
+    { years: 5, type: XP_EVENTS.yearsHere5 },
+    { years: 10, type: XP_EVENTS.yearsHere10 },
+  ],
+  needGames: 100,
+} as const;
+
+/**
+ * Whole years from one calendar day to another: anniversaries actually reached.
+ *
+ * Day keys (`YYYY-MM-DD`), because an anniversary is a day in somebody's own
+ * calendar and a kept record's dates are days. NULL when it cannot be measured —
+ * a missing day, a string that is not one, or an end before its start. Not
+ * nought: nought years is a real answer and a record with no dates has not said
+ * it. A rule that cannot measure must not fire.
+ */
+export function wholeYearsBetween(from: string | undefined, to: string | undefined): number | null {
+  const parts = (value: string | undefined) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? "");
+    if (match === null) return null;
+    const [y, m, d] = [Number(match[1]), Number(match[2]), Number(match[3])];
+    return m < 1 || m > 12 || d < 1 || d > 31 ? null : { y, m, d };
+  };
+  const start = parts(from);
+  const end = parts(to);
+  if (start === null || end === null) return null;
+  const beforeAnniversary = end.m < start.m || (end.m === start.m && end.d < start.d);
+  const years = end.y - start.y - (beforeAnniversary ? 1 : 0);
+  return years < 0 ? null : years;
+}
+
+/**
+ * Results at one game that earn a milestone: wins, losses and draws, each
+ * counted per game and per member, smallest first.
+ *
+ * One table for the live award, the replay and the import alike, so the three
+ * cannot disagree about where a milestone falls or what it is called.
+ */
+export const XP_RESULT_MILESTONES: readonly { outcome: StreakOutcome; count: number; type: XpEventType }[] = [
+  { outcome: "win", count: 10, type: XP_EVENTS.wins10 },
+  { outcome: "win", count: 100, type: XP_EVENTS.wins100 },
+  { outcome: "win", count: 250, type: XP_EVENTS.wins250 },
+  { outcome: "win", count: 500, type: XP_EVENTS.wins500 },
+  { outcome: "win", count: 1000, type: XP_EVENTS.wins1000 },
+  { outcome: "loss", count: 10, type: XP_EVENTS.losses10 },
+  { outcome: "loss", count: 50, type: XP_EVENTS.losses50 },
+  { outcome: "loss", count: 100, type: XP_EVENTS.losses100 },
+  { outcome: "loss", count: 250, type: XP_EVENTS.losses250 },
+  { outcome: "loss", count: 500, type: XP_EVENTS.losses500 },
+  { outcome: "loss", count: 1000, type: XP_EVENTS.losses1000 },
+  { outcome: "draw", count: 10, type: XP_EVENTS.draws10 },
+];
+
+/**
+ * The milestone a result has just reached at one game, or null.
+ *
+ * EXACTLY, not at-least, for `winStreakMilestoneFor`'s reason: the hundred and
+ * first win asks for nothing rather than asking for the hundredth's award and
+ * leaning on the index to refuse it. A milestone a live game missed — a failed
+ * read, a game decided before this shipped — is paid by the backfill's replay,
+ * which counts every decided game in order and is idempotent.
+ */
+export function resultMilestoneFor(outcome: StreakOutcome, count: number): XpEventType | null {
+  return XP_RESULT_MILESTONES.find((one) => one.outcome === outcome && one.count === count)?.type ?? null;
+}
 
 /** Consecutive days that earn a milestone, longest last. */
 export const XP_DAY_STREAK_MILESTONES: readonly { days: number; type: XpEventType }[] = [

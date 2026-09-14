@@ -72,7 +72,10 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaFake }));
 const { awardDailyVisit } = await import("./dailyVisit");
 
 /** A member row as `memberRowFor` hands it over, before "seen" is stamped. */
-function visitor(lastSeenAt: string, extra: { timeZone?: string; awayUntil?: string } = {}) {
+function visitor(
+  lastSeenAt: string,
+  extra: { timeZone?: string; awayUntil?: string; createdAt?: string; played?: number } = {},
+) {
   members.set("m-one", {
     id: "m-one",
     botTier: null,
@@ -86,8 +89,32 @@ function visitor(lastSeenAt: string, extra: { timeZone?: string; awayUntil?: str
     lastSeenAt: new Date(lastSeenAt),
     timeZone: extra.timeZone ?? "",
     awayUntil: extra.awayUntil === undefined ? null : new Date(extra.awayUntil),
+    createdAt: extra.createdAt === undefined ? null : new Date(extra.createdAt),
+    played: extra.played ?? null,
   };
 }
+
+describe("an anniversary of membership", () => {
+  it("pays the year on the first visit after it, with a hundred games played", async () => {
+    await awardDailyVisit(
+      visitor("2027-09-08T22:00:00Z", { createdAt: "2026-09-09T12:00:00Z", played: 100 }),
+      new Date("2027-09-09T09:00:00Z"),
+    );
+    expect(ledger()).toEqual(["dailyVisit 2027-09-09", "yearHere 2027-09-09"]);
+  });
+
+  it("pays nothing short of a hundred games, and asks nothing on an ordinary day", async () => {
+    await awardDailyVisit(
+      visitor("2027-09-08T22:00:00Z", { createdAt: "2026-09-09T12:00:00Z", played: 99 }),
+      new Date("2027-09-09T09:00:00Z"),
+    );
+    await awardDailyVisit(
+      visitor("2027-09-09T22:00:00Z", { createdAt: "2026-09-09T12:00:00Z", played: 500 }),
+      new Date("2027-09-10T09:00:00Z"),
+    );
+    expect(paid("yearHere")).toBe(0);
+  });
+});
 
 function paid(type: string): number {
   return events.filter((row) => row.memberId === "m-one" && row.type === type).length;

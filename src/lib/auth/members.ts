@@ -114,7 +114,7 @@ export async function admitMember(
     /* The day's XP rides this lookup, which was happening anyway. It is the
        member AS THEY WERE — the only moment `lastSeenAt` still says when they
        were last here, since the update below is about to overwrite it. */
-    select: { id: true, email: true, lastSeenAt: true, timeZone: true, awayUntil: true, country: true, preferences: true },
+    select: { id: true, email: true, lastSeenAt: true, timeZone: true, awayUntil: true, country: true, preferences: true, createdAt: true, played: true },
   });
   if (existing === null) {
     const row = await prisma.member.create({
@@ -133,7 +133,7 @@ export async function admitMember(
        today, which would refuse it. See `awardAdmission`. Quiet by construction
        — `awardXp` swallows and logs — because a ledger write must never be able
        to fail a sign-in. */
-    await awardAdmission({ id: row.id, lastSeenAt: null, timeZone: null, awayUntil: null });
+    await awardAdmission({ id: row.id, lastSeenAt: null, timeZone: null, awayUntil: null, createdAt: null, played: null });
     return { email: row.email ?? email, name: row.name, picture: row.picture, created: true };
   }
   // The name is the member's to choose; Google's is only the first suggestion.
@@ -323,6 +323,11 @@ export const memberRowFor = cache(async (key: string) =>
          on. A column on a row being read anyway, so "are they back" costs two
          comparisons rather than a query — see `xpHabit.ts`. */
       awayUntil: true,
+      /* And when they joined and how many games they have finished, which is
+         all an anniversary needs — comparisons on the same row, see
+         `anniversaryAwards` in `xpHabit.ts`. */
+      createdAt: true,
+      played: true,
       /* And where they say they are, which is the third rung of the time-zone
          order: a member with a country and no zone is guessed rather than left
          on UTC. Another field off the same row — see `zoneGuess.ts`. */

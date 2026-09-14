@@ -143,6 +143,11 @@ export function planBackfill(input: BackfillInput): BackfillPlan {
          a member with no row still had a game. Award eligibility is decided
          below and must not change the history. */
       state.run = extendStreak(state.run, side.outcome);
+      /* The results at this game move the same way the run does — for every
+         bound seat, before eligibility — so a milestone is counted over every
+         game the member played, which is what the live count reads too. */
+      const resultKey = heldKey(game.variant, side.outcome);
+      state.results.set(resultKey, (state.results.get(resultKey) ?? 0) + 1);
 
       const member = members.get(side.memberId);
       /* No row answers to that id: `awardXp` pays nobody, so the plan must not
@@ -216,6 +221,9 @@ function playedBy({
     run: state.run,
     opponent: opponentFor({ game, member, side, members, buddies, beaten }),
     weekendWeek: weekend ? xpWeekKey(game.playedAt, member.timeZone) : null,
+    /* The replay's own count, this game included. A variant this deploy cannot
+       name gets null, the live path's answer for the same row. */
+    sameResultsAtGame: variantOf(game) === null ? null : (state.results.get(heldKey(game.variant, side.outcome)) ?? null),
   });
 
   const reason: BackfillReason = { kind: "game", gameId: game.id, variant: game.variant };

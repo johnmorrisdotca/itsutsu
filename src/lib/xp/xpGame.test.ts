@@ -44,6 +44,7 @@ const alone: PlayedSideFacts = {
   run: null,
   opponent: NO_OPPONENT,
   weekendWeek: null,
+  sameResultsAtGame: null,
 };
 /** A person, known not to be a buddy and known never to have won before. */
 const person: Opponent = { id: "m-they", tier: null, buddy: false, beatenMeBefore: false, ratings: null };
@@ -61,6 +62,26 @@ function beat(over: Partial<Opponent> = {}, run: Streak | null = null): PlayedSi
 function types(input: Parameters<typeof gameAwards>[1], one = game): string[] {
   return gameAwards(one, input).map((award) => award.type);
 }
+
+describe("milestones at one game", () => {
+  it("pays ten wins on the tenth win, keyed on the game, after everything the win paid", () => {
+    const awards = gameAwards(game, { ...won, sameResultsAtGame: 10 });
+    expect(awards.at(-1)).toEqual({ type: "wins10", subject: RULE_VARIANTS.reversi });
+    expect(gameAwards(game, { ...won, sameResultsAtGame: 11 }).some((one) => one.type === "wins10")).toBe(false);
+  });
+
+  it("thanks the loser and the drawer at their own counts, and never on a count nobody read", () => {
+    expect(types({ ...lost, sameResultsAtGame: 50 })).toContain("losses50");
+    expect(types({ ...drawn, sameResultsAtGame: 10 })).toContain("draws10");
+    // Ten losses is not ten wins: the outcome decides which milestone a count is.
+    expect(types({ ...lost, sameResultsAtGame: 10 })).not.toContain("wins10");
+    expect(types({ ...won, sameResultsAtGame: null })).not.toContain("wins10");
+  });
+
+  it("pays nothing at a game this deploy cannot name", () => {
+    expect(types({ ...won, sameResultsAtGame: 10 }, { ...game, variant: "noSuchGame" })).not.toContain("wins10");
+  });
+});
 
 describe("what finishing a game pays", () => {
   it("pays the finish, the first game ever, and the tour — won or lost", () => {

@@ -48,7 +48,7 @@ import { awardXp } from "./awardXp";
 import { XP_EVENTS } from "./xp.constants";
 import type { XpAward } from "./xp.types";
 import { isNewDay, xpDayKey, type DayKey } from "./xpDay";
-import { XP_DAY_RUN_MAX, backFromAwayAward, dayRunEndingAt, dayStreakAward, isDayBefore } from "./xpHabit";
+import { XP_DAY_RUN_MAX, anniversaryAwards, backFromAwayAward, dayRunEndingAt, dayStreakAward, isDayBefore } from "./xpHabit";
 
 /** What this rider needs off the member row, all of it already selected. */
 export type VisitingMember = {
@@ -74,6 +74,13 @@ export type VisitingMember = {
    * for ever after one.
    */
   awayUntil: Date | null;
+  /**
+   * When the row was made, for the anniversaries. On the same row, for nothing;
+   * null where a caller did not read it, which pays no anniversary.
+   */
+  createdAt: Date | null;
+  /** Every game they have finished here — `Member.played` — for the anniversaries' guard. */
+  played: number | null;
 };
 
 /**
@@ -103,6 +110,16 @@ export async function visitAwards(row: VisitingMember, now: Date): Promise<XpAwa
     dayKeyOf: (at) => xpDayKey(at, row.timeZone),
   });
   if (back !== null) awards.push(back);
+
+  /* An anniversary of membership: comparisons on three days already in hand. */
+  awards.push(
+    ...anniversaryAwards({
+      joined: row.createdAt === null ? null : xpDayKey(row.createdAt, row.timeZone),
+      lastSeen: xpDayKey(last, row.timeZone),
+      today,
+      played: row.played,
+    }),
+  );
 
   const milestone = await dayRunMilestone(row, last, today);
   if (milestone !== null) awards.push(milestone);
