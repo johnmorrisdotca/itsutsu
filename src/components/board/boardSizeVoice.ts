@@ -4,10 +4,10 @@ import type { BoardSizeMarkWords } from "./board.types";
 /**
  * What a board-size mark says to somebody who cannot see it.
  *
- * One rule for both forms: SILENT WHERE THE SIZE IS IN TEXT BESIDE IT, NAMED
- * WHERE IT IS NOT. The numbered form exists so the text can be dropped, and a
- * number drawn into a picture reaches nobody who is not looking at it — so
- * wherever the text goes, the words move onto the mark.
+ * One rule: SILENT WHERE THE SIZE IS IN TEXT BESIDE IT, NAMED WHERE IT IS NOT.
+ * Every mark carries its number, and a number drawn into a picture reaches
+ * nobody who is not looking at it — so wherever the text under the mark goes,
+ * the words move onto the mark.
  *
  * `role="img"` rather than a bare `aria-label` on a span: a label on an element
  * with no role is not something every screen reader reads, and "image" is what

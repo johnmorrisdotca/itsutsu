@@ -201,14 +201,6 @@ export type StoneMarkProps = {
 };
 
 /**
- * The two ways a board size is drawn as a mark. `plain` is the lattice alone,
- * at the density its number means; `numbered` is the same lattice with the
- * number of the size set large in the middle of it, for a place that does not
- * also say the size in words.
- */
-export type BoardSizeMarkForm = "plain" | "numbered";
-
-/**
  * Whether the size is already said in words next to the mark.
  *
  * `beside`: it is ("19×19" under the block), so the mark is decoration and a
@@ -227,7 +219,6 @@ export type BoardSizeMarkWords = "beside" | "none";
 export type BoardSizeMarkProps = {
   /** The length of one side: 3 for tic-tac-toe, 19 for a go board. */
   size: number;
-  form: BoardSizeMarkForm;
   /** The side of the mark in CSS pixels. The numeral is scaled from it. */
   px: number;
   words: BoardSizeMarkWords;

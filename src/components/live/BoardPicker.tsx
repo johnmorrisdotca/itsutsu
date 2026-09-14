@@ -18,8 +18,9 @@ import { BOARD_BLOCK_MARK_PX, BOARD_ONLY_MARK_PX, PICK_BLOCKS, PICK_CARD } from 
  * board here is square, so the proportion is always one to one and density is
  * the only real difference between them — so density is what is drawn.
  *
- * The picture is `BoardSizeMark`, which is the one place the lattice is drawn —
- * plain here among several boards, numbered on a board that stands alone.
+ * The picture is `BoardSizeMark`, which is the one place a board size is
+ * drawn, and it carries the size as a numeral in every block — among several
+ * boards and on a board that stands alone alike.
  *
  * The blocks sit in a row and wrap only if they must — there are at most four
  * of them — because a stack of four is a list and John asked for a row.
@@ -93,32 +94,40 @@ export function BoardPicker({
                 className="peer sr-only"
               />
               {/*
-                The board itself, at the density its number means.
+                The board itself, at the density its number means, WITH ITS
+                NUMBER IN IT — in every block, whether the game offers one
+                board or four.
 
-                AMONG SEVERAL, the plain picture with the size in text under
-                it. The picture is decorative there: the number under it is the
-                same fact in words, and a screen reader hearing "grid" and then
-                "nineteen by nineteen" has been told one thing twice. A number
-                drawn into each picture as well would say every size twice to
-                the eye too, in a row whose whole job is telling 13 from 15.
+                It used to be drawn into the lone block only, on the argument
+                that a number in the picture and the same number printed under
+                it says one thing twice. John read the row and did not agree:
+                "so the 9x9 board has a white 9 in the middle of the board, so
+                that it's even more visible from the outside, and also the icon
+                alone tells you the size. I see it's done for some options but
+                not consistently for all." The picture is what the eye lands on
+                from across the room; the line under it is for reading. So the
+                number is in both, and no block is drawn a second way.
 
-                ALONE, THE NUMBER GOES INTO THE PICTURE. A one-board game's
-                block is a statement, and "8×8" over "Eight" was one number
-                said twice in words. John: "if you don't have the size below it
-                in text it is incorporated directly in the image." So the lone
-                block draws the numbered mark and drops the line — and because
-                the text is gone, the mark says the size in words itself
-                (`words="none"`), which is what the radio is then named by.
+                What still differs between the two blocks is the TEXT, and with
+                it what a screen reader hears. AMONG SEVERAL, "13×13" sits
+                under the picture and names the radio, so the mark is
+                decoration (`words="beside"`, aria-hidden) and its numeral is
+                not read out a second time. ALONE, the block drops that line,
+                so the mark says the size in words itself (`words="none"`) and
+                the radio is named by it. John, earlier and still true: "if you
+                don't have the size below it in text it is incorporated
+                directly in the image."
 
-                Bigger by exactly the line it replaces (`BOARD_ONLY_MARK_PX`),
-                so a one-board game's panel stays the height of a four-board
-                one's and the Start button does not move between them.
+                The lone mark is bigger by exactly the line it replaces
+                (`BOARD_ONLY_MARK_PX`), so a one-board game's panel stays the
+                height of a four-board one's and the Start button does not move
+                between them.
               */}
               {only ? (
-                <BoardSizeMark size={size} form="numbered" px={BOARD_ONLY_MARK_PX} words="none" />
+                <BoardSizeMark size={size} px={BOARD_ONLY_MARK_PX} words="none" />
               ) : (
                 <>
-                  <BoardSizeMark size={size} form="plain" px={BOARD_BLOCK_MARK_PX} words="beside" />
+                  <BoardSizeMark size={size} px={BOARD_BLOCK_MARK_PX} words="beside" />
                   <span className="text-base leading-none font-semibold">
                     {size}×{size}
                   </span>

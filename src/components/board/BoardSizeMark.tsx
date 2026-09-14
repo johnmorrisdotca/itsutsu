@@ -8,24 +8,38 @@ import type { BoardSizeMarkProps } from "./board.types";
 import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
 
 /**
- * A board size as a picture: the lattice at the density its number means, and
- * — in the numbered form — the number itself, large, in the middle of it.
+ * A board size as a picture: the lattice at the density its number means, with
+ * the number itself set large in the middle of it.
  *
- * THE ONLY PLACE THE LATTICE IS DRAWN. It lived inline in `BoardPicker`; a
- * second form beside it would have been a second copy of the gradient to keep
- * in step, so both forms are one component and differ by the numeral alone.
+ * THE ONLY PLACE A BOARD SIZE IS DRAWN, AND IT IS DRAWN ONE WAY. It lived
+ * inline in `BoardPicker`; a second drawing beside it would have been a second
+ * copy of the gradient to keep in step. `OpeningMark` borrows that gradient to
+ * draw an opening on the chosen board, which is a different fact with stones
+ * on it rather than a second board-size mark — `boardSizeMark.test.ts` lists
+ * it as the one file that may, with the reason.
  *
- * John: "we need a second set of images where we actually put in the number
- * of the size in the middle of that image in a large font… that way if you
- * don't have the size below it in text it is incorporated directly in the
- * image." The last clause is the accessibility rule as well as the design
- * one — see `boardSizeMarkVoice`, and `words`, which the caller must answer.
+ * John asked for the number in the picture — "if you don't have the size below
+ * it in text it is incorporated directly in the image" — and it shipped as a
+ * `form` prop: numbered where a board stood alone, plain among several. That
+ * is what he came back to: "I thought I already asked for the 9x9, 15x15 etc
+ * board images to also have a set with the Number directly centered in the
+ * board… so that it's even more visible from the outside, and also the icon
+ * alone tells you the size. I see it's done for some options but not
+ * consistently for all."
+ *
+ * So the choice is gone rather than defaulted. A mark carries its size
+ * wherever it is drawn, and no caller can ask for one that does not — which
+ * is the only version of "consistently for all" a component can guarantee.
+ *
+ * What a caller still answers is `words`: whether the size is in TEXT beside
+ * the mark. That is a fact about their layout, not about the drawing, and it
+ * decides what a screen reader hears — see `boardSizeMarkVoice`.
  *
  * Every board here is square, so density is the only real difference between
- * one size and another, and density is what is drawn. The frame's border is
- * the last line on the right and at the bottom.
+ * one size and another, and density is what is drawn behind the number. The
+ * frame's border is the last line on the right and at the bottom.
  */
-export function BoardSizeMark({ size, form, px, words, className = "" }: BoardSizeMarkProps) {
+export function BoardSizeMark({ size, px, words, className = "" }: BoardSizeMarkProps) {
   return (
     <span
       {...boardSizeMarkVoice(size, words)}
@@ -37,14 +51,11 @@ export function BoardSizeMark({ size, form, px, words, className = "" }: BoardSi
         backgroundSize: `${100 / size}% ${100 / size}%`,
       }}
       data-testid="board-size-mark"
-      data-form={form}
       data-size={size}
     >
-      {form === "numbered" ? (
-        <span className={BOARD_SIZE_NUMERAL_CLASS} style={{ fontSize: boardSizeNumeralPx(px, size) }}>
-          {size}
-        </span>
-      ) : null}
+      <span className={BOARD_SIZE_NUMERAL_CLASS} style={{ fontSize: boardSizeNumeralPx(px, size) }}>
+        {size}
+      </span>
     </span>
   );
 }

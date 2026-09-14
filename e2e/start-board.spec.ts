@@ -40,8 +40,20 @@ test.describe("choosing the board before the game exists", () => {
     await setUp(page, "freestyle");
     const board = page.getByTestId("shared-rules-size");
     await expect(board).toBeVisible();
-    // Big blocks with the numbers on them, in the order the boards grow.
-    await expect(page.getByTestId("set-up-size")).toHaveText([/^9×9/, /^13×13/, /^15×15/, /^19×19/]);
+    /*
+     * Big blocks with the numbers on them, in the order the boards grow.
+     *
+     * Read block by block rather than as one list of strings starting "9×9":
+     * the block's first text is now the number drawn INSIDE the picture, so a
+     * `^` match on the caption would fail for a reason that has nothing to do
+     * with the order being tested here.
+     */
+    const blocks = page.getByTestId("set-up-size");
+    await expect(blocks).toHaveCount(4);
+    for (const [at, size] of [9, 13, 15, 19].entries()) {
+      await expect(blocks.nth(at)).toHaveAttribute("data-size", String(size));
+      await expect(blocks.nth(at)).toContainText(`${size}×${size}`);
+    }
   });
 
   test("shows a one-board game its board, and asks nothing about it", async ({ page }) => {
@@ -63,7 +75,7 @@ test.describe("choosing the board before the game exists", () => {
     await expect(chosenBoard(page)).toHaveAttribute("data-only", "true");
   });
 
-  test("puts a lone board's number in its picture, and says it in words", async ({ page }) => {
+  test("puts every board's number in its picture, and says a lone one in words", async ({ page }) => {
     await setUp(page, "reversi");
     /*
      * John: "a second set of images where we actually put in the number of the
@@ -78,23 +90,31 @@ test.describe("choosing the board before the game exists", () => {
     const lone = chosenBoard(page);
     const mark = lone.getByRole("img", { name: "8 by 8 board" });
     await expect(mark).toBeVisible();
-    await expect(mark).toHaveAttribute("data-form", "numbered");
     await expect(mark).toHaveText("8");
     await expect(page.getByRole("radio", { name: /^8 by 8 board/ })).toBeChecked();
 
     /*
-     * And the way back: a game with a choice keeps the plain picture with the
-     * size in text under it, silent to a screen reader so the size is not said
-     * twice. The four blocks are waited for BEFORE the absence is asserted, so
-     * the absence is a statement about a drawn row rather than an early one.
+     * And a game with a CHOICE draws the same picture in every block, number
+     * and all. It used to draw the plain lattice there, which is the
+     * inconsistency John came back about: "I thought I already asked for the
+     * 9x9, 15x15 etc board images to also have a set with the Number directly
+     * centered in the board… I see it's done for some options but not
+     * consistently for all."
+     *
+     * What still differs is the TEXT: "9×9" sits under the picture and names
+     * the radio, so each mark stays silent to a screen reader rather than
+     * saying the size a second time. The four blocks are waited for BEFORE
+     * that absence is asserted, so the absence is a statement about a drawn
+     * row rather than an early one.
      */
     await chooseGame(page, "freestyle");
     await expect(page.getByTestId("set-up-size")).toHaveCount(4);
     const marks = page.getByTestId("shared-rules-size").getByTestId("board-size-mark");
     await expect(marks).toHaveCount(4);
-    for (const at of [0, 1, 2, 3]) {
+    for (const [at, size] of [9, 13, 15, 19].entries()) {
+      await expect(marks.nth(at)).toHaveAttribute("data-size", String(size));
+      await expect(marks.nth(at)).toHaveText(String(size));
       await expect(marks.nth(at)).toHaveAttribute("aria-hidden", "true");
-      await expect(marks.nth(at)).toHaveAttribute("data-form", "plain");
     }
     await expect(page.getByTestId("shared-rules-size").getByRole("img")).toHaveCount(0);
   });
