@@ -55,8 +55,13 @@ export function RivalryBoard({ one, other, readerIsOne, all, game, line, testId 
   const unnamed = say.say("rivalry.unnamed");
   const pair = { memberId: one.memberId, against: other.memberId };
   const mirrored = { memberId: other.memberId, against: one.memberId };
+  /*
+   * The site's sans, not its mono: the mono face slashes its zero, and a
+   * slashed nought at this size reads as "Ø" — the one score every new pair
+   * starts on. Tabular figures keep "10" and "11" the same width.
+   */
   const bigNumber =
-    "font-mono text-6xl font-black leading-none tabular-nums sm:text-7xl motion-safe:animate-[rivalry-rise_450ms_ease-out_both]";
+    "text-6xl font-black leading-none tabular-nums sm:text-7xl motion-safe:animate-[rivalry-rise_450ms_ease-out_both]";
   const smallLabel = "text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted";
 
   return (
@@ -101,7 +106,7 @@ export function RivalryBoard({ one, other, readerIsOne, all, game, line, testId 
               <span className={smallLabel}>{say.say("rivalry.wins")}</span>
             </div>
             <span
-              className="mt-3 rotate-[-6deg] rounded-md bg-ink px-2.5 py-1 font-mono text-sm font-black uppercase tracking-[0.2em] text-paper shadow-md sm:mt-5 motion-safe:animate-[rivalry-land_500ms_cubic-bezier(0.2,1.3,0.4,1)_both]"
+              className="mt-3 -rotate-6 rounded-md bg-ink px-2.5 py-1 font-mono text-sm font-black uppercase tracking-[0.2em] text-paper shadow-md sm:mt-5 motion-safe:animate-[rivalry-land_500ms_cubic-bezier(0.2,1.3,0.4,1)_both]"
               aria-hidden
             >
               {say.say("rivalry.versus")}
@@ -139,9 +144,16 @@ export function RivalryBoard({ one, other, readerIsOne, all, game, line, testId 
           <Stat label={say.say("rivalry.streak")}>
             <span data-testid={`${testId}-streak`}>{streak ?? NO_STREAK_TEXT}</span>
           </Stat>
+          {/*
+            The same game as the figures beside it. Every game's date here read
+            as a date for this game — "Last played Sep 11" beside a tic-tac-toe
+            score of 0–0 — and the all-time row below already speaks for every
+            game. The LINE's gap still reads every game, because a sentence
+            about not having played somebody is about them, not about a game.
+          */}
           <Stat label={say.say("rivalry.lastPlayed")}>
             <span data-testid={`${testId}-last`}>
-              {all.lastPlayedAt === null ? say.say("rivalry.notYet") : <LocalTime at={all.lastPlayedAt} style="date" />}
+              {scope.lastPlayedAt === null ? say.say("rivalry.notYet") : <LocalTime at={scope.lastPlayedAt} style="date" />}
             </span>
           </Stat>
           {showAll ? (
@@ -172,7 +184,7 @@ function Corner({ seat, side, fallback, testId }: RivalryCornerProps) {
       className={`flex min-w-0 flex-col gap-1.5 ${end ? "order-2 items-end text-right sm:order-3" : "order-1 items-start text-left"}`}
     >
       <span aria-hidden className={`h-1.5 w-12 rounded-full ${end ? "bg-shu" : "bg-moss"}`} />
-      <span className="max-w-full break-words text-lg font-bold leading-tight sm:text-2xl">
+      <span className="max-w-full wrap-break-word text-lg font-bold leading-tight sm:text-2xl">
         <PlayerName name={seat.name} memberId={seat.memberId} fallback={fallback} testId={`${testId}-name`} />
       </span>
       {seat.level !== null ? <LevelName level={seat.level} testId={`${testId}-level`} /> : null}
