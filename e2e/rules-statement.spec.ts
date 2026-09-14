@@ -112,8 +112,8 @@ test.describe("the rules beside a board", () => {
      * had the same sentence-as-an-option and so the same overflow.
      */
     await page.goto("/games/gomoku/play");
-    const penalty = page.getByTestId("shared-penalty");
-    const time = page.getByTestId("shared-move-time");
+    const penalty = page.getByTestId("shared-rules-penalty");
+    const time = page.getByTestId("shared-rules-move-time");
     await expect(time).toBeVisible();
     await time.selectOption({ index: 1 });
     await expect(penalty).toBeVisible();

@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
+
+import { GAME_COPY } from "../src/components/game/game.constants";
 import { ready } from "./support";
+import { gamesMade } from "./tidy";
+
+/** The games the Play apart case makes, taken away when the file finishes. */
+const tidyAway = gamesMade();
 
 /** Starts a server-side game and returns its id and both seat tokens. */
 async function startGame(request: import("@playwright/test").APIRequestContext) {
@@ -149,5 +155,37 @@ test.describe("a game played from two devices", () => {
     // The match, with its move count on the end: a fresh board is position 0.
     await expect(page).toHaveURL(/\/games\/gomoku\/match\/[a-z0-9-]+\/0$/);
     await expect(page.getByTestId("turn-banner")).toContainText("Your move");
+  });
+
+  test("Play apart starts the game its rules form describes", async ({ page }) => {
+    /*
+     * The panel renders `RulesForm` now rather than its own copy of it, so what
+     * is driven here is the shared form, by the controls a reader uses: a choice
+     * made in it has to be the game the button makes, or the panel is a form
+     * whose answers go nowhere. The practice board is `ssr: false`, so the panel
+     * and its handlers arrive together and there is no hydration window to wait out.
+     */
+    await page.goto("/games/gomoku/play");
+    const panel = page.locator("#post-seat");
+    await panel.getByTestId("shared-rules-move-time").selectOption(String(5 * 60_000));
+    await panel.getByTestId("shared-rules-rated").selectOption("friendly");
+    await panel.getByLabel(GAME_COPY.allowResign.label, { exact: true }).uncheck();
+
+    // The board beside it chose the game, the board and the opening; the panel
+    // says so in a line and asks none of them. Asserted after the form above was
+    // used, so the absence is of a rendered panel and not of an early one.
+    await expect(panel.getByTestId("shared-rules-summary")).toContainText("Gomoku");
+    for (const control of ["shared-rules-variant", "shared-rules-size", "shared-rules-opening"]) {
+      await expect(panel.getByTestId(control), control).toHaveCount(0);
+    }
+
+    await panel.getByTestId("start-shared-game").click();
+    await expect(page).toHaveURL(/\/games\/gomoku\/match\/[a-z0-9-]+\/0$/);
+    tidyAway(page.url().match(/\/match\/([a-z0-9-]+)\//)![1]);
+
+    const summary = page.getByTestId("shared-rules").getByTestId("more-settings-summary");
+    await expect(summary).toContainText("5 minutes a move");
+    await expect(summary).toContainText("Friendly");
+    await expect(summary).toContainText("No resigning");
   });
 });
