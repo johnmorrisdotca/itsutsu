@@ -69,6 +69,7 @@ export type SgfSource = Pick<
   | "result"
   | "blackName"
   | "whiteName"
+  | "moveTimeMs"
   | "moves"
 >;
 

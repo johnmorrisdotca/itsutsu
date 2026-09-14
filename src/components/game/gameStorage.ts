@@ -31,6 +31,12 @@ export type GameSnapshot = {
   swapsUsed: Record<Seat, number>;
   /** Decisions taken in a swap opening. Absent from snapshots that predate them. */
   openingChoices?: OpeningChoice[];
+  /**
+   * Whether the game ran a clock, so a turn lost to it may be on the record.
+   * Set only from a match; a board at one screen runs none, and absent is read
+   * as none — a forfeit on such a record is refused rather than replayed.
+   */
+  clocked?: boolean;
   appearance: Appearance;
   session: SessionSettings;
   names: SeatNames;
@@ -73,7 +79,7 @@ export function toSnapshot(
 export function restoreTimeline(snapshot: GameSnapshot): GameState[] {
   const start = createGame({ ...snapshot.settings, firstPlayer: snapshot.opener });
   // Stops at the first move that will not replay: the snapshot no longer fits the rules.
-  const timeline = replayMoves(start, snapshot.moves, snapshot.openingChoices ?? []);
+  const timeline = replayMoves(start, snapshot.moves, snapshot.openingChoices ?? [], { clocked: snapshot.clocked === true });
 
   return timeline.map((state) => ({
     ...state,

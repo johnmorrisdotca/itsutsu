@@ -13,6 +13,7 @@ import { PlayedMoves } from "./PlayedMoves";
 import { SgfDownload } from "./SgfDownload";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { pointName } from "@/lib/gomoku/notation";
+import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 import { forkOffered } from "@/lib/history/fork";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { moveNumberAt, timelineIndexForMove } from "@/lib/history/replayIndex";
@@ -36,7 +37,7 @@ function MoveList({
   offerSgf: boolean;
 }) {
   const [copied, setCopied] = useState(false);
-  const names = useMemo(() => game.moves.map((move) => (move.kind === "pass" ? "pass" : pointName(game.size, move))), [game]);
+  const names = useMemo(() => game.moves.map((move) => stonelessWord(move.kind) ?? pointName(game.size, move)), [game]);
   const text = useMemo(() => {
     const turns: string[] = [];
     for (let i = 0; i < names.length; i += 2) {

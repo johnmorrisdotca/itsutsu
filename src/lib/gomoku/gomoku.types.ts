@@ -34,10 +34,29 @@ export type Point = {
  * `move`: a piece stepping from `from` to the move's point, in the games
  * where a fixed handful of pieces move once they are all down.
  * `piece`: a multi-cell piece from the queue, laid as `cells`.
- * `pass`: a turn taken without a stone — nothing fit, or a deadline went by.
- * A pass has no point; its row and column are -1.
+ * `pass`: a turn taken without a stone that the rules offered — nothing fit, or
+ * Go, where passing is always a choice. A missed deadline is a pass too
+ * wherever a pass is on offer, since there it IS one.
+ * `forfeit`: a turn taken away by the clock where the rules offer no pass.
+ * Only a claimed timeout writes one, and a replay applies it only to a record
+ * that ran a clock. Kept apart from `pass` because the two replay differently:
+ * a pass the rules refuse stops a replay, and a forfeit read as a pass would
+ * stop every game with a timeout in it at the turn that was lost.
+ * Neither has a point; their row and column are -1.
  */
-export type MoveKind = "place" | "skip" | "move" | "piece" | "pass";
+export type MoveKind = "place" | "skip" | "move" | "piece" | "pass" | "forfeit";
+
+/**
+ * What a replay needs to know about a record that its moves cannot say.
+ *
+ * `clocked`: the game ran a clock, so a turn lost to it may be on the record.
+ * False for anything that never had one — a board at one screen, a filed game
+ * from a browser — and there a forfeit is refused like any other move the
+ * rules could not have produced.
+ */
+export type ReplayFacts = {
+  clocked: boolean;
+};
 
 /** One cell of a multi-cell piece, with the colour it carries. */
 export type PieceCell = Point & { stone: Stone };

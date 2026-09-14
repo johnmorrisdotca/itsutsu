@@ -42,7 +42,8 @@ describe("forfeiting a turn", () => {
     const forfeited = forfeitTurn(game);
     expect(forfeited.board).toEqual(game.board);
     expect(forfeited.toPlay).toBe(STONES.black);
-    expect(forfeited.moves[forfeited.moves.length - 1]).toMatchObject({ kind: "pass", stone: STONES.white });
+    // A forfeit, not a pass: gomoku offers no pass, and a replay stops at one it refuses.
+    expect(forfeited.moves[forfeited.moves.length - 1]).toMatchObject({ kind: "forfeit", stone: STONES.white });
     // Two forfeits in a row do not end the game; the forfeit count does that.
     expect(forfeitTurn(forfeitTurn(forfeited)).status).toBe("playing");
   });

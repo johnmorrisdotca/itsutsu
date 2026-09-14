@@ -53,6 +53,8 @@ export function snapshotFromMatch(game: GameDetail): GameSnapshot {
       }),
     ),
     seats,
+    // The match's own clock, so a turn it took away replays on this board too.
+    clocked: game.moveTimeMs !== null,
     swapsUsed: { one: 0, two: 0 },
     appearance: DEFAULT_APPEARANCE,
     session: DEFAULT_SESSION_SETTINGS,

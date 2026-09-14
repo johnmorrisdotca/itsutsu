@@ -246,6 +246,7 @@ export const GAME_COPY = {
    */
   idleKept: "This game is kept. It will be here when you come back.",
   pass: { label: "Pass", kanji: "パス" },
+  forfeit: { label: "Timed out", kanji: "時間切れ" },
   piece: { label: "Piece in hand", kanji: "手駒" },
   nextPieces: { label: "Coming next", kanji: "次" },
   rotatePiece: { label: "Rotate", kanji: "回転" },
