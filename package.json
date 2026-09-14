@@ -1,6 +1,6 @@
 {
   "name": "gomoku",
-  "version": "0.184.4",
+  "version": "0.185.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p ${WEB_PORT:-6600}",
