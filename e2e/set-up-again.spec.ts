@@ -324,7 +324,7 @@ test.describe("carrying a position into a new game", () => {
     // The screen names the program, and marks it as one — in the hint paragraph
     // and in the folded summary line, which used to read "the same opponent".
     await expect(page.getByTestId("set-up-fork")).toContainText(source.whiteName);
-    await expect(page.getByTestId("more-settings-summary")).toContainText(machine);
+    await expect(page.getByTestId("set-up-recap")).toContainText(machine);
     await openMoreSettings(page);
     /*
      * AND THE RATING IS STILL OFFERED, which is the promise the route used to
@@ -487,7 +487,7 @@ test.describe("carrying a position into a new game", () => {
     // And the drawer states the fact where the tiles would have been.
     await expect(page.getByTestId("set-up-rated-fact")).toContainText("will not count");
     // And the fact is stated in the control's place rather than left out.
-    await expect(page.getByTestId("more-settings-summary")).toContainText("Will not count");
+    await expect(page.getByTestId("set-up-recap")).toContainText("Will not count");
 
     /*
      * AND THE DOORSTEP AGREES WITH ITSELF. Its paragraph and its table of facts

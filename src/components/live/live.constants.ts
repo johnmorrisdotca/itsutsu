@@ -79,6 +79,8 @@ export const SET_UP_COPY = {
     `A second game from the position after move ${move}, against ${who}. Both games go on. The board, the game and the opening come with the position and cannot change; the clock and whether it counts are this game's own.`,
   forkAlone:
     "Nobody held the other seat in the game this comes from, so this is a board at one screen: start it and hand the other seat out from there.",
+  /** The handicap's colour select, under the Handicap heading: who takes on the harder rules. */
+  handicapFor: "Harder rules for",
   /** What a handicap is for, where somebody is choosing one. */
   handicapHint:
     "One colour plays under extra restrictions and the other plays the plain game — how the elder sites let a stronger player give a weaker one a start. Leave it at none for an even game.",
@@ -110,7 +112,29 @@ export const SET_UP_COPY = {
    * and land on a board, and it now leads to the page that states what is about
    * to be played. Somebody who has used this screen before needs telling once.
    */
-  startLeads: "You will see what is about to be played before anything is started.",
+  startLeads: "Next you will see the whole game stated. Nothing is started until you press Begin there.",
+  /**
+   * THE BUTTON AT THE BOTTOM, named for what it does. John: "it's not Start the
+   * Game... button should be 'Continue the Game' or 'Continue' or 'Game Setup' -
+   * something smart." It leads to the page that states the game and begins it
+   * on a press of its own, so it continues; it starts nothing.
+   */
+  continue: "Continue 次へ",
+  continuing: "Continuing…",
+  /** The same press where somebody is already asking for exactly this game. */
+  continueToSeat: (who: string) => `Continue to sit down with ${who} 次へ`,
+  /** The headings over the screen's groups, in the order they are drawn. */
+  sections: {
+    opponent: { title: "Who you play", kanji: "対戦相手" },
+    rules: { title: "The rules", kanji: "規則" },
+    handicap: { title: "Handicap", kanji: "ハンデ" },
+  },
+  /** Where a posted seat can be found by whoever takes it. */
+  postedWhere: "It waits on the Games page until somebody takes it.",
+  /** The way to anybody the lists here do not hold. */
+  elsewhere: "Somebody not listed here? Find them on the",
+  elsewhereLink: "Players page",
+  elsewhereAfter: "and press Challenge: they arrive here already chosen.",
 } as const;
 
 /**
@@ -158,10 +182,11 @@ export const SIGN_IN_TO_PLAY = "Sign in to start a game against somebody.";
  * than an instruction, and the two controls are named for the two things somebody
  * standing on a doorstep can do — go in, or go back and change something.
  *
- * Called Begin rather than Start on purpose. "Start the game" is the press that
- * led here, and reusing its words on the page after it would make the second
- * press look like a repeat of the first — which is how a confirmation screen
- * becomes a step people click through without reading.
+ * Called Begin on purpose, and the press that led here is Continue: the words on
+ * the two buttons say which one starts anything. Reusing the first press's words
+ * on the page after it would make the second look like a repeat of the first —
+ * which is how a confirmation screen becomes a step people click through without
+ * reading.
  */
 export const DOORSTEP_COPY = {
   title: "Before the first stone",
@@ -173,6 +198,9 @@ export const DOORSTEP_COPY = {
   /** Taking a seat somebody has already posted, rather than making a second game. */
   sit: (who: string) => `Sit down with ${who} 着席`,
   change: "Change something 変更",
+  /** Who a game against a computer player drawn at random is against, before the draw. */
+  drawnFrom: (names: readonly string[]) =>
+    `a computer player drawn at random from ${names.join(", ")} when you press Begin`,
   /** Once this doorstep has made its game, the same control opens its board. */
   board: "Open the board 対局へ",
   made: "You have already begun this game. The button below opens its board rather than making a second one.",

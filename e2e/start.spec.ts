@@ -86,7 +86,7 @@ test.describe("asking for a game", () => {
 
     // The button says which of the two it will do, because to the person
     // pressing it they are different things: one starts a game, one starts a wait.
-    await expect(page.getByTestId("set-up-start")).toContainText("Sit down with");
+    await expect(page.getByTestId("set-up-start")).toContainText(/sit down with/i);
     await expect(page.getByTestId("set-up-match")).toBeVisible();
 
     await startAndBegin(page);
@@ -126,7 +126,7 @@ test.describe("asking for a game", () => {
      * promise.
      */
     const button = page.getByTestId("set-up-start");
-    await expect(button).toContainText("Sit down with");
+    await expect(button).toContainText(/sit down with/i);
     await expect(button).not.toContainText(`Mine ${stamp}`);
 
     await theirs.close();

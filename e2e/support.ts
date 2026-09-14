@@ -180,10 +180,17 @@ export async function chooseGame(page: Page, variant: string) {
  * in the drawer on every setup screen there is.
  */
 export async function openMoreSettings(page: Page) {
-  const shut = await page
-    .getByTestId("more-settings")
-    .evaluate((el) => (el as HTMLDetailsElement).open === false);
-  if (shut) await page.getByTestId("more-settings-open").click();
+  /*
+   * The set-up screen no longer folds anything — John: "so very hard to see..."
+   * — so there the rules are on the page and this only waits for them. It still
+   * opens a drawer where there is one, so a spec that calls it does not have to
+   * know which kind of screen it is on.
+   */
+  const drawer = page.getByTestId("more-settings");
+  if ((await drawer.count()) > 0) {
+    const shut = await drawer.evaluate((el) => (el as HTMLDetailsElement).open === false);
+    if (shut) await page.getByTestId("more-settings-open").click();
+  }
   await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
 }
 

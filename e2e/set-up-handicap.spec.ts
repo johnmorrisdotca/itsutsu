@@ -25,7 +25,7 @@ const tidyAway = gamesMade();
  * something the two players have to have agreed before a stone goes down.
  */
 test.describe("a handicap is chosen where the rest of the rules are", () => {
-  test("is offered, folded away, and opens on a colour", async ({ browser, baseURL }) => {
+  test("is offered in plain sight, and opens on a colour", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
     const context = await memberContext(browser, baseURL!, {
       email: `handicap-${stamp}@example.test`,
@@ -35,9 +35,9 @@ test.describe("a handicap is chosen where the rest of the rules are", () => {
     await page.goto("/games/gomoku/new");
     await ready(page, "set-up-game");
     /*
-     * The handicap is folded with the opening, the clock, the ratings and the
-     * opponent: settings about a game already chosen, behind one line. So a
-     * reader opens the drawer to reach it, and so does this.
+     * The handicap is in plain sight under its own heading, after the rules: the
+     * screen folds nothing now ("so very hard to see..."). This waits for the
+     * rules to be drawn, which is all `openMoreSettings` does on this screen.
      */
     await openMoreSettings(page);
 

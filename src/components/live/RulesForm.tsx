@@ -19,12 +19,12 @@ import { Field, Select, Toggle } from "@/components/ui/Controls";
 import type { ReactNode } from "react";
 import { BoardPicker } from "./BoardPicker";
 import { GamePicker } from "./GamePicker";
-import { MoreSettings } from "./MoreSettings";
+import { SET_UP_COPY } from "./live.constants";
 import { OpeningPicker } from "./OpeningPicker";
 import { RatedPicker } from "./RatedPicker";
 import { penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
-import { describeSettings, type SettingWord } from "./rulesSummary";
+import { SetUpSection } from "./SetUpSection";
 
 /**
  * How the two biggest choices are drawn. NOT which rules are offered — that
@@ -75,7 +75,7 @@ export function RulesForm({
   variantLabel = "Rules",
   chooser = RULES_CHOOSERS.select,
   refused,
-  fold,
+  sections,
   onSizeChosen,
 }: {
   value: RulesDraft;
@@ -136,27 +136,28 @@ export function RulesForm({
    */
   refused: RatingRefusal | null;
   /**
-   * Fold everything that is not the game or the board behind a line saying
-   * what it currently is — see `MoreSettings` for the measurement that made
-   * this necessary rather than nice.
+   * THE SET-UP SCREEN'S GROUPS, drawn open under headings: who you play straight
+   * after the board, then these rules, then a handicap.
    *
-   * ONE PROP RATHER THAN A FLAG AND TWO SLOTS, because it is one idea: the
-   * caller has settings of its own to fold in with these, and saying so is
-   * what asks for the fold. The setup screen's opponent belongs inside the
-   * same drawer as the clock — it is a setting about a game already chosen —
-   * but it lives in that screen rather than in these rules, so it arrives
-   * here instead of being reached for.
+   * They used to fold behind one grey line, "The rest of the rules", to keep the
+   * Start button above an iPad's fold. John, on Halma: "Why can't I choose
+   * someone in this Halma page? … where are the options to change other
+   * settings?" — and, having found them, "so very hard to see...". A button a
+   * reader can reach is worth nothing if the choices above it cannot be seen, so
+   * nothing here folds; the page is long, and its headings are what make it
+   * readable. The opponent comes first because it is the question people come
+   * with after the game: who.
    *
-   * Absent on the panel beside a board, where every rule is inline: that
-   * panel is a narrow column about a game already in progress, there is no
-   * Start button under it to push off a screen, and a reader who opened it
-   * came to read the rules rather than to choose a game.
+   * The caller's own controls arrive here rather than being reached for, because
+   * they live on that screen rather than in these rules. Either may be null
+   * where the screen has nothing to ask — a fork, whose opponent and handicap
+   * come with the position — and its heading is then not drawn.
+   *
+   * Absent on the panel beside a board, where every rule is inline.
    */
-  fold?: {
-    /** The caller's own words, appended after the rules' own. */
-    summary: SettingWord[];
-    /** The caller's own controls, placed inside after the rules' own. */
-    fields: ReactNode;
+  sections?: {
+    opponent: ReactNode | null;
+    handicap: ReactNode | null;
   };
   /**
    * Told when somebody chooses a board themselves, so a caller that was
@@ -396,14 +397,8 @@ export function RulesForm({
     </>
   );
 
-  /*
-   * Inline unless the caller asked for the rest to be folded. The summary is
-   * built HERE, from the same `value` the controls above are bound to, so it
-   * cannot describe a game other than the one the button would start — see
-   * `describeSettings`. The caller's own words come after, in the order its
-   * own fields appear inside.
-   */
-  if (fold === undefined) {
+  /* Inline, unless the caller has groups of its own to draw these among. */
+  if (sections === undefined) {
     return (
       <>
         {head}
@@ -411,13 +406,23 @@ export function RulesForm({
       </>
     );
   }
+  const words = SET_UP_COPY.sections;
   return (
     <>
       {head}
-      <MoreSettings summary={[...describeSettings(value, refused), ...fold.summary]}>
+      {sections.opponent !== null ? (
+        <SetUpSection title={words.opponent.title} kanji={words.opponent.kanji} testId="set-up-who">
+          {sections.opponent}
+        </SetUpSection>
+      ) : null}
+      <SetUpSection title={words.rules.title} kanji={words.rules.kanji} testId="set-up-rules">
         {rest}
-        {fold.fields}
-      </MoreSettings>
+      </SetUpSection>
+      {sections.handicap !== null ? (
+        <SetUpSection title={words.handicap.title} kanji={words.handicap.kanji} testId="set-up-handicap-group">
+          {sections.handicap}
+        </SetUpSection>
+      ) : null}
     </>
   );
 }

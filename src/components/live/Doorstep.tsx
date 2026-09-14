@@ -13,10 +13,11 @@ import { DoorstepPictures } from "./DoorstepPictures";
 import { RulesStatement } from "./RulesStatement";
 import { DOORSTEP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
 import { useGameBegunHere } from "./doorstepMemory";
+import { drawnCreation } from "./setUpStart";
 import type { RulesDraft } from "./rulesDraft";
 
 /**
- * THE DOORSTEP. The page between "Start the game" and the board.
+ * THE DOORSTEP. The page between the set-up screen's Continue and the board.
  *
  * John, having asked for it more times than anybody should have to: "I still DO
  * NOT, after asking many times, see a secondary page, after pressing Start the
@@ -142,7 +143,10 @@ export function Doorstep({
           ? taking
             ? await takeSeat(begin)
             : await create(begin.instead, variant)
-          : await create(begin.body, variant);
+          : begin.kind === "draw"
+            ? // The one draw: made here, as the game is created, and never before.
+              await create(drawnCreation(begin.body, begin.pool, Math.random()), variant)
+            : await create(begin.body, variant);
       if (typeof landed !== "string") {
         setError(landed.error);
         // A seat that could not be taken is a seat somebody else has. Say so, and
@@ -273,9 +277,15 @@ export function Doorstep({
   );
 }
 
-/** What Begin will do. Two shapes, because they are two different acts. */
+/** What Begin will do. Three shapes, because they are three different acts. */
 export type BeginAction =
   | { kind: "create"; body: Record<string, unknown> }
+  /*
+   * A game against a computer player drawn at random from `pool`. The draw is made
+   * as Begin is pressed and not before, so a reload of this page never shows one
+   * program and makes another.
+   */
+  | { kind: "draw"; body: Record<string, unknown>; pool: readonly { id: string; name: string }[] }
   | {
       kind: "sit";
       id: string;

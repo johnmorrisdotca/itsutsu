@@ -1,5 +1,8 @@
+import type { ReactNode } from "react";
+
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import type { RulesDraft } from "./rulesDraft";
+import type { SettingWord } from "./rulesSummary";
 
 /** One setting as an address says it: its query name and its word. */
 export type SetUpParam = [name: string, value: string];
@@ -21,6 +24,36 @@ export type KeptBase = {
   pathVariant: RuleVariant | null;
   /** Who silence plays: the person a rematch repeats, and nobody otherwise. */
   silentOpponent: string | null;
+};
+
+/** One titled group of choices on the set-up screen. */
+export type SetUpSectionProps = {
+  title: string;
+  kanji: string;
+  testId: string;
+  children: ReactNode;
+};
+
+/** The sentences that head the set-up form, saying what this one is. */
+export type SetUpNoticesProps = {
+  problem: string | null;
+  again: SetUpAgain | null;
+  /** A rematch nobody has changed, which is still a repeat of the game it came from. */
+  repeat: boolean;
+  /** The name of the player chosen, for a rematch's sentence. */
+  chosenName: string | null;
+  fork: SetUpFork | null;
+  opponent: SetUpOpponent | null;
+  /** A named player the chosen game does not offer, whose offer has lapsed. */
+  dropped: string | null;
+  /** The chosen game, named inside that sentence. */
+  variant: string;
+};
+
+/** A line of a game's settings, as words. */
+export type SettingWordsProps = {
+  words: readonly SettingWord[];
+  testId: string;
 };
 
 /**
@@ -132,6 +165,11 @@ export type SetUpFrom = {
    */
   boardChosen: number | null;
   opponent: SetUpOpponent | null;
+  /**
+   * The address asked for a computer player drawn at random, and nobody has been
+   * drawn: the draw is made when Begin creates the game — see `drawnCreation`.
+   */
+  drawComputer: boolean;
   again: SetUpAgain | null;
   fork: SetUpFork | null;
   /**

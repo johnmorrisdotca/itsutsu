@@ -2,6 +2,8 @@ import { join } from "node:path";
 
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
+import { GAME_FAMILIES } from "../src/lib/gomoku/families";
+import { slugFor } from "../src/lib/gomoku/slugs";
 import { memberContext, removeMember } from "./members";
 import { chooseBoard, chooseGame, chooseRated, chosenBoard, chosenRated, openMoreSettings, ready } from "./support";
 
@@ -67,12 +69,15 @@ function chosenGame(page: Page) {
   return page.locator('[data-testid="set-up-variant"][data-chosen="true"]');
 }
 
-/** The space between the chosen game's card and the line saying what the game is. */
-async function gapUnderGame(page: Page, variant: string) {
-  const card = await page.locator(`[data-testid="set-up-variant"][data-variant="${variant}"]`).boundingBox();
+/**
+ * The space between the open family's LAST game card and the line saying what the
+ * chosen game is — where the empty rows used to sit, whichever family is open.
+ */
+async function gapUnderFamily(page: Page) {
+  const last = await page.getByTestId("set-up-family-games").getByTestId("set-up-variant").last().boundingBox();
   const hint = await page.getByTestId("set-up-variant-hint").boundingBox();
-  if (card === null || hint === null) throw new Error("the game card or its line is not drawn");
-  return hint.y - (card.y + card.height);
+  if (last === null || hint === null) throw new Error("the family's cards or the game's line are not drawn");
+  return hint.y - (last.y + last.height);
 }
 
 async function expectGoThirteenFriendly(page: Page) {
@@ -102,8 +107,8 @@ test.describe("the set-up screen keeps its choices", () => {
       await ready(page, "set-up-game");
       await expect(chosenGame(page)).toHaveAttribute("data-variant", "checkers");
       await expect(chosenBoard(page)).toHaveAttribute("data-size", "8");
-      // The lone Checkers card sits on its line, without a band of empty rows under it.
-      expect(await gapUnderGame(page, "checkers")).toBeLessThan(24);
+      // The family's cards sit on the game's line, without a band of empty rows under them.
+      expect(await gapUnderFamily(page)).toBeLessThan(24);
       await shot(page, "setupkeeps-checkers-after-reload");
 
       // The watcher is not blind: the reload itself was a document it saw.
@@ -193,14 +198,25 @@ test.describe("the set-up screen keeps its choices", () => {
     }
   });
 
-  test("on a phone the lone Checkers card has no empty band under it", async ({ browser, baseURL }) => {
-    const { context, page, email } = await freshMember(browser, baseURL!, "phone", { width: 400, height: 860 });
+  test("the smallest family has no empty band under its games, on a desk and on a phone", async ({ browser, baseURL }) => {
+    /*
+     * Whichever family holds the fewest games, found from the table rather than
+     * named. Checkers was the one-game family when this was written and gained
+     * five draughts games the same week — which is how a named example quietly
+     * stops testing the thing it was named for.
+     */
+    const smallest = [...GAME_FAMILIES].sort((one, two) => one.games.length - two.games.length)[0];
+    const lone = smallest.games[0];
+    const { context, page, email } = await freshMember(browser, baseURL!, "smallest");
     try {
-      await page.goto("/games/new?game=checkers");
+      await page.goto(`/games/new?game=${slugFor(lone)}`);
       await ready(page, "set-up-game");
-      await expect(chosenGame(page)).toHaveAttribute("data-variant", "checkers");
-      expect(await gapUnderGame(page, "checkers")).toBeLessThan(24);
-      await shot(page, "setupkeeps-checkers-phone");
+      await expect(chosenGame(page)).toHaveAttribute("data-variant", lone);
+      expect(await gapUnderFamily(page)).toBeLessThan(24);
+      await shot(page, "setupkeeps-smallest-family-desk");
+      await page.setViewportSize({ width: 400, height: 860 });
+      expect(await gapUnderFamily(page)).toBeLessThan(24);
+      await shot(page, "setupkeeps-smallest-family-phone");
     } finally {
       await context.close();
       await removeMember(email);

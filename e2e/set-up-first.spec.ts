@@ -81,9 +81,8 @@ test.describe("play leads to settling a game, not to a board", () => {
      * say nothing at all.
      */
     await openSetUpPage(page, "gomoku");
-    // The summary line is the present sibling: the opponent select moved
-    // behind it and is hidden until somebody opens it.
-    await expect(page.getByTestId("more-settings-open")).toBeVisible();
+    // The rules group is the present sibling, drawn open under its heading.
+    await expect(page.getByTestId("set-up-rules")).toBeVisible();
     await expect(page.getByTestId("shared-rules-variant")).toHaveCount(0);
   });
 

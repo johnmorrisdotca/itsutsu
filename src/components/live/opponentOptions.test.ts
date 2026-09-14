@@ -5,7 +5,7 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { Opponent } from "@/lib/social/opponents";
 
-import { ANYONE, capTiles, idIn, opponentGroups, shownChoice, valueFor } from "./opponentOptions";
+import { ANYONE, RANDOM_COMPUTER, capTiles, idIn, opponentGroups, shownChoice, valueFor } from "./opponentOptions";
 import { OPPONENT_GROUPS, PEOPLE_CAP } from "./picker.constants";
 
 /**
@@ -47,16 +47,23 @@ describe("opponentGroups", () => {
     ]);
   });
 
-  it("offers at every game exactly the programs that play it, with their grades", () => {
+  it("offers at every game exactly the programs that play it, with their grades, and a random one after them", () => {
     for (const variant of RULE_VARIANT_LIST) {
       const programs = opponentGroups({ variant, opponents: [], named: null }).find(
         (group) => group.kind === OPPONENT_GROUPS.computer,
       );
       const expected = botsFor(variant as RuleVariant);
-      expect(programs?.tiles.map((tile) => tile.value), variant).toEqual(expected.map((bot) => `c:${bot.id}`));
+      // A draw needs more than one to draw from; a draw of one is that program under a vaguer name.
+      const random = expected.length > 1 ? [RANDOM_COMPUTER] : [];
+      expect(programs?.tiles.map((tile) => tile.value), variant).toEqual([
+        ...expected.map((bot) => `c:${bot.id}`),
+        ...random,
+      ]);
       for (const tile of programs?.tiles ?? []) {
         expect(tile.computer).toBe(true);
-        expect(tile.tier, `${variant} ${tile.value}`).not.toBeNull();
+        // Every program has its grade; the random tile has none, since nobody has been drawn.
+        if (tile.value === RANDOM_COMPUTER) expect(tile.tier).toBeNull();
+        else expect(tile.tier, `${variant} ${tile.value}`).not.toBeNull();
       }
     }
   });

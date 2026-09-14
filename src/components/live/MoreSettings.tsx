@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { FOCUS_RING, SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { SettingWord } from "./rulesSummary";
+import { SettingWords } from "./SettingWords";
 
 /**
  * The settings that are not the game or the board, folded behind the line
@@ -69,29 +70,7 @@ export function MoreSettings({
           <span className={SECTION_TITLE}>
             The rest of the rules <span className="font-mincho normal-case tracking-normal">残りの規則</span>
           </span>
-          {/*
-            One line, wrapping rather than truncating: a summary cut off at
-            the edge of the panel is a summary that stops being true halfway
-            along, which is the one thing it must not do.
-
-            The notable ones are drawn in ink and the ordinary ones muted, so
-            a clock or an unrated game catches the eye in a line that is
-            otherwise the same on every visit. Weight and colour together,
-            never colour alone.
-          */}
-          <span className="flex flex-wrap items-baseline gap-x-1.5 text-xs" data-testid="more-settings-summary">
-            {summary.map((word, at) => (
-              <span key={word.text} className="flex items-baseline gap-1.5">
-                {at > 0 ? <span aria-hidden="true" className="text-muted/60">·</span> : null}
-                <span
-                  className={word.notable ? "font-semibold text-ink" : "text-muted"}
-                  data-notable={word.notable ? "true" : "false"}
-                >
-                  {word.text}
-                </span>
-              </span>
-            ))}
-          </span>
+          <SettingWords words={summary} testId="more-settings-summary" />
         </span>
         {/*
           Turned a quarter when open, which is the one place this differs from

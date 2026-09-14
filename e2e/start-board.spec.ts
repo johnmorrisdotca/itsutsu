@@ -105,7 +105,7 @@ test.describe("choosing the board before the game exists", () => {
      * The two halves are separate assertions because they are separate facts:
      * the board is stated, and it is the only one.
      */
-    await expect(page.getByTestId("more-settings-open")).toBeVisible();
+    await expect(page.getByTestId("set-up-rules")).toBeVisible();
     await expect(page.getByTestId("set-up-size")).toHaveCount(1);
     await expect(chosenBoard(page)).toHaveAttribute("data-size", "8");
     await expect(chosenBoard(page)).toHaveAttribute("data-only", "true");
@@ -184,7 +184,7 @@ test.describe("choosing the board before the game exists", () => {
 
     // Nobody has touched the board, and it has found them.
     await expect(chosenBoard(page)).toHaveAttribute("data-size", "9");
-    await expect(page.getByTestId("set-up-start")).toContainText(/Sit down with/);
+    await expect(page.getByTestId("set-up-start")).toContainText(/sit down with/i);
   });
 
   test("only offers a posted seat that is on the board being asked for", async ({ page, browser, baseURL }) => {
@@ -209,11 +209,11 @@ test.describe("choosing the board before the game exists", () => {
 
     // Asking for their board offers their seat…
     await chooseBoard(page, 9);
-    await expect(page.getByTestId("set-up-start")).toContainText(/Sit down with/);
+    await expect(page.getByTestId("set-up-start")).toContainText(/sit down with/i);
 
     // …and asking for a different one does not pretend it will do.
     await chooseBoard(page, 19);
-    await expect(page.getByTestId("set-up-start")).not.toContainText(/Sit down with/);
+    await expect(page.getByTestId("set-up-start")).not.toContainText(/sit down with/i);
   });
 
   test("keeps a chosen board across a game that cannot use it", async ({ page }) => {
@@ -224,7 +224,7 @@ test.describe("choosing the board before the game exists", () => {
     // own board as the only block there is — see the case above — so what this
     // waits on is the row holding exactly one, rather than holding none.
     await chooseGame(page, "reversi");
-    await expect(page.getByTestId("more-settings-open")).toBeVisible();
+    await expect(page.getByTestId("set-up-rules")).toBeVisible();
     await expect(page.getByTestId("set-up-size")).toHaveCount(1);
     await chooseGame(page, "freestyle");
 

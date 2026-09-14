@@ -77,7 +77,7 @@ test.describe("a seat somebody else is waiting on", () => {
     await expect(
       page.getByTestId("set-up-start"),
       "my own seat hid a stranger's identical one",
-    ).toContainText("Sit down with");
+    ).toContainText(/sit down with/i);
     await expect(page.getByTestId("set-up-match")).toContainText(`Waiting ${stamp}`);
   });
 });

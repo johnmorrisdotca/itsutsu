@@ -172,3 +172,25 @@ export function openerIn(carry: Record<string, unknown>): Stone {
   const opener = carry.opener;
   return opener === STONES.black || opener === STONES.white ? opener : FIRST_STONE;
 }
+
+/**
+ * A GAME AGAINST A COMPUTER PLAYER DRAWN AT RANDOM, as the creation route is asked
+ * for it: the same body, made a challenge to one program from the pool.
+ *
+ * The draw is made here, once, as Begin creates the game — not on the set-up
+ * screen and not when the doorstep is drawn, either of which a reload would
+ * repeat with a different answer while the page claimed the first. `roll` is the
+ * caller's random number in [0, 1), passed in so the choice is testable; a roll
+ * at the very top of the range still lands on the last program rather than past
+ * it. An empty pool is a refusal to guess: the body goes as it was, a seat for
+ * anyone, which is what nobody-to-draw-from honestly is.
+ */
+export function drawnCreation(
+  body: Record<string, unknown>,
+  pool: readonly { id: string }[],
+  roll: number,
+): Record<string, unknown> {
+  if (pool.length === 0) return body;
+  const at = Math.min(pool.length - 1, Math.max(0, Math.floor(roll * pool.length)));
+  return { ...body, open: false, challengeId: pool[at].id };
+}

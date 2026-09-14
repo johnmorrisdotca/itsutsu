@@ -62,7 +62,12 @@ export function HandicapChoice({
 
   return (
     <div className="flex flex-col gap-3" data-testid="set-up-handicap">
-      <Field label={GAME_COPY.handicap.label} hint={SET_UP_COPY.handicapHint}>
+      {/*
+        "Harder rules for", not "Handicap" again: the group's heading already says
+        Handicap, and this control asks which colour takes on the harder game. A
+        head start for the weaker colour is planned as its own control above it.
+      */}
+      <Field label={SET_UP_COPY.handicapFor} hint={SET_UP_COPY.handicapHint}>
         <Select
           value={stone ?? NONE}
           disabled={disabled}
