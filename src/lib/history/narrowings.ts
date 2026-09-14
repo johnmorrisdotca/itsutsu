@@ -1,3 +1,5 @@
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import type { Vars } from "@/lib/i18n/i18n.types";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 import {
@@ -25,6 +27,13 @@ export type AppliedPlayer = {
   removable: boolean;
   /** Which parameter named them, when it was `?member=<id>` rather than `?player=`. See `Narrowing.clears`. */
   via?: "member";
+  /**
+   * The other member of a pair, when the record was narrowed to the games
+   * between two people (`?member=A&against=B`) — and ONLY when the query
+   * applied it, which is `between` being set. An `against` the query dropped
+   * gets no chip, for the reason every chip here has to be earned.
+   */
+  against?: { name: string; memberId: string };
 };
 
 export type Narrowing = {
@@ -45,6 +54,18 @@ export type Narrowing = {
    * spelling brought the reader here.
    */
   clears?: string;
+  /**
+   * Parameters that go with it. Taking the player off a pair's record takes
+   * the pair off too: `against` with nobody on the other side narrows nothing,
+   * and leaving it in the address would be a filter sitting there doing nothing.
+   */
+  alsoClears?: readonly string[];
+  /**
+   * The chip's words in the reader's language, where they have a phrase. The
+   * older chips still carry English `label` alone; this is how a new one says
+   * itself without that, and `label` stays beside it as the English form.
+   */
+  phrase?: { key: PhraseKey; vars: Vars };
   /** Present when this chip leads to the player's own page instead of removing anything. */
   href?: string;
 };
@@ -88,7 +109,9 @@ export function appliedNarrowings(input: {
           label: `${shownName(player.name)}'s games`,
           href: player.removable ? undefined : playerPath(player.name, player.memberId),
           ...(player.via === "member" ? { clears: "member" } : {}),
+          ...(player.against !== undefined ? { alsoClears: ["against"] } : {}),
         },
+    player === null || player.against === undefined ? null : againstChip(player.against.name),
     outcome === "" || (player === null && outcomeNeedsPlayer(outcome))
       ? null
       : named("outcome", outcomeLabel(outcome)),
@@ -98,6 +121,17 @@ export function appliedNarrowings(input: {
     verdict === "" || player === null ? null : named("verdict", verdictLabel(verdict)),
   ];
   return list.filter((one): one is Narrowing => one !== null);
+}
+
+/**
+ * The other member of a pair's record: "against Dan", with its own "×".
+ *
+ * Shown by `shownName` like the player chip beside it, and in the reader's
+ * language through its phrase. Taking it off leaves that player's games.
+ */
+function againstChip(name: string): Narrowing {
+  const shown = shownName(name);
+  return { key: "against", label: `against ${shown}`, phrase: { key: "rivalry.against", vars: { name: shown } } };
 }
 
 /**

@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (43)
+## 1. Written by a machine — please check these (83)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -48,6 +48,46 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | After earning points — the notice that drops in from the top of the page | {count} to {name} | **{name}まであと{count}** | {count} more to go until {name}. |  |
 | After earning points — the notice that drops in from the top of the page | XP | **経験値** | Experience points. |  |
 | Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Download as SGF | **SGF形式でダウンロード** | Download in SGF format. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | against {name} | **{name}との対戦** | Games against {name}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between {one} and {other} has been a draw | **{one}と{other}の対局はすべて引き分け** | Every game between {one} and {other} has been a draw. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between you and {name} has been a draw | **{name}との対局はすべて引き分け** | Every game with {name} has been a draw. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | All games | **通算** | All-time total. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {winner} has beaten {loser} {count} times in a row | **{winner}が{loser}に{count}連勝中** | {winner} is on {count} wins in a row against {loser}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You've beaten {name} {count} times in a row | **{name}に{count}連勝中** | You are on {count} wins in a row against {name}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} leads you {score} | **{name}があなたに{score}でリード** | {name} leads you {score}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last {count} games between {one} and {other} were draws | **{one}と{other}の直近{count}局は引き分け** | The last {count} games between {one} and {other} were draws. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Your last {count} games against {name} were draws | **{name}との直近{count}局は引き分け** | Your last {count} games with {name} were draws. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Draws | **引き分け** | Draws. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name}'s first win against you | **{name}があなたに初勝利** | {name} wins against you for the first time. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {winner}'s first win against {loser} | **{winner}が{loser}に初勝利** | {winner} wins against {loser} for the first time. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Your first win against {name} | **{name}に対するあなたの初勝利** | Your first win against {name}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Games | **対局数** | Number of games played. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in {count} months | **{one}と{other}は{count}か月対戦していません** | {one} and {other} have not played each other for {count} months. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in {count} months | **{name}とは{count}か月対戦していません** | You have not played {name} for {count} months. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in a year | **{one}と{other}は1年対戦していません** | {one} and {other} have not played each other for a year. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in a year | **{name}とは1年対戦していません** | You have not played {name} for a year. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in {count} years | **{one}と{other}は{count}年対戦していません** | {one} and {other} have not played each other for {count} years. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in {count} years | **{name}とは{count}年対戦していません** | You have not played {name} for {count} years. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Last played | **最後の対局** | The last game played. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {leader} leads {trailer} {score} | **{leader}が{trailer}に{score}でリード** | {leader} leads {trailer} {score}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You lead {name} {score} | **{name}に{score}でリード** | You lead {name} {score}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You've lost to {name} {count} times in a row | **{name}に{count}連敗中** | You are on {count} losses in a row to {name}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} have never played each other | **{one}と{other}はまだ対戦したことがありません** | {one} and {other} have not yet ever played each other. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} have never played each other | **あなたと{name}はまだ対戦したことがありません** | You and {name} have not yet ever played each other. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} have never played {game} before | **{one}と{other}は{game}でまだ対戦したことがありません** | {one} and {other} have not yet played each other at {game}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} have never played {game} before | **あなたと{name}は{game}でまだ対戦したことがありません** | You and {name} have not yet played each other at {game}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Not yet | **まだなし** | None yet. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Streak | **連続** | In a row. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last game was a draw | **直近の対局は引き分け** | The most recent game was a draw. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last {count} were draws | **{count}局連続で引き分け** | {count} games in a row were draws. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} won the last game | **直近の対局は{name}の勝ち** | The most recent game was won by {name}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} won the last {count} | **{name}が{count}連勝中** | {name} is on {count} wins in a row. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} are tied {score} | **{one}と{other}は{score}で互角** | {one} and {other} are evenly matched at {score}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} are tied {score} | **あなたと{name}は{score}で互角** | You and {name} are evenly matched at {score}. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Head to head | **対戦成績** | Head-to-head record. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | A player | **名前のない対局者** | A player with no name. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | vs | **対** | Versus. |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Wins | **勝ち** | Wins. |  |
 | — — — | Whoever comes along first takes the other seat. | **最初に来た人がもう一方の席に着きます。** | The first person to come sits in the other seat. |  |
 | — — — | Asked for | **指名** | Nominated — the person named for this game. |  |
 | — — — | Friendly | **親善対局** | Friendly game. |  |

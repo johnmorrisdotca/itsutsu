@@ -10,7 +10,7 @@ import {
 import { isRefusal } from "@/lib/api/paging";
 import { fetchGameHistoryPage } from "@/lib/history/gameHistory";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
-import { memberUnknownRefusal, resolveMember } from "@/lib/history/recordMember";
+import { againstUnknownRefusal, memberUnknownRefusal, resolveMember } from "@/lib/history/recordMember";
 import { gameRecordSchema, recordGame } from "@/lib/history/gameRecord";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 
@@ -65,8 +65,10 @@ export async function GET(request: Request) {
      * with a line saying the member could not be found, for the reason its own
      * comment gives. Two readers, two right answers, one lookup each.
      */
-    const { query, unknown } = await resolveMember(parsed);
+    const { query, unknown, againstUnknown } = await resolveMember(parsed);
     if (unknown) return badRequest(memberUnknownRefusal(parsed.member ?? ""));
+    // The other half of a pair, refused by name for the same reason.
+    if (againstUnknown) return badRequest(againstUnknownRefusal(parsed.against ?? ""));
 
     return NextResponse.json(await fetchGameHistoryPage(query), {
       status: 200,

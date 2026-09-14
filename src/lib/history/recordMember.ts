@@ -39,6 +39,10 @@ export type ResolvedMember = {
   query: GameHistoryQuery;
   /** The address carried an id that names nobody. */
   unknown: boolean;
+  /** `?against=` carried an id that names nobody, beside a member that does. */
+  againstUnknown: boolean;
+  /** The name the other member of a pair goes by, for the chip that says so; null with no pair. */
+  againstName: string | null;
 };
 
 /**
@@ -52,15 +56,35 @@ export type ResolvedMember = {
  * keeping the id around to be asked about twice more.
  */
 export async function resolveMember(query: GameHistoryQuery): Promise<ResolvedMember> {
-  if (query.member === null) return { query, unknown: false };
-  const name = await nameForMember(query.member);
-  if (name === null) return { query: { ...query, member: null }, unknown: true };
-  return { query: { ...query, player: name, member: null }, unknown: false };
+  const none = { unknown: false, againstUnknown: false, againstName: null };
+  if (query.member === null) return { query, ...none };
+  const memberId = query.member;
+  const name = await nameForMember(memberId);
+  if (name === null) return { query: { ...query, member: null, between: null }, ...none, unknown: true };
+  const resolved: GameHistoryQuery = { ...query, player: name, member: null, between: null };
+  /*
+   * A PAIR IS TWO DIFFERENT PEOPLE. `against` naming the member themselves is
+   * not a rivalry, and nothing is narrowed by it — the same silence an outcome
+   * gets with no player to read it against.
+   */
+  if (query.against === null || query.against === memberId) return { query: resolved, ...none };
+  const againstName = await nameForMember(query.against);
+  if (againstName === null) return { query: resolved, ...none, againstUnknown: true };
+  return {
+    query: { ...resolved, between: { member: memberId, against: query.against } },
+    ...none,
+    againstName,
+  };
 }
 
 /** What `/api/games` says to `?member=<id>` when the id names nobody. */
 export function memberUnknownRefusal(id: string): string {
   return `No member has the id "${id.trim()}", so these listing filters are not valid: member.`;
+}
+
+/** What `/api/games` says to `?against=<id>` when the id names nobody. */
+export function againstUnknownRefusal(id: string): string {
+  return `No member has the id "${id.trim()}", so these listing filters are not valid: against.`;
 }
 
 /**
@@ -78,6 +102,10 @@ export async function withMemberResolved(query: GameHistoryQuery): Promise<GameH
   const resolved = await resolveMember(query);
   if (resolved.unknown) {
     throw new Error(`Resolve ?member= before reading the record: ${memberUnknownRefusal(query.member ?? "")}`);
+  }
+  // Dropped silently, a pair would widen to one member's every game.
+  if (resolved.againstUnknown) {
+    throw new Error(`Resolve ?against= before reading the record: ${againstUnknownRefusal(query.against ?? "")}`);
   }
   return resolved.query;
 }

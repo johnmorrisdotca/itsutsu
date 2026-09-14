@@ -34,6 +34,8 @@ import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
 import { prisma } from "@/lib/prisma";
 import { forkOffered } from "@/lib/history/fork";
+import { RivalryPanel } from "@/components/history/RivalryPanel";
+import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 
 /** The site's own origin, taken from the request so links work behind any host. */
 async function origin(): Promise<string> {
@@ -403,6 +405,10 @@ async function LiveMatch({
     <Page width="wide" gap="gap-6">
       <SiteHeader />
       <SeatFullNotice shown={seatFull} />
+      {/* Before the first stone: who these two are to each other. See RivalryPanel. */}
+      {game.moveCount === 0 ? (
+        <RivalryPanel of={{ seats: { black: game.blackMemberId, white: game.whiteMemberId } }} variant={game.variant} moment={RIVALRY_MOMENTS.before} />
+      ) : null}
 
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
         <div className="w-full min-w-0 flex-1">

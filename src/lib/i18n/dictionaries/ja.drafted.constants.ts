@@ -258,4 +258,83 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "SGF形式でダウンロード",
     back: "Download in SGF format.",
   },
+
+  /*
+   * The rivalry scoreboard. 対戦 is "playing each other" and 対局 is "a game
+   * played", the words the site's own record already leans on; 連勝 and 連敗
+   * are the site's own streak kanji (`STREAK_DISPLAY`), so a run is the same
+   * word on a ladder and here. 互角 is "evenly matched", which is how a tie
+   * between two players is said rather than a tie in a table. The `.one` and
+   * `.other` pairs say the same thing where Japanese does not count in forms.
+   */
+  "rivalry.title": { text: "対戦成績", back: "Head-to-head record." },
+  "rivalry.versus": { text: "対", back: "Versus." },
+  "rivalry.wins": { text: "勝ち", back: "Wins." },
+  "rivalry.draws": { text: "引き分け", back: "Draws." },
+  "rivalry.games": { text: "対局数", back: "Number of games played." },
+  "rivalry.allGames": { text: "通算", back: "All-time total." },
+  "rivalry.lastPlayed": { text: "最後の対局", back: "The last game played." },
+  "rivalry.notYet": { text: "まだなし", back: "None yet." },
+  "rivalry.streak": { text: "連続", back: "In a row." },
+  "rivalry.against": { text: "{name}との対戦", back: "Games against {name}." },
+  "rivalry.unnamed": { text: "名前のない対局者", back: "A player with no name." },
+  "rivalry.streakWon.one": { text: "直近の対局は{name}の勝ち", back: "The most recent game was won by {name}." },
+  "rivalry.streakWon.other": { text: "{name}が{count}連勝中", back: "{name} is on {count} wins in a row." },
+  "rivalry.streakDrawn.one": { text: "直近の対局は引き分け", back: "The most recent game was a draw." },
+  "rivalry.streakDrawn.other": { text: "{count}局連続で引き分け", back: "{count} games in a row were draws." },
+  "rivalry.never.you": {
+    text: "あなたと{name}はまだ対戦したことがありません",
+    back: "You and {name} have not yet ever played each other.",
+  },
+  "rivalry.never.named": {
+    text: "{one}と{other}はまだ対戦したことがありません",
+    back: "{one} and {other} have not yet ever played each other.",
+  },
+  "rivalry.neverGame.you": {
+    text: "あなたと{name}は{game}でまだ対戦したことがありません",
+    back: "You and {name} have not yet played each other at {game}.",
+  },
+  "rivalry.neverGame.named": {
+    text: "{one}と{other}は{game}でまだ対戦したことがありません",
+    back: "{one} and {other} have not yet played each other at {game}.",
+  },
+  "rivalry.gapMonths.you": { text: "{name}とは{count}か月対戦していません", back: "You have not played {name} for {count} months." },
+  "rivalry.gapMonths.named": {
+    text: "{one}と{other}は{count}か月対戦していません",
+    back: "{one} and {other} have not played each other for {count} months.",
+  },
+  "rivalry.gapYear.you": { text: "{name}とは1年対戦していません", back: "You have not played {name} for a year." },
+  "rivalry.gapYear.named": {
+    text: "{one}と{other}は1年対戦していません",
+    back: "{one} and {other} have not played each other for a year.",
+  },
+  "rivalry.gapYears.you": { text: "{name}とは{count}年対戦していません", back: "You have not played {name} for {count} years." },
+  "rivalry.gapYears.named": {
+    text: "{one}と{other}は{count}年対戦していません",
+    back: "{one} and {other} have not played each other for {count} years.",
+  },
+  "rivalry.firstWin.you": { text: "{name}に対するあなたの初勝利", back: "Your first win against {name}." },
+  "rivalry.firstLoss.you": { text: "{name}があなたに初勝利", back: "{name} wins against you for the first time." },
+  "rivalry.firstWin.named": { text: "{winner}が{loser}に初勝利", back: "{winner} wins against {loser} for the first time." },
+  "rivalry.beaten.you": { text: "{name}に{count}連勝中", back: "You are on {count} wins in a row against {name}." },
+  "rivalry.lostTo.you": { text: "{name}に{count}連敗中", back: "You are on {count} losses in a row to {name}." },
+  "rivalry.beaten.named": {
+    text: "{winner}が{loser}に{count}連勝中",
+    back: "{winner} is on {count} wins in a row against {loser}.",
+  },
+  "rivalry.drawnRun.you": { text: "{name}との直近{count}局は引き分け", back: "Your last {count} games with {name} were draws." },
+  "rivalry.drawnRun.named": {
+    text: "{one}と{other}の直近{count}局は引き分け",
+    back: "The last {count} games between {one} and {other} were draws.",
+  },
+  "rivalry.allDrawn.you": { text: "{name}との対局はすべて引き分け", back: "Every game with {name} has been a draw." },
+  "rivalry.allDrawn.named": {
+    text: "{one}と{other}の対局はすべて引き分け",
+    back: "Every game between {one} and {other} has been a draw.",
+  },
+  "rivalry.tied.you": { text: "あなたと{name}は{score}で互角", back: "You and {name} are evenly matched at {score}." },
+  "rivalry.tied.named": { text: "{one}と{other}は{score}で互角", back: "{one} and {other} are evenly matched at {score}." },
+  "rivalry.lead.you": { text: "{name}に{score}でリード", back: "You lead {name} {score}." },
+  "rivalry.behind.you": { text: "{name}があなたに{score}でリード", back: "{name} leads you {score}." },
+  "rivalry.lead.named": { text: "{leader}が{trailer}に{score}でリード", back: "{leader} leads {trailer} {score}." },
 };

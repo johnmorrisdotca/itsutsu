@@ -92,6 +92,20 @@ export function HistoryFilters({
     [params, pathname, router],
   );
 
+  /*
+   * A chip's "×", which may take more than one parameter with it: the player
+   * of a pair's record takes the pair too. See `Narrowing.alsoClears`.
+   */
+  const remove = useCallback(
+    (keys: readonly string[]) => {
+      const next = new URLSearchParams(params.toString());
+      for (const key of keys) next.delete(key);
+      next.delete("page");
+      router.replace(`${pathname}?${next.toString()}`);
+    },
+    [params, pathname, router],
+  );
+
   const value = (key: string, fallback = "") => params.get(key) ?? fallback;
 
   /*
@@ -120,7 +134,10 @@ export function HistoryFilters({
           data-testid="history-narrowed"
         >
           <span className="text-muted">{say.say("filter.narrowedTo")}</span>
-          {narrowings.map((one) =>
+          {narrowings.map((chip) => ({
+            ...chip,
+            label: chip.phrase === undefined ? chip.label : say.say(chip.phrase.key, chip.phrase.vars),
+          })).map((one) =>
             one.href !== undefined ? (
               // The address itself is applying this one (/games/<slug>/me),
               // so there is nothing for a "×" to take off — it leads to the
@@ -140,7 +157,7 @@ export function HistoryFilters({
                 type="button"
                 // The parameter actually in the address, which for a player
                 // who arrived by a count's link is `member`, not `player`.
-                onClick={() => update(one.clears ?? one.key, "all")}
+                onClick={() => remove([one.clears ?? one.key, ...(one.alsoClears ?? [])])}
                 className="flex items-center gap-1.5 rounded-full border border-rule px-2.5 py-1 hover:border-ink-soft"
                 title={`Stop narrowing to ${one.label}`}
                 data-testid="history-narrowing"

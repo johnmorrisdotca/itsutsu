@@ -58,6 +58,13 @@ export function gamesHref(options: {
    * would open a shorter list than the count it came from.
    */
   memberId?: string | null;
+  /**
+   * The other member, BY ID, when what was counted is the games between two
+   * people — a rivalry's score. Only beside `memberId`: a pair is read by id on
+   * both seats, and "against somebody" with nobody named on this side is just
+   * their games, which already has an address.
+   */
+  against?: string | null;
   /** How they went for that player. */
   outcome?: GameOutcome;
   /**
@@ -85,6 +92,9 @@ export function gamesHref(options: {
   const id = options.memberId?.trim() ?? "";
   if (id !== "") {
     query.set("member", id);
+    // A pair is two different people; the same id twice is nobody's rivalry.
+    const against = options.against?.trim() ?? "";
+    if (against !== "" && against !== id) query.set("against", against);
   } else if (options.player !== undefined && options.player.trim() !== "") {
     query.set("player", options.player.trim());
   }
@@ -101,6 +111,7 @@ export function GameCount({
   variant,
   player,
   memberId,
+  against,
   outcome,
   pool,
   rated,
@@ -117,6 +128,8 @@ export function GameCount({
   player?: string;
   /** Their id, which is what the address carries when there is one. See `gamesHref`. */
   memberId?: string | null;
+  /** The other member of a pair, by id. See `gamesHref`. */
+  against?: string | null;
   outcome?: GameOutcome;
   pool?: GamePoolFilter;
   rated?: GameRatedFilter;
@@ -147,7 +160,7 @@ export function GameCount({
   }
   return (
     <Link
-      href={gamesHref({ variant, player, memberId, outcome, pool, rated, verdict })}
+      href={gamesHref({ variant, player, memberId, against, outcome, pool, rated, verdict })}
       className={`underline-offset-2 hover:underline ${raised ? RAISED_LINK : ""} ${className}`}
       title={title}
       data-testid={testId ?? "game-count"}
