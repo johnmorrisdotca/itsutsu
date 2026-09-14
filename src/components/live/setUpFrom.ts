@@ -10,6 +10,7 @@ import { parseHandicap } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
 import { SET_UP_UNREAD } from "./live.constants";
+import { RANDOM_COMPUTER } from "./opponentOptions";
 import { plainDraft, silentDraft } from "./plainDraft";
 import { draftFromGame, type RulesDraft } from "./rulesDraft";
 import { boardAsked, readSetUpAsked, type SetUpAsked } from "./setUpAsked";
@@ -56,7 +57,12 @@ export async function setUpFrom({
   if (want.rematch !== null) return await fromFinishedGame(want.rematch, variant, want, asked);
   if (want.from !== null) return await fromPosition(want.from, variant, want, asked);
 
-  const opponent = want.against === null ? null : await personNamed(want.against);
+  /*
+   * A computer player drawn at random is asked for by a word, not an id: nobody
+   * has been drawn, and nobody will be until Begin creates the game.
+   */
+  const drawComputer = want.against === RANDOM_COMPUTER;
+  const opponent = want.against === null || drawComputer ? null : await personNamed(want.against);
   /*
    * THE GAME, WHICH A NAMED COMPUTER PLAYER CAN DECIDE WHEN THE ADDRESS HAS NOT.
    *
@@ -96,11 +102,12 @@ export async function setUpFrom({
     asPlayed: null,
     boardChosen: settledBoard,
     opponent,
+    drawComputer,
     again: null,
     fork: null,
     carry: {},
     problem: withUnread(
-      want.against !== null && opponent === null
+      want.against !== null && !drawComputer && opponent === null
         ? "Whoever that link named cannot be reached for a game. Pick somebody below."
         : null,
       unreadAsked(asked, want, initial, false),
@@ -222,6 +229,7 @@ async function fromFinishedGame(
      */
     boardChosen: boardAsked(want, asPlayed.variant as RuleVariant),
     opponent: them,
+    drawComputer: false,
     again,
     fork: null,
     carry: carriedFrom(origin),
@@ -282,6 +290,7 @@ async function fromPosition(
      */
     boardChosen: null,
     opponent: them,
+    drawComputer: false,
     again: null,
     fork,
     carry: carriedFrom(origin),
@@ -357,6 +366,7 @@ function blankFrom(variant: RuleVariant | null): SetUpFrom {
     /* Nothing was filled in at all, so nothing about the board was settled. */
     boardChosen: null,
     opponent: null,
+    drawComputer: false,
     again: null,
     fork: null,
     carry: {},

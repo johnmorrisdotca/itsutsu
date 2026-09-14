@@ -7,9 +7,6 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { botsFor } from "@/lib/bots/bots.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { beginLink } from "./setUpAddress";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
 import { START_COPY } from "@/components/mine/mine.constants";
 import type { Opponent } from "@/lib/social/opponents";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
@@ -18,18 +15,21 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { HandicapChoice } from "./HandicapChoice";
 import { OpponentChoice } from "./OpponentChoice";
-import { ANYONE, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
+import { ANYONE, RANDOM_COMPUTER, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
-import { describeRules } from "./rulesSummary";
+import { describeRules, describeSettings } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
+import { matchSeat } from "./seatMatch";
+import { beginLink } from "./setUpAddress";
 import { readSetUpAsked } from "./setUpAsked";
 import { keptBoardChosen, keptDraft, keptParams, queryRecord } from "./setUpKept";
+import { SetUpNotices } from "./SetUpNotices";
+import { SettingWords } from "./SettingWords";
+import { sameRules, seatsFor } from "./setUpStart";
+import { recapWords } from "./setUpWords";
 import type { KeptBase, KeptDefaults, SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 import { useKeptAddress } from "./useKeptAddress";
-import { matchSeat } from "./seatMatch";
-import { sameRules, seatsFor } from "./setUpStart";
-import { foldedWords } from "./setUpWords";
 
 /**
  * SETTLING A GAME BEFORE THERE IS A GAME — EVERY GAME, FROM EVERYWHERE.
@@ -41,20 +41,12 @@ import { foldedWords } from "./setUpWords";
  * that stops matching its own game when the rules move under it, and a posted
  * seat somebody could still change out from under whoever answered it.
  *
- * So nothing exists until the button at the bottom. Until then this is a form
- * and a sentence describing what it will make, and the game is created once,
- * settled, with the rules it will be played under.
+ * So nothing exists until the button at the bottom, and not even then: Continue
+ * carries the settled draft to the doorstep, which states it and creates it on a
+ * press of its own.
  *
- * WHAT CHANGED SECOND, AND IS THE POINT OF THE PRESENT ROUND: this screen was
- * built and then reached from exactly one place. A player's page, the players
- * list, the computer players tab, a rematch, a fork and the lobby sentence all
- * went on creating a game the instant they were pressed — so John, looking at a
- * computer player's page, pressed Play and was in a game of Gomoku he had not
- * asked for. His words: "you're playing Gomoku with an accidental click (or
- * just clicking around). I keep telling you we need to take the user to the
- * Game settings page, the page BEFORE the game starts."
- *
- * Now every one of them arrives HERE, with whatever it already knows filled in:
+ * Every way of starting a game arrives HERE, with whatever it already knows
+ * filled in:
  *
  *  - THE OPPONENT ONLY — a player's page, a challenge, the computer players
  *    tab. They are named and selected; the game and the rules are the choice.
@@ -66,8 +58,11 @@ import { foldedWords } from "./setUpWords";
  *    position and are not offered, because a Reversi position is not a Halma
  *    one; the clock and whether it counts are this game's own.
  *
- * None of that is held in a cookie or a store. It arrives in the query, so a
- * pre-filled screen is a plain address — see `SET_UP_PARAMS`.
+ * EVERY CHOICE IS ON THE SCREEN, under a heading, and none of it folds. John,
+ * with the opponent and every rule behind one grey line: "Why can't I choose
+ * someone in this Halma page? … so very hard to see..." — see `RulesForm`'s
+ * `sections`. And every choice is in the address, so a reload, Back and a copied
+ * link keep it — see `setUpKept.ts`.
  */
 export function SetUpGame({
   defaults,
@@ -89,32 +84,22 @@ export function SetUpGame({
   /**
    * The game this was filled in from, as it was PLAYED — null where nothing was.
    *
-   * Only a rematch has one, and it is what lets this screen notice it has been
-   * changed. Not the same thing as `initial`: the address can now carry a whole
-   * draft, so what the form opens with and what the old game was are two facts,
-   * and comparing a changed draft against itself would always say "unchanged".
+   * Only a rematch and a fork have one, and it is what lets this screen notice it
+   * has been changed: the address can carry a whole draft, so what the form opens
+   * with and what the old game was are two facts.
    */
   asPlayed?: RulesDraft | null;
   opponents: Opponent[];
   /**
    * The seats already posted, so asking for a game somebody is already asking
    * for sits down at theirs instead of posting a second one beside it.
-   *
-   * This came off the one-line sentence that used to start games, whose own
-   * comment put it best: auto-match and posting a seat are the same wish said
-   * twice, and the only difference is whether somebody is already asking.
    */
   seats?: SeatOnBoard[];
   signedIn: boolean;
   /**
-   * Offer the game itself as the first choice.
-   *
-   * Set at /games/new, where nothing has been chosen yet, and left alone at
-   * /games/<game>/new, where the address has already said which game this is
-   * — changing it there would make the address a lie. A rematch is sent to
-   * /games/new for exactly this reason: its game is a DEFAULT rather than an
-   * identity, and a rematch that could not change the game would fail at the
-   * thing it was asked for.
+   * Offer the game itself as the first choice: set at /games/new, where nothing
+   * has been chosen yet, and left alone at /games/<game>/new, where the address
+   * has already said which game this is.
    */
   chooseGame?: boolean;
   /** Somebody the address named. Selected, and offered even if the list would not have them. */
@@ -123,13 +108,6 @@ export function SetUpGame({
   again?: SetUpAgain | null;
   /** A position this carries forward, and how far in. */
   fork?: SetUpFork | null;
-  /*
-   * `carry` is no longer a prop here, and the absence is the point. The line
-   * length, the seed, who opens and the draw limit still travel — they come off
-   * the game a rematch or a fork was read from — but they are only needed by
-   * whatever BUILDS the creation, and this screen no longer does. The doorstep
-   * holds them, which is where the request is now made.
-   */
   /** Why the address could not be honoured, when it could not. */
   problem?: string | null;
 }) {
@@ -167,39 +145,31 @@ export function SetUpGame({
   const [rules, setRules] = useState<RulesDraft>(arrived.draft);
   const [against, setAgainst] = useState<string>(arrived.against);
   /*
-   * Pressed, and on the way. There is nothing here that can fail any more — the
-   * request that could moved to the doorstep — so this screen has no error to
-   * show, only a button that stops being pressable while the next page arrives.
+   * Pressed, and on the way. There is nothing here that can fail — the request
+   * that could lives on the doorstep — so this screen has no error to show, only
+   * a button that stops being pressable while the next page arrives.
    */
   const [busy, setBusy] = useState(false);
   /*
-   * Says when the browser has taken this over.
-   *
-   * These controls are server-rendered, so they are real controls before React
-   * has attached anything to them, and a choice made in that window is simply
-   * dropped — the state never hears it and the next render puts the control
-   * back. A person cannot lose that race; a test that opens the page and
-   * chooses in the same breath loses it whenever the page is slow, and then
-   * fails somewhere else entirely.
+   * Says when the browser has taken this over. These controls are server-rendered,
+   * so they are real controls before React has attached anything to them, and a
+   * choice made in that window is simply dropped.
    */
   const ready = useHydrated();
 
   /*
    * The players offered at this game, and the one that has been chosen. Looked
    * up in that list rather than in all of them, so a specialist chosen before
-   * the game was changed does not stay chosen at a game it does not play — and
-   * that holds for one the ADDRESS named too, which is why `opponent` is not
-   * simply trusted here.
+   * the game was changed does not stay chosen at a game it does not play.
    */
   const computers = botsFor(rules.variant as RuleVariant);
   const chosenId = idIn(against);
   const chosen = chosenId === null ? null : whoIs(chosenId, computers, opponents, opponent);
+  /* A computer player to be drawn at random: nobody is chosen, and the seat is not posted. */
+  const random = against === RANDOM_COMPUTER;
   /*
    * Somebody the chooser is holding and this game will not have — in practice a
-   * specialist program, after the game was changed to one it does not play. The
-   * name is kept so the screen can say whose offer has just lapsed; the fallback
-   * itself is unchanged, because posting a seat for anyone is the right thing to
-   * do with a game nobody can be found for.
+   * specialist program, after the game was changed to one it does not play.
    */
   const dropped =
     chosenId !== null && chosen === null && opponent !== null && opponent.id === chosenId
@@ -209,24 +179,15 @@ export function SetUpGame({
   /*
    * The board somebody chose, held here rather than in the draft: the draft has
    * to stay a board the current game can actually be played on, and this has to
-   * survive a game that cannot use it — see `matchSeat`.
-   *
-   * IT STARTS AT WHATEVER THE ADDRESS SETTLED, which is the whole of the fix
-   * for a wrong board on a link. It used to start at null, and null here means
-   * "nobody has said anything about the board" — so `?board=19` read as no
-   * answer, and a lone 9×9 seat on the noticeboard was followed over it. Every
-   * board-carrying way in was affected: the lobby sentence, a family page, a
-   * challenge, the doorstep's own way back. And only where exactly ONE seat
-   * matched the game and the pace, which is why a busy database never showed it
-   * and a fresh one always did.
+   * survive a game that cannot use it — see `matchSeat`. It starts at whatever
+   * the address settled, so a board on a link is a choice rather than a default.
    */
   const [boardChosen, setBoardChosen] = useState<number | null>(arrived.board);
 
   /*
    * Whether somebody is already asking for exactly this, and which board to show
    * — one rule, in one module, with its own tests: `matchSeat`. A rematch and a
-   * fork are never matched, because they are about one particular person and, for
-   * a fork, one particular position.
+   * fork are never matched, because they are about one particular person.
    */
   const { settled, waiting } = matchSeat({
     rules,
@@ -237,53 +198,34 @@ export function SetUpGame({
   });
 
   /* Every choice into the address as it is made, without asking the server — see `useKeptAddress`. */
-  useKeptAddress(keptParams(base, { rules, boardChosen, against: chosenId, chooseGame }));
+  useKeptAddress(keptParams(base, { rules, boardChosen, against: random ? RANDOM_COMPUTER : chosenId, chooseGame }));
 
   /*
-   * WHETHER THIS IS STILL A REPEAT of the game it was filled in from.
-   *
-   * A rematch is only a rematch while the form still describes that game — the
-   * creation route takes every rule from the old one and nothing from the
-   * request — so the moment somebody changes a rule this stops being one, and the
-   * screen has to say so rather than hand back swapped colours without mentioning
-   * it. `sameRules` is the same comparison `creationFor` makes on the doorstep,
-   * asked here because this is where the sentence is printed.
-   *
-   * Compared against `asPlayed` rather than against `initial`: since the address
-   * can fill this form in itself, `initial` may already carry a change, and a
-   * changed draft compared against itself would always answer yes.
+   * WHETHER THIS IS STILL A REPEAT of the game it was filled in from. A rematch is
+   * only a rematch while the form still describes that game; `sameRules` is the
+   * same comparison `creationFor` makes on the doorstep. Compared against
+   * `asPlayed`, since the address may already have carried a change in.
    */
   const repeat = again !== null && asPlayed !== null && sameRules(settled, asPlayed);
 
   /*
-   * THE WAY ON, WHICH NO LONGER CREATES ANYTHING.
-   *
-   * This used to POST the game and land on the board, and that was John's
-   * complaint stated as precisely as it can be: "we go straight to the game
-   * rather than the Doorstep screen which confirms settings… the board means
-   * we're playing!!!!" Choosing and confirming are two acts, and a screen that
-   * does both in one press cannot be read before it is committed to.
-   *
-   * So Start carries the draft to /games/<game>/begin, which states it and
-   * creates it on a press of its own. Every entry point reaches that page,
-   * because every entry point reaches this screen — see `SET_UP_PARAMS` and
-   * `beginLink`, and note that the draft travels in the address rather than in a
-   * store, so the doorstep can be reloaded, linked and come back from.
-   *
-   * WHAT A SEAT SOMEBODY IS ALREADY WAITING AT CARRIES INSTEAD. It goes to the
-   * same doorstep, naming the seat, and the doorstep reads that game and states
-   * ITS rules — because the match here is on the game, the board and the pace,
-   * and agreeing to somebody else's game means being shown the parts nobody
-   * compared. Sitting down used to land on a board with no confirmation either.
-   *
-   * `router.push`, not `replace`: pressing Start and then going back belongs on
-   * this screen, and the doorstep is a page a reader may honestly want to leave.
+   * WHETHER THE GAME THIS BUTTON LEADS TO COULD EVER COUNT, read from `seatsFor`
+   * — the function the doorstep asks — so the two pages cannot disagree about one
+   * press. True of one shape: a fork with nobody to hand the second seat to.
+   */
+  const refused = seatsFor({ again, fork }).screen ? RATING_REFUSALS.hotSeat : null;
+
+  /*
+   * THE WAY ON, WHICH CREATES NOTHING. Continue carries the draft to
+   * /games/<game>/begin, which states it and creates it on a press of its own; a
+   * seat somebody is already waiting at goes to the same doorstep, naming the
+   * seat. `router.push`, not `replace`: going back from the doorstep belongs here.
    */
   function start() {
     setBusy(true);
     router.push(
       beginLink(settled, {
-        against: chosen?.id ?? null,
+        against: random ? RANDOM_COMPUTER : (chosen?.id ?? null),
         rematch: again?.id ?? null,
         from: fork === null ? null : { id: fork.id, move: fork.move },
         sit: waiting?.id ?? null,
@@ -291,59 +233,33 @@ export function SetUpGame({
     );
   }
 
+  /*
+   * The whole game as a line, over the button that carries it: the rules' own
+   * words, then who it is against and any handicap. A reader at the bottom of a
+   * long form reads what Continue will carry without scrolling back up.
+   */
+  const recap = [
+    ...describeSettings(settled, refused),
+    ...recapWords({ opponent: fork !== null ? opponent : chosen, fork, handicap: settled.handicap, random }),
+  ];
+
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="set-up-game" {...readyMark(ready)}>
       <SectionTitle kanji="準備">Set up the game</SectionTitle>
-      {/*
-        WHAT THIS ONE IS, before what it is played under. A rematch, a fork and
-        a fresh game are the same form with different numbers in it, and a
-        reader who cannot tell which they are looking at has been handed a
-        puzzle rather than a confirmation.
-      */}
-      {problem !== null ? (
-        <p
-          className="rounded-lg border border-ochre/60 bg-ochre-soft px-3 py-2 text-xs text-ink"
-          data-testid="set-up-problem"
-        >
-          {problem}
-        </p>
-      ) : null}
-      {again !== null ? (
-        <p className="text-xs text-moss" data-testid="set-up-again">
-          {repeat
-            ? SET_UP_COPY.againHint(chosen?.name ?? "them", STONE_DISPLAY[again.colour].label)
-            : SET_UP_COPY.againChanged}
-        </p>
-      ) : null}
-      {fork !== null ? (
-        <p className="text-xs text-moss" data-testid="set-up-fork">
-          {fork.alone
-            ? `${SET_UP_COPY.fork(fork.move)}. ${SET_UP_COPY.forkAlone}`
-            : SET_UP_COPY.forkHint(fork.move, opponent?.name ?? "the same opponent")}
-        </p>
-      ) : null}
-      {again === null && fork === null && opponent !== null ? (
-        <p className="text-xs text-moss" data-testid="set-up-against">
-          {SET_UP_COPY.againstHint(opponent.name)}
-        </p>
-      ) : null}
-      {/*
-        A NAMED PLAYER THE CHOSEN GAME DOES NOT OFFER, said rather than swallowed.
-        A specialist program plays one game, so changing the game drops it from
-        the list — and the screen then falls back to posting a seat for anyone,
-        which is the right fallback and a surprise nobody should have to notice
-        for themselves.
-      */}
-      {dropped !== null ? (
-        <p className="text-xs text-shu" data-testid="set-up-not-offered">
-          {SET_UP_COPY.notAtThisGame(dropped, variantLabel(settled.variant))}
-        </p>
-      ) : null}
+      <SetUpNotices
+        problem={problem}
+        again={again}
+        repeat={repeat}
+        chosenName={chosen?.name ?? null}
+        fork={fork}
+        opponent={opponent}
+        dropped={dropped}
+        variant={settled.variant}
+      />
 
       {/*
         What it will be, in the same words the rules panel uses once it is a
-        game — so what somebody agreed to and what they are playing read the
-        same, rather than being described twice in two voices.
+        game — so what somebody agreed to and what they are playing read the same.
       */}
       <p className="text-sm font-semibold" data-testid="set-up-summary">
         {describeRules(settled)}
@@ -360,123 +276,76 @@ export function SetUpGame({
           showOpen={false}
           showVariant={chooseGame}
           variantLabel="Game"
-          /*
-           * The screen that CHOOSES a game shows the games, rather than
-           * naming them in a dropdown. The rules panel beside a board keeps
-           * the selects — it is a narrow column next to the game it is about,
-           * and a row of board pictures there would crowd out the board.
-           */
           chooser={RULES_CHOOSERS.pictures}
-          /*
-           * WHETHER THE GAME THIS BUTTON MAKES COULD EVER COUNT, answered
-           * before it exists and read from `seatsFor` — the same function the
-           * doorstep asks, so the screen that offers the rules and the page
-           * that states them cannot come to different answers about one press.
-           *
-           * `screen` is true of exactly one shape: a fork with nobody to hand
-           * the second seat to, which the creation route makes a hot seat.
-           * Since offers, a fork against a named person is an offer and counts
-           * like any other game, so the control stays for that one. Where it is
-           * true the rating select is not drawn at all — nothing here could
-           * overrule the route, so a control would be a question whose answer
-           * is thrown away.
-           */
-          refused={seatsFor({ again, fork }).screen ? RATING_REFUSALS.hotSeat : null}
-          /*
-           * THE FIVE SETTINGS FOLD, AND THE OPPONENT AND THE HANDICAP FOLD WITH
-           * THEM.
-           *
-           * The pictures cost 470 pixels over the two dropdowns they replaced
-           * and put the Start button below an iPad's fold — see MoreSettings
-           * for the measurement. These two are in the drawer because they are
-           * the same kind of thing: settings about a game already chosen, not
-           * the question this screen exists to ask. Both are named in the
-           * summary line, so a rematch shows who it is against and a handicap
-           * shows who is carrying it without either being opened.
-           */
-          fold={{
+          refused={refused}
+          sections={{
             /*
-              The fork's own opponent, not the select's: a fork offers no
-              opponent control, so `chosen` is null for one and the line would
-              have read "Post the seat for anyone" over a game against the
-              player who was in the position.
+              A fork is against whoever was in the game it came from — the route
+              reads that off the seats — so there is nothing to ask, and asking
+              would be a control whose answer is discarded. The notice above
+              names them.
             */
-            summary: foldedWords({
-              opponent: fork !== null ? opponent : chosen,
-              fork,
-              handicap: settled.handicap,
-            }),
-            fields: (
-              <>
-                {/*
-                  A HANDICAP, WHICH THIS SCREEN HAD NO ANSWER FOR UNTIL NOW. John:
-                  "you're playing someone who's not very strong — you want to, in
-                  the settings page, give yourself a handicap to help them out."
-                  The engine has had them all along and nothing could ask for one.
-
-                  Not on a fork: the position was played under whatever handicap
-                  the game had, and the route carries that with the moves.
-                  Offering to change it here would be a control the server is
-                  right to ignore.
-                */}
-                {fork === null ? (
-                  <HandicapChoice
-                    value={settled.handicap}
-                    variant={settled.variant}
-                    disabled={busy}
-                    onChange={(handicap) => setRules({ ...settled, handicap })}
-                  />
-                ) : null}
-                {/*
-                  A fork is against whoever was in the game it came from — the
-                  route reads that off the seats — so there is nothing to ask,
-                  and asking would be a control whose answer is discarded.
-                */}
-                {fork === null ? (
-                  <OpponentChoice
-                    value={against}
-                    onChange={setAgainst}
-                    variant={settled.variant}
-                    opponents={opponents}
-                    named={opponent}
-                    disabled={busy}
-                    signedIn={signedIn}
-                  />
-                ) : null}
-              </>
-            ),
+            opponent:
+              fork === null ? (
+                <OpponentChoice
+                  value={against}
+                  onChange={setAgainst}
+                  variant={settled.variant}
+                  opponents={opponents}
+                  named={opponent}
+                  disabled={busy}
+                  signedIn={signedIn}
+                />
+              ) : null,
+            /*
+              A HANDICAP: John, "you're playing someone who's not very strong —
+              you want to, in the settings page, give yourself a handicap to help
+              them out." Not on a fork, whose position was played under whatever
+              handicap its game had. A head start for the weaker player — free
+              moves, extra stones, piece odds — is the next ticket, and its group
+              goes in this section above the harder rules for the stronger one.
+            */
+            handicap:
+              fork === null ? (
+                <HandicapChoice
+                  value={settled.handicap}
+                  variant={settled.variant}
+                  disabled={busy}
+                  onChange={(handicap) => setRules({ ...settled, handicap })}
+                />
+              ) : null,
           }}
           onSizeChosen={setBoardChosen}
         />
       </div>
 
-      <span>
-        {/*
-          The button says which of the two things it will do, because they are
-          different things to the person pressing it: taking a seat somebody is
-          sitting at starts a game now, and posting one starts a wait. Neither of
-          them starts it HERE any more — both lead to the page that states what is
-          about to be played, which is the one press away that was missing.
-        */}
-        <Button onClick={start} disabled={busy || !signedIn} strong data-testid="set-up-start">
-          {busy
-            ? "Starting…"
-            : waiting !== undefined
-              ? `${START_COPY.sitWith(waiting.who)} 着席`
-              : "Start the game 開始"}
-        </Button>
-      </span>
-      <p className="text-xs text-muted" data-testid="set-up-leads">
-        {SET_UP_COPY.startLeads}
-      </p>
-      {waiting !== undefined ? (
-        <p className="text-xs text-muted" data-testid="set-up-match">
-          {START_COPY.matchHint(waiting.who)}
+      <div className="flex flex-col gap-2 border-t border-rule pt-3" data-testid="set-up-continue">
+        <SettingWords words={recap} testId="set-up-recap" />
+        <span>
+          {/*
+            The button says what it does: it continues, to the page that states
+            the game. John: "it's not Start the Game... button should be
+            'Continue'". Where somebody is already waiting at exactly this game it
+            says whose seat it continues to, because that is a different act.
+          */}
+          <Button onClick={start} disabled={busy || !signedIn} strong data-testid="set-up-start">
+            {busy
+              ? SET_UP_COPY.continuing
+              : waiting !== undefined
+                ? SET_UP_COPY.continueToSeat(waiting.who)
+                : SET_UP_COPY.continue}
+          </Button>
+        </span>
+        <p className="text-xs text-muted" data-testid="set-up-leads">
+          {SET_UP_COPY.startLeads}
         </p>
-      ) : null}
-      {!signedIn ? (
-        <p className="text-xs text-muted">{SIGN_IN_TO_PLAY}</p>
-      ) : null}
+        {waiting !== undefined ? (
+          <p className="text-xs text-muted" data-testid="set-up-match">
+            {START_COPY.matchHint(waiting.who)}
+          </p>
+        ) : null}
+        {!signedIn ? <p className="text-xs text-muted">{SIGN_IN_TO_PLAY}</p> : null}
+      </div>
     </section>
   );
 }

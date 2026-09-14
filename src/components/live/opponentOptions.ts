@@ -2,7 +2,7 @@ import { botsFor } from "@/lib/bots/bots.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { Opponent } from "@/lib/social/opponents";
 
-import { OPPONENT_GROUPS, PEOPLE_CAP } from "./picker.constants";
+import { OPPONENT_GROUPS, PEOPLE_CAP, RANDOM_COMPUTER_WORDS } from "./picker.constants";
 import type { CappedRun, OpponentGroup, OpponentTile } from "./picker.types";
 import type { SetUpOpponent } from "./setUp.types";
 
@@ -26,6 +26,18 @@ import type { SetUpOpponent } from "./setUp.types";
  * a test beside it rather than a browser.
  */
 export const ANYONE = "anyone";
+
+/**
+ * A COMPUTER PLAYER DRAWN AT RANDOM, from the programs that play the chosen game.
+ *
+ * John: "or a Bot, a random Bot or whatever other options the site has." A choice
+ * of its own rather than a hidden default, and a word rather than an id, because
+ * nobody has been drawn yet: the draw is made once, when Begin creates the game
+ * (`drawnCreation`), and the doorstep names the programs it will be drawn from.
+ * So the address carries "random" through a reload and back from the doorstep,
+ * rather than pinning whichever program a first draw happened to pick.
+ */
+export const RANDOM_COMPUTER = "random-computer";
 const MEMBER = "m:";
 const COMPUTER = "c:";
 
@@ -93,12 +105,22 @@ export function opponentGroups({
     { kind: OPPONENT_GROUPS.known, tiles: opponents.filter((one) => !one.here).map(person) },
     {
       kind: OPPONENT_GROUPS.computer,
-      tiles: computers.map((bot) => ({
-        value: `${COMPUTER}${bot.id}`,
-        name: bot.name,
-        computer: true,
-        tier: bot.tier,
-      })),
+      tiles: [
+        ...computers.map((bot) => ({
+          value: `${COMPUTER}${bot.id}`,
+          name: bot.name,
+          computer: true,
+          tier: bot.tier,
+        })),
+        /*
+         * Last, after the programs it is drawn from, so the tiles above are what
+         * it means. Only where there is more than one to draw from: a draw of one
+         * is that program under a vaguer name.
+         */
+        ...(computers.length > 1
+          ? [{ value: RANDOM_COMPUTER, name: RANDOM_COMPUTER_WORDS.name, computer: true, tier: null }]
+          : []),
+      ],
     },
   ];
   return groups.filter((group) => group.tiles.length > 0);
@@ -214,6 +236,7 @@ export function againstFromAddress(
 ): string {
   if (asked === null) return absent;
   if (asked === ANYONE) return ANYONE;
+  if (asked === RANDOM_COMPUTER) return RANDOM_COMPUTER;
   const found = whoIs(asked, computers, opponents, named);
   if (found !== null) return valueFor(found);
   return named !== null && named.id === asked ? valueFor(named) : absent;

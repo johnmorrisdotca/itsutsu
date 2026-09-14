@@ -291,3 +291,13 @@ export const DOORSTEP_PICTURES = "flex flex-wrap items-start gap-4";
 export const DOORSTEP_FIGURE = "m-0 flex w-28 min-w-0 flex-col items-center gap-1.5";
 
 export const DOORSTEP_FIGURE_NAME = "text-center text-xs leading-snug text-ink-soft";
+
+/** The tile for a computer player drawn at random, under the programs it is drawn from. */
+export const RANDOM_COMPUTER_WORDS = {
+  name: "A random computer player",
+  /** How the line over Continue names it. */
+  against: "Against a random computer player",
+  /** The mark on its black stone, where a program carries its own script. */
+  mark: "?",
+  means: "One of the programs above, drawn once, when you press Begin on the next page.",
+} as const;

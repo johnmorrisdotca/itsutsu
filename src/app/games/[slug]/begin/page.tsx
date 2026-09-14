@@ -7,6 +7,8 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Doorstep, type BeginAction } from "@/components/live/Doorstep";
 import { DOORSTEP_COPY } from "@/components/live/live.constants";
+import { RANDOM_COMPUTER } from "@/components/live/opponentOptions";
+import { botsFor } from "@/lib/bots/bots.constants";
 import { describeGameProse, describeSeating, playerWord } from "@/components/live/doorstepSays";
 import { beginLink, changeLink, type SetUpKnown } from "@/components/live/setUpAddress";
 import { readSetUpAsked } from "@/components/live/setUpAsked";
@@ -83,8 +85,15 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   const seat = noticeboard?.seat ?? null;
   const gone = noticeboard?.gone ?? null;
 
+  /*
+   * The programs a computer player drawn at random comes from: every one that
+   * plays this game. Named on this page, and drawn from on Begin (`drawnCreation`).
+   */
+  const pool = from.drawComputer ? botsFor(variant).map(({ id, name }) => ({ id, name })) : [];
+
   const known: SetUpKnown = {
-    against: from.opponent === null ? null : from.opponent.id,
+    /* Still "random" on the way back: nobody has been drawn, so there is nobody to name. */
+    against: from.drawComputer ? RANDOM_COMPUTER : from.opponent === null ? null : from.opponent.id,
     rematch: from.again === null ? null : from.again.id,
     from: from.fork === null ? null : { id: from.fork.id, move: from.fork.move },
     /* A seat that has gone is not carried back: there is nothing there to sit at. */
@@ -99,8 +108,13 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   const rules = seat?.rules ?? from.initial;
   const { mine, screen } = seatsFor({ again: from.again, fork: from.fork });
   const seating = describeSeating(rules, {
-    opponent: seat !== null ? seat.who : (from.opponent?.name ?? null),
-    computer: seat === null && (from.opponent?.computer ?? false),
+    opponent:
+      seat !== null
+        ? seat.who
+        : from.drawComputer
+          ? DOORSTEP_COPY.drawnFrom(pool.map((program) => program.name))
+          : (from.opponent?.name ?? null),
+    computer: seat === null && (from.drawComputer || (from.opponent?.computer ?? false)),
     mine: seat?.mine ?? mine,
     // A game whose rules fix who opens is stated that way, whatever a carried game says.
     opener: seat?.opener ?? fixedOpener(rules.variant, rules.opening) ?? openerIn(from.carry),
@@ -139,7 +153,9 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   const begin: BeginAction =
     seat !== null
       ? { kind: "sit", id: seat.id, who: playerWord(seat.who, false), instead: creation.body }
-      : { kind: "create", body: creation.body };
+      : from.drawComputer && pool.length > 0
+        ? { kind: "draw", body: creation.body, pool }
+        : { kind: "create", body: creation.body };
 
   const copy = RULE_VARIANT_DISPLAY[variant];
   /*

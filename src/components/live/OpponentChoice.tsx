@@ -8,13 +8,17 @@ import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import { shownName } from "@/lib/rating/shownName";
 
-import { ANYONE, capTiles, opponentGroups, shownChoice } from "./opponentOptions";
+import Link from "next/link";
+
+import { SET_UP_COPY } from "./live.constants";
+import { ANYONE, RANDOM_COMPUTER, capTiles, opponentGroups, shownChoice } from "./opponentOptions";
 import { PickMark } from "./PickMark";
 import {
   OPPONENT_GROUP_WORDS,
   PICK_CARD,
   PICK_MORE,
   PICK_PEOPLE,
+  RANDOM_COMPUTER_WORDS,
   SEAT_MARK_ANYONE,
   SEAT_MARK_COMPUTER,
   SEAT_MARK_PERSON,
@@ -62,7 +66,8 @@ export function OpponentChoice({
 
   return (
     <fieldset className="flex min-w-0 flex-col gap-2" data-testid="set-up-with">
-      <legend className="mb-0.5 text-sm text-ink-soft">{say("setup.opponent")}</legend>
+      {/* Named for a screen reader; the section heading above it says it to the eye. */}
+      <legend className="sr-only">{say("setup.opponent")}</legend>
       <div className={PICK_PEOPLE}>
         {/*
           THE WORDS FROM `setUpWords.ts`, WHICH IS WHERE THEY ARE DECIDED. The
@@ -76,7 +81,7 @@ export function OpponentChoice({
           onChange={onChange}
           mark={<span aria-hidden="true" className={SEAT_MARK_ANYONE} />}
           title={POST_FOR_ANYONE}
-          line={say("setup.anyoneMeans")}
+          line={`${say("setup.anyoneMeans")} ${SET_UP_COPY.postedWhere}`}
           computer={false}
           name=""
         />
@@ -84,6 +89,18 @@ export function OpponentChoice({
       {groups.map((group) => (
         <Run key={group.kind} group={group} shown={shown} disabled={inert} onChange={onChange} />
       ))}
+      {/*
+        NOBODY IS A DEAD END. The lists hold whoever is here and the players this
+        member knows; anybody else is one page away, and that page's Challenge
+        lands back here with them chosen.
+      */}
+      <p className="text-xs text-muted" data-testid="set-up-opponent-elsewhere">
+        {SET_UP_COPY.elsewhere}{" "}
+        <Link href="/players" className="underline underline-offset-4 hover:text-ink">
+          {SET_UP_COPY.elsewhereLink}
+        </Link>{" "}
+        {SET_UP_COPY.elsewhereAfter}
+      </p>
     </fieldset>
   );
 }
@@ -178,7 +195,8 @@ function Run({
 function tileWords(tile: OpponentTile) {
   const shownAs = tile.computer ? tile.name : shownName(tile.name);
   const profile = tile.tier === null ? null : BOT_PROFILES[tile.tier];
-  const initial = Array.from(profile?.native ?? shownAs)[0] ?? "";
+  const random = tile.value === RANDOM_COMPUTER;
+  const initial = random ? RANDOM_COMPUTER_WORDS.mark : (Array.from(profile?.native ?? shownAs)[0] ?? "");
   return {
     value: tile.value,
     name: tile.name,
@@ -194,7 +212,7 @@ function tileWords(tile: OpponentTile) {
       ) : (
         <Paired en={tile.name} kanji={profile.native ?? ""} kanjiClassName="text-xs font-normal opacity-70" />
       ),
-    line: profile?.strength ?? null,
+    line: profile?.strength ?? (random ? RANDOM_COMPUTER_WORDS.means : null),
   };
 }
 
