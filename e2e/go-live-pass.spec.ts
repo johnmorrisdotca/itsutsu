@@ -130,15 +130,15 @@ test.describe("passing in a live game of Go", () => {
       // And black, still on the board they passed from, is told without reloading.
       await expect(blackBoard.getByTestId("turn-banner")).toContainText("wins", { timeout: 30_000 });
 
-      /*
-       * Then both hand-backs are let through and waited for, so neither board is
-       * left holding a request when its browser closes. What each board becomes
-       * afterwards is not asserted here: at the time of writing the hand-back
-       * reloads one board and is lost on the other, which is its own fault with
-       * its own spec (`settled-in-place.spec.ts`), not this file's subject.
-       */
+      // Then both hand-backs are let through, and each board becomes the record of
+      // the game at the address of its last position. Whether that happens without
+      // a reload is `settled-in-place.spec.ts`'s question.
       await releaseWhite();
       await releaseBlack();
+      for (const page of [white, black]) {
+        await expect(page.getByRole("link", { name: /Play again as/ })).toBeVisible();
+        await expect(page).toHaveURL(new RegExp(`/games/go/match/${game.id}/6$`));
+      }
     } finally {
       await blackContext.close();
       await whiteContext.close();

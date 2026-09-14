@@ -28,6 +28,7 @@ export function ResignButton({
   token,
   moves = 1,
   onDone,
+  refreshAfter = true,
   onAsking,
 }: {
   id: string;
@@ -46,6 +47,15 @@ export function ResignButton({
    */
   moves?: number;
   onDone?: () => void;
+  /**
+   * Whether to ask the server for this page again once it is done. A list of
+   * games wants that. A live board does not: it hands itself back the moment
+   * it reads the game as over (`useMatchAddress`), and a second refresh from
+   * here went to an address the router no longer agreed with, and reloaded the
+   * page. Defaults to asking, so a caller that has not thought about it keeps
+   * the behaviour every caller had.
+   */
+  refreshAfter?: boolean;
   /**
    * Passed on to the confirm, for a caller that must hold still while the
    * question is up. The board is one: see `useAdvanceToNextGame`, which was
@@ -72,7 +82,7 @@ export function ResignButton({
       if (response.ok) {
         setRefused(null);
         onDone?.();
-        router.refresh();
+        if (refreshAfter) router.refresh();
         return;
       }
       /*

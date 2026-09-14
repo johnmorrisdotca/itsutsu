@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -40,8 +40,9 @@ import { GAME_COPY } from "@/components/game/game.constants";
 import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
 import { TurnBanner } from "./TurnBanner";
 import { readQuiet, subscribeQuiet, writeQuiet } from "./quiet";
-import { settleFromRecord } from "@/lib/history/settle";
+import { settleFromRecord, settledSinceRendered } from "@/lib/history/settle";
 import { useLiveGame } from "./useLiveGame";
+import { useMatchAddress } from "./useMatchAddress";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -130,12 +131,13 @@ export function SharedGame({
   const board: Appearance = { ...appearance, flipped: turned };
 
   const played = state.moves.length;
-  useEffect(() => {
-    if (basePath === undefined) return;
-    const next = `${basePath}/${played}`;
-    if (window.location.pathname !== next)
-      window.history.replaceState(null, "", next);
-  }, [basePath, played]);
+  // The address kept on the position, and the hand-back when the game ends
+  // under the reader: one hook, because as two effects they fought.
+  useMatchAddress({
+    basePath,
+    played,
+    settled: settledSinceRendered(initial.status, detail.status),
+  });
   /*
    * NOBODY'S TURN, AND NOTHING PLAYABLE, WHILE THIS IS AN OFFER.
    *
@@ -414,6 +416,13 @@ export function SharedGame({
             token={token}
             moves={state.moves.length}
             onDone={() => void mutate()}
+            /*
+              No refresh of its own here: the board hands itself back the
+              moment it reads the game as over (`useMatchAddress`), and a
+              second hand-back from the button went to the address the router
+              had stopped agreeing with, and reloaded the page.
+            */
+            refreshAfter={false}
             /*
               NOTHING MOVES WHILE THIS IS ASKING. A move carries a player to
               their next waiting game a moment after it lands, and somebody who

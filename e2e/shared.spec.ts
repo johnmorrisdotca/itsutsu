@@ -169,7 +169,8 @@ test.describe("a game played from two devices", () => {
      * refresh is held here until the settled board has been read, then let
      * through; the page does nothing it would not do on a slow connection.
      */
-    const refresh = new RegExp(`/match/${game.id}\\?_rsc=`);
+    // With or without a move number: the hand-back goes to the position's address.
+    const refresh = new RegExp(`/match/${game.id}(/\\d+)?\\?_rsc=`);
     let handBack = () => {};
     const heldUntilRead = new Promise<void>((resolve) => (handBack = resolve));
     await page.route(refresh, async (route) => {
