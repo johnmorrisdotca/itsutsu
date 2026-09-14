@@ -68,9 +68,15 @@ const each = Math.max(1, Number(process.env.BOT_GAMES_EACH ?? "1"));
  *
  * The default ladder is the five grades in order. The default boards are three
  * deliberately unalike games: the ladder report measured that Gomoku separates
- * the lower grades and flattens at the top, Reversi INVERTS — the grades that
- * search lose — and Connect Four separates cleanly. One game repeated would
- * show one of those three behaviours and imply it was all of them.
+ * the lower grades and flattens at the top, Connect Four separates cleanly, and
+ * Reversi is where the order was measured BACKWARDS until 0.149.0 — the grades
+ * that search lost, because nothing searched a flipping board at all. It no
+ * longer inverts (段 0-30 名人, see `ladder.order.test.ts`), and it is still the
+ * board that is thinnest at both ends: 名人 and 国手 finish the same depth
+ * inside the look-ahead's budget and are one player there, and the three
+ * grades that do not search are told apart only by their noise and blunders,
+ * which a series of two games a pairing cannot see. One game repeated would
+ * show one of those behaviours and imply it was all of them.
  *
  * A bad name in either list stops the run before it writes anything. Silently
  * dropping an unrecognised tier would play a smaller series than was asked for
