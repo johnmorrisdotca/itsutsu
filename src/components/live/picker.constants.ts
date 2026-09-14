@@ -128,3 +128,18 @@ export const PICK_GRID =
 
 /** The boards a game is played on, side by side rather than stacked. */
 export const PICK_BLOCKS = "flex flex-wrap gap-2";
+
+/** The board's picture in a block among several, with "13×13" in text under it. */
+export const BOARD_BLOCK_MARK_PX = 48;
+
+/**
+ * The board's picture in a lone block, which carries its number in the picture
+ * instead of a line of text under it.
+ *
+ * Larger by exactly what it replaces — the 16px line of "8×8" and the 6px gap
+ * above it — so a one-board game's panel is the same height as a four-board
+ * game's. Measured rather than assumed: 128.2px for both before this change,
+ * and 128.2px for both after it. See the note at the end of BoardPicker for
+ * why that height is worth holding.
+ */
+export const BOARD_ONLY_MARK_PX = BOARD_BLOCK_MARK_PX + 16 + 6;

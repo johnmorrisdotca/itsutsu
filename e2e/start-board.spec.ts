@@ -59,6 +59,42 @@ test.describe("choosing the board before the game exists", () => {
     await expect(chosenBoard(page)).toHaveAttribute("data-only", "true");
   });
 
+  test("puts a lone board's number in its picture, and says it in words", async ({ page }) => {
+    await setUp(page, "reversi");
+    /*
+     * John: "a second set of images where we actually put in the number of the
+     * size in the middle of that image… if you don't have the size below it in
+     * text it is incorporated directly in the image."
+     *
+     * The lone block drops its "8×8" line, so two things have to be true at
+     * once: the 8 is on the screen, IN the picture, and somebody who cannot see
+     * the picture still gets the size — by the image's name, and so by the
+     * radio's, which is what a screen reader announces on arriving at it.
+     */
+    const lone = chosenBoard(page);
+    const mark = lone.getByRole("img", { name: "8 by 8 board" });
+    await expect(mark).toBeVisible();
+    await expect(mark).toHaveAttribute("data-form", "numbered");
+    await expect(mark).toHaveText("8");
+    await expect(page.getByRole("radio", { name: /^8 by 8 board/ })).toBeChecked();
+
+    /*
+     * And the way back: a game with a choice keeps the plain picture with the
+     * size in text under it, silent to a screen reader so the size is not said
+     * twice. The four blocks are waited for BEFORE the absence is asserted, so
+     * the absence is a statement about a drawn row rather than an early one.
+     */
+    await chooseGame(page, "freestyle");
+    await expect(page.getByTestId("set-up-size")).toHaveCount(4);
+    const marks = page.getByTestId("shared-rules-size").getByTestId("board-size-mark");
+    await expect(marks).toHaveCount(4);
+    for (const at of [0, 1, 2, 3]) {
+      await expect(marks.nth(at)).toHaveAttribute("aria-hidden", "true");
+      await expect(marks.nth(at)).toHaveAttribute("data-form", "plain");
+    }
+    await expect(page.getByTestId("shared-rules-size").getByRole("img")).toHaveCount(0);
+  });
+
   test("starts the game on the board that was chosen", async ({ page, request }) => {
     await setUp(page, "freestyle");
     await chooseBoard(page, 19);
