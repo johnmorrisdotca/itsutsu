@@ -18,6 +18,7 @@ import {
 } from "./backlog";
 import { BACKLOG_STATUSES } from "./backlog.constants";
 import { BACKLOG_SEED } from "./backlog.seed.data";
+import { finishReleaseProblems } from "./releases";
 import { readReleases } from "./releasesFile";
 import type {
   BacklogChange,
@@ -362,6 +363,16 @@ export async function finishItem(
       problems: [`Only a row in progress may be marked done; this one is "${item.status}".`],
     };
   }
+
+  /*
+   * The release it closes at, against the changelog this server holds. A
+   * version the history has passed without naming is refused with the stamp's
+   * own refusal; a release newer than every one named is the release tool's,
+   * on its way. See `finishReleaseProblems` for why that is not the stamp's
+   * rule unchanged.
+   */
+  const refused = finishReleaseProblems(release.version, (await readReleases()).map((one) => one.version));
+  if (refused.length > 0) return { ok: false, reason: "illegal", problems: refused };
 
   const staleBefore = new Date(now.getTime() - LEASE_MS);
   const moved = await prisma.backlogItem.updateMany({

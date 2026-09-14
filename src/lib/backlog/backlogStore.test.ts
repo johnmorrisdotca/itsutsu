@@ -326,6 +326,24 @@ describe("finishItem", () => {
     expect(outcome.ok, "a row filed as building could not be finished at all").toBe(true);
     expect(rows[0].status).toBe(BACKLOG_STATUSES.done);
   });
+
+  it("refuses a release the changelog has passed without naming, having read it, and writes nothing", async () => {
+    // The changelog read names 0.150.1 and 0.151.0; 0.150.9 is behind the newest and is neither.
+    rows = [row({ status: "inProgress", claimedBy: "John", claimedAt: new Date() })];
+    const outcome = await finishItem("a", { version: "0.150.9", at: release.at }, "John");
+    expect(outcome).toMatchObject({ ok: false, reason: "illegal" });
+    expect((outcome as { problems: string[] }).problems[0]).toContain("0.150.9 is not a release CHANGELOG.md names");
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(rows[0].status).toBe("inProgress");
+    expect(rows[0].releasedIn).toBeNull();
+  });
+
+  it("closes at a release newer than every one named — the release tool closes before its push is deployed", async () => {
+    rows = [row({ status: "inProgress", claimedBy: "John", claimedAt: new Date() })];
+    const outcome = await finishItem("a", { version: "0.152.0", at: release.at }, "John");
+    expect(outcome.ok).toBe(true);
+    expect(rows[0].releasedIn).toBe("0.152.0");
+  });
 });
 
 describe("a row that is not there", () => {

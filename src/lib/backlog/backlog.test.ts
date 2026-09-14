@@ -437,7 +437,7 @@ describe("stamping a release onto a done row", () => {
 
   it("refuses a version the changelog does not name", () => {
     const problems = stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "9.9.9", RELEASED);
-    expect(problems).toEqual(["9.9.9 is not a release CHANGELOG.md names; a row can only be stamped with a release that went out."]);
+    expect(problems).toEqual(["9.9.9 is not a release CHANGELOG.md names; a row can only carry a release that went out."]);
   });
 
   it("refuses something that is not a version at all, before asking the changelog", () => {
