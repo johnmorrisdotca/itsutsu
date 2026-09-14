@@ -17,7 +17,7 @@ import { recordPlayed } from "@/lib/rating/playedRun";
 import { UnwinnableGame, unwinnableBecause } from "./winnableGame";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat } from "@/lib/bots/bots";
-import { sendEmail } from "@/lib/notify/email";
+import { noticeGameOver, noticeYourTurn } from "@/lib/notify/gameNotices";
 import { awardAnsweredChallenge } from "@/lib/xp/xpSocial";
 import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
 import { OFFER_SELECT, isOffered } from "./offers";
@@ -446,9 +446,10 @@ export async function appendMove(
     await recordPlayed({ ...row, hotSeat: isHotSeat(row), winner: next.winner, moveCount: next.moves.length });
     // A game at one screen is filed, never rated: the site cannot tell who was playing. Nor is a friendly.
     if (!isHotSeat(row) && row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
-    if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
-  } else if (next.toPlay !== stone && !isHotSeat(row)) {
-    await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });
+    // To the people seated only: never a program, a typed name or a board at one screen. See `gameNotices.ts`.
+    await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
+  } else if (next.toPlay !== stone) {
+    await noticeYourTurn({ ...row, hotSeat: isHotSeat(row) }, id, next.toPlay);
   }
 
   const game = await fetchGameDetail(id);

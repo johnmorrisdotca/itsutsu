@@ -10,7 +10,7 @@ import { recordResult } from "@/lib/rating/recordResult";
 import { recordPlayed } from "@/lib/rating/playedRun";
 import { poolFor } from "@/lib/rating/pools";
 import { hasBotSeat, seatMemberId } from "@/lib/bots/bots";
-import { sendEmail } from "@/lib/notify/email";
+import { noticeGameOver, noticeYourTurn } from "@/lib/notify/gameNotices";
 import { XP_EVENTS } from "@/lib/xp/xp.constants";
 import { awardCourtesy } from "@/lib/xp/xpSocial";
 import { courtesyMs, deadlineFor, nextDeadline } from "./deadline";
@@ -175,12 +175,13 @@ export async function claimTimeout(id: string, token: string, now = new Date()):
     // not a rating, and PLAYED counts a game at one screen. See `playedRun.ts`.
     // The count includes the forfeited turn this claim may just have written.
     await recordPlayed({ ...row, hotSeat: isHotSeat(row), winner: next.winner, moveCount: next.moves.length });
-    if (!isHotSeat(row)) {
-      if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
-      await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
+    if (!isHotSeat(row) && row.rated) {
+      await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
     }
-  } else if (!isHotSeat(row)) {
-    await sendEmail({ kind: "your-turn", gameId: id, stone: next.toPlay });
+    // To the people seated only: never a program, a typed name or a board at one screen. See `gameNotices.ts`.
+    await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
+  } else {
+    await noticeYourTurn({ ...row, hotSeat: isHotSeat(row) }, id, next.toPlay);
   }
 
   const game = await fetchGameDetail(id);
@@ -313,7 +314,7 @@ export async function cancelGame(id: string, token: string, now = new Date()): P
     },
   });
   // Deliberately no recordResult. Nothing was played, so nothing is owed.
-  if (!isHotSeat(row)) await sendEmail({ kind: "game-over", gameId: id, winner: null });
+  await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, null);
 
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };
@@ -354,10 +355,10 @@ export async function resignGame(id: string, token: string, now = new Date()): P
   // A resigned game is a decided game, whoever it was against and whether or
   // not anything rated it. Resigning adds no move, so the count is the record's.
   await recordPlayed({ ...row, hotSeat: isHotSeat(row), winner: next.winner, moveCount: next.moves.length });
-  if (!isHotSeat(row)) {
-    if (row.rated) await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
-    await sendEmail({ kind: "game-over", gameId: id, winner: next.winner });
+  if (!isHotSeat(row) && row.rated) {
+    await recordResult(row.blackName, row.whiteName, next.winner, row.variant, poolFor(hasBotSeat(row)));
   }
+  await noticeGameOver({ ...row, hotSeat: isHotSeat(row) }, id, next.winner);
 
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };
