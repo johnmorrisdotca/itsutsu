@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (29)
+## 1. Written by a machine — please check these (41)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -48,6 +48,18 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | After earning points — the notice that drops in from the top of the page | {count} to {name} | **{name}まであと{count}** | {count} more to go until {name}. |  |
 | After earning points — the notice that drops in from the top of the page | XP | **経験値** | Experience points. |  |
 | Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Download as SGF | **SGF形式でダウンロード** | Download in SGF format. |  |
+| — — — | Whoever comes along first takes the other seat. | **最初に来た人がもう一方の席に着きます。** | The first person to come sits in the other seat. |  |
+| — — — | Asked for | **指名** | Nominated — the person named for this game. |  |
+| — — — | Friendly | **親善対局** | Friendly game. |  |
+| — — — | Played for its own sake. No rating moves. | **対局そのものを楽しむ一局です。レーティングは変動しません。** | A game played to enjoy the game itself. The rating does not change. |  |
+| — — — | Here now | **在室** | In the room — here now. |  |
+| — — — | Opening | **開局ルール** | Opening rule — the rule for how a game begins. |  |
+| — — — | Opponent | **対戦相手** | Opponent — the person you play against. |  |
+| — — — | Players you know | **知人** | Acquaintances — people you know. |  |
+| — — — | Rated | **レーティング対局** | Rated game. |  |
+| — — — | The result moves both players' ratings. | **結果が双方のレーティングに反映されます。** | The result is reflected in both players' ratings. |  |
+| — — — | Ratings | **レーティング** | Rating. |  |
+| — — — | The computer | **対コンピュータ** | Against the computer. |  |
 
 `{game}`, `{name}`, `{names}` and `{country}` are filled in when the page is
 drawn — a game's name, a country. They have to survive a correction exactly as

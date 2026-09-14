@@ -1,5 +1,11 @@
+import { OPENING_RULES, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { OpeningRule, Stone } from "@/lib/gomoku/gomoku.types";
+import { LONG_PRO_EXCLUSION, PRO_EXCLUSION } from "@/lib/gomoku/rules/opening";
+
+import type { GroupWords, OpponentGroupKind, RatedTile } from "./picker.types";
+
 /**
- * The look of the two pickers on the set-up screen.
+ * The look of the pickers on the set-up screen.
  *
  * John, looking at /games/new: "however UGLY dropdown… we should show all the
  * families of board images with text… for the board sizes, make it more
@@ -128,6 +134,93 @@ export const PICK_GRID =
 
 /** The boards a game is played on, side by side rather than stacked. */
 export const PICK_BLOCKS = "flex flex-wrap gap-2";
+
+/**
+ * A setting stated rather than offered — the one opening a game has, or a
+ * rating the game could never move. The card's frame without anything that
+ * says "press me": no pointer, no hover, no check, no ring.
+ */
+export const PICK_FACT = "relative flex items-center rounded-xl border border-rule bg-ivory/70 text-left";
+
+/**
+ * The openings a game offers — two or three — in a row from a tablet up, and
+ * stacked on a phone, where a picture, a name and a line of what it means
+ * would otherwise be squeezed into a third of 390 pixels.
+ */
+export const PICK_TILES = "grid grid-cols-1 gap-2 md:grid-cols-3";
+
+/** Rated and Friendly: two answers, side by side once there is room for both lines. */
+export const PICK_PAIR = "grid grid-cols-1 gap-2 sm:grid-cols-2";
+
+/** People and programs: there can be more of them, so the columns are narrower. */
+export const PICK_PEOPLE = "grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3";
+
+/** The square that holds a tile's small picture, when the picture is a glyph. */
+export const PICK_ICON =
+  "inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-rule-strong bg-ivory text-ink";
+
+/** An opening's picture: the height of a tile's two lines of words, and no taller. */
+export const OPENING_MARK_PX = 44;
+
+/**
+ * How far from tengen each opening's square reaches, in cells — the ENGINE'S
+ * numbers, imported rather than written down again, so the picture of Pro
+ * cannot draw a different square from the one Pro enforces. An opening with no
+ * square has no entry; "no square" is an absence, not a zero, since a reach of
+ * zero would be a real square of one point.
+ */
+export const OPENING_ZONE_REACH: Partial<Record<OpeningRule, number>> = {
+  [OPENING_RULES.pro]: PRO_EXCLUSION,
+  [OPENING_RULES.longPro]: LONG_PRO_EXCLUSION,
+};
+
+/** The square an opening sends black's second stone out of. Dashed, and never colour alone. */
+export const OPENING_ZONE_CLASS = "absolute border border-dashed border-shu bg-shu-soft/60";
+
+export const MARK_STONE = "absolute size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full";
+
+export const MARK_STONE_COLOUR: Record<Stone, string> = {
+  [STONES.black]: "bg-ink",
+  [STONES.white]: "bg-paper ring-1 ring-ink",
+};
+
+/**
+ * The picture on an opponent's tile, which is a stone: white with an initial
+ * for a person, black with its own script for a program, and an empty dashed
+ * ring for the seat nobody has taken yet.
+ */
+const SEAT_MARK =
+  "inline-flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold leading-none";
+
+export const SEAT_MARK_PERSON = `${SEAT_MARK} border border-ink bg-paper text-ink`;
+
+export const SEAT_MARK_COMPUTER = `${SEAT_MARK} font-mincho bg-ink text-paper`;
+
+export const SEAT_MARK_ANYONE = `${SEAT_MARK} border-2 border-dashed border-rule-strong`;
+
+export const OPPONENT_GROUPS = {
+  asked: "asked",
+  here: "here",
+  known: "known",
+  computer: "computer",
+} as const satisfies Record<OpponentGroupKind, OpponentGroupKind>;
+
+/**
+ * The headings over each run of opponents. The kanji are the ones the select's
+ * optgroups carried, kept beside the English the way every heading here is.
+ */
+export const OPPONENT_GROUP_WORDS: Record<OpponentGroupKind, GroupWords> = {
+  [OPPONENT_GROUPS.asked]: { phrase: "setup.askedFor", kanji: "指名" },
+  [OPPONENT_GROUPS.here]: { phrase: "setup.hereNow", kanji: "在室" },
+  [OPPONENT_GROUPS.known]: { phrase: "setup.playersYouKnow", kanji: "知人" },
+  [OPPONENT_GROUPS.computer]: { phrase: "setup.theComputer", kanji: "対コンピュータ" },
+};
+
+/** Rated first, as the select had it, because a game counts unless somebody says otherwise. */
+export const RATED_TILES: readonly RatedTile[] = [
+  { rated: true, word: "rated", phrase: "setup.rated", means: "setup.ratedMeans" },
+  { rated: false, word: "friendly", phrase: "setup.friendly", means: "setup.friendlyMeans" },
+];
 
 /** The board's picture in a block among several, with "13×13" in text under it. */
 export const BOARD_BLOCK_MARK_PX = 48;

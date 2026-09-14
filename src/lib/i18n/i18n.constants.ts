@@ -144,6 +144,25 @@ export const PHRASES = {
   "rules.wikipedia": "Read about {game} on Wikipedia ↗",
 
   /*
+   * The set-up screen's last three choices, which were dropdowns and are
+   * tiles: the opening, whether the game counts, and who it is against. The
+   * names on the tiles are the domain's own copy (`OPENING_DISPLAY`,
+   * `BOT_PROFILES`); these are the words around them.
+   */
+  "setup.opening": "Opening",
+  "setup.ratings": "Ratings",
+  "setup.rated": "Rated",
+  "setup.ratedMeans": "The result moves both players' ratings.",
+  "setup.friendly": "Friendly",
+  "setup.friendlyMeans": "Played for its own sake. No rating moves.",
+  "setup.opponent": "Opponent",
+  "setup.anyoneMeans": "Whoever comes along first takes the other seat.",
+  "setup.askedFor": "Asked for",
+  "setup.hereNow": "Here now",
+  "setup.playersYouKnow": "Players you know",
+  "setup.theComputer": "The computer",
+
+  /*
    * The XP toast. It shipped in 0.158.4 with these five as fixed English in
    * `xp.constants.ts`, so a Japanese reader was paid in their own language
    * and told about it in somebody else's. The unit is spelt out rather than

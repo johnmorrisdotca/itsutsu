@@ -20,6 +20,8 @@ import type { ReactNode } from "react";
 import { BoardPicker } from "./BoardPicker";
 import { GamePicker } from "./GamePicker";
 import { MoreSettings } from "./MoreSettings";
+import { OpeningPicker } from "./OpeningPicker";
+import { RatedPicker } from "./RatedPicker";
 import { penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 import { describeSettings, type SettingWord } from "./rulesSummary";
@@ -261,8 +263,20 @@ export function RulesForm({
    */
   const rest = (
     <>
-      {/* The opening is the board's too, where a board has settled the game. */}
-      {settledByBoard ? null : (
+      {/*
+        The opening is the board's too, where a board has settled the game.
+        On the screen that CHOOSES, it is tiles with a picture of each rule;
+        beside a board it stays a select, for the reason the game does.
+      */}
+      {settledByBoard ? null : chooser === RULES_CHOOSERS.pictures ? (
+        <OpeningPicker
+          value={value.opening}
+          variant={value.variant}
+          size={value.size}
+          disabled={disabled}
+          onChange={(next) => change({ opening: next })}
+        />
+      ) : (
         <Field label="Opening">
           <Select
             value={value.opening}
@@ -333,7 +347,18 @@ export function RulesForm({
         discarded this codebase keeps finding. The fact is said instead, in the
         fold's own summary line, from the same `refused`.
       */}
-      {refused !== null ? null : (
+      {chooser === RULES_CHOOSERS.pictures ? (
+        /*
+          Tiles on the screen that chooses. Where `refused` is set they are
+          not drawn either; the fact is, in their place — see RatedPicker.
+        */
+        <RatedPicker
+          value={value.rated}
+          refused={refused}
+          disabled={disabled}
+          onChange={(rated) => change({ rated })}
+        />
+      ) : refused !== null ? null : (
         <Field label="Ratings">
           <Select
             value={value.rated ? "rated" : "friendly"}
