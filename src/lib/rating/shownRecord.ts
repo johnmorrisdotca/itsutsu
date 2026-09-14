@@ -84,3 +84,25 @@ export function ratingShown(
   }
   return null;
 }
+
+/**
+ * The tier to print beside the rating `ratingShown` chose: the tier OF THAT
+ * POOL, never the other one's.
+ *
+ * `PlayerProfile.tier` is the people pool's tier alone, worked out from the
+ * people pool's count — which for every computer player is nought, since a
+ * program never plays a person-versus-person game. So a program's own page
+ * printed its computer-pool rating beside "Unrated · Fewer than four rated
+ * games", while the Computers tab, reading the computer pool's count for the
+ * same row, said "Provisional". That is the "1639, unrated" mistake the
+ * comment above warns about, made one line further down: the number and the
+ * word taken from different pools.
+ *
+ * So the tier travels with the rating, from the same result. Where nothing
+ * is shown — no row, or fewer than UNRATED_BELOW games in either pool — the
+ * answer is unrated, which is the truth about both pools at once and reads
+ * consistently beside the dash every table prints for that case.
+ */
+export function tierShown(profile: PlayerProfile | null): RatingTier {
+  return ratingShown(profile)?.tier ?? "unrated";
+}

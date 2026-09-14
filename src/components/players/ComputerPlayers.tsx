@@ -10,8 +10,7 @@ import { RecordTable, type RecordTableRow } from "./RecordTable";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
 import { RowActions } from "@/components/ui/Controls";
 import { BOT_ALL_TIERS, BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.constants";
-import { tierFor } from "@/lib/rating/elo";
-import { gamesPlayed } from "@/lib/rating/shownRecord";
+import { gamesPlayed, ratingShown, tierShown } from "@/lib/rating/shownRecord";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import type { DirectoryEntry } from "@/lib/rating/directoryRows";
 
@@ -74,13 +73,19 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
 
   const rows: RecordTableRow[] = shown.map((entry) => {
     /*
-     * The RATING still comes from the computer-pool profile — that is a
-     * different question from "how many games", and it is right that it
-     * answers only about the rated ones. Reading the ordinary rating table
-     * would say they had never played at all, which is exactly what the page
-     * said the first time somebody beat Kyu.
+     * The RATING is `ratingShown`, THE SAME RULE THE MEMBERS TAB APPLIES to
+     * the same row: the people-pool figure where one has been earned, else
+     * the computer-pool figure, marked — and nothing under UNRATED_BELOW
+     * games in either. This table used to print the computer rating from the
+     * first rated game and call its tier from the computer pool's count, so a
+     * program read 1584 here and a dash on the Members tab, and "Provisional"
+     * here beside "Unrated" on its own page. One rule now, and the tier
+     * (`tierShown`) is the tier of the pool the figure came from: a program
+     * under four rated games reads "Unrated" beside its dash on every tab.
+     * For a program that is always the computer pool, since a program never
+     * plays a person-versus-person game.
      */
-    const computer = entry.profile?.computer ?? null;
+    const shown = ratingShown(entry.profile);
     // Every finished game, rated or not — see the comment above `tallies`.
     const here = gamesPlayed(tallies.get(entry.id));
     return {
@@ -129,11 +134,8 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
        * and the number are over the same games.
        */
       streak: entry.playedStreak,
-      rating:
-        computer === null || computer.ratedGames === 0
-          ? null
-          : { rating: computer.rating, pool: RATING_POOLS.computer },
-      tier: tierFor(computer?.ratedGames ?? 0),
+      rating: shown === null ? null : { rating: shown.rating, pool: shown.pool },
+      tier: tierShown(entry.profile),
       /*
        * NO BADGE ON A PROGRAM, BECAUSE A PROGRAM IS NOT ON THIS LADDER. It used
        * to fall out of nought being silence; John has since settled that nought

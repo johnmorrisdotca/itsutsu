@@ -8,10 +8,9 @@ import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { lastPlayedByMember } from "@/lib/history/lastPlayed";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
-import { tierFor } from "@/lib/rating/elo";
 import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { RATING_POOLS } from "@/lib/rating/pools";
-import { gamesPlayed } from "@/lib/rating/shownRecord";
+import { gamesPlayed, ratingShown, tierShown } from "@/lib/rating/shownRecord";
 
 import { ADMIN_BOTS_COPY } from "./admin.constants";
 
@@ -73,13 +72,15 @@ export async function AdminBots() {
     const tier = (entry.botTier ?? "") as BotTier;
     const grade = BOT_PROFILES[tier] as (typeof BOT_PROFILES)[BotTier] | undefined;
     /*
-     * The RATING comes from the computer-pool profile, which is a different
-     * question from "how many games" and is right to answer only about the
-     * rated ones. The ordinary rating would say they had never played at all:
-     * a program never plays a person-against-person game, so that column sits
-     * at its starting value for ever.
+     * The RATING is `ratingShown`, the one rule every table applies to the
+     * same row — the Members tab, the Computers tab and this one agree about
+     * a program by construction, and the tier (`tierShown`) is the tier of
+     * the pool the figure came from. For a program that is the computer pool,
+     * since a program never plays a person-against-person game and its
+     * ordinary column sits at its starting value for ever; and under
+     * UNRATED_BELOW rated games it is a dash beside "Unrated", as everywhere.
      */
-    const computer = entry.profile?.computer ?? null;
+    const shown = ratingShown(entry.profile);
     const when = lastPlayed.get(entry.id) ?? null;
     return {
       key: entry.id,
@@ -144,11 +145,8 @@ export async function AdminBots() {
        * every game, which they are not.
        */
       streak: entry.playedStreak,
-      rating:
-        computer === null || computer.ratedGames === 0
-          ? null
-          : { rating: computer.rating, pool: RATING_POOLS.computer },
-      tier: tierFor(computer?.ratedGames ?? 0),
+      rating: shown === null ? null : { rating: shown.rating, pool: shown.pool },
+      tier: tierShown(entry.profile),
       /*
        * NO BADGE ON A PROGRAM, BECAUSE A PROGRAM IS NOT ON THIS LADDER. It used
        * to fall out of nought being silence; John has since settled that nought
