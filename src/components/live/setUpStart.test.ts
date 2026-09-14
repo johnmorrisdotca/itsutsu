@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RulesDraft } from "./rulesDraft";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
-import { creationFor, sameRules, seatsFor } from "./setUpStart";
+import { creationFor, sameRules, seatsFor, stillARematch } from "./setUpStart";
 
 const draft: RulesDraft = {
   variant: "freestyle",
@@ -20,7 +20,9 @@ const draft: RulesDraft = {
 };
 
 const them: SetUpOpponent = { id: "mem_them", name: "Bob", computer: false };
-const again: SetUpAgain = { id: "g_old", colour: STONES.white };
+const again: SetUpAgain = { id: "g_old", colour: STONES.white, opponent: them };
+/** Somebody else, chosen on the set-up screen of a rematch against Bob. */
+const program: SetUpOpponent = { id: "kyu", name: "Kyu", computer: true };
 const fork: SetUpFork = { id: "g_old", move: 12, alone: false, colour: STONES.black };
 /** The line length and the seed, which no row on this form asks about. */
 const carry = { winLength: 3, seed: 7, opener: "black", drawLimit: "none" };
@@ -143,6 +145,72 @@ describe("what pressing Start asks for", () => {
     expect(
       creationFor({ rules: draft, source: draft, opponent: them, again: null, fork, carry }).repeat,
     ).toBe(false);
+  });
+
+  /*
+   * AND A REMATCH AGAINST SOMEBODY ELSE IS NOT A REMATCH. The set-up screen shows
+   * "Who you play" openly on a rematch, and choosing another player there used to
+   * change nothing: this asked for the rematch itself, which takes its opponent
+   * from the old game, so Begin made a game against the player from last time. It
+   * asks for a new game against the player chosen now — the same rules, carried as
+   * a changed rematch carries them, and nothing that marks a rematch.
+   */
+  it("asks for a new game against the player chosen, once somebody else is chosen", () => {
+    const { body, repeat } = creationFor({
+      rules: draft,
+      source: draft,
+      opponent: program,
+      again,
+      fork: null,
+      carry,
+    });
+    expect(repeat).toBe(false);
+    expect(body.rematch, "nothing that marks a rematch is asked for").toBeUndefined();
+    expect(body.challengeId).toBe("kyu");
+    expect(body.open).toBe(false);
+    // The same rules, including the line length the form has no row for.
+    expect(body.size).toBe(9);
+    expect(body.winLength).toBe(3);
+  });
+
+  it("posts a seat for anyone when nobody in particular is chosen instead", () => {
+    const { body, repeat } = creationFor({
+      rules: draft,
+      source: draft,
+      opponent: null,
+      again,
+      fork: null,
+      carry,
+    });
+    expect(repeat).toBe(false);
+    expect(body.rematch).toBeUndefined();
+    expect(body.open).toBe(true);
+    expect(body.challengeId).toBeUndefined();
+  });
+});
+
+describe("whether a rematch is still one", () => {
+  it("needs the same rules AND the same player", () => {
+    expect(stillARematch({ rules: draft, source: draft, opponent: them, again })).toBe(true);
+    expect(stillARematch({ rules: draft, source: draft, opponent: program, again })).toBe(false);
+    // A seat for anyone, or a program not yet drawn: nobody, which is not the player from last time.
+    expect(stillARematch({ rules: draft, source: draft, opponent: null, again })).toBe(false);
+    expect(stillARematch({ rules: { ...draft, size: 15 }, source: draft, opponent: them, again })).toBe(false);
+  });
+
+  it("is never true of a game that did not come from a rematch", () => {
+    expect(stillARematch({ rules: draft, source: draft, opponent: them, again: null })).toBe(false);
+    expect(stillARematch({ rules: draft, source: null, opponent: them, again })).toBe(false);
+  });
+
+  /*
+   * And the colours follow it: a rematch swaps, a new game seats whoever asks as
+   * black. The doorstep passes `again` only while `stillARematch` holds, so a
+   * rematch against somebody else is not described with the old game's swap.
+   */
+  it("keeps the swapped colour for a rematch and black for the new game it becomes", () => {
+    expect(seatsFor({ again, fork: null }).mine).toBe(STONES.white);
+    expect(seatsFor({ again: null, fork: null }).mine).toBe(STONES.black);
   });
 });
 

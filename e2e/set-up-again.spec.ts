@@ -1,7 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
-import { chooseGame, chosenBoard, chosenOpponent, openMoreSettings, ready, startAndBegin } from "./support";
+import {
+  aComputerOpponent,
+  chooseGame,
+  chooseOpponent,
+  chosenBoard,
+  chosenOpponent,
+  openMoreSettings,
+  ready,
+  startAndBegin,
+} from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -221,6 +230,74 @@ test.describe("playing a finished game again", () => {
     expect(next.variant, "the game somebody actually asked for").toBe("reversi");
     // Still against the same person, which is the half that must not be lost.
     expect([next.blackName, next.whiteName]).toContain(them.name);
+
+    await context.close();
+  });
+
+  /*
+   * OR SOMEBODY ELSE IS CHOSEN, AND THAT CHOICE IS THE GAME THEY GET.
+   *
+   * The set-up screen shows "Who you play" openly on a rematch, so a different
+   * opponent can be pressed there — and the doorstep and Begin went on with the
+   * person from the last game. A page must never accept a choice and quietly
+   * drop it. Choosing somebody else makes a new game with the same rules: it is
+   * not a rematch, so the colours do not swap and nothing that marks a rematch is
+   * claimed for it, and the doorstep says so before Begin.
+   *
+   * A computer player is the somebody else, because it is on every game's list of
+   * opponents without this spec having to make anybody a buddy first.
+   */
+  test("or somebody else is chosen, which makes a new game with the same rules rather than a rematch", async ({
+    browser,
+    baseURL,
+  }) => {
+    const stamp = Date.now().toString(36);
+    const { context, them, game } = await playedOut(browser, baseURL!, stamp);
+    const page = await context.newPage();
+    await page.goto(`/games/gomoku/match/${game.id}`);
+    await page.getByRole("link", { name: /Play again as White/ }).click();
+    await ready(page, "set-up-game");
+
+    await openMoreSettings(page);
+    const program = await aComputerOpponent(page);
+    await chooseOpponent(page, program);
+    const programId = program.slice(program.indexOf(":") + 1);
+    // The set-up screen says it has stopped being a repeat, and why.
+    await expect(page.getByTestId("set-up-again")).toContainText("not a rematch");
+
+    await page.getByTestId("set-up-start").click();
+    await ready(page, "doorstep");
+    await expect(page.getByTestId("doorstep-lineage"), "the doorstep says this is not a rematch").toContainText(
+      "not a rematch",
+    );
+    await expect(page.getByTestId("doorstep-colours"), "and the colours are not swapped").toContainText(
+      "you are black",
+    );
+    // An absence, asserted after the sentence it would sit in has been seen.
+    await expect(page.getByTestId("doorstep-colours"), "the doorstep names the player chosen").not.toContainText(
+      them.name.split(" ")[0],
+    );
+
+    await page.getByTestId("doorstep-begin").click();
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+    const id = page.url().split("/").pop()!;
+    tidyAway(id);
+    const started = await context.request.get(`/api/games/${id}`);
+    expect(started.status()).toBe(200);
+    const next = (await started.json()) as {
+      size: number;
+      winLength: number;
+      blackMemberId: string | null;
+      whiteMemberId: string | null;
+    };
+    expect(
+      [next.blackMemberId, next.whiteMemberId],
+      "Begin made a game against the player chosen, not the one from last time",
+    ).toContain(programId);
+    expect(next.whiteMemberId, "the asker takes black, as in any new game").toBe(programId);
+    // The same rules, including the line length this form has no row for.
+    expect(next.size).toBe(9);
+    expect(next.winLength).toBe(3);
 
     await context.close();
   });

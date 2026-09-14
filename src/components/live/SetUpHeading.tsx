@@ -6,6 +6,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { rulesPath, setUpLink } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { SET_UP_COPY } from "./live.constants";
+import { stillARematch } from "./setUpStart";
 import type { SetUpFrom } from "./setUp.types";
 
 /**
@@ -38,7 +39,7 @@ export function SetUpHeading({
 
   const title =
     from.again !== null
-      ? { en: SET_UP_COPY.again(from.opponent?.name ?? "them"), kanji: "再戦" }
+      ? { en: SET_UP_COPY.again(from.again.opponent.name), kanji: "再戦" }
       : from.fork !== null
         ? { en: SET_UP_COPY.fork(from.fork.move), kanji: "分岐" }
         : from.opponent !== null
@@ -92,7 +93,13 @@ export function SetUpHeading({
           <Link href={setUpLink({})} className="underline underline-offset-4" data-testid="set-up-fresh">
             {SET_UP_COPY.startOver}
           </Link>
-          {from.again !== null ? (
+          {/*
+            The swapped colour only while the address still describes a rematch:
+            a changed one, or one against somebody else, is a new game that swaps
+            nothing, and naming the swap over it would be the promise Begin broke.
+          */}
+          {from.again !== null &&
+          stillARematch({ rules: from.initial, source: from.asPlayed, opponent: from.opponent, again: from.again }) ? (
             <>
               {" · "}
               {`you take ${STONE_DISPLAY[from.again.colour].label}`}

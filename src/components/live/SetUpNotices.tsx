@@ -17,7 +17,17 @@ import type { SetUpNoticesProps } from "./setUp.types";
  * notices are a job of their own — deciding which sentence heads the form — and
  * the screen was near the 500-line gate doing both.
  */
-export function SetUpNotices({ problem, again, repeat, chosenName, fork, opponent, dropped, variant }: SetUpNoticesProps) {
+export function SetUpNotices({
+  problem,
+  again,
+  repeat,
+  sameOpponent,
+  chosenName,
+  fork,
+  opponent,
+  dropped,
+  variant,
+}: SetUpNoticesProps) {
   return (
     <>
       {problem !== null ? (
@@ -28,9 +38,18 @@ export function SetUpNotices({ problem, again, repeat, chosenName, fork, opponen
           {problem}
         </p>
       ) : null}
+      {/*
+        Which of three this is: the same game again, a changed game against the
+        same player, or a new game against somebody else. The third was missing,
+        so choosing another opponent read as a rematch naming the new player.
+      */}
       {again !== null ? (
         <p className="text-xs text-moss" data-testid="set-up-again">
-          {repeat ? SET_UP_COPY.againHint(chosenName ?? "them", STONE_DISPLAY[again.colour].label) : SET_UP_COPY.againChanged}
+          {repeat
+            ? SET_UP_COPY.againHint(chosenName ?? "them", STONE_DISPLAY[again.colour].label)
+            : sameOpponent
+              ? SET_UP_COPY.againChanged
+              : SET_UP_COPY.againElsewhere(again.opponent.name, chosenName)}
         </p>
       ) : null}
       {fork !== null ? (

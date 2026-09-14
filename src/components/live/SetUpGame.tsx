@@ -26,7 +26,7 @@ import { readSetUpAsked } from "./setUpAsked";
 import { keptBoardChosen, keptDraft, keptParams, queryRecord } from "./setUpKept";
 import { SetUpNotices } from "./SetUpNotices";
 import { SettingWords } from "./SettingWords";
-import { sameRules, seatsFor } from "./setUpStart";
+import { seatsFor, stillARematch } from "./setUpStart";
 import { recapWords } from "./setUpWords";
 import type { KeptBase, KeptDefaults, SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 import { useKeptAddress } from "./useKeptAddress";
@@ -121,12 +121,20 @@ export function SetUpGame({
    * the same state a click on the board picker writes: `?board=19` is a choice.
    */
   const query = useSearchParams();
+  /*
+   * THE PLAYER THIS SCREEN WAS OPENED FOR. On a rematch that is the player from
+   * last time, whoever the address has chosen since: they are the silence the
+   * address leaves out, and the tile somebody may want to go back to. `opponent`
+   * is who the address has this game against NOW, which on a rematch may be
+   * somebody else — see `stillARematch`.
+   */
+  const named = again !== null ? again.opponent : opponent;
   const base: KeptBase = {
     asPlayed,
     forked: fork !== null,
     defaults,
     pathVariant: game,
-    silentOpponent: again !== null ? (opponent?.id ?? null) : null,
+    silentOpponent: again !== null ? again.opponent.id : null,
   };
   const [arrived] = useState(() => {
     const asked = readSetUpAsked(queryRecord(query));
@@ -137,8 +145,8 @@ export function SetUpGame({
       against: againstFromAddress(fork === null ? asked.against : null, {
         computers: botsFor(draft.variant as RuleVariant),
         opponents,
-        named: opponent,
-        absent: (again !== null || fork !== null) && opponent !== null ? valueFor(opponent) : ANYONE,
+        named,
+        absent: (again !== null || fork !== null) && named !== null ? valueFor(named) : ANYONE,
       }),
     };
   });
@@ -164,7 +172,7 @@ export function SetUpGame({
    */
   const computers = botsFor(rules.variant as RuleVariant);
   const chosenId = idIn(against);
-  const chosen = chosenId === null ? null : whoIs(chosenId, computers, opponents, opponent);
+  const chosen = chosenId === null ? null : whoIs(chosenId, computers, opponents, named);
   /* A computer player to be drawn at random: nobody is chosen, and the seat is not posted. */
   const random = against === RANDOM_COMPUTER;
   /*
@@ -172,8 +180,8 @@ export function SetUpGame({
    * specialist program, after the game was changed to one it does not play.
    */
   const dropped =
-    chosenId !== null && chosen === null && opponent !== null && opponent.id === chosenId
-      ? opponent.name
+    chosenId !== null && chosen === null && named !== null && named.id === chosenId
+      ? named.name
       : null;
 
   /*
@@ -202,11 +210,15 @@ export function SetUpGame({
 
   /*
    * WHETHER THIS IS STILL A REPEAT of the game it was filled in from. A rematch is
-   * only a rematch while the form still describes that game; `sameRules` is the
-   * same comparison `creationFor` makes on the doorstep. Compared against
-   * `asPlayed`, since the address may already have carried a change in.
+   * only a rematch while the form still describes that game AGAINST THAT PLAYER;
+   * `stillARematch` is the same decision `creationFor` makes on the doorstep.
+   * Compared against `asPlayed`, since the address may already have carried a
+   * change in. A program still to be drawn at random is nobody yet, so it is never
+   * the player from last time.
    */
-  const repeat = again !== null && asPlayed !== null && sameRules(settled, asPlayed);
+  const opponentNow = random ? null : chosen;
+  const sameOpponent = again !== null && opponentNow !== null && opponentNow.id === again.opponent.id;
+  const repeat = stillARematch({ rules: settled, source: asPlayed, opponent: opponentNow, again });
 
   /*
    * WHETHER THE GAME THIS BUTTON LEADS TO COULD EVER COUNT, read from `seatsFor`
@@ -220,12 +232,16 @@ export function SetUpGame({
    * /games/<game>/begin, which states it and creates it on a press of its own; a
    * seat somebody is already waiting at goes to the same doorstep, naming the
    * seat. `router.push`, not `replace`: going back from the doorstep belongs here.
+   *
+   * On a rematch, nobody in particular is said out loud as `anyone`. Silence there
+   * means the player from last time, so a seat for anyone left unsaid arrived at
+   * the doorstep as the very rematch somebody had just chosen not to play.
    */
   function start() {
     setBusy(true);
     router.push(
       beginLink(settled, {
-        against: random ? RANDOM_COMPUTER : (chosen?.id ?? null),
+        against: random ? RANDOM_COMPUTER : (chosen?.id ?? (again !== null ? ANYONE : null)),
         rematch: again?.id ?? null,
         from: fork === null ? null : { id: fork.id, move: fork.move },
         sit: waiting?.id ?? null,
@@ -250,6 +266,7 @@ export function SetUpGame({
         problem={problem}
         again={again}
         repeat={repeat}
+        sameOpponent={sameOpponent}
         chosenName={chosen?.name ?? null}
         fork={fork}
         opponent={opponent}
@@ -292,7 +309,7 @@ export function SetUpGame({
                   onChange={setAgainst}
                   variant={settled.variant}
                   opponents={opponents}
-                  named={opponent}
+                  named={named}
                   disabled={busy}
                   signedIn={signedIn}
                 />

@@ -7,9 +7,9 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Doorstep, type BeginAction } from "@/components/live/Doorstep";
 import { DOORSTEP_COPY } from "@/components/live/live.constants";
-import { RANDOM_COMPUTER } from "@/components/live/opponentOptions";
+import { ANYONE, RANDOM_COMPUTER } from "@/components/live/opponentOptions";
 import { botsFor } from "@/lib/bots/bots.constants";
-import { describeGameProse, describeSeating, playerWord } from "@/components/live/doorstepSays";
+import { describeGameProse, describeLineage, describeSeating, playerWord } from "@/components/live/doorstepSays";
 import { beginLink, changeLink, type SetUpKnown } from "@/components/live/setUpAddress";
 import { readSetUpAsked } from "@/components/live/setUpAsked";
 import { setUpFrom } from "@/components/live/setUpFrom";
@@ -92,8 +92,19 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   const pool = from.drawComputer ? botsFor(variant).map(({ id, name }) => ({ id, name })) : [];
 
   const known: SetUpKnown = {
-    /* Still "random" on the way back: nobody has been drawn, so there is nobody to name. */
-    against: from.drawComputer ? RANDOM_COMPUTER : from.opponent === null ? null : from.opponent.id,
+    /*
+     * Still "random" on the way back: nobody has been drawn, so there is nobody to
+     * name. And on a rematch, a seat for anyone is said out loud — silence there is
+     * the player from last time, so leaving it unsaid would hand "Change something"
+     * the rematch this stopped being.
+     */
+    against: from.drawComputer
+      ? RANDOM_COMPUTER
+      : from.opponent !== null
+        ? from.opponent.id
+        : from.again !== null
+          ? ANYONE
+          : null,
     rematch: from.again === null ? null : from.again.id,
     from: from.fork === null ? null : { id: from.fork.id, move: from.fork.move },
     /* A seat that has gone is not carried back: there is nothing there to sit at. */
@@ -106,7 +117,28 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
    * draft the address carries, which is what Begin will send.
    */
   const rules = seat?.rules ?? from.initial;
-  const { mine, screen } = seatsFor({ again: from.again, fork: from.fork });
+
+  /*
+   * WHAT BEGIN WILL DO — decided on the server, and the only thing on this page
+   * that writes. `creationFor` is the same function the Start button used to send
+   * its body through, unchanged: the request is identical, it has simply moved one
+   * screen along so that nothing is written before somebody has read what it says.
+   *
+   * Decided BEFORE the seating is described, because the seating follows it. A
+   * rematch swaps the colours only while it is still one; a rematch somebody
+   * changed — another rule, or another player — is asked for as a new game, where
+   * whoever asks takes black. This page used to describe the swap either way, and
+   * the game Begin made against somebody else was not the one it described.
+   */
+  const creation = creationFor({
+    rules: from.initial,
+    source: from.asPlayed,
+    opponent: from.opponent,
+    again: from.again,
+    fork: from.fork,
+    carry: from.carry,
+  });
+  const { mine, screen } = seatsFor({ again: creation.repeat ? from.again : null, fork: from.fork });
   const seating = describeSeating(rules, {
     opponent:
       seat !== null
@@ -119,6 +151,14 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
     // A game whose rules fix who opens is stated that way, whatever a carried game says.
     opener: seat?.opener ?? fixedOpener(rules.variant, rules.opening) ?? openerIn(from.carry),
     screen,
+  });
+  /*
+   * And whether this is playing that game again at all, where it came from a
+   * rematch: still one, changed by its rules, or a new game against somebody else.
+   */
+  const lineage = describeLineage(from.again, {
+    repeat: creation.repeat,
+    sameOpponent: from.again !== null && from.opponent?.id === from.again.opponent.id,
   });
 
   /*
@@ -136,20 +176,6 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
    */
   const refused = screen ? RATING_REFUSALS.hotSeat : null;
 
-  /*
-   * WHAT BEGIN WILL DO — decided on the server, and the only thing on this page
-   * that writes. `creationFor` is the same function the Start button used to send
-   * its body through, unchanged: the request is identical, it has simply moved one
-   * screen along so that nothing is written before somebody has read what it says.
-   */
-  const creation = creationFor({
-    rules: from.initial,
-    source: from.asPlayed,
-    opponent: from.opponent,
-    again: from.again,
-    fork: from.fork,
-    carry: from.carry,
-  });
   const begin: BeginAction =
     seat !== null
       ? { kind: "sit", id: seat.id, who: playerWord(seat.who, false), instead: creation.body }
@@ -198,6 +224,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
         begin={begin}
         signedIn={email !== null}
         problem={problem}
+        lineage={lineage}
       />
     </Page>
   );
