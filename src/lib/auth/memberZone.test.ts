@@ -9,7 +9,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  * Tested here rather than in the browser because that is where the rule lives.
  */
 
-const memberRowFor = vi.fn<(key: string) => Promise<{ timeZone: string | null; country: string | null } | null>>();
+const memberRowFor =
+  vi.fn<(key: string) => Promise<{ timeZone: string | null; country: string | null; preferences?: unknown } | null>>();
 
 vi.mock("./members", () => ({ memberRowFor }));
 
@@ -58,6 +59,27 @@ describe("do we know when this member's day ends", () => {
 
   it("yes: a zone this platform cannot read is no better than none", async () => {
     memberRowFor.mockResolvedValue({ timeZone: "Mars/Olympus", country: "" });
+    expect(await dayZoneUnknown("aki@example.com")).toBe(true);
+  });
+
+  it("no: a zone they CHOSE is theirs even when it is exactly the country's guess", async () => {
+    /* The case the comparison above cannot see, settled by the source the row
+       records. Without it this member's browser was asked, and a trip moved them. */
+    memberRowFor.mockResolvedValue({
+      timeZone: "America/Toronto",
+      country: "Canada",
+      preferences: { timeZoneFrom: "chosen" },
+    });
+    expect(await dayZoneUnknown("aki@example.com")).toBe(false);
+  });
+
+  it("no: a zone their browser reported is not asked for again", async () => {
+    memberRowFor.mockResolvedValue({ timeZone: "America/Toronto", country: "Canada", preferences: { timeZoneFrom: "device" } });
+    expect(await dayZoneUnknown("aki@example.com")).toBe(false);
+  });
+
+  it("yes: a guess the row records as a guess may still be improved on", async () => {
+    memberRowFor.mockResolvedValue({ timeZone: "America/Toronto", country: "Canada", preferences: { timeZoneFrom: "country" } });
     expect(await dayZoneUnknown("aki@example.com")).toBe(true);
   });
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { zoneWorthRecording } from "@/lib/auth/deviceZone";
+import { ZONE_SOURCE } from "@/lib/auth/zoneSource.constants";
 
 /**
  * Tells the site what zone this device is in, for a member whose zone is unknown
@@ -32,8 +33,11 @@ import { zoneWorthRecording } from "@/lib/auth/deviceZone";
  * with it writes nothing: otherwise a member in Toronto with Canada as their
  * country would send the same value back on every page they opened, because the
  * row would still read as a guess afterwards — see `zoneWorthRecording`. A
- * device that disagrees writes once, the row then reads as the member's own, and
- * nothing mounts again. No polling, no timer, no query.
+ * device that disagrees writes once, SAYING IT IS A DEVICE — the server records
+ * the zone's source as `device`, refuses the write outright where the member has
+ * chosen (`zoneWrite`), and the row then reads as the member's own, so nothing
+ * mounts again. Without that word, the server would take the write for a choice
+ * made on the profile. No polling, no timer, no query.
  *
  * It draws nothing. A zone is not news.
  */
@@ -69,7 +73,7 @@ export function DeviceTimeZone({ held }: { held: string | null }) {
     void fetch("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ timeZone: zone }),
+      body: JSON.stringify({ timeZone: zone, timeZoneFrom: ZONE_SOURCE.device }),
     }).catch(() => undefined);
   }, [held]);
 

@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
 import { awardAdmission } from "@/lib/xp/admission";
-import { zoneToAssign } from "./zoneGuess";
+import { zoneAssignment } from "./zoneGuess";
 import { awardDailyVisit } from "@/lib/xp/dailyVisit";
 
 /**
@@ -114,7 +114,7 @@ export async function admitMember(
     /* The day's XP rides this lookup, which was happening anyway. It is the
        member AS THEY WERE — the only moment `lastSeenAt` still says when they
        were last here, since the update below is about to overwrite it. */
-    select: { id: true, email: true, lastSeenAt: true, timeZone: true, awayUntil: true, country: true },
+    select: { id: true, email: true, lastSeenAt: true, timeZone: true, awayUntil: true, country: true, preferences: true },
   });
   if (existing === null) {
     const row = await prisma.member.create({
@@ -139,24 +139,21 @@ export async function admitMember(
   // The name is the member's to choose; Google's is only the first suggestion.
   const now = new Date();
   /* Rung 3 of the time-zone order, on a write that was happening anyway: a
-     member with a country and no zone is guessed rather than reckoned in UTC.
-     Null leaves the column untouched, so this can never overwrite a zone
-     somebody chose or their browser measured — see `zoneToAssign`. */
-  const guessed = zoneToAssign({ stored: existing.timeZone, country: existing.country });
+     member with a country and no zone is guessed rather than reckoned in UTC,
+     and the row records that it is a guess. Null leaves both untouched, so this
+     can never overwrite a zone somebody chose or their browser measured — see
+     `zoneAssignment`. */
+  const assigned = zoneAssignment({ stored: existing.timeZone, country: existing.country, preferences: existing.preferences });
   const row = await prisma.member.update({
     where: { email },
-    data: {
-      picture: input.picture,
-      lastSeenAt: now,
-      ...(guessed === null ? {} : { timeZone: guessed }),
-    },
+    data: { picture: input.picture, lastSeenAt: now, ...assigned },
     select: { email: true, name: true, picture: true },
   });
   /* SIGNING IN IS A VISIT, and the stamp above has just spent the day it
      happened on. Paid from `existing`, which is the row before that write —
      carrying the zone just assigned, so the very first day is already counted
      in their own zone rather than one last time in UTC. */
-  await awardAdmission({ ...existing, timeZone: guessed ?? existing.timeZone }, now);
+  await awardAdmission({ ...existing, timeZone: assigned?.timeZone ?? existing.timeZone }, now);
   return { ...row, email: row.email ?? email, created: false };
 }
 

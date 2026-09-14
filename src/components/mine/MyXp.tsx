@@ -355,7 +355,7 @@ export async function MyXp({
   return (
     <div className="flex flex-col gap-4" data-testid="my-xp">
       <Standing xp={row.xp} />
-      <DayZoneNote timeZone={row.timeZone} country={row.country} />
+      <DayZoneNote timeZone={row.timeZone} country={row.country} preferences={row.preferences} />
 
       {isRefusal(page) ? (
         /*

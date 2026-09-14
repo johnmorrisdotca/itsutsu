@@ -87,21 +87,28 @@ export async function seedVisitor(label: string, daysAgo = 1): Promise<Visitor> 
 /**
  * The same, but holding a zone — and a country, where the case is about a guess.
  *
- * A row holding exactly what its country would guess reads as a guess, and any
- * other zone reads as the member's own (`zoneGuess.ts`). So the pair is what
- * decides which rung a case is on, and a spec about a guess has to set both.
+ * `source` is where the zone came from, kept beside it in the preferences
+ * registry (`timeZoneFrom`): `country` is what a sign-in writes with its guess.
+ * Left out, the row has no source — every row written before sources existed —
+ * and then a zone holding exactly what its country would guess reads as a
+ * guess, and any other zone as the member's own (`zoneGuess.ts`). So a spec
+ * about a guess sets the pair, and a spec about a recorded guess sets all three.
  */
 export async function seedVisitorWithZone(
   label: string,
   timeZone: string,
   daysAgo = 1,
   country = "",
+  source?: "chosen" | "device" | "country",
 ): Promise<Visitor> {
   const visitor = await seedVisitor(label, daysAgo);
   loadEnv();
   const prisma = new PrismaClient();
   try {
-    await prisma.member.update({ where: { id: visitor.id }, data: { timeZone, country } });
+    await prisma.member.update({
+      where: { id: visitor.id },
+      data: { timeZone, country, ...(source === undefined ? {} : { preferences: { timeZoneFrom: source } }) },
+    });
   } finally {
     await prisma.$disconnect();
   }

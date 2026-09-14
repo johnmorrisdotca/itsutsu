@@ -27,13 +27,13 @@ import "server-only";
  * AND IT COSTS NOTHING
  * ─────────────────────────────────────────────────────────────────────────
  *
- * `memberRowFor` already selects `timeZone` and is `cache()`d per request, so
- * this is a field off a row every page has read already: no query, on any page,
- * ever. It answers false for a signed-out reader and for the operator without a
+ * `memberRowFor` already selects `timeZone`, `country` and `preferences` — where
+ * the zone's source is kept — and is `cache()`d per request, so this is three
+ * fields off a row every page has read already: no query, on any page, ever. It answers false for a signed-out reader and for the operator without a
  * member row, because there is no row to record a zone on.
  */
 
-import { zoneStanding, worthAsking, type ZoneFrom } from "./zoneGuess";
+import { zoneSourceFrom, zoneStanding, worthAsking, type ZoneFrom } from "./zoneGuess";
 
 import { memberRowFor } from "./members";
 
@@ -44,7 +44,8 @@ export async function zoneStandingFor(
   if (email === null) return null;
   const row = await memberRowFor(email);
   if (row === null) return null;
-  return zoneStanding({ stored: row.timeZone, country: row.country });
+  /* The source rides the same row: `preferences` is on `memberRowFor` already. */
+  return zoneStanding({ stored: row.timeZone, country: row.country, source: zoneSourceFrom(row.preferences) });
 }
 
 export async function dayZoneUnknown(email: string | null): Promise<boolean> {

@@ -15,6 +15,8 @@ import { overLimit } from "@/lib/api/rateLimit";
 import { writePreferences } from "@/lib/preferences/memberPreferences";
 import { acceptPreferences } from "@/lib/preferences/preferences";
 import { awardNameSet, awardProfileXp } from "@/lib/xp/xpProfile";
+import { zoneWrite } from "@/lib/auth/zoneGuess";
+import { ZONE_SOURCE } from "@/lib/auth/zoneSource.constants";
 
 const nameSchema = z.object({
   name: z
@@ -27,6 +29,12 @@ const nameSchema = z.object({
   city: z.string().trim().max(60).optional(),
   country: z.string().trim().max(60).optional(),
   timeZone: z.string().trim().max(60).optional(),
+  /**
+   * Sent only by `DeviceTimeZone`, beside the zone its browser reports. A zone
+   * without it is the member's own choice. See `zoneWrite` for what each records
+   * and when a device is refused.
+   */
+  timeZoneFrom: z.literal(ZONE_SOURCE.device).optional(),
   bio: z.string().trim().max(500).optional(),
   showOnline: z.boolean().optional(),
   emailNotify: z.boolean().optional(),
@@ -96,7 +104,7 @@ export async function PATCH(request: Request) {
     if (member === null) {
       return NextResponse.json({ error: "No profile yet: sign in with Google first." }, { status: 404, headers: NO_STORE });
     }
-    const { name, awayFrom, awayUntil, preferences, ...rest } = parsed.data;
+    const { name, awayFrom, awayUntil, preferences, timeZoneFrom, ...rest } = parsed.data;
     /*
      * Checked before anything is written, so a change the registry refuses
      * refuses the whole request, by name, with nothing else in the body
@@ -112,6 +120,13 @@ export async function PATCH(request: Request) {
       ...(appearance === undefined ? {} : { appearance: cleanAppearance(appearance) }),
       ...(gameDefaults === undefined ? {} : { gameDefaults: cleanGameDefaults(gameDefaults) }),
     };
+    /*
+     * The zone, and where it came from, both decided before anything is written:
+     * a device writing over a zone the member chose is refused here, whole.
+     */
+    if (profile.timeZone !== undefined && !knownTimeZone(profile.timeZone)) return badRequest("Unknown time zone.");
+    const zone = zoneWrite({ asked: profile.timeZone, from: timeZoneFrom, preferences: kept?.ok ? kept.patch : null, row: member });
+    if (!zone.ok) return NextResponse.json({ error: zone.problem }, { status: zone.status, headers: NO_STORE });
     if (awayFrom !== undefined || awayUntil !== undefined) {
       const from = awayFrom ? new Date(awayFrom) : null;
       const until = awayUntil ? new Date(awayUntil) : null;
@@ -124,7 +139,6 @@ export async function PATCH(request: Request) {
         );
       }
     }
-    if (profile.timeZone !== undefined && !knownTimeZone(profile.timeZone)) return badRequest("Unknown time zone.");
     if (Object.keys(profile).length > 0) await updateProfile(me.email, profile);
     /*
      * XP for a page that now says something about somebody, decided from the
@@ -138,7 +152,9 @@ export async function PATCH(request: Request) {
     const saved = { country: plain.country ?? member.country, bio: plain.bio ?? member.bio };
     await awardProfileXp({ memberId: member.id ?? null, row: saved, touched });
     // Laid over what the row already holds — read once above, not again here.
-    if (kept !== null) await writePreferences(me.email, member.preferences, kept.patch);
+    // The zone's source rides the same write as the registry change beside it.
+    const remembered = { ...(kept?.ok ? kept.patch : {}), ...zone.patch };
+    if (Object.keys(remembered).length > 0) await writePreferences(me.email, member.preferences, remembered);
 
     let shown = me.name ?? "";
     const response = NextResponse.json({ ok: true }, { headers: NO_STORE });

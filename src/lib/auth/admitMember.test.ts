@@ -23,12 +23,13 @@ type Row = {
   timeZone: string;
   country: string;
   awayUntil: Date | null;
+  preferences: unknown;
 };
 
 const YESTERDAY = new Date("2026-09-11T22:00:00.000Z");
 
 let rows: Row[] = [];
-let updates: { email: string; lastSeenAt: Date | undefined; timeZone: string | undefined }[] = [];
+let updates: { email: string; lastSeenAt: Date | undefined; timeZone: string | undefined; preferences: unknown }[] = [];
 
 const prismaFake = {
   member: {
@@ -57,6 +58,7 @@ const prismaFake = {
         timeZone: "",
         country: "",
         awayUntil: null,
+        preferences: null,
       };
       rows.push(made);
       return made;
@@ -68,6 +70,7 @@ const prismaFake = {
         email: where.email,
         lastSeenAt: data.lastSeenAt as Date | undefined,
         timeZone: data.timeZone as string | undefined,
+        preferences: data.preferences,
       });
       if (data.timeZone !== undefined) row.timeZone = data.timeZone as string;
       if (data.lastSeenAt !== undefined) row.lastSeenAt = data.lastSeenAt as Date;
@@ -101,6 +104,7 @@ function known(lastSeenAt: Date, extra: Partial<Row> = {}): void {
     timeZone: "",
     country: "",
     awayUntil: null,
+    preferences: null,
     ...extra,
   });
 }
@@ -164,6 +168,21 @@ describe("the zone a sign-in assigns", () => {
   it("never writes over a zone the member chose", async () => {
     known(YESTERDAY, { timeZone: "America/Vancouver", country: "Canada" });
     await admitMember({ email: "aki@example.com", name: "Aki", picture: "p" });
+    expect(updates.at(0)?.timeZone).toBeUndefined();
+  });
+
+  it("records that the zone it assigned is a guess, beside what the row already kept", async () => {
+    /* Written with the guess, on the same update, so a guess can never be on a
+       row without saying it is one — the ambiguity this source exists to end. */
+    known(YESTERDAY, { timeZone: "", country: "Canada", preferences: { language: "ja" } });
+    await admitMember({ email: "aki@example.com", name: "Aki", picture: "p" });
+    expect(updates.at(0)?.preferences).toEqual({ language: "ja", timeZoneFrom: "country" });
+  });
+
+  it("writes no source at all when it assigns no zone — not onto an old row, not in bulk", async () => {
+    known(YESTERDAY, { timeZone: "America/Toronto", country: "Canada" });
+    await admitMember({ email: "aki@example.com", name: "Aki", picture: "p" });
+    expect(updates.at(0)?.preferences).toBeUndefined();
     expect(updates.at(0)?.timeZone).toBeUndefined();
   });
 

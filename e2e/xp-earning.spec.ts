@@ -183,6 +183,60 @@ test.describe("the zone a member's days are counted in", () => {
     await context.close();
   });
 
+  test("is kept when the member chose exactly the zone their country would guess", async ({ browser, baseURL }) => {
+    /*
+     * THE CASE A COMPARISON COULD NOT SEE. Before a zone carried its source, a
+     * row was told to be a guess by holding exactly what its country would give —
+     * so a member in Canada who deliberately chose Toronto read as a guess, and
+     * the first page they opened on a trip west had their browser write Vancouver
+     * over the choice. The row is seeded as a sign-in leaves it: Toronto, guessed
+     * from Canada, and saying so.
+     */
+    const visitor = await seedVisitorWithZone("chose-guess", "America/Toronto", 1, "Canada", "country");
+    made.push(visitor);
+
+    /* At home, in Toronto: the member presses "use this device's" and saves. The
+       control a person uses, so the choice is made the way a person makes it —
+       and a device that agrees with the guess sends nothing of its own first. */
+    const home = await visitorContext(browser, baseURL!, visitor, { timezoneId: "America/Toronto" });
+    const profile = await home.newPage();
+    await profile.goto("/me?view=profile");
+    await ready(profile, "profile-form");
+    await profile.getByRole("button", { name: "use this device's" }).click();
+    await expect(profile.getByTestId("profile-zone")).toHaveValue("America/Toronto");
+    const saved = profile.waitForResponse(
+      (response) => response.url().includes("/api/me") && response.request().method() === "PATCH",
+      { timeout: 15_000 },
+    );
+    await profile.getByRole("button", { name: "Save profile" }).click();
+    expect((await saved).ok()).toBe(true);
+    await home.close();
+
+    /* Away, in Vancouver. Two hydrated pages before the absence is asserted, so
+       a PATCH the first one started has had a whole navigation to be seen in. */
+    const away = await visitorContext(browser, baseURL!, visitor, { timezoneId: "America/Vancouver" });
+    const page = await away.newPage();
+    const patches: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("/api/me") && request.method() === "PATCH") patches.push(request.url());
+    });
+    await page.goto("/");
+    await ready(page, "account-menu");
+    await page.goto("/games");
+    await ready(page, "account-menu");
+
+    expect(patches).toEqual([]);
+    expect((await standingFor(visitor.id))?.timeZone).toBe("America/Toronto");
+
+    /* And the page says it is theirs rather than calling their choice a guess. */
+    await page.goto("/me?view=profile");
+    await ready(page, "profile-form");
+    await expect(page.getByTestId("day-zone-known")).toBeVisible();
+    await expect(page.getByTestId("day-zone-guessed")).toHaveCount(0);
+
+    await away.close();
+  });
+
   test("does not send back a guess the device agrees with, page after page", async ({ browser, baseURL }) => {
     /*
      * THE LOOP. A row holding exactly its country's guess reads as a guess for
