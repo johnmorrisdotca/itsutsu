@@ -62,6 +62,12 @@ const DRAWN = [
   "streak",
   "rating",
   "tier",
+  /*
+   * The XP total, which `recordTrailing.tsx` draws on the tables that switch it
+   * on. Only the members directory presses it — its rows are `Member` rows and
+   * `Member_xp_idx` answers the order.
+   */
+  "xp",
   "joined",
 ];
 
@@ -90,8 +96,13 @@ describe("the ladder's sortable headings", () => {
    * and present the result as the ladder. `LADDER_SORT_SPEC` says why each of
    * them cannot be ordered by; this asserts nobody has quietly added one.
    */
-  it("leaves the four that cannot be ordered by as plain text", () => {
-    for (const slot of ["winRate", "streak", "tier", "joined"]) {
+  it("leaves the five that cannot be ordered by as plain text", () => {
+    /*
+     * XP joined these when the directory learned it. The ladder does not draw
+     * the column at all — `LadderMore.tsx` says why — so a heading pressing it
+     * here would be a sort over a figure this table never shows.
+     */
+    for (const slot of ["winRate", "streak", "tier", "xp", "joined"]) {
       expect(by[slot], `"${slot}" has become sortable — is there a column behind it?`).toBeUndefined();
     }
   });
@@ -132,7 +143,7 @@ describe("the ladder's sortable headings", () => {
 describe("the members directory's sortable headings", () => {
   const by = slotsIn(DIRECTORY, "const sort: RecordSort");
 
-  it("presses the six columns the directory can order by", () => {
+  it("presses the seven columns the directory can order by", () => {
     expect(Object.keys(by).sort()).toEqual([
       "drawn",
       "joined",
@@ -140,7 +151,21 @@ describe("the members directory's sortable headings", () => {
       "played",
       "subject",
       "won",
+      "xp",
     ]);
+  });
+
+  it("presses XP on the index that answers it", () => {
+    /*
+     * The column John asked for by name. Its sort has to be the directory's own
+     * `xp` word on `Member_xp_idx`; `paging.coverage.test.ts` checks the index
+     * is really in the schema, and this checks the heading reaches that word.
+     */
+    expect(by.xp).toBe("xp");
+    const column = DIRECTORY_SORT_SPEC.columns.find((one) => one.param === "xp");
+    expect(column?.field).toBe("xp");
+    expect(column?.index).toBe("Member_xp_idx");
+    expect(column?.firstPress).toBe("desc");
   });
 
   it("presses only words the directory actually sorts by", () => {

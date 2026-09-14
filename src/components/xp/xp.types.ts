@@ -85,11 +85,22 @@ export type LevelNameProps = {
  * Somebody's standing on a page ABOUT them: the level and the total.
  *
  * `xp` is optional because the absence and a nought are different facts —
- * `MemberLevel`'s own comment sets out all three answers and why two of them
- * draw nothing. A lookup that did not select the column hands `undefined`, and
- * that must not become a `0` on the way here.
+ * `MemberLevel`'s own comment sets out all three answers and why one of them
+ * draws nothing. A lookup that did not select the column hands `undefined`, and
+ * that must not become a `0` on the way here: since John settled that nought is
+ * level 1, a defaulted `0` would print a real standing for somebody nobody
+ * asked about.
  */
 export type MemberLevelProps = {
   xp?: number;
+  /**
+   * The engine that plays this member's seats, when a program does.
+   *
+   * Passed through rather than decided here: `levelShown` is what knows that a
+   * program is not on this ladder, and it needs to be told. Optional, so a call
+   * site about a person need not say so — a page that omits it is saying "not a
+   * program", which is true of everybody it could be about.
+   */
+  botTier?: string | null;
   testId?: string;
 };

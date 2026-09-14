@@ -89,10 +89,12 @@ export function StandingsTable({
         rating: { rating: standing.rating, pool },
         tier: standing.tier,
         /*
-          No `level`, for the site ladder's reason one file over: a
-          `VariantStanding` is a rating row keyed by a folded name and XP is on
-          `Member`, so a badge here would cost a query this table does not make.
-          Stated rather than omitted, since the two look the same in a diff.
+          No `level` and no `xp` column, for the site ladder's reason one file
+          over (`LadderMore.tsx` sets it out in full): a `VariantStanding` is a
+          rating row keyed by a folded name and XP is on `Member`, so either
+          would cost a read this table does not make, for a figure that is about
+          a person rather than about this row. Stated rather than omitted, since
+          the two look the same in a diff.
         */
         actions: actions === undefined ? undefined : actions(standing),
       }))}

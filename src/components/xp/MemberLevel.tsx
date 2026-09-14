@@ -9,7 +9,7 @@ import type { MemberLevelProps } from "./xp.types";
  * The level and the total together, for a page ABOUT a person rather than a
  * list of them. John's words for the whole system were "you will show XP in a
  * person's profile", and a public player page is the profile a stranger reads —
- * so it says both, where the tables say only the rung.
+ * so it says both, where the tables say the rung and the total in two columns.
  *
  * A component and not four lines on the page, for two reasons and the second is
  * the one that decided it. `src/app/players/[slug]/page.tsx` is 492 lines
@@ -19,7 +19,7 @@ import type { MemberLevelProps } from "./xp.types";
  * than a rule should be written out.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * THREE ANSWERS, AND TWO OF THEM DRAW NOTHING FOR DIFFERENT REASONS
+ * THREE ANSWERS, AND ONLY ONE OF THEM IS SILENT NOW
  * ─────────────────────────────────────────────────────────────────────────
  *
  * `xp` is OPTIONAL, and the absence is not the same fact as a nought:
@@ -28,25 +28,30 @@ import type { MemberLevelProps } from "./xp.types";
  *    of columns and XP is not among them, so a row from it does not know. A
  *    page handed one must not print a standing, and must not print nought
  *    either: that would be a claim about somebody made out of a missing read.
- *  - **`0` — asked, and there is nothing.** `levelShown` answers null, for
- *    `xpBoard.ts`'s reason: "Level 1 · Insert Coin · 0" on the page of somebody
- *    who has never played is a badge about a default. A stranger reading it
- *    would think it meant something.
+ *  - **`0` — asked, and there is nothing earned.** `levelShown` answers **1**,
+ *    and this draws "Level 1 · Insert Coin · 0 XP". It answered null until John
+ *    settled it — "Everyone is level 1 if 0xp." — and he is right: level 1 is
+ *    named Insert Coin because it is where a person starts, so hiding it tells
+ *    somebody who has just arrived that the ladder does not include them.
  *  - **Anything else — a standing, shown.**
  *
- * Both absences render nothing, which is why the distinction has to live in the
- * TYPE rather than in what a reader sees. `?? 0` at the call site would collapse
- * them and the day XP arrives on a lookup that never selected it, the page would
- * have been quietly wrong about everybody it drew from that one.
+ * That reversal is exactly why the TYPE still has to keep `undefined` apart from
+ * `0`. While nought was silent the two absences looked the same on screen and
+ * the distinction was almost decorative; now one of them draws a real badge, so
+ * `?? 0` at the call site would print "Level 1" for a person whose XP was never
+ * read — a claim invented out of a narrow `select`. `levelShown` is asked here
+ * rather than the raw curve for the other half of the same care: a program is
+ * not on this ladder, so a bot's page draws nothing, and `botTier` is passed
+ * through to say so.
  *
  * The badge is `LevelName`'s full form — the number AND the name — because this
  * is a heading with room in it, not a table cell competing with nine figures.
  * The compact form exists for the lists; here the name is the half worth reading
  * and there is space to read it.
  */
-export function MemberLevel({ xp, testId = "member-level" }: MemberLevelProps) {
+export function MemberLevel({ xp, botTier, testId = "member-level" }: MemberLevelProps) {
   if (xp === undefined) return null;
-  const level = levelShown(xp);
+  const level = levelShown({ xp, botTier });
   if (level === null) return null;
   return (
     <span className="flex items-baseline gap-2 text-sm font-normal" data-testid={testId}>

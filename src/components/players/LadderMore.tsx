@@ -42,16 +42,26 @@ function ladderRow(player: PlayerProfile): RecordTableRow {
     rating: { rating: player.rating, pool: RATING_POOLS.people },
     tier: player.tier,
     /*
-      NO `level`, AND IT IS AN ABSENCE WITH A REASON. The members list and the
-      computers tab badge a member's XP level beside their name; this table
-      cannot, because a `PlayerProfile` is a `Player` row and XP lives on
-      `Member`. The two are joined by a folded NAME that stops matching the
-      moment somebody renames, so filling it would cost this page a second query
-      per page of the ladder to answer a question nobody sorts or pages by.
+      NO `level` AND NO `xp`, AND BOTH ARE ABSENCES WITH A REASON. The members
+      list badges a member's XP level beside their name and prints their total
+      in a column; this table does neither, and the reason was weighed rather
+      than assumed when John asked for XP on every table with a record in it.
 
-      Said here rather than left to look like an oversight — the two are
-      identical in a diff. If it should be here, the honest route is `xp` on the
-      row `fetchLadderPage` already reads, not a lookup per name.
+      A `PlayerProfile` is a `Player` row — a NAME's standing — and XP lives on
+      `Member`. `memberId` is on the row, but `fetchLadderPage` resolves no member
+      from it: it reads `Player` and nothing else. So XP here is not "the member
+      row it already has", it is a SECOND read per page — and it would have to
+      cross into this client component through `/api/ladder` as well, since the
+      pages after the first arrive from there. Worse than the cost, the figure
+      would not be about the row: `memberId` is null for a name with nobody
+      behind it, and two rating rows can belong to one member after a rename, so
+      one person's total could appear twice on the ladder beside two names.
+
+      So it is declined, and the reader is not left at a dead end: the Members
+      tab one click away is the same people with their XP, sortable by it on
+      `Member_xp_idx` — the mirror of the directory's refusal to sort by rating,
+      which points back here. Said in the source because an absence and an
+      oversight are identical in a diff.
     */
   };
 }

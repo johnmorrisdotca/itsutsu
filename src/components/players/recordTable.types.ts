@@ -33,6 +33,19 @@ export type RecordColumns = {
    * so a table without one has said so.
    */
   rating?: boolean;
+  /**
+   * What this member has earned on the site. Members only, and only where the
+   * row can reach a `Member`.
+   *
+   * OFF BY DEFAULT, unlike the nine canonical columns and like `rank`, `tier`
+   * and `joined`: most tables of records genuinely cannot fill it. A ladder row
+   * is a `Player` keyed by a folded name, a standings row is a
+   * `VariantStanding`, and a row whose subject is a GAME has no total at all —
+   * so on by default would mean a column of em dashes on more tables than not,
+   * and `RecordTable`'s head has the answer to that: a column of dashes is not a
+   * smaller truth, it is a column that says nothing.
+   */
+  xp?: boolean;
   /** The heading over the actions column; absent means there are no actions. */
   actions?: string;
 };
@@ -82,14 +95,30 @@ export type RecordTableRow = {
   /**
    * The XP level to badge after the subject's name, or absent for none.
    *
-   * `levelShown(xp)` is what decides; a caller passes what it answered, and null
-   * and undefined both mean no badge. Absent is correct on most tables — a row
-   * whose subject is a GAME has no level, and a row built from a `Player` row
+   * `levelShown(member)` is what decides; a caller passes what it answered, and
+   * null and undefined both mean no badge. Absent is correct on most tables — a
+   * row whose subject is a GAME has no level, and a row built from a `Player` row
    * cannot know one, since XP lives on `Member` and a rating row is keyed by a
    * folded name. It is drawn as a mark in the subject cell and NOT a column; the
-   * head of this file says why.
+   * head of `RecordTable.tsx` says why.
+   *
+   * A PROGRAM HAS NONE, and that is the rule's answer rather than a caller's:
+   * `awardXp` refuses a bot by name, so it can never climb a rung. Since John
+   * settled that nought is level 1, that is a thing `levelShown` has to be told —
+   * it no longer falls out of nought being silence.
    */
   level?: number | null;
+  /**
+   * What this member has earned, for the XP column — or null where the row has
+   * no total to show.
+   *
+   * `xpShown(member)` is what decides, and it is `levelShown`'s twin for a
+   * reason: the rung and the total are one fact seen twice, so a row must not be
+   * able to carry one without the other. NOUGHT IS A NUMBER AND PRINTS AS ONE; a
+   * dash here means "no total to be had", which is a program, a rating row or a
+   * game — never a person who has earned nothing.
+   */
+  xp?: number | null;
   /**
    * `data-*` attributes on the row, for identifying it rather than drawing it.
    *
