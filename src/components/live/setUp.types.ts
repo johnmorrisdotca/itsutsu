@@ -1,5 +1,27 @@
-import type { Stone } from "@/lib/gomoku/gomoku.types";
+import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import type { RulesDraft } from "./rulesDraft";
+
+/** One setting as an address says it: its query name and its word. */
+export type SetUpParam = [name: string, value: string];
+
+/** A member's standing board and clock, which is what silence gives a new game. */
+export type KeptDefaults = { size: number; moveTimeMs: number | null };
+
+/**
+ * WHAT SILENCE MEANS ON THE SET-UP SCREEN, which decides what its address may
+ * leave out — see `setUpKept.ts`.
+ */
+export type KeptBase = {
+  /** The game a rematch or a fork was read from, as played; null for a plain game. */
+  asPlayed: RulesDraft | null;
+  /** A fork, whose board, game, opening and handicap come with the position. */
+  forked: boolean;
+  defaults: KeptDefaults;
+  /** The game the path names, or null at /games/new where it is a choice. */
+  pathVariant: RuleVariant | null;
+  /** Who silence plays: the person a rematch repeats, and nobody otherwise. */
+  silentOpponent: string | null;
+};
 
 /**
  * WHAT THE SETUP SCREEN ARRIVED KNOWING.

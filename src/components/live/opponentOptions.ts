@@ -160,3 +160,61 @@ export function capTiles(
 export function shownChoice(value: string, groups: readonly OpponentGroup[]): string {
   return groups.some((group) => group.tiles.some((tile) => tile.value === value)) ? value : ANYONE;
 }
+
+/**
+ * Who a chosen value names, looked up where it can honestly be found.
+ *
+ * The order matters. A program is only itself at a game it plays — away from
+ * its own board a specialist is somebody else under a second name — so the list
+ * of programs offered at THIS game is asked first, and an opponent the address
+ * named is only honoured as a program while that list still holds them.
+ */
+export function whoIs(
+  id: string,
+  computers: readonly { id: string; name: string }[],
+  opponents: readonly Opponent[],
+  named: SetUpOpponent | null,
+): SetUpOpponent | null {
+  const bot = computers.find((one) => one.id === id);
+  if (bot !== undefined) return { id: bot.id, name: bot.name, computer: true };
+  const person = opponents.find((one) => one.id === id);
+  if (person !== undefined) return { id: person.id, name: person.name, computer: false };
+  /*
+   * Somebody the address named who is on neither list — a player met in the
+   * directory, who is nobody's buddy and is not here now. Honoured, because
+   * dropping them would answer "play this person" with a seat posted for
+   * anyone; but never for a program, which the list above is the authority on.
+   */
+  if (named !== null && named.id === id && !named.computer) return named;
+  return null;
+}
+
+/**
+ * THE OPPONENT CHOICE THE ADDRESS HOLDS, as the chooser's value.
+ *
+ * `anyone` said out loud is a posted seat — the only way a rematch, whose silence
+ * is the person it repeats, can keep "nobody in particular" across a reload. An id
+ * is looked up the way a chosen value always is (`whoIs`), and an id the lists do
+ * not hold but the server named stays chosen, so the screen can say its offer has
+ * lapsed at this game. Silence is `absent`: whoever this screen opens with.
+ */
+export function againstFromAddress(
+  asked: string | null,
+  {
+    computers,
+    opponents,
+    named,
+    absent,
+  }: {
+    computers: readonly { id: string; name: string }[];
+    opponents: readonly Opponent[];
+    named: SetUpOpponent | null;
+    absent: string;
+  },
+): string {
+  if (asked === null) return absent;
+  if (asked === ANYONE) return ANYONE;
+  const found = whoIs(asked, computers, opponents, named);
+  if (found !== null) return valueFor(found);
+  return named !== null && named.id === asked ? valueFor(named) : absent;
+}

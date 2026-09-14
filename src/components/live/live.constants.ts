@@ -47,6 +47,17 @@ export const IDLE_STOP_MS = 60 * 60 * 1000;
  * a reader cannot tell a fresh game from a rematch from a fork — they would all
  * be the same form with different numbers in it.
  */
+/**
+ * What the set-up screen and the doorstep say about an address they could not use
+ * all of, naming each part by the word the address used — see `unreadAsked`. Said,
+ * because a link that asked for something and quietly got the usual setting looks
+ * exactly like a link that asked for nothing.
+ */
+export const SET_UP_UNREAD = (names: readonly string[]) =>
+  `Part of this address is not something this game offers, so ${
+    names.length === 1 ? "it was" : "they were"
+  } left at the usual setting: ${names.join(", ")}.`;
+
 export const SET_UP_COPY = {
   /** The heading and lead, where nothing but the opponent is known. */
   against: (who: string) => `Against ${who}`,

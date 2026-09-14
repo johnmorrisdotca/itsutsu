@@ -9,10 +9,15 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { parseHandicap } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
-import { plainDraft } from "./plainDraft";
-import { applyRulesChange, draftFromGame, type RulesDraft } from "./rulesDraft";
+import { SET_UP_UNREAD } from "./live.constants";
+import { plainDraft, silentDraft } from "./plainDraft";
+import { draftFromGame, type RulesDraft } from "./rulesDraft";
 import { boardAsked, readSetUpAsked, type SetUpAsked } from "./setUpAsked";
+import { askedOver, unreadAsked } from "./setUpKept";
 import type { SetUpAgain, SetUpFork, SetUpFrom, SetUpOpponent } from "./setUp.types";
+
+/** A page's query, as `setUpFrom` reads it. */
+type Query = Record<string, string | string[] | undefined>;
 
 /**
  * THE SETUP SCREEN, PRE-FILLED FROM WHAT THE ADDRESS ALREADY KNOWS.
@@ -38,7 +43,7 @@ export async function setUpFrom({
 }: {
   /** The game the address names, or null at /games/new where it is still a choice. */
   variant: RuleVariant | null;
-  asked: Record<string, string | string[] | undefined>;
+  asked: Query;
   defaults: GameDefaults;
 }): Promise<SetUpFrom> {
   const want = readSetUpAsked(asked);
@@ -48,8 +53,8 @@ export async function setUpFrom({
    * first: what they find decides the game, the board and every rule, and the
    * plain path below only has the member's own defaults to go on.
    */
-  if (want.rematch !== null) return await fromFinishedGame(want.rematch, variant, want);
-  if (want.from !== null) return await fromPosition(want.from, variant, want);
+  if (want.rematch !== null) return await fromFinishedGame(want.rematch, variant, want, asked);
+  if (want.from !== null) return await fromPosition(want.from, variant, want, asked);
 
   const opponent = want.against === null ? null : await personNamed(want.against);
   /*
@@ -66,106 +71,41 @@ export async function setUpFrom({
    * it is identity, and a screen that moved the game out from under its own
    * address would be the thing this whole area exists to stop. That case falls
    * through to the chooser saying out loud that the named player is not offered
-   * here — see `SetUpGame`.
+   * here — see `SetUpGame`. The browser decides the same game the same way when
+   * it reads its own address (`silentVariant`).
    */
   const chosen =
     variant ??
     (opponent !== null && opponent.computer ? (gamesPlayedBy(opponent.id)[0] ?? null) : null) ??
     (DEFAULT_SETTINGS.variant as RuleVariant);
-  const sizes = boardSizesFor(chosen);
   /*
    * The board: whichever was asked for if this game has it, else the member's
    * standing size if this game has that, else this game's own first board. A
    * standing board size is a wish rather than an instruction — a game with one
    * board gets that board, whatever anybody usually likes.
+   *
+   * What silence gives is `silentDraft`, the one statement of it: the screen
+   * leaves every choice equal to it out of its own address, so the page that
+   * reads that address back must open at exactly the same thing.
    */
   const settledBoard = boardAsked(want, chosen);
-  const liked = settledBoard ?? defaults.size;
-  /*
-   * The plain pre-fill, from the one place it is stated — the lobby sentence
-   * names a waiting seat only where this screen will offer it, and decides that
-   * against the same draft (`plainDraft`, `seatsTheSentenceOffers`).
-   */
-  const initial: RulesDraft = plainDraft({
-    variant: chosen,
-    size: sizeForVariant(chosen, sizes.includes(liked) ? liked : sizes[0]),
-    moveTimeMs: want.pace === null ? defaults.moveTimeMs : want.pace.ms,
-  });
+  const initial = askedOver(silentDraft({ variant: chosen, defaults }), want);
 
   return {
-    initial: askedOver(initial, want),
+    initial,
     asPlayed: null,
     boardChosen: settledBoard,
     opponent,
     again: null,
     fork: null,
     carry: {},
-    problem:
+    problem: withUnread(
       want.against !== null && opponent === null
         ? "Whoever that link named cannot be reached for a game. Pick somebody below."
         : null,
+      unreadAsked(asked, want, initial, false),
+    ),
   };
-}
-
-/**
- * A DRAFT WITH WHATEVER THE ADDRESS ACTUALLY SAID LAID OVER IT.
- *
- * The five parameters this screen started with were a head start on a form
- * somebody was still going to fill in. The doorstep needs the other thing: an
- * address that carries a FINISHED draft, both so that the page after this one
- * can state it and so that "change something" lands back here with every answer
- * still made. A round trip that dropped a field would put a game somebody had
- * not agreed to in front of them, looking exactly like one they had.
- *
- * Each field is laid over only where the address said something — `AskedRules`
- * keeps "said nothing" and "said this" apart precisely so this can. And it goes
- * through `applyRulesChange`, so a game and a board that cannot sit together are
- * brought into line here, the same way they are when somebody moves a control.
- *
- * A FORK IS THE EXCEPTION, and it is the same exception the creation route
- * makes. The board, the game, the obstacles, the opening and the handicap come
- * with the POSITION and are not anybody's to change — replaying the copied moves
- * onto another board would not be that position. So only the pace settings are
- * honoured, which is exactly the set `FORK_PACE_SETTINGS` names and the route
- * already lets a caller settle. Letting the rest through would put values in
- * this form that the route is right to throw away, which is the thing this
- * codebase calls a control whose answer is discarded.
- */
-function askedOver(initial: RulesDraft, want: SetUpAsked, forked = false): RulesDraft {
-  const said = want.rules;
-  const pace: Partial<RulesDraft> = {
-    ...(want.pace !== null ? { moveTimeMs: want.pace.ms } : {}),
-    ...(said.clockMode !== null ? { clockMode: said.clockMode } : {}),
-    ...(said.timeoutPenalty !== null ? { timeoutPenalty: said.timeoutPenalty } : {}),
-    ...(said.allowResign !== null ? { allowResign: said.allowResign } : {}),
-    ...(said.rated !== null ? { rated: said.rated } : {}),
-  };
-  if (forked) return applyRulesChange(initial, pace);
-
-  /*
-   * A BOARD ONLY WHERE THE GAME BEING ASKED FOR ACTUALLY OFFERS IT, and this is
-   * not the same as letting `applyRulesChange` snap it.
-   *
-   * That function already refuses a board the picker has no block for — since
-   * 0.158.7 it snaps through `boardSizesFor` rather than `sizeForVariant` — but it
-   * snaps to the game's FIRST board, which is the right answer to "this draft
-   * holds an impossible size" and the wrong one to "an address named a size this
-   * game does not have". The second is an address that said nothing readable, and
-   * silence here means the member's own standing board, exactly as it does on the
-   * plain path above. Snapping instead would quietly move somebody from their
-   * usual 15×15 to 9×9 because a link had a typo in it.
-   */
-  const variant = said.variant ?? (initial.variant as RuleVariant);
-  const board = boardAsked(want, variant);
-
-  return applyRulesChange(initial, {
-    ...(said.variant !== null ? { variant: said.variant } : {}),
-    ...(board !== null ? { size: board } : {}),
-    ...(said.obstacles !== null ? { obstacles: said.obstacles } : {}),
-    ...(said.opening !== null ? { opening: said.opening } : {}),
-    ...(said.handicap !== null ? { handicap: said.handicap } : {}),
-    ...pace,
-  });
 }
 
 /** The member or program an `against` names, or null where there is no such player. */
@@ -234,6 +174,7 @@ async function fromFinishedGame(
   id: string,
   variant: RuleVariant | null,
   want: SetUpAsked,
+  asked: Query,
 ): Promise<SetUpFrom> {
   const blank = blankFrom(variant);
   const origin = await prisma.game.findUnique({ where: { id }, select: GAME_FOR_SET_UP });
@@ -267,8 +208,9 @@ async function fromFinishedGame(
    * the change silently away.
    */
   const asPlayed = { ...draftOf(origin), open: false };
+  const initial = askedOver(asPlayed, want);
   return {
-    initial: askedOver(asPlayed, want),
+    initial,
     asPlayed,
     /*
      * A rematch's board comes off the game it repeats, which is not a default
@@ -283,7 +225,7 @@ async function fromFinishedGame(
     again,
     fork: null,
     carry: carriedFrom(origin),
-    problem: null,
+    problem: withUnread(null, unreadAsked(asked, want, initial, false)),
   };
 }
 
@@ -297,14 +239,15 @@ async function fromFinishedGame(
  * those stay editable with the source's own values already in them.
  */
 async function fromPosition(
-  asked: { id: string; move: number },
+  from: { id: string; move: number },
   variant: RuleVariant | null,
   want: SetUpAsked,
+  asked: Query,
 ): Promise<SetUpFrom> {
   const blank = blankFrom(variant);
-  const origin = await prisma.game.findUnique({ where: { id: asked.id }, select: GAME_FOR_SET_UP });
+  const origin = await prisma.game.findUnique({ where: { id: from.id }, select: GAME_FOR_SET_UP });
   if (origin === null) return { ...blank, problem: "There is no such game to play on from." };
-  if (asked.move > origin.moveCount) {
+  if (from.move > origin.moveCount) {
     return { ...blank, problem: "That game has fewer moves than the position asked for." };
   }
 
@@ -321,14 +264,15 @@ async function fromPosition(
    */
   const fork: SetUpFork = {
     id: origin.id,
-    move: asked.move,
+    move: from.move,
     alone: them === null,
     colour: seatOf(origin, mineId),
   };
 
   const asPlayed = { ...draftOf(origin), open: false };
+  const initial = askedOver(asPlayed, want, true);
   return {
-    initial: askedOver(asPlayed, want, true),
+    initial,
     asPlayed,
     /*
      * Null, and not what the address said: a fork's board comes with the
@@ -341,7 +285,7 @@ async function fromPosition(
     again: null,
     fork,
     carry: carriedFrom(origin),
-    problem: null,
+    problem: withUnread(null, unreadAsked(asked, want, initial, true)),
   };
 }
 
@@ -384,6 +328,16 @@ function carriedFrom(origin: {
     winLength: origin.winLength,
     drawLimit: origin.drawLimit,
   };
+}
+
+/**
+ * A problem with the address, and the parts of it that could not be used, said
+ * together. Either alone is said alone; neither is silence.
+ */
+function withUnread(problem: string | null, unread: readonly string[]): string | null {
+  const note = unread.length === 0 ? null : SET_UP_UNREAD(unread);
+  if (problem === null) return note;
+  return note === null ? problem : `${problem} ${note}`;
 }
 
 /**

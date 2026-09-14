@@ -92,17 +92,21 @@ export const PICK_CHIP_SHUT =
   "border-rule bg-ivory/70 text-ink-soft hover:border-rule-strong hover:text-ink";
 
 /**
- * The games of the open family, at a height that does not move.
+ * The games of the open family, as tall as the family.
  *
- * EXPLICIT ROWS, not `auto-rows`. The families hold between one and eight
- * games, so a grid that sizes itself to its contents would change height
- * every time somebody looked at a different family — and the Start button
- * below it would walk up and down the screen under the reader's hand. Rows
- * declared in the template are drawn whether or not anything sits in them,
- * so the row is as tall for Checkers (one game) as for Drops (eight).
+ * ROWS SIZED TO WHAT IS IN THEM, and this reverses a decision on purpose. The
+ * template used to declare the rows of the largest family — eight games, so 1×8
+ * on a phone, 2×4, 3×3, 4×2 on a desk — so the Start button would not walk up
+ * and down under the reader's hand as families were browsed. Rows declared in a
+ * template are drawn whether or not anything sits in them, and that is exactly
+ * what John's screenshot of Checkers showed: one game card, then a band of empty
+ * rows before the line saying what the game is — seven empty rows on a phone,
+ * which reads as a page that failed to draw rather than as room kept.
  *
- * Eight is the largest family, and each shape holds exactly that: 1×8 on a
- * phone, 2×4 from a large phone, 3×3 on a tablet, 4×2 on a desk.
+ * A family click already redraws everything under it (the boards, the openings,
+ * the programs offered), so the rows below were never still; and a band of
+ * nothing is a worse thing to be shown than a page that grows to fit its
+ * answer. Each row is still exactly one card tall.
  *
  * ONE COLUMN ON A PHONE, which is what /games already does with its game
  * cards — two columns here was the odd one out. Measured: at 390px, two
@@ -129,11 +133,7 @@ export const PICK_CHIP_SHUT =
  * complaint being answered here was a control you had to read carefully to
  * tell one game from another.
  */
-export const PICK_GRID =
-  "grid grid-cols-1 grid-rows-[repeat(8,3rem)] gap-2" +
-  " sm:grid-cols-2 sm:grid-rows-[repeat(4,3rem)]" +
-  " md:grid-cols-3 md:grid-rows-[repeat(3,3rem)]" +
-  " xl:grid-cols-4 xl:grid-rows-[repeat(2,3rem)]";
+export const PICK_GRID = "grid grid-cols-1 auto-rows-[3rem] gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4";
 
 /**
  * The boards a game is played on, side by side rather than stacked.

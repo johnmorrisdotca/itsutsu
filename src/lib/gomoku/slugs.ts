@@ -288,6 +288,18 @@ export const NO_PACE = "none";
  */
 export const NO_HANDICAP_ASKED = "none";
 
+/**
+ * What the set-up screen was OPENED from, as opposed to what has been chosen on
+ * it: a game to play again, a position to carry on from. When the screen writes
+ * its choices into its address these are kept exactly as they arrived, because
+ * they are the errand rather than an answer to it — see `keptHref`.
+ */
+export const SET_UP_ARRIVAL_PARAMS: readonly string[] = [
+  SET_UP_PARAMS.rematch,
+  SET_UP_PARAMS.from,
+  SET_UP_PARAMS.move,
+];
+
 /** The most moves an address may name, matching the route's own ceiling. */
 const MOVE_CEILING = 4096;
 
