@@ -251,6 +251,63 @@ export function chosenBoard(page: Page) {
 }
 
 /**
+ * The opening, the rating and the opponent on the set-up screen are tiles now,
+ * the way the game and the board are — radios inside labels — so a spec
+ * presses the tile a reader presses and reads which one came on, rather than
+ * setting a select's value. All three are inside the More settings drawer:
+ * call `openMoreSettings` first.
+ *
+ * Each `choose…` checks the tile it pressed is the chosen one, so a press that
+ * landed before the page was listening fails here rather than three lines on.
+ */
+export async function chooseOpening(page: Page, opening: string) {
+  const tile = page.locator(`[data-testid="set-up-opening"][data-opening="${opening}"]`);
+  await tile.click();
+  await expect(tile).toHaveAttribute("data-chosen", "true");
+}
+
+/** The opening tile that is chosen — or, at a game with one opening, the one stated. */
+export function chosenOpening(page: Page) {
+  return page.locator('[data-testid="set-up-opening"][data-chosen="true"]');
+}
+
+/** Presses Rated or Friendly. */
+export async function chooseRated(page: Page, rated: boolean) {
+  const tile = page.locator(`[data-testid="set-up-rated"][data-rated="${rated ? "rated" : "friendly"}"]`);
+  await tile.click();
+  await expect(tile).toHaveAttribute("data-chosen", "true");
+}
+
+/** The rating tile that is chosen: `data-rated` is "rated" or "friendly". */
+export function chosenRated(page: Page) {
+  return page.locator('[data-testid="set-up-rated"][data-chosen="true"]');
+}
+
+/** Presses an opponent by the value it holds: "anyone", `m:<member id>` or `c:<program id>`. */
+export async function chooseOpponent(page: Page, value: string) {
+  const tile = page.locator(`[data-testid="set-up-opponent"][data-opponent="${value}"]`);
+  await tile.click();
+  await expect(tile).toHaveAttribute("data-chosen", "true");
+}
+
+/** The opponent tile that is chosen: its `data-opponent` is the value the choice holds. */
+export function chosenOpponent(page: Page) {
+  return page.locator('[data-testid="set-up-opponent"][data-chosen="true"]');
+}
+
+/**
+ * The value of a program this game offers, found by what its tile says it is
+ * rather than by name or position — the grades are copy and the order is the
+ * page's business. Waits for the tile, so it is never asked of a drawer that
+ * has not opened yet.
+ */
+export async function aComputerOpponent(page: Page, nth = 0): Promise<string> {
+  const tile = page.locator('[data-testid="set-up-opponent"][data-computer="true"]').nth(nth);
+  await expect(tile, "the setup screen offers no computer player here").toBeVisible();
+  return (await tile.getAttribute("data-opponent")) as string;
+}
+
+/**
  * The page holding the games somebody has going.
  *
  * Its own page now, split out of the lobby: /games starts a game, /play

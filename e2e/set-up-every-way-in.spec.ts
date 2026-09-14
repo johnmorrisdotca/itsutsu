@@ -3,7 +3,7 @@ import { shownName } from "../src/lib/rating/shownName";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
 import { gamesMade, namesPlayedUnder } from "./tidy";
-import { chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
+import { chooseGame, chosenBoard, chosenOpponent, openMoreSettings, ready } from "./support";
 
 /**
  * EVERY WAY OF STARTING A GAME GOES THROUGH THE SETUP SCREEN FIRST.
@@ -38,7 +38,8 @@ import { chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
 async function setUpScreen(page: Page) {
   await ready(page, "set-up-game");
   return {
-    opponent: page.getByTestId("set-up-with"),
+    /* The chosen opponent's TILE; its `data-opponent` is the value the choice holds. */
+    opponent: chosenOpponent(page),
     start: page.getByTestId("set-up-start"),
     summary: page.getByTestId("set-up-summary"),
     game: page.getByTestId("shared-rules-variant"),
@@ -103,7 +104,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     const screen = await setUpScreen(page);
     // Their name is filled in and selected, so the game is the only question left.
     await openMoreSettings(page);
-    await expect(screen.opponent).toHaveValue(`m:${theirId}`);
+    await expect(screen.opponent).toHaveAttribute("data-opponent", `m:${theirId}`);
     await expect(page.getByTestId("set-up-against")).toContainText(them.name);
     // And the game is a question: the address named nobody's game, so it is asked.
     await expect(screen.game).toBeVisible();
@@ -145,7 +146,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(page).toHaveURL(new RegExp(`/games/new\\?.*against=${theirId}`));
     const screen = await setUpScreen(page);
     await openMoreSettings(page);
-    await expect(screen.opponent).toHaveValue(`m:${theirId}`);
+    await expect(screen.opponent).toHaveAttribute("data-opponent", `m:${theirId}`);
 
     await throughTheDoorstep(page);
 
@@ -179,7 +180,9 @@ test.describe("every way into a game reaches the setup screen", () => {
     const screen = await setUpScreen(page);
     await expect(screen.game, "the game is asked, because a program plays any of them").toBeVisible();
     await openMoreSettings(page);
-    await expect(screen.opponent).not.toHaveValue("anyone");
+    // One tile is chosen — waited for — and it is not the posted seat.
+    await expect(screen.opponent).toHaveCount(1);
+    await expect(screen.opponent).not.toHaveAttribute("data-opponent", "anyone");
 
     await throughTheDoorstep(page);
 
@@ -221,7 +224,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     // Opened at a game it plays, with it chosen — not at Gomoku with it dropped.
     await expect(screen.chosenGame).toHaveAttribute("data-variant", "reversi");
     await openMoreSettings(page);
-    await expect(screen.opponent).toHaveValue("c:tamenoki");
+    await expect(screen.opponent).toHaveAttribute("data-opponent", "c:tamenoki");
     await expect(page.getByTestId("set-up-not-offered")).toHaveCount(0);
 
     /*
@@ -354,7 +357,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(page).toHaveURL(new RegExp(`/new\\?.*against=${theirId}`));
     const screen = await setUpScreen(page);
     await openMoreSettings(page);
-    await expect(screen.opponent).toHaveValue(`m:${theirId}`);
+    await expect(screen.opponent).toHaveAttribute("data-opponent", `m:${theirId}`);
 
     /*
      * The doorstep names them and says which colour each of them gets, which is

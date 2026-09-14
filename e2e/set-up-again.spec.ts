@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { memberContext, seatTokensFor, seedMember } from "./members";
-import { chooseGame, chosenBoard, openMoreSettings, ready, startAndBegin } from "./support";
+import { chooseGame, chosenBoard, chosenOpponent, openMoreSettings, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -122,7 +122,9 @@ test.describe("playing a finished game again", () => {
     await expect(chosenBoard(page)).toHaveAttribute("data-size", "9");
     await openMoreSettings(page);
     await expect(page.getByTestId("shared-rules-move-time")).toHaveValue(String(86_400_000));
-    await expect(page.getByTestId("set-up-with")).not.toHaveValue("anyone");
+    // One tile is chosen — waited for — and it is not the posted seat.
+    await expect(chosenOpponent(page)).toHaveCount(1);
+    await expect(chosenOpponent(page)).not.toHaveAttribute("data-opponent", "anyone");
     await expect(page.getByTestId("set-up-again")).toContainText(them.name);
     // And the colour, which changes, is said before anybody agrees to it.
     await expect(page.getByTestId("set-up-again")).toContainText("White");
@@ -482,6 +484,8 @@ test.describe("carrying a position into a new game", () => {
 
     await openMoreSettings(page);
     await expect(page.getByTestId("shared-rules-rated")).toHaveCount(0);
+    // And the drawer states the fact where the tiles would have been.
+    await expect(page.getByTestId("set-up-rated-fact")).toContainText("will not count");
     // And the fact is stated in the control's place rather than left out.
     await expect(page.getByTestId("more-settings-summary")).toContainText("Will not count");
 

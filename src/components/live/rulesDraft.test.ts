@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP, RULE_VARIANT_LIST, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
-import { applyRulesChange, type RulesDraft } from "./rulesDraft";
+import {
+  NO_HANDICAP,
+  OPENING_RULES,
+  RULE_VARIANT_LIST,
+  VARIANT_SPECS,
+  boardSizesFor,
+} from "@/lib/gomoku/gomoku.constants";
+import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
+import { applyRulesChange, openingsOffered, type RulesDraft } from "./rulesDraft";
 
 const draft: RulesDraft = {
   variant: "freestyle",
@@ -16,6 +23,36 @@ const draft: RulesDraft = {
   open: false,
   handicap: NO_HANDICAP,
 };
+
+describe("openingsOffered", () => {
+  it("offers every game the free opening, so there is always an answer to mark", () => {
+    for (const variant of RULE_VARIANT_LIST) {
+      expect(openingsOffered(variant), variant).toContain(OPENING_RULES.free);
+    }
+  });
+
+  it("offers only what a shared game can use AND what the game itself allows", () => {
+    for (const variant of RULE_VARIANT_LIST) {
+      for (const opening of openingsOffered(variant)) {
+        expect(SHARED_OPENINGS, `${variant} offers ${opening}`).toContain(opening);
+        expect(VARIANT_SPECS[variant].openings, `${variant} offers ${opening}`).toContain(opening);
+      }
+    }
+  });
+
+  it("offers the whole three at the line games and one at the rest", () => {
+    expect(openingsOffered("freestyle")).toEqual([OPENING_RULES.free, OPENING_RULES.pro, OPENING_RULES.longPro]);
+    expect(openingsOffered("renju")).toEqual([OPENING_RULES.free, OPENING_RULES.pro, OPENING_RULES.longPro]);
+    // Hex offers Swap too, which cannot be played across two devices.
+    expect(openingsOffered("hex")).toEqual([OPENING_RULES.free]);
+    expect(openingsOffered("reversi")).toEqual([OPENING_RULES.free]);
+    expect(openingsOffered("halma")).toEqual([OPENING_RULES.free]);
+  });
+
+  it("does not narrow the list for a game it cannot look up", () => {
+    expect(openingsOffered("no-such-game")).toEqual(SHARED_OPENINGS);
+  });
+});
 
 describe("applyRulesChange", () => {
   it("takes a change through untouched when nothing disagrees", () => {
@@ -42,6 +79,19 @@ describe("applyRulesChange", () => {
     // of the three; asking for it here falls back to a free opening rather
     // than being sent to a server that would refuse it.
     expect(applyRulesChange(draft, { opening: "swap2" }).opening).toBe("free");
+  });
+
+  it("drops an opening the new game does not offer, and keeps one it does", () => {
+    /*
+     * The set-up screen used to carry Pro from Gomoku to Halma, show "Pro
+     * opening" in its summary, and have the game made with Free — the creation
+     * route normalises it, silently. The draft now says what will be played.
+     */
+    const pro = applyRulesChange(draft, { opening: OPENING_RULES.pro });
+    expect(pro.opening).toBe(OPENING_RULES.pro);
+    expect(applyRulesChange(pro, { variant: "halma" }).opening).toBe(OPENING_RULES.free);
+    expect(applyRulesChange(pro, { variant: "reversi" }).opening).toBe(OPENING_RULES.free);
+    expect(applyRulesChange(pro, { variant: "renju" }).opening).toBe(OPENING_RULES.pro);
   });
 
   it("leaves the draft it was given alone", () => {
@@ -76,6 +126,17 @@ describe("applyRulesChange", () => {
         applyRulesChange(draft, { variant: "freestyle", size }).size,
         `${size} is not a board Gomoku is offered on`,
       ).toBe(9);
+    }
+  });
+
+  it("never leaves a draft on an opening its own game does not offer", () => {
+    for (const from of RULE_VARIANT_LIST) {
+      for (const opening of openingsOffered(from)) {
+        for (const to of RULE_VARIANT_LIST) {
+          const next = applyRulesChange({ ...draft, variant: from, opening }, { variant: to });
+          expect(openingsOffered(to), `${from} ${opening} -> ${to} kept ${next.opening}`).toContain(next.opening);
+        }
+      }
     }
   });
 

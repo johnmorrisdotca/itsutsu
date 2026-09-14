@@ -25,9 +25,13 @@ import { rulesFor } from "./handicap";
  * `openingAfterMove` after, and never looks at the protocol by name.
  */
 
-/** Half-widths of the central squares the openings refer to. */
-const PRO_EXCLUSION = 2; // outside the 5×5
-const LONG_PRO_EXCLUSION = 3; // outside the 7×7
+/**
+ * Half-widths of the central squares the openings refer to. The first two are
+ * exported for the set-up screen's picture of each opening, which draws the
+ * square from these rather than from a second copy of the numbers.
+ */
+export const PRO_EXCLUSION = 2; // outside the 5×5
+export const LONG_PRO_EXCLUSION = 3; // outside the 7×7
 const RIF_WHITE_REACH = 1; // inside the 3×3
 const RIF_BLACK_REACH = 2; // inside the 5×5
 const SAKATA_FIFTH_REACH = 3; // the fifth stone inside the 7×7

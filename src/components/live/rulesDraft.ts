@@ -1,6 +1,31 @@
-import { NO_HANDICAP, OPENING_RULES, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
-import type { Handicap, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { NO_HANDICAP, OPENING_RULES, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
+import type { Handicap, OpeningRule, RuleVariant, VariantSpec } from "@/lib/gomoku/gomoku.types";
 import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
+
+/**
+ * The openings a shared game of this variant can be set up with: the three a
+ * game across two devices can use (`SHARED_OPENINGS`), less any the game itself
+ * does not offer (`VARIANT_SPECS[…].openings`).
+ *
+ * Both halves were already rules. The first is why Swap is never offered here;
+ * the second is what `normaliseSettings` applies when a game is created, and
+ * nothing applied it before then — so the set-up screen offered Pro at Halma
+ * and the game was made with Free. Asking both here is what lets the screen
+ * offer only what will be played.
+ *
+ * The handicap's own narrowing (`availableOpenings` drops the colour-swapping
+ * openings when a colour carries one) needs no answer here: none of the three
+ * swaps colours.
+ *
+ * A variant this cannot read is offered the three, as the screen always
+ * offered them — narrowing a list for a game nobody can look up would be an
+ * answer to a question it could not ask.
+ */
+export function openingsOffered(variant: string): readonly OpeningRule[] {
+  const spec = VARIANT_SPECS[variant as RuleVariant] as VariantSpec | undefined;
+  if (spec === undefined) return SHARED_OPENINGS;
+  return SHARED_OPENINGS.filter((opening) => spec.openings.includes(opening));
+}
 
 /**
  * The rules of a shared game while they are still being decided.
@@ -48,7 +73,12 @@ export type RulesDraft = {
  */
 export function applyRulesChange(current: RulesDraft, next: Partial<RulesDraft>): RulesDraft {
   const merged = { ...current, ...next };
-  if (!SHARED_OPENINGS.includes(merged.opening as OpeningRule)) {
+  /*
+   * An opening THIS game offers, not merely one a shared game can use — see
+   * `openingsOffered`. The comment above always said so; the check only asked
+   * the second question, so Pro chosen at Gomoku rode along to Halma.
+   */
+  if (!openingsOffered(merged.variant).includes(merged.opening as OpeningRule)) {
     merged.opening = OPENING_RULES.free;
   }
   /*

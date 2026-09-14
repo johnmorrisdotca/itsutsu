@@ -128,6 +128,77 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   },
 
   /*
+   * The set-up screen's tiles for the opening, the rating and the opponent.
+   *
+   * The four opponent headings keep the kanji their dropdown's groups already
+   * showed — 指名, 在室, 知人, 対コンピュータ — but they are on this side of the
+   * line for the reason 昇級 is: a session wrote them, not John, so being on
+   * the site already is not the same as having been read. 対局者 is not used
+   * for "Opponent" because the site uses it for "Player"; 対戦相手 is the one
+   * who sits across from you.
+   */
+  "setup.opening": {
+    text: "開局ルール",
+    back: "Opening rule — the rule for how a game begins.",
+  },
+  "setup.ratings": {
+    text: "レーティング",
+    back: "Rating.",
+  },
+  "setup.rated": {
+    text: "レーティング対局",
+    back: "Rated game.",
+  },
+  "setup.ratedMeans": {
+    text: "結果が双方のレーティングに反映されます。",
+    back: "The result is reflected in both players' ratings.",
+  },
+  "setup.friendly": {
+    text: "親善対局",
+    back: "Friendly game.",
+  },
+  "setup.friendlyMeans": {
+    text: "対局そのものを楽しむ一局です。レーティングは変動しません。",
+    back: "A game played to enjoy the game itself. The rating does not change.",
+  },
+  "setup.opponent": {
+    text: "対戦相手",
+    back: "Opponent — the person you play against.",
+  },
+  "setup.anyoneMeans": {
+    text: "最初に来た人がもう一方の席に着きます。",
+    back: "The first person to come sits in the other seat.",
+  },
+  "setup.askedFor": {
+    text: "指名",
+    back: "Nominated — the person named for this game.",
+  },
+  "setup.hereNow": {
+    text: "在室",
+    back: "In the room — here now.",
+  },
+  "setup.playersYouKnow": {
+    text: "知人",
+    back: "Acquaintances — people you know.",
+  },
+  "setup.theComputer": {
+    text: "対コンピュータ",
+    back: "Against the computer.",
+  },
+  /*
+   * The press under a long run of people. 人 counts people, which is all a run
+   * that folds can hold — the computer players are never more than the cap.
+   */
+  "setup.showAll": {
+    text: "全{count}人を表示",
+    back: "Show all {count} people.",
+  },
+  "setup.showFewer": {
+    text: "折りたたむ",
+    back: "Fold it back up — show fewer.",
+  },
+
+  /*
    * The XP toast: the notice that drops in from the top of the page when
    * points land. 昇級 is the kanji the toast has shown beside "Level up"
    * since 0.158.4 and still shows there as the heading's mark; it is on this
