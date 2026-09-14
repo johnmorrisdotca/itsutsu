@@ -161,6 +161,8 @@ export const PHRASES = {
   "setup.hereNow": "Here now",
   "setup.playersYouKnow": "Players you know",
   "setup.theComputer": "The computer",
+  "setup.showAll": "Show all {count}",
+  "setup.showFewer": "Show fewer",
 
   /*
    * The XP toast. It shipped in 0.158.4 with these five as fixed English in

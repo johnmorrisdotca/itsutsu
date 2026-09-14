@@ -1,6 +1,6 @@
 import { expect, test, type Browser } from "@playwright/test";
 
-import { memberContext } from "./members";
+import { memberContext, memberIdFor, removeMember, seedMember, seenDaysAgo } from "./members";
 import {
   aComputerOpponent,
   chooseGame,
@@ -14,7 +14,7 @@ import {
   ready,
   startAndBegin,
 } from "./support";
-import { gamesMade } from "./tidy";
+import { gamesMade, removeGame } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
@@ -174,5 +174,86 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
     await chooseOpening(page, "longPro");
 
     await context.close();
+  });
+
+  test("a long run of people shows nine, all of them on a press, and never hides the one chosen", async ({
+    browser,
+    baseURL,
+  }) => {
+    /*
+     * ELEVEN PEOPLE THIS SPEC MAKES, AS "PLAYERS YOU KNOW".
+     *
+     * Not "Here now": that run is everybody seen in the last half hour on the
+     * whole database, so on a shared machine its N is whatever other runs left
+     * behind — fifty-seven, the day the cap was written. A member's own buddies
+     * are theirs alone, so this N is exactly the eleven below. Each is aged out
+     * of "here" by a different number of days, which is also the order the run
+     * lists them in (most recently seen first).
+     */
+    const stamp = Date.now().toString(36);
+    const crowd = Array.from({ length: 11 }, (_, at) => ({
+      email: `crowd${at}-${stamp}@example.test`,
+      name: `Crowd${String.fromCharCode(97 + at)} ${stamp}`,
+    }));
+    const { context, page } = await freshPage(browser, baseURL!, "crowd");
+    let made: string | null = null;
+    try {
+      for (const [at, one] of crowd.entries()) {
+        await seedMember(one);
+        const starred = await context.request.post("/api/buddies", { data: { email: one.email } });
+        expect(starred.status(), await starred.text()).toBeLessThan(300);
+        await seenDaysAgo(one.email, 2 + at);
+      }
+      const ids = await Promise.all(crowd.map((one) => memberIdFor(one.email)));
+
+      await page.goto("/games/gomoku/new");
+      await ready(page, "set-up-game");
+      await openMoreSettings(page);
+
+      const known = page.locator('[data-testid="set-up-opponent-group"][data-group="known"]');
+      const tiles = known.getByTestId("set-up-opponent");
+      const more = known.getByTestId("set-up-opponent-more");
+
+      await expect(more).toHaveText("Show all 11");
+      await expect(more).toHaveAttribute("aria-expanded", "false");
+      await expect(tiles).toHaveCount(9);
+      // The ninth is there, so the eleventh's absence is a statement about a drawn run.
+      await expect(known.locator(`[data-opponent="m:${ids[8]}"]`)).toHaveCount(1);
+      await expect(known.locator(`[data-opponent="m:${ids[10]}"]`)).toHaveCount(0);
+
+      await more.click();
+      await expect(more).toHaveAttribute("aria-expanded", "true");
+      await expect(more).toHaveText("Show fewer");
+      await expect(tiles).toHaveCount(11);
+      await chooseOpponent(page, `m:${ids[10]}`);
+
+      // The way back: folded again, and the one chosen past the cap is still on screen.
+      await more.click();
+      await expect(more).toHaveText("Show all 11");
+      await expect(more).toHaveAttribute("aria-expanded", "false");
+      await expect(tiles).toHaveCount(9);
+      await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${ids[10]}`);
+      // It took the ninth place, so the ninth is the one folded away.
+      await expect(known.locator(`[data-opponent="m:${ids[8]}"]`)).toHaveCount(0);
+
+      // The arrows walk only what is drawn: up from the chosen tile is the eighth, not the folded ninth.
+      await page.locator('input[name="set-up-opponent"]:checked').focus();
+      await page.keyboard.press("ArrowUp");
+      await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${ids[7]}`);
+      await page.keyboard.press("ArrowDown");
+      await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${ids[10]}`);
+
+      await startAndBegin(page);
+      await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9]{4}-[a-z0-9]{4}/, { timeout: 30_000 });
+      made = page.url().split("/games/gomoku/match/")[1].split("/")[0];
+      const read = await context.request.get(`/api/games/${made}`);
+      expect(read.status()).toBe(200);
+      const game = (await read.json()) as { blackName: string; whiteName: string };
+      expect([game.blackName, game.whiteName]).toContain(crowd[10].name);
+    } finally {
+      if (made !== null) await removeGame(made);
+      for (const one of crowd) await removeMember(one.email);
+      await context.close();
+    }
   });
 });

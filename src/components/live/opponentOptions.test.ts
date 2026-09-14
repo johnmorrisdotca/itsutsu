@@ -5,8 +5,8 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { Opponent } from "@/lib/social/opponents";
 
-import { ANYONE, idIn, opponentGroups, shownChoice, valueFor } from "./opponentOptions";
-import { OPPONENT_GROUPS } from "./picker.constants";
+import { ANYONE, capTiles, idIn, opponentGroups, shownChoice, valueFor } from "./opponentOptions";
+import { OPPONENT_GROUPS, PEOPLE_CAP } from "./picker.constants";
 
 /**
  * Who the set-up screen offers a game to, and under which heading.
@@ -104,6 +104,46 @@ describe("opponentGroups", () => {
       kind: OPPONENT_GROUPS.asked,
       tiles: [{ value: `c:${specialist}`, name: "Specialist", computer: true, tier: null }],
     });
+  });
+});
+
+describe("capTiles", () => {
+  const people = (count: number) =>
+    Array.from({ length: count }, (_, at) => ({ value: `m:p${at}`, name: `P${at}`, computer: false, tier: null }));
+  const values = (run: ReturnType<typeof capTiles>) => run.visible.map((tile) => tile.value);
+
+  it("draws a short run whole, with no press to fold it", () => {
+    const run = capTiles(people(4), ANYONE, false);
+    expect(values(run)).toEqual(["m:p0", "m:p1", "m:p2", "m:p3"]);
+    expect(run).toMatchObject({ total: 4, capped: false });
+  });
+
+  it("draws a run of exactly the cap whole, since there is nothing to fold", () => {
+    const run = capTiles(people(PEOPLE_CAP), ANYONE, false);
+    expect(run.visible).toHaveLength(PEOPLE_CAP);
+    expect(run).toMatchObject({ total: PEOPLE_CAP, capped: false });
+  });
+
+  it("folds a longer run to the first nine, in the list's order, and says how many there are", () => {
+    const run = capTiles(people(12), ANYONE, false);
+    expect(values(run)).toEqual(people(9).map((tile) => tile.value));
+    expect(run).toMatchObject({ total: 12, capped: true });
+  });
+
+  it("draws every tile once the run is opened, and still offers the way back", () => {
+    const run = capTiles(people(12), ANYONE, true);
+    expect(run.visible).toHaveLength(12);
+    expect(run).toMatchObject({ total: 12, capped: true });
+  });
+
+  it("keeps a chosen person past the cap on screen, in the last place, and still shows nine", () => {
+    const run = capTiles(people(12), "m:p10", false);
+    expect(values(run)).toEqual([...people(8).map((tile) => tile.value), "m:p10"]);
+    expect(run).toMatchObject({ total: 12, capped: true });
+  });
+
+  it("leaves the first nine alone when the chosen person is already among them", () => {
+    expect(values(capTiles(people(12), "m:p3", false))).toEqual(people(9).map((tile) => tile.value));
   });
 });
 

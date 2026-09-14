@@ -33,6 +33,15 @@ export type OpponentTile = {
 
 export type OpponentGroup = { kind: OpponentGroupKind; tiles: OpponentTile[] };
 
+/** One run of opponents as it is drawn: the tiles on screen, out of how many. */
+export type CappedRun = {
+  visible: OpponentTile[];
+  /** Everybody in the run, which is the N in "Show all N". */
+  total: number;
+  /** Whether the run is long enough to fold at all, which is whether the press is drawn. */
+  capped: boolean;
+};
+
 /** A heading's words: the phrase that switches language, and the kanji already beside it. */
 export type GroupWords = { phrase: PhraseKey; kanji: string };
 

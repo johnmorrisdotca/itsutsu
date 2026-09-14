@@ -185,6 +185,18 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "対コンピュータ",
     back: "Against the computer.",
   },
+  /*
+   * The press under a long run of people. 人 counts people, which is all a run
+   * that folds can hold — the computer players are never more than the cap.
+   */
+  "setup.showAll": {
+    text: "全{count}人を表示",
+    back: "Show all {count} people.",
+  },
+  "setup.showFewer": {
+    text: "折りたたむ",
+    back: "Fold it back up — show fewer.",
+  },
 
   /*
    * The XP toast: the notice that drops in from the top of the page when

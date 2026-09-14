@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
@@ -8,11 +8,12 @@ import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
 import { shownName } from "@/lib/rating/shownName";
 
-import { ANYONE, opponentGroups, shownChoice } from "./opponentOptions";
+import { ANYONE, capTiles, opponentGroups, shownChoice } from "./opponentOptions";
 import { PickMark } from "./PickMark";
 import {
   OPPONENT_GROUP_WORDS,
   PICK_CARD,
+  PICK_MORE,
   PICK_PEOPLE,
   SEAT_MARK_ANYONE,
   SEAT_MARK_COMPUTER,
@@ -101,6 +102,14 @@ function Run({
 }) {
   const speaker = useSpeaker();
   const heading = useId();
+  const grid = useId();
+  /*
+   * Folded or not, per run, and only here: which of a long list is on screen
+   * is a reading preference for this visit, not a setting of the game. A press
+   * redraws what is already in the page — no request, no address.
+   */
+  const [expanded, setExpanded] = useState(false);
+  const run = capTiles(group.tiles, shown, expanded);
   const words = speaker.pair(OPPONENT_GROUP_WORDS[group.kind].phrase, OPPONENT_GROUP_WORDS[group.kind].kanji);
   const program = group.tiles.find((tile) => tile.value === shown && tile.tier !== null);
 
@@ -121,11 +130,25 @@ function Run({
           </>
         ) : null}
       </span>
-      <div className={PICK_PEOPLE}>
-        {group.tiles.map((tile) => (
+      <div id={grid} className={PICK_PEOPLE}>
+        {run.visible.map((tile) => (
           <Tile key={tile.value} {...tileWords(tile)} shown={shown} disabled={disabled} onChange={onChange} />
         ))}
       </div>
+      {run.capped ? (
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={grid}
+          onClick={() => setExpanded(!expanded)}
+          className={PICK_MORE}
+          data-testid="set-up-opponent-more"
+          data-group={group.kind}
+          data-expanded={expanded ? "true" : "false"}
+        >
+          {expanded ? speaker.say("setup.showFewer") : speaker.say("setup.showAll", { count: String(run.total) })}
+        </button>
+      ) : null}
       {/*
         What the chosen program is like, under the programs — the way the game
         picker prints the chosen game's tagline under the games. One blurb for

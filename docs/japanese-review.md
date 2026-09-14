@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (41)
+## 1. Written by a machine — please check these (43)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -59,6 +59,8 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | — — — | Rated | **レーティング対局** | Rated game. |  |
 | — — — | The result moves both players' ratings. | **結果が双方のレーティングに反映されます。** | The result is reflected in both players' ratings. |  |
 | — — — | Ratings | **レーティング** | Rating. |  |
+| — — — | Show all {count} | **全{count}人を表示** | Show all {count} people. |  |
+| — — — | Show fewer | **折りたたむ** | Fold it back up — show fewer. |  |
 | — — — | The computer | **対コンピュータ** | Against the computer. |  |
 
 `{game}`, `{name}`, `{names}` and `{country}` are filled in when the page is

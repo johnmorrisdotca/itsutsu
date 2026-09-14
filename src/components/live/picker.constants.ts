@@ -198,6 +198,22 @@ export const SEAT_MARK_COMPUTER = `${SEAT_MARK} font-mincho bg-ink text-paper`;
 
 export const SEAT_MARK_ANYONE = `${SEAT_MARK} border-2 border-dashed border-rule-strong`;
 
+/**
+ * THE MOST TILES ONE RUN OF OPPONENTS SHOWS BEFORE IT FOLDS.
+ *
+ * A select hid a long list behind one line; tiles do not. On the development
+ * database "Here now" was fifty-seven tiles, a wall between the rules and the
+ * Start button. Nine is three rows of three on a desk, and the rest are one
+ * press away — "Show all N" — rather than gone. The chosen person is never
+ * behind that press: see `capTiles`.
+ */
+export const PEOPLE_CAP = 9;
+
+/** The press that shows the rest of a run, and the one that folds it back. */
+export const PICK_MORE =
+  "inline-flex min-h-11 items-center self-start rounded-lg px-2 text-xs font-semibold text-moss" +
+  " underline-offset-2 hover:underline outline-none focus-visible:ring-2 focus-visible:ring-moss";
+
 export const OPPONENT_GROUPS = {
   asked: "asked",
   here: "here",

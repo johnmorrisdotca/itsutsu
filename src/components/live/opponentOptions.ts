@@ -2,8 +2,8 @@ import { botsFor } from "@/lib/bots/bots.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { Opponent } from "@/lib/social/opponents";
 
-import { OPPONENT_GROUPS } from "./picker.constants";
-import type { OpponentGroup, OpponentTile } from "./picker.types";
+import { OPPONENT_GROUPS, PEOPLE_CAP } from "./picker.constants";
+import type { CappedRun, OpponentGroup, OpponentTile } from "./picker.types";
 import type { SetUpOpponent } from "./setUp.types";
 
 /**
@@ -102,6 +102,34 @@ export function opponentGroups({
     },
   ];
   return groups.filter((group) => group.tiles.length > 0);
+}
+
+/**
+ * Which of a run's tiles are drawn: all of them while the run is short or has
+ * been opened, and otherwise the first `cap`, in the list's own order.
+ *
+ * THE CHOSEN ONE IS NEVER FOLDED AWAY. A challenge or a rematch arrives with
+ * its opponent already chosen, and that person may be twentieth on the list —
+ * a screen that pre-filled them and then hid them behind "Show all" would be
+ * a choice made and not shown, which is the fault a select's closed line had.
+ * So a chosen tile past the cap takes the last place, and the run still shows
+ * `cap` tiles rather than `cap + 1`: the tile it displaces is one press away
+ * like the rest.
+ *
+ * Nothing drawn is nothing in the radio group, so the arrow keys walk only the
+ * tiles on screen until the run is opened, and every one of them after.
+ */
+export function capTiles(
+  tiles: readonly OpponentTile[],
+  shown: string,
+  expanded: boolean,
+  cap: number = PEOPLE_CAP,
+): CappedRun {
+  const capped = tiles.length > cap;
+  if (!capped || expanded) return { visible: [...tiles], total: tiles.length, capped };
+  const at = tiles.findIndex((tile) => tile.value === shown);
+  const visible = at >= cap ? [...tiles.slice(0, cap - 1), tiles[at] as OpponentTile] : tiles.slice(0, cap);
+  return { visible, total: tiles.length, capped };
 }
 
 /**
