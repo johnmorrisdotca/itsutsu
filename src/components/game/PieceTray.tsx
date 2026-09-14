@@ -100,7 +100,7 @@ export function PieceTray({
 
       {hand.mustPass ? (
         <div className="flex flex-col gap-2">
-          <p className="text-xs text-ochre">{GAME_COPY.mustPass}</p>
+          <p className="text-xs text-ochre">{GAME_COPY.noMoveLeft}</p>
           <Button onClick={onPass} disabled={disabled} strong data-testid="pass-turn">
             {GAME_COPY.passTurn.label}
           </Button>

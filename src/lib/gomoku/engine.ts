@@ -262,6 +262,8 @@ export function canPass(state: GameState): boolean {
 export function passTurn(state: GameState): GameState {
   if (!canPass(state)) return state;
   const move: Move = { ...NO_POINT, stone: state.toPlay, kind: MOVE_KINDS.pass, koPointBefore: state.koPoint };
+  // Forced or chosen, decided here from the position, so a replay says the same.
+  if (mustPass(state)) move.forced = true;
   const passed: GameState = { ...state, moves: [...state.moves, move], koPoint: null };
   const previous = state.moves[state.moves.length - 1];
   if (previous !== undefined && previous.kind === MOVE_KINDS.pass) {

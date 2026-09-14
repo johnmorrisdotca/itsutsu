@@ -6,6 +6,7 @@ import { assess, isSwapBlocked } from "@/lib/gomoku/analysis";
 import { readAdvantage } from "@/lib/gomoku/advantage";
 import { canPass as engineCanPass, canGrowBoard, canShrinkBoard, canSwapSeats, growBoard, shrinkBoard, chooseColour as engineChooseColour, extendOpening as engineExtendOpening, cellAt, inMovePhase, isLegalMove, movePiece, passTurn, pieceMoves, placePiece, playMove, seatToPlay, twistBoard, swapSeats, winOnTime } from "@/lib/gomoku/engine";
 import { canSkip as engineCanSkip, skipMove } from "@/lib/gomoku/rules/record";
+import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
 import {
   GAME_STATUS,
   MOVE_KINDS,
@@ -159,12 +160,14 @@ export function useGameSession(
   const setPlacing = useCallback((stone: Stone) => setPlacingChoice(stone), []);
 
   const commit = useCallback(
-    (next: typeof state) => {
-      if (next === state) return;
+    (move: typeof state) => {
+      if (move === state) return;
+      // Any pass the move leaves owed is taken here, as the server takes it: nobody clicks for a turn with nothing in it.
+      const next = passesOwed(move);
 
       // A twist finishes the move already recorded; only a new entry is a new stone.
       const played =
-        next.moves.length > state.moves.length ? next.moves[next.moves.length - 1] : undefined;
+        move.moves.length > state.moves.length ? move.moves[move.moves.length - 1] : undefined;
       const seat = seatToPlay(state);
       const fatal = findFatalMove(assessment, assess(next), next);
 

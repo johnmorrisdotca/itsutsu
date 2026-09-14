@@ -256,7 +256,16 @@ export const GAME_COPY = {
   useSingle: { label: "Lay a single", kanji: "単石" },
   usePiece: { label: "Lay the piece", kanji: "駒" },
   singlesLeft: (count: number) => `${count} single${count === 1 ? "" : "s"} left`,
-  mustPass: "Nothing fits. Pass the turn.",
+  /*
+   * The pass is taken for a player now — see rules/forcedPass.ts — so this is
+   * only ever seen on a game that was already sitting stuck before it was, and
+   * says what is true of that one rather than offering a choice there is not.
+   */
+  noMoveLeft: "You have no move left. Pass to hand the turn on.",
+  youHadNoMove: "You had no move, so your turn passed.",
+  hadNoMoveToYou: (who: string) => `${who} had no move, so the turn passed back to you.`,
+  hadNoMove: (who: string) => `${who} had no move, so their turn passed.`,
+  drawNoMoves: "Draw. Neither side had a move left.",
   passTurn: { label: "Pass", kanji: "パス" },
   piecePrompt: "Lay the piece in hand: rotate or flip it, then click where its top-left corner goes.",
   singlePrompt: "Lay one stone of your colour.",
