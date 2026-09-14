@@ -2,6 +2,7 @@ import { boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import type { RulesDraft } from "./rulesDraft";
+import { seatIsThisGame } from "./seatTerms";
 
 /**
  * WHETHER SOMEBODY IS ALREADY ASKING FOR THIS, AND WHICH BOARD TO OPEN ON.
@@ -61,10 +62,14 @@ export function matchSeat({
    * filled. Following keeps the common case one press; touching the control stops
    * it following, because at that point the board is a choice somebody has made.
    */
+  /*
+   * Only a seat whose GAME is the one being asked for is followed — the
+   * opening, whether it counts and the rest, not just the game and the pace
+   * (`seatIsThisGame`). Following the board of a seat that will not then be
+   * offered would move somebody's board for nothing.
+   */
   const alone =
-    matchable && posting && boardChosen === null
-      ? seats.filter((seat) => seat.variant === rules.variant && seat.moveTimeMs === rules.moveTimeMs)
-      : [];
+    matchable && posting && boardChosen === null ? seats.filter((seat) => seatIsThisGame(seat, rules)) : [];
   const follow = alone.length === 1 ? alone[0] : undefined;
   /*
    * Derived rather than written into state. The followed board is a reading of
@@ -90,19 +95,17 @@ export function matchSeat({
         : rules;
 
   /*
-   * A seat worth taking matches the whole of what is being asked for — the game,
-   * the BOARD and the pace. Matching on the game alone would sit somebody down at
-   * a board or a clock they did not choose, which is the opposite of settling the
-   * rules before the game exists.
+   * A seat worth taking matches the whole of what is being asked for — the
+   * game, the BOARD, and everything that makes the game that game: the pace,
+   * the opening, the blocked points, whether it counts, the clock. It used to
+   * stop at the game, the board and the pace, and a reader who chose Pro was
+   * sat down at a stranger's Free seat — which is the opposite of settling the
+   * rules before the game exists. The doorstep asks the row the same thing in
+   * SQL before it sits anybody down (`seatWhereFor`).
    */
   const waiting =
     matchable && posting
-      ? seats.find(
-          (seat) =>
-            seat.variant === settled.variant &&
-            seat.size === settled.size &&
-            seat.moveTimeMs === settled.moveTimeMs,
-        )
+      ? seats.find((seat) => seat.size === settled.size && seatIsThisGame(seat, settled))
       : undefined;
 
   return { settled, waiting };

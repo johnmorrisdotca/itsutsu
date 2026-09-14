@@ -17,6 +17,7 @@ import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { ratingsByName } from "@/lib/rating/players";
 import { playerKey } from "@/lib/rating/playerKey";
 import { sweepOpenSeats } from "@/lib/bots/botSeats";
+import { seatOnBoard } from "@/lib/history/seatsToSitAt";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { fetchOpponents } from "@/lib/social/opponents";
 import { ignoredMemberIds } from "@/lib/social/ignores";
@@ -196,13 +197,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
       kanji: RULE_VARIANT_DISPLAY[variant].kanji,
     })),
   }));
-  const seats: SeatOnBoard[] = choices.map((game) => ({
-    id: game.id,
-    variant: game.variant,
-    size: game.size,
-    moveTimeMs: game.moveTimeMs,
-    who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || "Somebody",
-  }));
+  const seats: SeatOnBoard[] = choices.map((game) => seatOnBoard(game));
 
   return (
     <Page width="standard">

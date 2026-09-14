@@ -151,6 +151,9 @@ export const DOORSTEP_COPY = {
       "That seat is no longer on the noticeboard, so this would be a new game of your own instead.",
     "other-game":
       "That seat is at a different game from this one, so it is not the seat this page is about.",
+    /** A seat whose game is set up differently — another opening, rated where friendly was chosen. */
+    "other-rules":
+      "That seat's game is set up differently from the one chosen here, so this would be a new game of your own instead.",
   },
 } as const;
 

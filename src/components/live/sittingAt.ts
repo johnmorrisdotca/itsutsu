@@ -5,6 +5,7 @@ import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { parseHandicap } from "@/lib/history/gameSettingsSchema";
 import { prisma } from "@/lib/prisma";
 import { draftFromGame, type RulesDraft } from "./rulesDraft";
+import { seatWhereFor } from "./seatWhere";
 
 /**
  * A SEAT ON THE NOTICEBOARD, AS THE DOORSTEP HAS TO STATE IT.
@@ -15,15 +16,17 @@ import { draftFromGame, type RulesDraft } from "./rulesDraft";
  * that already EXISTS, whose rules were settled by somebody else.
  *
  * Which is exactly why this path needs a doorstep too, and why the doorstep
- * cannot describe it from the draft in its own address. The draft matches the
- * seat on the game, the board and the pace, and says nothing about the opening,
- * the handicap or whether it counts — so stating the draft would be stating
- * three things nobody had checked. A confirmation that is right about the
- * headline and quietly wrong underneath is worse than no confirmation.
+ * states the ROW rather than the draft in its own address: the seat's own
+ * values are the ones somebody would be agreeing to, and a confirmation that is
+ * right about the headline and quietly wrong underneath is worse than none.
  *
- * So this reads the row. One read, on one path, of the same shape `setUpFrom`
- * already reads for a rematch or a fork — and the page then says what is
- * actually on the noticeboard.
+ * AND THE ROW HAS TO BE THE GAME THAT WAS CHOSEN. The match used to be the
+ * game, the board and the pace, so a reader who chose Pro was sent here to sit
+ * at a stranger's Free seat, and this page then stated Free. The set-up screen
+ * now matches on every term of the game (`seatIsThisGame`), and this asks the
+ * database the same question of the one row before anybody is sat down at it —
+ * so an address naming a seat whose game is not the draft's, a stale one or an
+ * edited one, is refused as `other-rules` rather than honoured.
  */
 export type SittingAt = {
   id: string;
@@ -45,11 +48,13 @@ export type SittingAt = {
  * different question from the one that was asked, at the moment somebody pressed
  * a button that named a person.
  */
-export type SeatGone = "taken" | "finished" | "missing" | "other-game";
+export type SeatGone = "taken" | "finished" | "missing" | "other-game" | "other-rules";
 
 export async function sittingAt(
   id: string,
   variant: RuleVariant,
+  /** The game the reader chose, which the seat's own game has to be. */
+  asked: RulesDraft,
 ): Promise<{ seat: SittingAt; gone: null } | { seat: null; gone: SeatGone }> {
   const row = await prisma.game.findUnique({
     where: { id },
@@ -88,6 +93,20 @@ export async function sittingAt(
    * a seat at another is the disagreement this whole area exists to stop.
    */
   if (row.variant !== variant) return { seat: null, gone: "other-game" };
+  /*
+   * The terms of the game, asked in SQL of this one row. A second read, and only
+   * on the path that names a seat; a draft with a handicap is never a stranger's
+   * seat, so it is refused without asking. Still an active game with a seat
+   * posted, said again here so the query stands on its own rather than leaning
+   * on the checks above it — which is also why it can never count a declined or
+   * withdrawn offer as a seat.
+   */
+  const where = seatWhereFor(asked);
+  const keeps =
+    where === null
+      ? 0
+      : await prisma.game.count({ where: { ...where, id, status: "active", openSeat: { not: null } } });
+  if (keeps === 0) return { seat: null, gone: "other-rules" };
 
   const mine = row.openSeat === STONES.black ? STONES.black : STONES.white;
   const theirs = mine === STONES.black ? row.whiteName : row.blackName;

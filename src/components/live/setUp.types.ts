@@ -11,6 +11,23 @@ import type { RulesDraft } from "./rulesDraft";
  * in a cookie or a store.
  */
 
+/**
+ * WHAT A POSTED SEAT'S GAME HAS TO BE, BESIDES ITS BOARD, to be the game
+ * somebody chose. Read by `seatIsThisGame` in the browser and by
+ * `seatWhereFor` in SQL, from one function, so the two cannot disagree.
+ */
+export type SeatTerms = {
+  variant: string;
+  moveTimeMs: number | null;
+  opening: string;
+  obstacles: string;
+  rated: boolean;
+  /** How the clock runs where there is one; null with no clock, where nothing reads it. */
+  clockMode: string | null;
+  /** What a missed per-move deadline costs; null where there is no per-move deadline. */
+  timeoutPenalty: string | null;
+};
+
 /** The person or program this game is against, once the address has been read. */
 export type SetUpOpponent = {
   /**

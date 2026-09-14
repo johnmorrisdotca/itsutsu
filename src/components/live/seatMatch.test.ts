@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import type { RulesDraft } from "./rulesDraft";
@@ -28,6 +28,12 @@ const seat = (over: Partial<SeatOnBoard> = {}): SeatOnBoard => ({
   variant: "freestyle",
   size: 9,
   moveTimeMs: WEEK,
+  opening: "free",
+  obstacles: "none",
+  rated: true,
+  handicap: NO_HANDICAP,
+  clockMode: "move",
+  timeoutPenalty: "turn",
   who: "Kyoko",
   ...over,
 });
@@ -118,6 +124,73 @@ describe("sitting down at a seat somebody is already asking from", () => {
     const given = { ...rules };
     ask({ seats: [seat()] });
     expect(given).toEqual(rules);
+  });
+});
+
+/**
+ * A SEAT IS ONLY OFFERED WHEN ITS GAME IS THE ONE CHOSEN.
+ *
+ * The match was the game, the board and the pace, so somebody who chose Pro
+ * with nobody named was sat down at a stranger's Free seat on the same board,
+ * and the doorstep then stated the stranger's rules. Every setting that
+ * changes how the game is played, or how it can be won or lost, is part of
+ * "the game": the opening, the blocked points, the handicap, whether it
+ * counts, and — on a clock — how the clock runs and what running out costs.
+ * Whether a player may resign is not; see `seatIsThisGame`.
+ */
+describe("a posted seat is only offered when its game is the one chosen", () => {
+  const nine = { ...rules, size: 9 };
+
+  it("does not offer a posted Free seat to somebody who chose Pro", () => {
+    const { waiting } = ask({ rules: { ...nine, opening: "pro" }, seats: [seat()] });
+    expect(waiting, "a Free game is not the Pro game that was chosen").toBeUndefined();
+  });
+
+  it("offers a posted Pro seat to somebody who chose Pro", () => {
+    const { waiting } = ask({ rules: { ...nine, opening: "pro" }, seats: [seat({ opening: "pro" })] });
+    expect(waiting?.who).toBe("Kyoko");
+  });
+
+  it("does not follow the board of a seat at another opening", () => {
+    const { settled, waiting } = ask({ rules: { ...rules, opening: "pro" }, seats: [seat()] });
+    expect(settled.size, "a board followed for a seat that will not be offered").toBe(15);
+    expect(waiting).toBeUndefined();
+  });
+
+  it("does not offer a seat with blocked star points to somebody who chose an open board", () => {
+    expect(ask({ rules: nine, seats: [seat({ obstacles: "hoshi" })] }).waiting).toBeUndefined();
+  });
+
+  it("does not offer a handicap game either way round", () => {
+    const given = { ...NO_HANDICAP, stone: STONES.black };
+    expect(ask({ rules: nine, seats: [seat({ handicap: given })] }).waiting, "a seat with one").toBeUndefined();
+    expect(ask({ rules: { ...nine, handicap: given }, seats: [seat()] }).waiting, "a draft with one").toBeUndefined();
+  });
+
+  it("does not offer a rated seat to somebody who chose a friendly game", () => {
+    expect(ask({ rules: { ...nine, rated: false }, seats: [seat()] }).waiting).toBeUndefined();
+  });
+
+  it("on a clock, matches how the clock runs and what running out costs", () => {
+    expect(ask({ rules: nine, seats: [seat({ clockMode: "game" })] }).waiting, "the clock").toBeUndefined();
+    expect(ask({ rules: nine, seats: [seat({ timeoutPenalty: "game" })] }).waiting, "the cost").toBeUndefined();
+  });
+
+  it("with no clock, does not compare settings that only a clock uses", () => {
+    const untimed = { ...nine, moveTimeMs: null };
+    const { waiting } = ask({
+      rules: untimed,
+      seats: [seat({ moveTimeMs: null, clockMode: "game", timeoutPenalty: "game" })],
+    });
+    expect(waiting?.who).toBe("Kyoko");
+  });
+
+  it("on a whole-game clock, does not compare the per-move timeout cost", () => {
+    const { waiting } = ask({
+      rules: { ...nine, clockMode: "game", timeoutPenalty: "turn" },
+      seats: [seat({ clockMode: "game", timeoutPenalty: "game" })],
+    });
+    expect(waiting?.who).toBe("Kyoko");
   });
 });
 

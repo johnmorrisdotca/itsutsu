@@ -78,7 +78,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
    * and says plainly when it has gone, which is a race two people asking for the
    * same game will lose sometimes.
    */
-  const noticeboard = want.sit === null ? null : await sittingAt(want.sit, variant);
+  const noticeboard = want.sit === null ? null : await sittingAt(want.sit, variant, from.initial);
   const seat = noticeboard?.seat ?? null;
   const gone = noticeboard?.gone ?? null;
 
