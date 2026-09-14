@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
 
-import { canChooseColour, canPass, createGame, extendOpening, mustPass, playMove } from "../engine";
-import { OPENING_RULES, OPENING_STAGES } from "../gomoku.constants";
-import type { GameState, Point } from "../gomoku.types";
+import {
+  canChooseColour,
+  canPass,
+  createGame,
+  extendOpening,
+  forfeitOnRecord,
+  mustPass,
+  playMove,
+} from "../engine";
+import { MOVE_KINDS, OPENING_RULES, OPENING_STAGES, SEATS, STONES } from "../gomoku.constants";
+import type { GameState, MoveInput, Point } from "../gomoku.types";
 import { passesOwed } from "./forcedPass";
+import { replayMoves } from "./record";
 
 /**
  * A COLOUR TO CHOOSE IS A MOVE, NEVER A PASS.
@@ -45,5 +54,43 @@ describe("a pending opening choice owes no pass", () => {
 
   it("plain swap, after its third stone", () => {
     expectNoPassOwed(play(createGame({ opening: OPENING_RULES.swap }), three));
+  });
+});
+
+/**
+ * A DEADLINE MISSED DURING THE CHOICE COSTS THE TURN, AND THE RECORD REPLAYS IT.
+ *
+ * Before this a claim during a pending choice wrote nothing and answered that
+ * the game was over, so a chooser who never chose held a timed game for ever.
+ * Now the choice is made the way the replay makes one the record does not
+ * hold — the colour to move keeps its side — and the turn is forfeited, so the
+ * forfeit row replays to the same position.
+ */
+describe("a missed deadline while a colour choice waits", () => {
+  it("keeps the colour to move on its side, forfeits that turn, and hands the move on", () => {
+    const waiting = play(createGame({ opening: OPENING_RULES.swap2 }), three);
+    expect(waiting.toPlay).toBe(STONES.white);
+
+    const settled = forfeitOnRecord(waiting);
+    expect(settled.opening.stage).toBe(OPENING_STAGES.done);
+    // White's seat kept white: nobody's colours moved without them choosing.
+    expect(settled.seats).toEqual(waiting.seats);
+    expect(settled.seats[STONES.white]).toBe(SEATS.two);
+    expect(settled.moves.slice(-1)).toMatchObject([{ kind: MOVE_KINDS.forfeit, stone: STONES.white }]);
+    expect(settled.toPlay).toBe(STONES.black);
+  });
+
+  it("replays from a record holding the stones and the forfeit, to the same position", () => {
+    const start = createGame({ opening: OPENING_RULES.swap2 });
+    const settled = forfeitOnRecord(play(start, three));
+    const record: MoveInput[] = settled.moves.map((move) => ({ row: move.row, col: move.col, kind: move.kind, stone: move.stone }));
+
+    // No choices stored, as on a live row, and a clock, since only a clock takes a turn away.
+    const timeline = replayMoves(start, record, [], { clocked: true });
+    const last = timeline[timeline.length - 1];
+    expect(last.moves).toHaveLength(settled.moves.length);
+    expect(last.toPlay).toBe(settled.toPlay);
+    expect(last.seats).toEqual(settled.seats);
+    expect(last.opening.stage).toBe(OPENING_STAGES.done);
   });
 });

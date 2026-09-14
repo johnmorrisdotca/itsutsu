@@ -7,6 +7,7 @@ import { MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { isIgnoring } from "@/lib/social/ignores";
+import { SHARED_OPENINGS } from "./gameSettingsSchema";
 import type { CreationAsked, CreationRefusal } from "./liveRequest";
 import { offerLiftedOff } from "./offers";
 import {
@@ -394,6 +395,23 @@ export async function resolveAgainst(
     // Nobody at all to play, so the fork is a board at one screen. Only ever
     // set, never cleared: a caller that asked for one screen gets one.
     if (challenge === undefined && challengeId === undefined) hotSeat = true;
+  }
+
+  /*
+   * A CARRIED OPENING A SHARED GAME CANNOT USE IS REFUSED, not written. The
+   * request's own opening is checked by its schema, and the one a rematch or a
+   * fork carries was merged in after that check — so a fork of a game filed from
+   * the practice board under swap2 made a clocked live game waiting on a colour
+   * choice, which a seat token cannot hold. The swap protocols stay a practice
+   * board's to play; see `SHARED_OPENINGS`.
+   */
+  if (typeof source.opening === "string" && !(SHARED_OPENINGS as readonly string[]).includes(source.opening)) {
+    return {
+      refused: {
+        status: 422,
+        error: "That game was played under an opening a shared game cannot use, so it cannot be continued or played again here.",
+      },
+    };
   }
 
   if (challengeId !== undefined && isBotId(challengeId)) await ensureBotMembers();

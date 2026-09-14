@@ -294,6 +294,16 @@ export function passTurn(state: GameState): GameState {
  * cannot disagree.
  */
 export function forfeitOnRecord(state: GameState): GameState {
+  /*
+   * A DEADLINE MISSED WHILE A COLOUR CHOICE WAITS STILL COSTS THE TURN. The
+   * choice is made the way a replay makes one the record does not hold — the
+   * colour to move keeps its seat's side (`replayMoves`: `choices[pending] ??
+   * current.toPlay`) — and then the turn is forfeited as any missed turn is. So
+   * the forfeit row replays to exactly this position, and a chooser who never
+   * chooses cannot hold a timed game still: without this a claim here wrote
+   * nothing at all and answered that the game was over.
+   */
+  if (canChooseColour(state)) return forfeitTurn(applyOpeningChoice(state, state.toPlay));
   return canPass(state) ? passTurn(state) : forfeitTurn(state);
 }
 
