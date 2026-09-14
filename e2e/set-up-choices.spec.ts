@@ -240,6 +240,13 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
       await page.locator('input[name="set-up-opponent"]:checked').focus();
       await page.keyboard.press("ArrowUp");
       await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${ids[7]}`);
+      /*
+       * And a step away does not fold the eleventh: it stays where it was, so the
+       * step can be taken back. This failed the first time it ran — the eleventh
+       * folded away and the press down landed on the ninth.
+       */
+      await expect(known.locator(`[data-opponent="m:${ids[10]}"]`)).toHaveCount(1);
+      await expect(known.locator(`[data-opponent="m:${ids[8]}"]`)).toHaveCount(0);
       await page.keyboard.press("ArrowDown");
       await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${ids[10]}`);
 

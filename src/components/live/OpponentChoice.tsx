@@ -109,7 +109,14 @@ function Run({
    * redraws what is already in the page — no request, no address.
    */
   const [expanded, setExpanded] = useState(false);
-  const run = capTiles(group.tiles, shown, expanded);
+  /*
+   * Whoever was chosen when the run was last folded — or when the page arrived,
+   * which for a challenge is the person it was filled in with. Kept on screen
+   * beside whoever is chosen now, so an arrow press away from a pre-filled
+   * opponent does not fold them out of reach. See `capTiles`.
+   */
+  const [pinned, setPinned] = useState(shown);
+  const run = capTiles(group.tiles, [pinned, shown], expanded);
   const words = speaker.pair(OPPONENT_GROUP_WORDS[group.kind].phrase, OPPONENT_GROUP_WORDS[group.kind].kanji);
   const program = group.tiles.find((tile) => tile.value === shown && tile.tier !== null);
 
@@ -140,7 +147,11 @@ function Run({
           type="button"
           aria-expanded={expanded}
           aria-controls={grid}
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => {
+            // Folding keeps whoever is chosen at that moment, wherever they sat in the open run.
+            if (expanded) setPinned(shown);
+            setExpanded(!expanded);
+          }}
           className={PICK_MORE}
           data-testid="set-up-opponent-more"
           data-group={group.kind}

@@ -112,23 +112,39 @@ export function opponentGroups({
  * its opponent already chosen, and that person may be twentieth on the list —
  * a screen that pre-filled them and then hid them behind "Show all" would be
  * a choice made and not shown, which is the fault a select's closed line had.
- * So a chosen tile past the cap takes the last place, and the run still shows
- * `cap` tiles rather than `cap + 1`: the tile it displaces is one press away
- * like the rest.
+ * So every tile in `keep` is drawn wherever it sits, the rest fill what is left
+ * of the `cap` places in the list's own order, and the run still shows `cap`
+ * tiles rather than more: a tile a kept one displaces is one press away like
+ * the rest.
+ *
+ * `keep` IS MORE THAN THE CURRENT CHOICE, and the browser spec is why. Keeping
+ * only the chosen tile let the arrow keys lose a pre-filled opponent: one press
+ * up chose the eighth tile, the eleventh stopped being chosen and folded away,
+ * and the press back down landed on the ninth. The caller keeps whoever was
+ * chosen when the run was folded as well, so a step away can be stepped back.
  *
  * Nothing drawn is nothing in the radio group, so the arrow keys walk only the
  * tiles on screen until the run is opened, and every one of them after.
  */
 export function capTiles(
   tiles: readonly OpponentTile[],
-  shown: string,
+  keep: readonly string[],
   expanded: boolean,
   cap: number = PEOPLE_CAP,
 ): CappedRun {
   const capped = tiles.length > cap;
   if (!capped || expanded) return { visible: [...tiles], total: tiles.length, capped };
-  const at = tiles.findIndex((tile) => tile.value === shown);
-  const visible = at >= cap ? [...tiles.slice(0, cap - 1), tiles[at] as OpponentTile] : tiles.slice(0, cap);
+  const kept = new Set(tiles.filter((tile) => keep.includes(tile.value)).map((tile) => tile.value));
+  let room = cap - kept.size;
+  const visible: OpponentTile[] = [];
+  for (const tile of tiles) {
+    if (kept.has(tile.value)) {
+      visible.push(tile);
+    } else if (room > 0) {
+      visible.push(tile);
+      room -= 1;
+    }
+  }
   return { visible, total: tiles.length, capped };
 }
 
