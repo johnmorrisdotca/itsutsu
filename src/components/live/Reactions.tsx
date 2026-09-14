@@ -11,9 +11,10 @@ import {
   MESSAGE_MAX,
   QUICK_PHRASES,
   REACTIONS,
-  REACTION_SHOW_MS,
   type ReactionEmoji,
 } from "@/lib/history/reactions.constants";
+import { reactionsShowing } from "@/lib/history/reactionsShowing";
+import { useHydrated } from "@/lib/ui/hydrated";
 
 /**
  * The emoji a seat holder can send. Each button reacts to the last move
@@ -93,13 +94,6 @@ export function ReactionBar({
   );
 }
 
-/** Reactions new enough to still be floating over the board. */
-function fresh(reactions: GameReaction[], now: number): GameReaction[] {
-  return reactions.filter(
-    (reaction) => now - new Date(reaction.createdAt).getTime() < REACTION_SHOW_MS,
-  );
-}
-
 /**
  * Incoming reactions, shown for a few seconds each and then let go. The list
  * arrives with the game on every poll, so nothing here asks the server for
@@ -112,16 +106,26 @@ export function ReactionBubbles({
   reactions: GameReaction[];
   yourStone: Stone | null;
 }) {
-  const [now, setNow] = useState(() => Date.now());
+  const [tick, setTick] = useState(() => Date.now());
 
   // Tick while anything is showing, so bubbles fade on time between polls.
   useEffect(() => {
-    if (fresh(reactions, Date.now()).length === 0) return;
-    const timer = setInterval(() => setNow(Date.now()), 500);
+    if (reactionsShowing(reactions, Date.now()).length === 0) return;
+    const timer = setInterval(() => setTick(Date.now()), 500);
     return () => clearInterval(timer);
   }, [reactions]);
 
-  const showing = fresh(reactions, now);
+  /*
+   * NO "NOW" UNTIL THE BROWSER HAS THE PAGE — the rule `useMatchClock` keeps.
+   *
+   * The server draws this too, with its own `Date.now()`, and a reaction that
+   * expires in the instant the page loads was fresh in one drawing and gone in
+   * the other, so React threw the server's markup away. Until hydration there
+   * is no answer, and no answer shows no bubbles: the first render never reads
+   * the clock, and the browser's next one says what is fresh.
+   */
+  const hydrated = useHydrated();
+  const showing = reactionsShowing(reactions, hydrated ? tick : null);
   if (showing.length === 0) return null;
 
   return (
