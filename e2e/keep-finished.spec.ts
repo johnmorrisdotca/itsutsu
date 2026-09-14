@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { memberContext, removeMember, removePlayedUnder } from "./members";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 import { ready } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
 
@@ -25,6 +25,8 @@ import { shownName } from "../src/lib/rating/shownName";
 test.describe("keeping finished games in your own list", () => {
   /* The games this file makes, taken away when it finishes. See `gamesMade`. */
   const tidyAway = gamesMade();
+  /** And the names they were played under, which outlive the games. See `namesPlayedUnder`. */
+  const under = namesPlayedUnder();
 
   /** One game's row in the queue, wherever it has been sorted to. */
   function row(page: import("@playwright/test").Page, id: string) {
@@ -72,7 +74,7 @@ test.describe("keeping finished games in your own list", () => {
     const opponent = `Broom ${stamp}`;
 
     const started = await request.post("/api/games/live", {
-      data: { blackName: me.name, whiteName: opponent, size: 9 },
+      data: { blackName: under(me.name), whiteName: under(opponent), size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; whiteToken: string };
@@ -112,7 +114,7 @@ test.describe("keeping finished games in your own list", () => {
     const me = { email: `keeper3-${stamp}@example.test`, name: `Duster${stamp} Tester` };
 
     const started = await request.post("/api/games/live", {
-      data: { blackName: me.name, whiteName: `Cloth${stamp} Tester`, size: 9 },
+      data: { blackName: under(me.name), whiteName: under(`Cloth${stamp} Tester`), size: 9 },
     });
     expect(started.status()).toBe(201);
     const game = (await started.json()) as { id: string; whiteToken: string };

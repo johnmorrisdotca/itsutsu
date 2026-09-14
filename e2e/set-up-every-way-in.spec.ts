@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { shownName } from "../src/lib/rating/shownName";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 import { chooseGame, chosenBoard, openMoreSettings, ready } from "./support";
 
 /**
@@ -76,6 +76,8 @@ async function throughTheDoorstep(page: Page) {
 test.describe("every way into a game reaches the setup screen", () => {
   /* The games this file posts, taken away when it finishes. See `gamesMade`. */
   const mine = gamesMade();
+  /** And the names its games are played under, which outlive the games. See `namesPlayedUnder`. */
+  const under = namesPlayedUnder();
 
   test("Play, on the page about a player", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
@@ -270,7 +272,7 @@ test.describe("every way into a game reaches the setup screen", () => {
       name: `Posted ${stamp}`,
     });
     const seated = await poster.request.post("/api/games/live", {
-      data: { variant: "freestyle", size: 9, moveTimeMs: PACE, open: true, blackName: `Posted ${stamp}` },
+      data: { variant: "freestyle", size: 9, moveTimeMs: PACE, open: true, blackName: under(`Posted ${stamp}`) },
     });
     expect(seated.status(), "the seat this case is about has to exist").toBe(201);
     // And taken down when this file finishes: a seat left standing is what the

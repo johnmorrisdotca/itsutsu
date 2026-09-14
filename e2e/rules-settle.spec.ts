@@ -2,10 +2,12 @@ import { expect, test } from "@playwright/test";
 
 import { memberContext } from "./members";
 import { openBoardRules } from "./support";
-import { gamesMade } from "./tidy";
+import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
+/** And the names they were played under, which outlive the games. See `namesPlayedUnder`. */
+const under = namesPlayedUnder();
 
 /**
  * The rules settle when the other player arrives, not when somebody moves.
@@ -23,7 +25,7 @@ test.describe("when a shared game's rules settle", () => {
         size: 9,
         open: true,
         moveTimeMs: null,
-        blackName: `Poster ${Date.now().toString(36)}`,
+        blackName: under(`Poster ${Date.now().toString(36)}`),
       },
     });
     expect(response.status()).toBe(201);
