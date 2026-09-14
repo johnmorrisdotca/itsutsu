@@ -44,11 +44,16 @@ export type GameStatsStripProps = {
   /** Whether the reader has a session: a way in to play, or a way to the door. */
   signedIn: boolean;
   /**
-   * Card-sized: games played and the top player, and nothing that needs a
-   * second line — no date, no standings link. The Cards view keeps its cards
-   * the size of a card.
+   * Card-sized: games played, the top player and the standings link, and no
+   * date. The Cards view keeps its cards the size of a card.
    */
   compact?: boolean;
+  /**
+   * Whether the strip carries the game's standings link. True unless the view
+   * already offers one beside the strip — the plain list's row of links does —
+   * so a game never shows the same link twice.
+   */
+  standings?: boolean;
 };
 
 /**

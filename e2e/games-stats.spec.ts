@@ -44,6 +44,8 @@ const PLAYED = RECORD.wins + RECORD.losses + RECORD.draws;
 const every = GAME_FAMILIES.flatMap((family) => family.games);
 let seeded = "";
 let unplayed = "";
+/** A game played once, unrated, so it has a count and no standing. */
+let unrated = "";
 const madeGames: string[] = [];
 
 function database(): PrismaClient {
@@ -63,8 +65,11 @@ test.beforeAll(async () => {
     ]);
     const touched = new Set([...games, ...standings].map((row) => row.variant));
     const empty = every.filter((variant) => !touched.has(variant));
-    expect(empty.length, "two games with nothing played and no standing, to seed one and leave one").toBeGreaterThanOrEqual(2);
-    [seeded, unplayed] = empty;
+    expect(
+      empty.length,
+      "three games with nothing played and no standing: one rated, one unrated, one left alone",
+    ).toBeGreaterThanOrEqual(3);
+    [seeded, unplayed, unrated] = empty;
 
     await seedMember(WINNER);
     await seedMember(LOSER);
@@ -108,7 +113,32 @@ test.beforeAll(async () => {
       madeGames.push(id);
     }
 
-    // The standings those games write, as `recordResult` would have left them.
+    // One friendly game of another kind: played, and nobody's standing moved.
+    const friendly = `gst-${STAMP}-friendly`;
+    await prisma.game.create({
+      data: {
+        id: friendly,
+        variant: unrated,
+        size: 15,
+        winLength: 5,
+        obstacles: "none",
+        opener: "black",
+        status: "finished",
+        result: "white",
+        winner: "white",
+        rated: false,
+        playedAt: new Date(now - 30 * 60_000),
+        lastMoveAt: new Date(now - 30 * 60_000),
+        moveCount: 9,
+        blackName: WINNER.name,
+        blackMemberId: winnerId,
+        whiteName: LOSER.name,
+        whiteMemberId: loserId,
+      },
+    });
+    madeGames.push(friendly);
+
+    // The standings the rated games write, as `recordResult` would have left them.
     await prisma.playerVariantRating.createMany({
       data: [
         {
@@ -176,12 +206,23 @@ async function showsTheSeededGame(strip: Locator, named: boolean): Promise<void>
   }
 }
 
-/** A game nobody has played: the same strip, saying so, with the way in. */
+/**
+ * A game nobody has played: the strip in its place, saying so, with the way in
+ * — and nothing else. Presence first, then every absence.
+ */
 async function invitesTheFirstGame(strip: Locator, href: string): Promise<void> {
   await expect(strip.getByTestId("game-stats-nobody")).toHaveText("Nobody has played this yet");
   await expect(strip.getByTestId("game-stats-be-first")).toHaveAttribute("href", href);
-  await expect(strip.getByTestId("game-stats-top")).toBeVisible();
+  await expect(strip.getByTestId("game-stats-top")).toHaveCount(0);
+  await expect(strip.getByTestId("game-stats-standings")).toHaveCount(0);
   await expect(strip.getByTestId("game-stats-played-count")).toHaveCount(0);
+}
+
+/** A game played with no rated game among them: counted, and it says nobody has a standing. */
+async function saysNobodyHasAStanding(strip: Locator): Promise<void> {
+  await expect(strip.getByTestId("game-stats-played-count")).toHaveText("1");
+  await expect(strip.getByTestId("game-stats-no-standing")).toHaveText("No rated games yet");
+  await expect(strip.getByTestId("game-stats-be-first")).toHaveCount(0);
 }
 
 /** Opens the folded family a game is in, the way a reader does: its summary. */
@@ -205,12 +246,14 @@ test.describe("a member reading the games index", () => {
     await showsTheSeededGame(strip, true);
     await expect(strip.getByTestId("game-stats-standings")).toHaveAttribute("href", `/games/${slugFor(seeded)}/standings`);
 
-    // CARDS, by its chip.
+    // CARDS, by its chip. A card has no other way to the standings, so the strip carries it.
     await page.getByTestId("catalogue-view-cards").click();
     await ready(page, "letter-filter");
     strip = await stripOf(page, seeded);
     await showsTheSeededGame(strip, true);
+    await expect(strip.getByTestId("game-stats-standings")).toHaveAttribute("href", `/games/${slugFor(seeded)}/standings`);
     await invitesTheFirstGame(await stripOf(page, unplayed), `/games/${slugFor(unplayed)}/play`);
+    await saysNobodyHasAStanding(await stripOf(page, unrated));
 
     // PLAIN LIST, by its chip.
     await page.getByTestId("catalogue-view-list").click();
@@ -218,9 +261,15 @@ test.describe("a member reading the games index", () => {
     strip = await stripOf(page, seeded);
     await showsTheSeededGame(strip, true);
     await expect(strip.getByTestId("game-stats-last")).toHaveText("Last played today");
-    const empty = await stripOf(page, unplayed);
-    await invitesTheFirstGame(empty, `/games/${slugFor(unplayed)}/play`);
-    await expect(empty.getByTestId("game-stats-no-standing")).toHaveText("No rated games yet");
+    // One standings link per game: the row's own, and not a second one in the strip.
+    const row = page.getByTestId(`every-game-${seeded}`);
+    await expect(row.getByRole("link", { name: "standings", exact: true })).toHaveAttribute(
+      "href",
+      `/games/${slugFor(seeded)}/standings`,
+    );
+    await expect(strip.getByTestId("game-stats-standings")).toHaveCount(0);
+    await invitesTheFirstGame(await stripOf(page, unplayed), `/games/${slugFor(unplayed)}/play`);
+    await saysNobodyHasAStanding(await stripOf(page, unrated));
 
     // And the promise a number makes: three wins lead to three games.
     await strip.getByTestId("game-stats-won").click();

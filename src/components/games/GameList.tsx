@@ -70,9 +70,10 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
                     {/*
                       The row's own figures. John: "The List View shows no row
                       info either". The whole strip, since a plain list has the
-                      width a card does not.
+                      width a card does not — less its standings link, which
+                      the row of links just below already carries.
                     */}
-                    <GameStatsStrip stats={stats.games[variant]} signedIn={signedIn} />
+                    <GameStatsStrip stats={stats.games[variant]} signedIn={signedIn} standings={false} />
                     <span className="flex flex-wrap gap-x-3 text-xs">
                       <Link href={playPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
                       <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>

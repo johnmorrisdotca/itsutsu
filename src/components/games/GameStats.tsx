@@ -35,48 +35,69 @@ import type { FamilyStatsLineProps, GameStatsStripProps } from "./games.types";
  * result, each of the top player's three numbers to their rated games at this
  * game on THAT ladder, won, lost or drawn.
  *
- * A game nobody has played draws the same strip, saying so, with the way in:
- * the board for a member, the door for a stranger — worded for the stranger.
- * See Show The Data, Not The Way To It in AGENTS.md.
+ * A game nobody has played keeps the strip's place and says so, with the way
+ * in — the board for a member, the door for a stranger, worded for the
+ * stranger — and NOTHING ELSE. A top-player chip reading "no rated games" and
+ * a standings link under "nobody has played this" are three ways of saying one
+ * thing, and on thirty-odd unplayed games they were the clutter John's rule
+ * about empty tables is not asking for. A game that HAS been played with no
+ * rated game among them keeps the chip, because there it says something the
+ * count beside it does not. See Show The Data, Not The Way To It in AGENTS.md.
+ *
+ * The standings link is drawn once per game per view: here, unless the view
+ * already offers one beside the strip (`standings={false}` — the plain list's
+ * row of links does).
  *
  * A CLIENT COMPONENT only because the Cards view is one; it holds no state and
  * reads no clock. Everything time-dependent arrived decided (`sinceLastPlayed`).
  * Every link is `RAISED_LINK`, because in two of the three views the card
  * under it is itself one stretched link to the game.
  */
-export function GameStatsStrip({ stats, signedIn, compact = false }: GameStatsStripProps) {
+export function GameStatsStrip({ stats, signedIn, compact = false, standings = true }: GameStatsStripProps) {
   const say = useSpeaker();
   const hydrated = useHydrated();
   const variant = stats.variant;
-  const nobody = stats.played === 0;
-  return (
-    <div
-      className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs"
-      data-testid="game-stats"
-      data-variant={variant}
-      {...readyMark(hydrated)}
-    >
-      {nobody ? (
+  const strip = {
+    className: "flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs",
+    "data-testid": "game-stats",
+    "data-variant": variant,
+    ...readyMark(hydrated),
+  };
+
+  if (stats.played === 0) {
+    return (
+      <div {...strip}>
         <span className={`${STAT_CHIP} text-muted`} data-testid="game-stats-nobody">
           {say.say("catalogue.nobodyYet")}
         </span>
-      ) : (
-        <span className={STAT_CHIP} data-testid="game-stats-played">
-          {phraseWith(say.say(stats.played === 1 ? "catalogue.playedOne" : "catalogue.playedMany"), {
-            count: (
-              <GameCount
-                count={countText(stats.played)}
-                variant={variant}
-                outcome="decided"
-                title={say.say("rules.everyGamePlayed", { game: RULE_VARIANT_DISPLAY[variant as RuleVariant].label })}
-                raised
-                className="font-mono font-semibold tabular-nums"
-                testId="game-stats-played-count"
-              />
-            ),
-          })}
-        </span>
-      )}
+        <Link
+          href={signedIn ? playPath(variant) : "/join"}
+          className={`${STAT_LINK} px-1 font-semibold`}
+          data-testid="game-stats-be-first"
+        >
+          {say.say(signedIn ? "catalogue.beFirst" : "catalogue.beFirstStranger")}
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div {...strip}>
+      <span className={STAT_CHIP} data-testid="game-stats-played">
+        {phraseWith(say.say(stats.played === 1 ? "catalogue.playedOne" : "catalogue.playedMany"), {
+          count: (
+            <GameCount
+              count={countText(stats.played)}
+              variant={variant}
+              outcome="decided"
+              title={say.say("rules.everyGamePlayed", { game: RULE_VARIANT_DISPLAY[variant as RuleVariant].label })}
+              raised
+              className="font-mono font-semibold tabular-nums"
+              testId="game-stats-played-count"
+            />
+          ),
+        })}
+      </span>
       <TopPlayer top={stats.top} variant={variant} />
       {!compact && stats.last !== null ? (
         <span className={`${STAT_CHIP} text-muted`} data-testid="game-stats-last">
@@ -89,20 +110,11 @@ export function GameStatsStrip({ stats, signedIn, compact = false }: GameStatsSt
           )}
         </span>
       ) : null}
-      {nobody ? (
-        <Link
-          href={signedIn ? playPath(variant) : "/join"}
-          className={`${STAT_LINK} px-1 font-semibold`}
-          data-testid="game-stats-be-first"
-        >
-          {say.say(signedIn ? "catalogue.beFirst" : "catalogue.beFirstStranger")}
-        </Link>
-      ) : null}
-      {compact ? null : (
+      {standings ? (
         <Link href={standingsPath(variant)} className={`${STAT_LINK} px-1`} data-testid="game-stats-standings">
           {say.say("catalogue.standings")}
         </Link>
-      )}
+      ) : null}
     </div>
   );
 }
