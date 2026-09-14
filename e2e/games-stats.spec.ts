@@ -59,8 +59,16 @@ function database(): PrismaClient {
 test.beforeAll(async () => {
   const prisma = database();
   try {
+    /*
+     * "Nothing played" means no FINISHED game, which is every row the strip,
+     * the record links and the invitation read — plus no standing, which is
+     * what the top player reads. An ACTIVE game is in none of them. Counting
+     * every row here once failed this spec on a database where other specs had
+     * left unfinished boards on 26 of the 39 games: a precondition stricter
+     * than the thing under test, refusing to run over rows it never looks at.
+     */
     const [games, standings] = await Promise.all([
-      prisma.game.groupBy({ by: ["variant"], _count: { _all: true } }),
+      prisma.game.groupBy({ by: ["variant"], where: { status: "finished" }, _count: { _all: true } }),
       prisma.playerVariantRating.groupBy({ by: ["variant"], _count: { _all: true } }),
     ]);
     const touched = new Set([...games, ...standings].map((row) => row.variant));
