@@ -8,6 +8,7 @@ import type {
   ForbiddenPattern,
   GameSettings,
   Handicap,
+  HandicapTerms,
   Stone,
 } from "../gomoku.types";
 
@@ -43,8 +44,15 @@ export function rulesFor(settings: GameSettings, stone: Stone): ColourRules {
   };
 }
 
-/** Whether any handicap is in force for anyone. */
-export function hasHandicap(settings: GameSettings): boolean {
+/**
+ * Whether any handicap is in force for anyone.
+ *
+ * THE ONE PLACE THAT QUESTION IS ANSWERED, and a rating depends on it: a game
+ * this is true of moves nobody's rating (`handicapRefusal`). So a new kind of
+ * handicap — a head start — joins here and in `HandicapTerms`, and is refused a
+ * rating without anybody having to find the rating code.
+ */
+export function hasHandicap(settings: HandicapTerms): boolean {
   return settings.handicap.stone !== null;
 }
 

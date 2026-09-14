@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { Handicap } from "@/lib/gomoku/gomoku.types";
+
 import { extendStreak, streakFrom, type Streak, type StreakOutcome } from "./streak";
 
 /**
@@ -44,6 +47,8 @@ type Row = {
   /** Required since the upset bonus: whether the LADDER counts this game. */
   rated: boolean;
   hotSeat: boolean;
+  /** Required since a handicap game stopped counting: the ladder's rule reads it. */
+  handicap: Handicap;
   blackName: string;
   whiteName: string;
 };
@@ -151,6 +156,7 @@ function game(
        the ordinary case, and the one the upset bonus is allowed to read. */
     rated: true,
     hotSeat: false,
+    handicap: NO_HANDICAP,
     blackName: `Black ${black ?? "nobody"}`,
     whiteName: `White ${white ?? "nobody"}`,
   };
@@ -447,7 +453,15 @@ describe("what recording one costs", () => {
  * game.
  */
 describe("the games the ladder counts, which are the only ones an upset is paid on", () => {
-  const counted = { rated: true, hotSeat: false, blackName: "Hanako", whiteName: "Taro" };
+  const counted = { rated: true, hotSeat: false, handicap: NO_HANDICAP, blackName: "Hanako", whiteName: "Taro" };
+
+  it("does not count a game with a handicap on either colour", () => {
+    // John, asked whether a handicap game should move both players' ratings: "Fine don't".
+    expect(countsOnLadder({ ...counted, handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true } })).toBe(
+      false,
+    );
+    expect(countsOnLadder({ ...counted, handicap: { ...NO_HANDICAP, stone: STONES.white } })).toBe(false);
+  });
 
   it("counts a rated game between two names at two screens", () => {
     expect(countsOnLadder(counted)).toBe(true);
@@ -572,6 +586,7 @@ describe("the XP a decided game asks for", () => {
       moveCount: 10,
       rated: true,
       hotSeat: false,
+      handicap: NO_HANDICAP,
       blackName: "A",
       whiteName: "B",
     });

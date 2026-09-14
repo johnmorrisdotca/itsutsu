@@ -96,6 +96,19 @@ export function isHotSeat(row: { blackToken: string; whiteToken: string }): bool
 }
 
 /**
+ * THE FACTS ABOUT A ROW THAT THE LADDER'S RULE NEEDS AND THE ROW DOES NOT HOLD
+ * AS SUCH: whether one device holds both seats, and the handicap parsed out of
+ * its JSON column.
+ *
+ * Spread beside the row into `recordPlayed` and `countsOnLadder` by every
+ * ending, so the four hand over the same facts worked out the same way — one of
+ * them reading the column raw is how a handicap game would go on being rated.
+ */
+export function ladderFacts(row: { blackToken: string; whiteToken: string; handicap: unknown }) {
+  return { hotSeat: isHotSeat(row), handicap: parseHandicap(row.handicap) };
+}
+
+/**
  * Rebuilds the position by replaying the stored moves through the engine.
  *
  * The database keeps a move list, never a board. Replaying is what guarantees

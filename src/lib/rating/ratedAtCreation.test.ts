@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
+
 import { ratedAtCreation } from "./ratedAtCreation";
 
 /** Nothing said by anybody: the shape a posted seat and a challenge send. */
-const silence = { requested: undefined, carried: undefined, hotSeat: false };
+const silence = { requested: undefined, carried: undefined, hotSeat: false, handicap: NO_HANDICAP };
 
 describe("ratedAtCreation", () => {
   it("takes silence as yes, which is what a posted seat has always meant", () => {
@@ -20,8 +22,8 @@ describe("ratedAtCreation", () => {
   it("lets the game this one came out of speak over the request", () => {
     // A rematch is the same game: what it carries wins. A fork whose caller
     // settled the pace arrives with nothing carried, so it never reaches here.
-    expect(ratedAtCreation({ requested: true, carried: false, hotSeat: false })).toBe(false);
-    expect(ratedAtCreation({ requested: false, carried: true, hotSeat: false })).toBe(true);
+    expect(ratedAtCreation({ ...silence, requested: true, carried: false })).toBe(false);
+    expect(ratedAtCreation({ ...silence, requested: false, carried: true })).toBe(true);
   });
 
   /*
@@ -35,17 +37,31 @@ describe("ratedAtCreation", () => {
    */
   it("refuses a rating for a game at one screen, whoever asks", () => {
     expect(ratedAtCreation({ ...silence, hotSeat: true })).toBe(false);
-    expect(ratedAtCreation({ requested: true, carried: undefined, hotSeat: true })).toBe(false);
-    expect(ratedAtCreation({ requested: undefined, carried: true, hotSeat: true })).toBe(false);
-    expect(ratedAtCreation({ requested: true, carried: true, hotSeat: true })).toBe(false);
+    expect(ratedAtCreation({ ...silence, requested: true, hotSeat: true })).toBe(false);
+    expect(ratedAtCreation({ ...silence, carried: true, hotSeat: true })).toBe(false);
+    expect(ratedAtCreation({ ...silence, requested: true, carried: true, hotSeat: true })).toBe(false);
+  });
+
+  /*
+   * AND FOR A GAME WITH A HANDICAP, FOR THE SAME REASON. John, asked whether a
+   * handicap game should move both players' ratings: "Fine don't". Stored rated,
+   * it would be listed among the games a ladder's count links to, a count it is
+   * never in.
+   */
+  it("refuses a rating for a game with a handicap on either colour, whoever asks", () => {
+    const onBlack = { ...NO_HANDICAP, stone: STONES.black, doubleThree: true };
+    const onWhite = { ...NO_HANDICAP, stone: STONES.white };
+    expect(ratedAtCreation({ ...silence, handicap: onBlack })).toBe(false);
+    expect(ratedAtCreation({ ...silence, requested: true, handicap: onBlack })).toBe(false);
+    expect(ratedAtCreation({ ...silence, carried: true, handicap: onWhite })).toBe(false);
   });
 
   it("tells 'nobody said' apart from 'somebody said no', in both sources", () => {
     // The distinction the whole signature exists for: an absent `rated`
     // becoming a rated game is the original fault, and a boolean that means
     // both "no" and "nothing said" is how it happened.
-    expect(ratedAtCreation({ requested: undefined, carried: false, hotSeat: false })).toBe(false);
-    expect(ratedAtCreation({ requested: false, carried: undefined, hotSeat: false })).toBe(false);
-    expect(ratedAtCreation({ requested: undefined, carried: undefined, hotSeat: false })).toBe(true);
+    expect(ratedAtCreation({ ...silence, carried: false })).toBe(false);
+    expect(ratedAtCreation({ ...silence, requested: false })).toBe(false);
+    expect(ratedAtCreation({ ...silence })).toBe(true);
   });
 });

@@ -84,15 +84,19 @@ export function settingsAsPlayed({
 
   const { source, seats, offer, hotSeat } = against;
   /*
-   * Whether THIS game moves a rating: the seats, then the game it came out of,
-   * then the request, then yes. The whole argument for that order is in
-   * `ratedAtCreation`, including why a board at one screen can never be stored
-   * rated whoever asks.
+   * Whether THIS game moves a rating: the seats and the handicap, then the game
+   * it came out of, then the request, then yes. The whole argument for that
+   * order is in `ratedAtCreation`, including why a board at one screen or a game
+   * with a handicap can never be stored rated whoever asks. The handicap is the
+   * one the game will be created with — a carried game's over the request's, as
+   * everything below takes it.
    */
+  const handicap = { ...settings, ...source }.handicap ?? NO_HANDICAP;
   const rated = ratedAtCreation({
     requested: ratedRequested,
     carried: typeof source.rated === "boolean" ? source.rated : undefined,
     hotSeat,
+    handicap,
   });
   const merged = { ...settings, ...source, rated, ...seats, ...offer, hotSeat };
   const playedAs = (typeof merged.variant === "string" ? merged.variant : asked.data.variant) as RuleVariant;

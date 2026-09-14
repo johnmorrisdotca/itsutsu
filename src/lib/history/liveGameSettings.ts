@@ -7,7 +7,8 @@ import { SEED_RANGE, STONES, VARIANT_SPECS, sizeForVariant } from "@/lib/gomoku/
 import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
-import { storedHandicap } from "./gameSettingsSchema";
+import { hasHandicap } from "@/lib/gomoku/rules/handicap";
+import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
 import { GAME_ROW, stoneForToken } from "./liveGame";
 import type { LiveGameSettings, SettingsOutcome } from "./liveGame.types";
 import { rulesAreSettled } from "./seats";
@@ -147,7 +148,16 @@ export async function updateLiveGameSettings(
        */
       winLength: VARIANT_SPECS[variant].winLength ?? row.winLength,
       clockMode,
-      rated: kept(settings.rated, row.rated),
+      /*
+       * Unrated whatever the payload says where a handicap is left in force, as
+       * `ratedAtCreation` stores one at creation: it moves nobody's rating
+       * (`handicapRefusal`), and a rated flag on it would list it among the
+       * games a ladder's count links to. The handicap as it will stand — the
+       * payload's where it names one, the row's where it says nothing.
+       */
+      rated: hasHandicap({ handicap: settings.handicap === undefined ? parseHandicap(row.handicap) : settings.handicap })
+        ? false
+        : kept(settings.rated, row.rated),
       blackTimeMs: budget,
       whiteTimeMs: budget,
       deadlineAt: moveTimeMs === null ? null : new Date(now.getTime() + moveTimeMs),
