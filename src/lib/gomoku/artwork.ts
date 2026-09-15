@@ -5,7 +5,7 @@
  *
  *   /art/games/<variant>.jpg          the board mid-game, 712×712 — the rules
  *                                     page, the game's front door, the cards
- *   /art/games/thumbs/<variant>.jpg   the same board at 96×96 — every list
+ *   /art/games/thumbs/<variant>.jpg   the same board at 140×140 — every list
  *                                     that names a game beside other games
  *
  * This module holds only the addresses, and touches no file system, so a
@@ -18,12 +18,13 @@
 export const GAME_ART_DIR = "/art/games";
 
 /**
- * The thumbnail's edge in pixels. Drawn at 40–48 CSS pixels, so this is crisp
- * on a two-density screen. scripts/make-game-thumbs.mjs cuts to the same
- * number and says so; the two are kept in step by hand because a script
+ * The thumbnail's edge in pixels: twice the regular picture size (70 CSS
+ * pixels, `PICTURE_PX.regular`), so it is crisp on a two-density screen. No
+ * thumbnail is drawn at the large size. scripts/make-game-thumbs.mjs cuts to the
+ * same number and says so; the two are kept in step by hand because a script
  * cannot import this file.
  */
-export const THUMB_SIZE = 96;
+export const THUMB_SIZE = 140;
 
 /** The full board of a game, for a page about that game. */
 export function gameArtPath(variant: string): string {

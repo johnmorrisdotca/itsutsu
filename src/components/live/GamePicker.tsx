@@ -56,7 +56,7 @@ const STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown:
  * this paragraph exists instead of a green test.
  *
  * WHY THE PICTURES ARE THE THUMBNAILS. `public/art/games/thumbs/<variant>.jpg`
- * is 96px and three to five kilobytes, cut once by `pnpm art:thumbs` from the
+ * is 140px and three to five kilobytes, cut once by `pnpm art:thumbs` from the
  * board screenshot every game already has. The full boards are 712px and
  * fifty kilobytes each: eight of those on one screen is most of a megabyte to
  * draw eight squares seventy pixels wide, and nothing on this site may cost it

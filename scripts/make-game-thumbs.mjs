@@ -3,7 +3,7 @@
  *
  *   public/art/games/<variant>.jpg          712×712, the board mid-game, from
  *                                           `pnpm screenshots:games`
- *   public/art/games/thumbs/<variant>.jpg    96×96, cut from it here
+ *   public/art/games/thumbs/<variant>.jpg    140×140, cut from it here
  *
  * John, on /play: "it's all just text. very ugly and hard to scan. no
  * icons or images." The boards exist — one per game, required by the New Game
@@ -18,11 +18,14 @@
  * serves these boards as a plain <img> for the same reason. A file in public/
  * is served like any other and costs the same as the one it was cut from.
  *
- * 96 pixels because the lists draw them at 40–48 and a phone shows two device
- * pixels for each: 96 is crisp at 48 on a retina screen, and a whole board
+ * 140 pixels because every list draws them at the site's regular picture size,
+ * 70 CSS pixels, and a phone shows two device pixels for each: 140 is crisp at
+ * 70 on a retina screen. It was 96, for lists that drew them at 40–48, until
+ * John asked for one regular size everywhere (2026-09-15). No list draws a
+ * thumbnail at the large size — the doorstep's large pictures are drawn, not
+ * cut — so 140 is the most any screen asks of these files. A whole board
  * scaled down reads as a KIND of board — green cells, a star, a hex grid —
- * which is what makes a queue scannable. Between three and five kilobytes
- * each.
+ * which is what makes a queue scannable.
  *
  * sharp is reached through Next's own copy. It is not a dependency of this
  * project, and it does not need to be: Next depends on it for exactly this
@@ -40,7 +43,7 @@ const sharp = createRequire(require.resolve("next/package.json"))("sharp");
 const IN = join("public", "art", "games");
 const OUT = join(IN, "thumbs");
 /** Kept in step with THUMB_SIZE in src/lib/gomoku/artwork.ts, which a script cannot import. */
-const SIZE = 96;
+const SIZE = 140;
 
 mkdirSync(OUT, { recursive: true });
 const boards = readdirSync(IN).filter((file) => file.endsWith(".jpg"));
