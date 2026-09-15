@@ -10,11 +10,12 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { PlayerName } from "@/components/players/PlayerName";
-import { ADMIN_WORDS_COPY } from "./admin.constants";
+import { ADMIN_CLAIM_COPY, ADMIN_WORDS_COPY } from "./admin.constants";
 import { MemberKindBadge } from "./MemberKindBadge";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { MemberClaimModal } from "./MemberClaimModal";
 import { MemberWordsModal } from "./MemberWordsModal";
-import type { WordsSubject } from "./admin.types";
+import type { ClaimSubject, WordsSubject } from "./admin.types";
 
 const json = async (url: string) => {
   const response = await fetch(url);
@@ -64,6 +65,8 @@ export function AdminMembers() {
   const [error, setError] = useState<string | null>(null);
   /** The member whose Words modal is open, or null. One at a time. */
   const [words, setWords] = useState<WordsSubject | null>(null);
+  /** The member whose Attach-a-record modal is open, or null. One at a time. */
+  const [claim, setClaim] = useState<ClaimSubject | null>(null);
 
   async function change(body: Record<string, unknown>, email: string) {
     setBusy(email);
@@ -204,6 +207,25 @@ export function AdminMembers() {
                 />
               </Button>
             ) : null}
+            {/*
+              ATTACH A RECORD 引継. Offered where the operator's other controls
+              are — an account, with a name — because a kept record, a seeded row
+              or a program takes nothing on, and a claimed rating is shown under
+              the member's name. The server refuses both anyway.
+            */}
+            {account === null || member.name.trim() === "" ? null : (
+              <Button
+                onClick={() => setClaim({ id: account, name: member.name })}
+                title={ADMIN_CLAIM_COPY.linkTitle}
+                data-testid="member-claim"
+              >
+                <Paired
+                  en={ADMIN_CLAIM_COPY.link}
+                  kanji={ADMIN_CLAIM_COPY.linkKanji}
+                  kanjiClassName="font-mincho text-xs opacity-70"
+                />
+              </Button>
+            )}
             {account === null || member.name.trim() === "" ? null : (
               <ConfirmButton
                 label="Take the name off"
@@ -274,6 +296,9 @@ export function AdminMembers() {
           */
           onSaved={() => void mutate()}
         />
+      )}
+      {claim === null ? null : (
+        <MemberClaimModal member={claim} onClose={() => setClaim(null)} onAttached={() => void mutate()} />
       )}
     </section>
   );

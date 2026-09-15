@@ -16,6 +16,11 @@ export const OPERATOR_ACTIONS = {
   wordsPickOpened: "wordsPickOpened",
   /** A member's name taken off or set by the operator. The row says which, never the name. */
   rename: "rename",
+  /**
+   * A record kept under a name nobody had an account for, attached to a member.
+   * The row says what moved, in counts — never the name it was kept under.
+   */
+  recordClaimed: "recordClaimed",
 } as const satisfies Record<string, OperatorActionName>;
 
 /** What the Admin tab says for each act, in the site's paired English and kanji. */
@@ -25,6 +30,7 @@ export const OPERATOR_ACTION_DISPLAY: Record<OperatorActionName, { label: string
   wordsSet: { label: "Set four words", kanji: "合言葉" },
   wordsPickOpened: { label: "Opened a four-word pick", kanji: "選択" },
   rename: { label: "Changed the name", kanji: "改名" },
+  recordClaimed: { label: "Attached a record", kanji: "引継" },
 };
 
 /**

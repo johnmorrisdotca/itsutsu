@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { awardFinishedGameXp } from "@/lib/xp/xpGameServer";
 import {
   MEMBER_STREAK_SCOPES,
+  streakFrom,
   streakIn,
   streakWrite,
   type Streak,
@@ -252,6 +253,55 @@ export function playedSides(game: DecidedSeats): PlayedSide[] {
     sides.push({ memberId: game.whiteMemberId, outcome: outcomeFor(winner, "white") });
   }
   return sides;
+}
+
+/** A finished game, as far as counting a member's played figures again needs it. */
+export type RecountGame = DecidedSeats & { id: string; lastMoveAt: Date | null; playedAt: Date };
+
+/** A member's four played figures and the run over them, counted from their games. */
+export type PlayedRecount = { played: number; won: number; lost: number; drawn: number; streak: Streak | null };
+
+/**
+ * THE FOUR FIGURES AND THE RUN, COUNTED AFRESH FROM A MEMBER'S GAMES.
+ *
+ * `recordPlayed` carries them forward one finished game at a time, which is
+ * right for a game that has just ended. A record the operator attaches brings
+ * games that ended long ago, and there is no "one more result" to carry: they
+ * land in the middle of the run. So the figures are counted again over every
+ * decided game the member now holds, by the rule above — `playedSides`, member
+ * id only, a game against yourself once from black — and the run is
+ * `streakFrom` over them newest first, by when the last stone landed (the
+ * order the finished queue pages by), the id settling a tie.
+ *
+ * Handed games already narrowed as `fetchPlayedTallies` narrows them: finished,
+ * and not abandoned. A row whose winner cannot be read moves nothing here, as it
+ * moves nothing in `playedSides`.
+ */
+export function playedFromGames(memberId: string, games: readonly RecountGame[]): PlayedRecount {
+  const ended = (game: RecountGame) => (game.lastMoveAt ?? game.playedAt).getTime();
+  const outcomes = [...games]
+    .sort((a, b) => ended(b) - ended(a) || b.id.localeCompare(a.id))
+    .flatMap((game) => playedSides(game).filter((side) => side.memberId === memberId).map((side) => side.outcome));
+  const count = (outcome: StreakOutcome) => outcomes.filter((one) => one === outcome).length;
+  return {
+    played: outcomes.length,
+    won: count("win"),
+    lost: count("loss"),
+    drawn: count("draw"),
+    streak: streakFrom(outcomes),
+  };
+}
+
+/** The member-row columns a recount writes: the four figures and the run, in one update. */
+export function playedRecountWrite(recount: PlayedRecount) {
+  return {
+    played: recount.played,
+    won: recount.won,
+    lost: recount.lost,
+    drawn: recount.drawn,
+    playedStreakKind: recount.streak?.kind ?? null,
+    playedStreakCount: recount.streak?.count ?? 0,
+  };
 }
 
 /**
