@@ -1,6 +1,5 @@
 import "server-only";
 
-import { foldEmail } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 import { cleanDaysOff, daysOffGraceMs } from "./daysOff";
 
@@ -83,10 +82,11 @@ export type AwayOutcome = { ok: true; used: number } | { ok: false; reason: "ran
  * allowance; a range that would go over it is refused, and clearing a range
  * gives its days back.
  */
-export async function setAway(email: string, from: Date | null, until: Date | null): Promise<AwayOutcome> {
-  const key = foldEmail(email);
+export async function setAway(memberId: string, from: Date | null, until: Date | null): Promise<AwayOutcome> {
+  // By member id: a member who came in with an invite code takes time away like anybody else.
+  const key = memberId;
   const row = await prisma.member.findUnique({
-    where: { email: key },
+    where: { id: key },
     select: { awayFrom: true, awayUntil: true, awayDaysUsed: true, awayYear: true },
   });
   if (row === null) return { ok: false, reason: "range", used: 0 };
@@ -96,14 +96,14 @@ export async function setAway(email: string, from: Date | null, until: Date | nu
     used = Math.max(0, used - awayDays(row.awayFrom, row.awayUntil));
   }
   if (from === null || until === null) {
-    await prisma.member.update({ where: { email: key }, data: { awayFrom: null, awayUntil: null, awayDaysUsed: used, awayYear: year } });
+    await prisma.member.update({ where: { id: key }, data: { awayFrom: null, awayUntil: null, awayDaysUsed: used, awayYear: year } });
     return { ok: true, used };
   }
   if (until.getTime() <= from.getTime()) return { ok: false, reason: "range", used };
   const days = awayDays(from, until);
   if (used + days > AWAY_DAYS_A_YEAR) return { ok: false, reason: "allowance", used };
   await prisma.member.update({
-    where: { email: key },
+    where: { id: key },
     data: { awayFrom: from, awayUntil: until, awayDaysUsed: used + days, awayYear: year },
   });
   return { ok: true, used: used + days };

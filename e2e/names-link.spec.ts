@@ -1,4 +1,4 @@
-import { expect, request as playwrightRequest, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
@@ -86,40 +86,57 @@ test.describe("a person's name leads to their page", () => {
     await context.close();
   });
 
-  test("a seat nobody has taken is described, not linked", async ({ page, request, baseURL }) => {
+  test("a seat nobody has taken is described, not linked", async ({ page, browser, baseURL }) => {
     /*
-     * The two honest exceptions: an empty chair is not a person, so it stays
-     * plain rather than pointing at a page that does not exist.
+     * The honest exception: a seat with nobody bound to it is not a person, so it
+     * stays plain rather than pointing at a page that does not exist.
      *
-     * `memberContext` cannot produce that scenario any more. Posting an open
-     * seat while signed in as a real member now binds that member's id to it
-     * — "Whoever starts a game is sitting at it" (games/live's route), closing
-     * an exploit where a poster answered their own invitation — and a bound
-     * seat is shown under its member's CURRENT name (currentNames.ts's
-     * seatName) rather than under whatever the row's own field says. So a
-     * blank name from a signed-in member no longer reads as nobody; it reads
-     * as them, linked, which is correct for them and wrong for this test. An
-     * invite-only identity is never bound, so it is the one that still is.
+     * No request can post one any more. Posting an open seat binds whoever posted
+     * it — "Whoever starts a game is sitting at it" (games/live's route) — and a
+     * bound seat is shown under its member's CURRENT name (currentNames.ts's
+     * seatName), linked, which is correct for them. This used to post as an
+     * invite-only identity because that one was never bound; since a code makes a
+     * member account, every poster is bound. So the seat is made the way the rows
+     * that ARE unbound stand — seats posted before posting bound anybody: posted
+     * by a member, then the poster's id taken off the row.
+     *
+     * The poster is a signed member session rather than a redeemed code: a code
+     * bought nothing a seeded member does not have, and redeeming spent the
+     * redeem limit, which is strict and shared by every spec on the runner.
      *
      * Posted by somebody else, since a seat is not shown back to whoever put
      * it up — posting it as this reader would leave nothing on their board.
      */
-    const minted = await request.post("/api/invites", { data: { note: "names-link-poster" } });
-    expect(minted.status()).toBe(201);
-    const { code } = (await minted.json()) as { code: string };
-    const other = await playwrightRequest.newContext({ baseURL });
-    const signedIn = await other.post("/api/session", { data: { kind: "invite", code } });
-    expect(signedIn.ok()).toBe(true);
-
-    const made = await other.post("/api/games/live", {
+    const stamp = Date.now().toString(36);
+    const other = await memberContext(browser, baseURL!, {
+      email: `seat-poster-${stamp}@example.test`,
+      name: under(`Poster${stamp} Tester`),
+    });
+    const made = await other.request.post("/api/games/live", {
       data: { blackName: "", whiteName: "", size: 9, open: true },
     });
-    expect(made.status()).toBe(201);
-    await other.dispose();
-    await page.goto("/games");
-    const open = page.getByTestId("open-game").first();
-    if (await open.isVisible()) {
-      await expect(open.getByTestId("player-name")).toHaveCount(0);
+    expect(made.status(), await made.text()).toBe(201);
+    const { id } = (await made.json()) as { id: string };
+    await other.close();
+
+    process.loadEnvFile(".env");
+    const { PrismaClient } = await import("@prisma/client");
+    const prisma = new PrismaClient();
+    try {
+      await prisma.game.update({ where: { id }, data: { blackMemberId: null, whiteMemberId: null } });
+    } finally {
+      await prisma.$disconnect();
     }
+
+    await page.goto("/games");
+    /*
+     * Only the rows nobody is bound to, found by the attribute a bound row
+     * carries and this one does not — rather than whichever seat happens to be
+     * first on the board. One is waited for before anything is said about what
+     * it lacks, so the absence below is read off a board that has answered.
+     */
+    const unbound = page.locator('[data-testid="open-game"]:not([data-member])');
+    await expect(unbound.first()).toBeVisible();
+    await expect(unbound.getByTestId("player-name")).toHaveCount(0);
   });
 });

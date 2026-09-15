@@ -27,29 +27,29 @@ import "server-only";
  * AND IT COSTS NOTHING
  * ─────────────────────────────────────────────────────────────────────────
  *
- * `memberRowFor` already selects `timeZone`, `country` and `preferences` — where
- * the zone's source is kept — and is `cache()`d per request, so this is three
- * fields off a row every page has read already: no query, on any page, ever. It answers false for a signed-out reader and for the operator without a
- * member row, because there is no row to record a zone on.
+ * The signed-in member's row — `currentMemberRow` — already selects `timeZone`,
+ * `country` and `preferences`, where the zone's source is kept, and is `cache()`d
+ * per request, so this is three fields off a row every page has read already: no
+ * query, on any page, ever. It answers null for a signed-out reader and for the
+ * operator without a member row, because there is no row to record a zone on —
+ * and, since it reads the row the session names rather than an address, it asks
+ * a member who came in with an invite code like anybody else.
  */
 
 import { zoneSourceFrom, zoneStanding, worthAsking, type ZoneFrom } from "./zoneGuess";
 
-import { memberRowFor } from "./members";
+import { currentMemberRow } from "./currentSession";
 
-/** The zone in force for a member, and which rung it came from. Null for no row. */
-export async function zoneStandingFor(
-  email: string | null,
-): Promise<{ zone: string; from: ZoneFrom } | null> {
-  if (email === null) return null;
-  const row = await memberRowFor(email);
+/** The zone in force for the signed-in member, and which rung it came from. Null for no row. */
+export async function zoneStandingFor(): Promise<{ zone: string; from: ZoneFrom } | null> {
+  const row = await currentMemberRow();
   if (row === null) return null;
-  /* The source rides the same row: `preferences` is on `memberRowFor` already. */
+  /* The source rides the same row: `preferences` is on the member row already. */
   return zoneStanding({ stored: row.timeZone, country: row.country, source: zoneSourceFrom(row.preferences) });
 }
 
-export async function dayZoneUnknown(email: string | null): Promise<boolean> {
-  const standing = await zoneStandingFor(email);
+export async function dayZoneUnknown(): Promise<boolean> {
+  const standing = await zoneStandingFor();
   if (standing === null) return false;
   return worthAsking(standing.from);
 }

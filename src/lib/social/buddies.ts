@@ -1,20 +1,17 @@
 import "server-only";
 
-import { foldEmail } from "@/lib/auth/members";
+import { listable } from "./listable";
 import { prisma } from "@/lib/prisma";
 import { awardBuddyKept } from "@/lib/xp/xpSocial";
 import { localTimeIn, recencyOf, type Recency } from "./presence";
 
 export type BuddyEntry = {
   /**
-   * Their member id, which is how anything that offers a game names them.
-   *
-   * Free: the row is already read whole. It is here because a computer player
-   * has no address, and because the site stopped addressing a challenge to an
-   * email — see `Opponent`.
+   * Their member id, which is how anything that offers a game names them — and,
+   * now, how the list itself holds them.
    */
   id: string;
-  /** Null for a kept record: somebody who never signed in. */
+  /** Null for a member who came in with an invite code: they have no address. */
   email: string | null;
   name: string;
   picture: string;
@@ -25,39 +22,26 @@ export type BuddyEntry = {
   country: string;
 };
 
-/** The addresses on a member's buddy list. */
-export async function buddyEmails(owner: string): Promise<Set<string>> {
-  const rows = await prisma.buddy.findMany({ where: { owner: foldEmail(owner) }, select: { buddy: true } });
-  return new Set(rows.map((row) => row.buddy));
-}
-
 /**
- * The member ids on a member's buddy list, for the pages that decide by id.
+ * The member ids on a member's buddy list.
  *
- * The list is KEPT by address, and that is the Buddy table's business; what a
- * page asks of it — "is this row somebody I buddied?" — is a question about who
- * a person is, which the site answers by id. The sibling of `ignoredMemberIds`,
- * and two reads for the same reason: the addresses, then whose they are.
+ * BY ID, AND ONE READ. The list was kept by address and this was two reads —
+ * the addresses, then whose they were — because the pages ask by id. It is kept
+ * by id now, so the page's question is the table's own.
  */
-export async function buddyMemberIds(owner: string): Promise<Set<string>> {
-  const addresses = await buddyEmails(owner);
-  if (addresses.size === 0) return new Set();
-  const rows = await prisma.member.findMany({
-    where: { email: { in: [...addresses] } },
-    select: { id: true },
-  });
-  return new Set(rows.map((row) => row.id));
+export async function buddyMemberIds(ownerId: string): Promise<Set<string>> {
+  const rows = await prisma.buddy.findMany({ where: { ownerId }, select: { buddyId: true } });
+  return new Set(rows.map((row) => row.buddyId));
 }
 
-/** A member's buddies, most recently seen first, as a list of people rather than addresses. */
-export async function fetchBuddies(owner: string, now = new Date()): Promise<BuddyEntry[]> {
-  const emails = [...(await buddyEmails(owner))];
-  if (emails.length === 0) return [];
-  const members = await prisma.member.findMany({
-    where: { email: { in: emails } },
-    orderBy: { lastSeenAt: "desc" },
+/** A member's buddies, most recently seen first, as a list of people. */
+export async function fetchBuddies(ownerId: string, now = new Date()): Promise<BuddyEntry[]> {
+  const rows = await prisma.buddy.findMany({
+    where: { ownerId },
+    select: { buddy: true },
+    orderBy: { buddy: { lastSeenAt: "desc" } },
   });
-  return members.map((member) => ({
+  return rows.map(({ buddy: member }) => ({
     id: member.id,
     email: member.email,
     name: member.name,
@@ -70,27 +54,17 @@ export async function fetchBuddies(owner: string, now = new Date()): Promise<Bud
   }));
 }
 
-/** Adds a buddy. Silently nothing if they are already there, or are not a member, or are you. */
-export async function addBuddy(owner: string, buddy: string): Promise<boolean> {
-  const me = foldEmail(owner);
-  const them = foldEmail(buddy);
-  if (me === them) return false;
-  /*
-   * BOTH ROWS IN THE QUERY THAT WAS ALREADY BEING MADE. This read existed to
-   * answer "is there such a member"; asking it for the pair answers that and
-   * hands over the two ids the XP ledger is keyed on, for the same one query.
-   * The ledger keys by id and the buddy list by address, so without this the
-   * award would have needed a lookup of its own.
-   */
-  const rows = await prisma.member.findMany({
-    where: { email: { in: [me, them] } },
-    select: { id: true, email: true },
+/** Adds a buddy. Silently nothing if they are already there, are not a person here, or are you. */
+export async function addBuddy(ownerId: string, buddyId: string): Promise<boolean> {
+  if (ownerId === buddyId) return false;
+  const them = await prisma.member.findUnique({
+    where: { id: buddyId },
+    select: { botTier: true, unclaimableBecause: true },
   });
-  const theirs = rows.find((row) => row.email === them);
-  if (theirs === undefined) return false;
+  if (!listable(them)) return false;
   await prisma.buddy.upsert({
-    where: { owner_buddy: { owner: me, buddy: them } },
-    create: { owner: me, buddy: them },
+    where: { ownerId_buddyId: { ownerId, buddyId } },
+    create: { ownerId, buddyId },
     update: {},
   });
   /*
@@ -99,13 +73,10 @@ export async function addBuddy(owner: string, buddy: string): Promise<boolean> {
    * `buddyAdded` is keyed on the buddy, so adding somebody already on the list —
    * which the upsert above makes a no-op — pays nothing the second time.
    */
-  await awardBuddyKept({
-    memberId: rows.find((row) => row.email === me)?.id ?? null,
-    buddyId: theirs.id,
-  });
+  await awardBuddyKept({ memberId: ownerId, buddyId });
   return true;
 }
 
-export async function removeBuddy(owner: string, buddy: string): Promise<void> {
-  await prisma.buddy.deleteMany({ where: { owner: foldEmail(owner), buddy: foldEmail(buddy) } });
+export async function removeBuddy(ownerId: string, buddyId: string): Promise<void> {
+  await prisma.buddy.deleteMany({ where: { ownerId, buddyId } });
 }

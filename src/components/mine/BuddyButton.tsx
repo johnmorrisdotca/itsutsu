@@ -5,8 +5,14 @@ import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 
-/** Adds or removes one member from the viewer's buddy list, in place. */
-export function BuddyButton({ email, isBuddy }: { email: string; isBuddy: boolean }) {
+/**
+ * Adds or removes one member from the viewer's buddy list, in place.
+ *
+ * By member id. It was by address, which wrote the address into the markup of
+ * every row this sits on, and could not name a member who came in with an
+ * invite code at all.
+ */
+export function BuddyButton({ memberId, isBuddy }: { memberId: string; isBuddy: boolean }) {
   const router = useRouter();
   const [buddy, setBuddy] = useState(isBuddy);
   const [busy, setBusy] = useState(false);
@@ -16,7 +22,7 @@ export function BuddyButton({ email, isBuddy }: { email: string; isBuddy: boolea
     const response = await fetch("/api/buddies", {
       method: buddy ? "DELETE" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ memberId }),
     });
     setBusy(false);
     if (response.ok) {

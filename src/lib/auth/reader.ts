@@ -5,23 +5,20 @@ import type { Session } from "./session";
 export const SIGNED_OUT: Reader = { signedIn: false, email: null, memberId: null, hasAccount: false };
 
 /**
- * The reader, from the session a request carries and the member row its
- * address found.
+ * The reader, from the session a request carries and the member row it names.
  *
- * Pure, so the one rule every page now asks is tested without a cookie jar:
- * the SESSION says whether somebody is in, the ADDRESS says which reads can be
- * kept for them, and the MEMBER ID says who they are. `currentReader` is the
- * server half that fetches the two inputs.
+ * Pure, so the one rule every page asks is tested without a cookie jar: the
+ * SESSION says whether somebody is in, the MEMBER ID says who they are and that
+ * they have an account, and the ADDRESS says only which of the few
+ * address-shaped questions — is this the operator — can be asked.
+ *
+ * AN ACCOUNT IS A MEMBER ROW, whether or not an address comes with it. It used
+ * to need both, because redeeming an invite code made a session and no member;
+ * since a code makes a member, somebody who came in by code has an account like
+ * anybody else, and asks, buddies, ignores and applauds as one.
  */
 export function readerFrom(session: Session | null, memberId: string | null): Reader {
   if (session === null) return SIGNED_OUT;
   const email = session.email ? session.email.trim().toLowerCase() : null;
-  /*
-   * A member id with no address is not a thing a session can carry — an id is
-   * found BY the address — so one arriving without one is ignored rather than
-   * believed. Silence is the safe answer here: an invite holder mistaken for a
-   * member would be offered buttons every route behind them refuses.
-   */
-  const member = email === null ? null : memberId;
-  return { signedIn: true, email, memberId: member, hasAccount: email !== null && member !== null };
+  return { signedIn: true, email, memberId, hasAccount: memberId !== null };
 }

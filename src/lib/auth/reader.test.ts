@@ -10,9 +10,9 @@ describe("readerFrom", () => {
     expect(SIGNED_OUT.signedIn).toBe(false);
   });
 
-  it("counts a browser that redeemed an invite as signed in, with no account", () => {
-    const reader = readerFrom({ kind: "player", code: "tea-house", exp: LATER }, null);
-    expect(reader).toEqual({ signedIn: true, email: null, memberId: null, hasAccount: false });
+  it("gives a member who came in with an invite code an account, with no address", () => {
+    const reader = readerFrom({ kind: "player", memberId: "m-guest", code: "tea-house", exp: LATER }, "m-guest");
+    expect(reader).toEqual({ signedIn: true, email: null, memberId: "m-guest", hasAccount: true });
   });
 
   it("gives a Google member the address folded, the id, and an account", () => {
@@ -26,9 +26,9 @@ describe("readerFrom", () => {
     expect(reader).toEqual({ signedIn: true, email: "operator@example.test", memberId: null, hasAccount: false });
   });
 
-  it("does not believe a member id that arrives without an address", () => {
-    const reader = readerFrom({ kind: "player", code: "tea-house", exp: LATER }, "m1");
-    expect(reader.memberId).toBeNull();
-    expect(reader.hasAccount).toBe(false);
+  it("counts a browser whose invite cookie predates accounts as signed in, with no account yet", () => {
+    // Its member is made the next time it asks /api/session who it is.
+    const reader = readerFrom({ kind: "player", code: "tea-house", exp: LATER }, null);
+    expect(reader).toEqual({ signedIn: true, email: null, memberId: null, hasAccount: false });
   });
 });

@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test as base, type APIRequestContext } from "@playwright/test";
 
-import { PLAYER_STATE, playAt, ready } from "./support";
+import { memberContext } from "./members";
+import { playAt, ready } from "./support";
 import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /**
@@ -20,15 +21,54 @@ import { gamesMade, namesPlayedUnder } from "./tidy";
  * Nothing here reloads. A reload would throw away exactly the client state
  * this feature lives in and turn a broken advance into a green test.
  *
- * IT CLAIMS ITS SEATS AS AN INVITE-ONLY BROWSER, which is not fussiness. The
- * queue of games waiting on somebody is read from their seat cookies AND from
- * their account, so a spec signed in as the member the whole suite plays as
- * inherits every unfinished board four hundred other tests left behind. The
- * first browser run of this file proved it by working correctly and looking
- * wrong: it carried the player onward to a real waiting game that was eight
- * moves old and belonged to another spec's fixture. A browser holding an
- * invite and no account has exactly the games it claimed, and nothing else.
+ * EVERY CASE PLAYS AS A MEMBER OF ITS OWN, which is not fussiness. The queue of
+ * games waiting on somebody is read from their seat cookies AND from their
+ * account, so a spec signed in as a member the whole suite shares inherits every
+ * unfinished board four hundred other tests left behind. The first browser run
+ * of this file proved it by working correctly and looking wrong: it carried the
+ * player onward to a real waiting game that was eight moves old and belonged to
+ * another spec's fixture.
+ *
+ * It used to dodge that as the suite's invite-only browser, which had no account.
+ * A code makes a member account now, so that browser is one member holding every
+ * game the suite made with it, and CI carried this file onward into one of them.
+ * So each case signs in as a member of its own, in its own browser, and makes its
+ * games through that browser's own requests: a fresh member whose queue holds
+ * exactly the games it made, and nothing else.
+ *
+ * A SIGNED MEMBER SESSION, NOT A REDEEMED CODE. The first version of this redeemed
+ * a code per case, and redeeming is the strict guessing limit — five a minute from
+ * one address, never relieved, and shared by every spec on the runner with
+ * gate.spec exhausting it on purpose — so the fourth case met a 429. A code-made
+ * account is what invite-player.spec is about; this file is about the queue, and a
+ * seeded member's queue is exactly as empty.
  */
+
+/** Distinct per member, so two cases signed in within one millisecond are still two people. */
+let members = 0;
+
+/**
+ * `page` and `request` as ONE fresh member. The context is signed in as a member
+ * seeded for this case, `page` opens in it, and `request` is its own request
+ * context, so a game made through it and a seat claimed on the page belong to the
+ * same account, and to no other test's.
+ */
+const test = base.extend<{ request: APIRequestContext }>({
+  // `provide` rather than Playwright's usual `use`: the React hooks lint rule reads any call named `use` as a hook.
+  context: async ({ browser, baseURL }, provide, testInfo) => {
+    members += 1;
+    const stamp = `${Date.now().toString(36)}${testInfo.workerIndex}${testInfo.retry}${members}`;
+    const own = await memberContext(browser, baseURL!, {
+      email: `next-game-${stamp}@example.test`,
+      name: `Queue${stamp} Player`,
+    });
+    await provide(own);
+    await own.close();
+  },
+  request: async ({ context }, provide) => {
+    await provide(context.request);
+  },
+});
 
 type Game = { id: string; blackToken: string; whiteToken: string };
 
@@ -90,8 +130,6 @@ async function waitingOnBlack(request: import("@playwright/test").APIRequestCont
 }
 
 test.describe("after a move, the next game that is waiting", () => {
-  test.use({ storageState: PLAYER_STATE });
-
   test("carries you to the other board, and stops when that was the last one", async ({
     page,
     request,

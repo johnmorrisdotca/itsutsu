@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
-import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { prisma } from "@/lib/prisma";
 import { overLimit } from "@/lib/api/rateLimit";
 
@@ -19,8 +19,10 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     const tooMany = overLimit(request, "hide-game");
     if (tooMany !== null) return tooMany;
 
-    const me = await currentSession();
-    if (!me?.email) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+    // A member, by id — whether or not they came in with an address.
+    if ((await currentMemberId()) === null) {
+      return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+    }
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = bodySchema.safeParse(body);

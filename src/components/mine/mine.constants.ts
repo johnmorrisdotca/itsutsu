@@ -357,3 +357,31 @@ export const PROFILE_WIDTH = {
   /** "Three months 三月" is the longest thing this select ever says. */
   keep: "max-w-[13rem]",
 } as const;
+
+/**
+ * The welcome, for an account a code made: where it lives, and the two things
+ * that can be done about that, said before the welcome is closed.
+ *
+ * John: the cookie-only way back is fine "provided invite members are
+ * prompted". So it is said plainly and first — this browser, this month — and
+ * each remedy is a control beside the sentence rather than a tab to find later.
+ *
+ * WHAT EACH REMEDY DOES, EXACTLY. Linking Google is the only thing that brings
+ * the account back after the cookie runs out or on another browser: the Google
+ * sign-in finds the member by the address it attached. Four words are checked
+ * in one place, taking a seat on a device somebody else is signed in on
+ * (`sit-as`), and nothing turns them into a session — so they are offered for
+ * what they do, and the line says what they do not, rather than promising a way
+ * back they cannot give.
+ */
+export const KEEP_ACCOUNT_COPY = {
+  lives: (days: number) => `This account lives only in this browser, and only for ${days} days.`,
+  unlessGoogle: "After that, or on any other device, you cannot get back into it — unless you link Google.",
+  noGoogle: "After that, or on any other device, you cannot get back into it.",
+  linkGoogle: "Link Google",
+  linkGoogleNote:
+    "Sign in on any device, for as long as you like, and keep this name, these games and this XP. If your Google address already has an account here, you are signed in to that one instead.",
+  addWords: "Add four words",
+  addWordsNote: (days: number) =>
+    `Play as yourself on a device somebody else is signed in on. Words do not sign a browser in, so on their own they will not bring this account back after ${days} days.`,
+} as const;

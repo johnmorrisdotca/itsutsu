@@ -2,6 +2,7 @@ import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { RowActions } from "@/components/ui/Controls";
 import type { Reader } from "@/lib/auth/reader.types";
 import { shownName } from "@/lib/rating/shownName";
+import { listable } from "@/lib/social/listable";
 import { recencyOf } from "@/lib/social/presence";
 import type { DirectoryEntry } from "@/lib/rating/directoryRows";
 
@@ -35,12 +36,13 @@ export function directoryActions(
     recency: (entry: DirectoryEntry) => recencyOf(new Date(entry.lastSeenAt), now),
     forEntry: (entry: DirectoryEntry) => {
       /*
-       * AN ACCOUNT TO ASK WITH, somebody with an address to be asked, and not
-       * the reader's own row — the last decided by id. It compared addresses,
-       * which is the question `currentMemberId` asks the rest of the site not to
-       * put: an id is who somebody is, an address is only how they sign in.
+       * AN ACCOUNT TO ASK WITH, a PERSON on the row — not a program, not a kept
+       * record — and not the reader's own row, decided by id. The middle test was
+       * "has an address", which turned away every member who came in with an
+       * invite code; see `listable`.
        */
-      if (!reader.hasAccount || entry.email === null || entry.id === reader.memberId) return null;
+      if (!reader.hasAccount || entry.id === reader.memberId) return null;
+      if (!listable({ botTier: entry.botTier ?? null, unclaimableBecause: entry.unclaimableBecause })) return null;
       return (
         <RowActions>
           {/*
@@ -51,7 +53,7 @@ export function directoryActions(
           */}
           <ChallengeButton memberId={entry.id} />
           <RowMore
-            email={entry.email}
+            memberId={entry.id}
             name={shownName(entry.name)}
             isBuddy={buddies.has(entry.id)}
             ignoring={ignored.has(entry.id)}

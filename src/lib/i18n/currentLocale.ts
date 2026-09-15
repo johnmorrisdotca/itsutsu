@@ -3,7 +3,7 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { cache } from "react";
 
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentMemberId } from "@/lib/auth/currentSession";
 
 import { OFFERED_LOCALES } from "./dictionaries";
 import { speaker, type Speaker } from "./i18n";
@@ -28,9 +28,9 @@ import { readLocale, resolveLocale } from "./locale";
  *
  * **What the account costs, and it is nothing.** Three of the four sources
  * are on the request itself. The fourth is the member's own choice, read off
- * `memberRowFor` — the one row every server-rendered page already reads to
- * say who is here — so a signed-in reader pays no query they were not paying
- * and a signed-out one pays none at all. See `memberLanguage.ts`, and
+ * the signed-in member's row — the one row every server-rendered page already
+ * reads to say who is here — so a signed-in reader pays no query they were not
+ * paying and a signed-out one pays none at all. See `memberLanguage.ts`, and
  * `memberPreferences.ts` for why the store is one JSON column.
  *
  * **What this costs, measured rather than assumed.** Reading a cookie or a
@@ -58,10 +58,11 @@ export const currentLocale = cache(async (): Promise<Locale> => {
    * Who is here, which this request has already worked out or is about to:
    * `currentSession` reads the same cookie the masthead reads, and the member
    * row underneath is `cache()`d for the rest of the request. Null for a
-   * browser holding only an invite, and for a stranger, neither of whom has
-   * an account for a language to live on.
+   * stranger and for a session with no member behind it, neither of whom has an
+   * account for a language to live on — and a member who came in with an invite
+   * code has one, like anybody else.
    */
-  const email = await currentEmail();
+  const memberId = await currentMemberId();
   /*
    * A choice is kept HERE rather than in the gate, and the gate is why it has
    * to be: `proxy.ts` cannot reach the database, so all it can do is say in a
@@ -71,11 +72,11 @@ export const currentLocale = cache(async (): Promise<Locale> => {
    * body is rendered only when the page was really asked for, where a gate
    * answers a prefetch too.
    */
-  await keepChosenLanguage(email, readLocale(justChosen));
+  await keepChosenLanguage(memberId, readLocale(justChosen));
   return resolveLocale(
     {
       justChosen,
-      onAccount: await languageOnAccount(email),
+      onAccount: await languageOnAccount(memberId),
       remembered: jar.get(LANG_COOKIE)?.value ?? null,
       accepts: head.get("accept-language"),
     },

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AccountMenu, type Who } from "@/components/auth/AccountMenu";
 import { AdminLink } from "@/components/auth/AdminLink";
 import { currentSession } from "@/lib/auth/currentSession";
+import { memberKeyOf } from "@/lib/auth/memberKey";
 import { xpFlashFor, type XpToastHold } from "@/lib/xp/xpFlash";
 
 import { BrandHero, BrandWordmark } from "./BrandMarks";
@@ -20,7 +21,9 @@ async function whoIsHere(): Promise<Who> {
     email: session.email ?? null,
     name: session.name ?? null,
     picture: session.picture ?? null,
-    member: session.kind === "player" && session.email !== undefined,
+    /* A member behind the session — by id, or by address on an older Google cookie. It was "has an
+       address", which drew the stranger's menu for everybody who came in with an invite code. */
+    member: session.kind === "player" && memberKeyOf(session) !== null,
   };
 }
 

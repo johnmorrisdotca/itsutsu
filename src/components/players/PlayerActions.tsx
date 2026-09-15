@@ -18,16 +18,15 @@ import { RowMore } from "./RowMore";
  * the words cannot drift apart: whatever a buddy is called, it is called that
  * in both places.
  *
- * Not everybody gets all three. A kept record has no address — Chibi never
- * signed in — so there is nobody to challenge or to hear from, and it gets
- * none. A computer player has no address either but does have an id, and a
- * game against one is the point of it being listed at all; buddying or
- * ignoring a program is not a thing anybody means, so it is offered a game
- * and nothing else. And nobody is offered any of it about themselves.
+ * Not everybody gets all three. A kept record is nobody with an account — Chibi
+ * never signed in — so there is nobody to challenge or to hear from, and it gets
+ * none. A computer player is offered a game and nothing else; buddying or
+ * ignoring a program is not a thing anybody means. And nobody is offered any of
+ * it about themselves.
  */
 export function PlayerActions({
-  email,
   memberId,
+  person,
   isBuddy,
   ignoring,
   isComputer,
@@ -39,9 +38,16 @@ export function PlayerActions({
 }: {
   /** Whose actions these are, for the ⋯ button's accessible name in a row. */
   name?: string;
-  /** Null for a kept record and for a computer player: neither has one. */
-  email: string | null;
+  /** Their member id; undefined for a name with no member behind it. */
   memberId?: string;
+  /**
+   * A person with an account — `listable`: not a program, not a kept record.
+   *
+   * It was their ADDRESS being there, which said the same thing about programs
+   * and kept records and something false about every member who came in with an
+   * invite code: they have no address and are people like anybody else.
+   */
+  person: boolean;
   isBuddy: boolean;
   ignoring: boolean;
   isComputer: boolean;
@@ -50,12 +56,9 @@ export function PlayerActions({
   /**
    * Whether the READER has an account to ask with — `Reader.hasAccount`.
    *
-   * Not "signed in", which it was called. A reader who came in by invite code
-   * is signed in and has no address, and every route behind these three buttons
-   * — the challenge, the buddy list, the ignore list — answers 401 to a caller
-   * with no address. Offering them would be offering a press the site then
-   * refuses two screens later, so they are offered to an account and nobody
-   * else, and the name says so.
+   * Every route behind these three buttons — the challenge, the buddy list, the
+   * ignore list — keys on the reader's member id, so they are offered wherever
+   * there is one, and nowhere a session has no member behind it.
    */
   canAsk: boolean;
   /**
@@ -78,16 +81,15 @@ export function PlayerActions({
    */
   testId?: string;
 }) {
-  if (isYou || !canAsk) return null;
+  if (isYou || !canAsk || memberId === undefined) return null;
   if (isComputer) {
-    if (memberId === undefined) return null;
     return (
       <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
         <ChallengeButton memberId={memberId} label="Play 対局" strong={!compact} />
       </div>
     );
   }
-  if (email === null) return null;
+  if (!person) return null;
 
   /*
    * IN A ROW, THE OFFER OF A GAME AND "⋯" FOR THE REST. Play, Buddy and Ignore at
@@ -97,30 +99,18 @@ export function PlayerActions({
   if (compact) {
     return (
       <div className="flex items-center justify-end gap-1" data-testid={testId}>
-        {memberId === undefined ? null : <ChallengeButton memberId={memberId} label="Play 対局" />}
-        <RowMore email={email} name={shownName(name ?? "")} isBuddy={isBuddy} ignoring={ignoring} />
+        <ChallengeButton memberId={memberId} label="Play 対局" />
+        <RowMore memberId={memberId} name={shownName(name ?? "")} isBuddy={isBuddy} ignoring={ignoring} />
       </div>
     );
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2" data-testid={testId}>
-      {/*
-        A game is offered by member id, so the offer needs one. A member row
-        without an id is a kept record — somebody who never signed in — and
-        `email === null` above has already sent those away; a row that somehow
-        has an address and no id is nobody this can reach, and saying nothing is
-        the honest answer rather than a button that cannot name who it is for.
-      */}
-      {memberId === undefined ? null : (
-        <ChallengeButton
-          memberId={memberId}
-          label={compact ? "Play 対局" : "Ask for a game 対局を申し込む"}
-          strong={!compact}
-        />
-      )}
-      <BuddyButton email={email} isBuddy={isBuddy} />
-      <IgnoreButton email={email} ignoring={ignoring} />
+      {/* A game is offered by member id, and so is everything beside it. */}
+      <ChallengeButton memberId={memberId} label="Ask for a game 対局を申し込む" strong />
+      <BuddyButton memberId={memberId} isBuddy={isBuddy} />
+      <IgnoreButton memberId={memberId} ignoring={ignoring} />
     </div>
   );
 }

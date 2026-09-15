@@ -1,7 +1,6 @@
 import "server-only";
 
-import { currentEmail } from "@/lib/auth/currentSession";
-import { memberRowFor } from "@/lib/auth/members";
+import { currentMemberRow } from "@/lib/auth/currentSession";
 
 import { xpStanding, type XpStanding } from "./xpCurve";
 import { xpForBadge } from "./xpScope";
@@ -58,9 +57,7 @@ export type ViewerXp = {
 
 /** The signed-in member's standing, or null when there is no member to mark. */
 export async function viewerXp(): Promise<ViewerXp | null> {
-  const email = await currentEmail();
-  if (email === null) return null;
-  const row = await memberRowFor(email);
+  const row = await currentMemberRow();
   if (row === null) return null;
   return {
     memberId: row.id,

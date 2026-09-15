@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { memberContext, seedMember } from "./members";
+import { memberContext, memberIdFor, seedMember } from "./members";
 import { openMoreSettings, openSetUpPage } from "./support";
 import { shownName } from "../src/lib/rating/shownName";
 
@@ -47,7 +47,7 @@ test.describe("the opponent chooser obeys the ignore list", () => {
      * "here now" is a half-hour window and a test that raced it would be a
      * test that passed on a fast machine.
      */
-    const starred = await mine.request.post("/api/buddies", { data: { email: them.email } });
+    const starred = await mine.request.post("/api/buddies", { data: { memberId: await memberIdFor(them.email) } });
     expect(starred.status()).toBeLessThan(300);
 
     /*
@@ -66,7 +66,7 @@ test.describe("the opponent chooser obeys the ignore list", () => {
     await openMoreSettings(page);
     await expect(chooser).toContainText(shownName(them.name));
 
-    const shut = await mine.request.post("/api/ignores", { data: { email: them.email } });
+    const shut = await mine.request.post("/api/ignores", { data: { memberId: await memberIdFor(them.email) } });
     expect(shut.status()).toBeLessThan(300);
 
     await openSetUpPage(page);

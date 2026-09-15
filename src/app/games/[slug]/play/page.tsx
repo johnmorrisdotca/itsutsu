@@ -34,9 +34,9 @@ export default async function PlayPage({ params }: PageProps<"/games/[slug]/play
   const siblings = siblingsOf(variant);
   // The member's own board, so a phone and a laptop set out the same one.
   const reader = await currentReader();
-  const board = await appearanceFor(reader.email);
+  const board = await appearanceFor(reader.memberId);
   // Where a new game starts for them: board size, the switches, the clock.
-  const defaults = await gameDefaultsFor(reader.email);
+  const defaults = await gameDefaultsFor(reader.memberId);
 
   return (
     <Page width="wide">

@@ -5,6 +5,7 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { PlayerActions } from "./PlayerActions";
 import { RecordTable } from "./RecordTable";
 import type { RecordOpponents } from "./recordOpponents.types";
+import { listable } from "@/lib/social/listable";
 import { playerKey } from "@/lib/rating/playerKey";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
@@ -220,7 +221,7 @@ function OpponentActions({
       compact
       testId="opponent-actions"
       name={name}
-      email={them.email}
+      person={listable({ botTier: them.botTier ?? null, unclaimableBecause: them.unclaimableBecause ?? null })}
       memberId={them.id}
       isBuddy={them.id !== undefined && opponents.buddies.has(them.id)}
       ignoring={them.id !== undefined && opponents.ignored.has(them.id)}

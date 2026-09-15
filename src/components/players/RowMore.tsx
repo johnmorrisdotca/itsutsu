@@ -35,7 +35,7 @@ import type { RowMoreProps } from "./recordTable.types";
  * called cannot drift. A buddy is still marked on the row itself — a star on the
  * button — because who is your buddy is a fact about the row, not an action.
  */
-export function RowMore({ email, name, isBuddy, ignoring }: RowMoreProps) {
+export function RowMore({ memberId, name, isBuddy, ignoring }: RowMoreProps) {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
@@ -118,8 +118,8 @@ export function RowMore({ email, name, isBuddy, ignoring }: RowMoreProps) {
         data-testid="row-more-menu"
       >
         <div className="flex flex-col items-stretch gap-1">
-          <BuddyButton email={email} isBuddy={isBuddy} />
-          <IgnoreButton email={email} ignoring={ignoring} />
+          <BuddyButton memberId={memberId} isBuddy={isBuddy} />
+          <IgnoreButton memberId={memberId} ignoring={ignoring} />
         </div>
       </div>
     </>

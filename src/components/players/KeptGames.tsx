@@ -5,7 +5,7 @@ import { appearanceFrom } from "@/components/board/appearance";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import type { Appearance } from "@/components/board/board.types";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { appearanceFor } from "@/lib/auth/members";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyGames.data";
@@ -29,7 +29,7 @@ export async function KeptGames({ slug, site }: { slug: string; site?: string })
    * a board looks. Of all the boards on this site these are the ones most
    * likely to be sat with: they are the games that were kept.
    */
-  const appearance = appearanceFrom(await appearanceFor(await currentEmail()));
+  const appearance = appearanceFrom(await appearanceFor(await currentMemberId()));
   return (
     <section className="flex flex-col gap-4" data-testid="kept-games">
       <h3 className={SECTION_TITLE}>Games we have</h3>

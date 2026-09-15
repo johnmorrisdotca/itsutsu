@@ -5,7 +5,7 @@ import { LadderSideView, PlayerLink } from "@/components/players/Standings";
 import { RecordLine } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
-import { findMember } from "@/lib/auth/members";
+import { findMemberById } from "@/lib/auth/members";
 import { playPath, standingsPath } from "@/lib/gomoku/slugs";
 import { fetchPlayerRecord } from "@/lib/history/playerRecord";
 import { fetchVariantLeaders } from "@/lib/rating/variantRatings";
@@ -89,17 +89,19 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
   }
 
   /*
-   * An invite holder has no address, and several things below are about a
-   * named person rather than about a reader: their own record, and which of
-   * these names is theirs. Those are skipped rather than guessed at.
+   * Several things below are about a named person rather than about a reader:
+   * their own record, and which of these names is theirs. They are read BY
+   * MEMBER ID — a member who came in with an invite code has a record here like
+   * anybody else — and skipped, rather than guessed at, for a session with no
+   * member behind it.
+   *
+   * The id, because a record is found by the person rather than by the name
+   * they happen to go by today — see `fetchPlayerRecord`.
    */
-  const mine = session.email ? session.email.trim().toLowerCase() : null;
-  const [standings, me, myId] = await Promise.all([
+  const myId = await currentMemberId();
+  const [standings, me] = await Promise.all([
     fetchVariantLeaders(variant, SHOWN),
-    mine === null ? Promise.resolve(null) : findMember(mine),
-    // The id, because a record is found by the person rather than by the name
-    // they happen to go by today — see `fetchPlayerRecord`.
-    mine === null ? Promise.resolve(null) : currentMemberId(),
+    myId === null ? Promise.resolve(null) : findMemberById(myId),
   ]);
 
   /*

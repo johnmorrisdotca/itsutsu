@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { memberContext } from "./members";
+import { memberContext, memberIdFor } from "./members";
 import { removeGame } from "./tidy";
 import { shownName } from "../src/lib/rating/shownName";
 
@@ -45,7 +45,7 @@ test.describe("a seat from somebody you ignore", () => {
     await expect(theirSeat.first(), "their seat was not on the board to begin with").toBeVisible();
 
     // Ignore them, and it goes.
-    const ignored = await page.request.post("/api/ignores", { data: { email: other.email } });
+    const ignored = await page.request.post("/api/ignores", { data: { memberId: await memberIdFor(other.email) } });
     expect([200, 201]).toContain(ignored.status());
     try {
       await page.goto("/games");
@@ -60,7 +60,7 @@ test.describe("a seat from somebody you ignore", () => {
        * here changed the sentence another spec was reading, and that is
        * precisely the litter this suite has been tripping over all day.
        */
-      await page.request.delete("/api/ignores", { data: { email: other.email } });
+      await page.request.delete("/api/ignores", { data: { memberId: await memberIdFor(other.email) } });
       await removeGame(game.id);
       await theirs.close();
     }

@@ -65,7 +65,8 @@ export type RecordColumns = {
 
 /** A row's lesser actions, behind "⋯": whose row it is, and where they stand with the reader. */
 export type RowMoreProps = {
-  email: string;
+  /** Whose row, by member id — which is how the buddy and ignore lists hold people now. */
+  memberId: string;
   /** The name as the row shows it (`shownName`), for the button's accessible name. */
   name: string;
   isBuddy: boolean;

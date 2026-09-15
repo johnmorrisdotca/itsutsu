@@ -1,6 +1,6 @@
 import "server-only";
 
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { preferencesFor, rememberPreferences } from "@/lib/preferences/memberPreferences";
 import type { RecordScope } from "@/lib/rating/recordScope";
 
@@ -16,12 +16,12 @@ import { askedXpScope } from "./xpScope";
  * has only the address. Nothing here redirects.
  */
 export async function xpScopeFor(query: Record<string, string | string[] | undefined>): Promise<RecordScope> {
-  const email = await currentEmail();
-  const preferences = await preferencesFor(email);
+  const memberId = await currentMemberId();
+  const preferences = await preferencesFor();
   const asked = askedXpScope(query);
   if (asked === null) return preferences.xpScope;
-  if (email !== null) {
-    await rememberPreferences(email, { xpScope: asked }).catch((error: unknown) => {
+  if (memberId !== null) {
+    await rememberPreferences({ xpScope: asked }).catch((error: unknown) => {
       console.error("Could not remember how much the XP board counts.", error);
     });
   }

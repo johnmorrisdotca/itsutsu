@@ -40,8 +40,16 @@ const ORIGIN = {
 };
 
 let origin: Record<string, unknown> = { ...ORIGIN };
-let members: Record<string, { id: string; name: string; email: string | null }> = {};
-let session: { email: string; name?: string } | null = null;
+type FakeMember = {
+  id: string;
+  name: string;
+  email: string | null;
+  botTier: string | null;
+  unclaimableBecause: string | null;
+};
+
+let members: Record<string, FakeMember> = {};
+let session: { email?: string; name?: string } | null = null;
 let mine: string | null = null;
 let ignoring = false;
 
@@ -56,9 +64,15 @@ vi.mock("@/lib/prisma", () => ({
     },
   },
 }));
+/*
+ * The caller is a member ROW, by id — which is how the route asks now. It asked
+ * for an address as well, so a member who came in with an invite code could not
+ * ask anybody for a game; the row's name is what seats them.
+ */
 vi.mock("@/lib/auth/currentSession", () => ({
   currentSession: async () => session,
   currentMemberId: async () => mine,
+  currentMemberRow: async () => (mine === null ? null : { id: mine, name: session?.name ?? "" }),
 }));
 vi.mock("@/lib/social/ignores", () => ({ isIgnoring: async () => ignoring }));
 vi.mock("@/lib/bots/botMembers", () => ({ ensureBotMembers: async () => {} }));
@@ -88,10 +102,10 @@ async function refusal(body: Record<string, unknown>) {
 beforeEach(() => {
   origin = { ...ORIGIN };
   members = {
-    them: { id: "them", name: "Them", email: "them@example.com" },
-    me: { id: "me", name: "Me", email: "me@example.com" },
+    them: { id: "them", name: "Them", email: "them@example.com", botTier: null, unclaimableBecause: null },
+    me: { id: "me", name: "Me", email: "me@example.com", botTier: null, unclaimableBecause: null },
     // A computer player is a member with no address, because it never signs in.
-    kyu: { id: "kyu", name: "Kyu", email: null },
+    kyu: { id: "kyu", name: "Kyu", email: null, botTier: "kyu", unclaimableBecause: "computer" },
   };
   session = null;
   mine = null;

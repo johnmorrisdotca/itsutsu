@@ -302,12 +302,14 @@ model Applause {
   id        String   @id @default(cuid())
   gameId    String
   game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  /// The member who left it, by address.
-  member    String
+  /// The member who left it, BY ID. It was their address, which a member who
+  /// came in with an invite code does not have — so they could not leave one.
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
   emoji     String
   createdAt DateTime @default(now())
 
-  @@unique([gameId, member])
+  @@unique([gameId, memberId])
   @@index([gameId])
 }
 
@@ -680,6 +682,13 @@ model Member {
   /// of its own rows, checkable the way `xp` is, and written only by the
   /// importer (`importedXpPay.ts`), in the transaction that writes those rows.
   xpImported Int @default(0)
+  /// The social rows, by member id on both sides — see `Buddy`, `Ignore` and
+  /// `Applause`. Deleting a member takes their lists and their marks with them.
+  buddies   Buddy[]    @relation("BuddyOwner")
+  buddyOf   Buddy[]    @relation("BuddyTarget")
+  ignoring  Ignore[]   @relation("IgnoreOwner")
+  ignoredBy Ignore[]   @relation("IgnoreTarget")
+  applause  Applause[]
 
   /// `xp + xpImported`: the Everywhere total, which the XP board ranks by under
   /// Everywhere and the level badge beside a name is read from.
@@ -834,23 +843,51 @@ model AutoMatchRequest {
 }
 
 /// A member's ignore list: a member who may not challenge the owner.
+///
+/// BY MEMBER ID, both sides. It was kept by folded address, which made it a list
+/// only members who came in by Google could have or be on — a member who joined
+/// with an invite code has no address, so could neither ignore anybody nor be
+/// ignored. An id is who somebody is; an address is only how some of them sign in.
 model Ignore {
-  owner     String
-  ignored   String
+  ownerId   String
+  owner     Member   @relation("IgnoreOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ignoredId String
+  ignored   Member   @relation("IgnoreTarget", fields: [ignoredId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
-  @@id([owner, ignored])
-  @@index([ignored])
+  @@id([ownerId, ignoredId])
+  @@index([ignoredId])
 }
 
-/// A member's buddy list: one row per pair, owner to buddy, by email.
+/// A member's buddy list: one row per pair, owner to buddy, BY MEMBER ID — see
+/// `Ignore` for why it is no longer by address.
 model Buddy {
-  owner     String
-  buddy     String
+  ownerId   String
+  owner     Member   @relation("BuddyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  buddyId   String
+  buddy     Member   @relation("BuddyTarget", fields: [buddyId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
-  @@id([owner, buddy])
-  @@index([buddy])
+  @@id([ownerId, buddyId])
+  @@index([buddyId])
+}
+
+/// A buddy, an ignore or a mark the move to member ids could not carry, because
+/// its address had no member row when the migration ran.
+///
+/// SET ASIDE RATHER THAN DROPPED. Such a row cannot be shown to anybody — there
+/// is no member on the other end of the address — but it is somebody's choice,
+/// and a migration has no business deciding it was worthless. Nothing reads
+/// this table; it exists so the answer to "what happened to that row" is a
+/// query rather than a guess. `target` is the other address for a buddy or an
+/// ignore, and `gameId:emoji` for a mark.
+model SocialRowWithoutMember {
+  id         String   @id @default(cuid())
+  kind       String
+  owner      String
+  target     String
+  createdAt  DateTime
+  setAsideAt DateTime @default(now())
 }
 
 /// Where a wanted thing stands.

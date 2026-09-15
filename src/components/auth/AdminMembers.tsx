@@ -121,10 +121,12 @@ export function AdminMembers() {
       {error !== null ? <p className="text-xs text-shu">{error}</p> : null}
       <ul className="flex flex-col gap-1.5">
         {members.map((member) => {
-          // A kept record has no address, and the operator's controls all act
-          // on an account reached by one. Narrowed here so the three below are
-          // talking about the same known address.
-          const account = member.email;
+          // A kept record is not an account, and the operator's controls all act
+          // on one — reached by MEMBER ID, since a member who came in with an
+          // invite code has no address. `mayHavePhrase` is `canBeClaimed`, the
+          // same server-side answer to "is there an account here". Narrowed once
+          // so the three below are talking about the same member.
+          const account = member.mayHavePhrase ? member.id : null;
           return (
           <li
             key={member.id}
@@ -207,8 +209,8 @@ export function AdminMembers() {
                 label="Take the name off"
                 question={`Take ${member.name.trim()}'s name off? They keep the account, the games and the rating; only the name goes, and they are asked for a new one.`}
                 confirm="Take it off"
-                onConfirm={() => void change({ email: account, name: "" }, account)}
-                disabled={busy === member.email}
+                onConfirm={() => void change({ id: account, name: "" }, account)}
+                disabled={busy === member.id}
                 testId="take-name-off"
               />
             )}
@@ -236,15 +238,15 @@ export function AdminMembers() {
                 label="Shut the account"
                 question={`Shut ${member.name.trim() || member.email}'s account? It stops working on their next request and the invite they came in by is revoked. Their games and their rating stay exactly as they are.`}
                 confirm="Shut it"
-                onConfirm={() => void change({ email: account, banned: true }, account)}
-                disabled={busy === member.email}
+                onConfirm={() => void change({ id: account, banned: true }, account)}
+                disabled={busy === member.id}
                 strong
                 testId="ban-member"
               />
             ) : (
               <Button
-                onClick={() => void change({ email: account, banned: false }, account)}
-                disabled={busy === member.email}
+                onClick={() => void change({ id: account, banned: false }, account)}
+                disabled={busy === member.id}
                 data-testid="ban-member"
               >
                 Open it again

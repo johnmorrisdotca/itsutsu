@@ -1,6 +1,7 @@
 import "server-only";
 
-import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentMemberRow } from "@/lib/auth/currentSession";
+import { listable } from "@/lib/social/listable";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
 import { isBotId } from "@/lib/bots/bots";
 import { MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
@@ -180,22 +181,28 @@ async function playingAgain(
     return { refused: { status: 400, error: "That game is still being played." } };
   }
 
-  const me = await currentSession();
-  const mineId = await currentMemberId();
-  if (!me?.email || mineId === null) {
+  /*
+   * BY MEMBER ID, and the name off the member row. This asked for an address
+   * too, and took the name from Google's word in the cookie — so a member who
+   * came in with an invite code could not play a game again, and would have
+   * been seated nameless if they could.
+   */
+  const me = await currentMemberRow();
+  if (me === null) {
     return { refused: { status: 401, error: "Sign in to play again." } };
   }
+  const mineId = me.id;
   const theirId = opponentOf(origin, mineId);
   // Either they were not in it, or nobody was sitting opposite them.
   if (theirId === null) return { refused: NOT_YOUR_GAME };
   const them = await prisma.member.findUnique({ where: { id: theirId } });
   if (them === null) return { refused: NO_SUCH_MEMBER };
-  if (them.email !== null && (await isIgnoring(them.email, me.email))) {
+  if (!isBotId(them.id) && (await isIgnoring(them.id, mineId))) {
     return { refused: NOT_TAKING_GAMES };
   }
   if (isBotId(them.id)) await ensureBotMembers();
 
-  const seats = seatsForRematch(origin, { id: mineId, name: me.name || "" }, { id: them.id, name: them.name });
+  const seats = seatsForRematch(origin, { id: mineId, name: me.name }, { id: them.id, name: them.name });
   if (seats === null) return { refused: NOT_YOUR_GAME };
   return {
     carried: {
@@ -303,11 +310,15 @@ async function askingSomebody(
   /** The colour the caller keeps, where a position has settled one. Black otherwise. */
   keep: Stone | null,
 ): Promise<{ refused: CreationRefusal } | { seats: AgainstSeats; offerTo: string | null }> {
-  const me = await currentSession();
+  /*
+   * A MEMBER, BY ID, AND THE NAME OFF THEIR ROW. This asked for an address, so a
+   * member who came in with an invite code could not challenge anybody or play a
+   * computer player — every one of those answered 401.
+   */
+  const me = await currentMemberRow();
   const signIn: CreationRefusal = { status: 401, error: "Sign in to challenge someone." };
-  if (!me?.email) return { refused: signIn };
-  const mineId = await currentMemberId();
-  if (mineId === null) return { refused: signIn };
+  if (me === null) return { refused: signIn };
+  const mineId = me.id;
   const other =
     challengeId !== undefined
       ? await prisma.member.findUnique({ where: { id: challengeId } })
@@ -315,9 +326,9 @@ async function askingSomebody(
   if (other === null) return { refused: NO_SUCH_MEMBER };
   // A challenge is addressed to somebody who can answer it — or to a computer, which always can.
   const computer = isBotId(other.id);
-  if (other.email === null && !computer) return { refused: NO_SUCH_MEMBER };
+  if (!computer && !listable(other)) return { refused: NO_SUCH_MEMBER };
   // Nobody is ignored by a computer, so there is no list to consult.
-  if (!computer && other.email !== null && (await isIgnoring(other.email, me.email))) {
+  if (!computer && (await isIgnoring(other.id, mineId))) {
     return { refused: NOT_TAKING_GAMES };
   }
 

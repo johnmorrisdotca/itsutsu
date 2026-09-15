@@ -103,7 +103,6 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
   if (!reader.signedIn) {
     return <PublicCatalogue view={view} say={say} />;
   }
-  const email = reader.email;
 
   const claims = seatClaims((await cookies()).getAll());
   /*
@@ -141,7 +140,13 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
      * and the list is kept by address. An invite holder has no address, so
      * there is nobody for them to ignore.
      */
-    email === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(email),
+    /*
+     * BY THE READER'S MEMBER ID, which is how the ignore list is kept now. This
+     * passed the ADDRESS after the list moved to ids — both strings, so it
+     * compiled, and it asked the list about an owner nobody is — and before
+     * that, an invite holder had no address and so nobody to ignore at all.
+     */
+    reader.memberId === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(reader.memberId),
   ]);
 
   /*

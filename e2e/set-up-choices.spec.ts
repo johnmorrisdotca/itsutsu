@@ -205,7 +205,7 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
     try {
       for (const [at, one] of crowd.entries()) {
         await seedMember(one);
-        const starred = await context.request.post("/api/buddies", { data: { email: one.email } });
+        const starred = await context.request.post("/api/buddies", { data: { memberId: await memberIdFor(one.email) } });
         expect(starred.status(), await starred.text()).toBeLessThan(300);
         await seenDaysAgo(one.email, 2 + at);
       }

@@ -3,6 +3,7 @@ import "server-only";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import type { GameDefaults } from "@/components/game/gameDefaults";
 import { isBotId } from "@/lib/bots/bots";
+import { listable } from "@/lib/social/listable";
 import { gamesPlayedBy } from "@/lib/bots/bots.constants";
 import { DEFAULT_SETTINGS, boardSizesFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -119,18 +120,21 @@ export async function setUpFrom({
 async function personNamed(id: string): Promise<SetUpOpponent | null> {
   const member = await prisma.member.findUnique({
     where: { id },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, botTier: true, unclaimableBecause: true },
   });
   if (member === null) return null;
   const computer = isBotId(member.id);
   /*
    * Somebody a game can actually be offered to. A kept record — a name and a
-   * history and no address, because they never signed in — is nobody to
+   * history and no account, because they never signed in — is nobody to
    * challenge, and the creation route says the same thing about it. A computer
-   * player has no address either and is the one exception, because it does not
-   * need one to answer.
+   * player is the other kind of row that is not a person, and the one exception,
+   * because it does not need to be one to answer.
+   *
+   * By the row's own markers, not by an address: "has an address" also turned
+   * away every member who came in with an invite code. See `listable`.
    */
-  if (member.email === null && !computer) return null;
+  if (!computer && !listable(member)) return null;
   return { id: member.id, name: member.name, computer };
 }
 

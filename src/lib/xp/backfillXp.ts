@@ -399,15 +399,14 @@ function add(
   into.set(type, { events: held.events + 1, points: held.points + points });
 }
 
-/** A buddy link as the planner wants it, from a row keyed by folded addresses. */
-export function buddyLinkFor(
-  row: { owner: string; buddy: string; createdAt: Date },
-  idFor: ReadonlyMap<string, string>,
-): BackfillBuddy | null {
-  const owner = idFor.get(row.owner);
-  const buddy = idFor.get(row.buddy);
-  /* An address on a link that no member row answers to any more. Nothing to
-     key, so nothing to say — and `wonVsBuddy` is not paid on a guess. */
-  if (owner === undefined || buddy === undefined) return null;
-  return { owner, buddy, since: row.createdAt };
+/**
+ * A buddy link as the planner wants it, from a row keyed by member ids.
+ *
+ * It was keyed by two folded addresses and had to be translated through every
+ * member's address first, returning null for an address no row answered to.
+ * The list holds ids now, which is what the planner was always keyed on, and a
+ * row whose member is gone is removed with them by the foreign key.
+ */
+export function buddyLinkFor(row: { ownerId: string; buddyId: string; createdAt: Date }): BackfillBuddy {
+  return { owner: row.ownerId, buddy: row.buddyId, since: row.createdAt };
 }

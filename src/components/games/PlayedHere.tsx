@@ -6,6 +6,7 @@ import { findMembersByNames, type NamedMember } from "@/lib/auth/members";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { playerKey } from "@/lib/rating/playerKey";
 import { buddyMemberIds } from "@/lib/social/buddies";
+import { listable } from "@/lib/social/listable";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 
 import { GameCount } from "@/components/games/GameCount";
@@ -71,7 +72,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
    */
   const reader = await currentReader();
   if (!reader.signedIn) return null;
-  const mine = reader.hasAccount ? reader.email : null;
+  const mine = reader.memberId;
 
   const [played, counts] = await Promise.all([recentGamesOf(variant), fetchPlayedCounts()]);
 
@@ -201,7 +202,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
                   compact
                   testId="played-here-actions"
                   name={name}
-                  email={member.email}
+                  person={listable({ botTier: member.botTier ?? null, unclaimableBecause: member.unclaimableBecause ?? null })}
                   memberId={member.id}
                   isBuddy={member.id !== undefined && buddies.has(member.id)}
                   ignoring={member.id !== undefined && ignored.has(member.id)}

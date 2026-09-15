@@ -5,7 +5,7 @@ import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { renameMember } from "@/lib/auth/members";
-import { countMembers, listMembers, setBanned } from "@/lib/auth/memberRoster";
+import { countMembers, listMembers, memberSummaryFor, setBanned } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 
@@ -66,9 +66,15 @@ export async function GET(request: Request) {
   }
 }
 
+/**
+ * Which member, BY ID. It was their address, which a member who came in with an
+ * invite code does not have — so the operator could neither shut such an account
+ * nor take an abusive name off it. Whether the CALLER may do this at all is still
+ * the address, through `currentAdmin`: the operator is named in the deployment.
+ */
 const changeSchema = z.union([
-  z.object({ email: z.string().min(3).max(200), banned: z.boolean(), note: z.string().max(280).optional() }),
-  z.object({ email: z.string().min(3).max(200), name: z.string().max(60) }),
+  z.object({ id: z.string().min(1).max(64), banned: z.boolean(), note: z.string().max(280).optional() }),
+  z.object({ id: z.string().min(1).max(64), name: z.string().max(60) }),
 ]);
 
 /**
@@ -100,17 +106,25 @@ export async function PATCH(request: Request) {
        * is read on every request and the control that would undo it is behind
        * the door it just shut. An account authorised by ADMIN_EMAILS is shut
        * by changing that setting, which is a deliberate act elsewhere.
+       *
+       * Their own row by id where the operator has one, and by address as well,
+       * since an operator signed in by token may have no member row to compare.
        */
-      const target = parsed.data.email.trim().toLowerCase();
-      if (parsed.data.banned && target === (me.email ?? "").trim().toLowerCase()) {
+      const target = await memberSummaryFor(parsed.data.id);
+      if (target === null) return notFound("No such member.");
+      const operatorAddress = (me.email ?? "").trim().toLowerCase();
+      const theirOwn =
+        parsed.data.id === (await currentMemberId()) ||
+        (target.email !== null && operatorAddress !== "" && target.email.trim().toLowerCase() === operatorAddress);
+      if (parsed.data.banned && theirOwn) {
         return badRequest("You cannot shut your own account. An operator is named in the deployment, not in this list.");
       }
-      const member = await setBanned(parsed.data.email, parsed.data.banned, parsed.data.note ?? "");
+      const member = await setBanned(parsed.data.id, parsed.data.banned, parsed.data.note ?? "");
       if (member === null) return notFound("No such member.");
       return NextResponse.json(member, { headers: NO_STORE });
     }
 
-    const renamed = await renameMember(parsed.data.email, parsed.data.name);
+    const renamed = await renameMember(parsed.data.id, parsed.data.name);
     if (renamed === null) return badRequest("That name is not free.");
     return NextResponse.json(renamed, { headers: NO_STORE });
   } catch (error) {

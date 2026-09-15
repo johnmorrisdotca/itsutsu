@@ -7,7 +7,7 @@ import { playerKey } from "@/lib/rating/playerKey";
 import { isAdminEmail } from "./admin";
 import { canBeClaimed } from "./memberId";
 import { alwaysListed } from "./alwaysListed";
-import { foldEmail, type NamedMember } from "./members";
+import type { NamedMember } from "./members";
 import { memberKind, type MemberKind } from "./memberKind";
 
 /**
@@ -124,17 +124,19 @@ export async function countMembers(): Promise<number> {
 }
 
 /**
- * One member, by address, in the shape the operator's list uses.
+ * One member, by id, in the shape the operator's list uses.
  *
  * `setBanned` used to fetch a thousand members and look through them for the
  * one it had just written, which is a table scan to answer a question it
  * already knew the answer to — and which returned nothing at all once the
  * site had more members than that, so shutting an account would have read as
  * having failed while having worked.
+ *
+ * By id rather than by address, so the operator can reach a member who came in
+ * with an invite code — who has none — as well as anybody else.
  */
-export async function memberSummaryFor(email: string): Promise<MemberSummary | null> {
-  const key = foldEmail(email);
-  const row = await prisma.member.findUnique({ where: { email: key }, select: MEMBER_SUMMARY_SELECT });
+export async function memberSummaryFor(memberId: string): Promise<MemberSummary | null> {
+  const row = await prisma.member.findUnique({ where: { id: memberId }, select: MEMBER_SUMMARY_SELECT });
   return row === null ? null : toSummary([row], null)[0];
 }
 
@@ -212,14 +214,14 @@ function toSummary(rows: SummaryRow[], youId: string | null): MemberSummary[] {
  * put that invite back, because a code is a thing the operator hands out and
  * this one has been spent on a decision.
  */
-export async function setBanned(email: string, banned: boolean, note = ""): Promise<MemberSummary | null> {
-  const key = foldEmail(email);
-  const row = await prisma.member.findUnique({ where: { email: key }, select: { invitedWith: true } });
+export async function setBanned(memberId: string, banned: boolean, note = ""): Promise<MemberSummary | null> {
+  // By id: a member who came in with an invite code has no address, and has to be shut out as surely as anybody.
+  const row = await prisma.member.findUnique({ where: { id: memberId }, select: { invitedWith: true } });
   if (row === null) return null;
   await prisma.member.update({
-    where: { email: key },
+    where: { id: memberId },
     data: banned ? { bannedAt: new Date(), bannedNote: note.trim().slice(0, 280) } : { bannedAt: null, bannedNote: "" },
   });
   if (banned && row.invitedWith !== "") await revokeInviteCode(row.invitedWith).catch(() => undefined);
-  return memberSummaryFor(key);
+  return memberSummaryFor(memberId);
 }

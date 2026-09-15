@@ -35,7 +35,7 @@ type Past = { id: string; variant: string; blackMemberId: string; whiteMemberId:
 
 let events: Event[] = [];
 let past: Past[] = [];
-/** `owner\0buddy`, both addresses, as the Buddy table's unique key really is. */
+/** `ownerId\0buddyId`, both member ids, as the Buddy table's unique key really is. */
 let buddies: Set<string> = new Set();
 /** `Player` rows on the ladder of people, for the upset bonus. A member may hold two. */
 let players: { memberId: string; rating: number; ratedGames: number; key?: string; updatedAt?: Date }[] = [];
@@ -66,9 +66,9 @@ const prismaFake = {
         .map((row, index) => ({ key: `row-${index}`, updatedAt: new Date(0), ...row })),
   },
   buddy: {
-    findUnique: async ({ where }: { where: { owner_buddy: { owner: string; buddy: string } } }) =>
-      buddies.has(`${where.owner_buddy.owner}\0${where.owner_buddy.buddy}`)
-        ? { owner: where.owner_buddy.owner }
+    findUnique: async ({ where }: { where: { ownerId_buddyId: { ownerId: string; buddyId: string } } }) =>
+      buddies.has(`${where.ownerId_buddyId.ownerId}\0${where.ownerId_buddyId.buddyId}`)
+        ? { ownerId: where.ownerId_buddyId.ownerId }
         : null,
   },
   game: {
@@ -360,11 +360,11 @@ describe("a different subject is a different award", () => {
 describe("winning, through the writer", () => {
   it("pays the person, the buddy, and the first win at that game", async () => {
     member("me", { email: "me@example.test" });
-    member("pal", { email: "PAL@example.test" });
-    // The buddy list is keyed by folded addresses, so the row is written folded
-    // and the read has to fold too — a member who signed in as PAL@ is the same
-    // person as pal@.
-    buddies.add("me@example.test\0pal@example.test");
+    // No address: a buddy who came in with an invite code is a buddy all the same.
+    member("pal", {});
+    // The buddy list is keyed by member ids, which is what a seat holds, so the
+    // row is written as the two ids and read the same way — no address involved.
+    buddies.add("me\0pal");
 
     await recordPlayed(finished({ black: "me", white: "pal", winner: "black", id: "beat-pal" }));
 

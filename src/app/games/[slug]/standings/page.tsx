@@ -16,6 +16,7 @@ import { currentReader } from "@/lib/auth/currentReader";
 import { findMembersByNames, type NamedMember } from "@/lib/auth/members";
 import { playerKey } from "@/lib/rating/playerKey";
 import { buddyMemberIds } from "@/lib/social/buddies";
+import { listable } from "@/lib/social/listable";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 
 export const metadata = { title: "Standings 名人" };
@@ -63,19 +64,19 @@ export default async function GameChampionsPage({ params }: PageProps<"/games/[s
   const reader = await currentReader();
   const named = [...standings, ...againstComputers].map((one) => one.name);
   const [members, buddies, ignored] =
-    !reader.hasAccount || reader.email === null
+    reader.memberId === null
       ? [new Map<string, NamedMember>(), new Set<string>(), new Set<string>()]
       : await Promise.all([
           findMembersByNames(named) as Promise<Map<string, NamedMember>>,
-          buddyMemberIds(reader.email),
-          ignoredMemberIds(reader.email),
+          buddyMemberIds(reader.memberId),
+          ignoredMemberIds(reader.memberId),
         ]);
   const actionsFor = (standing: VariantStanding) => {
     const member = members.get(playerKey(standing.name));
     const id = member?.id;
     return (
       <PlayerActions
-        email={member?.email ?? null}
+        person={listable({ botTier: member?.botTier ?? null, unclaimableBecause: member?.unclaimableBecause ?? null })}
         memberId={id}
         isBuddy={id !== undefined && buddies.has(id)}
         ignoring={id !== undefined && ignored.has(id)}

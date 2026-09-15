@@ -106,7 +106,14 @@ export function JoinForm({
         return;
       }
 
-      router.replace(next);
+      /*
+       * A code that has just made an account goes to the welcome first, where
+       * the name is chosen — the same first page a member who came in by Google
+       * is shown. The account has a placeholder name until then, and a name is
+       * the one thing the site needs to ask.
+       */
+      const landed = (await response.json().catch(() => null)) as { welcome?: boolean } | null;
+      router.replace(landed?.welcome === true ? `/me?welcome=1&next=${encodeURIComponent(next)}` : next);
       router.refresh();
     } catch {
       setError("Could not reach the server.");

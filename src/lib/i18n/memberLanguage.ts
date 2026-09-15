@@ -14,13 +14,13 @@ import { languageAsPreferences, languageFrom } from "./languagePreference";
  * the players filter is kept — the preferences registry, one JSON column on
  * the member — and read back on every device that signs in.
  *
- * NO QUERY OF ITS OWN, AND NO NEW ONE ON ANY PAGE. Both halves ride
- * `memberRowFor`, the single row every server-rendered page already reads to
- * say who is here, `cache()`d for the rest of the request. `layout.tsx` asks
- * for the language before it renders the masthead, so this is now usually the
- * call that populates that cache rather than one that adds to it: the same
- * one read, in a different order. A reader who is not signed in costs
- * nothing at all — there is no address to look up.
+ * NO QUERY OF ITS OWN, AND NO NEW ONE ON ANY PAGE. Both halves ride the
+ * signed-in member's row, the single row every server-rendered page already
+ * reads to say who is here, `cache()`d for the rest of the request. `layout.tsx`
+ * asks for the language before it renders the masthead, so this is now usually
+ * the call that populates that cache rather than one that adds to it: the same
+ * one read, in a different order. A reader who is not signed in costs nothing at
+ * all — there is no member to look up.
  *
  * AND NOTHING IS READ IN THE GATE. `proxy.ts` runs on every request to the
  * site and must never reach the database — that is a cost rule and a
@@ -34,8 +34,11 @@ import { languageAsPreferences, languageFrom } from "./languagePreference";
  */
 
 /**
- * What this member's account says, or null when nobody is signed in, the
- * account has never chosen, or the database would not answer.
+ * What the signed-in member's account says, or null when nobody is signed in,
+ * the account has never chosen, or the database would not answer.
+ *
+ * `memberId` is the reader's own — passed rather than read again, since the
+ * caller already has it — and says only whether there is an account to ask.
  *
  * A FAILURE IS SILENCE, NOT ENGLISH. `<html lang>` comes off the back of this
  * on every page, and the site already treats the member row as something a
@@ -45,10 +48,10 @@ import { languageAsPreferences, languageFrom } from "./languagePreference";
  * and then the browser's own header answer, which is what they did before any
  * of this existed.
  */
-export async function languageOnAccount(email: string | null): Promise<Locale | null> {
-  if (email === null) return null;
+export async function languageOnAccount(memberId: string | null): Promise<Locale | null> {
+  if (memberId === null) return null;
   try {
-    return languageFrom(await storedPreferencesFor(email));
+    return languageFrom(await storedPreferencesFor());
   } catch (error) {
     console.error("Could not read the language on the account.", error);
     return null;
@@ -61,12 +64,11 @@ export async function languageOnAccount(email: string | null): Promise<Locale | 
  * ONCE PER REQUEST, and that is what `cache()` is doing here rather than an
  * optimisation. `currentLocale` is asked for the language five times on an
  * ordinary page — the document element, the colophon, the page itself — and
- * the row `memberRowFor` hands back is the row as it was when this request
- * started. So the second caller would compare the new choice against the
- * stale column, find them different, and write again; five callers, five
- * updates. `touchMember` is `cache()`d against the identical hazard, and says
- * so: "three callers handed the same stale stamp would otherwise each have
- * written it."
+ * the member row hands back the row as it was when this request started. So the
+ * second caller would compare the new choice against the stale column, find
+ * them different, and write again; five callers, five updates. `touchMember` is
+ * `cache()`d against the identical hazard, and says so: "three callers handed
+ * the same stale stamp would otherwise each have written it."
  *
  * Nothing to keep — nobody signed in, or no choice just made — and nothing
  * happens, which is nearly every request. A member whose account already
@@ -78,9 +80,9 @@ export async function languageOnAccount(email: string | null): Promise<Locale | 
  * lost is the remembering, and the next click will try again.
  */
 export const keepChosenLanguage = cache(
-  async (email: string | null, chosen: Locale | null): Promise<void> => {
-    if (email === null || chosen === null) return;
-    await rememberPreferences(email, languageAsPreferences(chosen)).catch((error: unknown) => {
+  async (memberId: string | null, chosen: Locale | null): Promise<void> => {
+    if (memberId === null || chosen === null) return;
+    await rememberPreferences(languageAsPreferences(chosen)).catch((error: unknown) => {
       console.error("Could not remember the language chosen.", error);
     });
   },

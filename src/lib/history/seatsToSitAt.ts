@@ -4,7 +4,6 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { ignoredMemberIds } from "@/lib/social/ignores";
-import { currentEmail } from "@/lib/auth/currentSession";
 import { fetchOpenSeats } from "./openGames";
 import { seatOnBoard } from "./seatOnBoard";
 import type { GameSummary } from "./gameHistory.types";
@@ -30,16 +29,14 @@ import type { GameSummary } from "./gameHistory.types";
  *    game, so an offer keyed by cookie is one the site would then reject —
  *    worse than no offer at all.
  *
- *  - ONE POSTED BY SOMEBODY IGNORED, also by member id. The ignore list is
- *    kept by address and a seat is keyed by id, so asking a set of addresses
- *    whether it holds an id is a question with one answer — which is how the
- *    lobby's copy of this managed to do nothing at all for a while.
+ *  - ONE POSTED BY SOMEBODY IGNORED, also by member id — which is how the ignore
+ *    list is kept now, so the reader's own id is all this needs to ask it.
  */
 export async function seatsToSitAt(): Promise<SeatOnBoard[]> {
-  const [mine, email] = await Promise.all([currentMemberId(), currentEmail()]);
+  const mine = await currentMemberId();
   const [rows, ignored] = await Promise.all([
     fetchOpenSeats(),
-    email === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(email),
+    mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),
   ]);
 
   const theirs = (game: GameSummary) => {

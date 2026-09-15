@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { fetchProfile, renameMember, updateProfile, type ProfileUpdate } from "@/lib/auth/members";
 import { AWAY_DAYS_A_YEAR, setAway } from "@/lib/social/vacation";
 import { PLAYER_SESSION_DAYS, SESSION_COOKIE, sessionCookieOptions, signSession } from "@/lib/auth/session";
@@ -83,26 +83,33 @@ function knownTimeZone(zone: string): boolean {
 }
 
 /**
- * Changes the signed-in member's display name. The name is what other
- * players see and what the record is kept under, so it must be theirs alone.
- * The session cookie is minted again so the header shows the new name at once.
+ * Changes the signed-in member's display name and profile. The name is what
+ * other players see and what the record is kept under, so it must be theirs
+ * alone. The session cookie is minted again so the header shows the new name at
+ * once.
+ *
+ * BY MEMBER ID, every write. It was by address, so a member who came in with an
+ * invite code — no address — was told "No profile yet: sign in with Google
+ * first" when they tried to choose the name the welcome asks them for.
  */
 export async function PATCH(request: Request) {
   try {
     const tooMany = overLimit(request, "profile");
     if (tooMany !== null) return tooMany;
 
-    const me = await currentSession();
-    if (!me?.email) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+    const [me, mine] = await Promise.all([currentSession(), currentMemberId()]);
+    if (me === null || mine === null) {
+      return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+    }
 
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = nameSchema.safeParse(body);
     if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "That name will not do.");
 
-    const member = await fetchProfile(me.email);
+    const member = await fetchProfile(mine);
     if (member === null) {
-      return NextResponse.json({ error: "No profile yet: sign in with Google first." }, { status: 404, headers: NO_STORE });
+      return NextResponse.json({ error: "There is no account behind this session." }, { status: 404, headers: NO_STORE });
     }
     const { name, awayFrom, awayUntil, preferences, timeZoneFrom, ...rest } = parsed.data;
     /*
@@ -131,7 +138,7 @@ export async function PATCH(request: Request) {
       const from = awayFrom ? new Date(awayFrom) : null;
       const until = awayUntil ? new Date(awayUntil) : null;
       if ((from !== null && Number.isNaN(from.getTime())) || (until !== null && Number.isNaN(until.getTime()))) return badRequest("Those are not dates.");
-      const away = await setAway(me.email, from, until);
+      const away = await setAway(mine, from, until);
       if (!away.ok) {
         return NextResponse.json(
           { error: away.reason === "allowance" ? `Only ${AWAY_DAYS_A_YEAR} away days a year; ${away.used} used.` : "The range must end after it starts." },
@@ -139,7 +146,7 @@ export async function PATCH(request: Request) {
         );
       }
     }
-    if (Object.keys(profile).length > 0) await updateProfile(me.email, profile);
+    if (Object.keys(profile).length > 0) await updateProfile(mine, profile);
     /*
      * XP for a page that now says something about somebody, decided from the
      * values as they NOW STAND rather than from the patch: asking for a country
@@ -150,27 +157,27 @@ export async function PATCH(request: Request) {
      */
     const touched = plain.country !== undefined || plain.bio !== undefined;
     const saved = { country: plain.country ?? member.country, bio: plain.bio ?? member.bio };
-    await awardProfileXp({ memberId: member.id ?? null, row: saved, touched });
+    await awardProfileXp({ memberId: mine, row: saved, touched });
     // Laid over what the row already holds — read once above, not again here.
     // The zone's source rides the same write as the registry change beside it.
     const remembered = { ...(kept?.ok ? kept.patch : {}), ...zone.patch };
-    if (Object.keys(remembered).length > 0) await writePreferences(me.email, member.preferences, remembered);
+    if (Object.keys(remembered).length > 0) await writePreferences(mine, member.preferences, remembered);
 
-    let shown = me.name ?? "";
+    let shown = member.name;
     const response = NextResponse.json({ ok: true }, { headers: NO_STORE });
     if (name !== undefined) {
-      const member = await renameMember(me.email, name);
-      if (member === null) {
+      const renamed = await renameMember(mine, name);
+      if (renamed === null) {
         return NextResponse.json(
           { error: "That name is not free: somebody here goes by it, it is kept for a remembered player, or a record already stands under it." },
           { status: 409, headers: NO_STORE },
         );
       }
-      shown = member.name;
+      shown = renamed.name;
       // A name they chose, once ever. Only on the rename that was allowed: the
       // three refusals above return before this.
-      await awardNameSet(member.id ?? null);
-      const token = await signSession({ ...me, name: member.name });
+      await awardNameSet(renamed.id);
+      const token = await signSession({ ...me, name: renamed.name });
       if (token !== null) response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(PLAYER_SESSION_DAYS));
     }
     return NextResponse.json({ ok: true, name: shown }, { headers: response.headers });
