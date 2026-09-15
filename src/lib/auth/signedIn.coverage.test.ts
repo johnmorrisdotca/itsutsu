@@ -106,7 +106,7 @@ const SIGNED_IN_EXCEPTIONS: { path: string; expression: string; reason: string }
     reason: "The helper itself: `SIGNED_OUT`, the reader with no session.",
   },
   {
-    path: "src/app/games/page.tsx",
+    path: "src/app/games/PublicCatalogue.tsx",
     expression: "false",
     reason: "`PublicCatalogue`, which the lobby draws only after `currentReader` has found no session.",
   },
