@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { openSetup, ready } from "./support";
+import { openSetup, ready, readyHere } from "./support";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "../src/lib/gomoku/gomoku.constants";
 
@@ -146,6 +146,9 @@ test.describe("rules and learning", () => {
     // The first family is open; the rest are folded, so the page stays short.
     await expect(families.nth(1).getByTestId("game-name").first()).toBeHidden();
     const small = families.filter({ hasText: "Small boards" });
+    // Opened once the page has hydrated, waiting on the strip inside the family:
+    // a summary clicked before then can end up shut again (record-text, PR #26).
+    await readyHere(small.locator('[data-testid="game-stats"]').first());
     await small.locator("summary").click();
     // The families are for looking around: a game is read about here and
     // started above, so nothing in this list drops straight onto a board.

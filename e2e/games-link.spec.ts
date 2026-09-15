@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import { GAME_FAMILIES, gamesShownIn } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_DISPLAY } from "../src/lib/gomoku/variants.constants";
 import { slugFor } from "../src/lib/gomoku/slugs";
+import { readyHere } from "./support";
 import { namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
@@ -71,9 +72,12 @@ test.describe("a game's name leads to that game", () => {
     const open = page.getByTestId("lobby-family").first();
     await expect(open.getByTestId("game-name").first()).toBeVisible();
 
-    // And a folded one opens to show its own.
+    // And a folded one opens to show its own. Once the page has hydrated: a
+    // summary clicked before then can end up shut again, which is how
+    // record-text flaked on PR #26. The strip inside the family carries the mark.
     const folded = page.getByTestId("lobby-family").nth(1);
     await expect(folded.getByTestId("game-name").first()).toBeHidden();
+    await readyHere(folded.locator('[data-testid="game-stats"]').first());
     await folded.locator("summary").click();
     await expect(folded.getByTestId("game-name").first()).toBeVisible();
 
