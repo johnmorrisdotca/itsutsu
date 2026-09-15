@@ -9,34 +9,70 @@
 /**
  * HOW OFTEN A LIVE BOARD ASKS. Numbers rather than words, but the same group:
  * `useLiveGame` spends them and `pollCadence.ts` decides between them.
+ *
+ * Every ask is a function call on a paid account. With the numbers these
+ * replaced — every 2.5 seconds in front, every 30 behind, for an hour after the
+ * last move — one board left open made 1,440 asks an hour while looked at and
+ * 120 while hidden, counted by `e2e/live-poll-cadence.spec.ts`. John,
+ * 2026-09-15: "we have to stop doing things like that that will eat up CPU
+ * time."
  */
-
-/** How often a waiting board asks whether the other side has moved. */
-export const POLL_MS = 2500;
 
 /**
- * How often it asks while the tab is in the background.
+ * How often a board somebody is looking at asks whether the other side has
+ * moved.
  *
- * The board must still be current when a phone is unlocked or a tab is
- * brought forward, but nobody is reading it in the meantime, so it need not
- * be current every two and a half seconds. At that rate one forgotten tab on
- * an unfinished game asks the server thirty-four thousand times a day, and
- * every ask is a database read no cache can stand in front of.
+ * Fifteen seconds is the floor the site owner set, and it is enough: a move
+ * arriving a few seconds late cannot be told apart from the other side
+ * thinking. A hidden tab does not ask at all — see `pollInterval`.
  */
-export const BACKGROUND_POLL_MS = 30_000;
+export const POLL_MS = 15_000;
 
 /**
- * How long a background tab keeps asking about a game where nothing is
- * happening, before it stops asking altogether.
+ * How long a board keeps asking with nothing happening — no change arriving
+ * on the board, and nothing done by the reader — before it stops asking.
  *
- * These are games played over days. A tab left open on one where neither side
- * has moved for an hour is not waiting for anything, and thirty seconds is
- * still two and a half thousand questions a day to be told the same thing.
- * Nothing is lost by stopping: `revalidateOnFocus` fetches the moment the tab
- * is looked at again, so the board a person comes back to is current whether
- * it was asking or not. A move landing resets the hour.
+ * SIX MINUTES, because the fastest move clock this site offers is five: in a
+ * timed game a move can fairly arrive up to five minutes after the last, and
+ * a board must not go quiet inside one allowed move. Past that nobody is
+ * playing in real time — two people at their boards move, press, chat or
+ * claim a flag well inside it — and the game has become a correspondence game,
+ * whose board need only be current when somebody looks. On `POLL_MS` that is
+ * at most twenty-four asks after the last sign of life, where it was an hour.
+ *
+ * Nothing is lost by stopping: the board says it has stopped
+ * (`LIVE_PAUSED_COPY`), and a press, a key, focus or the tab being shown wakes
+ * it, and it asks at once. `pollCadence.test.ts` holds it above the fastest
+ * clock and under ten minutes.
  */
-export const IDLE_STOP_MS = 60 * 60 * 1000;
+export const IDLE_STOP_MS = 6 * 60 * 1000;
+
+/**
+ * The fastest the end-to-end suite's relief may make a board ask — see
+ * `pollEvery`.
+ *
+ * Two and a half seconds, not one, and not for the suite's comfort: SWR drops
+ * any ask made within its `dedupingInterval` (two seconds) of the last, so a
+ * board told to ask every second really asks every two, while saying one. At
+ * the suite's relief of 20 that is exactly what happened, and the cadence spec
+ * caught the page claiming a number it did not keep. Above the dedupe, the
+ * cadence a board states is the cadence it runs — and it is the two and a half
+ * seconds the two-seat specs were written against.
+ */
+export const POLL_RELIEF_FLOOR_MS = 2_500;
+
+/**
+ * What a board that has stopped asking says, and the button that wakes it.
+ *
+ * Said, because a board that stopped in silence would show an old position as
+ * though it were the current one — which is the one thing a live board must
+ * never do. Any press or key on the page wakes it too; the button is there so
+ * nobody has to know that.
+ */
+export const LIVE_PAUSED_COPY = {
+  line: "Nothing has happened here for a while, so this board has stopped checking for moves.",
+  check: "Check now",
+} as const;
 
 /**
  * SETTLING A GAME BEFORE IT EXISTS, IN WORDS.

@@ -17,7 +17,8 @@ import {
 } from "@/lib/gomoku/engine";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
-import { SectionTitle } from "@/components/ui/Controls";
+import { Button, SectionTitle } from "@/components/ui/Controls";
+import { LIVE_PAUSED_COPY } from "./live.constants";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
 import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -78,7 +79,7 @@ export function SharedGame({
     () => readTurned(initial.id),
     () => null,
   );
-  const { game: detail, mutate } = useLiveGame(initial);
+  const { game: detail, mutate, paused, resume, pollEvery } = useLiveGame(initial);
   const state = settleFromRecord(replayGame(detail), detail);
   /*
    * Three answers to which way up, in order of how particular they are: what
@@ -222,6 +223,8 @@ export function SharedGame({
     <div
       className="flex w-full flex-col gap-4"
       data-testid="shared-game"
+      // The cadence this board asks at while awake, said for the spec that counts its asks.
+      data-poll-every={pollEvery}
       {...readyMark(useHydrated())}
     >
       <TurnBanner
@@ -235,6 +238,14 @@ export function SharedGame({
         finishedAt={detail.status === "finished" ? detail.lastMoveAt : null}
       />
       {notice}
+
+      {/* A board that has stopped asking says so, rather than showing an old position as the current one. */}
+      {paused ? (
+        <p className="flex flex-wrap items-center gap-2 text-sm text-muted" data-testid="live-paused">
+          <span>{LIVE_PAUSED_COPY.line}</span>
+          <Button onClick={resume}>{LIVE_PAUSED_COPY.check}</Button>
+        </p>
+      ) : null}
 
       {error !== null ? (
         <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.warn}`}>

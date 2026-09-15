@@ -8,7 +8,7 @@ import type { GameState } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { NO_CURRENT_NAMES } from "./currentNames";
 import { SUMMARY_SELECT, toGameMove, toSummary } from "./gameHistory";
-import { type SettledPosition, settledPosition } from "./settledTurn";
+import { NOTHING_SETTLED, type SettledPosition, settledPosition, settledTurn } from "./settledTurn";
 import type { GameMove } from "./gameHistory.types";
 
 /**
@@ -32,6 +32,8 @@ export const QUEUE_SELECT = {
   whiteMemberId: true,
   settledStatus: true,
   settledToPlay: true,
+  /** The row as this read saw it, so a pair filled back after a replay cannot land on a newer one. See `fillTheTurnBack`. */
+  updatedAt: true,
 } as const;
 
 /**
@@ -117,7 +119,55 @@ export async function replaysFor(rows: readonly SeatRow[]): Promise<Map<string, 
      */
     replayed.set(row.id, replayGame({ ...toSummary(row, NO_CURRENT_NAMES), moves: byGame.get(row.id) ?? [] }));
   }
+  await fillTheTurnBack(wanted, replayed);
   return replayed;
+}
+
+/**
+ * WRITES WHAT A REPLAY FOUND BACK ONTO ITS ROW, so the next read of that game
+ * replays nothing.
+ *
+ * On 2026-09-15 production held fifteen active games, ten with nothing stored —
+ * seven of them last moved before these columns existed — and every /play load
+ * and every `/api/games/mine` the header badge asks for (on each page and each
+ * focus) replayed all ten. No migration and no script: a row fixes itself the
+ * first time a list has to replay it, and costs nothing after.
+ *
+ * THROUGH `settledTurn`, the function the move path writes with, so a filled
+ * row and a moved row cannot disagree about what one position means.
+ *
+ * ONLY ONTO THE ROW THIS READ SAW. The write matches a row whose status is still
+ * null (`NOTHING_SETTLED`) AND whose `updatedAt` is still the one read above.
+ * Null alone is not enough: a rules change writes `UNSETTLED` without a stone
+ * being played (`liveGameSettings.ts`), and a move can land between the row
+ * being read and its moves being read — either way this replay is of a position
+ * that has gone, and a null check would let it land on top of the new one. With
+ * `updatedAt` in the match, any write since the read makes this one match
+ * nothing, and a later read fills the row instead. A row that carries a pair is
+ * never matched at all, so nothing a writer settled is ever rewritten here.
+ *
+ * A failed write is logged and dropped, never thrown: the list already has its
+ * answer from the replay, and a row left null costs a replay next time, which
+ * is what it cost before.
+ */
+async function fillTheTurnBack(
+  rows: readonly SeatRow[],
+  replayed: ReadonlyMap<string, GameState>,
+): Promise<void> {
+  await Promise.all(
+    rows.map(async (row) => {
+      const state = replayed.get(row.id);
+      if (state === undefined) return;
+      try {
+        await prisma.game.updateMany({
+          where: { id: row.id, updatedAt: row.updatedAt, ...NOTHING_SETTLED },
+          data: { ...settledTurn(state) },
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }),
+  );
 }
 
 const MOVE_COLUMNS = {

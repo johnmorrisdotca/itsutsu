@@ -58,7 +58,12 @@ const MAY_NAME_THE_COLUMNS = new Map([
    * the same reader on the same two columns, in a module of its own — so the
    * entry MOVED rather than a second one being added.
    */
-  [join(HISTORY, "myGamesRows.ts"), "selects them to read; never assigns either"],
+  /*
+   * It also fills a null pair back after replaying a row — through
+   * `...settledTurn(state)` and `NOTHING_SETTLED`, so neither column is assigned
+   * by hand there either. Its names here are the select's.
+   */
+  [join(HISTORY, "myGamesRows.ts"), "selects them to read, and fills a null pair back only through settledTurn"],
 ]);
 
 /**

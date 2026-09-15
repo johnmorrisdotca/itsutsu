@@ -13,6 +13,20 @@ const frameAncestors = embedAllowList ? `'self' ${embedAllowList}` : "'self'";
 
 const nextConfig: NextConfig = {
   /*
+   * THE SUITE'S RELIEF, HANDED TO THE BROWSER.
+   *
+   * A live board decides its own cadence in the browser (`pollEvery` in
+   * src/components/live/pollCadence.ts), and the browser cannot read the
+   * server's environment. So the one knob the end-to-end suite already sets,
+   * RATE_LIMIT_RELIEF, is written into the bundle here under a name of its
+   * own, and no `.env` needs a new line. It changes nothing in production:
+   * `pollEvery` refuses any relief when NODE_ENV is production before it reads
+   * this, and its unit test fails if that refusal goes.
+   */
+  env: {
+    LIVE_POLL_RELIEF: process.env.RATE_LIMIT_RELIEF ?? "",
+  },
+  /*
    * The backlog page and the Admin card read CHANGELOG.md at request time, so
    * the release history is whatever the deployed commit actually says. Next
    * only ships the files it can see being imported, and a path read at runtime

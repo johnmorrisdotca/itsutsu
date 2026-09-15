@@ -50,10 +50,18 @@ export function EmbedStats({
   const query = new URLSearchParams({ token });
   if (player !== null) query.set("player", player);
 
+  /*
+   * LOADED ONCE, NOT POLLED. This asked every minute for as long as somebody
+   * else's page stayed open in front of a reader — sixty function calls an hour
+   * per open embed, each a count over every finished game — to refresh a total
+   * nobody watches tick. SWR asks again when the host's tab is shown again
+   * (`revalidateOnFocus`, its default), which is when a newer number can be
+   * read. A hidden tab never asked: that was SWR's default too.
+   */
   const { data } = useSWR<EmbedSummary>(
     `/api/embed/summary?${query.toString()}`,
     fetcher,
-    { refreshInterval: 60_000, shouldRetryOnError: false },
+    { shouldRetryOnError: false },
   );
 
   if (data === undefined) return null;

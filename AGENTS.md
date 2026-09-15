@@ -754,6 +754,14 @@ household. The relief multiplies only the limits that exist to bound a cost —
 never the guessing paths, and never in production, both of which are tested in
 `src/lib/api/rateLimit.test.ts`.
 
+**The same relief also shortens a live board's poll outside production.**
+`next.config.ts` hands it to the browser as `LIVE_POLL_RELIEF`, and `pollEvery`
+divides the fifteen-second cadence by it, never faster than every two and a half seconds, so
+the two-seat specs do not wait out a production poll for every move the other
+seat makes. It never applies in production — `pollEvery` refuses it there
+before reading it, because every ask is a paid function call — and
+`src/components/live/pollCadence.test.ts` fails if that refusal goes.
+
 **It does not touch the twenty-game cap.** It used to — one knob for both —
 which made the cap 400 on any server the suite drives, so no browser test could
 ever reach it and one written anyway would have passed over nothing. The cap is
