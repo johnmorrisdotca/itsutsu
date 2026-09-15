@@ -4,21 +4,23 @@ import { StatusPill } from "@/components/backlog/BacklogRow";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { openCount, tally } from "@/lib/backlog/backlog";
 import { STATUS_ORDER } from "@/lib/backlog/backlog.constants";
-import { fetchBoard } from "@/lib/backlog/backlogStore";
 import { latestRelease } from "@/lib/backlog/releases";
 import { readReleases } from "@/lib/backlog/releasesFile";
+
+import { BoardUnreadable } from "./BoardUnreadable";
+import type { AdminBoardCardProps } from "./backlogBoard.types";
 
 /**
  * The operator's view of the two lists: what is wanted, and what has shipped.
  *
- * The board itself is at /backlog and everyone who is in can read it — a
- * backlog only the operator can see is the chat window again, with one reader.
- * This is the way in from the Admin page, with enough of both lists on it to
- * say whether either needs attention.
+ * The board itself is at /backlog; this is the way in from the Admin page, with
+ * enough of both lists on it to say whether either needs attention. The board is
+ * handed in rather than read here, so the card and the board drawn below it on
+ * the same tab are one call to Sumilabu, and a board that could not be read is
+ * said to be unreadable rather than counted as empty.
  */
-export async function AdminBoardCard() {
-  const [items, releases] = await Promise.all([fetchBoard(), readReleases()]);
-  const counts = tally(items);
+export async function AdminBoardCard({ board }: AdminBoardCardProps) {
+  const releases = await readReleases();
   const latest = latestRelease(releases);
 
   return (
@@ -27,19 +29,23 @@ export async function AdminBoardCard() {
         Backlog and releases <span className="font-mincho text-sm font-normal opacity-70">積み残しと更新履歴</span>
       </h2>
 
-      <div className="flex flex-col gap-1">
-        <span className={SECTION_TITLE}>
-          {openCount(items)} still wanted, of {items.length}
-        </span>
-        <p className="flex flex-wrap gap-1.5">
-          {STATUS_ORDER.map((status) => (
-            <span key={status} className="flex items-center gap-1 text-xs text-muted">
-              <StatusPill status={status} />
-              <span className="font-mono tabular-nums">{counts[status]}</span>
-            </span>
-          ))}
-        </p>
-      </div>
+      {board.ok ? (
+        <div className="flex flex-col gap-1">
+          <span className={SECTION_TITLE}>
+            {openCount(board.items)} still wanted, of {board.items.length}
+          </span>
+          <p className="flex flex-wrap gap-1.5">
+            {STATUS_ORDER.map((status) => (
+              <span key={status} className="flex items-center gap-1 text-xs text-muted">
+                <StatusPill status={status} />
+                <span className="font-mono tabular-nums">{tally(board.items)[status]}</span>
+              </span>
+            ))}
+          </p>
+        </div>
+      ) : (
+        <BoardUnreadable problem={board.problem} />
+      )}
 
       <div className="flex flex-col gap-1">
         <span className={SECTION_TITLE}>{releases.length} releases</span>

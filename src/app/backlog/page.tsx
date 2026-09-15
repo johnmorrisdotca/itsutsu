@@ -2,16 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BacklogBoard } from "@/components/backlog/BacklogBoard";
+import { BoardUnreadable } from "@/components/backlog/BoardUnreadable";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { openCount } from "@/lib/backlog/backlog";
-import { fetchBoard } from "@/lib/backlog/backlogStore";
+import { readBoard } from "@/lib/backlog/backlogStore";
 
 export const metadata = { title: "Backlog", robots: { index: false, follow: false } };
 
-// The board is read from the database on every request, never at build time.
+// The board is read from Sumilabu on every request, never at build time.
 export const dynamic = "force-dynamic";
 
 /**
@@ -25,10 +26,13 @@ export const dynamic = "force-dynamic";
  * It used to be open to every member, on the argument that a board only one
  * person can write to is a list rather than a board. John has since decided
  * otherwise and it is his site: the board is the operator's, and it is shut
- * to everybody else — the API as well as the page, because a page that is
- * hidden while its API still answers is worse than either. Requests still
- * arrive the way they always did, in conversation; what has changed is who
- * can see they were written down.
+ * to everybody else — the page and the Server Functions it writes through
+ * alike, because a page that is hidden while its writes still answer is worse
+ * than either. Requests still arrive the way they always did, in
+ * conversation; what has changed is who can see they were written down.
+ *
+ * The rows live on Sumilabu. When they cannot be read the page says so in an
+ * alert, rather than drawing an empty board that would read as nothing wanted.
  *
  * Anyone else gets a 404 rather than a refusal, the same as the Admin page,
  * so the address gives nothing away about what is behind it.
@@ -37,8 +41,7 @@ export default async function BacklogPage() {
   const me = await currentAdmin();
   if (me === null) notFound();
 
-  const items = await fetchBoard();
-  const open = openCount(items);
+  const board = await readBoard();
 
   return (
     <Page width="standard" gap="gap-6">
@@ -48,9 +51,14 @@ export default async function BacklogPage() {
           Backlog <span className="font-mincho text-sm font-normal opacity-70">積み残し</span>
         </h1>
         <p className="max-w-prose text-sm text-muted">
-          Every feature asked for, every fault reported, and what has become of each. There are{" "}
-          <span className="font-semibold text-ink">{open}</span> still wanting something, out of {items.length} on the
-          board. A request written here outlives the conversation that raised it. The same board is a tab of{" "}
+          Every feature asked for, every fault reported, and what has become of each.{" "}
+          {board.ok ? (
+            <>
+              There are <span className="font-semibold text-ink">{openCount(board.items)}</span> still wanting something,
+              out of {board.items.length} on the board.{" "}
+            </>
+          ) : null}
+          A request written here outlives the conversation that raised it. The same board is a tab of{" "}
           <Link href="/admin?view=work" className="underline underline-offset-4">
             Admin
           </Link>
@@ -60,9 +68,8 @@ export default async function BacklogPage() {
           </Link>
           , open to everybody — this one is only what has not.
         </p>
-        <BacklogBoard items={items} who={me.name ?? ""} />
+        {board.ok ? <BacklogBoard items={board.items} who={me.name ?? ""} /> : <BoardUnreadable problem={board.problem} />}
       </section>
-
     </Page>
   );
 }

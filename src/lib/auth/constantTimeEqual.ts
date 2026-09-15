@@ -9,9 +9,10 @@
  * secret) and every character of the equal-length case, so a wrong answer
  * takes the same time whichever character it is wrong at.
  *
- * Extracted from `isOperatorLogin` so the board token (`boardActor.ts`)
- * checks its secret with the same discipline rather than a second, easily
- * drifted copy of the loop.
+ * Extracted from `isOperatorLogin` so a second token could check its secret
+ * with the same discipline rather than a second, easily drifted copy of the
+ * loop. That second token was the board's, which went with the local board
+ * routes; the operator login is its one caller now.
  */
 export function constantTimeEqual(expected: string, actual: string): boolean {
   if (expected.length !== actual.length) return false;

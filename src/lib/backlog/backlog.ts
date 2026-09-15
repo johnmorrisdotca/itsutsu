@@ -8,7 +8,6 @@ import {
   PRIORITY_ORDER,
   BACKLOG_STATUSES,
   DETAIL_MAX,
-  KEY_MAX,
   LEGACY_STATUSES,
   OPEN_STATUSES,
   STATUS_MOVES,
@@ -30,6 +29,7 @@ import type {
   BacklogTally,
   StatusFilter,
 } from "./backlog.types";
+import { keyFromTitle } from "./backlogKey";
 
 /**
  * The board's rules, kept away from the database the way the game engine is
@@ -39,22 +39,12 @@ import type {
  * page, the API route and the tests all get the same answers.
  */
 
-const KEBAB = /[^a-z0-9]+/g;
-
 /**
- * A stable kebab-case key for a title.
- *
- * Titles are typed by people and get edited afterwards; the key is what the
- * seed, a commit message and a duplicate check all hold on to, so it is
- * derived once at the moment an item is added and never again. A title with no
- * Latin letters at all — a request typed in Japanese — still needs a key, so
- * one is made from the moment it arrived rather than refusing the request.
+ * `keyFromTitle` lives in `backlogKey.ts`, beside this module rather than in
+ * it, because `pnpm task` runs under Node's own type stripping and needs to
+ * import it from a file with no extensionless imports of its own.
  */
-export function keyFromTitle(title: string, now: Date = new Date()): string {
-  const slug = title.toLowerCase().replace(KEBAB, "-").replace(/^-+|-+$/g, "").slice(0, KEY_MAX);
-  const trimmed = slug.replace(/-+$/g, "");
-  return trimmed === "" ? `item-${now.getTime().toString(36)}` : trimmed;
-}
+export { keyFromTitle } from "./backlogKey";
 
 export function isBacklogStatus(value: unknown): value is BacklogStatus {
   return typeof value === "string" && value in BACKLOG_STATUSES;
@@ -197,9 +187,9 @@ export function changedFields(change: BacklogChange): readonly (keyof BacklogCha
  *
  * So the answer is a refusal, and it reads the list out rather than hinting at
  * it — a caller that sent the wrong field needs to know which the right ones
- * are. Asked in the two places `draftProblems` is asked: the route, so nothing
- * reaches the database, and the store, so nothing reaches the database from
- * inside the process either.
+ * are. That fault was in the local board's route, before the board moved to
+ * Sumilabu; the rule is asked now where `draftProblems` is asked, in the store,
+ * before anything is sent.
  */
 export function changeProblems(change: BacklogChange): string[] {
   if (changedFields(change).length > 0) return [];
@@ -322,8 +312,8 @@ export function heldNow(
  * `releasedIn`/`releasedAt` are deliberately not here (board convergence
  * ITS-04): `done` is not a destination this function's caller, `changeItem`,
  * can ever reach — `STATUS_MOVES` lists nothing that leads to it — so nothing
- * this function writes is ever a release. `finishItem` in backlogStore.ts
- * writes those two columns directly, with the version `pnpm release:take`
+ * this function writes is ever a release. The release tool writes those two
+ * columns, through Sumilabu's ship route, with the version `pnpm release:take`
  * is taking at that moment, which is the only place that version is knowable.
  */
 export function moveData(

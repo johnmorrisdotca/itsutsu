@@ -4,6 +4,14 @@
  *
  *   pnpm release:take --summary "<one line a player reads>" [--summary "…"] [--patch] [--done <key>]...
  *   pnpm release:take --done <key>...   retry closing rows at the release HEAD already is
+ *   pnpm release:take:prod …            the same, closing the rows on the LIVE board
+ *
+ * `--done` closes rows on Sumilabu's board, and which board is
+ * `sumilabuTarget("board")`'s decision: itsutsu-dev unless the live project is
+ * asked for by name. `release:take:prod` asks for it. Plain `release:take`
+ * closes on itsutsu-dev and says so, so forgetting the name can never close a
+ * live row: the key is not found there, the run exits non-zero, and the `&&`
+ * chain stops before the push.
  *
  * The first --summary becomes the commit title after the dash, and the house
  * convention is to write it in lower case, as a continuation of that dash,
@@ -34,13 +42,14 @@
  * This fixes all three by taking the number immediately before pushing, the
  * one moment it is actually knowable, and writing everything from it: the
  * changelog heading, `package.json`, the release commit that carries both,
- * and — through the API, with `--done`, never through Prisma — the rows that
- * shipped. It commits the two files itself rather than printing a step that
+ * and — on Sumilabu's board, with `--done`, never through a table — the rows
+ * that shipped. It commits the two files itself rather than printing a step that
  * says to: see `release-commit.ts` for the night the printed step was
  * followed and the version was left behind.
  *
- * Self-contained like `scripts/tasks.ts`: no imports from `src/` (its one
- * import is its sibling `release-commit.ts`), `fetch` for the board,
+ * Its imports from `src/` name their files and pull in no `server-only`,
+ * because Node runs this by stripping types: the board client and the project
+ * it talks to, beside its sibling `release-commit.ts`, and
  * `node:child_process`/`node:fs` for git and the two files.
  * Everything is computed first and nothing is written until all of it can
  * be — a release that refuses halfway must leave the tree exactly as it
@@ -60,6 +69,12 @@ import {
   type ReleaseIo,
   type ReleaseOut,
 } from "./release-commit.ts";
+import { shipTicket, ticketByKey } from "../src/lib/sumilabu/boardClient.ts";
+import { SUMILABU_PROJECTS, sumilabuTarget, targetLine } from "../src/lib/sumilabu/sumilabuProject.ts";
+import type { SumilabuTarget } from "../src/lib/sumilabu/sumilabuProject.types.ts";
+
+/** The pnpm script this run came through, so retry advice names the board the rows were on. */
+const RELEASE_SCRIPT = process.env.npm_lifecycle_event?.startsWith("release:take") ? process.env.npm_lifecycle_event : "release:take";
 
 // ---------------------------------------------------------------------------
 // Pure planning. Exported for release-take.test.ts, which is the only reason
@@ -320,7 +335,7 @@ export function planRetry(state: RetryState): RetryPlan {
 
 /** What a failed close prints: the exact command that retries it, and what that command will and will not do. */
 export function retryAdvice(version: string, doneKeys: readonly string[]): string {
-  const command = ["pnpm release:take", ...doneKeys.map((key) => `--done ${key}`)].join(" ");
+  const command = [`pnpm ${RELEASE_SCRIPT}`, ...doneKeys.map((key) => `--done ${key}`)].join(" ");
   return (
     `The release commit is correct either way. To retry closing, run \`${command}\` with ${version}'s release commit ` +
     `as HEAD and a clean tree: it closes the rows at ${version} and takes no new number.`
@@ -416,42 +431,20 @@ function showRemote(path: string): string | null {
   }
 }
 
-const BOARD_URL = (process.env.BOARD_URL ?? "https://itsutsu.com").replace(/\/+$/, "");
-const BOARD_TOKEN = process.env.BOARD_TOKEN ?? "";
-
-function boardHeaders(actor: string, hasBody: boolean): Record<string, string> {
-  return {
-    Authorization: `Bearer ${BOARD_TOKEN}`,
-    "X-Board-Actor": actor,
-    ...(hasBody ? { "Content-Type": "application/json" } : {}),
-  };
-}
-
-/** Marks one row done through the API, never through Prisma. False on any refusal. */
-async function closeRow(key: string, version: string, releasedAt: string, actor: string): Promise<boolean> {
-  const listResponse = await fetch(`${BOARD_URL}/api/backlog`, { headers: boardHeaders(actor, false) });
-  if (!listResponse.ok) {
-    console.error(`${key}: could not read the board (${listResponse.status}).`);
+/** Ships one row on the board, found by its key. False on any refusal, having said why. */
+async function closeRow(target: SumilabuTarget, key: string, version: string, releasedAt: string, actor: string): Promise<boolean> {
+  const item = await ticketByKey(target, key);
+  if (item === null) {
+    const hint = target.projectKey === SUMILABU_PROJECTS.dev ? " The live board's rows are closed by pnpm release:take:prod." : "";
+    console.error(`${key}: no such row on ${targetLine(target)}.${hint}`);
     return false;
   }
-  const { items } = (await listResponse.json()) as { items: Array<{ id: string; key: string }> };
-  const found = items.find((item) => item.key === key);
-  if (found === undefined) {
-    console.error(`${key}: no such row on the board.`);
+  const shipped = await shipTicket(target, item.id, { version, releasedAt }, actor);
+  if (!shipped.ok) {
+    console.error(`${key}: ${shipped.problems.join(" ")}`);
     return false;
   }
-
-  const response = await fetch(`${BOARD_URL}/api/backlog/${found.id}`, {
-    method: "PATCH",
-    headers: boardHeaders(actor, true),
-    body: JSON.stringify({ status: "done", releasedIn: version, releasedAt }),
-  });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as { error?: string };
-    console.error(`${key}: ${body.error ?? "that did not go through"}.`);
-    return false;
-  }
-  console.log(`${key} marked done in ${version}.`);
+  console.log(`${key} marked done in ${version} on ${targetLine(target)}.`);
   return true;
 }
 
@@ -465,17 +458,25 @@ function mergeInProgress(): boolean {
   }
 }
 
-/** Closes every row through the API at one version. False when any was not closed, having said why. */
+/** Closes every row on the board at one version. False when any was not closed, having said why. */
 async function closeRows(keys: readonly string[], version: string, releasedAt: string): Promise<boolean> {
-  if (BOARD_TOKEN === "") {
-    console.error("BOARD_TOKEN is not set, so the rows named with --done were not closed.");
+  let target: SumilabuTarget;
+  try {
+    target = sumilabuTarget("board");
+  } catch (error) {
+    console.error(`${(error as Error).message} The rows named with --done were not closed.`);
     return false;
   }
+  console.log(`Closing ${keys.join(", ")} at ${version} on ${targetLine(target)}.`);
   const actor = process.env.BOARD_ACTOR ?? "release:take";
   let allClosed = true;
   for (const key of keys) {
-    const closed = await closeRow(key, version, releasedAt, actor);
-    if (!closed) allClosed = false;
+    try {
+      if (!(await closeRow(target, key, version, releasedAt, actor))) allClosed = false;
+    } catch (error) {
+      console.error(`${key}: ${(error as Error).message}`);
+      allClosed = false;
+    }
   }
   return allClosed;
 }

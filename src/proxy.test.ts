@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { EMBED_TOKEN_PARAM, signEmbedToken } from "@/lib/auth/embedToken";
 import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
 
-import { MATCHER_EXEMPT, config, isBoardApiPath, proxy, wouldBeOpen } from "./proxy";
+import { MATCHER_EXEMPT, config, proxy, wouldBeOpen } from "./proxy";
 
 /**
  * The gate, and the one shortcut through it.
@@ -229,96 +229,27 @@ describe("the paths that stay open", () => {
   });
 });
 
-describe("isBoardApiPath", () => {
-  it("is the two backlog routes, and nothing that merely starts the same way", () => {
-    expect(isBoardApiPath("/api/backlog")).toBe(true);
-    expect(isBoardApiPath("/api/backlog/abc123")).toBe(true);
-    expect(isBoardApiPath("/api/backlogging")).toBe(false);
-    expect(isBoardApiPath("/api/games")).toBe(false);
-  });
-
-  it("cannot be walked out of the board routes with an encoded separator", () => {
-    /*
-     * THESE TWO MATCH, AND ARE SAFE FOR A REASON OUTSIDE THIS FILE — which is
-     * exactly why they are pinned here rather than left to be re-derived.
-     *
-     * A dot-dot spelled plainly, or percent-encoded as %2e%2e, is normalised
-     * by the URL parser BEFORE the gate is asked, so `/api/backlog/../games/
-     * live` arrives as `/api/games/live` and never matches at all. An encoded
-     * SLASH is not: `%2f` stays inside its segment, so these two reach this
-     * check still spelled `/api/backlog/...` and it answers true.
-     *
-     * That is only safe because Next routes on the same un-decoded pathname —
-     * verified against the live site, where `/games/..%2fapi%2fgames%2flive`
-     * answers 404 rather than the 401 that `/api/games/live` itself gives. So
-     * the request lands somewhere under the backlog directory or nowhere, and
-     * the token cannot carry it to another route.
-     *
-     * If a Next upgrade ever decodes `%2f` before matching, that stops being
-     * true and this becomes a hole in the gate rather than a door in it. This
-     * case will not catch that by itself — nothing in a unit test can — but it
-     * records the assumption at the place that depends on it.
-     */
-    expect(isBoardApiPath("/api/backlog/..%2fgames%2flive")).toBe(true);
-    expect(isBoardApiPath("/api/backlog/games/live")).toBe(true);
-    expect(isBoardApiPath("/api/games/live")).toBe(false);
-  });
-});
-
 /**
- * Board convergence ITS-02: an agent's terminal has no browser to hold a
- * session cookie in, so it carries BOARD_TOKEN in a header instead. These
- * exercise `proxy()` itself, not just the path list, because the whole
- * point is a request that never had a session reaching the route at all —
- * `wouldBeOpen`/`isBoardApiPath` alone cannot show that the token is
- * actually checked.
+ * The board token is gone. It let an agent's terminal reach the two backlog
+ * routes with no session (board convergence ITS-02); the board lives on
+ * Sumilabu now, `pnpm task` talks to it there, and the routes went with the
+ * token. Pinned so the exception cannot come back by accident: a bearer token
+ * on the old addresses is answered the way any API call with no session is.
  */
-describe("the board token, through the gate itself", () => {
+describe("the board token opens nothing now", () => {
   const ENV = { ...process.env };
 
   afterEach(() => {
     process.env = { ...ENV };
   });
 
-  function backlogRequest(path: string, headers: Record<string, string> = {}): NextRequest {
-    return new NextRequest(`https://itsutsu.com${path}`, { headers });
-  }
-
-  it("lets the right bearer token through with no session at all", async () => {
+  it("answers a bearer token on the old board routes as it answers any call with no session", async () => {
     process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
     process.env.BOARD_TOKEN = "right-token";
-    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer right-token" }));
-    // NextResponse.next() carries no redirect and answers as an ordinary 200.
-    expect(response.headers.get("location")).toBeNull();
-    expect(response.status).toBe(200);
-  });
-
-  it("falls through to the ordinary API refusal for a wrong token", async () => {
-    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
-    process.env.BOARD_TOKEN = "right-token";
-    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer wrong" }));
-    expect(response.status).toBe(401);
-  });
-
-  it("falls through with no Authorization header at all", async () => {
-    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
-    process.env.BOARD_TOKEN = "right-token";
-    const response = await proxy(backlogRequest("/api/backlog"));
-    expect(response.status).toBe(401);
-  });
-
-  it("never opens anything but the board routes, whatever the token", async () => {
-    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
-    process.env.BOARD_TOKEN = "right-token";
-    const response = await proxy(backlogRequest("/api/games", { Authorization: "Bearer right-token" }));
-    expect(response.status).toBe(401);
-  });
-
-  it("opens nothing when BOARD_TOKEN is not set, whatever the request carries", async () => {
-    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
-    delete process.env.BOARD_TOKEN;
-    const response = await proxy(backlogRequest("/api/backlog", { Authorization: "Bearer anything" }));
-    expect(response.status).toBe(401);
+    for (const path of ["/api/backlog", "/api/backlog/abc123"]) {
+      const response = await proxy(new NextRequest(`https://itsutsu.com${path}`, { headers: { Authorization: "Bearer right-token" } }));
+      expect(response.status, path).toBe(401);
+    }
   });
 });
 
@@ -448,13 +379,13 @@ describe("the gate with no working key", () => {
 });
 
 /**
- * The two existing token exceptions do not go through `gateIsConfigured()`
- * at all — the board token is compared against its own separate env var,
- * and both checks run before the new "is the gate configured" branch this
- * ticket adds. Pinned here, in production specifically, because that is the
- * one environment where the new branch exists to run.
+ * The embed token does not go through `gateIsConfigured()` at all — it is
+ * checked before the "is the gate configured" branch this ticket adds.
+ * Pinned here, in production specifically, because that is the one
+ * environment where the new branch exists to run. (The board token was
+ * pinned here too, until it went with the local board routes.)
  */
-describe("the two token exceptions survive the fail-closed change, in production", () => {
+describe("the embed token survives the fail-closed change, in production", () => {
   const ENV = { ...process.env };
 
   afterEach(() => {
@@ -472,18 +403,6 @@ describe("the two token exceptions survive the fail-closed change, in production
     );
     expect(response.status).toBe(200);
     expect(response.headers.get("location")).toBeNull();
-  });
-
-  it("still lets the right board token through with no session", async () => {
-    vi.stubEnv("NODE_ENV", "production");
-    process.env.AUTH_SECRET = "a-secret-long-enough-to-be-accepted";
-    process.env.BOARD_TOKEN = "right-token";
-    const response = await proxy(
-      new NextRequest("https://itsutsu.com/api/backlog", {
-        headers: { Authorization: "Bearer right-token" },
-      }),
-    );
-    expect(response.status).toBe(200);
   });
 });
 
@@ -699,24 +618,15 @@ describe("the site being worked on", () => {
   });
 
   /*
-   * The two token exceptions are deliberately NOT shuttered, and that is a
-   * decision worth a failing test if anybody changes it. Both are narrow,
-   * read-only credentials that never reach a page; and the board token is how
-   * the operator works the backlog, which is exactly what they are doing while
-   * the site is down.
+   * The embed token is deliberately NOT shuttered, and that is a decision
+   * worth a failing test if anybody changes it: it is a narrow, read-only
+   * credential that never reaches a page.
    */
-  it("leaves the embed and board credentials alone, which is how the operator keeps working", async () => {
+  it("leaves the embed credential alone", async () => {
     shutTheSite();
-    process.env.BOARD_TOKEN = "right-token";
     const token = await signEmbedToken("proxy.test.ts");
     const embed = await proxy(ask(`/embed?${EMBED_TOKEN_PARAM}=${token}`));
     expect(embed.status).toBe(200);
-    const board = await proxy(
-      new NextRequest("https://itsutsu.com/api/backlog", {
-        headers: { Authorization: "Bearer right-token" },
-      }),
-    );
-    expect(board.status).toBe(200);
   });
 
   /*

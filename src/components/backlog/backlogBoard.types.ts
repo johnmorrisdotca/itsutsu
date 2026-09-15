@@ -1,4 +1,14 @@
-import type { BacklogItem, BacklogKind, BacklogSort, StatusFilter } from "@/lib/backlog/backlog.types";
+import type { BacklogItem, BacklogKind, BacklogSort, BoardRead, StatusFilter } from "@/lib/backlog/backlog.types";
+
+export type AdminBoardCardProps = {
+  /** The board as the Admin page read it once, so the card and the board below it are one call. */
+  board: BoardRead;
+};
+
+export type BoardUnreadableProps = {
+  /** Why Sumilabu could not be read, in the client's words; never a token. */
+  problem: string;
+};
 
 /** What the board's controls are set to. One object, so a change is one setState. */
 export type BoardView = {

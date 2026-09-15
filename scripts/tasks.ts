@@ -1,142 +1,118 @@
 /**
- * The features board, from a terminal — through the API, never the table.
+ * The features board, from a terminal.
  *
  *   pnpm task                              what is open and who holds it
  *   pnpm task add "<title>" [--detail "…"] [--kind feature|fix|chore] [--by "<who>"]
- *   pnpm task claim <key> --by "<who>"     open -> inProgress
+ *   pnpm task claim <key> --by "<who>"     open -> inProgress; a lapsed hold is freed, then taken
  *   pnpm task release <key> --by "<who>"   inProgress -> open
  *   pnpm task drop <key> --by "<who>"      -> dropped
  *   pnpm task reopen <key> --by "<who>"    dropped -> open
  *   pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none
- *   pnpm task edit <key> [--title "…"] [--detail "…"]   the text, through the API's own door
- *   pnpm task stamp <key> --release 0.x.y [--at <ISO>] --by "<who>"
- *                                          the release onto a done row that has none
+ *   pnpm task edit <key> [--title "…"] [--detail "…"] --by "<who>"
  *
- * `stamp` is for the rows closed before `pnpm release:take` existed to close
- * them: it writes releasedIn (and releasedAt, if you know the instant) onto a
- * row that is already done and unstamped, and the API refuses anything else —
- * a row not done, a row already stamped, a version CHANGELOG.md does not name.
- * It moves nothing. `done` itself is still not a destination this CLI offers.
+ *   pnpm task:prod <command> …             the same commands, on the LIVE board
  *
- * Reads BOARD_URL (default https://itsutsu.com), BOARD_TOKEN and BOARD_ACTOR
- * (overridden by --by) from the environment — `node --env-file=.env` loads
- * .env for the pnpm script, so nothing here reads dotenv itself.
+ * The board lives on Sumilabu, and this talks to it through `boardClient.ts`,
+ * the same client the /backlog page and `release:take` use. Every cap and every
+ * move rule is the service's, so there is nothing this can do that walks past
+ * one: it asks, and prints what it was told.
  *
- * Why this exists: `POST`/`PATCH /api/backlog` used to accept only the
- * operator's browser session, which no agent can hold. That is the whole
- * reason roughly forty rows were written straight to Postgres on
- * 2026-09-11, bypassing every rule the API enforces — thirteen of them
- * moves the board's own table forbids. This CLI is the door instead: every
- * command here is an HTTP request carrying `Authorization: Bearer
- * BOARD_TOKEN` and `X-Board-Actor: <name>`, so every cap and every move
- * rule applies to it exactly as it does to the page. `done` is deliberately
- * not a destination this CLI offers — board convergence ITS-04's release
- * tool is the only thing that writes it.
+ * WHICH BOARD is `sumilabuTarget("board")`'s decision, and forgetting lands on
+ * itsutsu-dev. `pnpm task:prod` sets SUMILABU_PROJECT_KEY=itsutsu and opts in
+ * by its own name, and it still needs the live board token, which no worktree's
+ * `.env` holds. Every command prints the board it reached.
  *
- * Self-contained on purpose: nothing here imports from `src/`. A `src/`
- * module can pull in `server-only`, which throws outside a server bundle,
- * and Node's own type-stripping wants an import naming the file it means
- * rather than the alias resolution `tsconfig.json` gives the app code. The
- * small pieces that would otherwise come from `src/lib/backlog/backlog.ts`
- * (the lease math, the quick-win order) are copied here instead, verbatim
- * enough that this script and that module cannot quietly disagree about
- * what "held" means.
+ * AN UNREADABLE BOARD EXITS NON-ZERO WITH THE REASON. It never lists as empty,
+ * because "nothing is wanted" and "nothing could be read" are different facts.
+ *
+ * `stamp` is retired. It wrote a release onto rows closed by hand before
+ * `release:take` could close them; those stamps came across with the import,
+ * and Sumilabu writes one only when the release tool ships a row.
+ *
+ * Keys resolve through Sumilabu's `GET tickets?key=`, and every write goes by
+ * the id it resolved to. BOARD_ACTOR (overridden by --by) names who is writing.
+ * Imports name their files, because Node runs this by stripping types.
  */
-
-type BacklogStatus = "open" | "inProgress" | "done" | "dropped";
-type BacklogKind = "feature" | "fix" | "chore";
-type BacklogPriority = "high" | "normal" | "low";
-type BacklogEffort = "small" | "medium" | "large";
-
-type BacklogItem = {
-  id: string;
-  key: string;
-  title: string;
-  detail: string;
-  kind: BacklogKind;
-  status: BacklogStatus;
-  priority: BacklogPriority | null;
-  effort: BacklogEffort | null;
-  askedBy: string;
-  claimedBy: string | null;
-  claimedAt: string | null;
-  createdAt: string;
-  movedAt: string;
-  releasedIn: string | null;
-  releasedAt: string | null;
-};
-
-const BOARD_URL = (process.env.BOARD_URL ?? "https://itsutsu.com").replace(/\/+$/, "");
-const BOARD_TOKEN = process.env.BOARD_TOKEN ?? "";
-
-if (BOARD_TOKEN === "") {
-  console.error("BOARD_TOKEN is not set.");
-  process.exit(2);
-}
+import { BACKLOG_EFFORTS, BACKLOG_KINDS, BACKLOG_PRIORITIES, BACKLOG_STATUSES } from "../src/lib/backlog/backlog.constants.ts";
+import { keyFromTitle } from "../src/lib/backlog/backlogKey.ts";
+import type { BacklogEffort, BacklogItem, BacklogKind, BacklogPriority } from "../src/lib/backlog/backlog.types.ts";
+import { addTicket, listTickets, moveTicket, patchTicket, ticketByKey } from "../src/lib/sumilabu/boardClient.ts";
+import type { BoardChange, BoardMoveTarget, BoardOutcome } from "../src/lib/sumilabu/boardClient.types.ts";
+import { SUMILABU_PROJECTS, liveOptIn, sumilabuTarget, targetLine } from "../src/lib/sumilabu/sumilabuProject.ts";
+import type { SumilabuTarget } from "../src/lib/sumilabu/sumilabuProject.types.ts";
 
 function flag(name: string, args: string[]): string | undefined {
   const at = args.indexOf(`--${name}`);
   return at > -1 ? args[at + 1] : undefined;
 }
 
-function actorFor(args: string[]): string {
-  return flag("by", args) ?? process.env.BOARD_ACTOR ?? "";
-}
-
 function usage(): never {
   console.error(
     [
       "usage:",
-      "  pnpm task",
+      "  pnpm task                    (pnpm task:prod for the live board)",
       '  pnpm task add "<title>" [--detail "…"] [--kind feature|fix|chore] [--by "<who>"]',
       '  pnpm task claim <key> --by "<who>"',
       '  pnpm task release <key> --by "<who>"',
       '  pnpm task drop <key> --by "<who>"',
       '  pnpm task reopen <key> --by "<who>"',
       "  pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none",
-      '  pnpm task edit <key> [--title "…"] [--detail "…"]',
-      '  pnpm task stamp <key> --release 0.x.y [--at <ISO>] --by "<who>"',
+      '  pnpm task edit <key> [--title "…"] [--detail "…"] --by "<who>"',
     ].join("\n"),
   );
   process.exit(2);
 }
 
-/** A refusal from the API, printed the way it phrased it. Never writes anything itself. */
-function fail(body: { error?: string }): never {
-  console.error(body.error ?? "That did not go through.");
+function fail(message: string): never {
+  console.error(message);
   process.exit(1);
 }
 
-async function api(path: string, actor: string, init: RequestInit = {}): Promise<Response> {
-  return fetch(`${BOARD_URL}${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${BOARD_TOKEN}`,
-      "X-Board-Actor": actor,
-      ...(init.body === undefined ? {} : { "Content-Type": "application/json" }),
-    },
-  });
+/** The board this run reached, said on every line that reports a write. */
+function where(target: SumilabuTarget): string {
+  return target.projectKey === SUMILABU_PROJECTS.live ? `${targetLine(target)} (LIVE, opted in by ${liveOptIn()})` : targetLine(target);
+}
+
+/** Who is writing: every move and every revision names somebody, or Sumilabu refuses it. */
+function actorFrom(args: string[]): string {
+  const who = (flag("by", args) ?? process.env.BOARD_ACTOR ?? "").trim();
+  if (who === "") fail('Name who is doing this with --by "<who>" (or BOARD_ACTOR).');
+  return who;
+}
+
+async function rowFor(target: SumilabuTarget, key: string): Promise<BacklogItem> {
+  const item = await ticketByKey(target, key);
+  if (item === null) fail(`No such row on ${where(target)}: ${key}`);
+  return item;
+}
+
+function landed(outcome: BoardOutcome, key: string): BacklogItem {
+  if (!outcome.ok) fail(`${key}: ${outcome.problems.join(" ")}`);
+  return outcome.item;
+}
+
+function wordOrNull<T extends string>(raw: string | undefined, values: Record<string, T>): T | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw === "none") return null;
+  if (!(Object.values(values) as string[]).includes(raw)) usage();
+  return raw as T;
 }
 
 /**
- * In progress is a claim, not only a status — copied from BOARD_RULES.md's
- * reference shapes, which `src/lib/backlog/backlog.ts` also copies. See
- * that module for the fuller explanation; this is the same six hours.
+ * In progress is a claim, not only a status — BOARD_RULES.md's reference
+ * shapes, which `src/lib/backlog/backlog.ts` also copies. The list reads the
+ * lease here only to group what it prints; who may take a row is Sumilabu's.
  */
 const LEASE_MS = 6 * 60 * 60 * 1000;
 
-function leaseExpired(claimedAt: string | null, nowMs: number): boolean {
-  if (claimedAt === null) return true;
-  const held = Date.parse(claimedAt);
-  return !Number.isFinite(held) || nowMs - held > LEASE_MS;
-}
-
 function heldNow(item: BacklogItem, nowMs: number): boolean {
-  return item.claimedBy !== null && item.claimedBy.trim().length > 0 && !leaseExpired(item.claimedAt, nowMs);
+  if (item.claimedBy === null || item.claimedBy.trim() === "" || item.claimedAt === null) return false;
+  const held = Date.parse(item.claimedAt);
+  return Number.isFinite(held) && nowMs - held <= LEASE_MS;
 }
 
-const PRIORITY_ORDER: readonly BacklogPriority[] = ["high", "normal", "low"];
-const EFFORT_ORDER: readonly BacklogEffort[] = ["small", "medium", "large"];
+const PRIORITY_ORDER = Object.values(BACKLOG_PRIORITIES);
+const EFFORT_ORDER = Object.values(BACKLOG_EFFORTS);
 
 function rank<T extends string>(order: readonly T[], value: T | null): number {
   return value === null ? order.length : order.indexOf(value);
@@ -145,136 +121,93 @@ function rank<T extends string>(order: readonly T[], value: T | null): number {
 /** BOARD_RULES.md invariant 7: priority descending, then effort ascending, then most recently moved. */
 function byQuickWin(a: BacklogItem, b: BacklogItem): number {
   return (
-    rank(PRIORITY_ORDER, a.priority) - rank(PRIORITY_ORDER, b.priority) ||
-    rank(EFFORT_ORDER, a.effort) - rank(EFFORT_ORDER, b.effort) ||
+    rank<BacklogPriority>(PRIORITY_ORDER, a.priority) - rank<BacklogPriority>(PRIORITY_ORDER, b.priority) ||
+    rank<BacklogEffort>(EFFORT_ORDER, a.effort) - rank<BacklogEffort>(EFFORT_ORDER, b.effort) ||
     b.movedAt.localeCompare(a.movedAt)
   );
 }
 
-async function board(actor: string): Promise<BacklogItem[]> {
-  const response = await api("/api/backlog", actor);
-  if (!response.ok) fail(await response.json().catch(() => ({})));
-  const body = (await response.json()) as { items: BacklogItem[] };
-  return body.items;
-}
-
-async function resolveKey(key: string, actor: string): Promise<BacklogItem> {
-  const found = (await board(actor)).find((item) => item.key === key);
-  if (found === undefined) {
-    console.error(`No such row: ${key}`);
-    process.exit(1);
-  }
-  return found;
-}
-
-/** Every write but `add` is a PATCH by id, the key resolved first. */
-async function patchItem(key: string, actor: string, data: Record<string, unknown>): Promise<BacklogItem> {
-  const item = await resolveKey(key, actor);
-  const response = await api(`/api/backlog/${item.id}`, actor, { method: "PATCH", body: JSON.stringify(data) });
-  if (!response.ok) fail(await response.json().catch(() => ({})));
-  return (await response.json()) as BacklogItem;
-}
-
-/** A 6-wide field: the one kind that earns a flag, mirroring UmaKuma's BUG marker for its own most-urgent-looking kind. */
-function kindFlag(kind: BacklogKind): string {
-  return kind === "fix" ? "FIX   " : "      ";
-}
-
-function holdLabel(item: BacklogItem, nowMs: number): string {
-  if (item.status !== "inProgress") return "WAITING";
-  return heldNow(item, nowMs) ? `HELD BY ${item.claimedBy}` : `STALE ${item.claimedBy}`;
-}
-
-function gradeTag(item: BacklogItem): string {
-  const parts: string[] = [];
-  if (item.priority !== null) parts.push(`P:${item.priority}`);
-  if (item.effort !== null) parts.push(`E:${item.effort}`);
-  return parts.length === 0 ? "" : `${parts.join(" ")}  `;
-}
-
 function taskLine(item: BacklogItem, nowMs: number): string {
-  return `${item.key.padEnd(40)}  ${kindFlag(item.kind)}${holdLabel(item, nowMs).padEnd(22)}${gradeTag(item)}${item.title}`;
+  const kind = item.kind === BACKLOG_KINDS.fix ? "FIX   " : "      ";
+  const hold = item.status !== BACKLOG_STATUSES.inProgress ? "WAITING" : heldNow(item, nowMs) ? `HELD BY ${item.claimedBy}` : `STALE ${item.claimedBy ?? ""}`;
+  const grades = [item.priority === null ? "" : `P:${item.priority}`, item.effort === null ? "" : `E:${item.effort}`].filter(Boolean).join(" ");
+  return `${item.key.padEnd(40)}  ${kind}${hold.padEnd(22)}${grades === "" ? "" : `${grades}  `}${item.title}`;
 }
 
-/** Held now, then waiting by quick wins, then stale — so a reader sees what is live first and what has lapsed last. */
-async function list(actor: string): Promise<void> {
-  const unfinished = (await board(actor)).filter((item) => item.status === "open" || item.status === "inProgress");
+/** Held now, then waiting by quick wins, then stale — what is live first and what has lapsed last. */
+async function list(target: SumilabuTarget): Promise<void> {
+  const unfinished = await listTickets(target, { unfinished: true });
   const nowMs = Date.now();
-  const held = unfinished.filter((item) => item.status === "inProgress" && heldNow(item, nowMs));
-  const waiting = unfinished.filter((item) => item.status === "open").sort(byQuickWin);
-  const stale = unfinished.filter((item) => item.status === "inProgress" && !heldNow(item, nowMs));
-
-  console.log(`${waiting.length} waiting · ${held.length} in progress · ${stale.length} stale · on ${BOARD_URL}\n`);
+  const held = unfinished.filter((item) => item.status === BACKLOG_STATUSES.inProgress && heldNow(item, nowMs));
+  const waiting = unfinished.filter((item) => item.status === BACKLOG_STATUSES.open).sort(byQuickWin);
+  const stale = unfinished.filter((item) => item.status === BACKLOG_STATUSES.inProgress && !heldNow(item, nowMs));
+  console.log(`${waiting.length} waiting · ${held.length} in progress · ${stale.length} stale · on ${where(target)}\n`);
   for (const item of [...held, ...waiting, ...stale]) console.log(taskLine(item, nowMs));
   if (unfinished.length === 0) console.log("Nothing on the board.");
 }
 
+async function move(target: SumilabuTarget, rest: string[], to: BoardMoveTarget, said: string): Promise<void> {
+  const [key] = rest;
+  if (key === undefined) usage();
+  const who = actorFrom(rest);
+  const item = landed(await moveTicket(target, await rowFor(target, key), to, who), key);
+  console.log(`${item.key} ${said}${to === BACKLOG_STATUSES.inProgress ? `, held by ${item.claimedBy}` : ""} on ${where(target)}`);
+}
+
 async function main(): Promise<void> {
   const [command = "list", ...rest] = process.argv.slice(2);
-  const actor = actorFor(rest);
+  let target: SumilabuTarget;
+  try {
+    target = sumilabuTarget("board");
+  } catch (error) {
+    fail((error as Error).message);
+  }
 
   switch (command) {
-    case "list": {
-      await list(actor);
+    case "list":
+      await list(target);
       break;
-    }
 
     case "add": {
       const [title] = rest;
       if (title === undefined) usage();
-      const response = await api("/api/backlog", actor, {
-        method: "POST",
-        body: JSON.stringify({ title, detail: flag("detail", rest), kind: flag("kind", rest) }),
-      });
-      if (!response.ok) fail(await response.json().catch(() => ({})));
-      const item = (await response.json()) as BacklogItem;
-      console.log(`added ${item.key} on ${BOARD_URL}`);
+      const kind = (flag("kind", rest) ?? BACKLOG_KINDS.feature) as BacklogKind;
+      if (!(Object.values(BACKLOG_KINDS) as string[]).includes(kind)) usage();
+      const by = (flag("by", rest) ?? "").trim();
+      const clean = title.trim().replace(/\s+/g, " ");
+      const item = landed(
+        await addTicket(target, { key: keyFromTitle(clean), title: clean, detail: (flag("detail", rest) ?? "").trim(), kind, askedBy: by }, by || null),
+        keyFromTitle(clean),
+      );
+      console.log(`added ${item.key} on ${where(target)}`);
       break;
     }
 
-    case "claim": {
-      const [key] = rest;
-      if (key === undefined) usage();
-      const item = await patchItem(key, actor, { status: "inProgress" });
-      console.log(`${item.key} in progress, held by ${item.claimedBy} on ${BOARD_URL}`);
+    case "claim":
+      await move(target, rest, BACKLOG_STATUSES.inProgress, "in progress");
       break;
-    }
 
-    case "release": {
-      const [key] = rest;
-      if (key === undefined) usage();
-      const item = await patchItem(key, actor, { status: "open" });
-      console.log(`${item.key} released on ${BOARD_URL}`);
+    case "release":
+      await move(target, rest, BACKLOG_STATUSES.open, "released");
       break;
-    }
 
-    case "drop": {
-      const [key] = rest;
-      if (key === undefined) usage();
-      const item = await patchItem(key, actor, { status: "dropped" });
-      console.log(`${item.key} dropped on ${BOARD_URL}`);
+    case "drop":
+      await move(target, rest, BACKLOG_STATUSES.dropped, "dropped");
       break;
-    }
 
-    case "reopen": {
-      const [key] = rest;
-      if (key === undefined) usage();
-      const item = await patchItem(key, actor, { status: "open" });
-      console.log(`${item.key} reopened on ${BOARD_URL}`);
+    case "reopen":
+      await move(target, rest, BACKLOG_STATUSES.open, "reopened");
       break;
-    }
 
     case "grade": {
       const [key] = rest;
       if (key === undefined) usage();
-      const priority = flag("priority", rest);
-      const effort = flag("effort", rest);
+      const priority = wordOrNull<BacklogPriority>(flag("priority", rest), BACKLOG_PRIORITIES);
+      const effort = wordOrNull<BacklogEffort>(flag("effort", rest), BACKLOG_EFFORTS);
       if (priority === undefined && effort === undefined) usage();
-      const data: Record<string, unknown> = {};
-      if (priority !== undefined) data.priority = priority === "none" ? null : priority;
-      if (effort !== undefined) data.effort = effort === "none" ? null : effort;
-      const item = await patchItem(key, actor, data);
-      console.log(`${item.key} graded on ${BOARD_URL}`);
+      const change: BoardChange = { ...(priority === undefined ? {} : { priority }), ...(effort === undefined ? {} : { effort }) };
+      const item = landed(await patchTicket(target, (await rowFor(target, key)).id, change, null), key);
+      console.log(`${item.key} graded on ${where(target)}`);
       break;
     }
 
@@ -284,23 +217,16 @@ async function main(): Promise<void> {
       const title = flag("title", rest);
       const detail = flag("detail", rest);
       if (title === undefined && detail === undefined) usage();
-      const data: Record<string, unknown> = {};
-      if (title !== undefined) data.title = title;
-      if (detail !== undefined) data.detail = detail;
-      const item = await patchItem(key, actor, data);
-      console.log(`${item.key} edited on ${BOARD_URL}`);
+      const who = actorFrom(rest);
+      const change: BoardChange = { ...(title === undefined ? {} : { title }), ...(detail === undefined ? {} : { detail }) };
+      const item = landed(await patchTicket(target, (await rowFor(target, key)).id, change, who), key);
+      console.log(`${item.key} edited on ${where(target)}`);
       break;
     }
 
-    case "stamp": {
-      const [key] = rest;
-      const release = flag("release", rest);
-      if (key === undefined || release === undefined) usage();
-      const at = flag("at", rest);
-      const item = await patchItem(key, actor, { releasedIn: release, ...(at === undefined ? {} : { releasedAt: at }) });
-      console.log(`${item.key} stamped ${item.releasedIn}${item.releasedAt === null ? "" : ` at ${item.releasedAt}`} on ${BOARD_URL}`);
+    case "stamp":
+      fail("pnpm task stamp is retired: stamps came across with the import, and Sumilabu writes one only when pnpm release:take:prod --done ships a row.");
       break;
-    }
 
     default:
       usage();

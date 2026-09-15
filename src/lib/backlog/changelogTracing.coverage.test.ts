@@ -21,9 +21,10 @@ const picomatch = createRequire(import.meta.url)("next/dist/compiled/picomatch")
  * route. Miss one and nothing fails: `readReleases` returns `[]` and logs,
  * the page shows an empty history, and — worse — a rule that reads the
  * changelog to decide something answers as though nothing had ever shipped.
- * That is what the release stamp would have done: `stampRelease` refuses a
- * version the changelog does not name, and on a route with no changelog it
- * would have refused every version, in production and nowhere else. The
+ * That is what the local board's release stamp would have done, before the
+ * board moved to Sumilabu: it refused a version the changelog did not name,
+ * and on a route with no changelog it would have refused every version, in
+ * production and nowhere else. The
  * Board Gate section of AGENTS.md already says pages that read the file must
  * name it; this is that sentence as a test, so it cannot be missed a third
  * time.
@@ -31,8 +32,8 @@ const picomatch = createRequire(import.meta.url)("next/dist/compiled/picomatch")
  * WHAT IT CAN SEE: every import, transitively. It walks `src/` for import
  * statements, follows them backwards from `releasesFile.ts`, and collects
  * every `page.tsx` and `route.ts` under `src/app` that can reach it — so a
- * route that reaches the reader through `backlogStore.ts` is found the same
- * as one importing it directly. A route on the list that never actually
+ * page that reaches the reader through a component it renders
+ * (`AdminBoardCard.tsx`) is found the same as one importing it directly. A route on the list that never actually
  * calls `readReleases` is over-included, which costs one small file in one
  * function and is the safe side of the line. What it cannot see is a read by
  * a path this file does not know about; there is one changelog reader, and
@@ -134,12 +135,12 @@ const readingRoutes = [...reachers(READER, importers)]
 describe("CHANGELOG.md reaches every route that reads it", () => {
   it("finds the reader's routes at all, so an empty answer cannot pass as a clean one", () => {
     expect(readingRoutes).toContain("/releases");
-    expect(readingRoutes).toContain("/api/backlog/[id]");
+    expect(readingRoutes).toContain("/admin");
   });
 
-  it("finds the routes that reach the reader through the store, not only the ones importing it", () => {
-    // `stampRelease` reads the changelog; the route never imports releasesFile itself.
-    expect(readingRoutes).toContain("/api/backlog/[id]");
+  it("finds the routes that reach the reader through something they render, not only the ones importing it", () => {
+    // The Admin page renders `AdminBoardCard`, which reads the changelog; the page never imports releasesFile itself.
+    expect(readingRoutes).toContain("/admin");
   });
 
   it.each(readingRoutes)("%s names ./CHANGELOG.md in outputFileTracingIncludes", (route) => {
@@ -152,7 +153,7 @@ describe("CHANGELOG.md reaches every route that reads it", () => {
   it("matches keys the way Next does: an escaped dynamic segment, containment, and the global key", () => {
     expect(keyMatches("/api/backlog/\\[id\\]", "/api/backlog/[id]")).toBe(true);
     expect(keyMatches("/api/backlog/\\[id\\]", "/api/backlog")).toBe(false);
-    // `contains`: a key reaches every route that contains it, which is how `/backlog` already reached the API.
+    // `contains`: a key reaches every route that contains it, however deep the route goes.
     expect(keyMatches("/backlog", "/api/backlog/[id]")).toBe(true);
     expect(keyMatches("/api/backlog", "/api/backlog/[id]")).toBe(true);
     expect(keyMatches("/*", "/api/backlog/[id]")).toBe(true);

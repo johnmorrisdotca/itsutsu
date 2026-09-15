@@ -207,9 +207,8 @@ describe("moving between statuses", () => {
   /*
    * Board convergence ITS-04: done is the release tool's alone. This table
    * is not how it is reached — canMove/movesFrom answer from STATUS_MOVES,
-   * and STATUS_MOVES names nothing that leads to done, on purpose. See
-   * `finishItem` in backlogStore.ts, which writes it directly, conditionally,
-   * from inProgress only.
+   * and STATUS_MOVES names nothing that leads to done, on purpose. The
+   * release tool writes it, through Sumilabu's ship route.
    */
   it("does not let in progress reach done through this table either", () => {
     expect(canMove("inProgress", "done")).toBe(false);

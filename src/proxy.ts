@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { EMBED_TOKEN_PARAM, verifyEmbedToken } from "@/lib/auth/embedToken";
-import { constantTimeEqual } from "@/lib/auth/constantTimeEqual";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
 import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import {
@@ -23,11 +22,12 @@ import { maintenanceRefusal } from "@/lib/site/maintenance";
  * the unauthenticated write endpoints: they are simply not reachable by an
  * anonymous request, rather than each route being remembered to guard itself.
  *
- * Three ways through: redeem an invite code, sign in as the operator, or —
- * for the two backlog routes only — carry the board token in a header, the
- * way an embed carries its own token in the URL. Neither of those last two
- * is a session; each is a narrow credential this gate recognises for one
- * purpose and re-checks nothing else about.
+ * Two ways through with a session: redeem an invite code, or sign in as the
+ * operator. One without, for the embed alone, which carries its own token in
+ * the URL: a narrow credential this gate recognises for one purpose and
+ * re-checks nothing else about. The board token that opened the two backlog
+ * routes the same way is gone, with the routes — the board lives on Sumilabu,
+ * and `pnpm task` talks to it there.
  *
  * `proxy.ts`, not `middleware.ts` — the middleware convention is deprecated in
  * Next 16 and renamed.
@@ -230,14 +230,6 @@ function isEmbed(pathname: string): boolean {
 }
 
 /**
- * The two routes board convergence ITS-02's CLI reaches: the board, and one
- * row of it.
- */
-function isBoardApi(pathname: string): boolean {
-  return pathname === "/api/backlog" || pathname.startsWith("/api/backlog/");
-}
-
-/**
  * A language asked for in the address, remembered and then taken back out of
  * it. Null when the address says nothing about language, which is almost
  * every request.
@@ -316,9 +308,8 @@ function rememberLanguage(request: NextRequest): NextResponse | null {
  * nowhere else. It can only ever turn that yes into a no: `maintenanceRefusal`
  * returns a 503 or null, never a pass, so nothing it does can open a path the
  * deciding above had shut. `isOpenPath`, `OPEN_PATHS`, `OPEN_EXACTLY`,
- * `OPEN_PATTERNS` and the two token exceptions are untouched — the exceptions
- * deliberately, since each is a narrow read-only credential and the board token
- * is how the operator works the backlog while the site is down.
+ * `OPEN_PATTERNS` and the embed token are untouched — the token deliberately,
+ * since it is a narrow read-only credential that never reaches a page.
  *
  * It costs one environment variable read on every request that is not in
  * maintenance, which is every request on almost every day. See
@@ -375,28 +366,6 @@ export async function proxy(request: NextRequest) {
   }
 
   /*
-   * Board convergence ITS-02: an agent's terminal carries its own credential
-   * in a header, the same reason an embed carries one in the URL — there is
-   * no browser here to hold a session cookie. This is the gate deciding
-   * "may this request reach the app at all", which is a coarser question
-   * than "who, exactly, is writing" — `boardActor` re-checks the same token
-   * and additionally requires `X-Board-Actor`, which the gate does not know
-   * about, the same relationship `isEmbed` has with the embed board's own
-   * `data`-scope check. A missing or wrong token changes nothing here; the
-   * request falls through to the session check below exactly as it always
-   * did, so this only ever ADDS a way through for these two paths, never
-   * takes one away.
-   */
-  if (isBoardApi(pathname)) {
-    const expected = process.env.BOARD_TOKEN?.trim() ?? "";
-    const auth = request.headers.get("Authorization") ?? "";
-    const token = auth.startsWith("Bearer ") ? auth.slice("Bearer ".length) : "";
-    if (expected.length > 0 && token.length > 0 && constantTimeEqual(expected, token)) {
-      return NextResponse.next();
-    }
-  }
-
-  /*
    * THE TICKET THIS BLOCK IS FOR: a gate with no key cannot verify a
    * session — not a stranger's, not the operator's, `signingKey()` returns
    * null either way — so treating that as "let everyone through", which
@@ -418,7 +387,7 @@ export async function proxy(request: NextRequest) {
    * protected, and generating a secret before `pnpm dev` even starts was
    * never the point of AUTH_SECRET.
    *
-   * Only ever a narrowing: `isOpenPath`, `isEmbed` and `isBoardApi` above are
+   * Only ever a narrowing: `isOpenPath` and `isEmbed` above are
    * untouched and still run first, so a request that already had a way
    * through keeps it. This adds no new one — it takes away the one bypass
    * that should never have been unconditional.
@@ -494,6 +463,3 @@ export const MATCHER_EXEMPT = [
 
 /** Only for that test: whether the gate would have let a path through. */
 export const wouldBeOpen = isOpenPath;
-
-/** Only for that test: whether a path is one the board token can open. */
-export const isBoardApiPath = isBoardApi;

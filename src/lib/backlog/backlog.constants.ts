@@ -82,8 +82,8 @@ export const STATUS_MOVES: Record<BacklogStatus, readonly BacklogStatus[]> = {
    * convergence ITS-04). Reaching it needs the version that carried the
    * work, which is only knowable at the moment `pnpm release:take` takes
    * that number — not from this table, which the page and `pnpm task` both
-   * read, and neither may ever offer Done. `finishItem` in backlogStore.ts
-   * writes it directly, conditionally, from `inProgress` only, alongside
+   * read, and neither may ever offer Done. The release tool writes it,
+   * through Sumilabu's ship route and under its claim condition, alongside
    * `releasedIn` and `releasedAt`. And it does not leave: a done row's
    * release stamp is a fact about a release that went out, and reopening it
    * would rewrite that fact. A regression is a new row citing this one, not
@@ -170,7 +170,7 @@ export const KEY_MAX = 80;
  * it does.
  *
  * `releasedIn`/`releasedAt` are deliberately absent. They are not fields of a
- * change at all — `finishItem` writes them, from the version `pnpm
+ * change at all — the release tool writes them, from the version `pnpm
  * release:take` is taking at that moment (board convergence ITS-04) — so a
  * body carrying one of those and nothing else is a body this board can write
  * nothing from, which is exactly what this list exists to say.

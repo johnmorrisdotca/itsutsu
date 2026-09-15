@@ -121,18 +121,22 @@ never the deciding. A change that only ever runs after "yes" cannot turn a no
 into one.
 
 **The one sanctioned exception is a narrow, its-own-secret credential for a
-specific path, not a session** — the embed token for `/embed` and `/api/embed/`,
-and, since board convergence ITS-02, the board token for `/api/backlog` and
-`/api/backlog/[id]`. Both exist because the caller has no browser to hold a
-session cookie in, both are checked by their own dedicated function
-(`verifyEmbedToken`, `constantTimeEqual` against `BOARD_TOKEN`), both grant
-nothing beyond letting the request continue to the route — which re-checks
-the same secret itself, plus whatever the gate does not know about (the
-embed's `data` scope, the board's `X-Board-Actor`) — and neither ever
-removes a way through that already existed; a wrong or missing credential
-falls through to the ordinary session check exactly as before. A THIRD one
-of these needs the same shape and the same reasoning stated beside it, not
-a shortcut that skips the dedicated check or grants more than "continue".
+specific path, not a session** — the embed token for `/embed` and `/api/embed/`.
+It exists because the caller has no browser to hold a session cookie in, it is
+checked by its own dedicated function (`verifyEmbedToken`), it grants nothing
+beyond letting the request continue to the route — which re-checks the same
+secret itself, plus the embed's `data` scope the gate does not know about — and
+it never removes a way through that already existed; a wrong or missing
+credential falls through to the ordinary session check exactly as before.
+
+There was a second, until the board moved to Sumilabu: the board token for
+`/api/backlog` and `/api/backlog/[id]` (board convergence ITS-02), so an agent's
+terminal could work the backlog. It is gone, and so are those routes. `pnpm task`
+talks to Sumilabu with a token of Sumilabu's, the page writes through Server
+Functions under the operator's session, and `proxy.test.ts` pins that a bearer
+token on the old addresses opens nothing. A NEW exception needs the same shape
+as the embed token and the same reasoning stated beside it, not a shortcut that
+skips the dedicated check or grants more than "continue".
 
 ## Workspace Gates
 
@@ -496,17 +500,25 @@ checks are made in three places and stated once.
 - **The rules are pure and in one module.** `src/lib/backlog/backlog.ts` decides what a
   usable request is (`draftProblems`), what may follow what (`canMove`, `movesFrom`), and
   how a board is filtered and ordered. It returns new items and never writes to the one
-  it was given, the way the engine does. `backlogStore.ts` only reads and writes.
+  it was given, the way the engine does.
+- **The rows live on Sumilabu**, the one board every site shares, under Itsutsu's
+  project. `src/lib/sumilabu/boardClient.ts` is the thin client every caller uses —
+  `pnpm task`, `pnpm release:take --done`, and the page through `backlogStore.ts` and
+  its Server Functions (`backlog.actions.ts`) — and the service enforces the contract,
+  `docs/plans/board-convergence/BOARD_RULES.md`: the caps, the table of moves, the lease
+  and the claim condition. The `BacklogItem` table stays in the schema, read by nothing,
+  until a later step drops it with a Neon branch taken first.
 - **A status move is checked, not trusted.** The row's select is built from `movesFrom`,
-  and `PATCH /api/backlog/:id` refuses anything `canMove` rejects with a 422 — so a
-  proposal cannot reach `done` without having been built, whatever calls the API.
+  the page's Server Function asks `moveProblems` before it writes, and Sumilabu refuses
+  anything its own table forbids — so a proposal cannot reach `done` without having been
+  built, whatever calls it.
+- **An unreadable board is never an empty one.** `/backlog` and Admin show an alert when
+  Sumilabu cannot be read, and `pnpm task` exits non-zero with the reason. "Nothing is
+  wanted" and "nothing could be read" are different facts.
 - **The gate runs in `pnpm test:unit`.** `src/lib/backlog/backlog.coverage.test.ts` fails
-  the build when a status cannot be left or reached, when a status or kind is missing its
-  label, kanji or blurb, or when a seeded row is not a request somebody could act on — a
-  title too short to mean anything, no detail, nobody named as having asked.
-- **Seeding is idempotent and once-only.** `BACKLOG_SEED` carries its own keys and is
-  written only into an empty board, so an item somebody dropped never comes back on the
-  next render.
+  the build when a status cannot be left or reached, when a status, kind, priority or
+  effort is missing its label, kanji or blurb, or when a cap in code is not the
+  contract's number.
 - **The release history is parsed, never copied.** The same page lists every release,
   read from `CHANGELOG.md` at request time by `releasesFile.ts` — a second list kept by
   hand would drift within a day. `releases.test.ts` parses the real file, so a changelog
@@ -518,66 +530,42 @@ checks are made in three places and stated once.
 Whether work is *taken* from the board is the site owner's rule to make, not this file's.
 The gate only guarantees the board is worth making that rule out of.
 
-**WRITE THROUGH THE API, NEVER STRAIGHT TO THE TABLE.** Every check above lives
-in `POST`/`PATCH /api/backlog` — `draftProblems` caps a detail at 4,000
-characters, a title at 120 and a name at 60, and `canMove` answers 422 to a
-status move the board does not allow. A `PrismaClient` script reaching the row
-directly walks past all of it, and two sessions did exactly that about forty
-times on 2026-09-11 — one of them writing thirteen `open → done` moves, which
-`canMove` refuses outright since the only road to done runs through
-`inProgress`.
+**WRITE THROUGH THE BOARD'S DOOR, NEVER AROUND IT.** Every check above lives on
+Sumilabu, behind its API. Before the move, two sessions wrote about forty rows
+straight to the local table on 2026-09-11, walking past every rule — thirteen of
+them `open → done` moves the table forbids — and eleven rows ended up past the
+detail cap, which the board's own owner could then never save. The move keeps the
+cure: the only writers are the client and Sumilabu's own import, and the caps are in
+Sumilabu's database as well as its code.
 
-The damage is not untidiness. **A row whose detail is over the cap can no
-longer be saved from the board at all**: open it, change anything, and the API
-refuses the write. Eleven of 154 live rows are in that state, the worst at
-15,111 characters, and most of them got there by `detail = detail || '…'`
-appends. We created rows the board's own owner cannot edit.
-
-This is the failure Nothing Answers What It Cannot Answer is about, one layer
-out: a gate routed around rather than heard. It is also worse than the usual
-version, because the board API checks for the OPERATOR's session specifically
-— so "I could not call the API" was true, and until board convergence ITS-02
-it was precisely the point: there was no other door.
-
-**There is one now.** `pnpm task` talks to the same API the page does, with
-a board token (`BOARD_TOKEN`, separate from `ADMIN_TOKEN` and never able to
-open a browser session — see `.env.example`) and an actor name, so every cap
-and every move rule in this section applies to it exactly as it applies to a
-click. The CLI is the API: there is nothing it can do that walks past a rule
-above.
+**Which board you reach is the safety property.** Every Sumilabu caller here works on
+`itsutsu-dev` unless it is told otherwise (`sumilabuTarget`, and the Sumilabu block of
+`.env.example`), the way `bots:play` stays on your own database. `pnpm task:prod` is the
+live board, and a checkout's `.env` holds only the dev tokens, so nothing run from one
+can reach it; the command that can is typed by name.
 
 ```
-pnpm task                              what is open and who holds it
+pnpm task                              what is open and who holds it, on itsutsu-dev
+pnpm task:prod <command> …             the same commands, on the live board
 pnpm task add "<title>" [--detail "…"] [--kind feature|fix|chore] [--by "<who>"]
-pnpm task claim <key> --by "<who>"     open -> inProgress
+pnpm task claim <key> --by "<who>"     open -> inProgress; a lapsed hold is freed, then taken
 pnpm task release <key> --by "<who>"   inProgress -> open
 pnpm task drop <key> --by "<who>"      -> dropped
 pnpm task reopen <key> --by "<who>"    dropped -> open
 pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none
-pnpm task edit <key> [--title "…"] [--detail "…"]   the text, through the API's own door
-pnpm task stamp <key> --release 0.x.y [--at <ISO>] --by "<who>"
-                                       the release onto a done row that has none
+pnpm task edit <key> [--title "…"] [--detail "…"] --by "<who>"   not on a done row
 ```
 
-`stamp` is the one thing that may be written onto a row already done, and it
-is not a move: `stampRelease` writes `releasedIn` and `releasedAt` and touches
-nothing else, refusing a row that is not done, one already stamped, and any
-version `CHANGELOG.md` does not name. It exists for the rows closed by hand
-before `release:take` could close them — see
-`docs/plans/board-convergence/released-in-backfill.md` — and `done` itself is
-still reached by the release tool alone.
+A key resolves through Sumilabu's `GET tickets?key=`, and every write addresses the id.
+`stamp` is retired: the release stamps written onto rows closed by hand came across with
+the import, and Sumilabu writes a stamp only when the release tool ships a row.
 
 In progress is a claim with a six-hour lease (board convergence ITS-01), not
 only a status: `claim` on a row somebody else holds is refused with their
 name, and cannot be taken over inside the lease. A hold nobody has renewed
-past six hours is free again, and `pnpm task`'s list prints it as STALE
-first — before WAITING — because somebody started it, and a reader should
-know that before starting again.
-
-If a cap needs enforcing against something that is not the API, it has to be a
-constraint in the database; anything in TypeScript is another door rather than
-a lock. `backlog.coverage.test.ts` checks SEEDED rows and cannot see live ones,
-so nothing today would catch this.
+past six hours is free again — `claim` puts it back to open and takes it, both
+under the claim condition — and `pnpm task`'s list prints it as STALE, because
+somebody started it, and a reader should know that before starting again.
 
 
 ### Every Landed Commit Bumps The Version
@@ -599,12 +587,16 @@ one line. A patch used to need none and got no heading, and 0.186.1 shipped
 that way — in `package.json`, missing from `/releases`, and closed onto a row
 at a version the changelog never named. A stock line would restore the heading
 and say nothing true, so the tool refuses a release without one instead.
-`--done <key>` marks a row done through the API with the version just taken;
-see board convergence ITS-04 and the Board Gate section above. `done` has no
-other door: the page and `pnpm task` cannot offer it, and a row already done
-does not move again. If closing a row fails, the release commit is still
-right: run `pnpm release:take --done <key>` again with nothing beside it, on
-that release commit with a clean tree. It takes no number and closes the row
+`--done <key>` ships a row on Sumilabu's board with the version just taken;
+see board convergence ITS-04 and the Board Gate section above. **Rows on the
+live board are closed by `pnpm release:take:prod`**, the same tool opted in to
+the live project by its name. Plain `release:take` closes on `itsutsu-dev` and
+says so, so forgetting the name can never close a live row by accident: the key
+is not found there, the run exits non-zero, and the `&&` stops the push. `done`
+has no other door: the page and `pnpm task` cannot offer it, and a row already
+done does not move again. If closing a row fails, the release commit is still
+right: run `pnpm release:take:prod --done <key>` again with nothing beside it,
+on that release commit with a clean tree. It takes no number and closes the row
 at the release HEAD already is, and it refuses, closing nothing, when HEAD is
 not a release commit.
 
