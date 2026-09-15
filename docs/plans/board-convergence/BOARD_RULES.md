@@ -40,7 +40,8 @@ Every row has these. The middle columns give each repository's name for them.
 
 | Canonical | UmaKuma | Itsutsu | Notes |
 |---|---|---|---|
-| `id` | `id` (cuid) | `id` (cuid) + `key` (kebab) | Itsutsu's `key` is the citable name. UmaKuma cites the cuid. Not unified in this pass. |
+| `id` | `id` (cuid) | `id` (cuid) | UmaKuma cites the id. Every write addresses the id. |
+| `key` | none | `key` (kebab) | Itsutsu's citable name. Optional, unique per project, never changed. See invariant 11. |
 | `title` | `title` | `title` | 8 to 120 characters. |
 | `detail` | `detail` | `detail` | At most 4,000 characters. |
 | `kind` | `kind` | `kind` | See table above. |
@@ -55,6 +56,8 @@ Every row has these. The middle columns give each repository's name for them.
 | `movedAt` | `movedAt` | `movedAt` | Changes only on a status move. |
 | `releasedIn` | via `filedAs` (the timeline entry carries `version`) | `releasedIn` | The version that carried the work. Written by the release tool only. |
 | `releasedAt` | via `filedAs` (entry's `releasedAt`) | `releasedAt` | The release instant. Written by the release tool only. |
+| `editedBy` | none | none | The actor who last revised `title` or `detail`. Written by the service. See invariant 12. |
+| `editedAt` | none | none | When they did. Null on a row never revised. |
 
 ## Invariants
 
@@ -71,7 +74,11 @@ Numbered so a ticket and a test can cite them.
    | `dropped` | `open` |
 
    A `done` row does not move. Its release stamp is a fact about a release
-   that went out, and reopening it would rewrite that. A regression is a new
+   that went out, and reopening it would rewrite that. The one exception is
+   a stamp that never went out: the release tool marks the row before the
+   push, so a chain stopped in between leaves `done` under a version main
+   never saw, and `reopen` allows exactly that case by asking `origin/main`
+   whether the stamped entry is there. A regression is a new
    `fix` row whose detail cites the old one. The API and the CLI never offer
    `done` as a destination; the release tool writes it together with the
    version bump.
@@ -123,6 +130,7 @@ Numbered so a ticket and a test can cite them.
    | detail | 4,000 |
    | askedBy | 60 |
    | claimedBy | 80 |
+   | key | 80 |
 
 7. **Quick wins order.** Priority descending (`high`, `normal`, `low`, then
    ungraded), then effort ascending (`small`, `medium`, `large`, then
@@ -144,8 +152,8 @@ Numbered so a ticket and a test can cite them.
    }
    ```
 
-8. **`movedAt` moves with the status.** Grading a row, editing its detail, or
-   renewing a claim does not touch it.
+8. **`movedAt` moves with the status.** Grading a row, revising its title or
+   detail, or renewing a claim does not touch it.
 
 9. **The release tool writes `done`.** In one pass, refusing on any collision,
    it takes the next version, writes the repository's own release record (the
@@ -159,6 +167,50 @@ Numbered so a ticket and a test can cite them.
     be reached by a move; `done` is reached by the release tool, and the test
     asserts the API's move schema excludes it. Every status, kind, priority
     and effort has a label. The caps in code equal the numbers in this file.
+
+11. **A key is a citable name, written once.** `key` is optional. When set it
+    is a kebab slug, `^[a-z0-9]+(-[a-z0-9]+)*$`, at most 80 characters, and
+    unique within a project: a unique index on `(projectKey, key)`, under
+    which any number of rows have no key and two projects may use the same
+    one. It is written by `POST tickets` or `POST tickets/import` and never
+    changed after, because by the time anybody wants another name the first
+    one is in commit messages and notes. Existing rows have a null key.
+
+    - A create naming a key another ticket in the project holds is 409
+      `key_taken`, with that ticket's id as `ticketId`. The unique index
+      decides, not a read before the write.
+    - Import keeps keys. A row whose key belongs to a different ticket in the
+      project, two rows in one import sharing a key, and a row that would
+      change a key already stored each refuse the whole import, 422, with a
+      problem naming the row in the same `problems` list as an id owned by
+      another project. A row that omits its key keeps the stored one.
+    - `GET tickets?key=<key>` answers as `GET tickets/{id}` does:
+      `{ ok: true, ticket }`, or 404 `missing`. A malformed key is 400
+      `invalid_key`; a key beside `status` or `unfinished` is 400
+      `key_with_filter`, since "not unfinished" and "nobody holds it" would
+      otherwise be the same 404.
+    - Every write addresses the id, and a client resolves a key to an id
+      first. `tickets/{id}` never takes a key in the path, because a cuid can
+      look like a slug. `PATCH tickets/{id}` refuses a body naming `key`,
+      400 `key_immutable`, rather than dropping it as an unknown field.
+
+12. **A ticket's words are revised by `PATCH`, and not once it is done.**
+    `PATCH tickets/{id}` takes `title` and `detail` under the caps in
+    invariant 6, refused in `draftProblems`' own words (422), alone or with
+    `status`, `priority` and `effort`. Null or empty `detail` clears it. A
+    revision needs an actor, writes `editedBy = actor` and `editedAt = now`,
+    and touches neither the claim nor `movedAt` (invariant 8). Carried with a
+    move, it rides in the move's conditional write, so a refused move
+    revises nothing; a refused revision writes no grade.
+
+    A `done` row's words are refused, 409 `done`. Invariant 1 makes `done`
+    terminal because its release stamp is a fact about a release that went
+    out. The title and detail are what that release is recorded as carrying,
+    and rewording them afterwards changes the record just as reopening would.
+    The contract already has the answer for shipped work that needs other
+    words: a new row citing the old one, the way a regression is filed. A
+    stamp that never went out is unshipped first, and its words are editable
+    again. A `dropped` row may be revised, since it may be reopened.
 
 ## Reference shapes
 
@@ -206,7 +258,40 @@ export function draftProblems(draft: { title: string; detail: string; askedBy: s
   alternative was UmaKuma gaining a way to unship, which would let the release
   tool number the same work twice.
 - Stored values stay as they are. Nobody renames a Postgres enum for spelling.
-- Itsutsu's `key` column is not added to UmaKuma in this pass.
+- Itsutsu's `key` column is not added to UmaKuma in this pass. The service
+  carries it as an optional column, and UmaKuma's rows leave it null.
+- A `done` row's title and detail are frozen with its stamp (invariant 12).
+  The alternative was letting a shipped row be reworded, which Itsutsu's own
+  board allowed before the move to the service.
+
+## Tokens and projects
+
+Two token maps on the service, each `{ "<projectKey>": "<token>" }`:
+`BOARD_TOKENS_JSON` for the ticket routes and `SETTINGS_TOKENS_JSON` for the
+settings routes. Neither accepts the other's token. The board token is in
+every agent's worktree; the settings token is only in a site's production
+deployment, because a setting decides who may sign up and a key every
+checkout holds is not the key for that.
+
+Each site has two projects: its real one (`umakuma`, `itsutsu`) and a
+`<key>-dev` one (`umakuma-dev`, `itsutsu-dev`) with its own entry in both
+maps and its own rows, for local and test runs. A test never writes to the
+real board or its settings.
+
+Import (`POST tickets/import`) upserts by id and keeps dates, and refuses the
+whole batch when an id already belongs to another project - ids are global,
+and an upsert would otherwise move that row across.
+
+## Settings
+
+A project's settings are `key -> value`, both strings: key matches
+`[a-z0-9_.-]{1,80}`, value is at most 4,000 characters, structure is the
+client's own JSON inside the value. `GET settings` returns every row as one
+object a client caches whole, plus `entries` with `setBy` and `updatedAt`.
+`PUT settings/{key}` writes one and records the actor as `setBy`.
+`DELETE settings/{key}` removes the row, which is how a client goes back to
+its built-in default: "no row" is the one representation of "unset", never
+an empty string. Deleting what is not there is not an error.
 
 ## Out of scope for these tickets
 

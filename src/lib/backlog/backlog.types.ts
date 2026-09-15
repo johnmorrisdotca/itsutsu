@@ -123,3 +123,12 @@ export type BacklogChange = BacklogEdit &
   Partial<BacklogDraft> & {
     status?: BacklogStatus;
   };
+
+/**
+ * The board as a page reads it: the rows, or why they could not be read.
+ * Never an empty list standing in for an unreadable board — see `readBoard`.
+ */
+export type BoardRead = { ok: true; items: BacklogItem[] } | { ok: false; problem: string };
+
+/** What a write from the page came to: done, or the one sentence to show beside the control. */
+export type BoardActionOutcome = { ok: true } | { ok: false; problem: string };

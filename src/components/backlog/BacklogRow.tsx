@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { SELECT_CLASS } from "@/components/ui/ui.constants";
 import { heldNow, movesFrom } from "@/lib/backlog/backlog";
+import { changeBacklogItem } from "@/lib/backlog/backlog.actions";
 import { BACKLOG_STATUSES, EFFORT_DISPLAY, KIND_DISPLAY, PRIORITY_DISPLAY, STATUS_DISPLAY } from "@/lib/backlog/backlog.constants";
 import type { BacklogItem, BacklogStatus } from "@/lib/backlog/backlog.types";
 
@@ -139,13 +140,13 @@ function GradePills({ item }: { item: BacklogItem }) {
 /**
  * One thing somebody asked for: what it is, who asked, where it stands, and
  * the only moves it may make from there. The select is built from the board's
- * own table, so a move the rules forbid is never offered — and the API refuses
- * it too, for anything that does not come through this page.
+ * own table, so a move the rules forbid is never offered — and the board on
+ * Sumilabu refuses it too, for anything that does not come through this page.
  *
  * There is no separate "take it" any more. Choosing In progress from the move
- * select IS taking it: the API writes the operator's own name into the claim
- * the moment the move lands, and a row somebody else is already holding
- * answers 409, shown in the error line below rather than applied quietly.
+ * select IS taking it: the board writes the operator's own name into the claim
+ * the moment the move lands, and a row somebody else is already holding is
+ * refused, shown in the error line below rather than applied quietly.
  */
 export function BacklogRow({ item, onMoved }: BacklogRowProps) {
   const [busy, setBusy] = useState(false);
@@ -156,15 +157,13 @@ export function BacklogRow({ item, onMoved }: BacklogRowProps) {
     if (to === "") return;
     setBusy(true);
     setError(null);
-    const response = await fetch(`/api/backlog/${item.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: to }),
-    });
+    const outcome = await changeBacklogItem(item.id, { status: to as BacklogStatus }).catch(() => ({
+      ok: false as const,
+      problem: "That did not go through.",
+    }));
     setBusy(false);
-    if (!response.ok) {
-      const body = (await response.json().catch(() => ({}))) as { error?: string };
-      setError(body.error ?? "That did not go through.");
+    if (!outcome.ok) {
+      setError(outcome.problem);
       return;
     }
     onMoved();

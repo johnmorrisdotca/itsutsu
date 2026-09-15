@@ -30,16 +30,11 @@ const nextConfig: NextConfig = {
     "/backlog": ["./CHANGELOG.md"],
     "/admin": ["./CHANGELOG.md"],
     /*
-     * The board's API reads the changelog too: a release stamp is refused
-     * unless the version is one CHANGELOG.md names (`stampRelease`), so a
-     * function shipped without the file would refuse every stamp, in
-     * production and nowhere else. Keys are picomatch route globs, so the
-     * dynamic segment's brackets are escaped, as Next's own docs show for
-     * `/api/login/\[\[...slug\]\]`. `changelogTracing.coverage.test.ts`
-     * holds every route that can reach the reader to an entry here.
+     * Keys are picomatch route globs, so a dynamic segment's brackets are
+     * escaped, as Next's own docs show for `/api/login/\[\[...slug\]\]`.
+     * `changelogTracing.coverage.test.ts` holds every route that can reach
+     * the reader to an entry here.
      */
-    "/api/backlog": ["./CHANGELOG.md"],
-    "/api/backlog/\\[id\\]": ["./CHANGELOG.md"],
     /*
      * Prisma's query engine is a native binary loaded by a runtime path
      * lookup, not a static import, so Next's tracing misses it and a

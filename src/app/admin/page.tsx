@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { AdminBoardCard } from "@/components/backlog/AdminBoardCard";
 import { BacklogBoard } from "@/components/backlog/BacklogBoard";
+import { BoardUnreadable } from "@/components/backlog/BoardUnreadable";
 import { AdminEmbeds } from "@/components/auth/AdminEmbeds";
 import { AdminInvites } from "@/components/auth/AdminInvites";
 import { AdminBots } from "@/components/auth/AdminBots";
@@ -14,13 +15,13 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
-import { fetchBoard } from "@/lib/backlog/backlogStore";
+import { readBoard } from "@/lib/backlog/backlogStore";
 import { isAdminRequest } from "@/lib/auth/requireAdmin";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
 export const metadata = { title: "Admin", robots: { index: false, follow: false } };
 
-// The board is read on every request; the operator is looking at what moved today.
+// The board is read on every request that opens its tab, and on no other: it is a call to Sumilabu.
 export const dynamic = "force-dynamic";
 
 /*
@@ -60,9 +61,10 @@ const TABS: Tab[] = [
  */
 export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   if (!(await isAdminRequest())) notFound();
-  const [items, me, asked] = await Promise.all([fetchBoard(), currentSession(), searchParams]);
+  const [me, asked] = await Promise.all([currentSession(), searchParams]);
   const who = me?.name ?? me?.email ?? "";
   const open = activeTab(TABS, asked.view);
+  const board = open === "work" ? await readBoard() : null;
   return (
     <Page width="standard">
       <SiteHeader />
@@ -101,10 +103,10 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </div>
       ) : null}
 
-      {open === "work" ? (
+      {open === "work" && board !== null ? (
         <>
           <div className={PANEL_CLASS}>
-            <AdminBoardCard />
+            <AdminBoardCard board={board} />
           </div>
           {/*
            * The board itself, not only a card pointing at it. The operator
@@ -119,7 +121,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                 On its own page
               </Link>
             </h2>
-            <BacklogBoard items={items} who={who} />
+            {board.ok ? <BacklogBoard items={board.items} who={who} /> : <BoardUnreadable problem={board.problem} />}
           </section>
         </>
       ) : null}

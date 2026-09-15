@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-import { PrismaClient } from "@prisma/client";
+import { expect, test, type Page } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
 import { suiteOperator } from "./operator";
@@ -8,29 +7,34 @@ import { ready } from "./support";
 /**
  * The features board.
  *
- * The board is only worth making a rule out of if a request typed into it is
- * still there afterwards, so this walks the whole way round: the seeded board
- * renders, a new request is added and comes back on a reload, it can be moved
- * along the statuses the rules allow, and a move the rules forbid is refused
- * by the API even when the page's select would never have offered it.
+ * The rows live on Sumilabu, and the dev server this runs against reads
+ * whichever project `sumilabuTarget` gives it — itsutsu-dev, since a test is
+ * never the deployed site. So this walks the whole way round through the page
+ * alone: a request added through the form comes back on a reload, it moves
+ * along the statuses the rules allow and no further, and a move claims it for
+ * the operator.
  *
- * These tests write to the same board people take work from, which makes
- * clearing up part of the test rather than good manners. Left to itself this
- * file put three rows on the board per run and had reached ninety of them —
- * more than half the board, so the thing the board exists for, being read,
- * had stopped working. Every row a test creates is named here and deleted
- * when the file finishes.
+ * WHAT IS NOT HERE ANY MORE, and why. The cases that drove `/api/backlog`
+ * directly — a forbidden move refused, a body naming nothing, a stamp on a
+ * row that is not done — went with those routes. The page writes through
+ * Server Functions now, and the rules they asked are Sumilabu's to refuse;
+ * `backlogStore.test.ts` and `boardClient.test.ts` pin what the page is told.
+ * A spec that cannot reach a rule except by an address no reader uses would
+ * be the kind of test this repository warns about.
+ *
+ * Every row a test makes is named here and dropped when the file finishes.
+ * Sumilabu keeps what it is given, so a dropped row is how this file leaves
+ * the dev board readable for the next run.
  */
 
 /**
  * Who a move written by the signed-in operator's session claims a row for.
- * The address `e2e/auth.setup.ts` signs in as, from the same source — the
- * admin sign-in this suite uses has no Google name behind it, so the route's
- * `me.name ?? me.email` falls all the way to the email.
+ * The admin sign-in this suite uses has no Google name behind it, so the
+ * Server Function's `me.name ?? me.email` falls all the way to the email.
  */
 const OPERATOR_NAME = suiteOperator().email;
 
-/** Titles this file has created, deleted at the end whatever happened. */
+/** Titles this file has created, dropped at the end whatever happened. */
 const created: string[] = [];
 
 /** A title nothing else could have: the test's own words plus the run's clock. */
@@ -40,34 +44,54 @@ function newTitle(what: string): string {
   return title;
 }
 
-test.afterAll(async () => {
+/** Adds a request through the form, the way the operator does, and hands back its row. */
+async function addThroughTheForm(page: Page, title: string, detail: string) {
+  await page.goto("/backlog");
+  await ready(page, "backlog-filters");
+  await page.getByTestId("backlog-add-panel").locator("summary").click();
+  await page.getByTestId("backlog-title").fill(title);
+  await page.getByTestId("backlog-detail").fill(detail);
+  await page.getByTestId("backlog-add").click();
+  const row = page.getByTestId("backlog-item").filter({ hasText: title });
+  await expect(row).toHaveCount(1);
+  return row;
+}
+
+test.afterAll(async ({ browser }, testInfo) => {
   if (created.length === 0) return;
-  const prisma = new PrismaClient();
+  const context = await browser.newContext({ baseURL: testInfo.project.use.baseURL, storageState: ".auth/admin.json" });
+  const page = await context.newPage();
   try {
-    // By exact title, so a failed run that left rows behind is still cleared
-    // and nothing outside this file can be caught by it.
-    await prisma.backlogItem.deleteMany({ where: { title: { in: created } } });
+    await page.goto("/backlog");
+    await ready(page, "backlog-filters");
+    await page.getByTestId("filter-all").click();
+    for (const title of created) {
+      const row = page.getByTestId("backlog-item").filter({ hasText: title });
+      if ((await row.count()) !== 1) continue;
+      if ((await row.getAttribute("data-status")) === "dropped") continue;
+      await row.getByTestId("move-status").selectOption("dropped");
+      await expect(row).toHaveAttribute("data-status", "dropped");
+    }
   } finally {
-    await prisma.$disconnect();
+    await context.close();
+    created.length = 0;
   }
-  created.length = 0;
 });
 
 test.describe("backlog", () => {
-  test("the board renders, seeded, with its filters and counts", async ({ page }) => {
+  test("the board renders from Sumilabu, with its filters, and never as an alert on a readable board", async ({ page }) => {
     await page.goto("/backlog");
     await expect(page.getByTestId("backlog")).toBeVisible();
-    // The starter set is written on the first read of an empty board.
-    await expect(page.getByTestId("backlog-list").getByTestId("backlog-item").first()).toBeVisible();
+    // The chips are buttons on the board's own client component: a press
+    // before it is listening narrows nothing.
+    await ready(page, "backlog-filters");
+    // Waited for something that IS there before asserting what is not.
+    await expect(page.getByTestId("backlog-unreadable")).toHaveCount(0);
     // Both chips exist and they are different things: the umbrella that means
     // "not finished", and the status that means "nobody is on it".
     await expect(page.getByTestId("filter-unfinished")).toBeVisible();
     await expect(page.getByTestId("filter-open")).toBeVisible();
 
-    // The chips are buttons on the board's own client component: a press
-    // before it is listening narrows nothing.
-    await ready(page, "backlog-filters");
-    // Filtering to a status shows only that status.
     await page.getByTestId("filter-done").click();
     const rows = page.getByTestId("backlog-item");
     const count = await rows.count();
@@ -78,15 +102,7 @@ test.describe("backlog", () => {
 
   test("a request can be added, and is still there on a reload", async ({ page }) => {
     const title = newTitle("Keyboard shortcut for the scrubber");
-    await page.goto("/backlog");
-    await ready(page, "backlog-filters");
-    await page.getByTestId("backlog-add-panel").locator("summary").click();
-    await page.getByTestId("backlog-title").fill(title);
-    await page.getByTestId("backlog-detail").fill("Raised by an end-to-end test, and kept like any other request.");
-    await page.getByTestId("backlog-add").click();
-
-    const added = page.getByTestId("backlog-item").filter({ hasText: title });
-    await expect(added).toHaveCount(1);
+    const added = await addThroughTheForm(page, title, "Raised by an end-to-end test, and kept like any other request.");
     await expect(added).toHaveAttribute("data-status", "open");
 
     await page.reload();
@@ -107,173 +123,37 @@ test.describe("backlog", () => {
 
   test("an item moves through the statuses the board allows, and done is never one of them", async ({ page }) => {
     /*
-     * Board convergence ITS-04: done is the release tool's alone. Neither the
-     * page nor the API offers it any more — movesFrom("inProgress") no longer
-     * lists it, so this is the select simply not offering something, not a
-     * refusal a reader would ever see.
+     * Board convergence ITS-04: done is the release tool's alone. The page
+     * never offers it — movesFrom("inProgress") does not list it — and
+     * Sumilabu's move table has no such move either.
      */
     const title = newTitle("A test request that walks the board");
-    await page.goto("/backlog");
-    await ready(page, "backlog-filters");
-    await page.getByTestId("backlog-add-panel").locator("summary").click();
-    await page.getByTestId("backlog-title").fill(title);
-    await page.getByTestId("backlog-detail").fill("Added and picked up, and no further than that.");
-    await page.getByTestId("backlog-add").click();
-
-    const row = page.getByTestId("backlog-item").filter({ hasText: title });
+    const row = await addThroughTheForm(page, title, "Added and picked up, and no further than that.");
     await expect(row).toHaveAttribute("data-status", "open");
-    // Done is not offered from an open item: somebody has to pick it up first.
     await expect(row.getByTestId("move-status").locator("option")).toHaveText(["Move…", "In progress", "Dropped"]);
 
     await row.getByTestId("move-status").selectOption("inProgress");
     await expect(row).toHaveAttribute("data-status", "inProgress");
-    // And done is not offered from in progress either — only release:take reaches it.
     await expect(row.getByTestId("move-status").locator("option")).toHaveText(["Move…", "Open", "Dropped"]);
   });
 
-  /*
-   * This one used to assign the first row on the board, which was somebody
-   * else's: it wrote "Tester has it" onto whichever real request happened to
-   * sort first, and did it again every run. Two live tickets carried a false
-   * assignee for days because of it, and an assignee set by a person was one
-   * test run away from being overwritten. A test may have an item to itself,
-   * so it makes one.
-   *
-   * Board convergence ITS-01 replaced assigning with claiming: there is no
-   * "take it" button any more, and no field a test — or anybody else — could
-   * steal. Choosing In progress from the move select IS taking the row, and
-   * the API writes the signed-in operator's own name into the claim the
-   * moment the move lands.
-   */
-  test("moving a row to In progress claims it, and the board groups what is where", async ({ page, request }) => {
+  test("moving a row to In progress claims it for the operator, and the claim is still there on a reload", async ({ page }) => {
     const title = newTitle("A request somebody has picked up");
-    const added = await request.post("/api/backlog", {
-      data: { title, detail: "Made by this test, picked up by this test.", kind: "chore", askedBy: "Playwright" },
-    });
-    expect(added.status()).toBe(201);
-
-    await page.goto("/backlog");
-    // Ordered by status and showing more than one, the board has a heading per status.
-    await expect(page.getByTestId("backlog-group").first()).toBeVisible();
-
-    await ready(page, "backlog-filters");
-    const item = page.getByTestId("backlog-item").filter({ hasText: title });
-    await expect(item).toHaveCount(1);
+    const item = await addThroughTheForm(page, title, "Made by this test, picked up by this test.");
     await item.getByTestId("move-status").selectOption("inProgress");
     await expect(item.getByTestId("backlog-held")).toContainText(`held by ${OPERATOR_NAME}`);
 
     await page.reload();
+    await ready(page, "backlog-filters");
+    await page.getByTestId("filter-all").click();
     const again = page.getByTestId("backlog-item").filter({ hasText: title });
     await expect(again.getByTestId("backlog-held")).toContainText(`held by ${OPERATOR_NAME}`);
   });
 
-  test("the API refuses a move the board's rules forbid", async ({ page, request }) => {
-    const title = newTitle("A request the API will not finish");
-    const added = await request.post("/api/backlog", {
-      data: { title, detail: "Straight to done is not a move.", kind: "fix", askedBy: "Playwright" },
-    });
-    expect(added.status()).toBe(201);
-    const item = (await added.json()) as { id: string; status: string };
-    expect(item.status).toBe("open");
-
-    const illegal = await request.patch(`/api/backlog/${item.id}`, { data: { status: "done" } });
-    expect(illegal.status()).toBe(422);
-
-    /*
-     * Board convergence ITS-04: not even from in progress, and not even for
-     * the operator's own session — done is the release tool's alone, and the
-     * operator has no releasedIn/releasedAt to offer.
-     */
-    const claimed = await request.patch(`/api/backlog/${item.id}`, { data: { status: "inProgress" } });
-    expect(claimed.status()).toBe(200);
-    const stillIllegal = await request.patch(`/api/backlog/${item.id}`, { data: { status: "done" } });
-    expect(stillIllegal.status()).toBe(422);
-
-    const legal = await request.patch(`/api/backlog/${item.id}`, { data: { status: "dropped" } });
-    expect(legal.status()).toBe(200);
-
-    await page.goto("/backlog");
-    await ready(page, "backlog-filters");
-    await page.getByTestId("filter-dropped").click();
-    await expect(page.getByTestId("backlog-item").filter({ hasText: title })).toHaveAttribute("data-status", "dropped");
-  });
-
-  /*
-   * A PATCH that names nothing the board writes used to be answered 200.
-   *
-   * `releasedIn` alone used to be the example: it was in the route's schema
-   * for the release tool's own branch and `changeItem` never wrote it, so a
-   * body of that field alone passed every rule that had an opinion, composed
-   * an empty update, and came back as a change that had happened. It is a
-   * door of its own now — a release stamp for a row already done — so the
-   * example here is an invented field, and the stamp gets its own case
-   * below. The unit tests pin the route's answer with the store mocked; this
-   * drives the real address against the real table, which is the only thing
-   * that can say the row was left alone.
-   */
-  test("the API refuses a body it could write nothing from, and leaves the row as it was", async ({ request }) => {
-    const title = newTitle("A request an empty PATCH must not touch");
-    const added = await request.post("/api/backlog", {
-      data: { title, detail: "A PATCH naming nothing is not a change.", kind: "fix", askedBy: "Playwright" },
-    });
-    expect(added.status()).toBe(201);
-    const item = (await added.json()) as { id: string; movedAt: string };
-
-    const nothing = await request.patch(`/api/backlog/${item.id}`, { data: { nonsense: true } });
-    expect(nothing.status()).toBe(422);
-    // The refusal names what a change may carry, rather than only saying no.
-    const refusal = (await nothing.json()) as { error: string };
-    for (const field of ["status", "title", "detail", "kind", "askedBy", "priority", "effort"]) {
-      expect(refusal.error).toContain(field);
-    }
-
-    // One accepted field beside an invented one still lands.
-    const mixed = await request.patch(`/api/backlog/${item.id}`, { data: { priority: "low", nonsense: true } });
-    expect(mixed.status()).toBe(200);
-
-    const board = await request.get("/api/backlog");
-    expect(board.status()).toBe(200);
-    const { items } = (await board.json()) as { items: Array<{ id: string; priority: string | null; releasedIn: string | null; movedAt: string }> };
-    const row = items.find((each) => each.id === item.id);
-    expect(row).toBeDefined();
-    expect(row!.priority).toBe("low");
-    expect(row!.releasedIn).toBeNull();
-    // A grade is not movement, so nothing above moved the row either.
-    expect(row!.movedAt).toBe(item.movedAt);
-  });
-
-  /*
-   * The release stamp, against the real table. A row this spec makes is open
-   * and can never be done here — done is the release tool's — so what this
-   * can drive is every refusal the door gives an open row: the stamp is
-   * refused as not done, a stamp beside a grade is refused whole, and in
-   * both cases the row reads exactly as it did. The happy path — a done,
-   * unstamped row taking a version the changelog names — is pinned in
-   * backlogStore.test.ts and exercised end to end by `pnpm task stamp`
-   * against a scratch board; see released-in-backfill.md.
-   */
-  test("a release stamp on a row that is not done is refused, and leaves the row as it was", async ({ request }) => {
-    const title = newTitle("A request a stamp must not touch");
-    const added = await request.post("/api/backlog", {
-      data: { title, detail: "A stamp is for done rows only.", kind: "fix", askedBy: "Playwright" },
-    });
-    expect(added.status()).toBe(201);
-    const item = (await added.json()) as { id: string; movedAt: string };
-
-    const notDone = await request.patch(`/api/backlog/${item.id}`, { data: { releasedIn: "0.61.0" } });
-    expect(notDone.status()).toBe(422);
-    expect(((await notDone.json()) as { error: string }).error).toContain("Only a done row");
-
-    const beside = await request.patch(`/api/backlog/${item.id}`, { data: { priority: "low", releasedIn: "0.61.0" } });
-    expect(beside.status()).toBe(422);
-
-    const board = await request.get("/api/backlog");
-    const { items } = (await board.json()) as { items: Array<{ id: string; priority: string | null; releasedIn: string | null; movedAt: string }> };
-    const row = items.find((each) => each.id === item.id);
-    expect(row).toBeDefined();
-    expect(row!.releasedIn).toBeNull();
-    expect(row!.priority).toBeNull();
-    expect(row!.movedAt).toBe(item.movedAt);
+  test("the board's old API is gone, for the operator as for anybody", async ({ request }) => {
+    // The routes went with the board token; a board write is a Server Function now.
+    expect((await request.get("/api/backlog")).status()).toBe(404);
+    expect((await request.patch("/api/backlog/anything", { data: { status: "dropped" } })).status()).toBe(404);
   });
 
   test("the board is not one of the site's sections any more", async ({ page }) => {
@@ -286,9 +166,8 @@ test.describe("backlog", () => {
   test("what has shipped is a page of its own, and not on the board", async ({ page }) => {
     /*
      * These used to share a page. They are two different questions — what is
-     * coming, which is the operator's, and what arrived, which is everybody's
-     * — and the second was written for players and then kept behind a page
-     * that answers 404 to every player there is.
+     * coming, which is the operator's, and what arrived, which is everybody's.
+     * The history is still read from CHANGELOG.md, never from the board.
      */
     await page.goto("/backlog");
     await expect(page.getByTestId("release-history")).toHaveCount(0);
@@ -297,9 +176,7 @@ test.describe("backlog", () => {
 
     const history = page.getByTestId("release-history");
     await expect(history).toBeVisible();
-    // Read from CHANGELOG.md itself, so there is a real history here, not a placeholder.
     expect(await history.getByTestId("release").count()).toBeGreaterThan(3);
-    // The edition being served is marked in the list.
     await expect(history.getByTestId("releases")).toContainText("This edition");
   });
 
@@ -320,12 +197,10 @@ test.describe("backlog", () => {
  * It used to be open to every member, on the argument that a request only the
  * operator can file goes back to living in a chat window. John decided
  * otherwise, and the half that matters is not the missing navigation link —
- * it is that a member's cookie reaches no further than a stranger's. A page
- * hidden from the nav while its API still answers is a board that looks shut
- * and is open.
+ * it is that a member's cookie reaches no further than a stranger's.
  */
 test.describe("a member who is not the operator", () => {
-  test("cannot read the board, add to it, or move a row", async ({ browser, baseURL }) => {
+  test("cannot read the board", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
     const me = { email: `not-the-operator-${stamp}@example.test`, name: `Ordinary ${stamp}` };
     await seedMember(me);
@@ -335,19 +210,6 @@ test.describe("a member who is not the operator", () => {
     // Not found rather than refused: a 403 would confirm the board is there.
     const visited = await page.goto("/backlog");
     expect(visited?.status()).toBe(404);
-
-    const read = await context.request.get("/api/backlog");
-    expect(read.status()).toBe(404);
-
-    const added = await context.request.post("/api/backlog", {
-      data: { title: "A member should not be able to file this", detail: "and cannot" },
-    });
-    expect(added.status()).toBe(404);
-
-    // Moving a row is the operator's too, and it is the method the page uses,
-    // so it is the one most likely to be left open by accident.
-    const moved = await context.request.patch("/api/backlog/anything", { data: { status: "done" } });
-    expect(moved.status()).toBe(404);
 
     await context.close();
   });

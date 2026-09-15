@@ -67,7 +67,7 @@ function FilterChip({
  * look identical in a diff, and only one of them is true.
  *
  * A CLIENT-SIDE SORT IS ONLY A LIE WHERE THERE IS A SECOND PAGE, and there is
- * not one here. `fetchBoard` reads every row — 218 on production — so sorting
+ * not one here. `readBoard` reads every row from Sumilabu, so sorting
  * the array is sorting the whole set, not reordering one page of it and calling
  * that the board. That is precisely the distinction the convention turns on, and
  * it is the same reason /play's groups open in place rather than paging.

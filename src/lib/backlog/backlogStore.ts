@@ -1,466 +1,98 @@
 import "server-only";
 
-import { prisma } from "@/lib/prisma";
+import { addTicket, listTickets, patchTicket, ticketById } from "@/lib/sumilabu/boardClient";
+import type { BoardChange, BoardMoveTarget } from "@/lib/sumilabu/boardClient.types";
+import { sumilabuTarget } from "@/lib/sumilabu/sumilabuProject";
 
-import {
-  LEASE_MS,
-  changeProblems,
-  draftProblems,
-  editProblems,
-  moveData,
-  moveProblems,
-  moveWhere,
-  normalizeDraft,
-  revisedDraft,
-  stampProblems,
-  stampWhere,
-  statusFrom,
-} from "./backlog";
+import { changeProblems, draftProblems, moveProblems, normalizeDraft } from "./backlog";
 import { BACKLOG_STATUSES } from "./backlog.constants";
-import { BACKLOG_SEED } from "./backlog.seed.data";
-import { finishReleaseProblems } from "./releases";
-import { readReleases } from "./releasesFile";
-import type {
-  BacklogChange,
-  BacklogDraft,
-  BacklogEdit,
-  BacklogItem,
-  BacklogKind,
-  BacklogStatus,
-} from "./backlog.types";
+import type { BacklogChange, BacklogDraft, BoardActionOutcome, BoardRead } from "./backlog.types";
 
 /**
- * The board, in the database.
+ * The half of the board that talks to where it is kept, which is Sumilabu.
  *
- * Everything that decides anything — whether a move is allowed, whether a
- * draft is a real request — lives in backlog.ts and is pure. This file only
- * reads and writes, so the rules cannot end up stated twice with the two
- * statements disagreeing.
+ * The page's reads and its two writes come through here; `pnpm task` and
+ * `release:take` use `boardClient.ts` directly. The rules asked here are the
+ * pure ones in `backlog.ts`, asked before a call so the operator hears a
+ * refusal in the board's own words without a round trip, and Sumilabu asks its
+ * own again — the service is the lock, this is the courtesy.
  *
- * AND EVERY WRITE ASKS THE RULES FIRST. The route used to be the only place
- * the caps and the move table were consulted, so anything reaching the store
- * from inside the process — a script, a runner, a test — could write a row
- * the board's own form would have refused. Rows over the detail cap were
- * written exactly that way, and a row past the cap is a row nothing above the
- * database can bring back under it. Now `changeItem` is the one door for
- * changing a row and `addItem` the one door for adding one, and each refuses
- * before it writes. A cap that has to hold against something that is not
- * this process at all is the database's to keep, not this file's.
+ * Which project is `sumilabuTarget("board")`'s decision: the live one on the
+ * deployed site, itsutsu-dev everywhere else.
+ *
+ * NOTHING HERE ANSWERS "EMPTY" FOR "UNREADABLE". A read that fails is a
+ * `BoardRead` that says so, and the page draws an alert; a write that fails
+ * is a sentence beside the control. The `BacklogItem` table this file used to
+ * write is still in the schema and read by nothing.
  */
 
-type Row = {
-  id: string;
-  key: string;
-  title: string;
-  detail: string;
-  kind: string;
-  status: string;
-  priority: string | null;
-  effort: string | null;
-  askedBy: string;
-  claimedBy: string | null;
-  claimedAt: Date | null;
-  createdAt: Date;
-  movedAt: Date;
-  releasedIn: string | null;
-  releasedAt: Date | null;
-};
-
-/** A row as everything above the database sees it: dates as ISO strings. */
-function toItem(row: Row): BacklogItem {
-  return {
-    id: row.id,
-    key: row.key,
-    title: row.title,
-    detail: row.detail,
-    kind: row.kind as BacklogKind,
-    status: statusFrom(row.status),
-    priority: row.priority as BacklogItem["priority"],
-    effort: row.effort as BacklogItem["effort"],
-    askedBy: row.askedBy,
-    claimedBy: row.claimedBy,
-    claimedAt: row.claimedAt === null ? null : row.claimedAt.toISOString(),
-    createdAt: row.createdAt.toISOString(),
-    movedAt: row.movedAt.toISOString(),
-    releasedIn: row.releasedIn,
-    releasedAt: row.releasedAt === null ? null : row.releasedAt.toISOString(),
-  };
+function why(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
-const SELECT = {
-  id: true,
-  key: true,
-  title: true,
-  detail: true,
-  kind: true,
-  status: true,
-  priority: true,
-  effort: true,
-  askedBy: true,
-  claimedBy: true,
-  claimedAt: true,
-  createdAt: true,
-  movedAt: true,
-  releasedIn: true,
-  releasedAt: true,
-} as const;
-
-/**
- * Writes the starter set, but only into an empty board.
- *
- * Seeding on emptiness rather than per row is deliberate. The seed is a
- * snapshot of what had been asked for before the board existed; once the board
- * is in use it is the source of truth, and an item somebody dropped must not
- * come back the next time a page is rendered. `skipDuplicates` covers the one
- * remaining race, two first visitors at once.
- */
-export async function ensureSeeded(): Promise<number> {
-  const existing = await prisma.backlogItem.count();
-  if (existing > 0) return 0;
-  const written = await prisma.backlogItem.createMany({
-    data: BACKLOG_SEED.map((item) => ({
-      key: item.key,
-      title: item.title,
-      detail: item.detail,
-      kind: item.kind,
-      status: item.status,
-      askedBy: item.askedBy,
-    })),
-    skipDuplicates: true,
-  });
-  return written.count;
+/** What arrived from a browser, as text: a Server Function's arguments are whatever was sent. */
+function text(value: unknown): string {
+  return typeof value === "string" ? value : "";
 }
 
-/** The whole board, most recently moved first. It is a list of dozens, not thousands. */
-export async function fetchBoard(): Promise<BacklogItem[]> {
-  await ensureSeeded();
-  const rows = await prisma.backlogItem.findMany({ orderBy: { movedAt: "desc" }, select: SELECT });
-  return rows.map(toItem);
+/** The whole board, most recently moved first, or why it could not be read. */
+export async function readBoard(): Promise<BoardRead> {
+  try {
+    return { ok: true, items: await listTickets(sumilabuTarget("board")) };
+  } catch (error) {
+    console.error(`The board could not be read: ${why(error)}`);
+    return { ok: false, problem: why(error) };
+  }
 }
 
-export type AddOutcome =
-  | { ok: true; item: BacklogItem }
-  | { ok: false; problems: string[] };
-
-/**
- * Adds a request, refusing anything the board's own rules call unusable.
- *
- * Keys are derived from the title and have to stay unique, and two people can
- * ask for the same thing on the same day, so a taken key gets a numbered
- * neighbour rather than an error a person would have to understand.
- */
-export async function addItem(draft: BacklogDraft, addedBy: string | null): Promise<AddOutcome> {
+/** Files a request, refusing anything the board's own rules call unusable before asking Sumilabu. */
+export async function addItem(input: BacklogDraft, actor: string): Promise<BoardActionOutcome> {
+  const draft: BacklogDraft = { title: text(input.title), detail: text(input.detail), kind: input.kind, askedBy: text(input.askedBy) };
   const problems = draftProblems(draft);
-  if (problems.length > 0) return { ok: false, problems };
-
-  const clean = normalizeDraft(draft);
-  let key = clean.key;
-  for (let attempt = 2; attempt < 100; attempt += 1) {
-    const taken = await prisma.backlogItem.findUnique({ where: { key }, select: { id: true } });
-    if (taken === null) break;
-    key = `${clean.key}-${attempt}`;
+  if (problems.length > 0) return { ok: false, problem: problems[0]! };
+  try {
+    const added = await addTicket(sumilabuTarget("board"), normalizeDraft(draft), actor);
+    return added.ok ? { ok: true } : { ok: false, problem: added.problems[0]! };
+  } catch (error) {
+    console.error(`A request could not be filed: ${why(error)}`);
+    return { ok: false, problem: `The board could not be reached: ${why(error)}` };
   }
-
-  const row = await prisma.backlogItem.create({
-    data: {
-      key,
-      title: clean.title,
-      detail: clean.detail,
-      kind: clean.kind,
-      askedBy: clean.askedBy,
-      addedBy,
-    },
-    select: SELECT,
-  });
-  return { ok: true, item: toItem(row) };
 }
 
-export type MoveOutcome =
-  | { ok: true; item: BacklogItem }
-  | { ok: false; reason: "missing" }
-  /** Refused by the board's rules, with the reasons in words a person can act on. */
-  | { ok: false; reason: "illegal"; problems: string[] }
-  /** Refused because somebody else's claim is still inside its lease. */
-  | { ok: false; reason: "held"; heldBy: string };
-
 /**
- * Changes one row — a move, a revision of its text, a grade — in a single
- * write, after every rule the change touches has been asked.
+ * A move, a revision of the title or detail, or a grade, as one PATCH.
  *
- * Refused whole or written whole, exactly as before ITS-01: nothing is
- * written until every field the request carries has passed its own rule. The
- * rules are asked in the same module the form and the route ask them in:
- *
- *  - a status, against the table of moves (`moveProblems`);
- *  - a title, a detail, a kind or an asker, against what makes a usable
- *    request (`draftProblems`, over the row as it would stand afterwards);
- *  - a grade, against `editProblems`.
- *
- * What changed is how the write happens once validation has passed and a
- * status is part of the request. A status is not this process's alone to
- * grant — another session, or another tab, may be moving the same row right
- * now — so it is never written on the strength of what `findUnique` returned
- * a moment ago. The write is conditional (BOARD_RULES.md invariant 4): the
- * database is asked to change the row only if it still stands where this
- * read it and is not held by a live claim that is not this actor's. A grade
- * or a text revision carrying no status touches neither the status column
- * nor the claim, so it is written plainly — the condition exists to protect
- * exactly those two columns, nothing else needs it.
- *
- * `movedAt` and the claim move only with the status — an edit to a title is
- * not movement, and does not touch who holds the row. The key never changes:
- * it was derived once and may already be cited somewhere.
+ * The row is read first, so a move its current status does not allow is
+ * refused in `moveProblems`' words. Two things are refused outright: `done`,
+ * which only the release tool writes, and a change to a row's kind or who
+ * asked, which Sumilabu's board keeps as the row was filed.
  */
-export async function changeItem(
-  id: string,
-  change: BacklogChange,
-  actor: string,
-  now: Date = new Date(),
-): Promise<MoveOutcome> {
-  const current = await prisma.backlogItem.findUnique({ where: { id }, select: SELECT });
-  if (current === null) return { ok: false, reason: "missing" };
-  const item = toItem(current);
-
-  const { status, title, detail, kind, askedBy, ...edit } = change;
-  const text: Partial<BacklogDraft> = { title, detail, kind, askedBy };
-  const revising = Object.values(text).some((value) => value !== undefined);
-  const revised = revising ? normalizeDraft(revisedDraft(item, text)) : null;
-
-  const problems = [
-    /*
-     * A change that would write nothing is refused rather than reported as
-     * done. Every rule below is silent about a field it was not given, so a
-     * body naming none of them used to pass all three and compose `data = {}`
-     * — a write of nothing, answered 200. `changeProblems` is the rule that
-     * has an opinion about the change AS A WHOLE, which is the only place
-     * that question can be asked from.
-     */
-    ...changeProblems(change),
-    ...(status === undefined ? [] : moveProblems(item.status, status)),
-    ...(revised === null ? [] : draftProblems(revised)),
-    ...editProblems(edit),
-  ];
-  if (problems.length > 0) return { ok: false, reason: "illegal", problems };
-
-  const textData = revised === null ? {} : { title: revised.title, detail: revised.detail, kind: revised.kind, askedBy: revised.askedBy };
-  const gradeData = {
-    ...(edit.priority === undefined ? {} : { priority: edit.priority }),
-    ...(edit.effort === undefined ? {} : { effort: edit.effort }),
-  };
-
-  if (status === undefined) {
-    // Neither the status nor the claim is touched, so this needs none of the
-    // conditional dance a move does.
-    const row = await prisma.backlogItem.update({ where: { id }, data: { ...textData, ...gradeData }, select: SELECT });
-    return { ok: true, item: toItem(row) };
+export async function changeItem(id: string, change: BacklogChange, actor: string): Promise<BoardActionOutcome> {
+  if (text(id) === "") return { ok: false, problem: "Which row?" };
+  const nothing = changeProblems(change);
+  if (nothing.length > 0) return { ok: false, problem: nothing[0]! };
+  if (change.status === BACKLOG_STATUSES.done) return { ok: false, problem: "Only the release tool may mark a row done." };
+  if (change.kind !== undefined || change.askedBy !== undefined) {
+    return { ok: false, problem: "The board revises a row's title and detail; its kind and who asked stay as it was filed." };
   }
+  try {
+    const target = sumilabuTarget("board");
+    const item = await ticketById(target, id);
+    if (item === null) return { ok: false, problem: "No such row on the board." };
+    const refused = change.status === undefined ? [] : moveProblems(item.status, change.status);
+    if (refused.length > 0) return { ok: false, problem: refused[0]! };
 
-  const staleBefore = new Date(now.getTime() - LEASE_MS);
-  const moved = await prisma.backlogItem.updateMany({
-    /*
-     * THE STORED STATUS, NOT THE READ ONE. `toItem` folds the board's older
-     * vocabulary as it reads — `proposed` becomes `open`, `building` becomes
-     * `inProgress` — so `item.status` is what the row MEANS and
-     * `current.status` is what the row SAYS. This `where` is matched by the
-     * database against the column, so it has to be the latter.
-     *
-     * Getting that wrong made every legacy row unmovable: 14 rows on
-     * production, including 6 the release sweep needed, refused every move
-     * with `status = 'open'` matching a column holding `'proposed'`. It only
-     * showed against production, because the development database had been
-     * migrated to the new words and had no legacy row left to catch it.
-     */
-    where: moveWhere(id, current.status as BacklogStatus, actor, staleBefore),
-    data: { ...moveData(status, actor, now), ...textData, ...gradeData },
-  });
-
-  if (moved.count === 0) {
-    /*
-     * Nothing matched. Re-read to say WHICH of the two reasons it was, rather
-     * than reporting the commoner one and being wrong the rest of the time:
-     * a live claim somebody else holds, or the row having moved out from
-     * under this change since it was read.
-     *
-     * "held by somebody" was the single answer here, and it is a guess
-     * wearing a fact — the fault above surfaced as fourteen rows claiming to
-     * be held when not one of them was claimed at all, which is what sent the
-     * first diagnosis to the lease instead of the `where`.
-     */
-    const fresh = await prisma.backlogItem.findUnique({ where: { id }, select: { claimedBy: true, status: true } });
-    if (fresh === null) return { ok: false, reason: "missing" };
-    if (fresh.claimedBy !== null && fresh.claimedBy !== "") {
-      return { ok: false, reason: "held", heldBy: fresh.claimedBy };
-    }
-    return {
-      ok: false,
-      reason: "illegal",
-      problems: [`This row is "${fresh.status}" now, not "${current.status}" — read it again and try the move from there.`],
+    const body: BoardChange = {
+      ...(change.status === undefined ? {} : { status: change.status as BoardMoveTarget }),
+      ...(change.title === undefined ? {} : { title: text(change.title) }),
+      ...(change.detail === undefined ? {} : { detail: text(change.detail) }),
+      ...(change.priority === undefined ? {} : { priority: change.priority }),
+      ...(change.effort === undefined ? {} : { effort: change.effort }),
     };
+    const changed = await patchTicket(target, id, body, actor);
+    return changed.ok ? { ok: true } : { ok: false, problem: changed.problems[0]! };
+  } catch (error) {
+    console.error(`A row could not be changed: ${why(error)}`);
+    return { ok: false, problem: `The board could not be reached: ${why(error)}` };
   }
-
-  const row = await prisma.backlogItem.findUniqueOrThrow({ where: { id }, select: SELECT });
-  return { ok: true, item: toItem(row) };
-}
-
-/**
- * Moves an item to another status, if the board's table of moves allows it
- * and nobody else's live claim is in the way. `actor` is who is making the
- * move — written into `claimedBy` when the destination is In progress,
- * cleared everywhere else — and there is no anonymous move (BOARD_RULES.md
- * invariant 5).
- */
-export async function moveItem(id: string, to: BacklogStatus, actor: string, now: Date = new Date()): Promise<MoveOutcome> {
-  return changeItem(id, { status: to }, actor, now);
-}
-
-/**
- * Writes the fields of a row that are somebody's opinion rather than the
- * board's rules: how much it matters, how much work it is.
- *
- * A status is not one of them and never passes through here; it is a move,
- * and a move is `changeItem` with a status on it. `actor` is accepted for the
- * same signature every store write carries, though a grade touches neither
- * the status column nor the claim, so nothing here writes it anywhere.
- */
-export async function editItem(id: string, fields: BacklogEdit, actor: string, now: Date = new Date()): Promise<MoveOutcome> {
-  return changeItem(id, fields, actor, now);
-}
-
-/**
- * Marks a row done, with the release that carried it. The only door: `done`
- * is not in `STATUS_MOVES` as a destination (board convergence ITS-04), so
- * `changeItem`/`moveItem` refuse it as illegal before this function is ever
- * reached, from the page, from `pnpm task`, from anywhere but the route's
- * own release-tool branch. That is deliberate — see BOARD_RULES.md
- * invariant 9 and STATUS_MOVES's own comment on `done`.
- *
- * Legal from `inProgress` only, and conditional the same way a move is
- * (BOARD_RULES.md invariant 4): a live claim somebody else holds, or a row
- * that has moved out from under this call since it was read, is refused
- * rather than overwritten. `moveWhere` is asked with the row's STORED
- * status — `current.status`, not the folded `item.status` — for the same
- * reason `changeItem` does: the database matches the `where` against the
- * column, and a legacy row can say `building` while meaning `inProgress`.
- *
- * `claimedBy`/`claimedAt` clear the way any move away from `inProgress`
- * does: a finished row is nobody's to hold. `movedAt` moves with it, the
- * same as every other status change.
- */
-export async function finishItem(
-  id: string,
-  release: { version: string; at: Date },
-  actor: string,
-  now: Date = new Date(),
-): Promise<MoveOutcome> {
-  const current = await prisma.backlogItem.findUnique({ where: { id }, select: SELECT });
-  if (current === null) return { ok: false, reason: "missing" };
-  const item = toItem(current);
-
-  if (item.status !== BACKLOG_STATUSES.inProgress) {
-    return {
-      ok: false,
-      reason: "illegal",
-      problems: [`Only a row in progress may be marked done; this one is "${item.status}".`],
-    };
-  }
-
-  /*
-   * The release it closes at, against the changelog this server holds. A
-   * version the history has passed without naming is refused with the stamp's
-   * own refusal; a release newer than every one named is the release tool's,
-   * on its way. See `finishReleaseProblems` for why that is not the stamp's
-   * rule unchanged.
-   */
-  const refused = finishReleaseProblems(release.version, (await readReleases()).map((one) => one.version));
-  if (refused.length > 0) return { ok: false, reason: "illegal", problems: refused };
-
-  const staleBefore = new Date(now.getTime() - LEASE_MS);
-  const moved = await prisma.backlogItem.updateMany({
-    where: moveWhere(id, current.status as BacklogStatus, actor, staleBefore),
-    data: {
-      status: BACKLOG_STATUSES.done,
-      releasedIn: release.version,
-      releasedAt: release.at,
-      claimedBy: null,
-      claimedAt: null,
-      movedAt: now,
-    },
-  });
-
-  if (moved.count === 0) {
-    const fresh = await prisma.backlogItem.findUnique({ where: { id }, select: { claimedBy: true, status: true } });
-    if (fresh === null) return { ok: false, reason: "missing" };
-    if (fresh.claimedBy !== null && fresh.claimedBy !== "") {
-      return { ok: false, reason: "held", heldBy: fresh.claimedBy };
-    }
-    return {
-      ok: false,
-      reason: "illegal",
-      problems: [`This row is "${fresh.status}" now, not "${current.status}" — read it again and try the move from there.`],
-    };
-  }
-
-  const row = await prisma.backlogItem.findUniqueOrThrow({ where: { id }, select: SELECT });
-  return { ok: true, item: toItem(row) };
-}
-
-/**
- * Stamps the release that carried a row onto a row that is already done and
- * carries none. The door the backfill needed and did not have — see
- * docs/plans/board-convergence/released-in-backfill.md, which measured that
- * `finishItem` refuses a done row and `changeItem` never wrote the field.
- *
- * NOT A MOVE. It writes `releasedIn` and `releasedAt` and nothing else: no
- * status, no `movedAt`, no claim. A done row still does not move
- * (BOARD_RULES.md invariant 1) and done is still reached by the release tool
- * alone (invariant 9); this only lets a row that is already there say which
- * release it was. The rules are `stampProblems`, asked here so an in-process
- * caller is refused the same way the route refuses — a row that is not done,
- * a row already stamped, a version the changelog does not name.
- *
- * No actor, and that is deliberate rather than an omission. Every MOVE has
- * one because a move can write a claim (invariant 5); a stamp reads no hold
- * and writes none, so there is nothing here for a name to go into. The route
- * still admits nobody anonymous — `boardActor` decides who may knock — the
- * store simply has no column to record who did.
- *
- * `at` may be null. The backfill knows the instant a version was bumped and
- * passes it; a person stamping an old release from the CLI does not, and
- * the row's own wording already tells "shipped in" from "marked done in" by
- * whether `releasedAt` is set. An instant nobody measured is not invented.
- *
- * Conditional like every other write that decides something: two stamps for
- * one row write once, and the second is told the row is already stamped.
- */
-export async function stampRelease(
-  id: string,
-  release: { version: string; at: Date | null },
-): Promise<MoveOutcome> {
-  const current = await prisma.backlogItem.findUnique({ where: { id }, select: SELECT });
-  if (current === null) return { ok: false, reason: "missing" };
-  const item = toItem(current);
-
-  /*
-   * The record of what shipped, read at the moment of asking. A changelog
-   * that cannot be read comes back empty, and every version is then refused
-   * as unknown — the safe direction: a stamp not written can be written
-   * later, and one written on a guess cannot be taken back.
-   */
-  const released = (await readReleases()).map((one) => one.version);
-  const problems = stampProblems(item, release.version, released);
-  if (problems.length > 0) return { ok: false, reason: "illegal", problems };
-
-  const stamped = await prisma.backlogItem.updateMany({
-    where: stampWhere(id, current.status as BacklogStatus),
-    data: { releasedIn: release.version, releasedAt: release.at },
-  });
-
-  if (stamped.count === 0) {
-    const fresh = await prisma.backlogItem.findUnique({ where: { id }, select: { status: true, releasedIn: true } });
-    if (fresh === null) return { ok: false, reason: "missing" };
-    return { ok: false, reason: "illegal", problems: stampProblems({ status: statusFrom(fresh.status), releasedIn: fresh.releasedIn }, release.version, released) };
-  }
-
-  const row = await prisma.backlogItem.findUniqueOrThrow({ where: { id }, select: SELECT });
-  return { ok: true, item: toItem(row) };
 }

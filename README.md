@@ -252,10 +252,10 @@ twice). Anyone signed in can add to it and move an item along.
 Which moves are allowed is a table, not a convention: a proposal cannot reach
 done without having been built, and a dropped item comes back as a proposal
 rather than as work. `src/lib/backlog/backlog.ts` holds that table and every
-other decision, purely; the row's select is built from it and
-`PATCH /api/backlog/:id` refuses anything it rejects.
-`backlog.coverage.test.ts` is the gate — see AGENTS.md, "Board Gate". The
-starter set in `backlog.seed.data.ts` is written once, into an empty board.
+other decision, purely; the row's select is built from it, and the rows
+themselves live on Sumilabu's board, which refuses anything the table rejects
+whatever calls it. `backlog.coverage.test.ts` is the gate — see AGENTS.md,
+"Board Gate".
 
 Beneath the board on the same page is the other half: **every release so far**,
 parsed from `CHANGELOG.md` at request time rather than kept a second time, with

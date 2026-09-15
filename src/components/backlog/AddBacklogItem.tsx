@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS, SELECT_CLASS } from "@/components/ui/ui.constants";
 import { BACKLOG_KIND_VALUES, draftProblems } from "@/lib/backlog/backlog";
+import { addBacklogItem } from "@/lib/backlog/backlog.actions";
 import { KIND_DISPLAY, TITLE_MAX } from "@/lib/backlog/backlog.constants";
 import type { BacklogKind } from "@/lib/backlog/backlog.types";
 
@@ -12,9 +13,9 @@ import type { AddBacklogItemProps } from "./backlogBoard.types";
 /**
  * Adding a request.
  *
- * The same `draftProblems` the API route refuses on is what greys the button
- * out, so the form cannot ask for something the server will not take, and the
- * rule about what counts as a real request is stated once.
+ * The same `draftProblems` the Server Function refuses on is what greys the
+ * button out, so the form cannot ask for something the board will not take,
+ * and the rule about what counts as a real request is stated once.
  */
 export function AddBacklogItem({ who, onAdded }: AddBacklogItemProps) {
   const [title, setTitle] = useState("");
@@ -32,15 +33,13 @@ export function AddBacklogItem({ who, onAdded }: AddBacklogItemProps) {
     if (!ready) return;
     setBusy(true);
     setError(null);
-    const response = await fetch("/api/backlog", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, detail, kind, askedBy }),
-    });
+    const outcome = await addBacklogItem({ title, detail, kind, askedBy }).catch(() => ({
+      ok: false as const,
+      problem: "That did not go through.",
+    }));
     setBusy(false);
-    if (!response.ok) {
-      const body = (await response.json().catch(() => ({}))) as { error?: string };
-      setError(body.error ?? "That did not go through.");
+    if (!outcome.ok) {
+      setError(outcome.problem);
       return;
     }
     setTitle("");
