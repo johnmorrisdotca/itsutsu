@@ -1,26 +1,35 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import useSWR, { type KeyedMutator } from "swr";
 
 import type { GameDetail } from "@/lib/history/gameHistory.types";
-import { IDLE_STOP_MS } from "./live.constants";
-import { pollInterval } from "./pollCadence";
+import { pollEvery, pollInterval } from "./pollCadence";
+import { useBoardAwake } from "./useBoardAwake";
 
 /**
- * Keeping a board current.
+ * Keeping a board current, at a price the site can pay.
  *
- * The server owns the rules; this only decides how often to ask it what has
+ * The server owns the rules; this only decides when to ask it what has
  * happened. Polling is deliberately plain — a board changes a few times a
- * minute at most, so a short poll costs less than the machinery a socket
- * would need, and it survives a phone locking and waking up.
- */
-
-/*
- * The three numbers this spends — how often in front, how often behind, and
- * how long a background tab asks about a game where nothing happens — live in
- * `live.constants.ts` with their reasons, and the choice between them is
- * `pollInterval` in `pollCadence.ts`, where a unit test holds it.
+ * minute at most, and a held connection is a service this site does not buy —
+ * but every ask is a function call on a paid account, so it asks as little as
+ * a person watching the board would notice:
+ *
+ *  - every `POLL_MS` (fifteen seconds) while somebody is looking at it;
+ *  - never from a hidden tab — `revalidateOnFocus` asks the moment it is shown;
+ *  - not at all once `IDLE_STOP_MS` pass with nothing happening, on the board
+ *    or from the reader, until a press, a key, focus or the tab being shown
+ *    wakes it and it asks at once;
+ *  - and not after the player's own move, whose answer is the new board
+ *    (`SharedGame`'s `send` puts it in the cache without asking again).
+ *
+ * It was every two and a half seconds in front and every thirty behind, for an
+ * hour after the last move: about 1,400 function calls an hour from one board
+ * left open. John, 2026-09-15: "we have to stop doing things like that that
+ * will eat up CPU time." The numbers live in `live.constants.ts` with their
+ * reasons, the choice between them is `pollInterval`, and
+ * `e2e/live-poll-cadence.spec.ts` counts what a browser really sends.
  */
 
 const fetcher = async (url: string): Promise<GameDetail> => {
@@ -46,72 +55,56 @@ function usePageVisible(): boolean {
 }
 
 /**
- * The game as it stands, kept up to date for as long as it is being played.
+ * The game as it stands, kept up to date for as long as it is being played
+ * and somebody is there to see it.
  *
- * A finished game has nothing left to poll for, so the asking stops the
- * moment one comes back settled.
+ * A finished game has nothing left to poll for, so the asking stops the moment
+ * one comes back settled.
  */
 export function useLiveGame(initial: GameDetail): {
   game: GameDetail;
   mutate: KeyedMutator<GameDetail>;
+  /** The game is in play and the board has stopped asking for want of anything happening. */
+  paused: boolean;
+  /** Wakes a paused board, which asks at once. */
+  resume: () => void;
+  /** The cadence this board asks at while awake and looked at, for the page to say. */
+  pollEvery: number;
 } {
   const [polling, setPolling] = useState(initial.status === "active");
   const visible = usePageVisible();
-  const [lastMove, setLastMove] = useState(initial.lastMoveAt ?? initial.playedAt);
-  const [asleep, setAsleep] = useState(false);
+  const every = pollEvery();
 
   /*
-   * Handing the page back to the server when the game ends under the reader
-   * is not done here any more. It has to agree with the address the board
-   * keeps, and doing it apart from that address is what reloaded some pages
-   * and froze others — see `useMatchAddress`.
+   * Waking asks at once, through SWR's own mutate — which does not exist until
+   * `useSWR` below has run, so the wake reaches it through a ref.
    */
-
-  /*
-   * The hour is counted by a timer, not by a clock read while rendering. A
-   * game where nothing is happening is exactly the case where nothing changes
-   * — a poll that comes back identical re-renders nothing — so a comparison
-   * made during render would never notice the hour go by. The timeout fires
-   * on its own, and a move landing changes `lastMove`, which starts it again.
-   */
-  useEffect(() => {
-    if (visible) return;
-    const remaining = IDLE_STOP_MS - (Date.now() - new Date(lastMove).getTime());
-    const timer = setTimeout(() => setAsleep(true), Math.max(0, remaining));
-    return () => clearTimeout(timer);
-  }, [visible, lastMove]);
-
-  // Being looked at is enough on its own; sleep only ever applies to a tab
-  // nobody is watching.
-  const awake = visible || !asleep;
+  const refetch = useRef<() => void>(() => {});
+  const onWake = useCallback(() => refetch.current(), []);
+  const { awake, stir } = useBoardAwake(onWake);
 
   const { data, mutate } = useSWR(`/api/games/${initial.id}`, fetcher, {
     fallbackData: initial,
-    refreshInterval: pollInterval({ polling, awake, visible }),
-    onSuccess: (latest) => {
-      setPolling(latest.status === "active");
-      // A move landing starts the idle hour again.
-      setLastMove(latest.lastMoveAt ?? latest.playedAt);
-      /*
-       * Having just heard from the server is the definition of awake. This is
-       * also what brings a slept tab back: returning to it revalidates on
-       * focus, and that answer lands here.
-       */
-      setAsleep(false);
-    },
-    /*
-     * Keep polling while the tab is in the background, slowly. This is a game
-     * played over minutes on two phones — the board has to be current the
-     * moment someone looks at it, not a poll interval later — and
-     * `revalidateOnFocus` is what delivers that: attention returning fetches
-     * at once. Between glances a background tab need not ask every two and a
-     * half seconds, and asking anyway is how one forgotten tab came to cost
-     * tens of thousands of uncached reads a day.
-     */
-    refreshWhenHidden: true,
+    refreshInterval: pollInterval({ polling, awake, visible, every }),
+    onSuccess: (latest) => setPolling(latest.status === "active"),
+    refreshWhenHidden: false,
     revalidateOnFocus: true,
   });
 
+  useEffect(() => {
+    refetch.current = () => void mutate();
+  }, [mutate]);
+
+  /*
+   * ANY CHANGE ON THE BOARD KEEPS IT AWAKE. SWR hands back the same object when
+   * an answer is identical to the last, so a new `data` is a real change — a
+   * move from either side, a reaction, an offer, the clock, a name — however
+   * it arrived. A board that is changing is never put to sleep.
+   */
+  useEffect(() => {
+    stir();
+  }, [data, stir]);
+
   const game = data ?? initial;
-  return { game, mutate };
+  return { game, mutate, paused: polling && !awake, resume: stir, pollEvery: every };
 }

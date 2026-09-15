@@ -95,7 +95,10 @@ jobs:
       # See .env.example, which explains each of these and why the relief is
       # set. RATE_LIMIT_RELIEF is not optional: without it the suite drives
       # the whole site from one address and a dozen tests fail with 429s in
-      # files testing something else entirely.
+      # files testing something else entirely. NEXT_PUBLIC_LIVE_POLL_RELIEF
+      # is its twin for the live board's cadence: without it the two-seat
+      # specs wait fifteen seconds for each move the other seat makes. Both are
+      # refused in production.
       #
       # The two AUTH_GOOGLE_* values are throwaways and nothing ever redeems
       # them, but they must be PRESENT: without a client id the sign-in button
@@ -114,6 +117,7 @@ jobs:
           AUTH_GOOGLE_ID="ci-only-not-a-real-client-id"
           AUTH_GOOGLE_SECRET="ci-only-not-a-real-client-secret"
           RATE_LIMIT_RELIEF=20
+          NEXT_PUBLIC_LIVE_POLL_RELIEF=6
           ENV
 
       - name: Install dependencies
