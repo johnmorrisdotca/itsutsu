@@ -1,12 +1,10 @@
 import "server-only";
 
-import type { Prisma } from "@prisma/client";
-
 import { foldEmail, memberRowFor } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 
 import { DEFAULT_PREFERENCES } from "./preferences.constants";
-import { mergePreferences, preferencesFrom, sameStored } from "./preferences";
+import { mergePreferences, patchParts, preferencesFrom, sameStored } from "./preferences";
 import type { PreferencePatch, Preferences } from "./preferences.types";
 
 /**
@@ -67,26 +65,51 @@ export async function storedPreferencesFor(email: string | null): Promise<unknow
 }
 
 /**
- * Lays a change over what the row holds and writes it back: one update by
- * primary key, or none when nothing would change.
+ * Lays a change over what the row holds: one statement, or none when nothing
+ * would change.
  *
  * The row's current value comes from whoever already has it — a page from the
  * read it makes anyway, the API from the profile it has just fetched — so
- * remembering never reads on its own account. Read, merge, write rather than a
+ * remembering never reads on its own account. A merge rather than a
  * replacement, because the column holds every preference at once and a page
  * that knows about one of them must not erase the others by writing only its
- * own. Two devices changing different preferences in the same instant could
- * lose one: a choice somebody can make again, which is not worth a lock.
+ * own.
+ *
+ * THE MERGE HAPPENS IN THE DATABASE, INSIDE THE UPDATE. It used to happen
+ * here, over the row as this request first read it, and the whole object went
+ * back — so two overlapping writes of DIFFERENT preferences kept only the one
+ * that landed last. That was written off as two devices in the same instant,
+ * which nobody would meet. The browser suite met it twice, as flakes:
+ *
+ *  - The XP board and its rungs remember who and how much in one render, both
+ *    at once (`xpWhoFor` and `xpScopeFor` under one `Promise.all`), from one
+ *    cached row. Whichever wrote second put the other back, so a chip followed
+ *    on a rung could be forgotten by the board a click later.
+ *  - A device reporting its time zone through `/api/me` fires as a page
+ *    hydrates, which is the second somebody clicks a language. The zone's
+ *    write carried the row from before the click and took the language back
+ *    off the account, and the member's next device spoke the old one.
+ *
+ * Laid over the column inside the statement, each write sets and removes only
+ * the keys its patch names (`patchParts`), so neither can undo the other. Two
+ * writes of the SAME preference still end on the later one, which is the right
+ * answer for one choice made twice. A key this version does not know is left
+ * where it was, as before. And `stored` still decides whether there is
+ * anything to say: the same link followed twice costs no write.
  */
 export async function writePreferences(email: string, stored: unknown, patch: PreferencePatch): Promise<void> {
-  const merged = mergePreferences(stored, patch);
   // Re-following a link already chosen says nothing new, and costs nothing.
-  if (sameStored(stored, merged)) return;
-  await prisma.member.update({
-    where: { email: foldEmail(email) },
-    // What came out of the column goes back into it, with the change laid over.
-    data: { preferences: merged as Prisma.InputJsonObject },
-  });
+  if (sameStored(stored, mergePreferences(stored, patch))) return;
+  const { set, forget } = patchParts(patch);
+  const written = await prisma.$executeRaw`
+    UPDATE "Member"
+    SET "preferences" = (
+      CASE WHEN jsonb_typeof("preferences") = 'object' THEN "preferences" ELSE '{}'::jsonb END
+      || ${JSON.stringify(set)}::jsonb
+    ) - ${forget}::text[]
+    WHERE "email" = ${foldEmail(email)}`;
+  // What `member.update` did for a row that is not there: say so, rather than succeed at nothing.
+  if (written === 0) throw new Error("There is no member row to keep these preferences on.");
 }
 
 /**

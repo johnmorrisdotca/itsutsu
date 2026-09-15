@@ -105,12 +105,31 @@ export function acceptPreferences(asked: unknown): Accepted {
  */
 export function mergePreferences(stored: unknown, patch: PreferencePatch): Record<string, unknown> {
   const merged: Record<string, unknown> = isRow(stored) ? { ...stored } : {};
+  const { set, forget } = patchParts(patch);
+  for (const name of forget) delete merged[name];
+  // A key already stored keeps its place and takes the new value; a new one goes last.
+  return { ...merged, ...set };
+}
+
+/**
+ * A patch as the two things it can do to the column: the preferences it sets,
+ * and the ones it forgets.
+ *
+ * The one reading of a patch, shared by `mergePreferences` above and by the
+ * write in `memberPreferences.ts`, which lays exactly these over the column
+ * inside the database rather than over a copy of it — so the registry's
+ * filter is the same in both places, and a name it does not know reaches the
+ * column by neither.
+ */
+export function patchParts(patch: PreferencePatch): { set: Record<string, unknown>; forget: string[] } {
+  const set: Record<string, unknown> = {};
+  const forget: string[] = [];
   for (const [name, value] of Object.entries(patch)) {
     if (!isPreferenceName(name) || value === undefined) continue;
-    if (value === null) delete merged[name];
-    else merged[name] = value;
+    if (value === null) forget.push(name);
+    else set[name] = value;
   }
-  return merged;
+  return { set, forget };
 }
 
 /**
