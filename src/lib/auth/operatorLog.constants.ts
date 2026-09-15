@@ -14,6 +14,8 @@ export const OPERATOR_ACTIONS = {
   wordsSet: "wordsSet",
   /** A four-word pick opened for a member: no credential exists yet, but somebody started making one. */
   wordsPickOpened: "wordsPickOpened",
+  /** A member's name taken off or set by the operator. The row says which, never the name. */
+  rename: "rename",
 } as const satisfies Record<string, OperatorActionName>;
 
 /** What the Admin tab says for each act, in the site's paired English and kanji. */
@@ -22,6 +24,7 @@ export const OPERATOR_ACTION_DISPLAY: Record<OperatorActionName, { label: string
   restore: { label: "Opened the account", kanji: "再開" },
   wordsSet: { label: "Set four words", kanji: "合言葉" },
   wordsPickOpened: { label: "Opened a four-word pick", kanji: "選択" },
+  rename: { label: "Changed the name", kanji: "改名" },
 };
 
 /**

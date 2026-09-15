@@ -8,6 +8,9 @@ import { isReservedKey } from "@/lib/rating/reservedKeys";
 import { awardAdmission } from "@/lib/xp/admission";
 import { foldEmail } from "./foldEmail";
 import { zoneAssignment } from "./zoneGuess";
+import { operatorActionWrite } from "./operatorLog";
+import { OPERATOR_ACTIONS } from "./operatorLog.constants";
+import type { OperatorActor } from "./operatorLog.types";
 
 /*
  * Re-exported so every caller imports them from where it always did. The row
@@ -181,6 +184,13 @@ export async function admitMember(
 export async function renameMember(
   memberId: string,
   name: string,
+  /**
+   * The operator, when an operator is the one taking a name off or setting one:
+   * the rename and its `OperatorAction` row are then one transaction. A member
+   * renaming themselves passes nothing, and nothing about their path changes.
+   * The row says whether a name was taken off or set, never either name.
+   */
+  by?: OperatorActor,
 ): Promise<{ id: string; name: string; picture: string } | null> {
   const key = playerKey(name);
   if (isReservedKey(key)) return null;
@@ -203,11 +213,25 @@ export async function renameMember(
       if (record !== null) return null;
     }
   }
-  const renamed = await prisma.member.update({
+  const update = prisma.member.update({
     where: { id: memberId },
     data: { name },
     select: { id: true, name: true, picture: true },
   });
+  const renamed =
+    by === undefined
+      ? await update
+      : (
+          await prisma.$transaction([
+            update,
+            operatorActionWrite({
+              actor: by,
+              action: OPERATOR_ACTIONS.rename,
+              subjectId: memberId,
+              detail: name.trim() === "" ? "name taken off" : "name set",
+            }),
+          ])
+        )[0];
 
   /*
    * THE NEW NAME REACHES THE RATING ROWS, and this is the half that was

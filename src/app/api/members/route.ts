@@ -126,7 +126,8 @@ export async function PATCH(request: Request) {
       return NextResponse.json(member, { headers: NO_STORE });
     }
 
-    const renamed = await renameMember(parsed.data.id, parsed.data.name);
+    // Kept in the operator log, in the same transaction as the rename: see `renameMember`.
+    const renamed = await renameMember(parsed.data.id, parsed.data.name, operatorActor(me));
     if (renamed === null) return badRequest("That name is not free.");
     return NextResponse.json(renamed, { headers: NO_STORE });
   } catch (error) {
