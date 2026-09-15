@@ -224,7 +224,10 @@ jobs:
               exit 0
             fi
             for url in $urls; do
-              vercel remove "$url" --safe --yes --token="$VERCEL_TOKEN"
+              # --safe exits 1 on a deployment a domain still points at, and bash -e
+              # would end the step there; the no-progress check below decides instead.
+              vercel remove "$url" --safe --yes --token="$VERCEL_TOKEN" \
+                || echo "Kept $url: a domain still points at it."
             done
             previous="$urls"
           done
