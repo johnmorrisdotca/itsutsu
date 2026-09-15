@@ -96,14 +96,14 @@ export async function setAway(memberId: string, from: Date | null, until: Date |
     used = Math.max(0, used - awayDays(row.awayFrom, row.awayUntil));
   }
   if (from === null || until === null) {
-    await prisma.member.update({ where: { email: key }, data: { awayFrom: null, awayUntil: null, awayDaysUsed: used, awayYear: year } });
+    await prisma.member.update({ where: { id: key }, data: { awayFrom: null, awayUntil: null, awayDaysUsed: used, awayYear: year } });
     return { ok: true, used };
   }
   if (until.getTime() <= from.getTime()) return { ok: false, reason: "range", used };
   const days = awayDays(from, until);
   if (used + days > AWAY_DAYS_A_YEAR) return { ok: false, reason: "allowance", used };
   await prisma.member.update({
-    where: { email: key },
+    where: { id: key },
     data: { awayFrom: from, awayUntil: until, awayDaysUsed: used + days, awayYear: year },
   });
   return { ok: true, used: used + days };
