@@ -1,3 +1,4 @@
+import type { PictureSize } from "@/components/games/games.types";
 import type { BoardGrid, Cell, GameState, MoveNarrowing, PieceCell, Point, Stone } from "@/lib/gomoku/gomoku.types";
 import type { BOARD_THEMES, STONE_SETS } from "./Board.constants";
 
@@ -251,10 +252,10 @@ export type StoneMarkProps = {
 export type BoardSizeMarkWords = "beside" | "none";
 
 export type BoardSizeMarkProps = {
-  /** The length of one side: 3 for tic-tac-toe, 19 for a go board. */
-  size: number;
-  /** The side of the mark in CSS pixels. The numeral is scaled from it. */
-  px: number;
+  /** The length of one side of the board: 3 for tic-tac-toe, 19 for a go board. */
+  side: number;
+  /** One of the site's two picture sizes. The numeral is scaled from it. */
+  size: PictureSize;
   words: BoardSizeMarkWords;
   className?: string;
 };

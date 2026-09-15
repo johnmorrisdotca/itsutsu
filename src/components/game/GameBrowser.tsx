@@ -116,7 +116,7 @@ function GameBrowser({
                   >
                     <h3 className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-2 text-base font-semibold">
-                        <GameThumb variant={option} size="card" />
+                        <GameThumb variant={option} size="regular" />
                         {/*
                           A NAME INSIDE A CHOOSER IS A CHOICE, NOT A REFERENCE.
                           This dialog is where a game is picked, over a board

@@ -5,6 +5,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { PICTURE_PX } from "@/components/games/games.constants";
+import type { PictureSize } from "@/components/games/games.types";
 import { ALL_BOARD_SIZES } from "@/lib/gomoku/gomoku.constants";
 
 import { boardSizeWords } from "./Board.constants";
@@ -28,17 +30,16 @@ import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
  * size the site plays on rather than over a couple of them: a mark that comes
  * out without its number fails here whatever board it is drawing.
  */
-function draw(size: number, words: BoardSizeMarkWords, px = 48): string {
-  return renderToStaticMarkup(createElement(BoardSizeMark, { size, px, words }));
+function draw(side: number, words: BoardSizeMarkWords, size: PictureSize = "regular"): string {
+  return renderToStaticMarkup(createElement(BoardSizeMark, { side, size, words }));
 }
 
 /**
- * The side the picker draws every block's mark at (70, `BOARD_MARK_PX`), and a
- * smaller one. The picker has one size since every block took the big number;
- * the smaller side stays in the sweep so the numeral's scale is checked at
- * more than the one size that happens to be in use.
+ * Both of the site's picture sizes: regular, the set-up block, and large, the
+ * doorstep's board at twice it. The sweep covers both so the numeral's scale is
+ * checked at every size a mark is actually drawn.
  */
-const PICKER_SIZES_PX = [48, 70] as const;
+const PICTURE_SIZES = ["regular", "large"] as const satisfies readonly PictureSize[];
 
 describe("boardSizeMarkVoice", () => {
   it("is silent where the size is in text beside it", () => {
@@ -59,15 +60,15 @@ describe("BoardSizeMark", () => {
 
   it("puts the size in the middle of every board the site offers, at either size, either voice", () => {
     for (const size of ALL_BOARD_SIZES) {
-      for (const px of PICKER_SIZES_PX) {
+      for (const picture of PICTURE_SIZES) {
         for (const words of ["beside", "none"] as const) {
-          const html = draw(size, words, px);
-          const where = `${size}×${size} at ${px}px, words=${words}`;
+          const html = draw(size, words, picture);
+          const where = `${size}×${size} at ${picture}, words=${words}`;
           // The number itself, as its own element in the middle of the mark.
           expect(html, where).toContain(`>${size}</span>`);
           // On its plate, in figures set the way the site sets figures.
           expect(html, where).toContain("tabular-nums");
-          expect(html, where).toContain(`font-size:${boardSizeNumeralPx(px, size)}px`);
+          expect(html, where).toContain(`font-size:${boardSizeNumeralPx(PICTURE_PX[picture], size)}px`);
         }
       }
     }
@@ -97,8 +98,9 @@ describe("BoardSizeMark", () => {
     expect(html).not.toContain("aria-hidden");
   });
 
-  it("is drawn at the size it is asked for", () => {
-    expect(draw(8, "none", 70)).toContain("width:70px;height:70px");
+  it("is drawn at the picture size it is asked for, large at twice regular", () => {
+    expect(draw(8, "none", "regular")).toContain("width:70px;height:70px");
+    expect(draw(8, "none", "large")).toContain("width:140px;height:140px");
   });
 });
 
@@ -115,7 +117,7 @@ describe("boardSizeNumeralPx", () => {
     // Two digits is the worst case here and 19 is the widest of them, but the
     // sweep is over every size so a board added later is measured rather than
     // assumed — an overflowing mark is the wrong way to find that out.
-    for (const px of [24, ...PICKER_SIZES_PX]) {
+    for (const px of [24, 48, ...Object.values(PICTURE_PX)]) {
       for (const size of ALL_BOARD_SIZES) {
         const font = boardSizeNumeralPx(px, size);
         const digits = String(size).length;

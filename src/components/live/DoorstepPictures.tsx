@@ -1,12 +1,12 @@
 import { BoardSizeMark } from "@/components/board/BoardSizeMark";
-import { Paired } from "@/components/i18n/Paired";
+import { OneName } from "@/components/i18n/OneName";
 import { BOARD_SIZE_DISPLAY, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 import { OpeningMark } from "./OpeningMark";
-import { DOORSTEP_FIGURE, DOORSTEP_FIGURE_NAME, DOORSTEP_MARK_PX, DOORSTEP_PICTURES } from "./picker.constants";
+import { DOORSTEP_FIGURE, DOORSTEP_FIGURE_NAME, DOORSTEP_PICTURES } from "./picker.constants";
 import type { DoorstepPicturesProps } from "./picker.types";
 import { openingsOffered } from "./rulesDraft";
 
@@ -21,8 +21,10 @@ import { openingsOffered } from "./rulesDraft";
  *
  * So the board block the reader just pressed comes with them, larger: the big
  * numbered mark and the board's name under it. The same component the block
- * draws, at `DOORSTEP_MARK_PX` rather than a copy, so the picture that was
- * chosen and the picture that is confirmed cannot come apart.
+ * draws, at the large picture size rather than a copy — exactly twice the
+ * block's regular one, which John asked for "for symmetry" — so the picture
+ * that was chosen and the picture that is confirmed cannot come apart. Its
+ * name is one language on one line, like every label under a picture.
  *
  * AND NO SIZE LINE, for the rule the set-up screen already keeps. John: "I
  * don't want the 9x9 size under every board... i want consistency. Like
@@ -58,18 +60,18 @@ export function DoorstepPictures({ rules }: DoorstepPicturesProps) {
   return (
     <div className={DOORSTEP_PICTURES} data-testid="doorstep-pictures">
       <figure className={DOORSTEP_FIGURE} data-testid="doorstep-board" data-size={size}>
-        <BoardSizeMark size={size} px={DOORSTEP_MARK_PX} words="none" />
+        <BoardSizeMark side={size} size="large" words="none" />
         {board !== undefined ? (
           <figcaption className={DOORSTEP_FIGURE_NAME} data-testid="doorstep-board-name">
-            <Paired en={board.label} kanji={board.kanji} kanjiClassName="opacity-70" />
+            <OneName en={board.label} kanji={board.kanji} />
           </figcaption>
         ) : null}
       </figure>
       {drawOpening ? (
         <figure className={DOORSTEP_FIGURE} data-testid="doorstep-opening" data-opening={opening}>
-          <OpeningMark opening={opening} size={size} px={DOORSTEP_MARK_PX} />
+          <OpeningMark opening={opening} side={size} size="large" />
           <figcaption className={DOORSTEP_FIGURE_NAME} data-testid="doorstep-opening-name">
-            <Paired en={openingCopy.label} kanji={openingCopy.kanji} kanjiClassName="opacity-70" />
+            <OneName en={openingCopy.label} kanji={openingCopy.kanji} />
           </figcaption>
         </figure>
       ) : null}

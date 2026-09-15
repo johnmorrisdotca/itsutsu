@@ -1,7 +1,7 @@
 import { THUMB_SIZE, gameThumbPath } from "@/lib/gomoku/artwork";
 
-import { GAME_PICTURE_SIZE } from "./games.constants";
-import type { GamePictureSize } from "./games.types";
+import type { PictureSize } from "./games.types";
+import { pictureBox } from "./picture";
 import { pictureOf } from "./gamePicture";
 
 /**
@@ -24,9 +24,12 @@ import { pictureOf } from "./gamePicture";
  * shape before the picture arrives; `loading="lazy"` because a record page can
  * list fifty rows and a reader sees eight.
  *
- * SIZED BY WHERE IT SITS, never by a class of its own: `size` is one of
- * `GAME_PICTURE_SIZE`'s names. `className` is for placing it — a margin, an
- * alignment — and `gamePictures.coverage.test.ts` refuses a size class there.
+ * AT ONE OF THE SITE'S TWO SIZES, never a class of its own: `size` is
+ * "regular" or "large" (`PICTURE_PX`), whatever list it sits in. It used to be
+ * named by where it sat — 48px on a card, 40 in a row, 24 in a table, 20 in a
+ * tag — and John asked for one regular size everywhere. `className` is for
+ * placing it — a margin, an alignment — and `gamePictures.coverage.test.ts`
+ * refuses a size class there.
  *
  * DECORATIVE BY DEFAULT. Every list that draws this also prints the game's name
  * beside it, and a screen reader that hears "Gomoku board" and then "Gomoku"
@@ -59,18 +62,21 @@ export function GameThumb({
   variant?: string;
   /** A name as another site wrote it, which is a game here only through its alias. */
   name?: string;
-  /** Where it sits: a card, a row, a table cell, a chip. */
-  size: GamePictureSize;
+  /** One of the site's two picture sizes. */
+  size: PictureSize;
   /** What it is a picture of, where the name is not already beside it. */
   alt?: string;
   /** Placement only — a margin or an alignment. Never a size. */
   className?: string;
 }) {
-  const frame = `shrink-0 rounded-md border border-rule ${GAME_PICTURE_SIZE[size]} ${className}`.trim();
+  const frame = `shrink-0 rounded-md border border-rule ${className}`.trim();
+  const box = pictureBox(size);
   const game = pictureOf({ variant, name });
   if (game === null) {
     if (variant === undefined) return null;
-    return <span aria-hidden="true" className={`${frame} bg-shade`} data-testid="game-thumb-blank" />;
+    return (
+      <span aria-hidden="true" className={`${frame} inline-block bg-shade`} style={box} data-testid="game-thumb-blank" data-picture={size} />
+    );
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element -- a static thumbnail already cut to the size it is drawn at
@@ -82,9 +88,10 @@ export function GameThumb({
       loading="lazy"
       decoding="async"
       className={`${frame} object-cover`}
+      style={box}
       data-testid="game-thumb"
       data-variant={game}
-      data-size={size}
+      data-picture={size}
     />
   );
 }

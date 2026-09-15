@@ -44,7 +44,7 @@ const BOARD_NAMES: Record<number, string> = {
   19: "Go board",
 };
 
-/** The side every block's mark is drawn at — `BOARD_MARK_PX`. */
+/** The side every block's mark is drawn at — the regular picture size, `PICTURE_PX.regular`. */
 const BIG_MARK_PX = 70;
 
 /**
@@ -64,7 +64,8 @@ async function expectBlocks(page: Page, sizes: readonly number[]) {
     await expect(mark).toHaveText(String(size));
     const box = await mark.boundingBox();
     expect(box?.width, `${size}×${size}: the big mark`).toBe(BIG_MARK_PX);
-    await expect(block.getByTestId("set-up-size-name")).toContainText(BOARD_NAMES[size]);
+    // The name alone, in one language: "Eight", never "Eight 八路".
+    await expect(block.getByTestId("set-up-size-name")).toHaveText(BOARD_NAMES[size]);
     // The radio is named by the mark first, so the size is heard once.
     await expect(block.getByRole("radio", { name: new RegExp(`^${size} by ${size} board`) })).toHaveCount(1);
     const order = await block.evaluate((el) =>

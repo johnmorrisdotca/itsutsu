@@ -64,7 +64,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
       </header>
 
       <div className="flex items-center gap-4">
-        <FamilyMark family={family.title} />
+        <FamilyMark family={family.title} size="regular" />
         <p className="text-sm text-muted">
           {family.games.length} {family.games.length === 1 ? "game" : "games"} in this family, including{" "}
           {/* The game you came from, named and still clickable — it is a game like the rest. */}
@@ -89,7 +89,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
               }`}
               data-testid={`family-game-${game}`}
             >
-              <GameThumb variant={game} size="card" />
+              <GameThumb variant={game} size="regular" />
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="flex items-baseline gap-2 font-semibold">
                   <GameName variant={game} kanji stretched />

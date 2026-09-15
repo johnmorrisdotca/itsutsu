@@ -57,7 +57,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               />
               <span className="flex items-center gap-3">
                 {/* The board, in the cell the names share, so the grid keeps its four columns. */}
-                <GameThumb variant={game.variant} size="row" />
+                <GameThumb variant={game.variant} size="regular" />
                 <span className="flex min-w-0 flex-col">
                   <span className="font-medium">
                     <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={linkable} className={RAISED_LINK} testId="history-player" />

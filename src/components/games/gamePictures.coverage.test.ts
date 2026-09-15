@@ -3,10 +3,13 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { PICK_ICON, SEAT_MARK_LOOK } from "@/components/live/picker.constants";
+
+import { PICTURE_PX } from "./games.constants";
 import { code, insideControl, namesPrinted } from "./sourceScan";
 
 /**
- * A game named in a list shows its picture, and a family's icon is one size.
+ * A game named in a list shows its picture, and every picture is one of two sizes.
  *
  * John, 2026-09-14, on /games and a player's page: "Looks like we aren't showing
  * the icons for all the variant games in a family! Why is this when we do it in
@@ -27,9 +30,11 @@ import { code, insideControl, namesPrinted } from "./sourceScan";
  *  - a game's name — through `GameName`, or printed by hand as a game's label —
  *    has no `<GameThumb` near it, and is not named below as a heading or a
  *    sentence;
- *  - a `<GameThumb` is drawn at a size of its own rather than one of
- *    `GAME_PICTURE_SIZE`'s;
- *  - a `<FamilyMark` is drawn at any size but `FAMILY_ICON_SIZE`.
+ *  - any picture — a game's, a family's, a board's, an opening's, an
+ *    opponent's stone, a rated tile's icon — is drawn at a size that is not
+ *    "regular" or "large", or large stops being exactly twice regular. John,
+ *    2026-09-15: from multiple icon sizes to exactly two, with the large one
+ *    "exactly DOUBLE the regular size, for symmetry".
  *
  * "Near" is a window of source, which is crude on purpose: a row draws its
  * picture a few lines from its name, and a gate that needed the component
@@ -193,28 +198,75 @@ function tagsOf(name: string): { path: string; tag: string }[] {
   );
 }
 
-describe("one size for each kind of picture", () => {
-  it("draws every game picture at a named size", () => {
-    const thumbs = tagsOf("GameThumb");
-    expect(thumbs.length).toBeGreaterThan(5);
-    const loose = thumbs
-      .filter(({ tag }) => !/\bsize=\{?["']?GAME_PICTURE_SIZE|\bsize="(card|row|table|chip)"/.test(tag) || /\bsize-/.test(tag))
+/**
+ * Every component that draws a picture, each taking `size: "regular" | "large"`.
+ * A new picture component belongs here the day it is written, or it is a third
+ * size waiting to happen.
+ */
+const PICTURES = ["GameThumb", "FamilyMark", "BoardSizeMark", "OpeningMark", "SeatMark", "MovesIcon", "LevelIcon"] as const;
+
+/** The files those components live in, each of which reads its side through `pictureBox`. */
+const PICTURE_SOURCES = [
+  "src/components/games/GameThumb.tsx",
+  "src/components/games/FamilyMark.tsx",
+  "src/components/board/BoardSizeMark.tsx",
+  "src/components/live/OpeningMark.tsx",
+  "src/components/live/SeatMark.tsx",
+  "src/components/live/RatedPicker.tsx",
+];
+
+/**
+ * The per-surface sizes the two replaced: a game's picture by where it sat, a
+ * family's icon, the board block, the doorstep's board, an opening's tile. None
+ * may come back under its old name.
+ */
+const RETIRED = ["GAME_PICTURE_SIZE", "GamePictureSize", "FAMILY_ICON_SIZE", "BOARD_MARK_PX", "DOORSTEP_MARK_PX", "OPENING_MARK_PX"];
+
+/** Every source file under `src`, tests aside, with its comments blanked. */
+function sourcesUnder(dir: string): { path: string; source: string }[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return sourcesUnder(path);
+    if (!/\.tsx?$/.test(entry.name) || /\.test\.tsx?$/.test(entry.name)) return [];
+    return [{ path, source: code(readFileSync(path, "utf8")) }];
+  });
+}
+
+describe("two picture sizes: regular, and large at exactly twice it", () => {
+  it("draws every picture at one of the two sizes and no other", () => {
+    for (const name of PICTURES) expect(tagsOf(name).length, `<${name}> is still drawn somewhere`).toBeGreaterThan(0);
+    expect(tagsOf("FamilyMark").length, "every page that shows a family is still found").toBeGreaterThanOrEqual(4);
+    const loose = PICTURES.flatMap(tagsOf)
+      .filter(({ tag }) => !/\bsize="(regular|large)"/.test(tag) || /\bpx=|\bsize-\d/.test(tag))
       .map(({ path, tag }) => `${path}: ${tag}`);
-    expect(loose, 'pass size="card" | "row" | "table" | "chip", and no size- class of its own').toEqual([]);
+    expect(loose, 'pass size="regular" or size="large", and no px or size- class of its own').toEqual([]);
   });
 
-  it("draws every family icon at the one family size", () => {
-    const marks = tagsOf("FamilyMark");
-    expect(marks.length, "every page that shows a family is still found").toBeGreaterThanOrEqual(4);
-    const loose = marks.filter(({ tag }) => /\bsize-/.test(tag)).map(({ path, tag }) => `${path}: ${tag}`);
-    expect(loose, "FamilyMark draws itself at FAMILY_ICON_SIZE; a caller passes no size").toEqual([]);
+  it("keeps the two in one place: regular is the board tile, large is written as twice it", () => {
+    expect(Object.keys(PICTURE_PX).sort()).toEqual(["large", "regular"]);
+    expect(PICTURE_PX.regular, "the set-up page's board tile, the size John chose").toBe(70);
+    expect(PICTURE_PX.large, "exactly double, for symmetry").toBe(PICTURE_PX.regular * 2);
+    const constants = code(readFileSync("src/components/games/games.constants.ts", "utf8"));
+    expect(constants, "large derived from regular, not a second number").toMatch(/large:\s*REGULAR_PICTURE_PX\s*\*\s*2\b/);
   });
 
-  it("keeps both sizes in the group's constants, where the components read them", () => {
-    expect(readFileSync("src/components/games/FamilyMark.tsx", "utf8")).toContain("FAMILY_ICON_SIZE");
-    expect(readFileSync("src/components/games/GameThumb.tsx", "utf8")).toContain("GAME_PICTURE_SIZE");
-    const constants = readFileSync("src/components/games/games.constants.ts", "utf8");
-    expect(constants).toContain("export const FAMILY_ICON_SIZE");
-    expect(constants).toContain("export const GAME_PICTURE_SIZE");
+  it("sizes every picture component from that one place, and by no class of its own", () => {
+    for (const path of PICTURE_SOURCES) {
+      const source = code(readFileSync(path, "utf8"));
+      expect(source, `${path} reads its side through pictureBox`).toContain("pictureBox(");
+      // The rated picker also draws a tick and a glyph inside its square, which are not pictures.
+      if (!path.endsWith("RatedPicker.tsx")) expect(source, `${path} carries a size class`).not.toMatch(/\bsize-\d/);
+    }
+    for (const [name, look] of Object.entries({ PICK_ICON, ...SEAT_MARK_LOOK })) {
+      expect(look, `${name} carries a size class, which is a picture size of its own`).not.toMatch(/\bsize-\d/);
+    }
+  });
+
+  it("leaves no per-surface size behind under its old name", () => {
+    const sources = sourcesUnder("src");
+    const using = RETIRED.flatMap((name) =>
+      sources.filter((file) => new RegExp(`\\b${name}\\b`).test(file.source)).map((file) => `${file.path}: ${name}`),
+    );
+    expect(using).toEqual([]);
   });
 });

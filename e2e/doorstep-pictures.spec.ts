@@ -47,15 +47,16 @@ async function blockMarkWidth(page: Page, size: number): Promise<number> {
 
 /**
  * The doorstep's board: the chosen size as the big number in the picture, the
- * name under it, larger than the block it was chosen from, and no "13×13" beside it.
+ * name under it in one language, exactly twice the block it was chosen from —
+ * John: "exactly DOUBLE the regular size, for symmetry" — and no "13×13" beside it.
  */
 async function expectChosenBoard(page: Page, size: number, name: string, blockWidth: number): Promise<Locator> {
   const figure = page.getByTestId("doorstep-board");
   await expect(figure).toHaveAttribute("data-size", String(size));
   const mark = figure.getByRole("img", { name: `${size} by ${size} board` });
   await expect(mark).toHaveText(String(size));
-  expect((await mark.boundingBox())!.width, "larger than the set-up block's mark").toBeGreaterThan(blockWidth);
-  await expect(figure.getByTestId("doorstep-board-name")).toContainText(name);
+  expect((await mark.boundingBox())!.width, "exactly twice the set-up block's mark").toBe(blockWidth * 2);
+  await expect(figure.getByTestId("doorstep-board-name")).toHaveText(name);
   // Absent, asked only after the picture and its name above were read.
   await expect(page.getByTestId("doorstep-pictures")).not.toContainText("×");
   return figure;
@@ -113,6 +114,6 @@ test.describe("the doorstep draws the chosen board", () => {
     await expectChosenBoard(page, 15, "Standard", block);
     const opening = page.getByTestId("doorstep-opening");
     await expect(opening).toHaveAttribute("data-opening", "pro");
-    await expect(opening.getByTestId("doorstep-opening-name")).toContainText("Pro");
+    await expect(opening.getByTestId("doorstep-opening-name")).toHaveText("Pro");
   });
 });

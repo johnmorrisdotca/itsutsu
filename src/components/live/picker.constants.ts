@@ -2,7 +2,7 @@ import { OPENING_RULES, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { OpeningRule, Stone } from "@/lib/gomoku/gomoku.types";
 import { LONG_PRO_EXCLUSION, PRO_EXCLUSION } from "@/lib/gomoku/rules/opening";
 
-import type { GroupWords, OpponentGroupKind, RatedTile } from "./picker.types";
+import type { GroupWords, OpponentGroupKind, RatedTile, SeatMarkKind } from "./picker.types";
 
 /**
  * The look of the pickers on the set-up screen.
@@ -70,19 +70,18 @@ export const PICK_CARD = `${PICK_BASE} ${PICK_RESTING} ${PICK_CHOSEN}`;
  * this screen is used on an iPad, and "the buttons are too small" is a
  * complaint John has made about two other screens.
  *
- * A TILE, THE MARK ABOVE THE NAME, since the mark is the family's full size.
- * It was a chip — a 20px mark beside the name, everything tight horizontally so
- * eleven fitted in two lines on an iPad. John then asked for the family icon
- * "larger… and consistent between some pages", which puts `FAMILY_ICON_SIZE`
- * (56px) here as on /games, and a 56px mark BESIDE a name makes each chip half
- * again as wide and the row wraps a line deeper. Above the name it costs height
- * instead of width: a fixed `w-24` tile holds the mark and a two-line name, so
- * the row stays the same number of tiles across whatever the names say, and a
- * finger's target grows rather than shrinks. It was measured again for this —
- * at 400px, 768px and a desk — as the note that stood here asked.
+ * A TILE, THE MARK ABOVE THE NAME. It was a chip — a 20px mark beside the
+ * name — and then a `w-24` tile holding the 56px family icon over a name that
+ * could take two lines. John, 2026-09-15, pointed at "Pieces and twists"
+ * wrapping under its mark and asked for one regular picture size on this page,
+ * the board tile's, and a label under an icon that is one language on one line.
+ * So the mark is the regular size and the tile is `w-28`: wide enough for the
+ * longest family name on one line at this text size. Every tile is still the
+ * same width, so the row stays the same number of tiles whatever the names
+ * say, and a finger's target grows rather than shrinks.
  */
 export const PICK_CHIP =
-  "flex w-24 min-h-12 flex-col items-center justify-start gap-1 rounded-lg border px-1 py-1.5 text-center text-xs leading-tight transition-colors" +
+  "flex w-28 min-h-12 flex-col items-center justify-start gap-1 rounded-lg border px-1 py-1.5 text-center text-xs leading-tight transition-colors" +
   " outline-none focus-visible:ring-2 focus-visible:ring-moss" +
   " disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -113,27 +112,30 @@ export const PICK_CHIP_SHUT =
  * columns leave 70px beside the board for the name, which cut seven of the
  * thirty-nine to about nine characters — "Tournament Gomo…", "Chinese
  * Checker…". A phone is the screen where reading is hardest and it is the
- * one place a clipped name is least affordable. It costs 208px of height,
- * all of it on the phone, where nothing has a fold to clear: the Start
- * button's margin was measured on an iPad, which gets three columns.
+ * one place a clipped name is least affordable.
  *
- * THE ROW HEIGHT IS THE THUMBNAIL'S. 3rem is the 40px board plus the card's
- * own padding and nothing else, so every pixel of this control's height is a
- * picture of a board. The first draft carried a line of what-it-is under each
- * name and was half again as tall; what that bought was a tagline nobody was
- * reading for a game they had not chosen, and what it cost was the Start
- * button, which went off the bottom of an iPad.
+ * TWO COLUMNS UNTIL A LAPTOP, THREE FROM THERE, AND NEVER FOUR — measured with
+ * the regular 70px board beside each name. Three columns on an iPad in
+ * portrait left 102px for a name and cut seven of them; four at a desk left 127
+ * and cut "International Draughts". A clipped name is what this control was
+ * rebuilt to stop, so the columns give way before a name does.
  *
- * THE NAME IS NEVER THE THING THAT GETS CUT. Three columns on a tablet left
- * 131px for "Tournament Gomoku 競技五目" — enough for the name and not for
- * the kanji. Because `Paired` puts the kanji last and the label truncates
- * from the end, the squeeze falls on the kanji and the name always survives:
- * "Tournament Gomoku 競技…". That is the right way round. A picture with an
- * unreadable name beside it is not "board images with text" — and the
- * complaint being answered here was a control you had to read carefully to
- * tell one game from another.
+ * THE ROW HEIGHT IS THE PICTURE'S. 5rem is the regular 70px board plus the
+ * card's own padding and border and nothing else, so every pixel of this
+ * control's height is a picture of a board. It was 3rem around a 40px board
+ * until John asked for one picture size on this page. The first draft carried a
+ * line of what-it-is under each name and was half again as tall; what that
+ * bought was a tagline nobody was reading for a game they had not chosen, and
+ * what it cost was the Start button, which went off the bottom of an iPad.
+ *
+ * THE NAME IS ONE LANGUAGE ON ONE LINE. The kanji used to follow the name and
+ * take the squeeze — "Tournament Gomoku 競技…" — and a label beside a picture is
+ * now the reader's own half of the pair (`OneName`), as it is under one. Where a
+ * column is still too narrow for a name, it truncates from the end and its
+ * title carries it whole. A picture with an unreadable name beside it is not
+ * "board images with text", which was the complaint being answered here.
  */
-export const PICK_GRID = "grid grid-cols-1 auto-rows-[3rem] gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4";
+export const PICK_GRID = "grid grid-cols-1 auto-rows-[5rem] gap-2 sm:grid-cols-2 lg:grid-cols-3";
 
 /**
  * The boards a game is played on, side by side rather than stacked.
@@ -167,12 +169,13 @@ export const PICK_PAIR = "grid grid-cols-1 gap-2 sm:grid-cols-2";
 /** People and programs: there can be more of them, so the columns are narrower. */
 export const PICK_PEOPLE = "grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3";
 
-/** The square that holds a tile's small picture, when the picture is a glyph. */
+/**
+ * The square that holds a tile's picture, when the picture is a glyph. Its side
+ * is a picture size, given by the caller through `pictureBox` — never a size
+ * class here, or it would be a picture size of its own again.
+ */
 export const PICK_ICON =
-  "inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-rule-strong bg-ivory text-ink";
-
-/** An opening's picture: the height of a tile's two lines of words, and no taller. */
-export const OPENING_MARK_PX = 44;
+  "inline-flex shrink-0 items-center justify-center rounded-md border border-rule-strong bg-ivory text-ink";
 
 /**
  * How far from tengen each opening's square reaches, in cells — the ENGINE'S
@@ -199,16 +202,17 @@ export const MARK_STONE_COLOUR: Record<Stone, string> = {
 /**
  * The picture on an opponent's tile, which is a stone: white with an initial
  * for a person, black with its own script for a program, and an empty dashed
- * ring for the seat nobody has taken yet.
+ * ring for the seat nobody has taken yet. The side is `SeatMark`'s, one of the
+ * two picture sizes; the initial is set large enough to read on a stone that big.
  */
 const SEAT_MARK =
-  "inline-flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold leading-none";
+  "inline-flex shrink-0 items-center justify-center rounded-full text-2xl font-semibold leading-none";
 
-export const SEAT_MARK_PERSON = `${SEAT_MARK} border border-ink bg-paper text-ink`;
-
-export const SEAT_MARK_COMPUTER = `${SEAT_MARK} font-mincho bg-ink text-paper`;
-
-export const SEAT_MARK_ANYONE = `${SEAT_MARK} border-2 border-dashed border-rule-strong`;
+export const SEAT_MARK_LOOK: Record<SeatMarkKind, string> = {
+  person: `${SEAT_MARK} border border-ink bg-paper text-ink`,
+  computer: `${SEAT_MARK} font-mincho bg-ink text-paper`,
+  anyone: `${SEAT_MARK} border-2 border-dashed border-rule-strong`,
+};
 
 /**
  * THE MOST TILES ONE RUN OF OPPONENTS SHOWS BEFORE IT FOLDS.
@@ -250,45 +254,32 @@ export const RATED_TILES: readonly RatedTile[] = [
   { rated: false, word: "friendly", phrase: "setup.friendly", means: "setup.friendlyMeans" },
 ];
 
-/**
- * The board's picture in every board block, one board or four: the big
- * numbered mark, with the board's name under it and no size line.
- *
- * It is the size the lone block used to have alone — the 48px mark plus the
- * 16px "8×8" line and 6px gap that block went without — which is the block
- * John pointed at: "Like checkers, just the big number now. easier to read".
- * One number for every block, so every block is the same height and there is
- * no second size to keep in step with it. See BoardPicker.
- */
-export const BOARD_MARK_PX = 70;
-
-/**
- * The same board, on the last page before a game: the big numbered mark the
- * block drew, larger, with the board's name under it and no size line.
+/*
+ * THE BOARD'S PICTURE in every board block is the big numbered mark at the
+ * regular size, and on the doorstep — the last page before a game — the same
+ * mark at the large size, twice it. Both numbers used to live here, 70 and 112,
+ * and the 70 is the one John picked for every picture on the site: see
+ * `PICTURE_PX` in the games constants, where large is written as twice regular.
  *
  * John, with the Checkers doorstep in front of him: "Checkers page, and all
  * pages like it, should use the Board Icon... since this is the last page
- * before the game... perhaps we use new larger icons? if so we need to always
- * create a larger set of icons with number too".
- *
- * NO SECOND SET OF ICONS, because there is no set: `BoardSizeMark` draws the
- * lattice from the number and scales the numeral from `px`, so a larger board
- * with its number in it is this one constant and nothing to keep in step.
- * Larger than the block by construction — the gate says so — because the
- * doorstep has one board to show, not a row of them to choose from. 112px is
- * the block's 70 and a half again, which still leaves room for the opening's
- * picture beside it inside a 400px phone.
+ * before the game... perhaps we use new larger icons?" NO SECOND SET OF ICONS,
+ * because there is no set: `BoardSizeMark` draws the lattice from the number
+ * and scales the numeral from the picture's side, so larger is one word.
  */
-export const DOORSTEP_MARK_PX = 112;
 
 /**
- * The doorstep's pictures in a row, wrapping only if a phone must. Each one is
- * a figure exactly as wide as its mark (`w-28` is 112px), so the name under it
- * wraps beneath the picture rather than widening the column past it.
+ * The doorstep's pictures in a row, wrapping only if a phone must. Two large
+ * pictures and the gap between them are 296px, inside a 400px phone's panel.
  */
 export const DOORSTEP_PICTURES = "flex flex-wrap items-start gap-4";
 
-export const DOORSTEP_FIGURE = "m-0 flex w-28 min-w-0 flex-col items-center gap-1.5";
+/**
+ * One picture and its name, as wide as the wider of the two. The name is one
+ * line (`OneName`) and never wraps under the picture; every name the doorstep
+ * prints is narrower than a large picture.
+ */
+export const DOORSTEP_FIGURE = "m-0 flex min-w-0 flex-col items-center gap-1.5";
 
 export const DOORSTEP_FIGURE_NAME = "text-center text-xs leading-snug text-ink-soft";
 

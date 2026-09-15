@@ -136,7 +136,7 @@ function Families({
         <details key={family.title} className={`${PANEL_CLASS} group`} data-testid="lobby-family" open={index === 0}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
             <span className="flex min-w-0 items-center gap-3">
-              <FamilyMark family={family.title} />
+              <FamilyMark family={family.title} size="regular" />
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="flex items-baseline gap-2 font-semibold">
                   {family.title}
@@ -189,7 +189,7 @@ function Families({
                   icons for all the variant games in a family!" In flow under
                   the stretched name, so a tap on it opens the card.
                 */}
-                <GameThumb variant={game.variant} size="card" />
+                <GameThumb variant={game.variant} size="regular" />
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="font-medium">
                     <GameName variant={game.variant} kanji stretched />

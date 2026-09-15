@@ -1,5 +1,7 @@
 "use client";
 
+import type { PictureSize } from "@/components/games/games.types";
+import { pictureBox } from "@/components/games/picture";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { RATING_REFUSAL_DISPLAY } from "@/lib/rating/rateable.constants";
 
@@ -30,7 +32,7 @@ export function RatedPicker({ value, refused, onChange, disabled = false }: Rate
       <div className="flex min-w-0 flex-col gap-1.5" data-testid="set-up-rated-fact" data-refused={refused}>
         <span className="text-sm text-ink-soft">{say("setup.ratings")}</span>
         <div className={`${PICK_FACT} gap-2.5 p-2`}>
-          <LevelIcon />
+          <LevelIcon size="regular" />
           <span className="flex min-w-0 flex-col gap-0.5">
             <span className="text-sm font-medium">
               {copy.playing} <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span>
@@ -63,7 +65,7 @@ export function RatedPicker({ value, refused, onChange, disabled = false }: Rate
               onChange={() => onChange(tile.rated)}
               className="peer sr-only"
             />
-            {tile.rated ? <MovesIcon /> : <LevelIcon />}
+            {tile.rated ? <MovesIcon size="regular" /> : <LevelIcon size="regular" />}
             <span className="flex min-w-0 flex-col gap-0.5">
               <span className="text-sm font-medium">{say(tile.phrase)}</span>
               <span className="text-xs leading-snug text-muted">{say(tile.means)}</span>
@@ -76,11 +78,17 @@ export function RatedPicker({ value, refused, onChange, disabled = false }: Rate
   );
 }
 
+/*
+ * The two tiles' pictures, at one of the site's two picture sizes like every
+ * other picture on the set-up page. They were 44px squares beside 70px board
+ * blocks; the glyph inside is set to half the square, as it was.
+ */
+
 /** A rating that moves: one arrow up, one down. */
-function MovesIcon() {
+function MovesIcon({ size }: { size: PictureSize }) {
   return (
-    <span aria-hidden="true" className={PICK_ICON}>
-      <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <span aria-hidden="true" className={PICK_ICON} style={pictureBox(size)} data-testid="rated-icon" data-picture={size}>
+      <svg viewBox="0 0 24 24" className="size-1/2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8 19V5M4 9l4-4 4 4M16 5v14M12 15l4 4 4-4" />
       </svg>
     </span>
@@ -88,10 +96,10 @@ function MovesIcon() {
 }
 
 /** A rating that stays where it is: level. */
-function LevelIcon() {
+function LevelIcon({ size }: { size: PictureSize }) {
   return (
-    <span aria-hidden="true" className={PICK_ICON}>
-      <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <span aria-hidden="true" className={PICK_ICON} style={pictureBox(size)} data-testid="rated-icon" data-picture={size}>
+      <svg viewBox="0 0 24 24" className="size-1/2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
         <path d="M5 10h14M5 14h14" />
       </svg>
     </span>

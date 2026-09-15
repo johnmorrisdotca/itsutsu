@@ -1,3 +1,5 @@
+import { pictureBox } from "@/components/games/picture";
+
 import { BOARD_SIZE_LATTICE, BOARD_SIZE_MARK_CLASS, BOARD_SIZE_NUMERAL_CLASS } from "./Board.constants";
 import type { BoardSizeMarkProps } from "./board.types";
 /*
@@ -38,23 +40,28 @@ import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
  * Every board here is square, so density is the only real difference between
  * one size and another, and density is what is drawn behind the number. The
  * frame's border is the last line on the right and at the bottom.
+ *
+ * `side` is the board; `size` is the picture, one of the site's two — regular
+ * in the set-up block, large on the doorstep, twice it. The block's 70px is the
+ * size John chose for every picture on the site.
  */
-export function BoardSizeMark({ size, px, words, className = "" }: BoardSizeMarkProps) {
+export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMarkProps) {
+  const box = pictureBox(size);
   return (
     <span
-      {...boardSizeMarkVoice(size, words)}
+      {...boardSizeMarkVoice(side, words)}
       className={className === "" ? BOARD_SIZE_MARK_CLASS : `${BOARD_SIZE_MARK_CLASS} ${className}`}
       style={{
-        width: px,
-        height: px,
+        ...box,
         backgroundImage: BOARD_SIZE_LATTICE,
-        backgroundSize: `${100 / size}% ${100 / size}%`,
+        backgroundSize: `${100 / side}% ${100 / side}%`,
       }}
       data-testid="board-size-mark"
-      data-size={size}
+      data-size={side}
+      data-picture={size}
     >
-      <span className={BOARD_SIZE_NUMERAL_CLASS} style={{ fontSize: boardSizeNumeralPx(px, size) }}>
-        {size}
+      <span className={BOARD_SIZE_NUMERAL_CLASS} style={{ fontSize: boardSizeNumeralPx(box.width, side) }}>
+        {side}
       </span>
     </span>
   );
