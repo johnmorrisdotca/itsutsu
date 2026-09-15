@@ -1,3 +1,5 @@
+import type { ProgressMeasure } from "@/lib/gomoku/rules/noProgress";
+
 import type {
   AwarenessLevel,
   HistoryMode,
@@ -226,6 +228,18 @@ export const GAME_COPY = {
    * ordinary drawn game.
    */
   drawUnfinishable: "This game could not be finished: nobody was getting anywhere.",
+  /*
+   * A stall that is an ordinary draw, named by the rule that drew it and that
+   * rule's own count — the way chess says "draw by the fifty-move rule". One
+   * sentence per measure in `rules/noProgress.ts`, handed the plies the rule
+   * allows. Draughts counts each side's moves, as its rule books do; the others
+   * count every move.
+   */
+  drawNoProgress: {
+    racing: (plies: number) => `Draw by the no-progress rule: in ${plies} moves, nobody got a piece any nearer home.`,
+    taking: (plies: number) => `Draw by the ${plies / 2}-move rule: ${plies / 2} moves each with nothing taken and no man moved.`,
+    placing: (plies: number) => `Draw by the sliding rule: ${plies} moves since the last piece went down, and nobody won.`,
+  } satisfies Record<ProgressMeasure, (plies: number) => string>,
   fixedBy: (game: string) => `Fixed by ${game}.`,
   penaltyStrict: "Loss of game, ignoring vacation days",
   rulesLocked: "The rules are fixed while a game is on. Start a new game to change them.",

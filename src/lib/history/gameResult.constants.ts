@@ -1,3 +1,7 @@
+import type { ProgressMeasure } from "@/lib/gomoku/rules/noProgress";
+
+import type { DrawReason } from "./gameResult.types";
+
 /**
  * HOW LONG A FINISHED GAME IS NEWS, in days.
  *
@@ -15,6 +19,9 @@ export const DAY_MS = 86_400_000;
 /** Every reason a game can end with nobody winning, so a list of reasons can be told apart from a win's. */
 export const RESULT_DRAW_REASONS = [
   "unfinishable",
+  "noProgressRacing",
+  "noProgressTaking",
+  "noProgressPlacing",
   "noMoves",
   "repetition",
   "endgameCount",
@@ -23,3 +30,14 @@ export const RESULT_DRAW_REASONS = [
   "boardFull",
   "draw",
 ] as const;
+
+/**
+ * The draw reason for each no-progress measure (`rules/noProgress.ts`), so a
+ * stall is filed under the rule that drew it. Checked against the measures, so a
+ * new measure cannot arrive without a reason of its own.
+ */
+export const NO_PROGRESS_DRAW_REASONS = {
+  racing: "noProgressRacing",
+  taking: "noProgressTaking",
+  placing: "noProgressPlacing",
+} as const satisfies Record<ProgressMeasure, DrawReason>;

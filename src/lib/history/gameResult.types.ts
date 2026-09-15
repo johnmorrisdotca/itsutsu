@@ -12,13 +12,19 @@ export type ResultOutcome = "won" | "lost" | "draw" | "decided";
 
 /**
  * Why a game neither side won ended, in the engine's own terms and the order the
- * board asks them in (`GameStatus`): nobody could finish it, neither side had a
- * move, a position came round too often, an ending ran out of moves, the game ran
- * to its agreed length, both made a line at once, or the board filled. `draw` is
- * a draw the replay does not read as one — said plainly, never given a reason.
+ * board asks them in (`GameStatus`): nobody could finish it, a no-progress rule
+ * drew it (one reason per measure — a race nobody got anywhere in, draughts'
+ * count with nothing taken, sliding after the last piece went down), neither
+ * side had a move, a position came round too often, an ending ran out of moves,
+ * the game ran to its agreed length, both made a line at once, or the board
+ * filled. `draw` is a draw the replay does not read as one — said plainly, never
+ * given a reason.
  */
 export type DrawReason =
   | "unfinishable"
+  | "noProgressRacing"
+  | "noProgressTaking"
+  | "noProgressPlacing"
   | "noMoves"
   | "repetition"
   | "endgameCount"

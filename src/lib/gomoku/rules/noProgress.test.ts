@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_PROGRESS_RULES, PROGRESS_MEASURES, canStall, couldNotFinish, distanceHome, pliesWithoutProgress, stalled } from "./noProgress";
+import {
+  NO_PROGRESS_RULES,
+  PROGRESS_MEASURES,
+  canStall,
+  couldNotFinish,
+  distanceHome,
+  pliesWithoutProgress,
+  stalled,
+  stalledDrawOf,
+} from "./noProgress";
 import { STAR_RADIUS, starCampSquares } from "./chineseCheckers";
 import { RULE_VARIANTS, STONES, VARIANT_SPECS, boardSizesFor } from "../gomoku.constants";
 import { GAME_STATUS } from "../gomoku.constants";
@@ -269,5 +278,71 @@ describe("the race games, measured by distance rather than a ledger", () => {
      * Chinese Checkers before its star camps were wired in.
      */
     expect(distanceHome(9, "black", { row: 0, col: 0 })).toBeNull();
+  });
+});
+
+describe("a stalled game names the rule that drew it", () => {
+  /*
+   * A draw by draughts' rule is a result the players can read, and says so; only
+   * the one game whose row says its stall is a symptom still reads as a game that
+   * could not be finished.
+   */
+  const drawnShuffle = (variant: string, size: number, plies: number): GameState =>
+    ({ ...shuffle(variant, size, plies), status: GAME_STATUS.draw }) as GameState;
+
+  it("names draughts' rule and its count, and does not call the game unfinished", () => {
+    const size = boardSizesFor(RULE_VARIANTS.checkers)[0];
+    const rule = NO_PROGRESS_RULES[RULE_VARIANTS.checkers]!;
+    const game = drawnShuffle(RULE_VARIANTS.checkers, size, rule.plies);
+    expect(stalledDrawOf(game)).toEqual({ measure: PROGRESS_MEASURES.taking, plies: rule.plies });
+    expect(couldNotFinish(game)).toBe(false);
+  });
+
+  it("names the sliding rule for a game that places its pieces and then slides them", () => {
+    const size = boardSizesFor(RULE_VARIANTS.squareFour)[0];
+    const rule = NO_PROGRESS_RULES[RULE_VARIANTS.squareFour]!;
+    const laid = 2 * VARIANT_SPECS[RULE_VARIANTS.squareFour].pieces!;
+    const game = drawnShuffle(RULE_VARIANTS.squareFour, size, laid + rule.plies);
+    expect(stalledDrawOf(game)).toEqual({ measure: PROGRESS_MEASURES.placing, plies: rule.plies });
+    expect(couldNotFinish(game)).toBe(false);
+  });
+
+  it("says nothing for a game still going, or for one no stall rule watches", () => {
+    const size = boardSizesFor(RULE_VARIANTS.checkers)[0];
+    const rule = NO_PROGRESS_RULES[RULE_VARIANTS.checkers]!;
+    const going = { ...shuffle(RULE_VARIANTS.checkers, size, rule.plies), status: GAME_STATUS.playing } as GameState;
+    expect(stalledDrawOf(going)).toBeNull();
+    const freestyle = { status: GAME_STATUS.draw, settings: { variant: RULE_VARIANTS.freestyle } } as GameState;
+    expect(stalledDrawOf(freestyle)).toBeNull();
+  });
+
+  it("keeps 'could not be finished' for the one row that says so, and the row decides it, not the name", () => {
+    const saying = Object.entries(NO_PROGRESS_RULES)
+      .filter(([, rule]) => rule?.saysUnfinished === true)
+      .map(([name]) => name);
+    expect(saying).toEqual([RULE_VARIANTS.chineseCheckers]);
+
+    // Lent to draughts for a moment, the flag makes draughts say it too.
+    const size = boardSizesFor(RULE_VARIANTS.checkers)[0];
+    const was = NO_PROGRESS_RULES[RULE_VARIANTS.checkers]!;
+    NO_PROGRESS_RULES[RULE_VARIANTS.checkers] = { ...was, saysUnfinished: true };
+    try {
+      const game = drawnShuffle(RULE_VARIANTS.checkers, size, was.plies);
+      expect(couldNotFinish(game)).toBe(true);
+      expect(stalledDrawOf(game)).toBeNull();
+    } finally {
+      NO_PROGRESS_RULES[RULE_VARIANTS.checkers] = was;
+    }
+  });
+
+  it("gives Chinese Checkers twenty times the longest idle run a won game was measured to have", () => {
+    /*
+     * 50 bot games over every grade pairing, seeds 20260914–20260963, all won:
+     * the longest idle run in any of them was 40 plies. Twenty times that is the
+     * margin Halma, Checkers and Square Four carry, and a cap under it would take
+     * a win off somebody about to make it — the fault this rule must never commit.
+     */
+    const longestWonIdle = 40;
+    expect(NO_PROGRESS_RULES[RULE_VARIANTS.chineseCheckers]!.plies).toBeGreaterThanOrEqual(longestWonIdle * 20);
   });
 });

@@ -30,6 +30,9 @@ export const RESULT_REASONS: Record<ResultReason, (who: string, other: string) =
    * "Draw." the card's headline has already said.
    */
   unfinishable: () => "Nobody was getting anywhere, so it could not be finished.",
+  noProgressRacing: () => "Nobody got a piece any nearer home for longer than its rules allow.",
+  noProgressTaking: () => "Nothing was taken and no man moved for longer than its rules allow.",
+  noProgressPlacing: () => "Every piece was down, and the sliding went on longer than its rules allow.",
   noMoves: () => "Neither side had a move left.",
   repetition: () => "The same position came round again, with the same side to move.",
   endgameCount: () => "The ending was not won within the moves its rules allow.",
