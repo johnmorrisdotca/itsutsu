@@ -26,8 +26,11 @@ export type ImportedFacts = {
 
 export type ImportedNote = { text: string; games: number | null };
 
-/** "ItsYourTurn", "ItsYourTurn and GoldToken", in the reader's language. */
-function sitesSaid(say: Speaker, sites: readonly string[]): string {
+/**
+ * "ItsYourTurn", "ItsYourTurn and GoldToken", in the reader's language — in a
+ * note under a total, and on a promotion that credit paid.
+ */
+export function importedSitesSaid(say: Speaker, sites: readonly string[]): string {
   if (sites.length <= 1) return sites[0] ?? "";
   return say.say("xp.imported.listLast", { list: sites.slice(0, -1).join(", "), last: sites[sites.length - 1] });
 }
@@ -40,7 +43,7 @@ export function importedNoteText(say: Speaker, facts: ImportedFacts): ImportedNo
     return { text: say.say("xp.imported.includesElsewhere", { xp: countText(facts.xp) }), games: null };
   }
   return {
-    text: say.say("xp.imported.includes", { xp: countText(facts.xp), sites: sitesSaid(say, facts.sites) }),
+    text: say.say("xp.imported.includes", { xp: countText(facts.xp), sites: importedSitesSaid(say, facts.sites) }),
     games: facts.games,
   };
 }

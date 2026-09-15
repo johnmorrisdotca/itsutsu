@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 
-import { recipientsOf, totalsDisagreements, type ImportedCandidate } from "./importedRecipients";
+import { importedSitesFor, recipientsOf, totalsDisagreements, type ImportedCandidate } from "./importedRecipients";
 
 const kept = (id: string, name: string): ImportedCandidate => ({ id, name, botTier: null, unclaimableBecause: UNCLAIMABLE_REASONS.keptRecord });
 const live = (id: string, name: string): ImportedCandidate => ({ id, name, botTier: null, unclaimableBecause: null });
@@ -38,6 +38,18 @@ describe("which member a kept record pays", () => {
     ]);
     expect(recipients).toEqual([]);
     expect(refused.map((one) => one.legacy).sort()).toEqual(["chibi", "jmorris"]);
+  });
+});
+
+describe("where a credit's play was, for a promotion it paid", () => {
+  it("names the sites a kept record under the name was played on, as a sentence names them", () => {
+    const sites = importedSitesFor("Chibi");
+    expect(sites.length).toBeGreaterThan(0);
+    for (const site of sites) expect(site).not.toMatch(/\.com$/i);
+  });
+
+  it("names none for a name no kept record answers to, rather than inventing one", () => {
+    expect(importedSitesFor("Somebody Nobody Kept")).toEqual([]);
   });
 });
 

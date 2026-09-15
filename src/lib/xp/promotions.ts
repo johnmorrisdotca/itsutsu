@@ -1,3 +1,6 @@
+import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
+
+import { IMPORTED_XP_TYPES } from "./importedXp.constants";
 import { XP_LEVELS, xpForLevel, xpLevelFor } from "./xpCurve";
 import { xpDayKey } from "./xpDay";
 import type { Promotion, PromotionBatch, PromotionsCursor } from "./promotions.types";
@@ -50,6 +53,34 @@ import type { Promotion, PromotionBatch, PromotionsCursor } from "./promotions.t
  * a live one read as a day late, and so can an award whose request began a few
  * milliseconds before midnight and whose transaction began after it. Both are a
  * day out, and both err towards saying "for play on" about a real day's play.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * CREDIT FROM ANOTHER SITE COUNTS UNDER ONE SCOPE, AND SAYS SO WHERE IT DOES
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * A record kept from ItsYourTurn or GoldToken is paid into this same ledger under
+ * its own types (`IMPORTED_XP_TYPES`), every row of one member's payment in one
+ * transaction on the day the payer runs. Read as one running total, 0.196.0's
+ * payment made Chibi a single line from level 1 to level 100 dated that day, as
+ * though a million XP had been earned in an afternoon. So the page takes the
+ * board's two scopes:
+ *
+ * - **Itsutsu only** leaves the imported rows out before the batches are made
+ *   (`promotionsLeaveOut`), so the running total is `Member.xp` as it moved and a
+ *   credit is never a promotion.
+ * - **Everywhere** keeps them, because the total it runs is `Member.xpEverywhere`
+ *   — the one every level badge on the site reads — and a batch carrying credit
+ *   is MARKED: dated by the payment, and named as play on another site.
+ *
+ * Marked rather than left out. Leaving it out would give Everywhere a badge on
+ * one rung and a list of promotions that never reaches it, on the one view whose
+ * claim is that it counts that credit — and John asked for the credit to be shown
+ * "with a justification", not hidden. It is the backfill's rule above applied to
+ * the other kind of payment that is not play on the day it is dated.
+ *
+ * A batch holding both kinds of row would need two writers committing for one
+ * member in the same millisecond. It is marked, since credit is in it, which errs
+ * towards saying less was earned here rather than more.
  */
 
 /** How many promotions one page shows. */
@@ -67,6 +98,17 @@ export const PROMOTIONS_PAGE = 50;
 export const LEVEL_THRESHOLDS: readonly number[] = Array.from({ length: XP_LEVELS - 1 }, (_, index) =>
   xpForLevel(index + 2),
 );
+
+/**
+ * The ledger types a scope leaves out of the running total: every imported type
+ * under Itsutsu only, and none under Everywhere.
+ *
+ * An array rather than a clause that is present or absent, so both scopes are one
+ * statement in `promotionsRead.ts` and what each hands it is pinned here.
+ */
+export function promotionsLeaveOut(scope: RecordScope): readonly string[] {
+  return scope === RECORD_SCOPES.here ? IMPORTED_XP_TYPES : [];
+}
 
 /**
  * The day of the play this batch paid for, where a replay filed it under a day
@@ -96,7 +138,9 @@ export function promotionOf(batch: PromotionBatch): Promotion | null {
     from,
     to,
     at: batch.at,
-    paidLater: paidLater(batch.at, batch.dayKey, batch.timeZone),
+    // A credit is dated by its payment and says so; it is never also a replay of play here.
+    paidLater: batch.imported ? null : paidLater(batch.at, batch.dayKey, batch.timeZone),
+    imported: batch.imported,
   };
 }
 

@@ -18,6 +18,16 @@ export function importedFactsFor(name: string, imported: number): ImportedFacts 
 }
 
 /**
+ * The sites the kept records under this name were played on, as a sentence names
+ * them — for a line that says where a credit came from without an amount. Empty
+ * where no record answers to the name any more, which says no site rather than
+ * inventing one.
+ */
+export function importedSitesFor(name: string): string[] {
+  return importedPlayedOn(legaciesForName(name).filter(importedXpEligible)).sites;
+}
+
+/**
  * WHICH MEMBER EACH KEPT RECORD PAYS, AND THE CHECK THAT SAYS A RUN LANDED.
  *
  * Pure, so both can be checked without a database.
