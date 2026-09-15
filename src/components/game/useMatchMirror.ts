@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { keepaliveFetch } from "@/lib/api/keepaliveFetch";
 import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings, Move } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail, GameMove } from "@/lib/history/gameHistory.types";
@@ -108,12 +109,18 @@ export function keepable(settings: GameSettings): boolean {
   );
 }
 
-async function call(url: string, method: string, body: unknown): Promise<Response> {
-  return fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+/*
+ * EVERY WRITE THE MIRROR MAKES OUTLIVES THE PAGE. The winning stone is posted a
+ * moment after "wins in 9 moves" is drawn, and a player who typed another address
+ * or closed the tab in that moment cancelled the post: the server never heard the
+ * stone and the game was never filed. A link on the page was always safe, since
+ * the page's code runs on through an in-app navigation. Keepalive hands a request
+ * under way to the browser, so it finishes after the page has gone — see
+ * `keepaliveFetch`, which also says what it cannot rescue: a stone still waiting
+ * behind an earlier one in `queue` has not been sent at all.
+ */
+function call(url: string, method: string, body: unknown): Promise<Response> {
+  return keepaliveFetch(url, method, body);
 }
 
 /**

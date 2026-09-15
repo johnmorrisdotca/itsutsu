@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { keepaliveFetch } from "@/lib/api/keepaliveFetch";
+
 import { GAME_STATUS, SEATS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Seat } from "@/lib/gomoku/gomoku.types";
 import type { GameHistoryPage } from "@/lib/history/gameHistory.types";
@@ -112,11 +114,14 @@ export function useGameRecording(
       })),
     };
 
-    void fetch("/api/games", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
+    /*
+     * Filed with keepalive, so a player who leaves the moment the game ends —
+     * another address, the tab closed — still has it filed: the request is the
+     * browser's, not the page's. A long game's move list can outgrow what a
+     * browser will carry that way, and then it goes as an ordinary post, as it
+     * always did. See `keepaliveFetch`.
+     */
+    void keepaliveFetch("/api/games", "POST", body)
       .then(async (response) => {
         if (!response.ok) throw new Error("not recorded");
         await readStreaks();
