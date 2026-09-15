@@ -63,6 +63,7 @@ export type SgfSource = Pick<
   | "opener"
   | "opening"
   | "handicap"
+  | "headStart"
   | "seed"
   | "drawLimit"
   | "status"

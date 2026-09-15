@@ -1,4 +1,4 @@
-import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START } from "@/lib/gomoku/gomoku.constants";
 import type { GameDetail, GameMove } from "@/lib/history/gameHistory.types";
 import { findLegacyPlayer } from "./legacyPlayers.data";
 import type { LegacyGame } from "./legacyPlayers.types";
@@ -73,6 +73,7 @@ export function keptGameDetail(game: LegacyGame): GameDetail {
     opener: "black",
     opening: "free",
     handicap: NO_HANDICAP,
+    headStart: NO_HEAD_START,
     seed: 0,
     moveTimeMs: null,
     timeoutPenalty: "turn",

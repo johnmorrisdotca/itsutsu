@@ -20,8 +20,11 @@ import { seatTermsFor } from "./seatTerms";
  *
  * "No handicap" is stored three ways, and all three are this game: the column
  * left NULL (`liveGame.ts`), a JSON null (`liveGameSettings.ts`), and a
- * handicap object whose stone is null (`gameRecord.ts`, which stores what it is
- * given) — the same reading `parseHandicap` makes.
+ * handicap object whose stone is null (`gameRecord.ts` stored what it was given)
+ * — the same reading `parseHandicap` makes. A head start with no handicap is
+ * stored as `{ headStart }` with no stone key at all (`storedHandicap`), and a
+ * path to a key that is not there is SQL NULL rather than JSON null, so it
+ * matches none of the three: a head-start game is never taken for an even one.
  */
 export function seatWhereFor(asked: RulesDraft): Prisma.GameWhereInput | null {
   const terms = seatTermsFor(asked);

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
-import { NO_HANDICAP, RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, RULE_VARIANTS, RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 
 import { POOL_COLUMNS } from "@/lib/rating/pools";
@@ -198,6 +198,7 @@ function finished(input: {
     rated: input.rated ?? true,
     hotSeat: input.hotSeat ?? false,
     handicap: NO_HANDICAP,
+    headStart: NO_HEAD_START,
     blackName: `Black ${input.black ?? "nobody"}`,
     whiteName: `White ${input.white ?? "nobody"}`,
   };

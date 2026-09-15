@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
+import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 import { matchPath, setUpLink } from "@/lib/gomoku/slugs";
 import { prisma } from "@/lib/prisma";
 import { seatedRivals } from "@/lib/record/rivalry";
@@ -86,6 +87,7 @@ export async function resultCardFor(input: {
     gameId: game.id,
     facts,
     names: { black: game.blackName, white: game.whiteName },
+    headStart: describeHeadStart(game),
     /*
      * The game-end batch, where it has not been shown yet, so the card and the
      * toasts it stands in for are one announcement; the ledger rows keyed to this

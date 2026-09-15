@@ -3,7 +3,8 @@ import { OUTLOOKS } from "./analysis.constants";
 import { ADVANTAGE_MEASURES, UNREADABLE_REASONS } from "./advantage.constants";
 import { STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { piecesHome } from "./rules/camps";
-import { KOMI, scoreArea } from "./rules/go";
+import { scoreArea } from "./rules/go";
+import { komiFor } from "./rules/headStart";
 import { STAR_RADIUS, starPiecesHome } from "./rules/chineseCheckers";
 import type { Advantage, AdvantageMeasure, Lead, UnreadableReason } from "./advantage.types";
 import type { Assessment, Outlook } from "./analysis.types";
@@ -98,7 +99,7 @@ function countFor(
      * also what makes the lead always answerable.
      */
     const area = scoreArea(state.board, size);
-    return stone === STONES.white ? area.white + KOMI : area.black;
+    return stone === STONES.white ? area.white + komiFor(state.settings) : area.black;
   }
   if (measure === ADVANTAGE_MEASURES.home) {
     return VARIANT_SPECS[variant].chineseCheckers

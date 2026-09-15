@@ -7,7 +7,9 @@ import {
   ALL_BOARD_SIZES,
   DRAW_LIMITS,
   DRAW_LIMIT_LIST,
+  HEAD_START_FREE_TURNS,
   NO_HANDICAP,
+  NO_HEAD_START,
   OBSTACLE_LAYOUTS,
   OPENING_RULES,
   RULE_VARIANTS,
@@ -15,7 +17,7 @@ import {
   SECOND_STONE_EXCLUSIONS,
   STONES,
 } from "@/lib/gomoku/gomoku.constants";
-import type { Handicap, OpeningRule } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, HeadStart, OpeningRule } from "@/lib/gomoku/gomoku.types";
 
 /**
  * The shapes of a game's settings as they cross the API and the database.
@@ -148,9 +150,60 @@ export function parseHandicap(value: unknown): Handicap {
   return parsed.data;
 }
 
-/** What goes into the JSON column: null rather than a handicap for nobody. */
-export function storedHandicap(handicap: Handicap): Handicap | null {
-  return handicap.stone === null ? null : handicap;
+/**
+ * A head start as a request carries it. The traditional part is checked against
+ * the game only when a game is made of it (`normaliseHeadStart`), because the
+ * schema cannot see which game or board it belongs to.
+ */
+export const headStartSchema = z
+  .object({
+    stone: stoneSchema.nullable().default(null),
+    freeTurns: z
+      .number()
+      .int()
+      .refine((value) => (HEAD_START_FREE_TURNS as readonly number[]).includes(value))
+      .default(0),
+    traditional: z.number().int().min(0).max(9).default(0),
+  })
+  .nullable()
+  .default(null);
+
+/**
+ * The head start read back from the handicap column, where it is kept under
+ * `headStart`. Anything that does not parse — a game stored before head starts
+ * existed, a colour with nothing given — is no head start: a stored game must
+ * always load, and the even game is the safe reading.
+ */
+export function parseHeadStart(value: unknown): HeadStart {
+  const inner = typeof value === "object" && value !== null ? (value as { headStart?: unknown }).headStart : undefined;
+  const parsed = headStartSchema.safeParse(inner ?? null);
+  if (!parsed.success || parsed.data === null || parsed.data.stone === null) return NO_HEAD_START;
+  if (parsed.data.freeTurns === 0 && parsed.data.traditional === 0) return NO_HEAD_START;
+  return parsed.data;
+}
+
+/**
+ * WHAT GOES INTO THE HANDICAP COLUMN: everything that makes the game uneven on
+ * purpose (`HandicapTerms`), or null for an even game.
+ *
+ * The handicap's fields at the top level, as they always were, and a head start
+ * under `headStart` beside them. One column rather than a second one, because
+ * the two are one fact for every reader of it — a rating refusal, a seat nobody
+ * else may take — and a column added beside it would be a migration for data
+ * that is already JSON. A head start given with no handicap is stored WITHOUT a
+ * `stone` key, so the plain-game match in `seatWhere.ts`, which asks for a null
+ * stone, can never read it as an even game.
+ *
+ * Both halves are required: a writer that forgot the head start would store the
+ * game as even, and nothing would say so.
+ */
+export function storedHandicap(
+  handicap: Handicap,
+  headStart: HeadStart,
+): Handicap | (Handicap & { headStart: HeadStart }) | { headStart: HeadStart } | null {
+  const start = headStart.stone === null || (headStart.freeTurns === 0 && headStart.traditional === 0) ? null : headStart;
+  if (handicap.stone === null) return start === null ? null : { headStart: start };
+  return start === null ? handicap : { ...handicap, headStart: start };
 }
 
 /**

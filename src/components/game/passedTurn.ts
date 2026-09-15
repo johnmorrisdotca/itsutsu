@@ -1,5 +1,6 @@
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { turnPassedBy } from "@/lib/gomoku/rules/forcedPass";
+import { headStartTurnTaken } from "@/lib/gomoku/rules/headStart";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { GAME_COPY } from "./game.constants";
 
@@ -14,6 +15,15 @@ import { GAME_COPY } from "./game.constants";
  * screen, are told whose it was.
  */
 export function passedTurnWords(state: GameState, viewer: Stone | null): string | null {
+  // A turn a head start took is a pass too, and says why: it was given, not missing.
+  const given = headStartTurnTaken(state);
+  if (given !== null) {
+    if (viewer === given.stone) return GAME_COPY.headStartYours(given.turn, given.of);
+    const who = STONE_DISPLAY[given.stone].label;
+    return viewer !== null
+      ? GAME_COPY.headStartToYou(who, given.turn, given.of)
+      : GAME_COPY.headStartWatched(who, given.turn, given.of);
+  }
   const passed = turnPassedBy(state);
   if (passed === null) return null;
   if (viewer === passed) return GAME_COPY.youHadNoMove;

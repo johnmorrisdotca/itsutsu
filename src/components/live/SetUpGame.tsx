@@ -14,12 +14,13 @@ import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { HandicapChoice } from "./HandicapChoice";
+import { HeadStartChoice } from "./HeadStartChoice";
 import { OpponentChoice } from "./OpponentChoice";
 import { ANYONE, RANDOM_COMPUTER, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
 import { describeRules, describeSettings } from "./rulesSummary";
-import type { RulesDraft } from "./rulesDraft";
+import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 import { matchSeat } from "./seatMatch";
 import { beginLink } from "./setUpAddress";
 import { readSetUpAsked } from "./setUpAsked";
@@ -253,7 +254,11 @@ export function SetUpGame({
    * so the two pages cannot disagree about one press. True of two shapes: a fork
    * with nobody to hand the second seat to, and a handicap on either colour.
    */
-  const refused = draftRatingRefusal({ screen: seatsFor({ again, fork }).screen, handicap: settled.handicap });
+  const refused = draftRatingRefusal({
+    screen: seatsFor({ again, fork }).screen,
+    handicap: settled.handicap,
+    headStart: settled.headStart,
+  });
 
   /*
    * THE WAY ON, WHICH CREATES NOTHING. Continue carries the draft to
@@ -284,7 +289,7 @@ export function SetUpGame({
    */
   const recap = [
     ...describeSettings(settled, refused),
-    ...recapWords({ opponent: fork !== null ? opponent : chosen, fork, handicap: settled.handicap, random }),
+    ...recapWords({ opponent: fork !== null ? opponent : chosen, fork, handicap: settled.handicap, game: settled, random }),
   ];
 
   return (
@@ -347,18 +352,27 @@ export function SetUpGame({
               A HANDICAP: John, "you're playing someone who's not very strong —
               you want to, in the settings page, give yourself a handicap to help
               them out." Not on a fork, whose position was played under whatever
-              handicap its game had. A head start for the weaker player — free
-              moves, extra stones, piece odds — is the next ticket, and its group
-              goes in this section above the harder rules for the stronger one.
+              handicap its game had. The head start for the weaker player — free
+              turns, and the game's own traditional head start — comes first in
+              the group, above the harder rules for the stronger one.
             */
             handicap:
               fork === null ? (
-                <HandicapChoice
-                  value={settled.handicap}
-                  variant={settled.variant}
-                  disabled={busy}
-                  onChange={(handicap) => setRules({ ...settled, handicap })}
-                />
+                <div className="flex flex-col gap-4">
+                  <HeadStartChoice
+                    value={settled.headStart}
+                    variant={settled.variant}
+                    size={settled.size}
+                    disabled={busy}
+                    onChange={(headStart) => setRules(applyRulesChange(settled, { headStart }))}
+                  />
+                  <HandicapChoice
+                    value={settled.handicap}
+                    variant={settled.variant}
+                    disabled={busy}
+                    onChange={(handicap) => setRules({ ...settled, handicap })}
+                  />
+                </div>
               ) : null,
           }}
           onSizeChosen={setBoardChosen}

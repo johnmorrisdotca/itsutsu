@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { RulesDraft } from "@/components/live/rulesDraft";
 import { creationFor } from "@/components/live/setUpStart";
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
-import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constants";
 
 /**
  * The awards that are about other people, driven through the writers that pay
@@ -187,6 +187,7 @@ describe("which of the three a creation was", () => {
       allowResign: true,
       open: false,
       handicap: NO_HANDICAP,
+      headStart: NO_HEAD_START,
     };
     const bob = { id: "m-bob", name: "Bob", computer: false };
     const again = { id: "g1", colour: STONES.white, opponent: bob };

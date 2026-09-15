@@ -247,6 +247,8 @@ export const SET_UP_PARAMS = {
   rated: "rated",
   resign: "resign",
   handicap: "handicap",
+  /** A start for the weaker colour — see `NO_HEAD_START_ASKED` and `HEAD_START_TURNS_WORD`. */
+  headStart: "head-start",
   /**
    * A seat already posted on the noticeboard that this will sit down at rather
    * than post a second one beside.
@@ -287,6 +289,20 @@ export const NO_PACE = "none";
  * could not express it.
  */
 export const NO_HANDICAP_ASKED = "none";
+
+/**
+ * A game with nobody given a head start, said out loud — for the same reason as
+ * `NO_HANDICAP_ASKED`: taking one off and pressing Change something must not
+ * have a rematch's head start handed straight back by silence.
+ */
+export const NO_HEAD_START_ASKED = "none";
+
+/**
+ * The word a head start's free turns are counted in, in an address:
+ * `white-2-turns`, `black-1-turns-4-stones`. The traditional part is counted in
+ * its own word — stones, corners, men — so a link reads as what was given.
+ */
+export const HEAD_START_TURNS_WORD = "turns";
 
 /**
  * What the set-up screen was OPENED from, as opposed to what has been chosen on

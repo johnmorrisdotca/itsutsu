@@ -19,6 +19,8 @@ import type {
   GameStatus,
   Handicap,
   HandicapRule,
+  HeadStart,
+  HeadStartTurns,
   LineRule,
   MoveKind,
   ObstacleLayout,
@@ -29,6 +31,7 @@ import type {
   RuleVariant,
   Seat,
   Stone,
+  TraditionalHeadStart,
   VariantSpec,
   WinReason,
 } from "./gomoku.types";
@@ -176,6 +179,13 @@ export const BOARD_GRIDS = {
   cells: "cells",
 } as const satisfies Record<BoardGrid, BoardGrid>;
 
+/** The traditional head starts, see TraditionalHeadStart. */
+export const TRADITIONAL_HEAD_STARTS = {
+  stones: "stones",
+  corners: "corners",
+  men: "men",
+} as const satisfies Record<TraditionalHeadStart, TraditionalHeadStart>;
+
 export const OPENING_RULES = {
   free: "free",
   pro: "pro",
@@ -271,6 +281,12 @@ export const NO_HANDICAP: Handicap = {
   noCaptures: false,
   secondStoneExclusion: 0,
 };
+
+/** Nobody given a start: the even game, which is most games. */
+export const NO_HEAD_START: HeadStart = { stone: null, freeTurns: 0, traditional: 0 };
+
+/** The free turns a head start may give, none included. John chose one to three. */
+export const HEAD_START_FREE_TURNS = [0, 1, 2, 3] as const;
 
 const NO_PATTERNS: readonly ForbiddenPattern[] = [];
 const RENJU_PATTERNS: readonly ForbiddenPattern[] = [
@@ -550,11 +566,14 @@ const CHINESE_CHECKERS_SIZES = [17] as const;
 const GO_SIZES = [19, 13, 9] as const;
 
 /**
- * What a row may set, less the one thing no builder supplies for it: where
- * its stones sit is declared by every game and never defaulted, so a new game
- * that leaves it out does not compile rather than getting a guess.
+ * What a row may set, less the two things no builder supplies for it: where its
+ * stones sit, and the most free turns it offers as a head start. Both are
+ * declared by every game and never defaulted, so a new game that leaves either
+ * out does not compile rather than getting a guess. The head-start figure is the
+ * most the game's measurement shows cannot decide it (`headStartTurns`), and each
+ * row says why beside it.
  */
-type SpecOverrides = Partial<VariantSpec> & Pick<VariantSpec, "grid">;
+type SpecOverrides = Partial<VariantSpec> & Pick<VariantSpec, "grid" | "headStartTurns">;
 
 function plain(overrides: SpecOverrides): VariantSpec {
   return {
@@ -595,12 +614,13 @@ function plain(overrides: SpecOverrides): VariantSpec {
     checkersRules: null,
     chineseCheckers: false,
     go: false,
+    headStart: null,
     ...overrides,
   };
 }
 
 /** The drop family: gravity columns, four in a row, a 7×7 or 9×9 board. A piece falls into a slot, so the whole family is drawn in the squares. */
-function drop(overrides: Partial<VariantSpec> = {}): VariantSpec {
+function drop(overrides: Partial<VariantSpec> & Pick<VariantSpec, "headStartTurns">): VariantSpec {
   return small({
     winLength: 4,
     placement: PLACEMENTS.drop,
@@ -611,7 +631,7 @@ function drop(overrides: Partial<VariantSpec> = {}): VariantSpec {
 }
 
 /** A flipping game: an 8×8 board of squares, as Othello's is, and no reading of threats — there are none. */
-function flipping(overrides: Partial<VariantSpec> = {}): VariantSpec {
+function flipping(overrides: Partial<VariantSpec> & Pick<VariantSpec, "headStartTurns">): VariantSpec {
   return small({ flips: true, analysis: false, grid: BOARD_GRIDS.cells, ...overrides, boardSizes: overrides.boardSizes ?? REVERSI_SIZES });
 }
 
@@ -627,8 +647,14 @@ function small(overrides: SpecOverrides & { boardSizes: readonly number[] }): Va
  * 3.3, CBJD, FSR), Black in pool checkers (APCA rule 7). Not a choice at the
  * board, because the rulebook does not make it one.
  */
-function federationDraughts(rules: CheckersRules, boardSizes: readonly number[], firstStone: Stone): VariantSpec {
+function federationDraughts(
+  rules: CheckersRules,
+  boardSizes: readonly number[],
+  firstStone: Stone,
+  headStartTurns: HeadStartTurns,
+): VariantSpec {
   return small({
+    headStartTurns,
     grid: BOARD_GRIDS.cells,
     checkers: true,
     checkersRules: rules,
@@ -636,6 +662,8 @@ function federationDraughts(rules: CheckersRules, boardSizes: readonly number[],
     analysis: false,
     allowFirstPlayerChoice: false,
     firstStone,
+    // Odds of a man, or men: the draughts clubs' way of giving a weaker player a game.
+    headStart: TRADITIONAL_HEAD_STARTS.men,
   });
 }
 
@@ -644,13 +672,15 @@ function federationDraughts(rules: CheckersRules, boardSizes: readonly number[],
  * so a new variant is a new row here plus its copy in `variants.constants.ts`.
  */
 export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
-  freestyle: plain({ grid: BOARD_GRIDS.lines, winLength: null, allowFirstPlayerChoice: true }),
+  freestyle: plain({ grid: BOARD_GRIDS.lines, winLength: null, allowFirstPlayerChoice: true, headStartTurns: 2 }), // 3 free turns give an open four.
   standard: plain({
     grid: BOARD_GRIDS.lines,
+    headStartTurns: 2, // 3 free turns give an open four.
     lineRule: { black: LINE_RULES.exact, white: LINE_RULES.exact },
   }),
   renju: plain({
     grid: BOARD_GRIDS.lines,
+    headStartTurns: 2, // 3 free turns give an open four.
     // White's overline counts as five; black's is forbidden.
     lineRule: { black: LINE_RULES.exact, white: LINE_RULES.atLeast },
     forbidden: { black: RENJU_PATTERNS, white: NO_PATTERNS },
@@ -663,7 +693,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
       OPENING_RULES.longPro,
     ],
   }),
-  omok: plain({ grid: BOARD_GRIDS.lines, forbidden: { black: OMOK_PATTERNS, white: OMOK_PATTERNS } }),
+  omok: plain({ grid: BOARD_GRIDS.lines, forbidden: { black: OMOK_PATTERNS, white: OMOK_PATTERNS }, headStartTurns: 2 }), // 3 free turns give an open four.
   /*
    * The one five-in-a-row game drawn in the squares. Caro is played on
    * squared paper with the marks written inside the squares, and its name is
@@ -671,31 +701,36 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    */
   caro: plain({
     grid: BOARD_GRIDS.cells,
+    headStartTurns: 2, // 3 free turns give an open four.
     lineRule: { black: LINE_RULES.exactOpen, white: LINE_RULES.exactOpen },
   }),
-  ninuki: plain({ grid: BOARD_GRIDS.lines, captures: true, capturesToWin: 10, allowFirstPlayerChoice: true }),
+  // 2 free turns could not be shown safe within the measurement's budget: captures keep every line open.
+  ninuki: plain({ grid: BOARD_GRIDS.lines, captures: true, capturesToWin: 10, allowFirstPlayerChoice: true, headStartTurns: 1 }),
   sannuki: plain({
     grid: BOARD_GRIDS.lines,
     captures: true,
     captureSizes: [2, 3],
+    headStartTurns: 1, // 2 not shown safe within budget: captures keep every line open.
     capturesToWin: 15,
     allowFirstPlayerChoice: true,
   }),
-  misereFive: plain({ grid: BOARD_GRIDS.lines, misere: true, allowFirstPlayerChoice: true, openings: FREE_ONLY }),
+  misereFive: plain({ grid: BOARD_GRIDS.lines, misere: true, allowFirstPlayerChoice: true, openings: FREE_ONLY, headStartTurns: 0 }), // A free turn is a burden where making the line loses, so it is no head start.
   // Tic-tac-toe's family: noughts and crosses IN the squares, however much the rules share with gomoku.
   makerBreaker: small({
     grid: BOARD_GRIDS.cells,
     anyColour: true,
     makerBreaker: true,
+    headStartTurns: 1, // 2 not shown safe within budget.
     boardSizes: [6],
     allowFirstPlayerChoice: false,
     analysis: false,
   }),
-  wildTicTacToe: small({ grid: BOARD_GRIDS.cells, winLength: 3, anyColour: true, boardSizes: [3], analysis: false }),
+  wildTicTacToe: small({ grid: BOARD_GRIDS.cells, winLength: 3, anyColour: true, boardSizes: [3], analysis: false, headStartTurns: 0 }), // 1 free turn is a forced line.
   notakto: small({
     grid: BOARD_GRIDS.cells,
     winLength: 3,
     singleColour: true,
+    headStartTurns: 0, // 1 free turn forces the other side to finish the line.
     misere: true,
     boardSizes: [3],
     allowFirstPlayerChoice: false,
@@ -703,14 +738,16 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   }),
   connect6: plain({
     grid: BOARD_GRIDS.lines,
+    // None: White's first turn is two stones, so one free turn is four before Black's second, and no budget showed that safe.
+    headStartTurns: 0,
     stonesPerTurn: 2,
     winLength: 6,
     allowFirstPlayerChoice: true,
     openings: [OPENING_RULES.free],
   }),
-  tictactoe: small({ grid: BOARD_GRIDS.cells, winLength: 3, boardSizes: [3] }),
+  tictactoe: small({ grid: BOARD_GRIDS.cells, winLength: 3, boardSizes: [3], headStartTurns: 0 }), // 1 free turn is a forced fork.
   // Squava: a 5×5 board of squares, played in them.
-  trapThree: small({ grid: BOARD_GRIDS.cells, winLength: 4, loseLength: 3, boardSizes: [5] }),
+  trapThree: small({ grid: BOARD_GRIDS.cells, winLength: 4, loseLength: 3, boardSizes: [5], headStartTurns: 1 }), // 2 not shown safe within budget.
   /*
    * A torus: both pairs of edges join, so every intersection is a middle one
    * and no line can be shut down by running out of board.
@@ -720,6 +757,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     winLength: null,
     allowFirstPlayerChoice: true,
     wrap: WRAP_MODES.both,
+    headStartTurns: 2, // 3 free turns give an open four.
     openings: FREE_ONLY,
   }),
   /*
@@ -732,19 +770,21 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     allowFirstPlayerChoice: true,
     openings: FREE_ONLY,
     deadSquares: 6,
+    headStartTurns: 1, // 2 free turns decide where the squares fall kindly.
     hotSquares: 2,
   }),
-  dropFour: drop(),
-  ringDrop: drop({ wrap: WRAP_MODES.columns }),
-  holeDrop: drop({ deadSquares: 1 }),
-  hotDrop: drop({ hotSquares: 1, deadSquares: 1 }),
-  clearDrop: drop({ lineClear: true }),
-  giveawayDrop: drop({ misere: true }),
-  edgeDrop: small({ grid: BOARD_GRIDS.cells, winLength: 4, placement: PLACEMENTS.edge, boardSizes: [7, 9, 10] }),
-  wormDrop: drop({ wormholes: 2 }),
+  dropFour: drop({ headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
+  ringDrop: drop({ wrap: WRAP_MODES.columns, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
+  holeDrop: drop({ deadSquares: 1, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
+  hotDrop: drop({ hotSquares: 1, deadSquares: 1, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
+  clearDrop: drop({ lineClear: true, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
+  giveawayDrop: drop({ misere: true, headStartTurns: 0 }), // A free turn is a burden where making the line loses, so it is no head start.
+  edgeDrop: small({ grid: BOARD_GRIDS.cells, winLength: 4, placement: PLACEMENTS.edge, boardSizes: [7, 9, 10], headStartTurns: 0 }), // 1 not shown safe within budget.
+  wormDrop: drop({ wormholes: 2, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
   // The piece games are this site's own, laid on go boards in stones rather than tiles, so they keep the house lines.
   dominoFive: plain({
     grid: BOARD_GRIDS.lines,
+    headStartTurns: 0, // 1 not shown safe within budget: a seed deals the pieces.
     queue: PIECE_QUEUES.domino,
     allowFirstPlayerChoice: true,
     openings: FREE_ONLY,
@@ -753,6 +793,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   }),
   blockFive: plain({
     grid: BOARD_GRIDS.lines,
+    headStartTurns: 0, // 1 not shown safe within budget: a seed deals the pieces.
     queue: PIECE_QUEUES.tetro,
     singles: 6,
     allowFirstPlayerChoice: true,
@@ -761,11 +802,12 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     analysis: false,
   }),
   // The twist games: marbles in the holes of turning quadrants, as the published game has them.
-  twistFive: small({ grid: BOARD_GRIDS.cells, winLength: 5, quadrantSize: 3, boardSizes: [6], analysis: false }),
-  twistFour: small({ grid: BOARD_GRIDS.cells, winLength: 4, quadrantSize: 2, boardSizes: [4], analysis: false }),
+  twistFive: small({ grid: BOARD_GRIDS.cells, winLength: 5, quadrantSize: 3, boardSizes: [6], analysis: false, headStartTurns: 1 }), // 2 not shown safe: the twists outrun the budget.
+  twistFour: small({ grid: BOARD_GRIDS.cells, winLength: 4, quadrantSize: 2, boardSizes: [4], analysis: false, headStartTurns: 0 }), // 1 not shown safe: the twists outrun the budget.
   // Teeko's board is twenty-five points joined by lines, and the pieces stand on the points.
   squareFour: small({
     grid: BOARD_GRIDS.lines,
+    headStartTurns: 1, // 2 free turns force a square or a line of four.
     winLength: 4,
     pieces: 4,
     squareWins: true,
@@ -776,14 +818,29 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * The flipping games. `winLength` is pinned to nothing in particular, since
    * no line is ever read; what matters is the flip, the pass and the count.
    */
-  reversi: flipping({ startingDiscs: STARTING_DISCS.fixed }),
-  classicReversi: flipping({ startingDiscs: STARTING_DISCS.laid }),
-  antiReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, misere: true }),
-  miniReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: MINI_REVERSI_SIZES }),
-  grandReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: GRAND_REVERSI_SIZES }),
-  halma: small({ grid: BOARD_GRIDS.cells, camps: true, analysis: false, boardSizes: HALMA_SIZES }),
+  /*
+   * Othello's handicap is corners: the weaker player starts owning one to four
+   * of them. Not in anti-Othello, where a disc nobody can turn is one you are
+   * stuck with — a corner there would be a burden handed over as a gift.
+   */
+  reversi: flipping({ startingDiscs: STARTING_DISCS.fixed, headStart: TRADITIONAL_HEAD_STARTS.corners, headStartTurns: 0 }), // 1 free turn takes the last disc.
+  classicReversi: flipping({ startingDiscs: STARTING_DISCS.laid, headStart: TRADITIONAL_HEAD_STARTS.corners, headStartTurns: 1 }), // 2 free turns take the last disc.
+  antiReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, misere: true, headStartTurns: 0 }), // A free turn is a burden where making the line loses, so it is no head start.
+  miniReversi: flipping({
+    startingDiscs: STARTING_DISCS.fixed,
+    boardSizes: MINI_REVERSI_SIZES,
+    headStartTurns: 0, // 1 free turn takes the last disc.
+    headStart: TRADITIONAL_HEAD_STARTS.corners,
+  }),
+  grandReversi: flipping({
+    startingDiscs: STARTING_DISCS.fixed,
+    boardSizes: GRAND_REVERSI_SIZES,
+    headStartTurns: 0, // 1 free turn takes the last disc.
+    headStart: TRADITIONAL_HEAD_STARTS.corners,
+  }),
+  halma: small({ grid: BOARD_GRIDS.cells, camps: true, analysis: false, boardSizes: HALMA_SIZES, headStartTurns: 3 }), // 3 never decides: a race needs every piece home.
   // On the crossings of a triangular lattice, as a wooden Hex board is ruled: see HEX_LATTICE.
-  hex: small({ grid: BOARD_GRIDS.lines, connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
+  hex: small({ grid: BOARD_GRIDS.lines, connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap], headStartTurns: 3 }), // 3 never decides: a chain needs a stone on every row.
   /*
    * Checkers: no lines, no captures-to-win tally of its own — the capture is
    * the whole of the move, worked out fresh by rules/checkers.ts rather than
@@ -794,8 +851,10 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     grid: BOARD_GRIDS.cells,
     checkers: true,
     checkersRules: ENGLISH_CHECKERS_RULES,
+    headStartTurns: 3, // 3 free moves never force a capture: the back rows stay full.
     boardSizes: CHECKERS_SIZES,
     analysis: false,
+    headStart: TRADITIONAL_HEAD_STARTS.men,
   }),
   /*
    * The international family: men that take backward, kings that fly, the
@@ -803,9 +862,9 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * One set of rules on three boards — see INTERNATIONAL_DRAUGHTS_RULES for the
    * articles, and where Brazil's and Canada's differ.
    */
-  internationalDraughts: federationDraughts(INTERNATIONAL_DRAUGHTS_RULES, INTERNATIONAL_DRAUGHTS_SIZES, STONES.white),
-  brazilianDraughts: federationDraughts(BRAZILIAN_DRAUGHTS_RULES, BRAZILIAN_DRAUGHTS_SIZES, STONES.white),
-  canadianCheckers: federationDraughts(CANADIAN_CHECKERS_RULES, CANADIAN_CHECKERS_SIZES, STONES.white),
+  internationalDraughts: federationDraughts(INTERNATIONAL_DRAUGHTS_RULES, INTERNATIONAL_DRAUGHTS_SIZES, STONES.white, 3), // 3 free moves never force a capture.
+  brazilianDraughts: federationDraughts(BRAZILIAN_DRAUGHTS_RULES, BRAZILIAN_DRAUGHTS_SIZES, STONES.white, 3), // 3 free moves never force a capture.
+  canadianCheckers: federationDraughts(CANADIAN_CHECKERS_RULES, CANADIAN_CHECKERS_SIZES, STONES.white, 2), // 3 not shown safe within budget on 12×12.
   /*
    * The free-choice games: kings fly and men take backward as in the
    * international family, but any capture may be chosen. Russian draughts
@@ -813,8 +872,8 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * not crown it unless the capture ends there. See RUSSIAN_DRAUGHTS_RULES and
    * POOL_CHECKERS_RULES for the articles.
    */
-  russianDraughts: federationDraughts(RUSSIAN_DRAUGHTS_RULES, RUSSIAN_DRAUGHTS_SIZES, STONES.white),
-  poolCheckers: federationDraughts(POOL_CHECKERS_RULES, POOL_CHECKERS_SIZES, STONES.black),
+  russianDraughts: federationDraughts(RUSSIAN_DRAUGHTS_RULES, RUSSIAN_DRAUGHTS_SIZES, STONES.white, 3), // 3 free moves never force a capture.
+  poolCheckers: federationDraughts(POOL_CHECKERS_RULES, POOL_CHECKERS_SIZES, STONES.black, 3), // 3 free moves never force a capture.
   /*
    * Chinese Checkers: a hexagram, not a square — see rules/chineseCheckers.ts
    * for how it is embedded in a Point{row,col} grid at all. Otherwise a race
@@ -824,6 +883,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     // Marbles in holes at the points of a lattice. No grid is drawn at all — BoardLines hides it — but the points are what they are.
     grid: BOARD_GRIDS.lines,
     chineseCheckers: true,
+    headStartTurns: 3, // 3 never decides: a race needs every marble home.
     boardSizes: CHINESE_CHECKERS_SIZES,
     analysis: false,
   }),
@@ -835,6 +895,9 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   go: small({
     grid: BOARD_GRIDS.lines,
     go: true,
+    headStartTurns: 3, // 3 never decides: nothing but two passes ends Go.
+    // Handicap stones on the star points, White moving first: Go's own head start.
+    headStart: TRADITIONAL_HEAD_STARTS.stones,
     boardSizes: GO_SIZES,
     allowFirstPlayerChoice: false,
     analysis: false,
@@ -1029,6 +1092,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   variant: RULE_VARIANTS.freestyle,
   opening: OPENING_RULES.free,
   handicap: NO_HANDICAP,
+  headStart: NO_HEAD_START,
   seed: 0,
   capturesToWin: DEFAULT_CAPTURES_TO_WIN,
   firstPlayer: FIRST_PLAYERS.black,

@@ -1,4 +1,4 @@
-import { parseHandicap } from "./gameSettingsSchema";
+import { parseHandicap, parseHeadStart } from "./gameSettingsSchema";
 
 /**
  * Playing the same game again.
@@ -56,6 +56,7 @@ export function settingsToCarry(origin: PlayedGame) {
     obstacles: origin.obstacles,
     opening: origin.opening,
     handicap: parseHandicap(origin.handicap),
+    headStart: parseHeadStart(origin.handicap),
     seed: origin.seed,
     opener: origin.opener,
     winLength: origin.winLength,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RulesDraft } from "./rulesDraft";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 import { creationFor, sameRules, seatsFor, stillARematch } from "./setUpStart";
@@ -17,6 +17,7 @@ const draft: RulesDraft = {
   allowResign: true,
   open: false,
   handicap: NO_HANDICAP,
+  headStart: NO_HEAD_START,
 };
 
 const them: SetUpOpponent = { id: "mem_them", name: "Bob", computer: false };

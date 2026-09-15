@@ -34,7 +34,7 @@ import { useResultCard } from "./useResultCard";
  * A dialog that does not trap: the page behind it stays usable, so it is labelled
  * and takes focus rather than claiming `aria-modal`. Escape closes it.
  */
-export function ResultCard({ gameId, facts, names, xp, rivalry, rematch, newGame, waiting }: ResultCardData) {
+export function ResultCard({ gameId, facts, names, headStart, xp, rivalry, rematch, newGame, waiting }: ResultCardData) {
   const dialog = useRef<HTMLDivElement | null>(null);
   const { open, close, seen } = useResultCard(gameId, dialog);
   const say = useSpeaker();
@@ -68,6 +68,12 @@ export function ResultCard({ gameId, facts, names, xp, rivalry, rematch, newGame
         </h2>
         <div id={described} className="flex flex-col gap-1 text-sm">
           <p data-testid="result-card-reason">{reasonOf(facts, names)}</p>
+          {/* Said with the result, because a win with a head start is a different win: and it did not count. */}
+          {headStart !== null ? (
+            <p className="text-xs text-ink-soft" data-testid="result-card-head-start">
+              {headStart}.
+            </p>
+          ) : null}
           {score !== null ? (
             <p className="font-mono text-xs tabular-nums text-ink-soft" data-testid="result-card-score">
               {score}

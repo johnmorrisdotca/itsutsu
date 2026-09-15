@@ -1,5 +1,6 @@
-import { NO_HANDICAP, OPENING_RULES, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
-import type { Handicap, OpeningRule, RuleVariant, VariantSpec } from "@/lib/gomoku/gomoku.types";
+import { NO_HANDICAP, NO_HEAD_START, OPENING_RULES, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
+import { freeTurnsOffered, hasHeadStart, traditionalCounts } from "@/lib/gomoku/rules/headStart";
+import type { Handicap, HeadStart, OpeningRule, RuleVariant, VariantSpec } from "@/lib/gomoku/gomoku.types";
 import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
 
 /**
@@ -58,6 +59,12 @@ export type RulesDraft = {
    * ordinary game, which is what almost every draft has.
    */
   handicap: Handicap;
+  /**
+   * A start for the weaker colour: free turns, and the game's own traditional
+   * head start where it has one. On the draft for the same reasons as the
+   * handicap. `NO_HEAD_START` is the even game.
+   */
+  headStart: HeadStart;
 };
 
 /**
@@ -106,6 +113,20 @@ export function applyRulesChange(current: RulesDraft, next: Partial<RulesDraft>)
    */
   const offered = boardSizesFor(merged.variant as RuleVariant);
   merged.size = offered.includes(merged.size) ? merged.size : offered[0];
+  /*
+   * A HEAD START THIS GAME CAN GIVE, ON THIS BOARD. Corners chosen at Othello
+   * mean nothing at Gomoku, and seven handicap stones mean nothing on 9×9, which
+   * marks five points: the traditional part drops to none rather than riding
+   * along to a game that would ignore it. Free turns come down to the game's own
+   * most, on the screen where somebody can see it happen. And a head start plays
+   * the free opening, as `availableOpenings` decides at creation.
+   */
+  const mostTurns = freeTurnsOffered(merged.variant).length;
+  if (merged.headStart.freeTurns > mostTurns) merged.headStart = { ...merged.headStart, freeTurns: mostTurns };
+  if (!traditionalCounts(merged.variant, merged.size).includes(merged.headStart.traditional)) {
+    merged.headStart = { ...merged.headStart, traditional: 0 };
+  }
+  if (hasHeadStart(merged)) merged.opening = OPENING_RULES.free;
   return merged;
 }
 
@@ -132,6 +153,8 @@ export function draftFromGame(game: {
    * could not read" — see `parseHandicap`, which answers the same way.
    */
   handicap?: Handicap;
+  /** Optional for the same reason, and absent means the even game — see `parseHeadStart`. */
+  headStart?: HeadStart;
 }): RulesDraft {
   return {
     variant: game.variant,
@@ -145,5 +168,6 @@ export function draftFromGame(game: {
     allowResign: game.allowResign,
     open: game.openSeat !== null,
     handicap: game.handicap ?? NO_HANDICAP,
+    headStart: game.headStart ?? NO_HEAD_START,
   };
 }

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constants";
 
 import { ratedAtCreation } from "./ratedAtCreation";
 
 /** Nothing said by anybody: the shape a posted seat and a challenge send. */
-const silence = { requested: undefined, carried: undefined, hotSeat: false, handicap: NO_HANDICAP };
+const silence = { requested: undefined, carried: undefined, hotSeat: false, handicap: NO_HANDICAP, headStart: NO_HEAD_START };
 
 describe("ratedAtCreation", () => {
   it("takes silence as yes, which is what a posted seat has always meant", () => {

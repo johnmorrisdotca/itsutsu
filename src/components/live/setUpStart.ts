@@ -1,5 +1,5 @@
 import { FIRST_STONE, HANDICAP_RULES, STONES } from "@/lib/gomoku/gomoku.constants";
-import type { Handicap, Stone } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, HeadStart, Stone } from "@/lib/gomoku/gomoku.types";
 import type { RulesDraft } from "./rulesDraft";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 
@@ -48,8 +48,16 @@ export function sameRules(one: RulesDraft, two: RulesDraft): boolean {
     one.clockMode === two.clockMode &&
     one.rated === two.rated &&
     one.allowResign === two.allowResign &&
-    sameHandicap(one.handicap, two.handicap)
+    sameHandicap(one.handicap, two.handicap) &&
+    sameHeadStart(one.headStart, two.headStart)
   );
+}
+
+/** A head start is the same where it gives the same colour the same start; an even game is one whatever it holds. */
+function sameHeadStart(one: HeadStart, two: HeadStart): boolean {
+  const given = (start: HeadStart) => start.stone !== null && (start.freeTurns > 0 || start.traditional > 0);
+  if (!given(one) || !given(two)) return given(one) === given(two);
+  return one.stone === two.stone && one.freeTurns === two.freeTurns && one.traditional === two.traditional;
 }
 
 /** Field by field, through the rule list, so a toggle added later is compared too. */

@@ -5,7 +5,9 @@ import type {
   ForbiddenPattern,
   LineRule,
   Placement,
+  HeadStartTurns,
   StartingDiscs,
+  TraditionalHeadStart,
   WrapMode,
 } from "./spec.types";
 
@@ -147,4 +149,18 @@ export type VariantSpec = {
    * with a fixed komi added for white.
    */
   go: boolean;
+  /**
+   * The head start this game's own tradition gives a weaker player, or null
+   * where it has none — see TraditionalHeadStart and `rules/headStart.ts`.
+   * Every game also offers free turns at the start; this is what it adds.
+   */
+  headStart: TraditionalHeadStart | null;
+  /**
+   * The most free turns this game offers as a head start, 0 for none. A head
+   * start must make a game easier, never decide it, so each game's figure is
+   * the most its measurement shows cannot force a win within a short horizon
+   * (`simulation.headStartDecides.ts`, held by `variants.coverage.test.ts`).
+   * Declared on every row, never defaulted, as `grid` is.
+   */
+  headStartTurns: HeadStartTurns;
 };

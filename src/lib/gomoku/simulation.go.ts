@@ -1,3 +1,4 @@
+import { handicapStonesByHand } from "./simulation.headStart";
 import { expect } from "vitest";
 import { cellAt, otherStone } from "./engine";
 import { undoMove } from "./rules/record";
@@ -163,6 +164,8 @@ function scoreByHand(board: readonly Cell[], size: number): { black: number; whi
 }
 
 const KOMI = 6.5;
+/** Half a point where handicap stones were given, so a handicap game still cannot tie. */
+const HANDICAP_KOMI = 0.5;
 
 /**
  * What must hold after a Go pass: the board and the ko point are untouched,
@@ -176,10 +179,12 @@ export function checkGoPass(before: GameState, after: GameState, seed: number) {
   expect(after.moves[after.moves.length - 1].kind, `${where}: pass not recorded`).toBe(MOVE_KINDS.pass);
 
   const previous = before.moves[before.moves.length - 1];
-  if (previous !== undefined && previous.kind === MOVE_KINDS.pass) {
+  // A pass a head start took is not the first of two.
+  if (previous !== undefined && previous.kind === MOVE_KINDS.pass && previous.headStart !== true) {
     expect(after.status, `${where}: two passes in a row did not end the game`).toBe(GAME_STATUS.won);
     const score = scoreByHand(after.board, after.settings.size);
-    const winner: Stone = score.black > score.white + KOMI ? "black" : "white";
+    const komi = handicapStonesByHand(after) ? HANDICAP_KOMI : KOMI;
+    const winner: Stone = score.black > score.white + komi ? "black" : "white";
     expect(after.winner, `${where}: the wrong side won on the count`).toBe(winner);
   } else {
     expect(after.status, `${where}: a single pass ended the game`).toBe(GAME_STATUS.playing);

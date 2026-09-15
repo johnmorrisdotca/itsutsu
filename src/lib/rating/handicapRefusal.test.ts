@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constants";
 import { hasHandicap } from "@/lib/gomoku/rules/handicap";
 
 import { draftRatingRefusal, handicapRefusal } from "./handicapRefusal";
@@ -16,9 +16,9 @@ import { RATING_REFUSALS, RATING_REFUSAL_DISPLAY } from "./rateable.constants";
  * rules. John, asked whether it should: "Fine don't".
  */
 
-const black = { handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true } };
-const white = { handicap: { ...NO_HANDICAP, stone: STONES.white, longerLine: true } };
-const none = { handicap: NO_HANDICAP };
+const black = { headStart: NO_HEAD_START, handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true } };
+const white = { headStart: NO_HEAD_START, handicap: { ...NO_HANDICAP, stone: STONES.white, longerLine: true } };
+const none = { headStart: NO_HEAD_START, handicap: NO_HANDICAP };
 
 describe("handicapRefusal", () => {
   it("refuses a game with a handicap on either colour", () => {
@@ -33,7 +33,7 @@ describe("handicapRefusal", () => {
   it("refuses a colour chosen with no toggle ticked yet, as the engine counts it", () => {
     // A colour named is a handicap in force for `hasHandicap`; the rating follows
     // the engine's answer rather than keeping a second opinion of its own.
-    const colourOnly = { handicap: { ...NO_HANDICAP, stone: STONES.black } };
+    const colourOnly = { headStart: NO_HEAD_START, handicap: { ...NO_HANDICAP, stone: STONES.black } };
     expect(hasHandicap(colourOnly)).toBe(true);
     expect(handicapRefusal(colourOnly)).toBe(RATING_REFUSALS.handicap);
   });
@@ -80,5 +80,34 @@ describe("draftRatingRefusal", () => {
 
   it("leaves every other game's rating to the choice the draft holds", () => {
     expect(draftRatingRefusal({ screen: false, ...none })).toBeNull();
+  });
+});
+
+describe("a head start", () => {
+  const freeTurns = { handicap: NO_HANDICAP, headStart: { stone: STONES.white, freeTurns: 2, traditional: 0 } };
+  const stones = { handicap: NO_HANDICAP, headStart: { stone: STONES.black, freeTurns: 0, traditional: 4 } };
+
+  it("is refused a rating by the same rule, and named for what it is", () => {
+    expect(handicapRefusal(freeTurns)).toBe(RATING_REFUSALS.headStart);
+    expect(handicapRefusal(stones)).toBe(RATING_REFUSALS.headStart);
+    expect(hasHandicap(freeTurns)).toBe(true);
+    expect(draftRatingRefusal({ screen: false, ...freeTurns })).toBe(RATING_REFUSALS.headStart);
+  });
+
+  it("is named as harder rules where the stronger side took those too", () => {
+    expect(handicapRefusal({ ...black, headStart: freeTurns.headStart })).toBe(RATING_REFUSALS.handicap);
+  });
+
+  it("gives nothing, and refuses nothing, where a colour is named with nothing given", () => {
+    const empty = { handicap: NO_HANDICAP, headStart: { stone: STONES.black, freeTurns: 0, traditional: 0 } };
+    expect(handicapRefusal(empty)).toBeNull();
+  });
+
+  it("has words that say head start, on every page that says why", () => {
+    const display = RATING_REFUSAL_DISPLAY[RATING_REFUSALS.headStart];
+    expect(display.playing).toBe("This game will not count");
+    expect(display.filed).toBe("This game did not count");
+    expect(display.sentence).toMatch(/head start/);
+    expect(display.short).toMatch(/head start/);
   });
 });

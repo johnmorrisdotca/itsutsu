@@ -50,7 +50,7 @@ export function byGameName(seats: readonly GameSummary[]): GameSummary[] {
 export function sitDownHref(
   seat: Pick<
     GameSummary,
-    "id" | "variant" | "size" | "obstacles" | "opening" | "handicap" | "moveTimeMs" | "clockMode" | "timeoutPenalty" | "allowResign" | "rated" | "openSeat"
+    "id" | "variant" | "size" | "obstacles" | "opening" | "handicap" | "headStart" | "moveTimeMs" | "clockMode" | "timeoutPenalty" | "allowResign" | "rated" | "openSeat"
   >,
 ): string {
   return beginLink(draftFromGame(seat), { sit: seat.id });

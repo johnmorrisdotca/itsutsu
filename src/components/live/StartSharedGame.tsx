@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
+import { hasHeadStart } from "@/lib/gomoku/rules/headStart";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { seatPath } from "@/lib/gomoku/slugs";
 import { Button, SectionTitle } from "@/components/ui/Controls";
@@ -50,7 +51,7 @@ export function StartSharedGame({
    * board somebody has since changed.
    */
   const [choices, setChoices] = useState<
-    Omit<RulesDraft, "variant" | "size" | "obstacles" | "opening" | "handicap">
+    Omit<RulesDraft, "variant" | "size" | "obstacles" | "opening" | "handicap" | "headStart">
   >({
     moveTimeMs: defaults.moveTimeMs,
     timeoutPenalty: "turn",
@@ -70,6 +71,7 @@ export function StartSharedGame({
     obstacles: settings.obstacles,
     opening: sharedOpening,
     handicap: settings.handicap,
+    headStart: settings.headStart,
   };
 
   // The panel sits beside the board on a wide screen and below it on a phone;
@@ -92,6 +94,7 @@ export function StartSharedGame({
           obstacles: rules.obstacles,
           opening: rules.opening,
           handicap: rules.handicap.stone === null ? null : rules.handicap,
+          headStart: hasHeadStart(rules) ? rules.headStart : null,
           moveTimeMs: rules.moveTimeMs,
           timeoutPenalty: rules.timeoutPenalty,
           clockMode: rules.clockMode,

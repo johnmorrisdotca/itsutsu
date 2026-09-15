@@ -115,6 +115,7 @@ export function askedOver(initial: RulesDraft, want: SetUpAsked, forked = false)
     ...(said.obstacles !== null ? { obstacles: said.obstacles } : {}),
     ...(said.opening !== null ? { opening: said.opening } : {}),
     ...(said.handicap !== null ? { handicap: said.handicap } : {}),
+    ...(said.headStart !== null ? { headStart: said.headStart } : {}),
     ...pace,
   });
 }
@@ -248,6 +249,7 @@ export function unreadAsked(
     [SET_UP_PARAMS.rated, said.rated === null],
     [SET_UP_PARAMS.resign, said.allowResign === null],
     [SET_UP_PARAMS.handicap, !forked && said.handicap === null],
+    [SET_UP_PARAMS.headStart, !forked && said.headStart === null],
   ];
   return checks.filter(([name, unread]) => asked[name] !== undefined && unread).map(([name]) => name);
 }

@@ -8,7 +8,8 @@ import {
 } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY, variantLabel } from "@/lib/gomoku/variants.constants";
 import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
-import type { Handicap, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { describeHeadStart } from "@/lib/gomoku/headStartWords";
+import type { Handicap, HeadStart, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { describeClock } from "@/lib/history/deadline";
 import { RATING_REFUSED_WORD, type RatingRefusal } from "@/lib/rating/rateable.constants";
 
@@ -19,6 +20,7 @@ export type RulesLike = {
   obstacles: string;
   opening: string;
   handicap: Handicap;
+  headStart: HeadStart;
 };
 
 /**
@@ -146,6 +148,9 @@ export function describeRules(rules: RulesLike): string {
     parts.push(`${OPENING_DISPLAY[rules.opening as OpeningRule].label} opening`);
   }
   if (rules.obstacles === OBSTACLE_LAYOUTS.hoshi) parts.push("Star blocks");
+  // The head start first, then the harder rules: the order the set-up screen asks them in.
+  const headStart = describeHeadStart(rules);
+  if (headStart !== null) parts.push(headStart);
   const handicap = describeHandicap(rules.handicap);
   if (handicap !== null) parts.push(handicap);
   return parts.join(" · ");

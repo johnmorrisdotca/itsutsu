@@ -40,6 +40,7 @@ import { winningLineFor } from "./rules/lines";
 import { stonesLeftInTurn } from "./rules/turns";
 import { rotateQuadrant } from "./rules/twist";
 import { forfeitTurn } from "./rules/seats";
+import { komiFor, owesHeadStart } from "./rules/headStart";
 import type {
   Cell,
   ForbiddenPattern,
@@ -128,6 +129,8 @@ export function cellAt(state: GameState, point: Point): Cell {
  */
 export function isLegalMove(state: GameState, point: Point): boolean {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
+  // A turn the other colour's head start takes has nothing on it to play: it is passed.
+  if (owesHeadStart(state)) return false;
   if (!isOnBoard(state.settings.size, point) || cellAt(state, point) !== null) return false;
   // The flipping games: legal means "turns something", and nothing else applies.
   if (VARIANT_SPECS[state.settings.variant].flips) return flipLegal(state, point);
@@ -184,7 +187,7 @@ export function singlesLeft(state: GameState): number {
  * it; a line for each is a draw.
  */
 export function placePiece(state: GameState, cells: readonly PieceCell[]): GameState {
-  if (state.status !== GAME_STATUS.playing || state.pendingTwist) return state;
+  if (state.status !== GAME_STATUS.playing || state.pendingTwist || owesHeadStart(state)) return state;
   if (!isPieceInHand(state, cells)) return state;
   const { settings, toPlay } = state;
   if (!footprintFits(state.board, settings.size, cells)) return state;
@@ -226,6 +229,13 @@ export function placePiece(state: GameState, cells: readonly PieceCell[]): GameS
  */
 export function mustPass(state: GameState): boolean {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return false;
+  /*
+   * A TURN THE HEAD START GIVES AWAY IS A PASS THE RULES FORCE, in every game —
+   * Go and the sliding games included, which never pass by compulsion otherwise.
+   * So the writers that already take a forced pass without a click (the server,
+   * the practice board, the programs) take this one too. See `owesHeadStart`.
+   */
+  if (owesHeadStart(state)) return true;
   /*
    * A colour to choose is a move, never a pass. While a swap opening waits on
    * its decision every point is refused, so the test below read "nothing to
@@ -269,13 +279,19 @@ export function canPass(state: GameState): boolean {
 export function passTurn(state: GameState): GameState {
   if (!canPass(state)) return state;
   const move: Move = { ...NO_POINT, stone: state.toPlay, kind: MOVE_KINDS.pass, koPointBefore: state.koPoint };
-  // Forced or chosen, decided here from the position, so a replay says the same.
-  if (mustPass(state)) move.forced = true;
+  /*
+   * Forced, chosen or given, decided here from the position, so a replay says
+   * the same. A head start's turn is not "had no move", which is what `forced`
+   * tells the boards, so it is marked as what it is instead.
+   */
+  if (owesHeadStart(state)) move.headStart = true;
+  else if (mustPass(state)) move.forced = true;
   const passed: GameState = { ...state, moves: [...state.moves, move], koPoint: null };
   const previous = state.moves[state.moves.length - 1];
-  if (previous !== undefined && previous.kind === MOVE_KINDS.pass) {
+  // Two passes end a game; a pass the head start took is not one of them.
+  if (previous !== undefined && previous.kind === MOVE_KINDS.pass && previous.headStart !== true) {
     if (VARIANT_SPECS[state.settings.variant].go) {
-      return won(passed, areaWinner(passed.board, passed.settings.size), WIN_REASONS.territory, []);
+      return won(passed, areaWinner(passed.board, passed.settings.size, komiFor(passed.settings)), WIN_REASONS.territory, []);
     }
     return noPlayLeft(passed, WIN_REASONS.blocked);
   }

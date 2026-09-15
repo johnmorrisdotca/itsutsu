@@ -32,6 +32,23 @@ export type Placement = "free" | "drop" | "edge";
  */
 export type BoardGrid = "lines" | "cells";
 
+/**
+ * The head start a game's own tradition gives a weaker player, where it has
+ * one: Go's handicap stones on the star points, Othello's corners, and
+ * draughts' piece odds, the men taken off the stronger side before the start.
+ * Null for a game with no such custom. Declared per game, never inferred from
+ * the mechanics — anti-Othello flips discs as Othello does, and a corner there
+ * is a burden rather than a gift.
+ */
+export type TraditionalHeadStart = "stones" | "corners" | "men";
+
+/**
+ * The most free turns a game offers as a head start: 0 where it offers none.
+ * Declared per game and measured, never inferred — see `headStartTurns` on the
+ * spec and `simulation.headStartDecides.ts`.
+ */
+export type HeadStartTurns = 0 | 1 | 2 | 3;
+
 /** Which edges of the board join up: a plane, a cylinder, or a torus. */
 export type WrapMode = "none" | "columns" | "both";
 

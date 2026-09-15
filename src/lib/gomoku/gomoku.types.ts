@@ -17,7 +17,9 @@ export type {
   LineRule,
   PieceTally,
   Placement,
+  HeadStartTurns,
   StartingDiscs,
+  TraditionalHeadStart,
   WrapMode,
 } from "./spec.types";
 
@@ -122,6 +124,12 @@ export type Move = Point & {
    * made, so a replay of the record sets it again; never stored.
    */
   forced?: boolean;
+  /**
+   * On a pass: whether it was a turn the other colour's head start took —
+   * see `owesHeadStart`. Set by `passTurn` from the position, like `forced`,
+   * and never stored.
+   */
+  headStart?: boolean;
   /** The ko point in force just before this move, so undo can put it back. Go only. */
   koPointBefore?: Point | null;
 };
@@ -282,14 +290,31 @@ export type Handicap = {
 export type HandicapRule = Exclude<keyof Handicap, "stone" | "secondStoneExclusion">;
 
 /**
- * EVERYTHING THAT MAKES A GAME UNEVEN ON PURPOSE, as `hasHandicap` reads it.
+ * A start given to one colour — the weaker player's — before the game is even.
  *
- * Today that is the per-colour handicap alone. A head start joins this type,
- * and every question that takes it — whether a rating may move, on the pages,
- * the set-up screen and the writers — then has to be handed it, so none of
- * them can go on rating a game that has one.
+ * `freeTurns`: turns this colour takes at the start with nothing played
+ * between them, 0 to 3. Each is recorded as the other colour's pass, so a
+ * replay reaches the same position from the move list alone.
+ * `traditional`: how much of the game's own traditional head start this colour
+ * is given — handicap stones, corners, or the other side's men taken off —
+ * as its spec's `headStart` names; 0 for none. See `rules/headStart.ts`.
+ *
+ * The opposite colour from a handicap's, by nature: a handicap makes the
+ * stronger side's game harder, a head start makes the weaker side's easier.
  */
-export type HandicapTerms = Pick<GameSettings, "handicap">;
+export type HeadStart = {
+  stone: Stone | null;
+  freeTurns: number;
+  traditional: number;
+};
+
+/**
+ * EVERYTHING THAT MAKES A GAME UNEVEN ON PURPOSE, as `hasHandicap` reads it:
+ * the per-colour handicap and the head start. Every question that takes it —
+ * whether a rating may move, on the pages, the set-up screen and the writers —
+ * has to be handed both, so none of them can go on rating a game with either.
+ */
+export type HandicapTerms = Pick<GameSettings, "handicap" | "headStart">;
 
 /**
  * The rules one colour actually plays under: the variant's spec for that
@@ -360,6 +385,8 @@ export type GameSettings = {
   variant: RuleVariant;
   opening: OpeningRule;
   handicap: Handicap;
+  /** A start for one colour, see HeadStart. `NO_HEAD_START` for an even game. */
+  headStart: HeadStart;
   /**
    * The random seed the game was created with: it places dead and hot
    * squares and draws the piece queues, so a stored game reproduces them.

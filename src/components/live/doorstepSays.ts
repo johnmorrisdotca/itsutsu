@@ -16,6 +16,7 @@ import { shownName } from "@/lib/rating/shownName";
 import type { RulesDraft } from "./rulesDraft";
 import { DOORSTEP_COPY } from "./live.constants";
 import { describeHandicap, describeSettings } from "./rulesSummary";
+import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 
 /**
  * WHAT THE DOORSTEP SAYS, IN SENTENCES.
@@ -201,6 +202,8 @@ export function describeGameProse(rules: RulesDraft, refused: RatingRefusal | nu
     if (word.text === `${OPENING_DISPLAY[OPENING_RULES.free].label} opening`) continue;
     sentences.push(`${word.text}.`);
   }
+  const headStart = describeHeadStart(rules);
+  if (headStart !== null) sentences.push(`${headStart}.`);
   const handicap = describeHandicap(rules.handicap);
   if (handicap !== null) sentences.push(`${handicap}.`);
   return sentences.join(" ");

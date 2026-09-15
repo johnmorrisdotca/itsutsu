@@ -1,4 +1,5 @@
-import { DEFAULT_SETTINGS, NO_HANDICAP, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { DEFAULT_SETTINGS, NO_HANDICAP, NO_HEAD_START, VARIANT_SPECS, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import { normaliseHeadStart } from "@/lib/gomoku/rules/headStart";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { ratedAtCreation } from "@/lib/rating/ratedAtCreation";
 import type { Against } from "./liveAgainst";
@@ -92,11 +93,24 @@ export function settingsAsPlayed({
    * everything below takes it.
    */
   const handicap = { ...settings, ...source }.handicap ?? NO_HANDICAP;
+  /*
+   * And the head start, taken the same way — a carried game's over the
+   * request's — and settled against the game before it is stored or rated: free
+   * turns above the game's own most, or a tradition the board has no room for,
+   * are not given at all, so a stale link cannot write a start the game refuses.
+   */
+  const carried = { ...settings, ...source };
+  const headStart = normaliseHeadStart({
+    variant: String(carried.variant),
+    size: sizeForVariant(carried.variant as RuleVariant, Number(carried.size)),
+    headStart: carried.headStart ?? NO_HEAD_START,
+  });
   const rated = ratedAtCreation({
     requested: ratedRequested,
     carried: typeof source.rated === "boolean" ? source.rated : undefined,
     hotSeat,
     handicap,
+    headStart,
   });
   const merged = { ...settings, ...source, rated, ...seats, ...offer, hotSeat };
   const playedAs = (typeof merged.variant === "string" ? merged.variant : asked.data.variant) as RuleVariant;
@@ -106,6 +120,7 @@ export function settingsAsPlayed({
     ...merged,
     from: from === undefined ? undefined : { id: from.id, moves: from.move },
     handicap: merged.handicap ?? NO_HANDICAP,
+    headStart,
     winLength:
       VARIANT_SPECS[playedAs].winLength ??
       carriedLine ??

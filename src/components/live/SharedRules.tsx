@@ -13,6 +13,7 @@ import { RulesStatement } from "./RulesStatement";
 import { SHARED_RULES_COPY } from "./live.constants";
 import { draftFromGame } from "./rulesDraft";
 import { describeHandicap, describeRules, describeSettings } from "./rulesSummary";
+import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 
 /**
  * THE RULES BESIDE A BOARD: A STATEMENT, FOLDED SMALL.
@@ -64,6 +65,7 @@ export function SharedRules({
   const variant = game.variant as RuleVariant;
   const copy = RULE_VARIANT_DISPLAY[variant];
   const handicap = describeHandicap(game.handicap);
+  const headStart = describeHeadStart(game);
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="shared-rules">
@@ -106,6 +108,11 @@ export function SharedRules({
         {copy !== undefined ? <p className="text-xs text-muted">{copy.tagline}</p> : null}
         {game.opening !== OPENING_RULES.free && game.opening in OPENING_DISPLAY ? (
           <p className="text-xs text-muted">{OPENING_DISPLAY[game.opening as OpeningRule].tagline}</p>
+        ) : null}
+        {headStart !== null ? (
+          <p className="text-xs text-muted" data-testid="shared-head-start-line">
+            {headStart}. {SHARED_RULES_COPY.headStartMeans}
+          </p>
         ) : null}
         {handicap !== null ? (
           <p className="text-xs text-muted">{SHARED_RULES_COPY.handicapMeans}</p>

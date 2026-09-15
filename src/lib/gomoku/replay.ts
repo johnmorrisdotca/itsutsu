@@ -1,7 +1,7 @@
 import { createGame } from "./engine";
 import { replayMoves } from "./rules/record";
-import { DRAW_LIMITS, NO_HANDICAP } from "./gomoku.constants";
-import type { GameState, Handicap, MoveInput, Stone } from "./gomoku.types";
+import { DRAW_LIMITS, NO_HANDICAP, NO_HEAD_START } from "./gomoku.constants";
+import type { GameState, Handicap, HeadStart, MoveInput, Stone } from "./gomoku.types";
 
 /** The stored shape of a game, as both the API and the pages see it. */
 type StoredGame = {
@@ -12,6 +12,8 @@ type StoredGame = {
   opener: string;
   opening?: string;
   handicap?: Handicap | null;
+  /** The head start, parsed — see `parseHeadStart`. Games stored before head starts had none. */
+  headStart?: HeadStart | null;
   seed?: number;
   /** See DrawLimit. Games recorded before it existed carry "none", as they were played. */
   drawLimit?: string;
@@ -42,6 +44,7 @@ export function replayTimeline(game: StoredGame): GameState[] {
     obstacles: game.obstacles as GameState["settings"]["obstacles"],
     opening: (game.opening ?? "free") as GameState["settings"]["opening"],
     handicap: game.handicap ?? NO_HANDICAP,
+    headStart: game.headStart ?? NO_HEAD_START,
     seed: game.seed ?? 0,
     firstPlayer: game.opener as Stone,
     drawLimit: (game.drawLimit ?? DRAW_LIMITS.none) as GameState["settings"]["drawLimit"],

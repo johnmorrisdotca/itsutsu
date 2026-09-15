@@ -125,9 +125,10 @@ function checkMove(before: GameState, after: GameState, played: Point, seed: num
     (total, move) => total + (move.cleared?.filter(isStone).length ?? 0),
     0,
   );
-  // Each move laid one stone, a piece's worth of stones, or none at all.
+  // Each move laid one stone, a piece's worth of stones, or none at all: a pass lays none, and
+  // nor does a slide, which a head start's free turns can bring one colour to while the other still places.
   const laid = after.moves.reduce(
-    (total, move) => total + (move.kind === "pass" ? 0 : (move.cells?.length ?? 1)),
+    (total, move) => total + (move.kind === "pass" || move.kind === "move" ? 0 : (move.cells?.length ?? 1)),
     0,
   );
   expect(

@@ -122,6 +122,7 @@ describe("a friendly game moves the run over every game played", () => {
         obstacles: DEFAULT_SETTINGS.obstacles,
         opening: DEFAULT_SETTINGS.opening,
         handicap: DEFAULT_SETTINGS.handicap,
+        headStart: DEFAULT_SETTINGS.headStart,
         drawLimit: DEFAULT_SETTINGS.drawLimit,
         // No clock: nobody is waiting, and a deadline would end this on time
         // rather than on the board.
@@ -216,6 +217,7 @@ describe("a friendly game moves the run over every game played", () => {
         obstacles: DEFAULT_SETTINGS.obstacles,
         opening: DEFAULT_SETTINGS.opening,
         handicap: DEFAULT_SETTINGS.handicap,
+        headStart: DEFAULT_SETTINGS.headStart,
         drawLimit: DEFAULT_SETTINGS.drawLimit,
         moveTimeMs: null,
         open: false,

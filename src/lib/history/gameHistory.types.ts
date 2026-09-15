@@ -1,4 +1,4 @@
-import type { Handicap } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
 import type { Cursor, SortDirection } from "@/lib/api/paging.types";
 import type { GameSortField } from "./gameHistory.sort";
 import type {
@@ -151,6 +151,8 @@ export type GameSummary = {
   opening: string;
   /** The handicap the game was played under; `stone` is null for none. */
   handicap: Handicap;
+  /** The head start it was played with, read from the same column; `stone` is null for none. */
+  headStart: HeadStart;
   /** The random seed, for the variants that scatter squares or draw pieces. */
   seed: number;
   /** Per-move time limit in milliseconds, or null for none. Shared games only. */

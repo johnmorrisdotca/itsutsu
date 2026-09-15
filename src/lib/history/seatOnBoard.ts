@@ -21,6 +21,7 @@ export function seatOnBoard(game: GameSummary): SeatOnBoard {
     obstacles: game.obstacles,
     rated: game.rated,
     handicap: game.handicap,
+    headStart: game.headStart,
     clockMode: game.clockMode,
     timeoutPenalty: game.timeoutPenalty,
     who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || "Somebody",

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  NO_HANDICAP,
+  NO_HANDICAP, NO_HEAD_START,
   OBSTACLE_LAYOUTS,
   OPENING_RULES,
   STONES,
@@ -33,6 +33,7 @@ const draft: RulesDraft = {
   allowResign: true,
   open: false,
   handicap: NO_HANDICAP,
+  headStart: NO_HEAD_START,
 };
 
 const who: DoorstepWho = {

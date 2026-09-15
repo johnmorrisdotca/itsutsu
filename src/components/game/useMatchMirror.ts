@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { keepaliveFetch } from "@/lib/api/keepaliveFetch";
 import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { hasHeadStart } from "@/lib/gomoku/rules/headStart";
 import type { GameSettings, Move } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail, GameMove } from "@/lib/history/gameHistory.types";
 import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
@@ -84,6 +85,7 @@ export function createMatchRequest(
     obstacles: settings.obstacles,
     opening: settings.opening,
     handicap: settings.handicap.stone === null ? undefined : settings.handicap,
+    headStart: hasHeadStart(settings) ? settings.headStart : undefined,
     winLength: settings.winLength,
     opener,
     blackName,

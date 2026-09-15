@@ -1,14 +1,20 @@
 import {
   HANDICAP_RULES,
+  HEAD_START_FREE_TURNS,
   NO_HANDICAP,
+  NO_HEAD_START,
   OBSTACLE_LAYOUTS,
   SECOND_STONE_EXCLUSIONS,
   STONES,
+  TRADITIONAL_HEAD_STARTS,
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
-import type { Handicap, HandicapRule, OpeningRule, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
+import { freeTurnsOffered, traditionalKind } from "@/lib/gomoku/rules/headStart";
+import type { Handicap, HandicapRule, HeadStart, OpeningRule, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import {
+  HEAD_START_TURNS_WORD,
   NO_HANDICAP_ASKED,
+  NO_HEAD_START_ASKED,
   NO_PACE,
   RATED_WORDS,
   RESIGN_WORDS,
@@ -90,6 +96,7 @@ export type AskedRules = {
   rated: boolean | null;
   allowResign: boolean | null;
   handicap: Handicap | null;
+  headStart: HeadStart | null;
 };
 
 /** One value from a query, or null where it is absent or repeated into an array. */
@@ -210,7 +217,45 @@ function readAskedRules(asked: Record<string, string | string[] | undefined>): A
     rated: rated === RATED_WORDS.rated ? true : rated === RATED_WORDS.friendly ? false : null,
     allowResign: resign === RESIGN_WORDS.yes ? true : resign === RESIGN_WORDS.no ? false : null,
     handicap: readHandicap(one(asked, SET_UP_PARAMS.handicap)),
+    headStart: readHeadStart(one(asked, SET_UP_PARAMS.headStart), game === null ? null : variantFor(game)),
   };
+}
+
+/**
+ * A head start said in one word — `white-2-turns-4-stones` — as `headStartWord`
+ * writes it: the colour, then each part as a number and what it counts.
+ *
+ * ONE UNREADABLE TOKEN THROWS THE WHOLE THING AWAY, as a handicap's does, and so
+ * does a traditional part counted in another game's word: `4-corners` at Go is
+ * not four stones, it is a link written for Othello. Nobody said, then, and the
+ * screen answers with its own default, the even game. The counts are checked
+ * against the game's board when the draft is settled (`applyRulesChange`).
+ */
+function readHeadStart(raw: string | null, variant: RuleVariant | null): HeadStart | null {
+  if (raw === null) return null;
+  if (raw === NO_HEAD_START_ASKED) return NO_HEAD_START;
+  const [colour, ...rest] = raw.split("-").filter((part) => part !== "");
+  if (colour !== STONES.black && colour !== STONES.white) return null;
+  if (rest.length === 0 || rest.length % 2 !== 0) return null;
+
+  const start: HeadStart = { stone: colour as Stone, freeTurns: 0, traditional: 0 };
+  for (let at = 0; at < rest.length; at += 2) {
+    const count = rest[at];
+    const word = rest[at + 1];
+    if (!/^\d$/.test(count)) return null;
+    const given = Number(count);
+    if (word === HEAD_START_TURNS_WORD) {
+      if (!(HEAD_START_FREE_TURNS as readonly number[]).includes(given)) return null;
+      // More free turns than the game offers is a start that could decide it: refused, not trimmed.
+      if (variant !== null && !freeTurnsOffered(variant).includes(given)) return null;
+      start.freeTurns = given;
+      continue;
+    }
+    if (!(Object.values(TRADITIONAL_HEAD_STARTS) as string[]).includes(word)) return null;
+    if (variant !== null && traditionalKind(variant) !== word) return null;
+    start.traditional = given;
+  }
+  return start;
 }
 
 /**

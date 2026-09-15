@@ -1,6 +1,9 @@
 import { HANDICAP_RULES } from "@/lib/gomoku/gomoku.constants";
+import { hasHeadStart, traditionalKind } from "@/lib/gomoku/rules/headStart";
 import type { Handicap } from "@/lib/gomoku/gomoku.types";
 import {
+  HEAD_START_TURNS_WORD,
+  NO_HEAD_START_ASKED,
   NO_HANDICAP_ASKED,
   NO_PACE,
   RATED_WORDS,
@@ -61,7 +64,24 @@ export function draftParams(draft: RulesDraft): Param[] {
     [SET_UP_PARAMS.rated, draft.rated ? RATED_WORDS.rated : RATED_WORDS.friendly],
     [SET_UP_PARAMS.resign, draft.allowResign ? RESIGN_WORDS.yes : RESIGN_WORDS.no],
     [SET_UP_PARAMS.handicap, handicapWord(draft.handicap)],
+    [SET_UP_PARAMS.headStart, headStartWord(draft)],
   ];
+}
+
+/**
+ * A head start in one hyphenated word: the colour, then each part as a number
+ * and the word it counts — `white-2-turns`, `black-4-stones`,
+ * `black-1-turns-2-corners`. The traditional part is counted in the game's own
+ * word, which the reader checks against the game. `none` for an even game.
+ */
+function headStartWord(draft: RulesDraft): string {
+  if (!hasHeadStart(draft) || draft.headStart.stone === null) return NO_HEAD_START_ASKED;
+  const { stone, freeTurns, traditional } = draft.headStart;
+  const parts: string[] = [stone];
+  if (freeTurns > 0) parts.push(String(freeTurns), HEAD_START_TURNS_WORD);
+  const kind = traditionalKind(draft.variant);
+  if (kind !== null && traditional > 0) parts.push(String(traditional), kind);
+  return parts.join("-");
 }
 
 /**

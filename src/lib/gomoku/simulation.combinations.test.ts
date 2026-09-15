@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   GAME_STATUS,
   NO_HANDICAP,
+  NO_HEAD_START,
   OPENING_RULES,
   RULE_VARIANTS,
   STONES,
@@ -12,6 +13,8 @@ import {
 import { createGame } from "./engine";
 import { replayMoves } from "./rules/record";
 import type { Handicap, RuleVariant } from "./gomoku.types";
+import { traditionalCounts } from "./rules/headStart";
+import { checkHeadStartRecord, checkHeadStartStart } from "./simulation.headStart";
 import { playOut } from "./simulation.support";
 
 /**
@@ -177,6 +180,51 @@ describe("every game under every opening it offers", () => {
       }
     }
     expect(checked, "no game offers an opening with a decision in it").toBeGreaterThan(0);
+  });
+});
+
+describe("every game with a head start", () => {
+  /*
+   * Free turns for every game, one to three by the game's place in the list, for
+   * each colour, with the most of its traditional head start it offers on its
+   * first board. The simulator takes each head-start turn as a forced pass and
+   * checks it by hand (`simulation.headStart.ts`), and the record must replay.
+   */
+  it("gives its free turns and its traditional start, and replays from its moves", () => {
+    let played = 0;
+    for (const [index, variant] of EVERY_VARIANT.entries()) {
+      for (const stone of [STONES.black, STONES.white]) {
+        const size = boardSizesFor(variant)[0];
+        const counts = traditionalCounts(variant, size);
+        // Never more free turns than the game offers: more would be refused, and this is about the ones given.
+        const freeTurns = Math.min(1 + (index % 3), VARIANT_SPECS[variant].headStartTurns);
+        const traditional = counts.length > 0 ? counts[counts.length - 1] : 0;
+        const headStart = freeTurns === 0 && traditional === 0 ? NO_HEAD_START : { stone, freeTurns, traditional };
+        const what = `${variant} with a head start for ${stone}`;
+        const final = playOut({ variant, size, headStart }, seedFor(variant, `head-start-${stone}`, index + 41));
+        expect(final.settings.headStart, `${what}: the head start was dropped`).toEqual(headStart);
+        checkHeadStartRecord(final, what);
+        replays(final, what);
+        played += 1;
+      }
+    }
+    expect(played).toBe(EVERY_VARIANT.length * 2);
+  });
+
+  it("sets out every traditional head start on every board that offers one", () => {
+    let checked = 0;
+    for (const variant of EVERY_VARIANT) {
+      for (const size of boardSizesFor(variant)) {
+        for (const traditional of traditionalCounts(variant, size)) {
+          for (const stone of [STONES.black, STONES.white]) {
+            checkHeadStartStart(createGame({ variant, size, headStart: { stone, freeTurns: 0, traditional } }), traditional);
+            checked += 1;
+          }
+        }
+      }
+    }
+    // Go on three boards, four Othello games and six draughts games: well over this.
+    expect(checked).toBeGreaterThan(60);
   });
 });
 

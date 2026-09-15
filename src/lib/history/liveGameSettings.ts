@@ -8,7 +8,7 @@ import { seedFromRoll } from "@/lib/gomoku/rules/random";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { fetchGameDetail } from "./gameHistory";
 import { hasHandicap } from "@/lib/gomoku/rules/handicap";
-import { parseHandicap, storedHandicap } from "./gameSettingsSchema";
+import { parseHandicap, parseHeadStart, storedHandicap } from "./gameSettingsSchema";
 import { GAME_ROW, stoneForToken } from "./liveGame";
 import type { LiveGameSettings, SettingsOutcome } from "./liveGame.types";
 import { rulesAreSettled } from "./seats";
@@ -155,7 +155,10 @@ export async function updateLiveGameSettings(
        * games a ladder's count links to. The handicap as it will stand — the
        * payload's where it names one, the row's where it says nothing.
        */
-      rated: hasHandicap({ handicap: settings.handicap === undefined ? parseHandicap(row.handicap) : settings.handicap })
+      rated: hasHandicap({
+        handicap: settings.handicap === undefined ? parseHandicap(row.handicap) : settings.handicap,
+        headStart: parseHeadStart(row.handicap),
+      })
         ? false
         : kept(settings.rated, row.rated),
       blackTimeMs: budget,
@@ -168,10 +171,15 @@ export async function updateLiveGameSettings(
        * have to mean different things here: not named at all leaves whatever
        * the game had.
        */
+      /*
+       * A head start is not a rule this panel changes: it was agreed on the
+       * doorstep and stays whatever the payload says, so it is carried over from
+       * the row into whatever the column now holds.
+       */
       handicap:
         settings.handicap === undefined
           ? undefined
-          : (storedHandicap(settings.handicap) ?? Prisma.JsonNull),
+          : (storedHandicap(settings.handicap, parseHeadStart(row.handicap)) ?? Prisma.JsonNull),
       openSeat: open ? STONES.white : null,
       openedAt: open ? (row.openedAt ?? new Date()) : null,
       seed: seedFromRoll(Math.random(), SEED_RANGE),

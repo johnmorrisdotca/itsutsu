@@ -92,6 +92,18 @@ export function canUndo(state: GameState): boolean {
  */
 export function undoMove(state: GameState): GameState {
   if (!canUndo(state)) return state;
+  /*
+   * A pass a head start took goes back with the turn it followed. Lifting the
+   * pass alone would leave the other colour owing it again, on a board with
+   * nothing it may play and no pass to press.
+   */
+  const last = state.moves[state.moves.length - 1];
+  const lifted = undoOne(state);
+  return last.headStart === true && canUndo(lifted) ? undoOne(lifted) : lifted;
+}
+
+/** One move off the record, as `undoMove` describes. */
+function undoOne(state: GameState): GameState {
   // A flipped disc is not on the record; the flipping games rebuild instead.
   if (VARIANT_SPECS[state.settings.variant].flips) {
     return undoFlip(state, createGame(state.settings));

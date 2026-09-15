@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constants";
 import { isHotSeat } from "@/lib/history/liveGame";
 import { gameRatingRefusal, isRateable, ratingImpossible, ratingRefusal } from "./rateable";
 import { RATING_REFUSALS, RATING_REFUSAL_DISPLAY, RATING_REFUSED_WORD } from "./rateable.constants";
 
 /** A game played straight: what every case below is, unless it says otherwise. */
-const straight = { handicap: NO_HANDICAP };
+const straight = { headStart: NO_HEAD_START, handicap: NO_HANDICAP };
 /** A handicap on black, the stronger player's own seat in the case John described. */
-const handicapped = { handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true } };
+const handicapped = { headStart: NO_HEAD_START, handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true } };
 
 describe("ratingRefusal", () => {
   it("says yes to two different people", () => {
@@ -191,7 +191,7 @@ describe("gameRatingRefusal and a handicap", () => {
 
   it("refuses a rated game between two different people with a handicap on either colour", () => {
     expect(gameRatingRefusal({ rated: true, ...people, ...handicapped })).toBe(RATING_REFUSALS.handicap);
-    const onWhite = { handicap: { ...NO_HANDICAP, stone: STONES.white, longerLine: true } };
+    const onWhite = { headStart: NO_HEAD_START, handicap: { ...NO_HANDICAP, stone: STONES.white, longerLine: true } };
     expect(gameRatingRefusal({ rated: true, ...people, ...onWhite })).toBe(RATING_REFUSALS.handicap);
   });
 

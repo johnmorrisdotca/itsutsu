@@ -65,7 +65,7 @@ export function HandicapChoice({
       {/*
         "Harder rules for", not "Handicap" again: the group's heading already says
         Handicap, and this control asks which colour takes on the harder game. A
-        head start for the weaker colour is planned as its own control above it.
+        head start for the weaker colour is its own control, above it: HeadStartChoice.
       */}
       <Field label={SET_UP_COPY.handicapFor} hint={SET_UP_COPY.handicapHint}>
         <Select
