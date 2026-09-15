@@ -65,6 +65,8 @@ test.afterAll(async ({ browser }, testInfo) => {
     await page.goto("/backlog");
     await ready(page, "backlog-filters");
     await page.getByTestId("filter-all").click();
+    // A link to the view that reads every row: its arrival is waited for before any row is looked for.
+    await expect(page.getByTestId("filter-all"), "the whole board's view never arrived").toHaveAttribute("aria-pressed", "true");
     for (const title of created) {
       const row = page.getByTestId("backlog-item").filter({ hasText: title });
       if ((await row.count()) !== 1) continue;
@@ -92,12 +94,31 @@ test.describe("backlog", () => {
     await expect(page.getByTestId("filter-unfinished")).toBeVisible();
     await expect(page.getByTestId("filter-open")).toBeVisible();
 
+    /*
+     * DONE ROWS ARE READ ONLY FOR THE VIEW THAT SHOWS THEM. The default view
+     * reads the unfinished rows, so the Done chip draws no number there — a
+     * count of rows nobody read would be a figure nothing counted — and it is a
+     * link to the view that reads them.
+     */
+    await expect(page.getByTestId("filter-unfinished")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("filter-done")).not.toContainText(/\d/);
+
     await page.getByTestId("filter-done").click();
+    await expect(page).toHaveURL(/\/backlog\?show=done$/);
+    // The done view has arrived and says so, before a single row of it is looked at.
+    await expect(page.getByTestId("filter-done")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("filter-done")).toContainText(/\d/);
     const rows = page.getByTestId("backlog-item");
     const count = await rows.count();
     for (let index = 0; index < count; index += 1) {
       await expect(rows.nth(index)).toHaveAttribute("data-status", "done");
     }
+
+    // And the way back: the default view is the plain address again, with its own chip pressed.
+    await page.getByTestId("filter-unfinished").click();
+    await expect(page).toHaveURL(/\/backlog$/);
+    await expect(page.getByTestId("filter-unfinished")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("filter-done")).not.toContainText(/\d/);
   });
 
   test("a request can be added, and is still there on a reload", async ({ page }) => {
@@ -109,6 +130,8 @@ test.describe("backlog", () => {
     // A reload is a fresh server render, so the wait is needed again.
     await ready(page, "backlog-filters");
     await page.getByTestId("filter-all").click();
+    // A link to the view that reads every row: its arrival is waited for before any row is looked for.
+    await expect(page.getByTestId("filter-all"), "the whole board's view never arrived").toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("backlog-item").filter({ hasText: title })).toHaveCount(1);
   });
 
@@ -146,6 +169,8 @@ test.describe("backlog", () => {
     await page.reload();
     await ready(page, "backlog-filters");
     await page.getByTestId("filter-all").click();
+    // A link to the view that reads every row: its arrival is waited for before any row is looked for.
+    await expect(page.getByTestId("filter-all"), "the whole board's view never arrived").toHaveAttribute("aria-pressed", "true");
     const again = page.getByTestId("backlog-item").filter({ hasText: title });
     await expect(again.getByTestId("backlog-held")).toContainText(`held by ${OPERATOR_NAME}`);
   });
@@ -188,6 +213,26 @@ test.describe("backlog", () => {
     await expect(page.getByTestId("admin-latest-release")).toContainText(/\d+\.\d+\.\d+/);
     await page.getByTestId("admin-backlog-link").click();
     await expect(page).toHaveURL(/\/backlog$/);
+  });
+
+  test("Admin's board reads dropped rows only when asked, keeps its own tab in the address, and comes back", async ({ page }) => {
+    await page.goto("/admin?view=work");
+    await ready(page, "backlog-filters");
+    const card = page.getByTestId("admin-board");
+    await expect(card).toContainText("still wanted");
+    await expect(page.getByTestId("filter-dropped")).not.toContainText(/\d/);
+
+    await page.getByTestId("filter-dropped").click();
+    await expect(page).toHaveURL(/\/admin\?view=work&show=dropped$/);
+    await expect(page.getByTestId("filter-dropped")).toHaveAttribute("aria-pressed", "true");
+    // The card says what this view read, and no longer what it did not.
+    await expect(card).toContainText("dropped");
+    await expect(card).not.toContainText("still wanted");
+
+    await page.getByTestId("filter-unfinished").click();
+    await expect(page).toHaveURL(/\/admin\?view=work$/);
+    await expect(page.getByTestId("filter-unfinished")).toHaveAttribute("aria-pressed", "true");
+    await expect(card).toContainText("still wanted");
   });
 });
 

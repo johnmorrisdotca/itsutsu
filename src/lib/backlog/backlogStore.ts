@@ -5,8 +5,9 @@ import type { BoardChange, BoardMoveTarget } from "@/lib/sumilabu/boardClient.ty
 import { sumilabuTarget } from "@/lib/sumilabu/sumilabuProject";
 
 import { changeProblems, draftProblems, moveProblems, normalizeDraft } from "./backlog";
-import { BACKLOG_STATUSES } from "./backlog.constants";
-import type { BacklogChange, BacklogDraft, BoardActionOutcome, BoardRead } from "./backlog.types";
+import { BACKLOG_STATUSES, BOARD_SCOPES } from "./backlog.constants";
+import type { BacklogChange, BacklogDraft, BoardActionOutcome, BoardRead, BoardScope } from "./backlog.types";
+import { boardQuery } from "./boardScope";
 
 /**
  * The half of the board that talks to where it is kept, which is Sumilabu.
@@ -35,10 +36,19 @@ function text(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-/** The whole board, most recently moved first, or why it could not be read. */
-export async function readBoard(): Promise<BoardRead> {
+/**
+ * One scope of the board, or why it could not be read.
+ *
+ * The unfinished rows unless a view asks for more: the page read every row
+ * Sumilabu held on every load — 767 KB and about 8 ms of Sumilabu's CPU on the
+ * live board at four hundred tickets — to show the forty that still want
+ * something. Done rows, dropped rows and everything are read only for the view
+ * that shows them (`boardScope.ts`). The answer says which scope it is, so a
+ * page never counts rows it did not read.
+ */
+export async function readBoard(scope: BoardScope = BOARD_SCOPES.unfinished): Promise<BoardRead> {
   try {
-    return { ok: true, items: await listTickets(sumilabuTarget("board")) };
+    return { ok: true, scope, items: await listTickets(sumilabuTarget("board"), boardQuery(scope)) };
   } catch (error) {
     console.error(`The board could not be read: ${why(error)}`);
     return { ok: false, problem: why(error) };

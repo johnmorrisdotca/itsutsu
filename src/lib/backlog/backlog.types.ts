@@ -88,6 +88,16 @@ export type BacklogDraft = {
  */
 export type StatusFilter = BacklogStatus | "all" | "unfinished" | "stale";
 
+/**
+ * Which rows one read of the board brings back — see `boardScope.ts`. Each is a
+ * whole set, never a page: every unfinished row, every done one, every dropped
+ * one, or everything.
+ */
+export type BoardScope = "unfinished" | "done" | "dropped" | "all";
+
+/** What a read asks Sumilabu for: the unfinished rows, the rows at some statuses, or — with neither — everything. */
+export type BoardQuery = { unfinished?: boolean; statuses?: readonly BacklogStatus[] };
+
 /** How the board is ordered. */
 export type BacklogSort = "moved" | "newest" | "oldest" | "status" | "quickWins";
 
@@ -128,7 +138,7 @@ export type BacklogChange = BacklogEdit &
  * The board as a page reads it: the rows, or why they could not be read.
  * Never an empty list standing in for an unreadable board — see `readBoard`.
  */
-export type BoardRead = { ok: true; items: BacklogItem[] } | { ok: false; problem: string };
+export type BoardRead = { ok: true; items: BacklogItem[]; scope: BoardScope } | { ok: false; problem: string };
 
 /** What a write from the page came to: done, or the one sentence to show beside the control. */
 export type BoardActionOutcome = { ok: true } | { ok: false; problem: string };

@@ -4,58 +4,28 @@ import { Paired } from "@/components/i18n/Paired";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, SECTION_TITLE, SELECT_CLASS } from "@/components/ui/ui.constants";
-import { BACKLOG_KIND_VALUES, filterItems, openCount, sortItems, tally } from "@/lib/backlog/backlog";
-import { KIND_DISPLAY, SORT_DISPLAY, STATUS_DISPLAY, STATUS_ORDER } from "@/lib/backlog/backlog.constants";
-import type { BacklogKind, BacklogSort } from "@/lib/backlog/backlog.types";
+import { INPUT_CLASS, SECTION_TITLE, SELECT_CLASS } from "@/components/ui/ui.constants";
+import { BACKLOG_KIND_VALUES, filterItems, sortItems } from "@/lib/backlog/backlog";
+import { BOARD_SCOPES, KIND_DISPLAY, SCOPE_WORDS, SORT_DISPLAY, STATUS_DISPLAY, STATUS_ORDER } from "@/lib/backlog/backlog.constants";
+import type { BacklogKind, BacklogSort, StatusFilter } from "@/lib/backlog/backlog.types";
+import { countFor, covers, hrefFor } from "@/lib/backlog/boardScope";
 
 import { AddBacklogItem } from "./AddBacklogItem";
 import { BacklogRow } from "./BacklogRow";
+import { FilterChip } from "./FilterChip";
 import type { BacklogBoardProps, BoardView } from "./backlogBoard.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-const START: BoardView = { status: "unfinished", kind: "all", text: "", sort: "status" };
-
-/** One filter button: the status, how many stand there, and whether it is the one being shown. */
-function FilterChip({
-  label,
-  kanji,
-  count,
-  current,
-  onPick,
-  testId,
-}: {
-  label: string;
-  kanji?: string;
-  count: number;
-  current: boolean;
-  onPick: () => void;
-  testId: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onPick}
-      aria-pressed={current}
-      data-testid={testId}
-      className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-xs ${current ? "border-moss bg-moss-soft text-ink" : ""}`}
-    >
-      {label}
-      {kanji === undefined ? null : <span className="font-mincho text-muted">{kanji}</span>}
-      <span className="font-mono tabular-nums text-muted">{count}</span>
-    </button>
-  );
-}
-
 /**
- * The board: everything asked for, filtered and ordered, with a form to add to
+ * The board: what was asked for, filtered and ordered, with a form to add to
  * it and a select on every row to move it.
  *
- * Filtering and ordering are done here in the browser because the whole board
- * is a list of dozens — sending it once and narrowing it locally keeps every
- * filter instant, and the counts honest, since they are counted from the same
- * list the rows come from. Adding and moving go to the server and then ask the
- * page to re-read, so what is on screen is always what is stored.
+ * A VIEW READS ITS OWN ROWS. The page hands this one scope of the board — every
+ * unfinished row by default, or every done one, every dropped one, or everything
+ * when a reader opens those (`boardScope.ts`). A filter inside that scope narrows
+ * here in the browser, instantly; a filter outside it is a link to the view that
+ * reads its rows. The page used to read every row Sumilabu held on every load to
+ * show the forty still wanted, and that is the cost this stops paying.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * AND IT IS NOT ON `lib/api/paging.ts`, DELIBERATELY
@@ -67,28 +37,24 @@ function FilterChip({
  * look identical in a diff, and only one of them is true.
  *
  * A CLIENT-SIDE SORT IS ONLY A LIE WHERE THERE IS A SECOND PAGE, and there is
- * not one here. `readBoard` reads every row from Sumilabu, so sorting
- * the array is sorting the whole set, not reordering one page of it and calling
- * that the board. That is precisely the distinction the convention turns on, and
- * it is the same reason /play's groups open in place rather than paging.
+ * not one here. A scope is a whole set, not a page of one — every unfinished row
+ * comes back, not the first fifty — so sorting the array is sorting everything
+ * the view shows, and the grouped view still has every row of its scope to know
+ * which groups exist. That is precisely the distinction the convention turns on.
  *
- * THREE THINGS WOULD BREAK IF IT DID. The counts beside each status filter are
- * counted from the same list the rows come from, which is what makes them agree
- * with what a reader can see; a paged board would need a second query per
- * status and could disagree with itself between them. The grouped-by-status view
- * needs every row at once to know which groups exist at all. And every filter
- * would become a round trip on a page whose whole manner is instant.
+ * THE COUNTS FOLLOW THE SAME RULE. Each is counted from the rows in hand, which
+ * keeps it agreeing with what a reader can see; and where a filter's rows were
+ * not read, no number is drawn at all rather than a count of nothing
+ * (`countFor`).
  *
- * What would change the answer is size: a board of thousands wants the
- * convention, and the columns are plain ones — `movedAt` and `createdAt` are
- * both indexed. It is a list of dozens, and the operator is one person.
+ * What would change the answer is size: a scope of thousands wants the
+ * convention, and Sumilabu has no paging to give it today. The unfinished rows
+ * are dozens, and the operator is one person.
  */
-export function BacklogBoard({ items, who }: BacklogBoardProps) {
+export function BacklogBoard({ items, scope, initial, base, who }: BacklogBoardProps) {
   const router = useRouter();
-  const [view, setView] = useState<BoardView>(START);
+  const [view, setView] = useState<BoardView>({ status: initial, kind: "all", text: "", sort: "status" });
 
-  const counts = useMemo(() => tally(items), [items]);
-  const open = useMemo(() => openCount(items), [items]);
   const shown = useMemo(() => sortItems(filterItems(items, view), view.sort), [items, view]);
   /*
    * A board of thirty rows reads as a wall unless it is broken up. When the
@@ -105,45 +71,26 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
   }, [shown, view.sort, view.status]);
   const change = (part: Partial<BoardView>) => setView((current) => ({ ...current, ...part }));
 
+  /** One chip's parts: its count where its rows were read, and a link to the view that reads them where not. */
+  const chip = (status: StatusFilter) => ({
+    count: countFor(items, scope, status),
+    current: view.status === status,
+    href: covers(scope, status) ? null : hrefFor(base, status),
+    onPick: () => change({ status }),
+    testId: `filter-${status}`,
+  });
+  const stale = countFor(items, scope, "stale");
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2" data-testid="backlog-filters" {...readyMark(useHydrated())}>
-        <FilterChip
-          label="Unfinished"
-          kanji="未了"
-          count={open}
-          current={view.status === "unfinished"}
-          onPick={() => change({ status: "unfinished" })}
-          testId="filter-unfinished"
-        />
-        <FilterChip
-          label="All"
-          count={items.length}
-          current={view.status === "all"}
-          onPick={() => change({ status: "all" })}
-          testId="filter-all"
-        />
+        <FilterChip label="Unfinished" kanji="未了" {...chip("unfinished")} />
+        <FilterChip label="All" {...chip("all")} />
         <span className="h-4 w-px bg-rule-strong" aria-hidden />
         {STATUS_ORDER.map((status) => (
-          <FilterChip
-            key={status}
-            label={STATUS_DISPLAY[status].label}
-            kanji={STATUS_DISPLAY[status].kanji}
-            count={counts[status]}
-            current={view.status === status}
-            onPick={() => change({ status })}
-            testId={`filter-${status}`}
-          />
+          <FilterChip key={status} label={STATUS_DISPLAY[status].label} kanji={STATUS_DISPLAY[status].kanji} {...chip(status)} />
         ))}
-        {counts.stale === 0 ? null : (
-          <FilterChip
-            label="Stale"
-            count={counts.stale}
-            current={view.status === "stale"}
-            onPick={() => change({ status: "stale" })}
-            testId="filter-stale"
-          />
-        )}
+        {stale === null || stale === 0 ? null : <FilterChip label="Stale" {...chip("stale")} />}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -183,7 +130,7 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
           ))}
         </select>
         <span className="text-xs text-muted" data-testid="backlog-shown">
-          {shown.length} of {items.length} shown
+          {shown.length} shown of {items.length} {SCOPE_WORDS[scope]}
         </span>
       </div>
 
@@ -197,8 +144,17 @@ export function BacklogBoard({ items, who }: BacklogBoardProps) {
           <AddBacklogItem
             who={who}
             onAdded={() => {
-              setView((current) => ({ ...current, status: "all", sort: "newest" }));
-              router.refresh();
+              /*
+               * A new request is open, so it lands on a view that holds open
+               * rows: this one, where it does, or the default view where this
+               * is a view of done or dropped rows that could not show it.
+               */
+              if (covers(scope, BOARD_SCOPES.unfinished)) {
+                setView((current) => ({ ...current, status: scope === BOARD_SCOPES.all ? "all" : "unfinished", sort: "newest" }));
+                router.refresh();
+              } else {
+                router.push(hrefFor(base, BOARD_SCOPES.unfinished), { scroll: false });
+              }
             }}
           />
         </div>

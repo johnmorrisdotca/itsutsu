@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import { StatusPill } from "@/components/backlog/BacklogRow";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
-import { openCount, tally } from "@/lib/backlog/backlog";
-import { STATUS_ORDER } from "@/lib/backlog/backlog.constants";
+import { BOARD_SCOPES, STATUS_DISPLAY, STATUS_ORDER } from "@/lib/backlog/backlog.constants";
+import { countFor } from "@/lib/backlog/boardScope";
 import { latestRelease } from "@/lib/backlog/releases";
 import { readReleases } from "@/lib/backlog/releasesFile";
 
@@ -18,6 +18,11 @@ import type { AdminBoardCardProps } from "./backlogBoard.types";
  * handed in rather than read here, so the card and the board drawn below it on
  * the same tab are one call to Sumilabu, and a board that could not be read is
  * said to be unreadable rather than counted as empty.
+ *
+ * It counts only what that call read. The tab reads the unfinished rows unless
+ * its board is showing done, dropped or everything, so the pills beside each
+ * status appear only for statuses whose rows are in hand, and "of all of them"
+ * only once all of them were read.
  */
 export async function AdminBoardCard({ board }: AdminBoardCardProps) {
   const releases = await readReleases();
@@ -31,16 +36,17 @@ export async function AdminBoardCard({ board }: AdminBoardCardProps) {
 
       {board.ok ? (
         <div className="flex flex-col gap-1">
-          <span className={SECTION_TITLE}>
-            {openCount(board.items)} still wanted, of {board.items.length}
-          </span>
+          <span className={SECTION_TITLE}>{heading(board.items, board.scope)}</span>
           <p className="flex flex-wrap gap-1.5">
-            {STATUS_ORDER.map((status) => (
-              <span key={status} className="flex items-center gap-1 text-xs text-muted">
-                <StatusPill status={status} />
-                <span className="font-mono tabular-nums">{tally(board.items)[status]}</span>
-              </span>
-            ))}
+            {STATUS_ORDER.map((status) => {
+              const count = countFor(board.items, board.scope, status);
+              return count === null ? null : (
+                <span key={status} className="flex items-center gap-1 text-xs text-muted">
+                  <StatusPill status={status} />
+                  <span className="font-mono tabular-nums">{count}</span>
+                </span>
+              );
+            })}
           </p>
         </div>
       ) : (
@@ -65,4 +71,15 @@ export async function AdminBoardCard({ board }: AdminBoardCardProps) {
       </p>
     </section>
   );
+}
+
+/** What the card can truthfully say about the rows it was handed. */
+function heading(items: Parameters<typeof countFor>[0], scope: Parameters<typeof countFor>[1]): string {
+  const wanted = countFor(items, scope, BOARD_SCOPES.unfinished);
+  if (wanted === null) {
+    const label = scope === BOARD_SCOPES.done ? STATUS_DISPLAY.done.label : STATUS_DISPLAY.dropped.label;
+    return `${items.length} ${label.toLowerCase()}`;
+  }
+  const total = countFor(items, scope, BOARD_SCOPES.all);
+  return total === null ? `${wanted} still wanted` : `${wanted} still wanted, of ${total}`;
 }

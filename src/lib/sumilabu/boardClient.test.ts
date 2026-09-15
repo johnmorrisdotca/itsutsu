@@ -15,6 +15,7 @@ import {
   patchTicket,
   shipTicket,
   ticketByKey,
+  ticketsPath,
 } from "./boardClient";
 import type { BoardTicketView } from "./boardClient.types";
 import type { SumilabuTarget } from "./sumilabuProject.types";
@@ -112,6 +113,17 @@ describe("reading the board", () => {
 
     answers({ status: 404, body: { ok: false, error: "missing" } });
     expect(await ticketByKey(target, "nobody-has-this")).toBeNull();
+  });
+
+  it("lists the rows at some statuses by GET ?status=, and everything only when no filter is named", async () => {
+    answers({ status: 200, body: { ok: true, tickets: [view({ status: "done" })] } });
+    expect((await listTickets(target, { statuses: ["done"] }))[0]!.status).toBe("done");
+    await listTickets(target, { statuses: ["done", "dropped"] });
+    await listTickets(target);
+    expect(calls.map((call) => call.url)).toEqual([`${BASE}/tickets?status=done`, `${BASE}/tickets?status=done,dropped`, `${BASE}/tickets`]);
+    // Unfinished wins where both are given, so the service is only ever sent one filter.
+    expect(ticketsPath({ unfinished: true, statuses: ["done"] })).toBe("/tickets?unfinished=1");
+    expect(ticketsPath({ statuses: [] })).toBe("/tickets");
   });
 
   it("never reads an unreachable board as an empty one, and never prints the token", async () => {

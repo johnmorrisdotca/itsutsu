@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { BoardTicketView } from "@/lib/sumilabu/boardClient.types";
 
+import type { StatusFilter } from "./backlog.types";
 import { addItem, changeItem, readBoard } from "./backlogStore";
+import { scopeOf } from "./boardScope";
 
 /*
  * The page's half of the board, against Sumilabu's routes with the network
@@ -65,11 +67,37 @@ afterEach(() => {
 });
 
 describe("reading the board", () => {
-  it("reads every row from the dev project", async () => {
+  it("reads only the unfinished rows from the dev project for the default view, and says which scope it read", async () => {
     answers({ status: 200, body: { ok: true, tickets: [view()] } });
     const board = await readBoard();
     expect(board.ok && board.items.map((item) => item.key)).toEqual(["keyboard-shortcut-for-the-scrubber"]);
-    expect(calls[0]!.url).toBe(`${BASE}/tickets`);
+    expect(board.ok && board.scope).toBe("unfinished");
+    expect(calls.map((call) => call.url)).toEqual([`${BASE}/tickets?unfinished=1`]);
+  });
+
+  it("asks Sumilabu for exactly the rows each view shows, in one request, and for everything only when everything is shown", async () => {
+    /*
+     * The page read the whole board on every load: 767 KB on the live board at
+     * four hundred tickets, to show the forty still wanted. Each view now reads
+     * its own scope, and a filter inside the unfinished rows reads nothing more.
+     */
+    const unfinished = `${BASE}/tickets?unfinished=1`;
+    const asked: Record<StatusFilter, string> = {
+      unfinished,
+      open: unfinished,
+      inProgress: unfinished,
+      stale: unfinished,
+      done: `${BASE}/tickets?status=done`,
+      dropped: `${BASE}/tickets?status=dropped`,
+      all: `${BASE}/tickets`,
+    };
+    for (const [status, url] of Object.entries(asked) as [StatusFilter, string][]) {
+      calls.length = 0;
+      answers({ status: 200, body: { ok: true, tickets: [] } });
+      const board = await readBoard(scopeOf(status));
+      expect(board.ok, status).toBe(true);
+      expect(calls.map((call) => call.url), status).toEqual([url]);
+    }
   });
 
   it("says the board could not be read, rather than handing the page an empty one", async () => {
