@@ -108,7 +108,8 @@ test("free turns: chosen on the set-up screen, played on a live board as the oth
     await expect(page.getByTestId("result-card-head-start")).toContainText("White head start: 2 free turns");
     await expect(page.getByTestId("record-unrated")).toContainText("head start");
     await page.goto(`/history?search=${stamp}`);
-    const row = page.getByTestId("history-row").filter({ hasText: me.name });
+    // The row for THIS game, found by the replay link it carries: a listing prints names shortened.
+    const row = page.getByTestId("history-row").filter({ has: page.locator(`a[href$="/match/${id}"]`) });
     await expect(row.getByTestId("history-head-start")).toHaveText("Head start");
   } finally {
     await context.close();
