@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  RULE_VARIANT_LIST,
-  boardSizesFor,
-} from "@/lib/gomoku/gomoku.constants";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import {
   MOVE_TIME_OPTIONS,
   SHARED_OPENINGS,
@@ -17,8 +11,7 @@ import { GAME_COPY } from "@/components/game/game.constants";
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
 import type { ReactNode } from "react";
-import { BoardPicker } from "./BoardPicker";
-import { GamePicker } from "./GamePicker";
+import { GameAndBoardChooser } from "./GameAndBoardChooser";
 import { SET_UP_COPY } from "./live.constants";
 import { OpeningPicker } from "./OpeningPicker";
 import { RatedPicker } from "./RatedPicker";
@@ -166,94 +159,21 @@ export function RulesForm({
   onSizeChosen?: (size: number) => void;
 }) {
   const change = (next: Partial<RulesDraft>) => onChange(applyRulesChange(value, next));
-  const variant = value.variant as RuleVariant;
-  const sizes = boardSizesFor(variant);
-
   /*
-   * THE TWO QUESTIONS THE SCREEN EXISTS TO ASK: which game, and what board.
-   * Everything else is a setting about a game already chosen, and `fold` is
-   * what lets a caller put that distinction on the screen.
+   * THE TWO QUESTIONS THE SCREEN EXISTS TO ASK: which game, and what board —
+   * `GameAndBoardChooser`. Everything below is a setting about a game already
+   * chosen.
    */
   const head = settledByBoard ? null : (
-    <>
-      {showVariant ? (
-        chooser === RULES_CHOOSERS.pictures ? (
-          <GamePicker
-            value={value.variant}
-            disabled={disabled}
-            onChange={(next) => change({ variant: next })}
-            label={variantLabel}
-          />
-        ) : (
-          <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
-            <Select
-              value={value.variant}
-              disabled={disabled}
-              onChange={(event) => change({ variant: event.target.value })}
-              data-testid="shared-rules-variant"
-            >
-              {RULE_VARIANT_LIST.map((option) => (
-                <option key={option} value={option}>
-                  {RULE_VARIANT_DISPLAY[option].label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        )
-      ) : null}
-      {/*
-        The boards this game has, not every board the site knows. A Reversi
-        game was offering 9×9, 13×13, 15×15 and 19×19 — none of which Reversi
-        is played on — and showing 9×9 as the current board of an 8×8 game,
-        because 8 was not in the list for anything to match.
-      */}
-      {/*
-        ALWAYS ON THE SCREEN THAT CHOOSES, EVEN WHEN THERE IS NOTHING TO
-        CHOOSE. John: "And the Reversi games don't even have a board size…
-        they should! It should show the board size (default) being used."
-
-        Every Reversi variant has exactly one board — 8×8, or 6×6 for Mini and
-        10×10 for Grand — so `boardSizesFor` returned one size and the picker
-        hid itself, and the page went from the games straight to the rest of
-        the rules with nothing said about what it would be played on. That is
-        Show The Data read backwards: a picker with one option is not a choice,
-        but the board is still a FACT, and the reader is about to play on it.
-
-        The panel beside a board keeps the old rule and shows nothing, because
-        the fact is already on that page — `describeRules` prints "Reversi
-        リバーシ · 8×8 Eight" at the top of it — and a select holding one
-        option in a narrow column beside a live game is furniture.
-      */}
-      {chooser === RULES_CHOOSERS.pictures ? (
-        <BoardPicker
-          value={value.size}
-          sizes={sizes}
-          disabled={disabled}
-          onChange={(next) => {
-            onSizeChosen?.(next);
-            change({ size: next });
-          }}
-        />
-      ) : sizes.length > 1 ? (
-        <Field label="Board">
-          <Select
-            value={value.size}
-            disabled={disabled}
-            onChange={(event) => {
-              onSizeChosen?.(Number(event.target.value));
-              change({ size: Number(event.target.value) });
-            }}
-            data-testid="shared-rules-size"
-          >
-            {sizes.map((option) => (
-              <option key={option} value={option}>
-                {option}×{option}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      ) : null}
-    </>
+    <GameAndBoardChooser
+      value={value}
+      disabled={disabled}
+      showVariant={showVariant}
+      variantLabel={variantLabel}
+      pictures={chooser === RULES_CHOOSERS.pictures}
+      change={change}
+      onSizeChosen={onSizeChosen}
+    />
   );
 
   /*
