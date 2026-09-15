@@ -78,6 +78,11 @@ export type XpBoardRow = {
   imported: number;
   /** When they last earned anything here, or null for never. */
   lastAt: Date | null;
+  /**
+   * Their own zone, "" where they have never set one — so Today and 7 days count
+   * THEIR days, the ones their awards were keyed under. See `xpGains.ts`.
+   */
+  timeZone: string;
 };
 
 export type XpBoardPage = PagedEnvelope<XpBoardRow> & {
@@ -137,7 +142,7 @@ export async function fetchXpBoardPage({
     prisma.member.count({ where: onTheBoard }),
     prisma.member.findMany({
       where,
-      select: { id: true, name: true, xp: true, xpEverywhere: true, xpImported: true, xpLastAt: true },
+      select: { id: true, name: true, xp: true, xpEverywhere: true, xpImported: true, xpLastAt: true, timeZone: true },
       orderBy: keysetOrderBy(spec, sort) as Prisma.MemberOrderByWithRelationInput[],
       // One further than the page, so "is there more" needs no second query.
       take: takeFor(limit),
@@ -152,6 +157,7 @@ export async function fetchXpBoardPage({
       xp: xpTotalIn(row, scope),
       imported: scope === RECORD_SCOPES.everywhere ? row.xpImported : 0,
       lastAt: row.xpLastAt,
+      timeZone: row.timeZone,
     })),
     next,
     total,

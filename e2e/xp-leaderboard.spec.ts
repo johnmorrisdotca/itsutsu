@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { removeXpMembers, seedXpMember, type SeededXpMember } from "./xpMembers";
+import { removeLedgerFor, seedLedgerFor } from "./xpGains";
 import { watchForCrashes } from "./support";
 
 /**
@@ -279,6 +280,84 @@ test("an order the board does not have gives the board, and says so", async ({ p
   await expect(page.getByTestId("xp-leaderboard")).toBeVisible();
   await expect(page.getByTestId("xp-sort-refused")).toBeVisible();
   await expectOrder(page, [beta.name, gamma.name, alpha.name]);
+});
+
+/**
+ * TODAY AND 7 DAYS, IN THE BOARD'S SCOPE.
+ *
+ * John: "XP tables aren't useful if they don't tell us how much you went up each
+ * day". The member and every award are this spec's own: 20 won here today, 30
+ * of another site's credit today, 100 three days ago, and 400 ten days ago that
+ * neither column may count. Everywhere that is +50 and +150; Itsutsu only, +20
+ * and +120. The scope is changed by pressing its chip, and pressed back again so
+ * the operator's remembered scope is left as the spec found it.
+ */
+test("each row says what it gained today and over seven days, in the board's scope", async ({ page }) => {
+  const gainer = await seedXpMember(30, "gains", `Xpgain-${RUN}`);
+  try {
+    await seedLedgerFor(gainer.id, [
+      { type: "gameWon", points: 20, subject: `${RUN}-won`, daysAgo: 0 },
+      { type: "importedGames", points: 30, subject: `ItsYourTurn.com@${RUN}=30`, daysAgo: 0 },
+      { type: "gameFinished", points: 100, subject: `${RUN}-finished`, daysAgo: 3 },
+      { type: "firstOfVariant", points: 400, subject: "renju", daysAgo: 10 },
+    ]);
+    await page.goto("/xp?who=everyone");
+    await expect(page.getByTestId("xp-leaderboard")).toBeVisible();
+
+    await page.getByTestId("scope-everywhere").click();
+    await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "everywhere");
+    let row = await rowFor(page, gainer.name);
+    await expect(row.getByTestId("xp-board-today")).toHaveText("+50");
+    await expect(row.getByTestId("xp-board-week")).toHaveText("+150");
+
+    await page.getByTestId("scope-here").click();
+    await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "here");
+    row = await rowFor(page, gainer.name);
+    await expect(row.getByTestId("xp-board-today")).toHaveText("+20");
+    await expect(row.getByTestId("xp-board-week")).toHaveText("+120");
+
+    // And the way back, which also leaves the remembered scope where it was.
+    await page.getByTestId("scope-everywhere").click();
+    await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "everywhere");
+    row = await rowFor(page, gainer.name);
+    await expect(row.getByTestId("xp-board-today")).toHaveText("+50");
+  } finally {
+    await removeLedgerFor([gainer.id]);
+    await removeXpMembers([gainer.email]);
+  }
+});
+
+/**
+ * BEHIND NEXT: THE GAP TO THE ROW DIRECTLY ABOVE, WHOEVER IS ON THE BOARD.
+ *
+ * Asserted as a relation between rows the page drew — each row's gap is the XP
+ * above it less its own — so it holds on any database, and three to a page so
+ * the row above the second page's first is on the page before. The first row of
+ * the board has nobody above it and says nothing. A fourth member is seeded so
+ * there is always a second page, whatever else the board holds.
+ */
+test("Behind next is the gap to the row directly above: blank at the top, and carried onto the next page", async ({ page }) => {
+  const fourth = await seedXpMember(10, "gap", `Xpgap-${RUN}`);
+  try {
+    await page.goto("/xp?who=everyone&limit=3");
+    const rows = page.getByTestId("xp-leaderboard").locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+    const xpOf = async (at: number) =>
+      Number((await rows.nth(at).getByTestId("xp-board-xp").innerText()).replace(/,/g, ""));
+
+    await expect(rows.nth(0).getByTestId("xp-board-behind")).toHaveText("");
+    for (const at of [1, 2]) {
+      const gap = (await xpOf(at - 1)) - (await xpOf(at));
+      await expect(rows.nth(at).getByTestId("xp-board-behind")).toHaveText(gap.toLocaleString("en-GB"));
+    }
+
+    const lastOnFirst = await xpOf(2);
+    expect(await nextPage(page), "a second page of the board").toBe(true);
+    const across = lastOnFirst - (await xpOf(0));
+    await expect(rows.nth(0).getByTestId("xp-board-behind")).toHaveText(across.toLocaleString("en-GB"));
+  } finally {
+    await removeXpMembers([fourth.email]);
+  }
 });
 
 test("the leaderboard and the ladder of levels each lead to the other", async ({ page }) => {
