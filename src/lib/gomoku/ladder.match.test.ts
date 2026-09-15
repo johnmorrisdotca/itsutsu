@@ -1,3 +1,5 @@
+import { writeFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { createGame } from "./engine";
@@ -7,8 +9,12 @@ import { BOT_TIER_LIST } from "./opponent.constants";
 import { chooseTurn } from "./opponent";
 import { applyTurn } from "./opponentTurns";
 import { variantFor } from "./slugs";
+import { readLadderFingerprint } from "./ladderFingerprint";
+import { LADDER_STRENGTH } from "./ladderStrength.data";
+import { ladderStrengthSource } from "./ladderStrengthSource";
 import type { GameSettings, RuleVariant, Stone } from "./gomoku.types";
 import type { BotTier, SearchBudget } from "./opponent.types";
+import type { LadderPairing, LadderStrengthTable } from "./ladderStrength.types";
 
 /**
  * The ladder against itself: every grade against every other, on any board.
@@ -42,10 +48,21 @@ import type { BotTier, SearchBudget } from "./opponent.types";
  * an idle one. Timed, it does not: the search deepens iteratively, a busy
  * laptop buys it fewer plies, and a series that reads 18-11 alone reads 14-15
  * with the rest of the suite beside it. That is a test of the laptop.
+ *
+ * AND IT IS THE GENERATOR OF `ladderStrength.data.ts`. With LADDER_WRITE=1 every
+ * board it measures becomes that game's row — the scores, the sample, the budget,
+ * the day and the fingerprint of the code that played — kept beside the rows of
+ * games this run did not measure, and the file is rewritten. That is the only
+ * thing it writes. The command that measures the whole table again is in that
+ * file's header, and `measuredLadder` says nothing for a row whose code has
+ * changed since, so a stale table is silent rather than wrong.
  */
 
 /** Whether the round robin was asked for. */
 const ASKED = process.env.BOT_LADDER === "1";
+
+/** Whether each board measured is written into `ladderStrength.data.ts`. */
+const WRITE = process.env.LADDER_WRITE === "1";
 
 /** Games per pairing. Colours alternate, so an even number is the fair one. */
 const GAMES = Math.max(2, Number(process.env.LADDER_GAMES ?? "30"));
@@ -159,6 +176,8 @@ function score(tally: Tally): number {
 describe.runIf(ASKED)("the graded ladder against itself", () => {
   const tiers = tiersAsked();
   const boards = boardsAsked();
+  /** The table as checked in, with each board this run measures laid over it. */
+  const strength: LadderStrengthTable = { ...LADDER_STRENGTH };
 
   it.each(boards)(
     "reports every pairing at $variant $size",
@@ -166,10 +185,12 @@ describe.runIf(ASKED)("the graded ladder against itself", () => {
       const points: Record<string, number> = {};
       for (const tier of tiers) points[tier] = 0;
       const lines: string[] = [];
+      const pairings: LadderPairing[] = [];
 
       for (let i = 0; i < tiers.length; i += 1) {
         for (let j = i + 1; j < tiers.length; j += 1) {
           const tally = series(variant, size, tiers[i], tiers[j]);
+          pairings.push({ first: tiers[i], second: tiers[j], ...tally });
           points[tiers[i]] += score(tally);
           points[tiers[j]] += 1 - score(tally);
           lines.push(
@@ -191,6 +212,28 @@ describe.runIf(ASKED)("the graded ladder against itself", () => {
       ].join("\n");
       console.log(table);
       expect(lines.length).toBe((tiers.length * (tiers.length - 1)) / 2);
+
+      if (WRITE) {
+        /*
+         * The fingerprint is read from the files as they stand now, which is the
+         * code that just played. Unreadable is refused rather than written as a
+         * row that could never match anything.
+         */
+        const fingerprint = readLadderFingerprint();
+        if (fingerprint === null) throw new Error("Could not read the files a grade's play is fingerprinted by.");
+        strength[variant] = {
+          variant,
+          size,
+          gamesPerPairing: GAMES,
+          nodesPerMove: BUDGET.nodes ?? 0,
+          measuredOn: new Date().toISOString().slice(0, 10),
+          fingerprint,
+          tiers: [...tiers],
+          pairings,
+        };
+        writeFileSync(new URL("./ladderStrength.data.ts", import.meta.url), ladderStrengthSource(strength));
+        console.log(`  written to ladderStrength.data.ts at fingerprint ${fingerprint}`);
+      }
     },
     3_600_000,
   );
