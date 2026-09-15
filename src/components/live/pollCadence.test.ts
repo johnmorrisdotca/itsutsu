@@ -67,14 +67,29 @@ describe("the end-to-end suite's relief on the cadence", () => {
 
   it("cannot make a board ask faster than once a second", () => {
     expect(pollEvery({ nodeEnv: "development", relief: "1000" })).toBe(POLL_RELIEF_FLOOR_MS);
+    // The suite's own RATE_LIMIT_RELIEF is 20, which the floor holds at once a second.
+    expect(pollEvery({ nodeEnv: "development", relief: "20" })).toBe(POLL_RELIEF_FLOOR_MS);
   });
 
   it("reads the real environment, and production still wins there", () => {
-    vi.stubEnv("NEXT_PUBLIC_LIVE_POLL_RELIEF", "6");
+    vi.stubEnv("LIVE_POLL_RELIEF", "6");
     vi.stubEnv("NODE_ENV", "development");
     expect(pollEvery()).toBe(POLL_MS / 6);
     vi.stubEnv("NODE_ENV", "production");
     expect(pollEvery()).toBe(POLL_MS);
     expect(pollInterval({ polling: true, awake: true, visible: true })).toBe(POLL_MS);
+  });
+
+  it("is the suite's RATE_LIMIT_RELIEF, handed over by next.config.ts, and nothing where that is unset", async () => {
+    vi.stubEnv("RATE_LIMIT_RELIEF", "20");
+    vi.resetModules();
+    const relieved = (await import("../../../next.config")).default;
+    expect(relieved.env?.LIVE_POLL_RELIEF).toBe("20");
+
+    vi.stubEnv("RATE_LIMIT_RELIEF", undefined);
+    vi.resetModules();
+    const plain = (await import("../../../next.config")).default;
+    expect(plain.env?.LIVE_POLL_RELIEF).toBe("");
+    expect(pollEvery({ nodeEnv: "development", relief: plain.env?.LIVE_POLL_RELIEF })).toBe(POLL_MS);
   });
 });

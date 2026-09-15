@@ -4,9 +4,10 @@ import { POLL_MS, POLL_RELIEF_FLOOR_MS } from "./live.constants";
  * How often a board that is being looked at asks, in milliseconds.
  *
  * `POLL_MS`, everywhere that matters. The one exception is the dev server the
- * end-to-end suite drives, which may set `NEXT_PUBLIC_LIVE_POLL_RELIEF` to
- * divide it: the two-seat specs watch one board for the other seat's move, and
- * a fifteen-second wait for every move makes them slow and their shorter waits
+ * end-to-end suite drives, whose `RATE_LIMIT_RELIEF` divides it too — handed
+ * to the browser as `LIVE_POLL_RELIEF` by next.config.ts's `env` block. The
+ * two-seat specs watch one board for the other seat's move, and a
+ * fifteen-second wait for every move makes them slow and their shorter waits
  * flaky. It is the rate limiter's pattern, and its two guarantees:
  *
  *  - IGNORED OUTRIGHT IN PRODUCTION, so a variable that escaped into a
@@ -20,13 +21,15 @@ import { POLL_MS, POLL_RELIEF_FLOOR_MS } from "./live.constants";
  * to rely on a board that never sleeps.
  *
  * The environment is read as a default argument, so the unit test can hand in
- * its own and the page gets the real one. `NEXT_PUBLIC_` because the cadence
- * is decided in the browser, where Next writes the value in at build time.
+ * its own and the page gets the real one. Through the config's `env` rather
+ * than a variable of its own, so no `.env` anywhere needs a new line; Next
+ * writes the value into the bundle at build time, and at the suite's relief
+ * of 20 the floor holds the board at once a second.
  */
 export function pollEvery(
   env: { nodeEnv: string | undefined; relief: string | undefined } = {
     nodeEnv: process.env.NODE_ENV,
-    relief: process.env.NEXT_PUBLIC_LIVE_POLL_RELIEF,
+    relief: process.env.LIVE_POLL_RELIEF,
   },
 ): number {
   if (env.nodeEnv === "production") return POLL_MS;
