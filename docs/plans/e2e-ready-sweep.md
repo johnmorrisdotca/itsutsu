@@ -38,6 +38,23 @@ files" is **42 of 122** — and the honest gloss on it is that 79 of the other 8
 do not need it, for reasons given one line each below, rather than being still
 outstanding.
 
+## A native `<details>` was not enough
+
+One of those reasons was wrong. The sweep counted a click on a native
+`<details>` as driving nothing hydrated, on the reasoning that a browser opens
+one without React. On 2026-09-15 `record-text` failed its first attempt on PR
+#26 (run 35002182271): it clicked the record's summary on `/history` as soon
+as the server-rendered block was visible, and the listing inside stayed hidden
+through every check until the retry. A summary clicked before the page has
+hydrated can end up shut again, whatever opened it.
+
+So every spec that clicks a server-rendered fold straight after loading a page
+now waits first: `record-text` on the block's own mark (`RecordText` carries
+`readyMark`), and `games-link` and `learn` on the `game-stats` strip inside the
+family they are about to open, as `game-pictures` and `games-stats` already
+did. The counts in the table above are the sweep's as counted that night, and
+are left as they were.
+
 ## Two things worth knowing before reading the table
 
 **The practice board cannot lose a click, and 22 specs live on it.** `/games/<slug>/play`
@@ -104,7 +121,7 @@ a queue with two games in it is a strict-mode violation rather than a wait.
 | `history` | the game/sort selects; the replay arrows and keyboard | `history-filters`, `game-replay` | DONE — ×2 |
 | `keep-finished` | the keep-finished window select | `profile-form` | DONE — ×4 |
 | `kitchen-table` | Set four words; Sit as somebody | `phrase-setup`, `sit-as-closed` | DONE — 2 added, 2 moved onto the helper |
-| `learn` | the A–Z and what-wins bars; Sign out | `letter-filter`, `account-menu` | DONE — ×3 |
+| `learn` | the A–Z and what-wins bars; Sign out; the Small boards fold | `letter-filter`, `account-menu`, `game-stats` via `readyHere` | DONE — ×3, and the fold after the sweep; see "A native `<details>` was not enough" |
 | `move-list` | a played move (button) on a finished game | `game-replay` | DONE |
 | `mygames` | Resign in a row; Sit at an open seat | `resign`, `sit` via `readyHere` | DONE — ×2 |
 | `offers` | accept, decline, withdraw — eight presses | `offer-buttons` via `readyHere` | DONE — ×8 |
@@ -171,7 +188,7 @@ a queue with two games in it is a strict-mode violation rather than a wait.
 | `first-names` | a member's name | none | NOT NEEDED — links |
 | `front-door` | nothing | none | NOT NEEDED — read only |
 | `game-front-door` | the ways on from a game's page | none | NOT NEEDED — links |
-| `games-link` | game names, and a family's fold | none | NOT NEEDED — links and a native `<details>` |
+| `games-link` | game names, and a family's fold | `game-stats` via `readyHere` | DONE after the sweep — the fold; see "A native `<details>` was not enough" |
 | `identity` | nothing | none | NOT NEEDED — API only |
 | `ignore-live` | nothing | none | NOT NEEDED — read only |
 | `ignored-seat` | nothing | none | NOT NEEDED — read only |
@@ -193,7 +210,7 @@ a queue with two games in it is a strict-mode violation rather than a wait.
 | `posted-seat-rules` | the rules drawer | none | NOT NEEDED — `openBoardRules` waits on a rendered statement |
 | `posted-waiting` | nothing | none | NOT NEEDED — read only |
 | `profile` | nothing | none | NOT NEEDED — read only |
-| `record-text` | the plain-text fold | none | NOT NEEDED — a native `<details>` |
+| `record-text` | the plain-text fold | `record-text` | DONE after the sweep — see "A native `<details>` was not enough" |
 | `refresh-race` | nothing | none | NOT NEEDED — read only |
 | `refusals` | nothing | none | NOT NEEDED — API only |
 | `releases` | the version stamp | none | NOT NEEDED — links |

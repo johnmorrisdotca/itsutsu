@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+
 /**
  * The whole record as plain text, to be selected, copied and kept.
  *
@@ -10,9 +12,15 @@ import { useState } from "react";
  * everything, in something you can take with you. The text is built on the
  * server and only shown here — nothing is computed twice, and nothing about
  * what "the record" means is decided in two places.
+ *
+ * CARRIES THE HYDRATION MARK, although the fold is a native `<details>`. A
+ * summary clicked before the page has hydrated can end up shut again: that is
+ * how `e2e/record-text.spec.ts` failed its first attempt on PR #26. A test
+ * waits for `data-ready="true"` before it opens the fold.
  */
 export function RecordText({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  const hydrated = useHydrated();
 
   async function copy() {
     try {
@@ -27,7 +35,7 @@ export function RecordText({ text }: { text: string }) {
   }
 
   return (
-    <details className="group flex flex-col gap-2" data-testid="record-text">
+    <details className="group flex flex-col gap-2" data-testid="record-text" {...readyMark(hydrated)}>
       <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase select-none hover:text-ink">
         The whole record as text <span className="font-mincho normal-case tracking-normal">記録</span>
         <span className="ml-1 opacity-60 group-open:hidden">+</span>
