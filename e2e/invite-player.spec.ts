@@ -160,6 +160,53 @@ test.describe("a player who came in with an invite code", () => {
     await operator.close();
   });
 
+  test("is told on the welcome that the account lives only in this browser, and can link Google or add four words from there", async ({
+    browser,
+    baseURL,
+  }) => {
+    const operator = await browser.newContext({ storageState: ADMIN_STATE });
+    const minted = await operator.request.post("/api/invites", { data: { note: `invite-keep ${stamp}` } });
+    expect(minted.status(), await minted.text()).toBe(201);
+    const { code } = (await minted.json()) as { code: string };
+    await operator.close();
+
+    const guest = await browser.newContext({ baseURL, storageState: { cookies: [], origins: [] } });
+    const page = await guest.newPage();
+    await page.goto(`/join?code=${code}`);
+    await ready(page, "join-form");
+    await page.getByTestId("join-submit").click();
+    await expect(page).toHaveURL(/\/me\?welcome=1/);
+    const guestName = ((await page.getByTestId("me-name").textContent()) ?? "").trim();
+    expect(guestName).toContain("Guest");
+    madeMembers.push((await memberNamed(guestName)).id);
+
+    // SAID PLAINLY, ON THE WELCOME, BEFORE ANY NAME IS SAVED: this browser, this month, and what changes that.
+    await ready(page, "welcome-keep");
+    const said = page.getByTestId("welcome-no-address");
+    await expect(said).toContainText(`only in this browser, and only for ${PLAYER_SESSION_DAYS} days`);
+    await expect(said).toContainText("unless you link Google");
+
+    // FOUR WORDS: one press from the welcome to the picker that sets them.
+    await page.getByTestId("welcome-add-words").click();
+    await expect(page).toHaveURL(/\/me\?view=words$/);
+    await ready(page, "phrase-setup");
+    await page.getByTestId("phrase-set-button").click();
+    await expect(page.getByTestId("phrase-picker")).toBeVisible();
+
+    // GOOGLE: back to the welcome, and the button starts Google's sign-in, returning through the route that attaches the address.
+    await page.goto("/me?welcome=1");
+    await ready(page, "welcome-keep");
+    // Nothing leaves this machine: NextAuth's answer is stood in for, and sends the browser home rather than to Google.
+    await page.route("**/api/auth/signin/google", (route) => route.fulfill({ json: { url: `${baseURL}/me` } }));
+    const started = page.waitForRequest((request) => request.url().includes("/api/auth/signin/google") && request.method() === "POST");
+    await page.getByTestId("welcome-link-google").click();
+    const form = new URLSearchParams((await started).postData() ?? "");
+    expect(form.get("callbackUrl")).toBe("/api/session/google?next=%2Fme");
+    await expect(page).toHaveURL(/\/me$/);
+
+    await guest.close();
+  });
+
   test("is made a member on the next visit when their invite cookie is from before accounts", async ({ browser, baseURL }) => {
     // What a browser that redeemed a code yesterday is holding: a signed session with a code and nobody in it.
     const legacyCode = `legacy-${stamp}`;

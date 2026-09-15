@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { GameDefaultsForm } from "@/components/mine/GameDefaultsForm";
 import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
+import { KeepThisAccount } from "@/components/mine/KeepThisAccount";
 import { MyPeople } from "@/components/mine/MyPeople";
 import { MyRecord } from "@/components/mine/MyRecord";
 import { MyXp } from "@/components/mine/MyXp";
@@ -16,6 +17,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { currentMemberRow, currentSession } from "@/lib/auth/currentSession";
 import { fetchProfile } from "@/lib/auth/members";
+import { isGoogleAuthConfigured } from "@/lib/auth/google";
+import { PLAYER_SESSION_DAYS } from "@/lib/auth/session";
 import { gameDefaultsFrom } from "@/components/game/gameDefaults";
 import { phraseStatus } from "@/lib/phrase/phraseStore";
 import { safeDestination } from "@/lib/auth/redirect";
@@ -148,15 +151,14 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
           </p>
           {addressless ? (
             /*
-             * THE ONE THING AN ACCOUNT MADE BY A CODE IS MISSING, SAID ON THE FIRST
-             * PAGE IT SEES. It has no address, so this browser's cookie is the only
-             * way back in — lost with the browser, or at the end of the month. Four
-             * words fix that, and they are one tab away.
+             * THE ONE THING AN ACCOUNT MADE BY A CODE IS MISSING, SAID BEFORE THE
+             * WELCOME CLOSES. It has no address, so this browser's cookie is the only
+             * way back in — lost with the browser, or when the cookie runs out. It
+             * used to say four words fixed that; nothing turns four words into a
+             * session, so linking Google is the remedy, and the words are offered for
+             * what they do. Both are controls here, not a tab to find later.
              */
-            <p className="text-sm text-ink-soft" data-testid="welcome-no-address">
-              This browser is how you get back in. To sign in on another device, or after a month, add four
-              words on the Words tab once you have chosen a name.
-            </p>
+            <KeepThisAccount days={PLAYER_SESSION_DAYS} googleReady={isGoogleAuthConfigured()} />
           ) : null}
         </section>
       ) : null}
