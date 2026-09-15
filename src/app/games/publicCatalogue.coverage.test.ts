@@ -24,11 +24,16 @@ import { describe, expect, it } from "vitest";
  * `e2e/games-stats.spec.ts` and `e2e/gate.spec.ts` are those.
  */
 
-const SOURCE = readFileSync("src/app/games/page.tsx", "utf8");
+/*
+ * The stranger's half lives in its own file beside the page, moved out whole
+ * when the page reached the 500-line gate; the lobby's half is still the page.
+ */
+const SOURCE = readFileSync("src/app/games/PublicCatalogue.tsx", "utf8");
+const LOBBY = readFileSync("src/app/games/page.tsx", "utf8");
 
-// Just the stranger's half of the page — everything from PublicCatalogue's
-// own definition onward, so a correct computation in the signed-in path above
-// it cannot make this pass for the wrong reason.
+// Just the stranger's half — everything from PublicCatalogue's own definition
+// onward, so a correct computation anywhere above it cannot make this pass for
+// the wrong reason.
 const START = SOURCE.indexOf("function PublicCatalogue");
 const PUBLIC = SOURCE.slice(START);
 
@@ -36,6 +41,8 @@ describe("the public catalogue", () => {
   it("has PublicCatalogue to check, so a passing run means something", () => {
     expect(START).toBeGreaterThan(0);
     expect(PUBLIC.length).toBeGreaterThan(200);
+    // And the page still hands a reader with no session to it.
+    expect(LOBBY).toContain("<PublicCatalogue");
   });
 
   it("does not hardcode played to nought", () => {
@@ -49,7 +56,7 @@ describe("the public catalogue", () => {
     // so a stranger gets the real numbers from the same reads, not a second
     // set invented for this path.
     expect(PUBLIC).toContain("fetchCatalogueStats()");
-    expect(SOURCE.slice(0, START)).toContain("fetchCatalogueStats()");
+    expect(LOBBY).toContain("fetchCatalogueStats()");
   });
 
   it("shapes them for a reader with no session before drawing them", () => {
