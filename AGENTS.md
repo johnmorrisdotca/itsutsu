@@ -706,6 +706,14 @@ household. The relief multiplies only the limits that exist to bound a cost —
 never the guessing paths, and never in production, both of which are tested in
 `src/lib/api/rateLimit.test.ts`.
 
+**It does not touch the twenty-game cap.** It used to — one knob for both —
+which made the cap 400 on any server the suite drives, so no browser test could
+ever reach it and one written anyway would have passed over nothing. The cap is
+twenty for every member everywhere; the suite's own operator, who plays all of
+its games, is let past it outside production by being in `ADMIN_EMAILS`, which
+the suite already requires. `e2e/active-game-cap.spec.ts` reaches the real
+twenty with a member of its own.
+
 It is written here because `.env` is gitignored, so a fresh clone or a
 worktree does not get one, and the failure gives no hint of its own cause.
 Three sessions lost time to it, twice after it had already been fixed. See

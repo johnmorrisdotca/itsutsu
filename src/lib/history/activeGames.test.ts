@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ACTIVE_GAME_LIMIT } from "./activeGames";
 
@@ -6,25 +6,34 @@ import { ACTIVE_GAME_LIMIT } from "./activeGames";
  * The twenty-game cap.
  *
  * The count itself is a single `prisma.game.count`, so the cases here are
- * about the two things a count cannot get wrong on its own: which seat a
- * member is checked by (both colours, not just black), and who is exempt —
- * a computer player is meant to carry far more than twenty at once, since a
- * batch of games started against one on purpose is the opposite of the pile
- * this limit exists to catch.
+ * about the things a count cannot get wrong on its own: which seat a member is
+ * checked by (both colours, not just black), and who is exempt — a computer
+ * player is meant to carry far more than twenty at once, since a batch of games
+ * started against one on purpose is the opposite of the pile this limit exists
+ * to catch; and, outside production only, the operator the suite plays as.
  */
 
 let counted: { memberId: string }[] = [];
+/** Each member's address, for the one read that asks which seats are an operator's. */
+let addresses: Record<string, string> = {};
 
 const count = vi.fn(async ({ where }: { where: { OR: [{ blackMemberId: string }, { whiteMemberId: string }] } }) => {
   const [{ blackMemberId }, { whiteMemberId }] = where.OR;
   return counted.filter((row) => row.memberId === blackMemberId || row.memberId === whiteMemberId).length;
 });
 
-vi.mock("@/lib/prisma", () => ({ prisma: { game: { count: (args: never) => count(args) } } }));
-
-const { activeGameCount, activeGameLimit, activeLimitRefusal, memberOverActiveLimit } = await import(
-  "./activeGames"
+const findMany = vi.fn(async ({ where }: { where: { id: { in: string[] }; email: { in: string[] } } }) =>
+  where.id.in.filter((id) => where.email.in.includes(addresses[id] ?? "")).map((id) => ({ id })),
 );
+
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
+    game: { count: (args: never) => count(args) },
+    member: { findMany: (args: never) => findMany(args) },
+  },
+}));
+
+const { activeGameCount, activeLimitRefusal, memberOverActiveLimit } = await import("./activeGames");
 
 /** `n` active games recorded against one member, alternating which seat holds them. */
 function gamesFor(memberId: string, n: number): void {
@@ -33,7 +42,15 @@ function gamesFor(memberId: string, n: number): void {
 
 beforeEach(() => {
   counted = [];
+  addresses = {};
   count.mockClear();
+  findMany.mockClear();
+  // Nobody is an operator unless a case says so, whatever this machine's environment holds.
+  vi.stubEnv("ADMIN_EMAILS", "");
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("activeGameCount", () => {
@@ -61,10 +78,10 @@ describe("memberOverActiveLimit", () => {
 
   it("checks the other seat too, not only the first", async () => {
     /*
-     * A challenge hands a new board to both seats. The member on the
-     * receiving end can be the one buried, and the caller has no reason to
-     * put them second in the array — this proves the order given is not the
-     * order that matters.
+     * A creation can hand a new board to both seats. The member on the second
+     * seat can be the one buried, and the caller has no reason to put them
+     * second in the array — this proves the order given is not the order that
+     * matters.
      */
     gamesFor("bob", ACTIVE_GAME_LIMIT + 5);
     expect(await memberOverActiveLimit(["alice", "bob"])).toMatchObject({ memberId: "bob" });
@@ -90,49 +107,54 @@ describe("memberOverActiveLimit", () => {
 });
 
 /**
- * The relief, which exists because the suite is one member playing four
- * hundred games and the site is not.
- *
- * The two things it must never do are the point of these cases: it cannot
- * apply in production, where a relieved cap would be no cap, and a value
- * nobody set has to change nothing — a limit whose behaviour depends on an
- * unset variable is a limit nobody can reason about.
+ * One knob used to govern both the rate limits and this cap, which made the cap
+ * four hundred on every server the suite drives and put it out of reach of any
+ * browser test. These hold the split: the relief moves nothing here, and the
+ * only account let past the cap is an operator's, outside production.
  */
-describe("the limit as it applies here and now", () => {
-  it("is the written number when nothing is set", () => {
-    vi.stubEnv("RATE_LIMIT_RELIEF", "");
-    expect(activeGameLimit()).toBe(ACTIVE_GAME_LIMIT);
-    vi.unstubAllEnvs();
-  });
-
-  it("multiplies by the relief the suite sets", () => {
+describe("the cap is twenty, and who alone is let past it", () => {
+  it("is not moved by the relief the suite sets for the rate limits", async () => {
     vi.stubEnv("RATE_LIMIT_RELIEF", "20");
-    expect(activeGameLimit()).toBe(ACTIVE_GAME_LIMIT * 20);
-    vi.unstubAllEnvs();
+    gamesFor("alice", ACTIVE_GAME_LIMIT);
+    expect(await memberOverActiveLimit(["alice"])).toEqual({
+      memberId: "alice",
+      count: ACTIVE_GAME_LIMIT,
+      limit: ACTIVE_GAME_LIMIT,
+    });
   });
 
-  it("ignores the relief in production, whatever escaped into the deployment", () => {
+  it("lets an operator past it outside production", async () => {
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("ADMIN_EMAILS", "operator@example.test");
+    addresses = { op: "operator@example.test" };
+    gamesFor("op", ACTIVE_GAME_LIMIT * 20);
+    expect(await memberOverActiveLimit(["op"])).toBeNull();
+    expect(count, "an operator's pile is never counted").not.toHaveBeenCalled();
+  });
+
+  it("holds an operator to it in production, and asks nothing about addresses there", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("RATE_LIMIT_RELIEF", "1000");
-    expect(activeGameLimit()).toBe(ACTIVE_GAME_LIMIT);
-    vi.unstubAllEnvs();
+    vi.stubEnv("ADMIN_EMAILS", "operator@example.test");
+    addresses = { op: "operator@example.test" };
+    gamesFor("op", ACTIVE_GAME_LIMIT);
+    expect(await memberOverActiveLimit(["op"])).toMatchObject({ memberId: "op", limit: ACTIVE_GAME_LIMIT });
+    expect(findMany).not.toHaveBeenCalled();
   });
 
-  it("never lowers the cap, whatever nonsense it is given", () => {
-    for (const value of ["0", "-5", "not a number"]) {
-      vi.stubEnv("RATE_LIMIT_RELIEF", value);
-      expect(activeGameLimit(), `${value} must not lower the cap`).toBe(ACTIVE_GAME_LIMIT);
-    }
-    vi.unstubAllEnvs();
+  it("lets nobody else past it on the operator's account", async () => {
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("ADMIN_EMAILS", "operator@example.test");
+    addresses = { op: "operator@example.test", alice: "alice@example.test" };
+    gamesFor("op", ACTIVE_GAME_LIMIT * 20);
+    gamesFor("alice", ACTIVE_GAME_LIMIT);
+    expect(await memberOverActiveLimit(["op", "alice"])).toMatchObject({ memberId: "alice" });
   });
 
-  it("is what the check actually reads, not a number kept beside it", async () => {
-    // The relief is worthless if `memberOverActiveLimit` still reads the raw
-    // constant — which is exactly the shape of bug that ships quietly.
-    vi.stubEnv("RATE_LIMIT_RELIEF", "20");
-    gamesFor("alice", ACTIVE_GAME_LIMIT + 5);
+  it("asks nothing about addresses when no operator is configured", async () => {
+    vi.stubEnv("NODE_ENV", "test");
+    gamesFor("alice", ACTIVE_GAME_LIMIT - 1);
     expect(await memberOverActiveLimit(["alice"])).toBeNull();
-    vi.unstubAllEnvs();
+    expect(findMany).not.toHaveBeenCalled();
   });
 });
 
@@ -171,18 +193,14 @@ describe("what the member is told", () => {
   it("says their number and the limit, and what to do about it", () => {
     const message = activeLimitRefusal({ memberId: "alice", count: 20, limit: 20 });
     expect(message).toContain("You have 20 games");
+    expect(message).toContain("20 at once is the limit");
     expect(message).toMatch(/finish or resign/i);
   });
 
-  it("quotes the limit it was actually checked against, not the word twenty", () => {
-    /*
-     * The suite relieves the cap, so the number in force is not always 20. A
-     * message naming a constant the check is not using is a message that is
-     * wrong exactly when somebody is trying to work out why they were
-     * refused.
-     */
-    const message = activeLimitRefusal({ memberId: "alice", count: 400, limit: 400 });
-    expect(message).toContain("400");
-    expect(message).not.toMatch(/twenty/i);
+  it("quotes the limit it was handed, not a number written into the words", () => {
+    // The sentence and the check must not be able to disagree about the number.
+    const message = activeLimitRefusal({ memberId: "alice", count: 7, limit: 7 });
+    expect(message).toContain("7 at once");
+    expect(message).not.toMatch(/twenty|\b20\b/i);
   });
 });
