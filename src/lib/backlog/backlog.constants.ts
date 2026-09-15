@@ -1,4 +1,13 @@
-import type { BacklogChange, BacklogEffort, BacklogKind, BacklogPriority, BacklogSort, BacklogStatus } from "./backlog.types";
+import type {
+  BacklogChange,
+  BacklogEffort,
+  BacklogKind,
+  BacklogPriority,
+  BacklogSort,
+  BacklogStatus,
+  BoardScope,
+  StatusFilter,
+} from "./backlog.types";
 
 /**
  * The board's fixed vocabulary: its statuses, what may follow what, and the
@@ -260,4 +269,39 @@ export const EFFORT_DISPLAY: Record<
     blurb: "Touches several things, or needs a decision before it can start.",
     pill: "border-rule-strong bg-shade text-muted",
   },
+};
+
+/**
+ * WHICH ROWS ONE READ OF THE BOARD BRINGS BACK — see `boardScope.ts`. The
+ * unfinished rows for the default view; done rows, dropped rows or everything
+ * only for the view that shows them.
+ */
+export const BOARD_SCOPES = {
+  unfinished: "unfinished",
+  done: "done",
+  dropped: "dropped",
+  all: "all",
+} as const satisfies Record<BoardScope, BoardScope>;
+
+/** A scope named after a count of its rows, as the board says it: "12 shown of 59 unfinished". */
+export const SCOPE_WORDS: Record<BoardScope, string> = {
+  unfinished: "unfinished",
+  done: "done",
+  dropped: "dropped",
+  all: "on the board",
+};
+
+/**
+ * THE `?show=` WORD FOR EACH FILTER, in plain words — kebab where there are two,
+ * as every address here is. The default view has none, so its address is the
+ * plain one and the way back to it takes the filter off.
+ */
+export const SHOW_WORDS: Record<StatusFilter, string | null> = {
+  unfinished: null,
+  open: "open",
+  inProgress: "in-progress",
+  stale: "stale",
+  done: "done",
+  dropped: "dropped",
+  all: "all",
 };

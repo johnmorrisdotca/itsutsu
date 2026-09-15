@@ -1,6 +1,6 @@
 import { BACKLOG_EFFORTS, BACKLOG_KINDS, BACKLOG_PRIORITIES, BACKLOG_STATUSES } from "../backlog/backlog.constants.ts";
 import { neighbourKey } from "../backlog/backlogKey.ts";
-import type { BacklogItem } from "../backlog/backlog.types.ts";
+import type { BacklogItem, BoardQuery } from "../backlog/backlog.types.ts";
 
 import type { SumilabuImportRow } from "./boardExport.types.ts";
 import type { BoardChange, BoardDraft, BoardImportOutcome, BoardMoveTarget, BoardOutcome, BoardTicketView } from "./boardClient.types.ts";
@@ -140,15 +140,30 @@ function outcome(status: number, body: Json): BoardOutcome {
 
 const one = (id: string) => `/tickets/${encodeURIComponent(id)}`;
 
-/** Every ticket as the service hands it back, for a caller comparing against the service's own fields. */
-export async function listTicketViews(target: SumilabuTarget, filter: { unfinished?: boolean } = {}): Promise<BoardTicketView[]> {
-  const { status, body } = await call(target, filter.unfinished ? "/tickets?unfinished=1" : "/tickets");
+/**
+ * The list's address for a filter: what is unfinished, the rows at some
+ * statuses, or — with neither — everything. Sumilabu takes `?unfinished=1` and
+ * `?status=a,b`; unfinished wins where both are given, so only one is ever sent.
+ * The whole board is the expensive one (767 KB on the live board at four
+ * hundred tickets), so it is asked for only by a caller that names no filter.
+ */
+export function ticketsPath(filter: BoardQuery = {}): string {
+  if (filter.unfinished) return "/tickets?unfinished=1";
+  if (filter.statuses !== undefined && filter.statuses.length > 0) {
+    return `/tickets?status=${filter.statuses.map((status) => encodeURIComponent(status)).join(",")}`;
+  }
+  return "/tickets";
+}
+
+/** Tickets as the service hands them back, for a caller comparing against the service's own fields. */
+export async function listTicketViews(target: SumilabuTarget, filter: BoardQuery = {}): Promise<BoardTicketView[]> {
+  const { status, body } = await call(target, ticketsPath(filter));
   if (status !== 200 || !Array.isArray(body.tickets)) throw new BoardUnreachable(`Sumilabu's board would not list ${target.projectKey}'s tickets (${status}).`);
   return body.tickets as BoardTicketView[];
 }
 
-/** Everything, or everything not yet done or dropped (stale holds included), in Itsutsu's words. */
-export async function listTickets(target: SumilabuTarget, filter: { unfinished?: boolean } = {}): Promise<BacklogItem[]> {
+/** Everything, everything not yet done or dropped (stale holds included), or the rows at some statuses, in Itsutsu's words. */
+export async function listTickets(target: SumilabuTarget, filter: BoardQuery = {}): Promise<BacklogItem[]> {
   return (await listTicketViews(target, filter)).map(itemFromTicket);
 }
 

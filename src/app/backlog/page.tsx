@@ -7,8 +7,9 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
-import { openCount } from "@/lib/backlog/backlog";
+import { BOARD_SCOPES } from "@/lib/backlog/backlog.constants";
 import { readBoard } from "@/lib/backlog/backlogStore";
+import { countFor, scopeOf, statusFromAddress } from "@/lib/backlog/boardScope";
 
 export const metadata = { title: "Backlog", robots: { index: false, follow: false } };
 
@@ -31,17 +32,23 @@ export const dynamic = "force-dynamic";
  * than either. Requests still arrive the way they always did, in
  * conversation; what has changed is who can see they were written down.
  *
- * The rows live on Sumilabu. When they cannot be read the page says so in an
- * alert, rather than drawing an empty board that would read as nothing wanted.
+ * The rows live on Sumilabu, and a load reads only the view's own scope —
+ * the unfinished rows unless `?show=` asks for done, dropped or everything
+ * (`boardScope.ts`). When they cannot be read the page says so in an alert,
+ * rather than drawing an empty board that would read as nothing wanted.
  *
  * Anyone else gets a 404 rather than a refusal, the same as the Admin page,
  * so the address gives nothing away about what is behind it.
  */
-export default async function BacklogPage() {
+export default async function BacklogPage({ searchParams }: PageProps<"/backlog">) {
   const me = await currentAdmin();
   if (me === null) notFound();
 
-  const board = await readBoard();
+  const status = statusFromAddress((await searchParams).show);
+  const board = await readBoard(scopeOf(status));
+  // Said only where the rows behind them were read: a view of done rows has no count of what is still wanted.
+  const wanted = board.ok ? countFor(board.items, board.scope, BOARD_SCOPES.unfinished) : null;
+  const total = board.ok ? countFor(board.items, board.scope, BOARD_SCOPES.all) : null;
 
   return (
     <Page width="standard" gap="gap-6">
@@ -52,12 +59,12 @@ export default async function BacklogPage() {
         </h1>
         <p className="max-w-prose text-sm text-muted">
           Every feature asked for, every fault reported, and what has become of each.{" "}
-          {board.ok ? (
+          {wanted === null ? null : (
             <>
-              There are <span className="font-semibold text-ink">{openCount(board.items)}</span> still wanting something,
-              out of {board.items.length} on the board.{" "}
+              There are <span className="font-semibold text-ink">{wanted}</span> still wanting something
+              {total === null ? "" : `, out of ${total} on the board`}.{" "}
             </>
-          ) : null}
+          )}
           A request written here outlives the conversation that raised it. The same board is a tab of{" "}
           <Link href="/admin?view=work" className="underline underline-offset-4">
             Admin
@@ -68,7 +75,12 @@ export default async function BacklogPage() {
           </Link>
           , open to everybody — this one is only what has not.
         </p>
-        {board.ok ? <BacklogBoard items={board.items} who={me.name ?? ""} /> : <BoardUnreadable problem={board.problem} />}
+        {board.ok ? (
+          // Keyed by what was read, so moving to another view starts the board afresh on it.
+          <BacklogBoard key={`${board.scope}:${status}`} items={board.items} scope={board.scope} initial={status} base="/backlog" who={me.name ?? ""} />
+        ) : (
+          <BoardUnreadable problem={board.problem} />
+        )}
       </section>
     </Page>
   );

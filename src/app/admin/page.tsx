@@ -17,6 +17,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
 import { readBoard } from "@/lib/backlog/backlogStore";
+import { scopeOf, statusFromAddress } from "@/lib/backlog/boardScope";
 import { isAdminRequest } from "@/lib/auth/requireAdmin";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 
@@ -72,7 +73,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const [me, asked] = await Promise.all([currentSession(), searchParams]);
   const who = me?.name ?? me?.email ?? "";
   const open = activeTab(TABS, asked.view);
-  const board = open === "work" ? await readBoard() : null;
+  // The board's own view, in `?show=` beside the tab: the unfinished rows unless it asks for more (`boardScope.ts`).
+  const status = statusFromAddress(asked.show);
+  const board = open === "work" ? await readBoard(scopeOf(status)) : null;
   return (
     <Page width="standard">
       <SiteHeader />
@@ -135,7 +138,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                 On its own page
               </Link>
             </h2>
-            {board.ok ? <BacklogBoard items={board.items} who={who} /> : <BoardUnreadable problem={board.problem} />}
+            {board.ok ? (
+              <BacklogBoard key={`${board.scope}:${status}`} items={board.items} scope={board.scope} initial={status} base="/admin?view=work" who={who} />
+            ) : (
+              <BoardUnreadable problem={board.problem} />
+            )}
           </section>
         </>
       ) : null}
