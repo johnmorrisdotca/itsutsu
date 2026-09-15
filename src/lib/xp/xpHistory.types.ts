@@ -115,3 +115,36 @@ export type XpLedgerRow = {
  * says so somewhere a person can see.
  */
 export type XpLedgerSkips = { readonly unknownType: number };
+
+/**
+ * One award on a player's XP history, as their own page draws it: the ledger
+ * row, where it left the whole total, and whether it was earned here at all.
+ */
+export type XpHistoryEntry = XpLedgerRow & {
+  /**
+   * The ledger's sum up to and including this award, in the ledger's own order
+   * (`createdAt`, then `id`). Read from the ledger rather than the member row,
+   * so the top row of the first page is what the awards themselves add up to.
+   */
+  runningTotal: number;
+  /**
+   * Credit for another site's kept record (`IMPORTED_XP_TYPES`). There is no
+   * game on this site behind it, so it is marked and never linked — the
+   * `here: false` exception from "Nothing Is A Dead End", said in data.
+   */
+  elsewhere: boolean;
+};
+
+/** A run of awards earned on one day, newest first, with that day's whole total. */
+export type XpHistoryDay = {
+  /** `XpEvent.dayKey`: the day in the earner's own zone. */
+  dayKey: string;
+  /**
+   * Everything earned that day — the WHOLE day, including awards on another
+   * page, so a day split by the page boundary says the same total on both.
+   * Null where the read did not return one, which is said as nothing rather
+   * than as the part of the day this page happens to hold.
+   */
+  total: number | null;
+  entries: XpHistoryEntry[];
+};

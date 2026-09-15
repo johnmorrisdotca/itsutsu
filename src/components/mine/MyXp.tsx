@@ -2,21 +2,18 @@ import Link from "next/link";
 
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { DayZoneNote } from "./DayZoneNote";
-import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
+import { AwardAbout } from "@/components/xp/AwardAbout";
+import { ABOUT_ON_A_DESK } from "@/components/xp/xp.constants";
 import { Paired } from "@/components/i18n/Paired";
-import { PlayerName } from "@/components/players/PlayerName";
-import { familyPath, matchPath } from "@/lib/gomoku/slugs";
 import { foldEmail, memberRowFor } from "@/lib/auth/members";
 import { isRefusal } from "@/lib/api/paging";
-import { playerPath } from "@/lib/rating/playerKey";
 import { LevelName } from "@/components/xp/LevelName";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { xpMoreHref, xpParamsFrom } from "@/lib/xp/xpHistory";
 import { xpLedgerPage } from "@/lib/xp/xpHistoryPage";
 import { xpStanding } from "@/lib/xp/xpCurve";
 import { xpForBadge } from "@/lib/xp/xpScope";
-import type { XpAbout, XpLedgerRow } from "@/lib/xp/xpHistory.types";
+import type { XpLedgerRow } from "@/lib/xp/xpHistory.types";
 
 /**
  * A MEMBER'S OWN XP: WHAT THEY HAVE, AND EVERY AWARD THAT MADE IT.
@@ -89,120 +86,6 @@ function Earned({ row }: { row: XpLedgerRow }) {
       {row.dayKey}
     </time>
   );
-}
-
-/**
- * What the award was about, drawn the way this site draws that kind of thing.
- *
- * Every branch that CAN lead somewhere does. The two that cannot say so in
- * words: a game that is no longer kept, and a subject this deploy cannot
- * resolve. A link that cannot keep its promise is worse than a plain word, and
- * saying so in the markup is what keeps the exception from looking identical to
- * an oversight.
- */
-function About({ about }: { about: XpAbout }) {
-  if (about.of === "game") {
-    return (
-      <>
-        <GameThumb variant={about.variant} size="table" className="mr-1.5 inline-block align-middle" />
-        <GameName variant={about.variant} />
-      </>
-    );
-  }
-
-  if (about.of === "match") {
-    if (about.variant === null) {
-      return (
-        <span
-          className="text-muted"
-          title="This match is no longer kept — finished games are held for the number of days you chose."
-        >
-          a match no longer kept
-        </span>
-      );
-    }
-    /*
-     * BOTH, and neither instead of the other. The game's name leads to the
-     * game — that is the standing rule wherever a game is named — and the match
-     * is the thing this row is actually about, so it gets its own way in. One
-     * link would have to choose between naming the game and reaching the board.
-     */
-    return (
-      <>
-        <GameThumb variant={about.variant} size="table" className="mr-1.5 inline-block align-middle" />
-        <GameName variant={about.variant} />
-        <span className="text-muted"> · </span>
-        <Link href={matchPath(about.variant, about.gameId)} className="underline underline-offset-4">
-          that match
-        </Link>
-      </>
-    );
-  }
-
-  if (about.of === "family") {
-    /*
-     * A family is reached through one of its games; a retitled family has no
-     * game to reach it through and keeps its words. See `familyThrough`.
-     *
-     * Styled the way `GameName` and `PlayerName` style themselves —
-     * `hover:underline` — because a family's title IS a name, and a name drawn
-     * differently from the game name in the row above it reads as a different
-     * kind of thing. The always-underlined links in this column are the ones
-     * that are PHRASES rather than names: "that match", "your rival". That is
-     * the rule, and it is why two styles appear in one cell.
-     */
-    return about.through === null ? (
-      <span title="A family that has been renamed since this was earned.">{about.title}</span>
-    ) : (
-      <Link href={familyPath(about.through)} className="underline-offset-2 hover:underline">
-        {about.title}
-      </Link>
-    );
-  }
-
-  if (about.of === "person") {
-    return about.name === null ? (
-      /*
-       * No name, and no query spent getting one. `/players/<id>` IS the subject,
-       * so the link is free; the name would cost a read of the members table for
-       * a word the row's own label already implies. The computer players are the
-       * other way round — their names are a constant — which is why that branch
-       * has one and this one does not.
-       */
-      <Link href={playerPath("", about.memberId)} className="underline underline-offset-4">
-        their page
-      </Link>
-    ) : (
-      <PlayerName name={about.name} memberId={about.memberId} fallback="a computer player" />
-    );
-  }
-
-  if (about.of === "rivalry") {
-    return (
-      <>
-        <GameThumb variant={about.variant} size="table" className="mr-1.5 inline-block align-middle" />
-        <GameName variant={about.variant} />
-        <span className="text-muted"> · </span>
-        <Link href={playerPath("", about.memberId)} className="underline underline-offset-4">
-          your rival
-        </Link>
-      </>
-    );
-  }
-
-  if (about.of === "words") {
-    return about.stale === true ? (
-      <span className="text-muted" title="Nothing on the site answers to this any more.">
-        {about.said}
-      </span>
-    ) : (
-      <span className="text-muted">{about.said}</span>
-    );
-  }
-
-  // Nothing to point at, said as nothing rather than as a link to the member's
-  // own page — which is the page they are already reading.
-  return <span className="text-muted">—</span>;
 }
 
 /**
@@ -306,7 +189,6 @@ function Standing({ xp }: { xp: number }) {
  * one. The alternative was hiding the sentence on a phone, and the sentence
  * saying what an award was for is the column a ledger exists for.
  */
-const ABOUT_ON_A_DESK = "hidden sm:table-cell";
 
 function Headings() {
   return (
@@ -446,12 +328,12 @@ export async function MyXp({
                         */}
                         {row.about.of === "nobody" ? null : (
                           <span className="mt-0.5 block sm:hidden">
-                            <About about={row.about} />
+                            <AwardAbout about={row.about} whose="yours" />
                           </span>
                         )}
                       </td>
                       <td className={`py-1.5 pr-3 align-top ${ABOUT_ON_A_DESK}`}>
-                        <About about={row.about} />
+                        <AwardAbout about={row.about} whose="yours" />
                       </td>
                     </tr>
                   ))

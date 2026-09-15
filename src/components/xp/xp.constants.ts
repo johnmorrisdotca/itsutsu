@@ -127,3 +127,17 @@ export const XP_TOAST_STYLE = {
   levelNext: "mt-1 text-xs text-muted",
   dismiss: "pointer-events-auto absolute top-1.5 right-1.5 inline-flex size-7 items-center justify-center rounded-full text-base leading-none text-muted transition-colors outline-none hover:bg-shade hover:text-ink focus-visible:ring-2 focus-visible:ring-moss",
 } as const;
+
+/**
+ * A ledger's About column: its own column on a desk, folded into the award's
+ * cell on a phone.
+ *
+ * FOUR COLUMNS ON A DESK, THREE ON A PHONE. At 390 the fourth one squeezed
+ * every other cell until "that match" broke over two lines and the sentence
+ * became a two-word-wide ribbon — a table crushed rather than a table read. So
+ * `AwardAbout` folds into the row's own cell below that width and the heading
+ * folds with it, which is why the subject appears twice in the markup: one of
+ * the two is always `display: none`, so a reader and a screen reader each meet
+ * exactly one. Shared by `/me`'s ledger and a player's XP history.
+ */
+export const ABOUT_ON_A_DESK = "hidden sm:table-cell";

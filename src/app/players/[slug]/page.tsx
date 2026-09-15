@@ -16,7 +16,7 @@ import { PlayerFigures } from "@/components/players/PlayerFigures";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMemberById, findMemberByName, findMembersByNames } from "@/lib/auth/members";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { fetchBuddies } from "@/lib/social/buddies";
@@ -37,6 +37,9 @@ import { ratingShown, tierShown } from "@/lib/rating/shownRecord";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { xpForBadge } from "@/lib/xp/xpScope";
+import Link from "next/link";
+import { PlayerXpHistory } from "@/components/xp/PlayerXpHistory";
+import { XP_HISTORY_TAB, XP_HISTORY_TAB_ENTRY, xpHistoryHref } from "@/lib/xp/xpHistoryDays";
 
 export const metadata = { title: "Player" };
 
@@ -115,6 +118,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * is why it could offer nothing.
    */
   const me = await currentSession();
+  const myId = await currentMemberId();
   const [myBuddies, myIgnored] = await Promise.all([
     me?.email ? fetchBuddies(me.email) : Promise.resolve([]),
     me?.email ? ignoredEmails(me.email) : Promise.resolve(new Set<string>()),
@@ -210,10 +214,17 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * all it ever was.
    */
   const elsewhere = legacyTabs(linked);
-  const tabs: Tab[] =
+  const sites: Tab[] =
     record.games > 0 || elsewhere.length === 0
       ? [ITSUTSU_TAB, ...elsewhere]
       : [...elsewhere, ITSUTSU_TAB];
+  /*
+   * AND HOW THEIR XP WAS EARNED, last. John: "there is NO indication how I got
+   * my XP". A tab rather than another panel down a long page, and only where a
+   * member row exists to have earned anything — a person's or a program's.
+   */
+  const earner = member?.id ?? null;
+  const tabs: Tab[] = earner === null ? sites : [...sites, XP_HISTORY_TAB_ENTRY];
   const open = activeTab(tabs, view);
   const shown = elsewhere.find((tab) => tab.key === open) ?? null;
 
@@ -349,6 +360,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           xp={member?.xp === undefined || member.xpEverywhere === undefined ? undefined : xpForBadge({ xp: member.xp, xpEverywhere: member.xpEverywhere })}
           imported={member === null || member.xpImported === undefined ? null : importedFactsFor(member.name, member.xpImported)}
         />
+        {earner === null ? null : (
+          <Link href={xpHistoryHref(`/players/${slug}`, new URLSearchParams(), null)} className="self-start text-xs underline underline-offset-4" data-testid="xp-history-link">
+            How this XP was earned
+          </Link>
+        )}
         {offered && scope === RECORD_SCOPES.everywhere ? (
           <p className="text-xs text-muted" data-testid="counting-everywhere">
             {/*
@@ -405,9 +421,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         </section>
       ) : null}
 
-      <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label="Where this player's record was kept" />
+      <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label="Where this player's record was kept, and how their XP was earned" />
 
-      {shown === null ? (
+      {earner !== null && open === XP_HISTORY_TAB ? (
+        <PlayerXpHistory memberId={earner} isYou={earner === myId} asked={asked} at={`/players/${slug}`} />
+      ) : shown === null ? (
         <>
           <ItsutsuRecord
             name={wholeName}
