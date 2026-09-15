@@ -79,7 +79,7 @@ export function RatedPicker({ value, refused, onChange, disabled = false }: Rate
 }
 
 /*
- * The two tiles' pictures, at one of the site's two picture sizes like every
+ * The two tiles' pictures, at one of the site's three picture sizes like every
  * other picture on the set-up page. They were 44px squares beside 70px board
  * blocks; the glyph inside is set to half the square, as it was.
  */

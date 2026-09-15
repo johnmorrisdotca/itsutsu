@@ -254,7 +254,7 @@ export type BoardSizeMarkWords = "beside" | "none";
 export type BoardSizeMarkProps = {
   /** The length of one side of the board: 3 for tic-tac-toe, 19 for a go board. */
   side: number;
-  /** One of the site's two picture sizes. The numeral is scaled from it. */
+  /** One of the site's three picture sizes. The numeral is scaled from it. */
   size: PictureSize;
   words: BoardSizeMarkWords;
   className?: string;

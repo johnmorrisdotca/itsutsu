@@ -106,7 +106,7 @@ export function ItsutsuRecord({
             */
             subject: (
               <span className="flex items-center gap-2">
-                <GameThumb variant={row.variant} size="regular" />
+                <GameThumb variant={row.variant} size="small" />
                 <GameName variant={row.variant} />
               </span>
             ),
@@ -147,7 +147,7 @@ export function ItsutsuRecord({
             {record.recent.map((game) => (
               <li key={game.id} className="flex items-center justify-between gap-3 py-1.5" data-testid="player-recent-game">
                 <span className="flex min-w-0 items-center gap-2">
-                  <GameThumb variant={game.variant} size="regular" />
+                  <GameThumb variant={game.variant} size="small" />
                   <span>
                   <GameName variant={game.variant} /> · vs{" "}
                   {game.opponent ? (

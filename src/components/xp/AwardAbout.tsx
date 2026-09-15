@@ -28,7 +28,7 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
   if (about.of === "game") {
     return (
       <>
-        <GameThumb variant={about.variant} size="regular" className="mr-1.5 inline-block align-middle" />
+        <GameThumb variant={about.variant} size="small" className="mr-1.5 inline-block align-middle" />
         <GameName variant={about.variant} />
       </>
     );
@@ -53,7 +53,7 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
      */
     return (
       <>
-        <GameThumb variant={about.variant} size="regular" className="mr-1.5 inline-block align-middle" />
+        <GameThumb variant={about.variant} size="small" className="mr-1.5 inline-block align-middle" />
         <GameName variant={about.variant} />
         <span className="text-muted"> · </span>
         <Link href={matchPath(about.variant, about.gameId)} className="underline underline-offset-4">
@@ -103,7 +103,7 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
   if (about.of === "rivalry") {
     return (
       <>
-        <GameThumb variant={about.variant} size="regular" className="mr-1.5 inline-block align-middle" />
+        <GameThumb variant={about.variant} size="small" className="mr-1.5 inline-block align-middle" />
         <GameName variant={about.variant} />
         <span className="text-muted"> · </span>
         <Link href={playerPath("", about.memberId)} className="underline underline-offset-4">

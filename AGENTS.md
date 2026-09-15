@@ -289,21 +289,27 @@ John: "Looks like we aren't showing the icons for all the variant games in a
 family!… Strange how we don't see icons in the Player pages, etc... that's a
 BUG too."
 
-**Every picture is one of two sizes: regular, and large = 2× regular.** John,
-2026-09-15, on a set-up page drawing family tiles, game chips and board tiles
-at three sizes: from multiple icon sizes to exactly two, with the large one
-"exactly DOUBLE the regular size, for symmetry". Regular is the set-up page's
-board tile, 70px; large is the doorstep's board, written as twice regular in
-`PICTURE_PX` (`games.constants.ts`) and never as a second number. `GameThumb`,
-`FamilyMark`, `BoardSizeMark`, `OpeningMark`, `SeatMark` and the rated tiles'
-icons each take `size: "regular" | "large"` and read their side through
-`pictureBox`; no per-surface size, class or pixel count. A label under a
-picture is one language on one line, through `OneName`.
+**Every picture is one of three sizes: small for tables and lists, regular, and
+large = 2× regular.** John, 2026-09-15, on a set-up page drawing family tiles,
+game chips and board tiles at three sizes: from multiple icon sizes to exactly
+two, with the large one "exactly DOUBLE the regular size, for symmetry" — and
+then, of tables whose rows had grown to hold a regular picture: "Tables keep
+small pictures". Regular is the set-up page's board tile, 70px, and stays on
+the set-up tiles and chips, /games and a family's cards, and the family icon
+heading a game page's panel. Small is half of it, 35px, for every table, ledger
+and row of a list. Large is the doorstep's board. Both are written from regular
+in `PICTURE_PX` (`games.constants.ts`) — `/ 2` and `* 2` — never as numbers of
+their own. `GameThumb`, `FamilyMark`, `BoardSizeMark`, `OpeningMark`, `SeatMark`
+and the rated tiles' icons each take `size: "small" | "regular" | "large"` and
+read their side through `pictureBox`; no per-surface class or pixel count. A
+label under a picture is one language on one line, through `OneName`.
 **Enforced by `src/components/games/gamePictures.coverage.test.ts`**, which
-fails the build for a name with no picture near it, for a picture at any other
-size, and for a retired per-surface size coming back; a page title, a heading
-or a sentence naming a game is an exception written there by line, with its
-reason.
+fails the build for a name with no picture near it, for a picture at any size
+but the three, for a picture drawn at a size other than its file is classified
+for in `SURFACE_SIZES` — a new file that draws a picture fails until it is
+classified — and for a retired per-surface size coming back. A page title, a
+heading or a sentence naming a game, and a picture that must differ from its
+file's size, are exceptions written there by line, with their reason.
 
 ### Every Table Of Players Shows XP, And The Programs Are Players
 

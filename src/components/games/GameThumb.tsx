@@ -24,10 +24,11 @@ import { pictureOf } from "./gamePicture";
  * shape before the picture arrives; `loading="lazy"` because a record page can
  * list fifty rows and a reader sees eight.
  *
- * AT ONE OF THE SITE'S TWO SIZES, never a class of its own: `size` is
- * "regular" or "large" (`PICTURE_PX`), whatever list it sits in. It used to be
- * named by where it sat — 48px on a card, 40 in a row, 24 in a table, 20 in a
- * tag — and John asked for one regular size everywhere. `className` is for
+ * AT ONE OF THE SITE'S THREE SIZES, never a class of its own: `size` is
+ * "small" in a table, a ledger or a row of a list, "regular" on a card or a
+ * tile (`PICTURE_PX`). It used to be named by where it sat — 48px on a card, 40
+ * in a row, 24 in a table, 20 in a tag — then John asked for one regular size
+ * everywhere, and then: "Tables keep small pictures". `className` is for
  * placing it — a margin, an alignment — and `gamePictures.coverage.test.ts`
  * refuses a size class there.
  *
@@ -62,7 +63,7 @@ export function GameThumb({
   variant?: string;
   /** A name as another site wrote it, which is a game here only through its alias. */
   name?: string;
-  /** One of the site's two picture sizes. */
+  /** One of the site's three picture sizes: small in a table or a row, regular on a card. */
   size: PictureSize;
   /** What it is a picture of, where the name is not already beside it. */
   alt?: string;

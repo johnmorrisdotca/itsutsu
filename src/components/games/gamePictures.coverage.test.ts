@@ -6,10 +6,11 @@ import { describe, expect, it } from "vitest";
 import { PICK_ICON, SEAT_MARK_LOOK } from "@/components/live/picker.constants";
 
 import { PICTURE_PX } from "./games.constants";
+import type { PictureSize } from "./games.types";
 import { code, insideControl, namesPrinted } from "./sourceScan";
 
 /**
- * A game named in a list shows its picture, and every picture is one of two sizes.
+ * A game named in a list shows its picture, and every picture is one of three sizes.
  *
  * John, 2026-09-14, on /games and a player's page: "Looks like we aren't showing
  * the icons for all the variant games in a family! Why is this when we do it in
@@ -32,9 +33,14 @@ import { code, insideControl, namesPrinted } from "./sourceScan";
  *    sentence;
  *  - any picture — a game's, a family's, a board's, an opening's, an
  *    opponent's stone, a rated tile's icon — is drawn at a size that is not
- *    "regular" or "large", or large stops being exactly twice regular. John,
- *    2026-09-15: from multiple icon sizes to exactly two, with the large one
- *    "exactly DOUBLE the regular size, for symmetry".
+ *    "small", "regular" or "large", or small stops being exactly half of
+ *    regular, or large exactly twice it. John, 2026-09-15: from multiple icon
+ *    sizes to exactly two, the large one "exactly DOUBLE the regular size, for
+ *    symmetry" — and then "Tables keep small pictures";
+ *  - a surface draws a picture at a size other than the one its file is
+ *    classified for in `SURFACE_SIZES`: small in a table, a ledger or a row of
+ *    a list; regular on the set-up tiles, the catalogue's cards and a game
+ *    page's panel heads; large on the doorstep.
  *
  * "Near" is a window of source, which is crude on purpose: a row draws its
  * picture a few lines from its name, and a gate that needed the component
@@ -199,7 +205,7 @@ function tagsOf(name: string): { path: string; tag: string }[] {
 }
 
 /**
- * Every component that draws a picture, each taking `size: "regular" | "large"`.
+ * Every component that draws a picture, each taking `size: "small" | "regular" | "large"`.
  * A new picture component belongs here the day it is written, or it is a third
  * size waiting to happen.
  */
@@ -232,22 +238,125 @@ function sourcesUnder(dir: string): { path: string; source: string }[] {
   });
 }
 
-describe("two picture sizes: regular, and large at exactly twice it", () => {
-  it("draws every picture at one of the two sizes and no other", () => {
+/**
+ * WHICH SIZE EACH SURFACE DRAWS, by file and by the component drawn in it.
+ *
+ * John, 2026-09-15, of tables whose rows had grown to hold a regular picture:
+ * "Tables keep small pictures". So:
+ *
+ *  - SMALL for a table, a ledger or a row in a list — a picture beside text in
+ *    a row, where the row's height belongs to the text;
+ *  - REGULAR for the set-up page's tiles and chips, /games and a family's
+ *    cards, and the family icon at the head of a panel on a game's page;
+ *  - LARGE on the doorstep, the last page before a game.
+ *
+ * EVERY FILE THAT DRAWS A PICTURE IS NAMED HERE, so a new table cannot draw at
+ * regular by default: it fails until somebody says which kind of surface it
+ * is. A picture that must differ from its file's size is written in
+ * `SIZE_EXCEPTIONS` by its line, with the reason.
+ */
+const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], PictureSize>>> = {
+  // Tables, ledgers and rows of a list.
+  "src/app/champions/page.tsx": { GameThumb: "small" },
+  "src/app/learn/[slug]/page.tsx": { GameThumb: "small" },
+  "src/components/games/GameList.tsx": { GameThumb: "small" },
+  "src/components/history/HistoryTable.tsx": { GameThumb: "small" },
+  "src/components/mine/LocalGameCard.tsx": { GameThumb: "small" },
+  "src/components/mine/MyGameRow.tsx": { GameThumb: "small" },
+  "src/components/mine/MyRecord.tsx": { GameThumb: "small" },
+  "src/components/mine/OpenGamesBoard.tsx": { GameThumb: "small" },
+  "src/components/players/ItsutsuRecord.tsx": { GameThumb: "small" },
+  "src/components/players/KeptGames.tsx": { GameThumb: "small" },
+  "src/components/players/LegacySource.tsx": { GameThumb: "small" },
+  // The XP ledger, and the XP history tab on a player's page, which draws its rows through it.
+  "src/components/xp/AwardAbout.tsx": { GameThumb: "small" },
+  // A game page's "Also in this family": the family's icon heads the panel, its siblings are rows.
+  "src/components/games/GameFamily.tsx": { GameThumb: "small", FamilyMark: "regular" },
+
+  // Cards: /games, a family's page, the practice browser.
+  "src/app/games/[slug]/family/page.tsx": { GameThumb: "regular", FamilyMark: "regular" },
+  "src/components/games/GameCatalogue.tsx": { GameThumb: "regular", FamilyMark: "regular" },
+  "src/components/games/GameCards.tsx": { GameThumb: "regular" },
+  "src/components/game/GameBrowser.tsx": { GameThumb: "regular" },
+
+  // The set-up page's tiles and chips.
+  "src/components/live/GamePicker.tsx": { GameThumb: "regular", FamilyMark: "regular" },
+  "src/components/live/BoardPicker.tsx": { BoardSizeMark: "regular" },
+  "src/components/live/OpeningPicker.tsx": { OpeningMark: "regular" },
+  "src/components/live/OpponentChoice.tsx": { SeatMark: "regular" },
+  "src/components/live/RatedPicker.tsx": { MovesIcon: "regular", LevelIcon: "regular" },
+
+  // The doorstep.
+  "src/components/live/DoorstepPictures.tsx": { BoardSizeMark: "large", OpeningMark: "large" },
+};
+
+/**
+ * Pictures drawn at a size other than their file's, each identified by the
+ * words of its own line, with the size it takes and why. Empty today: every
+ * file draws each kind of picture at one size.
+ */
+const SIZE_EXCEPTIONS: Record<string, { line: string; size: PictureSize; why: string }[]> = {};
+
+/** Every picture drawn anywhere, with the component, its opening tag and the words of its line. */
+function pictureTags(): { path: string; name: (typeof PICTURES)[number]; tag: string; line: string }[] {
+  return FILES.flatMap((file) =>
+    PICTURES.flatMap((name) =>
+      [...file.source.matchAll(new RegExp(`<${name}\\b[^>]*>`, "g"))].map((match) => ({
+        path: file.path,
+        name,
+        tag: match[0],
+        line: lineAt(file.raw, match.index),
+      })),
+    ),
+  );
+}
+
+describe("three picture sizes: small at half of regular, and large at twice it", () => {
+  it("draws every picture at one of the three sizes and no other", () => {
     for (const name of PICTURES) expect(tagsOf(name).length, `<${name}> is still drawn somewhere`).toBeGreaterThan(0);
     expect(tagsOf("FamilyMark").length, "every page that shows a family is still found").toBeGreaterThanOrEqual(4);
-    const loose = PICTURES.flatMap(tagsOf)
-      .filter(({ tag }) => !/\bsize="(regular|large)"/.test(tag) || /\bpx=|\bsize-\d/.test(tag))
+    const loose = PICTURES.flatMap((name) => tagsOf(name))
+      .filter(({ tag }) => !/\bsize="(small|regular|large)"/.test(tag) || /\bpx=|\bsize-\d/.test(tag))
       .map(({ path, tag }) => `${path}: ${tag}`);
-    expect(loose, 'pass size="regular" or size="large", and no px or size- class of its own').toEqual([]);
+    expect(loose, 'pass size="small", "regular" or "large", and no px or size- class of its own').toEqual([]);
   });
 
-  it("keeps the two in one place: regular is the board tile, large is written as twice it", () => {
-    expect(Object.keys(PICTURE_PX).sort()).toEqual(["large", "regular"]);
+  it("keeps the three in one place, small and large written from regular", () => {
+    expect(Object.keys(PICTURE_PX).sort()).toEqual(["large", "regular", "small"]);
     expect(PICTURE_PX.regular, "the set-up page's board tile, the size John chose").toBe(70);
+    expect(PICTURE_PX.small, "exactly half, for a table or a row").toBe(PICTURE_PX.regular / 2);
     expect(PICTURE_PX.large, "exactly double, for symmetry").toBe(PICTURE_PX.regular * 2);
     const constants = code(readFileSync("src/components/games/games.constants.ts", "utf8"));
-    expect(constants, "large derived from regular, not a second number").toMatch(/large:\s*REGULAR_PICTURE_PX\s*\*\s*2\b/);
+    expect(constants, "small derived from regular, not a number of its own").toMatch(/small:\s*REGULAR_PICTURE_PX\s*\/\s*2\b/);
+    expect(constants, "large derived from regular, not a number of its own").toMatch(/large:\s*REGULAR_PICTURE_PX\s*\*\s*2\b/);
+  });
+
+  it("draws each surface at its size: small in tables and lists, regular on tiles and cards, large on the doorstep", () => {
+    const wrong = pictureTags().flatMap((found) => {
+      const excused = (SIZE_EXCEPTIONS[found.path] ?? []).find((entry) => found.line.includes(entry.line));
+      const wanted = excused?.size ?? SURFACE_SIZES[found.path]?.[found.name];
+      if (wanted === undefined) {
+        return [`${found.path}: <${found.name}> is drawn on a surface nobody has classified — name it in SURFACE_SIZES`];
+      }
+      return found.tag.includes(`size="${wanted}"`) ? [] : [`${found.path}: ${found.tag.trim()} should be size="${wanted}"`];
+    });
+    expect(wrong).toEqual([]);
+  });
+
+  it("classifies no surface that no longer draws that picture, and excuses no line that is gone", () => {
+    const found = pictureTags();
+    const drawn = new Set(found.map((one) => `${one.path} ${one.name}`));
+    const staleSurfaces = Object.entries(SURFACE_SIZES).flatMap(([path, sizes]) =>
+      Object.keys(sizes)
+        .filter((name) => !drawn.has(`${path} ${name}`))
+        .map((name) => `${path}: ${name}`),
+    );
+    const staleExceptions = Object.entries(SIZE_EXCEPTIONS).flatMap(([path, entries]) =>
+      entries
+        .filter((entry) => !found.some((one) => one.path === path && one.line.includes(entry.line)))
+        .map((entry) => `${path}: ${entry.line}`),
+    );
+    expect([...staleSurfaces, ...staleExceptions], "a classification left behind is a rule about nothing").toEqual([]);
   });
 
   it("sizes every picture component from that one place, and by no class of its own", () => {

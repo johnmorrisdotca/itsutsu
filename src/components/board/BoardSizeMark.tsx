@@ -41,7 +41,7 @@ import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
  * one size and another, and density is what is drawn behind the number. The
  * frame's border is the last line on the right and at the bottom.
  *
- * `side` is the board; `size` is the picture, one of the site's two — regular
+ * `side` is the board; `size` is the picture, one of the site's three — regular
  * in the set-up block, large on the doorstep, twice it. The block's 70px is the
  * size John chose for every picture on the site.
  */

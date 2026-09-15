@@ -34,6 +34,8 @@ import { removeGames } from "./tidy";
  */
 const REGULAR_PX = 70;
 const LARGE_PX = REGULAR_PX * 2;
+/** And for a table, a ledger or a row of a list — John: "Tables keep small pictures". */
+const SMALL_PX = REGULAR_PX / 2;
 
 /** Scrolled to, because the boards load lazily, and then asked whether the browser drew it. */
 async function drawn(picture: Locator): Promise<void> {
@@ -223,6 +225,7 @@ test.describe("a player's page", () => {
       const picture = byGame.locator(`[data-testid="game-thumb"][data-variant="${variant}"]`);
       await expect(picture, `the By game row for ${variant} draws its board`).toHaveCount(1);
       await drawn(picture);
+      expect(await sideOf(picture), `the By game row for ${variant} keeps a small picture`).toBe(SMALL_PX);
     }
 
     const recent = page.getByTestId("player-recent-game");
@@ -232,6 +235,7 @@ test.describe("a player's page", () => {
       const picture = recent.nth(index).getByTestId("game-thumb");
       await expect(picture).toHaveCount(1);
       await drawn(picture);
+      expect(await sideOf(picture), "a Recent games row keeps a small picture").toBe(SMALL_PX);
     }
   });
 });

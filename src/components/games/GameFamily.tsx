@@ -58,7 +58,7 @@ export function GameFamily({ variant }: { variant: RuleVariant }) {
         {siblings.games.map((game) => (
           <li key={game} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md px-2 py-1`}>
             <span className="flex min-w-0 items-center gap-2">
-              <GameThumb variant={game} size="regular" />
+              <GameThumb variant={game} size="small" />
               <GameName variant={game} kanji stretched />
             </span>
             <CardArrow className="size-6" />

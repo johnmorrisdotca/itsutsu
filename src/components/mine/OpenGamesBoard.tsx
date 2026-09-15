@@ -146,7 +146,7 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
       <td className="py-1.5 pr-3">
         <span className="flex items-center gap-2">
           {/* Which game the seat is in, at a glance — the same board /play shows. */}
-          <GameThumb variant={game.variant} size="regular" />
+          <GameThumb variant={game.variant} size="small" />
           <span className="flex flex-col">
             <GameName variant={game.variant} raised />
             <Link href={rulesPath(game.variant)} className="text-xs text-muted underline underline-offset-4" data-testid="open-game-rules">

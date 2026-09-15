@@ -203,7 +203,7 @@ export const MARK_STONE_COLOUR: Record<Stone, string> = {
  * The picture on an opponent's tile, which is a stone: white with an initial
  * for a person, black with its own script for a program, and an empty dashed
  * ring for the seat nobody has taken yet. The side is `SeatMark`'s, one of the
- * two picture sizes; the initial is set large enough to read on a stone that big.
+ * picture sizes; the initial is set large enough to read on a regular stone.
  */
 const SEAT_MARK =
   "inline-flex shrink-0 items-center justify-center rounded-full text-2xl font-semibold leading-none";

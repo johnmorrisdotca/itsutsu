@@ -40,10 +40,8 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
           <p className="text-sm text-muted">{guide.summary}</p>
           <p className="flex flex-wrap gap-2 pt-1 text-xs">
             {/*
-              Each game the guide is about, with its board at the regular size,
-              as every list naming games draws it. A tag rather than a pill: a
-              round pill was the shape of a word-sized picture, and around a
-              seventy-pixel board it would be a circle with a name hanging off it.
+              Each game the guide is about, with its board at the small size
+              every row naming games draws it at, beside its name in a tag.
             */}
             {guide.variants.map((variant) => (
               <Link
@@ -51,7 +49,7 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
                 href={rulesPath(variant)}
                 className="inline-flex items-center gap-2 rounded-lg border border-rule p-1 pr-3 underline-offset-2 hover:underline"
               >
-                <GameThumb variant={variant} size="regular" />
+                <GameThumb variant={variant} size="small" />
                 {RULE_VARIANT_DISPLAY[variant].label}
               </Link>
             ))}

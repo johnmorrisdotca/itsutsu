@@ -82,7 +82,7 @@ export type OpeningMarkProps = {
   opening: OpeningRule;
   /** The chosen board's side, so the picture is drawn at the density that will be played on. */
   side: number;
-  /** One of the site's two picture sizes. */
+  /** One of the site's three picture sizes. */
   size: PictureSize;
 };
 
@@ -91,7 +91,7 @@ export type SeatMarkKind = "person" | "computer" | "anyone";
 
 export type SeatMarkProps = {
   kind: SeatMarkKind;
-  /** One of the site's two picture sizes. */
+  /** One of the site's three picture sizes. */
   size: PictureSize;
   /** The initial or script set on the stone; nothing on the empty seat. */
   children?: ReactNode;

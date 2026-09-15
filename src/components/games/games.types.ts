@@ -1,8 +1,8 @@
 import type { FamilyStats, GameStats } from "@/lib/catalogue/catalogue.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
-/** One of the site's two picture sizes: "regular", or "large" at twice it. See `PICTURE_PX`. */
-export type PictureSize = "regular" | "large";
+/** One of the site's three picture sizes: "small" at half of "regular", or "large" at twice it. See `PICTURE_PX`. */
+export type PictureSize = "small" | "regular" | "large";
 
 /** What a game is won by: a line of this many, or turning discs. Derived from its spec. */
 export type GameCardKind = "3" | "4" | "5" | "6" | "flips";

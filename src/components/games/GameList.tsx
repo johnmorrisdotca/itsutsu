@@ -63,7 +63,7 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
                       Its board at a table's size, beside the name that leads to
                       the game like every other name on the site.
                     */}
-                    <GameThumb variant={variant} size="regular" />
+                    <GameThumb variant={variant} size="small" />
                     <GameName variant={variant} kanji />
                   </dt>
                   <dd className="flex flex-col gap-0.5 text-sm">
