@@ -9,6 +9,7 @@ import { AdminEmbeds } from "@/components/auth/AdminEmbeds";
 import { AdminInvites } from "@/components/auth/AdminInvites";
 import { AdminBots } from "@/components/auth/AdminBots";
 import { AdminMembers } from "@/components/auth/AdminMembers";
+import { AdminOperatorLog } from "@/components/auth/AdminOperatorLog";
 import { AdminSite } from "@/components/auth/AdminSite";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -51,6 +52,13 @@ const TABS: Tab[] = [
   { key: "members", label: "The members", kanji: "会員" },
   { key: "bots", label: "The bots", kanji: "機械" },
   { key: "work", label: "The work", kanji: "仕事" },
+  /*
+   * What the operator has done to members' accounts, kept: shut, opened again,
+   * four words set, a pick opened. Last, so `/admin` still lands where it did,
+   * and its own tab rather than a section of Members, because it is a record
+   * of acts rather than a list of people.
+   */
+  { key: "log", label: "The log", kanji: "記録" },
 ];
 
 /**
@@ -94,6 +102,12 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       {open === "members" ? (
         <div className={PANEL_CLASS} data-testid="admin-people">
           <AdminMembers />
+        </div>
+      ) : null}
+
+      {open === "log" ? (
+        <div className={PANEL_CLASS} data-testid="admin-log">
+          <AdminOperatorLog />
         </div>
       ) : null}
 

@@ -35,7 +35,15 @@ vi.mock("@/lib/api/rateLimit", () => ({ overLimit: () => null, RATE_LIMITS: { ph
 vi.mock("@/lib/auth/requireAdmin", () => ({ currentAdmin: () => currentAdmin() }));
 vi.mock("@/lib/auth/operatorLog", () => ({
   logOperatorAction: (...args: Parameters<typeof logOperatorAction>) => logOperatorAction(...args),
+  // The real shape of the rule: what the session says, null for what it does not.
+  operatorActor: (session: { memberId?: string; email?: string } | null) => ({
+    memberId: session?.memberId ?? null,
+    email: session?.email ?? null,
+  }),
 }));
+
+/** The operator this file signs in as, as the operator log records them. */
+const BY = { memberId: null, email: "op@example.com" };
 vi.mock("@/lib/phrase/operatorPhrase", () => ({
   setPhraseAsOperator: (...args: Parameters<typeof setPhraseAsOperator>) => setPhraseAsOperator(...args),
 }));
@@ -124,7 +132,7 @@ describe("the ticket belongs to the member in the path", () => {
 
   it("sends the store the words the ticket held, never anything off the body", async () => {
     await put({ ...GOOD, words: ["hack", "hack", "hack", "hack"] }, "hanako");
-    expect(setPhraseAsOperator).toHaveBeenCalledWith("hanako", [...FOUR], { replacing: false });
+    expect(setPhraseAsOperator).toHaveBeenCalledWith("hanako", [...FOUR], { replacing: false, by: BY });
   });
 });
 
@@ -172,7 +180,7 @@ describe("replacing words somebody already has", () => {
 
   it("passes the confirm on when the operator has given it", async () => {
     await put({ ...GOOD, replacing: true });
-    expect(setPhraseAsOperator).toHaveBeenCalledWith("hanako", [...FOUR], { replacing: true });
+    expect(setPhraseAsOperator).toHaveBeenCalledWith("hanako", [...FOUR], { replacing: true, by: BY });
   });
 
   it("does not accept replacing: false as an answer to the question", async () => {

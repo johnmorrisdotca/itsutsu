@@ -21,6 +21,8 @@ import "server-only";
  * outcome, so "it worked" over a `create` cannot pass.
  */
 import { prisma } from "@/lib/prisma";
+import { operatorActionWrite } from "@/lib/auth/operatorLog";
+import type { OperatorActionInput } from "@/lib/auth/operatorLog.types";
 import { awardWordsSet } from "@/lib/xp/xpProfile";
 
 import { CREDENTIALS, mayRemove } from "./credentials";
@@ -109,6 +111,12 @@ async function claimantRow(who: PhraseClaimant) {
 export async function setPhrase(
   memberId: string,
   words: readonly string[],
+  /**
+   * The operator's act, when an operator is the one setting them: the phrase and
+   * its `OperatorAction` row are then one transaction. A member setting their own
+   * words passes nothing, and nothing about their path changes.
+   */
+  record?: OperatorActionInput,
 ): Promise<SetPhraseOutcome> {
   const canonical = canonicalPhrase([...words]);
   // Refused before anything is written, and before anything is read: words that
@@ -118,10 +126,13 @@ export async function setPhrase(
   const row = await prisma.member.findUnique({ where: { id: memberId }, select: { id: true } });
   if (row === null) return { ok: false, reason: "no-member" };
 
-  await prisma.member.update({
+  const phraseHash = await hashPhrase(canonical);
+  const write = prisma.member.update({
     where: { id: memberId },
-    data: { phraseHash: await hashPhrase(canonical), phraseSetAt: new Date() },
+    data: { phraseHash, phraseSetAt: new Date() },
   });
+  if (record === undefined) await write;
+  else await prisma.$transaction([write, operatorActionWrite(record)]);
   /*
    * The four words, once ever — and here rather than in the two routes because
    * `claimOrVerifyPhraseFor` also lands on this function, when somebody with no

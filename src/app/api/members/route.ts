@@ -4,6 +4,7 @@ import { z } from "zod";
 import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { operatorActor } from "@/lib/auth/operatorLog";
 import { renameMember } from "@/lib/auth/members";
 import { countMembers, listMembers, memberSummaryFor, setBanned } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
@@ -119,7 +120,8 @@ export async function PATCH(request: Request) {
       if (parsed.data.banned && theirOwn) {
         return badRequest("You cannot shut your own account. An operator is named in the deployment, not in this list.");
       }
-      const member = await setBanned(parsed.data.id, parsed.data.banned, parsed.data.note ?? "");
+      // Kept in the operator log, in the same transaction as the ban itself: see `setBanned`.
+      const member = await setBanned(parsed.data.id, parsed.data.banned, parsed.data.note ?? "", operatorActor(me));
       if (member === null) return notFound("No such member.");
       return NextResponse.json(member, { headers: NO_STORE });
     }

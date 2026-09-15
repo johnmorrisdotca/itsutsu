@@ -30,11 +30,19 @@ const readTicket = vi.fn<(token: string, member: string) => Promise<{ member: st
   member,
 }));
 const logOperatorAction = vi.fn<(who: string | null | undefined, what: string) => void>(() => undefined);
+type Recorded = { actor: { memberId: string | null; email: string | null }; action: string; subjectId: string; detail?: string };
+const recordOperatorAction = vi.fn<(input: Recorded) => Promise<void>>(async () => undefined);
 
 vi.mock("@/lib/api/rateLimit", () => ({ overLimit: () => null, RATE_LIMITS: { phraseDraw: { windowMs: 1, maxRequests: 1 } } }));
 vi.mock("@/lib/auth/requireAdmin", () => ({ currentAdmin: () => currentAdmin() }));
 vi.mock("@/lib/auth/operatorLog", () => ({
   logOperatorAction: (...args: Parameters<typeof logOperatorAction>) => logOperatorAction(...args),
+  recordOperatorAction: (input: Recorded) => recordOperatorAction(input),
+  // The real shape of the rule: what the session says, null for what it does not.
+  operatorActor: (session: { memberId?: string; email?: string } | null) => ({
+    memberId: session?.memberId ?? null,
+    email: session?.email ?? null,
+  }),
 }));
 vi.mock("@/lib/phrase/operatorPhrase", () => ({ phraseTarget: (id: string) => phraseTarget(id) }));
 vi.mock("@/lib/phrase/pickTicket", () => ({
@@ -73,6 +81,7 @@ beforeEach(() => {
   freshTicket.mockClear();
   readTicket.mockReset().mockImplementation(async (token, member) => ({ member }));
   logOperatorAction.mockClear();
+  recordOperatorAction.mockClear();
 });
 
 describe("only the operator may draw for somebody else", () => {
@@ -157,10 +166,22 @@ describe("what is recorded", () => {
     expect(what).not.toContain("acid");
   });
 
+  it("keeps the opening in the operator log too, once, as the act and the member and never a word", async () => {
+    await post({});
+    expect(recordOperatorAction).toHaveBeenCalledTimes(1);
+    expect(recordOperatorAction).toHaveBeenCalledWith({
+      actor: { memberId: null, email: "op@example.com" },
+      action: "wordsPickOpened",
+      subjectId: "hanako",
+    });
+    expect(JSON.stringify(recordOperatorAction.mock.calls[0][0])).not.toContain("acid");
+  });
+
   it("says nothing more as the pick goes on", async () => {
     await post({ ticket: "a-signed-ticket" });
     await post({ ticket: "a-signed-ticket", keep: 0 });
     expect(logOperatorAction).not.toHaveBeenCalled();
+    expect(recordOperatorAction).not.toHaveBeenCalled();
   });
 });
 

@@ -82,3 +82,24 @@ export const ADMIN_BOTS_COPY = {
   keptRecordsNote:
     "The kept records — the players whose history from elsewhere is kept here — stay under Members. They are people, not programs.",
 } as const;
+
+export const ADMIN_LOG_COPY = {
+  heading: { label: "The operator log", kanji: "記録" },
+  /*
+   * What the tab keeps and what it never does, said where the operator reads it:
+   * the four words are a password, and a record of setting them must not become
+   * a way to learn them.
+   */
+  lead:
+    "What has been done to members' accounts from this page, newest first: shutting one, opening it again, setting somebody's four words and starting a pick. It says who did it and when — never the words themselves.",
+  when: "When",
+  who: "Who",
+  what: "What",
+  member: "Member",
+  detail: "Detail",
+  empty: "Nothing has been done to anybody's account yet.",
+  /** An operator whose session named neither an address nor a member row. */
+  unnamedActor: "an operator the session did not name",
+  /** A member whose row has gone since: the act stands, and says whose id it was. */
+  memberGone: (id: string) => `a member no longer here (${id})`,
+} as const;

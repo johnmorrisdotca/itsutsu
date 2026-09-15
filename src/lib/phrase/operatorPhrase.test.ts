@@ -49,6 +49,9 @@ const { phraseTarget, setPhraseAsOperator } = await import("./operatorPhrase");
 
 const FOUR = ["acid", "mango", "yo-yo", "zebra"] as const;
 
+/** The operator setting the words, as the operator log records them. */
+const OPERATOR = { memberId: "op1dxxxxxxxxxxxx", email: "operator@example.test" };
+
 beforeEach(() => {
   rows = [];
   setPhrase.mockClear().mockResolvedValue({ ok: true });
@@ -107,14 +110,14 @@ describe("a row that is nobody's account", () => {
   for (const reason of ["kept-record", "seed", "computer"]) {
     it(`refuses ${reason} and writes nothing`, async () => {
       rows = [member({ id: "chibi", unclaimableBecause: reason })];
-      const outcome = await setPhraseAsOperator("chibi", FOUR, { replacing: true });
+      const outcome = await setPhraseAsOperator("chibi", FOUR, { replacing: true, by: OPERATOR });
       expect(outcome).toEqual({ ok: false, reason: "not-claimable", target: expect.anything() });
       expect(setPhrase, "the store was reached for a row nobody signs in to").not.toHaveBeenCalled();
     });
   }
 
   it("says no-member for a row that is not there at all, which is a different answer", async () => {
-    const outcome = await setPhraseAsOperator("ghost", FOUR, { replacing: true });
+    const outcome = await setPhraseAsOperator("ghost", FOUR, { replacing: true, by: OPERATOR });
     expect(outcome).toEqual({ ok: false, reason: "no-member" });
     expect(setPhrase).not.toHaveBeenCalled();
   });
@@ -125,7 +128,7 @@ describe("replacing four words somebody is already using", () => {
     const when = new Date("2026-03-03T10:00:00.000Z");
     rows = [member({ id: "hanako", phraseHash: "scrypt$whatever", phraseSetAt: when })];
 
-    const outcome = await setPhraseAsOperator("hanako", FOUR, { replacing: false });
+    const outcome = await setPhraseAsOperator("hanako", FOUR, { replacing: false, by: OPERATOR });
 
     expect(outcome.ok).toBe(false);
     if (outcome.ok) return;
@@ -137,10 +140,16 @@ describe("replacing four words somebody is already using", () => {
   it("writes once the operator has said to, and says that it replaced them", async () => {
     rows = [member({ id: "hanako", phraseHash: "scrypt$whatever", phraseSetAt: new Date() })];
 
-    const outcome = await setPhraseAsOperator("hanako", FOUR, { replacing: true });
+    const outcome = await setPhraseAsOperator("hanako", FOUR, { replacing: true, by: OPERATOR });
 
     expect(outcome).toEqual({ ok: true, replaced: true, target: expect.anything() });
-    expect(setPhrase).toHaveBeenCalledWith("hanako", FOUR);
+    expect(setPhrase).toHaveBeenCalledWith(
+      "hanako",
+      FOUR,
+      expect.objectContaining({ actor: OPERATOR, action: "wordsSet", subjectId: "hanako" }),
+    );
+    // The operator log's row says whether words were replaced and when — never which words.
+    expect(JSON.stringify((setPhrase.mock.calls.at(-1) as unknown[] | undefined)?.[2])).not.toMatch(/acid|mango|yo-yo|zebra/);
   });
 
   /*
@@ -150,12 +159,18 @@ describe("replacing four words somebody is already using", () => {
    */
   it("asks nothing on an account with no words, whatever the flag says", async () => {
     rows = [member({ id: "hanako" })];
-    expect(await setPhraseAsOperator("hanako", FOUR, { replacing: false })).toEqual({
+    expect(await setPhraseAsOperator("hanako", FOUR, { replacing: false, by: OPERATOR })).toEqual({
       ok: true,
       replaced: false,
       target: expect.anything(),
     });
-    expect(setPhrase).toHaveBeenCalledWith("hanako", FOUR);
+    expect(setPhrase).toHaveBeenCalledWith(
+      "hanako",
+      FOUR,
+      expect.objectContaining({ actor: OPERATOR, action: "wordsSet", subjectId: "hanako" }),
+    );
+    // The operator log's row says whether words were replaced and when — never which words.
+    expect(JSON.stringify((setPhrase.mock.calls.at(-1) as unknown[] | undefined)?.[2])).not.toMatch(/acid|mango|yo-yo|zebra/);
   });
 });
 
@@ -163,7 +178,7 @@ describe("what the store says still decides", () => {
   it("passes on a refusal about the words themselves rather than reporting success", async () => {
     rows = [member({ id: "hanako" })];
     setPhrase.mockResolvedValue({ ok: false, reason: "not-a-phrase" });
-    const outcome = await setPhraseAsOperator("hanako", ["acid"], { replacing: false });
+    const outcome = await setPhraseAsOperator("hanako", ["acid"], { replacing: false, by: OPERATOR });
     expect(outcome.ok).toBe(false);
     expect(outcome.ok ? null : outcome.reason).toBe("not-a-phrase");
   });
@@ -176,7 +191,7 @@ describe("what the store says still decides", () => {
   it("keeps no-member as no-member when the row goes between the read and the write", async () => {
     rows = [member({ id: "hanako" })];
     setPhrase.mockResolvedValue({ ok: false, reason: "no-member" });
-    const outcome = await setPhraseAsOperator("hanako", FOUR, { replacing: false });
+    const outcome = await setPhraseAsOperator("hanako", FOUR, { replacing: false, by: OPERATOR });
     expect(outcome).toEqual({ ok: false, reason: "no-member" });
   });
 });

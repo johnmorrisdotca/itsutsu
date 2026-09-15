@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
-import { logOperatorAction } from "@/lib/auth/operatorLog";
+import { logOperatorAction, operatorActor } from "@/lib/auth/operatorLog";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { setPhraseAsOperator } from "@/lib/phrase/operatorPhrase";
 import { completedPhrase, readTicket } from "@/lib/phrase/pickTicket";
@@ -110,7 +110,8 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/admin/member
     const words = completedPhrase(state);
     if (words === null) return unprocessable("That phrase is not finished: four words are needed.");
 
-    const outcome = await setPhraseAsOperator(id, words, { replacing: parsed.data.replacing === true });
+    // The words and their row in the operator log are one transaction: see `setPhraseAsOperator`.
+    const outcome = await setPhraseAsOperator(id, words, { replacing: parsed.data.replacing === true, by: operatorActor(me) });
     if (!outcome.ok) {
       if (outcome.reason === "no-member") return notFound("No such member.");
       if (outcome.reason === "not-claimable") {

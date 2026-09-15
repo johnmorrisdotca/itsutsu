@@ -3,7 +3,8 @@ import { z } from "zod";
 
 import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
-import { logOperatorAction } from "@/lib/auth/operatorLog";
+import { logOperatorAction, operatorActor, recordOperatorAction } from "@/lib/auth/operatorLog";
+import { OPERATOR_ACTIONS } from "@/lib/auth/operatorLog.constants";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { phraseTarget } from "@/lib/phrase/operatorPhrase";
 import {
@@ -116,6 +117,18 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
     // somebody is the act worth recording; the rest of it is one act.
     if (parsed.data.ticket === undefined) {
       logOperatorAction(me.email, `opened a four-word pick for member ${target.id}`);
+      /*
+       * KEPT, AND ON ITS OWN. Opening a pick writes nothing to the member — the
+       * words so far live in the signed ticket, not in any row — so there is no
+       * change here for the log's row to share a transaction with. A pick opened
+       * and then abandoned is still an operator starting to make somebody's
+       * credential, which is the act worth a record.
+       */
+      await recordOperatorAction({
+        actor: operatorActor(me),
+        action: OPERATOR_ACTIONS.wordsPickOpened,
+        subjectId: target.id,
+      });
     }
 
     /*
