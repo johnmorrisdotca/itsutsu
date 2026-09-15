@@ -39,6 +39,15 @@ export function Inside({ href, children }: { href: string; children: ReactNode }
   );
 }
 
+/** An address to write to, opened in the reader's own mail program. The address is the link's text, so it can be copied. */
+export function MailTo({ address }: { address: string }) {
+  return (
+    <a href={`mailto:${address}`} className={LINK}>
+      {address}
+    </a>
+  );
+}
+
 /** An outside site, opened in its own tab. */
 export function Out({ href, children }: { href: string; children: ReactNode }) {
   return (

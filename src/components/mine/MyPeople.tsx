@@ -8,6 +8,7 @@ import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { RowActions } from "@/components/ui/Controls";
 import { fetchBuddies } from "@/lib/social/buddies";
 import { fetchIgnored } from "@/lib/social/ignores";
+import { mailRefusalFor } from "@/lib/mail/mailSwitch";
 import { shownName } from "@/lib/rating/shownName";
 
 /**
@@ -87,7 +88,7 @@ export async function MyPeople({ memberId }: { memberId: string }) {
       ) : null}
 
       <div className="border-t border-rule pt-4">
-        <InviteFriends />
+        <InviteFriends canEmail={mailRefusalFor(process.env) === null} />
       </div>
     </div>
   );

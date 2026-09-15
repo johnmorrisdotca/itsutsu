@@ -1,14 +1,19 @@
 import "server-only";
 
 /**
- * Email, as a placeholder.
+ * Game notices by email, as a placeholder.
  *
- * Nothing is sent. There is no address list, no provider and no outbound
- * call: each notification is a named event with the data a template would
- * need, and `sendEmail` records that it would have gone. Wiring a provider is
- * a deliberate later decision — set `EMAIL_PROVIDER` and implement
- * `deliver` — and until then this is the whole seam, so the call sites are in
- * place and the day it is switched on nothing else has to change.
+ * Nothing is sent. There is no address list and no outbound call: each
+ * notification is a named event with the data a template would need, and
+ * `sendEmail` records that it would have gone.
+ *
+ * THE SITE CAN SEND EMAIL NOW, and these still do not, on purpose. The real
+ * sender is `lib/mail/sendMail.ts`, and it sends only on a person's own
+ * action under a daily and monthly cap kept inside Resend's free plan. A
+ * your-turn notice fires on every move somebody ELSE makes, so wiring these to
+ * it would spend the site's day in an afternoon and refuse the invitations a
+ * person actually clicked for. Connecting them is a decision about volume and
+ * cost for John, not a line to add here. See docs/email.md.
  */
 
 /*
