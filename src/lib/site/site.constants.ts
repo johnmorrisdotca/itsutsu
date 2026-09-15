@@ -87,6 +87,19 @@ export const SITE_SETTING_SPECS = {
 /** Every declared key, in registry order — which is the order the panel shows. */
 export const SITE_SETTING_KEYS = Object.keys(SITE_SETTING_SPECS) as readonly SiteSettingKey[];
 
+/**
+ * Each setting's name on Sumilabu's settings store, which is where the values
+ * live. A list of its own rather than the registry's names, because Sumilabu's
+ * keys are `[a-z0-9_.-]` — what every client can spell without escaping — and
+ * `joinNotice` is not one. Written out in full, `registration` included, so
+ * nothing has to know which names happen to coincide. `site.test.ts` holds
+ * every one to Sumilabu's rule.
+ */
+export const SITE_SETTING_REMOTE_KEYS = {
+  registration: "registration",
+  joinNotice: "join_notice",
+} as const satisfies Record<SiteSettingKey, string>;
+
 /** How the site behaves when nothing at all has been written: each setting at its fallback. */
 export const DEFAULT_SITE_SETTINGS = Object.fromEntries(
   SITE_SETTING_KEYS.map((key) => [key, SITE_SETTING_SPECS[key].fallback]),
