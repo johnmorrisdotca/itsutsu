@@ -49,7 +49,8 @@ const codes: string[] = [];
  */
 const test = base.extend<{ request: APIRequestContext }>({
   storageState: { cookies: [], origins: [] },
-  request: async ({ page, baseURL }, use) => {
+  // `provide` rather than Playwright's usual `use`: the React hooks lint rule reads any call named `use` as a hook.
+  request: async ({ page, baseURL }, provide) => {
     const operator = await playwrightRequest.newContext({ baseURL, storageState: ADMIN_STATE });
     const minted = await operator.post("/api/invites", { data: { note: "next-game" } });
     expect(minted.status(), await minted.text()).toBe(201);
@@ -59,7 +60,7 @@ const test = base.extend<{ request: APIRequestContext }>({
     const own = page.context().request;
     const signedIn = await own.post("/api/session", { data: { kind: "invite", code } });
     expect(signedIn.ok(), await signedIn.text()).toBe(true);
-    await use(own);
+    await provide(own);
   },
 });
 
