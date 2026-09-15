@@ -3,162 +3,29 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 
 import { STONES } from "@/lib/gomoku/gomoku.constants";
-import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { Cursor } from "@/lib/api/paging.types";
 import { prisma } from "@/lib/prisma";
 import { currentNamesFor } from "./currentNames";
 import { toSummary } from "./gameHistory";
 import { DEBT_ONLY, SEATED_ONLY, myFinishedPage, myFinishedTotal, seatedLive } from "./myFinished";
 import { MY_FINISHED_PAGE } from "./myFinished.sort";
+import { MY_GAME_GROUPS, STALE_AFTER_DAYS } from "./myGames.constants";
+import type { MyGameGroup, MyGames, MyQueue } from "./myGames.types";
 import { QUEUE_SELECT, positionOf, replaysFor } from "./myGamesRows";
 import { waitingFirst } from "./nextGame";
 import { offerIsMine, offerState, offeredSeat } from "./offers";
-import { OFFER_STATES, type OfferState } from "./offers.types";
+import { OFFER_STATES } from "./offers.types";
 import { KEEP_FINISHED_DEFAULT, myListWindow, staysInMyList } from "./retention";
-import type { GameSummary } from "./gameHistory.types";
 
-/** A game nobody has touched for this long is flagged, so it can be dealt with. */
-export const STALE_AFTER_DAYS = 14;
-
-/**
- * The queue, in the order it is drawn.
- *
- * OFFERS TO YOU COME FIRST, ahead even of the games waiting on your move.
- * They are the same kind of debt — something is waiting on you — and they are
- * the more urgent one: a game waiting on a move is a game two people are
- * playing, while an offer is somebody who cannot start at all until you
- * answer. There are never many, so putting them at the top costs the rest of
- * the page nothing.
- *
- * YOUR OWN OFFERS sit with the games you are waiting on, because that is what
- * they are — after "their move", before the boards nobody has started.
+/*
+ * The queue's constants, its types and the two display caps live beside this
+ * file now — `myGames.constants.ts`, `myGames.types.ts` and `shownGroup.ts` —
+ * split out at the file-size gate so this file is the read and nothing else.
+ * They are re-exported here, so every existing import keeps its path.
  */
-export const MY_GAME_GROUPS = [
-  "offered",
-  "yourMove",
-  "theirMove",
-  "offerSent",
-  "unstarted",
-  "hotSeat",
-  "finished",
-] as const;
-export type MyGameGroup = (typeof MY_GAME_GROUPS)[number];
-
-export type MyGame = {
-  game: GameSummary;
-  /**
-   * The colour this browser holds in it — or, on an offer, the colour it WOULD
-   * hold. An offer's seat is not yet anybody's, and the one fact a reader most
-   * wants before answering is which side of the board they are being asked to
-   * take, so the honest thing is to name it and let `offer` below say that it
-   * is not theirs yet.
-   */
-  seat: Stone;
-  group: MyGameGroup;
-  /**
-   * What this offer has become, for the two groups that hold offers, and null
-   * for an ordinary game.
-   *
-   * Carried rather than worked out in the row, because the row would have to
-   * ask the same four columns and could get a different answer — and because
-   * "declined" and "withdrawn" are the two states a reader is told apart by.
-   */
-  offer: OfferState | null;
-  /** Which side of an offer this reader is on. Null for an ordinary game. */
-  offerSide: "to-me" | "from-me" | null;
-  /** Whose turn it is, while the game runs. */
-  toPlay: Stone | null;
-  /** When something last happened, as an ISO string. */
-  since: string;
-  /** Running, but nobody has moved for a fortnight. */
-  stale: boolean;
-};
-
-export type MyGames = Record<MyGameGroup, MyGame[]>;
-
-/**
- * THE WHOLE QUEUE: the seven groups, plus what the one that PAGES could not say
- * about itself.
- *
- * `groups` keeps the shape it has always had — a record of seven arrays — so
- * every reader of it, including `/api/games/mine`, goes on reading arrays. What
- * is new is that `groups.finished` is ONE PAGE rather than the whole group, and a
- * page cannot report the two things the panel above it needs: how many there
- * really are, and whether there is another page.
- *
- * THOSE TWO FACTS TRAVEL BESIDE THE GROUPS RATHER THAN INSIDE THEM, and the
- * reason is worth stating because the tidier-looking arrangement is the broken
- * one. Putting a `{ items, next, total }` envelope in `groups.finished` would
- * make one of the seven a different shape from the other six, and the first
- * casualty is `Object.values(groups).reduce((n, list) => n + list.length, 0)` —
- * which is what the doorstep spec does to every group, and what would then read
- * `undefined` and answer `NaN` with nothing failing.
- *
- * AND `fetchMyGames` RETURNS THIS RATHER THAN THE GROUPS ALONE, with no second
- * door that hands back only the groups. A caller holding just the groups would
- * reach for `groups.finished.length` for the count and get the PAGE's length — a
- * number that is in range, looks right, and means something else. That is the
- * one mistake this shape exists to make impossible.
- */
-export type MyQueue = {
-  /** The seven groups. `finished` holds one page of itself; the rest are complete. */
-  groups: MyGames;
-  /** What the finished group's page cannot say about the group it came from. */
-  finished: {
-    /** How many finished games there are, over exactly the set the page pages. */
-    total: number;
-    /** Where the page ended, or null when it was the last one. */
-    next: Cursor | null;
-  };
-};
-
-/** A bucket capped for display, without losing how big the bucket actually was. */
-export type ShownGroup<T> = {
-  /** The capped slice, taken from the front. */
-  items: T[];
-  /** The bucket's own size, before the cap. */
-  total: number;
-  /** How many the cap left out. Zero means every one of them is shown. */
-  hidden: number;
-};
-
-/**
- * Caps a bucket for display without losing how big the bucket actually was.
- *
- * The lobby caps how many of each group it shows — a "Lately finished" list
- * running to fifty rows is a page nobody reaches the bottom of — but the
- * header above the list has to say how many the bucket actually holds, not
- * how many made it past the cap. Slicing at the call site and counting
- * separately at the display site is exactly how "Lately finished 5" came to
- * sit over a bucket of fourteen: the header read the slice's own length,
- * which is never more than the cap, whatever the bucket held. Bundling the
- * slice and the bucket's true size into one answer is what keeps a header
- * from being able to make that mistake again.
- */
-export function shownGroup<T>(items: readonly T[], cap: number): ShownGroup<T> {
-  const shown = items.slice(0, cap);
-  return { items: shown, total: items.length, hidden: items.length - shown.length };
-}
-
-/**
- * The same bucket, for the ONE group that arrives as a page rather than whole.
- *
- * `shownGroup` above derives the total from the list it was given, which is right
- * for a complete group and would be a LIE for a page: the finished group's list
- * is five rows of however many there are, so its own length is the cap and never
- * the total. The count comes from the database (see `MyQueue.finished`), so it is
- * passed in.
- *
- * Two functions rather than one that takes an optional total, because the
- * difference between them is which fact is being trusted and a caller passing
- * nothing would get a plausible, wrong number with nothing failing. The panel
- * reads both the same way, which is the whole point: `hidden` still means "how
- * many this is not showing", and the header still cannot print the slice's length
- * and call it the total.
- */
-export function pagedGroup<T>(page: readonly T[], total: number): ShownGroup<T> {
-  return { items: [...page], total, hidden: Math.max(0, total - page.length) };
-}
+export { MY_GAME_GROUPS, STALE_AFTER_DAYS } from "./myGames.constants";
+export type { MyGame, MyGameGroup, MyGames, MyQueue, ShownGroup } from "./myGames.types";
+export { pagedGroup, shownGroup } from "./shownGroup";
 
 /**
  * Sorts a browser's seats into the queue the turn-based sites taught: the
