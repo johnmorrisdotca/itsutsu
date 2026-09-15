@@ -42,9 +42,10 @@ import type { GameState, Move, Point, RuleVariant, Stone } from "../gomoku.types
  * runs but how long it runs WITHOUT anybody getting anywhere, and those are
  * different by an order of magnitude:
  *
- *     checkers    longest idle run 4 plies, in games of up to 72
- *     halma       longest idle run 18 plies, in games of up to 389
- *     squareFour  longest run of slides 232, in games of up to 240
+ *     checkers         longest idle run 4 plies, in games of up to 72
+ *     halma            longest idle run 18 plies, in games of up to 389
+ *     squareFour       longest run of slides 232, in games of up to 240
+ *     chineseCheckers  longest idle run 40 plies, in games of up to 233
  *
  * All measured over bot-vs-bot play with this rule lifted, or it would have
  * been measuring its own threshold.
@@ -72,7 +73,17 @@ export const PROGRESS_MEASURES = {
 
 export type ProgressMeasure = (typeof PROGRESS_MEASURES)[keyof typeof PROGRESS_MEASURES];
 
-export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, { plies: number; measure: ProgressMeasure }>> = {
+/**
+ * One game's no-progress rule: how long, measured how, and — for the one game
+ * whose stall is kept in view as a symptom rather than read as a result — that
+ * its stall says the game could not be finished (see `couldNotFinish`).
+ */
+export type NoProgressRule = { plies: number; measure: ProgressMeasure; saysUnfinished?: true };
+
+/** A draw a no-progress rule made: which measure fired, at the count the rule allows. */
+export type StalledDraw = { measure: ProgressMeasure; plies: number };
+
+export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, NoProgressRule>> = {
   [RULE_VARIANTS.checkers]: { plies: 80, measure: PROGRESS_MEASURES.taking },
   /*
    * The international family writes its own count, and it is this one exactly:
@@ -140,20 +151,62 @@ export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, { plies: number; mea
    * would have filed those games as ordinary results and the evidence would
    * be gone; saying that the game could not be finished kept the symptom in
    * view long enough for somebody to ask why.
+   *
+   * RE-MEASURED OVER PLAYERS THAT CAN SEE THE STAR. The 400 here was set while
+   * every grade was playing blind, so it measured a broken player rather than
+   * the game — a real number about the wrong thing, which is harder to catch
+   * than a wrong one. Measured again with `chineseCheckersStall.play.test.ts`
+   * (in memory, the rule lifted): 50 games, every grade against every grade
+   * from both seats, seeds 20260914–20260963, the live 250ms a move. All 50
+   * were won, none unfinished, in 104 to 233 plies. The longest idle run in a
+   * won game was 40 plies (median 7, p95 25), and 400 would have called off
+   * none of them — but 400 is only ten times 40, under the twenty the other
+   * race games carry. 800 carries it. Raised, because the error is not
+   * symmetrical: too generous draws a shuffle later, too tight takes a win.
+   *
+   * IT STILL SAYS "COULD NOT BE FINISHED" (`saysUnfinished`), and after that
+   * measurement the words are a question rather than a finding: all 50 games
+   * were won, so the game can plainly be finished, and its stall is the same
+   * racing draw a stalled Halma is. Which words it should end with is John's
+   * ruling to revisit, not this table's to guess.
    */
-  [RULE_VARIANTS.chineseCheckers]: { plies: 400, measure: PROGRESS_MEASURES.racing },
+  [RULE_VARIANTS.chineseCheckers]: { plies: 800, measure: PROGRESS_MEASURES.racing, saysUnfinished: true },
 };
 
 /**
  * Whether this game ended because nobody could finish it, rather than by any
- * of the ordinary draws.
+ * of the ordinary draws — said now of the one game whose row says so
+ * (`saysUnfinished`), and of no other.
+ *
+ * THE OTHER STALLS NAME THEIR RULE. "Could not be finished" was John's ruling
+ * for Chinese Checkers, chosen so a game nobody seemed able to win stayed in
+ * view as such. Halma, Checkers and Square Four inherited the sentence by
+ * sharing this function, and their stalls are the ordinary kind — so the one
+ * phrase meant to be conspicuous became the usual wording. Chess does not say a
+ * game could not be finished; it says "draw by the fifty-move rule". A stalled
+ * draughts game is a draw by draughts' rule, and says so: see `stalledDrawOf`.
  *
  * Derived, never stored — the same way `drawnByLength` answers its question.
  * A finished game is its settings and its moves, and anything the two of them
  * imply is a question to ask, not a column to keep in step.
  */
 export function couldNotFinish(state: GameState): boolean {
-  return state.status === GAME_STATUS.draw && stalled(state);
+  const rule = NO_PROGRESS_RULES[state.settings.variant as RuleVariant];
+  return state.status === GAME_STATUS.draw && rule?.saysUnfinished === true && stalled(state);
+}
+
+/**
+ * The no-progress rule that drew this game — what it measures and the count it
+ * allows — or null where no such rule drew it, including the one game whose
+ * stall says it could not be finished instead.
+ *
+ * Read from the table, like everything here: the engine never asks a game's name.
+ */
+export function stalledDrawOf(state: GameState): StalledDraw | null {
+  const rule = NO_PROGRESS_RULES[state.settings.variant as RuleVariant];
+  if (rule === undefined || rule.saysUnfinished === true) return null;
+  if (state.status !== GAME_STATUS.draw || !stalled(state)) return null;
+  return { measure: rule.measure, plies: rule.plies };
 }
 
 /** Whether this game can run away at all: pieces that move rather than land. */
