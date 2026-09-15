@@ -6,6 +6,13 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.197.0 — 2026-09-15
+- Every player's page has an XP tab showing how their XP was earned, day by day, with each day's total and the running total.
+- The XP board shows how much each player gained today and over the last 7 days, and how far behind the next player they are.
+- Recent promotions can be counted Everywhere or Itsutsu only, and XP credited from other sites is marked as imported rather than shown as earned today.
+- Twelve XP levels have new names: ColecoVision, TurboGrafx-16, Intellivision, Uno, Solitaire, You Sunk My Battleship, Triple Word Score, Shoot the Moon, Doubling Cube, T-Spin, Mahjong and Royal Flush.
+- The imported-XP payer allows enough time to pay a long record in one go.
+
 ## 0.196.2 — 2026-09-15
 - The site's settings, who may sign up and the join notice, now live on Sumilabu too; if they cannot be read, signing up stays invite-only
 
