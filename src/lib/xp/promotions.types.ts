@@ -28,6 +28,12 @@ export type PromotionBatch = {
   botTier: string | null;
   /** The member's zone as it is now; empty is UTC. */
   timeZone: string;
+  /**
+   * Whether the batch carries credit for a record kept from another site — any
+   * row of an `IMPORTED_XP_TYPES` type. Only ever true under Everywhere: Itsutsu
+   * only leaves those rows out before the batches are made.
+   */
+  imported: boolean;
 };
 
 /** One line of the recent promotions page. */
@@ -51,6 +57,12 @@ export type Promotion = {
    * this earlier day, and the page says so rather than dating it by the replay.
    */
   paidLater: string | null;
+  /**
+   * Whether credit for a record kept from another site is what carried the total
+   * over. Such a line is dated by the payment and says where the play was, rather
+   * than being shown as earned that day. Only under Everywhere, which counts it.
+   */
+  imported: boolean;
 };
 
 /** One page of promotions, newest first, and the way to the page after it. */

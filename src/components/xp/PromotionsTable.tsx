@@ -1,5 +1,6 @@
 import { PlayerName } from "@/components/players/PlayerName";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
+import { promotionsCursor } from "@/lib/xp/promotions";
 import { xpDayKey } from "@/lib/xp/xpDay";
 
 import { LevelName } from "./LevelName";
@@ -22,8 +23,13 @@ import type { PromotionsTableProps } from "./promotions.types";
  * promotion the 2026-09-13 replay paid is dated by the replay, which is when the
  * total moved, with the day of the play beside it — never presented as though it
  * had been earned on the day the replay ran. See `promotions.ts`.
+ *
+ * **So does a credit from another site.** Under Everywhere a promotion that credit
+ * for a kept record paid is dated by the payment, which is when the total moved,
+ * and says it was imported and where the play was — never shown as a day's play
+ * here. Under Itsutsu only there is no such line to draw.
  */
-export function PromotionsTable({ items, viewerId, viewerZone, empty }: PromotionsTableProps) {
+export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty }: PromotionsTableProps) {
   return (
     <div className="overflow-x-auto" data-testid="promotions">
       <table className={TABLE_CLASS}>
@@ -88,7 +94,11 @@ export function PromotionsTable({ items, viewerId, viewerZone, empty }: Promotio
                     <time dateTime={promotion.at.toISOString()} className="whitespace-nowrap">
                       {xpDayKey(promotion.at, viewerZone)}
                     </time>
-                    {promotion.paidLater !== null ? (
+                    {promotion.imported ? (
+                      <span className="block text-xs" data-testid="promotion-imported">
+                        Imported, for play on {creditFrom.get(promotionsCursor(promotion)) ?? "other sites"}
+                      </span>
+                    ) : promotion.paidLater !== null ? (
                       <span className="block text-xs" data-testid="promotion-backfilled">
                         Backfilled, for play on {promotion.paidLater}
                       </span>
