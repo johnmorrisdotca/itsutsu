@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SetUpGame } from "@/components/live/SetUpGame";
 import { SetUpHeading } from "@/components/live/SetUpHeading";
 import { setUpFrom } from "@/components/live/setUpFrom";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -43,10 +43,11 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
   const variant = variantFor(slug);
   if (variant === null) notFound();
 
-  const email = await currentEmail();
+  const reader = await currentReader();
   const [defaults, opponents, seats] = await Promise.all([
-    gameDefaultsFor(email),
-    fetchOpponents(email),
+    // Kept on the account, so an invite holder — no account — opens at the site's own.
+    gameDefaultsFor(reader.email),
+    fetchOpponents(reader),
     seatsToSitAt(),
   ]);
   /*
@@ -66,7 +67,9 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
         game={variant}
         opponents={opponents}
         seats={seats}
-        signedIn={email !== null}
+        // A session to continue, an account to name who — see /games/new.
+        signedIn={reader.signedIn}
+        canAsk={reader.hasAccount}
         opponent={from.opponent}
         again={from.again}
         fork={from.fork}

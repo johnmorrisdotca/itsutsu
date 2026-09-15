@@ -31,6 +31,24 @@ export async function buddyEmails(owner: string): Promise<Set<string>> {
   return new Set(rows.map((row) => row.buddy));
 }
 
+/**
+ * The member ids on a member's buddy list, for the pages that decide by id.
+ *
+ * The list is KEPT by address, and that is the Buddy table's business; what a
+ * page asks of it — "is this row somebody I buddied?" — is a question about who
+ * a person is, which the site answers by id. The sibling of `ignoredMemberIds`,
+ * and two reads for the same reason: the addresses, then whose they are.
+ */
+export async function buddyMemberIds(owner: string): Promise<Set<string>> {
+  const addresses = await buddyEmails(owner);
+  if (addresses.size === 0) return new Set();
+  const rows = await prisma.member.findMany({
+    where: { email: { in: [...addresses] } },
+    select: { id: true },
+  });
+  return new Set(rows.map((row) => row.id));
+}
+
 /** A member's buddies, most recently seen first, as a list of people rather than addresses. */
 export async function fetchBuddies(owner: string, now = new Date()): Promise<BuddyEntry[]> {
   const emails = [...(await buddyEmails(owner))];

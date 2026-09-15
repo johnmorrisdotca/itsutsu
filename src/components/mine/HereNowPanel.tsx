@@ -15,8 +15,24 @@ import { shownName } from "@/lib/rating/shownName";
  * carries the same list; here it sits next to the board because on a small
  * site the answer to "who can I play" is usually "whoever is about".
  */
-export function HereNowPanel({ here, me }: { here: HereNow[]; me: string | null }) {
-  const others = here.filter((entry) => entry.email !== me);
+export function HereNowPanel({
+  here,
+  me,
+}: {
+  here: HereNow[];
+  /**
+   * The reader's member id, or null for a reader with no account.
+   *
+   * By id: this compared the room against the reader's ADDRESS, which is
+   * null for an invite holder — and a null address matched every kept record
+   * in the room, so they were left off the list as though each were the
+   * reader. An id is who somebody is. And only an account can challenge, so
+   * the same null is what keeps the button off for an invite holder, whose
+   * challenge the route would refuse.
+   */
+  me: string | null;
+}) {
+  const others = here.filter((entry) => entry.id !== me);
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="here-panel">
       <h2 className="flex items-baseline gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">

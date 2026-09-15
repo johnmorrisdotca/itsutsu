@@ -19,16 +19,25 @@ export function Applause({
   gameId,
   initial,
   signedIn,
+  hasAccount,
 }: {
   gameId: string;
   initial: ApplauseTally;
+  /** Holding a session — `Reader.signedIn`. Decides only which sentence explains a mark that cannot be left. */
   signedIn: boolean;
+  /**
+   * An account — `Reader.hasAccount` — which is what leaving a mark needs: the
+   * route keeps whose mark is whose by address and answers 401 without one.
+   * It was one `signedIn` read off the address, which told everybody who came
+   * in by invite code to "sign in" while the masthead offered to sign them out.
+   */
+  hasAccount: boolean;
 }) {
   const [tally, setTally] = useState(initial);
   const [busy, setBusy] = useState(false);
 
   async function leave(emoji: ApplauseEmoji) {
-    if (!signedIn || busy) return;
+    if (!hasAccount || busy) return;
     setBusy(true);
     const response = await fetch(`/api/games/${gameId}/applause`, {
       method: "POST",
@@ -54,7 +63,7 @@ export function Applause({
               key={mark.emoji}
               type="button"
               onClick={() => void leave(mark.emoji)}
-              disabled={!signedIn || busy}
+              disabled={!hasAccount || busy}
               aria-pressed={mine}
               title={mine ? `${mark.label} · ${APPLAUSE_COPY.yours}` : mark.label}
               data-testid={`applause-${mark.label.replace(/\s+/g, "-").toLowerCase()}`}
@@ -68,7 +77,13 @@ export function Applause({
         })}
       </div>
       <p className="text-xs text-muted">
-        {!signedIn ? APPLAUSE_COPY.signedOut : tally.total === 0 ? APPLAUSE_COPY.none : APPLAUSE_COPY.hint}
+        {!signedIn
+          ? APPLAUSE_COPY.signedOut
+          : !hasAccount
+            ? APPLAUSE_COPY.noAccount
+            : tally.total === 0
+              ? APPLAUSE_COPY.none
+              : APPLAUSE_COPY.hint}
       </p>
     </section>
   );

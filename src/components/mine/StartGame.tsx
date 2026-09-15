@@ -11,6 +11,7 @@ import { NO_PACE, gamePath, playPath, rulesPath, setUpLink } from "@/lib/gomoku/
 import Link from "next/link";
 import { botsFor } from "@/lib/bots/bots.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
+import { ASK_NEEDS_ACCOUNT } from "@/components/live/live.constants";
 import { PACES, START_COPY } from "./mine.constants";
 import type { StartGameProps } from "./startGame.types";
 import { shownName } from "@/lib/rating/shownName";
@@ -44,7 +45,7 @@ const MEMBER = "m:";
  * one and posts yours if there is not. Naming a member challenges them;
  * "someone at this screen" is the board in this browser.
  */
-export function StartGame({ families, seats, opponents, signedIn }: StartGameProps) {
+export function StartGame({ families, seats, opponents, signedIn, canAsk }: StartGameProps) {
   const [variant, setVariant] = useState(families[0]?.games[0]?.variant ?? "freestyle");
   /** Null until somebody picks one: the sentence follows a waiting seat instead. */
   const [size, setSize] = useState<number | null>(null);
@@ -283,7 +284,13 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
               ))}
             </optgroup>
           ) : null}
-          {signedIn ? (
+          {/*
+            An account, not a session: a game against a program is a challenge,
+            and the route refuses a challenge from a caller with no address. An
+            invite holder is told so under the sentence rather than handed a
+            choice that ends in a refusal two screens on.
+          */}
+          {canAsk ? (
             <optgroup label={`${START_COPY.computer.label} ${START_COPY.computer.kanji}`}>
               {computers.map((bot) => (
                 <option key={bot.id} value={`${COMPUTER}${bot.id}`}>
@@ -314,6 +321,12 @@ export function StartGame({ families, seats, opponents, signedIn }: StartGamePro
       <p className="text-xs text-muted" data-testid="start-game-hint">
         {signedIn ? hint : START_COPY.signedOut}
       </p>
+      {/* Why nobody is offered by name, in words, for somebody in by invite code. */}
+      {signedIn && !canAsk ? (
+        <p className="text-xs text-muted" data-testid="start-game-ask-needs-account">
+          {ASK_NEEDS_ACCOUNT}
+        </p>
+      ) : null}
       {game !== undefined ? (
         <p className="text-xs text-muted">
           <Link href={rulesPath(variant)} className="underline underline-offset-4">

@@ -1,5 +1,6 @@
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { RowActions } from "@/components/ui/Controls";
+import type { Reader } from "@/lib/auth/reader.types";
 import { shownName } from "@/lib/rating/shownName";
 import { recencyOf } from "@/lib/social/presence";
 import type { DirectoryEntry } from "@/lib/rating/directoryRows";
@@ -24,7 +25,8 @@ import { RowMore } from "./RowMore";
  * see `RowMore`, which says what it measured and why this is the shape.
  */
 export function directoryActions(
-  me: { email?: string | null } | null,
+  reader: Pick<Reader, "hasAccount" | "memberId">,
+  /** The reader's buddies and ignores BY MEMBER ID — see `buddyMemberIds`. */
   buddies: Set<string>,
   ignored: Set<string>,
   now: Date,
@@ -32,8 +34,13 @@ export function directoryActions(
   return {
     recency: (entry: DirectoryEntry) => recencyOf(new Date(entry.lastSeenAt), now),
     forEntry: (entry: DirectoryEntry) => {
-      if (!me?.email || entry.email === null || me.email === entry.email) return null;
-      const email = entry.email;
+      /*
+       * AN ACCOUNT TO ASK WITH, somebody with an address to be asked, and not
+       * the reader's own row — the last decided by id. It compared addresses,
+       * which is the question `currentMemberId` asks the rest of the site not to
+       * put: an id is who somebody is, an address is only how they sign in.
+       */
+      if (!reader.hasAccount || entry.email === null || entry.id === reader.memberId) return null;
       return (
         <RowActions>
           {/*
@@ -44,10 +51,10 @@ export function directoryActions(
           */}
           <ChallengeButton memberId={entry.id} />
           <RowMore
-            email={email}
+            email={entry.email}
             name={shownName(entry.name)}
-            isBuddy={buddies.has(email)}
-            ignoring={ignored.has(email)}
+            isBuddy={buddies.has(entry.id)}
+            ignoring={ignored.has(entry.id)}
           />
         </RowActions>
       );

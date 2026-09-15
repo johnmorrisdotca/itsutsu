@@ -6,40 +6,34 @@ import { CountryMark } from "@/components/players/CountryMark";
 import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { MemberLevel } from "@/components/xp/MemberLevel";
 import { memberKind } from "@/lib/auth/memberKind";
-import { SnapshotWarning, WholeRecordPanel } from "@/components/players/WholeRecord";
+import { SnapshotWarning } from "@/components/players/WholeRecord";
 import { wholeRecord } from "@/lib/legacy/wholeRecord";
 import { Whereabouts } from "@/components/players/Whereabouts";
-import { ItsutsuRecord } from "@/components/players/ItsutsuRecord";
-import { KEPT_RECORD_COPY, PlayedEverywhere, keptRecordTail } from "@/components/players/LegacyRecord";
-import { LegacySourcePanel } from "@/components/players/LegacySource";
+import { PlayerChapters } from "@/components/players/PlayerChapters";
+import { PlayedEverywhere, keptRecordTail } from "@/components/players/LegacyRecord";
 import { PlayerFigures } from "@/components/players/PlayerFigures";
-import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { findMemberById, findMemberByName, findMembersByNames } from "@/lib/auth/members";
-import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { findMembersByNames } from "@/lib/auth/members";
+import { currentReader } from "@/lib/auth/currentReader";
 import { PlayerActions } from "@/components/players/PlayerActions";
-import { ChallengeButton } from "@/components/mine/ChallengeButton";
-import { fetchBuddies } from "@/lib/social/buddies";
-import { ignoredEmails } from "@/lib/social/ignores";
-import { fetchPlayerRecord } from "@/lib/history/playerRecord";
+import { buddyMemberIds } from "@/lib/social/buddies";
+import { ignoredMemberIds } from "@/lib/social/ignores";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
 import { findLegacyPlayer, foldedInto, legaciesForName } from "@/lib/legacy/legacyPlayers.data";
 import { ITSUTSU_TAB, legacyTabs } from "@/lib/legacy/legacyTabs";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { TwoPools } from "@/components/players/TwoPools";
 import { figuresOf } from "@/lib/rating/figures";
-import { playerKey, playerKeysFromSlug } from "@/lib/rating/playerKey";
+import { lookUpPlayer } from "@/lib/rating/playerPageLookup";
 import { shownName } from "@/lib/rating/shownName";
 import { RECORD_SCOPES, SCOPE_PARAM, readRecordScope, scopeWorthAsking } from "@/lib/rating/recordScope";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
-import { fetchPlayer } from "@/lib/rating/players";
 import { ratingShown, tierShown } from "@/lib/rating/shownRecord";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { xpForBadge } from "@/lib/xp/xpScope";
 import Link from "next/link";
-import { PlayerXpHistory } from "@/components/xp/PlayerXpHistory";
-import { XP_HISTORY_TAB, XP_HISTORY_TAB_ENTRY, xpHistoryHref } from "@/lib/xp/xpHistoryDays";
+import { XP_HISTORY_TAB_ENTRY, xpHistoryHref } from "@/lib/xp/xpHistoryDays";
 
 export const metadata = { title: "Player" };
 
@@ -61,67 +55,28 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
     if (home !== null) redirect(home);
   }
   /*
-   * The address holds a folded name with hyphens for spaces, and folding
-   * cannot be undone: "anne-marie" is either one hyphenated name or two
-   * words. So both readings are looked for, and whichever finds somebody is
-   * the player this address means.
+   * Who this address names — by id first, then by either reading of a folded
+   * name — with their rating row and their record. `lookUpPlayer` holds the
+   * argument for that order.
    */
-  /*
-   * AN ID FIRST, A NAME AFTER. Every link to a person now builds
-   * `/players/<id>` — see `playerPath` — because a link built from the name
-   * put a member's whole surname in the markup of every page that named them,
-   * under a screen that was carefully showing only "Hanako M.".
-   *
-   * The name reading stays underneath and is not a fallback in the apologetic
-   * sense: a kept record from another site, or a name typed into a game at one
-   * screen, has no member and its address is its name. Both are real addresses
-   * and this resolves either.
-   */
-  const byId = await findMemberById(slug);
-  const looked = byId !== null
-    ? [
-        await (async () => {
-          const key = playerKey(byId.name);
-          const [player, record] = await Promise.all([
-            fetchPlayer(key, byId.id ?? null),
-            fetchPlayerRecord(key, byId.id ?? null),
-          ]);
-          return { key, player, record, member: byId };
-        })(),
-      ]
-    : await Promise.all(
-    playerKeysFromSlug(slug).map(async (key) => {
-      /*
-       * The MEMBER is looked up first and the record is then asked for as
-       * theirs. A rating and a record are keyed by the folded name they were
-       * earned under, and that name does not move when somebody renames — so
-       * asking by today's name alone answered zero for a member with seven
-       * games. The member is findable by their current name; everything else
-       * hangs off their id from here.
-       */
-      const member = await findMemberByName(key);
-      const [player, record] = await Promise.all([
-        fetchPlayer(key, member?.id ?? null),
-        fetchPlayerRecord(key, member?.id ?? null),
-      ]);
-      return { key, player, record, member };
-    }),
-  );
-
-  const found =
-    looked.find((one) => one.player !== null || one.record.games > 0 || one.member !== null) ?? looked[0];
-  const { key: decoded, player, record, member } = found;
+  const { key: decoded, player, record, member } = await lookUpPlayer(slug);
   const gifts = await fetchTimeGiftRecord(decoded);
   /*
    * Who is reading, and what they have already said about this player. The
    * directory knows both and the page a directory row leads to did not, which
    * is why it could offer nothing.
    */
-  const me = await currentSession();
-  const myId = await currentMemberId();
+  const reader = await currentReader();
+  /*
+   * BY MEMBER ID. The lists are kept by address and read with it, but whether
+   * this player is on them — and whether this player is the reader — is decided
+   * by id: an invite holder has no address, and an address is only how somebody
+   * signs in, never who they are.
+   */
+  const mine = reader.hasAccount ? reader.email : null;
   const [myBuddies, myIgnored] = await Promise.all([
-    me?.email ? fetchBuddies(me.email) : Promise.resolve([]),
-    me?.email ? ignoredEmails(me.email) : Promise.resolve(new Set<string>()),
+    mine === null ? Promise.resolve(new Set<string>()) : buddyMemberIds(mine),
+    mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),
   ]);
   // A member has a page from the day they join, before they have finished a
   // game: every list that prints their name links to it, and a link that
@@ -153,8 +108,8 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * invitation, and offering one would be offering a game that cannot happen.
    */
   const askable =
-    Boolean(me?.email) &&
-    me?.email !== member?.email &&
+    reader.hasAccount &&
+    member?.id !== reader.memberId &&
     (member?.botTier ? member.id !== undefined : Boolean(member?.email));
 
   /*
@@ -171,13 +126,13 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * checklist, and this list named ten people and offered nothing about any
    * of them.
    */
-  const opponents = me?.email
+  const opponents = reader.hasAccount
     ? {
         members: await findMembersByNames(record.recent.map((one) => one.opponent)),
-        buddies: new Set(myBuddies.map((buddy) => buddy.email).filter((one): one is string => Boolean(one))),
+        buddies: myBuddies,
         ignored: myIgnored,
-        mine: me.email,
-        signedIn: true,
+        me: reader.memberId,
+        canAsk: reader.hasAccount,
       }
     : undefined;
   /*
@@ -301,11 +256,11 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         <PlayerActions
           email={member?.email ?? null}
           memberId={member?.id}
-          isBuddy={myBuddies.some((buddy) => buddy.email === member?.email)}
-          ignoring={member?.email !== null && member?.email !== undefined && myIgnored.has(member.email)}
+          isBuddy={member?.id !== undefined && myBuddies.has(member.id)}
+          ignoring={member?.id !== undefined && myIgnored.has(member.id)}
           isComputer={Boolean(member?.botTier)}
-          isYou={me?.email !== undefined && me.email !== null && me.email === member?.email}
-          signedIn={Boolean(me?.email)}
+          isYou={member?.id !== undefined && member.id === reader.memberId}
+          canAsk={reader.hasAccount}
         />
         {/*
           What somebody says about themselves. Written into the profile form
@@ -406,79 +361,28 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
       </section>
 
       {/*
-        Everything they have played, wherever they played it — beside the
-        tabs rather than instead of them, so a life of playing shows as one
-        figure and still breaks down into where each part came from.
+        Everything below the header: the whole record across every site, the
+        tabs, and the chapter the tabs have open — see `PlayerChapters`. Every
+        decision it draws is made above.
       */}
-      {whole.figures.played > 0 ? (
-        <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-          <WholeRecordPanel
-            whole={whole}
-            name={wholeName}
-            memberId={member?.id}
-            showFigures={!(offered && scope === RECORD_SCOPES.everywhere)}
-          />
-        </section>
-      ) : null}
-
-      <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label="Where this player's record was kept, and how their XP was earned" />
-
-      {earner !== null && open === XP_HISTORY_TAB ? (
-        <PlayerXpHistory memberId={earner} isYou={earner === myId} asked={asked} at={`/players/${slug}`} />
-      ) : shown === null ? (
-        <>
-          <ItsutsuRecord
-            name={wholeName}
-            memberId={member?.id}
-            record={record}
-            opponents={opponents}
-            gifts={gifts}
-            /*
-             * "No games yet" is the wrong word about somebody who has died,
-             * in the one place it would be noticed. Their own wording says
-             * this record was made elsewhere and is kept rather than added to.
-             */
-            emptyNote={keptRecord === null ? undefined : KEPT_RECORD_COPY[keptRecord.kind]?.here}
-          />
-          {/*
-            The second way in, and the one somebody actually uses. A profile is
-            read downwards — the figures, then the games, then how each went —
-            and by the end the buttons at the top are off the screen. The
-            decision is made here, so the offer belongs here; the elder sites
-            put an invitation beside a player's games for the same reason.
-
-            Only where there is a record to have read. On a page with no games
-            the question answers itself, and the two offers sit an inch apart —
-            one offer too many, about nothing.
-          */}
-          {askable && record.games > 0 ? (
-            <p className="flex flex-wrap items-center gap-3 text-sm text-muted" data-testid="ask-after-record">
-              Seen enough?{" "}
-              {/*
-                ONE OFFER, TWO WORDINGS. It was two components because a game
-                against a program had to be asked for by id and a game against a
-                person by address — and that was never a real difference, only
-                the shape the creation route happened to take. Everything is
-                asked for by id now, so the branch is a choice of words: "Play"
-                is right about something that answers at once, and asking a
-                person for a game is asking.
-
-                And it leads to the setup screen rather than into a game, which
-                is the whole of this change and the very button John was looking
-                at when he asked for it a third time.
-              */}
-              {member === undefined || member === null ? null : (
-                <ChallengeButton
-                  memberId={member.id}
-                  label={member.botTier ? "Play 対局" : "Ask for a game 対局を申し込む"}
-                />
-              )}
-            </p>
-          ) : null}
-        </>
-      ) : (
-        <LegacySourcePanel legacy={shown.legacy} source={shown.source} keptFor={shown.legacy.slug} />
-      )}
+      <PlayerChapters
+        slug={slug}
+        whole={whole}
+        showWholeFigures={!(offered && scope === RECORD_SCOPES.everywhere)}
+        wholeName={wholeName}
+        member={member}
+        tabs={tabs}
+        open={open}
+        shown={shown}
+        earner={earner}
+        reader={reader}
+        asked={asked}
+        record={record}
+        opponents={opponents}
+        gifts={gifts}
+        keptRecord={keptRecord}
+        askable={askable}
+      />
     </Page>
   );
 }

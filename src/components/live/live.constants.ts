@@ -184,6 +184,23 @@ export const SHARED_RULES_COPY = {
 export const SIGN_IN_TO_PLAY = "Sign in to start a game against somebody.";
 
 /**
+ * WHAT A READER WHO CAME IN BY INVITE CODE IS TOLD, where the choices they are
+ * not offered would otherwise be missing without a word.
+ *
+ * They are signed in, so `SIGN_IN_TO_PLAY` would be false to say to them — they
+ * can post a seat and sit down. What they cannot do is name somebody: a
+ * challenge to a member or a program is refused to a caller with no address,
+ * and a code redeemed without Google behind it makes no address. Said on the
+ * lobby sentence and the setup screen, in these words in both.
+ *
+ * No link to a sign-in, and that is deliberate rather than a dead end left in:
+ * /join sends anybody already in straight back where they were going, so a
+ * link there from here would be a press that lands on this same page.
+ */
+export const ASK_NEEDS_ACCOUNT =
+  "Naming a member or a computer player sends a challenge, which needs an account — an invite code on its own does not make one. A seat for anyone, and two at one screen, work as you are.";
+
+/**
  * THE DOORSTEP, IN WORDS: the page between choosing a game and playing one.
  *
  * The setup screen asks; this one states. So every line here is a fact rather

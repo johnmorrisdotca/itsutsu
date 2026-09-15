@@ -4,7 +4,7 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { PlayerActions } from "./PlayerActions";
 import { RecordTable } from "./RecordTable";
-import type { NamedMember } from "@/lib/auth/members";
+import type { RecordOpponents } from "./recordOpponents.types";
 import { playerKey } from "@/lib/rating/playerKey";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
@@ -54,16 +54,10 @@ export function ItsutsuRecord({
    * go and read about each of them. The decision a reader makes here is
    * whether to play somebody, and it was made two pages away.
    *
-   * Empty when nobody is signed in, so a page nobody can act on costs no
-   * lookup at all.
+   * Empty for a reader with no account — a stranger, or somebody who came in
+   * by invite code — so a page nobody can act on costs no lookup at all.
    */
-  opponents?: {
-    members: Map<string, NamedMember>;
-    buddies: Set<string>;
-    ignored: Set<string>;
-    mine: string | null;
-    signedIn: boolean;
-  };
+  opponents?: RecordOpponents;
   gifts: TimeGiftRecord;
   /**
    * What an empty record means here, when it means something other than "not
@@ -213,15 +207,9 @@ function OpponentActions({
   opponents,
 }: {
   name: string;
-  opponents?: {
-    members: Map<string, NamedMember>;
-    buddies: Set<string>;
-    ignored: Set<string>;
-    mine: string | null;
-    signedIn: boolean;
-  };
+  opponents?: RecordOpponents;
 }) {
-  if (opponents === undefined || !opponents.signedIn || name.trim() === "") return null;
+  if (opponents === undefined || !opponents.canAsk || name.trim() === "") return null;
   const them = opponents.members.get(playerKey(name));
   // Somebody who never signed in — a name typed into a game at one screen —
   // is not an account to ask anything of, and an offer to play them would be
@@ -234,11 +222,11 @@ function OpponentActions({
       name={name}
       email={them.email}
       memberId={them.id}
-      isBuddy={them.email !== null && opponents.buddies.has(them.email)}
-      ignoring={them.email !== null && opponents.ignored.has(them.email)}
+      isBuddy={them.id !== undefined && opponents.buddies.has(them.id)}
+      ignoring={them.id !== undefined && opponents.ignored.has(them.id)}
       isComputer={Boolean(them.botTier)}
-      isYou={them.email !== null && them.email === opponents.mine}
-      signedIn={opponents.signedIn}
+      isYou={them.id !== undefined && them.id === opponents.me}
+      canAsk={opponents.canAsk}
     />
   );
 }

@@ -25,7 +25,7 @@ export function GameView({
   trackPath = false,
   match = null,
   appearance = null,
-  signedIn = false,
+  savesToAccount = false,
   defaults,
 }: {
   variant?: RuleVariant;
@@ -34,8 +34,12 @@ export function GameView({
   match?: { game: GameDetail; at?: number } | null;
   /** The member's own board, from their account; null when they have never chosen one. */
   appearance?: Appearance | null;
-  /** Whether there is an account to save a board to at all. */
-  signedIn?: boolean;
+  /**
+   * Whether there is an account to save a board to at all — `Reader.hasAccount`.
+   * An invite holder is signed in and has none, so their choice stays in this
+   * browser rather than being sent to a route that answers 401.
+   */
+  savesToAccount?: boolean;
   /** Where a new game starts for this member. */
   defaults: GameDefaults;
 }) {
@@ -65,11 +69,12 @@ export function GameView({
   );
 
   /*
-   * Signed in, the board chosen here follows them to their other devices.
-   * `signedIn` rather than "has a board": somebody who has never chosen one
-   * is exactly who should have their first choice saved.
+   * With an account, the board chosen here follows them to their other devices.
+   * "Has an account" rather than "has a board": somebody who has never chosen
+   * one is exactly who should have their first choice saved. And an account
+   * rather than a session: an invite holder has no account to save it to.
    */
-  useSavedAppearance(session.appearance, signedIn);
+  useSavedAppearance(session.appearance, savesToAccount);
   // From the first stone the game is a match on the server, and has an address.
   const kept = useMatchMirror(session, trackPath, match?.game.id ?? null);
   const streaks = useGameRecording(session, { active: kept.matchId !== null, synced: kept.synced });

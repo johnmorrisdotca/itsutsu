@@ -30,7 +30,7 @@ import { readCatalogueView, type CatalogueView } from "@/lib/gomoku/catalogueVie
 import type { CatalogueFamily } from "@/components/games/games.types";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Speaker } from "@/lib/i18n/i18n";
-import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { OpenGamesBoard } from "@/components/mine/OpenGamesBoard";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -90,14 +90,20 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
    *
    * `email === null` means both "a stranger" and "a member who joined by
    * code", which is exactly the fault AGENTS.md calls Nothing Answers What It
-   * Cannot Answer. So the gate for the lobby is the session, and the address
-   * is carried on as `signedIn` for the parts that genuinely need a name.
+   * Cannot Answer. So the gate for the lobby is the session.
+   *
+   * AND THE SENTENCE BELOW WAS THE SAME FAULT ONE LEVEL DOWN. The lobby opened
+   * for them, and then its sentence was told "signed in" by the address: an
+   * invite holder was offered only "someone at this screen" and told to sign
+   * in, on a page whose seats they could post and sit at. `currentReader` is
+   * the one answer now — `signedIn` for what a session allows, `hasAccount` for
+   * what only an account does, `memberId` for who they are.
    */
-  const session = await currentSession();
-  if (session === null) {
+  const reader = await currentReader();
+  if (!reader.signedIn) {
     return <PublicCatalogue view={view} say={say} />;
   }
-  const email = session.email ? session.email.trim().toLowerCase() : null;
+  const email = reader.email;
 
   const claims = seatClaims((await cookies()).getAll());
   /*
@@ -113,8 +119,9 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
   sweepOpenSeats();
 
   const claimed = [...claims.keys()];
-  const [mine, stats, seatGames, here] = await Promise.all([
-    currentMemberId(),
+  // Who they are, off the row `currentReader` already read.
+  const mine = reader.memberId;
+  const [stats, seatGames, here] = await Promise.all([
     fetchCatalogueStats(),
     fetchOpenSeats(claimed),
     fetchHereNow(),
@@ -128,7 +135,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
      * who had been shut out was still offered a game. The sentence came back
      * in 0.143.0; the copy did not, and must not.
      */
-    fetchOpponents(email),
+    fetchOpponents(reader),
     /*
      * Who this reader has shut out, by id, because a seat is keyed by member
      * and the list is kept by address. An invite holder has no address, so
@@ -256,7 +263,13 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
           limit. Neither is a lesser version of the other.
         */}
         <div className={PANEL_CLASS}>
-          <StartGame families={groups} seats={seats} opponents={opponents} signedIn={email !== null} />
+          <StartGame
+            families={groups}
+            seats={seats}
+            opponents={opponents}
+            signedIn={reader.signedIn}
+            canAsk={reader.hasAccount}
+          />
         </div>
         <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="lobby-start-ways">
           <Link href="/games/new" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4 py-2`} data-testid="lobby-set-up">
@@ -274,7 +287,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
           filter={filter}
           standings={standings}
         />
-        <HereNowPanel here={here} me={email} />
+        <HereNowPanel here={here} me={reader.memberId} />
       </section>
 
       {/*
@@ -344,7 +357,7 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
           that game — its rules, its record, its standings and a board — and the three ways of
           looking at the list are the same games arranged differently.
         </p>
-        <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn />
+        <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} />
       </section>
   </Page>
   );

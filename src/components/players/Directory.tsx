@@ -6,9 +6,9 @@ import { MemberKindBadge } from "@/components/auth/MemberKindBadge";
 import { memberKind } from "@/lib/auth/memberKind";
 import { DirectoryFilters } from "@/components/players/DirectoryFilters";
 import { RecencyMark } from "@/components/mine/Recency";
-import { buddyEmails } from "@/lib/social/buddies";
+import { buddyMemberIds } from "@/lib/social/buddies";
 import { countText } from "@/lib/rating/figures";
-import { currentSession } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import { DIRECTORY_SORT_SPEC } from "@/lib/rating/directory.sort";
 import {
   directoryPagingFallback,
@@ -25,7 +25,7 @@ import type { RecordSort } from "./recordSort";
 import { levelShown, xpShown } from "@/lib/xp/levelShown";
 import type { DirectoryFilter, DirectoryWho } from "@/lib/rating/directoryFilter";
 import { DirectoryEmpty, DirectoryNarrowed } from "./DirectoryNarrowing";
-import { ignoredEmails } from "@/lib/social/ignores";
+import { ignoredMemberIds } from "@/lib/social/ignores";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 import { directoryActions } from "./directoryActions";
@@ -254,15 +254,17 @@ export async function Directory({
    */
   const refused = isRefusal(asked);
   const paging = refused ? directoryPagingFallback() : asked;
-  const [page, me] = await Promise.all([
+  const [page, reader] = await Promise.all([
     fetchDirectoryPage({ paging, filter, now }),
-    currentSession(),
+    currentReader(),
   ]);
+  // By member id, and only for an account: the rows' actions are the ones an invite holder cannot use.
+  const mine = reader.hasAccount ? reader.email : null;
   const [buddies, ignored] = await Promise.all([
-    me?.email ? buddyEmails(me.email) : Promise.resolve(new Set<string>()),
-    me?.email ? ignoredEmails(me.email) : Promise.resolve(new Set<string>()),
+    mine === null ? Promise.resolve(new Set<string>()) : buddyMemberIds(mine),
+    mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),
   ]);
-  const actions = directoryActions(me, buddies, ignored, now);
+  const actions = directoryActions(reader, buddies, ignored, now);
   const people = page.items;
   const anyKept = people.some(
     (entry) => entry.elsewhere.wins + entry.elsewhere.losses + entry.elsewhere.draws > 0,

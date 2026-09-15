@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
-import { currentEmail } from "@/lib/auth/currentSession";
+import { currentReader } from "@/lib/auth/currentReader";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -33,10 +33,10 @@ export default async function PlayPage({ params }: PageProps<"/games/[slug]/play
   const copy = RULE_VARIANT_DISPLAY[variant];
   const siblings = siblingsOf(variant);
   // The member's own board, so a phone and a laptop set out the same one.
-  const email = await currentEmail();
-  const board = await appearanceFor(email);
+  const reader = await currentReader();
+  const board = await appearanceFor(reader.email);
   // Where a new game starts for them: board size, the switches, the clock.
-  const defaults = await gameDefaultsFor(email);
+  const defaults = await gameDefaultsFor(reader.email);
 
   return (
     <Page width="wide">
@@ -45,7 +45,14 @@ export default async function PlayPage({ params }: PageProps<"/games/[slug]/play
         variant={variant}
         trackPath
         appearance={board}
-        signedIn={email !== null}
+        /*
+          AN ACCOUNT, NOT A SESSION, because the one thing this decides is
+          whether a board choice is written back to the account — and
+          PATCH /api/me answers 401 to an invite holder, who has none. It was
+          named `signedIn` and read off the address, which happened to give the
+          right answer under the wrong name.
+        */
+        savesToAccount={reader.hasAccount}
         defaults={defaults}
       />
       <footer className="flex flex-col gap-2 border-t border-rule pt-5 text-sm text-muted">

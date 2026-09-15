@@ -25,4 +25,10 @@ export const APPLAUSE_COPY = {
   yours: "Yours",
   none: "No applause yet. Be the first to say the game was worth playing.",
   signedOut: "Sign in to leave a mark on this game.",
+  /*
+   * For somebody who came in by invite code: signed in, so "sign in" would be
+   * false, and with no address, which the applause route needs to know whose
+   * mark is whose.
+   */
+  noAccount: "Leaving a mark needs an account — an invite code on its own does not make one.",
 } as const;

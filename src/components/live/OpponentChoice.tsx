@@ -10,7 +10,7 @@ import { shownName } from "@/lib/rating/shownName";
 
 import Link from "next/link";
 
-import { SET_UP_COPY } from "./live.constants";
+import { ASK_NEEDS_ACCOUNT, SET_UP_COPY } from "./live.constants";
 import { ANYONE, RANDOM_COMPUTER, capTiles, opponentGroups, shownChoice } from "./opponentOptions";
 import { PickMark } from "./PickMark";
 import {
@@ -58,11 +58,19 @@ export function OpponentChoice({
   named,
   disabled = false,
   signedIn,
+  canAsk,
 }: OpponentChoiceProps) {
   const say = useSpeaker().say;
   const groups = opponentGroups({ variant, opponents, named });
   const shown = shownChoice(value, groups);
+  /*
+   * TWO GATES, BECAUSE THEY ARE TWO ROUTES. A seat for anyone is a posted game,
+   * which a session is enough for; a person or a program is a challenge, which
+   * the route answers with 401 unless the caller has an address. An invite
+   * holder is the reader with the first and not the second.
+   */
   const inert = disabled || !signedIn;
+  const cannotName = disabled || !canAsk;
 
   return (
     <fieldset className="flex min-w-0 flex-col gap-2" data-testid="set-up-with">
@@ -87,20 +95,31 @@ export function OpponentChoice({
         />
       </div>
       {groups.map((group) => (
-        <Run key={group.kind} group={group} shown={shown} disabled={inert} onChange={onChange} />
+        <Run key={group.kind} group={group} shown={shown} disabled={cannotName} onChange={onChange} />
       ))}
       {/*
         NOBODY IS A DEAD END. The lists hold whoever is here and the players this
         member knows; anybody else is one page away, and that page's Challenge
         lands back here with them chosen.
+
+        Only for an account, because only an account is offered that Challenge:
+        sent to /players, an invite holder would find no button there, which is
+        a promise this line cannot keep for them. They are told instead why the
+        names above cannot be chosen — in words, not by tiles that simply refuse.
       */}
-      <p className="text-xs text-muted" data-testid="set-up-opponent-elsewhere">
-        {SET_UP_COPY.elsewhere}{" "}
-        <Link href="/players" className="underline underline-offset-4 hover:text-ink">
-          {SET_UP_COPY.elsewhereLink}
-        </Link>{" "}
-        {SET_UP_COPY.elsewhereAfter}
-      </p>
+      {canAsk ? (
+        <p className="text-xs text-muted" data-testid="set-up-opponent-elsewhere">
+          {SET_UP_COPY.elsewhere}{" "}
+          <Link href="/players" className="underline underline-offset-4 hover:text-ink">
+            {SET_UP_COPY.elsewhereLink}
+          </Link>{" "}
+          {SET_UP_COPY.elsewhereAfter}
+        </p>
+      ) : signedIn ? (
+        <p className="text-xs text-muted" data-testid="set-up-ask-needs-account">
+          {ASK_NEEDS_ACCOUNT}
+        </p>
+      ) : null}
     </fieldset>
   );
 }

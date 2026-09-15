@@ -32,7 +32,7 @@ export function GameViewClient({
   trackPath = false,
   match = null,
   appearance = null,
-  signedIn = false,
+  savesToAccount = false,
   defaults,
 }: {
   variant?: RuleVariant;
@@ -46,8 +46,8 @@ export function GameViewClient({
    * this browser as they always have.
    */
   appearance?: Appearance | null;
-  /** Whether there is an account to save a board to at all. */
-  signedIn?: boolean;
+  /** Whether there is an account to save a board to at all — `Reader.hasAccount`. */
+  savesToAccount?: boolean;
   /** Where a new game starts for this member. */
   defaults: GameDefaults;
 }) {
@@ -57,7 +57,7 @@ export function GameViewClient({
       trackPath={trackPath}
       match={match}
       appearance={appearance}
-      signedIn={signedIn}
+      savesToAccount={savesToAccount}
       defaults={defaults}
     />
   );
