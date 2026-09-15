@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GAME_STATUS, MOVE_KINDS, OPENING_RULES, STONES } from "@/lib/gomoku/gomoku.constants";
+import { settledTurn } from "./settledTurn";
 
 /**
  * What a list of games costs to draw, and what it gets right.
@@ -176,7 +177,13 @@ const gameFindMany = vi.fn(
     }
     const page = args.take === undefined ? found : found.slice(0, args.take);
     rowsRead += page.length;
-    return page;
+    /*
+     * COPIES, as Prisma hands back. A replay works from the row as it was read,
+     * and a write landing on the stored row afterwards must not reach into that
+     * copy — which is exactly the race `fillTheTurnBack` guards against, and a
+     * fake handing back the stored objects would hide it.
+     */
+    return page.map((row) => ({ ...row }));
   },
 );
 /** The finished group's true size, over the same `where` its page is read with. */
@@ -185,6 +192,24 @@ const gameCount = vi.fn(async ({ where }: { where: Record<string, unknown> }) =>
 );
 const moveFindMany = vi.fn(async ({ where }: { where: { gameId: { in: string[] } } }) =>
   moves.filter((move) => where.gameId.in.includes(move.gameId as string)),
+);
+/**
+ * A pair filled back after a replay, honouring its `where` as Postgres would —
+ * including the `updatedAt` a racing write would have moved — and moving
+ * `updatedAt` itself, as Prisma's `@updatedAt` does.
+ */
+let clock = Date.parse("2026-09-10T00:00:00Z");
+const gameUpdateMany = vi.fn(
+  async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+    let count = 0;
+    for (const row of rows) {
+      if (!matches(row, where)) continue;
+      clock += 1_000;
+      Object.assign(row, data, { updatedAt: new Date(clock) });
+      count += 1;
+    }
+    return { count };
+  },
 );
 /**
  * The members a seat might be bound to, so a name can be resolved to whatever
@@ -199,7 +224,11 @@ const memberFindMany = vi.fn(async ({ where }: { where: { id: { in: string[] } }
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    game: { findMany: (args: never) => gameFindMany(args), count: (args: never) => gameCount(args) },
+    game: {
+      findMany: (args: never) => gameFindMany(args),
+      count: (args: never) => gameCount(args),
+      updateMany: (args: never) => gameUpdateMany(args),
+    },
     move: { findMany: (args: never) => moveFindMany(args) },
     member: { findMany: (args: never) => memberFindMany(args) },
   },
@@ -242,6 +271,7 @@ function game(over: Partial<Row> = {}): Row {
     moveTimeMs: null,
     timeoutPenalty: "turn",
     lastMoveAt: new Date("2026-09-02T00:00:00Z"),
+    updatedAt: new Date("2026-09-02T00:00:00Z"),
     blackForfeits: 0,
     whiteForfeits: 0,
     allowResign: true,
@@ -307,6 +337,7 @@ beforeEach(() => {
   gameCount.mockClear();
   moveFindMany.mockClear();
   memberFindMany.mockClear();
+  gameUpdateMany.mockClear();
 });
 
 describe("what it costs to draw", () => {
@@ -515,6 +546,135 @@ describe("a row with nothing stored", () => {
     // Two stones down: black to move. One stone down: white to move.
     expect(byId.get("a")?.toPlay).toBe(STONES.black);
     expect(byId.get("b")?.toPlay).toBe(STONES.white);
+  });
+});
+
+describe("a row that had to be replayed fills itself in", () => {
+  /*
+   * Production, 2026-09-15: ten active games with nothing stored, replayed on
+   * every /play load and every badge read. A replay's answer is written back
+   * once, through the move path's own `settledTurn`, and never over a pair
+   * somebody else wrote.
+   */
+  it("fills the pair back once, and the next read replays nothing", async () => {
+    rows = [game({ moveCount: 2 })];
+    moves = stones("g1", 2);
+    const read = rows[0].updatedAt;
+
+    const first = await only();
+    expect(first.group).toBe("yourMove");
+    expect(moveFindMany).toHaveBeenCalledTimes(1);
+    expect(gameUpdateMany).toHaveBeenCalledTimes(1);
+    expect(gameUpdateMany.mock.calls[0][0]).toEqual({
+      where: { id: "g1", updatedAt: read, settledStatus: null },
+      data: settledTurn({ status: GAME_STATUS.playing, toPlay: STONES.black }),
+    });
+    expect(rows[0]).toMatchObject({ settledStatus: GAME_STATUS.playing, settledToPlay: STONES.black });
+
+    const second = await only();
+    expect(second.group).toBe("yourMove");
+    expect(second.toPlay).toBe(STONES.black);
+    expect(moveFindMany, "the second read replayed the game again").toHaveBeenCalledTimes(1);
+    expect(gameUpdateMany, "the second read wrote the pair again").toHaveBeenCalledTimes(1);
+  });
+
+  it("writes an ending the replay found as the move path would, with nobody to move", async () => {
+    rows = [game({ moveCount: 9 })];
+    moves = [0, 1, 2, 3, 4].flatMap((line) => [
+      { number: line * 2 + 1, row: line, col: 0, stone: STONES.black },
+      ...(line < 4 ? [{ number: line * 2 + 2, row: line, col: 9, stone: STONES.white }] : []),
+    ]).map((move) => ({
+      ...move,
+      gameId: "g1",
+      kind: MOVE_KINDS.place,
+      fromRow: null,
+      fromCol: null,
+      twistQuadrant: null,
+      twistClockwise: null,
+      cells: null,
+      createdAt: new Date("2026-09-02T00:00:00Z"),
+    }));
+    expect((await only()).group).toBe("finished");
+    expect(rows[0].settledStatus).not.toBe(GAME_STATUS.playing);
+    expect(rows[0].settledToPlay).toBeNull();
+    await only();
+    expect(moveFindMany).toHaveBeenCalledTimes(1);
+  });
+
+  it("never writes over a row that already carries a pair", async () => {
+    rows = [
+      game({ id: "settled", moveCount: 2, settledStatus: GAME_STATUS.playing, settledToPlay: STONES.white }),
+      game({ id: "filed", status: "finished", result: "draw", moveCount: 2 }),
+    ];
+    moves = [...stones("settled", 2), ...stones("filed", 2)];
+    await queueOf(new Map(), MEMBER);
+    expect(gameUpdateMany).not.toHaveBeenCalled();
+    expect(rows[0]).toMatchObject({ settledStatus: GAME_STATUS.playing, settledToPlay: STONES.white });
+  });
+
+  it("does not overwrite a value nobody could settle, even while replaying it", async () => {
+    // A status this engine does not know is replayed every time, and still never rewritten by a reader.
+    rows = [game({ moveCount: 2, settledStatus: "asleep", settledToPlay: STONES.white })];
+    moves = stones("g1", 2);
+    expect((await only()).toPlay).toBe(STONES.black);
+    expect(rows[0]).toMatchObject({ settledStatus: "asleep", settledToPlay: STONES.white });
+  });
+
+  it("leaves a row alone that was written while it was being replayed", async () => {
+    rows = [game({ moveCount: 2 })];
+    moves = stones("g1", 2);
+    // White moves between the row being read and its moves being read, and the move path settles it.
+    moveFindMany.mockImplementationOnce(async ({ where }) => {
+      Object.assign(rows[0], {
+        moveCount: 3,
+        updatedAt: new Date("2026-09-03T00:00:00Z"),
+        ...settledTurn({ status: GAME_STATUS.playing, toPlay: STONES.white }),
+      });
+      return moves.filter((move) => where.gameId.in.includes(move.gameId as string));
+    });
+    await only();
+    expect(gameUpdateMany).toHaveBeenCalledTimes(1);
+    await expect(gameUpdateMany.mock.results[0].value).resolves.toEqual({ count: 0 });
+    expect(rows[0]).toMatchObject({ settledStatus: GAME_STATUS.playing, settledToPlay: STONES.white });
+  });
+
+  it("leaves a row alone whose rules changed while it was being replayed, though its pair is still null", async () => {
+    /*
+     * The case a null check alone cannot see. A rules change re-decides who
+     * opens and writes UNSETTLED without a stone being played, so the stored
+     * pair is null before it and after it — and this read's replay is of the
+     * old rules. Only the `updatedAt` in the match stops that landing.
+     */
+    rows = [game({ moveCount: 2 })];
+    moves = stones("g1", 2);
+    moveFindMany.mockImplementationOnce(async ({ where }) => {
+      Object.assign(rows[0], {
+        opener: STONES.white,
+        updatedAt: new Date("2026-09-03T00:00:00Z"),
+        settledStatus: null,
+        settledToPlay: null,
+      });
+      return moves.filter((move) => where.gameId.in.includes(move.gameId as string));
+    });
+    await only();
+    expect(gameUpdateMany).toHaveBeenCalledTimes(1);
+    await expect(gameUpdateMany.mock.results[0].value).resolves.toEqual({ count: 0 });
+    expect(rows[0]).toMatchObject({ settledStatus: null, settledToPlay: null });
+  });
+
+  it("still answers from the replay when the write fails, and throws nothing", async () => {
+    rows = [game({ moveCount: 2 })];
+    moves = stones("g1", 2);
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    gameUpdateMany.mockRejectedValueOnce(new Error("the database went away"));
+    try {
+      const mine = await only();
+      expect(mine.group).toBe("yourMove");
+      expect(logged).toHaveBeenCalledTimes(1);
+      expect(rows[0].settledStatus).toBeNull();
+    } finally {
+      logged.mockRestore();
+    }
   });
 });
 

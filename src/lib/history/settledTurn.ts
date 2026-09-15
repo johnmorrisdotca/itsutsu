@@ -59,6 +59,18 @@ export function settledTurn(state: Pick<GameState, "status" | "toPlay">): Settle
 export const UNSETTLED = { settledStatus: null, settledToPlay: null } as const;
 
 /**
+ * The `where` that matches a row nothing has settled, for the one writer that
+ * fills a pair back after a replay rather than settling a move of its own —
+ * `myGamesRows.ts` — so it never has to name a column either.
+ *
+ * The status alone, because it is the column that says whether anything was
+ * written at all: `settledTurn` never leaves it null, and a null status is the
+ * only "nothing said". A row carrying any other value is never matched, so a
+ * pair somebody wrote is never overwritten by a reader.
+ */
+export const NOTHING_SETTLED = { settledStatus: null } as const;
+
+/**
  * The pair as a `select` asks for it, for a reader that goes on to hand the row
  * to `settledPosition`.
  *
