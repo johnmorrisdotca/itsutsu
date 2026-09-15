@@ -5,6 +5,7 @@ import {
   boardSizeSchema,
   drawLimitSchema,
   handicapSchema,
+  headStartSchema,
   moveTimeSchema,
   obstaclesSchema,
   playerNameSchema,
@@ -47,6 +48,8 @@ export const liveGameSchema = z.object({
   obstacles: obstaclesSchema,
   opening: sharedOpeningSchema,
   handicap: handicapSchema,
+  /** A start for the weaker colour: free turns, and the game's own traditional head start. */
+  headStart: headStartSchema,
   moveTimeMs: moveTimeSchema,
   timeoutPenalty: timeoutPenaltySchema,
   allowResign: z.boolean().default(true),

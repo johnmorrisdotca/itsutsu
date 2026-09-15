@@ -3,7 +3,8 @@ import { STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { farCampSquares } from "./rules/farCamp";
 import { isKingAt } from "./rules/checkers";
 import { EVAL_WEIGHTS } from "./opponent.constants";
-import { KOMI, scoreArea } from "./rules/go";
+import { scoreArea } from "./rules/go";
+import { komiFor } from "./rules/headStart";
 import type { GameState, Point, Stone, VariantSpec } from "./gomoku.types";
 
 /**
@@ -102,8 +103,10 @@ export function flipScore(state: GameState, stone: Stone, spec: VariantSpec): nu
 export function goScore(state: GameState, stone: Stone): number {
   const area = scoreArea(state.board, state.settings.size);
   const foe = otherStone(stone);
-  const mine = area[stone] + (stone === STONES.white ? KOMI : 0);
-  const theirs = area[foe] + (foe === STONES.white ? KOMI : 0);
+  // The komi this game is counted with: less where handicap stones were given.
+  const komi = komiFor(state.settings);
+  const mine = area[stone] + (stone === STONES.white ? komi : 0);
+  const theirs = area[foe] + (foe === STONES.white ? komi : 0);
   return (mine - theirs) * EVAL_WEIGHTS.area;
 }
 

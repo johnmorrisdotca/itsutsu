@@ -8,6 +8,8 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { RAISED_LINK, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
+import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
+import { hasHeadStart } from "@/lib/gomoku/rules/headStart";
 
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
@@ -74,6 +76,12 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
                 {game.size}×{game.size}
                 <span className="px-2">·</span>
                 <GameName variant={game.variant as RuleVariant} raised />
+                {hasHeadStart(game) ? (
+                  <>
+                    <span className="px-2">·</span>
+                    <span data-testid="history-head-start">{HEAD_START_DISPLAY.label}</span>
+                  </>
+                ) : null}
               </span>
 
               <span className="text-sm text-muted tabular-nums">

@@ -1,4 +1,5 @@
-import type { Handicap } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
+import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 
 import { playerWord } from "./doorstepSays";
 import { RANDOM_COMPUTER_WORDS } from "./picker.constants";
@@ -51,6 +52,7 @@ export function recapWords({
   opponent,
   fork,
   handicap,
+  game,
   random = false,
 }: {
   /**
@@ -63,6 +65,8 @@ export function recapWords({
   /** The position being carried, where one is. */
   fork: SetUpFork | null;
   handicap: Handicap;
+  /** The game and the head start given in it, which the line names beside the handicap. */
+  game: { variant: string; headStart: HeadStart };
   /** A computer player is to be drawn at random. */
   random?: boolean;
 }): SettingWord[] {
@@ -75,6 +79,11 @@ export function recapWords({
           ? { text: "Against whoever you hand the seat to", notable: true }
           : { text: POST_FOR_ANYONE, notable: false };
 
+  const given = describeHeadStart(game);
   const carried = describeHandicap(handicap);
-  return carried === null ? [against] : [against, { text: carried, notable: true }];
+  return [
+    against,
+    ...(given === null ? [] : [{ text: given, notable: true }]),
+    ...(carried === null ? [] : [{ text: carried, notable: true }]),
+  ];
 }

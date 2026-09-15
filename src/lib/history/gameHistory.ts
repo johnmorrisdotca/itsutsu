@@ -13,7 +13,7 @@ import { type CurrentNames, currentNamesFor, seatName } from "./currentNames";
 import { GAME_SORT_SPEC, gameSortChoice } from "./gameHistory.sort";
 import { type FilterSeats, buildGameOrderBy, buildGameWhere } from "./gameHistoryQuery";
 import { GAME_RESULTS, RECORD_TEXT_MAX } from "./gameHistory.constants";
-import { parseHandicap, pieceCellsSchema } from "./gameSettingsSchema";
+import { parseHandicap, parseHeadStart, pieceCellsSchema } from "./gameSettingsSchema";
 import { REACTIONS_KEPT } from "./reactions.constants";
 import { withMemberResolved } from "./recordMember";
 import type {
@@ -153,6 +153,7 @@ export function toSummary(row: SummaryRow, names: CurrentNames): GameSummary {
     declinedAt: row.declinedAt === null ? null : row.declinedAt.toISOString(),
     withdrawnAt: row.withdrawnAt === null ? null : row.withdrawnAt.toISOString(),
     handicap: parseHandicap(row.handicap),
+    headStart: parseHeadStart(row.handicap),
     forfeits: { black: blackForfeits, white: whiteForfeits },
   };
 }

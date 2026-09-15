@@ -10,7 +10,7 @@ import {
   type StreakOutcome,
 } from "./streak";
 import { outcomeFor } from "./pools";
-import type { Handicap } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
 
 import { countsOnLadder } from "./countsOnLadder";
 
@@ -150,6 +150,11 @@ export type DecidedGame = DecidedSeats & {
    * rating a game with a handicap on it. See `handicapRefusal`.
    */
   handicap: Handicap;
+  /**
+   * The head start it was played with, PARSED — `parseHeadStart(row.handicap)`.
+   * Required for the same reason: a game with one moves no rating either.
+   */
+  headStart: HeadStart;
   /** The names the ladder is keyed by, for `gameRatingRefusal`. */
   blackName: string;
   whiteName: string;

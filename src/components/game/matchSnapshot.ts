@@ -28,6 +28,7 @@ export function snapshotFromMatch(game: GameDetail): GameSnapshot {
     obstacles: game.obstacles as GameSettings["obstacles"],
     opening: game.opening as GameSettings["opening"],
     handicap: game.handicap,
+    headStart: game.headStart,
     seed: game.seed,
     firstPlayer: opener as GameSettings["firstPlayer"],
   };

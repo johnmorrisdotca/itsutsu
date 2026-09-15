@@ -1,4 +1,5 @@
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
+import { hasHandicap } from "@/lib/gomoku/rules/handicap";
 
 import type { RulesDraft } from "./rulesDraft";
 import type { SeatTerms } from "./setUp.types";
@@ -6,7 +7,7 @@ import type { SeatTerms } from "./setUp.types";
 /** The settings a game is compared on, whichever side of a match it is. */
 type Comparable = Pick<
   RulesDraft & SeatOnBoard,
-  "variant" | "moveTimeMs" | "opening" | "obstacles" | "rated" | "handicap" | "clockMode" | "timeoutPenalty"
+  "variant" | "moveTimeMs" | "opening" | "obstacles" | "rated" | "handicap" | "headStart" | "clockMode" | "timeoutPenalty"
 >;
 
 /**
@@ -34,7 +35,7 @@ type Comparable = Pick<
  * match on. A handicap is laid on one colour, and taking a posted seat gives
  * you whichever colour is free; the chooser's handicap and the poster's cannot
  * be compared as "the same" without knowing who sits where, so a game with one
- * posts its own seat.
+ * posts its own seat. A head start is laid on one colour too, so the same.
  *
  * WHETHER A PLAYER MAY RESIGN IS NOT A TERM. It changes neither the play nor
  * how the board is won, only whether a player may concede early; the doorstep
@@ -43,7 +44,7 @@ type Comparable = Pick<
  * the two-people-waiting-for-each-other this matching exists to prevent.
  */
 export function seatTermsFor(game: Comparable): SeatTerms | null {
-  if (game.handicap.stone !== null) return null;
+  if (hasHandicap(game)) return null;
   const timed = game.moveTimeMs !== null;
   const perMove = timed && game.clockMode !== "game";
   return {

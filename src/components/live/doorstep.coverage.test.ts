@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP, OBSTACLE_LAYOUTS, OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, OBSTACLE_LAYOUTS, OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import { SET_UP_PARAMS } from "@/lib/gomoku/slugs";
 import { draftParams } from "./setUpAddress";
 import type { RulesDraft } from "./rulesDraft";
@@ -152,6 +152,7 @@ describe("the address carries the whole of a settled game", () => {
     allowResign: true,
     open: false,
     handicap: NO_HANDICAP,
+    headStart: NO_HEAD_START,
   };
 
   /**
@@ -173,6 +174,7 @@ describe("the address carries the whole of a settled game", () => {
     rated: SET_UP_PARAMS.rated,
     allowResign: SET_UP_PARAMS.resign,
     handicap: SET_UP_PARAMS.handicap,
+    headStart: SET_UP_PARAMS.headStart,
     open: null,
   };
 

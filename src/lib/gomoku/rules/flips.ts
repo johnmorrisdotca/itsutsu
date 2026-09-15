@@ -1,6 +1,7 @@
 import { GAME_STATUS, STARTING_DISCS, STONES, VARIANT_SPECS, WIN_REASONS } from "../gomoku.constants";
 import type { Cell, GameSettings, GameState, Move, Point, Stone, StartingDiscs } from "../gomoku.types";
 import { won } from "./mechanics";
+import { leavesNoStone } from "./stoneless";
 
 /**
  * The flipping games — reversi, and Othello as the world plays it now.
@@ -158,7 +159,11 @@ export function settleCount(state: GameState): GameState {
 export function undoFlip(state: GameState, start: GameState): GameState {
   let rebuilt: GameState = { ...start, opener: state.opener, seats: state.seats, toPlay: state.opener };
   for (const move of state.moves.slice(0, -1)) {
-    rebuilt = playFlip(rebuilt, { row: move.row, col: move.col });
+    // A turn with no stone on the record — a head start's pass, or a turn lost on time — turns nothing and hands the move over.
+    rebuilt =
+      leavesNoStone(move.kind)
+        ? { ...rebuilt, moves: [...rebuilt.moves, move], toPlay: other(rebuilt.toPlay) }
+        : playFlip(rebuilt, { row: move.row, col: move.col });
   }
   return { ...rebuilt, swapsUsed: state.swapsUsed };
 }

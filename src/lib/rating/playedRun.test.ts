@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
-import type { Handicap } from "@/lib/gomoku/gomoku.types";
+import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
 
 import { extendStreak, streakFrom, type Streak, type StreakOutcome } from "./streak";
 
@@ -49,6 +49,8 @@ type Row = {
   hotSeat: boolean;
   /** Required since a handicap game stopped counting: the ladder's rule reads it. */
   handicap: Handicap;
+  /** And the head start, which the same rule reads. */
+  headStart: HeadStart;
   blackName: string;
   whiteName: string;
 };
@@ -157,6 +159,7 @@ function game(
     rated: true,
     hotSeat: false,
     handicap: NO_HANDICAP,
+    headStart: NO_HEAD_START,
     blackName: `Black ${black ?? "nobody"}`,
     whiteName: `White ${white ?? "nobody"}`,
   };
@@ -453,7 +456,7 @@ describe("what recording one costs", () => {
  * game.
  */
 describe("the games the ladder counts, which are the only ones an upset is paid on", () => {
-  const counted = { rated: true, hotSeat: false, handicap: NO_HANDICAP, blackName: "Hanako", whiteName: "Taro" };
+  const counted = { rated: true, hotSeat: false, handicap: NO_HANDICAP, headStart: NO_HEAD_START, blackName: "Hanako", whiteName: "Taro" };
 
   it("does not count a game with a handicap on either colour", () => {
     // John, asked whether a handicap game should move both players' ratings: "Fine don't".
@@ -587,6 +590,7 @@ describe("the XP a decided game asks for", () => {
       rated: true,
       hotSeat: false,
       handicap: NO_HANDICAP,
+    headStart: NO_HEAD_START,
       blackName: "A",
       whiteName: "B",
     });

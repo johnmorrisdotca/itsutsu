@@ -13,9 +13,10 @@ import {
   VARIANT_SPECS,
 } from "../gomoku.constants";
 import { emptyBoard } from "../obstacles";
-import type { Cell, GameSettings, GameState, OpeningRule, Point, Seat, Stone } from "../gomoku.types";
+import type { Cell, GameSettings, GameState, HeadStart, OpeningRule, Point, Seat, Stone } from "../gomoku.types";
 import { otherStone } from "./board";
 import { hasHandicap } from "./handicap";
+import { hasHeadStart, headStartOdds, headStartOpener, headStartPieces, normaliseHeadStart } from "./headStart";
 import { initialOpening } from "./opening";
 import { seedFromRoll } from "./random";
 
@@ -33,10 +34,14 @@ const SWAPPING_OPENINGS: readonly GameSettings["opening"][] = [
 
 /**
  * The openings these settings may use: what the variant offers, less the
- * colour-swapping ones when a handicap is bound to a colour.
+ * colour-swapping ones when a handicap is bound to a colour — and only the free
+ * opening under a head start. Pro and the renju protocols count stones from the
+ * first, and a head start's free turns and starting pieces are exactly what
+ * that count does not expect.
  */
 export function availableOpenings(settings: GameSettings): OpeningRule[] {
   const offered = VARIANT_SPECS[settings.variant].openings;
+  if (hasHeadStart(settings)) return offered.filter((opening) => opening === OPENING_RULES.free);
   return hasHandicap(settings)
     ? offered.filter((opening) => !SWAPPING_OPENINGS.includes(opening))
     : [...offered];
@@ -55,12 +60,13 @@ export function normaliseSettings(settings: GameSettings): GameSettings {
     spec.boardSizes !== null && !spec.boardSizes.includes(settings.size)
       ? spec.boardSizes[0]
       : settings.size;
+  // A head start the game and this board can give, or less: see `normaliseHeadStart`.
+  const settled = { ...settings, size, headStart: normaliseHeadStart({ ...settings, size }) };
   return {
-    ...settings,
-    size,
+    ...settled,
     capturesToWin: spec.capturesToWin ?? settings.capturesToWin,
     winLength: spec.winLength ?? settings.winLength,
-    opening: availableOpenings(settings).includes(settings.opening)
+    opening: availableOpenings(settled).includes(settings.opening)
       ? settings.opening
       : OPENING_RULES.free,
   };
@@ -92,12 +98,19 @@ export function startingBoard(settings: GameSettings): Cell[] {
   }
   // Chinese Checkers begins with both points full, likewise.
   if (spec.chineseCheckers) for (const piece of starStartingPieces(STAR_RADIUS)) place(piece);
+  // A head start's handicap stones or corners are set out too, and odds of a man take the man away first.
+  for (const point of headStartOdds(settings, board)) board[point.row * settings.size + point.col] = null;
+  for (const piece of headStartPieces(settings)) place(piece);
   return board;
 }
 
 /**
  * The colour a game must open with whatever anybody asked for, or null where
  * the players may choose.
+ *
+ * A head start with handicap stones fixes it first: the stones are the given
+ * colour's opening, so the other colour moves — `headStartOpener`. Asked with
+ * the head start and the board it is laid on, which a writer has as well.
  *
  * Fixed where the game gives no choice — and then it is the game's own first
  * colour, which is White for the draughts games whose rules say so — and fixed
@@ -109,9 +122,15 @@ export function startingBoard(settings: GameSettings): Cell[] {
  * Null for a variant this deploy does not know, since there is nothing to fix
  * it to and the caller's own answer is the only one there is.
  */
-export function fixedOpener(variant: string, opening: string): Stone | null {
+export function fixedOpener(
+  variant: string,
+  opening: string,
+  start?: { headStart: HeadStart; size: number },
+): Stone | null {
   const spec = VARIANT_SPECS[variant as keyof typeof VARIANT_SPECS] as (typeof VARIANT_SPECS)[keyof typeof VARIANT_SPECS] | undefined;
   if (spec === undefined) return null;
+  const given = start === undefined ? null : headStartOpener({ variant, ...start });
+  if (given !== null) return given;
   if (!spec.allowFirstPlayerChoice || opening !== OPENING_RULES.free) return spec.firstStone;
   return null;
 }
@@ -122,7 +141,7 @@ export function fixedOpener(variant: string, opening: string): Stone | null {
  * constrain black, and every opening protocol, put black on move one.
  */
 export function resolveOpener(settings: GameSettings, roll = 0): Stone {
-  const fixed = fixedOpener(settings.variant, settings.opening);
+  const fixed = fixedOpener(settings.variant, settings.opening, settings);
   if (fixed !== null) return fixed;
   if (settings.firstPlayer === FIRST_PLAYERS.random) {
     return roll < 0.5 ? STONES.black : STONES.white;

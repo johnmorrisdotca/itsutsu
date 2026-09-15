@@ -19,6 +19,7 @@ import type {
   GameStatus,
   Handicap,
   HandicapRule,
+  HeadStart,
   LineRule,
   MoveKind,
   ObstacleLayout,
@@ -29,6 +30,7 @@ import type {
   RuleVariant,
   Seat,
   Stone,
+  TraditionalHeadStart,
   VariantSpec,
   WinReason,
 } from "./gomoku.types";
@@ -176,6 +178,13 @@ export const BOARD_GRIDS = {
   cells: "cells",
 } as const satisfies Record<BoardGrid, BoardGrid>;
 
+/** The traditional head starts, see TraditionalHeadStart. */
+export const TRADITIONAL_HEAD_STARTS = {
+  stones: "stones",
+  corners: "corners",
+  men: "men",
+} as const satisfies Record<TraditionalHeadStart, TraditionalHeadStart>;
+
 export const OPENING_RULES = {
   free: "free",
   pro: "pro",
@@ -271,6 +280,12 @@ export const NO_HANDICAP: Handicap = {
   noCaptures: false,
   secondStoneExclusion: 0,
 };
+
+/** Nobody given a start: the even game, which is most games. */
+export const NO_HEAD_START: HeadStart = { stone: null, freeTurns: 0, traditional: 0 };
+
+/** The free turns a head start may give, none included. John chose one to three. */
+export const HEAD_START_FREE_TURNS = [0, 1, 2, 3] as const;
 
 const NO_PATTERNS: readonly ForbiddenPattern[] = [];
 const RENJU_PATTERNS: readonly ForbiddenPattern[] = [
@@ -595,6 +610,7 @@ function plain(overrides: SpecOverrides): VariantSpec {
     checkersRules: null,
     chineseCheckers: false,
     go: false,
+    headStart: null,
     ...overrides,
   };
 }
@@ -636,6 +652,8 @@ function federationDraughts(rules: CheckersRules, boardSizes: readonly number[],
     analysis: false,
     allowFirstPlayerChoice: false,
     firstStone,
+    // Odds of a man, or men: the draughts clubs' way of giving a weaker player a game.
+    headStart: TRADITIONAL_HEAD_STARTS.men,
   });
 }
 
@@ -776,11 +794,24 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    * The flipping games. `winLength` is pinned to nothing in particular, since
    * no line is ever read; what matters is the flip, the pass and the count.
    */
-  reversi: flipping({ startingDiscs: STARTING_DISCS.fixed }),
-  classicReversi: flipping({ startingDiscs: STARTING_DISCS.laid }),
+  /*
+   * Othello's handicap is corners: the weaker player starts owning one to four
+   * of them. Not in anti-Othello, where a disc nobody can turn is one you are
+   * stuck with — a corner there would be a burden handed over as a gift.
+   */
+  reversi: flipping({ startingDiscs: STARTING_DISCS.fixed, headStart: TRADITIONAL_HEAD_STARTS.corners }),
+  classicReversi: flipping({ startingDiscs: STARTING_DISCS.laid, headStart: TRADITIONAL_HEAD_STARTS.corners }),
   antiReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, misere: true }),
-  miniReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: MINI_REVERSI_SIZES }),
-  grandReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, boardSizes: GRAND_REVERSI_SIZES }),
+  miniReversi: flipping({
+    startingDiscs: STARTING_DISCS.fixed,
+    boardSizes: MINI_REVERSI_SIZES,
+    headStart: TRADITIONAL_HEAD_STARTS.corners,
+  }),
+  grandReversi: flipping({
+    startingDiscs: STARTING_DISCS.fixed,
+    boardSizes: GRAND_REVERSI_SIZES,
+    headStart: TRADITIONAL_HEAD_STARTS.corners,
+  }),
   halma: small({ grid: BOARD_GRIDS.cells, camps: true, analysis: false, boardSizes: HALMA_SIZES }),
   // On the crossings of a triangular lattice, as a wooden Hex board is ruled: see HEX_LATTICE.
   hex: small({ grid: BOARD_GRIDS.lines, connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap] }),
@@ -796,6 +827,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     checkersRules: ENGLISH_CHECKERS_RULES,
     boardSizes: CHECKERS_SIZES,
     analysis: false,
+    headStart: TRADITIONAL_HEAD_STARTS.men,
   }),
   /*
    * The international family: men that take backward, kings that fly, the
@@ -835,6 +867,8 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   go: small({
     grid: BOARD_GRIDS.lines,
     go: true,
+    // Handicap stones on the star points, White moving first: Go's own head start.
+    headStart: TRADITIONAL_HEAD_STARTS.stones,
     boardSizes: GO_SIZES,
     allowFirstPlayerChoice: false,
     analysis: false,
@@ -1029,6 +1063,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   variant: RULE_VARIANTS.freestyle,
   opening: OPENING_RULES.free,
   handicap: NO_HANDICAP,
+  headStart: NO_HEAD_START,
   seed: 0,
   capturesToWin: DEFAULT_CAPTURES_TO_WIN,
   firstPlayer: FIRST_PLAYERS.black,

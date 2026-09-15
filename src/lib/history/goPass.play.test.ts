@@ -59,6 +59,7 @@ describe("a live game of Go between two computer players", () => {
       obstacles: DEFAULT_SETTINGS.obstacles,
       opening: DEFAULT_SETTINGS.opening,
       handicap: DEFAULT_SETTINGS.handicap,
+      headStart: DEFAULT_SETTINGS.headStart,
       drawLimit: DEFAULT_SETTINGS.drawLimit,
       moveTimeMs: null,
       timeoutPenalty: "turn",

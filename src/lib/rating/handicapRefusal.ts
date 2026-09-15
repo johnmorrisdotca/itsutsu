@@ -1,5 +1,5 @@
 import type { HandicapTerms } from "@/lib/gomoku/gomoku.types";
-import { hasHandicap } from "@/lib/gomoku/rules/handicap";
+import { handicapKind, hasHandicap } from "@/lib/gomoku/rules/handicap";
 
 import { RATING_REFUSALS, type RatingRefusal } from "./rateable.constants";
 
@@ -22,7 +22,9 @@ import { RATING_REFUSALS, type RatingRefusal } from "./rateable.constants";
  * data, and not worth shipping to a browser to word a notice.
  */
 export function handicapRefusal(game: HandicapTerms): RatingRefusal | null {
-  return hasHandicap(game) ? RATING_REFUSALS.handicap : null;
+  if (!hasHandicap(game)) return null;
+  // Refused by the one rule, and named for which of the two it is: `handicapKind`.
+  return handicapKind(game) === "headStart" ? RATING_REFUSALS.headStart : RATING_REFUSALS.handicap;
 }
 
 /**

@@ -34,6 +34,7 @@ import {
 import { Field, SectionTitle, Select, Toggle } from "@/components/ui/Controls";
 import { GameBrowserButton } from "./GameBrowser";
 import { HandicapPanel } from "./HandicapPanel";
+import { HeadStartChoice } from "@/components/live/HeadStartChoice";
 import { settingsLocks } from "./settingsLocks";
 import {
   AWARENESS_DISPLAY,
@@ -258,6 +259,14 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
 
         <div className="mt-3 flex flex-col gap-3">
           <fieldset disabled={begun} className="flex min-w-0 flex-col gap-3">
+          {/* The same question the set-up screen asks, first, and a new game when it changes. */}
+          <HeadStartChoice
+            value={settings.headStart}
+            variant={settings.variant}
+            size={settings.size}
+            onChange={(headStart) => actions.reset({ headStart })}
+            testPrefix="practice"
+          />
           <HandicapPanel session={session} actions={actions} />
 
           <Toggle

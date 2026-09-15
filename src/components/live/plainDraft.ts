@@ -1,4 +1,4 @@
-import { NO_HANDICAP, OPENING_RULES, boardSizesFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, OPENING_RULES, boardSizesFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 import type { RulesDraft } from "./rulesDraft";
@@ -41,6 +41,7 @@ export function plainDraft({
     allowResign: true,
     open: true,
     handicap: NO_HANDICAP,
+    headStart: NO_HEAD_START,
   };
 }
 

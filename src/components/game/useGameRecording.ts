@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { keepaliveFetch } from "@/lib/api/keepaliveFetch";
 
 import { GAME_STATUS, SEATS, STONES } from "@/lib/gomoku/gomoku.constants";
+import { hasHeadStart } from "@/lib/gomoku/rules/headStart";
 import type { Seat } from "@/lib/gomoku/gomoku.types";
 import type { GameHistoryPage } from "@/lib/history/gameHistory.types";
 import { winStreak } from "@/lib/history/streaks";
@@ -99,6 +100,7 @@ export function useGameRecording(
       obstacles: state.settings.obstacles,
       opening: state.settings.opening,
       handicap: state.settings.handicap.stone === null ? null : state.settings.handicap,
+      headStart: hasHeadStart(state.settings) ? state.settings.headStart : null,
       seed: state.settings.seed,
       opener: state.opener,
       result: state.winner ?? "draw",

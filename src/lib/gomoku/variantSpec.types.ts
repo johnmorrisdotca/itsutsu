@@ -6,6 +6,7 @@ import type {
   LineRule,
   Placement,
   StartingDiscs,
+  TraditionalHeadStart,
   WrapMode,
 } from "./spec.types";
 
@@ -147,4 +148,10 @@ export type VariantSpec = {
    * with a fixed komi added for white.
    */
   go: boolean;
+  /**
+   * The head start this game's own tradition gives a weaker player, or null
+   * where it has none — see TraditionalHeadStart and `rules/headStart.ts`.
+   * Every game also offers free turns at the start; this is what it adds.
+   */
+  headStart: TraditionalHeadStart | null;
 };

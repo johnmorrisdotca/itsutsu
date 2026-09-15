@@ -326,6 +326,7 @@ async function LiveMatch({
           rated: game.rated,
           hotSeat: tokens !== null && isHotSeat(tokens),
           handicap: game.handicap,
+          headStart: game.headStart,
           blackName: game.playedAs.black,
           whiteName: game.playedAs.white,
         })

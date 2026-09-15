@@ -8,7 +8,7 @@ import { replayMoves } from "@/lib/gomoku/rules/record";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { toGameMove } from "./gameHistory";
-import { parseHandicap } from "./gameSettingsSchema";
+import { parseHandicap, parseHeadStart } from "./gameSettingsSchema";
 import { OFFER_SELECT } from "./offers";
 
 /*
@@ -105,7 +105,7 @@ export function isHotSeat(row: { blackToken: string; whiteToken: string }): bool
  * them reading the column raw is how a handicap game would go on being rated.
  */
 export function ladderFacts(row: { blackToken: string; whiteToken: string; handicap: unknown }) {
-  return { hotSeat: isHotSeat(row), handicap: parseHandicap(row.handicap) };
+  return { hotSeat: isHotSeat(row), handicap: parseHandicap(row.handicap), headStart: parseHeadStart(row.handicap) };
 }
 
 /**
@@ -123,6 +123,7 @@ export function replay(row: GameRow): GameState {
     obstacles: row.obstacles as GameState["settings"]["obstacles"],
     opening: row.opening as GameState["settings"]["opening"],
     handicap: parseHandicap(row.handicap),
+    headStart: parseHeadStart(row.handicap),
     seed: row.seed,
     firstPlayer: row.opener as Stone,
     // A shared game is played from two devices, so neither side may rewind it.

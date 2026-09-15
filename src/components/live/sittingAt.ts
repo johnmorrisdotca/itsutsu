@@ -2,7 +2,7 @@ import "server-only";
 
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
-import { parseHandicap } from "@/lib/history/gameSettingsSchema";
+import { parseHandicap, parseHeadStart } from "@/lib/history/gameSettingsSchema";
 import { prisma } from "@/lib/prisma";
 import { draftFromGame, type RulesDraft } from "./rulesDraft";
 import { seatWhereFor } from "./seatWhere";
@@ -113,7 +113,7 @@ export async function sittingAt(
   return {
     seat: {
       id: row.id,
-      rules: draftFromGame({ ...row, handicap: parseHandicap(row.handicap) }),
+      rules: draftFromGame({ ...row, handicap: parseHandicap(row.handicap), headStart: parseHeadStart(row.handicap) }),
       mine,
       who: theirs.trim() || "Somebody",
       opener: row.opener === STONES.white ? STONES.white : STONES.black,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  NO_HANDICAP,
+  NO_HANDICAP, NO_HEAD_START,
   OPENING_RULES,
   RULE_VARIANT_LIST,
   VARIANT_SPECS,
@@ -22,6 +22,7 @@ const draft: RulesDraft = {
   allowResign: true,
   open: false,
   handicap: NO_HANDICAP,
+  headStart: NO_HEAD_START,
 };
 
 describe("openingsOffered", () => {

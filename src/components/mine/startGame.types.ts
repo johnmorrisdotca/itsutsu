@@ -1,4 +1,4 @@
-import type { Handicap } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
 
 /** One seat already on the board, as the composer needs to read it. */
 export type SeatOnBoard = {
@@ -16,6 +16,7 @@ export type SeatOnBoard = {
   obstacles: string;
   rated: boolean;
   handicap: Handicap;
+  headStart: HeadStart;
   clockMode: string;
   timeoutPenalty: string;
   /** The member sitting in it, as they are named. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START } from "@/lib/gomoku/gomoku.constants";
 import type { GameSummary } from "./gameHistory.types";
 import { streakIn, winStreak } from "./streaks";
 
@@ -24,6 +24,7 @@ function game(
     opener: "black",
     opening: "free",
     handicap: NO_HANDICAP,
+    headStart: NO_HEAD_START,
     seed: 0,
     moveTimeMs: null,
     timeoutPenalty: "turn",

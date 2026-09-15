@@ -6,7 +6,7 @@ import { isBotId } from "@/lib/bots/bots";
 import { gamesPlayedBy } from "@/lib/bots/bots.constants";
 import { DEFAULT_SETTINGS, boardSizesFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { parseHandicap } from "@/lib/history/gameSettingsSchema";
+import { parseHandicap, parseHeadStart } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
 import { SET_UP_UNREAD } from "./live.constants";
@@ -349,7 +349,12 @@ function draftOf(origin: {
   allowResign: boolean;
   rated: boolean;
 }): RulesDraft {
-  return draftFromGame({ ...origin, openSeat: null, handicap: parseHandicap(origin.handicap) });
+  return draftFromGame({
+    ...origin,
+    openSeat: null,
+    handicap: parseHandicap(origin.handicap),
+    headStart: parseHeadStart(origin.handicap),
+  });
 }
 
 /**

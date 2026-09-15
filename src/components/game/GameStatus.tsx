@@ -31,6 +31,7 @@ import {
   WIN_REASONS,
 } from "@/lib/gomoku/gomoku.constants";
 import { SECOND_STONE_EXCLUSION_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 import { FORBIDDEN_PATTERN_DISPLAY, HANDICAP_RULE_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { StoneMark } from "@/components/board/StoneMark";
 import { STONE_SETS } from "@/components/board/Board.constants";
@@ -288,6 +289,8 @@ function VariantLine({ session }: { session: GameSession }) {
       `${GAME_COPY.handicapFor(STONE_DISPLAY[handicap.stone].label)}${parts.length > 0 ? `: ${parts.join(", ")}` : ""}.`,
     );
   }
+  const given = describeHeadStart(settings);
+  if (given !== null) lines.push(`${given}.`);
   const forbidden = rules.forbidden;
   if (forbidden.length > 0 && state.status === GAME_STATUS.playing) {
     const shapes = forbidden

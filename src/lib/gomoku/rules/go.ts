@@ -168,10 +168,14 @@ export function scoreArea(board: Cell[], size: number): { black: number; white: 
   return score;
 }
 
-/** Who the area score, with komi added for white, gives the game to. Never a tie: komi is a half point. */
-export function areaWinner(board: Cell[], size: number): Stone {
+/**
+ * Who the area score, with komi added for white, gives the game to. Never a
+ * tie: komi is a half point. Handed the komi, because a handicap game is
+ * counted with less — see `komiFor`.
+ */
+export function areaWinner(board: Cell[], size: number, komi: number): Stone {
   const { black, white } = scoreArea(board, size);
-  return black > white + KOMI ? "black" : "white";
+  return black > white + komi ? "black" : "white";
 }
 
 /**

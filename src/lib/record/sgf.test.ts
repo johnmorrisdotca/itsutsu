@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START } from "@/lib/gomoku/gomoku.constants";
 import type { GameMove } from "@/lib/history/gameHistory.types";
 import { hexColumn, sgfFileName, sgfLetter, sgfRefusal, writeSgf } from "./sgf";
 import type { SgfSource } from "./sgf.types";
@@ -31,6 +31,7 @@ function game(overrides: Partial<SgfSource>): SgfSource {
     opener: "black",
     opening: "free",
     handicap: NO_HANDICAP,
+    headStart: NO_HEAD_START,
     seed: 0,
     drawLimit: "none",
     status: "finished",

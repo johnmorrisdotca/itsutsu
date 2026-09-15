@@ -1,4 +1,4 @@
-import type { Handicap, PieceCell, Point } from "@/lib/gomoku/gomoku.types";
+import type { Handicap, HeadStart, PieceCell, Point } from "@/lib/gomoku/gomoku.types";
 
 /**
  * What a client may send as a move: a stone, a sliding piece, or the quarter
@@ -19,6 +19,8 @@ export type LiveGameSettings = {
   obstacles: string;
   opening: string;
   handicap: Handicap;
+  /** A start for one colour, `NO_HEAD_START` for none. Kept in the handicap column. */
+  headStart: HeadStart;
   /** Per-move time limit in milliseconds, or null for none. */
   moveTimeMs: number | null;
   /** What a missed deadline costs: "turn" or "game". */

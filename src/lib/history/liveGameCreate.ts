@@ -49,7 +49,7 @@ export async function createLiveGame(
     from?: { id: string; moves: number };
   },
 ): Promise<CreatedGame> {
-  const { handicap, open, hotSeat = false, seed, from, clockMode = "move", rated, ...rest } = input;
+  const { handicap, headStart, open, hotSeat = false, seed, from, clockMode = "move", rated, ...rest } = input;
   const token = randomBytes(18).toString("base64url");
   const startedAt = new Date();
   const budget = clockMode === "game" ? rest.moveTimeMs : null;
@@ -76,8 +76,8 @@ export async function createLiveGame(
     data: {
       id: await freeGameId(),
       ...rest,
-      // The opener the engine will replay, where the rules fix it — see `fixedOpener`.
-      opener: fixedOpener(rest.variant, rest.opening) ?? rest.opener,
+      // The opener the engine will replay, where the rules or a head start's stones fix it — see `fixedOpener`.
+      opener: fixedOpener(rest.variant, rest.opening, { headStart, size: board }) ?? rest.opener,
       // A game with a board of its own is created on it, whatever was asked for.
       size: sizeForVariant(rest.variant as RuleVariant, rest.size),
       clockMode,
@@ -100,7 +100,7 @@ export async function createLiveGame(
         rest.moveTimeMs === null || rest.offeredAt !== undefined
           ? null
           : new Date(startedAt.getTime() + rest.moveTimeMs),
-      handicap: storedHandicap(handicap) ?? undefined,
+      handicap: storedHandicap(handicap, headStart) ?? undefined,
       ...(hotSeat ? { blackToken: token, whiteToken: token } : {}),
       // An open game posts its white seat for anyone; the creator sits as black.
       openSeat: open && !hotSeat ? STONES.white : null,

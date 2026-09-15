@@ -36,6 +36,7 @@ describe("reading what an address asked the setup screen for", () => {
         rated: null,
         allowResign: null,
         handicap: null,
+        headStart: null,
       },
     });
   });

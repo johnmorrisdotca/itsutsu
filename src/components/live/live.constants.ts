@@ -87,6 +87,16 @@ export const SET_UP_COPY = {
     `A second game from the position after move ${move}, against ${who}. Both games go on. The board, the game and the opening come with the position and cannot change; the clock and whether it counts are this game's own.`,
   forkAlone:
     "Nobody held the other seat in the game this comes from, so this is a board at one screen: start it and hand the other seat out from there.",
+  /** The head start's colour select, first under the Handicap heading: who is given a start. */
+  headStartFor: "Head start for",
+  /** What a head start is for, where somebody is choosing one. */
+  headStartHint:
+    "The weaker player's start: turns in hand at the beginning, and the game's own traditional head start where it has one. A game with a head start does not count towards ratings. Leave it at none for an even game.",
+  /** The answer that gives nobody anything. */
+  headStartNone: "None",
+  freeTurns: "Free turns",
+  freeTurnsHint: (colour: string) =>
+    `${colour} plays this many turns at the very start before the other side answers. Each one is shown on the record as the other side's pass.`,
   /** The handicap's colour select, under the Handicap heading: who takes on the harder rules. */
   handicapFor: "Harder rules for",
   /** What a handicap is for, where somebody is choosing one. */
@@ -164,6 +174,8 @@ export const SHARED_RULES_COPY = {
   settled: "Agreed before this game was written. Nothing here can change them now.",
   handicapMeans:
     "The handicapped colour plays under those extra restrictions; the other colour plays the plain game.",
+  headStartMeans:
+    "The colour given a head start plays its free turns before the other side answers, with any traditional head start on the board from the first move.",
 } as const;
 
 /**

@@ -5,12 +5,14 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { freeGameId } from "./gameId";
-import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { MOVE_KINDS, NO_HANDICAP, NO_HEAD_START, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { fetchGameDetail } from "./gameHistory";
 import { GAME_RESULTS } from "./gameHistory.constants";
 import {
   drawLimitSchema,
   handicapSchema,
+  headStartSchema,
+  storedHandicap,
   obstaclesSchema,
   openingSchema,
   pieceCellsSchema,
@@ -51,6 +53,7 @@ export const gameRecordSchema = z
     obstacles: obstaclesSchema,
     opening: openingSchema,
     handicap: handicapSchema,
+    headStart: headStartSchema,
     drawLimit: drawLimitSchema,
     seed: z.number().int().min(0).max(2 ** 31 - 1).default(0),
     opener: stoneSchema,
@@ -103,7 +106,7 @@ export async function recordGame(input: GameRecordInput): Promise<GameDetail> {
       variant: input.variant,
       obstacles: input.obstacles,
       opening: input.opening,
-      handicap: input.handicap ?? undefined,
+      handicap: storedHandicap(input.handicap ?? NO_HANDICAP, input.headStart ?? NO_HEAD_START) ?? undefined,
       drawLimit: input.drawLimit,
       seed: input.seed,
       opener: input.opener,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { NO_HANDICAP, STONES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import type { RulesDraft } from "./rulesDraft";
@@ -21,6 +21,7 @@ const rules: RulesDraft = {
   allowResign: true,
   open: true,
   handicap: NO_HANDICAP,
+  headStart: NO_HEAD_START,
 };
 
 const seat = (over: Partial<SeatOnBoard> = {}): SeatOnBoard => ({
@@ -32,6 +33,7 @@ const seat = (over: Partial<SeatOnBoard> = {}): SeatOnBoard => ({
   obstacles: "none",
   rated: true,
   handicap: NO_HANDICAP,
+  headStart: NO_HEAD_START,
   clockMode: "move",
   timeoutPenalty: "turn",
   who: "Kyoko",

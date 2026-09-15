@@ -150,7 +150,10 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
     computer: seat === null && (from.drawComputer || (from.opponent?.computer ?? false)),
     mine: seat?.mine ?? mine,
     // A game whose rules fix who opens is stated that way, whatever a carried game says.
-    opener: seat?.opener ?? fixedOpener(rules.variant, rules.opening) ?? openerIn(from.carry),
+    opener:
+      seat?.opener ??
+      fixedOpener(rules.variant, rules.opening, { headStart: rules.headStart, size: rules.size }) ??
+      openerIn(from.carry),
     screen,
   });
   /*
@@ -179,7 +182,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
    * Null otherwise, and that is not a guess: every other press makes a game
    * between two people, where the rating is a choice and the draft holds it.
    */
-  const refused = draftRatingRefusal({ screen, handicap: rules.handicap });
+  const refused = draftRatingRefusal({ screen, handicap: rules.handicap, headStart: rules.headStart });
 
   const begin: BeginAction =
     seat !== null

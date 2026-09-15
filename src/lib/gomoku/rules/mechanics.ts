@@ -16,6 +16,7 @@ import { STAR_RADIUS, starCampSquares, starFilled, starMoves } from "./chineseCh
 import { dropTarget } from "./drop";
 import { hexConnection } from "./hex";
 import { rulesFor } from "./handicap";
+import { owesHeadStart } from "./headStart";
 import { findWinningLine, runThrough, winningLineFor } from "./lines";
 import { countStones, pieceDestinations, squareThrough } from "./pieces";
 import { findAllWins, rotateQuadrant } from "./twist";
@@ -208,6 +209,8 @@ export function twistBoard(state: GameState, quadrant: number, clockwise: boolea
 /** Where a piece of the colour to move may step from `from`; empty if it may not move. */
 export function pieceMoves(state: GameState, from: Point): Point[] {
   if (state.status !== GAME_STATUS.playing || state.pendingTwist) return [];
+  // A turn the other colour's head start takes moves nothing: it is passed.
+  if (owesHeadStart(state)) return [];
   if (!inMovePhase(state)) return [];
   if (!isOnBoard(state.settings.size, from) || state.board[indexOf(state.settings.size, from)] !== state.toPlay) return [];
   const spec = VARIANT_SPECS[state.settings.variant];

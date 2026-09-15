@@ -11,6 +11,7 @@ import type {
   HandicapTerms,
   Stone,
 } from "../gomoku.types";
+import { hasHeadStart } from "./headStart";
 
 /**
  * The rules a colour plays under: the variant's spec for that colour, with the
@@ -45,15 +46,27 @@ export function rulesFor(settings: GameSettings, stone: Stone): ColourRules {
 }
 
 /**
- * Whether any handicap is in force for anyone.
+ * Whether any handicap is in force for anyone: harder rules for one colour, or
+ * a head start for one.
  *
  * THE ONE PLACE THAT QUESTION IS ANSWERED, and a rating depends on it: a game
- * this is true of moves nobody's rating (`handicapRefusal`). So a new kind of
- * handicap — a head start — joins here and in `HandicapTerms`, and is refused a
- * rating without anybody having to find the rating code.
+ * this is true of moves nobody's rating (`handicapRefusal`). The head start
+ * joined here and in `HandicapTerms`, and was refused a rating without anybody
+ * having to find the rating code.
  */
 export function hasHandicap(settings: HandicapTerms): boolean {
-  return settings.handicap.stone !== null;
+  return settings.handicap.stone !== null || hasHeadStart(settings);
+}
+
+/**
+ * WHICH KIND OF UNEVENNESS a game carries, for the pages that name it: harder
+ * rules for one colour, a head start for one, or neither. Where both are set the
+ * harder rules are named, being the one the handicap panel shows first. Null
+ * exactly where `hasHandicap` is false.
+ */
+export function handicapKind(settings: HandicapTerms): "handicap" | "headStart" | null {
+  if (settings.handicap.stone !== null) return "handicap";
+  return hasHeadStart(settings) ? "headStart" : null;
 }
 
 /** Line rules from loosest to strictest, so a handicap can only move rightward. */

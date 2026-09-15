@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { HANDICAP_RULES, NO_HANDICAP, OBSTACLE_LAYOUTS, OPENING_RULES, STONES } from "@/lib/gomoku/gomoku.constants";
-import { NO_HANDICAP_ASKED, SET_UP_PARAMS } from "@/lib/gomoku/slugs";
+import { HANDICAP_RULES, NO_HANDICAP, NO_HEAD_START, OBSTACLE_LAYOUTS, OPENING_RULES, STONES } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP_ASKED, SET_UP_PARAMS, NO_HEAD_START_ASKED, slugFor } from "@/lib/gomoku/slugs";
 import { beginLink, changeLink, draftParams } from "./setUpAddress";
 import type { RulesDraft } from "./rulesDraft";
 import { readSetUpAsked } from "./setUpAsked";
@@ -32,6 +32,7 @@ const draft: RulesDraft = {
   allowResign: false,
   open: false,
   handicap: NO_HANDICAP,
+  headStart: NO_HEAD_START,
 };
 
 /** The query of an address, as the pages receive one. */
@@ -54,6 +55,7 @@ function roundTrip(rules: RulesDraft): Record<string, unknown> {
     rated: asked.rules.rated,
     allowResign: asked.rules.allowResign,
     handicap: asked.rules.handicap,
+    headStart: asked.rules.headStart,
   };
 }
 
@@ -70,7 +72,35 @@ describe("a settled game written into an address and read back", () => {
       rated: false,
       allowResign: false,
       handicap: NO_HANDICAP,
+      headStart: NO_HEAD_START,
     });
+  });
+
+  it("carries a head start in one word, counted in the game's own words, and reads it back", () => {
+    const go: RulesDraft = {
+      ...draft,
+      variant: "go",
+      size: 19,
+      opening: OPENING_RULES.free,
+      headStart: { stone: STONES.black, freeTurns: 2, traditional: 4 },
+    };
+    const link = beginLink(go);
+    expect(queryOf(link)[SET_UP_PARAMS.headStart]).toBe("black-2-turns-4-stones");
+    expect(readSetUpAsked(queryOf(link)).rules.headStart).toEqual(go.headStart);
+  });
+
+  it("says NO HEAD START out loud, so taking one off survives the way back", () => {
+    const link = beginLink(draft);
+    expect(queryOf(link)[SET_UP_PARAMS.headStart]).toBe(NO_HEAD_START_ASKED);
+    expect(readSetUpAsked(queryOf(link)).rules.headStart).toEqual(NO_HEAD_START);
+  });
+
+  it("reads nothing from a head start it cannot read, rather than half of one", () => {
+    // Corners at Go is a link written for Othello, not four stones.
+    expect(readSetUpAsked({ [SET_UP_PARAMS.game]: slugFor("go"), [SET_UP_PARAMS.headStart]: "black-4-corners" }).rules.headStart).toBeNull();
+    // Four free turns is more than anybody can give.
+    expect(readSetUpAsked({ [SET_UP_PARAMS.headStart]: "white-4-turns" }).rules.headStart).toBeNull();
+    expect(readSetUpAsked({ [SET_UP_PARAMS.headStart]: "white-2" }).rules.headStart).toBeNull();
   });
 
   /*

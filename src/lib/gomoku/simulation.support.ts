@@ -21,6 +21,7 @@ import { canChooseColour, canExtendOpening, chooseColour, extendOpening } from "
 import { checkCheckersMove, isCheckers } from "./simulation.checkers";
 import { checkStarMove, isChineseCheckers } from "./simulation.chineseCheckers";
 import { checkGoPass, isGo } from "./simulation.go";
+import { checkHeadStartPass, checkHeadStartStart, headStartDueByHand } from "./simulation.headStart";
 import {
   bruteForceWinner,
   checkMove,
@@ -67,12 +68,38 @@ function rng(seed: number): () => number {
 function playOut(settings: Partial<GameSettings>, seed: number, slideCap: number = SLIDE_CAP): GameState {
   const random = rng(seed);
   let state = createGame({ allowUndo: true, ...settings }, random());
+  // A traditional head start is part of the position before anybody moves.
+  checkHeadStartStart(state, seed);
   let guard = 0;
+  let headStartTurns = 0;
   let slides = 0;
 
   while (state.status === GAME_STATUS.playing) {
     const open = emptyPoints(state);
     if (open.length === 0) break;
+
+    /*
+     * A head start's turn: worked out by hand, and then the engine must agree
+     * that it is a pass the rules force. First, because in every game — Go and
+     * the sliding games included, which otherwise never pass by compulsion — it
+     * comes before anything else the colour to move might do.
+     */
+    const due = headStartDueByHand(state);
+    expect(mustPass(state) || !due, `seed ${seed}: a head start's turn was not a forced pass`).toBe(true);
+    if (due) {
+      const passed = passTurn(state);
+      expect(passed, `seed ${seed}: a head start's pass was refused`).not.toBe(state);
+      checkHeadStartPass(state, passed, seed);
+      state = passed;
+      /*
+       * Counted on its own rather than against the game's guard, which is a
+       * budget of points on the board: a head start's pass fills none, and there
+       * are never more of them than the three free turns anybody can give.
+       */
+      headStartTurns += 1;
+      expect(headStartTurns, `seed ${seed}: more head-start turns than free turns`).toBeLessThanOrEqual(3);
+      continue;
+    }
 
     /*
      * The swap openings: a seat is being asked to choose, not to play.

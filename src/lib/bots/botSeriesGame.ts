@@ -81,6 +81,7 @@ export async function createSeriesGame(m: SeriesMatch): Promise<{ id: string }> 
     obstacles: DEFAULT_SETTINGS.obstacles,
     opening: DEFAULT_SETTINGS.opening,
     handicap: DEFAULT_SETTINGS.handicap,
+    headStart: DEFAULT_SETTINGS.headStart,
     drawLimit: DEFAULT_SETTINGS.drawLimit,
     ...SERIES,
   });

@@ -39,6 +39,13 @@ export const RATING_REFUSALS = {
    * function, without anybody finding this one.
    */
   handicap: "handicap",
+  /**
+   * A HEAD START FOR EITHER COLOUR — free turns at the start, or the game's own
+   * traditional head start. A handicap by another name, refused by the same
+   * check (`hasHandicap`), and named separately only so the page says which of
+   * the two the players agreed to.
+   */
+  headStart: "head-start",
 } as const;
 
 export type RatingRefusal = (typeof RATING_REFUSALS)[keyof typeof RATING_REFUSALS];
@@ -109,5 +116,13 @@ export const RATING_REFUSAL_DISPLAY: Record<
     sentence:
       "One side took a handicap, so the two of you are not playing by the same rules. A rating is an exchange between two players on equal terms, and a handicap game cannot give the site one — so it is filed and replayed like any other, but no rating moves.",
     short: `${RATING_REFUSED_WORD} — a handicap`,
+  },
+  [RATING_REFUSALS.headStart]: {
+    playing: "This game will not count",
+    filed: "This game did not count",
+    kanji: "ハンデ戦",
+    sentence:
+      "One side has a head start, so the two of you are not playing on equal terms. A rating is an exchange between two players on equal terms, and a head-start game cannot give the site one — so it is filed and replayed like any other, but no rating moves.",
+    short: `${RATING_REFUSED_WORD} — a head start`,
   },
 };

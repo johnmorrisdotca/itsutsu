@@ -19,8 +19,10 @@ import {
 } from "@/lib/gomoku/gomoku.constants";
 import type { DrawLimit, Handicap, ObstacleLayout, OpeningRule, Point, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 import { replayGame } from "@/lib/gomoku/replay";
 import { startingDiscs } from "@/lib/gomoku/rules/flips";
+import { headStartPieces, komiFor } from "@/lib/gomoku/rules/headStart";
 import { scoreArea } from "@/lib/gomoku/rules/go";
 import { leavesNoStone } from "@/lib/gomoku/rules/stoneless";
 import { slugFor } from "@/lib/gomoku/slugs";
@@ -167,7 +169,8 @@ function areaMargin(game: SgfSource, winner: Stone, komi: number): string {
 
 function resultFor(game: SgfSource, spec: SgfTypeSpec): string {
   if (game.result === STONES.black || game.result === STONES.white) {
-    const margin = spec.komi === null ? "" : areaMargin(game, game.result, spec.komi);
+    // The komi this game was counted with: less where handicap stones were given.
+    const margin = spec.komi === null ? "" : areaMargin(game, game.result, komiFor(game));
     return `${colour(game.result)}+${margin}`;
   }
   // An unfinished game has no result, and SGF's word for that is Void.
@@ -195,6 +198,8 @@ function commentFor(game: SgfSource, spec: SgfTypeSpec, unwrittenPasses: number,
   }
   const handicap = handicapLine(game.handicap);
   if (handicap !== null) lines.push(handicap);
+  const headStart = describeHeadStart(game);
+  if (headStart !== null) lines.push(`${headStart}.`);
   if (game.obstacles !== OBSTACLE_LAYOUTS.none) {
     const layout = OBSTACLE_LAYOUT_DISPLAY[game.obstacles as ObstacleLayout];
     lines.push(`${layout.label}: ${layout.description}`);
@@ -256,7 +261,7 @@ export function writeSgf(game: SgfSource, playedOn: string | null): SgfWritten {
   if (playedOn !== null && SGF_CALENDAR_DATE.test(playedOn)) props.push(`DT[${playedOn}]`);
   props.push(`RE[${resultFor(game, spec)}]`);
   if (type.rules !== null) props.push(`RU[${simpleText(type.rules)}]`);
-  if (spec.komi !== null) props.push(`KM[${spec.komi}]`);
+  if (spec.komi !== null) props.push(`KM[${komiFor(game)}]`);
 
   const unwrittenPasses = spec.passes === "unwritable" ? game.moves.filter((move) => move.kind === MOVE_KINDS.pass).length : 0;
   const forfeits = game.moves.filter((move) => move.kind === MOVE_KINDS.forfeit).length;
@@ -264,10 +269,22 @@ export function writeSgf(game: SgfSource, playedOn: string | null): SgfWritten {
   if (comment.length > 0) props.push(`GC[${text(comment.join("\n"))}]`);
   if (game.opener === STONES.white) props.push("PL[W]");
 
+  /*
+   * A head start's handicap stones and corners are part of the position the first
+   * move is played on, so they are written as setup stones — beside Othello's
+   * centre, or on their own with HA naming the handicap where the game is Go.
+   */
+  const given = headStartPieces({ ...DEFAULT_SETTINGS, variant: game.variant as RuleVariant, size: game.size, headStart: game.headStart });
   if (spec.startingDiscs) {
-    const discs = startingDiscs({ ...DEFAULT_SETTINGS, variant: game.variant as RuleVariant, size: game.size });
+    const discs = [...startingDiscs({ ...DEFAULT_SETTINGS, variant: game.variant as RuleVariant, size: game.size }), ...given];
     const of = (stone: Stone) => discs.filter((disc) => disc.stone === stone).map((disc) => `[${pointFor(spec, disc.point)}]`).join("");
     props.push(`AB${of(STONES.black)}`, `AW${of(STONES.white)}`);
+  } else if (given.length > 0) {
+    if (spec.komi !== null) props.push(`HA[${given.length}]`);
+    for (const stone of [STONES.black, STONES.white]) {
+      const written = given.filter((piece) => piece.stone === stone).map((piece) => `[${pointFor(spec, piece.point)}]`).join("");
+      if (written !== "") props.push(`${stone === STONES.black ? "AB" : "AW"}${written}`);
+    }
   }
 
   const nodes = game.moves.map((move) => nodeFor(move, spec)).filter((node) => node !== null);

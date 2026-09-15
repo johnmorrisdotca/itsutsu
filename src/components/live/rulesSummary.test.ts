@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { describeRules, describeSettings } from "./rulesSummary";
-import { NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
+import { NO_HANDICAP, NO_HEAD_START } from "@/lib/gomoku/gomoku.constants";
 import {
   RATING_REFUSALS,
   RATING_REFUSED_WORD,
@@ -22,7 +22,7 @@ import {
  * before that, and rather than trust that no such row will ever exist again
  * the label snaps the same way the board does.
  */
-const plain = { obstacles: "none", opening: "free", handicap: NO_HANDICAP };
+const plain = { obstacles: "none", opening: "free", handicap: NO_HANDICAP, headStart: NO_HEAD_START };
 
 describe("describeRules", () => {
   it("names the board a game is actually played on, not the number in the row", () => {

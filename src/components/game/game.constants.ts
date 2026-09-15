@@ -265,6 +265,11 @@ export const GAME_COPY = {
   youHadNoMove: "You had no move, so your turn passed.",
   hadNoMoveToYou: (who: string) => `${who} had no move, so the turn passed back to you.`,
   hadNoMove: (who: string) => `${who} had no move, so their turn passed.`,
+  /** A turn a head start took, said to the colour given it, to the other side, and to anybody watching. */
+  headStartYours: (turn: number, of: number) => `Your head start: free turn ${turn} of ${of}, so it is your move again.`,
+  headStartToYou: (who: string, turn: number, of: number) =>
+    `${who}'s head start: free turn ${turn} of ${of}, so your turn passed.`,
+  headStartWatched: (who: string, turn: number, of: number) => `${who}'s head start: free turn ${turn} of ${of}.`,
   drawNoMoves: "Draw. Neither side had a move left.",
   passTurn: { label: "Pass", kanji: "パス" },
   piecePrompt: "Lay the piece in hand: rotate or flip it, then click where its top-left corner goes.",

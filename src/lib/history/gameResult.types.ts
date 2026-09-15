@@ -52,6 +52,8 @@ export type ResultCardData = {
   facts: GameResultFacts;
   /** The two names as the page shows them. */
   names: { black: string; white: string };
+  /** The head start the game was played with, in words — `describeHeadStart` — or null for an even game. */
+  headStart: string | null;
   /**
    * XP this reader was paid for this game, or null where there is none to say.
    *
