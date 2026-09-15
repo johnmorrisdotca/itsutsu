@@ -1,6 +1,6 @@
 import "server-only";
 
-import { pairWhere } from "@/lib/history/gameHistoryQuery";
+import { pairWhere } from "@/lib/history/gameHistoryClauses";
 import { NOT_A_REFUSED_OFFER } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
 import { levelShown } from "@/lib/xp/levelShown";

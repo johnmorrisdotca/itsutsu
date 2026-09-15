@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildGameOrderBy,
-  buildGameWhere,
-  outcomeNeedsPlayer,
-  pairWhere,
-  toGameHistoryQuery,
-} from "./gameHistoryQuery";
+import { buildGameOrderBy, buildGameWhere, toGameHistoryQuery } from "./gameHistoryQuery";
+import { outcomeNeedsPlayer, pairWhere } from "./gameHistoryClauses";
 import { NOT_A_REFUSED_OFFER } from "./offers";
 import { isRefusal } from "@/lib/api/paging";
 import { GAME_PAGE_SIZE_DEFAULT, GAME_PAGE_SIZE_MAX } from "./gameHistory.constants";
