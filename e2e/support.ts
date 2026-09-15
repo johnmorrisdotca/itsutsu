@@ -8,6 +8,24 @@ import { expect, type APIRequestContext, type Locator, type Page } from "@playwr
 
 import { UNRATED_BELOW } from "../src/lib/rating/elo";
 
+/**
+ * The page's tab strip holds exactly these tabs, named by their keys
+ * (`data-tab`), each once and nothing else.
+ *
+ * Named rather than counted. A player's page grew an XP tab in 0.197.0 and
+ * four specs that counted tabs went red saying "expected 3, got 4" — a
+ * number that says something changed and not what. A list of keys says which
+ * tab arrived, and the next one has to be written here on purpose. Order is
+ * left out: which chapter comes first depends on whether somebody has played
+ * here, which is a fact about the database rather than the page.
+ */
+export async function expectTabs(page: Page, keys: readonly string[]) {
+  await expect(page.getByTestId("tab"), `the tabs were meant to be ${keys.join(", ")}`).toHaveCount(keys.length);
+  for (const key of keys) {
+    await expect(page.locator(`[data-testid="tab"][data-tab="${key}"]`), `no "${key}" tab`).toHaveCount(1);
+  }
+}
+
 /** Column letters as the board labels them, with "I" skipped as in go. */
 const COLUMN_LETTERS = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 

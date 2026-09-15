@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { expectTabs } from "./support";
+
 /**
  * A page with several sections shows one at a time, and the address says
  * which.
@@ -38,12 +40,15 @@ test.describe("a page of many sections is tabs", () => {
   test("a record from one site still has this site's tab beside it", async ({ page }) => {
     /*
      * Kyokosan played on ItsYourTurn and nowhere else, and never here. She
-     * still has two tabs. A page whose tabs depend on a count being zero
-     * looks like a different kind of page to the reader, and what this site
-     * holds of somebody is worth saying even when it is nothing.
+     * still has this site's tab beside her site's. A page whose tabs depend
+     * on a count being zero looks like a different kind of page to the
+     * reader, and what this site holds of somebody is worth saying even when
+     * it is nothing. The third is how her XP was earned (`XP_HISTORY_TAB`,
+     * "xp"), which every page with a member row behind it has had since
+     * 0.197.0.
      */
     await page.goto("/players/kyokosan");
-    await expect(page.getByTestId("tab")).toHaveCount(2);
+    await expectTabs(page, ["itsyourturn", "itsutsu", "xp"]);
     // The record made elsewhere comes first, so the page opens on its substance.
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "ItsYourTurn.com");
 
