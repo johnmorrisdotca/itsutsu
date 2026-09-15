@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { seedMember } from "./members";
+import { expectTabs } from "./support";
 import { RULE_VARIANTS } from "../src/lib/gomoku/gomoku.constants";
 import { gamePath } from "../src/lib/gomoku/slugs";
 
@@ -85,8 +86,12 @@ test.describe("a legacy record's games link to what they are", () => {
     const heading = page.getByTestId("player-profile");
     await expect(heading).toContainText("ItsYourTurn.com");
     await expect(heading).toContainText("GoldToken.com");
-    // Two sites, plus this one — every player page keeps an Itsutsu tab.
-    await expect(page.getByTestId("tab")).toHaveCount(3);
+    /*
+     * Two sites, plus this one — every player page keeps an Itsutsu tab — and
+     * how his XP was earned (`XP_HISTORY_TAB`, "xp"), which every page with a
+     * member row behind it has had since 0.197.0.
+     */
+    await expectTabs(page, ["itsyourturn", "goldtoken", "itsutsu", "xp"]);
     // One at a time: the whole point of the tabs.
     await expect(page.getByTestId("legacy-source")).toHaveCount(1);
 
@@ -124,8 +129,8 @@ test.describe("a legacy record's games link to what they are", () => {
     const said = page.getByTestId("legacy-elsewhere");
     await expect(said).toContainText("Incognito");
     await expect(said).toContainText("John Morris");
-    // Two sites he played on, and this one.
-    await expect(page.getByTestId("tab")).toHaveCount(3);
+    // Two sites he played on, this one, and how his XP was earned.
+    await expectTabs(page, ["itsyourturn", "goldtoken", "itsutsu", "xp"]);
   });
 
   test("a member's own page shows the record they brought with them", async ({ page }) => {
@@ -145,8 +150,8 @@ test.describe("a legacy record's games link to what they are", () => {
     await expect(said).toContainText("GoldToken.com");
     await expect(said).toContainText("Incognito");
 
-    // And the record itself is a tab beside what he has done here.
-    await expect(page.getByTestId("tab")).toHaveCount(3);
+    // And the record itself is a tab beside what he has done here, and beside his XP.
+    await expectTabs(page, ["itsyourturn", "goldtoken", "itsutsu", "xp"]);
     await page.getByTestId("tab").filter({ hasText: "GoldToken" }).click();
     await expect(page.getByTestId("legacy-source")).toHaveAttribute("data-site", "GoldToken.com");
   });

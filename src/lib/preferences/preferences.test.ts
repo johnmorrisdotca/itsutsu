@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DIRECTORY_WHO } from "@/lib/rating/directoryFilter";
 
 import { DEFAULT_PREFERENCES, PREFERENCE_NAMES, PREFERENCE_SPECS } from "./preferences.constants";
-import { acceptPreferences, cleanPreferences, mergePreferences, preferencesFrom, sameStored } from "./preferences";
+import { acceptPreferences, cleanPreferences, mergePreferences, patchParts, preferencesFrom, sameStored } from "./preferences";
 
 /**
  * A registry, not a bag.
@@ -206,6 +206,32 @@ describe("laying a change over what is stored", () => {
     mergePreferences(stored, patch);
     expect(stored).toEqual({ playersWho: DIRECTORY_WHO.people });
     expect(patch).toEqual({ playersWho: null });
+  });
+
+  it("keeps a stored key where it was when changing its value, so an unchanged write still compares equal", () => {
+    expect(Object.keys(mergePreferences({ playersWho: DIRECTORY_WHO.people, xpWho: DIRECTORY_WHO.people }, { playersWho: DIRECTORY_WHO.computers }))).toEqual([
+      "playersWho",
+      "xpWho",
+    ]);
+  });
+});
+
+describe("a change as the database lays it over the column", () => {
+  /*
+   * The write in memberPreferences.ts sets and removes exactly these keys
+   * inside one UPDATE, so two overlapping writes of different preferences both
+   * land. The rule deciding which keys is the merge's own, and this pins that.
+   */
+  it("splits a change into what it sets and what it forgets", () => {
+    expect(patchParts({ xpWho: DIRECTORY_WHO.people, playersWho: null })).toEqual({
+      set: { xpWho: DIRECTORY_WHO.people },
+      forget: ["playersWho"],
+    });
+    expect(patchParts({})).toEqual({ set: {}, forget: [] });
+  });
+
+  it("lets through no name the registry does not know, and says nothing for undefined", () => {
+    expect(patchParts({ nonsense: 1, toString: null, xpWho: undefined } as never)).toEqual({ set: {}, forget: [] });
   });
 });
 

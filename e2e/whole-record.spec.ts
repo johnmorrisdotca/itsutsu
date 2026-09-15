@@ -335,7 +335,23 @@ test.describe("how much of a record the page leads with", () => {
 
       const figuresBox = await figures.boundingBox();
       const noteBox = await note.boundingBox();
-      expect(noteBox!.y - figuresBox!.y).toBeLessThan(200);
+      /*
+       * WHAT SITS BETWEEN, AND WHY THE NUMBER IS WHAT IT IS. The figures, then
+       * the standing John put under them (the level and XP block), then that
+       * standing's one link — "How this XP was earned", 0.197.0 — then the line
+       * saying every site is counted, then this warning. 200 held until the link
+       * arrived and measured 218.6 after it: the link is a 16px gap and a 16px
+       * line of small text, so the budget is 200 plus that one line. The link
+       * stays where it is, under the XP it explains; moved below this warning it
+       * would read as explaining the snapshot.
+       */
+      expect(noteBox!.y - figuresBox!.y).toBeLessThan(200 + 32);
+      /*
+       * And the thing the pixel budget stands for, said directly: the warning
+       * is in the headline, above the tabs, where it cannot become fine print.
+       */
+      const tabsBox = await page.getByTestId("tabs").boundingBox();
+      expect(noteBox!.y).toBeLessThan(tabsBox!.y);
     } finally {
       await dropLinkedGames(game);
     }
