@@ -29,7 +29,8 @@ import type { RowMoreProps } from "./recordTable.types";
  * controls. The list is the browser's top layer, so a table that scrolls inside its
  * own box cannot clip it; Escape and a press anywhere else close it, and it opens
  * beside the button with focus on its first control. It closes again the moment
- * the page or the table scrolls, rather than float away from the row it is about.
+ * the row it is about moves — the page or the table scrolled, or the window
+ * changed size — rather than float away from it.
  *
  * The same `BuddyButton` and `IgnoreButton` as everywhere else, so what a buddy is
  * called cannot drift. A buddy is still marked on the row itself — a star on the
@@ -41,6 +42,8 @@ export function RowMore({ memberId, name, isBuddy, ignoring }: RowMoreProps) {
   const menu = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const hydrated = useHydrated();
+  /** Where the button stood, and how big the window was, when the list was placed beside it. */
+  const placedAt = useRef<{ top: number; right: number; width: number; height: number } | null>(null);
 
   /* Beside the button, right-aligned to it, and above it where the viewport has no room below. */
   function place() {
@@ -48,6 +51,7 @@ export function RowMore({ memberId, name, isBuddy, ignoring }: RowMoreProps) {
     const list = menu.current;
     if (button === null || list === null) return;
     const at = button.getBoundingClientRect();
+    placedAt.current = { top: at.top, right: at.right, width: window.innerWidth, height: window.innerHeight };
     list.style.right = `${Math.max(8, window.innerWidth - at.right)}px`;
     if (window.innerHeight - at.bottom < 140) {
       list.style.top = "auto";
@@ -70,7 +74,35 @@ export function RowMore({ memberId, name, isBuddy, ignoring }: RowMoreProps) {
 
   useEffect(() => {
     if (!open) return;
-    const close = () => menu.current?.hidePopover();
+    /*
+     * CLOSED WHEN THE ROW HAS MOVED, NOT WHENEVER A SCROLL EVENT ARRIVES.
+     *
+     * A browser fires a scroll's event when it next renders, not when the scroll
+     * happens. Pressing a button that sits half below the fold scrolls it into view
+     * first, and a browser rendering late — CI's runner, at 1280px, where a hundred
+     * names above the table put the row at the foot of the window — delivered that
+     * scroll's event after the list had opened and this had begun listening. The
+     * list shut the instant it appeared, and row-actions.spec.ts failed there in
+     * light and dark while passing on every development database.
+     *
+     * So each scroll or resize asks whether the button still stands where the list
+     * was placed beside it, and in a window of the same size. The press's own
+     * scroll was already applied when `place` measured, so its late event finds
+     * nothing moved; a scroll a reader makes with the list open moves the row and
+     * still closes it.
+     */
+    const close = () => {
+      const button = trigger.current;
+      const was = placedAt.current;
+      if (button === null || was === null) return;
+      const at = button.getBoundingClientRect();
+      const moved =
+        Math.abs(at.top - was.top) > 0.5 ||
+        Math.abs(at.right - was.right) > 0.5 ||
+        window.innerWidth !== was.width ||
+        window.innerHeight !== was.height;
+      if (moved) menu.current?.hidePopover();
+    };
     window.addEventListener("scroll", close, true);
     window.addEventListener("resize", close);
     return () => {

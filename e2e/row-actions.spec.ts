@@ -141,3 +141,62 @@ for (const look of LOOKS) {
     }
   });
 }
+
+test("the ⋯ menu opens when pressing it first scrolls it into view, and a real scroll still closes it", async ({
+  browser,
+  baseURL,
+}) => {
+  /*
+   * WHERE CI'S DATABASE PUT THE ROW, AND WHEN CI'S BROWSER TOLD THE PAGE. Its
+   * "players here" panel holds a hundred names, so at 1280×900 the long-named
+   * member's row sat at the foot of the window with the ⋯ button just past it.
+   * Pressing it scrolled the page twenty pixels first — the trace's DOM snapshots
+   * record the scroll before the press — but the screencast still drew the page
+   * unscrolled ninety milliseconds after it. A browser fires a scroll's event when
+   * it next renders, and that runner was rendering late, so the event arrived
+   * after the menu had opened and begun listening for scrolls, and the menu shut
+   * the instant it appeared. The 1280px cases above failed on CI in light and dark
+   * and pass every time on a development database, whose panel is short, whose
+   * row never needs scrolling to, and whose browser renders on time.
+   *
+   * So the window is sized to leave the button half below the fold on any
+   * database, it is pressed the way a reader presses it, and the scroll's event is
+   * then delivered late, as that runner delivered it.
+   */
+  const look: Look = { width: 1280, scheme: "light", shot: "rowactions-scrolled" };
+  const { me, them, theirId, key, context, page } = await world(browser, baseURL!, look);
+  try {
+    await page.goto("/players");
+    const table = page.getByTestId("directory");
+    await expect(table).toBeVisible();
+    const more = table.locator(`tbody tr:has(a[href="/players/${theirId}"])`).getByTestId("row-more");
+    await readyHere(more);
+
+    const box = await more.boundingBox();
+    expect(box, "the ⋯ button has no box").not.toBeNull();
+    await page.setViewportSize({ width: look.width, height: Math.floor(box!.y + box!.height / 2) });
+    expect(await page.evaluate(() => window.scrollY), "the page had scrolled before the press").toBe(0);
+
+    await more.click();
+    await expect(more).toHaveAttribute("aria-expanded", "true");
+    const menu = page.locator(`#${await more.getAttribute("aria-controls")}`);
+    await expect(menu).toBeVisible();
+    expect(await page.evaluate(() => window.scrollY), "pressing did not scroll the button into view").toBeGreaterThan(0);
+
+    // The press's own scroll, told to the page late, as CI's runner told it: nothing has moved since the menu opened.
+    await page.evaluate(() => document.dispatchEvent(new Event("scroll", { bubbles: true })));
+    await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+    await expect(menu, "a scroll that moved nothing shut the menu").toBeVisible();
+    await expect(more).toHaveAttribute("aria-expanded", "true");
+
+    // The way back: a scroll that moves the row away from the menu closes it.
+    await page.mouse.wheel(0, 300);
+    await expect(menu).toBeHidden();
+    await expect(more).toHaveAttribute("aria-expanded", "false");
+  } finally {
+    await context.close();
+    await clearPeopleStanding("freestyle", key);
+    await removeMember(me.email);
+    await removeMember(them.email);
+  }
+});
