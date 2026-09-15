@@ -714,7 +714,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     capturesToWin: 15,
     allowFirstPlayerChoice: true,
   }),
-  misereFive: plain({ grid: BOARD_GRIDS.lines, misere: true, allowFirstPlayerChoice: true, openings: FREE_ONLY, headStartTurns: 3 }), // 3 never decides: the other side cannot be made to lay five so soon.
+  misereFive: plain({ grid: BOARD_GRIDS.lines, misere: true, allowFirstPlayerChoice: true, openings: FREE_ONLY, headStartTurns: 0 }), // A free turn is a burden where making the line loses, so it is no head start.
   // Tic-tac-toe's family: noughts and crosses IN the squares, however much the rules share with gomoku.
   makerBreaker: small({
     grid: BOARD_GRIDS.cells,
@@ -778,7 +778,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
   holeDrop: drop({ deadSquares: 1, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
   hotDrop: drop({ hotSquares: 1, deadSquares: 1, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
   clearDrop: drop({ lineClear: true, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
-  giveawayDrop: drop({ misere: true, headStartTurns: 3 }), // 3 never decides: the other side cannot be made to drop four so soon.
+  giveawayDrop: drop({ misere: true, headStartTurns: 0 }), // A free turn is a burden where making the line loses, so it is no head start.
   edgeDrop: small({ grid: BOARD_GRIDS.cells, winLength: 4, placement: PLACEMENTS.edge, boardSizes: [7, 9, 10], headStartTurns: 0 }), // 1 not shown safe within budget.
   wormDrop: drop({ wormholes: 2, headStartTurns: 1 }), // 2 free turns lay an open three on the bottom row: a forced four.
   // The piece games are this site's own, laid on go boards in stones rather than tiles, so they keep the house lines.
@@ -825,7 +825,7 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
    */
   reversi: flipping({ startingDiscs: STARTING_DISCS.fixed, headStart: TRADITIONAL_HEAD_STARTS.corners, headStartTurns: 0 }), // 1 free turn takes the last disc.
   classicReversi: flipping({ startingDiscs: STARTING_DISCS.laid, headStart: TRADITIONAL_HEAD_STARTS.corners, headStartTurns: 1 }), // 2 free turns take the last disc.
-  antiReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, misere: true, headStartTurns: 3 }), // 3 never decides: fewer discs wins, and free turns only add them.
+  antiReversi: flipping({ startingDiscs: STARTING_DISCS.fixed, misere: true, headStartTurns: 0 }), // A free turn is a burden where making the line loses, so it is no head start.
   miniReversi: flipping({
     startingDiscs: STARTING_DISCS.fixed,
     boardSizes: MINI_REVERSI_SIZES,
