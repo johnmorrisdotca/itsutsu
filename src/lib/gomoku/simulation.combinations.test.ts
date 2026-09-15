@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   GAME_STATUS,
   NO_HANDICAP,
+  NO_HEAD_START,
   OPENING_RULES,
   RULE_VARIANTS,
   STONES,
@@ -195,7 +196,10 @@ describe("every game with a head start", () => {
       for (const stone of [STONES.black, STONES.white]) {
         const size = boardSizesFor(variant)[0];
         const counts = traditionalCounts(variant, size);
-        const headStart = { stone, freeTurns: 1 + (index % 3), traditional: counts.length > 0 ? counts[counts.length - 1] : 0 };
+        // Never more free turns than the game offers: more would be refused, and this is about the ones given.
+        const freeTurns = Math.min(1 + (index % 3), VARIANT_SPECS[variant].headStartTurns);
+        const traditional = counts.length > 0 ? counts[counts.length - 1] : 0;
+        const headStart = freeTurns === 0 && traditional === 0 ? NO_HEAD_START : { stone, freeTurns, traditional };
         const what = `${variant} with a head start for ${stone}`;
         const final = playOut({ variant, size, headStart }, seedFor(variant, `head-start-${stone}`, index + 41));
         expect(final.settings.headStart, `${what}: the head start was dropped`).toEqual(headStart);

@@ -140,10 +140,11 @@ test("corners: Othello's head start gives the colour its corners before the firs
   await page.goto("/games/reversi/play");
   await openAdvanced(page);
   await page.getByTestId("practice-head-start-stone").selectOption("white");
+  // Othello offers no free turns — one would take the other side's last disc — so its corners are the whole choice.
   await page.getByTestId("practice-head-start-traditional").selectOption("2");
-  await page.getByTestId("practice-head-start-turns").selectOption("0");
 
   await expect(stoneAt(page, "A8", "White stone")).toBeVisible();
+  await expect(page.getByTestId("practice-head-start-turns")).toHaveCount(0);
   await expect(stoneAt(page, "H1", "White stone")).toBeVisible();
   await expect(stoneAt(page, "H8", "empty")).toBeVisible();
   // Two in the centre and two in the corners.

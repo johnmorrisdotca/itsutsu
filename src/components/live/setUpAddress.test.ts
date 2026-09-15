@@ -98,8 +98,9 @@ describe("a settled game written into an address and read back", () => {
   it("reads nothing from a head start it cannot read, rather than half of one", () => {
     // Corners at Go is a link written for Othello, not four stones.
     expect(readSetUpAsked({ [SET_UP_PARAMS.game]: slugFor("go"), [SET_UP_PARAMS.headStart]: "black-4-corners" }).rules.headStart).toBeNull();
-    // Four free turns is more than anybody can give.
+    // Four free turns is more than anybody can give, and three is more than freestyle offers.
     expect(readSetUpAsked({ [SET_UP_PARAMS.headStart]: "white-4-turns" }).rules.headStart).toBeNull();
+    expect(readSetUpAsked({ [SET_UP_PARAMS.game]: slugFor("freestyle"), [SET_UP_PARAMS.headStart]: "white-3-turns" }).rules.headStart).toBeNull();
     expect(readSetUpAsked({ [SET_UP_PARAMS.headStart]: "white-2" }).rules.headStart).toBeNull();
   });
 

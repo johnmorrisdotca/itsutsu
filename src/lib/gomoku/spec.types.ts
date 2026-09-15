@@ -42,6 +42,13 @@ export type BoardGrid = "lines" | "cells";
  */
 export type TraditionalHeadStart = "stones" | "corners" | "men";
 
+/**
+ * The most free turns a game offers as a head start: 0 where it offers none.
+ * Declared per game and measured, never inferred — see `headStartTurns` on the
+ * spec and `simulation.headStartDecides.ts`.
+ */
+export type HeadStartTurns = 0 | 1 | 2 | 3;
+
 /** Which edges of the board join up: a plane, a cylinder, or a torus. */
 export type WrapMode = "none" | "columns" | "both";
 

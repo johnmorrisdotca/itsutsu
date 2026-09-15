@@ -9,7 +9,7 @@ import {
   TRADITIONAL_HEAD_STARTS,
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
-import { traditionalKind } from "@/lib/gomoku/rules/headStart";
+import { freeTurnsOffered, traditionalKind } from "@/lib/gomoku/rules/headStart";
 import type { Handicap, HandicapRule, HeadStart, OpeningRule, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import {
   HEAD_START_TURNS_WORD,
@@ -246,6 +246,8 @@ function readHeadStart(raw: string | null, variant: RuleVariant | null): HeadSta
     const given = Number(count);
     if (word === HEAD_START_TURNS_WORD) {
       if (!(HEAD_START_FREE_TURNS as readonly number[]).includes(given)) return null;
+      // More free turns than the game offers is a start that could decide it: refused, not trimmed.
+      if (variant !== null && !freeTurnsOffered(variant).includes(given)) return null;
       start.freeTurns = given;
       continue;
     }

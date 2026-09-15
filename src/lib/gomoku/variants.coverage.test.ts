@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { ALSO_LISTED_IN, GAME_FAMILIES, familyOf, gamesShownIn, siblingsOf } from "./families";
-import { RULE_VARIANTS } from "./gomoku.constants";
+import { RULE_VARIANTS, VARIANT_SPECS } from "./gomoku.constants";
+import { measureHeadStart } from "./simulation.headStartDecides";
 import type { RuleVariant } from "./gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "./variants.constants";
 import { hasGameImage, hasGameThumb } from "@/lib/learn/images";
@@ -119,5 +120,27 @@ describe("every game is finished, not just playable", () => {
       const shown = gamesShownIn(family).map((game) => game.variant);
       expect(new Set(shown).size, `${family.title} shows a game twice`).toBe(shown.length);
     }
+  });
+});
+
+/**
+ * A HEAD START MAKES A GAME EASIER, NEVER DECIDES IT.
+ *
+ * Every game declares the most free turns it offers (`headStartTurns`), and the
+ * figure is held here to its measurement: with that many free turns, the
+ * favoured colour must not be able to force a win — or in draughts a capture it
+ * keeps — within a short horizon, on any board the game is played on, for either
+ * colour. A search that runs past its budget fails this too: a figure nobody
+ * can show safe is not a figure to declare. See `simulation.headStartDecides.ts`.
+ */
+describe("every game's head start leaves the game to be played", () => {
+  it.each(VARIANTS)("%s declares how many free turns it offers", (variant) => {
+    expect([0, 1, 2, 3]).toContain(VARIANT_SPECS[variant].headStartTurns);
+  });
+
+  it.each(VARIANTS)("%s is not decided by the free turns it declares", { timeout: 120_000 }, (variant) => {
+    const declared = VARIANT_SPECS[variant].headStartTurns;
+    if (declared === 0) return;
+    expect(measureHeadStart(variant, declared)).toEqual({ kind: "safe" });
   });
 });

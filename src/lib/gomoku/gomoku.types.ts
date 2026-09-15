@@ -17,6 +17,7 @@ export type {
   LineRule,
   PieceTally,
   Placement,
+  HeadStartTurns,
   StartingDiscs,
   TraditionalHeadStart,
   WrapMode,

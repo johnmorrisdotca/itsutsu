@@ -1,6 +1,5 @@
 import {
   GAME_STATUS,
-  HEAD_START_FREE_TURNS,
   NO_HEAD_START,
   STAR_POINTS,
   STONES,
@@ -93,19 +92,32 @@ export function traditionalCounts(variant: string, size: number): readonly numbe
 }
 
 function upTo(from: number, to: number): number[] {
-  return Array.from({ length: to - from + 1 }, (_, index) => from + index);
+  return Array.from({ length: Math.max(0, to - from + 1) }, (_, index) => from + index);
 }
 
 /**
- * A head start that agrees with its game and board: free turns among those on
- * offer, a traditional part the game has at this size, and no colour at all
- * where nothing is left. Anything it cannot read comes out as less, never as
- * more — the safe direction for a start somebody may not have agreed to.
+ * The free turns a game offers: one up to its declared `headStartTurns`, and
+ * none where it declares none — the flipping games, where a single free turn
+ * takes the other side's last disc, and the small boards a free turn wins.
+ */
+export function freeTurnsOffered(variant: string): readonly number[] {
+  const spec = VARIANT_SPECS[variant as RuleVariant] as VariantSpec | undefined;
+  return spec === undefined ? [] : upTo(1, spec.headStartTurns);
+}
+
+/**
+ * A head start that agrees with its game and board: free turns among those the
+ * game offers, a traditional part the game has at this size, and no colour at
+ * all where nothing is left. Anything it cannot read comes out as less, never
+ * as more — the safe direction for a start somebody may not have agreed to. So
+ * free turns above the game's own most are refused, whether they arrive from a
+ * stale address, a request or a stored row: a head start that could decide the
+ * game is not given at all.
  */
 export function normaliseHeadStart(settings: { variant: string; size: number; headStart?: HeadStart | null }): HeadStart {
   const { stone, freeTurns, traditional } = headStartOf(settings);
   if (stone !== STONES.black && stone !== STONES.white) return NO_HEAD_START;
-  const turns = (HEAD_START_FREE_TURNS as readonly number[]).includes(freeTurns) ? freeTurns : 0;
+  const turns = freeTurnsOffered(settings.variant).includes(freeTurns) ? freeTurns : 0;
   const extra = traditionalCounts(settings.variant, settings.size).includes(traditional) ? traditional : 0;
   return turns === 0 && extra === 0 ? NO_HEAD_START : { stone, freeTurns: turns, traditional: extra };
 }

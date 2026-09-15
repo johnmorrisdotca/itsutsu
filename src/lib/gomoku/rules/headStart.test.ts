@@ -28,6 +28,7 @@ import { handicapKind, hasHandicap } from "./handicap";
 import {
   HEAD_START_KOMI,
   cornerPoints,
+  freeTurnsOffered,
   handicapStonePoints,
   headStartTurnTaken,
   komiFor,
@@ -74,9 +75,20 @@ describe("a head start, as the settings carry it", () => {
     expect(normaliseHeadStart({ variant: RULE_VARIANTS.freestyle, size: 15 })).toEqual(NO_HEAD_START);
   });
 
-  it("keeps free turns to the one-to-three John chose, and drops what it cannot read", () => {
-    expect(normaliseHeadStart({ variant: RULE_VARIANTS.freestyle, size: 15, headStart: given(STONES.white, 3) })).toEqual(given(STONES.white, 3));
-    expect(normaliseHeadStart({ variant: RULE_VARIANTS.freestyle, size: 15, headStart: given(STONES.white, 4) })).toEqual(NO_HEAD_START);
+  it("offers free turns up to each game's declared most, and refuses more", () => {
+    expect(freeTurnsOffered(RULE_VARIANTS.freestyle)).toEqual([1, 2]);
+    expect(freeTurnsOffered(RULE_VARIANTS.go)).toEqual([1, 2, 3]);
+    // One free turn wins tic-tac-toe and takes Othello's last disc: none offered.
+    expect(freeTurnsOffered(RULE_VARIANTS.tictactoe)).toEqual([]);
+    expect(freeTurnsOffered(RULE_VARIANTS.reversi)).toEqual([]);
+    expect(freeTurnsOffered("not-a-game")).toEqual([]);
+
+    expect(normaliseHeadStart({ variant: RULE_VARIANTS.freestyle, size: 15, headStart: given(STONES.white, 2) })).toEqual(given(STONES.white, 2));
+    // Three gives an open four: refused outright rather than trimmed to two.
+    expect(normaliseHeadStart({ variant: RULE_VARIANTS.freestyle, size: 15, headStart: given(STONES.white, 3) })).toEqual(NO_HEAD_START);
+    expect(normaliseHeadStart({ variant: RULE_VARIANTS.tictactoe, size: 3, headStart: given(STONES.black, 1) })).toEqual(NO_HEAD_START);
+    // Refused free turns leave a tradition the game still has.
+    expect(normaliseHeadStart({ variant: RULE_VARIANTS.reversi, size: 8, headStart: given(STONES.white, 1, 2) })).toEqual(given(STONES.white, 0, 2));
   });
 
   it("offers each game's own traditional head start, and none where it has none", () => {
@@ -172,7 +184,14 @@ describe("free turns", () => {
   });
 
   it("counts a two-stone turn as one turn", () => {
-    let state = createGame({ variant: RULE_VARIANTS.connect6, size: 19, headStart: given(STONES.black, 1) });
+    /*
+     * Connect6 offers no free turns — its measurement could not show one safe —
+     * but the turn rule must still count a two-stone turn as one, so the start is
+     * set on the position directly, past the game's own limit.
+     */
+    const plain = createGame({ variant: RULE_VARIANTS.connect6, size: 19 });
+    expect(plain.settings.headStart).toEqual(NO_HEAD_START);
+    let state: GameState = { ...plain, settings: { ...plain.settings, headStart: given(STONES.black, 1) } };
     state = playMove(state, p(9, 9));
     state = passesOwed(state);
     // Black's second turn is a whole turn of two stones, not the tail of its first.
@@ -210,13 +229,16 @@ describe("free turns", () => {
     expect(state.status).toBe(GAME_STATUS.playing);
   });
 
-  it("gives a turn in the flipping games", () => {
+  it("takes a flipping game's turn as a pass, where one is set", () => {
     /*
-     * White given it, because Black is the opener: a free turn for the colour
-     * that opens Othello takes the other colour's last disc on its second move,
-     * every time — see the report on this ticket.
+     * Othello offers no free turns: one for the colour that opens takes the
+     * other colour's last disc on its second move, every time. The rule is still
+     * the engine's, so the start is set on the position directly — for White,
+     * which does not open.
      */
-    let state = createGame({ variant: RULE_VARIANTS.reversi, headStart: given(STONES.white, 1) });
+    expect(createGame({ variant: RULE_VARIANTS.reversi, headStart: given(STONES.white, 1) }).settings.headStart).toEqual(NO_HEAD_START);
+    const plain = createGame({ variant: RULE_VARIANTS.reversi });
+    let state: GameState = { ...plain, settings: { ...plain.settings, headStart: given(STONES.white, 1) } };
     state = playMove(state, anyPoint(state));
     expect(owesHeadStart(state)).toBe(false);
     state = playMove(state, anyPoint(state));
@@ -229,8 +251,8 @@ describe("free turns", () => {
   });
 
   it("replays from its move list alone, head-start passes and all", () => {
-    let state = createGame({ size: 15, headStart: given(STONES.black, 3) });
-    for (const point of [p(3, 3), p(3, 4), p(3, 5), p(3, 6), p(10, 10)]) {
+    let state = createGame({ size: 15, headStart: given(STONES.black, 2) });
+    for (const point of [p(3, 3), p(3, 4), p(3, 5), p(10, 10), p(3, 7)]) {
       state = passesOwed(playMove(state, point));
     }
     const replayed = replayMoves(createGame({ ...state.settings, firstPlayer: state.opener }), state.moves, []);

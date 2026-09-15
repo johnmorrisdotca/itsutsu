@@ -1,5 +1,5 @@
 import { NO_HANDICAP, NO_HEAD_START, OPENING_RULES, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
-import { hasHeadStart, traditionalCounts } from "@/lib/gomoku/rules/headStart";
+import { freeTurnsOffered, hasHeadStart, traditionalCounts } from "@/lib/gomoku/rules/headStart";
 import type { Handicap, HeadStart, OpeningRule, RuleVariant, VariantSpec } from "@/lib/gomoku/gomoku.types";
 import { SHARED_OPENINGS } from "@/lib/history/gameSettingsSchema";
 
@@ -117,9 +117,12 @@ export function applyRulesChange(current: RulesDraft, next: Partial<RulesDraft>)
    * A HEAD START THIS GAME CAN GIVE, ON THIS BOARD. Corners chosen at Othello
    * mean nothing at Gomoku, and seven handicap stones mean nothing on 9×9, which
    * marks five points: the traditional part drops to none rather than riding
-   * along to a game that would ignore it. And a head start plays the free
-   * opening, as `availableOpenings` decides at creation.
+   * along to a game that would ignore it. Free turns come down to the game's own
+   * most, on the screen where somebody can see it happen. And a head start plays
+   * the free opening, as `availableOpenings` decides at creation.
    */
+  const mostTurns = freeTurnsOffered(merged.variant).length;
+  if (merged.headStart.freeTurns > mostTurns) merged.headStart = { ...merged.headStart, freeTurns: mostTurns };
   if (!traditionalCounts(merged.variant, merged.size).includes(merged.headStart.traditional)) {
     merged.headStart = { ...merged.headStart, traditional: 0 };
   }
