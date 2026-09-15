@@ -18,7 +18,6 @@ export const DAY_MS = 86_400_000;
 
 /** Every reason a game can end with nobody winning, so a list of reasons can be told apart from a win's. */
 export const RESULT_DRAW_REASONS = [
-  "unfinishable",
   "noProgressRacing",
   "noProgressTaking",
   "noProgressPlacing",

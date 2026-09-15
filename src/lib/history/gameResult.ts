@@ -5,7 +5,7 @@ import { endingRanOut, repeatedTooOften } from "@/lib/gomoku/rules/checkersDraws
 import { discCount } from "@/lib/gomoku/rules/flips";
 import { endedWithNoMoves } from "@/lib/gomoku/rules/forcedPass";
 import { scoreArea } from "@/lib/gomoku/rules/go";
-import { couldNotFinish, stalledDrawOf } from "@/lib/gomoku/rules/noProgress";
+import { stalledDrawOf } from "@/lib/gomoku/rules/noProgress";
 
 import { NO_PROGRESS_DRAW_REASONS } from "./gameResult.constants";
 import type { DrawReason, GameResultFacts, ResultReason, ResultScore } from "./gameResult.types";
@@ -79,7 +79,6 @@ export function gameResultFacts({
  */
 export function drawReasonOf(final: GameState): DrawReason {
   if (final.status !== GAME_STATUS.draw) return "draw";
-  if (couldNotFinish(final)) return "unfinishable";
   const stall = stalledDrawOf(final);
   if (stall !== null) return NO_PROGRESS_DRAW_REASONS[stall.measure];
   if (endedWithNoMoves(final)) return "noMoves";

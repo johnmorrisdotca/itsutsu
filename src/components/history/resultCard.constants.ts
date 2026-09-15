@@ -29,7 +29,6 @@ export const RESULT_REASONS: Record<ResultReason, (who: string, other: string) =
    * A draw's reasons, in the board's own words (`GAME_COPY.draw…`) less the
    * "Draw." the card's headline has already said.
    */
-  unfinishable: () => "Nobody was getting anywhere, so it could not be finished.",
   noProgressRacing: () => "Nobody got a piece any nearer home for longer than its rules allow.",
   noProgressTaking: () => "Nothing was taken and no man moved for longer than its rules allow.",
   noProgressPlacing: () => "Every piece was down, and the sliding went on longer than its rules allow.",

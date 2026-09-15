@@ -73,12 +73,8 @@ export const PROGRESS_MEASURES = {
 
 export type ProgressMeasure = (typeof PROGRESS_MEASURES)[keyof typeof PROGRESS_MEASURES];
 
-/**
- * One game's no-progress rule: how long, measured how, and — for the one game
- * whose stall is kept in view as a symptom rather than read as a result — that
- * its stall says the game could not be finished (see `couldNotFinish`).
- */
-export type NoProgressRule = { plies: number; measure: ProgressMeasure; saysUnfinished?: true };
+/** One game's no-progress rule: how long nobody getting anywhere may go on, and how "anywhere" is read. */
+export type NoProgressRule = { plies: number; measure: ProgressMeasure };
 
 /** A draw a no-progress rule made: which measure fired, at the count the rule allows. */
 export type StalledDraw = { measure: ProgressMeasure; plies: number };
@@ -132,8 +128,8 @@ export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, NoProgressRule>> = {
    */
   [RULE_VARIANTS.squareFour]: { plies: 4000, measure: PROGRESS_MEASURES.placing },
   /*
-   * Chinese Checkers is capped like the others but says something different
-   * when it ends — see `couldNotFinish`.
+   * Chinese Checkers is a race like Halma, and its stall is Halma's: a draw by
+   * the no-progress rule, said in the same words (John, 2026-09-15).
    *
    * It was left out until its star camps were wired in, because the rule was
    * reading an empty camp for them and would have drawn every game for a
@@ -141,16 +137,16 @@ export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, NoProgressRule>> = {
    * checked: on a 17×17 star, black's distance falls from 24 at its own camp
    * to 0 at the corner of the camp it fills.
    *
-   * The separate wording is John's ruling, and it is the right one — and the
-   * reason it was right is a lesson. Fifteen bot games across every grade
-   * never filled more than three of the ten squares a win needs, and the note
-   * here concluded the GAME might not be winnable. It was the players: the
-   * bot's race score was reading the square camp table for the star board,
-   * the same fault this rule had just been cured of, so every grade was
-   * wandering blind — see rules/farCamp.ts, which both now read. A plain draw
-   * would have filed those games as ordinary results and the evidence would
-   * be gone; saying that the game could not be finished kept the symptom in
-   * view long enough for somebody to ask why.
+   * IT USED TO SAY THE GAME "COULD NOT BE FINISHED", and for a while that was
+   * the right thing to say — the reason is a lesson. Fifteen bot games across
+   * every grade never filled more than three of the ten squares a win needs,
+   * and the note here concluded the GAME might not be winnable. It was the
+   * players: the bot's race score was reading the square camp table for the
+   * star board, the same fault this rule had just been cured of, so every grade
+   * was wandering blind — see rules/farCamp.ts, which both now read. A plain
+   * draw would have filed those games as ordinary results and the evidence
+   * would be gone; the separate wording kept the symptom in view long enough
+   * for somebody to ask why.
    *
    * RE-MEASURED OVER PLAYERS THAT CAN SEE THE STAR. The 400 here was set while
    * every grade was playing blind, so it measured a broken player rather than
@@ -164,47 +160,33 @@ export const NO_PROGRESS_RULES: Partial<Record<RuleVariant, NoProgressRule>> = {
    * race games carry. 800 carries it. Raised, because the error is not
    * symmetrical: too generous draws a shuffle later, too tight takes a win.
    *
-   * IT STILL SAYS "COULD NOT BE FINISHED" (`saysUnfinished`), and after that
-   * measurement the words are a question rather than a finding: all 50 games
-   * were won, so the game can plainly be finished, and its stall is the same
-   * racing draw a stalled Halma is. Which words it should end with is John's
-   * ruling to revisit, not this table's to guess.
+   * SO THE SEPARATE WORDING WENT. All 50 games were won: the game can plainly
+   * be finished, and a stall in it is the same racing draw a stalled Halma is.
+   * It was the only row that said otherwise, so the flag that said it, the
+   * function that read the flag and the `unfinishable` draw reason went with it
+   * rather than stay behind as branches nothing reaches.
    */
-  [RULE_VARIANTS.chineseCheckers]: { plies: 800, measure: PROGRESS_MEASURES.racing, saysUnfinished: true },
+  [RULE_VARIANTS.chineseCheckers]: { plies: 800, measure: PROGRESS_MEASURES.racing },
 };
 
 /**
- * Whether this game ended because nobody could finish it, rather than by any
- * of the ordinary draws — said now of the one game whose row says so
- * (`saysUnfinished`), and of no other.
+ * The no-progress rule that drew this game — what it measures and the count it
+ * allows — or null where no such rule drew it.
  *
- * THE OTHER STALLS NAME THEIR RULE. "Could not be finished" was John's ruling
- * for Chinese Checkers, chosen so a game nobody seemed able to win stayed in
- * view as such. Halma, Checkers and Square Four inherited the sentence by
- * sharing this function, and their stalls are the ordinary kind — so the one
- * phrase meant to be conspicuous became the usual wording. Chess does not say a
- * game could not be finished; it says "draw by the fifty-move rule". A stalled
- * draughts game is a draw by draughts' rule, and says so: see `stalledDrawOf`.
+ * EVERY STALL NAMES ITS RULE. Chess does not say a game could not be finished;
+ * it says "draw by the fifty-move rule". A stalled draughts game is a draw by
+ * draughts' rule, and a stalled race — Halma or Chinese Checkers — a draw by
+ * the no-progress rule, and each says so with that rule's count.
  *
  * Derived, never stored — the same way `drawnByLength` answers its question.
  * A finished game is its settings and its moves, and anything the two of them
  * imply is a question to ask, not a column to keep in step.
- */
-export function couldNotFinish(state: GameState): boolean {
-  const rule = NO_PROGRESS_RULES[state.settings.variant as RuleVariant];
-  return state.status === GAME_STATUS.draw && rule?.saysUnfinished === true && stalled(state);
-}
-
-/**
- * The no-progress rule that drew this game — what it measures and the count it
- * allows — or null where no such rule drew it, including the one game whose
- * stall says it could not be finished instead.
  *
  * Read from the table, like everything here: the engine never asks a game's name.
  */
 export function stalledDrawOf(state: GameState): StalledDraw | null {
   const rule = NO_PROGRESS_RULES[state.settings.variant as RuleVariant];
-  if (rule === undefined || rule.saysUnfinished === true) return null;
+  if (rule === undefined) return null;
   if (state.status !== GAME_STATUS.draw || !stalled(state)) return null;
   return { measure: rule.measure, plies: rule.plies };
 }

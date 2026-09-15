@@ -222,13 +222,6 @@ export const GAME_COPY = {
   drawByRepetition: "Draw by repetition: the same position came round again, with the same side to move.",
   drawByEndgameCount: "Draw. The ending was not won within the moves its rules allow.",
   /*
-   * Not "draw" first, because this is not a result. The game got nowhere for
-   * long enough that it had to be stopped, and saying so plainly is what
-   * keeps a game nobody can win visible as such rather than filed away as an
-   * ordinary drawn game.
-   */
-  drawUnfinishable: "This game could not be finished: nobody was getting anywhere.",
-  /*
    * A stall that is an ordinary draw, named by the rule that drew it and that
    * rule's own count — the way chess says "draw by the fifty-move rule". One
    * sentence per measure in `rules/noProgress.ts`, handed the plies the rule
