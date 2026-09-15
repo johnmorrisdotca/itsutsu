@@ -91,7 +91,7 @@ export const ADMIN_LOG_COPY = {
    * a way to learn them.
    */
   lead:
-    "What has been done to members' accounts from this page, newest first: shutting one, opening it again, setting somebody's four words and starting a pick. It says who did it and when — never the words themselves.",
+    "What has been done to members' accounts from this page, newest first: shutting one, opening it again, setting somebody's four words, starting a pick and attaching a kept record. It says who did it and when — never the words themselves, and never the name a record was kept under.",
   when: "When",
   who: "Who",
   what: "What",
@@ -102,4 +102,36 @@ export const ADMIN_LOG_COPY = {
   unnamedActor: "an operator the session did not name",
   /** A member whose row has gone since: the act stands, and says whose id it was. */
   memberGone: (id: string) => `a member no longer here (${id})`,
+} as const;
+
+/**
+ * The Attach-a-record modal on the Members list. See `claimRecord.ts` for what a
+ * record is here: games, a rating and per-game standings kept under a name that
+ * nobody had an account for.
+ */
+export const ADMIN_CLAIM_COPY = {
+  link: "Attach a record",
+  linkKanji: "引継",
+  linkTitle: "Attach the games and rating kept under a name nobody had an account for",
+  title: "Attach a record to",
+  lead: (name: string) =>
+    `Games played under a name with no account behind it — at one screen, or before accounts existed — can be attached to ${name}, with the rating and the per-game standings kept under that name. Type the name exactly as the games were played under, and look before attaching.`,
+  nameLabel: "The name the games were played under",
+  look: "Look",
+  underName: (asked: string) => `Kept under “${asked}”:`,
+  /** Said after the count, which is a link to exactly those games. */
+  finished: (count: number) => (count === 1 ? " finished game" : " finished games"),
+  seats: (count: number, name: string) =>
+    count === 1
+      ? `1 seat in them carries nobody's id yet, and will carry ${name}'s`
+      : `${count} seats in them carry nobody's id yet, and will carry ${name}'s`,
+  rating: (has: boolean) => (has ? "A rating, which becomes theirs" : "No rating"),
+  standings: (count: number) => (count === 1 ? "1 per-game standing, which becomes theirs" : `${count} per-game standings, which become theirs`),
+  whatStays:
+    "The games keep the names they were played under. No XP comes with them, and the operator log keeps what moved, without the name.",
+  attach: (name: string) => `Attach to ${name}`,
+  done: (name: string) => `Attached. ${name}'s page counts these games now, and the operator log keeps what moved.`,
+  close: "Close",
+  lookFailed: "Could not look that name up.",
+  attachFailed: "Could not attach that record.",
 } as const;

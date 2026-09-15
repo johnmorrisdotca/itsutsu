@@ -1,5 +1,5 @@
 /** The acts the operator log keeps — see `OPERATOR_ACTIONS`. */
-export type OperatorActionName = "shut" | "restore" | "wordsSet" | "wordsPickOpened" | "rename";
+export type OperatorActionName = "shut" | "restore" | "wordsSet" | "wordsPickOpened" | "rename" | "recordClaimed";
 
 /**
  * Who acted, as the operator's session knows them. Null where the session does

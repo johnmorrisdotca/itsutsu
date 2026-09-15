@@ -48,3 +48,18 @@ export type MemberWordsModalProps = {
 export type AdminDrawFields = PhraseDrawFields & {
   member: { id: string; name: string; set: boolean; setAt: string | null };
 };
+
+/** The member the Attach-a-record modal is about: an id to send and a name to say. */
+export type ClaimSubject = { id: string; name: string };
+
+export type MemberClaimModalProps = {
+  member: ClaimSubject;
+  /** Shut. Whatever was looked at and not attached is dropped. */
+  onClose: () => void;
+  /**
+   * Told once a record has been attached, so the list behind the modal reads
+   * itself again. It carries nothing, for the reason `MemberWordsModalProps`
+   * gives: what moved is the server's to state.
+   */
+  onAttached: () => void;
+};
