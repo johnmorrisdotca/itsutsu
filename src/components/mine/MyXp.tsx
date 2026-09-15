@@ -268,7 +268,7 @@ function Standing({ xp }: { xp: number }) {
       {/*
         The bar is `aria-hidden`: it says the same thing as the line above it,
         which is already words, and a progress bar announced as "63%" after
-        "215 to Cartridge I" is the same fact twice in a worse unit.
+        "215 to ColecoVision" is the same fact twice in a worse unit.
       */}
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-shade" aria-hidden>
         <div

@@ -5,8 +5,8 @@ import { LEVEL_NAMES } from "./levelNames.constants";
 import { XP_LEVELS } from "./xpCurve";
 
 /**
- * A numbered series is one name with different trailing numerals, "Cartridge I"
- * / "Cartridge II" or "Pixel 1" / "Pixel 2". Two of them close together read as
+ * A numbered series is one name with different trailing numerals, "PlayStation 2"
+ * / "PlayStation 5" or "Pixel 1" / "Pixel 2". Two of them close together read as
  * counting, which is the one thing John asked the ladder not to do.
  */
 const SERIES = /^(.+?)\s+(\d+|[IVX]+)$/;
