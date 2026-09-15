@@ -2,11 +2,14 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { XP_EVENT_SPECS, XP_ONE_MORE_GAME, earnableByProgram, xpPointsFor } from "./xp.constants";
+import { earnableByProgram } from "./xp.constants";
 import { xpDayKey } from "./xpDay";
-import { levelCrossed, xpLevelFor, xpStanding } from "./xpCurve";
+import { levelCrossed } from "./xpCurve";
 import { xpForBadge } from "./xpScope";
 import { XP_SKIP_REASONS, type XpAward, type XpAwardResult, type XpAwarded } from "./xp.types";
+import type { Decided, Recipient } from "./awardXp.types";
+import { withinAllowance } from "./xpAllowance";
+import { levelNote } from "./xpLevelNote";
 
 /**
  * Paying XP, once, and never being able to fail the thing that earned it.
@@ -18,7 +21,9 @@ import { XP_SKIP_REASONS, type XpAward, type XpAwardResult, type XpAwarded } fro
  * So `Member.xp` has one writer, which is the same reasoning `recordPlayed`
  * gives for the streak columns: a materialised number with several writers
  * eventually disagrees with what it was derived from. And so the two rules
- * nothing else may restate — who is eligible, and how often — are in one place.
+ * nothing else may restate — who is eligible, and how often — are in one place:
+ * eligibility here, and the day's allowance in `xpAllowance.ts`, which only
+ * this calls.
  *
  * **Called from the writers, never from a page.** A page that renders twice
  * pays twice; a page that is prefetched pays for a visit nobody made. The
@@ -52,21 +57,6 @@ import { XP_SKIP_REASONS, type XpAward, type XpAwardResult, type XpAwarded } fro
  * `awardXpQuietly` made the default instead of the careful option, because the
  * careful option is the one somebody forgets in the one path that matters.
  */
-
-/** What is read about a member before anything is paid. Four columns, one row. */
-type Recipient = { id: string; botTier: string | null; timeZone: string; xp: number; xpEverywhere: number };
-
-/**
- * One award after the allowance has been applied, with its subject still on it.
- *
- * The subject travels with the decision rather than being looked up by type
- * afterwards, because a batch may legitimately hold two awards of one type with
- * different subjects — a first game of two variants, a buddy added twice — and a
- * lookup by type would give both the first one's. Two rows with one key is a
- * duplicate the index refuses, so the second award would vanish and nothing
- * would say which.
- */
-type Decided = XpAwarded & { subject: string };
 
 /**
  * Pay a member for one or more things at once.
@@ -299,122 +289,4 @@ function reported(award: Decided, paid: boolean): XpAwarded {
 /** What the unique index is keyed on, for matching a decision back to its row. */
 function keyOf(award: Decided): string {
   return `${award.type}\0${award.subject}`;
-}
-
-/**
- * What each award is worth after the day's allowance, and why any of them is
- * worth nothing.
- *
- * Two rules, and both are in `XP_EVENT_SPECS` rather than here:
- *
- * **A `cap` is how many events of that type a member may earn in a day.** In
- * events rather than points, because the number a reader is shown is "six games
- * a day" and not "sixty XP of games". Absent means uncapped, which is right for
- * anything that cannot be farmed — a first game of a variant happens once
- * however hard somebody tries.
- *
- * **`ridesAllowance` means the award only fires if the same game's finish was
- * paid.** One rule in one place, so a game outside the day's allowance is
- * silent as a whole rather than paying for being won but not for being
- * finished. It is never set on a first-time or a milestone award: beating
- * Guoshou for the first time on your seventh game of the day is not the thing
- * worth rationing, and telling somebody nothing happened is the failure a cap
- * exists to prevent, not to cause.
- *
- * One grouped count for the whole batch, on the `(memberId, dayKey)` index.
- */
-async function withinAllowance({
-  member,
-  awards,
-  dayKey,
-}: {
-  member: Recipient;
-  awards: readonly XpAward[];
-  dayKey: string;
-}): Promise<Decided[]> {
-  const capped = awards.filter((award) => XP_EVENT_SPECS[award.type].cap !== undefined);
-  const earnedToday = new Map<string, number>();
-
-  if (capped.length > 0) {
-    const rows = await prisma.xpEvent.groupBy({
-      by: ["type"],
-      where: { memberId: member.id, dayKey, type: { in: capped.map((award) => award.type) } },
-      _count: { _all: true },
-    });
-    for (const row of rows) earnedToday.set(row.type, row._count._all);
-  }
-
-  const decided: Decided[] = [];
-  /* Whether this batch's finish was paid, for the awards that ride it. Read off
-     the decisions already made rather than asked again, so the two can never
-     disagree. */
-  let finishPaid: boolean | null = null;
-
-  for (const award of awards) {
-    const spec = XP_EVENT_SPECS[award.type];
-
-    if (spec.cap !== undefined && (earnedToday.get(award.type) ?? 0) >= spec.cap) {
-      decided.push({ type: award.type, subject: award.subject ?? "", points: 0, skipped: XP_SKIP_REASONS.dailyAllowance });
-      if (award.type === "gameFinished") finishPaid = false;
-      continue;
-    }
-
-    if (spec.ridesAllowance && finishPaid === false) {
-      decided.push({ type: award.type, subject: award.subject ?? "", points: 0, skipped: XP_SKIP_REASONS.dailyAllowance });
-      continue;
-    }
-
-    decided.push({ type: award.type, subject: award.subject ?? "", points: xpPointsFor(award.type) });
-    if (award.type === "gameFinished") finishPaid = true;
-    /* Counted as this batch's own, so asking for two of a capped kind in one
-       call cannot slip past a cap of one. */
-    earnedToday.set(award.type, (earnedToday.get(award.type) ?? 0) + 1);
-  }
-
-  return decided;
-}
-
-/**
- * A member's total and the level it has earned, for a surface that holds neither.
- *
- * Almost nothing should need this: every list that shows a level already has the
- * `Member` row, and `xpLevelFor` turns the column into the level for free. It is
- * here for the one honest case — a writer that has just paid and wants to say
- * where somebody now stands — and deliberately not exported as a page helper.
- */
-export async function xpStandingFor(memberId: string): Promise<{ xp: number; level: number }> {
-  const row = await prisma.member.findUnique({ where: { id: memberId }, select: { xp: true } });
-  const xp = row?.xp ?? 0;
-  return { xp, level: xpLevelFor(xp) };
-}
-
-/**
- * The level a toast may mention, or nothing.
- *
- * Two cases and no third:
- *
- * - **A level was crossed.** `reached: true`, and the toast says so outright.
- * - **The award left them within one game of the next one.** `reached: false`,
- *   and the toast adds a quiet "Next level" line.
- *
- * **Not on every award**, which is the other thing the toast's interface allows.
- * A daily-visit toast carrying a progress line every single day turns a courtesy
- * that goes away on its own into a status panel following a reader round the
- * site. The nudge earns its place by being rare — and by being true:
- * `XP_ONE_MORE_GAME` is what one finished win pays, so "one more game" is
- * something a reader can go and do, where a percentage of a level's span is a
- * number nobody can act on.
- *
- * Null at the top of the ladder, where there is no next level. Not level 100
- * with `reached: false`, which would read as a level somebody is approaching
- * while already standing on it.
- */
-function levelNote(before: number, after: number): { level: { level: number; reached: boolean } } | null {
-  const crossed = levelCrossed(before, after);
-  if (crossed !== null) return { level: { level: crossed.to, reached: true } };
-
-  const standing = xpStanding(after);
-  if (standing.span === 0) return null;
-  if (standing.toNext > XP_ONE_MORE_GAME) return null;
-  return { level: { level: standing.level + 1, reached: false } };
 }

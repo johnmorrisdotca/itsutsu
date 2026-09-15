@@ -8,7 +8,7 @@ import {
   outcomeLabel,
   verdictLabel,
 } from "./gameHistory.constants";
-import { outcomeNeedsPlayer } from "./gameHistoryQuery";
+import { outcomeNeedsPlayer } from "./gameHistoryClauses";
 
 /**
  * A player filter as the record actually applied it — never as an address

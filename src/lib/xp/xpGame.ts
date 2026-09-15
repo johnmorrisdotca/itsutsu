@@ -1,12 +1,12 @@
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { GAME_FAMILIES, familyKeyOf } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { BOT_SPECIALIST_LIST, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
-import { STREAK_KINDS, type Streak, type StreakOutcome } from "@/lib/rating/streak";
+import { BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
+import { STREAK_KINDS } from "@/lib/rating/streak";
 
-import { XP_EVENTS, XP_LONG_GAME_MOVES, resultMilestoneFor, winStreakMilestoneFor } from "./xp.constants";
+import { XP_EVENTS, XP_LONG_GAME_MOVES, resultMilestoneFor } from "./xp.constants";
 import type { XpAward } from "./xp.types";
-import { upsetAwardFor, type RatingsAsTheyStood } from "./xpUpset";
+import { winAwards } from "./xpWinAwards";
 
 /**
  * What one finished game pays one member, decided without a database.
@@ -20,7 +20,8 @@ import { upsetAwardFor, type RatingsAsTheyStood } from "./xpUpset";
  * against a table of cases rather than against a database — which is the same
  * reason `src/lib/gomoku/engine.ts` takes a position and returns one.
  *
- * `xpGameServer.ts` is the half that gathers the facts and pays.
+ * `xpGameServer.ts` is the half that gathers the facts and pays. What a win
+ * adds on top of a finish is `xpWinAwards.ts`.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * THE ORDER IS THE ORDER A MEMBER READS THEM IN
@@ -83,94 +84,14 @@ import { upsetAwardFor, type RatingsAsTheyStood } from "./xpUpset";
  * earn it.
  */
 
-/** The finished game, as much of it as an award needs. */
-export type FinishedGame = {
-  id: string;
-  /**
-   * `Game.variant` is a plain string column, so it is taken as one and checked
-   * here rather than asserted by the caller — the same shape `winnerOf` uses for
-   * `Game.winner` in `playedRun.ts`, and for the same reason: a row holding
-   * something this deploy has never heard of must pay nothing rather than pay
-   * against a key that is not a game.
-   */
-  variant: string;
-  /** How many moves the finished game holds. See `longGame`. */
-  moveCount: number;
-  /**
-   * Whether the ladder counts this game: rated, and not refused by the ladder's
-   * own rule (`countsOnLadder` in `playedRun.ts`). Only then may an upset bonus
-   * be paid — a friendly costs its loser nothing, so a gap no rated game tested
-   * is not one anybody overturned. NULL where it is not known, which is the
-   * replay, and null pays no upset.
-   */
-  ladderCounts: boolean | null;
-};
-
-/** Who was in the other seat, as far as this member's awards are concerned. */
-export type Opponent = {
-  /**
-   * Their member id, or null.
-   *
-   * Null is an UNBOUND seat or this member playing themselves, and both mean the
-   * same thing here: there is nobody this member can be said to have beaten. A
-   * hot-seat game where two accounts hold the two chairs is two different ids and
-   * is a real win over a real person, which is what the sit-as feature is for.
-   */
-  id: string | null;
-  /** The grade a program in that seat plays at, or null for a person. */
-  tier: string | null;
-  /** On this member's buddy list. Null where it could not be read. */
-  buddy: boolean | null;
-  /**
-   * Whether they had already beaten this member at this game. Null where it
-   * could not be read.
-   */
-  beatenMeBefore: boolean | null;
-  /**
-   * Both players' standing on the ladder of people as they went INTO the game,
-   * for the upset bonus. Null where nothing was read — a loss, a program, a
-   * failed read, or a replay, which cannot know them — and null pays nothing.
-   * See `xpUpset.ts`.
-   */
-  ratings: RatingsAsTheyStood | null;
-};
-
-/** One member's half of one finished game. */
-export type PlayedSideFacts = {
-  outcome: StreakOutcome;
-  /**
-   * The run this result made, over every finished game.
-   *
-   * Taken from the very columns `recordPlayed` is writing rather than counted
-   * again here: two implementations of "one more result" would be two answers to
-   * the question the streak column exists to answer once. Null is no run — which
-   * is not the same as a run of nought, and pays nothing either way.
-   */
-  run: Streak | null;
-  opponent: Opponent;
-  /**
-   * The ISO week, when this game finished at the weekend FOR THIS MEMBER, and
-   * null when it did not.
-   *
-   * Decided by the caller because it depends on the member's own zone: a game
-   * that ends on Sunday evening in Tokyo ended on Sunday morning in Vancouver
-   * and on Saturday night in Tallinn, and only one of those readings is the
-   * member's. The week rather than the day, so the award is once a WEEKEND
-   * rather than once a game — a Saturday and the Sunday after it are one ISO
-   * week, which is why the week is the subject and a made-up "weekend id" is
-   * not.
-   */
-  weekendWeek: string | null;
-  /**
-   * How many games at THIS game this member has now finished with THIS outcome,
-   * this one included — what a milestone at one game is counted against.
-   *
-   * Null where it was not read, or could not be: a variant this deploy cannot
-   * name, a failed count. Null pays no milestone, which is the safe answer; a
-   * missed one is paid by the replay.
-   */
-  sameResultsAtGame: number | null;
-};
+/*
+ * The shapes of the facts are `xpGame.types.ts` and re-exported here, because
+ * the writer (`xpGameServer.ts`) and the replay (`backfillXp.ts`) import them
+ * from this module beside the function they feed. One door, the same way
+ * `RecordTable.tsx` hands out its row type.
+ */
+export type { FinishedGame, Opponent, PlayedSideFacts } from "./xpGame.types";
+import type { FinishedGame, Opponent, PlayedSideFacts } from "./xpGame.types";
 
 /** Nobody in the other seat, and nothing known about them. For a caller's default. */
 export const NO_OPPONENT: Opponent = { id: null, tier: null, buddy: null, beatenMeBefore: null, ratings: null };
@@ -281,103 +202,6 @@ function resultMilestone(variant: RuleVariant | null, side: PlayedSideFacts): Xp
   if (variant === null || side.sameResultsAtGame === null) return [];
   const type = resultMilestoneFor(side.outcome, side.sameResultsAtGame);
   return type === null ? [] : [{ type, subject: variant }];
-}
-
-/**
- * What a win adds, on top of everything finishing already paid.
- *
- * Its own function because "what finishing pays" and "what winning pays" are two
- * questions, and every judgement about the other seat lives in the second one —
- * a person, a buddy, a rivalry, a grade. Keeping them apart is what lets a draw
- * and a loss be read in one glance above.
- */
-function winAwards(
-  game: FinishedGame,
-  side: PlayedSideFacts,
-  variant: RuleVariant | null,
-): XpAward[] {
-  const awards: XpAward[] = [{ type: XP_EVENTS.gameWon, subject: game.id }];
-  const { opponent } = side;
-  /* A program in the other seat is a grade, not a person, and an unbound seat is
-     neither. See `Opponent.id`. */
-  const person = opponent.id !== null && opponent.tier === null;
-
-  if (person) {
-    awards.push({ type: XP_EVENTS.wonVsPerson, subject: game.id });
-    /* True only. Null is "could not be read" and false is "not a buddy", and
-       neither of them is a buddy beaten. */
-    if (opponent.buddy === true) awards.push({ type: XP_EVENTS.wonVsBuddy, subject: game.id });
-
-    /* ── BEATING SOMEBODY BETTER THAN YOU ───────────────────────────────
-       John's rule. One band or none, from both ratings as they stood; keyed
-       on the game, so one game pays one band. It is only ever ADDED: a win
-       over somebody weaker pays every award above and nothing less. After
-       the finish, because it rides the day's allowance like the rest. */
-    /* Only on a game the ladder counts, and true only: null is "not known". */
-    const upset = game.ladderCounts === true ? upsetAwardFor(opponent.ratings) : null;
-    if (upset !== null) awards.push({ type: upset, subject: game.id });
-  }
-
-  if (variant !== null) {
-    /* Trying something new is paid once by `firstOfVariant`; understanding it is
-       paid once more here. Keyed on the game's name, so it is a first win at
-       Reversi rather than a first win. */
-    awards.push({ type: XP_EVENTS.firstWinAtVariant, subject: variant });
-
-    /* ── THE TURN-AROUND ───────────────────────────────────────────────────
-       John's "winning after losing to a friend". Once per rivalry per game —
-       `<opponentId>:<variant>` — so it is the turn-around that pays and not
-       every win after it. Against a person only: a computer grade is beaten
-       rather than avenged, and `gradeBeaten` is what pays for that. */
-    if (person && opponent.beatenMeBefore === true) {
-      awards.push({ type: XP_EVENTS.revengeWin, subject: `${opponent.id}:${variant}` });
-    }
-  }
-
-  const milestone = streakMilestone(side.run);
-  /* Keyed on the GAME that completed the run rather than on the run's length, so
-     a second run of three later pays again — which is the whole point of a
-     streak award. */
-  if (milestone !== null) awards.push({ type: milestone, subject: game.id });
-
-  awards.push(...gradeAwards(opponent));
-  return awards;
-}
-
-/**
- * The milestone a run of wins has just reached, or null.
- *
- * Only a run of WINS, and only at exactly three, five or ten:
- * `winStreakMilestoneFor` answers null for four and for eleven, so an eleventh
- * win asks for nothing rather than asking for the tenth's award and leaning on
- * the unique index to refuse it.
- */
-function streakMilestone(run: Streak | null) {
-  if (run === null || run.kind !== STREAK_KINDS.win) return null;
-  return winStreakMilestoneFor(run.count);
-}
-
-/**
- * A computer grade beaten, or one of the two specialists.
- *
- * Keyed on the tier, so each grade pays once however many times it is beaten —
- * which is what makes the five of them a ladder to climb rather than forty XP a
- * game. The specialists are deliberately not on that ladder: they play one game
- * each and have to be sought out, which is why they pay more than a grade.
- */
-function gradeAwards(opponent: Opponent): XpAward[] {
-  const tier = opponent.tier;
-  if (tier === null) return [];
-  if ((BOT_SPECIALIST_LIST as readonly string[]).includes(tier)) {
-    return [{ type: XP_EVENTS.specialistBeaten, subject: tier }];
-  }
-  if ((BOT_TIER_LIST as readonly string[]).includes(tier)) {
-    return [{ type: XP_EVENTS.gradeBeaten, subject: tier }];
-  }
-  /* A tier this deploy does not know — a grade retired, or a row written by a
-     later version. Nothing, rather than an award keyed on a string that is not a
-     grade and would sit in the ledger unable to explain itself. */
-  return [];
 }
 
 /** The five graded grades: what `everyGradeBeaten` is counted against. */
