@@ -4,16 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { assess, isSwapBlocked } from "@/lib/gomoku/analysis";
 import { readAdvantage } from "@/lib/gomoku/advantage";
-import { canPass as engineCanPass, canGrowBoard, canShrinkBoard, canSwapSeats, growBoard, shrinkBoard, chooseColour as engineChooseColour, extendOpening as engineExtendOpening, cellAt, inMovePhase, isLegalMove, movePiece, passTurn, pieceMoves, placePiece, playMove, seatToPlay, twistBoard, swapSeats, winOnTime } from "@/lib/gomoku/engine";
-import { canSkip as engineCanSkip, skipMove } from "@/lib/gomoku/rules/record";
+import { canPass as engineCanPass, canGrowBoard, canShrinkBoard, canSwapSeats, seatToPlay, winOnTime } from "@/lib/gomoku/engine";
+import { canSkip as engineCanSkip } from "@/lib/gomoku/rules/record";
 import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
-import {
-  GAME_STATUS,
-  MOVE_KINDS,
-  STONES,
-  VARIANT_SPECS,
-} from "@/lib/gomoku/gomoku.constants";
-import type { GameSettings, Point, Seat, Stone } from "@/lib/gomoku/gomoku.types";
+import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { GameSettings, Point, Seat } from "@/lib/gomoku/gomoku.types";
 import type { Appearance } from "@/components/board/board.types";
 import {
   DEFAULT_SEAT_NAMES,
@@ -21,9 +16,9 @@ import {
   GAME_COPY,
   HISTORY_MODES,
 } from "./game.constants";
+import { useBoardInput } from "./useBoardInput";
 import { useGameClock } from "./useGameClock";
-import { usePieceHand } from "./usePieceHand";
-import { buildMarks, findFatalMove, nextGameSettings, resizeTarget } from "./sessionSupport";
+import { buildMarks, findFatalMove, nextGameSettings } from "./sessionSupport";
 import { emptyStats, missedThreat, recordHint, recordMove } from "./stats";
 import { useGameHints } from "./useGameHints";
 import {
@@ -35,12 +30,12 @@ import {
   restoredSnapshot,
 } from "./restoreSession";
 import { useGameTimeline } from "./useGameTimeline";
+import { useTurnDecisions } from "./useTurnDecisions";
 import { clearSnapshot, saveSnapshot, toSnapshot } from "./gameStorage";
 import { unsavedAppearance } from "./unsavedAppearance";
 import type {
   GameActions,
   MatchStart,
-  ResizeDirection,
   ResizeProposal,
   GameSession,
   SeatNames,
@@ -120,7 +115,6 @@ export function useGameSession(
   }, []);
   const [helpRequest, setHelpRequest] = useState<Seat | null>(null);
   const [resizeProposal, setResizeProposal] = useState<ResizeProposal | null>(null);
-  const [pendingBranch, setPendingBranch] = useState<Point | null>(null);
   const [helpMark, setHelpMark] = useState<Point | null>(null);
 
   const assessment = useMemo(() => assess(state), [state]);
@@ -157,14 +151,6 @@ export function useGameSession(
     if (!persist) return;
     saveSnapshot(toSnapshot(state, appearance, settings, names, hintsLeft, stats));
   }, [appearance, hintsLeft, names, persist, settings, state, stats]);
-
-  const [selected, setSelected] = useState<Point | null>(null);
-  const { hand, rotate: rotatePiece, flip: flipPiece, toggleSingle } = usePieceHand(state);
-  // The choose-a-colour games: which colour the next stone will be. Black to begin with.
-  const choosesColour = VARIANT_SPECS[state.settings.variant].anyColour;
-  const [placingChoice, setPlacingChoice] = useState<Stone>(STONES.black);
-  const placing = choosesColour ? placingChoice : null;
-  const setPlacing = useCallback((stone: Stone) => setPlacingChoice(stone), []);
 
   const commit = useCallback(
     (move: typeof state) => {
@@ -204,153 +190,33 @@ export function useGameSession(
   );
 
 
-  const play = useCallback(
-    (point: Point) => {
-      // While advice has been asked for, a click marks the board instead.
-      if (helpRequest !== null) {
-        setHelpMark(point);
-        setHelpRequest(null);
-        return;
-      }
-      /*
-       * Playing from an earlier position destroys the moves after it. In
-       * review mode that is simply not allowed; in branch mode it is held
-       * back for confirmation, because silently discarding a game someone is
-       * only reading through is never what they meant.
-       */
-      if (reviewing) {
-        if (settings.historyMode !== HISTORY_MODES.branch) return;
-        if (!isLegalMove(state, point)) return;
-        setPendingBranch(point);
-        return;
-      }
-      /*
-       * The sliding games: once every piece is down, the first click picks a
-       * piece up and the second puts it down. Clicking another of your own
-       * pieces changes your mind; clicking the same one puts it back.
-       */
-      // The piece games: the click is where the piece's corner goes, unless a single is chosen.
-      if (hand.piece !== null && !hand.layingSingle) {
-        const footprint = hand.footprintFor(point);
-        if (footprint !== null) commit(placePiece(state, footprint));
-        return;
-      }
-      if (inMovePhase(state)) {
-        const lands =
-          selected !== null &&
-          pieceMoves(state, selected).some((to) => to.row === point.row && to.col === point.col);
-        if (lands && selected !== null) {
-          setSelected(null);
-          commit(movePiece(state, selected, point));
-          return;
-        }
-        if (cellAt(state, point) === state.toPlay) {
-          setSelected(
-            selected !== null && selected.row === point.row && selected.col === point.col
-              ? null
-              : point,
-          );
-        }
-        return;
-      }
-      commit(playMove(state, point, MOVE_KINDS.place, placing));
-    },
-    [commit, hand, helpRequest, placing, reviewing, selected, settings.historyMode, state],
-  );
+  /*
+   * What a click on the board means, and what is in hand while it is decided —
+   * see `useBoardInput`. Every move it makes is recorded through `commit`.
+   */
+  const input = useBoardInput({ state, commit, reviewing, historyMode: settings.historyMode, helpRequest, setHelpRequest, setHelpMark });
+  const { clearInput } = input;
 
-  /** Passes the turn: forced in a piece game when nothing fits, offered freely at any point in Go. */
-  const pass = useCallback(() => {
-    if (reviewing) return;
-    commit(passTurn(state));
-  }, [commit, reviewing, state]);
-
-  /** Finishes a move in the twist games by turning one quadrant. */
-  const twist = useCallback(
-    (quadrant: number, clockwise: boolean) => {
-      if (reviewing) return;
-      commit(twistBoard(state, quadrant, clockwise));
-    },
-    [commit, reviewing, state],
-  );
-
-  const confirmBranch = useCallback(() => {
-    if (pendingBranch === null) return;
-    setPendingBranch(null);
-    commit(playMove(state, pendingBranch, MOVE_KINDS.place, placing));
-  }, [commit, pendingBranch, placing, state]);
-
-  const cancelBranch = useCallback(() => setPendingBranch(null), []);
-
-  const skip = useCallback(() => {
-    commit(skipMove(state, Math.random()));
-  }, [commit, state]);
-
-  /** A swap moves the timeline on without a stone, so it undoes like a move. */
-  const swap = useCallback(() => {
-    if (isSwapBlocked(assessment)) return;
-    const next = swapSeats(state);
-    if (next !== state) line.advance(next, null);
-  }, [line, assessment, state]);
-
-  /** Opening decisions are timeline entries too, so they can be taken back. */
-  const chooseColour = useCallback(
-    (stone: Stone) => {
-      if (reviewing) return;
-      const next = engineChooseColour(state, stone);
-      if (next !== state) line.advance(next, null);
-    },
-    [line, reviewing, state],
-  );
-
-  const extendOpening = useCallback(() => {
-    if (reviewing) return;
-    const next = engineExtendOpening(state);
-    if (next !== state) line.advance(next, null);
-  }, [line, reviewing, state]);
+  // The turns that are not a stone — a skip, a swap, a colour, an opening, a resize: see `useTurnDecisions`.
+  const decisions = useTurnDecisions({ state, line, assessment, reviewing, commit, resizeProposal, setResizeProposal });
 
   const reset = useCallback((next: Partial<GameSettings> = {}) => {
     if (persist) clearSnapshot();
-    setSelected(null);
+    clearInput();
 
     const gameSettings = nextGameSettings(timeline[0].settings, next);
     line.restart(gameSettings);
     setHelpMark(null);
     setHelpRequest(null);
-    setPendingBranch(null);
     setResizeProposal(null);
     resetHints(settings.hintsPerSeat);
     setStats(emptyStats());
     setLostOnTime(null);
     lastMoveAt.current = Date.now();
     clock.reset(timeControlFor(settings.timeControl));
-  }, [clock, line, persist, resetHints, settings.hintsPerSeat, settings.timeControl, timeline]);
+  }, [clearInput, clock, line, persist, resetHints, settings.hintsPerSeat, settings.timeControl, timeline]);
 
   const seat = seatToPlay(state);
-
-  /*
-   * A resize changes the game both players are in, so it is offered rather
-   * than done. The proposal is session state, not engine state: it is a
-   * negotiation about the rules, not a move within them, and nothing about it
-   * belongs in the record.
-   */
-  const proposeResize = useCallback(
-    (direction: ResizeDirection) => {
-      const size = resizeTarget(state, direction);
-      if (size === null) return;
-      setResizeProposal({ from: seatToPlay(state), direction, size });
-    },
-    [state],
-  );
-
-  const acceptResize = useCallback(() => {
-    if (resizeProposal === null) return;
-    const next =
-      resizeProposal.direction === "grow" ? growBoard(state) : shrinkBoard(state);
-    setResizeProposal(null);
-    if (next !== state) line.advance(next, null);
-  }, [line, resizeProposal, state]);
-
-  const declineResize = useCallback(() => setResizeProposal(null), []);
 
   const requestHelp = useCallback(() => setHelpRequest(seat), [seat]);
   const cancelHelp = useCallback(() => setHelpRequest(null), []);
@@ -430,39 +296,39 @@ export function useGameSession(
     reviewing,
     boardReadOnly:
       reviewing && settings.historyMode !== HISTORY_MODES.branch,
-    selected,
-    hand,
-    placing,
-    pendingBranch,
+    selected: input.selected,
+    hand: input.hand,
+    placing: input.placing,
+    pendingBranch: input.pendingBranch,
     branchDiscards: timeline.length - 1 - index,
   };
 
   const actions: GameActions = {
-    play,
+    play: input.play,
     undo: line.undo,
     redo: line.redo,
     jumpTo: line.jumpTo,
     returnToLatest: line.returnToLatest,
-    confirmBranch,
-    cancelBranch,
+    confirmBranch: input.confirmBranch,
+    cancelBranch: input.cancelBranch,
     reset,
-    skip,
-    swap,
-    chooseColour,
-    extendOpening,
-    twist,
-    setPlacing,
-    rotatePiece,
-    flipPiece,
-    toggleSingle,
-    pass,
+    skip: decisions.skip,
+    swap: decisions.swap,
+    chooseColour: decisions.chooseColour,
+    extendOpening: decisions.extendOpening,
+    twist: input.twist,
+    setPlacing: input.setPlacing,
+    rotatePiece: input.rotatePiece,
+    flipPiece: input.flipPiece,
+    toggleSingle: input.toggleSingle,
+    pass: input.pass,
     askHint,
     grantHint,
     requestHelp,
     cancelHelp,
-    proposeResize,
-    acceptResize,
-    declineResize,
+    proposeResize: decisions.proposeResize,
+    acceptResize: decisions.acceptResize,
+    declineResize: decisions.declineResize,
     setAppearance,
     setSessionSettings,
     setName,
