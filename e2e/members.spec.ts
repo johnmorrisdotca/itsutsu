@@ -1,11 +1,16 @@
 import { expect, test } from "@playwright/test";
 
-import { memberContext, seedMember } from "./members";
+import { memberContext, memberIdFor, seedMember } from "./members";
 
 /**
  * Shutting an account. A ban that waits for somebody to sign out is not a
  * ban, so it takes effect on their next request; and the record of the games
  * they played stays, because their opponents played those games too.
+ *
+ * The operator names the account BY ID. `/api/members` took an address, and a
+ * member who came in with an invite code has none, so they could be neither
+ * shut out nor let back in; the route takes the member's id now, as the members
+ * list hands it to the operator's own controls.
  */
 test.describe("a member the operator has shut out", () => {
   test("is signed out at once, cannot come back with a code, and keeps their record", async ({
@@ -17,6 +22,7 @@ test.describe("a member the operator has shut out", () => {
     const email = `banned-${stamp}@example.test`;
     const name = `Banned ${stamp}`;
     const context = await memberContext(browser, baseURL!, { email, name });
+    const id = await memberIdFor(email);
     const page = await context.newPage();
 
     // They are in, and the site knows them.
@@ -24,7 +30,7 @@ test.describe("a member the operator has shut out", () => {
     await expect(page.getByTestId("name-form")).toBeVisible();
 
     // The operator shuts the account.
-    const shut = await request.patch("/api/members", { data: { email, banned: true, note: "e2e" } });
+    const shut = await request.patch("/api/members", { data: { id, banned: true, note: "e2e" } });
     expect(shut.status()).toBe(200);
     expect(((await shut.json()) as { bannedAt: string | null }).bannedAt).not.toBeNull();
 
@@ -35,10 +41,10 @@ test.describe("a member the operator has shut out", () => {
     // The operator can see the state, and open it again.
     const listed = await request.get("/api/members");
     expect(listed.status()).toBe(200);
-    const items = ((await listed.json()) as { items: { email: string; bannedAt: string | null }[] }).items;
-    expect(items.find((one) => one.email === email)?.bannedAt).not.toBeNull();
+    const items = ((await listed.json()) as { items: { id: string; bannedAt: string | null }[] }).items;
+    expect(items.find((one) => one.id === id)?.bannedAt).not.toBeNull();
 
-    const opened = await request.patch("/api/members", { data: { email, banned: false } });
+    const opened = await request.patch("/api/members", { data: { id, banned: false } });
     expect(opened.status()).toBe(200);
     await page.goto("/me");
     await expect(page.getByTestId("name-form")).toBeVisible();
@@ -48,13 +54,13 @@ test.describe("a member the operator has shut out", () => {
 
   test("the members list belongs to the operator alone", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
-    await seedMember({ email: `nosy-${stamp}@example.test`, name: `Nosy ${stamp}` });
-    const context = await memberContext(browser, baseURL!, { email: `nosy-${stamp}@example.test`, name: `Nosy ${stamp}` });
+    const email = `nosy-${stamp}@example.test`;
+    await seedMember({ email, name: `Nosy ${stamp}` });
+    const context = await memberContext(browser, baseURL!, { email, name: `Nosy ${stamp}` });
+    const id = await memberIdFor(email);
     // A member is not an operator: the route says it does not exist.
     expect((await context.request.get("/api/members")).status()).toBe(404);
-    expect(
-      (await context.request.patch("/api/members", { data: { email: `nosy-${stamp}@example.test`, banned: true } })).status(),
-    ).toBe(404);
+    expect((await context.request.patch("/api/members", { data: { id, banned: true } })).status()).toBe(404);
     await context.close();
   });
 });

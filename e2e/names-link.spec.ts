@@ -88,18 +88,18 @@ test.describe("a person's name leads to their page", () => {
 
   test("a seat nobody has taken is described, not linked", async ({ page, request, baseURL }) => {
     /*
-     * The two honest exceptions: an empty chair is not a person, so it stays
-     * plain rather than pointing at a page that does not exist.
+     * The honest exception: a seat with nobody bound to it is not a person, so it
+     * stays plain rather than pointing at a page that does not exist.
      *
-     * `memberContext` cannot produce that scenario any more. Posting an open
-     * seat while signed in as a real member now binds that member's id to it
-     * — "Whoever starts a game is sitting at it" (games/live's route), closing
-     * an exploit where a poster answered their own invitation — and a bound
-     * seat is shown under its member's CURRENT name (currentNames.ts's
-     * seatName) rather than under whatever the row's own field says. So a
-     * blank name from a signed-in member no longer reads as nobody; it reads
-     * as them, linked, which is correct for them and wrong for this test. An
-     * invite-only identity is never bound, so it is the one that still is.
+     * No request can post one any more. Posting an open seat binds whoever posted
+     * it — "Whoever starts a game is sitting at it" (games/live's route) — and a
+     * bound seat is shown under its member's CURRENT name (currentNames.ts's
+     * seatName), linked, which is correct for them. This used to post as an
+     * invite-only identity because that one was never bound; since a code makes a
+     * member account, it is bound like anybody, and the row CI found named its
+     * poster, correctly. So the seat is made the way the rows that ARE unbound
+     * stand — seats posted before posting bound anybody: posted by a fresh code,
+     * then the poster's id taken off the row.
      *
      * Posted by somebody else, since a seat is not shown back to whoever put
      * it up — posting it as this reader would leave nothing on their board.
@@ -115,11 +115,27 @@ test.describe("a person's name leads to their page", () => {
       data: { blackName: "", whiteName: "", size: 9, open: true },
     });
     expect(made.status()).toBe(201);
+    const { id } = (await made.json()) as { id: string };
     await other.dispose();
-    await page.goto("/games");
-    const open = page.getByTestId("open-game").first();
-    if (await open.isVisible()) {
-      await expect(open.getByTestId("player-name")).toHaveCount(0);
+
+    process.loadEnvFile(".env");
+    const { PrismaClient } = await import("@prisma/client");
+    const prisma = new PrismaClient();
+    try {
+      await prisma.game.update({ where: { id }, data: { blackMemberId: null, whiteMemberId: null } });
+    } finally {
+      await prisma.$disconnect();
     }
+
+    await page.goto("/games");
+    /*
+     * Only the rows nobody is bound to, found by the attribute a bound row
+     * carries and this one does not — rather than whichever seat happens to be
+     * first on the board. One is waited for before anything is said about what
+     * it lacks, so the absence below is read off a board that has answered.
+     */
+    const unbound = page.locator('[data-testid="open-game"]:not([data-member])');
+    await expect(unbound.first()).toBeVisible();
+    await expect(unbound.getByTestId("player-name")).toHaveCount(0);
   });
 });

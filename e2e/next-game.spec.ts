@@ -1,6 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, request as playwrightRequest, test as base, type APIRequestContext } from "@playwright/test";
+import { PrismaClient } from "@prisma/client";
 
-import { PLAYER_STATE, playAt, ready } from "./support";
+import { isLocalDatabase } from "../src/lib/db/localDatabase";
+import { ADMIN_STATE, playAt, ready } from "./support";
 import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /**
@@ -20,15 +22,57 @@ import { gamesMade, namesPlayedUnder } from "./tidy";
  * Nothing here reloads. A reload would throw away exactly the client state
  * this feature lives in and turn a broken advance into a green test.
  *
- * IT CLAIMS ITS SEATS AS AN INVITE-ONLY BROWSER, which is not fussiness. The
- * queue of games waiting on somebody is read from their seat cookies AND from
- * their account, so a spec signed in as the member the whole suite plays as
- * inherits every unfinished board four hundred other tests left behind. The
- * first browser run of this file proved it by working correctly and looking
- * wrong: it carried the player onward to a real waiting game that was eight
- * moves old and belonged to another spec's fixture. A browser holding an
- * invite and no account has exactly the games it claimed, and nothing else.
+ * EVERY CASE PLAYS AS A MEMBER OF ITS OWN, which is not fussiness. The queue of
+ * games waiting on somebody is read from their seat cookies AND from their
+ * account, so a spec signed in as a member the whole suite shares inherits every
+ * unfinished board four hundred other tests left behind. The first browser run
+ * of this file proved it by working correctly and looking wrong: it carried the
+ * player onward to a real waiting game that was eight moves old and belonged to
+ * another spec's fixture.
+ *
+ * It used to dodge that as the suite's invite-only browser, which had no account.
+ * A code makes a member account now, so that browser is one member holding every
+ * game the suite made with it, and CI carried this file onward into one of them.
+ * So each case redeems a code of its own, in its own browser, and makes its games
+ * through that browser's own requests: a fresh member whose queue holds exactly
+ * the games it made, and nothing else.
  */
+
+/** The codes this file redeemed, so the members they made go when it finishes. */
+const codes: string[] = [];
+
+/**
+ * `page` and `request` as ONE fresh member. The operator mints a code, this
+ * test's own browser redeems it, and `request` is that browser's own request
+ * context, so a game made through it and a seat claimed on the page belong to the
+ * same account, and to no other test's.
+ */
+const test = base.extend<{ request: APIRequestContext }>({
+  storageState: { cookies: [], origins: [] },
+  request: async ({ page, baseURL }, use) => {
+    const operator = await playwrightRequest.newContext({ baseURL, storageState: ADMIN_STATE });
+    const minted = await operator.post("/api/invites", { data: { note: "next-game" } });
+    expect(minted.status(), await minted.text()).toBe(201);
+    const { code } = (await minted.json()) as { code: string };
+    await operator.dispose();
+    codes.push(code);
+    const own = page.context().request;
+    const signedIn = await own.post("/api/session", { data: { kind: "invite", code } });
+    expect(signedIn.ok(), await signedIn.text()).toBe(true);
+    await use(own);
+  },
+});
+
+test.afterAll(async () => {
+  process.loadEnvFile(".env");
+  if (!isLocalDatabase(process.env.DATABASE_URL) || codes.length === 0) return;
+  const prisma = new PrismaClient();
+  try {
+    await prisma.member.deleteMany({ where: { invitedWith: { in: codes }, email: null } });
+  } finally {
+    await prisma.$disconnect();
+  }
+});
 
 type Game = { id: string; blackToken: string; whiteToken: string };
 
@@ -90,8 +134,6 @@ async function waitingOnBlack(request: import("@playwright/test").APIRequestCont
 }
 
 test.describe("after a move, the next game that is waiting", () => {
-  test.use({ storageState: PLAYER_STATE });
-
   test("carries you to the other board, and stops when that was the last one", async ({
     page,
     request,
