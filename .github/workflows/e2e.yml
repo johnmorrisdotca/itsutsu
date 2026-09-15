@@ -5,6 +5,18 @@ name: End-to-end
 # suite that guards a pull request can never quietly drift apart.
 on:
   workflow_call:
+    # Sumilabu's DEV project, and only that: see the step that runs the suite.
+    # Passed by name from each caller rather than `secrets: inherit`, so this
+    # job never holds the deploy token or the production database's URL.
+    # Optional so a run with them unset still starts; the specs that need
+    # them then fail naming the missing variable, which is the honest report.
+    secrets:
+      SUMILABU_BOARD_URL:
+        required: false
+      SUMILABU_BOARD_DEV_TOKEN:
+        required: false
+      SUMILABU_SETTINGS_DEV_TOKEN:
+        required: false
 
 jobs:
   playwright:
@@ -76,7 +88,9 @@ jobs:
       # e2e/tidy.ts, e2e/members.ts and one spec — and throws if it is absent,
       # so job-level environment variables alone are not enough. Every value
       # here is a throwaway against the container above; no real credential
-      # goes near this job.
+      # goes into this file. The one real credential this job holds is
+      # Sumilabu's dev project's, given to the step that runs the suite and
+      # to no other — see there.
       #
       # See .env.example, which explains each of these and why the relief is
       # set. RATE_LIMIT_RELIEF is not optional: without it the suite drives
@@ -130,8 +144,32 @@ jobs:
       # address against household-scale limits and fail a dozen specs with
       # 429s, in files testing something else entirely, with nothing naming
       # the cause. That is the single most expensive wrong turn available here.
+      #
+      # THE BOARD AND THE SITE'S SETTINGS LIVE ON SUMILABU (0.196.1, 0.196.2),
+      # so the dev server needs somewhere to read them. Without these, every
+      # page touching either answers "Sumilabu's board for itsutsu-dev needs
+      # SUMILABU_BOARD_URL and SUMILABU_BOARD_DEV_TOKEN", and ten specs across
+      # backlog, backlog-detail, site-settings and control-names fail on a
+      # missing variable that reads like a broken page.
+      #
+      # THE DEV PROJECT ONLY, NEVER THE LIVE TOKENS. `sumilabuTarget` answers
+      # itsutsu-dev when SUMILABU_PROJECT_KEY is unset, refuses the live
+      # project outside NODE_ENV=production (and this is the dev server — see
+      # above), and the dev project reads only these two tokens. Nothing here
+      # sets SUMILABU_BOARD_TOKEN or SUMILABU_SETTINGS_TOKEN, and nothing may.
+      #
+      # On this step and no other: `pnpm install` runs dependencies' install
+      # scripts, and they have no business with a token. Playwright's
+      # `webServer` inherits this environment, so the dev server it starts
+      # reads them; Next's `.env` loading never overrides a variable already
+      # set. A pull request from a fork is given no secrets by GitHub, so
+      # those ten specs fail there by design.
       - name: Run the end-to-end suite
         run: pnpm test:e2e
+        env:
+          SUMILABU_BOARD_URL: ${{ secrets.SUMILABU_BOARD_URL }}
+          SUMILABU_BOARD_DEV_TOKEN: ${{ secrets.SUMILABU_BOARD_DEV_TOKEN }}
+          SUMILABU_SETTINGS_DEV_TOKEN: ${{ secrets.SUMILABU_SETTINGS_DEV_TOKEN }}
 
       # Only on failure, and only for a fortnight: the traces are what make a
       # red run diagnosable without reproducing it locally, and they are large.

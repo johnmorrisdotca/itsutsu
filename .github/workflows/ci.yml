@@ -113,3 +113,9 @@ jobs:
   # after them, and costs no extra wall clock on a public repo's free runners.
   e2e:
     uses: ./.github/workflows/e2e.yml
+    # Sumilabu's dev project only, never the live tokens, and by name rather
+    # than `secrets: inherit` — see e2e.yml, where they are used.
+    secrets:
+      SUMILABU_BOARD_URL: ${{ secrets.SUMILABU_BOARD_URL }}
+      SUMILABU_BOARD_DEV_TOKEN: ${{ secrets.SUMILABU_BOARD_DEV_TOKEN }}
+      SUMILABU_SETTINGS_DEV_TOKEN: ${{ secrets.SUMILABU_SETTINGS_DEV_TOKEN }}
