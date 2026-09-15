@@ -197,6 +197,14 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "折りたたむ",
     back: "Fold it back up — show fewer.",
   },
+  /*
+   * On a game's chip when the family showing it is not the one it lives in:
+   * that family's name fills {family}. にもあり — "is also in".
+   */
+  "setup.alsoUnder": {
+    text: "{family}にもあり",
+    back: "Also found under {family}.",
+  },
 
   /*
    * The XP toast: the notice that drops in from the top of the page when

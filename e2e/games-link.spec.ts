@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { GAME_FAMILIES } from "../src/lib/gomoku/families";
+import { GAME_FAMILIES, gamesShownIn } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_DISPLAY } from "../src/lib/gomoku/variants.constants";
 import { slugFor } from "../src/lib/gomoku/slugs";
 import { namesPlayedUnder } from "./tidy";
@@ -25,6 +25,15 @@ const under = namesPlayedUnder();
 
 const EVERY_GAME = GAME_FAMILIES.flatMap((family) => family.games);
 
+/**
+ * How many shelves show a game: its home, plus any family it is also listed on
+ * (`ALSO_LISTED_IN`). A guest is the same game, so every one of its names must
+ * lead to the same address.
+ */
+function shelvesShowing(variant: string): number {
+  return GAME_FAMILIES.filter((family) => gamesShownIn(family).some((shown) => shown.variant === variant)).length;
+}
+
 test.describe("a game's name leads to that game", () => {
   test("on the games index, every one of them, counted from the families", async ({ page }) => {
     await page.goto("/games");
@@ -37,20 +46,24 @@ test.describe("a game's name leads to that game", () => {
      */
     const index = page.getByTestId("lobby-family");
     const names = index.getByTestId("game-name");
-    await expect(names).toHaveCount(EVERY_GAME.length);
+    await expect(names).toHaveCount(EVERY_GAME.reduce((sum, variant) => sum + shelvesShowing(variant), 0));
 
     /*
      * By the address rather than by eye: the families are folded shut on this
      * page, so a game inside a closed one is in the page and not on screen.
      * The rule is about where the name goes, and asking for its href asks
-     * exactly that without also asking which family a reader has opened.
+     * exactly that without also asking which family a reader has opened. A game
+     * on two shelves is named twice, and both names lead to the one game.
      */
     for (const variant of EVERY_GAME) {
       const named = index.locator(`[data-testid="game-name"][data-variant="${variant}"]`);
-      await expect(named, `${variant} is not linked on the games index`).toHaveAttribute(
-        "href",
-        `/games/${slugFor(variant)}`,
-      );
+      await expect(named, `${variant} is not named once per shelf showing it`).toHaveCount(shelvesShowing(variant));
+      for (let at = 0; at < shelvesShowing(variant); at += 1) {
+        await expect(named.nth(at), `${variant} is not linked on the games index`).toHaveAttribute(
+          "href",
+          `/games/${slugFor(variant)}`,
+        );
+      }
     }
 
     // The first family stands open, so some of them really are on screen: a

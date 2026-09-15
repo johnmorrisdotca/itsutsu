@@ -15,7 +15,7 @@
  * Linux runner, so the failure is not even the same in both places. Do not
  * put a `foo.ts` beside a `Foo.tsx`.
  */
-import { GAME_FAMILIES, familyOf } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyOf, familyShows } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /** One row of `GAME_FAMILIES`: a title, its kanji, its blurb and its games. */
@@ -47,8 +47,20 @@ export type Family = (typeof GAME_FAMILIES)[number];
  * happens to be in range: an empty row means both "no family" and "a family
  * with no games in it". The first family is a real answer, and no chip shows
  * as chosen, which is the truth about a game that is not in any family.
+ *
+ * AND A GAME ON TWO SHELVES IS SHOWN ON THE ONE IT WAS FOUND ON. Mini Reversi is
+ * at home under Flips and listed under Small boards (`ALSO_LISTED_IN`). A reader
+ * who opened Small boards and picked it must stay on Small boards, or the row
+ * they were reading jumps away under their finger. So `browsing` — the family
+ * last clicked, by key — is honoured, but ONLY while that family shows the
+ * chosen game. The moment it does not, the answer is the game's home again. The
+ * open family can therefore never disagree with the chosen game, which is the
+ * property the old browse state broke: it is still a reading of the game, with
+ * the reader's last click deciding between shelves that both hold it.
  */
-export function familyShown(variant: string): Family {
+export function familyShown(variant: string, browsing: string | null = null): Family {
+  const browsed = browsing === null ? undefined : GAME_FAMILIES.find((family) => family.key === browsing);
+  if (browsed !== undefined && familyShows(browsed, variant as RuleVariant)) return browsed;
   return familyOf(variant as RuleVariant) ?? GAME_FAMILIES[0];
 }
 
@@ -81,8 +93,11 @@ export function defaultGameOf(family: Family): RuleVariant {
  * would only re-apply what is already there. `applyRulesChange` snaps the
  * board on every change it is handed, so a no-op change is not free: it
  * would be a second chance to lose a board size somebody chose.
+ *
+ * A family that shows the chosen game AS A GUEST counts as holding it: somebody
+ * on Mini Reversi who taps Small boards has not asked for Tic-tac-toe.
  */
 export function gameForFamilyClick(family: Family, chosen: string): RuleVariant | null {
-  if (family.games.includes(chosen as RuleVariant)) return null;
+  if (familyShows(family, chosen as RuleVariant)) return null;
   return defaultGameOf(family);
 }

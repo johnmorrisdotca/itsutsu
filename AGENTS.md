@@ -198,7 +198,13 @@ that is missing any of them fails the build rather than shipping quietly.
   section. If the game is our version of a published game, set `inspiredBy` — see
   `RULES_ATTRIBUTION`.
 - **It belongs to a family.** Add it to `GAME_FAMILIES` in `families.ts`. A game in no
-  family appears on no index page, so nobody will ever meet it.
+  family appears on no index page, so nobody will ever meet it. That family is its one
+  HOME — its family page, its siblings, the family's counts and figures, and the XP
+  for a family all read the home. It may also be shown on another family's shelf for
+  discovery, through `ALSO_LISTED_IN`, with the reason beside it: the same game, never
+  a copy, saying "also under" its home wherever it is shown. John, 2026-09-15: "a
+  family is a way of finding a game, not a filing cabinet" — and a shelf, not a
+  complete list, so list only what a person looking there would want to find.
 - **It decides its names on other sites.** A kept record prints the source site's own
   name for a game, and `GAME_ALIASES` in `src/lib/legacy/gameAliases.ts` is what turns
   that name into a link; `NO_GAME_HERE` names the ones with no game here, each with its

@@ -1,3 +1,4 @@
+import type { AlsoListing, GameFamily, ShelvedGame } from "./families.types";
 import type { RuleVariant } from "./gomoku.types";
 
 /**
@@ -17,8 +18,11 @@ import type { RuleVariant } from "./gomoku.types";
  * string as an identity and left the decision to whoever wired the tour; this
  * is that decision, taken the other way. Kebab-case, matching the addresses
  * this site builds elsewhere.
+ *
+ * **`games` IS A GAME'S HOME**, exactly one family each. A game may also be
+ * shown on another family's shelf — see `ALSO_LISTED_IN` — but it lives here.
  */
-export const GAME_FAMILIES: { key: string; title: string; kanji: string; blurb: string; games: RuleVariant[] }[] = [
+export const GAME_FAMILIES: GameFamily[] = [
   {
     key: "five-in-a-row",
     title: "Five in a row",
@@ -97,6 +101,69 @@ export const GAME_FAMILIES: { key: string; title: string; kanji: string; blurb: 
     games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker"],
   },
 ];
+
+/**
+ * THE OTHER SHELVES A GAME IS FOUND ON, declared by the game.
+ *
+ * John, 2026-09-15: Small boards held Tic-tac-toe, a three-in-a-row, and had no
+ * small Reversi, though one would belong there just as much. A family is a way
+ * of finding a game, not a filing cabinet — so a game may be listed on another
+ * family's shelf, for discovery, under three rules:
+ *
+ *  - ONE GAME, ONE IDENTITY. A listing is the same variant shown twice — the
+ *    same rules, ratings, record and address — never a copy, and picking it
+ *    from either shelf starts the same game. Its HOME is the family whose
+ *    `games` holds it, and everything that must count a game once reads the
+ *    home and only the home: its family page (`familyPath`), "also in this
+ *    family" (`siblingsOf`), a family's figures on /games, and the XP for a
+ *    first game of a family or a family won (`familyKeyOf`, `familyToWin`).
+ *    So a guest adds no game, no play and no crown to the shelf it visits.
+ *  - SAY WHERE ELSE IT LIVES. Every shelf that shows a guest says "also under"
+ *    its home, so the repetition reads as meant.
+ *  - A SHELF, NOT A CATALOGUE. Only a game somebody looking at that family for
+ *    that family's reason would want to find, with the reason beside it — not
+ *    every small variant of every game. `variants.coverage.test.ts` refuses a
+ *    listing with no reason, one on the game's own family or a family that does
+ *    not exist, and a game shown twice on one shelf.
+ */
+export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>> = {
+  miniReversi: [
+    {
+      family: "small-boards",
+      why: "Reversi on a 4×4 or 6×6 board is over in minutes: the quick small game somebody opening this shelf is after.",
+    },
+  ],
+  twistFour: [
+    {
+      family: "small-boards",
+      why: "Four in a row on a 4×4 board whose quarters turn: as small and as quick as Tic-tac-toe, with a trick in it.",
+    },
+  ],
+};
+
+/** Whether a family's shelf shows this game, at home or as a guest. */
+export function familyShows(family: GameFamily, variant: RuleVariant): boolean {
+  return (
+    family.games.includes(variant) || (ALSO_LISTED_IN[variant] ?? []).some((listing) => listing.family === family.key)
+  );
+}
+
+/**
+ * The games a family's shelf shows: its own, in their load-bearing order, then
+ * the guests listed on it from other families, each carrying its home.
+ *
+ * A family's COUNTS read `family.games`, never this: a guest is counted once,
+ * at home.
+ */
+export function gamesShownIn(family: GameFamily): ShelvedGame[] {
+  const own: ShelvedGame[] = family.games.map((variant) => ({ variant, listed: "home" }));
+  const guests = (Object.keys(ALSO_LISTED_IN) as RuleVariant[]).flatMap((variant): ShelvedGame[] => {
+    const home = familyOf(variant);
+    const listedHere = (ALSO_LISTED_IN[variant] ?? []).some((listing) => listing.family === family.key);
+    return home === null || home.key === family.key || !listedHere ? [] : [{ variant, listed: "shelf", home }];
+  });
+  return [...own, ...guests];
+}
 
 /** The other games in the family a variant belongs to, for "also try" links. */
 export function siblingsOf(variant: RuleVariant): { family: (typeof GAME_FAMILIES)[number]; games: RuleVariant[] } | null {

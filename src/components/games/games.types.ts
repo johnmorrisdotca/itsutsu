@@ -31,6 +31,9 @@ export type CatalogueGame = {
   inspiredBy?: string;
 };
 
+/** A game shown on a family's shelf from another family, with the home it says it is also under. */
+export type CatalogueGuest = CatalogueGame & { home: { title: string; kanji: string } };
+
 /** A family as the catalogue shows it: the heading, the line under it, and its games. */
 export type CatalogueFamily = {
   /** The family's identity, which is what its figures are keyed by. */
@@ -38,7 +41,10 @@ export type CatalogueFamily = {
   title: string;
   kanji: string;
   blurb: string;
+  /** The games whose home this family is — what its count and its figures are about. */
   games: CatalogueGame[];
+  /** Games listed on this shelf from their own families, drawn after `games` and counted there, not here. */
+  guests: CatalogueGuest[];
 };
 
 /** The figures strip under one game, in any of the three views. */
