@@ -182,6 +182,24 @@ export const XP_BACKFILL_COVERAGE: Record<XpEventType, XpBackfillCoverage> = {
   losses1000: { replayed: true, from: "the replay's own count of the member's losses at that game, over every decided game so far" },
   draws10: { replayed: true, from: "the replay's own count of the member's draws at that game, over every decided game so far" },
 
+  /* ── A full board, kept moving ─────────────────────────────────────────── */
+
+  fullHouse: {
+    replayed: false,
+    recorded: true,
+    why: "`Move.createdAt` and `Game.lastMoveAt` record it, and it is judged live from them on a member's first action of a new day (`fullBoard.ts`), reaching back `XP_FULL_BOARD_LOOKBACK_DAYS`. Days older than that at the first action after this ships are not paid.",
+  },
+  cleanSweepFirst: { replayed: false, recorded: true, why: "As `fullHouse`: judged live from stored move times, never by this replay." },
+  cleanSweep: { replayed: false, recorded: true, why: "As `fullHouse`: judged live from stored move times, never by this replay." },
+  fullHouseCombo7: { replayed: false, recorded: true, why: "As `fullHouse`: counted over the Clean Sweep rows the live judgement writes." },
+  fullHouseCombo15: { replayed: false, recorded: true, why: "As `fullHouseCombo7`: counted over the live judgement's Clean Sweep rows." },
+  fullHouseCombo30: { replayed: false, recorded: true, why: "As `fullHouseCombo7`: counted over the live judgement's Clean Sweep rows." },
+  fullHouseCombo60: { replayed: false, recorded: true, why: "As `fullHouseCombo7`: counted over the live judgement's Clean Sweep rows." },
+  fullHouseCombo120: { replayed: false, recorded: true, why: "As `fullHouseCombo7`: counted over the live judgement's Clean Sweep rows." },
+  fullHouseCombo250: { replayed: false, recorded: true, why: "As `fullHouseCombo7`: counted over the live judgement's Clean Sweep rows." },
+  fullHouseCombo500: { replayed: false, recorded: true, why: "As `fullHouseCombo7`: counted over the live judgement's Clean Sweep rows." },
+  fullHouseCombo1000: { replayed: false, recorded: true, why: "As `fullHouseCombo7`: counted over the live judgement's Clean Sweep rows." },
+
   /* ── The computer ladder ───────────────────────────────────────────────── */
 
   gradeBeaten: { replayed: true, from: "`botTierFor` on the beaten seat" },

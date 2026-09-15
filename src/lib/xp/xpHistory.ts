@@ -92,6 +92,18 @@ export const XP_SUBJECT_KIND_OF: Record<XpEventType, XpSubjectKind> = {
   losses500: XP_SUBJECT_KINDS.game,
   losses1000: XP_SUBJECT_KINDS.game,
   draws10: XP_SUBJECT_KINDS.game,
+  // A full board, kept moving: once ever, or the day that was kept.
+  fullHouse: XP_SUBJECT_KINDS.nobody,
+  cleanSweepFirst: XP_SUBJECT_KINDS.nobody,
+  cleanSweep: XP_SUBJECT_KINDS.when,
+  fullHouseCombo7: XP_SUBJECT_KINDS.when,
+  fullHouseCombo15: XP_SUBJECT_KINDS.when,
+  fullHouseCombo30: XP_SUBJECT_KINDS.when,
+  fullHouseCombo60: XP_SUBJECT_KINDS.when,
+  fullHouseCombo120: XP_SUBJECT_KINDS.when,
+  fullHouseCombo250: XP_SUBJECT_KINDS.when,
+  fullHouseCombo500: XP_SUBJECT_KINDS.when,
+  fullHouseCombo1000: XP_SUBJECT_KINDS.when,
   // The computer ladder. A tier IS a member here — see BOT_MEMBERS.
   gradeBeaten: XP_SUBJECT_KINDS.person,
   everyGradeBeaten: XP_SUBJECT_KINDS.nobody,

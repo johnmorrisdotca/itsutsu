@@ -58,6 +58,15 @@ export function settledTurn(state: Pick<GameState, "status" | "toPlay">): Settle
  */
 export const UNSETTLED = { settledStatus: null, settledToPlay: null } as const;
 
+/**
+ * The pair as a `select` asks for it, for a reader that goes on to hand the row
+ * to `settledPosition`.
+ *
+ * Here so a reader never has to name either column: this module stays the only
+ * place that does, which is what `settledTurn.coverage.test.ts` holds it to.
+ */
+export const SETTLED_SELECT = { settledStatus: true, settledToPlay: true } as const;
+
 /** What a reader gets back, once it has been told: whether it runs, and whose move. */
 export type SettledPosition = {
   /** The engine still has the game running. */

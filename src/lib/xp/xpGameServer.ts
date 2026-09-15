@@ -8,6 +8,7 @@ import { ownedRow } from "@/lib/rating/ownedRow";
 import { STREAK_KINDS, type Streak, type StreakOutcome } from "@/lib/rating/streak";
 
 import { awardXp } from "./awardXp";
+import { fullBoardAwardsFor } from "./fullBoardServer";
 import { XP_EVENTS } from "./xp.constants";
 import { isWeekend, xpWeekKey } from "./xpDay";
 import {
@@ -87,6 +88,12 @@ export type XpSide = {
    * Tallinn, and the member's reading is the one that counts.
    */
   timeZone: string | null;
+  /**
+   * When they last earned anything, read before this game paid — so a first
+   * finished game of a new day can judge the days before it for a full board.
+   * Undefined where the caller did not read it, which judges nothing.
+   */
+  xpLastAt?: Date | null;
 };
 
 /**
@@ -134,6 +141,14 @@ export async function awardFinishedGameXp(
        worth asking exactly when one was just paid for and at no other time. */
     await awardTourBonuses({ memberId: side.memberId, paid, variant: game.variant, now });
     await awardLadderBonus({ memberId: side.memberId, paid, now });
+    /* A full board kept moving, judged on this member's first finished game of a
+       new day. The way a program is judged at all — it never visits — and for a
+       person it is the same judgement the first visit made, which the index
+       then refuses to pay twice. */
+    if (side.xpLastAt !== undefined) {
+      const board = await fullBoardAwardsFor({ memberId: side.memberId, timeZone: side.timeZone, lastActionAt: side.xpLastAt, now });
+      if (board.length > 0) await awardXp({ memberId: side.memberId, awards: board, now });
+    }
   }
 }
 

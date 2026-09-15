@@ -34,7 +34,7 @@ describe("what each kind of subject refers to", () => {
     for (const type of TYPES) {
       expect(XP_SUBJECT_KIND_OF[type], type).toBeTruthy();
     }
-    expect(TYPES.length).toBe(59);
+    expect(TYPES.length).toBe(70);
   });
 
   /*

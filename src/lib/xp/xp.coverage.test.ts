@@ -13,7 +13,13 @@ import {
   winStreakMilestoneFor,
   xpEventCopy,
 } from "./xp.constants";
-import { XP_PEOPLE_ONLY, earnableByProgram } from "./xp.constants";
+import {
+  XP_FULL_BOARD_PEOPLE_ONLY,
+  XP_FULL_BOARD_TYPES,
+  XP_PEOPLE_ONLY,
+  earnableByProgram,
+  xpPeopleOnlyWith,
+} from "./xp.constants";
 import type { XpEventType } from "./xp.types";
 import { toToasts } from "./xpFlash";
 import { readFileSync } from "node:fs";
@@ -216,6 +222,10 @@ describe("the economy holds its shape", () => {
       "wins10", "wins100", "wins250", "wins500", "wins1000",
       "losses10", "losses50", "losses100", "losses250", "losses500", "losses1000", "draws10",
       "yearHere", "yearsHere5", "yearsHere10",
+      // Once ever, once a day, or once per run: a full board cannot be farmed by repetition.
+      "fullHouse", "cleanSweepFirst", "cleanSweep",
+      "fullHouseCombo7", "fullHouseCombo15", "fullHouseCombo30", "fullHouseCombo60",
+      "fullHouseCombo120", "fullHouseCombo250", "fullHouseCombo500", "fullHouseCombo1000",
     ];
     for (const type of milestones) {
       expect(XP_EVENT_SPECS[type].cap, `${type} is capped`).toBeUndefined();
@@ -273,6 +283,8 @@ describe("what is priced and not yet paid", () => {
       "buddyAdded",
       "challengeAnswered",
       "challengeSent",
+      "cleanSweep",
+      "cleanSweepFirst",
       "countrySet",
       "dailyVisit",
       "dayStreak100",
@@ -290,6 +302,15 @@ describe("what is priced and not yet paid", () => {
       "firstOfVariant",
       "firstWinAtVariant",
       "forkPlayed",
+      "fullHouse",
+      "fullHouseCombo1000",
+      "fullHouseCombo120",
+      "fullHouseCombo15",
+      "fullHouseCombo250",
+      "fullHouseCombo30",
+      "fullHouseCombo500",
+      "fullHouseCombo60",
+      "fullHouseCombo7",
       "gameFinished",
       "gameWon",
       "giantKilled",
@@ -516,6 +537,9 @@ describe("every award is either people-only or a game result", () => {
     XP_EVENTS.losses500,
     XP_EVENTS.losses1000,
     XP_EVENTS.draws10,
+    /* The full-board awards sit on this side only while John has not said they
+       are for people only — `XP_FULL_BOARD_PEOPLE_ONLY`, one line. */
+    ...(XP_FULL_BOARD_PEOPLE_ONLY ? [] : XP_FULL_BOARD_TYPES),
   ] as const;
 
   it("sorts every priced award onto exactly one side", () => {
@@ -535,6 +559,17 @@ describe("every award is either people-only or a game result", () => {
   it("holds a program to the game results and a person to everything", () => {
     for (const type of GAME_RESULTS) expect(earnableByProgram(type)).toBe(true);
     for (const type of XP_PEOPLE_ONLY) expect(earnableByProgram(type)).toBe(false);
+  });
+
+  it("puts the full-board awards on whichever side the one line says, and both sides hold", () => {
+    // Today: not people-only, so a program with a full board earns them.
+    expect(XP_PEOPLE_ONLY).toEqual(xpPeopleOnlyWith(XP_FULL_BOARD_PEOPLE_ONLY));
+    const earnsBoth = xpPeopleOnlyWith(false);
+    for (const type of XP_FULL_BOARD_TYPES) expect(earnsBoth.has(type), type).toBe(false);
+    // John's other answer: every one of them on the people side, and nothing else moved.
+    const peopleOnly = xpPeopleOnlyWith(true);
+    for (const type of XP_FULL_BOARD_TYPES) expect(peopleOnly.has(type), type).toBe(true);
+    expect(peopleOnly.size - earnsBoth.size).toBe(XP_FULL_BOARD_TYPES.length);
   });
 });
 

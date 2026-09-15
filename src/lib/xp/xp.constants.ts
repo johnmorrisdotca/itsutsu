@@ -70,6 +70,17 @@ export const XP_EVENTS = {
   losses500: "losses500",
   losses1000: "losses1000",
   draws10: "draws10",
+  fullHouse: "fullHouse",
+  cleanSweepFirst: "cleanSweepFirst",
+  cleanSweep: "cleanSweep",
+  fullHouseCombo7: "fullHouseCombo7",
+  fullHouseCombo15: "fullHouseCombo15",
+  fullHouseCombo30: "fullHouseCombo30",
+  fullHouseCombo60: "fullHouseCombo60",
+  fullHouseCombo120: "fullHouseCombo120",
+  fullHouseCombo250: "fullHouseCombo250",
+  fullHouseCombo500: "fullHouseCombo500",
+  fullHouseCombo1000: "fullHouseCombo1000",
   gradeBeaten: "gradeBeaten",
   everyGradeBeaten: "everyGradeBeaten",
   specialistBeaten: "specialistBeaten",
@@ -464,6 +475,97 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
     sentence: "Ten draws at this game. A stalemate artist.",
   },
 
+  /* ── A full board, kept moving ──────────────────────────────────────────
+     John, 2026-09-14: "awards for playing 20 games at a time first time. award
+     for clearing out your 20 games in 1 day (since they're moving games along)
+     having 20 games for 1 week straight and making moves every day 15 day award.
+     30 day award 60 120 250 500 1000 if a user is clearing out all possible games
+     in a day when maxxed out they deserve credit... of course, they could be
+     waiting for others, so gotta figure out a way to be fair, and also not a
+     loophole". Judged from stored move times on a member's first action of a new
+     day — see `fullBoard.ts` — and uncapped, since each is once a day at most.
+     "1,000 the first time, then 100 a day" is paid as a Clean Sweep every day
+     and First Clean Sweep once on top of the first, so the first day comes to
+     1,000 and a re-judged day can never pay the first-time amount twice. */
+
+  fullHouse: {
+    points: 500,
+    label: "Full House",
+    kanji: "満卓",
+    blurb: "For your first full board: twenty games at once, every one of them answered by an opponent.",
+    sentence: "A full house. Twenty games on the go.",
+  },
+  cleanSweepFirst: {
+    points: 900,
+    label: "First Clean Sweep",
+    kanji: "初一掃",
+    blurb: "On top of the day's Clean Sweep, for the first day you kept a full board moving. Once.",
+    sentence: "Your first clean sweep.",
+  },
+  cleanSweep: {
+    points: 100,
+    label: "Clean Sweep",
+    kanji: "一掃",
+    blurb: "For a day at a full board with nothing left waiting on your move, and moves made that day.",
+    sentence: "A clean sweep: nothing left waiting on you.",
+  },
+  fullHouseCombo7: {
+    points: 1000,
+    label: "Full House Combo ×7",
+    kanji: "七連満卓",
+    blurb: "For seven clean sweeps in a row: a full board, kept moving, every day for a week.",
+    sentence: "Seven days of full houses, kept moving.",
+  },
+  fullHouseCombo15: {
+    points: 2000,
+    label: "Full House Combo ×15",
+    kanji: "十五連満卓",
+    blurb: "For fifteen clean sweeps in a row: a full board, kept moving, every day.",
+    sentence: "Fifteen days of full houses, kept moving.",
+  },
+  fullHouseCombo30: {
+    points: 4000,
+    label: "Full House Combo ×30",
+    kanji: "三十連満卓",
+    blurb: "For thirty clean sweeps in a row: a month at a full board, kept moving.",
+    sentence: "Thirty days of full houses, kept moving.",
+  },
+  fullHouseCombo60: {
+    points: 8000,
+    label: "Full House Combo ×60",
+    kanji: "六十連満卓",
+    blurb: "For sixty clean sweeps in a row: two months at a full board, kept moving.",
+    sentence: "Sixty days of full houses, kept moving.",
+  },
+  fullHouseCombo120: {
+    points: 15000,
+    label: "Full House Combo ×120",
+    kanji: "百二十連満卓",
+    blurb: "For a hundred and twenty clean sweeps in a row: four months at a full board.",
+    sentence: "A hundred and twenty days of full houses.",
+  },
+  fullHouseCombo250: {
+    points: 30000,
+    label: "Full House Combo ×250",
+    kanji: "二百五十連満卓",
+    blurb: "For two hundred and fifty clean sweeps in a row at a full board.",
+    sentence: "Two hundred and fifty days of full houses.",
+  },
+  fullHouseCombo500: {
+    points: 60000,
+    label: "Full House Combo ×500",
+    kanji: "五百連満卓",
+    blurb: "For five hundred clean sweeps in a row at a full board.",
+    sentence: "Five hundred days of full houses.",
+  },
+  fullHouseCombo1000: {
+    points: 100000,
+    label: "Full House Combo ×1000",
+    kanji: "千連満卓",
+    blurb: "For a thousand clean sweeps in a row at a full board. Nobody gets here by accident.",
+    sentence: "A thousand days of full houses.",
+  },
+
   /* ── The computer ladder ────────────────────────────────────────────────
      Five graded grades and two specialists. Five times a won game against a
      person, because each grade can be beaten for the first time only once and
@@ -654,6 +756,17 @@ export const XP_SUBJECTS: Record<XpEventType, string> = {
   losses500: "the RuleVariant key, so it is once per game per member",
   losses1000: "the RuleVariant key, so it is once per game per member",
   draws10: "the RuleVariant key, so it is once per game per member",
+  fullHouse: "",
+  cleanSweepFirst: "",
+  cleanSweep: "the day key of the day that was kept, in the member's own zone",
+  fullHouseCombo7: "the day key the run reached it on, so a later run earns it again",
+  fullHouseCombo15: "the day key the run reached it on",
+  fullHouseCombo30: "the day key the run reached it on",
+  fullHouseCombo60: "the day key the run reached it on",
+  fullHouseCombo120: "the day key the run reached it on",
+  fullHouseCombo250: "the day key the run reached it on",
+  fullHouseCombo500: "the day key the run reached it on",
+  fullHouseCombo1000: "the day key the run reached it on",
   gradeBeaten: "the BotTier",
   everyGradeBeaten: "",
   specialistBeaten: "the BotTier",
@@ -727,7 +840,7 @@ export const XP_LONG_GAME_MOVES = 60;
  * `xp.coverage.test.ts` holds every type to one side of this line or the
  * other, so a new award has to be sorted the day it is priced.
  */
-export const XP_PEOPLE_ONLY: ReadonlySet<XpEventType> = new Set<XpEventType>([
+const XP_PEOPLE_ONLY_ALWAYS: readonly XpEventType[] = [
   XP_EVENTS.joined,
   XP_EVENTS.dailyVisit,
   XP_EVENTS.dayStreak7,
@@ -753,7 +866,41 @@ export const XP_PEOPLE_ONLY: ReadonlySet<XpEventType> = new Set<XpEventType>([
   XP_EVENTS.bioSet,
   XP_EVENTS.wordsSet,
   XP_EVENTS.seatClaimedElsewhere,
-]);
+];
+
+/** The full-board awards, together, for the one decision below and the gate that checks it. */
+export const XP_FULL_BOARD_TYPES: readonly XpEventType[] = [
+  XP_EVENTS.fullHouse,
+  XP_EVENTS.cleanSweepFirst,
+  XP_EVENTS.cleanSweep,
+  XP_EVENTS.fullHouseCombo7,
+  XP_EVENTS.fullHouseCombo15,
+  XP_EVENTS.fullHouseCombo30,
+  XP_EVENTS.fullHouseCombo60,
+  XP_EVENTS.fullHouseCombo120,
+  XP_EVENTS.fullHouseCombo250,
+  XP_EVENTS.fullHouseCombo500,
+  XP_EVENTS.fullHouseCombo1000,
+];
+
+/**
+ * WHETHER THE FULL-BOARD AWARDS ARE FOR PEOPLE ONLY. JOHN'S TO DECIDE, AND
+ * DECIDED HERE IN ONE LINE.
+ *
+ * Asked of him on 2026-09-14 and not yet answered. Until he does, they are what
+ * every other award about games is — a fact about play that a program earns
+ * too — since AGENTS.md says a people-only award is John's to ask for, not ours
+ * to add. A program can hold a full board: the active-game limit does not apply
+ * to one. `xp.coverage.test.ts` checks both answers.
+ */
+export const XP_FULL_BOARD_PEOPLE_ONLY = false;
+
+/** The people-only set, with the full-board awards in it or not. Exported so both answers can be tested. */
+export function xpPeopleOnlyWith(fullBoardPeopleOnly: boolean): ReadonlySet<XpEventType> {
+  return new Set<XpEventType>([...XP_PEOPLE_ONLY_ALWAYS, ...(fullBoardPeopleOnly ? XP_FULL_BOARD_TYPES : [])]);
+}
+
+export const XP_PEOPLE_ONLY: ReadonlySet<XpEventType> = xpPeopleOnlyWith(XP_FULL_BOARD_PEOPLE_ONLY);
 
 /** Whether this award may reach a member with an engine name. */
 export function earnableByProgram(type: XpEventType): boolean {
@@ -845,6 +992,41 @@ export const XP_RESULT_MILESTONES: readonly { outcome: StreakOutcome; count: num
  */
 export function resultMilestoneFor(outcome: StreakOutcome, count: number): XpEventType | null {
   return XP_RESULT_MILESTONES.find((one) => one.outcome === outcome && one.count === count)?.type ?? null;
+}
+
+/**
+ * A FULL BOARD: how many games, how long a wait, and how far back a first
+ * action of a new day judges. See `fullBoard.ts` for what each means.
+ */
+export const XP_FULL_BOARD_GAMES = 20;
+/** More than this long on the member's own turn, at a day's end, and the day was not kept up. */
+export const XP_KEPT_UP_HOURS = 24;
+/**
+ * How many days back a member's first action of a new day judges. A day that
+ * could qualify has the member's moves in it, and a move is an action, so a
+ * qualifying day is always judged by the next action after it — this only
+ * bounds the read for somebody coming back after a long absence, whose days away
+ * cannot qualify anyway.
+ */
+export const XP_FULL_BOARD_LOOKBACK_DAYS = 31;
+/** Longest run a combo is counted over: the top milestone. */
+export const XP_FULL_BOARD_RUN_MAX = 1000;
+
+/** Clean Sweeps in a row that earn a Full House combo, shortest first. */
+export const XP_FULL_HOUSE_COMBOS: readonly { days: number; type: XpEventType }[] = [
+  { days: 7, type: XP_EVENTS.fullHouseCombo7 },
+  { days: 15, type: XP_EVENTS.fullHouseCombo15 },
+  { days: 30, type: XP_EVENTS.fullHouseCombo30 },
+  { days: 60, type: XP_EVENTS.fullHouseCombo60 },
+  { days: 120, type: XP_EVENTS.fullHouseCombo120 },
+  { days: 250, type: XP_EVENTS.fullHouseCombo250 },
+  { days: 500, type: XP_EVENTS.fullHouseCombo500 },
+  { days: 1000, type: XP_EVENTS.fullHouseCombo1000 },
+];
+
+/** The combo a run of exactly this many Clean Sweeps has just reached, or null. Exactly, as a day streak is. */
+export function fullHouseComboFor(days: number): XpEventType | null {
+  return XP_FULL_HOUSE_COMBOS.find((combo) => combo.days === days)?.type ?? null;
 }
 
 /** Consecutive days that earn a milestone, longest last. */
