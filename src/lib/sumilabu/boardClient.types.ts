@@ -55,3 +55,6 @@ export type BoardRefusal = "missing" | "illegal" | "held" | "done" | "refused";
 export type BoardOutcome =
   | { ok: true; item: BacklogItem }
   | { ok: false; reason: BoardRefusal; problems: string[]; heldBy: string | null };
+
+/** What one import batch came to: how many rows the service took, or its problems by row. */
+export type BoardImportOutcome = { ok: true; imported: number } | { ok: false; status: number; problems: string[] };

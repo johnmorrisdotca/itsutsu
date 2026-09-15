@@ -23,7 +23,7 @@ export type StoredBacklogRow = {
 /** One row as Sumilabu's `POST tickets/import` takes it, in the contract's words. */
 export type SumilabuImportRow = {
   id: string;
-  /** Left off entirely while the target does not take keys (`targetTakesKeys`). */
+  /** Left off entirely while the target does not take keys (`boardTakesKeys`). */
   key?: string;
   title: string;
   detail: string | null;

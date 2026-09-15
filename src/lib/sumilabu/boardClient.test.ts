@@ -6,6 +6,9 @@ import { keyFromTitle, neighbourKey } from "../backlog/backlogKey";
 import {
   BoardUnreachable,
   addTicket,
+  boardTakesKeys,
+  importTickets,
+  listTicketViews,
   itemFromTicket,
   listTickets,
   moveTicket,
@@ -177,5 +180,33 @@ describe("writing to the board", () => {
     expect(shipped.ok && shipped.item.releasedIn).toBe("0.197.0");
     expect(calls[0]!.url).toBe(`${BASE}/tickets/cmf1/ship`);
     expect(sent(0)).toEqual({ version: "0.197.0", releasedAt: "2026-09-15T01:00:00.000Z" });
+  });
+});
+
+describe("the one-time import's calls", () => {
+  it("reads a whole list as no keys, one ticket or a 404 for the probe as keys, and anything else as not knowing", async () => {
+    answers({ status: 200, body: { ok: true, api_version: "v1", tickets: [] } });
+    expect(await boardTakesKeys(target)).toBe(false);
+    expect(calls[0]!.url).toBe(`${BASE}/tickets?key=board-export-key-probe`);
+
+    answers({ status: 404, body: { ok: false, error: "missing" } });
+    expect(await boardTakesKeys(target)).toBe(true);
+    answers({ status: 200, body: { ok: true, ticket: view() } });
+    expect(await boardTakesKeys(target)).toBe(true);
+    answers({ status: 400, body: { ok: false, error: "invalid_key" } });
+    await expect(boardTakesKeys(target)).rejects.toThrow(/could not tell/i);
+  });
+
+  it("imports under the actor, hands a refusal back by row, and lists the service's own fields for the diff", async () => {
+    answers({ status: 422, body: { ok: false, error: "a: already belongs to project itsutsu.", problems: ["a: already belongs to project itsutsu."] } });
+    expect(await importTickets(target, [], "board-export")).toEqual({ ok: false, status: 422, problems: ["a: already belongs to project itsutsu."] });
+    expect(calls[0]!.url).toBe(`${BASE}/tickets/import`);
+    expect(header(0, "x-board-actor")).toBe("board-export");
+
+    answers({ status: 200, body: { ok: true, imported: 3 } });
+    expect(await importTickets(target, [], "board-export")).toEqual({ ok: true, imported: 3 });
+
+    answers({ status: 200, body: { ok: true, tickets: [view({ key: null })] } });
+    expect((await listTicketViews(target))[0]).toMatchObject({ key: null, detail: null });
   });
 });

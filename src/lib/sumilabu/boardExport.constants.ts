@@ -26,12 +26,6 @@ export const SUMILABU_KEY_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 /** Rows per `POST tickets/import`. The service takes up to 1,000; half that keeps one refusal readable. */
 export const IMPORT_BATCH_SIZE = 500;
 
-/**
- * The key `targetTakesKeys` asks for. Nobody holds it; what matters is the
- * shape of the answer (see that function).
- */
-export const KEY_PROBE = "board-export-key-probe";
-
 /** Who the import is written as when `--by` names nobody. */
 export const EXPORT_ACTOR = "board-export";
 

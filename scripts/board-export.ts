@@ -9,7 +9,7 @@ import { EXPORT_ACTOR, PRODUCTION_SOURCE } from "../src/lib/sumilabu/boardExport
 import { diffTickets, freshen, inBatches, planExport, rehearsalSuffix, withoutKeys } from "../src/lib/sumilabu/boardExport.ts";
 import type { StoredBacklogRow } from "../src/lib/sumilabu/boardExport.types.ts";
 import { diffLines, planLines } from "../src/lib/sumilabu/boardExportReport.ts";
-import { importBatch, listTargetTickets, targetTakesKeys } from "../src/lib/sumilabu/boardExportWire.ts";
+import { boardTakesKeys, importTickets, listTicketViews } from "../src/lib/sumilabu/boardClient.ts";
 import { SUMILABU_PROJECTS, liveOptIn, sumilabuTarget, targetLine } from "../src/lib/sumilabu/sumilabuProject.ts";
 
 /**
@@ -39,7 +39,7 @@ import { SUMILABU_PROJECTS, liveOptIn, sumilabuTarget, targetLine } from "../src
  *    project takes production's rows and nothing else.
  *
  * Keys are sent once the target takes them, which it is asked rather than
- * told (`targetTakesKeys`). Batches of at most five hundred; the import
+ * told (`boardTakesKeys`). Batches of at most five hundred; the import
  * upserts by id, so a run stopped half way is run again.
  */
 
@@ -133,7 +133,7 @@ async function main(): Promise<void> {
   console.log(`${stored.length} rows archived whole to ${archive}\n`);
 
   const plan = planExport(stored, basename(archive));
-  const takesKeys = await targetTakesKeys(target);
+  const takesKeys = await boardTakesKeys(target);
   const suffix = rehearsalSuffix(now);
   const freshened = FRESH ? freshen(plan.rows, suffix) : plan.rows;
   const rows = takesKeys ? freshened : withoutKeys(freshened);
@@ -141,7 +141,7 @@ async function main(): Promise<void> {
   if (FRESH) console.log(`rehearsal: every id and key ends -${suffix}`);
   for (const line of planLines(plan, takesKeys)) console.log(line);
   console.log("");
-  for (const line of diffLines(diffTickets(rows, await listTargetTickets(target), takesKeys), "against the target now")) console.log(line);
+  for (const line of diffLines(diffTickets(rows, await listTicketViews(target), takesKeys), "against the target now")) console.log(line);
 
   if (!RUN) {
     console.log(`\nReport only: nothing was written to ${targetLine(target)}. Add --run to import.`);
@@ -154,7 +154,7 @@ async function main(): Promise<void> {
   const batches = inBatches(rows);
   let imported = 0;
   for (const [index, batch] of batches.entries()) {
-    const outcome = await importBatch(target, batch, actor);
+    const outcome = await importTickets(target, batch, actor);
     if (!outcome.ok) {
       fail(`\nbatch ${index + 1} of ${batches.length} refused (${outcome.status}), after ${imported} rows:\n${outcome.problems.map((line) => `  ${line}`).join("\n")}`);
     }
@@ -162,7 +162,7 @@ async function main(): Promise<void> {
     console.log(`\nbatch ${index + 1} of ${batches.length}: ${outcome.imported} rows imported into ${targetLine(target)}`);
   }
 
-  const after = diffTickets(rows, await listTargetTickets(target), takesKeys);
+  const after = diffTickets(rows, await listTicketViews(target), takesKeys);
   for (const line of diffLines(after, "against the target afterwards")) console.log(line);
   if (after.toAdd.length > 0 || after.changed.length > 0) fail("The target does not hold what was sent. Read the lines above before running again.");
   console.log(`\n${imported} rows imported; the target holds every one as sent.`);
