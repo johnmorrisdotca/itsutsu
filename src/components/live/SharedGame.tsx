@@ -9,21 +9,16 @@ import {
   readTurned,
   subscribeTurned,
   turnedFor,
-  writeTurned,
 } from "@/components/board/turned";
 import {
   cellAt,
   inMovePhase,
   pieceMoves,
-  rulesFor,
-  otherStone,
 } from "@/lib/gomoku/engine";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
-import { Button, SectionTitle } from "@/components/ui/Controls";
-import { LocalTime } from "@/components/ui/LocalTime";
+import { SectionTitle } from "@/components/ui/Controls";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
-import { shownName } from "@/lib/rating/shownName";
 import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { MatchClock } from "./MatchClock";
@@ -32,14 +27,14 @@ import { usePieceHand } from "@/components/game/usePieceHand";
 import {
   GAME_STATUS,
   STONES,
-  STONE_DISPLAY,
   VARIANT_SPECS,
 } from "@/lib/gomoku/gomoku.constants";
-import { ResignButton } from "@/components/mine/ResignButton";
-import { GAME_COPY } from "@/components/game/game.constants";
-import { ReactionBar, ReactionBubbles, ReactionLog } from "./Reactions";
+import { ReactionBubbles, ReactionLog } from "./Reactions";
+import { ColourChooser, GoPassButton, RuleNotes, TurnBoardButton } from "./SharedGameControls";
+import { SharedGameFooter } from "./SharedGameFooter";
+import type { SharedGameProps } from "./sharedGame.types";
 import { TurnBanner } from "./TurnBanner";
-import { readQuiet, subscribeQuiet, writeQuiet } from "./quiet";
+import { readQuiet, subscribeQuiet } from "./quiet";
 import { settleFromRecord, settledSinceRendered } from "@/lib/history/settle";
 import { useLiveGame } from "./useLiveGame";
 import { useMatchAddress } from "./useMatchAddress";
@@ -65,41 +60,7 @@ export function SharedGame({
   ignoring = [],
   offer = null,
   appearance = DEFAULT_APPEARANCE,
-}: {
-  initial: GameDetail;
-  token: string | null;
-  seat: Stone | null;
-  /**
-   * This game is an offer nobody has answered yet, and which side of it the
-   * reader is on. Null for an ordinary game.
-   *
-   * Handed down from the page rather than worked out here, because deciding it
-   * needs the reader's member id and a client component has no business
-   * knowing one. What it changes here is small and important: the banner says
-   * what the board is, and the board cannot be played.
-   */
-  offer?: { side: "to-me" | "from-me"; who: string } | null;
-  /**
-   * How this reader likes a board dressed, from their account. The shared
-   * board used to draw the default and nothing else, so a member's own board
-   * followed them into a local game and stopped at the door of a real one.
-   */
-  appearance?: Appearance;
-  /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
-  basePath?: string;
-  /** Who sits across the board, and where they are, when the seat is an account with a country set. */
-  opponent?: {
-    name: string;
-    country: string;
-    awayUntil?: string | null;
-  } | null;
-  /**
-   * Colours whose player this reader has ignored — for a watcher as much as
-   * for a player, since the ignore list is about who may reach you and not
-   * about which chair you are in.
-   */
-  ignoring?: readonly Stone[];
-}) {
+}: SharedGameProps) {
   const [error, setError] = useState<string | null>(null);
   // Mute this opponent's messages for this game only; remembered in this browser.
   const quiet = useSyncExternalStore(
@@ -291,42 +252,11 @@ export function SharedGame({
         mutate={mutate}
       />
 
-      {VARIANT_SPECS[state.settings.variant].captures ? (
-        <p className="text-xs text-muted" data-testid="shared-captures">
-          {GAME_COPY.captures.label} · {STONE_DISPLAY.black.label}{" "}
-          {state.captures.black} · {STONE_DISPLAY.white.label}{" "}
-          {state.captures.white} ·{" "}
-          {GAME_COPY.capturesToWin(state.settings.capturesToWin)}
-        </p>
-      ) : null}
-      {state.status === GAME_STATUS.playing &&
-      rulesFor(state.settings, state.toPlay).forbidden.length > 0 ? (
-        <p className="text-xs text-muted">
-          {STONE_DISPLAY[state.toPlay].label} may not play the points marked ✕.
-        </p>
-      ) : null}
+      <RuleNotes state={state} />
 
       <ReactionBubbles reactions={shown} yourStone={seat} />
 
-      {/*
-        This game's own way up. Above the board rather than buried in the
-        settings, because it is answering a question the board is asking right
-        now — you are looking at your camp from the wrong end — and it must be
-        one press away from the position that prompted it.
-      */}
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={() => writeTurned(detail.id, !turned)}
-          className="rounded-full border border-rule bg-ivory/70 px-3 py-1 text-xs text-ink-soft transition-colors hover:bg-ivory"
-          aria-pressed={turned}
-          title="Your own view of this board. The other player's board does not move."
-          data-testid="turn-board"
-        >
-          {turned ? "Turn the board back" : "Turn the board round"}{" "}
-          <span className="font-mincho">盤反転</span>
-        </button>
-      </div>
+      <TurnBoardButton gameId={detail.id} turned={turned} />
 
       <Board
         state={state}
@@ -339,23 +269,7 @@ export function SharedGame({
         placing={choosesColour ? placing : null}
       />
 
-      {choosesColour && playable ? (
-        <div
-          className="flex flex-wrap items-center gap-2"
-          data-testid="colour-chooser"
-        >
-          <span className="text-xs text-muted">{GAME_COPY.placeAs}</span>
-          {Object.values(STONES).map((stone) => (
-            <Button
-              key={stone}
-              onClick={() => setPlacing(stone)}
-              strong={placing === stone}
-            >
-              {STONE_DISPLAY[stone].label}
-            </Button>
-          ))}
-        </div>
-      ) : null}
+      {choosesColour && playable ? <ColourChooser placing={placing} onChoose={setPlacing} /> : null}
 
       {hand.piece !== null && seat !== null ? (
         <PieceTray
@@ -369,15 +283,7 @@ export function SharedGame({
       ) : null}
 
       {VARIANT_SPECS[state.settings.variant].go && seat !== null ? (
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={pass}
-            disabled={!playable}
-            title={GAME_COPY.passHint}
-          >
-            {GAME_COPY.pass.label}
-          </Button>
-        </div>
+        <GoPassButton disabled={!playable} onPass={pass} />
       ) : null}
 
       {/*
@@ -398,87 +304,21 @@ export function SharedGame({
         />
       </div>
 
-      {/*
-        An empty board can be called off even where resigning is refused — but
-        an OFFER is neither resigned nor called off. It is withdrawn, which is a
-        different door on the server (`cancelGame` refuses an offer outright, so
-        this would be a button that does nothing) and a different word: there is
-        no game here to give up, only a question to take back. The control for
-        that is in the offer panel beside the board.
-      */}
-      {offer === null &&
-      seat !== null &&
-      (detail.allowResign || state.moves.length === 0) &&
-      state.status === GAME_STATUS.playing ? (
-        <div className="flex justify-end">
-          <ResignButton
-            id={detail.id}
-            token={token}
-            moves={state.moves.length}
-            onDone={() => void mutate()}
-            /*
-              No refresh of its own here: the board hands itself back the
-              moment it reads the game as over (`useMatchAddress`), and a
-              second hand-back from the button went to the address the router
-              had stopped agreeing with, and reloaded the page.
-            */
-            refreshAfter={false}
-            /*
-              NOTHING MOVES WHILE THIS IS ASKING. A move carries a player to
-              their next waiting game a moment after it lands, and somebody who
-              plays a stone and reaches straight for Resign opened this question
-              inside that moment — then watched the board and the question go
-              together. Waved away, the held advance goes ahead; answered, it is
-              dropped, because a game that has just ended is the board to be
-              looking at.
-            */
-            onAsking={whileAsking}
-          />
-        </div>
-      ) : null}
-
-      {/*
-        Nothing to say across a board nobody has agreed to sit at. The offeree
-        holds no token and could not send one anyway; the offerer would be
-        waving at somebody who has not answered the question yet.
-      */}
-      {offer === null && seat !== null && token !== null ? (
-        <ReactionBar
-          lastMove={state.moves.length > 0 ? state.moves.length : null}
-          disabled={false}
-          onSend={react}
-        />
-      ) : null}
-      {/*
-        Nothing to mute by hand when they are already ignored outright. Read
-        from the ignore list rather than from `silenced`, which also holds the
-        result of this very checkbox — testing that would make the box vanish
-        the moment it was ticked.
-      */}
-      {seat !== null && !ignoring.includes(otherStone(seat)) ? (
-        <label className="flex items-center gap-2 text-xs text-muted">
-          <input
-            type="checkbox"
-            checked={quiet}
-            onChange={(event) => writeQuiet(initial.id, event.target.checked)}
-            className="size-3.5 accent-ink"
-            data-testid="mute-game"
-          />
-          Mute this opponent&apos;s messages in this game
-        </label>
-      ) : null}
-      {opponent !== null && seat !== null ? (
-        <p className="text-xs text-muted" data-testid="opponent-line">
-          You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
-          <span className="font-medium text-ink">{shownName(opponent.name)}</span>
-          {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
-          {opponent.awayUntil ? (
-            <>
-              {" "}Away until <LocalTime at={opponent.awayUntil} style="date" />; their deadline waits.
-            </>
-          ) : null}
-        </p>
-      ) : null}
+      {/* Resigning, a wave across the board, muting, and who is opposite — see `SharedGameFooter`. */}
+      <SharedGameFooter
+        detail={detail}
+        state={state}
+        seat={seat}
+        token={token}
+        offer={offer}
+        ignoring={ignoring}
+        quiet={quiet}
+        gameId={initial.id}
+        opponent={opponent}
+        onReact={react}
+        onAsking={whileAsking}
+        mutate={mutate}
+      />
       <ReactionLog reactions={shown} />
     </div>
   );

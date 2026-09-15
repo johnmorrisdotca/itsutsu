@@ -1,9 +1,16 @@
 import type { ReactNode } from "react";
 
+import type { GamePoolFilter, GameRatedFilter } from "@/lib/history/gameHistory.types";
 import type { RatingPool } from "@/lib/rating/pools";
 import type { RatingTier } from "@/lib/rating/elo";
-import type { RecordOf, WonLostDrawn } from "./PlayerRecord";
 import type { Streak } from "@/lib/rating/streak";
+
+/*
+ * `WonLostDrawn` and `RecordOf`, at the foot of this file, were declared in
+ * `PlayerRecord.tsx` and imported from there until that file reached the
+ * file-size gate. They are the record's contract as much as the row is, so they
+ * live with it now; `PlayerRecord.tsx` re-exports both, so no import moved.
+ */
 
 /**
  * WHAT ONE ROW OF THE ONE TABLE OF RECORDS HOLDS.
@@ -150,4 +157,42 @@ export type RecordTableRow = {
    * which is where the drift this component exists to stop would come back in.
    */
   attributes?: Record<`data-${string}`, string>;
+};
+
+export type WonLostDrawn = { wins: number; losses: number; draws: number };
+
+/**
+ * Whose games these are, so each count can lead to them.
+ *
+ * Optional because a record is sometimes nobody's in particular — a totals
+ * row, a figure added up across several people — and a link then has no set of
+ * games to promise. `here` is false for a record kept from another site: those
+ * numbers are true and there is nothing behind them to open.
+ */
+export type RecordOf = {
+  player?: string;
+  /**
+   * Their member id, where the row knows one — the thing the ADDRESS carries.
+   *
+   * The name still decides which games are counted, because a record hangs off a
+   * folded name; the id decides how the link ASKS for them, so that a page
+   * showing "Hanako M." is not also publishing "Hanako Morris" in the href of
+   * every number on it. `gamesHref` says why at length. A row with no member
+   * behind it — a kept record, a name typed in at one screen — leaves it out and
+   * the name is the address, because the name is all it has.
+   */
+  memberId?: string | null;
+  /** One game's record, when the table is per game. Left out for every game. */
+  variant?: string;
+  /**
+   * Which ladder counted these, when a ladder did.
+   *
+   * A rating's record is rated games in one pool, and nothing else. A table
+   * showing one has to hand both down or its numbers link to a longer list
+   * than they came from — which is the same fault as a number that leads
+   * nowhere, only harder to notice.
+   */
+  pool?: GamePoolFilter;
+  rated?: GameRatedFilter;
+  here?: boolean;
 };

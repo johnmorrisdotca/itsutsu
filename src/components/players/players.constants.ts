@@ -33,3 +33,38 @@ export const NARROWING_WORDS = {
   active: { chip: "Seen lately", clause: (days: number) => `has been seen in the last ${days} days` },
   remembered: "as you chose last time",
 } as const;
+
+/**
+ * The cell classes, here rather than in each table, so columns line up between
+ * pages.
+ *
+ * Exported so that `RecordTable` — which draws the columns AROUND these: the
+ * rating, the tier, whatever a table switches on — uses the same two strings
+ * rather than a copy. A copied class string is how a table drifts half a line
+ * out of true and nobody can say why.
+ */
+export const CELL = "py-1.5 pr-3 font-mono tabular-nums";
+/*
+ * `whitespace-nowrap` because these headings are two words at most and a
+ * wrapped one throws the whole row's baseline out. On the members list, which
+ * carries two action columns, "WIN RATE" broke over two lines while the same
+ * heading on the ladder beside it did not — two tables meant to read as one,
+ * differing by a line height for no reason a reader could see.
+ */
+export const HEAD = "py-1 pr-3 whitespace-nowrap";
+
+/**
+ * The heading typography every record table shares.
+ *
+ * It was this string written out in five files and a near-miss of it in two
+ * more — `0.68rem`/`0.1em` against `0.7rem`/`0.14em`, on two tables a reader
+ * sees one after the other. One string, one look.
+ */
+export const TABLE_HEAD_CLASS =
+  "text-left text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase";
+
+/** The table element itself, so no page invents its own width or size. */
+export const TABLE_CLASS = "w-full text-sm";
+
+/** The line between rows. */
+export const ROW_CLASS = "border-t border-rule";

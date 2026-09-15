@@ -301,3 +301,59 @@ export const WORDS_COPY = {
   saveFailed: "Could not set those words.",
   removeFailed: "Could not remove those words.",
 } as const;
+
+/*
+ * A FIELD IS AS WIDE AS WHAT GOES IN IT.
+ *
+ * John, with the form in front of him: "The Away to date stuff is so ugly.
+ * Just these large full page width date inputs… BAD! They should at least be
+ * on the same row. Time zone doesn't need to be full width either! Heck, City
+ * and Country need to be that wide???"
+ *
+ * He is right, and the cause is one line of CSS repeated nine times:
+ * `INPUT_CLASS` is `w-full`, and the panel this form sits in is a thousand
+ * pixels across on a laptop. So a ten-character date got a box wide enough
+ * for a paragraph, which is what a form looks like when nobody has looked at
+ * it. Each control is capped here at what its own longest value needs, and
+ * only the bio — which really is a paragraph — keeps the width.
+ *
+ * TWO THINGS TO KEEP RIGHT WHEN CHANGING THESE.
+ *
+ * They are caps (`max-w-*`) and never widths (`w-*`). Partly so a phone
+ * narrows every one of them to the column it actually has — 390px of screen
+ * is about 326px of panel, narrower than most of the caps below — and partly
+ * because `w-*` here would be a coin toss: `INPUT_CLASS` already sets
+ * `w-full`, and Tailwind settles two utilities for one property by their
+ * order in the stylesheet rather than in the attribute. `max-width` is a
+ * different property, so it composes instead of competing.
+ *
+ * And a narrower field is not a shorter one. Nothing here touches the padding
+ * or the text size that make these comfortable to tap.
+ *
+ * Here rather than in `ProfileForm.tsx` since the form was split into sections
+ * at the file-size gate: the form and both of its sections read these.
+ */
+export const PROFILE_WIDTH = {
+  /** "Charlottetown", "Sault Ste. Marie" — a couple of words at most. */
+  city: "sm:max-w-[11rem]",
+  /** "🇬🇧 United Kingdom", and the longest of the 249 run half again as long. */
+  country: "sm:max-w-[17rem]",
+  /** Measured: "America/Argentina/Buenos_Aires", the longest there is, wants 313px. */
+  zone: "max-w-[20rem]",
+  /*
+   * A date is ten characters, a picker icon, and nothing else — 136px, which
+   * is what one needs to render whole.
+   *
+   * The second half is arithmetic and not taste. A screen 360px wide leaves
+   * this form a 294px column, and two whole dates with the word between them
+   * want 294px exactly; anything narrower cannot have both at this text size,
+   * whatever the padding does. Below that the TEXT gives way rather than the
+   * row, because "they should at least be on the same row" is the thing being
+   * asked for and a smaller date is still a date. Measured at 320px: at the
+   * ordinary size the boxes come out 113px and Chrome eats the leading digit,
+   * so every year read 026.
+   */
+  date: "max-w-[8.5rem] max-[359px]:text-xs",
+  /** "Three months 三月" is the longest thing this select ever says. */
+  keep: "max-w-[13rem]",
+} as const;
