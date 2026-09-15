@@ -732,7 +732,7 @@ never the guessing paths, and never in production, both of which are tested in
 
 **The same relief also shortens a live board's poll outside production.**
 `next.config.ts` hands it to the browser as `LIVE_POLL_RELIEF`, and `pollEvery`
-divides the fifteen-second cadence by it, never faster than once a second, so
+divides the fifteen-second cadence by it, never faster than every two and a half seconds, so
 the two-seat specs do not wait out a production poll for every move the other
 seat makes. It never applies in production — `pollEvery` refuses it there
 before reading it, because every ask is a paid function call — and

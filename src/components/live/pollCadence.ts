@@ -24,7 +24,8 @@ import { POLL_MS, POLL_RELIEF_FLOOR_MS } from "./live.constants";
  * its own and the page gets the real one. Through the config's `env` rather
  * than a variable of its own, so no `.env` anywhere needs a new line; Next
  * writes the value into the bundle at build time, and at the suite's relief
- * of 20 the floor holds the board at once a second.
+ * of 20 the floor holds the board at two and a half seconds, above SWR's own
+ * two-second dedupe (`POLL_RELIEF_FLOOR_MS`).
  */
 export function pollEvery(
   env: { nodeEnv: string | undefined; relief: string | undefined } = {

@@ -56,7 +56,7 @@ describe("the end-to-end suite's relief on the cadence", () => {
   });
 
   it("divides the cadence where it is asked for", () => {
-    expect(pollEvery({ nodeEnv: "development", relief: "6" })).toBe(POLL_MS / 6);
+    expect(pollEvery({ nodeEnv: "development", relief: "3" })).toBe(POLL_MS / 3);
   });
 
   it("changes nothing where nobody set it, or set it to nothing sensible", () => {
@@ -65,16 +65,24 @@ describe("the end-to-end suite's relief on the cadence", () => {
     }
   });
 
-  it("cannot make a board ask faster than once a second", () => {
+  it("cannot make a board ask faster than SWR would really ask", () => {
+    /*
+     * SWR drops an ask made within its two-second `dedupingInterval` of the
+     * last, so a floor at or under it would have the page state a cadence it
+     * does not keep — which is what a floor of one second did at the suite's
+     * relief of 20, measured by e2e/live-poll-cadence.spec.ts.
+     */
+    const SWR_DEDUPING_MS = 2_000;
+    expect(POLL_RELIEF_FLOOR_MS).toBeGreaterThan(SWR_DEDUPING_MS);
     expect(pollEvery({ nodeEnv: "development", relief: "1000" })).toBe(POLL_RELIEF_FLOOR_MS);
-    // The suite's own RATE_LIMIT_RELIEF is 20, which the floor holds at once a second.
+    // The suite's own RATE_LIMIT_RELIEF is 20, which the floor holds.
     expect(pollEvery({ nodeEnv: "development", relief: "20" })).toBe(POLL_RELIEF_FLOOR_MS);
   });
 
   it("reads the real environment, and production still wins there", () => {
-    vi.stubEnv("LIVE_POLL_RELIEF", "6");
+    vi.stubEnv("LIVE_POLL_RELIEF", "3");
     vi.stubEnv("NODE_ENV", "development");
-    expect(pollEvery()).toBe(POLL_MS / 6);
+    expect(pollEvery()).toBe(POLL_MS / 3);
     vi.stubEnv("NODE_ENV", "production");
     expect(pollEvery()).toBe(POLL_MS);
     expect(pollInterval({ polling: true, awake: true, visible: true })).toBe(POLL_MS);

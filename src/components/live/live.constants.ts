@@ -47,8 +47,19 @@ export const POLL_MS = 15_000;
  */
 export const IDLE_STOP_MS = 6 * 60 * 1000;
 
-/** The fastest the end-to-end suite's relief may make a board ask — see `pollEvery`. */
-export const POLL_RELIEF_FLOOR_MS = 1_000;
+/**
+ * The fastest the end-to-end suite's relief may make a board ask — see
+ * `pollEvery`.
+ *
+ * Two and a half seconds, not one, and not for the suite's comfort: SWR drops
+ * any ask made within its `dedupingInterval` (two seconds) of the last, so a
+ * board told to ask every second really asks every two, while saying one. At
+ * the suite's relief of 20 that is exactly what happened, and the cadence spec
+ * caught the page claiming a number it did not keep. Above the dedupe, the
+ * cadence a board states is the cadence it runs — and it is the two and a half
+ * seconds the two-seat specs were written against.
+ */
+export const POLL_RELIEF_FLOOR_MS = 2_500;
 
 /**
  * What a board that has stopped asking says, and the button that wakes it.
