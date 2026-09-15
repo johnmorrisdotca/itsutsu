@@ -1,6 +1,5 @@
 import type { Prisma } from "@prisma/client";
 
-import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
 import { countText } from "@/lib/rating/figures";
 
 import { IMPORTED_XP_TYPES } from "./importedXp.constants";
@@ -32,6 +31,18 @@ import { xpDayKey, type DayKey } from "./xpDay";
  * day and the six before it. A key later than today — an award earned under a
  * zone that runs ahead of the one they hold now — is recent by definition, and
  * counts in the seven days but not in today, which is a day it did not fall on.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * A GAIN IS WHAT SOMEBODY EARNED HERE — NEVER CREDIT IMPORTED FROM ELSEWHERE
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * Under BOTH scopes. The Everywhere total still includes another site's credit,
+ * and ranks by it; the two gain columns do not. John's question was how much
+ * somebody went up by playing, and imported credit is paid in one go on the day
+ * a kept record is imported — the pay that landed on 2026-09-14 would have shown
+ * Chibi +1,008,863 in Today and then in 7 days for a week, for no game played.
+ * So the ledger read leaves `IMPORTED_XP_TYPES` out whatever the scope, and
+ * nothing here takes a scope at all.
  */
 
 /** How many days the second column counts, today included. */
@@ -55,17 +66,13 @@ export function xpGainWindow(now: Date, timeZone?: string | null): XpGainWindow 
 
 /**
  * The ledger rows one read must cover for a page of the board: each member from
- * the first of their own seven days, and under Itsutsu only, none of the credit
- * imported from another site — which Everywhere counts and Itsutsu only does not,
- * exactly as the totals the board ranks by do.
+ * the first of their own seven days, and none of the credit imported from
+ * another site, under either scope — see the header.
  */
-export function xpGainsWhere(
-  windows: ReadonlyMap<string, XpGainWindow>,
-  scope: RecordScope,
-): Prisma.XpEventWhereInput {
+export function xpGainsWhere(windows: ReadonlyMap<string, XpGainWindow>): Prisma.XpEventWhereInput {
   return {
     OR: [...windows].map(([memberId, window]) => ({ memberId, dayKey: { gte: window.from } })),
-    ...(scope === RECORD_SCOPES.here ? { type: { notIn: [...IMPORTED_XP_TYPES] } } : {}),
+    type: { notIn: [...IMPORTED_XP_TYPES] },
   };
 }
 

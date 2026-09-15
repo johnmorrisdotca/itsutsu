@@ -283,16 +283,18 @@ test("an order the board does not have gives the board, and says so", async ({ p
 });
 
 /**
- * TODAY AND 7 DAYS, IN THE BOARD'S SCOPE.
+ * TODAY AND 7 DAYS: EARNED HERE, UNDER EITHER SCOPE.
  *
  * John: "XP tables aren't useful if they don't tell us how much you went up each
  * day". The member and every award are this spec's own: 20 won here today, 30
  * of another site's credit today, 100 three days ago, and 400 ten days ago that
- * neither column may count. Everywhere that is +50 and +150; Itsutsu only, +20
- * and +120. The scope is changed by pressing its chip, and pressed back again so
- * the operator's remembered scope is left as the spec found it.
+ * neither column may count. The imported 30 is never a gain — it is in the
+ * Everywhere total, not in how much somebody went up by playing — so it is +20
+ * and +120 under Everywhere AND under Itsutsu only. The scope is changed by
+ * pressing its chip, and pressed back again so the operator's remembered scope
+ * is left as the spec found it.
  */
-test("each row says what it gained today and over seven days, in the board's scope", async ({ page }) => {
+test("each row says what it earned here today and over seven days, never imported credit, under either scope", async ({ page }) => {
   const gainer = await seedXpMember(30, "gains", `Xpgain-${RUN}`);
   try {
     await seedLedgerFor(gainer.id, [
@@ -307,8 +309,8 @@ test("each row says what it gained today and over seven days, in the board's sco
     await page.getByTestId("scope-everywhere").click();
     await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "everywhere");
     let row = await rowFor(page, gainer.name);
-    await expect(row.getByTestId("xp-board-today")).toHaveText("+50");
-    await expect(row.getByTestId("xp-board-week")).toHaveText("+150");
+    await expect(row.getByTestId("xp-board-today")).toHaveText("+20");
+    await expect(row.getByTestId("xp-board-week")).toHaveText("+120");
 
     await page.getByTestId("scope-here").click();
     await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "here");
@@ -320,7 +322,8 @@ test("each row says what it gained today and over seven days, in the board's sco
     await page.getByTestId("scope-everywhere").click();
     await expect(page.getByTestId("xp-scope-said")).toHaveAttribute("data-scope", "everywhere");
     row = await rowFor(page, gainer.name);
-    await expect(row.getByTestId("xp-board-today")).toHaveText("+50");
+    await expect(row.getByTestId("xp-board-today")).toHaveText("+20");
+    await expect(row.getByTestId("xp-board-week")).toHaveText("+120");
   } finally {
     await removeLedgerFor([gainer.id]);
     await removeXpMembers([gainer.email]);

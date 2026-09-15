@@ -111,10 +111,11 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
    * aren't useful if they don't tell us how much you went up each day... and how
    * far you are behind the next person." One ledger read for the whole page, and
    * past page one one primary-key read for the row above — see `xpBoardGains.ts`.
-   * Both in this board's scope, over the rows its narrowing already chose.
+   * Over the rows the narrowing already chose. Behind next follows the scope; a
+   * gain never includes imported credit under either scope — see `xpGains.ts`.
    */
   const [gains, above] = await Promise.all([
-    fetchXpBoardGains({ rows: board.items, scope }),
+    fetchXpBoardGains({ rows: board.items }),
     fetchXpAboveTotal({ cursor: paging.cursor, sort: paging.sort, scope }),
   ]);
 
@@ -160,8 +161,9 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
             {xpLevelName(XP_LEVELS)}
           </Link>
-          . Press a heading to sort by it. Today and 7 days are what each member gained on their own
-          days; Behind next is how far a row trails the one above it. The games finished here before the ladder existed were
+          . Press a heading to sort by it. Today and 7 days are what each member earned here on their
+          own days — credit from other sites counts in the total, never as a gain; Behind next is how
+          far a row trails the one above it. The games finished here before the ladder existed were
           paid for when it was built, so it reaches back to the first game on the site — and a
           record kept from another site is credited too, which Everywhere counts and Itsutsu only
           leaves out.

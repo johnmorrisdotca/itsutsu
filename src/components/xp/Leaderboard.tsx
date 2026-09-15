@@ -170,8 +170,8 @@ export type LeaderboardProps = {
   /** What the empty board offers, worded by the page for whoever is reading. */
   empty: React.ReactNode;
   /**
-   * What each row gained today and over seven days, in the board's scope and
-   * each member's own days, by member id. A row missing from it prints a dash:
+   * What each row earned here today and over seven days, in each member's own
+   * days, by member id — never imported credit, under either scope. A row missing from it prints a dash:
    * a gain the read did not measure is not a nought.
    */
   gains: ReadonlyMap<string, XpGain>;
@@ -226,10 +226,12 @@ export function Leaderboard({
               the rows on screen, and ordering the whole board by it would be a
               read of every member's week on every press. See `xpBoardGains.ts`.
             */}
-            <SortHead {...head} param={null} title="XP gained today, on each member's own day">
+            {/* Earned here only, under either scope: credit imported from another
+                site is in the total and never a gain. See `xpGains.ts`. */}
+            <SortHead {...head} param={null} title="XP earned here today, on each member's own day. Credit from other sites counts in the total, never as a gain">
               Today
             </SortHead>
-            <SortHead {...head} param={null} title="XP gained over the last seven days, today included">
+            <SortHead {...head} param={null} title="XP earned here over the last seven days, today included. Credit from other sites counts in the total, never as a gain">
               7 days
             </SortHead>
             <SortHead {...head} param={null} title="Points behind the row directly above, in the order shown">

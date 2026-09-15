@@ -7,11 +7,11 @@ import { IMPORTED_XP_EVENTS } from "./importedXp.constants";
 import { XP_EVENTS } from "./xp.constants";
 
 /**
- * THE XP BOARD'S GAINS, READ: ONE QUERY FOR A PAGE, IN THE BOARD'S SCOPE.
+ * THE XP BOARD'S GAINS, READ: ONE QUERY FOR A PAGE, NEVER IMPORTED CREDIT.
  *
  * The fake honours the `OR`, `gte` and `notIn` the real `where` carries, so a
- * scope that forgot to leave imported credit out, or a window read from the
- * wrong member, changes the answer here rather than passing over it.
+ * read that let imported credit into a gain, or a window read from the wrong
+ * member, changes the answer here rather than passing over it.
  */
 
 type Event = { memberId: string; type: string; dayKey: string; points: number };
@@ -82,25 +82,31 @@ const page = Array.from({ length: 25 }, (_, i) => ({ id: `m${i}`, timeZone: "" }
 
 describe("the gains on one page of the board", () => {
   it("are ONE query for the whole page, however many rows", async () => {
-    await fetchXpBoardGains({ rows: page, scope: RECORD_SCOPES.everywhere, now: NOW });
+    await fetchXpBoardGains({ rows: page, now: NOW });
     expect(reads.groupBy).toBe(1);
   });
 
-  it("count imported credit Everywhere and leave it out under Itsutsu only", async () => {
-    const everywhere = await fetchXpBoardGains({ rows: page, scope: RECORD_SCOPES.everywhere, now: NOW });
-    expect(everywhere.get("m0")).toEqual({ today: 50, week: 150 });
-    const here = await fetchXpBoardGains({ rows: page, scope: RECORD_SCOPES.here, now: NOW });
-    expect(here.get("m0")).toEqual({ today: 20, week: 120 });
+  it("never count imported credit, which is in the Everywhere total and is not a gain", async () => {
+    // 20 won here today, 30 of another site's credit today, 100 three days ago.
+    expect((await fetchXpBoardGains({ rows: page, now: NOW })).get("m0")).toEqual({ today: 20, week: 120 });
+  });
+
+  it("never count imported credit even for a member whose every award today is imported", async () => {
+    events = [
+      { memberId: "m1", type: IMPORTED_XP_EVENTS.importedGames, dayKey: "2026-09-14", points: 1_000_000 },
+      { memberId: "m1", type: IMPORTED_XP_EVENTS.importedYears, dayKey: "2026-09-12", points: 8_863 },
+    ];
+    expect((await fetchXpBoardGains({ rows: page, now: NOW })).get("m1")).toEqual({ today: 0, week: 0 });
   });
 
   it("answer nought for everybody else on the page, and nothing for anyone off it", async () => {
-    const gains = await fetchXpBoardGains({ rows: page, scope: RECORD_SCOPES.everywhere, now: NOW });
+    const gains = await fetchXpBoardGains({ rows: page, now: NOW });
     expect(gains.get("m24")).toEqual({ today: 0, week: 0 });
     expect(gains.has("elsewhere")).toBe(false);
   });
 
   it("ask nothing for an empty board", async () => {
-    expect((await fetchXpBoardGains({ rows: [], scope: RECORD_SCOPES.here, now: NOW })).size).toBe(0);
+    expect((await fetchXpBoardGains({ rows: [], now: NOW })).size).toBe(0);
     expect(reads.groupBy).toBe(0);
   });
 });

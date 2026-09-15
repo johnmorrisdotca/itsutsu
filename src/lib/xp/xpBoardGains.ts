@@ -16,7 +16,8 @@ import { xpTotalIn } from "./xpScope";
  * each from the first of their own seven days (`xpGainsWhere`), on
  * `XpEvent_memberId_dayKey_idx`. Twenty-five members is at most 175 groups back,
  * and today and the week are both read out of them. Why the day is a day key
- * and not a `createdAt` range is `xpGains.ts`'s header.
+ * and not a `createdAt` range, and why imported credit is never a gain under
+ * either scope, is `xpGains.ts`'s header.
  *
  * AND ONE PRIMARY-KEY READ PAST PAGE ONE, for Behind next on the page's first
  * row. The row directly above it is the last row of the page before, and the
@@ -29,18 +30,16 @@ import { xpTotalIn } from "./xpScope";
 
 export async function fetchXpBoardGains({
   rows,
-  scope,
   now = new Date(),
 }: {
   rows: readonly Pick<XpBoardRow, "id" | "timeZone">[];
-  scope: RecordScope;
   now?: Date;
 }): Promise<Map<string, XpGain>> {
   if (rows.length === 0) return new Map();
   const windows = new Map(rows.map((row) => [row.id, xpGainWindow(now, row.timeZone)]));
   const sums = await prisma.xpEvent.groupBy({
     by: ["memberId", "dayKey"],
-    where: xpGainsWhere(windows, scope),
+    where: xpGainsWhere(windows),
     _sum: { points: true },
   });
   return xpGainsFrom(

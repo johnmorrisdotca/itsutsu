@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { RECORD_SCOPES } from "@/lib/rating/recordScope";
-
 import { IMPORTED_XP_TYPES } from "./importedXp.constants";
 import {
   xpBehindText,
@@ -40,18 +38,20 @@ describe("what one read asks the ledger for", () => {
     ["m2", { today: "2026-09-15", from: "2026-09-09" }],
   ]);
 
-  it("asks for each member from their own first day", () => {
-    expect(xpGainsWhere(windows, RECORD_SCOPES.everywhere)).toEqual({
+  it("asks for each member from their own first day, and never for imported credit", () => {
+    /*
+     * One question whatever the board's scope: a gain is what somebody earned
+     * here. The Everywhere total includes another site's credit; a gain never
+     * does, or a record imported today reads as a week of play.
+     */
+    expect(xpGainsWhere(windows)).toEqual({
       OR: [
         { memberId: "m1", dayKey: { gte: "2026-09-08" } },
         { memberId: "m2", dayKey: { gte: "2026-09-09" } },
       ],
+      type: { notIn: [...IMPORTED_XP_TYPES] },
     });
-  });
-
-  it("leaves imported credit out under Itsutsu only, as the total it ranks by does", () => {
-    const where = xpGainsWhere(windows, RECORD_SCOPES.here);
-    expect(where.type).toEqual({ notIn: [...IMPORTED_XP_TYPES] });
+    expect(IMPORTED_XP_TYPES.length).toBeGreaterThan(0);
   });
 });
 
