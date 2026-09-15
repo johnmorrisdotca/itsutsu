@@ -36,6 +36,7 @@ import {
 } from "./restoreSession";
 import { useGameTimeline } from "./useGameTimeline";
 import { clearSnapshot, saveSnapshot, toSnapshot } from "./gameStorage";
+import { unsavedAppearance } from "./unsavedAppearance";
 import type {
   GameActions,
   MatchStart,
@@ -87,9 +88,15 @@ export function useGameSession(
    * who changed the wood on their phone should find that wood here, which is
    * the whole point of keeping it on the account; and a change made here is
    * written back, so the two agree again immediately.
+   *
+   * EXCEPT a choice made here that the account has not yet confirmed. A reload
+   * reaches the server before the save the old page sent on its way out, so the
+   * account's copy can be one choice behind for a moment; this browser's
+   * unconfirmed choice is the newer truth, and `useSavedAppearance` sends it
+   * again. Signed in only — nobody else has an account to be behind.
    */
   const [appearance, setAppearanceState] = useState<Appearance>(() =>
-    restoredAppearance(restored, accountAppearance),
+    restoredAppearance(restored, accountAppearance === null ? null : (unsavedAppearance() ?? accountAppearance)),
   );
   const [settings, setSettingsState] = useState<SessionSettings>(() =>
     restoredSettings(restored),
