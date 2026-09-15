@@ -183,3 +183,54 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # KEEP THE LIVE DEPLOYMENT AND THE ONE BEFORE IT. Every deployment Vercel keeps is
+      # counted against the account's Functions Storage and Deployment Storage,
+      # and this project deploys on every push to main, so the old ones piled up
+      # until the Hobby account was at 144 GB of a 10 GB allowance (2026-09-15).
+      # John: "we don't need to keep deployments!!", and then "really you should
+      # be keeping 1 previous backup, no?" — so the release before the live one
+      # stays, as an instant rollback, and nothing older.
+      #
+      # ONE ADDRESS PER CALL, NEVER A LIST AND NEVER THE PROJECT NAME. On
+      # 2026-09-15 `vercel remove itsutsu --safe` sat for ten minutes at no CPU
+      # with over a hundred deployments, and `vercel remove <twenty urls>` hung the
+      # same way; `vercel remove <one url> --safe` answered in two seconds, every
+      # time. The newest deployment is the one the step above has just put
+      # on itsutsu.com — `concurrency` means no other deploy of this project is
+      # building — so it and the ready deployment before it are left out of the list, and `--safe` skips anything
+      # still carrying an alias as a second guard. `--safe` skips an aliased
+      # deployment without an error, so a round that asks for exactly what the
+      # round before asked for has removed nothing and never will: the step says
+      # which addresses are left and stops there, rather than going red on every
+      # deploy while the site is fine. The timeout is what stops a stuck call from
+      # holding the job for GitHub's six hours, and a failed list or remove still
+      # fails the step, because a cleanup that quietly stops is how the storage
+      # came back.
+      - name: Remove superseded deployments
+        timeout-minutes: 10
+        run: |
+          previous=""
+          for round in $(seq 1 20); do
+            urls=$(vercel list itsutsu --json --limit 100 --token="$VERCEL_TOKEN" \
+              | jq -r '(.deployments | map(select(.state == "READY")) | .[2:][]), (.deployments[] | select(.state == "ERROR" or .state == "CANCELED")) | .url' \
+              )
+            if [ -z "$urls" ]; then
+              echo "Only the live deployment and the one before it are kept (round $round)."
+              exit 0
+            fi
+            if [ "$urls" = "$previous" ]; then
+              echo "::warning::Only aliased deployments remain: $(echo $urls)"
+              exit 0
+            fi
+            for url in $urls; do
+              vercel remove "$url" --safe --yes --token="$VERCEL_TOKEN"
+            done
+            previous="$urls"
+          done
+          echo "::error::Superseded deployments were still listed after 20 rounds."
+          exit 1
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
