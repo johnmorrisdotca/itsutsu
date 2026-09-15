@@ -10,9 +10,7 @@ import {
   filterItems,
   heldNow,
   leaseExpired,
-  moveData,
   moveProblems,
-  moveWhere,
   revisedDraft,
   isOpen,
   keyFromTitle,
@@ -21,8 +19,6 @@ import {
   normalizeDraft,
   openCount,
   sortItems,
-  stampProblems,
-  stampWhere,
   tally,
 } from "./backlog";
 import {
@@ -260,22 +256,6 @@ describe("moving between statuses", () => {
     expect(moveTo(item({ id: "a", status: BACKLOG_STATUSES.inProgress }), BACKLOG_STATUSES.done, "John")).toBeNull();
   });
 
-  it("writes the claim on a move to in progress, and previews the same shape the store writes", () => {
-    const now = new Date("2026-09-08T12:00:00.000Z");
-    const after = moveTo(item({ id: "a", status: BACKLOG_STATUSES.open }), BACKLOG_STATUSES.inProgress, "Sora", now);
-    expect(after).toMatchObject({ claimedBy: "Sora", claimedAt: now.toISOString() });
-    expect(moveData(BACKLOG_STATUSES.inProgress, "Sora", now)).toMatchObject({ claimedBy: "Sora", claimedAt: now });
-  });
-
-  it("clears the claim on every move that is not to in progress", () => {
-    const before = item({ id: "a", status: BACKLOG_STATUSES.inProgress, claimedBy: "Sora", claimedAt: "2026-09-01T00:00:00.000Z" });
-    for (const to of ["open", "dropped"] as const) {
-      const after = moveTo(before, to, "Sora", new Date("2026-09-08T12:00:00.000Z"));
-      expect(after).toMatchObject({ claimedBy: null, claimedAt: null });
-      expect(moveData(to, "Sora", new Date("2026-09-08T12:00:00.000Z"))).toMatchObject({ claimedBy: null, claimedAt: null });
-    }
-  });
-
   it("counts open and in progress as still wanting something", () => {
     expect(isOpen("open")).toBe(true);
     expect(isOpen("inProgress")).toBe(true);
@@ -394,65 +374,5 @@ describe("a claim's lease", () => {
     expect(heldNow({ claimedBy: "   ", claimedAt: "2026-09-08T00:00:00.000Z" }, now)).toBe(false);
     // Past the six hours between the claim and "now".
     expect(heldNow({ claimedBy: "Sora", claimedAt: "2026-09-07T23:00:00.000Z" }, now)).toBe(false);
-  });
-
-  it("writes the id, the status it was read at, and the three-way OR a database evaluates", () => {
-    const staleBefore = new Date("2026-09-08T00:00:00.000Z");
-    expect(moveWhere("row-1", "open", "Sora", staleBefore)).toEqual({
-      id: "row-1",
-      status: "open",
-      OR: [{ claimedBy: null }, { claimedBy: "Sora" }, { claimedAt: { lt: staleBefore } }],
-    });
-  });
-});
-
-/**
- * The stamp: the one thing that may be written onto a row already done, and
- * not a move. Each refusal is its own case because each is its own sentence
- * to a caller, and the 4xx the route answers with is built from them.
- */
-describe("stamping a release onto a done row", () => {
-  const RELEASED = ["0.150.1", "0.151.0"];
-
-  it("allows a done row with no release, stamped with a version the changelog names", () => {
-    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "0.150.1", RELEASED)).toEqual([]);
-  });
-
-  it("refuses a row that is not done, naming where it stands", () => {
-    const problems = stampProblems({ status: BACKLOG_STATUSES.open, releasedIn: null }, "0.150.1", RELEASED);
-    expect(problems).toHaveLength(1);
-    expect(problems[0]).toContain("Only a done row");
-    expect(problems[0]).toContain('"open"');
-    expect(stampProblems({ status: BACKLOG_STATUSES.inProgress, releasedIn: null }, "0.150.1", RELEASED)).toHaveLength(1);
-    expect(stampProblems({ status: BACKLOG_STATUSES.dropped, releasedIn: null }, "0.150.1", RELEASED)).toHaveLength(1);
-  });
-
-  it("never rewrites a release that has been stated, even to the same version", () => {
-    const problems = stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: "0.150.1" }, "0.151.0", RELEASED);
-    expect(problems).toHaveLength(1);
-    expect(problems[0]).toContain("already says it shipped in 0.150.1");
-    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: "0.150.1" }, "0.150.1", RELEASED)).toHaveLength(1);
-  });
-
-  it("refuses a version the changelog does not name", () => {
-    const problems = stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "9.9.9", RELEASED);
-    expect(problems).toEqual(["9.9.9 is not a release CHANGELOG.md names; a row can only carry a release that went out."]);
-  });
-
-  it("refuses something that is not a version at all, before asking the changelog", () => {
-    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "latest", RELEASED)).toEqual(["releasedIn must be a version like 1.2.3."]);
-    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "0.150", RELEASED)).toHaveLength(1);
-  });
-
-  it("refuses a changelog that could not be read as it refuses an unknown version — silence over a guess", () => {
-    expect(stampProblems({ status: BACKLOG_STATUSES.done, releasedIn: null }, "0.150.1", [])).toHaveLength(1);
-  });
-
-  it("says every reason at once, so a caller is not refused twice", () => {
-    expect(stampProblems({ status: BACKLOG_STATUSES.open, releasedIn: "0.1.0" }, "9.9.9", RELEASED)).toHaveLength(3);
-  });
-
-  it("is written only onto a row still done and still unstamped, with no claim clause", () => {
-    expect(stampWhere("id-1", BACKLOG_STATUSES.done)).toEqual({ id: "id-1", status: "done", releasedIn: null });
   });
 });

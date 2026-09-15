@@ -37,7 +37,6 @@
     "task:prod": "SUMILABU_PROJECT_KEY=itsutsu SUMILABU_LIVE_OPT_IN=task:prod node --env-file=.env scripts/tasks.ts",
     "release:take": "node --env-file=.env scripts/release-take.ts",
     "release:take:prod": "SUMILABU_PROJECT_KEY=itsutsu SUMILABU_LIVE_OPT_IN=release:take:prod node --env-file=.env scripts/release-take.ts",
-    "backlog:cleanup-litter": "node --env-file=.env scripts/cleanup-backlog-litter.ts",
     "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line && node scripts/make-game-thumbs.mjs",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
     "bots:play:prod": "node scripts/bots-play-prod.mjs",

@@ -15,7 +15,6 @@ import {
   TITLE_MAX,
   TITLE_MIN,
 } from "./backlog.constants";
-import { unnamedReleaseProblem } from "./releases";
 import type {
   BacklogChange,
   BacklogDraft,
@@ -143,7 +142,7 @@ export function revisedDraft(
  *
  * Who has it is deliberately not here: a claim is not an opinion typed into a
  * field, it is what a move to In progress writes, from the actor making the
- * move. See `moveData`.
+ * move, on Sumilabu's board and under its claim condition.
  *
  * The same gate the route's schema keeps, stated where the other rules are,
  * so an in-process caller that never met the route is refused the same way.
@@ -196,65 +195,6 @@ export function changeProblems(change: BacklogChange): string[] {
   return [`Nothing there to change. A change names at least one of: ${CHANGE_FIELDS.join(", ")}.`];
 }
 
-/** A version as `pnpm release:take` writes it: three numbers, nothing else. */
-const SEMVER = /^\d+\.\d+\.\d+$/;
-
-/**
- * What is wrong with stamping a release onto a row, in words a person can
- * act on; empty means it may be written.
- *
- * The door this guards is narrow on purpose. 109 of production's 189 done
- * rows carry no `releasedIn`, because they were closed by hand before board
- * convergence ITS-04 gave the release tool the job of stamping the version
- * as it closes a row — and `finishItem`, the only writer `releasedIn` ever
- * had, refuses a row that is already done. So a stamp is not a move: it
- * writes the two release columns onto a row that is ALREADY done and says
- * nothing about which release carried it, and it touches nothing else — no
- * status, no `movedAt`, no claim. BOARD_RULES.md invariants 1 and 9 hold as
- * they stand: a done row still does not move, and done is still reached by
- * the release tool alone.
- *
- * Three refusals, each its own sentence. A row that is not done has no
- * release to name, and getting one this way would be a second road to done
- * without the version bump. A row already stamped has stated a fact about a
- * release that went out, and a stated release is never rewritten — the same
- * reason done is terminal. And the version has to be one CHANGELOG.md names:
- * the changelog is the record of what shipped, and a stamp naming a release
- * that never went out is a fact nobody established, written where a true
- * one would go.
- */
-export function stampProblems(
-  item: Pick<BacklogItem, "status" | "releasedIn">,
-  version: string,
-  releasedVersions: readonly string[],
-): string[] {
-  const problems: string[] = [];
-  if (item.status !== BACKLOG_STATUSES.done) {
-    problems.push(`Only a done row can be stamped with the release that carried it; this one is "${item.status}".`);
-  }
-  if (item.releasedIn !== null) {
-    problems.push(`This row already says it shipped in ${item.releasedIn}; a release that has been stated is never rewritten.`);
-  }
-  if (!SEMVER.test(version)) {
-    problems.push("releasedIn must be a version like 1.2.3.");
-  } else {
-    const unnamed = unnamedReleaseProblem(version, releasedVersions);
-    if (unnamed !== null) problems.push(unnamed);
-  }
-  return problems;
-}
-
-/**
- * The condition a stamp is written under: the row is still done, and still
- * unstamped. Two stamps racing for one row write once — the database decides,
- * as it does for a move (BOARD_RULES.md invariant 4) — and a `count` of zero
- * is the store's cue to re-read and say which of the two it was. No claim
- * clause: a stamp neither reads nor writes a hold.
- */
-export function stampWhere(id: string, status: BacklogStatus): { id: string; status: BacklogStatus; releasedIn: null } {
-  return { id, status, releasedIn: null };
-}
-
 /** Whether an item at `from` may be moved to `to`. */
 export function canMove(from: BacklogStatus, to: BacklogStatus): boolean {
   return STATUS_MOVES[from].includes(to);
@@ -301,63 +241,13 @@ export function heldNow(
 }
 
 /**
- * The columns a move writes, and it is never the status alone.
- *
- * In progress is not a status; it is a claim. `claimedBy` and `claimedAt` are
- * the one place work-in-progress is recorded, so a status written on its own
- * is two fields that can disagree — a row `inProgress` with nobody holding
- * it, or a holder left on a row the page calls waiting. Same shape the store
- * writes and `moveTo` previews, so the two doors into a move agree.
- *
- * `releasedIn`/`releasedAt` are deliberately not here (board convergence
- * ITS-04): `done` is not a destination this function's caller, `changeItem`,
- * can ever reach — `STATUS_MOVES` lists nothing that leads to it — so nothing
- * this function writes is ever a release. The release tool writes those two
- * columns, through Sumilabu's ship route, with the version `pnpm release:take`
- * is taking at that moment, which is the only place that version is knowable.
- */
-export function moveData(
-  to: BacklogStatus,
-  actor: string,
-  now: Date,
-): { status: BacklogStatus; claimedBy: string | null; claimedAt: Date | null; movedAt: Date } {
-  const claim = to === BACKLOG_STATUSES.inProgress ? { claimedBy: actor, claimedAt: now } : { claimedBy: null, claimedAt: null };
-  return { status: to, ...claim, movedAt: now };
-}
-
-/**
- * The condition a move is written under, so the database decides who wins
- * rather than whoever read the row first.
- *
- * The status has to still be the one the move was planned from — two
- * sessions do not both get to move a row only one of them read. And a live
- * hold belongs to whoever has it: a mover may take a row nobody holds, one
- * they hold themselves, or one whose hold has lapsed, and is otherwise
- * refused with the holder's name. `staleBefore` is the lease boundary,
- * passed in so the rule is testable without a clock. See BOARD_RULES.md
- * invariant 4 — this is the `where` every moving write carries.
- */
-export function moveWhere(
-  id: string,
-  from: BacklogStatus,
-  actor: string,
-  staleBefore: Date,
-): { id: string; status: BacklogStatus; OR: Array<{ claimedBy: null } | { claimedBy: string } | { claimedAt: { lt: Date } }> } {
-  return {
-    id,
-    status: from,
-    OR: [{ claimedBy: null }, { claimedBy: actor }, { claimedAt: { lt: staleBefore } }],
-  };
-}
-
-/**
  * The item as it stands after a move, or null when the move is not allowed.
  * The item passed in is never touched: a board rendered from the old list and
  * one rendered from the new can be compared, and nothing further up can move
  * an item by writing to it.
  *
- * Returns the same claim fields `moveData` writes, so a preview shown before
- * the request goes to the server cannot say something the store would not.
+ * Returns the same claim fields a move writes (BOARD_RULES.md invariant 2),
+ * so a preview cannot say something the board would not.
  * `done` is never a `to` this function reaches — `canMove` refuses it before
  * anything else runs, since `STATUS_MOVES` names nothing that leads there.
  */

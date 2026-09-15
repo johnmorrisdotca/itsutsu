@@ -786,7 +786,6 @@ One-time setup:
 | Migrations | `pnpm db:migrate` (dev) / `pnpm db:deploy` |
 | Prisma client / browser | `pnpm db:generate` / `pnpm db:studio` |
 | Mint an invite code | `pnpm invite` |
-| Clear the board's test litter | `pnpm backlog:cleanup-litter` |
 | Dependency audit | `pnpm security:check` |
 | Take a release (bumps the version, dates the changelog) | `pnpm release:take --summary "…"` |
 | Write to the features board from a terminal | `pnpm task` |

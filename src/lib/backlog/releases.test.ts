@@ -6,10 +6,8 @@ import { describe, expect, it } from "vitest";
 import {
   compareVersions,
   currentRelease,
-  finishReleaseProblems,
   latestRelease,
   parseReleases,
-  unnamedReleaseProblem,
   versionParts,
 } from "./releases";
 import { VERSION } from "@/lib/version";
@@ -109,42 +107,6 @@ describe("dated releases", () => {
   it("accepts an em dash or a hyphen between the version and the date", () => {
     expect(parseReleases("## 0.1.0 — 2026-01-01\n- x\n")[0].date).toBe("2026-01-01");
     expect(parseReleases("## 0.1.0 - 2026-01-01\n- x\n")[0].date).toBe("2026-01-01");
-  });
-});
-
-/**
- * Which release a row may say it shipped in. One rule for "the changelog names
- * it", asked by the stamp and the close alike; the close lets a release on its
- * way through, because the release tool closes rows before its push deploys.
- */
-describe("which release a row may carry", () => {
-  const RELEASED = ["0.186.2", "0.186.0", "0.185.0"];
-
-  it("finds nothing wrong with a release the changelog names", () => {
-    expect(unnamedReleaseProblem("0.186.0", RELEASED)).toBeNull();
-  });
-
-  it("says so for a release it does not name", () => {
-    expect(unnamedReleaseProblem("0.186.1", RELEASED)).toBe(
-      "0.186.1 is not a release CHANGELOG.md names; a row can only carry a release that went out.",
-    );
-  });
-
-  it("closes a row at a named release", () => {
-    expect(finishReleaseProblems("0.186.2", RELEASED)).toEqual([]);
-  });
-
-  it("closes a row at a release newer than every one named — the tool's own, not yet deployed", () => {
-    expect(finishReleaseProblems("0.186.3", RELEASED)).toEqual([]);
-    expect(finishReleaseProblems("0.187.0", RELEASED)).toEqual([]);
-  });
-
-  it("refuses a release the history has passed without naming, with the stamp's own refusal", () => {
-    expect(finishReleaseProblems("0.186.1", RELEASED)).toEqual([unnamedReleaseProblem("0.186.1", RELEASED)]);
-  });
-
-  it("refuses every version when the changelog names nothing, rather than guessing", () => {
-    expect(finishReleaseProblems("0.186.3", [])).toHaveLength(1);
   });
 });
 
