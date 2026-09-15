@@ -1,82 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
-import { Toggle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
-import { KEEP_FINISHED_DAYS, KEEP_FINISHED_DISPLAY } from "@/lib/history/retention";
-import { MOST_DAYS_OFF, WEEKDAYS, WEEKDAY_DISPLAY } from "@/lib/social/daysOff";
-import { resolveCountry, type MemberCountry } from "@/lib/social/countries";
+import { resolveCountry } from "@/lib/social/countries";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-export type ProfileFields = {
-  awayFrom: string;
-  awayUntil: string;
-  city: string;
-  country: string;
-  timeZone: string;
-  bio: string;
-  showOnline: boolean;
-  emailNotify: boolean;
-  /** Days a finished game stays in your own list; 0 keeps them all. */
-  keepFinishedDays: number;
-  /** Days of the week you do not play, 0 for Sunday. */
-  daysOff: number[];
-};
+import { PROFILE_WIDTH } from "./mine.constants";
+import { ProfileAway } from "./ProfileAway";
+import { ProfileSends } from "./ProfileSends";
+import type { ProfileFields, ProfileFormProps } from "./profileForm.types";
 
 /*
- * A FIELD IS AS WIDE AS WHAT GOES IN IT.
- *
- * John, with the form in front of him: "The Away to date stuff is so ugly.
- * Just these large full page width date inputs… BAD! They should at least be
- * on the same row. Time zone doesn't need to be full width either! Heck, City
- * and Country need to be that wide???"
- *
- * He is right, and the cause is one line of CSS repeated nine times:
- * `INPUT_CLASS` is `w-full`, and the panel this form sits in is a thousand
- * pixels across on a laptop. So a ten-character date got a box wide enough
- * for a paragraph, which is what a form looks like when nobody has looked at
- * it. Each control is capped here at what its own longest value needs, and
- * only the bio — which really is a paragraph — keeps the width.
- *
- * TWO THINGS TO KEEP RIGHT WHEN CHANGING THESE.
- *
- * They are caps (`max-w-*`) and never widths (`w-*`). Partly so a phone
- * narrows every one of them to the column it actually has — 390px of screen
- * is about 326px of panel, narrower than most of the caps below — and partly
- * because `w-*` here would be a coin toss: `INPUT_CLASS` already sets
- * `w-full`, and Tailwind settles two utilities for one property by their
- * order in the stylesheet rather than in the attribute. `max-width` is a
- * different property, so it composes instead of competing.
- *
- * And a narrower field is not a shorter one. Nothing here touches the padding
- * or the text size that make these comfortable to tap.
+ * The fields' type, the width each control is capped at (`PROFILE_WIDTH` in
+ * `mine.constants.ts`, with the argument for every cap) and two of the form's
+ * three groups (`ProfileAway`, `ProfileSends`) live beside this file since it
+ * reached the file-size gate. `ProfileFields` is re-exported, so its import
+ * path is unchanged.
  */
-const WIDTH = {
-  /** "Charlottetown", "Sault Ste. Marie" — a couple of words at most. */
-  city: "sm:max-w-[11rem]",
-  /** "🇬🇧 United Kingdom", and the longest of the 249 run half again as long. */
-  country: "sm:max-w-[17rem]",
-  /** Measured: "America/Argentina/Buenos_Aires", the longest there is, wants 313px. */
-  zone: "max-w-[20rem]",
-  /*
-   * A date is ten characters, a picker icon, and nothing else — 136px, which
-   * is what one needs to render whole.
-   *
-   * The second half is arithmetic and not taste. A screen 360px wide leaves
-   * this form a 294px column, and two whole dates with the word between them
-   * want 294px exactly; anything narrower cannot have both at this text size,
-   * whatever the padding does. Below that the TEXT gives way rather than the
-   * row, because "they should at least be on the same row" is the thing being
-   * asked for and a smaller date is still a date. Measured at 320px: at the
-   * ordinary size the boxes come out 113px and Chrome eats the leading digit,
-   * so every year read 026.
-   */
-  date: "max-w-[8.5rem] max-[359px]:text-xs",
-  /** "Three months 三月" is the longest thing this select ever says. */
-  keep: "max-w-[13rem]",
-} as const;
+export type { ProfileFields } from "./profileForm.types";
 
 /**
  * The rest of the profile, all optional: where you are and what time it is
@@ -107,14 +50,8 @@ export function ProfileForm({
   initial,
   countries,
   timeZones,
-}: {
-  initial: ProfileFields;
-  countries: MemberCountry[];
-  timeZones: string[];
-}) {
+}: ProfileFormProps) {
   const router = useRouter();
-  /** The id the retention select is described by — see where it is used. */
-  const keepHint = useId();
   const [fields, setFields] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -183,8 +120,6 @@ export function ProfileForm({
     }
   };
 
-  const away = fields.awayFrom !== "" || fields.awayUntil !== "";
-
   /*
    * ONE COLUMN, AND THE CITY-AND-COUNTRY ROW SETS ITS WIDTH: 11rem + 17rem
    * with a gap between them, which is 29rem, which is where every field in
@@ -207,11 +142,11 @@ export function ProfileForm({
           Country is the wider of the two because a country name is.
         */}
         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-          <label className={`flex flex-1 flex-col gap-1 text-sm ${WIDTH.city}`}>
+          <label className={`flex flex-1 flex-col gap-1 text-sm ${PROFILE_WIDTH.city}`}>
             City <span className="sr-only">optional</span>
             <input value={fields.city} onChange={(e) => set({ city: e.target.value })} maxLength={60} className={INPUT_CLASS} data-testid="profile-city" />
           </label>
-          <label className={`flex flex-1 flex-col gap-1 text-sm ${WIDTH.country}`}>
+          <label className={`flex flex-1 flex-col gap-1 text-sm ${PROFILE_WIDTH.country}`}>
             Country
             {/*
               A list rather than a box, now that there is a list to offer. It was
@@ -266,7 +201,7 @@ export function ProfileForm({
               onChange={(e) => setZone(e.target.value)}
               list="time-zones"
               placeholder="America/Vancouver"
-              className={`${INPUT_CLASS} ${WIDTH.zone} min-w-0 font-mono`}
+              className={`${INPUT_CLASS} ${PROFILE_WIDTH.zone} min-w-0 font-mono`}
               data-testid="profile-zone"
             />
             <button type="button" onClick={guessZone} className="shrink-0 text-xs text-muted underline underline-offset-4">
@@ -286,176 +221,11 @@ export function ProfileForm({
         </label>
       </div>
 
-      {/*
-        WHEN YOUR DEADLINES WAIT. One holiday out of a small yearly allowance,
-        and the days of the week that hold every week for ever — the same
-        question asked twice, which is why they are one group and why the
-        second one's note says what it does not cost.
-      */}
-      <div className="flex flex-col gap-4">
-        <fieldset className="flex min-w-0 flex-col gap-1">
-          <legend className="text-sm">
-            Away <span className="font-mincho text-xs opacity-70">休暇</span>
-          </legend>
-          {/*
-            Two dates and the word between them on ONE row, each sized to a
-            date. The pair is a `w-full` block with a cap on it so the row can
-            never break in the middle and leave "to" stranded on a line of its
-            own, which is what it did; "clear" is outside the pair and may wrap
-            under it, because a third control is not part of the range.
+      {/* When your deadlines wait: the holiday and the standing days off — see `ProfileAway`. */}
+      <ProfileAway fields={fields} set={set} />
 
-            `min-w-0` — on the fieldset, on the pair — and `flex-1` on each
-            date are what make that promise hold on a small phone rather than
-            only on a laptop. Nothing shrinks below its own content unless it
-            is told it may, and a FIELDSET is the worst offender: browsers give
-            it `min-inline-size: min-content`, which Tailwind's reset leaves
-            alone, so it will not narrow for anything. Measured at 320px wide:
-            the fieldset stood at 299px inside a 254px column and pushed the
-            whole PAGE sideways, which turned "the dates are on one row" into a
-            horizontal scrollbar. With these the two dates divide whatever the
-            column has, up to the cap.
-
-            The dates are labelled for a screen reader rather than by the words
-            on screen — "to" between two boxes is a picture of a range, not a
-            name for either end of it, so it is spoken by neither.
-          */}
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="flex w-full min-w-0 max-w-[20rem] items-center gap-2">
-              <label htmlFor="away-from" className="sr-only">
-                Away from
-              </label>
-              <input
-                id="away-from"
-                type="date"
-                value={fields.awayFrom}
-                onChange={(e) => set({ awayFrom: e.target.value })}
-                className={`${INPUT_CLASS} ${WIDTH.date} min-w-0 flex-1`}
-                data-testid="away-from"
-              />
-              <span aria-hidden="true" className="shrink-0 text-xs text-muted">
-                to
-              </span>
-              <label htmlFor="away-until" className="sr-only">
-                Away until
-              </label>
-              <input
-                id="away-until"
-                type="date"
-                value={fields.awayUntil}
-                onChange={(e) => set({ awayUntil: e.target.value })}
-                className={`${INPUT_CLASS} ${WIDTH.date} min-w-0 flex-1`}
-                data-testid="away-until"
-              />
-            </span>
-            {away ? (
-              <button type="button" onClick={() => set({ awayFrom: "", awayUntil: "" })} className="text-xs text-muted underline underline-offset-4">
-                clear
-              </button>
-            ) : null}
-          </div>
-          <span className="text-xs text-muted">
-            While you are away, deadlines in your games wait, except in games set up to ignore vacation days. Three days a
-            year, whole days.
-          </span>
-        </fieldset>
-        {/*
-          Standing, unlike the away range above it: these cost nothing from the
-          yearly allowance and hold every week, for ever.
-        */}
-        <fieldset className="flex min-w-0 flex-col gap-1">
-          <legend className="text-sm">Days I do not play</legend>
-          <div className="mt-1 flex flex-wrap gap-1.5" data-testid="days-off">
-            {WEEKDAYS.map((day) => {
-              const chosen = fields.daysOff.includes(day);
-              const full = !chosen && fields.daysOff.length >= MOST_DAYS_OFF;
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  disabled={full}
-                  aria-pressed={chosen}
-                  title={WEEKDAY_DISPLAY[day].label}
-                  data-testid={`day-off-${day}`}
-                  onClick={() =>
-                    set({
-                      daysOff: chosen
-                        ? fields.daysOff.filter((other) => other !== day)
-                        : [...fields.daysOff, day].sort((a, b) => a - b),
-                    })
-                  }
-                  className={`rounded-lg border px-2.5 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                    chosen ? "border-moss bg-moss-soft text-ink" : "border-rule hover:bg-shade"
-                  }`}
-                >
-                  {WEEKDAY_DISPLAY[day].short}{" "}
-                  <span className="font-mincho opacity-70">{WEEKDAY_DISPLAY[day].kanji}</span>
-                </button>
-              );
-            })}
-          </div>
-          <span className="text-xs text-muted">
-            Deadlines in games that honour vacation step over these every week, and they cost nothing from your
-            away days. Somebody has to play on some day, so six is the most you can take.
-          </span>
-        </fieldset>
-      </div>
-
-      {/*
-        WHAT THE SITE SENDS YOU, AND WHAT IT KEEPS. `Toggle` sets its box
-        against the right-hand edge of whatever it is given, so these two get
-        their sanity from the column being 29rem rather than a thousand pixels:
-        a switch that far from its own words is a switch nobody can tell which
-        words belong to. Nothing in `Toggle` itself is touched — it is shared
-        with the game defaults, and this form is not the place to restyle it.
-      */}
-      <div className="flex flex-col gap-3">
-        <Toggle
-          label="Show when I am here"
-          checked={fields.showOnline}
-          onChange={(next) => set({ showOnline: next })}
-          hint="Listed on the players page while you are on the site. Off, and nobody sees you come and go."
-        />
-        <Toggle
-          label="Email me when it is my move"
-          checked={fields.emailNotify}
-          onChange={(next) => set({ emailNotify: next })}
-          hint="One mail per turn, once mail is set up. Off, and the site never writes to you."
-        />
-        {/*
-          Your own list is a working list: the games waiting on you, and the
-          ones just over. This says how long "just over" lasts. It hides them
-          from that list and from nowhere else.
-        */}
-        {/*
-          The note is the select's DESCRIPTION and not part of its name — the
-          same rule `Field` and `Toggle` keep, kept here by hand because this
-          one is a column rather than a row and does not use `Field`. Inside
-          the label, a screen reader read the whole paragraph out as the name
-          of the control and a voice-control user had to say it.
-        */}
-        <div className="flex flex-col gap-1">
-          <label className="flex flex-col gap-1">
-            <span className="text-sm">Keep finished games in my list for</span>
-            <select
-              className={`${INPUT_CLASS} ${WIDTH.keep}`}
-              value={fields.keepFinishedDays}
-              onChange={(event) => set({ keepFinishedDays: Number(event.target.value) })}
-              aria-describedby={keepHint}
-              data-testid="keep-finished-days"
-            >
-              {KEEP_FINISHED_DAYS.map((days) => (
-                <option key={days} value={days}>
-                  {KEEP_FINISHED_DISPLAY[days].label} {KEEP_FINISHED_DISPLAY[days].kanji}
-                </option>
-              ))}
-            </select>
-          </label>
-          <span id={keepHint} className="text-xs text-muted">
-            The record keeps every game whatever this says, and each one stays at its own address. This is only
-            about how long they sit in your queue.
-          </span>
-        </div>
-      </div>
+      {/* What the site sends you, and how long it keeps a finished game in your list — see `ProfileSends`. */}
+      <ProfileSends fields={fields} set={set} />
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
