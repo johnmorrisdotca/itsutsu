@@ -469,34 +469,58 @@ what the site wants from them. Do not reuse the signed-in label.
 
 ### Back It Up Before You Migrate It
 
-**Checked, not assumed** — the numbers below were read from the project on
-2026-09-10 with `neonctl`, and are worth re-reading rather than trusting if
-they matter to a decision.
+**As it stood on 2026-09-15** — worth re-reading with `neonctl` rather than
+trusting if the numbers matter to a decision.
 
 The production database is Neon project `calm-boat-93104880` ("itsutsu"),
-Postgres 18 in `aws-us-east-2`, and it has exactly one branch: `main`, which is
-**not protected**. Its history retention is `86400` seconds — **twenty-four
-hours**. That is the whole of what exists today:
+Postgres 18 in `aws-us-east-2`. Its `main` branch is **not protected**, and its
+history retention is `86400` seconds — **twenty-four hours**. What there is to
+recover from:
 
 - **Point-in-time recovery: yes, but only for a day.** Neon can restore or
   branch from any moment in the last 24 hours. A mistake noticed on Wednesday
-  about Tuesday's migration is past the window, and there is nothing else.
-- **Snapshots: none.** No branch has ever been taken before a migration.
+  about Tuesday's migration is past the window.
+- **A few `before-*` branches, and only a few.** A branch taken before a change
+  outlives the window, and it is not free past a point: the org is on Neon's
+  Launch plan, which includes 10 branches a project and bills each one beyond
+  that at $1.50 a branch-month, prorated by the hour. Twenty had piled up; on
+  2026-09-15 they were pruned to `main` and three `before-*`, and about three is
+  the number to keep. John: "we will almost never need backups... store them on
+  DiskStation server... so just keep a few going?"
+- **Full dumps on the DiskStation, kept indefinitely.** A branch lives inside the
+  project it protects, on the plan it is billed to. A dump on DS1 outlives both,
+  costs nothing to keep, and is the copy that lasts — which is why the branches
+  can be few.
 - **`main` is unprotected**, so nothing at the Neon end refuses a destructive
   operation on it.
 
-**So, before any migration against production:**
+**So, before any migration or data write against production:**
 
-1. **Take a branch first.** It is one command, it is copy-on-write so it costs
-   almost nothing, and it is the only thing that survives past 24 hours:
+1. **Take a branch first.** It is one command, copy-on-write, and the quickest
+   way back if the change goes wrong today:
    `neonctl branches create --project-id calm-boat-93104880 --org-id org-old-wave-97887412 --name before-<what>-<yyyy-mm-dd>`
-2. **Say what you are about to run, and to which database, before running it.**
+2. **Delete the oldest `before-*`, so about three remain.** A branch nobody will
+   restore from is a branch-month paid for nothing, and the dump below is what
+   covers the long run. `neonctl branches list` with the same two ids shows them
+   and when each was made.
+3. **Take a full dump to the DiskStation.** Production is Postgres 18 and
+   Homebrew's `pg_dump` is 17, which refuses to dump a newer server, so the 18
+   client runs in a container. `$URL` comes from
+   `neonctl connection-string main` with the same ids, and goes into this one
+   command and nowhere else:
+   `docker run --rm -v "$DIR":/out postgres:18-alpine pg_dump "$URL" -Fc --no-owner --no-privileges -f /out/itsutsu-YYYYMMDD-HHMMSS.dump`
+4. **Archive it with UmaKuma's script.** It copies the dump to DS1 over ssh,
+   proves it arrived by SHA-256 on DS1 rather than by the copy's exit code, never
+   overwrites a file already there, and deletes the local copy only once the
+   checksum matches; nothing prunes the folder on DS1:
+   `cd /Users/john/Projects/umakuma && NAS_BACKUP_DIR=/volume2/docker/staging/itsutsu/backups pnpm db:backup:archive "$DIR"`
+5. **Say what you are about to run, and to which database, before running it.**
    Verify which one you are actually connected to by counting rows — an
    inline `DATABASE_URL` is silently overridden by `.env`, which has caught
    this project before.
-3. **Never pass the real database as `--shadow-database-url`.** Prisma drops
+6. **Never pass the real database as `--shadow-database-url`.** Prisma drops
    and recreates a shadow database.
-4. **If `prisma migrate dev` offers to reset, the answer is no.** "Applied to
+7. **If `prisma migrate dev` offers to reset, the answer is no.** "Applied to
    the database but missing from the local migrations directory" means a
    migration file is on a branch that has not merged yet. The fix is to merge
    that branch. It is never to reset a database other people are using.
@@ -1089,8 +1113,26 @@ the site stays a version behind while every job reads green-or-cancelled rather
 than failed.
 
 **So after the last push of a session, check the live version rather than the
-run.** `curl -s https://itsutsu.com/games | grep -oE '0\.[0-9]+\.[0-9]+' | sort -u | head -1`
-reads it out of the page and needs no credential.
+run — once.** `curl -s https://itsutsu.com/games | grep -oE '0\.[0-9]+\.[0-9]+' | sort -u | head -1`
+reads it out of the page and needs no credential. It is a check, never a wait:
+not in a loop, not on a timer. One load of `/games` is about 2.9 seconds of
+server render with database reads, billed as Fluid Active CPU, and on
+2026-09-15 the Vercel account stood at 6h29m of that against an allowance of
+4h. John: "we have to stop doing things like that that will eat up CPU time."
+
+**To wait for a deploy, ask GitHub, and ask about the one job that deploys.**
+Poll the vercel-deploy run's `deploy` job once a minute with
+`gh run view <id> --json jobs`, and read that job's status rather than the
+run's: the run also carries the e2e job, which takes about thirty minutes and
+says nothing about whether the site is live. When `deploy` has finished, load
+the page once.
+
+Nor is a superseded deployment kept: after each production deploy the
+`Remove superseded deployments` step in `vercel-deploy.yml` removes every
+deployment but the live one, because Vercel counts them all against the
+account's storage, which had reached 144 GB of a 10 GB allowance on 2026-09-15
+(John: "we don't need to keep deployments!!") — so that step is not one to
+soften, skip or make optional.
 
 The same distinction decides the two concurrency groups, which are deliberately
 opposite. `vercel-deploy.yml` cancels in progress, because **a superseded
