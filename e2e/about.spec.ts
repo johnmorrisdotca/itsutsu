@@ -79,6 +79,31 @@ test.describe("about", () => {
     await expect(tables.nth(1)).toContainText("200 below your best");
   });
 
+  test.describe("bringing a record over", () => {
+    // The people this line is for have no account here yet, so it is checked
+    // with no session at all: a line only a member can read reaches nobody it
+    // was written for.
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test("a signed-out reader is told where to write, and what is and is not promised", async ({ page }) => {
+      const response = await page.goto("/about");
+      expect(response?.status()).toBe(200);
+      await expect(page).toHaveURL(/\/about$/);
+
+      const sites = page.getByTestId("about-section").filter({ hasText: "Sites worth knowing" });
+      await expect(sites).toHaveCount(1);
+      const write = sites.getByRole("link", { name: "hello@itsutsu.com", exact: true });
+      await expect(write).toBeVisible();
+      await expect(write).toHaveAttribute("href", "mailto:hello@itsutsu.com");
+
+      // Done by hand, once: a snapshot, not a feed.
+      await expect(sites).toContainText("copied over by hand");
+      await expect(sites).toContainText("It is a snapshot, copied once");
+      // A record adds up across sites; a rating never does.
+      await expect(sites).toContainText("a combined record, never a combined rating");
+    });
+  });
+
   test("the notation section says how a move is written, and names SGF", async ({ page }) => {
     await page.goto("/about");
     const notation = page.getByTestId("about-section").filter({ hasText: "How a move is written down" });

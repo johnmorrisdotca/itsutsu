@@ -1,7 +1,8 @@
 import { Diagram } from "@/components/about/Diagram";
 import { EloCurve } from "@/components/about/EloCurve";
 import { FigureTable as Table } from "@/components/about/FigureTable";
-import { Game, Inside, Out } from "./about.links";
+import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
+import { Game, Inside, MailTo, Out } from "./about.links";
 import type { AboutSection } from "./about.constants";
 
 /** 花月, the direct opening: white beside black, black's third stone on the diagonal. */
@@ -295,6 +296,24 @@ export const SITES_SECTION: AboutSection = {
       the morning, with an Elo rating per game and rooms that never seem to empty. Membership numbers are the one
       thing none of these sites publish plainly; each has had tens of thousands of registered players at its peak,
       and each has a hard core that has been there for twenty years.
+    </>,
+    <>
+      {/*
+        The one invitation on this page, and every clause is load-bearing
+        (board: say-that-we-will-bring-your-record-over). It is done BY HAND,
+        ONCE, so it is a snapshot and never a live feed — the player page says
+        so under the figures (`SnapshotWarning`). And it is a combined RECORD,
+        never a combined RATING: games and wins add across sites, ratings are
+        each measured on their own site's scale and are never added. Here and
+        not behind the gate, because the people it is for have no account yet.
+      */}
+      Played for years on ItsYourTurn or GoldToken? Your record can come with you. Write to{" "}
+      <MailTo address={CONTACT_ADDRESS} /> with the site and the name you played under, and it will be copied over by
+      hand — games, wins, losses and draws, game by game — so your page here shows it added to what you play here, as
+      one record across every site you have brought. No other site shows a record combined like that. Two things it is
+      not. It is a snapshot, copied once: games you play there afterwards do not appear here unless you write again. And
+      it is a combined record, never a combined rating — games and wins add up across sites, but each site measures its
+      rating on its own scale, so a rating from elsewhere is never mixed into the one here.
     </>,
     <>
       {/*

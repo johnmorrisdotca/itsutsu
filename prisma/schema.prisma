@@ -1091,3 +1091,25 @@ model OperatorAction {
   @@index([at])
   @@index([subjectId, at])
 }
+
+/// How many emails the site has sent in a period, so a cap on sending is a
+/// fact in the database rather than a number each serverless instance keeps
+/// for itself and loses on a cold start.
+///
+/// ONE ROW PER PERIOD PER COUNTER, keyed by what it counts:
+/// `site:day:2026-09-15`, `site:month:2026-09`, and
+/// `member:<id>:day:2026-09-15`. `lib/mail/mailLimits.ts` is the only place
+/// that spells a key; `lib/mail/mailCounter.ts` is the only writer.
+///
+/// NEVER READ-THEN-WRITE. A send is allowed by one guarded upsert per counter
+/// — increment only while `count` is under the cap — inside one transaction,
+/// and it is allowed only when every counter moved. Two sends at the last
+/// place cannot both pass, because the second waits on the row the first has
+/// locked and then finds it full.
+///
+/// Holds no address, no subject and no member name: a count and the key.
+model EmailSendCount {
+  key       String   @id
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
