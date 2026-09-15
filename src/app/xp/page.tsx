@@ -3,28 +3,30 @@ import Link from "next/link";
 import { Paired } from "@/components/i18n/Paired";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { ImportedXpNote } from "@/components/xp/ImportedXpNote";
 import { Leaderboard } from "@/components/xp/Leaderboard";
-import { LevelName } from "@/components/xp/LevelName";
+import { XpBoardFoot } from "@/components/xp/XpBoardFoot";
+import { XpScopeSaid } from "@/components/xp/XpScopeSaid";
+import { YourXpStanding } from "@/components/xp/YourXpStanding";
 import type { SortChoice } from "@/lib/api/paging.types";
 import { isRefusal } from "@/lib/api/paging";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { countText } from "@/lib/rating/figures";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
-import { XP_LEVELS, xpLevelFor } from "@/lib/xp/xpCurve";
+import { XP_LEVELS } from "@/lib/xp/xpCurve";
 import { WhoFilter } from "@/components/players/WhoFilter";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
-import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
-import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
+import { DIRECTORY_WHO } from "@/lib/rating/directoryFilter";
+import { RECORD_SCOPES } from "@/lib/rating/recordScope";
 import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { importedNoteText } from "@/lib/xp/importedNote";
-import { fetchXpBoardPage, readXpBoardPaging, xpRankOf, type XpBoardPage } from "@/lib/xp/xpBoard";
+import { fetchXpBoardPage, readXpBoardPaging } from "@/lib/xp/xpBoard";
 import { fetchXpAboveTotal, fetchXpBoardGains } from "@/lib/xp/xpBoardGains";
-import { viewerXp, type ViewerXp } from "@/lib/xp/xpViewer";
+import { viewerXp } from "@/lib/xp/xpViewer";
 import { XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
 import { xpWhoFor } from "@/lib/xp/xpWhoServer";
-import { xpScopeHref, xpTotalIn } from "@/lib/xp/xpScope";
+import { xpScopeHref } from "@/lib/xp/xpScope";
 import { xpScopeFor } from "@/lib/xp/xpScopeServer";
 
 export const metadata = {
@@ -193,9 +195,9 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
             </p>
           ) : null}
         </div>
-        <ScopeSaid scope={scope} say={say} href={xpScopeHref("/xp", query, RECORD_SCOPES.everywhere)} />
+        <XpScopeSaid scope={scope} say={say} href={xpScopeHref("/xp", query, RECORD_SCOPES.everywhere)} />
 
-        <YourStanding viewer={viewer} board={board} who={who} scope={scope} />
+        <YourXpStanding viewer={viewer} board={board} who={who} scope={scope} />
 
         <Leaderboard
           rows={board.items}
@@ -246,163 +248,8 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           }
         />
 
-        <BoardFoot board={board} query={query} from={from} />
+        <XpBoardFoot board={board} query={query} from={from} />
       </section>
     </Page>
-  );
-}
-
-/**
- * What the board is counting, said in words under the chips — and under Itsutsu
- * only, the way back to Everywhere, since "every page a link lands on says what
- * it was narrowed to, and lets it be taken off."
- */
-function ScopeSaid({ scope, say, href }: { scope: RecordScope; say: Awaited<ReturnType<typeof currentSpeaker>>; href: string }) {
-  if (scope === RECORD_SCOPES.here) {
-    return (
-      <p className="text-xs text-muted" data-testid="xp-scope-said" data-scope={scope}>
-        {say.say("xp.scope.here")}{" "}
-        <Link href={href} className="underline underline-offset-4" data-testid="xp-count-everywhere">
-          {say.say("xp.scope.countEverywhere")}
-        </Link>
-      </p>
-    );
-  }
-  return (
-    <p className="text-xs text-muted" data-testid="xp-scope-said" data-scope={scope}>
-      {say.say("xp.scope.everywhere")}
-    </p>
-  );
-}
-
-/**
- * Where the reader stands, above the board.
- *
- * "Show The Data, Not The Way To It": the fact a member came for is their own
- * place, so it is on the page. Their row is marked in the table as well, and
- * when it is on this page that marking is the whole answer — so the RANK, which
- * costs a `count`, is only asked for when they are not among the rows on screen.
- * See `xpRankOf`. Their total is the one the board is counting.
- */
-async function YourStanding({
-  viewer,
-  board,
-  who,
-  scope,
-}: {
-  viewer: ViewerXp | null;
-  board: XpBoardPage;
-  who: DirectoryWho;
-  scope: RecordScope;
-}) {
-  if (viewer === null) return null;
-
-  /* A reader is a person, and a board narrowed to the computer players is not
-     one they can be on: said, rather than a rank counted among programs. */
-  if (who === DIRECTORY_WHO.computers) {
-    return (
-      <p className="text-sm" data-testid="your-xp">
-        This board is narrowed to the computer players, so you are not among them.
-      </p>
-    );
-  }
-
-  const total = xpTotalIn(viewer, scope);
-  const level = xpLevelFor(total);
-  const shown = board.items.some((row) => row.id === viewer.memberId);
-
-  if (total <= 0) {
-    return (
-      <p className="text-sm" data-testid="your-xp">
-        You are on{" "}
-        <Link href={levelPath(level)} className="underline underline-offset-4">
-          level {level}, {xpLevelName(level)}
-        </Link>{" "}
-        with no experience yet, so you are not on the board.{" "}
-        <Link href="/games/new" className="underline underline-offset-4">
-          Finish a game
-        </Link>{" "}
-        and you will be.
-      </p>
-    );
-  }
-
-  const rank = shown ? null : await xpRankOf(total, who, scope);
-
-  return (
-    <p className="text-sm" data-testid="your-xp" data-rank={rank ?? undefined}>
-      You have {countText(total)} XP and stand at <LevelName level={level} linkable={false} />
-      {", "}
-      <Link href={levelPath(level)} className="underline underline-offset-4">
-        {xpLevelName(level)}
-      </Link>
-      {rank === null ? (
-        <span className="text-muted"> — your row is marked below.</span>
-      ) : (
-        /* Ties share a number: two members on one total are level with each
-           other, and separating them by `id` would be an order nobody can see. */
-        <span className="text-muted">
-          {" "}
-          — {countText(rank)} of {countText(board.total)} {who === DIRECTORY_WHO.people ? "among the people" : "on the board"}.
-        </span>
-      )}
-    </p>
-  );
-}
-
-/**
- * What is on screen, and the way to the rest of it.
- *
- * FORWARD AND BACK, because a one-directional control is a whole class of fault
- * — "I cannot get out of it" is only ever found by the return trip. Both links
- * carry the sort, so a reader who has chosen an order keeps it; a "show more"
- * that dropped it would hand them the next page of a different board.
- */
-function BoardFoot({
-  board,
-  query,
-  from,
-}: {
-  board: XpBoardPage;
-  query: string;
-  from: number;
-}) {
-  const shownTo = from + board.items.length;
-
-  const link = (cursor: string | null, at: number) => {
-    const params = new URLSearchParams(query);
-    if (cursor === null) {
-      params.delete("cursor");
-      params.delete("from");
-    } else {
-      params.set("cursor", cursor);
-      params.set("from", String(at));
-    }
-    const rest = params.toString();
-    return rest === "" ? "/xp" : `/xp?${rest}`;
-  };
-
-  return (
-    <div className="flex flex-wrap items-center gap-3">
-      <p className="text-sm text-muted" data-testid="xp-board-count">
-        {board.total === 0
-          ? "Nobody on the board yet."
-          : `${countText(shownTo - Math.min(from, shownTo))} of ${countText(board.total)} on the board.`}
-      </p>
-      {board.next === null ? null : (
-        <Link
-          href={link(board.next, shownTo)}
-          className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
-          data-testid="xp-board-next"
-        >
-          Show the next {countText(Math.min(board.items.length, board.total - shownTo))}
-        </Link>
-      )}
-      {from === 0 ? null : (
-        <Link href={link(null, 0)} className="text-sm underline underline-offset-4" data-testid="xp-board-top">
-          Back to the top of the board
-        </Link>
-      )}
-    </div>
   );
 }
