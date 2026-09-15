@@ -41,10 +41,17 @@ const json = async <T,>(url: string): Promise<T> => {
  * so what is shown is what the site will do.
  */
 export function AdminSite() {
-  const { data, mutate } = useSWR<Loaded>("/api/site", json);
+  const { data, error, mutate } = useSWR<Loaded>("/api/site", json);
   const [busy, setBusy] = useState<SiteSettingKey | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const hydrated = useHydrated();
+  /*
+   * The settings live on Sumilabu, and a panel that could not read them must
+   * not draw its controls at their defaults: "invite code needed, nobody has
+   * changed this" would read as a fact about the site when it is a fact about
+   * a failed request. So it says so, and draws no control until it can read.
+   */
+  const unreadable = error !== undefined && data === undefined;
 
   async function save(key: SiteSettingKey, value: string | null) {
     setBusy(key);
@@ -72,7 +79,7 @@ export function AdminSite() {
     <section
       className="flex flex-col gap-5"
       data-testid="admin-site"
-      {...readyMark(hydrated && data !== undefined)}
+      {...readyMark(hydrated && (data !== undefined || unreadable))}
     >
       <SectionTitle kanji="設定">The site</SectionTitle>
       <p className="text-xs text-muted">
@@ -86,7 +93,14 @@ export function AdminSite() {
         </p>
       ) : null}
 
-      {SITE_SETTING_KEYS.map((key) => {
+      {unreadable ? (
+        <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.alarm}`} role="alert" data-testid="site-unreadable">
+          The settings could not be read from Sumilabu just now, so none of them is shown. Until they can be,
+          signing up asks for an invite code and the door shows no notice.
+        </p>
+      ) : null}
+
+      {(unreadable ? [] : SITE_SETTING_KEYS).map((key) => {
         const spec = SITE_SETTING_SPECS[key];
         const copy = SITE_SETTING_COPY[key];
         const state = states.get(key);

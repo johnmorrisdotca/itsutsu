@@ -2,8 +2,10 @@ import {
   DEFAULT_SITE_SETTINGS,
   MAINTENANCE_ON,
   SITE_SETTING_KEYS,
+  SITE_SETTING_REMOTE_KEYS,
   SITE_SETTING_SPECS,
 } from "./site.constants";
+import type { RemoteSetting } from "./siteSettingsRemote.types";
 import type {
   SiteSettingKey,
   SiteSettingState,
@@ -69,6 +71,19 @@ export type StoredSetting = {
   updatedAt?: Date | string | null;
   updatedBy?: string | null;
 };
+
+/**
+ * Sumilabu's rows as the store's, under the registry's names: `join_notice`
+ * becomes `joinNotice` and `setBy` becomes `updatedBy`. A name the registry
+ * does not map is dropped, the way `byKey` drops a key it does not declare.
+ */
+export function storedFromRemote(entries: readonly RemoteSetting[]): StoredSetting[] {
+  const byRemote = new Map<string, SiteSettingKey>(SITE_SETTING_KEYS.map((key) => [SITE_SETTING_REMOTE_KEYS[key], key]));
+  return entries.flatMap((entry) => {
+    const key = byRemote.get(entry.key);
+    return key === undefined ? [] : [{ key, value: entry.value, updatedAt: entry.updatedAt, updatedBy: entry.setBy ?? "" }];
+  });
+}
 
 /** Rows keyed by name, ignoring any key the registry does not declare. */
 function byKey(rows: readonly StoredSetting[]): Map<string, StoredSetting> {

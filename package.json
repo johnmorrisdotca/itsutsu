@@ -44,6 +44,8 @@
     "rated:audit": "RATED_AUDIT=1 vitest run src/lib/rating/ratedButRefused.play.test.ts --disable-console-intercept",
     "xp:backfill": "XP_BACKFILL=1 vitest run src/lib/xp/backfillXp.play.test.ts --disable-console-intercept",
     "standings:reconcile": "STANDINGS_RECONCILE=1 vitest run src/lib/rating/reconcileStandings.play.test.ts --disable-console-intercept",
+    "site-settings:copy": "SITE_SETTINGS_COPY=1 vitest run src/lib/site/siteSettingsCopy.play.test.ts --disable-console-intercept",
+    "site-settings:copy:prod": "node scripts/site-settings-copy-prod.mjs",
     "xp:backfill:prod": "node scripts/xp-backfill-prod.mjs"
   },
   "dependencies": {

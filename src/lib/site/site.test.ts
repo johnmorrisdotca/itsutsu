@@ -5,6 +5,7 @@ import {
   REGISTRATION_MODES,
   SITE_SETTING_COPY,
   SITE_SETTING_KEYS,
+  SITE_SETTING_REMOTE_KEYS,
   SITE_SETTING_SPECS,
 } from "./site.constants";
 import {
@@ -14,8 +15,41 @@ import {
   mayJoin,
   siteSettingStates,
   siteSettingsFrom,
+  storedFromRemote,
   valueFor,
 } from "./site";
+
+/*
+ * The settings live on Sumilabu, whose keys are [a-z0-9_.-]{1,80}: the rule
+ * in sumilabu-dashboard's rules.ts (`isSettingKey`). A registry name outside
+ * it would be refused on every write and never read.
+ */
+describe("the settings' names on Sumilabu", () => {
+  it("gives every setting a name Sumilabu accepts, and no two the same", () => {
+    const names = SITE_SETTING_KEYS.map((key) => SITE_SETTING_REMOTE_KEYS[key]);
+    for (const name of names) expect(name).toMatch(/^[a-z0-9_.-]{1,80}$/);
+    expect(new Set(names).size).toBe(names.length);
+    expect(SITE_SETTING_REMOTE_KEYS.joinNotice).toBe("join_notice");
+  });
+
+  it("reads Sumilabu's rows under the registry's names, and drops a name it does not map", () => {
+    const at = "2026-09-14T10:00:00.000Z";
+    expect(
+      storedFromRemote([
+        { key: "join_notice", value: "Beta", setBy: "operator@example.test", updatedAt: at },
+        { key: "joinNotice", value: "the registry's name, not Sumilabu's", setBy: null, updatedAt: at },
+        { key: "maintenance", value: "on", setBy: null, updatedAt: at },
+      ]),
+    ).toEqual([{ key: "joinNotice", value: "Beta", updatedAt: at, updatedBy: "operator@example.test" }]);
+    expect(siteSettingStates(storedFromRemote([{ key: "registration", value: "closed", setBy: null, updatedAt: at }]))[0]).toEqual({
+      key: "registration",
+      value: "closed",
+      chosen: true,
+      updatedAt: at,
+      updatedBy: "",
+    });
+  });
+});
 
 /**
  * The registry, and the one property everything else rests on: an empty table
