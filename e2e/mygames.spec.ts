@@ -119,8 +119,16 @@ test.describe("open seats", () => {
      * shortens every word after the first to an initial — and the rows below
      * are found by the name THIS run gave its seat, not by a word every earlier
      * run's seat carried too.
+     *
+     * AND IT IS THE HOST'S OWN NAME NOW. A code makes a member account, so the
+     * host is bound to the seat they post and the noticeboard shows their
+     * CURRENT member name — the placeholder a code gives, "Guest" and four
+     * letters — rather than whatever the request typed. The host chooses this
+     * name first, as a person who came in with a code is asked to.
      */
     const hostName = under(`Host${Date.now().toString(36)}`);
+    const named = await host.patch("/api/me", { data: { name: hostName } });
+    expect(named.status(), await named.text()).toBe(200);
     const created = await host.post("/api/games/live", {
       data: { blackName: hostName, size: 9, open: true },
     });

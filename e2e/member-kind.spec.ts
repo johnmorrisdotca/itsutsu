@@ -87,9 +87,15 @@ test.describe("shutting an account", () => {
     await expect(mine.getByTestId("ban-member")).toHaveCount(0);
   });
 
+  /*
+   * The operator's list names a member BY ID, which is what it sends now: a
+   * member who came in with an invite code has no address to name them by, and
+   * has to be shut out as surely as anybody.
+   */
   test("is refused by the API too, not only hidden on the page", async ({ page, request }) => {
     await ensureMember(suiteOperator());
-    const refused = await request.patch("/api/members", { data: { email: OPERATOR, banned: true } });
+    const { memberIdFor } = await import("./members");
+    const refused = await request.patch("/api/members", { data: { id: await memberIdFor(OPERATOR), banned: true } });
     expect(refused.status()).toBe(400);
     expect(await refused.text()).toContain("cannot shut your own account");
 
@@ -103,14 +109,14 @@ test.describe("shutting an account", () => {
     const them = { email: `shut-me-${stamp}@example.test`, name: `Shut Me ${stamp}` };
     await seedMember(them);
 
-    const { memberContext } = await import("./members");
+    const { memberContext, memberIdFor } = await import("./members");
     const theirs = await memberContext(browser, baseURL!, them);
     const mine = await theirs.newPage();
     await mine.goto("/players");
     // Signed in: the site knows who they are, and says so in the corner.
     await expect(mine.getByTestId("me-link")).toContainText(them.name);
 
-    const shut = await request.patch("/api/members", { data: { email: them.email, banned: true } });
+    const shut = await request.patch("/api/members", { data: { id: await memberIdFor(them.email), banned: true } });
     expect(shut.status()).toBe(200);
 
     /*
