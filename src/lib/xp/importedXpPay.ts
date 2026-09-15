@@ -111,7 +111,11 @@ export async function payImportedXp({
       });
     }
     return landed;
-  });
+    /* One insert per award over the production pooler is ~70 ms each, and a
+       kept record runs to over a hundred awards: Prisma's default 5 s
+       interactive-transaction timeout closed the first production pay run
+       (2026-09-14) mid-way, and it rolled back whole. Give it room. */
+  }, { maxWait: 15_000, timeout: 120_000 });
 
   return { memberId, reckoning, plan, paid };
 }
