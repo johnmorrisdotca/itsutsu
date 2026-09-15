@@ -1055,3 +1055,39 @@ model SiteSetting {
   /// The operator who last wrote it, for the question "who shut the door".
   updatedBy String   @default("")
 }
+
+/// Something the operator did TO SOMEBODY ELSE'S ACCOUNT, kept.
+///
+/// It was a console line (`logOperatorAction`): who, what, which member, gone
+/// with the deployment's log retention and never something the operator could
+/// read back. Shutting an account recorded nothing at all. One row per act now,
+/// written in the same transaction as the change wherever the change is one
+/// write, and listed newest first on the Admin page.
+///
+/// WHAT NEVER GOES IN A ROW: a credential or the material of one. The four
+/// words a member picks are a password and are never stored; `detail` is built
+/// by the writer from the act's own facts ("replaced words set on …"), never
+/// from a request body, a ticket or text somebody typed.
+///
+/// NO FOREIGN KEY TO `Member`, on purpose. A log that cascades away with the
+/// row it describes stops being a log the moment it matters most; `subjectId`
+/// is the member's id as it was, indexed so one member's history is a range.
+model OperatorAction {
+  id            String   @id @default(cuid())
+  at            DateTime @default(now())
+  /// Who acted, as the operator's session knows them. Either may be absent — an
+  /// operator signed in by token has an address and no member row — and null
+  /// says "the session did not know", which an empty string would not.
+  actorMemberId String?
+  actorEmail    String?
+  /// `OPERATOR_ACTIONS` in `lib/auth/operatorLog.constants.ts`: `shut`,
+  /// `restore`, `wordsSet`, `wordsPickOpened`.
+  action        String
+  /// The member the act was done to, by id.
+  subjectId     String
+  /// A short line of fact about the act, capped by the writer. Never a credential.
+  detail        String   @default("")
+
+  @@index([at])
+  @@index([subjectId, at])
+}

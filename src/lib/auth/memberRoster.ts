@@ -9,6 +9,9 @@ import { canBeClaimed } from "./memberId";
 import { alwaysListed } from "./alwaysListed";
 import type { NamedMember } from "./members";
 import { memberKind, type MemberKind } from "./memberKind";
+import { operatorActionWrite } from "./operatorLog";
+import { OPERATOR_ACTIONS } from "./operatorLog.constants";
+import type { OperatorActor } from "./operatorLog.types";
 
 /**
  * The operator's list of members, and the one thing he may do to a row of it.
@@ -213,15 +216,38 @@ function toSummary(rows: SummaryRow[], youId: string | null): MemberSummary[] {
  * cannot walk back through the door they came by; opening it again does not
  * put that invite back, because a code is a thing the operator hands out and
  * this one has been spent on a decision.
+ *
+ * `by` is the operator doing it, and with it the act is KEPT: the ban and its
+ * `OperatorAction` row are one transaction, so there is never a shut account
+ * with no record of who shut it, nor a record of a shutting that did not
+ * happen. The typed note stays on the member row and out of the log, which
+ * only ever holds what the writer states itself.
  */
-export async function setBanned(memberId: string, banned: boolean, note = ""): Promise<MemberSummary | null> {
+export async function setBanned(
+  memberId: string,
+  banned: boolean,
+  note = "",
+  by?: OperatorActor,
+): Promise<MemberSummary | null> {
   // By id: a member who came in with an invite code has no address, and has to be shut out as surely as anybody.
   const row = await prisma.member.findUnique({ where: { id: memberId }, select: { invitedWith: true } });
   if (row === null) return null;
-  await prisma.member.update({
+  const update = prisma.member.update({
     where: { id: memberId },
     data: banned ? { bannedAt: new Date(), bannedNote: note.trim().slice(0, 280) } : { bannedAt: null, bannedNote: "" },
   });
+  if (by === undefined) {
+    await update;
+  } else {
+    await prisma.$transaction([
+      update,
+      operatorActionWrite({
+        actor: by,
+        action: banned ? OPERATOR_ACTIONS.shut : OPERATOR_ACTIONS.restore,
+        subjectId: memberId,
+      }),
+    ]);
+  }
   if (banned && row.invitedWith !== "") await revokeInviteCode(row.invitedWith).catch(() => undefined);
   return memberSummaryFor(memberId);
 }

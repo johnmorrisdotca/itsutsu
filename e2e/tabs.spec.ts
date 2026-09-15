@@ -152,17 +152,17 @@ test.describe("a page of many sections is tabs", () => {
     await expect(page.getByTestId("tabs")).toHaveCount(0);
   });
 
-  test("the operator's page is five tabs, one part at a time", async ({ page }) => {
+  test("the operator's page is six tabs, one part at a time", async ({ page }) => {
     /*
-     * The door, the members, the bots and the work. It was three headings on
-     * one page with the whole features board inside the third, which made it
-     * long however short the headings were — and the programs were in the
-     * members list among the people, which is a different kind of row to
+     * The door, the members, the bots, the work and the log. It was three
+     * headings on one page with the whole features board inside the third, which
+     * made it long however short the headings were — and the programs were in
+     * the members list among the people, which is a different kind of row to
      * anybody who runs a site.
      */
     await page.goto("/admin");
-    // Five since 0.165.0: the door, the site, the members, the bots, the work.
-    await expect(page.getByTestId("tab")).toHaveCount(5);
+    // Named rather than counted: the door, the site, the members, the bots, the work, and the operator log.
+    await expectTabs(page, ["door", "site", "members", "bots", "work", "log"]);
     await expect(page.getByTestId("admin-door")).toBeVisible();
     // One at a time: the board is not also on screen behind the invites.
     await expect(page.getByTestId("admin-backlog")).toHaveCount(0);

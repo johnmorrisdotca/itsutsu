@@ -2,6 +2,8 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { canBeClaimed } from "@/lib/auth/memberId";
+import { OPERATOR_ACTIONS } from "@/lib/auth/operatorLog.constants";
+import type { OperatorActor } from "@/lib/auth/operatorLog.types";
 
 import { setPhrase } from "./phraseStore";
 
@@ -108,18 +110,34 @@ export type OperatorSetOutcome =
  * required rather than defaulted, so the caller has had to decide: a default
  * of true replaces credentials by omission, and a default of false makes the
  * confirm impossible to express.
+ *
+ * `by` is required for the same reason: an operator setting somebody's words is
+ * an act the log keeps, in the same transaction as the words, and a caller that
+ * could leave it out would be a way to set a credential with no record of who.
+ * The row says whether it replaced words and when those were set — never the
+ * words, never the hash.
  */
 export async function setPhraseAsOperator(
   memberId: string,
   words: readonly string[],
-  { replacing }: { replacing: boolean },
+  { replacing, by }: { replacing: boolean; by: OperatorActor },
 ): Promise<OperatorSetOutcome> {
   const target = await phraseTarget(memberId);
   if (target === null) return { ok: false, reason: "no-member" };
   if (!target.mayHavePhrase) return { ok: false, reason: "not-claimable", target };
   if (target.set && !replacing) return { ok: false, reason: "needs-confirm", target };
 
-  const written = await setPhrase(target.id, words);
+  const detail = !target.set
+    ? "no words before"
+    : target.setAt === null
+      ? "replaced words"
+      : `replaced words set on ${target.setAt.toISOString()}`;
+  const written = await setPhrase(target.id, words, {
+    actor: by,
+    action: OPERATOR_ACTIONS.wordsSet,
+    subjectId: target.id,
+    detail,
+  });
   if (!written.ok) {
     /*
      * `no-member` cannot happen here — the row was just read — but the store
