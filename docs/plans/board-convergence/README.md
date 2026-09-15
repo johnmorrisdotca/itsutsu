@@ -1,5 +1,22 @@
 # Board convergence: Itsutsu's half
 
+> **Moved to Sumilabu (0.x, 2026-09).** This plan is history now. The board it
+> describes lives on Sumilabu's shared board under Itsutsu's project, reached
+> through `src/lib/sumilabu/boardClient.ts`, and `BOARD_RULES.md` here is
+> Sumilabu's own copy. For anybody working from the tickets below:
+>
+> - **Retired:** the board token (`BOARD_TOKEN`) and its exception in
+>   `src/proxy.ts`, the `/api/backlog` routes, `pnpm task stamp`, the
+>   released-in backfill scripts (`pnpm board:released-in` and
+>   `pnpm board:released-in:derive`), and `pnpm backlog:cleanup-litter`.
+> - **New:** `pnpm task` works on `itsutsu-dev` and `pnpm task:prod` on the live
+>   board; `pnpm release:take:prod --done <key>` closes live rows; the one-time
+>   move is `pnpm board:export:prod`.
+> - The `BacklogItem` table stays in the schema, read by nothing, until a later
+>   step drops it with a Neon branch taken first.
+>
+> The tickets below are kept as they were written.
+
 Four tickets that bring the features board up to the contract in
 `BOARD_RULES.md`, which UmaKuma (the `umakuma` repository) is being brought
 up to at the same time. The two boards should behave the same, and one day
