@@ -3,9 +3,11 @@
  *
  * A ladder, not a list: level 1 is where a person starts, level 100 is the
  * coolest thing in gaming, and everything between climbs. Video games and
- * board games share the one ladder, about one rung in four from the board,
- * because this is a board-game site and that culture runs as deep as the
- * arcade's. Consoles appear in release order, numbered series are spaced well
+ * table games — board, card and tile — share the one ladder, about one rung in
+ * three from the table, because this is a board-game site and that culture
+ * runs as deep as the arcade's. Consoles mostly climb in release order; the
+ * exception is Intellivision (1979) at 38, among the 3D machines, where John
+ * placed it when it replaced a cartridge rung. Numbered series are spaced well
  * apart, and the round numbers are the ones somebody would screenshot. Every
  * name is a real reference a player would know; the `note` says why, in one
  * line, for the rank's own page.
@@ -44,12 +46,12 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 10, name: "Player One", note: "The first slot on every cabinet and every couch: the one the game was built for." },
   // 11-20: 8-bit, and the first games anyone learns.
   { level: 11, name: "Tic-Tac-Toe", kanji: "三目並べ", note: "Three in a row on nine squares: the first game anyone learns, and the first one anyone learns cannot be won." },
-  { level: 12, name: "Cartridge I", note: "The grey brick you blew into, sworn by a whole generation to work better afterwards." },
+  { level: 12, name: "ColecoVision", note: "Coleco, 1982: Donkey Kong in the box, and an expansion module that played the rival Atari's cartridges too." },
   { level: 13, name: "NES", note: "Nintendo Entertainment System, 1985: the box that brought games back from the dead." },
   { level: 14, name: "World 1-1", note: "Super Mario Bros., 1985: the level that taught the whole world to play without a word of instruction." },
   { level: 15, name: "Connect Four", note: "Milton Bradley, 1974: four in a row with gravity doing the placing, solved in 1988 and played as if it never was." },
   { level: 16, name: "The Legend of Zelda", note: "1986: a golden cartridge, a battery to save your game, and 'it's dangerous to go alone'." },
-  { level: 17, name: "Metroid", note: "1986: run, jump, and learn at the end that the bounty hunter was a woman all along." },
+  { level: 17, name: "Uno", note: "Merle Robbins, 1971: an Ohio barber's deck of four colours, and the one word you must say before your last card or draw two." },
   { level: 18, name: "King Me", note: "Checkers: reach the far row, get a second piece stacked on top, and move backwards for the first time in your life." },
   { level: 19, name: "Game Boy", note: "1989: four shades of green, thirty hours on two AAs, and Tetris in the box." },
   { level: 20, name: "Tetris", note: "Alexey Pajitnov, 1984: seven shapes, one rule, and the one game everybody on Earth has played." },
@@ -57,10 +59,10 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 21, name: "Sega Genesis", note: "1989: Sega's 16-bit answer to Nintendo, 'blast processing', and the first console war worth the name." },
   { level: 22, name: "Sonic the Hedgehog", note: "1991: a blue hedgehog with attitude, built to run faster than a plumber could ever jump." },
   { level: 23, name: "Gomoku", kanji: "五目並べ", note: "Five in a row on a Go board, played in Japan for centuries with stones borrowed from a harder game; this site is named for it." },
-  { level: 24, name: "Cartridge II", note: "The 16-bit cart: twice the pins, a battery inside, and a quest that survived the night." },
+  { level: 24, name: "TurboGrafx-16", note: "NEC, 1989: Japan's PC Engine renamed for America, an 8-bit processor behind the 16 in its name, and games on cards the size of a credit card." },
   { level: 25, name: "Super Nintendo", note: "1991: Mode 7, a pad with four coloured buttons, and the library still argued to be the best there ever was." },
   { level: 26, name: "Hadouken", kanji: "波動拳", note: "Street Fighter II, 1991: quarter-circle forward and punch, the first special move every gamer learned to throw." },
-  { level: 27, name: "Fatality", note: "Mortal Kombat, 1992: 'FINISH HIM', then a move so gory it gave America a ratings board." },
+  { level: 27, name: "You Sunk My Battleship", note: "Milton Bradley, 1967: two plastic grids, a peg for every hit and miss, and the cry from the TV advert every losing admiral has copied since." },
   { level: 28, name: "Othello", note: "Goro Hasegawa, 1973: a minute to learn, a lifetime to master, and a corner that decides everything." },
   { level: 29, name: "Super Metroid", note: "1994: the map, the mood, and the animals you could go back to save; for many, the best game on the system." },
   { level: 30, name: "Neo Geo", note: "SNK, 1990: the arcade board sold as a home console, at a price only the richest kid on the street could pay." },
@@ -72,7 +74,7 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 35, name: "Nintendo 64", note: "1996: a three-pronged pad, four controller ports, and the analog stick every console since has copied." },
   { level: 36, name: "Super Mario 64", note: "1996: the first time a stick moved a man through a real, round, three-dimensional world." },
   { level: 37, name: "Joseki", kanji: "定石", note: "Go's settled corner sequences, learned by heart and then, the proverb says, forgotten." },
-  { level: 38, name: "Cartridge III", note: "The N64 cart: no loading, no scratches, and the last of its kind for twenty years." },
+  { level: 38, name: "Intellivision", note: "Mattel, 1979: a 16-bit processor years early, a card overlay on the keypad for every game, and George Plimpton on TV holding it up against the Atari." },
   { level: 39, name: "GoldenEye 007", note: "Rare, 1997: four players, one screen, and a house rule about not picking Oddjob." },
   { level: 40, name: "Final Fantasy VII", note: "Square, 1997: three discs, a Buster Sword, and the death nobody was ready for." },
   // 41-50: the turn of the millennium.
@@ -80,7 +82,7 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 42, name: "Dreamcast", note: "Sega, 1999: 9/9/99, a modem in the box, and the last console Sega ever made, ahead of its time to the end." },
   { level: 43, name: "Metal Gear Solid", note: "Konami, 1998: a cardboard box, a codec call, and a boss who read your memory card." },
   { level: 44, name: "Half-Life", note: "Valve, 1998: a crowbar, a tram ride, and a story told without ever taking the controls away from you." },
-  { level: 45, name: "LAN Party", note: "Ten PCs in a basement, a crate of cola, and Quake until sunrise: the golden age of the wired night." },
+  { level: 45, name: "Solitaire", note: "Windows 3.0, 1990: an intern's card game shipped to teach the world to drag with a mouse, and the cascade of bouncing cards when you won." },
   { level: 46, name: "StarCraft", note: "Blizzard, 1998: three races, a balance nobody has matched since, and a game South Korea put on television." },
   { level: 47, name: "Elo Rating", note: "Arpad Elo, 1960: the number that says how good you are, invented for chess and now behind every ladder, this one included." },
   { level: 48, name: "Boss Fight", kanji: "ボス戦", note: "The music changes, the health bar fills the screen, and everything you learned is about to be tested." },
@@ -91,7 +93,7 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 52, name: "GameCube", note: "2001: a purple lunchbox with a handle, tiny discs, and a controller so good Smash players still refuse to give it up." },
   { level: 53, name: "En Passant", note: "Chess's strangest rule: a pawn captured on a square it never landed on, and the one every beginner swears was made up." },
   { level: 54, name: "Halo", note: "Bungie, 2001: Master Chief, a ring world, and the game that sold the first Xbox." },
-  { level: 55, name: "Katamari Damacy", kanji: "塊魂", note: "Namco, 2004: roll up the cat, then the car, then the continent, while the King of All Cosmos judges you." },
+  { level: 55, name: "T-Spin", note: "Tetris's hardest-earned move: twist the T into a slot it could never have fallen into, and a double scores more than a Tetris." },
   { level: 56, name: "World of Warcraft", note: "Blizzard, 2004: twelve million subscribers, a raid on Tuesday night, and Leeroy Jenkins." },
   { level: 57, name: "Nintendo DS", note: "2004: two screens, a stylus, and 154 million sold, a touchscreen three years before the iPhone." },
   { level: 58, name: "Shadow of the Colossus", note: "Team Ico, 2005: sixteen giants, an empty world, and the game people name when someone says games can't be art." },
@@ -99,7 +101,7 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 60, name: "Wii", note: "Nintendo, 2006: a remote instead of a pad, Wii Sports in the box, and grandparents bowling in the living room." },
   // 61-70: the HD era, and the fight.
   { level: 61, name: "Portal", note: "Valve, 2007: a gun that made two holes, a computer that made promises about cake, and a song over the credits." },
-  { level: 62, name: "BioShock", note: "Irrational, 2007: a city under the sea, a plasmid in your hand, and 'would you kindly'." },
+  { level: 62, name: "Doubling Cube", note: "Backgammon, New York, the 1920s: a die marked 2 to 64, and a turn spent offering to double the stakes, which the other side must take or concede." },
   { level: 63, name: "Ko", kanji: "劫", note: "Go's rule against repeating the board: the fight you can only win by threatening something bigger somewhere else." },
   { level: 64, name: "Minecraft", note: "Mojang, 2011: a block of dirt, a creeper at the door, and 300 million sold, the best-selling game there has ever been." },
   { level: 65, name: "Skyrim", note: "Bethesda, 2011: 'Fus Ro Dah', a dragon on the road, and an arrow to the knee." },
@@ -117,7 +119,7 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 76, name: "Honinbo", kanji: "本因坊", note: "Go's oldest title, held first by Sansa in 1612 and fought for every year since: the longest-running championship in any game." },
   { level: 77, name: "Combo Breaker", note: "Killer Instinct, 1994: 'C-C-C-COMBO BREAKER', and the two words shouted at every interruption since." },
   { level: 78, name: "Ryuo", kanji: "竜王", note: "Dragon King: shogi's promoted rook, and the title one of its eight crowns is named for." },
-  { level: 79, name: "S-Rank", note: "The grade above A, from Devil May Cry to Resident Evil: not just finished, finished with style." },
+  { level: 79, name: "Triple Word Score", note: "Scrabble, Alfred Butts, 1938: eight red squares around the rim, and a word stretched across two of them for nine times its worth." },
   { level: 80, name: "Breath of the Wild", note: "Nintendo, 2017: a plateau, a paraglider, and a whole kingdom that let you go anywhere you could see." },
   // 81-90: the legends.
   { level: 81, name: "Elden Ring", note: "FromSoftware, 2022: the Lands Between, a horse called Torrent, and the Souls formula set loose in an open world." },
@@ -131,14 +133,14 @@ export const LEVEL_NAMES: readonly LevelName[] = [
   { level: 89, name: "Frame Perfect", note: "An input on the one frame in sixty that works: the difference between a good player and the best one alive." },
   { level: 90, name: "Ocarina of Time", note: "Nintendo, 1998: Z-targeting, the Temple of Time, and the highest score any critic has ever given a game." },
   // 91-100: the pantheon.
-  { level: 91, name: "SSS", note: "Devil May Cry, 2001: the top of the style meter, three letters above S, held only by never being touched and never standing still." },
+  { level: 91, name: "Shoot the Moon", note: "Hearts: take every heart and the queen of spades, the tricks that should sink you, and hand all 26 points to everybody else." },
   { level: 92, name: "Checkmate", kanji: "詰み", note: "The king has nowhere to go, and there is nothing left to say: the oldest winning word there is." },
   { level: 93, name: "Konami Code", note: "Up, up, down, down, left, right, left, right, B, A: thirty lives in Contra, and the most famous secret ever typed." },
   { level: 94, name: "Tengen", kanji: "天元", note: "The origin of heaven: the centre point of the Go board, the boldest first move there is, and a title fought for since 1976." },
   { level: 95, name: "Final Boss", kanji: "大魔王", note: "The last one, the one every other fight was practice for; the name for whoever everyone else has to beat." },
   { level: 96, name: "Move 37", note: "AlphaGo v Lee Sedol, game two, 2016: a move no human would play, at one-in-ten-thousand odds, and the moment a machine was called creative." },
   { level: 97, name: "High Score", kanji: "高得点", note: "Three initials at the top of the cabinet, and everything the arcade was ever for." },
-  { level: 98, name: "Master Sword", note: "The blade of evil's bane, asleep in its pedestal until someone worthy comes to pull it." },
-  { level: 99, name: "Triforce", note: "Power, wisdom and courage, and a wish granted to whoever holds all three." },
+  { level: 98, name: "Mahjong", kanji: "麻雀", note: "China, the 1800s: 144 tiles, four players, the clatter of building the wall, and a craze that reached America and Japan in the 1920s." },
+  { level: 99, name: "Royal Flush", note: "Poker's unbeatable hand: ten to ace in one suit, dealt about once in every 649,740 five-card hands." },
   { level: 100, name: "Divine Move", kanji: "神の一手", note: "Kami no itte: the one perfect move Go players have chased for a thousand years, and the reason Sai stayed on Earth." },
 ];
