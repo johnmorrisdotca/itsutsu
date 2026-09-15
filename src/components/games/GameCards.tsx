@@ -128,7 +128,7 @@ export function GameCards({
             data-variant={copy.variant}
           >
             {/* The game's board beside its card, as every list that names a game draws it. */}
-            <GameThumb variant={copy.variant} size="card" />
+            <GameThumb variant={copy.variant} size="regular" />
             <span className="flex min-w-0 flex-1 flex-col gap-1">
               <Link
                 href={gamePath(copy.variant)}

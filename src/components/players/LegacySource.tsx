@@ -124,7 +124,7 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
                     than the nearest board to it.
                   */}
                   <span className="flex items-center gap-2">
-                    <GameThumb name={game.game} size="table" />
+                    <GameThumb name={game.game} size="regular" />
                     <GameName name={game.game} />
                   </span>
                   <GameLog game={game} />
@@ -224,7 +224,7 @@ function HeadToHead({ source }: { source: LegacySource }) {
                       <td className="py-1.5 pr-3 text-muted">{game.date}</td>
                       <td className="py-1.5 pr-3">
                         <span className="flex items-center gap-2">
-                          <GameThumb name={game.game} size="table" />
+                          <GameThumb name={game.game} size="regular" />
                           <GameName name={game.game} />
                         </span>
                       </td>

@@ -1,11 +1,11 @@
 "use client";
 
 import { BoardSizeMark } from "@/components/board/BoardSizeMark";
-import { Paired } from "@/components/i18n/Paired";
+import { OneName } from "@/components/i18n/OneName";
 import { BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 
 import { PickMark } from "./PickMark";
-import { BOARD_MARK_PX, PICK_BLOCKS, PICK_CARD } from "./picker.constants";
+import { PICK_BLOCKS, PICK_CARD } from "./picker.constants";
 
 /**
  * The board, as big blocks in a row. John: "for the board sizes, make it more
@@ -123,21 +123,23 @@ export function BoardPicker({
                 the size once, then the board's name — and nothing printed
                 beside it says the size a second time.
 
-                One mark size, `BOARD_MARK_PX`, so every block is the same
-                height by construction and the Start button does not move from
-                one game to the next.
+                The regular picture size, so every block is the same height by
+                construction and the Start button does not move from one game
+                to the next. This block's 70px is the size John chose for every
+                picture on the site.
               */}
-              <BoardSizeMark size={size} px={BOARD_MARK_PX} words="none" />
+              <BoardSizeMark side={size} size="regular" words="none" />
               {/*
                 What that board is FOR — "Mini", "Tournament size" — which is
                 the part a number alone cannot say to somebody meeting these
                 games for the first time. Every size a game is played on has
                 one; the coverage test says so, so no block quietly goes
-                without.
+                without. One language on one line, as every label under a
+                picture is: "Eight", not "Eight 八路".
               */}
               {copy !== undefined ? (
                 <span className="text-center text-[0.7rem] leading-none text-muted" data-testid="set-up-size-name">
-                  <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="opacity-70" />
+                  <OneName en={copy.label} kanji={copy.kanji} />
                 </span>
               ) : null}
               {/*

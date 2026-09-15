@@ -6,7 +6,7 @@ import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 
 import { removeMember, seedMember } from "./members";
-import { ready, readyHere } from "./support";
+import { chooseGame, openMoreSettings, openSetUpPage, ready, readyHere } from "./support";
 import { removeGames } from "./tidy";
 
 /**
@@ -25,8 +25,15 @@ import { removeGames } from "./tidy";
  * pixels, because a broken image is still an element. Nothing reloads.
  */
 
-/** `FAMILY_ICON_SIZE` is `size-14`: 56 CSS pixels, on every page that shows a family. */
-const FAMILY_ICON_PX = 56;
+/**
+ * The site's two picture sizes, as the browser draws them. John, 2026-09-15:
+ * "from multiple icon sizes to exactly two, regular and large" — regular the
+ * set-up page's board tile, large "exactly DOUBLE the regular size, for
+ * symmetry". `PICTURE_PX` holds them; they are written out here so this
+ * measures the page rather than agreeing with the constant.
+ */
+const REGULAR_PX = 70;
+const LARGE_PX = REGULAR_PX * 2;
 
 /** Scrolled to, because the boards load lazily, and then asked whether the browser drew it. */
 async function drawn(picture: Locator): Promise<void> {
@@ -36,12 +43,23 @@ async function drawn(picture: Locator): Promise<void> {
     .toBeGreaterThan(0);
 }
 
-async function isFamilySized(mark: Locator): Promise<void> {
-  await expect(mark).toBeVisible();
-  const box = await mark.boundingBox();
-  expect(box, "the family icon has a box").not.toBeNull();
-  expect(Math.round(box!.width)).toBe(FAMILY_ICON_PX);
-  expect(Math.round(box!.height)).toBe(FAMILY_ICON_PX);
+/** A picture's side in CSS pixels, once it is on screen and known to be square. */
+async function sideOf(picture: Locator): Promise<number> {
+  await expect(picture).toBeVisible();
+  const box = await picture.boundingBox();
+  expect(box, "the picture has a box").not.toBeNull();
+  expect(Math.round(box!.height), "the picture is square").toBe(Math.round(box!.width));
+  return Math.round(box!.width);
+}
+
+/** The words under a picture, on one line that stays inside the tile holding it. */
+async function isOneLineInside(label: Locator, tile: Locator): Promise<void> {
+  const [text, frame] = [await label.boundingBox(), await tile.boundingBox()];
+  expect(text, "the label has a box").not.toBeNull();
+  const lineHeight = await label.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+  expect(Math.round(text!.height), "one line, not two").toBeLessThanOrEqual(Math.ceil(lineHeight));
+  expect(text!.x, "inside the tile on the left").toBeGreaterThanOrEqual(frame!.x);
+  expect(text!.x + text!.width, "inside the tile on the right").toBeLessThanOrEqual(frame!.x + frame!.width);
 }
 
 test.describe("the games index", () => {
@@ -65,10 +83,14 @@ test.describe("the games index", () => {
     }
   });
 
-  test("draws a family's icon at the one family size, on /games and on the set-up screen", async ({ page }) => {
+  test("draws a family's icon at the regular size, on /games and on the set-up screen, its name on one line", async ({
+    page,
+  }) => {
     await page.goto("/games");
     await readyHere(page.locator('[data-testid="game-stats"]').first());
-    await isFamilySized(page.getByTestId("lobby-family").first().getByTestId("family-mark"));
+    expect(await sideOf(page.getByTestId("lobby-family").first().getByTestId("family-mark"))).toBe(REGULAR_PX);
+    await drawn(page.getByTestId("lobby-family").first().getByTestId("game-thumb").first());
+    expect(await sideOf(page.getByTestId("lobby-family").first().getByTestId("game-thumb").first())).toBe(REGULAR_PX);
 
     // To the set-up screen by its own button, not by address.
     await page.getByTestId("lobby-set-up").click();
@@ -78,8 +100,59 @@ test.describe("the games index", () => {
     const tabs = page.getByTestId("set-up-family");
     await expect(tabs).toHaveCount(GAME_FAMILIES.length);
     for (let index = 0; index < GAME_FAMILIES.length; index += 1) {
-      await isFamilySized(tabs.nth(index).getByTestId("family-mark"));
+      const tab = tabs.nth(index);
+      expect(await sideOf(tab.getByTestId("family-mark")), GAME_FAMILIES[index].title).toBe(REGULAR_PX);
+      // English only: the name and nothing else, on one line inside its tile ("Pieces and twists" used to wrap).
+      const label = tab.locator(":scope > span");
+      await expect(label).toHaveText(GAME_FAMILIES[index].title);
+      await isOneLineInside(label, tab);
     }
+  });
+});
+
+test.describe("the set-up page and the page before a game", () => {
+  test("draws the family tile, the game chip and the board tile at one size, and the doorstep's board at twice it", async ({
+    page,
+  }) => {
+    await openSetUpPage(page);
+    // Checkers, chosen the way a reader chooses it — its family, then the game — for its one 8×8 board.
+    await chooseGame(page, "checkers");
+    await openMoreSettings(page);
+
+    const chip = page.locator('[data-testid="set-up-variant"][data-variant="checkers"]');
+    await drawn(chip.getByTestId("game-thumb"));
+    const board = page.locator('[data-testid="set-up-size"][data-size="8"]');
+    const sides = {
+      family: await sideOf(page.locator('[data-testid="set-up-family"][data-open="true"]').getByTestId("family-mark")),
+      game: await sideOf(chip.getByTestId("game-thumb")),
+      board: await sideOf(board.getByTestId("board-size-mark")),
+      opening: await sideOf(page.getByTestId("set-up-opening").first().getByTestId("opening-mark")),
+      rated: await sideOf(page.getByTestId("rated-icon").first()),
+      opponent: await sideOf(page.getByTestId("set-up-opponent").first().getByTestId("seat-mark")),
+    };
+    expect(sides, "every picture on the set-up page is the regular size").toEqual({
+      family: REGULAR_PX,
+      game: REGULAR_PX,
+      board: REGULAR_PX,
+      opening: REGULAR_PX,
+      rated: REGULAR_PX,
+      opponent: REGULAR_PX,
+    });
+    // The board tile's name is English only, one line: "Eight", not "Eight 八路".
+    await expect(board.getByTestId("set-up-size-name")).toHaveText("Eight");
+    await isOneLineInside(board.getByTestId("set-up-size-name"), board);
+
+    await page.getByTestId("set-up-start").click();
+    await ready(page, "doorstep");
+    await expect(page).toHaveURL(/\/games\/checkers\/begin\?/);
+
+    const doorstep = page.getByTestId("doorstep-board");
+    expect(await sideOf(doorstep.getByTestId("board-size-mark")), "exactly twice the board tile it was chosen from").toBe(
+      sides.board * 2,
+    );
+    expect(sides.board * 2).toBe(LARGE_PX);
+    await expect(doorstep.getByTestId("doorstep-board-name")).toHaveText("Eight");
+    await isOneLineInside(doorstep.getByTestId("doorstep-board-name"), doorstep);
   });
 });
 

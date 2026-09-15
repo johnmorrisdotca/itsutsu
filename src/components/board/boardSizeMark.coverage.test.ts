@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { BOARD_MARK_PX, DOORSTEP_MARK_PX } from "@/components/live/picker.constants";
+import { PICTURE_PX } from "@/components/games/games.constants";
 import { ALL_BOARD_SIZES, BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 
 /**
@@ -25,13 +25,14 @@ import { ALL_BOARD_SIZES, BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constan
  *   it is named below with its reason;
  * - every mark is told nothing beside it says the size (`words="none"`), so it
  *   names itself — "8 by 8 board" — and the size is heard once;
- * - the board picker draws one mark, at the one big size, then the name,
- *   with nothing inside the block decided by how many sizes there are;
- * - the old small mark and the old lone-board mark are gone, since there is
- *   only one size of mark on the set-up screen;
+ * - the board picker draws one mark, at the regular picture size, then the
+ *   name, with nothing inside the block decided by how many sizes there are;
+ * - the old small mark, the old lone-board mark and the old per-surface pixel
+ *   sizes are gone, since every picture is now regular or large;
  * - the last page before a game — the doorstep, at /games/<game>/begin, for
- *   every game and every way in — draws the chosen board the same way,
- *   larger: the mark, then the name, no size line. John: "Checkers page, and
+ *   every game and every way in — draws the chosen board the same way, at the
+ *   large size, exactly twice the block's: the mark, then the name, no size
+ *   line. John: "Checkers page, and
  *   all pages like it, should use the Board Icon... since this is the last
  *   page before the game... perhaps we use new larger icons?" It is held to
  *   the rule here rather than excused from it;
@@ -122,8 +123,8 @@ describe("the board picker draws one block, whatever the number of sizes", () =>
     expect(source.match(/<BoardSizeMark\b/g) ?? []).toHaveLength(1);
   });
 
-  it("draws it at the one big size", () => {
-    expect(block).toMatch(/<BoardSizeMark\b[^>]*\bpx=\{BOARD_MARK_PX\}/);
+  it("draws it at the regular picture size", () => {
+    expect(block).toMatch(/<BoardSizeMark\b[^>]*\bsize="regular"/);
   });
 
   it("decides nothing inside the block by how many sizes there are", () => {
@@ -134,13 +135,13 @@ describe("the board picker draws one block, whatever the number of sizes", () =>
 
   it("draws the mark, then the name", () => {
     const mark = block.indexOf("<BoardSizeMark");
-    const name = block.indexOf("<Paired");
+    const name = block.indexOf("<OneName");
     expect(mark, "the mark").toBeGreaterThanOrEqual(0);
     expect(name, "the name after the mark").toBeGreaterThan(mark);
   });
 
   it("has no second size of mark anywhere", () => {
-    for (const retired of ["BOARD_BLOCK_MARK_PX", "BOARD_ONLY_MARK_PX"]) {
+    for (const retired of ["BOARD_BLOCK_MARK_PX", "BOARD_ONLY_MARK_PX", "BOARD_MARK_PX", "DOORSTEP_MARK_PX"]) {
       const using = SOURCES.filter((file) => file.source.includes(retired)).map((file) => file.path);
       expect(using, retired).toEqual([]);
     }
@@ -159,20 +160,20 @@ describe("the last page before a game draws the chosen board the same way, large
     expect(doorstep, `${DOORSTEP} no longer draws the chosen board`).toMatch(/<DoorstepPictures\b/);
   });
 
-  it("draws the board once, as the big numbered mark at the doorstep's size", () => {
+  it("draws the board once, as the big numbered mark at the large picture size", () => {
     const marks = pictures.match(/<BoardSizeMark\b[^>]*>/g) ?? [];
     expect(marks).toHaveLength(1);
-    expect(marks[0]).toMatch(/\bpx=\{DOORSTEP_MARK_PX\}/);
+    expect(marks[0]).toMatch(/\bsize="large"/);
     expect(marks[0]).toContain('words="none"');
   });
 
-  it("is larger than the block the reader pressed, and is not a second set of icons", () => {
-    expect(DOORSTEP_MARK_PX).toBeGreaterThan(BOARD_MARK_PX);
+  it("is exactly twice the block the reader pressed, and is not a second set of icons", () => {
+    expect(PICTURE_PX.large).toBe(PICTURE_PX.regular * 2);
   });
 
   it("draws the mark, then the board's name, with no size line", () => {
     const mark = pictures.indexOf("<BoardSizeMark");
-    const name = pictures.indexOf("<Paired", mark);
+    const name = pictures.indexOf("<OneName", mark);
     expect(mark, "the mark").toBeGreaterThanOrEqual(0);
     expect(name, "the name after the mark").toBeGreaterThan(mark);
     // Between the mark and its name: nothing printed but the caption's own markup.

@@ -1,3 +1,6 @@
+import type { ReactNode } from "react";
+
+import type { PictureSize } from "@/components/games/games.types";
 import type { OpeningRule, Stone } from "@/lib/gomoku/gomoku.types";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { PhraseKey } from "@/lib/i18n/i18n.constants";
@@ -75,7 +78,24 @@ export type OpeningPickerProps = {
   disabled?: boolean;
 };
 
-export type OpeningMarkProps = { opening: OpeningRule; size: number; px: number };
+export type OpeningMarkProps = {
+  opening: OpeningRule;
+  /** The chosen board's side, so the picture is drawn at the density that will be played on. */
+  side: number;
+  /** One of the site's two picture sizes. */
+  size: PictureSize;
+};
+
+/** Who an opponent tile's stone stands for: a person, a program, or the seat nobody has taken. */
+export type SeatMarkKind = "person" | "computer" | "anyone";
+
+export type SeatMarkProps = {
+  kind: SeatMarkKind;
+  /** One of the site's two picture sizes. */
+  size: PictureSize;
+  /** The initial or script set on the stone; nothing on the empty seat. */
+  children?: ReactNode;
+};
 
 export type RatedPickerProps = {
   value: boolean;

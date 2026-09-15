@@ -19,11 +19,9 @@ import {
   PICK_MORE,
   PICK_PEOPLE,
   RANDOM_COMPUTER_WORDS,
-  SEAT_MARK_ANYONE,
-  SEAT_MARK_COMPUTER,
-  SEAT_MARK_PERSON,
 } from "./picker.constants";
 import type { OpponentChoiceProps, OpponentGroup, OpponentTile } from "./picker.types";
+import { SeatMark } from "./SeatMark";
 import { POST_FOR_ANYONE } from "./setUpWords";
 
 /**
@@ -87,7 +85,7 @@ export function OpponentChoice({
           shown={shown}
           disabled={inert}
           onChange={onChange}
-          mark={<span aria-hidden="true" className={SEAT_MARK_ANYONE} />}
+          mark={<SeatMark kind="anyone" size="regular" />}
           title={POST_FOR_ANYONE}
           line={`${say("setup.anyoneMeans")} ${SET_UP_COPY.postedWhere}`}
           computer={false}
@@ -221,9 +219,9 @@ function tileWords(tile: OpponentTile) {
     name: tile.name,
     computer: tile.computer,
     mark: (
-      <span aria-hidden="true" className={tile.computer ? SEAT_MARK_COMPUTER : SEAT_MARK_PERSON}>
+      <SeatMark kind={tile.computer ? "computer" : "person"} size="regular">
         {initial}
-      </span>
+      </SeatMark>
     ),
     title:
       profile === null ? (

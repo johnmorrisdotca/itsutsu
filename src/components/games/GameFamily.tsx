@@ -37,7 +37,7 @@ export function GameFamily({ variant }: { variant: RuleVariant }) {
         Also in this family <span className="font-mincho normal-case tracking-normal">同族</span>
       </h2>
       <div className="flex items-center gap-3">
-        <FamilyMark family={family.title} />
+        <FamilyMark family={family.title} size="regular" />
         <span className="flex min-w-0 flex-col">
           <span className="flex items-baseline gap-2 text-sm font-semibold">
             {family.title}
@@ -58,7 +58,7 @@ export function GameFamily({ variant }: { variant: RuleVariant }) {
         {siblings.games.map((game) => (
           <li key={game} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md px-2 py-1`}>
             <span className="flex min-w-0 items-center gap-2">
-              <GameThumb variant={game} size="table" />
+              <GameThumb variant={game} size="regular" />
               <GameName variant={game} kanji stretched />
             </span>
             <CardArrow className="size-6" />

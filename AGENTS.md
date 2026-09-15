@@ -278,14 +278,26 @@ board and Wikipedia and had no way to the record or the ladder.
 
 **And a game named in a list shows its picture.** A card, a row or a table
 cell that names a game draws that game's board beside the name, through
-`GameThumb` at one of `GAME_PICTURE_SIZE`'s named sizes, and a family's icon
-is drawn at `FAMILY_ICON_SIZE` on every page that shows a family. John: "Looks
-like we aren't showing the icons for all the variant games in a family!…
-Strange how we don't see icons in the Player pages, etc... that's a BUG too."
+`GameThumb`, and a family's icon is drawn on every page that shows a family.
+John: "Looks like we aren't showing the icons for all the variant games in a
+family!… Strange how we don't see icons in the Player pages, etc... that's a
+BUG too."
+
+**Every picture is one of two sizes: regular, and large = 2× regular.** John,
+2026-09-15, on a set-up page drawing family tiles, game chips and board tiles
+at three sizes: from multiple icon sizes to exactly two, with the large one
+"exactly DOUBLE the regular size, for symmetry". Regular is the set-up page's
+board tile, 70px; large is the doorstep's board, written as twice regular in
+`PICTURE_PX` (`games.constants.ts`) and never as a second number. `GameThumb`,
+`FamilyMark`, `BoardSizeMark`, `OpeningMark`, `SeatMark` and the rated tiles'
+icons each take `size: "regular" | "large"` and read their side through
+`pictureBox`; no per-surface size, class or pixel count. A label under a
+picture is one language on one line, through `OneName`.
 **Enforced by `src/components/games/gamePictures.coverage.test.ts`**, which
-fails the build for a name with no picture near it and for either picture at
-a size of its own; a page title, a heading or a sentence naming a game is an
-exception written there by line, with its reason.
+fails the build for a name with no picture near it, for a picture at any other
+size, and for a retired per-surface size coming back; a page title, a heading
+or a sentence naming a game is an exception written there by line, with its
+reason.
 
 ### Every Table Of Players Shows XP, And The Programs Are Players
 

@@ -1,4 +1,5 @@
-import { FAMILY_ICON_SIZE } from "./games.constants";
+import type { PictureSize } from "./games.types";
+import { pictureBox } from "./picture";
 
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
@@ -158,16 +159,17 @@ const MARKS: Record<string, Mark> = {
 const PLAIN: Mark = { n: 5, stones: [{ r: 2, c: 2 }] };
 
 /**
- * The family's mark as an inline SVG, at the one size a family's icon is drawn.
+ * The family's mark as an inline SVG, at one of the site's two picture sizes.
  *
  * It was sized by whatever class a page handed it, so four pages drew four
  * sizes — 20px in a chip on /games/new, 40 on a game's page, 48 on /games, 64
- * on the family's own — and John asked for one, larger. So the size is not the
- * caller's: `FAMILY_ICON_SIZE`, from the group's constants, and
+ * on the family's own. That became one family size, 56px, and then John asked
+ * for every picture to be one regular size, the board tile's. So the caller
+ * says "regular" or "large" and nothing else (`PICTURE_PX`), and
  * `gamePictures.coverage.test.ts` refuses a size class at any call site.
  * `className` is left for placement only.
  */
-export function FamilyMark({ family, className = "" }: { family: string; className?: string }) {
+export function FamilyMark({ family, size, className = "" }: { family: string; size: PictureSize; className?: string }) {
   const mark = MARKS[family] ?? PLAIN;
   const { n } = mark;
   const cells = mark.cells === true;
@@ -179,10 +181,12 @@ export function FamilyMark({ family, className = "" }: { family: string; classNa
   return (
     <svg
       viewBox={`${-pad} ${-pad} ${extent + pad * 2} ${extent + pad * 2}`}
-      className={`${FAMILY_ICON_SIZE} shrink-0 ${className}`.trim()}
+      className={`shrink-0 ${className}`.trim()}
+      style={pictureBox(size)}
       aria-hidden="true"
       data-testid="family-mark"
       data-family={family}
+      data-picture={size}
     >
       <rect
         x={-pad}

@@ -1,4 +1,5 @@
 import { BOARD_SIZE_LATTICE, BOARD_SIZE_MARK_CLASS } from "@/components/board/Board.constants";
+import { pictureBox } from "@/components/games/picture";
 
 import { openingStones, openingZone } from "./openingPicture";
 import { MARK_STONE, MARK_STONE_COLOUR, OPENING_ZONE_CLASS } from "./picker.constants";
@@ -16,22 +17,25 @@ import type { OpeningMarkProps } from "./picker.types";
  * Decorative (`aria-hidden`): the name and the line under it on the same tile
  * say everything the picture does, and a screen reader would otherwise be told
  * it twice.
+ *
+ * At one of the site's two picture sizes: regular on the set-up tile, large
+ * beside the doorstep's board. It was 44px on the tile and 112 on the doorstep.
  */
-export function OpeningMark({ opening, size, px }: OpeningMarkProps) {
-  const cell = 100 / size;
-  const zone = openingZone(opening, size);
+export function OpeningMark({ opening, side, size }: OpeningMarkProps) {
+  const cell = 100 / side;
+  const zone = openingZone(opening, side);
   return (
     <span
       aria-hidden="true"
       className={`${BOARD_SIZE_MARK_CLASS} overflow-hidden`}
       style={{
-        width: px,
-        height: px,
+        ...pictureBox(size),
         backgroundImage: BOARD_SIZE_LATTICE,
         backgroundSize: `${cell}% ${cell}%`,
       }}
       data-testid="opening-mark"
       data-opening={opening}
+      data-picture={size}
     >
       {zone !== null ? (
         <span
@@ -44,7 +48,7 @@ export function OpeningMark({ opening, size, px }: OpeningMarkProps) {
           }}
         />
       ) : null}
-      {openingStones(opening, size).map((stone) => (
+      {openingStones(opening, side).map((stone) => (
         <span
           key={`${stone.row}-${stone.col}`}
           className={`${MARK_STONE} ${MARK_STONE_COLOUR[stone.colour]}`}

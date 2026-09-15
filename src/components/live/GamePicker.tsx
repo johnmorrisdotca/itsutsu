@@ -4,7 +4,7 @@ import { useRef, type KeyboardEvent } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameThumb } from "@/components/games/GameThumb";
-import { Paired } from "@/components/i18n/Paired";
+import { OneName } from "@/components/i18n/OneName";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
@@ -51,15 +51,15 @@ const STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown:
  *
  * Worth knowing: `gameLinks.coverage.test.ts` never sees this either way. It
  * looks for a label printed into a text position, and this one goes through
- * `<Paired en={copy.label}>` as a prop — as it does on the /games cards. That
+ * `<OneName en={copy.label}>` as a prop — as `Paired` does on the /games cards. That
  * is the gate's scope rather than a hole opened here, but it is the reason
  * this paragraph exists instead of a green test.
  *
  * WHY THE PICTURES ARE THE THUMBNAILS. `public/art/games/thumbs/<variant>.jpg`
- * is 96px and three to five kilobytes, cut once by `pnpm art:thumbs` from the
+ * is 140px and three to five kilobytes, cut once by `pnpm art:thumbs` from the
  * board screenshot every game already has. The full boards are 712px and
  * fifty kilobytes each: eight of those on one screen is most of a megabyte to
- * draw eight squares forty pixels wide, and nothing on this site may cost it
+ * draw eight squares seventy pixels wide, and nothing on this site may cost it
  * extra money. GameThumb is the same component every other list uses, so a
  * game looks the same here as it does on /play and /games.
  */
@@ -164,17 +164,16 @@ export function GamePicker({
               data-family={entry.title}
               data-open={showing ? "true" : "false"}
             >
-              <FamilyMark family={entry.title} />
+              <FamilyMark family={entry.title} size="regular" />
               {/*
-                The kanji goes below a laptop, and only for a reader of
-                English. Eleven chips carrying both scripts wrap to three
-                lines on an iPad and six on a phone, and those lines come
-                straight off the bottom of the screen where the Start button
-                is. For a Japanese reader `Paired` returns the kanji as the
-                whole label rather than as an extra, so this never hides
-                their only copy of the name.
+                One language, one line, under the mark. The kanji used to
+                follow the name from a laptop up, and "Pieces and twists" took
+                two lines in its tile; John asked for the label under an icon
+                to be English on one row. For a Japanese reader `OneName` gives
+                the kanji as the whole label, so this never hides their only
+                copy of the name.
               */}
-              <Paired en={entry.title} kanji={entry.kanji} kanjiClassName="hidden opacity-70 lg:inline" />
+              <OneName en={entry.title} kanji={entry.kanji} />
               {/*
                 A dot used to mark the family holding the chosen game, for a
                 reader who had browsed away from it. Nobody can be away from
@@ -242,7 +241,7 @@ export function GamePicker({
                 onChange={() => onChange(game)}
                 className="peer sr-only"
               />
-              <GameThumb variant={game} size="row" />
+              <GameThumb variant={game} size="regular" />
               {/*
                 THE BOARD AND THE NAME, and not the tagline.
 
@@ -257,19 +256,15 @@ export function GamePicker({
               */}
               {/*
                 A thirteenth of a pixel smaller than the site's small text
-                until a laptop, and this is measured too. Three columns at
-                exactly 768 — an iPad in portrait, the device this screen is
-                for — leave 132px beside the board for the name and its
-                kanji, and "Tournament Gomoku" at 14px wants 124 of them, so
-                the clip reached back into the name: "Tournament Gomo…". At
-                13px it wants 115 and the kanji takes the squeeze instead,
-                which is the way round this control is supposed to fail.
-
-                Two columns would have fixed it too and cost 56px of height,
-                which is more than the whole margin the Start button has.
+                until a laptop, and one language on one line: the name only,
+                through `OneName`. With the regular 70px board beside it,
+                three columns on an iPad in portrait left 102px and cut seven
+                names, so `PICK_GRID` is two columns until a laptop and never
+                four. `truncate` and the title stay as the guard for a name
+                added later that is longer than any today.
               */}
-              <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium lg:text-sm">
-                <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
+              <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium lg:text-sm" title={copy.label}>
+                <OneName en={copy.label} kanji={copy.kanji} />
               </span>
               <PickMark className="size-5" />
             </label>

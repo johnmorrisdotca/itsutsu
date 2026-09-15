@@ -25,7 +25,7 @@ export function LocalGameCard() {
   const toPlay = snapshot.moves.length % 2 === 0 ? snapshot.opener : otherThan(snapshot.opener);
   return (
     <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="local-game">
-      <GameThumb variant={snapshot.settings.variant} size="row" />
+      <GameThumb variant={snapshot.settings.variant} size="regular" />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
           <Paired en={MY_GAMES_COPY.localGame.label} kanji={MY_GAMES_COPY.localGame.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />

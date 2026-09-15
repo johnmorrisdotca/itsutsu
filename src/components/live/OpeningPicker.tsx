@@ -7,7 +7,7 @@ import type { OpeningRule } from "@/lib/gomoku/gomoku.types";
 
 import { OpeningMark } from "./OpeningMark";
 import { PickMark } from "./PickMark";
-import { OPENING_MARK_PX, PICK_CARD, PICK_TILES } from "./picker.constants";
+import { PICK_CARD, PICK_TILES } from "./picker.constants";
 import type { OpeningPickerProps } from "./picker.types";
 import { openingsOffered } from "./rulesDraft";
 
@@ -70,7 +70,7 @@ export function OpeningPicker({ value, variant, size, onChange, disabled = false
                 onChange={() => onChange(opening)}
                 className="peer sr-only"
               />
-              <OpeningMark opening={opening} size={size} px={OPENING_MARK_PX} />
+              <OpeningMark opening={opening} side={size} size="regular" />
               <OpeningWords opening={opening} />
               <PickMark className="absolute top-1.5 right-1.5 size-5" />
             </label>
