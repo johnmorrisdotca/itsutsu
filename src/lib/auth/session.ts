@@ -21,6 +21,23 @@ export type Session = {
    * absent for a browser that only redeemed an invite code.
    */
   email?: string;
+  /**
+   * The member this session belongs to, by id.
+   *
+   * THE IDENTITY, where there is one. It was the address alone, which a member
+   * who came in with an invite code does not have — so redeeming a code made a
+   * browser that could post a seat and nothing else. Redeeming one now makes a
+   * member, and this is how the cookie says which. Google sessions carry it too.
+   *
+   * Absent on cookies minted before it existed: an operator's token session, a
+   * Google session from an earlier release (resolved by `email`, as before), and
+   * an invite-only session from an earlier release, which `/api/session` turns
+   * into a member the next time the browser asks who it is.
+   *
+   * Signed like everything else here, so it is proof and not a claim: nobody can
+   * write another member's id into a cookie this server will verify.
+   */
+  memberId?: string;
   /** What Google calls them, for the header and for a seat's default name. */
   name?: string;
   picture?: string;

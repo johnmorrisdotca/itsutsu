@@ -1,24 +1,30 @@
 import "server-only";
-import { cache } from "react";
 
-import { KEEP_FINISHED_DEFAULT } from "@/lib/history/retention";
 import { isMemberId, makeMemberId } from "./memberId";
-import { appearanceFrom } from "@/components/board/appearance";
-import type { Appearance } from "@/components/board/board.types";
-import { DEFAULT_GAME_DEFAULTS, gameDefaultsFrom, type GameDefaults } from "@/components/game/gameDefaults";
 
 import { prisma } from "@/lib/prisma";
 import { playerKey } from "@/lib/rating/playerKey";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
 import { awardAdmission } from "@/lib/xp/admission";
+import { foldEmail } from "./foldEmail";
 import { zoneAssignment } from "./zoneGuess";
-import { awardDailyVisit } from "@/lib/xp/dailyVisit";
+
+/*
+ * Re-exported so every caller imports them from where it always did. The row
+ * reader and the account store live beside this module now — see
+ * `memberRow.ts` and `memberAccount.ts` — because this file had reached the
+ * size gate doing three jobs: who somebody is, the row every page reads, and
+ * what they keep on their account.
+ */
+export { foldEmail } from "./foldEmail";
+export { isBanned, memberRowFor, touchMember } from "./memberRow";
+export { appearanceFor, fetchProfile, gameDefaultsFor, keepFinishedDaysFor, updateProfile } from "./memberAccount";
 
 /**
- * Somebody who signs in. The address is what they sign in with, so every
- * member reached through these functions has one — the column is nullable
- * only because a kept record belongs to somebody who never held an account
- * and never had an address to give.
+ * Somebody who signs in with an address. Every member reached through the
+ * address-keyed functions here has one — the column is nullable because a kept
+ * record belongs to somebody who never held an account, and because a member
+ * who came in with an invite code has none.
  *
  * `id` is optional here for the same reason it is on `NamedMember`: most
  * callers only ever needed the address, the name and the picture, and giving
@@ -64,11 +70,6 @@ export type NamedMember = {
   xpImported?: number;
 };
 
-/** Emails are compared folded; Google gives them in whatever case the user typed once. */
-export function foldEmail(email: string): string {
-  return email.trim().toLowerCase();
-}
-
 /** The member for an address, or null when the address has not been let in. */
 export async function findMember(email: string): Promise<Member | null> {
   const row = await prisma.member.findUnique({
@@ -108,10 +109,13 @@ export async function freeMemberId(chosen?: string): Promise<string> {
  * form, no password, no confirmation mail — Google has already proved the
  * address, and the invite code (or the operator) says it is welcome. Signing
  * in again refreshes the name and picture, which people change.
+ *
+ * The id comes back with the rest, because the session carries it now: a
+ * cookie that names its member by id is read the same way as one a code made.
  */
 export async function admitMember(
   input: Member & { invitedWith?: string },
-): Promise<Member & { created: boolean }> {
+): Promise<Member & { id: string; created: boolean }> {
   const email = foldEmail(input.email);
   const existing = await prisma.member.findUnique({
     where: { email },
@@ -138,7 +142,7 @@ export async function admitMember(
        — `awardXp` swallows and logs — because a ledger write must never be able
        to fail a sign-in. */
     await awardAdmission({ id: row.id, lastSeenAt: null, timeZone: null, awayUntil: null, createdAt: null, played: null });
-    return { email: row.email ?? email, name: row.name, picture: row.picture, created: true };
+    return { id: row.id, email: row.email ?? email, name: row.name, picture: row.picture, created: true };
   }
   // The name is the member's to choose; Google's is only the first suggestion.
   const now = new Date();
@@ -158,7 +162,7 @@ export async function admitMember(
      carrying the zone just assigned, so the very first day is already counted
      in their own zone rather than one last time in UTC. */
   await awardAdmission({ ...existing, timeZone: assigned?.timeZone ?? existing.timeZone }, now);
-  return { ...row, email: row.email ?? email, created: false };
+  return { ...row, id: existing.id, email: row.email ?? email, created: false };
 }
 
 /**
@@ -169,14 +173,21 @@ export async function admitMember(
  * name nobody else may wear. Or a record already stands under it, earned by
  * whoever played as that name before: a rating is not something a rename may
  * inherit, and a name that has been vacated is not therefore free.
+ *
+ * BY MEMBER ID. It was by address, so a member who came in with an invite code
+ * could not choose a name at all — and the name is the first thing they are
+ * asked for.
  */
-export async function renameMember(email: string, name: string): Promise<Member | null> {
+export async function renameMember(
+  memberId: string,
+  name: string,
+): Promise<{ id: string; name: string; picture: string } | null> {
   const key = playerKey(name);
   if (isReservedKey(key)) return null;
 
   const clash = await prisma.member.findFirst({
-    where: { email: { not: foldEmail(email) }, name: { equals: name, mode: "insensitive" } },
-    select: { email: true },
+    where: { id: { not: memberId }, name: { equals: name, mode: "insensitive" } },
+    select: { id: true },
   });
   if (clash !== null) return null;
 
@@ -186,16 +197,16 @@ export async function renameMember(email: string, name: string): Promise<Member 
    * their current name folds to the same key, a change of capitalisation.
    */
   if (key !== "") {
-    const current = await prisma.member.findUnique({ where: { email: foldEmail(email) }, select: { name: true } });
+    const current = await prisma.member.findUnique({ where: { id: memberId }, select: { name: true } });
     if (playerKey(current?.name ?? "") !== key) {
       const record = await prisma.player.findUnique({ where: { key }, select: { key: true } });
       if (record !== null) return null;
     }
   }
   const renamed = await prisma.member.update({
-    where: { email: foldEmail(email) },
+    where: { id: memberId },
     data: { name },
-    select: { id: true, email: true, name: true, picture: true },
+    select: { id: true, name: true, picture: true },
   });
 
   /*
@@ -222,168 +233,13 @@ export async function renameMember(email: string, name: string): Promise<Member 
     prisma.playerVariantRating.updateMany({ where: { memberId: renamed.id }, data: { name } }),
   ]);
 
-  return { email: renamed.email ?? foldEmail(email), name: renamed.name, picture: renamed.picture };
+  return renamed;
 }
 
 /* The stored profile's own shapes live beside this module; see members.types.ts.
    Re-exported so every caller imports them from where it always did. */
 import type { MemberProfile, ProfileUpdate } from "./members.types";
 export type { MemberProfile, ProfileUpdate };
-
-export async function fetchProfile(email: string): Promise<MemberProfile | null> {
-  return prisma.member.findUnique({ where: { email: foldEmail(email) } });
-}
-
-/**
- * How long this member keeps finished games in their own list, in days.
- *
- * One column rather than the whole profile: this is read on the route the
- * header's badge polls, so it is worth being narrow about. Nobody signed in
- * — a browser holding only seat cookies — keeps everything, which is the
- * default anybody gets until they change it.
- */
-/**
- * The board this member keeps on their account, or null when there is none.
- *
- * Null and "the ordinary board" are not the same answer, and the difference
- * matters: a member who has never chosen must not have their browser's own
- * choice overruled by a default they never asked for, and the operator — who
- * signs in without a member row at all — must not be overruled by one either.
- * Only a board somebody actually chose is allowed to win.
- */
-export async function appearanceFor(email: string | null): Promise<Appearance | null> {
-  if (email === null) return null;
-  const row = await prisma.member.findUnique({
-    where: { email: foldEmail(email) },
-    select: { appearance: true },
-  });
-  if (row?.appearance === null || row?.appearance === undefined) return null;
-  return appearanceFrom(row.appearance);
-}
-
-/**
- * Where a new game starts for this member.
- *
- * Unlike their board, this always answers: a game has to start somewhere,
- * and "the ordinary starting point" is a perfectly good answer for somebody
- * who has never said otherwise.
- */
-export async function gameDefaultsFor(email: string | null): Promise<GameDefaults> {
-  if (email === null) return DEFAULT_GAME_DEFAULTS;
-  const row = await prisma.member.findUnique({
-    where: { email: foldEmail(email) },
-    select: { gameDefaults: true },
-  });
-  return gameDefaultsFrom(row?.gameDefaults);
-}
-
-export async function keepFinishedDaysFor(email: string | null): Promise<number> {
-  if (email === null) return KEEP_FINISHED_DEFAULT;
-  const row = await prisma.member.findUnique({
-    where: { email: foldEmail(email) },
-    select: { keepFinishedDays: true },
-  });
-  return row?.keepFinishedDays ?? KEEP_FINISHED_DEFAULT;
-}
-
-/** How often "last seen" is written: once a minute is plenty for a who's-here list. */
-const TOUCH_EVERY_MS = 60_000;
-
-/**
- * The member row behind an address, read ONCE PER REQUEST.
- *
- * Every server-rendered page asks who is here, and several parts of one page
- * ask it separately — the header, the list, the page itself — each of which
- * was a query. React's `cache` keeps the first answer for the rest of the
- * request, so the third component to ask costs nothing. Outside a render, in
- * a route handler, it is a plain read, as before.
- *
- * It carries everything a page wants from this row on the way past: whether
- * the member is still welcome, when they were last seen, and their standing
- * preferences. A preference is read by riding this query, never by adding
- * one — see `preferencesFor` — because a store that cost a query per page is
- * the thing one JSON column was chosen over a table to avoid.
- *
- * Keyed by the FOLDED address, so every caller asking about one member asks
- * the same question.
- */
-export const memberRowFor = cache(async (key: string) =>
-  prisma.member.findUnique({
-    where: { email: key },
-    select: {
-      id: true,
-      lastSeenAt: true,
-      bannedAt: true,
-      preferences: true,
-      timeZone: true,
-      /* XP rides this read for the same reason a preference does. `xpFlash` is
-         the toast a member has not been shown yet, and it must reach the
-         masthead on every page without a query of its own — see
-         `src/lib/xp/xpFlash.ts`. `id` comes along because `currentMemberId`
-         was paying for a second `findUnique` to get it. */
-      xp: true,
-      /* Both other totals, for the badge and the board's Everywhere: see
-         `xpForBadge` in `src/lib/xp/xpScope.ts`. Columns on the same row. */
-      xpEverywhere: true,
-      xpImported: true,
-      xpFlash: true,
-      /* And the end of their away spell, which is what `backFromAway` is keyed
-         on. A column on a row being read anyway, so "are they back" costs two
-         comparisons rather than a query — see `xpHabit.ts`. */
-      awayUntil: true,
-      /* And when they joined and how many games they have finished, which is
-         all an anniversary needs — comparisons on the same row, see
-         `anniversaryAwards` in `xpHabit.ts`. */
-      createdAt: true,
-      played: true,
-      /* And where they say they are, which is the third rung of the time-zone
-         order: a member with a country and no zone is guessed rather than left
-         on UTC. Another field off the same row — see `zoneGuess.ts`. */
-      country: true,
-    },
-  }),
-);
-
-/**
- * Marks a member as seen, and says whether they are still allowed in.
- *
- * Every server-rendered page asks who is here, and this is the read that
- * answers it, so the ban is checked in the same breath rather than costing a
- * query of its own. A banned member is "gone" from that moment: the next
- * request they make is the one that stops working.
- *
- * Cached per request like the read underneath it, so a page that asks three
- * times writes "seen" at most once — three callers handed the same stale
- * stamp would otherwise each have written it.
- */
-export const touchMember = cache(async (email: string): Promise<{ banned: boolean }> => {
-  const key = foldEmail(email);
-  const row = await memberRowFor(key);
-  if (row === null) return { banned: false };
-  if (row.bannedAt !== null) return { banned: true };
-  const now = new Date();
-  if (now.getTime() - row.lastSeenAt.getTime() >= TOUCH_EVERY_MS) {
-    /* The day's XP rides this write — see `awardDailyVisit`, which is handed
-       the row as it was, before "seen" is stamped over the old `lastSeenAt`. */
-    await prisma.member.update({ where: { email: key }, data: { lastSeenAt: now } });
-    await awardDailyVisit(row, now);
-  }
-  return { banned: false };
-});
-
-/** Whether this address is shut out, for the places that have not read the row already. */
-export async function isBanned(email: string): Promise<boolean> {
-  const row = await prisma.member.findUnique({
-    where: { email: foldEmail(email) },
-    select: { bannedAt: true },
-  });
-  return row?.bannedAt != null;
-}
-
-
-export async function updateProfile(email: string, update: ProfileUpdate): Promise<void> {
-  await prisma.member.update({ where: { email: foldEmail(email) }, data: update });
-}
 
 /**
  * The members behind a list of names, in one query.
@@ -419,11 +275,6 @@ export async function findMembersByNames(
 }
 
 /**
- * The member who plays under a name, however it was capitalised. A name is
- * how the site addresses somebody, so a name typed into an address bar or
- * printed beside a game has to find them; the address is the key underneath.
- */
-/**
  * A member by their opaque id, for an address that carries one.
  *
  * `/players/<id>` is what every link to a person builds now, so this is the
@@ -455,6 +306,11 @@ export async function findMemberById(id: string): Promise<NamedMember | null> {
   return row;
 }
 
+/**
+ * The member who plays under a name, however it was capitalised. A name is
+ * how the site addresses somebody, so a name typed into an address bar or
+ * printed beside a game has to find them; the address is the key underneath.
+ */
 export async function findMemberByName(name: string): Promise<NamedMember | null> {
   const wanted = name.trim();
   if (wanted === "") return null;

@@ -74,30 +74,24 @@ export async function acrossTheBoard(
  * in, and the record page has answered it this way for any reader since the
  * conversation was put on it.
  *
- * One read for both seats rather than one each: the ids are known before
- * anything is looked up, so there is no reason to go back to the database
- * twice.
+ * BY MEMBER ID, both the reader and the seats. The ignore list was kept by
+ * address, so this read each seat's member row to find the address to ask with —
+ * and a member who came in with an invite code has none, so could not be muted.
+ * The list is kept by id now, which is what a seat already holds.
  */
 export async function mutedColours(
-  reader: string | null,
+  readerId: string | null,
   seats: SeatIds,
 ): Promise<Stone[]> {
-  if (reader === null) return [];
+  if (readerId === null) return [];
   const pairs = [
     [STONES.black, seats.blackMemberId],
     [STONES.white, seats.whiteMemberId],
   ] as const;
-  const held = pairs.map(([, id]) => id).filter((id): id is string => id !== null);
-  const rows =
-    held.length === 0
-      ? []
-      : await prisma.member.findMany({ where: { id: { in: held } }, select: { id: true, email: true } });
 
   const muted: Stone[] = [];
   for (const [stone, memberId] of pairs) {
-    // The ignore list is still keyed by address, so theirs is read off the row.
-    const address = rows.find((row) => row.id === memberId)?.email ?? null;
-    if (address !== null && (await isIgnoring(reader, address))) muted.push(stone);
+    if (memberId !== null && memberId !== readerId && (await isIgnoring(readerId, memberId))) muted.push(stone);
   }
   return muted;
 }

@@ -51,6 +51,18 @@ vi.mock("@/lib/site/siteStore", () => ({ registrationMode: async () => mode }));
 vi.mock("@/lib/invite/inviteStore", () => ({
   redeemInviteCode: async () => ({ ok: true, code: "hoshi-kuma-nami" }),
 }));
+/*
+ * The account a code makes for somebody with no Google identity — no address,
+ * a placeholder name to change on the welcome. Faked, like `admitMember` above,
+ * because the question here is WHETHER a door makes a member, not how the row
+ * is written.
+ */
+const admitInviteMember = vi.fn(async () => ({ id: "m-guest", name: "Guest ABCD" }));
+vi.mock("@/lib/auth/inviteMember", () => ({
+  admitInviteMember: () => admitInviteMember(),
+  attachAddress: async () => false,
+  legacyInviteMemberId: async () => "m-legacy",
+}));
 
 const { GET: googleDoor } = await import("./google/route");
 const { POST: codeDoor } = await import("./route");
@@ -144,20 +156,34 @@ describe("a stranger arriving with a code", () => {
   });
 
   /*
-   * A browser redeeming a code with no Google identity behind it makes no
-   * member row — it is a pass for this browser, which is what an invite has
-   * always been for somebody with no Google account. Unchanged by all three
-   * modes, and asserted so that tightening the door cannot quietly start
-   * turning those away as well.
+   * A browser redeeming a code with no Google identity behind it USED to make no
+   * member row — a pass for this browser and nothing more — and so it was let in
+   * under every mode, closed included. John chose to give those players a full
+   * account, so the code makes a member now: an account with no address.
+   *
+   * Which makes it the same question the Google branch above asks, and it gets
+   * the same answer. `closed` means nobody new, and a code that still made members
+   * under it would be a door the panel says is shut and is not. So a code with no
+   * Google account makes a member under invite-only and open, and nothing under
+   * closed — refused before the code is spent.
    */
-  it("still lets a browser with no Google account in on a code, whatever the mode", async () => {
+  it("makes a member of a browser with no Google account on a code, except when the door is closed", async () => {
     signedInWithGoogle = null;
-    for (const each of ["invite-only", "open", "closed"]) {
+    for (const each of ["invite-only", "open"]) {
       mode = each;
+      admitInviteMember.mockClear();
       const response = await codeDoor(codePresented());
-      expect(response.status, `a codeholder with no account, under ${each}`).toBe(200);
+      expect(response.status, `a codeholder with no Google account, under ${each}`).toBe(200);
+      expect(await response.json(), "they are sent to choose a name").toMatchObject({ welcome: true });
+      expect(admitInviteMember, `${each} makes the account`).toHaveBeenCalled();
       expect(admitMember).not.toHaveBeenCalled();
     }
+
+    mode = "closed";
+    admitInviteMember.mockClear();
+    const refused = await codeDoor(codePresented());
+    expect(refused.status, "a code makes nobody new while the door is closed").toBe(401);
+    expect(admitInviteMember).not.toHaveBeenCalled();
   });
 });
 

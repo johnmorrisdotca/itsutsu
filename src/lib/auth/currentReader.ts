@@ -1,7 +1,6 @@
 import "server-only";
 
-import { currentSession } from "./currentSession";
-import { memberRowFor } from "./members";
+import { currentMemberRow, currentSession } from "./currentSession";
 import { readerFrom } from "./reader";
 import type { Reader } from "./reader.types";
 
@@ -17,12 +16,9 @@ import type { Reader } from "./reader.types";
  *
  * No extra read. `currentSession()` has already fetched the member row through
  * `touchMember`, and `memberRowFor` is cached per request, so the id comes off
- * the row already in hand — and an invite holder, with no address, costs no
- * member lookup at all.
+ * the row already in hand.
  */
 export async function currentReader(): Promise<Reader> {
-  const session = await currentSession();
-  const email = session?.email ? session.email.trim().toLowerCase() : null;
-  const row = email === null ? null : await memberRowFor(email);
+  const [session, row] = await Promise.all([currentSession(), currentMemberRow()]);
   return readerFrom(session, row?.id ?? null);
 }

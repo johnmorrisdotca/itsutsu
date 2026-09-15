@@ -12,15 +12,10 @@ export type Opponent = {
    * Their member id, which is how a game against them is asked for — and how
    * this list decides who is the reader, who is ignored, and who is already
    * listed.
-   *
-   * The address is still here because the ignore and buddy lists are KEPT by
-   * address — but nothing that offers a game or tells two people apart reads it
-   * any more. A computer player has no address at all, so the id was always the
-   * form that works for everybody, and it keeps members' addresses out of the
-   * markup of every page with a chooser on it.
    */
   id: string;
-  email: string;
+  /** Null for a member who came in with an invite code. Nothing that offers a game reads it. */
+  email: string | null;
   name: string;
   /** Here in the last half hour, so a hint can say so. */
   here: boolean;
@@ -30,43 +25,30 @@ export type Opponent = {
  * Everyone this member could ask for a game: whoever is about now, then the
  * people they play, with the ones they have ignored left out.
  *
- * Somebody you could ask means somebody who can answer. A kept record has a
- * name and a history and no address, so it is nobody to challenge — that is
- * why this is keyed on the address being there at all.
+ * Somebody you could ask means somebody who can answer — a person with an
+ * account. Both lists already are: who is here is members seen lately, which a
+ * program and a kept record never are, and a buddy list refuses anybody else.
+ * It used to be keyed on the address being there at all, which also left out
+ * every member who came in with an invite code.
  *
- * NOBODY FOR A READER WITH NO ACCOUNT. An invite holder is signed in and has no
- * address, so there is no buddy list to read and a challenge they sent would
- * be refused; the list is empty rather than a room full of offers the route
- * turns down.
+ * NOBODY FOR A READER WITH NO ACCOUNT: there is no buddy list to read and a
+ * challenge they sent would be refused.
  *
  * Gathered here rather than on a page because two pages ask it now: the games
  * page, where a game is started in a sentence, and the setup screen, where it
  * is settled in full. One list, so the same people are offered by both.
  */
-export async function fetchOpponents(reader: Pick<Reader, "email" | "memberId" | "hasAccount">): Promise<Opponent[]> {
-  if (!reader.hasAccount || reader.email === null) return [];
-  const [here, buddies, ignored] = await Promise.all([
-    fetchHereNow(),
-    fetchBuddies(reader.email),
-    ignoredMemberIds(reader.email),
-  ]);
+export async function fetchOpponents(reader: Pick<Reader, "memberId">): Promise<Opponent[]> {
+  const mine = reader.memberId;
+  if (mine === null) return [];
+  const [here, buddies, ignored] = await Promise.all([fetchHereNow(), fetchBuddies(mine), ignoredMemberIds(mine)]);
   const hereIds = new Set(here.map((entry) => entry.id));
   return [
     ...here
-      .filter((entry) => entry.email !== null && entry.id !== reader.memberId && !ignored.has(entry.id))
-      .map((entry) => ({
-        id: entry.id,
-        email: entry.email as string,
-        name: entry.name || (entry.email as string),
-        here: true,
-      })),
+      .filter((entry) => entry.id !== mine && !ignored.has(entry.id))
+      .map((entry) => ({ id: entry.id, email: entry.email, name: entry.name || entry.id, here: true })),
     ...buddies
-      .filter((buddy) => buddy.email !== null && !hereIds.has(buddy.id) && !ignored.has(buddy.id))
-      .map((buddy) => ({
-        id: buddy.id,
-        email: buddy.email as string,
-        name: buddy.name || (buddy.email as string),
-        here: false,
-      })),
+      .filter((buddy) => !hereIds.has(buddy.id) && !ignored.has(buddy.id))
+      .map((buddy) => ({ id: buddy.id, email: buddy.email, name: buddy.name || buddy.id, here: false })),
   ];
 }

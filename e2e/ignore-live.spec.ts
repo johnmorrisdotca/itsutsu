@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { memberContext } from "./members";
+import { memberContext, memberIdFor } from "./members";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -44,7 +44,7 @@ test.describe("ignoring somebody, in a live game", () => {
     const accepted = await mine.request.post(`/api/games/${game.id}/offer/accept`, {});
     expect(accepted.status(), await accepted.text()).toBe(200);
 
-    await mine.request.post("/api/ignores", { data: { email: loud.email } });
+    await mine.request.post("/api/ignores", { data: { memberId: await memberIdFor(loud.email) } });
     await theirs.request.post(`/api/games/${game.id}/moves`, {
       data: { token: game.blackToken, row: 4, col: 4 },
     });
@@ -71,7 +71,7 @@ test.describe("ignoring somebody, in a live game", () => {
     const stamp = Date.now().toString(36);
     const watcher = { email: `watcher-${stamp}@example.com`, name: `Watcher ${stamp}` };
     const theirs = await memberContext(browser, baseURL!, watcher);
-    await theirs.request.post("/api/ignores", { data: { email: loud.email } });
+    await theirs.request.post("/api/ignores", { data: { memberId: await memberIdFor(loud.email) } });
 
     const page = await theirs.newPage();
     await page.goto(`/games/gomoku/match/${game.id}`);

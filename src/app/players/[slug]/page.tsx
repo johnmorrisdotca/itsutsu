@@ -17,6 +17,7 @@ import { findMembersByNames } from "@/lib/auth/members";
 import { currentReader } from "@/lib/auth/currentReader";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { buddyMemberIds } from "@/lib/social/buddies";
+import { listable } from "@/lib/social/listable";
 import { ignoredMemberIds } from "@/lib/social/ignores";
 import { fetchTimeGiftRecord } from "@/lib/history/timeGifts";
 import { findLegacyPlayer, foldedInto, legaciesForName } from "@/lib/legacy/legacyPlayers.data";
@@ -73,7 +74,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
    * by id: an invite holder has no address, and an address is only how somebody
    * signs in, never who they are.
    */
-  const mine = reader.hasAccount ? reader.email : null;
+  const mine = reader.memberId;
   const [myBuddies, myIgnored] = await Promise.all([
     mine === null ? Promise.resolve(new Set<string>()) : buddyMemberIds(mine),
     mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),
@@ -103,14 +104,20 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
   if (!hasLiveData && linked.length === 0) notFound();
 
   /*
-   * Whether there is anybody here to ask. A kept record has no address and no
-   * id — Chibi never signed in — so there is nobody on the other end of an
+   * Whether there is anybody here to ask. A kept record is nobody with an
+   * account — Chibi never signed in — so there is nobody on the other end of an
    * invitation, and offering one would be offering a game that cannot happen.
+   *
+   * By the row's markers rather than by an address being there: a member who
+   * came in with an invite code has no address and is somebody to ask. A program
+   * is askable whenever it has an id. See `listable`.
    */
+  const person = listable({ botTier: member?.botTier ?? null, unclaimableBecause: member?.unclaimableBecause ?? null });
   const askable =
     reader.hasAccount &&
     member?.id !== reader.memberId &&
-    (member?.botTier ? member.id !== undefined : Boolean(member?.email));
+    member?.id !== undefined &&
+    (Boolean(member.botTier) || person);
 
   /*
    * The name this page is about, decided once. It is what the heading prints
@@ -254,7 +261,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         )}
         <Whereabouts city={member?.city} timeZone={member?.timeZone} />
         <PlayerActions
-          email={member?.email ?? null}
+          person={person}
           memberId={member?.id}
           isBuddy={member?.id !== undefined && myBuddies.has(member.id)}
           ignoring={member?.id !== undefined && myIgnored.has(member.id)}

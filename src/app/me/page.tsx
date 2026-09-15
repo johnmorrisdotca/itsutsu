@@ -14,7 +14,7 @@ import { DayZoneNote } from "@/components/mine/DayZoneNote";
 import { ProfileForm } from "@/components/mine/ProfileForm";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
-import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { currentMemberRow, currentSession } from "@/lib/auth/currentSession";
 import { fetchProfile } from "@/lib/auth/members";
 import { gameDefaultsFrom } from "@/components/game/gameDefaults";
 import { phraseStatus } from "@/lib/phrase/phraseStore";
@@ -90,22 +90,28 @@ const TABS: Tab[] = [
  * The member's own page: the name others see, the record it has earned, game
  * by game, and the way to bring a friend in. A new member lands here first,
  * with a welcome, because the name is the one thing the site needs to ask.
+ *
+ * ANY MEMBER, BY ID. It sent anybody without an address back to the door —
+ * which was everybody who came in with an invite code, who then had nowhere to
+ * choose a name, set a board or see their XP.
  */
 export default async function MePage({ searchParams }: PageProps<"/me">) {
   const params = await searchParams;
-  const me = await currentSession();
-  if (!me?.email) redirect("/join?next=%2Fme");
+  const [me, row] = await Promise.all([currentSession(), currentMemberRow()]);
+  if (me === null || row === null) redirect("/join?next=%2Fme");
 
   /*
    * The member's own row, and nothing else, on every visit. Each tab asks for
    * what it alone needs — the record is four queries, and the page used to
    * run all four for somebody who had come to change their time zone.
    */
-  const member = await fetchProfile(me.email);
-  const name = member?.name ?? me.name ?? "";
+  const member = await fetchProfile(row.id);
+  const name = member?.name ?? row.name;
   const welcome = params.welcome === "1";
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
   const open = activeTab(TABS, params.view);
+  /* No address: in by invite code, and this browser is their only way back until they add one. */
+  const addressless = !member?.email;
 
   /*
    * Read only for the tab that shows it — the same rule the record and the
@@ -113,12 +119,10 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
    * than the store's (`setAt` as a date, `mayRemovePhrase`), so the client
    * component reads exactly what it would get back from `GET /api/me/phrase`.
    *
-   * By id, from `currentMemberId`, and not from `member` above: `MemberProfile`
-   * is read by email and does not carry the id, and a phrase is a credential on
-   * a specific row — the one thing this must never be tempted to look up by
-   * name or address instead.
+   * By id — a phrase is a credential on a specific row, the one thing this must
+   * never be tempted to look up by name or address instead.
    */
-  const myId = open === "words" ? await currentMemberId() : null;
+  const myId = open === "words" ? row.id : null;
   const phraseFacts = myId !== null ? await phraseStatus(myId) : null;
   const phraseInitial = {
     set: phraseFacts?.set ?? false,
@@ -137,9 +141,23 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
             <Paired en="Welcome" kanji="ようこそ" kanjiClassName="text-sm font-normal opacity-70" />
           </h1>
           <p className="text-sm text-ink-soft">
-            You are in. One question before the board: what should the other players call you? Google&apos;s name is
-            filled in; change it if you like.
+            You are in. One question before the board: what should the other players call you?{" "}
+            {addressless
+              ? "Your account has a name to be going on with; change it to the one you want."
+              : "Google’s name is filled in; change it if you like."}
           </p>
+          {addressless ? (
+            /*
+             * THE ONE THING AN ACCOUNT MADE BY A CODE IS MISSING, SAID ON THE FIRST
+             * PAGE IT SEES. It has no address, so this browser's cookie is the only
+             * way back in — lost with the browser, or at the end of the month. Four
+             * words fix that, and they are one tab away.
+             */
+            <p className="text-sm text-ink-soft" data-testid="welcome-no-address">
+              This browser is how you get back in. To sign in on another device, or after a month, add four
+              words on the Words tab once you have chosen a name.
+            </p>
+          ) : null}
         </section>
       ) : null}
 
@@ -151,7 +169,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
           ) : null}
           <div className="flex flex-col">
             <h1 className="text-xl font-semibold" data-testid="me-name">{name || "Unnamed"}</h1>
-            <span className="text-xs text-muted">{me.email}</span>
+            {member?.email ? <span className="text-xs text-muted">{member.email}</span> : null}
           </div>
         </div>
         <NameForm initial={name} next={next} />
@@ -169,14 +187,11 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
           {open === "record" ? <MyRecord name={name} /> : null}
 
           {/*
-            The ledger. Handed the address and nothing else: the total and the
-            level ride `memberRowFor`, which this render has already run and
-            cached, so the standing costs no query and the level is a lookup over
-            the curve. `fetchProfile`'s row above could not answer it —
-            `MemberProfile` is declared over a session-shaped `Member` that knows
-            nothing about XP — and that is worth knowing before reaching for it.
+            The ledger. The total and the level ride the member row this render
+            has already read and cached, so the standing costs no query and the
+            level is a lookup over the curve.
           */}
-          {open === "xp" ? <MyXp email={me.email} params={params} /> : null}
+          {open === "xp" ? <MyXp params={params} /> : null}
 
           {open === "profile" ? (
             <div className="flex flex-col gap-3" data-testid="my-profile">
@@ -227,7 +242,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
             </div>
           ) : null}
 
-          {open === "people" ? <MyPeople email={me.email} /> : null}
+          {open === "people" ? <MyPeople memberId={row.id} /> : null}
         </section>
       )}
     </Page>

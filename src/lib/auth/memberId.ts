@@ -82,6 +82,20 @@ export function makeMemberId(random: () => number = Math.random): string {
 }
 
 /**
+ * An id made from bytes rather than drawn: the same bytes always give the same
+ * id. For the one id that has to come out identical on two requests that cannot
+ * see each other — see `legacyInviteMemberId`. Same alphabet and length as a
+ * drawn one, so nothing downstream can tell them apart.
+ */
+export function memberIdFromBytes(bytes: Uint8Array): string {
+  let id = "";
+  for (let index = 0; index < LENGTH; index += 1) {
+    id += ALPHABET[bytes[index % bytes.length] % ALPHABET.length];
+  }
+  return id;
+}
+
+/**
  * Why a row may never be claimed by a real login, or null when it may.
  *
  * A reason rather than a flag: it carries the same fact plus the thing an

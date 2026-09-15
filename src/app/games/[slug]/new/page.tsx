@@ -45,8 +45,8 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
 
   const reader = await currentReader();
   const [defaults, opponents, seats] = await Promise.all([
-    // Kept on the account, so an invite holder — no account — opens at the site's own.
-    gameDefaultsFor(reader.email),
+    // Kept on the account, by member id; a session with no member opens at the site's own.
+    gameDefaultsFor(reader.memberId),
     fetchOpponents(reader),
     seatsToSitAt(),
   ]);

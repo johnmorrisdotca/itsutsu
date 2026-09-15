@@ -102,7 +102,6 @@
 import { Prisma } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 
-import { foldEmail } from "@/lib/auth/members";
 import { prisma } from "@/lib/prisma";
 
 import { awardXp } from "./awardXp";
@@ -207,7 +206,7 @@ describe("backfilling the XP ledger", () => {
           },
         }),
         prisma.xpEvent.findMany({ select: { memberId: true, type: true, subject: true, dayKey: true } }),
-        prisma.buddy.findMany({ select: { owner: true, buddy: true, createdAt: true } }),
+        prisma.buddy.findMany({ select: { ownerId: true, buddyId: true, createdAt: true } }),
         ledgerSums(),
       ]);
 
@@ -223,17 +222,9 @@ describe("backfilling the XP ledger", () => {
       const before = ledgerDisagreements(members, sums);
       reportDisagreements("before", before);
 
-      /* The buddy list is keyed by two folded ADDRESSES and the replay is keyed
-         by member id, so the folding happens here — once, from the same
-         `foldEmail` the live path uses — rather than inside a pure planner. */
-      const idFor = new Map<string, string>();
-      for (const member of members) {
-        if (member.email !== null) idFor.set(foldEmail(member.email), member.id);
-      }
-      const buddies = buddyRows.flatMap((row): BackfillBuddy[] => {
-        const link = buddyLinkFor(row, idFor);
-        return link === null ? [] : [link];
-      });
+      /* The buddy list is keyed by member id, as the replay is, so each row is a
+         link as it stands. It was two folded addresses translated here first. */
+      const buddies: BackfillBuddy[] = buddyRows.map((row) => buddyLinkFor(row));
 
       const plan = planBackfill({ members, games, buddies, held });
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isAdminEmail } from "@/lib/auth/admin";
 import { authOptions } from "@/lib/auth/google";
+import { attachAddress } from "@/lib/auth/inviteMember";
 import { admitMember, findMember, foldEmail } from "@/lib/auth/members";
 import { safeDestination } from "@/lib/auth/redirect";
 import {
@@ -12,6 +13,7 @@ import {
   expiryInDays,
   sessionCookieOptions,
   signSession,
+  verifySession,
 } from "@/lib/auth/session";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
 import { mayJoin } from "@/lib/site/site";
@@ -23,9 +25,9 @@ import { registrationMode } from "@/lib/site/siteStore";
  * The gate in `proxy.ts` reads one signed cookie and knows nothing about
  * OAuth. A completed Google sign-in is exchanged here for the same cookie an
  * invite code produces — if the address is welcome. The operator's address
- * gets the operator's cookie; a member's gets a member's, carrying their name
- * and picture; anyone else is sent back to the door, where the Google identity
- * waits for the invite code that will make them a member.
+ * gets the operator's cookie; a member's gets a member's, carrying their id,
+ * name and picture; anyone else is sent back to the door, where the Google
+ * identity waits for the invite code that will make them a member.
  *
  * Both lists are consulted here on every sign-in rather than trusted from the
  * OAuth callback, so removing somebody takes effect on their next visit.
@@ -45,13 +47,31 @@ export async function GET(request: Request) {
 
   if (isAdminEmail(email)) {
     // The operator is a member too: listed, with a profile, like everyone else.
-    await admitMember({ email, name, picture });
+    const operator = await admitMember({ email, name, picture });
     return grant(
-      { kind: "admin", email: foldEmail(email), name, picture, exp: expiryInDays(ADMIN_SESSION_DAYS) },
+      { kind: "admin", email: foldEmail(email), memberId: operator.id, name, picture, exp: expiryInDays(ADMIN_SESSION_DAYS) },
       ADMIN_SESSION_DAYS,
       destination,
       url.origin,
     );
+  }
+
+  /*
+   * A MEMBER WHO CAME IN WITH A CODE, NOW SIGNING IN WITH GOOGLE ON THE SAME
+   * BROWSER, keeps the account they already have. The address Google has just
+   * proved becomes a second way into it — beside the cookie — and their id, games,
+   * standing, buddies and XP stay exactly where they are.
+   *
+   * Only when the address is nobody's yet. An address that is already a member is
+   * somebody who played as a guest AND has a Google account: they are signed in
+   * as the Google account, and the guest account stays as it is, untouched and
+   * reachable from this browser no longer. Merging two accounts' histories is a
+   * decision about somebody's record, and it is the operator's to make, not a
+   * side effect of pressing a sign-in button.
+   */
+  const here = await verifySession(cookieFrom(request));
+  if (here?.kind === "player" && here.memberId && !here.email && (await findMember(email)) === null) {
+    await attachAddress(here.memberId, email);
   }
 
   /*
@@ -82,11 +102,28 @@ export async function GET(request: Request) {
   // The first visit is the registration: choose the name other players will see.
   const welcome = `/me?welcome=1&next=${encodeURIComponent(destination)}`;
   return grant(
-    { kind: "player", email: foldEmail(email), name: admitted.name, picture, exp: expiryInDays(PLAYER_SESSION_DAYS) },
+    {
+      kind: "player",
+      email: foldEmail(email),
+      memberId: admitted.id,
+      name: admitted.name,
+      picture,
+      exp: expiryInDays(PLAYER_SESSION_DAYS),
+    },
     PLAYER_SESSION_DAYS,
     admitted.created ? welcome : destination,
     url.origin,
   );
+}
+
+/** This site's own session cookie off the request, or undefined. */
+function cookieFrom(request: Request): string | undefined {
+  return request.headers
+    .get("cookie")
+    ?.split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${SESSION_COOKIE}=`))
+    ?.slice(SESSION_COOKIE.length + 1);
 }
 
 async function grant(

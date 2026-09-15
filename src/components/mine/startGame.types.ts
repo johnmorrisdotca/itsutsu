@@ -26,7 +26,8 @@ export type SeatOnBoard = {
 export type Opponent = {
   /** Their member id: how the sentence names them on the way to the setup screen. */
   id: string;
-  email: string;
+  /** Null for a member who came in with an invite code. Nothing that offers a game reads it. */
+  email: string | null;
   name: string;
   /** Here in the last half hour, so the hint can say so. */
   here: boolean;

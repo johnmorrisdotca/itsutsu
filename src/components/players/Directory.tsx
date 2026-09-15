@@ -259,7 +259,7 @@ export async function Directory({
     currentReader(),
   ]);
   // By member id, and only for an account: the rows' actions are the ones an invite holder cannot use.
-  const mine = reader.hasAccount ? reader.email : null;
+  const mine = reader.memberId;
   const [buddies, ignored] = await Promise.all([
     mine === null ? Promise.resolve(new Set<string>()) : buddyMemberIds(mine),
     mine === null ? Promise.resolve(new Set<string>()) : ignoredMemberIds(mine),

@@ -59,7 +59,8 @@ export function HereNowPanel({
                 {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
               </span>
               <RowActions>
-                {me !== null && entry.email !== null ? (
+                {/* Everybody here is a member seen lately — a person, with or without an address. */}
+                {me !== null ? (
                   <ChallengeButton memberId={entry.id} label="Challenge" />
                 ) : null}
               </RowActions>

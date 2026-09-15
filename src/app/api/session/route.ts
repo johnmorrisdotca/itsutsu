@@ -7,6 +7,8 @@ import { getServerSession } from "next-auth";
 
 import { isOperatorLogin } from "@/lib/auth/admin";
 import { authOptions } from "@/lib/auth/google";
+import { admitInviteMember, legacyInviteMemberId } from "@/lib/auth/inviteMember";
+import { memberKeyOf } from "@/lib/auth/memberKey";
 import { admitMember, findMember, foldEmail, isBanned, touchMember } from "@/lib/auth/members";
 import { mayJoin } from "@/lib/site/site";
 import { registrationMode } from "@/lib/site/siteStore";
@@ -18,6 +20,7 @@ import {
   sessionCookieOptions,
   signSession,
   verifySession,
+  type Session,
 } from "@/lib/auth/session";
 import { redeemInviteCode } from "@/lib/invite/inviteStore";
 
@@ -37,30 +40,68 @@ const signInSchema = z.union([
   }),
 ]);
 
-/** Who the caller is, for a page deciding what to show. */
-export async function GET(request: Request) {
-  const cookie = request.headers
+const DAY_MS = 86_400_000;
+
+/** This site's own session cookie off the request, or undefined. */
+function cookieFrom(request: Request): string | undefined {
+  return request.headers
     .get("cookie")
     ?.split(";")
     .map((part) => part.trim())
     .find((part) => part.startsWith(`${SESSION_COOKIE}=`))
     ?.slice(SESSION_COOKIE.length + 1);
+}
 
-  const session = await verifySession(cookie);
+/**
+ * Who the caller is, for a page deciding what to show.
+ *
+ * AND WHERE AN INVITE COOKIE FROM BEFORE ACCOUNTS BECOMES ONE. A browser that
+ * redeemed a code before a code made a member holds a session with no member in
+ * it: signed in, and able to do little. Every page's account menu asks this route
+ * who is here, so this is the first request such a browser makes that can both
+ * write a member and hand back a cookie naming them. Its id is derived from the
+ * cookie, so the two parts of a page that ask at once make one member, not two —
+ * see `legacyInviteMemberId`. The cookie keeps the expiry it had.
+ */
+export async function GET(request: Request) {
+  const cookie = cookieFrom(request);
+  let session = await verifySession(cookie);
+  let reissued: { token: string; days: number } | null = null;
+
+  if (cookie !== undefined && session?.kind === "player" && !session.memberId && !session.email && session.code) {
+    const code = session.code;
+    const member = await legacyInviteMemberId(cookie)
+      .then((id) => admitInviteMember(code, id))
+      .catch((error: unknown) => {
+        console.error("Could not make a member for an invite session.", error);
+        return null;
+      });
+    if (member !== null) {
+      session = { ...session, memberId: member.id, name: member.name };
+      const token = await signSession(session);
+      if (token !== null) {
+        reissued = { token, days: Math.max(1, Math.ceil((session.exp * 1000 - Date.now()) / DAY_MS)) };
+      }
+    }
+  }
+
   // Every page asks who is here; that is also how the site knows who is here.
-  if (session?.email) await touchMember(session.email).catch(() => undefined);
-  return NextResponse.json(
+  const key = memberKeyOf(session);
+  if (key !== null) await touchMember(key.by, key.value).catch(() => undefined);
+  const response = NextResponse.json(
     {
       signedIn: session !== null,
       admin: session?.kind === "admin",
       email: session?.email ?? null,
       name: session?.name ?? null,
       picture: session?.picture ?? null,
-      /** A member came in by Google; an invite-only visitor has no address. */
-      member: Boolean(session?.email),
+      /** Whether there is a member behind this session — by Google or by invite code alike. */
+      member: key !== null,
     },
     { headers: { "Cache-Control": "no-store" } },
   );
+  if (reissued !== null) response.cookies.set(SESSION_COOKIE, reissued.token, sessionCookieOptions(reissued.days));
+  return response;
 }
 
 export async function POST(request: Request) {
@@ -97,35 +138,38 @@ export async function POST(request: Request) {
       );
     }
 
+    /*
+     * A code redeemed while a Google identity is waiting at the door makes
+     * that address a member: from now on Google alone lets them in, on any
+     * device. A code redeemed with no identity behind it makes a member too —
+     * one with no address, whose way back in is this browser's cookie.
+     *
+     * Asked BEFORE the code is spent, so a door that is going to refuse does
+     * not use up somebody's invitation doing it.
+     */
+    const google = await getServerSession(authOptions);
+    const email = google?.user?.email ?? null;
+    // A shut account is shut whatever code is presented at the door.
+    if (email !== null && (await isBanned(email))) return refused();
+    /*
+     * The only other place a stranger becomes a member. A code IS the thing
+     * `invite-only` asks for, so it passes; `closed` turns it away, because a
+     * mode that let last week's code still make members would not be the mode
+     * the panel says it is.
+     *
+     * Asked only of a stranger. An address already a member never reaches
+     * the question — `admitMember` refreshes the row it finds — so no setting
+     * here can shut out somebody already in. A code with no Google identity is
+     * always a stranger: it is about to make a member.
+     */
+    const stranger = email === null || (await findMember(email)) === null;
+    if (stranger && !mayJoin(await registrationMode(), true)) return refused();
+
     const redeemed = await redeemInviteCode(parsed.data.code);
     // Every failure answers identically: a guesser learns nothing from which.
     if (!redeemed.ok) return refused();
 
-    /*
-     * A code redeemed while a Google identity is waiting at the door makes
-     * that address a member: from now on Google alone lets them in, on any
-     * device. A code redeemed with no identity behind it lets this browser
-     * in, as it always has.
-     */
-    const google = await getServerSession(authOptions);
-    const email = google?.user?.email;
-    if (email) {
-      // A shut account is shut whatever code is presented at the door.
-      if (await isBanned(email)) return refused();
-      /*
-       * The second door, and the only other place a stranger becomes a member.
-       * A code IS the thing `invite-only` asks for, so it passes; `closed` turns
-       * it away, because a mode that let last week's code still make members
-       * would not be the mode the panel says it is.
-       *
-       * Asked only of a stranger. An address already a member never reaches
-       * this — `admitMember` refreshes the row it finds — so no setting here can
-       * shut out somebody already in, and the code itself stays as valid as it
-       * was for everybody else.
-       */
-      if ((await findMember(email)) === null && !mayJoin(await registrationMode(), true)) {
-        return refused();
-      }
+    if (email !== null) {
       const member = await admitMember({
         email,
         name: google?.user?.name ?? "",
@@ -136,18 +180,22 @@ export async function POST(request: Request) {
         {
           kind: "player",
           email: foldEmail(member.email),
+          memberId: member.id,
           name: member.name,
           picture: member.picture,
           code: redeemed.code,
           exp: expiryInDays(PLAYER_SESSION_DAYS),
         },
         PLAYER_SESSION_DAYS,
+        member.created,
       );
     }
 
+    const member = await admitInviteMember(redeemed.code);
     return await grant(
-      { kind: "player", code: redeemed.code, exp: expiryInDays(PLAYER_SESSION_DAYS) },
+      { kind: "player", memberId: member.id, name: member.name, code: redeemed.code, exp: expiryInDays(PLAYER_SESSION_DAYS) },
       PLAYER_SESSION_DAYS,
+      true,
     );
   } catch (error) {
     console.error(error);
@@ -186,10 +234,11 @@ function refused(): NextResponse {
   );
 }
 
-async function grant(
-  session: Parameters<typeof signSession>[0],
-  days: number,
-): Promise<NextResponse> {
+/**
+ * The cookie, and the answer the door reads. `welcome` says a member was just
+ * made, so the door sends them to choose a name before anything else.
+ */
+async function grant(session: Session, days: number, welcome = false): Promise<NextResponse> {
   const token = await signSession(session);
   if (token === null) {
     // No AUTH_SECRET: refuse rather than hand out a session nothing can verify.
@@ -197,7 +246,7 @@ async function grant(
   }
 
   const response = NextResponse.json(
-    { signedIn: true, admin: session.kind === "admin" },
+    { signedIn: true, admin: session.kind === "admin", welcome },
     { headers: { "Cache-Control": "no-store" } },
   );
   response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(days));

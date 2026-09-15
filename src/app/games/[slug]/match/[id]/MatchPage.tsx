@@ -29,7 +29,7 @@ import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { seatPickList } from "@/lib/phrase/seatPick";
 import { markSeatTaken, resolveSeat, seatIsFree } from "@/lib/history/seats";
-import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { currentReader } from "@/lib/auth/currentReader";
 import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
@@ -146,8 +146,8 @@ export async function MatchPage({
   if (tokens !== null && isHotSeat(tokens) && claim !== null) {
     // The member's own board, so a phone and a laptop set out the same one.
     const reader = await currentReader();
-    const board = await appearanceFor(reader.email);
-    const defaults = await gameDefaultsFor(reader.email);
+    const board = await appearanceFor(reader.memberId);
+    const defaults = await gameDefaultsFor(reader.memberId);
     return (
       <Page width="wide">
         <SiteHeader />
@@ -170,7 +170,8 @@ export async function MatchPage({
    * `acrossTheBoard.ts`, which also keeps the reason the second one is asked
    * for a WATCHER and not only for a player.
    */
-  const mine = await currentEmail();
+  // Muted by member id: the ignore list is kept that way, and so is every seat.
+  const mine = await currentMemberId();
   const opponent = tokens === null ? null : await acrossTheBoard(seat, tokens, game);
   const ignoring = tokens === null ? [] : await mutedColours(mine, tokens);
 
@@ -337,7 +338,7 @@ async function LiveMatch({
    * the account followed them into a local game and stopped at the door of a
    * real one.
    */
-  const appearance = appearanceFrom(await appearanceFor(await currentEmail()));
+  const appearance = appearanceFrom(await appearanceFor(await currentMemberId()));
 
   /*
    * A seat holder opening the game is that seat's holder arriving, and until

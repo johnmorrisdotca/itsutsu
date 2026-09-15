@@ -21,7 +21,17 @@ let events: Event[] = [];
 let upserts = 0;
 const members = new Map<
   string,
-  { id: string; email: string | null; botTier: string | null; timeZone: string; xp: number; xpFlash: unknown; xpLastAt: Date | null }
+  {
+    id: string;
+    email: string | null;
+    botTier: string | null;
+    /** Null for a person with an account — what the buddy list checks, see `listable`. */
+    unclaimableBecause: string | null;
+    timeZone: string;
+    xp: number;
+    xpFlash: unknown;
+    xpLastAt: Date | null;
+  }
 >();
 
 function keyOf(row: { memberId: string; type: string; subject: string }): string {
@@ -103,6 +113,7 @@ function member(id: string, email: string | null, extra: { botTier?: string } = 
     id,
     email,
     botTier: extra.botTier ?? null,
+    unclaimableBecause: null,
     timeZone: "",
     xp: 0,
     xpFlash: null,
@@ -331,12 +342,17 @@ describe("answering a challenge", () => {
   });
 });
 
+/*
+ * BY MEMBER ID, which is how the list is kept now — so a member who came in with
+ * an invite code, with no address, keeps and earns buddies like anybody else.
+ * `pal` below has no address on purpose.
+ */
 describe("keeping a buddy list", () => {
   it("pays the first buddy and the buddy, through addBuddy", async () => {
     member("me", "me@example.test");
-    member("pal", "pal@example.test");
+    member("pal", null);
 
-    await addBuddy("Me@example.test", "PAL@example.test");
+    await addBuddy("me", "pal");
 
     expect(upserts).toBe(1);
     expect(ledger("me")).toEqual(["firstBuddy ", "buddyAdded pal"]);
@@ -346,8 +362,8 @@ describe("keeping a buddy list", () => {
     member("me", "me@example.test");
     member("pal", "pal@example.test");
 
-    await addBuddy("me@example.test", "pal@example.test");
-    await addBuddy("me@example.test", "pal@example.test");
+    await addBuddy("me", "pal");
+    await addBuddy("me", "pal");
 
     expect(paid("me", "buddyAdded")).toBe(1);
     expect(paid("me", "firstBuddy")).toBe(1);
@@ -358,8 +374,8 @@ describe("keeping a buddy list", () => {
     member("pal", "pal@example.test");
     member("other", "other@example.test");
 
-    await addBuddy("me@example.test", "pal@example.test");
-    await addBuddy("me@example.test", "other@example.test");
+    await addBuddy("me", "pal");
+    await addBuddy("me", "other");
 
     expect(paid("me", "buddyAdded")).toBe(2);
     expect(paid("me", "firstBuddy")).toBe(1);
@@ -368,7 +384,7 @@ describe("keeping a buddy list", () => {
   it("pays nothing, and writes nothing, for somebody who is not a member", async () => {
     member("me", "me@example.test");
 
-    expect(await addBuddy("me@example.test", "nobody@example.test")).toBe(false);
+    expect(await addBuddy("me", "nobody")).toBe(false);
 
     expect(upserts).toBe(0);
     expect(ledger("me")).toEqual([]);

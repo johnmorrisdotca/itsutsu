@@ -1,4 +1,3 @@
-import { currentEmail } from "@/lib/auth/currentSession";
 import { zoneStandingFor } from "@/lib/auth/memberZone";
 import { ZONE_FROM, worthAsking } from "@/lib/auth/zoneGuess";
 
@@ -19,12 +18,12 @@ import { DeviceTimeZone } from "./DeviceTimeZone";
  * the same value back on every page. The bare floor sends null: nothing is held,
  * and whatever the device reports is better than UTC by default.
  *
- * `currentEmail` and `memberRowFor` are both `cache()`d per request and the
- * masthead above has already called both, so this costs no query on any page.
- * A signed-out reader has no row to record a zone on and gets nothing.
+ * The signed-in member's row is `cache()`d per request and the masthead above
+ * has already read it, so this costs no query on any page. A signed-out reader
+ * has no row to record a zone on and gets nothing.
  */
 export async function LearnTimeZone() {
-  const standing = await zoneStandingFor(await currentEmail());
+  const standing = await zoneStandingFor();
   if (standing === null || !worthAsking(standing.from)) return null;
   return <DeviceTimeZone held={standing.from === ZONE_FROM.guessed ? standing.zone : null} />;
 }

@@ -5,7 +5,7 @@ import { DayZoneNote } from "./DayZoneNote";
 import { AwardAbout } from "@/components/xp/AwardAbout";
 import { ABOUT_ON_A_DESK } from "@/components/xp/xp.constants";
 import { Paired } from "@/components/i18n/Paired";
-import { foldEmail, memberRowFor } from "@/lib/auth/members";
+import { currentMemberRow } from "@/lib/auth/currentSession";
 import { isRefusal } from "@/lib/api/paging";
 import { LevelName } from "@/components/xp/LevelName";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
@@ -217,15 +217,13 @@ function Headings() {
  * Which leaves exactly one read of its own: the page of the ledger.
  */
 export async function MyXp({
-  email,
   params,
 }: {
-  /** The signed-in address. Folded here, so the cached read is the same read. */
-  email: string;
   /** The page's own search parameters: the cursor, the sort, and the open tab. */
   params: Record<string, string | string[] | undefined>;
 }) {
-  const row = await memberRowFor(foldEmail(email));
+  // The signed-in member's row, as the session names it — by id, however they came in.
+  const row = await currentMemberRow();
   if (row === null) {
     /*
      * THE OPERATOR IS NOT A MEMBER. `currentMemberId` answers null for the admin

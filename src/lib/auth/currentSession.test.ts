@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
-const touchMember = vi.fn(async () => ({ banned: false }));
+const touchMember = vi.fn<(by: string, value: string) => Promise<{ banned: boolean }>>(async () => ({ banned: false }));
+const memberRowFor = vi.fn(async () => null);
 const verifySession = vi.fn();
 const get = vi.fn(() => ({ value: "token" }));
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get }) }));
-vi.mock("./members", () => ({ touchMember }));
+vi.mock("./memberRow", () => ({ memberRowFor, touchMember }));
 vi.mock("./session", () => ({ SESSION_COOKIE: "session", verifySession }));
 
 const { currentSession } = await import("./currentSession");
@@ -16,25 +17,40 @@ const { currentSession } = await import("./currentSession");
  * "last seen" never moved past their first sign-in, so "who is here" quietly
  * read zero. This pins the wiring that fixes it: every call through
  * currentSession, which every page already makes, touches presence too.
+ *
+ * BY THE MEMBER THE SESSION NAMES: its id where it carries one, which every
+ * session made now does — a member who came in with an invite code has no
+ * address to be touched by — and the address on a Google cookie from before.
  */
 describe("currentSession touches presence", () => {
-  it("touches the signed-in member, so a page load counts as being here", async () => {
-    verifySession.mockResolvedValueOnce({ kind: "player", email: "aki@example.com" });
+  it("touches a member by the id their session carries", async () => {
+    verifySession.mockResolvedValueOnce({ kind: "player", memberId: "m-guest", code: "tea-house" });
     touchMember.mockClear();
 
     const session = await currentSession();
 
-    expect(session?.email).toBe("aki@example.com");
-    expect(touchMember).toHaveBeenCalledWith("aki@example.com");
+    expect(session?.memberId).toBe("m-guest");
+    expect(touchMember).toHaveBeenCalledWith("id", "m-guest");
   });
 
-  it("touches nothing for a browser with no session, or one with no email", async () => {
+  it("touches an older Google cookie by its folded address", async () => {
+    verifySession.mockResolvedValueOnce({ kind: "player", email: "Aki@Example.com" });
+    touchMember.mockClear();
+
+    const session = await currentSession();
+
+    expect(session?.email).toBe("Aki@Example.com");
+    expect(touchMember).toHaveBeenCalledWith("email", "aki@example.com");
+  });
+
+  it("touches nothing for a browser with no session, or one that names no member", async () => {
     verifySession.mockResolvedValueOnce(null);
     touchMember.mockClear();
     await currentSession();
     expect(touchMember).not.toHaveBeenCalled();
 
-    verifySession.mockResolvedValueOnce({ kind: "player" });
+    // An invite cookie from before a code made a member: `/api/session` makes one on its next visit.
+    verifySession.mockResolvedValueOnce({ kind: "player", code: "tea-house" });
     touchMember.mockClear();
     await currentSession();
     expect(touchMember).not.toHaveBeenCalled();
@@ -59,5 +75,12 @@ describe("a shut account", () => {
 
     expect(await currentSession()).toBeNull();
   });
-});
 
+  it("is shut for a member who came in with an invite code, too", async () => {
+    // It was not: presence and the ban were read by address, and this member has none.
+    verifySession.mockResolvedValueOnce({ kind: "player", memberId: "m-guest", code: "tea-house" });
+    touchMember.mockResolvedValueOnce({ banned: true });
+
+    expect(await currentSession()).toBeNull();
+  });
+});

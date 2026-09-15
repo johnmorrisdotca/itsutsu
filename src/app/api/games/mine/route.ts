@@ -3,15 +3,16 @@ import { NextResponse } from "next/server";
 
 import { NO_STORE, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
-import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { fetchMyGames } from "@/lib/history/myGames";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { seatClaims } from "@/lib/history/seatCookie";
 
 /**
  * The games this browser holds a seat in, sorted into a queue. "Mine" is
- * decided by the seat cookies on the request: there are no accounts, so the
- * cookies are the only thing that knows which seats are yours.
+ * decided by the seat cookies on the request and by the member the session
+ * names — by id, so a member who came in with an invite code has a queue and a
+ * keep-finished window like anybody else.
  *
  * The badge beside "Play" asks this on a timer from every page, so like the
  * board's own poll it is called far more often than a person clicks anything,
@@ -23,8 +24,8 @@ export async function GET(request: Request) {
     if (tooMany !== null) return tooMany;
 
     const claims = seatClaims((await cookies()).getAll());
-    const email = await currentEmail();
-    const queue = await fetchMyGames(claims, await currentMemberId(), new Date(), await keepFinishedDaysFor(email));
+    const memberId = await currentMemberId();
+    const queue = await fetchMyGames(claims, memberId, new Date(), await keepFinishedDaysFor(memberId));
     const { groups } = queue;
     return NextResponse.json(
       {

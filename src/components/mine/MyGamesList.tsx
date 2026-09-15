@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { currentEmail, currentMemberId } from "@/lib/auth/currentSession";
+import { currentMemberId } from "@/lib/auth/currentSession";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_FINISHED_PAGE, MY_FINISHED_PAGE_OPEN } from "@/lib/history/myFinished.sort";
 import {
@@ -137,7 +137,8 @@ export async function MyGamesList({
   cursor?: string | null;
 } = {}) {
   const claims = seatClaims((await cookies()).getAll());
-  const email = await currentEmail();
+  // The member, by id — however they came in. Null for a browser holding only seat cookies.
+  const memberId = await currentMemberId();
   /*
    * `?all=seated` IS NOT A GROUP, IT IS A SET A COUNT PROMISED: the games the
    * games-at-once limit counts, which a seat-refused notice links its number to.
@@ -145,14 +146,13 @@ export async function MyGamesList({
    * returns exactly `seatedLive` and nothing the count counted is dropped.
    */
   const seated = showAll === SEATED_ONLY;
-  if (claims.size === 0 && email === null && !seated) return null;
+  if (claims.size === 0 && memberId === null && !seated) return null;
   const now = new Date();
-  const memberId = await currentMemberId();
   const opened = openedGroup(showAll);
   const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor } : {};
   const queue = seated
     ? await fetchMyGames(new Map(), memberId, now, 0, {}, { only: SEATED_ONLY })
-    : await fetchMyGames(claims, memberId, now, await keepFinishedDaysFor(email), paging);
+    : await fetchMyGames(claims, memberId, now, await keepFinishedDaysFor(memberId), paging);
   const { groups } = queue;
   const shown = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   /*
@@ -164,7 +164,7 @@ export async function MyGamesList({
    * holding twenty games that nothing is waiting on them.
    */
   if (shown === 0 && opened === null && !seated) {
-    if (email === null) return null;
+    if (memberId === null) return null;
     return (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-empty">
         <h2 className="flex items-baseline gap-2 text-lg font-semibold">

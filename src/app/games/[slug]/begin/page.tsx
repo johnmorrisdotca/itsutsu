@@ -15,7 +15,6 @@ import { readSetUpAsked } from "@/components/live/setUpAsked";
 import { setUpFrom } from "@/components/live/setUpFrom";
 import { creationFor, openerIn, seatsFor } from "@/components/live/setUpStart";
 import { sittingAt } from "@/components/live/sittingAt";
-import { currentEmail } from "@/lib/auth/currentSession";
 import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { rulesPath, variantFor } from "@/lib/gomoku/slugs";
@@ -71,8 +70,8 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   const variant = variantFor(slug);
   if (variant === null) notFound();
 
-  const email = await currentEmail();
-  const defaults = await gameDefaultsFor(email);
+  // Where a new game starts for this member, by id: an invite-code member keeps defaults too.
+  const defaults = await gameDefaultsFor((await currentReader()).memberId);
   const want = readSetUpAsked(asked);
   const from = await setUpFrom({ variant, asked, defaults });
 

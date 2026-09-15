@@ -1,6 +1,5 @@
 import "server-only";
 
-import { foldEmail } from "@/lib/auth/members";
 import { botTierFor } from "@/lib/bots/bots";
 import { prisma } from "@/lib/prisma";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
@@ -112,12 +111,11 @@ export async function awardFinishedGameXp(
   sides: readonly XpSide[],
   now: Date = new Date(),
 ): Promise<void> {
-  const emails = new Map(sides.map((side) => [side.memberId, side.email]));
   const names = new Map(sides.map((side) => [side.memberId, side.name]));
 
   for (const side of sides) {
     const [opponent, sameResultsAtGame] = await Promise.all([
-      opponentFacts(game, side, emails, names),
+      opponentFacts(game, side, names),
       sameResultsAt(game, side),
     ]);
     const paid = await awardXp({
@@ -213,7 +211,6 @@ export function sameResultsWhere(memberId: string, variant: string, outcome: Str
 async function opponentFacts(
   game: { blackMemberId: string | null; whiteMemberId: string | null; id: string; variant: string; ladderCounts: boolean | null },
   side: XpSide,
-  emails: ReadonlyMap<string, string | null>,
   names: ReadonlyMap<string, string | null>,
 ): Promise<Opponent> {
   const id = otherSeat(game, side.memberId);
@@ -226,7 +223,7 @@ async function opponentFacts(
   }
 
   const [buddy, beatenMeBefore, ratings] = await Promise.all([
-    onMyBuddyList(side.email, emails.get(id) ?? null),
+    onMyBuddyList(side.memberId, id),
     hadBeatenMe({ me: side.memberId, them: id, game }),
     /* Only where the ladder counts the game, because only there can an upset be
        paid — an unrated or one-screen win asks nothing about ratings at all.
@@ -286,16 +283,17 @@ async function ratingsAsTheyStood(
  * Whether the opponent is on this member's buddy list. Null where it cannot be
  * asked.
  *
- * `Buddy` is keyed by two ADDRESSES, folded, so a seat bound to a member with no
- * address — a kept record, a computer — cannot be on one. That is a different
- * fact from "not a buddy", and it is reported as null so nothing pays on it.
+ * BY MEMBER ID on both sides, which is how `Buddy` is kept now. It was two folded
+ * addresses, so a win over a buddy who came in with an invite code — no address —
+ * could never pay. A program cannot be on a list at all (the list refuses one),
+ * and the caller never asks about a program's side.
  */
 async function onMyBuddyList(mine: string | null, theirs: string | null): Promise<boolean | null> {
   if (mine === null || theirs === null) return null;
   try {
     const row = await prisma.buddy.findUnique({
-      where: { owner_buddy: { owner: foldEmail(mine), buddy: foldEmail(theirs) } },
-      select: { owner: true },
+      where: { ownerId_buddyId: { ownerId: mine, buddyId: theirs } },
+      select: { ownerId: true },
     });
     return row !== null;
   } catch (problem) {

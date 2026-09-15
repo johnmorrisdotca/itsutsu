@@ -23,11 +23,10 @@ import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { ResultCard } from "@/components/history/ResultCard";
 import { resolveSeat } from "@/lib/history/seats";
 import { cookies } from "next/headers";
-import { currentSession } from "@/lib/auth/currentSession";
 import { currentReader } from "@/lib/auth/currentReader";
 import { Conversation } from "@/components/history/Conversation";
 import { fetchApplause, type ApplauseTally } from "@/lib/history/applause";
-import { ignoredEmails } from "@/lib/social/ignores";
+import { ignoredMemberIds } from "@/lib/social/ignores";
 import { appearanceFor, keepFinishedDaysFor } from "@/lib/auth/members";
 import { appearanceFrom } from "@/components/board/appearance";
 import type { Appearance } from "@/components/board/board.types";
@@ -69,7 +68,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * computer player does not have, and a game against one is where wanting
    * another immediately is the ordinary case rather than the rare one.
    */
-  const [reader, members, applause] = await Promise.all([
+  const [reader, members] = await Promise.all([
     currentReader(),
     prisma.game.findUnique({
       where: { id },
@@ -86,11 +85,14 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
         whiteToken: true,
       },
     }),
-    currentSession().then((session) => fetchApplause(id, session?.email ?? null)),
   ]);
+  /*
+   * BY MEMBER ID, EVERY READ ABOUT THIS READER: which mark is theirs, whom they
+   * have ignored, their board, how long they keep a finished game. Some of those
+   * were by address, which a member who came in with an invite code does not have.
+   */
   const myId = reader.memberId;
-  // By address, for the reads still KEPT by address: the ignore list, the account's board, how long it keeps a finished game.
-  const mine = reader.email;
+  const applause = await fetchApplause(id, myId);
   /*
    * By the member's id, not by their address.
    *
@@ -118,20 +120,6 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
         : members.blackMemberId;
 
   /*
-   * The two seats' addresses, for the two things that are addressed rather
-   * than identified: a challenge is sent to somebody's email, and the ignore
-   * list is still kept by address. One read serves both.
-   */
-  const seatIds = [members?.blackMemberId, members?.whiteMemberId].filter((one) => one !== null && one !== undefined);
-  const seatRows =
-    seatIds.length === 0
-      ? []
-      : await prisma.member.findMany({ where: { id: { in: seatIds } }, select: { id: true, email: true } });
-  const addressOf = (memberId: string | null | undefined) =>
-    memberId === null || memberId === undefined
-      ? null
-      : seatRows.find((row) => row.id === memberId)?.email ?? null;
-  /*
    * Which colour this reader would play next time, or null if there is no
    * next time to offer — they did not play, or nobody was sitting opposite.
    * Named on the button, because the colour changes.
@@ -143,14 +131,14 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * in the game and printed in the record. A colour whose player this reader
    * has ignored is left out of the conversation below.
    */
-  const ignored = mine === null ? new Set<string>() : await ignoredEmails(mine);
+  const ignored = myId === null ? new Set<string>() : await ignoredMemberIds(myId);
   const silenced = new Set<string>();
   for (const [stone, memberId] of [
     ["black", members?.blackMemberId],
     ["white", members?.whiteMemberId],
   ] as const) {
-    const address = addressOf(memberId);
-    if (address !== null && ignored.has(address)) silenced.add(stone);
+    // By id: the seat holds one and the ignore list is kept by it, so no address is looked up.
+    if (memberId !== null && memberId !== undefined && ignored.has(memberId)) silenced.add(stone);
   }
 
   /*
@@ -191,7 +179,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
    * chosen a board played on it and then went back through the game on a
    * board they had never asked for.
    */
-  const appearance = appearanceFrom(await appearanceFor(mine));
+  const appearance = appearanceFrom(await appearanceFor(myId));
 
   // A seat held by cookie counts too: a game played from a scanned link, or at one screen.
   const claim = await resolveSeat(id, (await cookies()).get(seatCookieName(id))?.value, myId);
@@ -210,7 +198,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
     viewerId: myId,
     rematchable: againIn !== null,
     claims: seatClaims((await cookies()).getAll()),
-    keepFinishedDays: await keepFinishedDaysFor(mine),
+    keepFinishedDays: await keepFinishedDaysFor(myId),
   });
 
   return (

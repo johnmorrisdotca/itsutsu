@@ -346,7 +346,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     const theirId = await memberIdFor(them.email);
     // They have to be somewhere the sentence offers: a buddy is the steady one,
     // since "here now" is a half-hour window and racing it would be a flake.
-    expect((await context.request.post("/api/buddies", { data: { email: them.email } })).status()).toBeLessThan(300);
+    expect((await context.request.post("/api/buddies", { data: { memberId: theirId } })).status()).toBeLessThan(300);
 
     const page = await context.newPage();
     await page.goto("/games");

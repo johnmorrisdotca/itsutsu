@@ -6,8 +6,8 @@ import { Page } from "@/components/layout/Page";
 import { RecordPage } from "@/components/history/RecordPage";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { currentEmail } from "@/lib/auth/currentSession";
-import { findMember } from "@/lib/auth/members";
+import { currentMemberId } from "@/lib/auth/currentSession";
+import { findMemberById } from "@/lib/auth/members";
 import { historyPath, myGamePath, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
@@ -44,8 +44,9 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];
 
-  const email = await currentEmail();
-  const me = email === null ? null : await findMember(email);
+  // By member id: a member who came in with an invite code has games of their own here too.
+  const myId = await currentMemberId();
+  const me = myId === null ? null : await findMemberById(myId);
 
   if (me === null) {
     return (
@@ -54,7 +55,7 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-unknown">
           <h1 className="text-lg font-semibold">Your games of {copy.label}</h1>
           <p className="max-w-prose text-sm text-muted">
-            {email === null
+            {myId === null
               ? "This page counts your own games, and it does not know who you are yet."
               : "This page counts your own games, and there is no player on this account yet — finish one and it will have something to show."}
           </p>

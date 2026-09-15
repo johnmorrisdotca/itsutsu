@@ -1,7 +1,6 @@
 import "server-only";
 
-import { currentEmail } from "@/lib/auth/currentSession";
-import { memberRowFor } from "@/lib/auth/members";
+import { currentMemberRow } from "@/lib/auth/currentSession";
 import { prisma } from "@/lib/prisma";
 
 import { xpLevelName } from "./levelNames";
@@ -143,9 +142,7 @@ export function flashAboutGame(
  * and a malformed courtesy must not be able to take the site down.
  */
 export async function xpFlashFor(): Promise<XpFlashToShow | null> {
-  const email = await currentEmail();
-  if (email === null) return null;
-  const row = await memberRowFor(email);
+  const row = await currentMemberRow();
   const flash = row?.xpFlash as Partial<XpFlash> | null | undefined;
   if (!flash || typeof flash.at !== "string") return null;
   return { at: flash.at, about: typeof flash.about === "string" ? flash.about : null, toasts: toToasts(flash) };

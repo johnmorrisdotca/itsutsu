@@ -11,16 +11,21 @@ export type ApplauseTally = {
   mine: string | null;
 };
 
-export async function fetchApplause(gameId: string, member: string | null): Promise<ApplauseTally> {
+/**
+ * A game's marks, and which is the reader's — BY MEMBER ID, which is how a mark
+ * is kept now. It was by address, so a member who came in with an invite code
+ * could neither leave a mark nor see their own.
+ */
+export async function fetchApplause(gameId: string, memberId: string | null): Promise<ApplauseTally> {
   const rows = await prisma.applause.findMany({
     where: { gameId },
-    select: { emoji: true, member: true },
+    select: { emoji: true, memberId: true },
   });
   const counts: Record<string, number> = {};
   let mine: string | null = null;
   for (const row of rows) {
     counts[row.emoji] = (counts[row.emoji] ?? 0) + 1;
-    if (member !== null && row.member === member) mine = row.emoji;
+    if (memberId !== null && row.memberId === memberId) mine = row.emoji;
   }
   return { counts, total: rows.length, mine };
 }
@@ -34,7 +39,7 @@ export async function fetchApplause(gameId: string, member: string | null): Prom
  */
 export async function setApplause(
   gameId: string,
-  member: string,
+  memberId: string,
   emoji: ApplauseEmoji,
 ): Promise<{ ok: true; tally: ApplauseTally } | { ok: false; reason: "not-found" | "unfinished" }> {
   const game = await prisma.game.findUnique({ where: { id: gameId }, select: { status: true } });
@@ -42,17 +47,17 @@ export async function setApplause(
   if (game.status !== "finished") return { ok: false, reason: "unfinished" };
 
   const existing = await prisma.applause.findUnique({
-    where: { gameId_member: { gameId, member } },
+    where: { gameId_memberId: { gameId, memberId } },
     select: { emoji: true },
   });
   if (existing !== null && existing.emoji === emoji) {
-    await prisma.applause.delete({ where: { gameId_member: { gameId, member } } });
+    await prisma.applause.delete({ where: { gameId_memberId: { gameId, memberId } } });
   } else {
     await prisma.applause.upsert({
-      where: { gameId_member: { gameId, member } },
-      create: { gameId, member, emoji },
+      where: { gameId_memberId: { gameId, memberId } },
+      create: { gameId, memberId, emoji },
       update: { emoji },
     });
   }
-  return { ok: true, tally: await fetchApplause(gameId, member) };
+  return { ok: true, tally: await fetchApplause(gameId, memberId) };
 }

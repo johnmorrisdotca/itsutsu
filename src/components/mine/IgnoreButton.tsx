@@ -5,8 +5,11 @@ import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 
-/** Ignores a member, or stops. They cannot challenge you, and their messages in a game are hidden from you. */
-export function IgnoreButton({ email, ignoring }: { email: string; ignoring: boolean }) {
+/**
+ * Ignores a member, or stops. They cannot challenge you, and their messages in a
+ * game are hidden from you. By member id — see `BuddyButton`.
+ */
+export function IgnoreButton({ memberId, ignoring }: { memberId: string; ignoring: boolean }) {
   const router = useRouter();
   const [state, setState] = useState(ignoring);
   const [busy, setBusy] = useState(false);
@@ -16,7 +19,7 @@ export function IgnoreButton({ email, ignoring }: { email: string; ignoring: boo
     const response = await fetch("/api/ignores", {
       method: state ? "DELETE" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ memberId }),
     });
     setBusy(false);
     if (response.ok) {

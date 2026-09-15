@@ -23,9 +23,13 @@ import { shownName } from "@/lib/rating/shownName";
  * Fetches its own rows: nothing else on this page needs them, and the page
  * used to read the buddy list and the ignore list on every visit whichever
  * part of it somebody had come for.
+ *
+ * BY MEMBER ID, both lists. Everybody on them is a person with an account — the
+ * lists refuse programs and kept records when a row is added — so every row
+ * offers its actions, whether or not that person came in by Google.
  */
-export async function MyPeople({ email }: { email: string }) {
-  const [buddies, ignored] = await Promise.all([fetchBuddies(email), fetchIgnored(email)]);
+export async function MyPeople({ memberId }: { memberId: string }) {
+  const [buddies, ignored] = await Promise.all([fetchBuddies(memberId), fetchIgnored(memberId)]);
 
   return (
     <div className="flex flex-col gap-4" data-testid="my-people">
@@ -43,21 +47,17 @@ export async function MyPeople({ email }: { email: string }) {
         ) : (
           <ul className="flex flex-col gap-1 text-sm">
             {buddies.map((buddy) => (
-              <li key={buddy.email} className="flex flex-wrap items-center gap-3 border-t border-rule py-1.5 first:border-t-0">
+              <li key={buddy.id} className="flex flex-wrap items-center gap-3 border-t border-rule py-1.5 first:border-t-0">
                 <RecencyMark recency={buddy.recency} />
-                <span className="font-medium">{buddy.name || buddy.email}</span>
+                <span className="font-medium">{shownName(buddy.name)}</span>
                 <span className="text-xs text-muted">
                   {[buddy.city, buddy.country].filter(Boolean).join(", ")}
                   {buddy.localTime !== null ? ` · ${buddy.localTime} there` : ""}
                 </span>
                 <span className="ml-auto">
                   <RowActions>
-                    {buddy.email === null ? null : (
-                      <>
-                        <ChallengeButton memberId={buddy.id} />
-                        <BuddyButton email={buddy.email} isBuddy />
-                      </>
-                    )}
+                    <ChallengeButton memberId={buddy.id} />
+                    <BuddyButton memberId={buddy.id} isBuddy />
                   </RowActions>
                 </span>
               </li>
@@ -77,9 +77,9 @@ export async function MyPeople({ email }: { email: string }) {
           <p className="text-xs text-muted">They cannot challenge you, and their messages in a game are hidden from you.</p>
           <ul className="flex flex-col gap-1 text-sm">
             {ignored.map((entry) => (
-              <li key={entry.email} className="flex items-center gap-3">
+              <li key={entry.id} className="flex items-center gap-3">
                 <span>{shownName(entry.name)}</span>
-                <span className="ml-auto"><IgnoreButton email={entry.email} ignoring /></span>
+                <span className="ml-auto"><IgnoreButton memberId={entry.id} ignoring /></span>
               </li>
             ))}
           </ul>

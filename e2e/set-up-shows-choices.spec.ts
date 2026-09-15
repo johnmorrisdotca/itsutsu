@@ -108,7 +108,7 @@ test.describe("who you play and every rule are on the set-up screen", () => {
     const context = await memberContext(browser, baseURL!, me);
     const page = await context.newPage();
     try {
-      const starred = await context.request.post("/api/buddies", { data: { email: buddy.email } });
+      const starred = await context.request.post("/api/buddies", { data: { memberId: await memberIdFor(buddy.email) } });
       expect(starred.status(), await starred.text()).toBeLessThan(300);
       // Out of "Here now", whose run on a shared machine is whoever else is about.
       await seenDaysAgo(buddy.email, 2);
