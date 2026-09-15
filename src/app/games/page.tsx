@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
 import { cookies } from "next/headers";
 
 import { HereNowPanel } from "@/components/mine/HereNowPanel";
@@ -367,6 +367,11 @@ export default async function LobbyPage({ searchParams }: PageProps<"/games">) {
  * The catalogue's families, as copy: the same for every reader, from tables in
  * this repository. What has been played of each travels beside them as
  * `CatalogueStats`, shaped for the reader by `forReader`.
+ *
+ * A family's `games` are the ones at home in it, which its count and its
+ * figures are about. Its `guests` are games from other families listed on its
+ * shelf too (`ALSO_LISTED_IN`), each saying which family it lives in — shown,
+ * and counted once, at home.
  */
 function catalogueFamilies(): CatalogueFamily[] {
   return GAME_FAMILIES.map((family) => ({
@@ -374,17 +379,17 @@ function catalogueFamilies(): CatalogueFamily[] {
     title: family.title,
     kanji: family.kanji,
     blurb: family.blurb,
-    games: family.games.map((variant) => {
-      const copy = RULE_VARIANT_DISPLAY[variant];
-      return {
-        variant,
-        label: copy.label,
-        kanji: copy.kanji,
-        tagline: copy.tagline,
-        inspiredBy: copy.inspiredBy,
-      };
-    }),
+    games: family.games.map(gameCopy),
+    guests: gamesShownIn(family).flatMap((shown) =>
+      shown.listed === "shelf" ? [{ ...gameCopy(shown.variant), home: { title: shown.home.title, kanji: shown.home.kanji } }] : [],
+    ),
   }));
+}
+
+/** One game's words, as a family's card shows them. */
+function gameCopy(variant: CatalogueFamily["games"][number]["variant"]): CatalogueFamily["games"][number] {
+  const copy = RULE_VARIANT_DISPLAY[variant];
+  return { variant, label: copy.label, kanji: copy.kanji, tagline: copy.tagline, inspiredBy: copy.inspiredBy };
 }
 
 /**

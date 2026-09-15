@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { GAME_FAMILIES, siblingsOf } from "./families";
+import { ALSO_LISTED_IN, GAME_FAMILIES, familyOf, gamesShownIn, siblingsOf } from "./families";
 import { RULE_VARIANTS } from "./gomoku.constants";
 import type { RuleVariant } from "./gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "./variants.constants";
@@ -87,8 +87,37 @@ describe("every game is finished, not just playable", () => {
     expect(page.house.length).toBeGreaterThan(0);
   });
 
-  it("lists each game in exactly one family", () => {
+  it("gives each game exactly one home family", () => {
     const listed = GAME_FAMILIES.flatMap((family) => family.games);
     expect(new Set(listed).size).toBe(listed.length);
+  });
+
+  /*
+   * A game may also be shown on another family's shelf, for discovery
+   * (`ALSO_LISTED_IN`): the same game, never a copy, with a reason, and never
+   * twice on one shelf. John, 2026-09-15: a family is a way of finding a game,
+   * not a filing cabinet — and a shelf, not a complete list.
+   */
+  it("lists a game on another shelf only with a reason, on a real family that is not its home", () => {
+    const keys = new Set(GAME_FAMILIES.map((family) => family.key));
+    for (const [variant, listings] of Object.entries(ALSO_LISTED_IN)) {
+      const home = familyOf(variant as RuleVariant);
+      expect(home, `${variant} is listed on another shelf but has no home family`).not.toBeNull();
+      const seen = new Set<string>();
+      for (const listing of listings ?? []) {
+        expect(keys.has(listing.family), `${variant} is listed on "${listing.family}", which is no family`).toBe(true);
+        expect(listing.family, `${variant} is listed on its own home`).not.toBe(home?.key);
+        expect(seen.has(listing.family), `${variant} is listed on "${listing.family}" twice`).toBe(false);
+        seen.add(listing.family);
+        expect(listing.why.length, `${variant} on "${listing.family}" gives no reason`).toBeGreaterThan(20);
+      }
+    }
+  });
+
+  it("shows no game twice on one shelf", () => {
+    for (const family of GAME_FAMILIES) {
+      const shown = gamesShownIn(family).map((game) => game.variant);
+      expect(new Set(shown).size, `${family.title} shows a game twice`).toBe(shown.length);
+    }
   });
 });

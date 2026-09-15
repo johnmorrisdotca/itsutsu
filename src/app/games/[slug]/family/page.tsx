@@ -8,10 +8,10 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
-import { familyOf } from "@/lib/gomoku/families";
+import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
+import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import { gamePath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { familyPath, gamePath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/family">): Promise<Metadata> {
@@ -45,6 +45,13 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
   // A game in no family is a gap the New Game Gate refuses, but a page must
   // not pretend to an answer it has not got.
   if (family === null) notFound();
+  /*
+   * The shelf: the family's own games, then any guests listed on it from their
+   * own families (`ALSO_LISTED_IN`). The count above them is the family's own —
+   * a guest is counted once, at home — and the guests are said apart.
+   */
+  const shelf = gamesShownIn(family);
+  const guests = shelf.filter((shown) => shown.listed === "shelf").length;
 
   return (
     <Page width="standard" gap="gap-6">
@@ -71,9 +78,15 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
           <GameName variant={variant} />.
         </p>
       </div>
+      {guests > 0 ? (
+        <p className="-mt-3 text-sm text-muted" data-testid="family-guest-count">
+          And {guests} {guests === 1 ? "game" : "games"} from other families, listed here too.
+        </p>
+      ) : null}
 
       <ul className="flex flex-col gap-3" data-testid="family-games">
-        {family.games.map((game) => {
+        {shelf.map((shown) => {
+          const game = shown.variant;
           const sibling = RULE_VARIANT_DISPLAY[game];
           return (
             /*
@@ -88,6 +101,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
                 game === variant ? "border-rule-strong" : ""
               }`}
               data-testid={`family-game-${game}`}
+              data-listed={shown.listed}
             >
               <GameThumb variant={game} size="regular" />
               <span className="flex min-w-0 flex-1 flex-col gap-1">
@@ -95,6 +109,15 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
                   <GameName variant={game} kanji stretched />
                   {game === variant ? <span className="text-xs font-normal text-muted">— the one you came from</span> : null}
                 </span>
+                {/* A guest says where it lives, and leads there, raised above the card's face. */}
+                {shown.listed === "shelf" ? (
+                  <span className="text-xs text-muted" data-testid="family-game-home">
+                    also under{" "}
+                    <Link href={familyPath(game)} className={`${RAISED_LINK} underline underline-offset-2`}>
+                      {shown.home.title}
+                    </Link>
+                  </span>
+                ) : null}
                 <span className="text-sm text-muted">{sibling.tagline}</span>
                 {sibling.inspiredBy !== undefined ? (
                   <span className="text-xs text-muted italic">Inspired by {sibling.inspiredBy}</span>

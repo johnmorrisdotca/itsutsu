@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
-import { GAME_FAMILIES } from "../src/lib/gomoku/families";
+import { ALSO_LISTED_IN, GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 import { playerKey } from "../src/lib/rating/playerKey";
 import { shownName } from "../src/lib/rating/shownName";
@@ -41,7 +41,13 @@ const LOSER = { email: `gstats-${STAMP}-ren@example.test`, name: `Ren ${STAMP}` 
 const RECORD = { wins: 3, losses: 1, draws: 1 };
 const PLAYED = RECORD.wins + RECORD.losses + RECORD.draws;
 
-const every = GAME_FAMILIES.flatMap((family) => family.games);
+/*
+ * Every game, less those also listed on another family's shelf
+ * (`ALSO_LISTED_IN`). A guest's strip is drawn once on each shelf showing it,
+ * so a strip found by its variant alone would be two strips; the games this
+ * spec seeds are chosen from the ones drawn once, so each locator names one.
+ */
+const every = GAME_FAMILIES.flatMap((family) => family.games).filter((variant) => ALSO_LISTED_IN[variant] === undefined);
 let seeded = "";
 let unplayed = "";
 /** A game played once, unrated, so it has a count and no standing. */

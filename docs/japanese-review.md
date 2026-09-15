@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (117)
+## 1. Written by a machine — please check these (118)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -122,6 +122,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | A player | **名前のない対局者** | A player with no name. |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | vs | **対** | Versus. |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Wins | **勝ち** | Wins. |  |
+| — — — | also under {family} | **{family}にもあり** | Also found under {family}. |  |
 | — — — | Whoever comes along first takes the other seat. | **最初に来た人がもう一方の席に着きます。** | The first person to come sits in the other seat. |  |
 | — — — | Asked for | **指名** | Nominated — the person named for this game. |  |
 | — — — | Friendly | **親善対局** | Friendly game. |  |

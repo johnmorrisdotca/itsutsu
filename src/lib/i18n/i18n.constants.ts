@@ -163,6 +163,12 @@ export const PHRASES = {
   "setup.theComputer": "The computer",
   "setup.showAll": "Show all {count}",
   "setup.showFewer": "Show fewer",
+  /*
+   * The line on a game's chip when the family showing it is not its home —
+   * "also under Flips" — so a game on two shelves reads as meant. The home
+   * family's name fills {family}, in the reader's own script.
+   */
+  "setup.alsoUnder": "also under {family}",
 
   /*
    * The XP toast. It shipped in 0.158.4 with these five as fixed English in

@@ -8,7 +8,7 @@ import { GameName } from "@/components/games/GameName";
 import { FamilyStatsLine, GameStatsStrip } from "@/components/games/GameStats";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import {
   CATALOGUE_VIEWS,
@@ -19,9 +19,10 @@ import {
 } from "@/lib/gomoku/catalogueView";
 import { RULE_VARIANT_LIST, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
+import { familyPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
-import type { CatalogueFamily, GameCard, GameCardKind } from "./games.types";
+import type { CatalogueFamily, CatalogueGame, CatalogueGuest, GameCard, GameCardKind } from "./games.types";
 
 /**
  * Every game there is, three ways.
@@ -141,8 +142,14 @@ function Families({
                 <span className="flex items-baseline gap-2 font-semibold">
                   {family.title}
                   <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
-                  <span className="text-xs font-normal text-muted">
+                  {/*
+                    The family's own games. A guest from another family is
+                    shown on the shelf but counted at home, so it is said
+                    apart rather than added in.
+                  */}
+                  <span className="text-xs font-normal text-muted" data-testid="lobby-family-count">
                     {family.games.length} {family.games.length === 1 ? "game" : "games"}
+                    {family.guests.length > 0 ? `, and ${family.guests.length} from other families` : ""}
                   </span>
                 </span>
                 {/*
@@ -161,59 +168,92 @@ function Families({
           <p className="mt-2 text-sm text-muted">{family.blurb}</p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {family.games.map((game) => (
-              /*
-                THE WHOLE CARD IS THE WAY INTO THE GAME. John, looking at this
-                box: "Mousing over a game should show us a button to click…
-                right now we're forced to click the name." The box read as one
-                object and answered on two words of it.
-
-                The name is still the one link to the game, and it is spread
-                over the card (`stretched`) rather than a second link being
-                laid under it — so a keyboard reader gets one stop for one
-                destination and a screen reader hears one link, not two. The
-                count and the last game lead ELSEWHERE, so they are `raised`
-                above the face; anything added to this card that leads
-                somewhere needs the same, or the face swallows the click. The
-                arrow at the right is the sign that the card opens, and it is
-                drawn at rest so a finger on an iPad — where nothing hovers —
-                is told the same thing a pointer is. See ui.constants.ts.
-              */
-              <li
-                key={game.variant}
-                className={`${STRETCHED_CARD} flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm`}
-                data-testid="family-game"
-              >
-                {/*
-                  The game's board, the way /games/new's picker and every list
-                  of games draws it. John: "Looks like we aren't showing the
-                  icons for all the variant games in a family!" In flow under
-                  the stretched name, so a tap on it opens the card.
-                */}
-                <GameThumb variant={game.variant} size="regular" />
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="font-medium">
-                    <GameName variant={game.variant} kanji stretched />
-                  </span>
-                  <span className="text-xs text-muted">{game.tagline}</span>
-                  {game.inspiredBy !== undefined ? (
-                    <span className="text-[0.7rem] text-muted italic">Inspired by {game.inspiredBy}</span>
-                  ) : null}
-                  {/*
-                    What has been played of it, and who is best at it. It
-                    replaces "12 played · last Kyu vs Dan", which was the last
-                    game's two names and nothing about the game; the date of
-                    that game is in the strip, and for a member it still opens
-                    the game.
-                  */}
-                  <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
-                </span>
-                <CardArrow />
-              </li>
+              <FamilyGameCard key={game.variant} game={game} stats={stats} signedIn={signedIn} />
+            ))}
+            {/* Guests from other families, after the family's own: see ALSO_LISTED_IN. */}
+            {family.guests.map((guest) => (
+              <FamilyGameCard key={guest.variant} game={guest} stats={stats} signedIn={signedIn} />
             ))}
           </ul>
         </details>
       ))}
     </div>
+  );
+}
+
+/**
+ * One game on a family's shelf, at home there or a guest from its own family.
+ *
+ * THE WHOLE CARD IS THE WAY INTO THE GAME. John, looking at this box:
+ * "Mousing over a game should show us a button to click… right now we're
+ * forced to click the name." The box read as one object and answered on two
+ * words of it.
+ *
+ * The name is still the one link to the game, and it is spread over the card
+ * (`stretched`) rather than a second link being laid under it — so a keyboard
+ * reader gets one stop for one destination and a screen reader hears one link,
+ * not two. The count and the last game lead ELSEWHERE, so they are `raised`
+ * above the face; anything added to this card that leads somewhere needs the
+ * same, or the face swallows the click. The arrow at the right is the sign that
+ * the card opens, and it is drawn at rest so a finger on an iPad — where
+ * nothing hovers — is told the same thing a pointer is. See ui.constants.ts.
+ *
+ * A GUEST IS THE SAME CARD: the same name leading to the same game, the same
+ * figures, because it is the same game. One line more says where it lives —
+ * "also under Flips" — and leads to that family, raised like every other link
+ * on the card.
+ */
+function FamilyGameCard({
+  game,
+  stats,
+  signedIn,
+}: {
+  game: CatalogueGame | CatalogueGuest;
+  stats: CatalogueStats;
+  signedIn: boolean;
+}) {
+  const guest = "home" in game;
+  return (
+    <li
+      className={`${STRETCHED_CARD} flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm`}
+      data-testid="family-game"
+      data-variant={game.variant}
+      data-listed={guest ? "shelf" : "home"}
+    >
+      {/*
+        The game's board, the way /games/new's picker and every list of games
+        draws it. John: "Looks like we aren't showing the icons for all the
+        variant games in a family!" In flow under the stretched name, so a tap
+        on it opens the card.
+      */}
+      <GameThumb variant={game.variant} size="regular" />
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="font-medium">
+          <GameName variant={game.variant} kanji stretched />
+        </span>
+        {guest ? (
+          <span className="text-[0.7rem] text-muted" data-testid="family-game-home">
+            also under{" "}
+            <Link href={familyPath(game.variant)} className={`${RAISED_LINK} underline underline-offset-2`}>
+              {game.home.title}
+            </Link>
+          </span>
+        ) : null}
+        <span className="text-xs text-muted">{game.tagline}</span>
+        {game.inspiredBy !== undefined ? (
+          <span className="text-[0.7rem] text-muted italic">Inspired by {game.inspiredBy}</span>
+        ) : null}
+        {/*
+          What has been played of it, and who is best at it. It replaces "12
+          played · last Kyu vs Dan", which was the last game's two names and
+          nothing about the game; the date of that game is in the strip, and for
+          a member it still opens the game. The same figures on a guest's card as
+          at home: they are the game's, not the shelf's.
+        */}
+        <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
+      </span>
+      <CardArrow />
+    </li>
   );
 }
 

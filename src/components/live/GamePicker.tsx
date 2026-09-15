@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameThumb } from "@/components/games/GameThumb";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { OneName } from "@/components/i18n/OneName";
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
@@ -77,18 +78,24 @@ export function GamePicker({
   label: string;
 }) {
   /*
-   * The open family is a READING of the chosen game, and there is no state
-   * here at all.
+   * The open family is a READING of the chosen game.
    *
-   * There was, and it was the bug: a separate `browsing` state meant the row
-   * of families could say one thing while the chosen game said another, so
-   * clicking Drops from Hex gave the eight drop games over Hex's boards and a
-   * heading still reading "Hex ヘックス · 13×13 Medium". Nothing was going to
-   * keep two answers in step for long. Now a family click chooses that
-   * family's game — see `gameForFamilyClick` — and this is derived from it,
-   * so the two cannot come apart.
+   * A separate `browsing` state was once the bug: the row of families could
+   * say one thing while the chosen game said another, so clicking Drops from
+   * Hex gave the eight drop games over Hex's boards and a heading still
+   * reading "Hex ヘックス · 13×13 Medium". A family click chooses that
+   * family's game — see `gameForFamilyClick` — so the two cannot come apart.
+   *
+   * `browsing` is back, and cannot be that bug again. A game may be shown on
+   * two shelves (Mini Reversi lives under Flips and is listed under Small
+   * boards), and a reader who picked it from Small boards must stay on Small
+   * boards. So the last family clicked is remembered, but `familyShown`
+   * honours it only while that family shows the chosen game and falls back to
+   * the game's home otherwise: the open family always holds the chosen game.
    */
-  const family = familyShown(value);
+  const speaker = useSpeaker();
+  const [browsing, setBrowsing] = useState<string | null>(null);
+  const family = familyShown(value, browsing);
   const tagline = RULE_VARIANT_DISPLAY[value as RuleVariant]?.tagline;
 
   /*
@@ -96,6 +103,7 @@ export function GamePicker({
    * does nothing. Both halves are `gameForFamilyClick`, tested in picker.ts.
    */
   const openFamily = (entry: Family) => {
+    setBrowsing(entry.key);
     const next = gameForFamilyClick(entry, value);
     if (next !== null) onChange(next);
   };
@@ -222,7 +230,8 @@ export function GamePicker({
           {family.blurb}
         </span>
         <div className={PICK_GRID}>
-        {family.games.map((game) => {
+        {gamesShownIn(family).map((shown) => {
+          const game = shown.variant;
           const copy = RULE_VARIANT_DISPLAY[game];
           return (
             <label
@@ -231,6 +240,7 @@ export function GamePicker({
               data-testid="set-up-variant"
               data-variant={game}
               data-chosen={game === value ? "true" : "false"}
+              data-listed={shown.listed}
             >
               <input
                 type="radio"
@@ -263,8 +273,28 @@ export function GamePicker({
                 four. `truncate` and the title stay as the guard for a name
                 added later that is longer than any today.
               */}
-              <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium lg:text-sm" title={copy.label}>
-                <OneName en={copy.label} kanji={copy.kanji} />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-[0.8125rem] font-medium lg:text-sm" title={copy.label}>
+                  <OneName en={copy.label} kanji={copy.kanji} />
+                </span>
+                {/*
+                  A GUEST SAYS WHERE IT LIVES, on one line under its name: "also
+                  under Flips". The same game as at home — picking it here
+                  starts that game — and the line is what makes seeing it twice
+                  read as meant. Not a link: this is inside the label that
+                  chooses, and a link there would swallow the choice.
+
+                  0.7rem, the size a board tile's name is set in. Measured at
+                  640px, the narrowest two columns: "also under Pieces and
+                  twists" wanted 157px of 149 at text-xs, and fits at this.
+                */}
+                {shown.listed === "shelf" ? (
+                  <span className="truncate text-[0.7rem] text-muted" data-testid="set-up-variant-home">
+                    {speaker.say("setup.alsoUnder", {
+                      family: speaker.pairName(shown.home.title, shown.home.kanji).text,
+                    })}
+                  </span>
+                ) : null}
               </span>
               <PickMark className="size-5" />
             </label>

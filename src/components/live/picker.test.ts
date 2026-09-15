@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { GAME_FAMILIES } from "@/lib/gomoku/families";
+import { ALSO_LISTED_IN, GAME_FAMILIES, familyOf, familyShows } from "@/lib/gomoku/families";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
@@ -111,19 +112,21 @@ describe("what a click on a family chooses", () => {
 
   it("lands every game on its own family without moving, and every other family with one click", () => {
     /*
-     * The whole grid, both ways round: from any game, clicking its own family
-     * is a no-op, and clicking any other family lands inside that other one.
-     * This is the property the two-sources-of-truth bug broke.
+     * The whole grid, both ways round: from any game, clicking a family that
+     * shows it — its home, or a shelf it is listed on — is a no-op, and
+     * clicking any other family lands inside that other one. Either way the
+     * family shown after the click is the one clicked. This is the property the
+     * two-sources-of-truth bug broke.
      */
     for (const variant of RULE_VARIANT_LIST) {
       for (const family of GAME_FAMILIES) {
         const next = gameForFamilyClick(family, variant);
-        if (family.games.includes(variant)) {
+        if (familyShows(family, variant)) {
           expect(next, `${variant} in ${family.title} should not move`).toBeNull();
+          expect(familyShown(variant, family.key).title).toBe(family.title);
         } else {
           expect(family.games, `${variant} -> ${family.title} landed outside it`).toContain(next);
-          // And the family shown after the click is the one that was clicked.
-          expect(familyShown(next as string).title).toBe(family.title);
+          expect(familyShown(next as string, family.key).title).toBe(family.title);
         }
       }
     }
@@ -132,6 +135,40 @@ describe("what a click on a family chooses", () => {
   it("treats a game it does not know as being in no family, so any click moves", () => {
     for (const family of GAME_FAMILIES) {
       expect(gameForFamilyClick(family, "aGameThatWasRenamed")).toBe(defaultGameOf(family));
+    }
+  });
+});
+
+describe("a game on two shelves", () => {
+  const guests = Object.entries(ALSO_LISTED_IN) as [RuleVariant, readonly { family: string }[]][];
+
+  it("has at least one, so the cases below are about something", () => {
+    expect(guests.length).toBeGreaterThan(0);
+  });
+
+  it("stays on the shelf it was picked from, without moving the game", () => {
+    /*
+     * John: a family is a way of finding a game. Somebody who opened Small
+     * boards and picked Mini Reversi is still reading Small boards, and a tap
+     * on it again has not asked for Tic-tac-toe.
+     */
+    for (const [variant, listings] of guests) {
+      for (const listing of listings) {
+        const shelf = GAME_FAMILIES.find((family) => family.key === listing.family)!;
+        expect(gameForFamilyClick(shelf, variant), `${variant} on ${shelf.title}`).toBeNull();
+        expect(familyShown(variant, shelf.key).key, `${variant} on ${shelf.title}`).toBe(shelf.key);
+      }
+    }
+  });
+
+  it("opens on its home when nothing was clicked, and whenever the family clicked does not show it", () => {
+    for (const [variant] of guests) {
+      const home = familyOf(variant)!;
+      expect(familyShown(variant).key).toBe(home.key);
+      for (const family of GAME_FAMILIES.filter((one) => !familyShows(one, variant))) {
+        // The old bug's shape: a family open over a game it does not hold. It cannot come back.
+        expect(familyShown(variant, family.key).key, `${variant} browsing ${family.title}`).toBe(home.key);
+      }
     }
   });
 });
