@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
+import { readyHere } from "./support";
 import { removeXpMembers, seedXpMember, type SeededXpMember } from "./xpMembers";
 
 /**
@@ -98,6 +99,18 @@ test.describe("the XP column on the members list", () => {
     await page.goto("/players");
     const heading = page.getByTestId("directory").locator('[data-testid="sortable-head"][data-sort="xp"]');
     await expect(heading, "the XP heading is not a sortable heading").toHaveCount(1);
+    /*
+     * WAIT FOR THE TABLE TO BE LISTENING BEFORE PRESSING ITS HEADING. The heading
+     * is a server-rendered link, so it is on the page before React has taken the
+     * table over, and a press in that window went nowhere: red on CI on every run
+     * from 0.195.1, when each row gained its own hydrated "⋯" menu, and green on
+     * any machine fast enough to finish first. The CI trace settles it — all 52
+     * ready marks on the page read "false" in the snapshot taken as the click
+     * went in, and "true" in the one after it, with no request sent and no
+     * navigation scheduled. The seeded row's own menu carries the mark and
+     * hydrates with the heading, so it is the thing to wait on.
+     */
+    await readyHere(rowFor(page, high).getByTestId("row-more"));
 
     // Most first, on the first press.
     await heading.click();
