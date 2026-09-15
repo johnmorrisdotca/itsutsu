@@ -1,8 +1,7 @@
-import { expect, request as playwrightRequest, test as base, type APIRequestContext } from "@playwright/test";
-import { PrismaClient } from "@prisma/client";
+import { expect, test as base, type APIRequestContext } from "@playwright/test";
 
-import { isLocalDatabase } from "../src/lib/db/localDatabase";
-import { ADMIN_STATE, playAt, ready } from "./support";
+import { memberContext } from "./members";
+import { playAt, ready } from "./support";
 import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /**
@@ -33,46 +32,42 @@ import { gamesMade, namesPlayedUnder } from "./tidy";
  * It used to dodge that as the suite's invite-only browser, which had no account.
  * A code makes a member account now, so that browser is one member holding every
  * game the suite made with it, and CI carried this file onward into one of them.
- * So each case redeems a code of its own, in its own browser, and makes its games
- * through that browser's own requests: a fresh member whose queue holds exactly
- * the games it made, and nothing else.
+ * So each case signs in as a member of its own, in its own browser, and makes its
+ * games through that browser's own requests: a fresh member whose queue holds
+ * exactly the games it made, and nothing else.
+ *
+ * A SIGNED MEMBER SESSION, NOT A REDEEMED CODE. The first version of this redeemed
+ * a code per case, and redeeming is the strict guessing limit — five a minute from
+ * one address, never relieved, and shared by every spec on the runner with
+ * gate.spec exhausting it on purpose — so the fourth case met a 429. A code-made
+ * account is what invite-player.spec is about; this file is about the queue, and a
+ * seeded member's queue is exactly as empty.
  */
 
-/** The codes this file redeemed, so the members they made go when it finishes. */
-const codes: string[] = [];
+/** Distinct per member, so two cases signed in within one millisecond are still two people. */
+let members = 0;
 
 /**
- * `page` and `request` as ONE fresh member. The operator mints a code, this
- * test's own browser redeems it, and `request` is that browser's own request
+ * `page` and `request` as ONE fresh member. The context is signed in as a member
+ * seeded for this case, `page` opens in it, and `request` is its own request
  * context, so a game made through it and a seat claimed on the page belong to the
  * same account, and to no other test's.
  */
 const test = base.extend<{ request: APIRequestContext }>({
-  storageState: { cookies: [], origins: [] },
   // `provide` rather than Playwright's usual `use`: the React hooks lint rule reads any call named `use` as a hook.
-  request: async ({ page, baseURL }, provide) => {
-    const operator = await playwrightRequest.newContext({ baseURL, storageState: ADMIN_STATE });
-    const minted = await operator.post("/api/invites", { data: { note: "next-game" } });
-    expect(minted.status(), await minted.text()).toBe(201);
-    const { code } = (await minted.json()) as { code: string };
-    await operator.dispose();
-    codes.push(code);
-    const own = page.context().request;
-    const signedIn = await own.post("/api/session", { data: { kind: "invite", code } });
-    expect(signedIn.ok(), await signedIn.text()).toBe(true);
+  context: async ({ browser, baseURL }, provide, testInfo) => {
+    members += 1;
+    const stamp = `${Date.now().toString(36)}${testInfo.workerIndex}${testInfo.retry}${members}`;
+    const own = await memberContext(browser, baseURL!, {
+      email: `next-game-${stamp}@example.test`,
+      name: `Queue${stamp} Player`,
+    });
     await provide(own);
+    await own.close();
   },
-});
-
-test.afterAll(async () => {
-  process.loadEnvFile(".env");
-  if (!isLocalDatabase(process.env.DATABASE_URL) || codes.length === 0) return;
-  const prisma = new PrismaClient();
-  try {
-    await prisma.member.deleteMany({ where: { invitedWith: { in: codes }, email: null } });
-  } finally {
-    await prisma.$disconnect();
-  }
+  request: async ({ context }, provide) => {
+    await provide(context.request);
+  },
 });
 
 type Game = { id: string; blackToken: string; whiteToken: string };

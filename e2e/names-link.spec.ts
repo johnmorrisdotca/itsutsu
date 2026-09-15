@@ -1,4 +1,4 @@
-import { expect, request as playwrightRequest, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 import { memberContext, seedMember } from "./members";
 import { shownName } from "../src/lib/rating/shownName";
@@ -86,7 +86,7 @@ test.describe("a person's name leads to their page", () => {
     await context.close();
   });
 
-  test("a seat nobody has taken is described, not linked", async ({ page, request, baseURL }) => {
+  test("a seat nobody has taken is described, not linked", async ({ page, browser, baseURL }) => {
     /*
      * The honest exception: a seat with nobody bound to it is not a person, so it
      * stays plain rather than pointing at a page that does not exist.
@@ -96,27 +96,28 @@ test.describe("a person's name leads to their page", () => {
      * bound seat is shown under its member's CURRENT name (currentNames.ts's
      * seatName), linked, which is correct for them. This used to post as an
      * invite-only identity because that one was never bound; since a code makes a
-     * member account, it is bound like anybody, and the row CI found named its
-     * poster, correctly. So the seat is made the way the rows that ARE unbound
-     * stand — seats posted before posting bound anybody: posted by a fresh code,
-     * then the poster's id taken off the row.
+     * member account, every poster is bound. So the seat is made the way the rows
+     * that ARE unbound stand — seats posted before posting bound anybody: posted
+     * by a member, then the poster's id taken off the row.
+     *
+     * The poster is a signed member session rather than a redeemed code: a code
+     * bought nothing a seeded member does not have, and redeeming spent the
+     * redeem limit, which is strict and shared by every spec on the runner.
      *
      * Posted by somebody else, since a seat is not shown back to whoever put
      * it up — posting it as this reader would leave nothing on their board.
      */
-    const minted = await request.post("/api/invites", { data: { note: "names-link-poster" } });
-    expect(minted.status()).toBe(201);
-    const { code } = (await minted.json()) as { code: string };
-    const other = await playwrightRequest.newContext({ baseURL });
-    const signedIn = await other.post("/api/session", { data: { kind: "invite", code } });
-    expect(signedIn.ok()).toBe(true);
-
-    const made = await other.post("/api/games/live", {
+    const stamp = Date.now().toString(36);
+    const other = await memberContext(browser, baseURL!, {
+      email: `seat-poster-${stamp}@example.test`,
+      name: under(`Poster${stamp} Tester`),
+    });
+    const made = await other.request.post("/api/games/live", {
       data: { blackName: "", whiteName: "", size: 9, open: true },
     });
-    expect(made.status()).toBe(201);
+    expect(made.status(), await made.text()).toBe(201);
     const { id } = (await made.json()) as { id: string };
-    await other.dispose();
+    await other.close();
 
     process.loadEnvFile(".env");
     const { PrismaClient } = await import("@prisma/client");

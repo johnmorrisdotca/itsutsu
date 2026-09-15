@@ -1,5 +1,6 @@
-import { expect, request as playwrightRequest, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
+import { memberContext } from "./members";
 import { PLAYER_STATE, ready, readyHere } from "./support";
 import { namesPlayedUnder } from "./tidy";
 
@@ -94,47 +95,32 @@ test.describe("your games", () => {
 test.describe("open seats", () => {
   test("a game posted for anyone can be sat at by somebody else, once", async ({ browser, request, baseURL }) => {
     /*
-     * Posted by somebody with no member behind them, not by this file's own
-     * admin session. "Whoever starts a game is sitting at it" (games/live's
-     * route) binds a SIGNED-IN poster's own member id to a seat they post,
-     * and seatName() (currentNames.ts) always shows a bound seat's CURRENT
-     * member name over whatever the row's own field says — both deliberate,
-     * and both already covered elsewhere. So the admin identity every other
-     * request in this file uses would have its own live profile name shown
-     * on the noticeboard instead of "Host", which is what actually broke
-     * this test: this file's session is real (`ensureMember` gives the
-     * operator a row), so the label picked here was never what the row
-     * showed once posting started binding its poster. An invite-only
-     * identity is never bound, so the label chosen here is the label shown.
-     */
-    const minted = await request.post("/api/invites", { data: { note: "mygames-host" } });
-    expect(minted.status()).toBe(201);
-    const { code } = (await minted.json()) as { code: string };
-    const host = await playwrightRequest.newContext({ baseURL });
-    const signedIn = await host.post("/api/session", { data: { kind: "invite", code } });
-    expect(signedIn.ok()).toBe(true);
-
-    /*
-     * One word, stamp and all, so the noticeboard prints it whole — `shownName`
-     * shortens every word after the first to an initial — and the rows below
-     * are found by the name THIS run gave its seat, not by a word every earlier
-     * run's seat carried too.
+     * Posted by a member of this case's own, not by this file's admin session.
+     * "Whoever starts a game is sitting at it" (games/live's route) binds the
+     * poster's member id to the seat they post, and seatName() (currentNames.ts)
+     * shows a bound seat under that member's CURRENT name — so the noticeboard
+     * names the host by their own member name, whatever the request typed.
      *
-     * AND IT IS THE HOST'S OWN NAME NOW. A code makes a member account, so the
-     * host is bound to the seat they post and the noticeboard shows their
-     * CURRENT member name — the placeholder a code gives, "Guest" and four
-     * letters — rather than whatever the request typed. The host chooses this
-     * name first, as a person who came in with a code is asked to.
+     * A signed member session, and not a code redeemed for the purpose. A code
+     * makes a member account now, so redeeming one bought nothing a seeded member
+     * does not have, and it spent the redeem limit — strict, never relieved, and
+     * shared by every spec on the runner's one address, gate.spec among them. A
+     * code-made account is what invite-player.spec is about; this is about a seat.
+     *
+     * One word, stamp and all, so the noticeboard prints it whole — `shownName`
+     * shortens every word after the first to an initial — and the rows below are
+     * found by the name THIS run gave its host, not by a word every earlier run's
+     * seat carried too.
      */
-    const hostName = under(`Host${Date.now().toString(36)}`);
-    const named = await host.patch("/api/me", { data: { name: hostName } });
-    expect(named.status(), await named.text()).toBe(200);
-    const created = await host.post("/api/games/live", {
+    const stamp = Date.now().toString(36);
+    const hostName = under(`Host${stamp}`);
+    const host = await memberContext(browser, baseURL!, { email: `mygames-host-${stamp}@example.test`, name: hostName });
+    const created = await host.request.post("/api/games/live", {
       data: { blackName: hostName, size: 9, open: true },
     });
-    expect(created.status()).toBe(201);
+    expect(created.status(), await created.text()).toBe(201);
     const game = (await created.json()) as { id: string; blackToken: string };
-    await host.dispose();
+    await host.close();
 
     /*
      * Somebody else, and it has to be somebody else: this used to sign the
