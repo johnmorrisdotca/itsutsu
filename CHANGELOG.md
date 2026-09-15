@@ -6,6 +6,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.196.1 — 2026-09-15
+- The tickets board now lives on Sumilabu, the board every site shares: the board page and the ticket tools read and write it there
+
 ## 0.196.0 — 2026-09-14
 - Players imported from other sites now earn XP for the record they built there, and the XP board and every badge can count Everywhere or Itsutsu only.
 
