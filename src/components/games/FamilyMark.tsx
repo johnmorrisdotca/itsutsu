@@ -159,13 +159,13 @@ const MARKS: Record<string, Mark> = {
 const PLAIN: Mark = { n: 5, stones: [{ r: 2, c: 2 }] };
 
 /**
- * The family's mark as an inline SVG, at one of the site's two picture sizes.
+ * The family's mark as an inline SVG, at one of the site's three picture sizes.
  *
  * It was sized by whatever class a page handed it, so four pages drew four
  * sizes — 20px in a chip on /games/new, 40 on a game's page, 48 on /games, 64
  * on the family's own. That became one family size, 56px, and then John asked
  * for every picture to be one regular size, the board tile's. So the caller
- * says "regular" or "large" and nothing else (`PICTURE_PX`), and
+ * says "small", "regular" or "large" and nothing else (`PICTURE_PX`), and
  * `gamePictures.coverage.test.ts` refuses a size class at any call site.
  * `className` is left for placement only.
  */

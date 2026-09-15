@@ -57,12 +57,12 @@ function KeptGame({
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-3`}>
       {/*
-        The board beside the sentence rather than inside its first line: at the
-        regular picture size an inline board would make that one line seventy
-        pixels tall and leave the rest of the sentence under it.
+        The board beside the sentence, at the small size a row's picture takes,
+        rather than inside its first line, where it would make that one line
+        taller than the rest of the sentence.
       */}
       <p className="flex items-center gap-3 text-sm text-muted">
-        <GameThumb variant={game.variant} size="regular" />
+        <GameThumb variant={game.variant} size="small" />
         <span>
           {game.playedAt} · <GameName variant={game.variant} />, {game.size}×{game.size} · vs{" "}
           <Link href={`/players/${opponentSlug}`} className="font-medium text-ink-soft underline-offset-2 hover:underline">

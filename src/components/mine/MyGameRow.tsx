@@ -103,7 +103,7 @@ export function Row({ item, now }: { item: MyGame; now: Date }) {
         Gomoku board are different at a glance and the words were not. Under
         the row's link, in flow, so it is part of the target and not a stop.
       */}
-      <GameThumb variant={game.variant} size="regular" />
+      <GameThumb variant={game.variant} size="small" />
       {/*
         `basis-56`: on a phone the words keep fourteen rems and the controls
         wrap under them, rather than the words wrapping four deep beside a

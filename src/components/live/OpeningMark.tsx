@@ -18,7 +18,7 @@ import type { OpeningMarkProps } from "./picker.types";
  * say everything the picture does, and a screen reader would otherwise be told
  * it twice.
  *
- * At one of the site's two picture sizes: regular on the set-up tile, large
+ * At one of the site's three picture sizes: regular on the set-up tile, large
  * beside the doorstep's board. It was 44px on the tile and 112 on the doorstep.
  */
 export function OpeningMark({ opening, side, size }: OpeningMarkProps) {

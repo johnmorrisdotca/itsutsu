@@ -3,7 +3,16 @@ import { RAISED_LINK } from "@/components/ui/ui.constants";
 import type { GameCardKind, PictureSize } from "./games.types";
 
 /*
- * THE PICTURES ON THIS SITE COME IN TWO SIZES, AND ONLY TWO.
+ * THE PICTURES ON THIS SITE COME IN THREE SIZES, AND ONLY THREE.
+ *
+ * Two, at first — regular and large — and then John, looking at a table whose
+ * rows had grown to seventy pixels to hold a picture each: "Tables keep small
+ * pictures". So SMALL is the size for a table, a ledger and a row in a list,
+ * written as HALF of regular, the way large is written as twice it, so none of
+ * the three is a number of its own. Regular stays on the set-up page's tiles,
+ * on /games and a family's cards and at the head of a game's page; large stays
+ * on the doorstep. `gamePictures.coverage.test.ts` says which surface takes
+ * which.
  *
  * John, 2026-09-15, on the set-up page, where the family tiles, the game chips
  * and the board tiles were three different sizes: he liked the board tile —
@@ -23,12 +32,13 @@ import type { GameCardKind, PictureSize } from "./games.types";
  *
  * Every picture component — `GameThumb`, `FamilyMark`, `BoardSizeMark`,
  * `OpeningMark`, the opponent's `SeatMark` and the rated tiles' icons — takes
- * `size: "regular" | "large"` and reads its side from here through
+ * `size: "small" | "regular" | "large"` and reads its side from here through
  * `pictureBox`. `gamePictures.coverage.test.ts` refuses any other size.
  */
 export const REGULAR_PICTURE_PX = 70;
 
 export const PICTURE_PX = {
+  small: REGULAR_PICTURE_PX / 2,
   regular: REGULAR_PICTURE_PX,
   large: REGULAR_PICTURE_PX * 2,
 } as const satisfies Record<PictureSize, number>;

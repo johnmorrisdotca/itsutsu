@@ -32,7 +32,7 @@ function ChampionRow({ variant, champion }: { variant: string; champion: Variant
       <td className="py-1.5 pr-3">
         <span className="flex items-center gap-2">
           {/* Forty rows of names scan by their boards; a table cell gets the small size. */}
-          <GameThumb variant={variant} size="regular" />
+          <GameThumb variant={variant} size="small" />
           <Link href={standingsPath(variant)} className="font-medium underline-offset-2 hover:underline">
             <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
           </Link>

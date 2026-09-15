@@ -8,7 +8,7 @@ import type { SeatMarkProps } from "./picker.types";
  * person, black with its own script for a program, an empty dashed ring for
  * the seat nobody has taken.
  *
- * At one of the site's two picture sizes, like every other picture on the
+ * At one of the site's three picture sizes, like every other picture on the
  * set-up page. It was 36px, beside a 70px board block, a 56px family tile and a
  * 40px game chip — the several sizes John asked to become one.
  *
