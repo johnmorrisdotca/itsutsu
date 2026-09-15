@@ -1,4 +1,5 @@
 import type { ImportedFacts } from "@/lib/xp/importedNote";
+import type { XpAbout } from "@/lib/xp/xpHistory.types";
 
 /**
  * The XP a player just earned, as a toast shows it.
@@ -102,6 +103,27 @@ export type LevelNameProps = {
  * level 1, a defaulted `0` would print a real standing for somebody nobody
  * asked about.
  */
+/**
+ * Whose ledger an award is drawn on: the reader's own (`/me`), or a player's
+ * page, where "your rival" would be about the wrong person.
+ */
+export type AwardWhose = "yours" | "theirs";
+
+/** What one XP award was about, and whose ledger it sits on. */
+export type AwardAboutProps = { about: XpAbout; whose: AwardWhose };
+
+/** A player's XP history, on the XP tab of their page. */
+export type PlayerXpHistoryProps = {
+  /** The member whose ledger this is — a person or a program alike. */
+  memberId: string;
+  /** Whether the reader is that member, which changes the wording and nothing else. */
+  isYou: boolean;
+  /** The page's own search parameters: the history's cursor, the tab and the record scope. */
+  asked: Record<string, string | string[] | undefined>;
+  /** The player page's address, with no query on it. */
+  at: string;
+};
+
 export type MemberLevelProps = {
   xp?: number;
   /**

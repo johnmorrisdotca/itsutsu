@@ -10,6 +10,7 @@ import type { XpBoardRow } from "@/lib/xp/xpBoard";
 import { xpBoardSortSpec } from "@/lib/xp/xpBoard.sort";
 import { xpDayKey } from "@/lib/xp/xpDay";
 import { xpLevelFor } from "@/lib/xp/xpCurve";
+import { xpBehindText, xpGainText, xpGapsFor, type XpGain } from "@/lib/xp/xpGains";
 
 import { LevelName } from "./LevelName";
 
@@ -168,6 +169,17 @@ export type LeaderboardProps = {
   viewerZone: string;
   /** What the empty board offers, worded by the page for whoever is reading. */
   empty: React.ReactNode;
+  /**
+   * What each row earned here today and over seven days, in each member's own
+   * days, by member id — never imported credit, under either scope. A row missing from it prints a dash:
+   * a gain the read did not measure is not a nought.
+   */
+  gains: ReadonlyMap<string, XpGain>;
+  /**
+   * The total of the row directly above this page's first row — the previous
+   * page's last — or null on the first page, where the top row has nobody above.
+   */
+  above: number | null;
 };
 
 export function Leaderboard({
@@ -182,9 +194,13 @@ export function Leaderboard({
   rankAmong,
   scope,
   notes,
+  gains,
+  above,
 }: LeaderboardProps) {
   const spec = xpBoardSortSpec(scope) as SortSpec<string>;
   const head = { spec, current, at, query };
+  /* Behind next follows the order in force, so it is computed over the rows as drawn. */
+  const gaps = xpGapsFor(rows.map((row) => row.xp), above);
 
   return (
     <div className="overflow-x-auto" data-testid="xp-leaderboard">
@@ -205,6 +221,22 @@ export function Leaderboard({
             <SortHead {...head} param="xp">
               XP
             </SortHead>
+            {/*
+              Not sortable, any of the three: a gain is summed from the ledger for
+              the rows on screen, and ordering the whole board by it would be a
+              read of every member's week on every press. See `xpBoardGains.ts`.
+            */}
+            {/* Earned here only, under either scope: credit imported from another
+                site is in the total and never a gain. See `xpGains.ts`. */}
+            <SortHead {...head} param={null} title="XP earned here today, on each member's own day. Credit from other sites counts in the total, never as a gain">
+              Today
+            </SortHead>
+            <SortHead {...head} param={null} title="XP earned here over the last seven days, today included. Credit from other sites counts in the total, never as a gain">
+              7 days
+            </SortHead>
+            <SortHead {...head} param={null} title="Points behind the row directly above, in the order shown">
+              Behind next
+            </SortHead>
             <SortHead {...head} param="last-earned" title="When they last earned anything">
               Last earned
             </SortHead>
@@ -220,7 +252,7 @@ export function Leaderboard({
              * Not The Way To It".
              */
             <tr className={ROW_CLASS}>
-              <td className="py-3 pr-3 text-sm" colSpan={5} data-testid="xp-board-empty">
+              <td className="py-3 pr-3 text-sm" colSpan={8} data-testid="xp-board-empty">
                 {empty}
               </td>
             </tr>
@@ -245,7 +277,20 @@ export function Leaderboard({
                   <td className="py-1.5 pr-3">
                     <LevelName level={xpLevelFor(row.xp)} />
                   </td>
-                  <td className={CELL}>{countText(row.xp)}</td>
+                  <td className={CELL} data-testid="xp-board-xp">{countText(row.xp)}</td>
+                  <td className={`${CELL} text-moss`} data-testid="xp-board-today">
+                    {xpGainText(gains.get(row.id)?.today)}
+                  </td>
+                  <td className={`${CELL} text-moss`} data-testid="xp-board-week">
+                    {xpGainText(gains.get(row.id)?.week)}
+                  </td>
+                  <td
+                    className={`${CELL} text-muted`}
+                    data-testid="xp-board-behind"
+                    title={(gaps[index] ?? 0) < 0 ? "Ahead of the row above, in this order" : undefined}
+                  >
+                    {xpBehindText(gaps[index])}
+                  </td>
                   <td className={`${CELL} text-muted`}>
                     {/*
                       An em dash for a member who has never earned anything, which
