@@ -4,7 +4,7 @@ import {
   FATAL_MOVE_DISPLAY,
   OUTLOOK_DISPLAY,
 } from "@/lib/gomoku/analysis.constants";
-import { couldNotFinish, stalledDrawOf } from "@/lib/gomoku/rules/noProgress";
+import { stalledDrawOf } from "@/lib/gomoku/rules/noProgress";
 import { endingRanOut, repeatedTooOften } from "@/lib/gomoku/rules/checkersDraws";
 import { endedWithNoMoves } from "@/lib/gomoku/rules/forcedPass";
 import { passedTurnWords } from "./passedTurn";
@@ -47,26 +47,19 @@ function ToPlay({ session }: { session: GameSession }) {
 
   if (state.status === GAME_STATUS.draw) {
     /*
-     * Four ways to draw, and they are not interchangeable: nobody could
-     * finish it, the board filled, both colours made a line on the same move,
-     * or the game ran to the length its players agreed to. Which one it was
-     * is the engine's to say.
+     * The ways to draw are not interchangeable: a no-progress rule drew it,
+     * neither side had a move, a position came round too often, an ending ran
+     * out of the moves its rules allow, the game ran to the length its players
+     * agreed to, both colours made a line on the same move, or the board
+     * filled. Which one it was is the engine's to say.
      *
-     * "Could not be finished" is first because it is the only one that is not
-     * a result. The others are ways a game ends properly; this one says the
-     * game got nowhere, and it is worded plainly so that a game which cannot
-     * be won stays visible as such instead of being filed as an ordinary
-     * draw. Only the game whose rule row says so ends that way now.
-     *
-     * Every other stall names the rule that drew it, with that rule's count —
-     * "draw by the forty-move rule", the way chess says the fifty-move rule —
-     * because a stalled Halma or draughts game is an ordinary draw by a rule
-     * the players can read, not a game nobody could finish.
+     * A stall names the rule that drew it, with that rule's count — "draw by
+     * the forty-move rule", the way chess says the fifty-move rule — because a
+     * stalled Halma, Chinese Checkers or draughts game is an ordinary draw by a
+     * rule the players can read.
      */
     const stall = stalledDrawOf(state);
-    const why = couldNotFinish(state)
-      ? GAME_COPY.drawUnfinishable
-      : stall !== null
+    const why = stall !== null
         ? GAME_COPY.drawNoProgress[stall.measure](stall.plies)
       : endedWithNoMoves(state)
         ? GAME_COPY.drawNoMoves

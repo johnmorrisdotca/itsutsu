@@ -4,7 +4,6 @@ import {
   NO_PROGRESS_RULES,
   PROGRESS_MEASURES,
   canStall,
-  couldNotFinish,
   distanceHome,
   pliesWithoutProgress,
   stalled,
@@ -46,10 +45,10 @@ describe("which games can run away", () => {
     expect(canStall(RULE_VARIANTS.halma)).toBe(true);
     expect(canStall(RULE_VARIANTS.squareFour)).toBe(true);
     /*
-     * Chinese Checkers is watched too, but it says something different when
-     * it ends — see the case below. It was excluded for a while because the
-     * rule was reading an empty camp for its star board and would have drawn
-     * every game of it for a reason that looked like a property of the game.
+     * Chinese Checkers is watched too, as a race. It was excluded for a while
+     * because the rule was reading an empty camp for its star board and would
+     * have drawn every game of it for a reason that looked like a property of
+     * the game.
      */
     expect(canStall(RULE_VARIANTS.chineseCheckers)).toBe(true);
     // A placed stone fills a point for good, so the board is the bound.
@@ -104,7 +103,7 @@ describe("which games can run away", () => {
   });
 });
 
-describe("a game nobody could finish says so", () => {
+describe("the star board, which the race rule reads", () => {
   it("reads the star board rather than answering zero for it", () => {
     /*
      * The bug that kept Chinese Checkers out: its camps are in another module
@@ -118,17 +117,6 @@ describe("a game nobody could finish says so", () => {
     const atHome = distanceHome(size, "black", target[target.length - 1]);
     expect(atHome).not.toBeNull();
     expect(atHome!).toBeLessThan(distanceHome(size, "black", own)!);
-  });
-
-  it("tells a game that got nowhere apart from a game that ran its length", () => {
-    /*
-     * Not the same thing, and the board says so differently: one is a result
-     * the players agreed to, the other is the game admitting it went nowhere.
-     * A game nobody can win must stay visible as such rather than be filed as
-     * an ordinary draw.
-     */
-    const drawn = { status: GAME_STATUS.draw, settings: { variant: RULE_VARIANTS.freestyle } } as GameState;
-    expect(couldNotFinish(drawn)).toBe(false);
   });
 });
 
@@ -283,19 +271,17 @@ describe("the race games, measured by distance rather than a ledger", () => {
 
 describe("a stalled game names the rule that drew it", () => {
   /*
-   * A draw by draughts' rule is a result the players can read, and says so; only
-   * the one game whose row says its stall is a symptom still reads as a game that
-   * could not be finished.
+   * A draw by a no-progress rule is a result the players can read, and every
+   * stalled game says so with that rule's name and count.
    */
-  const drawnShuffle = (variant: string, size: number, plies: number): GameState =>
-    ({ ...shuffle(variant, size, plies), status: GAME_STATUS.draw }) as GameState;
+  const drawnShuffle = (variant: string, size: number, plies: number, over: Partial<Move> = {}): GameState =>
+    ({ ...shuffle(variant, size, plies, over), status: GAME_STATUS.draw }) as GameState;
 
-  it("names draughts' rule and its count, and does not call the game unfinished", () => {
+  it("names draughts' rule and its count", () => {
     const size = boardSizesFor(RULE_VARIANTS.checkers)[0];
     const rule = NO_PROGRESS_RULES[RULE_VARIANTS.checkers]!;
     const game = drawnShuffle(RULE_VARIANTS.checkers, size, rule.plies);
     expect(stalledDrawOf(game)).toEqual({ measure: PROGRESS_MEASURES.taking, plies: rule.plies });
-    expect(couldNotFinish(game)).toBe(false);
   });
 
   it("names the sliding rule for a game that places its pieces and then slides them", () => {
@@ -304,7 +290,6 @@ describe("a stalled game names the rule that drew it", () => {
     const laid = 2 * VARIANT_SPECS[RULE_VARIANTS.squareFour].pieces!;
     const game = drawnShuffle(RULE_VARIANTS.squareFour, size, laid + rule.plies);
     expect(stalledDrawOf(game)).toEqual({ measure: PROGRESS_MEASURES.placing, plies: rule.plies });
-    expect(couldNotFinish(game)).toBe(false);
   });
 
   it("says nothing for a game still going, or for one no stall rule watches", () => {
@@ -316,22 +301,21 @@ describe("a stalled game names the rule that drew it", () => {
     expect(stalledDrawOf(freestyle)).toBeNull();
   });
 
-  it("keeps 'could not be finished' for the one row that says so, and the row decides it, not the name", () => {
-    const saying = Object.entries(NO_PROGRESS_RULES)
-      .filter(([, rule]) => rule?.saysUnfinished === true)
-      .map(([name]) => name);
-    expect(saying).toEqual([RULE_VARIANTS.chineseCheckers]);
-
-    // Lent to draughts for a moment, the flag makes draughts say it too.
-    const size = boardSizesFor(RULE_VARIANTS.checkers)[0];
-    const was = NO_PROGRESS_RULES[RULE_VARIANTS.checkers]!;
-    NO_PROGRESS_RULES[RULE_VARIANTS.checkers] = { ...was, saysUnfinished: true };
-    try {
-      const game = drawnShuffle(RULE_VARIANTS.checkers, size, was.plies);
-      expect(couldNotFinish(game)).toBe(true);
-      expect(stalledDrawOf(game)).toBeNull();
-    } finally {
-      NO_PROGRESS_RULES[RULE_VARIANTS.checkers] = was;
+  it("names the no-progress rule for a stalled Chinese Checkers game, as it does for Halma", () => {
+    /*
+     * John, 2026-09-15: a stalled Chinese Checkers game is a draw by the
+     * no-progress rule, in Halma's words. It used to be the one game whose
+     * stall said it "could not be finished"; all 50 measured bot games were
+     * won, so it can be.
+     *
+     * Every move here leaves its piece where it stood, so neither side gets any
+     * nearer home whichever way the camps face — a stall on any board.
+     */
+    const still: Partial<Move> = { row: 4, col: 4, from: { row: 4, col: 4 } };
+    for (const variant of [RULE_VARIANTS.chineseCheckers, RULE_VARIANTS.halma]) {
+      const rule = NO_PROGRESS_RULES[variant]!;
+      const game = drawnShuffle(variant, boardSizesFor(variant)[0], rule.plies, still);
+      expect(stalledDrawOf(game), variant).toEqual({ measure: PROGRESS_MEASURES.racing, plies: rule.plies });
     }
   });
 

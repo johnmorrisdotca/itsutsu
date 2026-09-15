@@ -13,7 +13,6 @@ import type { StalledDraw } from "@/lib/gomoku/rules/noProgress";
  */
 
 const answers = {
-  couldNotFinish: false,
   stalledDrawOf: null as StalledDraw | null,
   endedWithNoMoves: false,
   repeatedTooOften: false,
@@ -22,7 +21,6 @@ const answers = {
 };
 
 vi.mock("@/lib/gomoku/rules/noProgress", () => ({
-  couldNotFinish: () => answers.couldNotFinish,
   stalledDrawOf: () => answers.stalledDrawOf,
 }));
 vi.mock("@/lib/gomoku/rules/forcedPass", () => ({ endedWithNoMoves: () => answers.endedWithNoMoves }));
@@ -37,7 +35,6 @@ const { drawReasonOf } = await import("./gameResult");
 const drawn = (board: GameState["board"]) => ({ status: GAME_STATUS.draw, board }) as GameState;
 
 beforeEach(() => {
-  answers.couldNotFinish = false;
   answers.stalledDrawOf = null;
   answers.endedWithNoMoves = false;
   answers.repeatedTooOften = false;
@@ -47,11 +44,8 @@ beforeEach(() => {
 
 describe("why a draw is a draw", () => {
   it("asks each rule in turn, first match wins", () => {
-    answers.couldNotFinish = true;
     answers.stalledDrawOf = { measure: "taking", plies: 80 };
     answers.endedWithNoMoves = true;
-    expect(drawReasonOf(drawn([null]))).toBe("unfinishable");
-    answers.couldNotFinish = false;
     expect(drawReasonOf(drawn([null]))).toBe("noProgressTaking");
     answers.stalledDrawOf = null;
     expect(drawReasonOf(drawn([null]))).toBe("noMoves");
