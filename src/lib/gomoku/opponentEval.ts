@@ -148,6 +148,13 @@ export function pointScore(
   point: Point,
   stone: Stone,
   spec: VariantSpec,
+  /**
+   * How much denying the other side's shape here is worth, against making your
+   * own. A bot's style, and the only thing that separates an attacker from a
+   * defender of the same strength. Left off, it is the even-handed weight
+   * every grade played before styles existed.
+   */
+  defenceWeight: number = EVAL_WEIGHTS.defence,
 ): number {
   const foe = otherStone(stone);
   const { board, settings } = before;
@@ -162,7 +169,7 @@ export function pointScore(
   const denied = spec.makerBreaker ? offence + defence : defence;
   return (
     sign * offence * EVAL_WEIGHTS.shape +
-    sign * denied * EVAL_WEIGHTS.shape * 0.85 +
+    sign * denied * EVAL_WEIGHTS.shape * defenceWeight +
     centreScore(settings.size, point)
   );
 }
@@ -182,11 +189,12 @@ export function pieceScore(
   cells: readonly { row: number; col: number; stone: Stone }[],
   me: Stone,
   spec: VariantSpec,
+  defenceWeight: number = EVAL_WEIGHTS.defence,
 ): number {
   let total = 0;
   for (const cell of cells) {
     const point = { row: cell.row, col: cell.col };
-    const worth = pointScore(before, point, cell.stone, spec);
+    const worth = pointScore(before, point, cell.stone, spec, defenceWeight);
     total += cell.stone === me ? worth : -worth;
   }
   return total;
