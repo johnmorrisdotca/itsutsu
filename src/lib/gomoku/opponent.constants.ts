@@ -29,6 +29,7 @@ export const BOT_TIERS = {
   dan: "dan",
   meijin: "meijin",
   guoshou: "guoshou",
+  rafaDuarte: "rafaDuarte",
   tamenoki: "tamenoki",
   meritalu: "meritalu",
 } as const satisfies Record<BotTier, BotTier>;
@@ -95,10 +96,42 @@ export const BOT_SPECIALIST_LIST: readonly BotTier[] = [
   BOT_TIERS.meritalu,
 ];
 
-/** Everybody the site plays as a computer: the ladder, then the specialists. */
-export const BOT_ALL_TIERS: readonly BotTier[] = [...BOT_TIER_LIST, ...BOT_SPECIALIST_LIST];
+/**
+ * THE CHARACTERS: a grade's knobs, a style of its own, and a face.
+ *
+ * The ladder is five rungs of difficulty and the specialists are one game
+ * each. These are neither: they play at a grade that already exists and differ from
+ * it only in STYLE — how much they value taking your point against making
+ * their own — which costs nothing, because both halves were already computed.
+ *
+ * That is why a roster of them is affordable here when a roster of deeper
+ * searches is not, and why they sit at the middle grades: style breaks ties,
+ * and the top grade's search leaves few ties to break. A master plays the best
+ * move; a club player plays like themselves.
+ */
+export const BOT_CHARACTER_LIST: readonly BotTier[] = [BOT_TIERS.rafaDuarte];
+
+/** Everybody the site plays as a computer: the ladder, the specialists, the characters. */
+export const BOT_ALL_TIERS: readonly BotTier[] = [
+  ...BOT_TIER_LIST,
+  ...BOT_SPECIALIST_LIST,
+  ...BOT_CHARACTER_LIST,
+];
 
 export const BOT_PROFILES: Record<BotTier, BotProfile> = {
+  rafaDuarte: {
+    tier: "rafaDuarte",
+    name: "Rafa Duarte",
+    // Portuguese is the script his name is already in. Null rather than a
+    // repeat of it — see BotProfile.native.
+    native: null,
+    strength: "Medium, attacking",
+    blurb:
+      "Plays at Dan's strength and would always rather be the one asking the " +
+      "question. Rafa builds threats faster than he answers them, which works " +
+      "more often than it should — and when it does not, everyone watching saw " +
+      "it coming a move before he did.",
+  },
   razryad: {
     tier: BOT_TIERS.razryad,
     name: "Razryad",
@@ -291,6 +324,32 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     searchDepth: 8,
     expertise: [],
   },
+  /*
+   * Rafa Duarte: Dan's strength, an attacker's style.
+   *
+   * Every number here but one is Dan's, and the one is `defence`. He is not a
+   * stronger or weaker player than Dan — he is the same player who would
+   * rather make you answer a threat than answer yours, and at 0.3 against the
+   * even-handed 0.85 he means it.
+   *
+   * At Dan and not at the top, because that is where a style is visible: the
+   * top grade's search runs after the base score and finds the same move
+   * whatever the base score preferred, so an aggressive 国手 is very nearly
+   * 国手. A master plays the best move; a club player plays like themselves.
+   */
+  rafaDuarte: {
+    depth: 2,
+    guard: 0.95,
+    blunder: 0.03,
+    noise: 0.25,
+    reads: false,
+    width: 90,
+    guardTop: 20,
+    searchDepth: 0,
+    expertise: [],
+    defence: 0.3,
+  },
+
   /*
    * The specialists carry 国手's knobs and one thing more: a game they have
    * actually studied. At that game the knobs hardly matter — the specialist

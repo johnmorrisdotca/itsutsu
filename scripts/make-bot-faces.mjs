@@ -40,8 +40,19 @@ import { join, parse } from "node:path";
 const require = createRequire(import.meta.url);
 const sharp = createRequire(require.resolve("next/package.json"))("sharp");
 
-const IN = join("public", "art", "bots");
-const OUT = join(IN, "faces");
+/**
+ * One folder per style, the same filename in each.
+ *
+ * John keeps both variants side by side — `src-oil/rafaDuarte.png` and
+ * `src-enamel/rafaDuarte.png` — so choosing the site's look is choosing a
+ * folder, and the losing style stays on disk rather than being regenerated if
+ * the decision is revisited. `BOT_ART=src-enamel pnpm art:faces` cuts the
+ * other set over the top; the faces are named for the bot, never for the
+ * style, so nothing downstream knows or cares which was chosen.
+ */
+const ROOT = join("public", "art", "bots");
+const IN = join(ROOT, process.env.BOT_ART ?? "src-oil");
+const OUT = join(ROOT, "faces");
 /** Kept in step with the largest size the site draws a picture at, doubled for retina. */
 const SIZE = 280;
 

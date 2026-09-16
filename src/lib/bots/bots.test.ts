@@ -105,7 +105,13 @@ describe("the ladder as members", () => {
     expect(atReversi).not.toContain(BOT_TIERS.meritalu);
     expect(atFive).toContain(BOT_TIERS.meritalu);
     expect(atFive).not.toContain(BOT_TIERS.tamenoki);
+    // Halma is a race: no shape is read, so a character whose whole difference
+    // is a shape preference would be the grade it is built on under another
+    // name. The ladder plays it and nobody else does.
     expect(atHalma).toEqual([...BOT_TIER_LIST]);
+    // ...and a character IS offered where shape is the game.
+    expect(atFive).toContain(BOT_TIERS.rafaDuarte);
+    expect(atHalma).not.toContain(BOT_TIERS.rafaDuarte);
   });
 
   it("reads which seat a computer is sitting in", () => {

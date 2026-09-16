@@ -7,6 +7,7 @@ import { seededRandom } from "./rules/random";
 import {
   BOT_ALL_TIERS,
   BOT_PROFILES,
+  BOT_CHARACTER_LIST,
   BOT_SPECIALIST_LIST,
   BOT_TIER_LIST,
   BOT_TIERS,
@@ -139,7 +140,16 @@ describe("the graded players", () => {
      */
     expect(BOT_PROFILES.tamenoki.native).toBe("為乃木秀正");
     expect(BOT_PROFILES.meritalu.native).toBeNull();
-    expect(BOT_ALL_TIERS).toEqual([...BOT_TIER_LIST, ...BOT_SPECIALIST_LIST]);
+    /*
+     * Three kinds of computer player, and everybody is exactly one of them:
+     * the ladder's five rungs, the specialists at their own game, and the
+     * characters, who play a rung's strength with a style of their own.
+     */
+    expect(BOT_ALL_TIERS).toEqual([...BOT_TIER_LIST, ...BOT_SPECIALIST_LIST, ...BOT_CHARACTER_LIST]);
+    for (const tier of BOT_CHARACTER_LIST) {
+      expect(BOT_TIER_LIST, "a character is not a rung").not.toContain(tier);
+      expect(BOT_SPECIALIST_LIST, "a character has studied nothing").not.toContain(tier);
+    }
     const names = BOT_ALL_TIERS.map((tier) => BOT_PROFILES[tier].name);
     expect(new Set(names).size).toBe(BOT_ALL_TIERS.length);
   });

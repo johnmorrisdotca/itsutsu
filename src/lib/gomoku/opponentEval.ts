@@ -143,6 +143,27 @@ function centreScore(size: number, point: Point): number {
  * lines: the shape it makes, plus the shape it denies the other colour by
  * occupying a point they wanted.
  */
+/**
+ * Whether a point's SHAPE is what matters in this game.
+ *
+ * True for the line-and-grid games, where a stone's own point carries most of
+ * the information: the shape it makes and the shape it takes away. False where
+ * a turn has no single point to read or where shape is not the game — the
+ * flipping boards, the races, the connection games and Go, whose position
+ * scores already say what a move was worth.
+ *
+ * Exported because two callers must agree. `baseScore` uses it to decide
+ * whether to read a point at all, and `tiersFor` uses it to decide whether a
+ * player whose whole difference is a SHAPE preference has any difference here
+ * — an attacker at Halma is the grade it is built on under another name and a
+ * different flag, which is the same thing this codebase already refuses to do
+ * with the specialists. Two copies of this rule would drift, and the one that
+ * drifted would be whichever nobody was looking at.
+ */
+export function shapeIsRead(spec: VariantSpec): boolean {
+  return !spec.flips && !racesForCamp(spec) && !spec.connects && !spec.go;
+}
+
 export function pointScore(
   before: GameState,
   point: Point,
