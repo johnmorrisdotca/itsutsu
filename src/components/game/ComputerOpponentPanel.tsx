@@ -41,8 +41,17 @@ export function ComputerOpponentPanel({ session, actions }: GamePanelProps) {
         ) : null}
       </div>
 
-      <label className="flex flex-col gap-1 text-xs text-muted">
-        Plays as
+      {/*
+        The label BESIDE the control, never wrapped around it.
+        A <label> that wraps a <select> takes every option into its own text, so
+        this one read "Plays as Nobody — two people Player 1 Player 2" — and
+        `getByLabel(/Player 1/)` then matched this dropdown instead of the
+        player-name field beside the board. Five practice specs failed on CI
+        trying to type into a <select>, which reads as a broken form rather than
+        as a label that got greedy. htmlFor keeps the name to the words meant.
+      */}
+      <div className="flex flex-col gap-1 text-xs text-muted">
+        <label htmlFor="computer-seat">Plays as</label>
         <select
           id="computer-seat"
           className="rounded-lg border border-rule bg-transparent px-2 py-1 text-sm text-ink"
@@ -61,10 +70,10 @@ export function ComputerOpponentPanel({ session, actions }: GamePanelProps) {
           <option value={SEATS.one}>{SEAT_DISPLAY[SEATS.one].label}</option>
           <option value={SEATS.two}>{SEAT_DISPLAY[SEATS.two].label}</option>
         </select>
-      </label>
+      </div>
 
-      <label className="flex flex-col gap-1 text-xs text-muted">
-        Strength
+      <div className="flex flex-col gap-1 text-xs text-muted">
+        <label htmlFor="computer-tier">Strength</label>
         <select
           id="computer-tier"
           className="rounded-lg border border-rule bg-transparent px-2 py-1 text-sm text-ink"
@@ -79,7 +88,7 @@ export function ComputerOpponentPanel({ session, actions }: GamePanelProps) {
             </option>
           ))}
         </select>
-      </label>
+      </div>
 
       {failed === null ? (
         <p className="text-xs text-muted">
