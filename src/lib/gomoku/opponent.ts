@@ -1,7 +1,7 @@
 import { racesForCamp } from "./rules/farCamp";
 import { otherStone } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
-import { DECIDED_SCORE, EVAL_WEIGHTS, FORCED, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
+import { DECIDED_SCORE, EVAL_WEIGHTS, FORCED, REPLY_CAP, SEARCH, TIER_SPECS } from "./opponent.constants";
 import { defenceNow, pieceScore, positionScore, pointScore, readsThreats, shapeIsRead, threatScore } from "./opponentEval";
 import { masteredTurn } from "./expert/experts";
 import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
@@ -28,12 +28,24 @@ import { perfectTurns } from "./solved/smallGames";
  * losing condition, and needs to know nothing about which game it is playing.
  */
 
+/**
+ * What the guard has said about a turn. Three states, not a boolean: a turn
+ * the guard never reached, or ran out of clock on, is UNREAD, which is neither
+ * "safe" nor "loses" — see `handsOverTheGame` for why the difference matters.
+ */
+const GUARD = {
+  unread: "unread",
+  cleared: "cleared",
+  condemned: "condemned",
+} as const;
+type GuardVerdict = (typeof GUARD)[keyof typeof GUARD];
+
 type Scored = {
   turn: BotTurn;
   after: GameState;
   score: number;
-  /** Set when the guard found that this turn hands the other side the game. */
-  condemned: boolean;
+  /** What the guard found, or that it has not looked. */
+  guard: GuardVerdict;
 };
 
 /** Whether a score is a settled game rather than a reading of a live one. */
@@ -88,19 +100,39 @@ function baseScore(state: GameState, turn: BotTurn, after: GameState, me: Stone,
 }
 
 /**
- * Whether the other side could win outright in reply to this position.
+ * Whether the other side could win outright in reply to this position — or
+ * null, when the clock ran out before every reply had been read.
  *
  * The whole of the lookahead, and deliberately so. On a turn-based site a move
  * has to be chosen inside a request, and one ply of "does this hand them the
  * game" — checked through the engine, so it is right in every variant — beats
  * three plies of a heuristic that does not know what the game is about.
+ *
+ * `until` is the move's deadline, the same one the search spends the rest of.
+ * This used to run with no clock at all: up to `REPLY_CAP` replies for each of
+ * `guardTop` candidates, every one a full rule application, all of it before
+ * the search's clock had started — so the move's real cost was the budget plus
+ * whatever this took, and on a board where a rule application is dear that
+ * was the larger half. It is bounded in COUNT by construction (`REPLY_CAP` a
+ * read, `guardTop` reads a move), which is why it takes no node budget of its
+ * own; what it lacked was a bound in time.
+ *
+ * NULL, NEVER FALSE, WHEN IT CANNOT FINISH. A read that stops half way has not
+ * found a winning reply, and "I found none" and "I did not look at them all"
+ * are different facts — the first clears a move and the second says nothing.
+ * Returning false here would report "no danger" for a move nobody had checked,
+ * which is exactly the plausible-looking wrong answer this codebase has been
+ * bitten by before. The clock is read before each reply rather than after, so
+ * a read that gets through every reply answers, whatever the time says then.
  */
-function handsOverTheGame(after: GameState, me: Stone): boolean {
+export function handsOverTheGame(after: GameState, me: Stone, until: number): boolean | null {
   if (after.status !== GAME_STATUS.playing) return false;
   // Where a turn is more than one stone, the other side is not to move yet.
   if (after.toPlay === me) return false;
+  if (Date.now() >= until) return null;
   const foe = otherStone(me);
   for (const reply of legalTurns(after, REPLY_CAP)) {
+    if (Date.now() >= until) return null;
     const next = applyTurn(after, reply);
     if (next === after) continue;
     if (next.status !== GAME_STATUS.playing && next.winner === foe) return true;
@@ -126,29 +158,51 @@ function firstDefended(
   forcing: ForcedBudget,
   /** The root moves the search ranked, best first. */
   ranked: readonly Point[],
+  /** The move's deadline, which the guard reads against. */
+  until: number,
 ): Scored | null {
   for (const point of ranked) {
     const entry = scored.find(
       (option) => option.turn.kind === MOVE_KINDS.place && option.turn.row === point.row && option.turn.col === point.col,
     );
-    if (entry === undefined || entry.condemned) continue;
-    if (guarding && handsOverTheGame(entry.after, me)) continue;
+    if (entry === undefined || entry.guard === GUARD.condemned) continue;
+    // UNREAD is not cleared: a move nobody checked is not played on the
+    // strength of the check nobody made. See `handsOverTheGame`.
+    if (guarding && readGuard(entry, me, until) !== GUARD.cleared) continue;
     if (threatWinTurn(entry.after, forcing) === null) return entry;
   }
-  return bestByShape(scored, me, guarding, forcing);
+  return bestByShape(scored, me, guarding, forcing, until);
 }
 
 /**
  * The best turn by shape that neither hands over the game nor leaves the other
  * side a forced win, among the first few; null when none of them manages it.
  */
-function bestByShape(scored: Scored[], me: Stone, guarding: boolean, forcing: ForcedBudget): Scored | null {
-  const byShape = scored.filter((entry) => !entry.condemned).sort((a, b) => b.score - a.score);
+function bestByShape(
+  scored: Scored[],
+  me: Stone,
+  guarding: boolean,
+  forcing: ForcedBudget,
+  until: number,
+): Scored | null {
+  const byShape = scored.filter((entry) => entry.guard !== GUARD.condemned).sort((a, b) => b.score - a.score);
   for (const entry of byShape.slice(0, FORCED.defended)) {
-    if (guarding && handsOverTheGame(entry.after, me)) continue;
+    if (guarding && readGuard(entry, me, until) !== GUARD.cleared) continue;
     if (threatWinTurn(entry.after, forcing) === null) return entry;
   }
   return null;
+}
+
+/**
+ * Reads a turn the guard has not reached yet, and records what it found. A
+ * turn already read is not read twice: the answer is a fact about the position
+ * and the position has not changed.
+ */
+function readGuard(entry: Scored, me: Stone, until: number): GuardVerdict {
+  if (entry.guard !== GUARD.unread) return entry.guard;
+  const verdict = handsOverTheGame(entry.after, me, until);
+  if (verdict !== null) entry.guard = verdict ? GUARD.condemned : GUARD.cleared;
+  return entry.guard;
 }
 
 /** One of `items`, drawn evenly. Ties are broken by chance, never by board order. */
@@ -231,7 +285,7 @@ export function chooseTurn(
     // A turn the engine refuses is not a turn. It should not happen; if the
     // enumeration ever drifts from the rules, the rules win.
     if (after === state) continue;
-    scored.push({ turn, after, score: baseScore(state, turn, after, me, spec), condemned: false });
+    scored.push({ turn, after, score: baseScore(state, turn, after, me, spec), guard: GUARD.unread });
   }
   if (scored.length === 0) return null;
 
@@ -275,13 +329,36 @@ export function chooseTurn(
    * one, and it makes the tier's strength impossible to reason about.
    */
   const guarding = spec.depth > 1 && random() < spec.guard;
+  /*
+   * THE MOVE'S CLOCK STARTS HERE, and the guard and the search both spend it.
+   *
+   * One deadline rather than one each: a move on this site is a request
+   * somebody pays for, and its cost is whatever runs, not whatever the search
+   * was told. The guard used to run before the clock existed and the search
+   * then took the whole budget after it, so a move cost the budget plus the
+   * guard — measured at 250ms plus 68ms on a fifteen by fifteen board with
+   * twenty-four stones down, and more wherever a rule application is dearer.
+   * Now the guard reads what it can before the deadline and the search gets
+   * what is left, so the two together cost the budget. The node count is not
+   * shared: the searches count different things under that name (positions in
+   * one, candidates weighed in another) and a test pins a search by it, so a
+   * guard charging its six thousand applications there would starve every one
+   * of them. The guard's count is bounded by `REPLY_CAP` and `guardTop`
+   * already; the clock was the bound it lacked.
+   *
+   * When the clock runs out part way down the list, the rest stay UNREAD and
+   * are not pretended safe — see `handsOverTheGame`. A grade out of time then
+   * plays what it has read, which is the same as a grade with a smaller
+   * `guardTop`, rather than a move with a fabricated all-clear on it.
+   */
+  const until = Date.now() + (budget.millis ?? SEARCH.millis);
   if (guarding) {
     const ranked = [...scored].sort((a, b) => b.score - a.score);
     for (const entry of ranked.slice(0, spec.guardTop)) {
-      if (handsOverTheGame(entry.after, me)) {
-        entry.condemned = true;
-        entry.score -= DECIDED_SCORE;
-      }
+      const verdict = readGuard(entry, me, until);
+      // Out of clock: nothing further down the list can be read either.
+      if (verdict === GUARD.unread) break;
+      if (verdict === GUARD.condemned) entry.score -= DECIDED_SCORE;
     }
   }
 
@@ -320,13 +397,15 @@ export function chooseTurn(
      * sixteen games; see LOOK for why its node budget counts what it counts.
      */
     const ranked: Point[] = [];
+    // What the guard left of the clock; the node count passes through whole.
+    const left: SearchBudget = { ...budget, millis: Math.max(0, until - Date.now()) };
     const searched =
-      searchTurn(state, spec.searchDepth, random, budget, defenceNow(spec, state.moves.length), "auto", ranked) ??
+      searchTurn(state, spec.searchDepth, random, left, defenceNow(spec, state.moves.length), "auto", ranked) ??
       lookAheadTurn(
         state,
         lookDepth(VARIANT_SPECS[state.settings.variant], spec.searchDepth),
         random,
-        budget,
+        left,
         // Its own width, so what it hands back is among what was weighed above.
         spec.width,
       );
@@ -336,25 +415,29 @@ export function chooseTurn(
      * The guard only condemns the best few by shape, so a move the search
      * liked may simply never have been examined. It is checked here on its own
      * account: one reply reading, on one position, and the safety net has no
-     * hole in it.
+     * hole in it. A move the guard already read is not read again, and a move
+     * it could not finish reading is UNREAD, which is not cleared — the grade
+     * falls back to the moves it did read rather than play a plan nobody has
+     * checked for the one-move loss the whole guard exists to catch.
      */
     const safe =
       entry !== undefined &&
-      !entry.condemned &&
-      (!guarding || !handsOverTheGame(entry.after, me));
+      entry.guard !== GUARD.condemned &&
+      (!guarding || readGuard(entry, me, until) === GUARD.cleared);
     if (safe && (forcing === null || threatWinTurn(entry.after, forcing) === null)) return entry.turn;
 
     /*
      * The move the search liked leaves the other side a forced win — or the
-     * guard condemned it. Either way the next best that does neither is played
-     * instead. This is the finder's larger half: a chain of threats against us is
-     * as far past the search's horizon as one of ours, and until now the top
-     * grades walked into them. Only the best few by shape are tried, on the
-     * finder's own shared budget; when none survives, the choice falls through
-     * to the ordinary one, because every move then loses and none is worse.
+     * guard condemned it, or the clock ran out before the guard could read it.
+     * Either way the next best that does neither is played instead. This is the
+     * finder's larger half: a chain of threats against us is as far past the
+     * search's horizon as one of ours, and until now the top grades walked into
+     * them. Only the best few by shape are tried, on the finder's own shared
+     * budget; when none survives, the choice falls through to the ordinary one,
+     * because every move then loses and none is worse.
      */
     if (forcing !== null) {
-      const defended = firstDefended(scored, me, guarding, forcing, ranked);
+      const defended = firstDefended(scored, me, guarding, forcing, ranked, until);
       if (defended !== null) return defended.turn;
     }
   }
