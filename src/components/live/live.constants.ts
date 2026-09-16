@@ -347,3 +347,16 @@ export const OFFER_PANEL_COPY = {
       `Withdrawing costs nobody anything — you can offer it again.`,
   },
 } as const;
+
+/**
+ * What the board says while the computer opposite is thinking.
+ *
+ * It needs saying now and never did before. The computer used to answer inside
+ * the request that carried your own stone, so there was no gap: the board came
+ * back with both moves on it. Now the thinking happens in this browser and may
+ * take a couple of seconds, and a board that sits still is indistinguishable
+ * from one that has stopped working.
+ */
+export const BOT_SEAT_COPY = {
+  thinking: "Thinking…",
+} as const;

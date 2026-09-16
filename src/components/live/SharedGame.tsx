@@ -18,7 +18,7 @@ import {
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
 import { Button, SectionTitle } from "@/components/ui/Controls";
-import { LIVE_PAUSED_COPY } from "./live.constants";
+import { BOT_SEAT_COPY, LIVE_PAUSED_COPY } from "./live.constants";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
 import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -37,6 +37,7 @@ import type { SharedGameProps } from "./sharedGame.types";
 import { TurnBanner } from "./TurnBanner";
 import { readQuiet, subscribeQuiet } from "./quiet";
 import { settleFromRecord, settledSinceRendered } from "@/lib/history/settle";
+import { useBotSeat } from "./useBotSeat";
 import { useLiveGame } from "./useLiveGame";
 import { useMatchAddress } from "./useMatchAddress";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
@@ -129,10 +130,18 @@ export function SharedGame({
   async function send(body: Record<string, unknown>) {
     if (token === null) return;
     setError(null);
+    /*
+     * `botReply` tells the server not to work the computer's answer out itself,
+     * because this browser is about to. It is the whole of the saving — see the
+     * moves route — and it is claimed only when a worker can actually be made,
+     * so a browser that cannot think still gets its opponent's move back in the
+     * response exactly as before. Claiming it and then failing to post would
+     * leave the game waiting for a move nobody is working on.
+     */
     const response = await fetch(`/api/games/${detail.id}/moves`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, ...body }),
+      body: JSON.stringify({ token, ...body, ...(bot.answering ? { botReply: true } : {}) }),
     });
 
     if (!response.ok) {
@@ -186,6 +195,21 @@ export function SharedGame({
         : { row: point.row, col: point.col },
     );
   }
+
+  /*
+   * The computer opposite answers in THIS browser rather than on a paid
+   * function. It posts through `send` like any click, with this player's own
+   * token, and the server re-checks it — see `appendMove`, which is the door
+   * and explains what it grants. `playBotTurns` is still there on the server
+   * for the tab that gets closed mid-think.
+   */
+  const bot = useBotSeat({
+    state,
+    seats: { blackMemberId: detail.blackMemberId, whiteMemberId: detail.whiteMemberId },
+    mySeat: seat,
+    send,
+    enabled: token !== null && offer === null,
+  });
 
   async function twist(quadrant: number, clockwise: boolean) {
     if (!playable) return;
@@ -250,6 +274,19 @@ export function SharedGame({
       {error !== null ? (
         <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.warn}`}>
           {error}
+        </p>
+      ) : null}
+
+      {/*
+        Said out loud, because it is now this browser doing the thinking and a
+        move may take a couple of seconds. A board that simply sits there is
+        indistinguishable from one that has stopped working, and the player has
+        no other way to tell — the computer used to answer inside the request
+        that carried their own stone, so there was never a gap to explain.
+      */}
+      {bot.thinking ? (
+        <p className="text-sm text-muted" data-testid="bot-thinking" role="status">
+          {BOT_SEAT_COPY.thinking}
         </p>
       ) : null}
 

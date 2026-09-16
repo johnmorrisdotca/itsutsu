@@ -57,6 +57,10 @@ const PASS_AND_ONLY_A_PASS = new Map([
   ["src/lib/gomoku/opponentTurns.ts", "a computer's candidate turns, which offer a pass and never a forfeit"],
   ["src/lib/gomoku/opponent.ts", "scores a computer's candidate turn, never a stored move"],
   ["src/lib/bots/botPlay.ts", "turns a computer's chosen turn into a request, and no computer chooses a forfeit"],
+  [
+    "src/components/live/useBotSeat.ts",
+    "the same turn-into-a-request as botPlay.ts, done in the browser instead of on the server; a BotTurn is place, move, piece or pass and has no forfeit in it",
+  ],
   ["src/lib/history/gameRecord.ts", "a filed game's move schema has no forfeit in its enum, so no move reaching that check can be one"],
   ["src/lib/gomoku/simulation.checks.ts", "the simulator plays without a clock, so nothing on its record is a forfeit"],
   ["src/lib/gomoku/simulation.go.ts", "the simulator plays without a clock, so nothing on its record is a forfeit"],

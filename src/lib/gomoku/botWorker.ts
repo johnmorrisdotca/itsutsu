@@ -2,6 +2,7 @@
 
 import { chooseTurn } from "./opponent";
 import { seededRandom } from "./botSeed";
+import { BROWSER_MOVE_MILLIS } from "./botWorker.constants";
 import type { BotTurn, BotTier, SearchBudget } from "./opponent.types";
 import type { GameState } from "./gomoku.types";
 
@@ -53,16 +54,6 @@ export type BotAsk = {
 export type BotAnswer =
   | { id: number; ok: true; turn: BotTurn | null; millis: number }
   | { id: number; ok: false; reason: string };
-
-/**
- * How long a browser move may think.
- *
- * Far past the server's 250 ms, and deliberately: this is the budget that lets
- * a grade actually be the strength it claims. It is still bounded, because a
- * player waiting on a board wants an opponent rather than a progress bar, and
- * because a runaway loop on somebody's laptop is our bug however free the CPU.
- */
-export const BROWSER_MOVE_MILLIS = 2_000;
 
 self.addEventListener("message", (event: MessageEvent<BotAsk>) => {
   const ask = event.data;
