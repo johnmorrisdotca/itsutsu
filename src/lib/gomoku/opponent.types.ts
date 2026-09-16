@@ -40,7 +40,8 @@ export type BotTier =
   | "guoshou"
   | "tamenoki"
   | "meritalu"
-  | "rafaDuarte";
+  | "rafaDuarte"
+  | "ingridSolheim";
 
 /**
  * One whole turn, in the shapes a turn can take across these games.
