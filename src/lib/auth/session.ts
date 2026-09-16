@@ -47,7 +47,7 @@ export type Session = {
   exp: number;
 };
 
-export const SESSION_COOKIE = "gomoku_session";
+export const SESSION_COOKIE = "itsutsu_session";
 
 /** A player's pass lasts a month; the operator's a day. */
 export const PLAYER_SESSION_DAYS = 30;

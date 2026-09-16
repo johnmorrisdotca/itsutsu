@@ -1,0 +1,28 @@
+Copyright (c) 2026 John Morris. All rights reserved.
+
+This source code is published so it can be read. It is not open source, and no
+licence to use it is granted here.
+
+You may not copy, modify, distribute, sublicense, or create derivative works
+from this repository, in whole or in part, without prior written permission
+from the copyright holder. Nothing in this file grants any right to any
+trademark, service mark, or the name Itsutsu.
+
+Two things this file is NOT saying.
+
+It is not a statement that the code will always be closed. Reserving every
+right is the only starting position from which every later choice is still
+available: a licence can always be made more permissive afterwards, and the
+parts of this repository worth opening — the game engine most of all — may be
+opened under their own terms when they are ready to stand on their own. The
+reverse is not possible. Code released under an open licence stays released
+under it for the copies already made, whatever this file says later.
+
+It is not a claim over other people's work. The dependencies in package.json
+are covered by their own licences and nothing here alters them. Where this
+project has learned from published research on game engines, what it took was
+the published method and not the source — the ideas in a paper are free to
+anyone who reads them, and an engine's code is not.
+
+Questions about use, or about a licence for any part of this, go to
+hello@itsutsu.com.
