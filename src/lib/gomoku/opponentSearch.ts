@@ -87,6 +87,9 @@ function terminalScore(state: GameState, me: Stone, depthLeft: number): number {
  * Ordered by shape, which is cheap. The threat reading, which is the better
  * ordering and about fifty times the price, is spent only where `reading` says
  * so — at the root, over a shortlist the shape ordering has already narrowed.
+ *
+ * `defence` is the player's STYLE, and this is the only place in the search it
+ * is allowed to reach. See `searchTurn`.
  */
 function orderedCandidates(
   state: GameState,
@@ -94,6 +97,7 @@ function orderedCandidates(
   branch: number,
   reading: boolean,
   first: Point | null,
+  defence?: number,
 ): Point[] {
   const mover = state.toPlay;
   const points = candidatePoints(state).filter((point) => isLegalMove(state, point));
@@ -101,7 +105,7 @@ function orderedCandidates(
 
   const scored = points.map((point) => ({
     point,
-    score: pointScore(state, point, mover, spec),
+    score: pointScore(state, point, mover, spec, defence),
   }));
   scored.sort((a, b) => b.score - a.score);
 
@@ -150,6 +154,7 @@ function negamax(
   alpha: number,
   beta: number,
   budget: Budget,
+  defence?: number,
 ): number {
   if (state.status !== GAME_STATUS.playing) return terminalScore(state, me, depth);
   if (depth === 0) return leafScore(state, me, spec);
@@ -158,7 +163,7 @@ function negamax(
   if (spent(budget)) return leafScore(state, me, spec);
 
   const maximising = state.toPlay === me;
-  const candidates = orderedCandidates(state, spec, SEARCH.branch, false, null);
+  const candidates = orderedCandidates(state, spec, SEARCH.branch, false, null, defence);
   if (candidates.length === 0) return leafScore(state, me, spec);
 
   let best = maximising ? -Infinity : Infinity;
@@ -169,7 +174,7 @@ function negamax(
     const turn: BotTurn = { kind: MOVE_KINDS.place, row: point.row, col: point.col };
     const after = applyTurn(state, turn);
     if (after === state) continue;
-    const value = negamax(after, me, spec, depth - 1, low, high, budget);
+    const value = negamax(after, me, spec, depth - 1, low, high, budget, defence);
 
     if (maximising) {
       if (value > best) best = value;
@@ -198,6 +203,24 @@ export function searchTurn(
   depth: number,
   random: () => number,
   limit: SearchBudget = {},
+  /**
+   * The player's STYLE — see `TierSpec.defence`. It reaches the ORDERING and
+   * nothing else, which is a deliberate line rather than an unfinished job.
+   *
+   * Ordering is where a preference belongs. The search runs on a budget, so
+   * what it looks at first is what it has time to look at at all: an attacker
+   * spends its plies on its own threats, a defender on yours, and when two
+   * moves come back genuinely equal the order decides. That is a style.
+   *
+   * The LEAF is deliberately left alone. `leafScore` reads a whole position,
+   * and bending it would change what the search BELIEVES a position is worth —
+   * a "defensive" 国手 would then overvalue blocking and play weaker chess than
+   * 国手, which is not a personality, it is a worse player wearing one. Style
+   * breaks ties and orders work; it never overrules a search. The same line is
+   * kept in `chooseTurn`, where the win in hand, the guard and the solved-game
+   * table all run before style is consulted.
+   */
+  defence?: number,
 ): BotTurn | null {
   const spec = VARIANT_SPECS[state.settings.variant];
   if (!searchable(spec)) return null;
@@ -216,7 +239,7 @@ export function searchTurn(
    * which is the whole of what deepening needs from it — and it saves paying
    * the threat reading again for each extra ply.
    */
-  const rootPoints = orderedCandidates(state, spec, SEARCH.rootBranch, true, null);
+  const rootPoints = orderedCandidates(state, spec, SEARCH.rootBranch, true, null, defence);
   if (rootPoints.length === 0) return null;
 
   for (let ply = 2; ply <= depth; ply += 2) {
@@ -231,7 +254,7 @@ export function searchTurn(
       const turn: BotTurn = { kind: MOVE_KINDS.place, row: point.row, col: point.col };
       const after = applyTurn(state, turn);
       if (after === state) continue;
-      const value = negamax(after, me, spec, ply - 1, -Infinity, Infinity, budget);
+      const value = negamax(after, me, spec, ply - 1, -Infinity, Infinity, budget, defence);
       if (value > best) {
         best = value;
         equal = [point];

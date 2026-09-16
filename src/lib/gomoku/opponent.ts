@@ -253,7 +253,7 @@ export function chooseTurn(
      * sixteen games; see LOOK for why its node budget counts what it counts.
      */
     const searched =
-      searchTurn(state, spec.searchDepth, random, budget) ??
+      searchTurn(state, spec.searchDepth, random, budget, defenceNow(spec, state.moves.length)) ??
       lookAheadTurn(
         state,
         lookDepth(VARIANT_SPECS[state.settings.variant], spec.searchDepth),

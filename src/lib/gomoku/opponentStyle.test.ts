@@ -117,12 +117,25 @@ describe("the style knob", () => {
     for (const tier of [...BOT_TIER_LIST, ...BOT_SPECIALIST_LIST]) {
       expect(TIER_SPECS[tier].defence, `${tier} should play even-handed`).toBeUndefined();
       expect(TIER_SPECS[tier].moods, `${tier} should have no moods`).toBeUndefined();
+      expect(TIER_SPECS[tier].masteryBudget, `${tier} reads as deep as it can`).toBeUndefined();
     }
     expect(BOT_CHARACTER_LIST.length, "a character with no style is just its grade").toBeGreaterThan(0);
+    /*
+     * A character has to DIFFER from the grade it is built on, or it is that
+     * grade under another name and a different face — the thing this codebase
+     * already refuses to do with the specialists.
+     *
+     * There are three ways to differ, and a character needs one of them: a
+     * fixed style, a style that changes during the game, or a specialist
+     * reading that does not go as deep as the best one's. Chibi is the third:
+     * he plays Othello and simply does not read as far, which no style knob
+     * could express, because at a flipping board shape is not what is scored.
+     */
     for (const tier of BOT_CHARACTER_LIST) {
       const knobs = TIER_SPECS[tier];
-      const styled = knobs.defence !== undefined || knobs.moods !== undefined;
-      expect(styled, `${tier} has no style, so it is just its grade`).toBe(true);
+      const differs =
+        knobs.defence !== undefined || knobs.moods !== undefined || knobs.masteryBudget !== undefined;
+      expect(differs, `${tier} is its grade under another name`).toBe(true);
     }
     expect(EVAL_WEIGHTS.defence).toBe(0.85);
   });
