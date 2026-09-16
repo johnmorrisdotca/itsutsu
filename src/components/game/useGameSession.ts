@@ -33,6 +33,8 @@ import { useGameTimeline } from "./useGameTimeline";
 import { useTurnDecisions } from "./useTurnDecisions";
 import { clearSnapshot, saveSnapshot, toSnapshot } from "./gameStorage";
 import { unsavedAppearance } from "./unsavedAppearance";
+import { applyTurn } from "@/lib/gomoku/opponentTurns";
+import type { BotTurn } from "@/lib/gomoku/opponent.types";
 import type {
   GameActions,
   MatchStart,
@@ -303,8 +305,33 @@ export function useGameSession(
     branchDiscards: timeline.length - 1 - index,
   };
 
+  /*
+   * A whole turn, chosen by something that is not a pair of hands.
+   *
+   * The computer answers with a `BotTurn` — which may be a stone, a stone and
+   * a quarter turn together, a piece from one square to another, a shape, or a
+   * pass — and every one of those is a different sequence of clicks. Replaying
+   * it AS clicks would mean a second implementation of what a turn is, living
+   * in the opponent rather than the engine, and drifting from it the first time
+   * a game with a new kind of move is added.
+   *
+   * So it does not replay clicks. `applyTurn` is the engine's own answer to
+   * "what does this turn do", and `commit` is the same recorder a click ends
+   * at — the clock, the statistics, the blunder mark and the timeline all
+   * happen exactly as they do for a person. An illegal turn returns the state
+   * unchanged and `commit` discards it, so nothing here can bend a rule.
+   */
+  const playTurn = useCallback(
+    (turn: BotTurn) => {
+      if (reviewing) return;
+      commit(applyTurn(state, turn));
+    },
+    [commit, reviewing, state],
+  );
+
   const actions: GameActions = {
     play: input.play,
+    playTurn,
     undo: line.undo,
     redo: line.redo,
     jumpTo: line.jumpTo,

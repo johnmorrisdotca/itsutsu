@@ -12,6 +12,7 @@ import type {
 } from "@/lib/gomoku/gomoku.types";
 import type { Appearance, BoardMark } from "@/components/board/board.types";
 import type { PieceHand } from "./usePieceHand";
+import type { BotTurn } from "@/lib/gomoku/opponent.types";
 
 /**
  * How much the board tells a player about the position.
@@ -160,6 +161,8 @@ export type ResizeProposal = {
 
 export type GameActions = {
   play: (point: Point) => void;
+  /** A whole turn at once, as a computer opponent answers one. See `playTurn` in useGameSession. */
+  playTurn: (turn: BotTurn) => void;
   undo: () => void;
   redo: () => void;
   jumpTo: (index: number) => void;
