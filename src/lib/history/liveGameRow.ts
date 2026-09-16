@@ -136,6 +136,40 @@ export function replay(row: GameRow): GameState {
   return timeline[timeline.length - 1];
 }
 
+/**
+ * Whether `state` is the position this row's record replays to, so a caller
+ * that already holds it may hand it over instead of having it replayed.
+ *
+ * A computer's turn is taken by `playBotTurns`, which replays the row to
+ * choose a move, then hands the move to `appendMove`, which re-read the row
+ * and replayed it again — twice per stone, up to six stones a request. The
+ * position it had was the one the second replay would have produced, so the
+ * second replay was work spent to learn a thing already known.
+ *
+ * The check is what makes taking the caller's word safe: the record is the
+ * truth and the state must match it, not the other way round. Same length,
+ * and the last move the same move — its kind, its point and its colour, and
+ * whether it has had its twist — so a state one move behind the row, or one
+ * whose last stone a concurrent twist has since turned, is refused and the
+ * row replayed as it always was. It is not a hash of the whole record: the
+ * caller's state came from this row's own moves a moment ago, and what can
+ * have changed since is the tail.
+ */
+export function sameRecord(state: GameState, row: Pick<GameRow, "moves">): boolean {
+  const length = row.moves.length;
+  if (state.moves.length !== length) return false;
+  if (length === 0) return true;
+  const stored = row.moves[length - 1];
+  const held = state.moves[length - 1];
+  return (
+    stored.kind === held.kind &&
+    stored.row === held.row &&
+    stored.col === held.col &&
+    stored.stone === held.stone &&
+    (stored.twistQuadrant !== null) === (held.twist !== undefined)
+  );
+}
+
 /** The seat a token holds, or null when the token belongs to neither. */
 export function stoneForToken(row: GameRow, token: string): Stone | null {
   if (token === row.blackToken) return STONES.black;
