@@ -69,7 +69,7 @@ export function BoardPreview({ rules }: { rules: PreviewRules }) {
        */
       return null;
     }
-  }, [settings, variant]);
+  }, [settings]);
 
   /*
    * The games that deal themselves a board — rocks scattered, a hotspot placed,
