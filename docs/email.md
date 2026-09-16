@@ -132,10 +132,21 @@ own caps are half of them. Free allows three domains; itsutsu.com is the second.
    subdomain empty, click tracking off.
 3. ~~Add the DNS records~~ — done, and verified against live DNS: all four
    resolve, and the root MX and SPF are untouched, so forwarding is unharmed.
-4. **Create an API key** in Resend with *Sending access* only, limited to
-   `itsutsu.com`. Put it in Vercel as `RESEND_API_KEY` in the **Production**
-   environment only, marked **Sensitive**. Leave it out of Preview and
-   Development, and out of any `.env`.
+4. ~~Create an API key and put it in Vercel~~ — done 2026-09-16. Sending access
+   only, `itsutsu.com` only, and in Vercel as `RESEND_API_KEY` on **Production**
+   alone, stored as a **Secret** so the value cannot be read back.
+
+   **It is deliberately NOT in any `.env`.** It was put in the local one for a
+   few minutes and taken out again, and the reason is worth keeping: the site
+   fails closed outside production, so a key in a checkout cannot send anything
+   — it is a live credential sitting where it has no use, in a file that gets
+   copied to a second machine, into worktrees and into fresh clones. `.env.example`
+   carries the reasoning and a commented-out line, never a value.
+
+   Marked Secret for a second reason too: `vercel env pull` writes the literal
+   string `[SENSITIVE]` rather than the value, so a pull can never drag the real
+   key back onto a laptop. AGENTS.md records the evening that behaviour once cost
+   two people, when it read as a permissions problem instead.
 5. **Land the migration** `20260915180000_email_send_counts`: Neon branch
    first, DS1 dump, John's word. **Redeploy.** A new environment variable reaches
    the site only on the next deployment.
