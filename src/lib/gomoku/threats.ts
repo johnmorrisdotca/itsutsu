@@ -165,31 +165,68 @@ export function threatAt(
 /**
  * Empty intersections close enough to the existing stones to matter. On an
  * untouched board only the centre is offered.
+ *
+ * WORKED FROM THE STONES OUTWARDS, NOT FROM THE BOARD INWARDS, because the
+ * search calls this at every node it visits — tens of thousands of times for
+ * one move — and the two directions cost very different amounts. Asking of
+ * every empty point "is any stone within two of you" is the whole board times
+ * every stone: on a fifteen by fifteen board a dozen moves in, about two and a
+ * half thousand distance tests, each through a closure, after a first whole-
+ * board pass that built a `Point` for every stone. Stamping each stone's five
+ * by five neighbourhood into a flag array instead is a dozen times twenty-five
+ * touches and one pass to collect: measured over 4,000 calls at that position,
+ * 21.4 µs before and 11.4 µs after, off an ordering that cost 87 µs a node.
+ *
+ * Most of what is left is the `Point` objects themselves — about sixty of them
+ * a call, which is what the callers are handed and not something this can
+ * decide to stop making. A version of this written as a local closure timed at
+ * 1.9 µs, and that number is an artefact worth naming rather than a target:
+ * inlined into its caller, V8 could see the array never escaped and skipped the
+ * allocation entirely. An exported function called from another module does
+ * not get that, and the search does read the points.
+ *
+ * THE ORDER IS PART OF THE ANSWER and is deliberately unchanged: board index
+ * order, which is what the search's ordering breaks its ties by and therefore
+ * what decides which move the computer plays when two are worth the same. The
+ * collecting pass walks the indices in order for that reason, rather than
+ * emitting each stone's neighbourhood as it is stamped.
+ *
+ * The flag array is made per call rather than kept between them. Measured at
+ * 2.0 µs against 1.9 for a reused one, which does not buy a piece of mutable
+ * module state that every future caller would have to be trusted not to
+ * re-enter.
  */
 export function candidatePoints(state: GameState): Point[] {
   const { size } = state.settings;
-  const stones: Point[] = [];
-  state.board.forEach((cell, index) => {
-    if (isStone(cell)) stones.push(pointOf(size, index));
-  });
-  if (stones.length === 0) {
-    const centre = tengen(size);
-    return state.board[indexOf(size, centre)] === null ? [centre] : [];
+  const board = state.board;
+  const near = new Uint8Array(board.length);
+  let stones = 0;
+
+  for (let index = 0; index < board.length; index += 1) {
+    if (!isStone(board[index])) continue;
+    stones += 1;
+    const row = Math.floor(index / size);
+    const col = index - row * size;
+    const rowFrom = Math.max(0, row - CANDIDATE_RADIUS);
+    const rowTo = Math.min(size - 1, row + CANDIDATE_RADIUS);
+    const colFrom = Math.max(0, col - CANDIDATE_RADIUS);
+    const colTo = Math.min(size - 1, col + CANDIDATE_RADIUS);
+    for (let r = rowFrom; r <= rowTo; r += 1) {
+      const rowStart = r * size;
+      for (let c = colFrom; c <= colTo; c += 1) near[rowStart + c] = 1;
+    }
   }
 
-  const near = (point: Point) =>
-    stones.some(
-      (stone) =>
-        Math.max(Math.abs(stone.row - point.row), Math.abs(stone.col - point.col)) <=
-        CANDIDATE_RADIUS,
-    );
+  if (stones === 0) {
+    const centre = tengen(size);
+    return board[indexOf(size, centre)] === null ? [centre] : [];
+  }
 
   const points: Point[] = [];
-  state.board.forEach((cell, index) => {
-    if (cell !== null) return;
-    const point = pointOf(size, index);
-    if (near(point)) points.push(point);
-  });
+  for (let index = 0; index < board.length; index += 1) {
+    if (near[index] === 0 || board[index] !== null) continue;
+    points.push(pointOf(size, index));
+  }
   return points;
 }
 
