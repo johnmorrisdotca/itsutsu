@@ -1,4 +1,5 @@
 import { VARIANT_SPECS } from "../gomoku.constants";
+import { shapeIsRead } from "../opponentEval";
 import { BOT_ALL_TIERS, BOT_TIER_LIST, TIER_SPECS } from "../opponent.constants";
 import { FLIP_EXPERT } from "./flipExpert";
 import { LINE_EXPERT } from "./lineExpert";
@@ -65,8 +66,19 @@ export function tiersFor(variant: RuleVariant): readonly BotTier[] {
    */
   if (spec === undefined) return BOT_TIER_LIST;
   return BOT_ALL_TIERS.filter((tier) => {
-    const studied = TIER_SPECS[tier].expertise;
-    return studied.length === 0 || expertFor(studied, spec) !== null;
+    const knobs = TIER_SPECS[tier];
+    const studied = knobs.expertise;
+    if (studied.length > 0) return expertFor(studied, spec) !== null;
+    /*
+     * A character's whole difference from the grade it is built on is a SHAPE
+     * preference — whether it would rather make its own shape or take yours.
+     * Where shape is not what the game is scored by, that preference changes
+     * nothing, and offering it would be offering the same player twice under
+     * two names and a different flag: exactly what is refused for the
+     * specialists two comments above, for exactly the same reason.
+     */
+    if (knobs.defence !== undefined) return shapeIsRead(spec);
+    return true;
   });
 }
 

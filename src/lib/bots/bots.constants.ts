@@ -30,6 +30,24 @@ export type BotMember = {
   /** What its own page says about it. */
   bio: string;
   /**
+   * The town this one is from, where it has one.
+   *
+   * Optional because the five grades are not people and have no town: разряд
+   * is a rank held across a country, not somebody who lives somewhere. Only
+   * the characters have one, and it is the hook a local mood would hang on —
+   * a country is too big to have weather.
+   */
+  town?: string;
+  /**
+   * Its portrait, cut to 280×280 by `pnpm art:faces`.
+   *
+   * A person here has a Google avatar and a program has nothing, which is why
+   * every computer player has shown as a blank beside its name. Optional
+   * because the grades and the specialists have no face yet; a member without
+   * one draws as it always has rather than as a broken image.
+   */
+  face?: string;
+  /**
    * Where they are from, so a flag stands beside their name like anybody
    * else's — and it has to be the country the name actually comes from.
    *
@@ -44,6 +62,25 @@ export type BotMember = {
 };
 
 export const BOT_MEMBERS: Record<BotTier, BotMember> = {
+  rafaDuarte: {
+    tier: BOT_TIERS.rafaDuarte,
+    id: "rafa-duarte",
+    name: BOT_PROFILES.rafaDuarte.name,
+    country: "Brazil",
+    /*
+     * São Paulo rather than only Brazil is deliberate: a character's town is
+     * the one thing a mood could ever be read from — a clock, a season — and
+     * a country is too big to have weather.
+     */
+    town: "São Paulo",
+    face: "/art/bots/faces/rafaDuarte.jpg",
+    bio:
+      "Rafa learned draughts on a concrete table in a São Paulo square, where " +
+      "the rule is simple: you take the longest capture, and you take it now. " +
+      "He came to five-in-a-row late and never unlearned the habit. He plays " +
+      "at Dan's strength and would rather make you solve a problem than solve " +
+      "one of yours — the same player as Dan, pointed the other way.",
+  },
   razryad: {
     tier: BOT_TIERS.razryad,
     id: "razryad",
@@ -307,6 +344,20 @@ export function botRowFields(bot: BotMember) {
     bio: bot.bio,
     botTier: bot.tier,
     country: bot.country,
+    /*
+     * The face, written into the SAME column a person's Google avatar lands in.
+     *
+     * Every list, table and profile on this site already draws `member.picture`
+     * — so a computer player with one is drawn by all of them at once, with no
+     * page needing to learn what a bot is.
+     *
+     * The EMPTY STRING where there is no portrait yet, not null: the column is
+     * `String @default("")` and the pages test it for truthiness, so "" is what
+     * they have always been handed for a member with no avatar and is already
+     * drawn correctly. Null would not compile, and a bare path that does not
+     * exist would be a broken image on every row.
+     */
+    picture: bot.face ?? "",
     unclaimableBecause: BOT_UNCLAIMABLE,
     // Not in the "who is here" list: it is always here, which is not news.
     showOnline: false,

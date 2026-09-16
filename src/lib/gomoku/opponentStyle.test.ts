@@ -4,7 +4,7 @@ import { chooseTurn } from "./opponent";
 import { createGame } from "./engine";
 import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
 import { assess } from "./analysis";
-import { EVAL_WEIGHTS, TIER_SPECS } from "./opponent.constants";
+import { BOT_CHARACTER_LIST, BOT_SPECIALIST_LIST, BOT_TIER_LIST, EVAL_WEIGHTS, TIER_SPECS } from "./opponent.constants";
 import { GAME_STATUS, RULE_VARIANTS } from "./gomoku.constants";
 import type { BotTurn, TierSpec } from "./opponent.types";
 import type { GameState } from "./gomoku.types";
@@ -73,9 +73,17 @@ function chooseWith(state: GameState, spec: TierSpec, as: "guoshou" | "dan" = "g
 
 describe("the style knob", () => {
   it("is even-handed unless a spec asks otherwise", () => {
-    // Every grade shipped today leaves it off, so nothing about their play
-    // changed when the knob arrived. That is the claim, written down.
-    for (const spec of Object.values(TIER_SPECS)) expect(spec.defence).toBeUndefined();
+    /*
+     * Every RUNG of the ladder leaves it off, so nothing about how the five
+     * grades play changed when the knob arrived. The characters are the ones
+     * that set it — that is what makes them characters — so the claim is about
+     * the ladder and the specialists, not about every spec there is.
+     */
+    for (const tier of [...BOT_TIER_LIST, ...BOT_SPECIALIST_LIST]) {
+      expect(TIER_SPECS[tier].defence, `${tier} should play even-handed`).toBeUndefined();
+    }
+    expect(BOT_CHARACTER_LIST.length, "a character with no style is just its grade").toBeGreaterThan(0);
+    for (const tier of BOT_CHARACTER_LIST) expect(TIER_SPECS[tier].defence).toBeDefined();
     expect(EVAL_WEIGHTS.defence).toBe(0.85);
   });
 

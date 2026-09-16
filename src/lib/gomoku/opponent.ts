@@ -2,7 +2,7 @@ import { racesForCamp } from "./rules/farCamp";
 import { otherStone } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, EVAL_WEIGHTS, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
-import { pieceScore, positionScore, pointScore, readsThreats, threatScore } from "./opponentEval";
+import { pieceScore, positionScore, pointScore, readsThreats, shapeIsRead, threatScore } from "./opponentEval";
 import { masteredTurn } from "./expert/experts";
 import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
 import { searchTurn } from "./opponentSearch";
@@ -58,7 +58,7 @@ function baseScore(state: GameState, turn: BotTurn, after: GameState, me: Stone,
    * to do with the thing it was playing. Its position score is the area, and
    * the area already says what a stone was worth.
    */
-  const readsPoints = !variant.flips && !racesForCamp(variant) && !variant.connects && !variant.go;
+  const readsPoints = shapeIsRead(variant);
   if (turn.kind === MOVE_KINDS.place && readsPoints) {
     const point = { row: turn.row, col: turn.col };
     const stone = turn.stone ?? me;
