@@ -887,11 +887,16 @@ export const XP_FULL_BOARD_TYPES: readonly XpEventType[] = [
  * WHETHER THE FULL-BOARD AWARDS ARE FOR PEOPLE ONLY. JOHN'S TO DECIDE, AND
  * DECIDED HERE IN ONE LINE.
  *
- * Asked of him on 2026-09-14 and not yet answered. Until he does, they are what
- * every other award about games is — a fact about play that a program earns
- * too — since AGENTS.md says a people-only award is John's to ask for, not ours
- * to add. A program can hold a full board: the active-game limit does not apply
- * to one. `xp.coverage.test.ts` checks both answers.
+ * ANSWERED, 2026-09-16: "xp board programs can earn I said yes they are like
+ * people. why not?" So a program earns Full House, Clean Sweep and the day
+ * combos exactly as a person does, and this stays false.
+ *
+ * It was already false when he answered, and not by guessing him: AGENTS.md
+ * says a people-only award is John's to ask for, not ours to add, so the
+ * default had to be the earnable one while the question was out. His answer
+ * confirms it rather than changing it. A program can hold a full board: the
+ * active-game limit does not apply to one. `xp.coverage.test.ts` checks both
+ * answers, so flipping the line is all it would ever take.
  */
 export const XP_FULL_BOARD_PEOPLE_ONLY = false;
 
