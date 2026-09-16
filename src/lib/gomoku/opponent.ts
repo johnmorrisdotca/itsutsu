@@ -9,6 +9,7 @@ import { searchTurn } from "./opponentSearch";
 import { lookAheadTurn, lookDepth } from "./opponentLook";
 import type { GameState, Stone } from "./gomoku.types";
 import type { BotTier, BotTurn, SearchBudget, TierSpec } from "./opponent.types";
+import { perfectTurns } from "./solved/smallGames";
 
 /**
  * The computer opponent's choice of turn.
@@ -156,6 +157,28 @@ export function chooseTurn(
    */
   const mastered = masteredTurn(state, spec, random, budget);
   if (mastered !== null) return mastered;
+
+  /*
+   * The few games whose whole tree fits in memory are played from it, by the
+   * grades that promise never to blunder.
+   *
+   * `blunder === 0 && guard === 1` is not a description of how Meijin and 国手
+   * usually play, it is their spec — and at tic-tac-toe or Notakto, keeping
+   * that promise is free. Measured before this branch existed, they threw away
+   * 1% of held wins at Wild tic-tac-toe, a game with 2,510 positions.
+   *
+   * The weaker grades deliberately do NOT come here. Their measured ladder —
+   * 6%, 4%, 1% at tic-tac-toe — is honest weakness, a player who did not see
+   * the win. Giving them the answer and having them look away would be a
+   * different thing entirely, and not one to build unasked.
+   *
+   * `perfectTurns` answers null for anything it cannot settle, and null falls
+   * through to the ordinary reading below rather than standing in for it.
+   */
+  if (spec.blunder === 0 && spec.guard === 1) {
+    const perfect = perfectTurns(state);
+    if (perfect !== null && perfect.length > 0) return pick(perfect.map((turn) => ({ turn })), random).turn;
+  }
 
   const scored: Scored[] = [];
   for (const turn of turns) {
