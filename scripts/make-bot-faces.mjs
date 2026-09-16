@@ -43,15 +43,21 @@ const sharp = createRequire(require.resolve("next/package.json"))("sharp");
 /**
  * One folder per style, the same filename in each.
  *
- * John keeps both variants side by side — `src-oil/rafaDuarte.png` and
- * `src-enamel/rafaDuarte.png` — so choosing the site's look is choosing a
- * folder, and the losing style stays on disk rather than being regenerated if
- * the decision is revisited. `BOT_ART=src-enamel pnpm art:faces` cuts the
- * other set over the top; the faces are named for the bot, never for the
- * style, so nothing downstream knows or cares which was chosen.
+ * John keeps every style side by side under the same filenames — `src-photo`,
+ * `src-oil`, `src-enamel` — so choosing the site's look is choosing a folder,
+ * and the styles not chosen stay on disk rather than being regenerated if the
+ * decision is revisited. `BOT_ART=src-oil pnpm art:faces` cuts another set over
+ * the top; the faces are named for the bot and never for the style, so nothing
+ * downstream knows or cares which was chosen.
+ *
+ * `src-photo` is the default: studio portraits on a flat seamless backdrop, a
+ * different colour per character. Measured at the 20 pixels the directory
+ * actually draws, those read as clearly as the paintings did — it was the FLAT
+ * BACKGROUND doing the work all along, not the medium. The first attempt, a
+ * photograph in a real place with a busy background, was a smudge at that size.
  */
 const ROOT = join("public", "art", "bots");
-const IN = join(ROOT, process.env.BOT_ART ?? "src-oil");
+const IN = join(ROOT, process.env.BOT_ART ?? "src-photo");
 const OUT = join(ROOT, "faces");
 /** Kept in step with the largest size the site draws a picture at, doubled for retina. */
 const SIZE = 280;

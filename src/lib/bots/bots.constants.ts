@@ -62,6 +62,20 @@ export type BotMember = {
 };
 
 export const BOT_MEMBERS: Record<BotTier, BotMember> = {
+  ingridSolheim: {
+    tier: BOT_TIERS.ingridSolheim,
+    id: "ingrid-solheim",
+    name: BOT_PROFILES.ingridSolheim.name,
+    country: "Norway",
+    town: "Bergen",
+    face: "/art/bots/faces/ingridSolheim.jpg",
+    bio:
+      "Ingrid spent thirty years teaching children in Bergen that the board " +
+      "tells you what to do if you wait, and she plays the way she taught: " +
+      "your threat first, always, her own plan somewhere after it. She is not " +
+      "strong and does not pretend to be — she plays at Kyu's strength and " +
+      "misses things. She is simply very hard to hurry.",
+  },
   rafaDuarte: {
     tier: BOT_TIERS.rafaDuarte,
     id: "rafa-duarte",

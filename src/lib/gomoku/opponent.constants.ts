@@ -30,6 +30,7 @@ export const BOT_TIERS = {
   meijin: "meijin",
   guoshou: "guoshou",
   rafaDuarte: "rafaDuarte",
+  ingridSolheim: "ingridSolheim",
   tamenoki: "tamenoki",
   meritalu: "meritalu",
 } as const satisfies Record<BotTier, BotTier>;
@@ -109,7 +110,7 @@ export const BOT_SPECIALIST_LIST: readonly BotTier[] = [
  * and the top grade's search leaves few ties to break. A master plays the best
  * move; a club player plays like themselves.
  */
-export const BOT_CHARACTER_LIST: readonly BotTier[] = [BOT_TIERS.rafaDuarte];
+export const BOT_CHARACTER_LIST: readonly BotTier[] = [BOT_TIERS.rafaDuarte, BOT_TIERS.ingridSolheim];
 
 /** Everybody the site plays as a computer: the ladder, the specialists, the characters. */
 export const BOT_ALL_TIERS: readonly BotTier[] = [
@@ -119,6 +120,17 @@ export const BOT_ALL_TIERS: readonly BotTier[] = [
 ];
 
 export const BOT_PROFILES: Record<BotTier, BotProfile> = {
+  ingridSolheim: {
+    tier: "ingridSolheim",
+    name: "Ingrid Solheim",
+    // Norwegian is the script her name is already in.
+    native: null,
+    strength: "Easy, defensive",
+    blurb:
+      "Plays at Kyu's strength and answers before she builds. Ingrid misses " +
+      "things and knows it, but she is very hard to hurry — the players who " +
+      "lose to her mostly lose to their own impatience.",
+  },
   rafaDuarte: {
     tier: "rafaDuarte",
     name: "Rafa Duarte",
@@ -348,6 +360,34 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     searchDepth: 0,
     expertise: [],
     defence: 0.3,
+  },
+
+  /*
+   * Ingrid Solheim: Kyu's strength, a defender's style.
+   *
+   * Every number here but one is Kyu's, and the one is `defence`. At 2.4
+   * against the even-handed 0.85 she answers your threat before she builds her
+   * own — and because she is only Kyu, she misses things while doing it. That
+   * is the point rather than a compromise: she is not hard to BEAT, she is
+   * hard to HURRY, and the players who lose to her mostly lose to their own
+   * impatience.
+   *
+   * The far end of the same knob Rafa sits at, so the two of them are the
+   * cheapest possible proof that a style is a style and not a strength: one
+   * plays above the other on the ladder and they are told apart by how they
+   * play, not by how often they are right.
+   */
+  ingridSolheim: {
+    depth: 1,
+    guard: 0.6,
+    blunder: 0.16,
+    noise: 0.9,
+    reads: false,
+    width: 60,
+    guardTop: 0,
+    searchDepth: 0,
+    expertise: [],
+    defence: 2.4,
   },
 
   /*
