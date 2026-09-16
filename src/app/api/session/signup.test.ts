@@ -113,7 +113,7 @@ describe("a stranger arriving with Google and no code", () => {
     // Straight to choosing the name other players will see, which is what the
     // first visit has always done for a member the invite code just made.
     expect(response.headers.get("location")).toContain("/me?welcome=1");
-    expect(response.headers.get("set-cookie")).toContain("gomoku_session=");
+    expect(response.headers.get("set-cookie")).toContain("itsutsu_session=");
   });
 
   it("is turned away when the door is closed, and no member is made", async () => {
@@ -205,7 +205,7 @@ describe("a member who is already in", () => {
       const response = await googleDoor(googleReturning());
       expect(response.status, `signing in under ${each}`).toBe(307);
       expect(response.headers.get("location"), `signing in under ${each}`).toContain("/games");
-      expect(response.headers.get("set-cookie")).toContain("gomoku_session=");
+      expect(response.headers.get("set-cookie")).toContain("itsutsu_session=");
       expect(admitMember, `${each} must still refresh the row`).toHaveBeenCalled();
     }
   });

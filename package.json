@@ -2,6 +2,7 @@
   "name": "itsutsu",
   "version": "0.208.0",
   "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "dev": "next dev -p ${WEB_PORT:-6600}",
     "build": "next build",
@@ -39,6 +40,7 @@
     "release:take:prod": "SUMILABU_PROJECT_KEY=itsutsu SUMILABU_LIVE_OPT_IN=release:take:prod node --env-file=.env scripts/release-take.ts",
     "screenshots:games": "GAME_SCREENSHOTS=1 playwright test e2e/game-screenshots.spec.ts --reporter=line && node scripts/make-game-thumbs.mjs",
     "bots:grades": "BOT_GRADES=1 vitest run src/lib/bots/botGrades.play.test.ts --disable-console-intercept",
+    "bots:perfect": "BOT_PERFECT=1 vitest run src/lib/bots/botPerfect.play.test.ts --disable-console-intercept",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
     "bots:play:prod": "node scripts/bots-play-prod.mjs",
     "board:export": "node --env-file-if-exists=.env scripts/board-export.ts",
