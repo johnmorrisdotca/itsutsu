@@ -17,7 +17,7 @@ condition so the database decides who wins. This ticket brings that here.
 ## Before you start
 
 1. Work in your own worktree off `origin/main` (AGENTS.md "One agent, one
-   worktree"). Never in `/Users/john/Projects/gomoku` itself.
+   worktree"). Never in `/Users/john/Projects/itsutsu` itself.
 2. Read AGENTS.md "Board Gate", "WRITE THROUGH THE API", and "Back It Up
    Before You Migrate It". Read `src/lib/backlog/backlog.ts`,
    `backlogStore.ts`, `backlog.constants.ts`, `backlog.types.ts`,

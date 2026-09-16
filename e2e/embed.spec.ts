@@ -97,7 +97,7 @@ test.describe("an embedded board", () => {
     await page.addInitScript(() => {
       window.addEventListener("message", (event) => {
         const type = (event.data as { type?: string })?.type;
-        if (typeof type === "string" && type.startsWith("gomoku:")) {
+        if (typeof type === "string" && (type.startsWith("itsutsu:") || type.startsWith("gomoku:"))) {
           void (window as unknown as {
             recordEmbedMessage: (t: string) => void;
           }).recordEmbedMessage(type);
@@ -108,6 +108,9 @@ test.describe("an embedded board", () => {
     await page.goto(`/embed?token=${embedToken()}&size=9`);
     await ready(page, "embed-board");
     await page.getByRole("button", { name: /^E5, empty$/ }).click();
-    await expect.poll(() => messages).toContain("gomoku:move");
+    await expect.poll(() => messages).toContain("itsutsu:move");
+    // The name the board went out under before the site was called Itsutsu.
+    // A host page is somebody else's code, so both keep going out.
+    expect(messages).toContain("gomoku:move");
   });
 });

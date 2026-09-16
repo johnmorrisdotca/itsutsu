@@ -58,13 +58,13 @@ jobs:
       db:
         image: postgres:17-alpine
         env:
-          POSTGRES_USER: gomoku
-          POSTGRES_PASSWORD: gomoku
-          POSTGRES_DB: gomoku
+          POSTGRES_USER: itsutsu
+          POSTGRES_PASSWORD: itsutsu
+          POSTGRES_DB: itsutsu
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U gomoku -d gomoku"
+          --health-cmd "pg_isready -U itsutsu -d itsutsu"
           --health-interval 2s
           --health-timeout 3s
           --health-retries 30
@@ -105,8 +105,8 @@ jobs:
       - name: Write the .env the suite expects
         run: |
           cat > .env <<'ENV'
-          DATABASE_URL="postgresql://gomoku:gomoku@localhost:5432/gomoku"
-          DIRECT_URL="postgresql://gomoku:gomoku@localhost:5432/gomoku"
+          DATABASE_URL="postgresql://itsutsu:itsutsu@localhost:5432/itsutsu"
+          DIRECT_URL="postgresql://itsutsu:itsutsu@localhost:5432/itsutsu"
           AUTH_SECRET="ci-only-not-a-real-secret"
           ADMIN_EMAILS="operator@example.test"
           ADMIN_TOKEN="ci-only-operator-token"
