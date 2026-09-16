@@ -178,7 +178,7 @@ describe.each([
   it("records a forfeit, the record replays to the position the claim settled, and the game goes on", async () => {
     row = liveRow(variant, size);
     const opening = firstLegal(replayed());
-    expect(await appendMove("g1", "black-token", place(opening))).toEqual({ ok: true, game: { id: "g1" } });
+    expect(await appendMove("g1", "black-token", place(opening))).toMatchObject({ ok: true, game: { id: "g1" } });
 
     // White's minute went by an hour ago. The clock is planted, not waited out.
     Object.assign(row, { lastMoveAt: hourAgo(), deadlineAt: hourAgo() });
@@ -199,7 +199,7 @@ describe.each([
     expect(await appendMove("g1", "white-token", place(elsewhere))).toEqual({ ok: false, reason: "not-your-turn" });
 
     // And black's next move is accepted: move three, no conflict.
-    expect(await appendMove("g1", "black-token", place(elsewhere))).toEqual({ ok: true, game: { id: "g1" } });
+    expect(await appendMove("g1", "black-token", place(elsewhere))).toMatchObject({ ok: true, game: { id: "g1" } });
     expect(row.moves.map((move) => move.number)).toEqual([1, 2, 3]);
     expect(replayed().moves).toHaveLength(3);
   });
@@ -266,7 +266,7 @@ describe.each([
     expect(after.toPlay).toBe(STONES.black);
     expect(written).toMatchObject({ status: "active", moveCount: 4, whiteForfeits: 1, ...settledTurn(after) });
     // And the game goes on: black's next stone is move five.
-    expect(await appendMove("g1", "black-token", place(firstLegal(after)))).toEqual({ ok: true, game: { id: "g1" } });
+    expect(await appendMove("g1", "black-token", place(firstLegal(after)))).toMatchObject({ ok: true, game: { id: "g1" } });
   });
 });
 
@@ -297,6 +297,6 @@ describe("a timeout claimed while a twist is owed", () => {
     expect(after.toPlay).toBe(STONES.white);
     expect(after.board[0]).toBe(STONES.black);
     expect(gameWrites[gameWrites.length - 1]).toMatchObject({ status: "active", moveCount: 2, blackForfeits: 1, ...settledTurn(after) });
-    expect(await appendMove("g1", "white-token", place(firstLegal(after)))).toEqual({ ok: true, game: { id: "g1" } });
+    expect(await appendMove("g1", "white-token", place(firstLegal(after)))).toMatchObject({ ok: true, game: { id: "g1" } });
   });
 });

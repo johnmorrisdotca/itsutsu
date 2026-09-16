@@ -3,7 +3,8 @@ import "server-only";
 import { GAME_STATUS, MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
 import { chooseTurn } from "@/lib/gomoku/opponent";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
-import { appendMove, GAME_ROW, replay } from "@/lib/history/liveGame";
+import type { GameState } from "@/lib/gomoku/gomoku.types";
+import { appendMove, GAME_ROW, replay, sameRecord } from "@/lib/history/liveGame";
 import type { MoveRequest } from "@/lib/history/liveGame.types";
 import { isOffered } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
@@ -67,6 +68,17 @@ export async function playBotTurns(
   id: string,
   millis: number = BOT_MOVE_MILLIS,
 ): Promise<void> {
+  /*
+   * The position as the last move this loop made left it, carried to the
+   * next pass instead of replayed. The row is still read every pass — whether
+   * the game is still on, whose seat is whose and what the clock says come
+   * from the database and nowhere else — but the moves on it are the ones
+   * this loop just wrote, and `sameRecord` checks that before the state is
+   * trusted; anything else is replayed as before. Each stone used to cost two
+   * replays, here and again inside `appendMove`; a turn of two stones or a
+   * game between two programs made it a dozen a request.
+   */
+  let known: GameState | null = null;
   for (let taken = 0; taken < BOT_TURNS_PER_REQUEST; taken += 1) {
     const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
     if (row === null) return;
@@ -85,7 +97,7 @@ export async function playBotTurns(
      */
     if (isOffered(row)) return;
 
-    const state = replay(row);
+    const state: GameState = known !== null && sameRecord(known, row) ? known : replay(row);
     /*
      * The game is over — by five, by a resignation, by a flag, or by a draw.
      * A person thanks their opponent for all of those, so the computer does
@@ -115,8 +127,9 @@ export async function playBotTurns(
     if (turn === null) return;
 
     const token = state.toPlay === STONES.black ? row.blackToken : row.whiteToken;
+    let position: GameState = state;
     for (const request of asRequests(turn)) {
-      const outcome = await appendMove(id, token, request);
+      const outcome = await appendMove(id, token, request, { known: position });
       /*
        * A refusal is not something to retry. Either somebody moved first — the
        * unique index on the move number saw to that — or the position moved on
@@ -124,7 +137,9 @@ export async function playBotTurns(
        * the game as it now is and decides again.
        */
       if (!outcome.ok) return;
+      position = outcome.state;
     }
+    known = position;
   }
 }
 
