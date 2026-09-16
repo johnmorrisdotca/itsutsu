@@ -14,11 +14,11 @@ import { poolFor } from "@/lib/rating/pools";
 import { botInSeat, hasBotSeat } from "@/lib/bots/bots";
 import { noticeGameOver, noticeYourTurn } from "@/lib/notify/gameNotices";
 import { awardAnsweredChallenge } from "@/lib/xp/xpSocial";
-import type { MoveOutcome, MoveRequest } from "./liveGame.types";
+import type { AppendOutcome, MoveRequest } from "./liveGame.types";
 import { nextDeadline } from "./deadline";
 import { settledTurn } from "./settledTurn";
 import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
-import { GAME_ROW, isHotSeat, ladderFacts, replay, stoneForToken } from "./liveGameRow";
+import { GAME_ROW, isHotSeat, ladderFacts, replay, sameRecord, stoneForToken } from "./liveGameRow";
 import { isOffered } from "./offers";
 
 /*
@@ -27,7 +27,7 @@ import { isOffered } from "./offers";
  * are re-exported here so every caller that imported them from this file still
  * does, and neither of them imports this file back.
  */
-export { GAME_ROW, isHotSeat, replay, seatForToken, stoneForToken } from "./liveGameRow";
+export { GAME_ROW, isHotSeat, replay, sameRecord, seatForToken, stoneForToken } from "./liveGameRow";
 export type { GameRow } from "./liveGameRow";
 export { createLiveGame } from "./liveGameCreate";
 
@@ -49,12 +49,21 @@ const UNIQUE_VIOLATION = "P2002";
  * turn it is, whether the intersection is free, and whether the game is still
  * running. The token is the only thing standing in for a sign-in, so it is
  * checked against the colour to move, not merely against the game.
+ *
+ * `known` is a position the caller already holds for this game — the one a
+ * computer player just chose its move on, or the one the previous move in
+ * the same request settled into. It saves the replay and nothing else: the
+ * row is still read, its status, offer and token still checked against what
+ * the database says now, and the state is taken only where `sameRecord` says
+ * it is what the row would replay to. A caller with a stale or wrong idea of
+ * the game gets exactly the move it would have got without one.
  */
 export async function appendMove(
   id: string,
   token: string,
   request: MoveRequest,
-): Promise<MoveOutcome> {
+  { known }: { known?: GameState } = {},
+): Promise<AppendOutcome> {
   const row = await prisma.game.findUnique({ where: { id }, select: GAME_ROW });
   if (row === null) return { ok: false, reason: "not-found" };
   if (row.status !== "active") return { ok: false, reason: "finished" };
@@ -68,7 +77,7 @@ export async function appendMove(
    */
   if (isOffered(row)) return { ok: false, reason: "offered" };
 
-  const state = replay(row);
+  const state = known !== undefined && sameRecord(known, row) ? known : replay(row);
   // One token for both chairs plays whoever is to move.
   const own = isHotSeat(row) && token === row.blackToken ? state.toPlay : stoneForToken(row, token);
   if (own === null) return { ok: false, reason: "wrong-token" };
@@ -278,7 +287,7 @@ export async function appendMove(
 
   const game = await fetchGameDetail(id);
   if (game === null) return { ok: false, reason: "not-found" };
-  return { ok: true, game };
+  return { ok: true, game, state: next };
 }
 
 /**

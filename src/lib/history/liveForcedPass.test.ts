@@ -165,7 +165,7 @@ describe("a live move that leaves the other side with nothing to play", () => {
     seen.planted = sealed(RULE_VARIANTS.blockFive, 13, [p(1, 1), p(3, 3), p(5, 5)], whiteSingles);
     row = liveRow(RULE_VARIANTS.blockFive, 13);
 
-    expect(await appendMove("g1", "black-token", { kind: "place", row: 1, col: 1 })).toEqual({ ok: true, game: { id: "g1" } });
+    expect(await appendMove("g1", "black-token", { kind: "place", row: 1, col: 1 })).toMatchObject({ ok: true, game: { id: "g1" } });
 
     expect(row.moves.map((move) => [move.number, move.stone, move.kind])).toEqual([
       [7, STONES.black, MOVE_KINDS.place],
@@ -185,7 +185,7 @@ describe("a live move that leaves the other side with nothing to play", () => {
     row = liveRow(RULE_VARIANTS.dominoFive, 13);
     const [lay] = piecePlacements(seen.planted);
 
-    expect(await appendMove("g1", "black-token", { kind: "piece", cells: lay })).toEqual({ ok: true, game: { id: "g1" } });
+    expect(await appendMove("g1", "black-token", { kind: "piece", cells: lay })).toMatchObject({ ok: true, game: { id: "g1" } });
 
     expect(row.moves.map((move) => [move.number, move.stone, move.kind])).toEqual([
       [1, STONES.black, MOVE_KINDS.piece],

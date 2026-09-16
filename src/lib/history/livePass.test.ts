@@ -183,7 +183,7 @@ describe("a pass on a shared game", () => {
 
     const outcome = await appendMove("g1", "black-token", { kind: "pass" });
 
-    expect(outcome).toEqual({ ok: true, game: { id: "g1" } });
+    expect(outcome).toMatchObject({ ok: true, game: { id: "g1" } });
     expect(moveWrites).toEqual([
       { gameId: "g1", number: 5, row: -1, col: -1, stone: STONES.black, kind: MOVE_KINDS.pass },
     ]);
