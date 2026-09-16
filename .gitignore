@@ -66,3 +66,4 @@ next-env.d.ts
 # history for files nothing reads.
 public/art/bots/*.png
 public/art/bots/*.webp
+public/art/bots/src-*/
