@@ -45,7 +45,8 @@ export type BotTier =
   | "amaraOkafor"
   | "minaPark"
   | "kenjiArakawa"
-  | "liWenjing";
+  | "liWenjing"
+  | "chibi";
 
 /**
  * One whole turn, in the shapes a turn can take across these games.
@@ -122,6 +123,23 @@ export type TierSpec = {
   moods?: readonly number[];
   /** How many turns one mood lasts. Ignored without `moods`. */
   moodMoves?: number;
+  /**
+   * A specialist who sees less far than the best one.
+   *
+   * The share of the ordinary search budget this player's SPECIALIST reading
+   * gets — 1 is the full reading and is what a specialist gets when this is
+   * left off. Below that is a player who has genuinely studied the game and
+   * simply does not read as deep, which is how human strength at one game
+   * actually differs.
+   *
+   * It exists because a specialty had exactly one strength until now: any tier
+   * carrying the same expertise played the identical move, so a second Othello
+   * player would have been the first one under another name. Note this weakens
+   * DEPTH and not WIDTH — the player still looks at the whole board, because
+   * "considers less of the board" is a bad program rather than a gentler
+   * opponent, which is the rule Razryad's own comment sets out.
+   */
+  masteryBudget?: number;
   /** How many candidates it will weigh, so the work a request does is bounded. */
   width: number;
   /**

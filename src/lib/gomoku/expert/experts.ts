@@ -4,6 +4,7 @@ import { BOT_ALL_TIERS, BOT_TIER_LIST, TIER_SPECS } from "../opponent.constants"
 import { FLIP_EXPERT } from "./flipExpert";
 import { LINE_EXPERT } from "./lineExpert";
 import { expertTurn } from "./expertSearch";
+import { EXPERT_SEARCH } from "./expert.constants";
 import type { GameState, RuleVariant, VariantSpec } from "../gomoku.types";
 import type { BotTier, BotTurn, SearchBudget, TierSpec } from "../opponent.types";
 import type { Expert, ExpertKind } from "./expert.types";
@@ -100,5 +101,16 @@ export function masteredTurn(
   if (spec === undefined) return null;
   const expert = expertFor(tier.expertise, spec);
   if (expert === null) return null;
-  return expertTurn(state, expert, random, budget);
+  /*
+   * A specialist that reads less deep than the best one. The share is applied
+   * to NODES and never to the clock: a shallower player must be quicker or at
+   * worst the same, never slower, and a wall clock shared with everyone else is
+   * not this player's to spend differently.
+   */
+  const share = tier.masteryBudget;
+  const reading =
+    share === undefined || share >= 1
+      ? budget
+      : { ...budget, nodes: Math.max(200, Math.round((budget.nodes ?? EXPERT_SEARCH.nodes) * share)) };
+  return expertTurn(state, expert, random, reading);
 }

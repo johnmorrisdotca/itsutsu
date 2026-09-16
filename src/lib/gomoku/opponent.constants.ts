@@ -35,6 +35,7 @@ export const BOT_TIERS = {
   minaPark: "minaPark",
   kenjiArakawa: "kenjiArakawa",
   liWenjing: "liWenjing",
+  chibi: "chibi",
   tamenoki: "tamenoki",
   meritalu: "meritalu",
 } as const satisfies Record<BotTier, BotTier>;
@@ -118,6 +119,7 @@ export const BOT_CHARACTER_LIST: readonly BotTier[] = [BOT_TIERS.rafaDuarte, BOT
   BOT_TIERS.minaPark,
   BOT_TIERS.kenjiArakawa,
   BOT_TIERS.liWenjing,
+  BOT_TIERS.chibi,
 ];
 
 /** Everybody the site plays as a computer: the ladder, the specialists, the characters. */
@@ -128,6 +130,17 @@ export const BOT_ALL_TIERS: readonly BotTier[] = [
 ];
 
 export const BOT_PROFILES: Record<BotTier, BotProfile> = {
+  chibi: {
+    tier: "chibi",
+    name: "Chibi",
+    // A nickname, and the only name he goes by here.
+    native: null,
+    strength: "Strong at the flipping games",
+    blurb:
+      "Forty years of Othello and backgammon, and he plays for the pleasure " +
+      "of it. Chibi knows what a corner is worth and will not be talked out " +
+      "of it — he simply does not read as far ahead as the machine does.",
+  },
   minaPark: {
     tier: "minaPark",
     name: "Mina Park",
@@ -530,6 +543,36 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     searchDepth: 8,
     expertise: [],
     defence: 2.2,
+  },
+
+  /*
+   * Chibi: an Othello player who has read the game for forty years and reads
+   * it a quarter as deep as the machine does.
+   *
+   * The site's first specialist who is not the best in the world at their own
+   * game. `masteryBudget: 0.25` gives his flipping reading a quarter of the
+   * nodes 為乃木's gets, so he is genuinely playing Othello — corners, the
+   * squares beside them, mobility, the disc count that means nothing until it
+   * means everything — and simply not as far ahead.
+   *
+   * Depth and not width, which is the rule Razryad's comment sets out: he still
+   * looks at the whole board. A player who considers less of the board is a bad
+   * program; one who does not see as far is a person.
+   *
+   * Away from a flipping board he is 国手's knobs like every specialist, and is
+   * offered at the flipping games and nowhere else.
+   */
+  chibi: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 180,
+    guardTop: 34,
+    searchDepth: 8,
+    expertise: [EXPERT_KINDS.flip],
+    masteryBudget: 0.25,
   },
 
   /*

@@ -62,6 +62,20 @@ export type BotMember = {
 };
 
 export const BOT_MEMBERS: Record<BotTier, BotMember> = {
+  chibi: {
+    tier: BOT_TIERS.chibi,
+    id: "chibi",
+    name: BOT_PROFILES.chibi.name,
+    country: "Canada",
+    town: "Vancouver",
+    face: "/art/bots/faces/chibi.jpg",
+    bio:
+      "Chibi has played Othello and backgammon for forty years, in Vancouver, " +
+      "and has always played to have fun. He knows what a corner is worth and " +
+      "will not be talked out of one. He reads a quarter as deep as the " +
+      "strongest program here, which mostly means he is beatable and never " +
+      "means he is careless.",
+  },
   minaPark: {
     tier: BOT_TIERS.minaPark,
     id: "mina-park",
