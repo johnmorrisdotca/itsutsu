@@ -45,8 +45,7 @@ export type BotTier =
   | "amaraOkafor"
   | "minaPark"
   | "kenjiArakawa"
-  | "liWenjing"
-  | "chibi";
+  | "liWenjing";
 
 /**
  * One whole turn, in the shapes a turn can take across these games.
