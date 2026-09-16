@@ -1,9 +1,13 @@
 <div align="center">
 
-# 五目並べ · Gomoku
+# 五つ · Itsutsu
 
-**Five in a row on a go board.** Two players, one browser — or two devices, a
-QR code apart.
+**Forty-four board games on one engine.** Gomoku and renju, Othello and Go,
+checkers and draughts, Hex and Halma — two players in one browser, or two
+devices a QR code apart.
+
+[**itsutsu.com**](https://itsutsu.com) · Next.js 16 · React 19 · TypeScript ·
+Postgres
 
 <img src="docs/images/board-in-play.jpg" alt="A game in progress on a kaya board" width="820">
 
@@ -17,8 +21,11 @@ QR code apart.
 - [What it does](#what-it-does)
 - [How it is put together](#how-it-is-put-together)
 - [The API](#the-api)
+- [Getting in](#getting-in)
+- [Who gets in](#who-gets-in)
 - [Games played from two devices](#games-played-from-two-devices)
 - [Embedding the board](#embedding-the-board)
+- [Deploying](#deploying)
 - [Scripts](#scripts)
 
 ## Getting started
@@ -36,9 +43,9 @@ and rebuilds it from the migrations.
 
 ## What it does
 
-### Thirty-nine games, in eleven families
+### Forty-four games, in eleven families
 
-The site began as one game and is now thirty-nine, grouped into families on
+The site began as one game and is now forty-four, grouped into families on
 `/games`: five in a row, captures, drops, pieces and twists, flips, strange
 boards, races, connections, checkers, territory and small boards. The
 **Games** button opens a browser over the board with each rule set spelled
@@ -143,7 +150,7 @@ replay reproduces it:
 | **Clear Drop** 消し落とし | A full bottom row disappears and everything drops a row, as in the falling-block game. | Connect Four |
 | **Giveaway Drop** 譲り落とし | Making four loses. You may not play on top of the opponent's last stone while another column has room. A full board goes to the opener. | Connect Four |
 | **Edge Drop** 縁寄せ | Gravity from all four edges: a stone must rest on an edge or against another stone. | Connect Four |
-| **Worm Drop** 穴通し落とし | Two random squares are the mouths of a wormhole: a line that reaches one continues from the other. | Connect Four |
+| **Wormhole Drop** 穴通し落とし | Two random squares are the mouths of a wormhole: a line that reaches one continues from the other. | Connect Four |
 
 #### Games where no line is ever read
 
@@ -162,7 +169,19 @@ what the engine is asked at the end of a move.
 | **Chinese Checkers** ダイヤモンドゲーム | Ten pieces, a six-pointed star, and the point opposite yours to fill. Jumps chain and turn corners. | 17×17 star |
 | **Hex** ヘックス | Join your own two sides with an unbroken chain. A full board always has exactly one winner, so there are no draws — which is why the swap opening is offered. | 11, 13, 19 |
 | **Checkers** チェッカー | Jump the other side's pieces off the board. Capturing is forced, a man crowned partway through a chain stops there, and a king moves both ways. | 8×8 |
+| **Russian Draughts** ロシアチェッカー | Flying kings on 8×8: men take backward, any capture may be chosen, and a man crowned mid-capture takes on as a king. | 8×8 |
+| **Pool Checkers** プールチェッカー | American pool: men take backward, kings fly, and you choose which capture to make. | 8×8 |
+| **Brazilian Draughts** ブラジルチェッカー | The international rules on the small board: men take backward, kings fly, and the longest capture is compulsory. | 8×8 |
+| **International Draughts** 国際ドラフツ | Men take backward, kings fly, and you must take the most you can. The FMJD's game. | 10×10 |
+| **Canadian Checkers** カナディアンチェッカー | The international rules on 144 squares, with thirty men a side. | 12×12 |
 | **Go** 囲碁 | Surround more of the board than the other colour. Groups share liberties, the ko rule forbids instantly retaking, two passes end it, and White takes 6.5 komi so it can never be a tie. | 19×19, 13×13, 9×9 |
+
+Six of those are the checkers family, and they differ only in rules, never in
+aim: whether a man may capture backward, whether a king slides any distance,
+and whether you must take the longest chain or may choose. Worth knowing that
+**English checkers is the only one of the six that has been solved** — weakly,
+by Schaeffer's team in 2007, and it is a draw. The same board and the same
+twelve men under Brazilian rules is a different game, and open.
 
 The games where pieces MOVE rather than land have no natural end — two kings
 shuffling is a game neither player can be made to stop — so those carry a
@@ -462,7 +481,7 @@ game, and validates moves on the server. There is no second implementation of
 "who has won".
 
 A variant is a row in `VARIANT_SPECS` plus its copy, and the engine reads the
-spec rather than switching on a variant's name. That is what lets thirty-nine
+spec rather than switching on a variant's name. That is what lets forty-four
 games share one engine — and `variants.coverage.test.ts` fails the build for a
 game that is missing its tests, its copy, its family or its screenshot, so a
 new game cannot ship half-finished.
@@ -664,14 +683,20 @@ Parameters: `size` (9/13/15/19), `variant` (`freestyle`, `standard`, `renju`,
 `swap`, `swap2`, `rif`), `obstacles`, `theme`, `stones`, `coords=0`. Unknown values fall back rather than erroring — a host should not
 be able to break the board by mistyping a parameter.
 
-The board posts messages outward — `gomoku:ready`, `gomoku:resize`,
-`gomoku:move`, `gomoku:result` — so a host can size the frame and react to play:
+The board posts messages outward — `itsutsu:ready`, `itsutsu:resize`,
+`itsutsu:move`, `itsutsu:result` — so a host can size the frame and react to
+play:
 
 ```js
 window.addEventListener("message", (event) => {
-  if (event.data?.type === "gomoku:resize") frame.style.height = `${event.data.height}px`;
+  if (event.data?.type === "itsutsu:resize") frame.style.height = `${event.data.height}px`;
 });
 ```
+
+Every one of those also goes out under its old `gomoku:` name, because the site
+was called Gomoku when this interface was published and a host page is somebody
+else's code on somebody else's server. Listen for **one or the other, never
+both**, or you will count every event twice. New hosts should use `itsutsu:`.
 
 ### Embed tokens
 

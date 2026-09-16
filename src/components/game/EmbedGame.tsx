@@ -18,10 +18,25 @@ export type EmbedOptions = {
 
 /** Messages the host page receives. Namespaced so they cannot be mistaken. */
 type EmbedMessage =
-  | { type: "gomoku:ready"; height: number }
-  | { type: "gomoku:resize"; height: number }
-  | { type: "gomoku:move"; moveCount: number; toPlay: string }
-  | { type: "gomoku:result"; result: string; moveCount: number };
+  | { kind: "ready"; height: number }
+  | { kind: "resize"; height: number }
+  | { kind: "move"; moveCount: number; toPlay: string }
+  | { kind: "result"; result: string; moveCount: number };
+
+/** The name the site goes by, and the one it went by before. */
+const EMBED_NAME = "itsutsu";
+
+/*
+ * Every message goes out under BOTH names. The site was called Gomoku when
+ * this interface was published, and a host page is somebody else's code on
+ * somebody else's server: we cannot edit it, and we do not know who has one.
+ * Renaming outright would break every embed silently — the iframe would go on
+ * drawing a board while the page around it stopped resizing. So `itsutsu:*`
+ * is what the README documents and what a new host should listen for, and
+ * `gomoku:*` keeps going out beside it. Drop the old one only when something
+ * actually tells us nobody is listening for it, which nothing does today.
+ */
+const EMBED_NAME_WAS = "gomoku";
 
 /**
  * The board on its own, for embedding in another site through an iframe.
@@ -35,19 +50,21 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
   const { session, actions } = useGameSession(options.settings);
   const frame = useRef<HTMLDivElement>(null);
 
-  const post = (message: EmbedMessage) => {
+  const post = ({ kind, ...body }: EmbedMessage) => {
     // The host origin is unknown by design; nothing sent here is sensitive.
-    window.parent?.postMessage(message, "*");
+    for (const name of [EMBED_NAME, EMBED_NAME_WAS]) {
+      window.parent?.postMessage({ type: `${name}:${kind}`, ...body }, "*");
+    }
   };
 
   useEffect(() => {
     const element = frame.current;
     if (element === null) return;
 
-    post({ type: "gomoku:ready", height: element.offsetHeight });
+    post({ kind: "ready", height: element.offsetHeight });
 
     const observer = new ResizeObserver(([entry]) => {
-      post({ type: "gomoku:resize", height: entry.contentRect.height });
+      post({ kind: "resize", height: entry.contentRect.height });
     });
     observer.observe(element);
     return () => observer.disconnect();
@@ -58,7 +75,7 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
     if (state.status === GAME_STATUS.playing) {
       if (state.moves.length > 0) {
         post({
-          type: "gomoku:move",
+          kind: "move",
           moveCount: state.moves.length,
           toPlay: state.toPlay,
         });
@@ -66,7 +83,7 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
       return;
     }
     post({
-      type: "gomoku:result",
+      kind: "result",
       result: state.winner ?? "draw",
       moveCount: state.moves.length,
     });

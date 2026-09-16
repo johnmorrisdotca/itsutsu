@@ -1252,7 +1252,7 @@ run happened to leave behind.
 
 ### A Scratch File In The Shared Checkout Is Somebody Else's Commit
 
-Two sessions ran `git add -A` in `/Users/john/Projects/gomoku` while a
+Two sessions ran `git add -A` in `/Users/john/Projects/itsutsu` while a
 one-off runner was sitting untracked in `src/`, and both swept it into their
 branches. It had been deleted an hour earlier and never committed by the
 session that wrote it — and it came back twice, at two different merges, as a
