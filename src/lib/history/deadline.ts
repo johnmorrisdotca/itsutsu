@@ -24,10 +24,24 @@ export function deadlineFor(game: {
 }): Date | null {
   if (game.moveTimeMs === null) return null;
   /*
-   * A computer is never late. It answers inside the request that provoked it,
-   * so a clock running against its seat can only ever be a bug: the board
-   * would offer to claim a turn from a player that has already moved, or is
-   * about to inside the next second.
+   * A computer is never late.
+   *
+   * It used to be enough to say WHY in one line — it answers inside the request
+   * that provoked it, so a clock against its seat could only ever be a bug. That
+   * reason is going away: the same chooser now runs in the player's own browser
+   * (`botWorker.ts`), where a move may take seconds and the person may close the
+   * tab in the middle of one. The move then arrives late, or on the next visit,
+   * or not until some later request asks the server to play it.
+   *
+   * So this rule matters MORE than it did, not less, and it is not a shortcut
+   * that a faster path made unnecessary. Without it, moving the thinking off the
+   * server would quietly introduce a way for a computer to LOSE ON TIME because
+   * somebody shut their laptop — a program forfeiting a game it was winning, for
+   * something its opponent did to their own browser. Nobody would report that as
+   * a clock bug; it would read as the computer resigning at random.
+   *
+   * The check is on who HOLDS the seat and never on how fast anything is, which
+   * is why it keeps working now that the timing has changed underneath it.
    *
    * Only while it is the computer's turn, though — not for the whole game, the
    * way a posted seat is. The person on the other side plays under the clock
