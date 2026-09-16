@@ -227,3 +227,43 @@ export type SearchBudget = {
   /** Positions visited. */
   nodes?: number;
 };
+
+/**
+ * WHERE ONE DEPTH OF THE SEARCH KEEPS ITS CANDIDATE LIST.
+ *
+ * The line search visits tens of thousands of positions for one move, and at
+ * every one of them it used to build a list of the points worth trying: an
+ * array of candidates, an array of the legal ones, a wrapper object for each
+ * to carry its score, a sorted copy and a trimmed copy of that. All of it was
+ * dead the moment the node returned, and ten of the sixty-odd points were ever
+ * looked at.
+ *
+ * None of that memory has to be new. The search is one thread going depth
+ * first, so at any instant exactly one call is live at each remaining-ply
+ * count, and the list that call is walking is nobody else's business. A shelf
+ * per remaining ply is therefore enough, and it is reused for every node at
+ * that depth for the whole move.
+ *
+ * THE INVARIANT THIS RESTS ON, because getting it wrong would corrupt a search
+ * silently rather than fail: **a shelf is written only by the call whose
+ * remaining depth indexes it, and a call only ever recurses to depth − 1.** So
+ * while a node at depth 5 is walking its own list, everything it sets in
+ * motion writes to 4, 3, 2 and 1 and cannot reach 5. `searchCandidates.test.ts`
+ * pins both halves of that: a shelf is the same array twice at one depth, a
+ * different array at a different depth, and untouched by any amount of work at
+ * every other depth.
+ *
+ * The root's list is deliberately NOT one of these. It is read once and reused
+ * by every deepening pass, so it outlives the calls below it — which is why
+ * `rootCandidates` takes no shelves at all rather than being trusted to pick a
+ * slot nobody else wants.
+ */
+export type SearchShelf = {
+  /** The best points found at this depth, best first, at most `branch` of them. */
+  points: Point[];
+  /** Their scores, in the same order, so the insertion can find where one belongs. */
+  scores: number[];
+};
+
+/** One shelf per remaining ply, filled as the search first reaches each depth. */
+export type SearchShelves = SearchShelf[];

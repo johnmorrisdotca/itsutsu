@@ -1,12 +1,11 @@
 import { racesForCamp } from "./rules/farCamp";
-import { isLegalMove } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, DRAW_SCORE, SEARCH } from "./opponent.constants";
-import { boardScore, pointScore, positionScore, readsThreats, threatScore } from "./opponentEval";
+import { boardScore, positionScore, readsThreats } from "./opponentEval";
 import { applyTurn } from "./opponentTurns";
-import { candidatePoints } from "./threats";
+import { nodeCandidates, rootCandidates } from "./searchCandidates";
 import type { GameState, Point, Stone, VariantSpec } from "./gomoku.types";
-import type { BotTurn, SearchBudget } from "./opponent.types";
+import type { BotTurn, SearchBudget, SearchShelves } from "./opponent.types";
 
 /**
  * Looking ahead.
@@ -81,56 +80,6 @@ function terminalScore(state: GameState, me: Stone, depthLeft: number): number {
     : -(DECIDED_SCORE + depthLeft);
 }
 
-/**
- * The points worth searching here, best first, at most `branch` of them.
- *
- * Ordered by shape, which is cheap. The threat reading, which is the better
- * ordering and about fifty times the price, is spent only where `reading` says
- * so — at the root, over a shortlist the shape ordering has already narrowed.
- *
- * `defence` is the player's STYLE, and this is the only place in the search it
- * is allowed to reach. See `searchTurn`.
- */
-function orderedCandidates(
-  state: GameState,
-  spec: VariantSpec,
-  branch: number,
-  reading: boolean,
-  first: Point | null,
-  defence?: number,
-): Point[] {
-  const mover = state.toPlay;
-  const points = candidatePoints(state).filter((point) => isLegalMove(state, point));
-  if (points.length === 0) return [];
-
-  const scored = points.map((point) => ({
-    point,
-    score: pointScore(state, point, mover, spec, defence),
-  }));
-  scored.sort((a, b) => b.score - a.score);
-
-  if (reading) {
-    // Only the shortlist, and only once: see SEARCH.rootReading.
-    const shortlist = scored.slice(0, SEARCH.rootReading);
-    for (const entry of shortlist) {
-      entry.score += threatScore(state, entry.point, mover);
-    }
-    shortlist.sort((a, b) => b.score - a.score);
-    scored.splice(0, shortlist.length, ...shortlist);
-  }
-
-  const best = scored.slice(0, branch).map((entry) => entry.point);
-  if (first === null) return best;
-  /*
-   * The best move from the previous, shallower pass goes first. It is usually
-   * still the best move, and trying it first is most of what makes iterative
-   * deepening cheaper than the deep search it ends on rather than more
-   * expensive than it.
-   */
-  const rest = best.filter((point) => point.row !== first.row || point.col !== first.col);
-  return [first, ...rest].slice(0, branch);
-}
-
 /** What a live position at the bottom of the search is worth to `me`. */
 function leafScore(state: GameState, me: Stone, spec: VariantSpec): number {
   return boardScore(state, me, spec) + positionScore(state, me);
@@ -154,6 +103,7 @@ function negamax(
   alpha: number,
   beta: number,
   budget: Budget,
+  shelves: SearchShelves,
   defence?: number,
 ): number {
   if (state.status !== GAME_STATUS.playing) return terminalScore(state, me, depth);
@@ -163,18 +113,30 @@ function negamax(
   if (spent(budget)) return leafScore(state, me, spec);
 
   const maximising = state.toPlay === me;
-  const candidates = orderedCandidates(state, spec, SEARCH.branch, false, null, defence);
+  /*
+   * The list below is BORROWED from this depth's shelf, not owned — see
+   * `SearchShelf`. It stays valid for exactly as long as this node walks it,
+   * because everything the walk sets in motion recurses to `depth - 1` and
+   * writes to a different shelf. Nothing here may keep it past the return, and
+   * nothing does: the loop reads a point, plays it and is finished with it.
+   *
+   * Walked by index rather than by `for…of` for the same reason the list is
+   * borrowed: an iterator is one more object made and dropped at every node,
+   * and the node is the thing being counted here.
+   */
+  const candidates = nodeCandidates(state, spec, SEARCH.branch, defence, shelves, depth);
   if (candidates.length === 0) return leafScore(state, me, spec);
 
   let best = maximising ? -Infinity : Infinity;
   let low = alpha;
   let high = beta;
 
-  for (const point of candidates) {
+  for (let at = 0; at < candidates.length; at += 1) {
+    const point = candidates[at];
     const turn: BotTurn = { kind: MOVE_KINDS.place, row: point.row, col: point.col };
     const after = applyTurn(state, turn);
     if (after === state) continue;
-    const value = negamax(after, me, spec, depth - 1, low, high, budget, defence);
+    const value = negamax(after, me, spec, depth - 1, low, high, budget, shelves, defence);
 
     if (maximising) {
       if (value > best) best = value;
@@ -232,14 +194,26 @@ export function searchTurn(
     until: Date.now() + (limit.millis ?? SEARCH.millis),
   };
   let chosen: Point | null = null;
+  /*
+   * The memory every node below the root will order its candidates in, made
+   * once for this move and lent out a shelf per remaining ply. It belongs to
+   * this call rather than to the module, so two searches could run side by
+   * side without either knowing about the other — which they never do here,
+   * and a search that quietly depended on that would be a nasty thing to
+   * discover later.
+   */
+  const shelves: SearchShelves = [];
 
   /*
    * The root's ordering is read once, threats and all, and reused by every
    * pass. Only the best move found so far moves to the front between passes,
    * which is the whole of what deepening needs from it — and it saves paying
    * the threat reading again for each extra ply.
+   *
+   * Its own array, never a shelf: this list outlives every node under it, and
+   * a borrowed one would be rewritten by the first node the first pass reached.
    */
-  const rootPoints = orderedCandidates(state, spec, SEARCH.rootBranch, true, null, defence);
+  const rootPoints = rootCandidates(state, spec, SEARCH.rootBranch, defence);
   if (rootPoints.length === 0) return null;
 
   for (let ply = 2; ply <= depth; ply += 2) {
@@ -254,7 +228,7 @@ export function searchTurn(
       const turn: BotTurn = { kind: MOVE_KINDS.place, row: point.row, col: point.col };
       const after = applyTurn(state, turn);
       if (after === state) continue;
-      const value = negamax(after, me, spec, ply - 1, -Infinity, Infinity, budget, defence);
+      const value = negamax(after, me, spec, ply - 1, -Infinity, Infinity, budget, shelves, defence);
       if (value > best) {
         best = value;
         equal = [point];
