@@ -62,12 +62,12 @@ function baseScore(state: GameState, turn: BotTurn, after: GameState, me: Stone,
   if (turn.kind === MOVE_KINDS.place && readsPoints) {
     const point = { row: turn.row, col: turn.col };
     const stone = turn.stone ?? me;
-    score += pointScore(state, point, stone, variant);
+    score += pointScore(state, point, stone, variant, spec.defence);
     if (spec.reads && readsThreats(variant)) score += threatScore(state, point, stone);
   }
   // A laid piece is several cells at once, and each of them is shape.
   if (turn.kind === MOVE_KINDS.piece && readsPoints) {
-    score += pieceScore(state, turn.cells, me, variant);
+    score += pieceScore(state, turn.cells, me, variant, spec.defence);
   }
   /*
    * In Go, pass when playing on gains nothing.

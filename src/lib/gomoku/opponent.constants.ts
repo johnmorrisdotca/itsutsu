@@ -415,6 +415,18 @@ export const EVAL_WEIGHTS = {
   crowning: 6,
   /** How much the line reading counts against everything else. */
   shape: 1,
+  /**
+   * What DENYING the other side's shape at a point is worth, against making
+   * your own there. Even-handed at 0.85, which is what every grade played
+   * before a bot could have a style.
+   *
+   * This is the seam a personality turns on. Below 0.85 is a player who builds
+   * and lets yours grow; above it is one who takes your point before its own.
+   * It costs nothing either way — both halves are already computed, and this
+   * only decides how they are weighed — which is why a roster of styles is
+   * affordable where a roster of deeper searches is not.
+   */
+  defence: 0.85,
   /** How much a point being near the middle is worth, to break ties inwards. */
   centre: 2,
   /** Per point of the area lead in Go, which is the whole of that game's result. */

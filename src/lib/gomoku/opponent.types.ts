@@ -83,6 +83,19 @@ export type TierSpec = {
   noise: number;
   /** Whether it reads the threat ladder where the game's shape allows one. */
   reads: boolean;
+  /**
+   * STYLE, not strength: how much this player values taking your point against
+   * building its own. `EVAL_WEIGHTS.defence` (0.85) is even-handed and is what
+   * every grade plays when this is left off. Lower is an attacker, higher a
+   * defender.
+   *
+   * It must never make a player weaker than its grade promises. Style decides
+   * between moves that are ALL acceptable — the win in hand, the guard and the
+   * solved-game table all run before this is consulted and none of them reads
+   * it — so an aggressive 国手 still never hands the game over, it only
+   * prefers the attacking move among the ones that do not.
+   */
+  defence?: number;
   /** How many candidates it will weigh, so the work a request does is bounded. */
   width: number;
   /**
