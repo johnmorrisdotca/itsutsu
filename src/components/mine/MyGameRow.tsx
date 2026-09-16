@@ -1,4 +1,3 @@
-import { Paired } from "@/components/i18n/Paired";
 import { PlayerName } from "@/components/players/PlayerName";
 import Link from "next/link";
 
