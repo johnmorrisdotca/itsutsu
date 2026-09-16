@@ -2,13 +2,14 @@ import { shapeScore } from "./analysis";
 import { otherStone } from "./engine";
 import { DIRECTIONS, GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import { SHAPE_BASE } from "./analysis.constants";
+import { boardShapeScore } from "./lineShapes";
 import { rulesFor } from "./engine";
 import { racesForCamp } from "./rules/farCamp";
 import { DECIDED_SCORE, DRAW_SCORE, EVAL_WEIGHTS } from "./opponent.constants";
 import { checkersScore, connectScore, flipScore, goScore, raceScore } from "./opponentFamilies";
 import { threatAt } from "./threats";
 import { tengen } from "./obstacles";
-import type { GameState, Point, Stone, VariantSpec } from "./gomoku.types";
+import type { Cell, GameState, Point, Stone, VariantSpec } from "./gomoku.types";
 
 /**
  * How good a position is for one colour, read from the game's spec rather than
@@ -86,13 +87,21 @@ function settledScore(state: GameState, stone: Stone): number {
  * square and slightly pessimistic for a hot one; and the wrapping boards are
  * read flat, so a line across the join is not counted. Both are approximations
  * in an advisory reading, and the engine still settles every game.
+ *
+ * Read from a table where one exists — this runs at every leaf of the search,
+ * over the whole board, twice — and by the scan below where the line is longer
+ * than any table covers. `boardShapeScore` answers null rather than a number it
+ * cannot stand behind; see `lineShapes.ts`.
  */
 function windowScore(
-  board: readonly (string | null)[],
+  board: readonly Cell[],
   size: number,
   winLength: number,
   stone: Stone,
 ): number {
+  const tabled = boardShapeScore(board, size, winLength, stone);
+  if (tabled !== null) return tabled;
+
   let total = 0;
   for (const step of DIRECTIONS) {
     for (let row = 0; row < size; row += 1) {

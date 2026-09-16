@@ -8,6 +8,7 @@ import {
   seatToPlay,
 } from "./engine";
 import { DIRECTIONS, GAME_STATUS, STONES, VARIANT_SPECS } from "./gomoku.constants";
+import { spanScore } from "./lineShapes";
 import { candidatePoints, emptyReport, scanThreats } from "./threats";
 import { tengen } from "./obstacles";
 import type {
@@ -214,6 +215,13 @@ export function isSwapBlocked(assessment: Assessment): boolean {
  * How promising an empty point looks for `stone`, ignoring forced sequences.
  * Every window of `winLength` through the point that the opponent has not
  * already broken scores by how many friendly stones it holds.
+ *
+ * THE HOT FUNCTION of the whole computer player — the search asks it twice for
+ * every candidate at every node, which is millions of times in a game — so it
+ * is read from a table where one exists. `spanScore` gives the same number for
+ * fifteenth of the cost, and answers null rather than a plausible one where the
+ * line is longer than any table covers; the scan below is what that falls back
+ * to, and is also what the table is checked against in `lineShapes.test.ts`.
  */
 export function shapeScore(
   board: Cell[],
@@ -222,6 +230,9 @@ export function shapeScore(
   point: Point,
 ): number {
   const { size, winLength } = settings;
+  const tabled = spanScore(board, size, winLength, stone, point);
+  if (tabled !== null) return tabled;
+
   let score = 0;
 
   for (const step of DIRECTIONS) {
