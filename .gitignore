@@ -59,3 +59,10 @@ next-env.d.ts
 
 # Worktrees agents work in; never part of the repository.
 .claude/worktrees/
+
+# The full-resolution bot portraits as generated. The 280px faces cut from them
+# by `pnpm art:faces` are what the site serves and what is committed; the
+# sources are two megabytes each and twenty of them would be forty megabytes of
+# history for files nothing reads.
+public/art/bots/*.png
+public/art/bots/*.webp
