@@ -1,4 +1,4 @@
-import type { Handicap, HeadStart, PieceCell, Point } from "@/lib/gomoku/gomoku.types";
+import type { GameState, Handicap, HeadStart, PieceCell, Point } from "@/lib/gomoku/gomoku.types";
 
 /**
  * What a client may send as a move: a stone, a sliding piece, or the quarter
@@ -103,6 +103,16 @@ export type MoveRefusal =
 
 export type MoveOutcome =
   | { ok: true; game: GameDetail }
+  | { ok: false; reason: MoveRefusal };
+
+/**
+ * What `appendMove` answers: a `MoveOutcome`, and on success the position the
+ * move settled into as well, so a caller taking several moves in one request
+ * can hand it back as `known` for the next instead of having the row replayed.
+ * A subtype of `MoveOutcome`, so every caller that wanted one still has one.
+ */
+export type AppendOutcome =
+  | { ok: true; game: GameDetail; state: GameState }
   | { ok: false; reason: MoveRefusal };
 
 /** What the creator of a game gets back: the game, and both seat links. */
