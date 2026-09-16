@@ -11,7 +11,7 @@ import { recordResult } from "@/lib/rating/recordResult";
 import { recordPlayed } from "@/lib/rating/playedRun";
 import { countsOnLadder } from "@/lib/rating/countsOnLadder";
 import { poolFor } from "@/lib/rating/pools";
-import { hasBotSeat } from "@/lib/bots/bots";
+import { botInSeat, hasBotSeat } from "@/lib/bots/bots";
 import { noticeGameOver, noticeYourTurn } from "@/lib/notify/gameNotices";
 import { awardAnsweredChallenge } from "@/lib/xp/xpSocial";
 import type { MoveOutcome, MoveRequest } from "./liveGame.types";
@@ -70,8 +70,44 @@ export async function appendMove(
 
   const state = replay(row);
   // One token for both chairs plays whoever is to move.
-  const stone = isHotSeat(row) && token === row.blackToken ? state.toPlay : stoneForToken(row, token);
-  if (stone === null) return { ok: false, reason: "wrong-token" };
+  const own = isHotSeat(row) && token === row.blackToken ? state.toPlay : stoneForToken(row, token);
+  if (own === null) return { ok: false, reason: "wrong-token" };
+
+  /*
+   * A PERSON MAY ANSWER FOR THE COMPUTER SITTING OPPOSITE THEM.
+   *
+   * Every computer move on this site used to be worked out here, inside a paid
+   * function, and that is the one cost that grows with how good the opponent
+   * is — it is what capped the ladder at a quarter of a second a move. The same
+   * chooser now runs in the player's own browser, in a worker thread that costs
+   * nothing and can think for as long as the move is worth, and this is the
+   * door its answer comes back through.
+   *
+   * WHAT IT GRANTS, EXACTLY. The seat being answered for must be a COMPUTER's:
+   * a token is never widened to another person's chair, and the condition below
+   * says so in both directions — the mover's own seat must not be a computer's
+   * either, so nothing here lets one program play another. The move is then
+   * checked by the engine exactly as anybody's is, so an impossible move is
+   * refused whoever sent it. What a cheat buys is choosing which LEGAL move
+   * their own opponent plays.
+   *
+   * WHY THAT IS ACCEPTABLE, which is a decision and not an oversight. Signing
+   * or encrypting the browser's answer would not help: whatever key the page
+   * holds, the person running the page holds too. The real containment is
+   * already in this codebase — `hasBotSeat` puts every game with a computer in
+   * it into the computer POOL, so a rating won this way cannot touch where
+   * anybody stands among people. John, asked directly: "how the heck can a
+   * regular person change the bot on their computer?? they cannot. that's a
+   * hacker. we don't care about that."
+   *
+   * If that ever stops being true, the answer is not a secret in the browser.
+   * It is `botSeed.ts`, which makes a grade's choice reproducible so the server
+   * can replay a sample and compare, and `botHonesty.ts`, which catches a grade
+   * that claims never to blunder doing it without re-searching anything.
+   */
+  const answeringForBot =
+    own !== state.toPlay && botInSeat(row, state.toPlay) !== null && botInSeat(row, own) === null;
+  const stone = answeringForBot ? state.toPlay : own;
   if (state.toPlay !== stone) return { ok: false, reason: "not-your-turn" };
 
   /*

@@ -81,7 +81,17 @@ vi.mock("./gameHistory", async (original) => ({
 vi.mock("@/lib/rating/recordResult", () => ({ recordResult: async () => {} }));
 vi.mock("@/lib/rating/playedRun", () => ({ recordPlayed: seen.recordPlayed }));
 vi.mock("@/lib/rating/pools", () => ({ poolFor: () => "people" }));
-vi.mock("@/lib/bots/bots", () => ({ hasBotSeat: () => false, seatMemberId: () => null, isBotId: () => false }));
+// `botInSeat` is here because appendMove now asks it whether the seat to move
+// belongs to a computer — a person may answer for the program opposite them.
+// null for both seats keeps these fixtures as two PEOPLE, which is what they
+// are testing; a stub missing it throws inside appendMove and reads as a rule
+// change rather than an absent mock.
+vi.mock("@/lib/bots/bots", () => ({
+  hasBotSeat: () => false,
+  seatMemberId: () => null,
+  isBotId: () => false,
+  botInSeat: () => null,
+}));
 vi.mock("@/lib/notify/gameNotices", () => ({ noticeYourTurn: seen.noticeYourTurn, noticeGameOver: seen.noticeGameOver }));
 vi.mock("@/lib/xp/xpSocial", () => ({ awardAnsweredChallenge: async () => {}, awardCourtesy: async () => {} }));
 

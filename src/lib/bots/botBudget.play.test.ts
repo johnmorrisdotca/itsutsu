@@ -110,7 +110,21 @@ describe.skipIf(!ASKED)("thinking longer, against thinking less long", () => {
     let draws = 0;
 
     for (const variant of games) {
-      const size = boardSizesFor(variant)[0]!;
+      /*
+       * THE BOARD MATTERS MORE THAN ANYTHING ELSE HERE, and the first run of
+       * this file got it wrong. It played 9×9, the smallest board each game
+       * offers, and came back 3-3 with eighteen draws — "more time is worth
+       * nothing". But 国手 carries `searchDepth: 8`, a hard ceiling, and on a
+       * small board a quarter of a second already reaches it. The run measured
+       * the DEPTH cap and reported it as a verdict on the TIME cap.
+       *
+       * A budget can only show itself where it binds. `BOT_BUDGET_SIZE` names
+       * the board, and the default is the largest the game offers rather than
+       * the smallest.
+       */
+      const sizes = boardSizesFor(variant);
+      const asked = whole("BOT_BUDGET_SIZE", 0, 0);
+      const size = asked > 0 ? asked : sizes[sizes.length - 1]!;
       let d = 0;
       let s = 0;
       let e = 0;
