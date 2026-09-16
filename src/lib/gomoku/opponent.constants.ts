@@ -31,6 +31,7 @@ export const BOT_TIERS = {
   guoshou: "guoshou",
   rafaDuarte: "rafaDuarte",
   ingridSolheim: "ingridSolheim",
+  amaraOkafor: "amaraOkafor",
   tamenoki: "tamenoki",
   meritalu: "meritalu",
 } as const satisfies Record<BotTier, BotTier>;
@@ -110,7 +111,7 @@ export const BOT_SPECIALIST_LIST: readonly BotTier[] = [
  * and the top grade's search leaves few ties to break. A master plays the best
  * move; a club player plays like themselves.
  */
-export const BOT_CHARACTER_LIST: readonly BotTier[] = [BOT_TIERS.rafaDuarte, BOT_TIERS.ingridSolheim];
+export const BOT_CHARACTER_LIST: readonly BotTier[] = [BOT_TIERS.rafaDuarte, BOT_TIERS.ingridSolheim, BOT_TIERS.amaraOkafor];
 
 /** Everybody the site plays as a computer: the ladder, the specialists, the characters. */
 export const BOT_ALL_TIERS: readonly BotTier[] = [
@@ -120,6 +121,16 @@ export const BOT_ALL_TIERS: readonly BotTier[] = [
 ];
 
 export const BOT_PROFILES: Record<BotTier, BotProfile> = {
+  amaraOkafor: {
+    tier: "amaraOkafor",
+    name: "Amara Okafor",
+    native: null,
+    strength: "Medium, changeable",
+    blurb:
+      "Plays at Dan's strength and changes her mind about how. Amara hounds " +
+      "you for a while, then goes quiet and answers everything, then comes " +
+      "back — and the hard part is not knowing which one you are playing.",
+  },
   ingridSolheim: {
     tier: "ingridSolheim",
     name: "Ingrid Solheim",
@@ -388,6 +399,35 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     searchDepth: 0,
     expertise: [],
     defence: 2.4,
+  },
+
+  /*
+   * Amara Okafor: Dan's strength, and a mood that changes mid-game.
+   *
+   * She swings between exactly the two weights the other characters sit at —
+   * Rafa's 0.3 and Ingrid's 2.4 — holding each for six turns. So a game against
+   * her has a shape: she hounds you for a while, then goes quiet and answers
+   * everything, then comes back. John: "each move we don't know if they will do
+   * a string of attacks or defense".
+   *
+   * Runs and not a coin flip, and taken from the MOVE NUMBER rather than a die.
+   * A player who flipped every turn would be noisy rather than unpredictable,
+   * and noise is already what the weak grades have; and a mood read from the
+   * position is one the server can reproduce, which keeps her the same as
+   * everyone else to check. See `defenceNow`.
+   */
+  amaraOkafor: {
+    depth: 2,
+    guard: 0.95,
+    blunder: 0.03,
+    noise: 0.25,
+    reads: false,
+    width: 90,
+    guardTop: 20,
+    searchDepth: 0,
+    expertise: [],
+    moods: [0.3, 2.4],
+    moodMoves: 6,
   },
 
   /*

@@ -2,7 +2,7 @@ import { racesForCamp } from "./rules/farCamp";
 import { otherStone } from "./engine";
 import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, EVAL_WEIGHTS, REPLY_CAP, TIER_SPECS } from "./opponent.constants";
-import { pieceScore, positionScore, pointScore, readsThreats, shapeIsRead, threatScore } from "./opponentEval";
+import { defenceNow, pieceScore, positionScore, pointScore, readsThreats, shapeIsRead, threatScore } from "./opponentEval";
 import { masteredTurn } from "./expert/experts";
 import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
 import { searchTurn } from "./opponentSearch";
@@ -62,12 +62,12 @@ function baseScore(state: GameState, turn: BotTurn, after: GameState, me: Stone,
   if (turn.kind === MOVE_KINDS.place && readsPoints) {
     const point = { row: turn.row, col: turn.col };
     const stone = turn.stone ?? me;
-    score += pointScore(state, point, stone, variant, spec.defence);
+    score += pointScore(state, point, stone, variant, defenceNow(spec, state.moves.length));
     if (spec.reads && readsThreats(variant)) score += threatScore(state, point, stone);
   }
   // A laid piece is several cells at once, and each of them is shape.
   if (turn.kind === MOVE_KINDS.piece && readsPoints) {
-    score += pieceScore(state, turn.cells, me, variant, spec.defence);
+    score += pieceScore(state, turn.cells, me, variant, defenceNow(spec, state.moves.length));
   }
   /*
    * In Go, pass when playing on gains nothing.

@@ -4,6 +4,7 @@ import { chooseTurn } from "./opponent";
 import { createGame } from "./engine";
 import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
 import { assess } from "./analysis";
+import { defenceNow } from "./opponentEval";
 import { BOT_CHARACTER_LIST, BOT_SPECIALIST_LIST, BOT_TIER_LIST, EVAL_WEIGHTS, TIER_SPECS } from "./opponent.constants";
 import { GAME_STATUS, RULE_VARIANTS } from "./gomoku.constants";
 import type { BotTurn, TierSpec } from "./opponent.types";
@@ -71,6 +72,40 @@ function chooseWith(state: GameState, spec: TierSpec, as: "guoshou" | "dan" = "g
   }
 }
 
+describe("a style that changes during the game", () => {
+  it("holds a mood for a run of turns, then takes the next", () => {
+    const spec = { moods: [0.3, 2.4] as const, moodMoves: 6 };
+    // Six turns of one, six of the other, and back — a person in a mood, not
+    // a coin flip. A flip every turn would be noise, which the weak grades
+    // already have.
+    for (const move of [0, 1, 5]) expect(defenceNow(spec, move)).toBe(0.3);
+    for (const move of [6, 7, 11]) expect(defenceNow(spec, move)).toBe(2.4);
+    for (const move of [12, 17]) expect(defenceNow(spec, move)).toBe(0.3);
+  });
+
+  it("answers from the position, so the same position always answers the same", () => {
+    /*
+     * The property that keeps a moody player checkable. Her mood is read from
+     * the move number rather than a die, so a move she chose in somebody's
+     * browser can be replayed on the server and reach the same answer — see
+     * botSeed.ts. A style that rolled for itself would make the one character
+     * nobody could ever verify.
+     */
+    const spec = TIER_SPECS.amaraOkafor;
+    for (const move of [0, 3, 7, 14, 30]) {
+      expect(defenceNow(spec, move)).toBe(defenceNow(spec, move));
+    }
+    expect(defenceNow(spec, 0)).not.toBe(defenceNow(spec, 6));
+  });
+
+  it("leaves a player with no mood on its fixed style", () => {
+    expect(defenceNow(TIER_SPECS.rafaDuarte, 0)).toBe(TIER_SPECS.rafaDuarte.defence);
+    expect(defenceNow(TIER_SPECS.rafaDuarte, 99)).toBe(TIER_SPECS.rafaDuarte.defence);
+    // And a rung of the ladder has neither, so it reads as even-handed.
+    expect(defenceNow(TIER_SPECS.dan, 4)).toBeUndefined();
+  });
+});
+
 describe("the style knob", () => {
   it("is even-handed unless a spec asks otherwise", () => {
     /*
@@ -81,9 +116,14 @@ describe("the style knob", () => {
      */
     for (const tier of [...BOT_TIER_LIST, ...BOT_SPECIALIST_LIST]) {
       expect(TIER_SPECS[tier].defence, `${tier} should play even-handed`).toBeUndefined();
+      expect(TIER_SPECS[tier].moods, `${tier} should have no moods`).toBeUndefined();
     }
     expect(BOT_CHARACTER_LIST.length, "a character with no style is just its grade").toBeGreaterThan(0);
-    for (const tier of BOT_CHARACTER_LIST) expect(TIER_SPECS[tier].defence).toBeDefined();
+    for (const tier of BOT_CHARACTER_LIST) {
+      const knobs = TIER_SPECS[tier];
+      const styled = knobs.defence !== undefined || knobs.moods !== undefined;
+      expect(styled, `${tier} has no style, so it is just its grade`).toBe(true);
+    }
     expect(EVAL_WEIGHTS.defence).toBe(0.85);
   });
 
