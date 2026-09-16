@@ -17,6 +17,7 @@ import { NotesPanel } from "./NotesPanel";
 import { PieceTray } from "./PieceTray";
 import { PlayerNames } from "./PlayerNames";
 import type { GamePanelProps } from "./game.types";
+import { ComputerOpponentPanel } from "./ComputerOpponentPanel";
 
 /**
  * What you need while a stone is in your hand: how the game stands, the
@@ -32,6 +33,9 @@ export function GameSidebar({
     <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-80">
       <div className={PANEL_CLASS}>
         <GameStatus session={props.session} />
+      </div>
+      <div className={PANEL_CLASS}>
+        <ComputerOpponentPanel session={props.session} actions={props.actions} />
       </div>
       {props.session.settings.timeControl !== "none" ? (
         <div className={PANEL_CLASS}>
