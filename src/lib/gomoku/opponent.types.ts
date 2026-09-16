@@ -42,7 +42,10 @@ export type BotTier =
   | "meritalu"
   | "rafaDuarte"
   | "ingridSolheim"
-  | "amaraOkafor";
+  | "amaraOkafor"
+  | "minaPark"
+  | "kenjiArakawa"
+  | "liWenjing";
 
 /**
  * One whole turn, in the shapes a turn can take across these games.
