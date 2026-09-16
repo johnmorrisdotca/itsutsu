@@ -62,6 +62,19 @@ export type BotMember = {
 };
 
 export const BOT_MEMBERS: Record<BotTier, BotMember> = {
+  amaraOkafor: {
+    tier: BOT_TIERS.amaraOkafor,
+    id: "amara-okafor",
+    name: BOT_PROFILES.amaraOkafor.name,
+    country: "Nigeria",
+    town: "Lagos",
+    face: "/art/bots/faces/amaraOkafor.jpg",
+    bio:
+      "Amara plays at Dan's strength and changes her mind about how to use " +
+      "it. She will hound you for six or seven moves, then go quiet and " +
+      "answer everything you try, then come back at you. Nothing about it is " +
+      "random — she is simply in a mood, and the mood turns over.",
+  },
   ingridSolheim: {
     tier: BOT_TIERS.ingridSolheim,
     id: "ingrid-solheim",

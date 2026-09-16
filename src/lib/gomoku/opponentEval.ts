@@ -160,6 +160,25 @@ function centreScore(size: number, point: Point): number {
  * with the specialists. Two copies of this rule would drift, and the one that
  * drifted would be whichever nobody was looking at.
  */
+/**
+ * The style this player is in RIGHT NOW.
+ *
+ * A fixed `defence` for most characters; for one with `moods`, the weight its
+ * current run calls for. Taken from how many moves are on the board, so it is
+ * a property of the position rather than of a die — the same position always
+ * answers the same way, on the server and in the browser alike, which is what
+ * keeps a moody player checkable. See TierSpec.moods.
+ */
+export function defenceNow(
+  spec: { defence?: number; moods?: readonly number[]; moodMoves?: number },
+  movesPlayed: number,
+): number | undefined {
+  const moods = spec.moods;
+  if (moods === undefined || moods.length === 0) return spec.defence;
+  const runLength = Math.max(1, spec.moodMoves ?? 6);
+  return moods[Math.floor(movesPlayed / runLength) % moods.length];
+}
+
 export function shapeIsRead(spec: VariantSpec): boolean {
   return !spec.flips && !racesForCamp(spec) && !spec.connects && !spec.go;
 }

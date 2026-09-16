@@ -41,7 +41,8 @@ export type BotTier =
   | "tamenoki"
   | "meritalu"
   | "rafaDuarte"
-  | "ingridSolheim";
+  | "ingridSolheim"
+  | "amaraOkafor";
 
 /**
  * One whole turn, in the shapes a turn can take across these games.
@@ -98,6 +99,26 @@ export type TierSpec = {
    * prefers the attacking move among the ones that do not.
    */
   defence?: number;
+  /**
+   * A player whose style CHANGES during the game — John: "one that is totally
+   * randomly strong... each move we don't know if they will do a string of
+   * attacks or defense".
+   *
+   * A list of `defence` weights it moves between, and `moodMoves` is how many
+   * turns it holds one before taking the next. Runs rather than a coin flip at
+   * every move, because a person has a mood for a while: a player who flips
+   * every turn is not unpredictable, it is noisy, and noise is already what
+   * the weak grades have.
+   *
+   * **Read from the MOVE NUMBER, never from a die.** The mood is therefore a
+   * fact about the position, so the same position always gets the same mood —
+   * which is what lets a browser-chosen move be replayed and checked on the
+   * server (see `botSeed.ts`). A style that rolled for itself would make the
+   * one bot nobody could ever verify.
+   */
+  moods?: readonly number[];
+  /** How many turns one mood lasts. Ignored without `moods`. */
+  moodMoves?: number;
   /** How many candidates it will weigh, so the work a request does is bounded. */
   width: number;
   /**

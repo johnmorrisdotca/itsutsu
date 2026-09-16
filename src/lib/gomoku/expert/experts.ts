@@ -77,7 +77,7 @@ export function tiersFor(variant: RuleVariant): readonly BotTier[] {
      * two names and a different flag: exactly what is refused for the
      * specialists two comments above, for exactly the same reason.
      */
-    if (knobs.defence !== undefined) return shapeIsRead(spec);
+    if (knobs.defence !== undefined || knobs.moods !== undefined) return shapeIsRead(spec);
     return true;
   });
 }
