@@ -17,6 +17,7 @@ import { HandicapChoice } from "./HandicapChoice";
 import { HeadStartChoice } from "./HeadStartChoice";
 import { OpponentChoice } from "./OpponentChoice";
 import { ANYONE, RANDOM_COMPUTER, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
+import { BoardPreview } from "./BoardPreview";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
 import { describeRules, describeSettings } from "./rulesSummary";
@@ -317,6 +318,17 @@ export function SetUpGame({
       <p className="text-xs text-muted">
         Nothing is started until you say so. Once it is, these are the rules it is played under.
       </p>
+
+      {/*
+        The board itself, above the rules that shape it. IYT has shown a sample
+        board on its new-game screen since 1998 and this site showed only a name
+        and a small mark — which on a site where forty-four games share one
+        engine and look nothing like each other is the thing worth seeing first.
+        It redraws as the choices below it change.
+      */}
+      <div className="mt-1 border-t border-rule pt-3">
+        <BoardPreview rules={settled} />
+      </div>
 
       <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">
         <RulesForm
