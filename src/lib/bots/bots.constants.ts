@@ -62,6 +62,47 @@ export type BotMember = {
 };
 
 export const BOT_MEMBERS: Record<BotTier, BotMember> = {
+  minaPark: {
+    tier: BOT_TIERS.minaPark,
+    id: "mina-park",
+    name: BOT_PROFILES.minaPark.name,
+    country: "South Korea",
+    town: "Seoul",
+    face: "/art/bots/faces/minaPark.jpg",
+    bio:
+      "Mina learned omok at school and plays it the way most people start: " +
+      "she looks at what you have just done and answers it, and she does not " +
+      "look any further than that. She blocks more than she builds — not " +
+      "because she decided to, but because blocking is what you can see " +
+      "without a plan. She misses a great deal and is beatable by anyone.",
+  },
+  kenjiArakawa: {
+    tier: BOT_TIERS.kenjiArakawa,
+    id: "kenji-arakawa",
+    name: BOT_PROFILES.kenjiArakawa.name,
+    country: "Japan",
+    town: "Osaka",
+    face: "/art/bots/faces/kenjiArakawa.jpg",
+    bio:
+      "Kenji plays at Meijin's strength and spends it entirely on you. He " +
+      "would rather set a problem than answer one, so a game against him is " +
+      "mostly you deciding which of his threats to take seriously. He never " +
+      "gives a game away to do it — the attack is a preference, not a gamble.",
+  },
+  liWenjing: {
+    tier: BOT_TIERS.liWenjing,
+    id: "li-wenjing",
+    name: BOT_PROFILES.liWenjing.name,
+    country: "China",
+    town: "Chengdu",
+    face: "/art/bots/faces/liWenjing.jpg",
+    bio:
+      "Wenjing plays at 国手's strength and points it at whatever you are " +
+      "building. She takes the point you wanted before she takes the one she " +
+      "wanted, which is a slow way to win and a very hard one to hurry. Games " +
+      "against her tend to end with you having run out of ideas rather than " +
+      "having been beaten by one.",
+  },
   amaraOkafor: {
     tier: BOT_TIERS.amaraOkafor,
     id: "amara-okafor",

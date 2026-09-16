@@ -32,6 +32,9 @@ export const BOT_TIERS = {
   rafaDuarte: "rafaDuarte",
   ingridSolheim: "ingridSolheim",
   amaraOkafor: "amaraOkafor",
+  minaPark: "minaPark",
+  kenjiArakawa: "kenjiArakawa",
+  liWenjing: "liWenjing",
   tamenoki: "tamenoki",
   meritalu: "meritalu",
 } as const satisfies Record<BotTier, BotTier>;
@@ -111,7 +114,11 @@ export const BOT_SPECIALIST_LIST: readonly BotTier[] = [
  * and the top grade's search leaves few ties to break. A master plays the best
  * move; a club player plays like themselves.
  */
-export const BOT_CHARACTER_LIST: readonly BotTier[] = [BOT_TIERS.rafaDuarte, BOT_TIERS.ingridSolheim, BOT_TIERS.amaraOkafor];
+export const BOT_CHARACTER_LIST: readonly BotTier[] = [BOT_TIERS.rafaDuarte, BOT_TIERS.ingridSolheim, BOT_TIERS.amaraOkafor,
+  BOT_TIERS.minaPark,
+  BOT_TIERS.kenjiArakawa,
+  BOT_TIERS.liWenjing,
+];
 
 /** Everybody the site plays as a computer: the ladder, the specialists, the characters. */
 export const BOT_ALL_TIERS: readonly BotTier[] = [
@@ -121,6 +128,36 @@ export const BOT_ALL_TIERS: readonly BotTier[] = [
 ];
 
 export const BOT_PROFILES: Record<BotTier, BotProfile> = {
+  minaPark: {
+    tier: "minaPark",
+    name: "Mina Park",
+    native: "박미나",
+    strength: "Gentlest, defensive",
+    blurb:
+      "Answers what is in front of her and does not look further. Mina blocks " +
+      "what she sees coming and misses a great deal, because she is reacting " +
+      "rather than planning — which is what a beginner's defence actually is.",
+  },
+  kenjiArakawa: {
+    tier: "kenjiArakawa",
+    name: "Kenji Arakawa",
+    native: "荒川健二",
+    strength: "Hard, attacking",
+    blurb:
+      "Meijin's strength aimed forward. Kenji would rather hand you a problem " +
+      "than solve one, and at this strength the problems are real — but he " +
+      "never gives a game away to do it.",
+  },
+  liWenjing: {
+    tier: "liWenjing",
+    name: "Li Wenjing",
+    native: "李文静",
+    strength: "Strongest, defensive",
+    blurb:
+      "国手's strength aimed at whatever you are building. Wenjing takes the " +
+      "point you wanted before she takes the one she wanted, and waits for the " +
+      "game to come to her.",
+  },
   amaraOkafor: {
     tier: "amaraOkafor",
     name: "Amara Okafor",
@@ -428,6 +465,71 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     expertise: [],
     moods: [0.3, 2.4],
     moodMoves: 6,
+  },
+
+  /*
+   * Mina Park: Razryad's strength, and defensive because she cannot yet plan.
+   *
+   * John, on why a defensive player is often a beginner rather than a
+   * strategist: "sometimes kids are like that... very defensive because they
+   * are reacting and not planning". So her style is not a preference she chose
+   * — it is what is left when there is no plan. Razryad's knobs answer what is
+   * already on the board and nothing further ahead, and `defence: 2.0` points
+   * what little she sees at your threat rather than her own chance.
+   */
+  minaPark: {
+    depth: 1,
+    guard: 0.3,
+    blunder: 0.3,
+    noise: 1,
+    reads: false,
+    width: 50,
+    guardTop: 0,
+    searchDepth: 0,
+    expertise: [],
+    defence: 2,
+  },
+
+  /*
+   * Kenji Arakawa and Li Wenjing: the best attack and the best defence.
+   *
+   * John asked for "bots that are super good at defending the best defense...
+   * and ones that are the most offensive best attack", and these are those —
+   * Meijin's knobs and 国手's, pointed.
+   *
+   * ONE HONEST LIMIT, measured rather than assumed. A style shows least at the
+   * top, because the search runs after the base score and reaches the same move
+   * whatever the base score preferred. So these two differ from the rungs they
+   * are built on mainly in QUIET positions, where the search finds nothing to
+   * force and the preference is what is left to decide. In a sharp position
+   * they play like the grade, which is the correct thing for a strong player to
+   * do — a master plays the best move. Making the style bite at depth means
+   * threading it into the search's own evaluation, which is a change to
+   * `opponentSearch` and not to a number here.
+   */
+  kenjiArakawa: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 140,
+    guardTop: 28,
+    searchDepth: 6,
+    expertise: [],
+    defence: 0.35,
+  },
+  liWenjing: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 180,
+    guardTop: 34,
+    searchDepth: 8,
+    expertise: [],
+    defence: 2.2,
   },
 
   /*
