@@ -95,6 +95,10 @@ export const SET_UP_UNREAD = (names: readonly string[]) =>
   } left at the usual setting: ${names.join(", ")}.`;
 
 export const SET_UP_COPY = {
+  /** Under the sample board on the set-up screen, so nobody takes it for a game in progress. */
+  previewIs: (game: string) => `A preview of the ${game} board. Nothing here is a move.`,
+  /** Added where the board is dealt from a seed, so this arrangement is one of many. */
+  previewDealt: "This game scatters its board, so the one you play will be different.",
   /** The heading and lead, where nothing but the opponent is known. */
   against: (who: string) => `Against ${who}`,
   againstHint: (who: string) =>
