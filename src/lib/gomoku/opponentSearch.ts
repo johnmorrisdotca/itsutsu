@@ -4,6 +4,8 @@ import { DECIDED_SCORE, DRAW_SCORE, SEARCH } from "./opponent.constants";
 import { boardScore, positionScore, readsThreats } from "./opponentEval";
 import { applyTurn } from "./opponentTurns";
 import { forcedReplies } from "./forcedReplies";
+import { fitsLineBoard } from "./lineBoard";
+import { lineChildReader } from "./lineSearch";
 import { nodeCandidates, rootCandidates } from "./searchCandidates";
 import { boundOf, floorUnder, indexOfMove, pointKey, positionKey, recalled, type SearchMemory } from "./searchMemory";
 import type { GameState, Point, Stone, VariantSpec } from "./gomoku.types";
@@ -220,6 +222,13 @@ export function searchTurn(
    * table all run before style is consulted.
    */
   defence?: number,
+  /**
+   * Which board the children are read on. `"auto"` reads them on a line board
+   * wherever one fits — see `lineBoard.ts` — and on copies of the game
+   * everywhere else. `"states"` always uses copies: the reading the line board
+   * is proven against in `lineSearch.test.ts`, and nothing else.
+   */
+  on: "auto" | "states" = "auto",
 ): BotTurn | null {
   const spec = VARIANT_SPECS[state.settings.variant];
   if (!searchable(spec)) return null;
@@ -255,6 +264,16 @@ export function searchTurn(
   const rootPoints = forcedReplies(state) ?? rootCandidates(state, spec, SEARCH.rootBranch, defence);
   if (rootPoints.length === 0) return null;
 
+  // How a root move is read: on one board edited in place where the game allows it.
+  const readChild =
+    on === "auto" && fitsLineBoard(state)
+      ? lineChildReader(state, me, budget, defence)
+      : (point: Point, plies: number, floor: number): number | null => {
+          const after = applyTurn(state, { kind: MOVE_KINDS.place, row: point.row, col: point.col });
+          if (after === state) return null;
+          return negamax(after, me, spec, plies, floor, Infinity, budget, shelves, memory, defence);
+        };
+
   for (let ply = 2; ply <= depth; ply += 2) {
     const candidates =
       chosen === null
@@ -264,11 +283,9 @@ export function searchTurn(
     let best = -Infinity;
     let equal: Point[] = [];
     for (const point of candidates) {
-      const turn: BotTurn = { kind: MOVE_KINDS.place, row: point.row, col: point.col };
-      const after = applyTurn(state, turn);
-      if (after === state) continue;
       // The root prunes too, just under the best so far — see `floorUnder`.
-      const value = negamax(after, me, spec, ply - 1, floorUnder(best), Infinity, budget, shelves, memory, defence);
+      const value = readChild(point, ply - 1, floorUnder(best));
+      if (value === null) continue;
       if (value > best) {
         best = value;
         equal = [point];
