@@ -6,6 +6,10 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.210.0 — 2026-09-17
+- In a live game against a computer player, it now thinks on your own device for a couple of seconds rather than a quarter of a second on the server — a much stronger opponent, and the board stays put while it answers.
+- If you close the tab while the computer is thinking, its move is made for it the next time you look at your games.
+
 ## 0.209.0 — 2026-09-17
 - Computer opponents search about four times further in the same time: they read each line of the board from a table built once, and pick the moves worth trying without listing the rest.
 - The grades that promise never to blunder now play tic-tac-toe, Wild tic-tac-toe and Notakto perfectly.
