@@ -55,13 +55,24 @@ export function nextWaiting<T extends Waiting & { game: { id: string } }>(
  * And a game that has just ENDED is the one board worth staying on. The result
  * is what the move was for. Whisking somebody past their own win is not taking
  * them onward; it is taking the game away from them.
+ *
+ * A COMPUTER TO MOVE IS A THIRD, and it is the one that hid a feature. The
+ * computer's reply is worked out in this browser now (`useBotSeat`), on the
+ * board the player is looking at. Carrying them onward unmounts that board and
+ * the worker with it, mid-thought, so the reply never came: measured, the ask
+ * went out and no answer ever arrived, and it read as a worker that does not
+ * work in a live game. It was a worker thrown away by the page leaving. And
+ * staying costs nothing — the turn comes straight back round in a second or
+ * two, as it always did when the server answered inside the move's request.
  */
 export function carriesOnwardFrom(
   status: GameStatus,
   toPlay: Stone,
   seat: Stone,
+  computerToMove: boolean,
 ): boolean {
   if (status !== GAME_STATUS.playing) return false;
+  if (computerToMove) return false;
   return toPlay !== seat;
 }
 

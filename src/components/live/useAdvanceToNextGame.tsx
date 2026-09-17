@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { GAME_COPY } from "@/components/game/game.constants";
 import type { Asking } from "@/components/ui/ui.types";
+import { botInSeat } from "@/lib/bots/bots";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import { matchPath } from "@/lib/gomoku/slugs";
@@ -93,7 +94,7 @@ export function useAdvanceToNextGame() {
       if (seat === null || !advancesAfterMove()) return;
 
       const state = replayGame(after);
-      if (!carriesOnwardFrom(state.status, state.toPlay, seat)) return;
+      if (!carriesOnwardFrom(state.status, state.toPlay, seat, botInSeat(after, state.toPlay) !== null)) return;
 
       const step = advanceHold(hold.current, { kind: "move", move: { after, seat } });
       hold.current = step.hold;

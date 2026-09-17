@@ -182,10 +182,11 @@ export async function POST(
      * the engine in `appendMove`. Without the flag this behaves exactly as it
      * always has, which is what a client with no worker still needs.
      *
-     * It stays here as the FALLBACK either way. A player who closes the tab
-     * mid-think leaves a computer still to move, and the next request that
-     * touches this game finds it and plays it. A failure to answer is not a
-     * failure to move: the stone is on the record and the game is sound.
+     * And a browser that claims the reply and then goes away — a tab closed
+     * mid-think — leaves a computer still to move. The next read of that
+     * player's games finds it past a minute's grace and plays it here on the
+     * server (`unansweredBotTurns`). A failure to answer is not a failure to
+     * move: the stone is on the record and the game is sound.
      */
     let game = outcome.game;
     if (parsed.data.botReply !== true) {

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { playUnansweredBotTurns } from "@/lib/bots/botPlay";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_FINISHED_PAGE, MY_FINISHED_PAGE_OPEN } from "@/lib/history/myFinished.sort";
 import {
@@ -150,9 +151,14 @@ export async function MyGamesList({
   const now = new Date();
   const opened = openedGroup(showAll);
   const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor } : {};
-  const queue = seated
-    ? await fetchMyGames(new Map(), memberId, now, 0, {}, { only: SEATED_ONLY })
-    : await fetchMyGames(claims, memberId, now, await keepFinishedDaysFor(memberId), paging);
+  const readQueue = async (at: Date) =>
+    seated
+      ? await fetchMyGames(new Map(), memberId, at, 0, {}, { only: SEATED_ONLY })
+      : await fetchMyGames(claims, memberId, at, await keepFinishedDaysFor(memberId), paging);
+  let queue = await readQueue(now);
+  // The computer's move nobody stayed for — see `unansweredBotTurns` — is made
+  // here, where the player who closed the tab comes looking, and shown made.
+  if ((await playUnansweredBotTurns(queue.groups, now)) > 0) queue = await readQueue(new Date());
   const { groups } = queue;
   const shown = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   /*
