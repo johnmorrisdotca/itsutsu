@@ -454,6 +454,25 @@ export const BOT_MOVE_MILLIS = 250;
 export const BOT_TURNS_PER_REQUEST = 6;
 
 /**
+ * How long a computer's move may wait on the player's browser before the
+ * server plays it instead.
+ *
+ * The browser thinks for `BROWSER_MOVE_MILLIS` (two seconds) and posts at once,
+ * so a reply that has not arrived in a minute is not coming: the tab was closed
+ * mid-thought, the laptop shut, the phone locked. Long enough that the server
+ * never races a browser still working, short enough that somebody glancing at
+ * their games a minute later finds the computer has moved.
+ */
+export const BROWSER_REPLY_GRACE_MS = 60_000;
+
+/**
+ * The most abandoned computer moves one request will take up. A read of a
+ * player's games is not the place for a backlog; two a read clears any real
+ * one within a visit or two, and bounds what one page load can cost.
+ */
+export const UNANSWERED_TURNS_AT_ONCE = 2;
+
+/**
  * How long a posted seat waits for a person before a computer takes it.
  *
  * A day. Long enough that somebody who posted a game hoping for a person gets

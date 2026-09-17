@@ -44,16 +44,27 @@ describe("which game to play next", () => {
      * waiting on the same person, and being carried "onward" to the board
      * they are already looking at is the one outcome that reads as broken.
      */
-    expect(carriesOnwardFrom(GAME_STATUS.playing, STONES.black, STONES.black)).toBe(false);
-    expect(carriesOnwardFrom(GAME_STATUS.playing, STONES.white, STONES.black)).toBe(true);
+    expect(carriesOnwardFrom(GAME_STATUS.playing, STONES.black, STONES.black, false)).toBe(false);
+    expect(carriesOnwardFrom(GAME_STATUS.playing, STONES.white, STONES.black, false)).toBe(true);
   });
 
   it("stays put on a game that has just ended, whoever won it", () => {
     // The result is what the move was for. Nobody is carried past their own win.
     for (const ended of [GAME_STATUS.won, GAME_STATUS.draw]) {
-      expect(carriesOnwardFrom(ended, STONES.white, STONES.black)).toBe(false);
-      expect(carriesOnwardFrom(ended, STONES.black, STONES.black)).toBe(false);
+      expect(carriesOnwardFrom(ended, STONES.white, STONES.black, false)).toBe(false);
+      expect(carriesOnwardFrom(ended, STONES.black, STONES.black, false)).toBe(false);
     }
+  });
+
+  it("stays put while the computer opposite works out its reply", () => {
+    /*
+     * The reply is thought out in THIS browser, on this board. Leaving it
+     * unmounts the worker mid-thought and the computer never moves — which is
+     * how the browser bot came to look broken in a live game when it was only
+     * ever being thrown away. The same turn with a person to move still goes on.
+     */
+    expect(carriesOnwardFrom(GAME_STATUS.playing, STONES.white, STONES.black, true)).toBe(false);
+    expect(carriesOnwardFrom(GAME_STATUS.playing, STONES.white, STONES.black, false)).toBe(true);
   });
 
   it("carries everybody onward for now, and has somewhere for the choice to live", () => {

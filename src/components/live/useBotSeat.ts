@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { botInSeat } from "@/lib/bots/bots";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import { otherStone } from "@/lib/gomoku/rules/board";
 import { BROWSER_MOVE_MILLIS } from "@/lib/gomoku/botWorker.constants";
 import type { BotAnswer, BotAsk } from "@/lib/gomoku/botWorker";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
@@ -29,31 +30,33 @@ import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
  * it against the engine. What the browser is trusted with is WHICH legal move
  * the computer plays, and nothing else.
  *
- * **It is a fallback, not the only path.** `playBotTurns` still runs on the
- * server when the computer is found still to move on some later request, so a
- * player who closes the tab mid-think cannot leave a game hanging for ever.
- * This is the fast, free path; that is the safety net.
+ * **It is not the only path.** A player who closes the tab mid-think leaves the
+ * computer still to move, and the next read of their games — the list, or the
+ * badge beside Play — finds it past a minute's grace and plays it on the
+ * server (`unansweredBotTurns`). This is the fast, free path; that is the net.
  */
 /**
- * OFF, and this is the safety catch rather than a preference.
+ * ON — and why it was off, because the reason is worth more than the flag.
  *
  * `botReply` tells the server not to work the computer's answer out, because
  * this browser will. Claiming that and then failing to post is the worst
- * outcome available: the game simply stops, with no error anywhere, waiting on
- * a move nobody is working on.
+ * outcome available: the game simply stops, waiting on a move nobody is
+ * working on. So this stayed off while a real browser showed the worker built,
+ * the ask sent, and no answer ever coming back.
  *
- * Measured in a real browser against 国手 on a live board: the worker is built,
- * the ask goes out, and no answer ever comes back — while the same worker
- * answers in about two seconds on the practice board, through
- * `useComputerOpponent`. The difference has not been found yet.
+ * The worker was fine. The page was leaving. After a move that hands the turn
+ * to somebody else, the board carries its player on to their next waiting game
+ * (`useAdvanceToNextGame`) — and with the server no longer answering inside the
+ * request, a computer to move looked exactly like that. The board unmounted,
+ * the worker was terminated mid-thought, and on a database with other games
+ * waiting the reply could never arrive. `carriesOnwardFrom` now stays put while
+ * a computer is to move, as it always effectively did.
  *
- * The SERVER half is done and proven, both ways: with the flag the server stays
- * out and the record keeps one move; without it the server plays the computer
- * and the record has two. So nothing is lost by leaving this off — a live game
- * behaves today exactly as it always has — and nothing may be gained by turning
- * it on until a run shows the move arriving.
+ * And the one real hole is closed on the server rather than hoped away: a tab
+ * shut mid-thought leaves a computer's move nobody is making, and the next
+ * read of that player's games plays it (`unansweredBotTurns`).
  */
-const BROWSER_ANSWERS_LIVE_GAMES = false;
+const BROWSER_ANSWERS_LIVE_GAMES = true;
 
 export function useBotSeat({
   state,
@@ -168,7 +171,14 @@ export function useBotSeat({
    * without being able to do it would leave the game waiting for a move
    * nobody is working on.
    */
-  const answering = BROWSER_ANSWERS_LIVE_GAMES && enabled && mySeat !== null && typeof Worker !== "undefined";
+  const answering =
+    BROWSER_ANSWERS_LIVE_GAMES &&
+    enabled &&
+    mySeat !== null &&
+    // Only opposite a computer. Against a person there is no reply to work out,
+    // and a move claiming one would be a claim about nothing.
+    botInSeat(seats, otherStone(mySeat)) !== null &&
+    typeof Worker !== "undefined";
 
   return { thinking, answering, stop };
 }

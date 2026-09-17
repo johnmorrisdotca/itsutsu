@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { NO_STORE, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { playUnansweredBotTurns } from "@/lib/bots/botPlay";
 import { fetchMyGames } from "@/lib/history/myGames";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { seatClaims } from "@/lib/history/seatCookie";
@@ -25,7 +26,14 @@ export async function GET(request: Request) {
 
     const claims = seatClaims((await cookies()).getAll());
     const memberId = await currentMemberId();
-    const queue = await fetchMyGames(claims, memberId, new Date(), await keepFinishedDaysFor(memberId));
+    const keepFinishedDays = await keepFinishedDaysFor(memberId);
+    const now = new Date();
+    let queue = await fetchMyGames(claims, memberId, now, keepFinishedDays);
+    // A computer still to move that no browser answered for — a tab closed
+    // mid-thought — is played here, and the queue read again to show it.
+    if ((await playUnansweredBotTurns(queue.groups, now)) > 0) {
+      queue = await fetchMyGames(claims, memberId, new Date(), keepFinishedDays);
+    }
     const { groups } = queue;
     return NextResponse.json(
       {
