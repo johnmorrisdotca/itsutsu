@@ -725,6 +725,26 @@ export const UNTRIMMED_POINTS = 121;
 export const REPLY_CAP = 200;
 
 /**
+ * WHAT AN OPEN LINE OF FIVE IS WORTH, by how many of a colour's stones it holds
+ * — and separately for the colour about to move and the colour waiting.
+ *
+ * The same shape is not worth the same to both. A three the mover can turn into
+ * an open four this turn is a threat; the same three, with the other side to
+ * answer it, is a thing already being answered. The scoring had one list for
+ * both and these numbers by hand — 1, 4, 16, 64, a power of four a stone.
+ *
+ * Tuned by `pnpm bots:eval-tune` over quiet positions from real games, by the
+ * measure Texel's method uses: the weights under which the score best predicts
+ * the result each game reached, checked on a fifth of the positions held back
+ * from the tuning. Lines of other lengths keep the powers of four; the tuning
+ * was done at five.
+ */
+export const LINE_WINDOW_VALUES = {
+  toMove: [0, 1, 4, 16, 64, 256],
+  waiting: [0, 1, 4, 16, 64, 256],
+} as const;
+
+/**
  * How the look-ahead spends itself.
  *
  * `branch` is narrow on purpose. Alpha-beta pays for itself only when the

@@ -4,7 +4,7 @@ import { findsForcedWins } from "./forcedWin";
 import { BLOCKED, EMPTY, OWN, leafSpanTable, openCountTable, ownCountTable } from "./lineBoardTables";
 import { boardShapeScore, spanTable } from "./lineShapes";
 import { tengen } from "./obstacles";
-import { EVAL_WEIGHTS } from "./opponent.constants";
+import { EVAL_WEIGHTS, LINE_WINDOW_VALUES } from "./opponent.constants";
 import { CANDIDATE_RADIUS } from "./threats";
 import type { Cell, GameSettings, GameState, GameStatus, Point, Stone } from "./gomoku.types";
 
@@ -91,10 +91,13 @@ export class LineBoard {
   private readonly pow3: Int32Array;
   private readonly reach: number;
   private readonly shapeTable: Int16Array;
-  private readonly leafTable: Int32Array;
+  /** The board's running score for each colour, under each of the two weight lists. */
+  private readonly leafToMove: Int32Array;
+  private readonly leafWaiting: Int32Array;
   private readonly openTable: Uint8Array;
   private readonly ownTable: Uint8Array;
-  private readonly totals = new Float64Array(2);
+  private readonly totalsToMove = new Float64Array(2);
+  private readonly totalsWaiting = new Float64Array(2);
   private readonly near: Int16Array;
   private empty = 0;
   private readonly drawAt: number | null;
@@ -115,7 +118,10 @@ export class LineBoard {
     this.moves = state.moves.length;
     this.reach = this.winLength - 1;
     this.shapeTable = spanTable(this.winLength) as Int16Array;
-    this.leafTable = leafSpanTable(this.winLength) as Int32Array;
+    const toMove = this.winLength === 5 ? LINE_WINDOW_VALUES.toMove : undefined;
+    const waiting = this.winLength === 5 ? LINE_WINDOW_VALUES.waiting : undefined;
+    this.leafToMove = leafSpanTable(this.winLength, toMove) as Int32Array;
+    this.leafWaiting = leafSpanTable(this.winLength, waiting) as Int32Array;
     this.openTable = openCountTable(this.winLength);
     this.ownTable = ownCountTable(this.winLength);
     this.drawAt = movesBeforeDraw(settings);
@@ -151,7 +157,8 @@ export class LineBoard {
     }
     for (const stone of [STONES.black, STONES.white] as const) {
       const side = sideOf(stone);
-      this.totals[side] = boardShapeScore(this.cells, this.size, this.winLength, stone) ?? 0;
+      this.totalsToMove[side] = boardShapeScore(this.cells, this.size, this.winLength, stone, toMove) ?? 0;
+      this.totalsWaiting[side] = boardShapeScore(this.cells, this.size, this.winLength, stone, waiting) ?? 0;
       for (let direction = 0; direction < DIRECTIONS.length; direction += 1) {
         const step = DIRECTIONS[direction];
         for (let index = 0; index < points; index += 1) {
@@ -289,7 +296,9 @@ export class LineBoard {
           this.count(side, point, old, -1);
           this.count(side, point, next, 1);
         }
-        this.totals[side] += this.leafTable[this.codes[base + index]] - this.leafTable[before];
+        const after = this.codes[base + index];
+        this.totalsToMove[side] += this.leafToMove[after] - this.leafToMove[before];
+        this.totalsWaiting[side] += this.leafWaiting[after] - this.leafWaiting[before];
       }
     }
   }
@@ -422,10 +431,17 @@ export class LineBoard {
     return wins;
   }
 
-  /** `boardScore` for `stone` in the games this board plays: its shape less the other colour's. */
+  /**
+   * `boardScore` for `stone`: its shape less the other colour's, each read under
+   * the weights for the side it is on — the colour about to move and the colour
+   * waiting are worth different things. See `LINE_WINDOW_VALUES`.
+   */
   boardScore(stone: Stone): number {
     const side = sideOf(stone);
-    return this.totals[side] - this.totals[1 - side];
+    const other = 1 - side;
+    return stone === this.toPlay
+      ? this.totalsToMove[side] - this.totalsWaiting[other]
+      : this.totalsWaiting[side] - this.totalsToMove[other];
   }
 
   /** The position as one number, for the search's memory: the stones, and whose turn it is. */
