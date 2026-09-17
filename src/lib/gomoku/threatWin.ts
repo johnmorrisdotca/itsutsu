@@ -11,6 +11,8 @@ import {
   type Budget,
 } from "./forcedWin";
 import { FORCED } from "./opponent.constants";
+import { fitsLineBoard } from "./lineBoard";
+import { lineThreatWinTurn } from "./lineThreats";
 import { applyTurn } from "./opponentTurns";
 import { positionKey } from "./searchMemory";
 import { candidatePoints } from "./threats";
@@ -254,8 +256,19 @@ const ROOM = 60;
  * and its budget. It never claims a win on a board nearly full: a reading that
  * ends in a draw because the last point was filled is not one it models.
  */
-export function threatWinTurn(state: GameState, budget: Budget, threes: number = FORCED.threes): BotTurn | null {
+export function threatWinTurn(
+  state: GameState,
+  budget: Budget,
+  threes: number = FORCED.threes,
+  /**
+   * `"auto"` reads on a line board wherever one fits (`lineThreats.ts`), the same
+   * steps without a copy of the game per move; `"states"` always reads on
+   * copies — the reading the board is proven against, and nothing else.
+   */
+  on: "auto" | "states" = "auto",
+): BotTurn | null {
   if (!findsForcedWins(state)) return null;
+  if (on === "auto" && fitsLineBoard(state)) return lineThreatWinTurn(state, budget, threes);
   const me = state.toPlay;
   if (hasFiveToMake(state, otherStone(me))) return null;
   let empty = 0;

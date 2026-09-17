@@ -283,12 +283,17 @@ function firstFourWithin(state: GameState, me: Stone, fours: number, budget: Bud
  * `botSeed.ts`), and a clock under it would make the answer depend on how fast
  * the machine was.
  */
-export function forcedBudget(limit: SearchBudget = {}): Budget {
+export function forcedBudget(limit: SearchBudget = {}, part = 1): Budget {
   const until =
     limit.millis === undefined && limit.nodes !== undefined
       ? Infinity
-      : Date.now() + Math.min(FORCED.millis, Math.floor((limit.millis ?? FORCED.millis) * FORCED.share));
-  return { nodes: FORCED.nodes, until };
+      : Date.now() + Math.floor(forcedMillis(limit) * part);
+  return { nodes: Math.floor(FORCED.nodes * part), until };
+}
+
+/** The finders' whole share of a move's clock: a quarter, never more than `FORCED.millis`. */
+export function forcedMillis(limit: SearchBudget = {}): number {
+  return Math.min(FORCED.millis, Math.floor((limit.millis ?? FORCED.millis) * FORCED.share));
 }
 
 /** The move that starts a forced win by fours for the side to move, or null. */

@@ -785,7 +785,12 @@ export const SEARCH = {
  */
 export const FORCED = {
   fours: 15,
-  nodes: 6_000,
+  /**
+   * Engine calls, counted as well as timed. A hundred thousand since the finders
+   * moved onto the line board: at six thousand they stopped in a few tens of
+   * milliseconds, long before their share of the clock was spent.
+   */
+  nodes: 100_000,
   share: 0.25,
   millis: 400,
   /** How many of the best moves by shape are tried when the search's own choice leaves the other side a forced win. */
