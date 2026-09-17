@@ -775,8 +775,14 @@ export const FORCED = {
   nodes: 6_000,
   share: 0.25,
   millis: 400,
-  /** How many of the best moves by shape are tried when the search's own choice leaves the other side a win by fours. */
+  /** How many of the best moves by shape are tried when the search's own choice leaves the other side a forced win. */
   defended: 8,
+  /**
+   * How many threes a win by threats may pass through (`threatWin.ts`). Each
+   * one multiplies the replies to read by the handful that could stop it, so
+   * this is the knob that decides what the reading costs.
+   */
+  threes: 2,
 } as const;
 
 /**
