@@ -762,6 +762,24 @@ export const SEARCH = {
 } as const;
 
 /**
+ * How far the finder of forced wins may go — see `forcedWin.ts`.
+ *
+ * `fours` is the length of chain it follows, and fifteen is more than any
+ * real game offers: a chain is found in a handful of steps or not at all.
+ * `nodes` counts engine calls, the thing that costs. It takes a quarter of the
+ * move's clock (`share`), and never more than `millis`, so a position full of
+ * fours that lead nowhere cannot starve the ordinary search behind it.
+ */
+export const FORCED = {
+  fours: 15,
+  nodes: 6_000,
+  share: 0.25,
+  millis: 400,
+  /** How many of the best moves by shape are tried when the search's own choice leaves the other side a win by fours. */
+  defended: 8,
+} as const;
+
+/**
  * How the general look-ahead spends itself — the one for the games that are not
  * about lines. See `opponentLook.ts` for why it is a second search rather than
  * a flag on the first.
