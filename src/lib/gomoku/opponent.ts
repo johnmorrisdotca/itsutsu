@@ -5,7 +5,7 @@ import { DECIDED_SCORE, EVAL_WEIGHTS, FORCED, REPLY_CAP, TIER_SPECS } from "./op
 import { defenceNow, pieceScore, positionScore, pointScore, readsThreats, shapeIsRead, threatScore } from "./opponentEval";
 import { masteredTurn } from "./expert/experts";
 import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
-import { forcedBudget, forcedMillis, type Budget as ForcedBudget } from "./forcedWin";
+import { forcedBudget, type Budget as ForcedBudget } from "./forcedWin";
 import { threatWinTurn } from "./threatWin";
 import { searchTurn } from "./opponentSearch";
 import { lookAheadTurn, lookDepth } from "./opponentLook";
@@ -106,21 +106,6 @@ function handsOverTheGame(after: GameState, me: Stone): boolean {
     if (next.status !== GAME_STATUS.playing && next.winner === foe) return true;
   }
   return false;
-}
-
-/**
- * The search's clock: what is left of the move's, less the defence's half of the
- * finders' share, so the move as a whole keeps to the time it was given. It used
- * to be the whole clock again, started after the attack had spent its share, and
- * two-second moves were measured taking two and a half. Never less than a
- * quarter of the move, so a slow start cannot leave the search nothing. A
- * budget counted in positions has no clock and is passed on as it came.
- */
-function searchLimit(budget: SearchBudget, started: number): SearchBudget {
-  if (budget.millis === undefined) return budget;
-  const reserve = Math.floor(forcedMillis(budget) * 0.5);
-  const left = budget.millis - (Date.now() - started) - reserve;
-  return { ...budget, millis: Math.max(Math.floor(budget.millis / 4), left) };
 }
 
 /**
@@ -240,15 +225,18 @@ export function chooseTurn(
    * nothing over: the other side has no five to make, or it would not look.
    */
   /*
-   * The finders' share of the clock is split in two, and the halves are kept
-   * apart. Attack and defence used to draw on one budget, and measured on two-
-   * second moves the attack spent all of it in half the positions tried — so the
-   * defence, the half that measured best, ran with no time at all. The defence's
-   * half is made when the defence starts, so its clock is its own.
+   * ONE BUDGET FOR BOTH HALVES, and it was tried the other way. Attack and
+   * defence draw on the same quarter of the move's clock, so a long attack
+   * reading leaves the defence little — which looks wrong and measures right.
+   * Split in two, with the search then given only the time left, the grade lost
+   * 7–13 at equal time against the one it replaced; the defence, when it refuses
+   * the search's move, falls back on the best move by SHAPE, and more of that is
+   * worse rather than better. `firstDefended` is the thing to mend before this
+   * is worth revisiting.
    */
-  const started = Date.now();
-  if (spec.searchDepth > 0) {
-    const forced = threatWinTurn(state, forcedBudget(budget, 0.5));
+  const forcing = spec.searchDepth > 0 ? forcedBudget(budget) : null;
+  if (forcing !== null) {
+    const forced = threatWinTurn(state, forcing);
     if (forced !== null) return forced;
   }
 
@@ -303,14 +291,13 @@ export function chooseTurn(
      * bounded by the same wall clock every grade already spends in the other
      * sixteen games; see LOOK for why its node budget counts what it counts.
      */
-    const searching = searchLimit(budget, started);
     const searched =
-      searchTurn(state, spec.searchDepth, random, searching, defenceNow(spec, state.moves.length)) ??
+      searchTurn(state, spec.searchDepth, random, budget, defenceNow(spec, state.moves.length)) ??
       lookAheadTurn(
         state,
         lookDepth(VARIANT_SPECS[state.settings.variant], spec.searchDepth),
         random,
-        searching,
+        budget,
         // Its own width, so what it hands back is among what was weighed above.
         spec.width,
       );
@@ -326,8 +313,7 @@ export function chooseTurn(
       entry !== undefined &&
       !entry.condemned &&
       (!guarding || !handsOverTheGame(entry.after, me));
-    const defending = forcedBudget(budget, 0.5);
-    if (safe && threatWinTurn(entry.after, defending) === null) return entry.turn;
+    if (safe && (forcing === null || threatWinTurn(entry.after, forcing) === null)) return entry.turn;
 
     /*
      * The move the search liked leaves the other side a forced win — or the
@@ -338,8 +324,10 @@ export function chooseTurn(
      * finder's own shared budget; when none survives, the choice falls through
      * to the ordinary one, because every move then loses and none is worse.
      */
-    const defended = firstDefended(scored, me, guarding, defending);
-    if (defended !== null) return defended.turn;
+    if (forcing !== null) {
+      const defended = firstDefended(scored, me, guarding, forcing);
+      if (defended !== null) return defended.turn;
+    }
   }
 
   if (spec.noise > 0) {

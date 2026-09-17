@@ -806,11 +806,14 @@ export const SEARCH = {
 export const FORCED = {
   fours: 15,
   /**
-   * Engine calls, counted as well as timed. A hundred thousand since the finders
-   * moved onto the line board: at six thousand they stopped in a few tens of
-   * milliseconds, long before their share of the clock was spent.
+   * Engine calls, counted as well as timed. Raised to a hundred thousand when
+   * the finders moved onto the line board, and put back: with the larger cap the
+   * finder spent its whole share of the clock, refused more of the search's own
+   * moves, and the grade measured 9–11 against the one it replaced over twenty
+   * games at two seconds. What the finder is for is the win it can prove
+   * quickly, not the longest reading it can afford.
    */
-  nodes: 100_000,
+  nodes: 6_000,
   share: 0.25,
   millis: 400,
   /** How many of the best moves by shape are tried when the search's own choice leaves the other side a forced win. */
