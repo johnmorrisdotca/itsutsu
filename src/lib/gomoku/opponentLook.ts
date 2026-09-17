@@ -4,6 +4,7 @@ import { DECIDED_SCORE, DRAW_SCORE, LOOK, SEARCH } from "./opponent.constants";
 import { positionScore, readsPosition } from "./opponentEval";
 import { searchable } from "./opponentSearch";
 import { applyTurn, legalTurns } from "./opponentTurns";
+import { floorUnder } from "./searchMemory";
 import type { GameState, Stone, VariantSpec } from "./gomoku.types";
 import type { BotTurn, SearchBudget } from "./opponent.types";
 
@@ -223,7 +224,8 @@ export function lookAheadTurn(
     let equal: BotTurn[] = [];
     let finished = true;
     for (const option of root) {
-      const value = look(option.after, me, ply - 1, -Infinity, Infinity, budget);
+      // Pruned just under the best so far, which keeps the ties exact — see `floorUnder`.
+      const value = look(option.after, me, ply - 1, floorUnder(best), Infinity, budget);
       if (value > best) {
         best = value;
         equal = [option.turn];
