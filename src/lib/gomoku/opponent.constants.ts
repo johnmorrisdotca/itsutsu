@@ -360,13 +360,13 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     reads: true,
     width: 140,
     guardTop: 28,
-    searchDepth: 6,
+    searchDepth: 8,
     expertise: [],
   },
   /*
    * Stronger than Meijin by seeing further and weighing more, which are the
    * only two knobs left once a grade already never blunders and never misses
-   * a threat. Two more plies and a wider net; nothing else can be turned up,
+   * a threat. Four more plies and a wider net; nothing else can be turned up,
    * because everything else is already at its limit.
    *
    * The budget is the same for every grade — see BOT_MOVE_MILLIS — so this is
@@ -381,7 +381,15 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     reads: true,
     width: 180,
     guardTop: 34,
-    searchDepth: 8,
+    /*
+     * Twelve since the line games' search moved onto a board edited in place
+     * (`lineBoard.ts`): it reached eight in about half a second of a browser's
+     * two and then stopped, idle for the rest. Allowed twelve, against the eight
+     * it had, it won 13–3 over sixteen games at two seconds a move, and went
+     * from 6–14 to 11–9 against Rapfi held to 3,000 positions. Meijin moves up
+     * to the eight this used to be, which now costs what six did.
+     */
+    searchDepth: 12,
     expertise: [],
   },
   /*
@@ -515,7 +523,7 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     reads: true,
     width: 140,
     guardTop: 28,
-    searchDepth: 6,
+    searchDepth: 8,
     expertise: [],
     defence: 0.35,
   },
@@ -527,7 +535,7 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     reads: true,
     width: 180,
     guardTop: 34,
-    searchDepth: 8,
+    searchDepth: 12,
     expertise: [],
     defence: 2.2,
   },
@@ -757,8 +765,13 @@ export const SEARCH = {
    * time costs a ply rather than an answer.
    */
   millis: 400,
-  /** A backstop under the clock, so a pathological position cannot spin. */
-  nodes: 60_000,
+  /**
+   * A backstop under the clock, so a pathological position cannot spin. Two
+   * million since the search moved onto a board edited in place: sixty thousand
+   * was reached in about 1.3 seconds of a browser's two and stopped the top grade
+   * early, and the clock is what bounds a move anyway.
+   */
+  nodes: 2_000_000,
 } as const;
 
 /**
