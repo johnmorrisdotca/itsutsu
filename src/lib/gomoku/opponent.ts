@@ -9,7 +9,7 @@ import { forcedBudget, type Budget as ForcedBudget } from "./forcedWin";
 import { threatWinTurn } from "./threatWin";
 import { searchTurn } from "./opponentSearch";
 import { lookAheadTurn, lookDepth } from "./opponentLook";
-import type { GameState, Stone } from "./gomoku.types";
+import type { GameState, Point, Stone } from "./gomoku.types";
 import type { BotTier, BotTurn, SearchBudget, TierSpec } from "./opponent.types";
 import { perfectTurns } from "./solved/smallGames";
 
@@ -109,12 +109,42 @@ function handsOverTheGame(after: GameState, me: Stone): boolean {
 }
 
 /**
+ * The best turn that neither hands over the game nor leaves the other side a
+ * forced win: the search's own ranking first, and only then the best by shape.
+ *
+ * The order matters more than it looks. When the move the search liked is
+ * refused, what replaces it used to be picked by SHAPE alone — and shape is
+ * what the search exists to improve on. Measured, that fallback is why every
+ * change that let the defence run more often made the grade weaker: more of the
+ * search's moves refused meant more shallow ones played. The search's ranking is
+ * consulted first now, and the shape list is the last resort it always was.
+ */
+function firstDefended(
+  scored: Scored[],
+  me: Stone,
+  guarding: boolean,
+  forcing: ForcedBudget,
+  /** The root moves the search ranked, best first. */
+  ranked: readonly Point[],
+): Scored | null {
+  for (const point of ranked) {
+    const entry = scored.find(
+      (option) => option.turn.kind === MOVE_KINDS.place && option.turn.row === point.row && option.turn.col === point.col,
+    );
+    if (entry === undefined || entry.condemned) continue;
+    if (guarding && handsOverTheGame(entry.after, me)) continue;
+    if (threatWinTurn(entry.after, forcing) === null) return entry;
+  }
+  return bestByShape(scored, me, guarding, forcing);
+}
+
+/**
  * The best turn by shape that neither hands over the game nor leaves the other
  * side a forced win, among the first few; null when none of them manages it.
  */
-function firstDefended(scored: Scored[], me: Stone, guarding: boolean, forcing: ForcedBudget): Scored | null {
-  const ranked = scored.filter((entry) => !entry.condemned).sort((a, b) => b.score - a.score);
-  for (const entry of ranked.slice(0, FORCED.defended)) {
+function bestByShape(scored: Scored[], me: Stone, guarding: boolean, forcing: ForcedBudget): Scored | null {
+  const byShape = scored.filter((entry) => !entry.condemned).sort((a, b) => b.score - a.score);
+  for (const entry of byShape.slice(0, FORCED.defended)) {
     if (guarding && handsOverTheGame(entry.after, me)) continue;
     if (threatWinTurn(entry.after, forcing) === null) return entry;
   }
@@ -225,14 +255,12 @@ export function chooseTurn(
    * nothing over: the other side has no five to make, or it would not look.
    */
   /*
-   * ONE BUDGET FOR BOTH HALVES, and it was tried the other way. Attack and
-   * defence draw on the same quarter of the move's clock, so a long attack
-   * reading leaves the defence little — which looks wrong and measures right.
-   * Split in two, with the search then given only the time left, the grade lost
-   * 7–13 at equal time against the one it replaced; the defence, when it refuses
-   * the search's move, falls back on the best move by SHAPE, and more of that is
-   * worse rather than better. `firstDefended` is the thing to mend before this
-   * is worth revisiting.
+   * ONE BUDGET FOR BOTH HALVES, and it has been tried the other way twice.
+   * Splitting the finders' quarter of the clock between attack and defence, and
+   * giving the search only the time left, lost 7–13 at equal time while a
+   * refused move fell back on the best by SHAPE, and 9–11 after that fallback
+   * was mended to follow the search's own ranking. Better, still not better than
+   * this. The defence reads what is left when the attack is done.
    */
   const forcing = spec.searchDepth > 0 ? forcedBudget(budget) : null;
   if (forcing !== null) {
@@ -291,8 +319,9 @@ export function chooseTurn(
      * bounded by the same wall clock every grade already spends in the other
      * sixteen games; see LOOK for why its node budget counts what it counts.
      */
+    const ranked: Point[] = [];
     const searched =
-      searchTurn(state, spec.searchDepth, random, budget, defenceNow(spec, state.moves.length)) ??
+      searchTurn(state, spec.searchDepth, random, budget, defenceNow(spec, state.moves.length), "auto", ranked) ??
       lookAheadTurn(
         state,
         lookDepth(VARIANT_SPECS[state.settings.variant], spec.searchDepth),
@@ -325,7 +354,7 @@ export function chooseTurn(
      * to the ordinary one, because every move then loses and none is worse.
      */
     if (forcing !== null) {
-      const defended = firstDefended(scored, me, guarding, forcing);
+      const defended = firstDefended(scored, me, guarding, forcing, ranked);
       if (defended !== null) return defended.turn;
     }
   }

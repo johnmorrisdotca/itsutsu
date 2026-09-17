@@ -229,6 +229,13 @@ export function searchTurn(
    * is proven against in `lineSearch.test.ts`, and nothing else.
    */
   on: "auto" | "states" = "auto",
+  /**
+   * Filled, best first, with the root moves of the last pass that ran: what the
+   * search thought of each, not only which it liked most. The chooser needs it
+   * when the move it liked most has to be refused — see `firstDefended`. Left
+   * alone by a search that never reached a root move.
+   */
+  ranked?: Point[],
 ): BotTurn | null {
   const spec = VARIANT_SPECS[state.settings.variant];
   if (!searchable(spec)) return null;
@@ -282,10 +289,12 @@ export function searchTurn(
 
     let best = -Infinity;
     let equal: Point[] = [];
+    const scored: Array<{ point: Point; value: number }> = [];
     for (const point of candidates) {
       // The root prunes too, just under the best so far — see `floorUnder`.
       const value = readChild(point, ply - 1, floorUnder(best));
       if (value === null) continue;
+      scored.push({ point, value });
       if (value > best) {
         best = value;
         equal = [point];
@@ -293,6 +302,17 @@ export function searchTurn(
         equal.push(point);
       }
       if (spent(budget)) break;
+    }
+    /*
+     * The ranking of this pass, kept before the next one begins. A move cut off
+     * below the best is worth AT MOST what came back — the root prunes under its
+     * best, see `floorUnder` — so this orders the also-rans by an upper bound on
+     * each rather than by an exact score. That is the right order for the one
+     * question it is asked: which move to fall back on when the best is refused.
+     */
+    if (ranked !== undefined && scored.length > 0) {
+      ranked.length = 0;
+      for (const entry of [...scored].sort((a, b) => b.value - a.value)) ranked.push(entry.point);
     }
     if (equal.length === 0) break;
     // Ties settled by chance, so the computer does not play the same game twice.
