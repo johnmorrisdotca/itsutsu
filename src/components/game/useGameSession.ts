@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { assess, isSwapBlocked } from "@/lib/gomoku/analysis";
+import { isSwapBlocked } from "@/lib/gomoku/analysis";
 import { readAdvantage } from "@/lib/gomoku/advantage";
 import { canPass as engineCanPass, canGrowBoard, canShrinkBoard, canSwapSeats, seatToPlay, winOnTime } from "@/lib/gomoku/engine";
 import { canSkip as engineCanSkip } from "@/lib/gomoku/rules/record";
@@ -18,7 +18,7 @@ import {
 } from "./game.constants";
 import { useBoardInput } from "./useBoardInput";
 import { useGameClock } from "./useGameClock";
-import { buildMarks, findFatalMove, nextGameSettings } from "./sessionSupport";
+import { assessOnce, buildMarks, findFatalMove, nextGameSettings } from "./sessionSupport";
 import { emptyStats, missedThreat, recordHint, recordMove } from "./stats";
 import { useGameHints } from "./useGameHints";
 import {
@@ -119,7 +119,7 @@ export function useGameSession(
   const [resizeProposal, setResizeProposal] = useState<ResizeProposal | null>(null);
   const [helpMark, setHelpMark] = useState<Point | null>(null);
 
-  const assessment = useMemo(() => assess(state), [state]);
+  const assessment = useMemo(() => assessOnce(state), [state]);
 
   const control = timeControlFor(settings.timeControl);
 
@@ -164,7 +164,7 @@ export function useGameSession(
       const played =
         move.moves.length > state.moves.length ? move.moves[move.moves.length - 1] : undefined;
       const seat = seatToPlay(state);
-      const fatal = findFatalMove(assessment, assess(next), next);
+      const fatal = findFatalMove(assessment, assessOnce(next), next);
 
       const now = Date.now();
       const thinkingMs = lastMoveAt.current === 0 ? 0 : now - lastMoveAt.current;

@@ -1,5 +1,5 @@
 import type { Assessment, Suggestion } from "@/lib/gomoku/analysis.types";
-import { newlyLost } from "@/lib/gomoku/analysis";
+import { assess, newlyLost } from "@/lib/gomoku/analysis";
 import { nextBoardSize, otherStone, previousBoardSize } from "@/lib/gomoku/engine";
 import { BOARD_SIZES, VARIANT_SPECS, WIN_LENGTH } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings, GameState, Point, Seat } from "@/lib/gomoku/gomoku.types";
@@ -11,6 +11,26 @@ import type { FatalMove, GameSession, ResizeDirection, SessionSettings } from ".
  * Pure helpers behind `useGameSession`, kept out of the hook so it stays a
  * readable account of the timeline rather than a mixture of state and reading.
  */
+
+/**
+ * Every position's assessment, read once however many times it is asked for.
+ *
+ * A move asks for it twice: once when it is made, to see whether it handed the
+ * game over, and again a moment later when the board draws the position that
+ * move produced. Both are the same immutable state, and the reading is the
+ * dearest thing the page's own thread does — so the second ask is answered
+ * from here. Keyed on the object itself and held weakly, so a position nobody
+ * can reach any more takes its reading with it.
+ */
+const ASSESSED = new WeakMap<GameState, Assessment>();
+
+export function assessOnce(state: GameState): Assessment {
+  const known = ASSESSED.get(state);
+  if (known !== undefined) return known;
+  const assessment = assess(state);
+  ASSESSED.set(state, assessment);
+  return assessment;
+}
 
 /**
  * Attributes a newly decided game to the move that threw it away.

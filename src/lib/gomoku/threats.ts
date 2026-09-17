@@ -1,4 +1,4 @@
-import { DIRECTIONS } from "./gomoku.constants";
+import { DIRECTIONS, HOT, VARIANT_SPECS } from "./gomoku.constants";
 import {
   findWinningLine,
   forbiddenAt,
@@ -27,16 +27,23 @@ export function emptyReport(stone: Stone): ThreatReport {
   };
 }
 
-function withStone(
-  board: Cell[],
-  size: number,
-  point: Point,
-  stone: Stone,
-): Cell[] {
-  const next = board.slice();
-  next[indexOf(size, point)] = stone;
-  return next;
-}
+/*
+ * LAID AND LIFTED, NEVER COPIED.
+ *
+ * Every question below is "what if a stone were here", and each used to be
+ * answered on a fresh copy of the whole board. One threat reading asks it
+ * hundreds of times — the stone, then every point that could complete it, then
+ * every follow-up on four lines and every completion of each — so a reading of
+ * one point made several hundred board copies, and the practice board's
+ * assessment, which reads every candidate for both colours, measured 87 ms at
+ * the start of a fifteen by fifteen game and 250 ms on nineteen by nineteen: a
+ * visible stutter on the page after every move.
+ *
+ * So the exported functions copy the board ONCE, and everything under them
+ * lays a stone on that working copy, asks, and lifts it again before doing
+ * anything else. The answers are the same by construction — the board each
+ * question sees is identical — and the caller's board is never touched.
+ */
 
 /**
  * The points lying on the four lines through `around`, out to `radius` steps
@@ -76,12 +83,86 @@ export function fiveCompletions(
   stone: Stone,
   around: Point,
 ): Point[] {
-  const reach = rulesFor(settings, stone).winLength - 1;
-  return linePoints(settings.size, around, reach).filter((point) => {
-    if (board[indexOf(settings.size, point)] !== null) return false;
-    const next = withStone(board, settings.size, point, stone);
-    return findWinningLine(next, settings, point).length > 0;
-  });
+  return completionsOn(board.slice(), settings, stone, around);
+}
+
+/**
+ * Whether a stone of `stone` at `point` could possibly complete a winning line:
+ * on some line through it, the unbroken run of its own stones (and hotspots,
+ * which join either colour) touching it is long enough. The full check builds
+ * each run out of points and asks the colour's rules; this only counts.
+ *
+ * It is the full check's own first condition and nothing more — every rule
+ * there wants a run at least the winning length — so a point it turns away is
+ * one the full check would have turned away too, and a point it lets through
+ * still goes to the full check. Nearly every point asked about is nowhere near
+ * a line, which is where the time went: one assessment asked the full question
+ * about a hundred thousand times.
+ *
+ * On a board whose lines wrap, or pass through wormholes, a run is not a
+ * straight count, so there it lets everything through.
+ */
+function mayComplete(work: Cell[], settings: GameSettings, stone: Stone, point: Point, winLength: number): boolean {
+  const spec = VARIANT_SPECS[settings.variant];
+  if (spec.wrap !== "none" || spec.wormholes > 0) return true;
+  const { size } = settings;
+  const needed = winLength - 1;
+  for (const step of DIRECTIONS) {
+    const joined =
+      runLength(work, size, point, step.row, step.col, stone, needed) +
+      runLength(work, size, point, -step.row, -step.col, stone, needed);
+    if (joined >= needed) return true;
+  }
+  return false;
+}
+
+/** How many of `stone`'s cells run unbroken from beside `point` one way, counting no further than `most`. */
+function runLength(work: Cell[], size: number, point: Point, dRow: number, dCol: number, stone: Stone, most: number): number {
+  let joined = 0;
+  for (let k = 1; k <= most; k += 1) {
+    const row = point.row + dRow * k;
+    const col = point.col + dCol * k;
+    if (row < 0 || col < 0 || row >= size || col >= size) break;
+    const cell = work[row * size + col];
+    if (cell !== stone && cell !== HOT) break;
+    joined += 1;
+  }
+  return joined;
+}
+
+/** `fiveCompletions` on a working board it may lay stones on, as long as it lifts them again. */
+function completionsOn(
+  work: Cell[],
+  settings: GameSettings,
+  stone: Stone,
+  around: Point,
+): Point[] {
+  const { winLength } = rulesFor(settings, stone);
+  const { size } = settings;
+  const reach = winLength - 1;
+  const found: Point[] = [];
+  /*
+   * The points `linePoints` would list, in its order — each direction, nearest
+   * the far end first — walked in place, so a Point is made only for a
+   * completion rather than for all thirty-two candidates on every call.
+   */
+  for (const step of DIRECTIONS) {
+    for (let k = -reach; k <= reach; k += 1) {
+      if (k === 0) continue;
+      const row = around.row + step.row * k;
+      const col = around.col + step.col * k;
+      if (row < 0 || col < 0 || row >= size || col >= size) continue;
+      const at = row * size + col;
+      if (work[at] !== null) continue;
+      const point = { row, col };
+      if (!mayComplete(work, settings, stone, point, winLength)) continue;
+      work[at] = stone;
+      const wins = findWinningLine(work, settings, point).length > 0;
+      work[at] = null;
+      if (wins) found.push(point);
+    }
+  }
+  return found;
 }
 
 /**
@@ -91,13 +172,14 @@ export function fiveCompletions(
  * single threat, and only threats on *different* lines combine into a double.
  */
 function hasOpenFourFollowUp(
-  board: Cell[],
+  work: Cell[],
   settings: GameSettings,
   stone: Stone,
   around: Point,
   step: Point,
 ): boolean {
-  const reach = rulesFor(settings, stone).winLength - 1;
+  const { winLength } = rulesFor(settings, stone);
+  const reach = winLength - 1;
 
   for (let k = -reach; k <= reach; k += 1) {
     if (k === 0) continue;
@@ -106,12 +188,17 @@ function hasOpenFourFollowUp(
       col: around.col + step.col * k,
     };
     if (!isOnBoard(settings.size, follow)) continue;
-    if (board[indexOf(settings.size, follow)] !== null) continue;
+    const at = indexOf(settings.size, follow);
+    if (work[at] !== null) continue;
 
-    const next = withStone(board, settings.size, follow, stone);
     // A five is a bigger threat than an open four, and already counted.
-    if (findWinningLine(next, settings, follow).length > 0) continue;
-    if (fiveCompletions(next, settings, stone, follow).length >= 2) return true;
+    const five = mayComplete(work, settings, stone, follow, winLength);
+    work[at] = stone;
+    const opens =
+      (!five || findWinningLine(work, settings, follow).length === 0) &&
+      completionsOn(work, settings, stone, follow).length >= 2;
+    work[at] = null;
+    if (opens) return true;
   }
   return false;
 }
@@ -129,37 +216,52 @@ export function threatAt(
   stone: Stone,
   point: Point,
 ): MoveThreat {
-  const none: MoveThreat = {
-    kind: null,
-    fiveCompletions: 0,
-    openThreeDirections: 0,
-  };
-  if (board[indexOf(settings.size, point)] !== null) return none;
+  if (board[indexOf(settings.size, point)] !== null) return { ...NO_THREAT };
+  return threatOn(board.slice(), settings, stone, point);
+}
 
-  const after = withStone(board, settings.size, point, stone);
-  if (findWinningLine(after, settings, point).length > 0) {
-    return { ...none, kind: "five" };
-  }
+/** Nothing threatened. Always handed out as a copy, so no caller can change it for the next. */
+const NO_THREAT: MoveThreat = { kind: null, fiveCompletions: 0, openThreeDirections: 0 };
 
-  const fives = fiveCompletions(after, settings, stone, point).length;
-  if (fives >= 2) {
-    return { kind: "openFour", fiveCompletions: fives, openThreeDirections: 0 };
-  }
+/** `threatAt` on a working board, which it hands back exactly as it found it. */
+function threatOn(
+  work: Cell[],
+  settings: GameSettings,
+  stone: Stone,
+  point: Point,
+): MoveThreat {
+  const at = indexOf(settings.size, point);
+  if (work[at] !== null) return { ...NO_THREAT };
 
-  let openThreeDirections = 0;
-  for (const step of DIRECTIONS) {
-    if (hasOpenFourFollowUp(after, settings, stone, point, step)) {
-      openThreeDirections += 1;
+  const five = mayComplete(work, settings, stone, point, rulesFor(settings, stone).winLength);
+  work[at] = stone;
+  try {
+    if (five && findWinningLine(work, settings, point).length > 0) {
+      return { ...NO_THREAT, kind: "five" };
     }
-  }
 
-  const threat = { fiveCompletions: fives, openThreeDirections };
-  if (fives === 1) {
-    return { ...threat, kind: openThreeDirections >= 1 ? "doubleThreat" : "four" };
+    const fives = completionsOn(work, settings, stone, point).length;
+    if (fives >= 2) {
+      return { kind: "openFour", fiveCompletions: fives, openThreeDirections: 0 };
+    }
+
+    let openThreeDirections = 0;
+    for (const step of DIRECTIONS) {
+      if (hasOpenFourFollowUp(work, settings, stone, point, step)) {
+        openThreeDirections += 1;
+      }
+    }
+
+    const threat = { fiveCompletions: fives, openThreeDirections };
+    if (fives === 1) {
+      return { ...threat, kind: openThreeDirections >= 1 ? "doubleThreat" : "four" };
+    }
+    if (openThreeDirections >= 2) return { ...threat, kind: "doubleThreat" };
+    if (openThreeDirections === 1) return { ...threat, kind: "openThree" };
+    return { ...threat, kind: null };
+  } finally {
+    work[at] = null;
   }
-  if (openThreeDirections >= 2) return { ...threat, kind: "doubleThreat" };
-  if (openThreeDirections === 1) return { ...threat, kind: "openThree" };
-  return { ...threat, kind: null };
 }
 
 /**
@@ -237,9 +339,11 @@ export function candidatePoints(state: GameState): Point[] {
  */
 export function scanThreats(state: GameState, stone: Stone): ThreatReport {
   const report = emptyReport(stone);
+  // One working copy for the whole scan: every reading lifts what it lays.
+  const work = state.board.slice();
   for (const point of candidatePoints(state)) {
     if (forbiddenAt(state.board, state.settings, stone, point) !== null) continue;
-    const { kind } = threatAt(state.board, state.settings, stone, point);
+    const { kind } = threatOn(work, state.settings, stone, point);
     if (kind !== null) report[kind].push(point);
   }
   return report;
