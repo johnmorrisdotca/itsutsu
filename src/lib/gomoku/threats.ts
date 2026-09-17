@@ -13,7 +13,7 @@ import type { Cell, GameSettings, GameState, Point, Stone } from "./gomoku.types
 import type { MoveThreat, ThreatReport } from "./analysis.types";
 
 /** How far from an existing stone a move is still considered relevant. */
-const CANDIDATE_RADIUS = 2;
+export const CANDIDATE_RADIUS = 2;
 
 /** An empty report, used for positions where nothing is brewing. */
 export function emptyReport(stone: Stone): ThreatReport {
