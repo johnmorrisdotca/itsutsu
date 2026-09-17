@@ -1,5 +1,5 @@
 import { findWinningLine, indexOf, isOnBoard, otherStone, rulesFor } from "./engine";
-import { DIRECTIONS, GAME_STATUS, LINE_RULES, MOVE_KINDS, OPENING_STAGES, PLACEMENTS, STONES, VARIANT_SPECS } from "./gomoku.constants";
+import { DIRECTIONS, GAME_STATUS, LINE_RULES, MOVE_KINDS, OPENING_STAGES, PLACEMENTS, STONES, VARIANT_SPECS, WRAP_MODES } from "./gomoku.constants";
 import { FORCED } from "./opponent.constants";
 import { searchable } from "./opponentSearch";
 import { applyTurn } from "./opponentTurns";
@@ -45,8 +45,10 @@ export function spent(budget: Budget): boolean {
  * turn; a colour chosen per stone is not one side's four at all; a line that
  * must be open at an end can be spoiled by a stone beside it rather than on
  * it; a dropped stone can only land where something holds it up, so the point
- * that completes a four may be one NEITHER side can play yet; and a game still
- * in its opening has turns that are not stones. In all of
+ * that completes a four may be one NEITHER side can play yet; a board whose
+ * edges join, or with hotspots that count for either colour, has lines no
+ * straight count of stones can read; and a game still in its opening has turns
+ * that are not stones. In all of
  * those the defender has an answer the finder does not know about, so it says
  * nothing.
  *
@@ -60,6 +62,8 @@ export function findsForcedWins(state: GameState): boolean {
   if (state.opening.stage !== OPENING_STAGES.done) return false;
   const spec = VARIANT_SPECS[state.settings.variant];
   if (!searchable(spec) || spec.anyColour || spec.placement !== PLACEMENTS.free) return false;
+  // Every count below reads a line as a straight run of points on the board. See above.
+  if (spec.wrap !== WRAP_MODES.none || spec.hotSquares > 0) return false;
   for (const stone of [STONES.black, STONES.white]) {
     const rules = rulesFor(state.settings, stone);
     if (rules.captures || rules.stonesPerTurn !== 1 || rules.lineRule === LINE_RULES.exactOpen) return false;
@@ -74,7 +78,8 @@ export function findsForcedWins(state: GameState): boolean {
  */
 export function completionsThrough(board: Cell[], state: GameState, stone: Stone, around: Point): Point[] {
   const { size } = state.settings;
-  const reach = rulesFor(state.settings, stone).winLength - 1;
+  const { winLength } = rulesFor(state.settings, stone);
+  const reach = winLength - 1;
   const found: Point[] = [];
   for (const step of DIRECTIONS) {
     for (let k = -reach; k <= reach; k += 1) {
@@ -83,6 +88,8 @@ export function completionsThrough(board: Cell[], state: GameState, stone: Stone
       if (!isOnBoard(size, point)) continue;
       const at = indexOf(size, point);
       if (board[at] !== null) continue;
+      // The full check's own first condition, counted: a run of the colour's stones long enough to finish.
+      if (!longEnoughRun(board, size, point, stone, winLength)) continue;
       board[at] = stone;
       const wins = findWinningLine(board, state.settings, point).length > 0;
       board[at] = null;
@@ -91,6 +98,30 @@ export function completionsThrough(board: Cell[], state: GameState, stone: Stone
   }
   return found;
 }
+
+/**
+ * Whether a stone of `stone` laid at `point` would sit in an unbroken run of its
+ * own stones at least `winLength` long in some direction — the first thing every
+ * winning line needs, counted without building one. Straight lines only, which
+ * is all `findsForcedWins` lets through.
+ */
+function longEnoughRun(board: Cell[], size: number, point: Point, stone: Stone, winLength: number): boolean {
+  for (const step of DIRECTIONS) {
+    let run = 1;
+    for (const sign of SIGNS) {
+      for (let k = 1; k < winLength && run < winLength; k += 1) {
+        const row = point.row + step.row * k * sign;
+        const col = point.col + step.col * k * sign;
+        if (row < 0 || col < 0 || row >= size || col >= size || board[row * size + col] !== stone) break;
+        run += 1;
+      }
+    }
+    if (run >= winLength) return true;
+  }
+  return false;
+}
+
+const SIGNS = [1, -1] as const;
 
 /**
  * Whether a stone of `stone` at `point` could be part of a line `short` stones
@@ -124,6 +155,22 @@ export function couldMakeLine(board: Cell[], state: GameState, stone: Stone, poi
     }
   }
   return false;
+}
+
+/** Every point where `stone` would complete a winning line now — near the stones, which is everywhere one can be. */
+export function fivePoints(state: GameState, stone: Stone): Point[] {
+  const board = state.board.slice();
+  const { size } = state.settings;
+  const found: Point[] = [];
+  for (const point of candidatePoints(state)) {
+    const at = indexOf(size, point);
+    if (board[at] !== null) continue;
+    if (!couldMakeLine(board, state, stone, point, 0)) continue;
+    board[at] = stone;
+    if (findWinningLine(board, state.settings, point).length > 0) found.push(point);
+    board[at] = null;
+  }
+  return found;
 }
 
 /** Whether `stone`, to move, has a winning line to complete anywhere near the stones. */

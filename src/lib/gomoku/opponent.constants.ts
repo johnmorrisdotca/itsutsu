@@ -783,6 +783,8 @@ export const FORCED = {
    * this is the knob that decides what the reading costs.
    */
   threes: 2,
+  /** How many fours a win by threats may play between its threes, on any one line of reading. */
+  mixedFours: 6,
 } as const;
 
 /**

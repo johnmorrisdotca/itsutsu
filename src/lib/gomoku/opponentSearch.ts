@@ -3,6 +3,7 @@ import { GAME_STATUS, MOVE_KINDS, VARIANT_SPECS } from "./gomoku.constants";
 import { DECIDED_SCORE, DRAW_SCORE, SEARCH } from "./opponent.constants";
 import { boardScore, positionScore, readsThreats } from "./opponentEval";
 import { applyTurn } from "./opponentTurns";
+import { forcedReplies } from "./forcedReplies";
 import { nodeCandidates, rootCandidates } from "./searchCandidates";
 import { boundOf, floorUnder, indexOfMove, pointKey, positionKey, recalled, type SearchMemory } from "./searchMemory";
 import type { GameState, Point, Stone, VariantSpec } from "./gomoku.types";
@@ -137,7 +138,9 @@ function negamax(
    * borrowed: an iterator is one more object made and dropped at every node,
    * and the node is the thing being counted here.
    */
-  const candidates = nodeCandidates(state, spec, SEARCH.branch, defence, shelves, depth);
+  // In a forcing position only the replies that answer the threat are read — see `forcedReplies`.
+  const forced = forcedReplies(state);
+  const candidates = forced ?? nodeCandidates(state, spec, SEARCH.branch, defence, shelves, depth);
   if (candidates.length === 0) return leafScore(state, me, spec);
 
   let best = maximising ? -Infinity : Infinity;
@@ -249,7 +252,7 @@ export function searchTurn(
    * Its own array, never a shelf: this list outlives every node under it, and
    * a borrowed one would be rewritten by the first node the first pass reached.
    */
-  const rootPoints = rootCandidates(state, spec, SEARCH.rootBranch, defence);
+  const rootPoints = forcedReplies(state) ?? rootCandidates(state, spec, SEARCH.rootBranch, defence);
   if (rootPoints.length === 0) return null;
 
   for (let ply = 2; ply <= depth; ply += 2) {
