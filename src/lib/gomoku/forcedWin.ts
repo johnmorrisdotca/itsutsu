@@ -33,7 +33,7 @@ import type { BotTurn, SearchBudget } from "./opponent.types";
 /** What the finder has left to spend, charged per engine call. */
 export type Budget = { nodes: number; until: number };
 
-function spent(budget: Budget): boolean {
+export function spent(budget: Budget): boolean {
   return budget.nodes <= 0 || Date.now() >= budget.until;
 }
 
@@ -72,7 +72,7 @@ export function findsForcedWins(state: GameState): boolean {
  * `around`. Read on the board as it stands, with one stone laid and lifted
  * again rather than a copy made per point: the finder asks this at every step.
  */
-function completionsThrough(board: Cell[], state: GameState, stone: Stone, around: Point): Point[] {
+export function completionsThrough(board: Cell[], state: GameState, stone: Stone, around: Point): Point[] {
   const { size } = state.settings;
   const reach = rulesFor(state.settings, stone).winLength - 1;
   const found: Point[] = [];
@@ -93,12 +93,13 @@ function completionsThrough(board: Cell[], state: GameState, stone: Stone, aroun
 }
 
 /**
- * Whether a stone of `stone` at `point` could be part of a four at all: some
- * window of the winning length through it holds nothing of the other side's
- * and at least all but two of its own. A cheap count that throws away nearly
- * every point before the engine is asked anything.
+ * Whether a stone of `stone` at `point` could be part of a line `short` stones
+ * short of winning once it is laid: some window of the winning length through
+ * it holds nothing of the other side's and at least all but `short + 1` of its
+ * own. A cheap count that throws away nearly every point before the engine is
+ * asked anything — a four is one short, a three two.
  */
-function couldMakeFour(board: Cell[], state: GameState, stone: Stone, point: Point): boolean {
+export function couldMakeLine(board: Cell[], state: GameState, stone: Stone, point: Point, short: number): boolean {
   const { size } = state.settings;
   const length = rulesFor(state.settings, stone).winLength;
   for (const step of DIRECTIONS) {
@@ -119,14 +120,14 @@ function couldMakeFour(board: Cell[], state: GameState, stone: Stone, point: Poi
           break;
         }
       }
-      if (open && own >= length - 2) return true;
+      if (open && own >= length - 1 - short) return true;
     }
   }
   return false;
 }
 
 /** Whether `stone`, to move, has a winning line to complete anywhere near the stones. */
-function hasFiveToMake(state: GameState, stone: Stone): boolean {
+export function hasFiveToMake(state: GameState, stone: Stone): boolean {
   const board = state.board.slice();
   const { size } = state.settings;
   for (const point of candidatePoints(state)) {
@@ -147,7 +148,7 @@ function hasFiveToMake(state: GameState, stone: Stone): boolean {
  * checked by playing each block rather than by counting, because counting is
  * the step that would quietly be wrong on a board with one point left to fill.
  */
-function stopsNeither(after: GameState, completions: readonly Point[], budget: Budget): boolean {
+export function stopsNeither(after: GameState, completions: readonly Point[], budget: Budget): boolean {
   for (const block of completions) {
     budget.nodes -= 1;
     const blocked = applyTurn(after, { kind: MOVE_KINDS.place, row: block.row, col: block.col });
@@ -163,16 +164,31 @@ function stopsNeither(after: GameState, completions: readonly Point[], budget: B
  * each step checks it again after the defender's forced reply.
  */
 function winsByFours(state: GameState, me: Stone, fours: number, budget: Budget): boolean {
-  return firstFour(state, me, fours, budget) !== null;
+  return firstFourWithin(state, me, fours, budget) !== null;
 }
 
-/** The first move of a win by fours for `me`, or null when none is found. */
-function firstFour(state: GameState, me: Stone, fours: number, budget: Budget): Point | null {
+/**
+ * The first move of a win by fours for `me`, shortest chains first: one four,
+ * then two, and so on up to `fours`. A position with a win in one is answered
+ * without reading any long chain, and the budget is not spent on a twelve-four
+ * line that fails when a two-four line was sitting there.
+ */
+export function firstFour(state: GameState, me: Stone, fours: number, budget: Budget): Point | null {
+  for (let length = 1; length <= fours; length += 1) {
+    const point = firstFourWithin(state, me, length, budget);
+    if (point !== null) return point;
+    if (spent(budget)) return null;
+  }
+  return null;
+}
+
+/** The first move of a win by at most `fours` fours for `me`, or null when none is found. */
+function firstFourWithin(state: GameState, me: Stone, fours: number, budget: Budget): Point | null {
   const foe = otherStone(me);
   const scratch = state.board.slice();
   for (const point of candidatePoints(state)) {
     if (spent(budget)) return null;
-    if (!couldMakeFour(scratch, state, me, point)) continue;
+    if (!couldMakeLine(scratch, state, me, point, 1)) continue;
 
     budget.nodes -= 1;
     const after = applyTurn(state, { kind: MOVE_KINDS.place, row: point.row, col: point.col });

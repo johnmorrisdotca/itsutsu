@@ -43,6 +43,7 @@
     "bots:budget": "BOT_BUDGET=1 vitest run src/lib/bots/botBudget.play.test.ts --disable-console-intercept",
     "bots:grades": "BOT_GRADES=1 vitest run src/lib/bots/botGrades.play.test.ts --disable-console-intercept",
     "bots:perfect": "BOT_PERFECT=1 vitest run src/lib/bots/botPerfect.play.test.ts --disable-console-intercept",
+    "bots:threats": "BOT_THREATS=1 vitest run src/lib/gomoku/threatWin.play.test.ts --disable-console-intercept",
     "bots:play": "BOT_GAMES=1 vitest run src/lib/bots/botSeries.play.test.ts --disable-console-intercept",
     "bots:play:prod": "node scripts/bots-play-prod.mjs",
     "board:export": "node --env-file-if-exists=.env scripts/board-export.ts",

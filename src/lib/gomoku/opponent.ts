@@ -5,7 +5,8 @@ import { DECIDED_SCORE, EVAL_WEIGHTS, FORCED, REPLY_CAP, TIER_SPECS } from "./op
 import { defenceNow, pieceScore, positionScore, pointScore, readsThreats, shapeIsRead, threatScore } from "./opponentEval";
 import { masteredTurn } from "./expert/experts";
 import { applyTurn, legalTurns, sameTurn } from "./opponentTurns";
-import { forcedBudget, forcedWinTurn, type Budget as ForcedBudget } from "./forcedWin";
+import { forcedBudget, type Budget as ForcedBudget } from "./forcedWin";
+import { threatWinTurn } from "./threatWin";
 import { searchTurn } from "./opponentSearch";
 import { lookAheadTurn, lookDepth } from "./opponentLook";
 import type { GameState, Stone } from "./gomoku.types";
@@ -109,13 +110,13 @@ function handsOverTheGame(after: GameState, me: Stone): boolean {
 
 /**
  * The best turn by shape that neither hands over the game nor leaves the other
- * side a win by fours, among the first few; null when none of them manages it.
+ * side a forced win, among the first few; null when none of them manages it.
  */
 function firstDefended(scored: Scored[], me: Stone, guarding: boolean, forcing: ForcedBudget): Scored | null {
   const ranked = scored.filter((entry) => !entry.condemned).sort((a, b) => b.score - a.score);
   for (const entry of ranked.slice(0, FORCED.defended)) {
     if (guarding && handsOverTheGame(entry.after, me)) continue;
-    if (forcedWinTurn(entry.after, forcing) === null) return entry;
+    if (threatWinTurn(entry.after, forcing) === null) return entry;
   }
   return null;
 }
@@ -216,15 +217,16 @@ export function chooseTurn(
   if (random() < spec.blunder) return pick(scored, random).turn;
 
   /*
-   * A win by fours, where the grade reads ahead at all. It follows only the
-   * moves that force a reply, so it sees a chain of fours far past the depth
-   * the search reaches, and a win it reports is real — every step went through
-   * the engine. Before the guard, because a four hands nothing over: the other
-   * side has no five to make, or the finder would not have looked.
+   * A forced win, where the grade reads ahead at all — by fours, or by the open
+   * threes that threaten fours (`threatWin.ts`). It follows only the moves that
+   * force a reply, so it sees a chain far past the depth the search reaches,
+   * and a win it reports is real: every step, and every reply that could stop
+   * it, went through the engine. Before the guard, because a threat hands
+   * nothing over: the other side has no five to make, or it would not look.
    */
   const forcing = spec.searchDepth > 0 ? forcedBudget(budget) : null;
   if (forcing !== null) {
-    const forced = forcedWinTurn(state, forcing);
+    const forced = threatWinTurn(state, forcing);
     if (forced !== null) return forced;
   }
 
@@ -301,12 +303,12 @@ export function chooseTurn(
       entry !== undefined &&
       !entry.condemned &&
       (!guarding || !handsOverTheGame(entry.after, me));
-    if (safe && (forcing === null || forcedWinTurn(entry.after, forcing) === null)) return entry.turn;
+    if (safe && (forcing === null || threatWinTurn(entry.after, forcing) === null)) return entry.turn;
 
     /*
-     * The move the search liked leaves the other side a win by fours — or the
+     * The move the search liked leaves the other side a forced win — or the
      * guard condemned it. Either way the next best that does neither is played
-     * instead. This is the finder's larger half: a chain of fours against us is
+     * instead. This is the finder's larger half: a chain of threats against us is
      * as far past the search's horizon as one of ours, and until now the top
      * grades walked into them. Only the best few by shape are tried, on the
      * finder's own shared budget; when none survives, the choice falls through
