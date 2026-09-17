@@ -5,7 +5,7 @@ import { SHAPE_BASE } from "./analysis.constants";
 import { boardShapeScore } from "./lineShapes";
 import { rulesFor } from "./engine";
 import { racesForCamp } from "./rules/farCamp";
-import { DECIDED_SCORE, DRAW_SCORE, EVAL_WEIGHTS } from "./opponent.constants";
+import { DECIDED_SCORE, DRAW_SCORE, EVAL_WEIGHTS, LINE_WINDOW_VALUES } from "./opponent.constants";
 import { checkersScore, connectScore, flipScore, goScore, raceScore } from "./opponentFamilies";
 import { threatAt } from "./threats";
 import { tengen } from "./obstacles";
@@ -98,8 +98,9 @@ function windowScore(
   size: number,
   winLength: number,
   stone: Stone,
+  values?: readonly number[],
 ): number {
-  const tabled = boardShapeScore(board, size, winLength, stone);
+  const tabled = boardShapeScore(board, size, winLength, stone, values);
   if (tabled !== null) return tabled;
 
   let total = 0;
@@ -119,7 +120,7 @@ function windowScore(
             break;
           }
         }
-        if (usable && own > 0) total += SHAPE_BASE ** own;
+        if (usable && own > 0) total += values?.[own] ?? SHAPE_BASE ** own;
       }
     }
   }
@@ -133,11 +134,25 @@ function windowScore(
 export function boardScore(state: GameState, stone: Stone, spec: VariantSpec): number {
   const { board, settings } = state;
   const foe = otherStone(stone);
-  const mine = windowScore(board, settings.size, rulesFor(settings, stone).winLength, stone);
-  const theirs = windowScore(board, settings.size, rulesFor(settings, foe).winLength, foe);
+  const mine = windowScore(board, settings.size, rulesFor(settings, stone).winLength, stone, lineValues(state, stone, spec));
+  const theirs = windowScore(board, settings.size, rulesFor(settings, foe).winLength, foe, lineValues(state, foe, spec));
   // The maker wants a line of either colour; the breaker wants neither.
   if (spec.makerBreaker) return (stone === STONES.black ? 1 : -1) * (mine + theirs);
   return lineSign(spec, stone) * (mine - theirs);
+}
+
+/**
+ * What a window is worth to `stone` here: the list for the colour about to move
+ * or the one for the colour waiting — see `LINE_WINDOW_VALUES`. The games where
+ * a line is not simply a good thing keep the plain powers of four for both
+ * sides: in a giveaway game a line loses, and in the maker-breaker game one
+ * player wants a line of either colour, so a reading built on whose turn it is
+ * says nothing true about them.
+ */
+export function lineValues(state: GameState, stone: Stone, spec: VariantSpec): readonly number[] | undefined {
+  if (spec.misere || spec.makerBreaker) return undefined;
+  if (rulesFor(state.settings, stone).winLength !== 5) return undefined;
+  return stone === state.toPlay ? LINE_WINDOW_VALUES.toMove : LINE_WINDOW_VALUES.waiting;
 }
 
 /** Distance from the middle of the board, so ties settle inwards. */

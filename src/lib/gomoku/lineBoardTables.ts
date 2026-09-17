@@ -1,4 +1,4 @@
-import { windowTable } from "./lineShapes";
+import { weightedWindowTable, windowTable } from "./lineShapes";
 
 /*
  * The tables a line board reads a point's span through. Each is indexed by the
@@ -18,12 +18,13 @@ export const BLOCKED = 2;
  * `boardShapeScore` — which counts an empty window as nothing, where the point
  * table counts it as one.
  */
-const LEAF_SPAN_TABLES = new Map<number, Int32Array>();
+const LEAF_SPAN_TABLES = new Map<string, Int32Array>();
 
-export function leafSpanTable(winLength: number): Int32Array | null {
-  const known = LEAF_SPAN_TABLES.get(winLength);
+export function leafSpanTable(winLength: number, values?: readonly number[]): Int32Array | null {
+  const key = values === undefined ? `${winLength}` : `${winLength}:${values.join(",")}`;
+  const known = LEAF_SPAN_TABLES.get(key);
   if (known !== undefined) return known;
-  const windows = windowTable(winLength);
+  const windows = values === undefined ? windowTable(winLength) : weightedWindowTable(winLength, values);
   if (windows === null) return null;
   const span = 2 * winLength - 1;
   const table = new Int32Array(3 ** span);
@@ -44,7 +45,7 @@ export function leafSpanTable(winLength: number): Int32Array | null {
       }
     }
   }
-  LEAF_SPAN_TABLES.set(winLength, table);
+  LEAF_SPAN_TABLES.set(key, table);
   return table;
 }
 

@@ -174,7 +174,23 @@ export function windowTable(winLength: number): Int32Array | null {
   return built;
 }
 
-function buildWindowTable(winLength: number): Int32Array | null {
+/**
+ * A window table with values of the caller's own: what a window holding `own` of
+ * a colour's stones is worth, in `values` by that count. Cached by the values it
+ * was built from, so the search builds each pair of tables once.
+ */
+const WEIGHTED_WINDOW_TABLES = new Map<string, Int32Array | null>();
+
+export function weightedWindowTable(winLength: number, values: readonly number[]): Int32Array | null {
+  const key = `${winLength}:${values.join(",")}`;
+  const known = WEIGHTED_WINDOW_TABLES.get(key);
+  if (known !== undefined) return known;
+  const built = buildWindowTable(winLength, values);
+  WEIGHTED_WINDOW_TABLES.set(key, built);
+  return built;
+}
+
+function buildWindowTable(winLength: number, values?: readonly number[]): Int32Array | null {
   if (!Number.isInteger(winLength)) return null;
   if (winLength < 2 || winLength > LONGEST_WINDOW) return null;
 
@@ -189,7 +205,7 @@ function buildWindowTable(winLength: number): Int32Array | null {
       if (digit === CELL_MINE) own += 1;
       else if (digit === CELL_BLOCKED) blocked = true;
     }
-    table[index] = own === 0 ? 0 : windowValue(own, blocked);
+    table[index] = own === 0 || blocked ? 0 : (values?.[own] ?? windowValue(own, false));
   }
   return table;
 }
@@ -215,8 +231,10 @@ export function boardShapeScore(
   size: number,
   winLength: number,
   stone: Stone,
+  /** What a window is worth by the stones it holds; the powers of four where the caller says nothing. */
+  values?: readonly number[],
 ): number | null {
-  const table = windowTable(winLength);
+  const table = values === undefined ? windowTable(winLength) : weightedWindowTable(winLength, values);
   if (table === null) return null;
   // A board too small to hold one window holds none, in any direction.
   if (size < winLength) return 0;
