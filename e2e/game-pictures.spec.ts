@@ -6,7 +6,7 @@ import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 
 import { removeMember, seedMember } from "./members";
-import { chooseGame, openMoreSettings, openSetUpPage, ready, readyHere } from "./support";
+import { chooseGame, openChoice, openMoreSettings, openSetUpPage, ready, readyHere } from "./support";
 import { removeGames } from "./tidy";
 
 /**
@@ -124,12 +124,22 @@ test.describe("the set-up page and the page before a game", () => {
     const chip = page.locator('[data-testid="set-up-variant"][data-variant="checkers"]');
     await drawn(chip.getByTestId("game-thumb"));
     const board = page.locator('[data-testid="set-up-size"][data-size="8"]');
+    /*
+     * THE SIZES ARE READ OFF THE TILES, and a settled choice folds its tiles
+     * away behind a row saying what it is (`SetUpFold`). So the fold is opened
+     * first — by the same Change a reader presses — and every picture is then
+     * scoped to the TILE it belongs to. `getByTestId("rated-icon").first()`
+     * used to be that tile's icon and is now the folded row's, which is the
+     * site's SMALL size because a row takes a row's picture; asked loosely, this
+     * read 35 where it meant 70 and called the page wrong.
+     */
+    await openChoice(page, "set-up-rated-fold");
     const sides = {
       family: await sideOf(page.locator('[data-testid="set-up-family"][data-open="true"]').getByTestId("family-mark")),
       game: await sideOf(chip.getByTestId("game-thumb")),
       board: await sideOf(board.getByTestId("board-size-mark")),
       opening: await sideOf(page.getByTestId("set-up-opening").first().getByTestId("opening-mark")),
-      rated: await sideOf(page.getByTestId("rated-icon").first()),
+      rated: await sideOf(page.locator('[data-testid="set-up-rated"]').first().getByTestId("rated-icon")),
       opponent: await sideOf(page.getByTestId("set-up-opponent").first().getByTestId("seat-mark")),
     };
     expect(sides, "every picture on the set-up page is the regular size").toEqual({
@@ -140,6 +150,15 @@ test.describe("the set-up page and the page before a game", () => {
       rated: REGULAR_PX,
       opponent: REGULAR_PX,
     });
+    /*
+     * AND THE FOLDED ROW'S OWN PICTURE IS THE SMALL ONE — half of a tile's,
+     * which is what every row and table on this site draws. Said here because
+     * the fold introduced a second size to this screen, and a size nobody
+     * asserts is a size that drifts.
+     */
+    const foldedIcon = page.getByTestId("set-up-rated-fold").getByTestId("rated-icon").first();
+    expect(await sideOf(foldedIcon), "the folded row's icon is a row's picture").toBe(SMALL_PX);
+
     // The board tile's name is English only, one line: "Eight", not "Eight 八路".
     await expect(board.getByTestId("set-up-size-name")).toHaveText("Eight");
     await isOneLineInside(board.getByTestId("set-up-size-name"), board);

@@ -209,8 +209,6 @@ export const SET_UP_COPY = {
   openingKanji: "定石",
   /** And the ratings', for the same row. */
   ratingsKanji: "評価",
-  /** What the handicap group comes to when nobody is carrying one, which is most games. */
-  noHandicap: "An even game",
   /** Where a posted seat can be found by whoever takes it. */
   postedWhere: "It waits on the Games page until somebody takes it.",
   /** The way to anybody the lists here do not hold. */

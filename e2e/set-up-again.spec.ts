@@ -7,6 +7,7 @@ import {
   chooseOpponent,
   chosenBoard,
   chosenOpponent,
+  openChoice,
   openMoreSettings,
   ready,
   startAndBegin,
@@ -411,6 +412,17 @@ test.describe("carrying a position into a new game", () => {
      * been waited for, so it is a statement about a rendered form.
      */
     await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
+    /*
+     * The rating is OFFERED, which is the promise the route used to break — and
+     * offered now means a row saying which it is with the two tiles a press
+     * behind it, since a settled choice folds (`SetUpFold`). Both halves are
+     * checked: the answer is on screen without opening anything, and opening it
+     * really does reach the choice.
+     */
+    const rated = page.getByTestId("set-up-rated-fold");
+    await expect(rated).toBeVisible();
+    await expect(rated).toContainText("Rated");
+    await openChoice(page, "set-up-rated-fold");
     await expect(page.getByTestId("shared-rules-rated")).toBeVisible();
 
     await page.getByTestId("set-up-start").click();
