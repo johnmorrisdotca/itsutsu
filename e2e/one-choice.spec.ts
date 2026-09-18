@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-import { chooseGame, openMoreSettings, openSetUpPage } from "./support";
+import { chooseGame, openChoice, openMoreSettings, openSetUpPage } from "./support";
 
 /**
  * ONE CHOICE IS STILL CHOSEN.
@@ -87,6 +87,14 @@ test.describe("a sole option is drawn as a chosen one", () => {
 
     await chooseGame(page, "freestyle");
     await expect(openings).toHaveCount(3);
+    /*
+     * A game with THREE openings has a settled choice among them, so the choice
+     * folds to a row saying which one it is — and the tiles are one press away
+     * (`SetUpFold`). A game with ONE has nothing to fold, which is why the
+     * Reversi halves of this test open nothing. The tile is read after the
+     * press, because a mark nobody can see is not a mark.
+     */
+    await openChoice(page, "set-up-opening-fold");
     const chosen = page.locator('[data-testid="set-up-opening"][data-chosen="true"]');
     await expect(chosen).toHaveCount(1);
     await expectMarked(chosen);

@@ -20,8 +20,7 @@ import { ANYONE, RANDOM_COMPUTER, againstFromAddress, idIn, valueFor, whoIs } fr
 import { BoardPreview } from "./BoardPreview";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
-import { describeHandicap, describeRules, describeSettings } from "./rulesSummary";
-import { describeHeadStart } from "@/lib/gomoku/headStartWords";
+import { describeRules, describeSettings } from "./rulesSummary";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 import { matchSeat } from "./seatMatch";
 import { beginLink } from "./setUpAddress";
@@ -387,13 +386,6 @@ export function SetUpGame({
                   />
                 </div>
               ) : null,
-            /*
-             * WHAT THE HANDICAP GROUP COMES TO, so it can be a folded row
-             * rather than a heading over two selects. Almost every game is
-             * played straight: the ordinary answer is one short line, and the
-             * nine restrictions are a tap away for the game that wants them.
-             */
-            handicapSummary: fork !== null ? undefined : handicapWords(settled),
           }}
           onSizeChosen={setBoardChosen}
         />
@@ -439,19 +431,4 @@ export function SetUpGame({
       </div>
     </section>
   );
-}
-
-/**
- * What this game's handicap group comes to, in a line.
- *
- * BOTH HALVES, WHERE BOTH ARE SET. A head start and a restriction are two
- * different gifts — free turns for the weaker player, harder rules for the
- * stronger one — and a summary that printed the first and dropped the second
- * would be a folded row that is false about the game behind it.
- */
-function handicapWords(settled: RulesDraft): string {
-  const parts = [describeHeadStart(settled), describeHandicap(settled.handicap)].filter(
-    (part): part is string => part !== null,
-  );
-  return parts.length === 0 ? SET_UP_COPY.noHandicap : parts.join(" · ");
 }
