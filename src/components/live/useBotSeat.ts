@@ -6,8 +6,8 @@ import { botInSeat } from "@/lib/bots/bots";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import { otherStone } from "@/lib/gomoku/rules/board";
 import { BROWSER_MOVE_MILLIS } from "@/lib/gomoku/botWorker.constants";
+import { postTurn } from "./postTurn";
 import type { BotAnswer, BotAsk } from "@/lib/gomoku/botWorker";
-import type { BotTurn } from "@/lib/gomoku/opponent.types";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 
 /**
@@ -31,9 +31,9 @@ import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
  * the computer plays, and nothing else.
  *
  * **It is not the only path.** A player who closes the tab mid-think leaves the
- * computer still to move, and the next read of their games — the list, or the
- * badge beside Play — finds it past a minute's grace and plays it on the
- * server (`unansweredBotTurns`). This is the fast, free path; that is the net.
+ * computer still to move, and their next visit to /play finds it past a
+ * minute's grace and makes it in THAT browser (`unansweredBotTurns`,
+ * `BotCatchUp`). Both paths think here; neither costs a paid function.
  */
 /**
  * ON — and why it was off, because the reason is worth more than the flag.
@@ -52,9 +52,9 @@ import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
  * waiting the reply could never arrive. `carriesOnwardFrom` now stays put while
  * a computer is to move, as it always effectively did.
  *
- * And the one real hole is closed on the server rather than hoped away: a tab
- * shut mid-thought leaves a computer's move nobody is making, and the next
- * read of that player's games plays it (`unansweredBotTurns`).
+ * And the one real hole is closed rather than hoped away: a tab shut
+ * mid-thought leaves a computer's move nobody is making, and the next visit to
+ * the games page makes it in that browser (`BotCatchUp`).
  */
 const BROWSER_ANSWERS_LIVE_GAMES = true;
 
@@ -106,7 +106,7 @@ export function useBotSeat({
       if (answer.id !== asked.current) return;
       setThinking(false);
       if (!answer.ok || answer.turn === null) return;
-      void post(answer.turn, latest.current.send);
+      void postTurn(answer.turn, latest.current.send);
     });
 
     made.addEventListener("error", () => setThinking(false));
@@ -181,29 +181,4 @@ export function useBotSeat({
     typeof Worker !== "undefined";
 
   return { thinking, answering, stop };
-}
-
-/**
- * One turn, in the shapes the moves route takes.
- *
- * Written out rather than derived, because the route's body is an interface and
- * an interface is worth stating. A twist is the one turn that is two requests:
- * it rides on the stone that owes it, and the route updates the stone's row
- * rather than adding one, so the stone has to land first.
- */
-async function post(turn: BotTurn, send: (body: Record<string, unknown>) => Promise<void>): Promise<void> {
-  if (turn.kind === "pass") {
-    await send({ pass: true });
-    return;
-  }
-  if (turn.kind === "piece") {
-    await send({ cells: turn.cells });
-    return;
-  }
-  if (turn.kind === "move") {
-    await send({ row: turn.row, col: turn.col, from: turn.from });
-    return;
-  }
-  await send(turn.stone === undefined ? { row: turn.row, col: turn.col } : { row: turn.row, col: turn.col, stone: turn.stone });
-  if (turn.twist !== undefined) await send({ twist: turn.twist });
 }

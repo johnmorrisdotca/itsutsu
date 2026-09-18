@@ -7,9 +7,7 @@ import { appendMove, GAME_ROW, replay } from "@/lib/history/liveGame";
 import type { MoveRequest } from "@/lib/history/liveGame.types";
 import { isOffered } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
-import type { MyGames } from "@/lib/history/myGames.types";
 import { botInSeat } from "./bots";
-import { unansweredBotTurns } from "./unansweredBotTurns";
 import { settleEnded } from "@/lib/history/liveGameEndings";
 import { farewellFromBots, greetFromBot } from "./botTalk";
 import { BOT_MOVE_MILLIS, BOT_TURNS_PER_REQUEST } from "./bots.constants";
@@ -142,26 +140,4 @@ export async function waitingOnBot(id: string): Promise<boolean> {
   const state = replay(row);
   if (state.status !== GAME_STATUS.playing) return false;
   return botInSeat(row, state.toPlay) !== null;
-}
-
-/**
- * Plays the computer moves no browser answered for, among one player's games,
- * and says how many it took up — so the caller reads the list again rather
- * than showing a game still waiting on a move the server has just made.
- *
- * The fallback for a tab closed mid-thought; see `unansweredBotTurns`. On the
- * server's own budget, which is weaker than the browser's, and that is the
- * right way round: this is the move nobody stayed for.
- */
-export async function playUnansweredBotTurns(groups: MyGames, now: Date): Promise<number> {
-  let played = 0;
-  for (const one of unansweredBotTurns(groups, now)) {
-    try {
-      await playBotTurns(one.game.id);
-      played += 1;
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  return played;
 }

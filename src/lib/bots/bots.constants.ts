@@ -454,23 +454,43 @@ export const BOT_MOVE_MILLIS = 250;
 export const BOT_TURNS_PER_REQUEST = 6;
 
 /**
- * How long a computer's move may wait on the player's browser before the
- * server plays it instead.
+ * How long a computer's move may wait on the browser that claimed it before
+ * another browser picks it up.
  *
  * The browser thinks for `BROWSER_MOVE_MILLIS` (two seconds) and posts at once,
  * so a reply that has not arrived in a minute is not coming: the tab was closed
- * mid-thought, the laptop shut, the phone locked. Long enough that the server
- * never races a browser still working, short enough that somebody glancing at
- * their games a minute later finds the computer has moved.
+ * mid-thought, the laptop shut, the phone locked. Long enough that the games
+ * list never races a board still working, short enough that somebody glancing
+ * at their games a minute later finds the computer has moved.
  */
 export const BROWSER_REPLY_GRACE_MS = 60_000;
 
 /**
- * The most abandoned computer moves one request will take up. A read of a
- * player's games is not the place for a backlog; two a read clears any real
- * one within a visit or two, and bounds what one page load can cost.
+ * The most abandoned computer moves one visit to the games list will take up.
+ * A page is not the place for a backlog; two a visit clears any real one within
+ * a visit or two, and bounds what one page load asks of the machine reading it.
  */
 export const UNANSWERED_TURNS_AT_ONCE = 2;
+
+/**
+ * The most moves the browser's catch-up will play in ONE abandoned game.
+ *
+ * Usually one: the computer owes a move, it is made, and the turn is the
+ * player's again. More than one only where a turn is more than a stone or the
+ * position hands the computer another go, and it is a bound rather than a
+ * target — a game that would not stop asking is a bug, not a long game.
+ */
+export const CATCH_UP_MOVES = 3;
+
+/**
+ * How long the catch-up waits on the worker for one move.
+ *
+ * Well past `BROWSER_MOVE_MILLIS` and its overrun, so an ordinary move is never
+ * cut off. It is here for the case that leaves no trace at all: a worker that
+ * never answers would hold the run open for ever, so the wait ends and the
+ * game is left exactly as it was for the next visit.
+ */
+export const CATCH_UP_TIMEOUT_MS = 30_000;
 
 /**
  * How long a posted seat waits for a person before a computer takes it.

@@ -183,10 +183,11 @@ export async function POST(
      * always has, which is what a client with no worker still needs.
      *
      * And a browser that claims the reply and then goes away — a tab closed
-     * mid-think — leaves a computer still to move. The next read of that
-     * player's games finds it past a minute's grace and plays it here on the
-     * server (`unansweredBotTurns`). A failure to answer is not a failure to
-     * move: the stone is on the record and the game is sound.
+     * mid-think — leaves a computer still to move. The next visit to that
+     * player's games finds it past a minute's grace and makes the move in the
+     * browser reading the page (`unansweredBotTurns`, `BotCatchUp`), so it
+     * costs nothing here either. A failure to answer is not a failure to move:
+     * the stone is on the record and the game is sound.
      */
     let game = outcome.game;
     if (parsed.data.botReply !== true) {
