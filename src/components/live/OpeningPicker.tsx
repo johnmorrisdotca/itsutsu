@@ -6,6 +6,8 @@ import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { OpeningRule } from "@/lib/gomoku/gomoku.types";
 
 import { OpeningMark } from "./OpeningMark";
+import { SetUpFold } from "./SetUpFold";
+import { SET_UP_COPY } from "./live.constants";
 import { PickMark } from "./PickMark";
 import { PICK_CARD, PICK_TILES } from "./picker.constants";
 import type { OpeningPickerProps } from "./picker.types";
@@ -47,7 +49,7 @@ export function OpeningPicker({ value, variant, size, onChange, disabled = false
    * three — the chosen style, the check, a radio group of one that is checked
    * and announced as such — and `data-only` still says which case it is.
    */
-  return (
+  const tiles = (
     <fieldset className="flex min-w-0 flex-col gap-1.5" data-testid="shared-rules-opening">
       <legend className="mb-0.5 text-sm text-ink-soft">{say("setup.opening")}</legend>
       {
@@ -78,6 +80,44 @@ export function OpeningPicker({ value, variant, size, onChange, disabled = false
         </div>
       }
     </fieldset>
+  );
+
+  /*
+   * A GAME WITH ONE OPENING HAS NOTHING TO FOLD. The tile is the fact itself
+   * and there is no second answer behind it, so a Change that opened onto one
+   * choice would be a control that cannot change anything.
+   */
+  if (only) return tiles;
+
+  /*
+   * Otherwise the chosen opening is a settled choice, and a settled choice is
+   * folded down to what it is — see `SetUpFold`. The summary is the same
+   * picture and the same name as the tile, so the closed row and the open one
+   * say the same thing about the same rule.
+   */
+  const chosen = offered.find((opening) => opening === value) ?? null;
+  /*
+   * AND A VALUE THAT IS NOT ONE OF THE OFFERED RULES IS NOT AN ANSWER. It can
+   * happen while a draft is between games — the opening this game does not have
+   * yet, the one the next one will — and a fold would print it as chosen. An
+   * unsettled choice stays open, which is this fold's own rule.
+   */
+  if (chosen === null) return tiles;
+  const copy = OPENING_DISPLAY[chosen];
+  return (
+    <SetUpFold
+      title={say("setup.opening")}
+      kanji={SET_UP_COPY.openingKanji}
+      testId="set-up-opening-fold"
+      summary={
+        <>
+          <OpeningMark opening={chosen} side={size} size="small" />
+          <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
+        </>
+      }
+    >
+      {tiles}
+    </SetUpFold>
   );
 }
 

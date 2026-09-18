@@ -295,7 +295,25 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
  * words of its own line, with the size it takes and why. Empty today: every
  * file draws each kind of picture at one size.
  */
-const SIZE_EXCEPTIONS: Record<string, { line: string; size: PictureSize; why: string }[]> = {};
+const SIZE_EXCEPTIONS: Record<string, { line: string; size: PictureSize; why: string }[]> = {
+  /*
+   * THE FOLDED ROW ON THE SET-UP SCREEN, which is a row of a list and takes a
+   * row's picture. Each of these files draws the same choice twice now: as a
+   * TILE, at the tile's size, and on the one-line row the choice folds down to
+   * once it is settled (`SetUpFold`). The row is the site's small size for the
+   * same reason a table's is — "Tables keep small pictures" — so the file is
+   * classified for its tiles above and its row is named here.
+   */
+  "src/components/live/OpeningPicker.tsx": [
+    { line: "opening={chosen}", size: "small", why: "the folded row's picture of the chosen opening" },
+  ],
+  "src/components/live/OpponentChoice.tsx": [
+    { line: "mine.computer", size: "small", why: "the folded row's mark for the chosen opponent" },
+  ],
+  "src/components/live/RatedPicker.tsx": [
+    { line: "chosen.rated ?", size: "small", why: "the folded row's icon for rated or friendly" },
+  ],
+};
 
 /** Every picture drawn anywhere, with the component, its opening tag and the words of its line. */
 function pictureTags(): { path: string; name: (typeof PICTURES)[number]; tag: string; line: string }[] {

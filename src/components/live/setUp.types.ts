@@ -34,6 +34,20 @@ export type SetUpSectionProps = {
   children: ReactNode;
 };
 
+/** One settled choice, folded down to what it is. See `SetUpFold`. */
+export type SetUpFoldProps = {
+  title: string;
+  kanji: string;
+  /** The answer, drawn: a picture and a name, never a blank. */
+  summary: ReactNode;
+  testId: string;
+  /** Open from the start, for a screen where this choice IS the errand. */
+  openInitially?: boolean;
+  /** Which list this is, where several folds share a test id. Drawn as `data-group`. */
+  group?: string;
+  children: ReactNode;
+};
+
 /** The sentences that head the set-up form, saying what this one is. */
 export type SetUpNoticesProps = {
   problem: string | null;

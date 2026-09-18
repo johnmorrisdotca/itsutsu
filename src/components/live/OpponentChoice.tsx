@@ -21,6 +21,7 @@ import {
   RANDOM_COMPUTER_WORDS,
 } from "./picker.constants";
 import type { OpponentChoiceProps, OpponentGroup, OpponentTile } from "./picker.types";
+import { SetUpFold } from "./SetUpFold";
 import { SeatMark } from "./SeatMark";
 import { POST_FOR_ANYONE } from "./setUpWords";
 
@@ -93,7 +94,21 @@ export function OpponentChoice({
         />
       </div>
       {groups.map((group) => (
-        <Run key={group.kind} group={group} shown={shown} disabled={cannotName} onChange={onChange} />
+        <Run
+          key={group.kind}
+          group={group}
+          shown={shown}
+          /*
+           * Whether anybody at all has been chosen from these lists, which
+           * decides whether a run is a question or a way to change your mind.
+           * Asked over EVERY group rather than inside one, because a run cannot
+           * see the others and "nobody is chosen" is a fact about all of them.
+           * The posted-seat tile above is not a run and is never folded away.
+           */
+          answered={groups.some((one) => one.tiles.some((tile) => tile.value === shown))}
+          disabled={cannotName}
+          onChange={onChange}
+        />
       ))}
       {/*
         NOBODY IS A DEAD END. The lists hold whoever is here and the players this
@@ -126,11 +141,14 @@ export function OpponentChoice({
 function Run({
   group,
   shown,
+  answered,
   disabled,
   onChange,
 }: {
   group: OpponentGroup;
   shown: string;
+  /** Whether any of these lists holds the chosen opponent. See the call site. */
+  answered: boolean;
   disabled: boolean;
   onChange: (next: string) => void;
 }) {
@@ -154,7 +172,7 @@ function Run({
   const words = speaker.pair(OPPONENT_GROUP_WORDS[group.kind].phrase, OPPONENT_GROUP_WORDS[group.kind].kanji);
   const program = group.tiles.find((tile) => tile.value === shown && tile.tier !== null);
 
-  return (
+  const body = (
     <div
       role="group"
       aria-labelledby={heading}
@@ -198,6 +216,11 @@ function Run({
         What the chosen program is like, under the programs — the way the game
         picker prints the chosen game's tagline under the games. One blurb for
         the one being decided about, rather than six paragraphs nobody chose.
+
+        UNDER THE LIST RATHER THAN ON THE FOLDED ROW. It is a paragraph, and a
+        paragraph on a one-line summary makes the folded row eight lines tall,
+        which is the scrolling this fold exists to end. The row carries the
+        short line instead — the same one the tile carries.
       */}
       {program?.tier != null ? (
         <span className="text-xs leading-snug text-muted" data-testid="set-up-opponent-hint">
@@ -206,6 +229,80 @@ function Run({
       ) : null}
     </div>
   );
+
+  /*
+   * A RUN HOLDING THE CHOSEN OPPONENT FOLDS DOWN TO THEM — John, 2026-09-18:
+   * "Same goes for The computer. Keep it closed to Guoshou and only change if I
+   * click to expand it." Written about the run rather than about the computers,
+   * because it is the same fact either way: this list is answered, that one is
+   * not, and the run somebody chose from is the one worth showing them.
+   *
+   * WHETHER ANYBODY IS CHOSEN DECIDES HOW THIS OPENS, AND NOTHING AFTER THAT.
+   *
+   * A run arrives folded when the screen already has an opponent — John's
+   * rematch, a challenge, a Play pressed on somebody's page — and open when
+   * nobody is chosen, because then every list is a question and a question is
+   * not folded away behind a summary of nothing.
+   *
+   * IT IS THE FIRST STATE ONLY, never a live one, and that is a fix rather
+   * than a detail. Deciding it on every render meant the lists FOLDED THE
+   * MOMENT somebody chose from them — and choosing with the arrow keys walks
+   * the radio group, so the group closed around the keyboard's own focus and
+   * the next arrow went nowhere. `set-up-choices.spec.ts` presses those arrows;
+   * it found this, twice, in two different shapes.
+   */
+  const mine = group.tiles.find((tile) => tile.value === shown);
+  return (
+    <SetUpFold
+      title={words.text}
+      kanji={words.kanji ?? ""}
+      testId="set-up-opponent-fold"
+      group={group.kind}
+      openInitially={!answered}
+      summary={
+        mine === undefined ? (
+          /*
+           * A RUN THAT DOES NOT HOLD THE CHOSEN OPPONENT SAYS HOW MANY ARE IN
+           * IT, never a name. Once somebody is chosen, the other lists are the
+           * way to change your mind rather than the question in front of you —
+           * and twenty-seven people between you and the program you picked is
+           * the scrolling this fold exists to end. A count is true of a list
+           * nobody has answered; a name would not be.
+           */
+          <span className="font-normal text-muted">{SET_UP_COPY.fold.among(group.tiles.length)}</span>
+        ) : (
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="flex min-w-0 items-center gap-2">
+              <SeatMark kind={mine.computer ? "computer" : "person"} size="small">
+                {markLetter(mine)}
+              </SeatMark>
+              <span className="truncate">{tileWords(mine).title}</span>
+            </span>
+            {tileWords(mine).line === null ? null : (
+              <span className="text-xs leading-snug font-normal text-muted" data-testid="set-up-opponent-strength">
+                {tileWords(mine).line}
+              </span>
+            )}
+          </span>
+        )
+      }
+    >
+      {body}
+    </SetUpFold>
+  );
+}
+
+/**
+ * The one letter in somebody's mark — their own script where they have one.
+ *
+ * Its own function because the tile and the folded row above it draw the same
+ * mark, and a second copy of this is a second place for 国手 to become a G.
+ */
+function markLetter(tile: OpponentTile): string {
+  if (tile.value === RANDOM_COMPUTER) return RANDOM_COMPUTER_WORDS.mark;
+  const profile = tile.tier === null ? null : BOT_PROFILES[tile.tier];
+  const shownAs = tile.computer ? tile.name : shownName(tile.name);
+  return Array.from(profile?.native ?? shownAs)[0] ?? "";
 }
 
 /** A tile's picture and words, from who it is. */
@@ -213,7 +310,7 @@ function tileWords(tile: OpponentTile) {
   const shownAs = tile.computer ? tile.name : shownName(tile.name);
   const profile = tile.tier === null ? null : BOT_PROFILES[tile.tier];
   const random = tile.value === RANDOM_COMPUTER;
-  const initial = random ? RANDOM_COMPUTER_WORDS.mark : (Array.from(profile?.native ?? shownAs)[0] ?? "");
+  const initial = markLetter(tile);
   return {
     value: tile.value,
     name: tile.name,

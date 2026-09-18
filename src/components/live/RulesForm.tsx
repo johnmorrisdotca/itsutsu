@@ -17,6 +17,7 @@ import { OpeningPicker } from "./OpeningPicker";
 import { RatedPicker } from "./RatedPicker";
 import { penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
+import { SetUpFold } from "./SetUpFold";
 import { SetUpSection } from "./SetUpSection";
 
 /**
@@ -151,6 +152,17 @@ export function RulesForm({
   sections?: {
     opponent: ReactNode | null;
     handicap: ReactNode | null;
+    /**
+     * The handicap group's answer in a few words, which makes it a FOLD rather
+     * than a heading over two selects — see `SetUpFold`. Almost every game is
+     * played straight, so the ordinary case is one row saying so instead of a
+     * screenful of restrictions nobody asked for.
+     *
+     * Passed in rather than worked out here, because the words belong to the
+     * draft the caller holds and `describeHandicap` already writes them.
+     * Undefined leaves the group exactly as it was, for the board's own form.
+     */
+    handicapSummary?: string;
   };
   /**
    * Told when somebody chooses a board themselves, so a caller that was
@@ -339,9 +351,20 @@ export function RulesForm({
         {rest}
       </SetUpSection>
       {sections.handicap !== null ? (
-        <SetUpSection title={words.handicap.title} kanji={words.handicap.kanji} testId="set-up-handicap-group">
-          {sections.handicap}
-        </SetUpSection>
+        sections.handicapSummary !== undefined ? (
+          <SetUpFold
+            title={words.handicap.title}
+            kanji={words.handicap.kanji}
+            testId="set-up-handicap-group"
+            summary={sections.handicapSummary}
+          >
+            {sections.handicap}
+          </SetUpFold>
+        ) : (
+          <SetUpSection title={words.handicap.title} kanji={words.handicap.kanji} testId="set-up-handicap-group">
+            {sections.handicap}
+          </SetUpSection>
+        )
       ) : null}
     </>
   );
