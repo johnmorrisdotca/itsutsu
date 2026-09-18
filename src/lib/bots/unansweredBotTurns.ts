@@ -14,12 +14,17 @@ import { BROWSER_REPLY_GRACE_MS, UNANSWERED_TURNS_AT_ONCE } from "./bots.constan
  *
  * So the read of a player's games is where it is found. That list already
  * knows whose turn each game is, so finding one costs nothing, and it is where
- * the person who closed the tab looks next. Only past the grace, so the server
- * never races a browser still thinking; only a few at once, so one read cannot
- * turn into a backlog's worth of searches.
+ * the person who closed the tab looks next. Only past the grace, so nothing
+ * races a browser still thinking; only a few at once, so one visit cannot turn
+ * into a backlog's worth of searches.
  *
- * Pure, and apart from `botPlay.ts`, so the rule can be checked without a
- * database.
+ * WHAT IS DONE ABOUT THEM HAPPENS IN THE BROWSER — `BotCatchUp`, on that same
+ * page, thinks in the worker the board uses and posts the move. The server used
+ * to play them here instead, which cost a search inside the request; the
+ * machine reading the page is idle and already has the chooser.
+ *
+ * Pure, and apart from anything that reads a database, so the rule can be
+ * checked on its own.
  */
 export function unansweredBotTurns(groups: Pick<MyGames, "theirMove" | "unstarted">, now: Date): MyGame[] {
   return [...groups.theirMove, ...groups.unstarted]

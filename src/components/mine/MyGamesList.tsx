@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { playUnansweredBotTurns } from "@/lib/bots/botPlay";
+import { catchUpSeats } from "@/lib/bots/catchUpSeats";
 import { keepFinishedDaysFor } from "@/lib/auth/members";
 import { MY_FINISHED_PAGE, MY_FINISHED_PAGE_OPEN } from "@/lib/history/myFinished.sort";
 import {
@@ -18,6 +18,7 @@ import {
 } from "@/lib/history/myGames";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { playerPath } from "@/lib/rating/playerKey";
+import { BotCatchUp } from "./BotCatchUp";
 import { MY_GAMES_COPY } from "./mine.constants";
 import { Row } from "./MyGameRow";
 import { SEATED_ONLY } from "@/lib/history/myFinished";
@@ -155,11 +156,23 @@ export async function MyGamesList({
     seated
       ? await fetchMyGames(new Map(), memberId, at, 0, {}, { only: SEATED_ONLY })
       : await fetchMyGames(claims, memberId, at, await keepFinishedDaysFor(memberId), paging);
-  let queue = await readQueue(now);
-  // The computer's move nobody stayed for — see `unansweredBotTurns` — is made
-  // here, where the player who closed the tab comes looking, and shown made.
-  if ((await playUnansweredBotTurns(queue.groups, now)) > 0) queue = await readQueue(new Date());
+  const queue = await readQueue(now);
   const { groups } = queue;
+  /*
+   * THE COMPUTER'S MOVE NOBODY STAYED FOR, handed to the browser that is
+   * reading this page — see `unansweredBotTurns` for which games those are and
+   * `BotCatchUp` for what is done about them.
+   *
+   * The server used to play them here, which worked and cost a search inside
+   * this render on the one page a member opens daily. The machine in front of
+   * the person is idle, already has the chooser, and is where every other
+   * computer move on this site is now worked out.
+   *
+   * ONLY GAMES THIS READER HOLDS THE SEAT IN, with that seat's own key — see
+   * `catchUpSeats`, which asks `resolveSeat` exactly as the match page does.
+   * Nothing is handed over for a seat that is not this reader's.
+   */
+  const stuck = await catchUpSeats(groups, claims, memberId, now);
   const shown = MY_GAME_GROUPS.reduce((n, group) => n + groups[group].length, 0);
   /*
    * NOTHING AT ALL IS A CLAIM ABOUT THE WHOLE QUEUE, so a page that is empty
@@ -198,6 +211,11 @@ export async function MyGamesList({
 
   return (
     <section className="flex flex-col gap-4" data-testid="my-games">
+      {/*
+        Draws nothing. It is here rather than on the page because this is where
+        the queue is read, and the games it is given come out of that same read.
+      */}
+      <BotCatchUp games={stuck} />
       <h2 className="flex items-baseline gap-2 text-lg font-semibold">
         <Paired en={MY_GAMES_COPY.title.label} kanji={MY_GAMES_COPY.title.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
