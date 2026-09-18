@@ -441,10 +441,26 @@ test.describe("carrying a position into a new game", () => {
     expect(forked.rated, "rated, in the computer pool, as a fresh game against one is").toBe(true);
     /*
      * The position, and the program's answer to it. One move was carried and it
-     * was white's turn, so a program that is actually seated has played by now —
-     * two moves rather than one is the whole of "the bot answers".
+     * was white's turn, so a program that is actually seated answers it — two
+     * moves rather than one is the whole of "the bot answers".
+     *
+     * WAITED FOR RATHER THAN READ ONCE, and the reason is a change in who plays
+     * it rather than a loosened assertion. This used to be true the instant the
+     * game existed, because the creation route worked the program's opening move
+     * out inside the request. It is the browser that plays it now — the board
+     * this page is on, in a worker, as it plays every move after it — so the
+     * answer arrives a second or two after the board does. Still exactly two
+     * moves, and still nothing in this spec that plays the second one.
      */
-    expect(forked.moveCount, "the carried move, and the program's reply to it").toBe(2);
+    await expect
+      .poll(
+        async () => {
+          const again = await context.request.get(`/api/games/${id}`);
+          return ((await again.json()) as { moveCount: number }).moveCount;
+        },
+        { message: "the carried move, and the program's reply to it", timeout: 30_000 },
+      )
+      .toBe(2);
 
     await context.close();
   });
