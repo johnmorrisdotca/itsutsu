@@ -109,12 +109,18 @@ export async function LiveMatch({
        */
       offeredAt: true,
       /*
-       * The two member ids used to be read here as well, for `settled` — a seat
-       * bound to a member is a person already in this game whether or not they
-       * have opened it. Nothing beside the board asks whether the rules are still
-       * open any more (see below), so they go: a column fetched for a reader that
-       * no longer exists is a comment about the past wearing a query.
+       * AND WHO HOLDS EACH SEAT. These were dropped when the rules panel went,
+       * on the reasoning that nothing beside the board asked whether the rules
+       * were still open — which was true, and left `seatIsFree` reading a seat's
+       * STAMP alone. A stamp is written when somebody follows a link, and the
+       * two players who never follow one are a computer player and a person
+       * challenged by name: so a game against a computer drew a QR code for the
+       * computer's chair, and a challenge drew the other person's seat key on
+       * the challenger's own board. `seatIsFree` requires them now, so this
+       * select cannot quietly forget them again.
        */
+      blackMemberId: true,
+      whiteMemberId: true,
     },
   });
 
