@@ -10,7 +10,9 @@ import {
   chosenOpening,
   chosenOpponent,
   chosenRated,
+  openChoice,
   openMoreSettings,
+  openOpponentLists,
   ready,
   startAndBegin,
 } from "./support";
@@ -115,7 +117,15 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
     /*
      * A radio group, driven as one: the chosen radio takes focus, an arrow
      * chooses the next, and focus is where a keyboard user can see it.
+     *
+     * The settled choices fold down to a row saying what they are, so each
+     * group is opened first — by pressing the same Change a reader presses.
+     * A folded group's radios are in the page and hidden, which is what makes
+     * "what is chosen" still readable below while they are shut.
      */
+    await openChoice(page, "set-up-opening-fold");
+    await openChoice(page, "set-up-rated-fold");
+    await openOpponentLists(page);
     await page.locator('input[name="set-up-opening"]:checked').focus();
     await page.keyboard.press("ArrowRight");
     await expect(chosenOpening(page)).toHaveAttribute("data-opening", "pro");
@@ -129,10 +139,12 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
     await page.keyboard.press("ArrowLeft");
     await expect(chosenOpening(page)).toHaveAttribute("data-opening", "free");
 
+    await openChoice(page, "set-up-rated-fold");
     await page.locator('input[name="set-up-rated"]:checked').focus();
     await page.keyboard.press("ArrowRight");
     await expect(chosenRated(page)).toHaveAttribute("data-rated", "friendly");
 
+    await openOpponentLists(page);
     await page.locator('input[name="set-up-opponent"]:checked').focus();
     await page.keyboard.press("ArrowDown");
     await expect(chosenOpponent(page)).not.toHaveAttribute("data-opponent", "anyone");
@@ -242,7 +254,8 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
       await expect(known.locator(`[data-opponent="m:${ids[8]}"]`)).toHaveCount(0);
 
       // The arrows walk only what is drawn: up from the chosen tile is the eighth, not the folded ninth.
-      await page.locator('input[name="set-up-opponent"]:checked').focus();
+      await openOpponentLists(page);
+    await page.locator('input[name="set-up-opponent"]:checked').focus();
       await page.keyboard.press("ArrowUp");
       await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${ids[7]}`);
       /*

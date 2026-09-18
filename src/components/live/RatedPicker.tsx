@@ -6,6 +6,8 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { RATING_REFUSAL_DISPLAY } from "@/lib/rating/rateable.constants";
 
 import { PickMark } from "./PickMark";
+import { SetUpFold } from "./SetUpFold";
+import { SET_UP_COPY } from "./live.constants";
 import { PICK_CARD, PICK_FACT, PICK_ICON, PICK_PAIR, RATED_TILES } from "./picker.constants";
 import type { RatedPickerProps } from "./picker.types";
 
@@ -44,7 +46,7 @@ export function RatedPicker({ value, refused, onChange, disabled = false }: Rate
     );
   }
 
-  return (
+  const tiles = (
     <fieldset className="flex min-w-0 flex-col gap-1.5" data-testid="shared-rules-rated">
       <legend className="mb-0.5 text-sm text-ink-soft">{say("setup.ratings")}</legend>
       <div className={PICK_PAIR}>
@@ -75,6 +77,28 @@ export function RatedPicker({ value, refused, onChange, disabled = false }: Rate
         ))}
       </div>
     </fieldset>
+  );
+
+  /*
+   * Rated or friendly is one word once it is chosen, and a settled choice folds
+   * down to what it is — `SetUpFold`. The summary carries the same picture and
+   * the same word as the chosen tile, so the row and the tile agree.
+   */
+  const chosen = RATED_TILES.find((tile) => tile.rated === value) ?? RATED_TILES[0];
+  return (
+    <SetUpFold
+      title={say("setup.ratings")}
+      kanji={SET_UP_COPY.ratingsKanji}
+      testId="set-up-rated-fold"
+      summary={
+        <>
+          {chosen.rated ? <MovesIcon size="small" /> : <LevelIcon size="small" />}
+          <span>{say(chosen.phrase)}</span>
+        </>
+      }
+    >
+      {tiles}
+    </SetUpFold>
   );
 }
 

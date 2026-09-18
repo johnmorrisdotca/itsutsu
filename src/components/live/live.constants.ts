@@ -187,6 +187,30 @@ export const SET_UP_COPY = {
     rules: { title: "The rules", kanji: "規則" },
     handicap: { title: "Handicap", kanji: "ハンデ" },
   },
+  /**
+   * The two words on a folded choice.
+   *
+   * "Change" rather than a chevron, because the fold this screen used to have
+   * was a grey line and a small › that said nothing about what was behind it —
+   * see `SetUpFold`, which exists to not be that.
+   */
+  fold: {
+    change: "Change 変更",
+    done: "Done 完了",
+    /**
+     * What a folded list of opponents says when the chosen one is not in it: how
+     * many are, and nothing else. A name would read as the answer, and this list
+     * has not been answered — it is the way to change your mind about one that
+     * has. See `SetUpFold` on never summarising a question.
+     */
+    among: (count: number) => `${count} to choose from`,
+  },
+  /** The opening's own kanji, for the folded row's heading. */
+  openingKanji: "定石",
+  /** And the ratings', for the same row. */
+  ratingsKanji: "評価",
+  /** What the handicap group comes to when nobody is carrying one, which is most games. */
+  noHandicap: "An even game",
   /** Where a posted seat can be found by whoever takes it. */
   postedWhere: "It waits on the Games page until somebody takes it.",
   /** The way to anybody the lists here do not hold. */

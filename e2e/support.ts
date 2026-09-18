@@ -285,7 +285,38 @@ export function chosenBoard(page: Page) {
  * Each `choose…` checks the tile it pressed is the chosen one, so a press that
  * landed before the page was listening fails here rather than three lines on.
  */
+/**
+ * OPENS A SETTLED CHOICE THAT HAS FOLDED ITSELF AWAY.
+ *
+ * The set-up screen folds each choice down to what it is once it has one, and
+ * opens it again on a press of Change — see `SetUpFold`. A spec that wants to
+ * CHANGE something therefore presses the same thing a reader presses, rather
+ * than reaching past the fold to a control nobody can see.
+ *
+ * Idempotent and silent about folds that are not there: a fold only exists
+ * where a choice is settled, so "there is nothing to open" is an ordinary
+ * answer and not a failure.
+ */
+export async function openChoice(page: Page, testId: string, group?: string) {
+  const fold = group === undefined
+    ? page.getByTestId(testId)
+    : page.locator(`[data-testid="${testId}"][data-group="${group}"]`);
+  const many = await fold.count();
+  for (let at = 0; at < many; at += 1) {
+    const one = fold.nth(at);
+    if ((await one.getAttribute("data-open")) === "true") continue;
+    await one.getByTestId(`${testId}-change`).click();
+    await expect(one).toHaveAttribute("data-open", "true");
+  }
+}
+
+/** Every opponent list opened, for a spec hunting a particular person or program. */
+export async function openOpponentLists(page: Page) {
+  await openChoice(page, "set-up-opponent-fold");
+}
+
 export async function chooseOpening(page: Page, opening: string) {
+  await openChoice(page, "set-up-opening-fold");
   const tile = page.locator(`[data-testid="set-up-opening"][data-opening="${opening}"]`);
   await tile.click();
   await expect(tile).toHaveAttribute("data-chosen", "true");
@@ -298,6 +329,7 @@ export function chosenOpening(page: Page) {
 
 /** Presses Rated or Friendly. */
 export async function chooseRated(page: Page, rated: boolean) {
+  await openChoice(page, "set-up-rated-fold");
   const tile = page.locator(`[data-testid="set-up-rated"][data-rated="${rated ? "rated" : "friendly"}"]`);
   await tile.click();
   await expect(tile).toHaveAttribute("data-chosen", "true");
@@ -310,6 +342,7 @@ export function chosenRated(page: Page) {
 
 /** Presses an opponent by the value it holds: "anyone", `m:<member id>` or `c:<program id>`. */
 export async function chooseOpponent(page: Page, value: string) {
+  await openOpponentLists(page);
   const tile = page.locator(`[data-testid="set-up-opponent"][data-opponent="${value}"]`);
   await tile.click();
   await expect(tile).toHaveAttribute("data-chosen", "true");
@@ -327,6 +360,7 @@ export function chosenOpponent(page: Page) {
  * has not opened yet.
  */
 export async function aComputerOpponent(page: Page, nth = 0): Promise<string> {
+  await openOpponentLists(page);
   const tile = page.locator('[data-testid="set-up-opponent"][data-computer="true"]').nth(nth);
   await expect(tile, "the setup screen offers no computer player here").toBeVisible();
   return (await tile.getAttribute("data-opponent")) as string;
