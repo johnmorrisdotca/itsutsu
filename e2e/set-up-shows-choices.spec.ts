@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { memberContext, memberIdFor, removeMember, seedMember, seenDaysAgo } from "./members";
-import { chooseOpponent, chooseRated, chosenOpponent, chosenRated, ready } from "./support";
+import { chooseOpponent, chooseRated, chosenOpponent, chosenRated, openOpponentLists, ready } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -120,7 +120,19 @@ test.describe("who you play and every rule are on the set-up screen", () => {
       await page.goto(`/games/halma/new?against=${namedId}`);
       await ready(page, "set-up-game");
 
-      // ALL OF IT ON THE PAGE, with nothing opened.
+      /*
+       * ALL OF IT ON THIS PAGE, and nothing behind a second screen — which is
+       * what this test has always been about: no `more-settings` drawer, the
+       * rules and the handicap in plain sight, and the whole game settled here.
+       *
+       * WHAT CHANGED IS THE LISTS OF PEOPLE, and only when one of them is
+       * already answered. This screen arrives with a person named, so the runs
+       * fold to a row saying who is chosen and how many the others hold (John,
+       * 2026-09-18: "Keep it closed to Guoshou and only change if I click to
+       * expand it"). The chosen opponent is still on screen without opening
+       * anything — asserted below — and the rest are one press away, pressed
+       * here the way a reader presses them.
+       */
       await expect(page.getByTestId("more-settings")).toHaveCount(0);
       await expect(page.getByTestId("set-up-who")).toBeVisible();
       await expect(page.getByTestId("set-up-rules")).toBeVisible();
@@ -135,6 +147,10 @@ test.describe("who you play and every rule are on the set-up screen", () => {
       const rulesTop = (await page.getByTestId("set-up-rules").boundingBox())!.y;
       expect(boardTop).toBeLessThan(whoTop);
       expect(whoTop).toBeLessThan(rulesTop);
+
+      // The chosen person is named on the folded row before anything is opened.
+      await expect(page.getByTestId("set-up-opponent-fold").filter({ hasText: /Named/ })).toBeVisible();
+      await openOpponentLists(page);
 
       const computerTile = page.locator('[data-testid="set-up-opponent"][data-computer="true"]').first();
       const computerValue = (await computerTile.getAttribute("data-opponent")) as string;
