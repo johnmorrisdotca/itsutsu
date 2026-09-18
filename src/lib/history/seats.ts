@@ -98,6 +98,25 @@ export function seatIsFree(
      * optional. Now it can.
      */
     offeredAt: Date | string | null;
+    /**
+     * Who holds each seat, where a member holds it — and REQUIRED for the same
+     * reason `offeredAt` is, because forgetting them is what went wrong.
+     *
+     * A seat bound to a member id belongs to that member whether or not they
+     * have ever opened the game: a computer player never follows a link, so its
+     * seat is never stamped, and a challenged person is named before they
+     * arrive. Read only by the stamp, both of those seats said "still waiting
+     * for somebody" — so a game against a computer printed a QR code for the
+     * computer's chair (John, with a screenshot, 2026-09-18), and a challenge
+     * printed the OTHER PERSON'S seat key on the challenger's own board, which
+     * is the credential for resigning as them.
+     *
+     * `standInSeat.ts` has asked this question correctly since it was written —
+     * "an unstamped seat with a member on it belongs to that member" — and this
+     * is the same sentence, in the place the board reads.
+     */
+    blackMemberId: string | null;
+    whiteMemberId: string | null;
   },
   seat: Stone,
 ): boolean {
@@ -118,6 +137,9 @@ export function seatIsFree(
    * from the one that was asked.
    */
   if (game.offeredAt !== null) return false;
+  // Somebody is already sitting in it, by name, however the stamps read.
+  const held = seat === STONES.black ? game.blackMemberId : game.whiteMemberId;
+  if (held !== null) return false;
   // A posted seat is offered to anybody, but — like every other seat — only
   // until somebody takes it. There is no case left where openSeat matters.
   const claimed = seat === STONES.black ? game.blackClaimedAt : game.whiteClaimedAt;
@@ -191,8 +213,9 @@ export function rulesAreSettled(game: {
   offeredAt: Date | string | null;
   blackClaimedAt?: Date | string | null;
   whiteClaimedAt?: Date | string | null;
-  blackMemberId?: string | null;
-  whiteMemberId?: string | null;
+  /** Required, because this hands its own shape to `seatIsFree`, which reads them. */
+  blackMemberId: string | null;
+  whiteMemberId: string | null;
   moveCount?: number;
 }): boolean {
   if ((game.moveCount ?? 0) > 0) return true;
@@ -226,14 +249,7 @@ export function rulesAreSettled(game: {
    * screen has neither. Those really are still being set up, and their form
    * stays.
    */
-  if (
-    game.blackMemberId !== null &&
-    game.blackMemberId !== undefined &&
-    game.whiteMemberId !== null &&
-    game.whiteMemberId !== undefined
-  ) {
-    return true;
-  }
+  if (game.blackMemberId !== null && game.whiteMemberId !== null) return true;
   /*
    * A seat that was posted and is no longer posted has been answered, and
    * that is the moment somebody agreed to these rules — whatever the poster

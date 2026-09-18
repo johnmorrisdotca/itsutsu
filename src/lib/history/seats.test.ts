@@ -13,7 +13,15 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
  * on offer while one person played both colours of it.
  */
 describe("seatIsFree", () => {
-  const empty = { openSeat: null, blackClaimedAt: null, whiteClaimedAt: null, moveCount: 0, offeredAt: null };
+  const empty = {
+    openSeat: null,
+    blackClaimedAt: null,
+    whiteClaimedAt: null,
+    moveCount: 0,
+    offeredAt: null,
+    blackMemberId: null,
+    whiteMemberId: null,
+  };
 
   it("offers a seat nobody has taken", () => {
     expect(seatIsFree(empty, STONES.black)).toBe(true);
@@ -39,6 +47,48 @@ describe("seatIsFree", () => {
 
     const answered = { ...posted, whiteClaimedAt: new Date() };
     expect(seatIsFree(answered, STONES.white), "after somebody answers").toBe(false);
+  });
+
+  /*
+   * ─────────────────────────────────────────────────────────────────────────
+   * A SEAT WITH SOMEBODY'S NAME ON IT IS NOT WAITING FOR ANYBODY
+   * ─────────────────────────────────────────────────────────────────────────
+   *
+   * The stamp is written when somebody follows a link, and the two players who
+   * never follow one are a computer player and a person challenged by name. Read
+   * by the stamp alone, both of their seats said "still free": so a new game
+   * against a computer drew a QR code for the computer's chair, and a challenge
+   * drew the OTHER PERSON'S seat key on the challenger's own board — the
+   * credential for resigning as them.
+   *
+   * Before the first stone, which is the window the move count cannot cover.
+   */
+  it("does not offer a seat a computer player is sitting in", () => {
+    const against = { ...empty, blackMemberId: "a-person", whiteMemberId: "guoshou" };
+    expect(seatIsFree(against, STONES.white), "the computer's chair, unstamped for ever").toBe(false);
+    expect(seatIsFree(against, STONES.black), "and my own, which is mine").toBe(false);
+  });
+
+  it("does not offer the seat of somebody challenged by name", () => {
+    // Neither player follows a link, so neither seat is ever stamped.
+    const challenged = { ...empty, blackMemberId: "challenger", whiteMemberId: "challenged" };
+    expect(seatIsFree(challenged, STONES.white)).toBe(false);
+    expect(seatIsFree(challenged, STONES.black)).toBe(false);
+  });
+
+  it("still offers the other seat while only one has a name on it", () => {
+    // The ordinary case this must not break: a game made for a friend, whose
+    // seat link is the whole way in.
+    const mine = { ...empty, blackMemberId: "me", whiteMemberId: null };
+    expect(seatIsFree(mine, STONES.white), "the seat waiting for them").toBe(true);
+    expect(seatIsFree(mine, STONES.black), "and mine, which is not").toBe(false);
+  });
+
+  it("offers both seats of a board with nobody named on it", () => {
+    // A hot seat, or a game made by a browser with no account: the links are
+    // how it is played from a second device, and nothing here takes them away.
+    expect(seatIsFree(empty, STONES.black)).toBe(true);
+    expect(seatIsFree(empty, STONES.white)).toBe(true);
   });
 
   it("offers nothing once a stone is down, whatever the seats say", () => {
@@ -93,7 +143,15 @@ describe("seatIsFree", () => {
  * where one seat could change what the other had just agreed to.
  */
 describe("rulesAreSettled", () => {
-  const nobody = { openSeat: null, blackClaimedAt: null, whiteClaimedAt: null, moveCount: 0, offeredAt: null };
+  const nobody = {
+    openSeat: null,
+    blackClaimedAt: null,
+    whiteClaimedAt: null,
+    moveCount: 0,
+    offeredAt: null,
+    blackMemberId: null as string | null,
+    whiteMemberId: null as string | null,
+  };
 
   it("leaves a game nobody has answered open", () => {
     // A creator who posted the wrong clock can still fix it.

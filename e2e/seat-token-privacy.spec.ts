@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test";
+import { PrismaClient } from "@prisma/client";
+
+import { memberContext } from "./members";
 
 /**
  * A seat that is somebody else's does not come with its token.
@@ -67,5 +70,73 @@ test.describe("the token for a seat that is not yours", () => {
     const body = (await made.json()) as Record<string, unknown>;
     const tokens = ["blackToken", "whiteToken"].filter((key) => key in body);
     expect(tokens.length, "exactly one seat's token, and it is the caller's").toBe(1);
+  });
+});
+
+/**
+ * AND THE BOARD DOES NOT PRINT A KEY FOR A SEAT SOMEBODY IS ALREADY IN.
+ *
+ * The rule above is about what the creation route hands back. This is the same
+ * credential reaching the same wrong hands by the other door: the board draws a
+ * seat link, QR code and all, for every seat `seatIsFree` calls free — and that
+ * asked only whether somebody had FOLLOWED a link. The two players who never
+ * follow one are a computer player and a person challenged by name, so both of
+ * their seats read as free until the first stone landed.
+ *
+ * What that printed: a QR code for the computer's own chair, which is the bug
+ * John reported with a screenshot; and, in a challenge, the other person's seat
+ * key on the challenger's own board — the whole credential for resigning as
+ * them, which is the harm this file was written about.
+ *
+ * Driven as a reader meets it: the board is opened and read.
+ */
+test.describe("the board's seat links", () => {
+  test("are not drawn for a seat a computer player is sitting in", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const context = await memberContext(browser, baseURL!, {
+      email: `seatlinks-${stamp}@example.test`,
+      name: `SeatLinks ${stamp}`,
+    });
+    const page = await context.newPage();
+    await page.goto("/games");
+
+    const made = await page.evaluate(async () => {
+      const answer = await fetch("/api/games/live", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variant: "freestyle", size: 15, challengeId: "kyu", rated: false }),
+      });
+      return { status: answer.status, body: (await answer.json()) as { id?: string } };
+    });
+    expect(made.status, "a game against a computer player was made").toBe(201);
+    const id = made.body.id ?? "";
+
+    const prisma = new PrismaClient();
+    let whiteToken = "";
+    try {
+      const row = await prisma.game.findUnique({ where: { id }, select: { whiteToken: true, whiteMemberId: true } });
+      expect(row?.whiteMemberId, "the computer is seated").toBe("kyu");
+      whiteToken = row?.whiteToken ?? "";
+    } finally {
+      await prisma.$disconnect();
+    }
+    expect(whiteToken).not.toBe("");
+
+    await page.goto(`/games/gomoku/match/${id}`);
+
+    /*
+     * An absence after a presence: the board itself is waited for, so "no seat
+     * links" is a statement about a rendered page rather than about how fast
+     * this asked. BEFORE the first stone, which is the window the move count
+     * cannot cover and where the panel used to show.
+     */
+    await expect(page.getByTestId("turn-banner")).toBeVisible();
+    await expect(page.getByTestId("seat-invite")).toHaveCount(0);
+    expect(
+      (await page.content()).includes(whiteToken),
+      "the computer's seat key is printed on the page",
+    ).toBe(false);
+
+    await context.close();
   });
 });
