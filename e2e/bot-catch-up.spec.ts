@@ -166,3 +166,68 @@ test.describe("the computer's move nobody stayed for", () => {
     await context.close();
   });
 });
+
+/**
+ * THE COMPUTER'S OPENING STONE, ALSO A BROWSER MOVE.
+ *
+ * Here for the same reason as the tests above: a computer move that used to be
+ * worked out on a paid function, now worked out where every other one is. A
+ * game whose OPENER is a computer — a rematch swaps the colours, a fork carries
+ * a position — had its first stone played inside `POST /api/games/live`. The
+ * doorstep now sends `botReply`, the same promise it makes for every move
+ * after, and the board it lands you on answers.
+ *
+ * The game is created by request rather than by playing a game out and asking
+ * for a rematch, because what is under test is the BOARD playing that stone —
+ * and that is reached the way anybody reaches it, by opening the match page.
+ * `opener: "white"` with the asker on black is exactly the position a rematch
+ * hands over.
+ */
+test.describe("the computer's opening stone", () => {
+  test("is played by the board, not inside the request that made the game", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const context = await memberContext(browser, baseURL!, {
+      email: `opener-${stamp}@example.test`,
+      name: `Opener ${stamp}`,
+    });
+    const page = await context.newPage();
+    await page.goto("/games");
+
+    const made = await page.evaluate(async () => {
+      const answer = await fetch("/api/games/live", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // What the doorstep sends for a rematch against a computer: they open,
+        // and this browser promises to play their stone.
+        body: JSON.stringify({
+          // The variant's own name; "gomoku" is the address it is shown at.
+          variant: "freestyle",
+          size: 15,
+          challengeId: "kyu",
+          opener: "white",
+          rated: false,
+          botReply: true,
+        }),
+      });
+      return { status: answer.status, body: (await answer.json()) as { id?: string } };
+    });
+    expect(made.status, "the game was created").toBe(201);
+    const id = made.body.id ?? "";
+    expect(id).not.toBe("");
+
+    /*
+     * NOTHING WAS PLAYED IN THAT REQUEST, which is the saving itself and the
+     * half a "there is a stone on the board" assertion cannot see: the stone
+     * appearing later proves the browser played it only if the server did not.
+     */
+    expect((await record(page, id))?.moves.length, "the request worked out a move after all").toBe(0);
+
+    // The only act under test: opening the board.
+    await page.goto(`/games/gomoku/match/${id}`);
+    await expect
+      .poll(async () => (await record(page, id))?.moves.length ?? 0, { timeout: 60_000 })
+      .toBe(1);
+
+    await context.close();
+  });
+});

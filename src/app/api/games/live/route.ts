@@ -42,6 +42,22 @@ import { awardCreatedGame, createdGameKind } from "@/lib/xp/xpSocial";
  * game, pays XP and decides which credentials to hand back is a file doing
  * eight jobs. See AGENTS.md, "Nothing Answers What It Cannot Answer".
  */
+/**
+ * Whether the caller has promised to play the computer's opening move itself.
+ *
+ * Read off the raw body rather than through `liveGameSchema`, and that is the
+ * point rather than a shortcut: everything in that schema is a property of the
+ * GAME and is spread into the row that gets written, so a flag about the CALLER
+ * put there reaches `prisma.game.create` as an unknown column and refuses every
+ * creation — which is exactly what it did the first time this was written. What
+ * the caller will do next is not something the game is.
+ *
+ * `true` only, never inferred: a body that says nothing has promised nothing.
+ */
+function browserWillOpen(body: unknown): boolean {
+  return typeof body === "object" && body !== null && (body as { botReply?: unknown }).botReply === true;
+}
+
 export async function POST(request: Request) {
   try {
     const tooMany = overLimit(request, "live", RATE_LIMITS.createGame);
@@ -108,8 +124,18 @@ export async function POST(request: Request) {
      * neither of which sends a challenge. `playBotTurns` is safe to call on any
      * game: it returns without a move for an open seat, for an offer, and for a
      * position that is not the program's to play.
+     *
+     * AND NOT AT ALL WHEN THE CALLER SAYS IT WILL PLAY IT. `botReply` is the
+     * promise the moves route already takes, made one step earlier: the browser
+     * that asked for this game lands on the board, and the board answers for
+     * the computer exactly as it does for every move after this one — which
+     * makes the opening stone the last computer move that cost a paid function.
+     * A caller that does not send it — no worker, or not a browser at all — is
+     * answered here as it always was, and a browser that promises and then goes
+     * away is caught by the games page (`BotCatchUp`) like any other abandoned
+     * move.
      */
-    if (against.computerSeated) {
+    if (against.computerSeated && !browserWillOpen(body)) {
       try {
         await playBotTurns(created.id);
       } catch (error) {

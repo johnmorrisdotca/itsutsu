@@ -321,7 +321,14 @@ export type BeginAction =
 
 /**
  * Writing the game: the same request the Start button used to send, moved one
- * screen along and otherwise untouched.
+ * screen along, plus the promise about the opening stone.
+ *
+ * `botReply` says this browser will play the computer's opening move itself, so
+ * the route does not work it out on a paid function — the same flag, meaning the
+ * same thing, as on every move after it. It is claimed only where a worker can
+ * genuinely be made, because claiming it without one would leave a new game
+ * waiting on a move nobody is working on; and the very next thing this function
+ * does is send the player to the board, which is what answers.
  */
 async function create(
   body: Record<string, unknown>,
@@ -330,7 +337,9 @@ async function create(
   const response = await fetch("/api/games/live", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(
+      typeof Worker === "undefined" ? body : { ...body, botReply: true },
+    ),
   });
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
