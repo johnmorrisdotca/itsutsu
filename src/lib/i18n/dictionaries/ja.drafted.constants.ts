@@ -430,6 +430,10 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "参加すると誰かわかります →",
     back: "Join, and you will see who →",
   },
+  "catalogue.play": {
+    text: "対局する →",
+    back: "Play →",
+  },
   "catalogue.standings": {
     text: "順位表 →",
     back: "Standings →",

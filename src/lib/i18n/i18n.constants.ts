@@ -295,6 +295,8 @@ export const PHRASES = {
     "Nobody holds a standing among people yet, so this is the top of the ladder against the computer players — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder.",
   "catalogue.noStanding": "No rated games yet",
   "catalogue.joinToSeeWho": "Join to see who →",
+  /** The way into a game of it, from its card on the catalogue. */
+  "catalogue.play": "Play →",
   "catalogue.standings": "Standings →",
   "catalogue.wonTitle": "The rated games they won on this ladder",
   "catalogue.lostTitle": "The rated games they lost on this ladder",

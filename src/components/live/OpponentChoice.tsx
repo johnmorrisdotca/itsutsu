@@ -12,6 +12,7 @@ import Link from "next/link";
 
 import { ASK_NEEDS_ACCOUNT, SET_UP_COPY } from "./live.constants";
 import { ANYONE, RANDOM_COMPUTER, capTiles, opponentGroups, shownChoice } from "./opponentOptions";
+import { OPPONENT_GROUPS } from "./picker.constants";
 import { PickMark } from "./PickMark";
 import {
   OPPONENT_GROUP_WORDS,
@@ -134,6 +135,24 @@ export function OpponentChoice({
            * inside it.
            */
           answered={shown === ANYONE || groups.some((one) => one.tiles.some((tile) => tile.value === shown))}
+          /*
+           * THE PEOPLE YOU KNOW ARE OPEN WHILE NOBODY HAS BEEN CHOSEN.
+           *
+           * John, 2026-09-21, after a count of the clicks: "If you know the
+           * person that saves you time and tells you something. no game or
+           * process should take 3 screens/clicks." Folding every run took the
+           * screen from four phone-fulls to under two, and it also made
+           * KNOWING somebody cost an extra press — open the list, then them,
+           * then Begin. That is backwards: a buddy list is short, it is the
+           * likeliest answer on the screen, and it is the one run whose
+           * length cannot run away with the page.
+           *
+           * Only while the answer is still the posted seat. Once somebody has
+           * chosen a program or a person, every run folds to its summary and
+           * this one with them — the screen is then about what was chosen
+           * rather than about choosing.
+           */
+          openAnyway={group.kind === OPPONENT_GROUPS.known && shown === ANYONE}
           disabled={cannotName}
           onChange={onChange}
         />
@@ -171,6 +190,7 @@ function Run({
   variant,
   shown,
   answered,
+  openAnyway,
   disabled,
   onChange,
 }: {
@@ -180,6 +200,8 @@ function Run({
   shown: string;
   /** Whether any of these lists holds the chosen opponent. See the call site. */
   answered: boolean;
+  /** Open this run whatever the answer is — the people you know. See the call site. */
+  openAnyway: boolean;
   disabled: boolean;
   onChange: (next: string) => void;
 }) {
@@ -289,7 +311,7 @@ function Run({
       kanji={words.kanji ?? ""}
       testId="set-up-opponent-fold"
       group={group.kind}
-      openInitially={!answered}
+      openInitially={!answered || openAnyway}
       summary={
         mine === undefined ? (
           /*
