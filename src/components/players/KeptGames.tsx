@@ -10,6 +10,7 @@ import { appearanceFor } from "@/lib/auth/members";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyGames.data";
 import type { LegacyGame } from "@/lib/legacy/legacyPlayers.types";
+import { boardWords } from "@/lib/gomoku/boardWords";
 
 /**
  * The games kept in full — a board a reader can step through, not just a
@@ -64,7 +65,7 @@ function KeptGame({
       <p className="flex items-center gap-3 text-sm text-muted">
         <GameThumb variant={game.variant} size="small" />
         <span>
-          {game.playedAt} · <GameName variant={game.variant} />, {game.size}×{game.size} · vs{" "}
+          {game.playedAt} · <GameName variant={game.variant} />, {boardWords(game.variant, game.size)} · vs{" "}
           <Link href={`/players/${opponentSlug}`} className="font-medium text-ink-soft underline-offset-2 hover:underline">
             {opponentName}
           </Link>{" "}

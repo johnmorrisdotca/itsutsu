@@ -44,6 +44,7 @@ import {
   HINT_POLICY_DISPLAY,
 } from "./game.constants";
 import type { AwarenessLevel, GamePanelProps, HintPolicy } from "./game.types";
+import { boardWords } from "@/lib/gomoku/boardWords";
 
 export function GameSettingsPanel({ session, actions }: GamePanelProps) {
   const { settings } = session.state;
@@ -126,7 +127,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         >
           {boardSizesFor(variant).map((option) => (
             <option key={option} value={option}>
-              {option}×{option} · {BOARD_SIZE_DISPLAY[option].label}
+              {boardWords(variant, option)} · {BOARD_SIZE_DISPLAY[option].label}
             </option>
           ))}
         </Select>

@@ -21,6 +21,8 @@ import { PlayerName } from "@/components/players/PlayerName";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { byGameName, sitDownHref, waitingRoomSays } from "./waitingRoom";
+import { boardWords } from "@/lib/gomoku/boardWords";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 /** How many columns the table has, for the span of its one empty row. */
 const COLUMNS = 7;
@@ -158,7 +160,7 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
       <td className="py-1.5 pr-3 text-xs" data-testid="open-game-clock">
         {describeClock(game.clockMode, game.moveTimeMs)}
         <span className="block text-muted">
-          {game.size}×{game.size}
+          {boardWords(game.variant as RuleVariant, game.size)}
           {game.allowResign ? "" : " · no resigning"}
         </span>
       </td>

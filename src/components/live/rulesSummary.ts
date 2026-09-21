@@ -9,6 +9,7 @@ import {
 import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY, variantLabel } from "@/lib/gomoku/variants.constants";
 import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { describeHeadStart } from "@/lib/gomoku/headStartWords";
+import { boardWords } from "@/lib/gomoku/boardWords";
 import type { Handicap, HeadStart, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { describeClock } from "@/lib/history/deadline";
 import { RATING_REFUSED_WORD, type RatingRefusal } from "@/lib/rating/rateable.constants";
@@ -142,7 +143,14 @@ export function describeRules(rules: RulesLike): string {
   const size = variant === null ? rules.size : sizeForVariant(rules.variant as RuleVariant, rules.size);
   const parts = [
     variant ? `${variant.label} ${variant.kanji}` : variantLabel(rules.variant),
-    `${size}×${size}${BOARD_SIZE_DISPLAY[size] ? ` ${BOARD_SIZE_DISPLAY[size].label}` : ""}`,
+    /*
+     * The board in the shape it really is: "8×8" for a square, "91 cells"
+     * for the hexagon — see `boardWords`. The size's own name ("Mini",
+     * "Eleven") follows it where there is one.
+     */
+    `${boardWords(rules.variant as RuleVariant, size)}${
+      BOARD_SIZE_DISPLAY[size] ? ` ${BOARD_SIZE_DISPLAY[size].label}` : ""
+    }`,
   ];
   if (rules.opening !== OPENING_RULES.free && rules.opening in OPENING_DISPLAY) {
     parts.push(`${OPENING_DISPLAY[rules.opening as OpeningRule].label} opening`);

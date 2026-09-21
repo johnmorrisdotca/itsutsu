@@ -5,6 +5,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
+import { boardPhrase } from "@/lib/gomoku/boardWords";
 
 /**
  * AN OFFER NOBODY TOOK UP, at the address it had.
@@ -49,7 +50,7 @@ export async function RefusedOfferPage({ game }: { game: GameDetail }) {
           </span>
         </h1>
         <p className="text-sm text-ink-soft">
-          A game of <GameName variant={game.variant} /> on a {game.size}×{game.size} board was
+          A game of <GameName variant={game.variant} /> on {boardPhrase(game.variant, game.size)} was
           offered here and{" "}
           {declined
             ? "the other player chose not to play it"

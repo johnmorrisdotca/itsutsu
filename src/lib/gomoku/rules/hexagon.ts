@@ -13,9 +13,10 @@ import type { Point, Stone } from "../gomoku.types";
  * this cell" on such a lattice.
  *
  * A hexagon of radius R is the cells with max(|x|, |y|, |z|) <= R: 3R² + 3R + 1
- * of them, 61 at R = 4 and 91 at R = 5. It sits in a (2R + 1)-square, and the
- * corners of that square are the cells the hexagon does not reach, which
- * `emptyBoard` seals off as BLOCKED so no rule ever has to ask.
+ * of them — 37, 61, 91 and 127 at the four radii this game is played at. It
+ * sits in a (2R + 1)-square, and the corners of that square are the cells the
+ * hexagon does not reach, which `emptyBoard` seals off as BLOCKED so no rule
+ * ever has to ask.
  */
 
 /** The six lattice directions, the same six `rules/hex.ts` reads its neighbours from. */
@@ -31,6 +32,37 @@ export const HEX_DIRECTIONS: readonly Point[] = [
 /** The radius of the hexagon a square of this side embeds. */
 export function hexagonRadius(size: number): number {
   return Math.floor(size / 2);
+}
+
+/**
+ * How many cells the hexagon has: 3R² + 3R + 1. Worked out rather than looked
+ * up, because the game is played at four radii and a table of four numbers is
+ * a table that will be wrong the day a fifth board is offered.
+ */
+export function hexagonCells(size: number): number {
+  const radius = hexagonRadius(size);
+  return 3 * radius * radius + 3 * radius + 1;
+}
+
+/**
+ * How many cells lie along one of the hexagon's six sides, corners counted:
+ * R + 1. This is the number a player would give if you asked how big the
+ * board is — "six a side" — the way Hex's eleven is said.
+ */
+export function hexagonSide(size: number): number {
+  return hexagonRadius(size) + 1;
+}
+
+/**
+ * The cells a game is actually played on: every cell but the sealed centre.
+ *
+ * ALWAYS EVEN, at every radius, and that is the reason the centre is sealed
+ * rather than a taste for symmetry: 3R² + 3R is even for every R, so a game
+ * decided by counting discs can always be drawn or won outright and never
+ * hangs on the one cell nobody could reach.
+ */
+export function honeycombPlayable(size: number): number {
+  return hexagonCells(size) - 1;
 }
 
 /** The board's own middle: the cell every distance is measured from. */

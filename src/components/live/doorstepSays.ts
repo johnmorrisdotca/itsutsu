@@ -16,6 +16,7 @@ import { shownName } from "@/lib/rating/shownName";
 import type { RulesDraft } from "./rulesDraft";
 import { DOORSTEP_COPY } from "./live.constants";
 import { describeHandicap, describeSettings } from "./rulesSummary";
+import { boardPhrase } from "@/lib/gomoku/boardWords";
 import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 
 /**
@@ -194,10 +195,11 @@ export function describeGameProse(rules: RulesDraft, refused: RatingRefusal | nu
    * name for each — "Eight", "Mini" — which earns its place on a chip beside a
    * picker and reads as a mistake in a sentence: "on an 8×8 Eight board".
    */
-  const board = `${size}×${size}`;
+  // "an 8×8 board", or "a hexagon of 91 cells" where the board is not a square.
+  const board = boardPhrase(variant, size);
   const blocks = rules.obstacles === OBSTACLE_LAYOUTS.hoshi ? ", with the star points blocked" : "";
 
-  const sentences = [`${name} on ${article(board)} ${board} board${blocks}.`];
+  const sentences = [`${name} on ${board}${blocks}.`];
   for (const word of describeSettings(rules, refused)) {
     if (word.text === `${OPENING_DISPLAY[OPENING_RULES.free].label} opening`) continue;
     sentences.push(`${word.text}.`);
@@ -230,7 +232,3 @@ export function describeLineage(
   return sameOpponent ? DOORSTEP_COPY.rematchChanged(them) : DOORSTEP_COPY.notRematch(them);
 }
 
-/** "an 8×8", "a 19×19". English, from the digit that is actually spoken. */
-function article(board: string): string {
-  return /^(8|11|18)/.test(board) ? "an" : "a";
-}

@@ -322,11 +322,16 @@ const HALMA_SIZES = [16, 10, 8] as const;
 const HEX_SIZES = [11, 13, 19] as const;
 /**
  * The honeycomb's embedding squares: a hexagon of radius R sits in a
- * (2R+1)-square, so 11 is the 91-cell board ItsYourTurn's Hexversi is played
- * on and 9 the 61-cell one. The centre is sealed, which leaves an even count
- * of cells either way — the right parity for a game decided by counting.
+ * (2R+1)-square, so the four boards are hexagons of 91, 37, 61 and 127 cells
+ * — six cells a side, four, five and seven. Eleven first, because 91 is the
+ * board ItsYourTurn's Hexversi is played on and the one a reader arriving
+ * from there expects; the rest in size order after it.
+ *
+ * The centre is sealed on every one of them, which leaves an even count of
+ * playable cells at every radius (`honeycombPlayable`) — the right parity for
+ * a game decided by counting discs.
  */
-const HONEYCOMB_SIZES = [11, 9] as const;
+const HONEYCOMB_SIZES = [11, 7, 9, 13] as const;
 /** Checkers: the 8×8 board draughts is played on everywhere. */
 const CHECKERS_SIZES = [8] as const;
 
@@ -1032,15 +1037,15 @@ export const BOARD_SIZE_DISPLAY: Record<
   4: { label: "Four", kanji: "四路", note: "Twist Four, Mini Reversi" },
   5: { label: "Five", kanji: "五路", note: "Trap Three, Square Four" },
   6: { label: "Six", kanji: "六路", note: "Twist Five, Mini Reversi" },
-  7: { label: "Seven", kanji: "七路", note: "Drop Four" },
+  7: { label: "Seven", kanji: "七路", note: "Drop Four, the small Honeycomb" },
   8: { label: "Eight", kanji: "八路", note: "Reversi, small Halma, Checkers and the 8×8 draughts games" },
   10: { label: "Ten", kanji: "十路", note: "The big drop board, Grand Reversi, Halma, International Draughts" },
-  11: { label: "Eleven", kanji: "十一路", note: "Hex" },
+  11: { label: "Eleven", kanji: "十一路", note: "Hex, Honeycomb" },
   12: { label: "Twelve", kanji: "十二路", note: "Canadian Checkers" },
   16: { label: "Sixteen", kanji: "十六路", note: "Halma" },
   17: { label: "Seventeen", kanji: "十七路", note: "Chinese Checkers" },
   9: { label: "Mini", kanji: "小盤", note: "Quick game" },
-  13: { label: "Medium", kanji: "中盤", note: "Shorter game" },
+  13: { label: "Medium", kanji: "中盤", note: "Shorter game, the big Honeycomb" },
   15: { label: "Standard", kanji: "正盤", note: "Tournament size" },
   19: { label: "Go board", kanji: "碁盤", note: "Long game" },
 };

@@ -11,6 +11,7 @@ import { OfferButtons } from "./OfferButtons";
 import { ResignButton } from "./ResignButton";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
+import { boardWords } from "@/lib/gomoku/boardWords";
 
 /**
  * ONE GAME IN THE QUEUE, AS A ROW.
@@ -115,7 +116,7 @@ export function Row({ item, now }: { item: MyGame; now: Date }) {
           <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} />
         </span>
         <span className="text-xs text-muted">
-          <GameName variant={game.variant} raised /> · {game.size}×{game.size} · {game.moveCount} moves ·{" "}
+          <GameName variant={game.variant} raised /> · {boardWords(game.variant, game.size)} · {game.moveCount} moves ·{" "}
           {/*
             "you WOULD be white" on an offer, because you are not in it yet.
             The colour is the fact a reader most wants before answering — a

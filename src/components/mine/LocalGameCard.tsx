@@ -11,6 +11,7 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { MY_GAMES_COPY } from "./mine.constants";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
+import { boardWords } from "@/lib/gomoku/boardWords";
 
 /**
  * The game on this device — the hot-seat one, kept in the browser. It has
@@ -31,7 +32,7 @@ export function LocalGameCard() {
           <Paired en={MY_GAMES_COPY.localGame.label} kanji={MY_GAMES_COPY.localGame.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         </span>
         <span className="text-sm font-medium">
-          <GameName variant={snapshot.settings.variant} /> · {snapshot.settings.size}×{snapshot.settings.size} ·{" "}
+          <GameName variant={snapshot.settings.variant} /> · {boardWords(snapshot.settings.variant, snapshot.settings.size)} ·{" "}
           {snapshot.moves.length} moves · {STONE_DISPLAY[toPlay].label} to play
         </span>
       </div>

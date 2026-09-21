@@ -37,6 +37,7 @@ import { prisma } from "@/lib/prisma";
 import { GameName } from "@/components/games/GameName";
 import { RivalryPanel } from "@/components/history/RivalryPanel";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
+import { boardWords } from "@/lib/gomoku/boardWords";
 
 /**
  * A match that has been filed: the replay, at the address the match has always
@@ -294,7 +295,7 @@ function FiledMatch({
               </>
             ) : null}{" "}
             ·{" "}
-            {game.size}×{game.size} ·{" "}
+            {boardWords(game.variant, game.size)} ·{" "}
             <GameName variant={game.variant} />{" "}
             · <Paired en={result.label} kanji={result.kanji} kanjiClassName="" />
             {!game.rated ? <span className="ml-2 rounded-full border border-rule px-2 py-0.5 text-xs">Friendly · unrated</span> : null}

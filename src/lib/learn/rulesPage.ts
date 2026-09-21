@@ -6,6 +6,7 @@ import {
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
 import { checkersBoardLine, checkersDrawLines, checkersPlayLines } from "./rulesPage.checkers";
+import { hexagonCells, hexagonSide } from "@/lib/gomoku/rules/hexagon";
 import { gameArtPath } from "@/lib/gomoku/artwork";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
@@ -13,6 +14,21 @@ import { aliasesFor } from "@/lib/legacy/gameAliases";
 import { type Origin, originFor, wikipediaUrl } from "./origins";
 import { FORBIDDEN_PATTERN_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+
+/**
+ * A hexagon's side, in words. Only ever four to seven here — the four boards
+ * Honeycomb is played on — and a sentence reads better with the word than
+ * with the digit beside a cell count that is already a digit.
+ */
+function sideWord(side: number): string {
+  return ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight"][side] ?? String(side);
+}
+
+/** "a, b and c" — an English list, for a sentence rather than a table. */
+function listOf(parts: readonly string[]): string {
+  if (parts.length <= 1) return parts[0] ?? "";
+  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
 
 /**
  * A rules page in one template for every game — Object, Board, Play, House
@@ -171,9 +187,22 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   }
   if (spec.checkers) board.push(checkersBoardLine(variant, sizes[0]));
   if (spec.hexagon) {
+    /*
+     * COUNTED, NOT LOOKED UP. This line used to read the two boards off a
+     * pair of ternaries on `sizes[0] === 11`, which said 61 for every board
+     * that was not the eleven-square — true while there were two boards and
+     * false the moment a third was offered. `hexagonCells` works it out from
+     * the radius, so the sentence is right at any size the game is given.
+     */
     board.push(
-      `A hexagon of hexagons, ${sizes[0] === 11 ? "six" : "five"} cells a side and ${sizes[0] === 11 ? "91" : "61"} in all, with the centre cell sealed and the six round it set at the start, three of each colour, no two alike side by side. Every cell touches six others, so a run may lie along any of six directions rather than eight.`,
+      `A hexagon of hexagons, ${sideWord(hexagonSide(sizes[0]))} cells a side and ${hexagonCells(sizes[0])} in all, with the centre cell sealed and the six round it set at the start, three of each colour, no two alike side by side. Every cell touches six others, so a run may lie along any of six directions rather than eight.`,
     );
+    const others = sizes.slice(1).toSorted((a, b) => a - b);
+    if (others.length > 0) {
+      board.push(
+        `It is played on ${others.length + 1} hexagons in all: this one, and ${listOf(others.map((size) => `${hexagonCells(size)} cells at ${sideWord(hexagonSide(size))} a side`))}. The centre is sealed on every one of them, which leaves an even number of cells to fill whichever board is chosen.`,
+      );
+    }
   }
   if (spec.chineseCheckers) {
     board.push("A hexagram: a centre hexagon with six triangular points, 121 cells in all. Each side's ten pieces start filling one point, black at the top and white at the bottom, shaded on the board; the far point is the one to fill.");
