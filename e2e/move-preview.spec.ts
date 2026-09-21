@@ -109,4 +109,53 @@ test.describe("a move is shown before it is sent", () => {
 
     await context.close();
   });
+
+  /**
+   * THE NEAR MISS, WHICH IS THE COMMON MISS. A 19×19 board on a phone gives
+   * points 17.6 pixels across, and no layout makes those bigger — so the stone
+   * is placed, the point is NAMED, and four arrows move it one point at a time
+   * before it is sent.
+   *
+   * Driven by pressing, and read off the board: the arrow is pressed and the
+   * point the row names must change, which is a statement about the move that
+   * would be sent rather than about a button having been clicked.
+   */
+  test("names the point it landed on, and the arrows move it before it is sent", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const context = await memberContext(browser, baseURL!, {
+      email: `nudge-${stamp}@example.test`,
+      name: `Nudge ${stamp}`,
+    });
+    const page = await context.newPage();
+
+    await openSetUpPage(page, "gomoku");
+    const computer = await aComputerOpponent(page, 0);
+    await chooseOpponent(page, computer);
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+    tidyAway(page.url().split("/").pop()!);
+
+    const empties = page.getByRole("button", { name: /, empty$/ });
+    await empties.first().waitFor({ state: "visible" });
+    // The middle of the board, so every arrow has somewhere to go.
+    await empties.nth(Math.floor((await empties.count()) / 2)).click();
+
+    const where = page.getByTestId("pending-move-where");
+    await expect(where).toContainText(/Placed at [A-Z]\d+/);
+    const first = await where.textContent();
+
+    await page.getByTestId("pending-move-right").click();
+    await expect(where).not.toHaveText(first!);
+    const moved = await where.textContent();
+
+    // And the opposite arrow puts it back, so a nudge is not a one-way trip.
+    await page.getByTestId("pending-move-left").click();
+    await expect(where).toHaveText(first!);
+    expect(moved).not.toBe(first);
+
+    // Still nothing sent: this is all before Submit, which is the whole point.
+    await expect(page.getByTestId("pending-move-submit")).toBeVisible();
+
+    await context.close();
+  });
 });

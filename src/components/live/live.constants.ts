@@ -422,4 +422,20 @@ export const LIVE_MOVE_COPY = {
   submitToSame: (game: string) => `Submit, then the next ${game}`,
   submitToMyGames: "Submit, then my games",
   startOver: "Start this move over",
+  /*
+   * WHERE THE STONE ACTUALLY WENT, said in words. On a phone the point a
+   * finger lands on and the point it meant are a few pixels apart, and the
+   * drawn stone is 17 pixels wide — so the board shows what happened and this
+   * says it, which are two different ways of being told and one of them
+   * survives a thumb being in the way.
+   */
+  placedAt: (point: string) => `Placed at ${point}`,
+  /** The arrows that move it a point at a time, before it is sent. */
+  nudge: {
+    label: "Move it a point",
+    up: "Up one point",
+    down: "Down one point",
+    left: "Left one point",
+    right: "Right one point",
+  },
 } as const;
