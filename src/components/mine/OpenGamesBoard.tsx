@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CountryMark } from "@/components/players/CountryMark";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { XpCell } from "@/components/players/recordTrailing";
-import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { LevelName } from "@/components/xp/LevelName";
 import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { rulesPath } from "@/lib/gomoku/slugs";
@@ -76,7 +76,7 @@ export function OpenGamesBoard({
       {total > 0 ? <OpenSeatsFilters filter={filter} shown={shown} total={total} /> : null}
       {says === "seats" ? <p className="text-xs text-muted">{copy.hint}</p> : null}
 
-      <div className="overflow-x-auto">
+      <div className={TABLE_SCROLL}>
         <table className={TABLE_CLASS} data-testid="waiting-room">
           <thead className={TABLE_HEAD_CLASS}>
             <tr>

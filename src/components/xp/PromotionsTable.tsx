@@ -5,6 +5,7 @@ import { xpDayKey } from "@/lib/xp/xpDay";
 
 import { LevelName } from "./LevelName";
 import type { PromotionsTableProps } from "./promotions.types";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /**
  * WHO WENT UP A LEVEL, AS A TABLE: who, from which rung to which, and when.
@@ -31,7 +32,7 @@ import type { PromotionsTableProps } from "./promotions.types";
  */
 export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty }: PromotionsTableProps) {
   return (
-    <div className="overflow-x-auto" data-testid="promotions">
+    <div className={TABLE_SCROLL} data-testid="promotions">
       <table className={TABLE_CLASS}>
         <thead className={TABLE_HEAD_CLASS}>
           <tr>

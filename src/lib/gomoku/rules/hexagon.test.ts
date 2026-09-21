@@ -11,7 +11,7 @@ import {
   honeycombStartingDiscs,
   inHexagon,
 } from "./hexagon";
-import { boardSizesFor } from "../gomoku.constants";
+import { boardSizesFor, defaultBoardFor } from "../gomoku.constants";
 
 const p = (row: number, col: number) => ({ row, col });
 const key = (point: { row: number; col: number }) => `${point.row},${point.col}`;
@@ -44,16 +44,19 @@ describe("honeycomb", () => {
    * no board here should be won by arithmetic.
    */
   it("comes in four hexagons, each with an even number of cells to fill", () => {
-    expect(boardSizesFor("honeycomb")).toEqual([11, 7, 9, 13]);
+    // In numerical order, which is the order every picker on the site draws
+    // them in; the board the game OPENS on is said separately.
+    expect(boardSizesFor("honeycomb")).toEqual([7, 9, 11, 13]);
+    expect(defaultBoardFor("honeycomb"), "91 cells: the board Hexversi is played on").toBe(11);
     const shapes = boardSizesFor("honeycomb").map((size) => ({
       size,
       side: hexagonSide(size),
       cells: hexagonCells(size),
     }));
     expect(shapes).toEqual([
-      { size: 11, side: 6, cells: 91 },
       { size: 7, side: 4, cells: 37 },
       { size: 9, side: 5, cells: 61 },
+      { size: 11, side: 6, cells: 91 },
       { size: 13, side: 7, cells: 127 },
     ]);
 

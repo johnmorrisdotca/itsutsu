@@ -1,4 +1,6 @@
-import { EDGE_LINE_WIDTH, HEX_LATTICE } from "./Board.constants";
+import { EDGE_LINE_WIDTH, GO_BOARD_RIM, HEXAGON_ROWS, HEX_LATTICE } from "./Board.constants";
+
+export { GO_BOARD_RIM } from "./Board.constants";
 
 /**
  * The rim of bare board surface around the playing area.
@@ -26,20 +28,6 @@ import { EDGE_LINE_WIDTH, HEX_LATTICE } from "./Board.constants";
  * that box is one rim across all thirty-nine games, which is what "make sure
  * all images of boards have a border" asks for.
  */
-
-/** The board the rim is measured from: a 19×19 go board, drawn on its lines. */
-const GO_SIDE = 19;
-
-/**
- * How much surface a 19×19 go board shows outside its outermost line, as a
- * fraction of the board's width — the proportion every other board is matched
- * to rather than a value anybody chose.
- *
- * The line's CENTRE is half a cell in from the edge and the line is
- * `EDGE_LINE_WIDTH` cells thick, so half that thickness stands in the margin
- * and only the rest of it is bare.
- */
-export const GO_BOARD_RIM = (0.5 - EDGE_LINE_WIDTH / 2) / GO_SIDE;
 
 /**
  * How far in to push a board's playing area, as a fraction of its width, so
@@ -93,19 +81,33 @@ export function labelTracks(size: number, inset: number): string {
 
 /**
  * The same strips for a board on the hexagon lattice, whose rows and columns
- * do not span the box the way a square board's do — see HEX_LATTICE. Along
- * the top, the first row of points starts a quarter of a cell in and runs
- * two thirds of the width, the rest being the shear of the rows below. Down
- * the side, the rows are packed closer and sit centred in a box taller than
- * they are. Both in cells, as `fr`, for the reason `labelTracks` gives.
+ * do not span the box the way a square board's do — see HEX_LATTICE. Down the
+ * side, the rows are packed closer and sit centred in a box taller than they
+ * are. Along the top it depends on the SHAPE, which is what `hexagon` says.
+ *
+ * On the rhombus, the first row of points starts a quarter of a cell in and
+ * runs two thirds of the width, the rest being the shear of the rows below.
+ *
+ * ON A HEXAGON, THE LETTERS FOLLOW THE MIDDLE ROW, and that is not a
+ * convenience — it is the only row where every column of the array exists. The
+ * top row of a hexagon holds only its right-hand half; a letter placed over
+ * the top row would sit off the left of the board for half the alphabet, and
+ * over cells that are sealed for the rest. The widest row is the one through
+ * the centre, and its shear works out to exactly one cell per column across
+ * the whole box, which is why this comes out as plainly as it does.
+ *
+ * All in cells, as `fr`, for the reason `labelTracks` gives.
  */
-export function latticeLabelTracks(size: number, axis: "columns" | "rows"): string {
+export function latticeLabelTracks(size: number, axis: "columns" | "rows", hexagon = false): string {
   const { width, height } = HEX_LATTICE;
+  const fitted = hexagon ? HEXAGON_ROWS : height / width;
   if (axis === "columns") {
+    if (hexagon) return `repeat(${size}, minmax(0, 1fr))`;
     // The first row's points sit half a cell down, so the shear moves them a quarter along.
     const lead = 0.25;
     return `${lead}fr repeat(${size}, minmax(0, 1fr)) ${(width - 1) * size - lead}fr`;
   }
-  const edge = ((width - height) / (2 * height)) * size;
+  // What is left over above and below the rows, once they are fitted to the box.
+  const edge = ((1 / fitted - 1) / 2) * size;
   return `${edge}fr repeat(${size}, minmax(0, 1fr)) ${edge}fr`;
 }

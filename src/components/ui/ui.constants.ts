@@ -177,3 +177,31 @@ export const ASKING = {
   dismissed: "dismissed",
   answered: "answered",
 } as const;
+
+/**
+ * THE BOX A WIDE TABLE SITS IN, so the TABLE scrolls and the PAGE does not.
+ *
+ * John, 2026-09-21: "Make sure these boards, etc fit on a mobile device." The
+ * boards did, once the honeycomb was clipped; the tables did not. A table of
+ * records has six or seven columns that cannot be narrowed below their words,
+ * and on a 390-pixel phone /champions came out 570 pixels wide — the whole
+ * document, not the table — so every page scrolled sideways and the browser
+ * shrank all of it to fit. A reader's first impression of the standings was
+ * eight-point type.
+ *
+ * TWO CLASSES, AND THE SECOND ONE IS THE ONE THAT WAS MISSING. Eleven of the
+ * fourteen tables here already had `overflow-x-auto`, and the waiting room
+ * STILL pushed /games nineteen pixels wide with it on: the "Sit down" column's
+ * `sr-only` label is `position: absolute`, and an absolutely positioned
+ * element escapes an ancestor's overflow unless that ancestor is POSITIONED.
+ * So it laid itself out past the last column, outside the scroll box, in the
+ * page. `relative` makes the box its containing block, and it is clipped with
+ * everything else.
+ *
+ * Nineteen pixels is not a bug anybody would report and it costs the same as
+ * a hundred and eighty: the viewport widens, and the page is drawn smaller.
+ *
+ * `tableScroll.coverage.test.ts` is what holds every table to it, and
+ * `e2e/fits-a-phone.spec.ts` is what measures the result in a browser.
+ */
+export const TABLE_SCROLL = "relative overflow-x-auto";

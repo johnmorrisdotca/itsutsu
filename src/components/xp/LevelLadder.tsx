@@ -5,6 +5,7 @@ import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/componen
 import { countText } from "@/lib/rating/figures";
 import type { LadderRung } from "@/lib/xp/levelLadder";
 import { levelPath } from "@/lib/xp/levelNames";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /**
  * THE WHOLE LADDER, A HUNDRED RUNGS, SCROLLED RATHER THAN PAGED.
@@ -132,7 +133,7 @@ export function LevelLadder({
   return (
     /* Five columns with a sentence in the last one, so the table scrolls inside
        its own box rather than making the page scroll sideways on a phone. */
-    <div className="overflow-x-auto" data-testid="level-ladder">
+    <div className={TABLE_SCROLL} data-testid="level-ladder">
       <table className={TABLE_CLASS}>
         <caption className="sr-only">
           Every level of the experience ladder, with what it is called, what it costs to reach,

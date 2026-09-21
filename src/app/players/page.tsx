@@ -1,6 +1,7 @@
 import { Paired } from "@/components/i18n/Paired";
 
 import { ComputerPlayers } from "@/components/players/ComputerPlayers";
+import { BuddyList } from "@/components/players/BuddyList";
 import { Directory } from "@/components/players/Directory";
 import { HereNow } from "@/components/players/HereNow";
 import { Ladder } from "@/components/players/Ladder";
@@ -10,6 +11,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { ensureBotMembers } from "@/lib/bots/botMembers";
+import { currentReader } from "@/lib/auth/currentReader";
 import { directoryFilterFor } from "@/lib/rating/memberFilter";
 import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { readRecordScope, SCOPE_PARAM } from "@/lib/rating/recordScope";
@@ -41,6 +43,13 @@ export const dynamic = "force-dynamic";
  */
 const TABS: Tab[] = [
   { key: "members", label: "Members", kanji: "会員" },
+  /*
+   * THE PEOPLE YOU PLAY, second — John, 2026-09-21: "We need Buddy LIst page."
+   * Second rather than last because it is the shortest list and the one a
+   * returning player wants: the members tab is two hundred names and this is
+   * the handful of them you came for.
+   */
+  { key: "buddies", label: "Buddies", kanji: "仲間" },
   { key: "ladder", label: "Ladder", kanji: "番付" },
   { key: "computers", label: "Computers", kanji: "機械" },
   { key: "remembered", label: "Remembered", kanji: "偲ぶ" },
@@ -70,6 +79,8 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
    * this page makes anyway, so it costs no query.
    */
   const shown = open === "members" ? await directoryFilterFor(asked) : null;
+  /* Who is reading, asked for only by the tab that needs it. */
+  const reader = open === "buddies" ? await currentReader() : { memberId: null };
   /*
    * The computer players' rows are written the first time anybody needs them,
    * and until this page did nothing anybody visits needed them — so they
@@ -131,6 +142,21 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
           inside and anything else on the query. A sort that dropped `view`
           would send a reader who pressed Rating back to the Members tab.
         */}
+        {/*
+          A buddy list belongs to a reader, so a visitor with no account is told
+          what it is rather than shown an empty one — the same answer the ladder
+          gives somebody who has played nothing.
+        */}
+        {open === "buddies" ? (
+          reader.memberId === null ? (
+            <p className="text-sm text-muted" data-testid="buddies-need-account">
+              Your buddies are the people you want to find again. Sign in, star somebody on the
+              members list, and they are listed here.
+            </p>
+          ) : (
+            <BuddyList memberId={reader.memberId} />
+          )
+        ) : null}
         {open === "ladder" ? <Ladder query={addressOf(asked)} /> : null}
         {open === "computers" ? <ComputerTab /> : null}
         {open === "remembered" ? (

@@ -14,6 +14,7 @@ import { xpLedgerPage } from "@/lib/xp/xpHistoryPage";
 import { xpStanding } from "@/lib/xp/xpCurve";
 import { xpForBadge } from "@/lib/xp/xpScope";
 import type { XpLedgerRow } from "@/lib/xp/xpHistory.types";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /**
  * A MEMBER'S OWN XP: WHAT THEY HAVE, AND EVERY AWARD THAT MADE IT.
@@ -265,7 +266,7 @@ export async function MyXp({
         </p>
       ) : (
         <>
-          <div className="overflow-x-auto">
+          <div className={TABLE_SCROLL}>
             <table className={TABLE_CLASS} data-testid="my-xp-ledger">
               <Headings />
               <tbody>

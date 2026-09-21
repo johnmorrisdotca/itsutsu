@@ -13,6 +13,7 @@ import { xpLevelFor } from "@/lib/xp/xpCurve";
 import { xpBehindText, xpGainText, xpGapsFor, type XpGain } from "@/lib/xp/xpGains";
 
 import { LevelName } from "./LevelName";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /**
  * THE XP LEADERBOARD'S TABLE.
@@ -203,7 +204,7 @@ export function Leaderboard({
   const gaps = xpGapsFor(rows.map((row) => row.xp), above);
 
   return (
-    <div className="overflow-x-auto" data-testid="xp-leaderboard">
+    <div className={TABLE_SCROLL} data-testid="xp-leaderboard">
       <table className={TABLE_CLASS}>
         <thead className={TABLE_HEAD_CLASS}>
           <tr>

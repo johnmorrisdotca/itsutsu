@@ -192,15 +192,91 @@ export const HEX_LATTICE = {
   height: Math.sqrt(3) / 2,
 } as const;
 
+/** The board the rim is measured from: a 19×19 go board, drawn on its lines. */
+const GO_SIDE = 19;
+
+/**
+ * How much surface a 19×19 go board shows outside its outermost line, as a
+ * fraction of the board's width — the proportion every other board is matched
+ * to rather than a value anybody chose.
+ *
+ * The line's CENTRE is half a cell in from the edge and the line is
+ * `EDGE_LINE_WIDTH` cells thick, so half that thickness stands in the margin
+ * and only the rest of it is bare.
+ */
+export const GO_BOARD_RIM = (0.5 - EDGE_LINE_WIDTH / 2) / GO_SIDE;
+
+/**
+ * THE LATTICE FITTED TO THE BOX BY THE SHAPE THAT IS ACTUALLY PLAYED ON.
+ *
+ * A square grid sheared into the lattice comes out `HEX_LATTICE.width` wide,
+ * and for the connection game that whole width IS the board — a rhombus, every
+ * cell of it in play. A HEXAGON is not: it is the middle two thirds of that
+ * rhombus, with the four corners of the square array sealed off and hidden.
+ * Fitting the rhombus to the box therefore left a hexagon filling two thirds
+ * of the width and four sevenths of the height, floating in its own frame —
+ * John, 2026-09-21, looking at the thirteen board: "Why is there such a border
+ * around 13x13? If that's the largest, it shoud fill the page".
+ *
+ * So the fit is given the shape's own span rather than the array's. `from` and
+ * `to` are where that shape starts and ends across the sheared grid, in units
+ * of the unsheared grid's width, and everything else follows: the scale is
+ * what makes that span the box's width, and the offsets put it there and
+ * centre what is left over.
+ *
+ * Percentages in `translate` are of the element's own box, which is the square
+ * both the lines and the stones fill — so one string moves both, and they
+ * cannot come apart.
+ */
+function latticeFit(from: number, to: number, rim = 0): string {
+  const scale = (1 - 2 * rim) / (to - from);
+  const left = rim - from * scale;
+  const top = (1 - HEX_LATTICE.height * scale) / 2;
+  return `translate(${(left * 100).toFixed(4)}%, ${(top * 100).toFixed(4)}%) scale(${scale}) ${HEX_LATTICE.slant}`;
+}
+
 /** Where the lattice's top edge lands, as a fraction of the square box it is drawn in, once fitted to that box's width and centred. */
 const LATTICE_TOP = (1 - HEX_LATTICE.height / HEX_LATTICE.width) / 2;
 
 /**
- * The whole square box turned into the lattice: fitted to the box's width
- * and centred in its height. The lines and the stones are two boxes kept
- * exactly over each other, so both take this one string and nothing else.
+ * The whole sheared grid fitted to the box: the connection game's rhombus,
+ * where every cell of the array is in play.
  */
-export const LATTICE_TRANSFORM = `translateY(${(LATTICE_TOP * 100).toFixed(4)}%) scale(${1 / HEX_LATTICE.width}) ${HEX_LATTICE.slant}`;
+export const LATTICE_TRANSFORM = latticeFit(0, HEX_LATTICE.width);
+
+/**
+ * Where a hexagon sits across the sheared grid, in units of the unsheared
+ * grid's width — and it is the same two numbers at every radius.
+ *
+ * A hexagon of radius R fills a (2R+1) array. Its leftmost cells are the row
+ * through the centre, whose left edge lands at (0.5R + 0.25) cells, and its
+ * rightmost are the same row's right edge at (2.5R + 1.25); divided by the
+ * 2R + 1 cells of the array those are exactly a quarter and a quarter past
+ * one, whatever R is. So one constant covers every board the game is played
+ * on, and a fifth board would need no arithmetic here.
+ */
+export const HEXAGON_SPAN = { from: 0.25, to: 1.25 } as const;
+
+/**
+ * A HEXAGON KEEPS THE SAME RIM AS A BOARD DRAWN IN THE SQUARES, because that
+ * is what it is: a cell of a honeycomb is filled edge to edge, unlike a board
+ * on the lines, whose stones sit on crossings and leave their own half-cell of
+ * air at the edge (`playingAreaInset` answers zero for exactly that reason).
+ * Without it the widest row's two points touch the wood.
+ */
+const HEXAGON_RIM = GO_BOARD_RIM;
+
+/** The same lattice, fitted to the hexagon rather than to the array holding it. */
+export const HEXAGON_TRANSFORM = latticeFit(HEXAGON_SPAN.from, HEXAGON_SPAN.to, HEXAGON_RIM);
+
+/**
+ * How much of the box's height the hexagon's rows take up — the one number the
+ * coordinate strips need, since they have to land on the same rows the board
+ * drew. It is the fit's own scale times the lattice's height, and nothing else:
+ * getting this from the horizontal scale instead put the row numbers off the
+ * board entirely, which is what a strip computed from the wrong axis looks like.
+ */
+export const HEXAGON_ROWS = HEX_LATTICE.height * ((1 - 2 * HEXAGON_RIM) / (HEXAGON_SPAN.to - HEXAGON_SPAN.from));
 
 /**
  * The rhombus the lattice makes of a square box, cut a little wider than

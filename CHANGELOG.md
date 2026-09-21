@@ -6,11 +6,23 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
-## 0.221.0 — 2026-09-21
-- A new game: Honeycomb 蜂の巣, Reversi on a hexagon of hexagons — six directions to bracket a run along instead of eight, six corners that can never be turned, and four boards from 37 cells to 127.
-- Starting a game is one screen now. It states the whole game — the board, who you play, every rule and which colour you take — and one press begins it; it fits a phone, and the button is one you can hit with a thumb.
+**One feature, one version.** John, 2026-09-21: "each feature is a version increase". A number is what a reader points at — "the one where Honeycomb arrived" — and a release carrying five things is a number that names none of them. `pnpm release:take` refuses a minor with more than one `--summary` for that reason; a **patch** may still carry several, because a pile of small fixes is one release by nature and nobody points at the version a typo went out in. Several releases still land in ONE push: the push is the deployment, the number is not, so this costs no build.
+
+**0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
+
+## 0.225.0 — 2026-09-21
 - Place a stone and look at it before you send it, with a setting to turn that off — and when a move goes, straight on to the next game waiting on you.
+
+## 0.224.0 — 2026-09-21
+- Starting a game is one screen now. It states the whole game — the board, who you play, every rule and which colour you take — and one press begins it; it fits a phone, and the button is one you can hit with a thumb.
+
+## 0.223.0 — 2026-09-21
 - The About page says what the site actually is, with a new section on the computer players: how they think, that they think in your own browser, and what happened when they were made to play each other.
+
+## 0.222.0 — 2026-09-21
+- A new game: Honeycomb 蜂の巣, Reversi on a hexagon of hexagons — six directions to bracket a run along instead of eight, six corners that can never be turned, and four boards from 37 cells to 127.
+
+## 0.221.0 — 2026-09-21
 - A board is named for the shape it really is — a hexagon says how many cells it has rather than pretending to be a square.
 
 ## 0.220.0 — 2026-09-21
