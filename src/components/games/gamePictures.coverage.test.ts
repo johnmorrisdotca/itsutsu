@@ -263,6 +263,8 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/history/HistoryTable.tsx": { GameThumb: "small" },
   "src/components/mine/LocalGameCard.tsx": { GameThumb: "small" },
   "src/components/mine/MyGameRow.tsx": { GameThumb: "small" },
+  // A row per game of how this grade measured: a list, so a small picture.
+  "src/components/players/LadderStrength.tsx": { GameThumb: "small" },
   "src/components/mine/MyRecord.tsx": { GameThumb: "small" },
   "src/components/mine/OpenGamesBoard.tsx": { GameThumb: "small" },
   "src/components/players/ItsutsuRecord.tsx": { GameThumb: "small" },

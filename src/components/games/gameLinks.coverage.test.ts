@@ -239,6 +239,18 @@ describe("a count of games is the way into those games", () => {
     // exception the rule has always had.
     "src/components/players/LegacySource.tsx": "counted elsewhere",
     /*
+     * The measured ladder, and it is the "counted elsewhere" exception with
+     * the elsewhere being MEMORY. `ladder.match.test.ts` plays the grades
+     * against each other in process, on somebody's own CPU, and writes no row
+     * anywhere — that is the whole point of it, and AGENTS.md says why: the
+     * same games driven through the site would be thousands of paid function
+     * calls to learn what a laptop settles for nothing. So "20 games a
+     * pairing" counts games that were never kept and cannot be opened, and a
+     * link would be a promise this site is unable to keep. The panel says
+     * where the number came from instead.
+     */
+    "src/components/players/LadderStrength.tsx": "played in memory, kept nowhere",
+    /*
      * The gift line, and the reason it stays. `fetchTimeGiftRecord` counts
      * every game a gift was made in, FINISHED OR NOT — a fact about somebody's
      * conduct rather than about the record — while /history is finished games
