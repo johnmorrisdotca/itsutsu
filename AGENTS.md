@@ -627,8 +627,24 @@ pnpm release:take --summary "a new game a player would notice." && \
 ```
 
 A **minor** (the default) is something a player would notice — a game, an
-opening, a page, a capability — and needs at least one `--summary`, written
+opening, a page, a capability — and needs EXACTLY ONE `--summary`, written
 for the person reading `/releases`, not for whoever picks the ticket up next.
+
+**One feature, one version.** John, 2026-09-21, reading 0.221.0 — a new game,
+a rewritten set-up screen, a move flow, an About page and a board-naming
+change, all under one number: "Did you miss the basic rule where each feature
+is a version increase? Look at all the other releases." The number is what a
+reader points at, and a release carrying five things names none of them. The
+tool refuses a minor with a second `--summary`; **a patch may carry several**,
+because a night of small fixes is one release by nature and nobody points at
+the version a typo went out in.
+
+So three features are three runs of the chain, oldest first (each run takes
+the next number), and then ONE push. **That costs no extra deployment** —
+Vercel counts the push, not the version — so this rule and the batching rule
+in `CLAUDE.md` do not pull against each other. 0.221.0 was split into 0.221.0
+through 0.225.0 afterwards, all dated the day they shipped; see the note at
+the top of `CHANGELOG.md` for what that does and does not claim.
 A **patch** (`--patch`) is a fix, a rewording, a refactor or a chore, and
 **needs a `--summary` too**: every release writes its dated heading and at least
 one line. A patch used to need none and got no heading, and 0.186.1 shipped

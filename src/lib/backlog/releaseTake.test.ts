@@ -190,18 +190,54 @@ describe("planRelease", () => {
     expect(plan.error).toContain("does not hold");
   });
 
+  // A patch, because a minor is one feature and one line — see the case below.
   it("writes one bullet per summary, in the order given", () => {
     const plan = planRelease({
       published: "0.150.0",
       changelog: CHANGELOG,
       packageJson: PACKAGE_JSON,
-      step: "minor",
+      step: "patch",
       summaries: ["First thing", "Second thing"],
       now: NOW,
     });
     expect(plan.ok).toBe(true);
     if (!plan.ok) return;
-    expect(plan.changelog).toContain("## 0.151.0 — 2026-09-12\n- First thing\n- Second thing\n");
+    expect(plan.changelog).toContain("## 0.150.1 — 2026-09-12\n- First thing\n- Second thing\n");
+  });
+
+  /*
+   * ONE FEATURE, ONE VERSION. 0.221.0 shipped a new game, a rewritten set-up
+   * screen, a move flow, an About page and a board-naming change under one
+   * number, and John asked why. The rule was never written down, so nothing
+   * stopped it; this is where it is stopped now.
+   */
+  it("refuses a minor carrying more than one feature", () => {
+    const plan = planRelease({
+      published: "0.150.0",
+      changelog: CHANGELOG,
+      packageJson: PACKAGE_JSON,
+      step: "minor",
+      summaries: ["a new game", "and a new page"],
+      now: NOW,
+    });
+    expect(plan.ok).toBe(false);
+    if (plan.ok) return;
+    expect(plan.error).toContain("ONE feature");
+    // And it says how many it was given, so the message names what it saw.
+    expect(plan.error).toContain("2 summaries");
+  });
+
+  /** A patch is not a feature, so a night of fixes is still one release. */
+  it("allows a patch to carry several lines", () => {
+    const plan = planRelease({
+      published: "0.150.0",
+      changelog: CHANGELOG,
+      packageJson: PACKAGE_JSON,
+      step: "patch",
+      summaries: ["one fix", "another fix", "a third"],
+      now: NOW,
+    });
+    expect(plan.ok).toBe(true);
   });
 });
 
@@ -289,7 +325,8 @@ describe("a summary's case: the title as written, the changelog bullet capitalis
       published: "0.150.0",
       changelog: CHANGELOG,
       packageJson: PACKAGE_JSON,
-      step: "minor",
+      // A patch: only a patch may carry more than one line now.
+      step: "patch",
       summaries: ["first thing", "second thing"],
       now: NOW,
     });
