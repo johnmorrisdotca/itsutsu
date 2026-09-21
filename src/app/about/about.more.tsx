@@ -2,6 +2,8 @@ import { Diagram } from "@/components/about/Diagram";
 import { EloCurve } from "@/components/about/EloCurve";
 import { FigureTable as Table } from "@/components/about/FigureTable";
 import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
+import { ACTIVE_GAME_LIMIT } from "@/lib/history/activeGames";
+import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { Game, Inside, MailTo, Out } from "./about.links";
 import type { AboutSection } from "./about.constants";
 
@@ -139,7 +141,9 @@ const SITES = (
     caption={
       <>
         From the sites’ own pages and long memory; the exact caps and prices change, and the sites are the authority.
-        Itsutsu: about 35 games, everything free, no cap on moves, ratings per game and a ladder overall.
+        Itsutsu: {RULE_VARIANT_LIST.length} games, everything free with no paid tier at all, no cap on moves,
+        {" "}{ACTIVE_GAME_LIMIT} games open at once, ratings per game and a ladder overall. That count is read
+        from the catalogue rather than typed here — it said “about 35” for long enough to be ten games wrong.
       </>
     }
   />

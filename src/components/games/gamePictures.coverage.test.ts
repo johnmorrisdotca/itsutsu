@@ -270,6 +270,11 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/players/ItsutsuRecord.tsx": { GameThumb: "small" },
   "src/components/players/KeptGames.tsx": { GameThumb: "small" },
   "src/components/players/LegacySource.tsx": { GameThumb: "small" },
+  // The About page's family table: a row per family, so the family's own mark
+  // at a table's size, like every other row of a list.
+  "src/app/about/about.games.tsx": { FamilyMark: "small" },
+  // The About page's measured round robin: a column per game, in a table.
+  "src/components/about/MeasuredGrades.tsx": { GameThumb: "small" },
   // The XP ledger, and the XP history tab on a player's page, which draws its rows through it.
   "src/components/xp/AwardAbout.tsx": { GameThumb: "small" },
   // A game page's "Also in this family": the family's icon heads the panel, its siblings are rows.

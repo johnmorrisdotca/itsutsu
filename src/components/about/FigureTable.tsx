@@ -17,7 +17,11 @@ export function FigureTable({
   rows,
   caption,
 }: {
-  head: string[];
+  /**
+   * ReactNode and not string, because a heading may name a game — and a game
+   * named anywhere on this site leads to that game (`gameLinks.coverage.test.ts`).
+   */
+  head: ReactNode[];
   rows: ReactNode[][];
   caption: ReactNode;
 }) {
