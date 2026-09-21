@@ -20,7 +20,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-21",
-    "fingerprint": "18f26a909d865d01",
+    "fingerprint": "4a92de5749d2c41a",
     "tiers": [
       "razryad",
       "kyu",
@@ -107,7 +107,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-21",
-    "fingerprint": "18f26a909d865d01",
+    "fingerprint": "4a92de5749d2c41a",
     "tiers": [
       "razryad",
       "kyu",
