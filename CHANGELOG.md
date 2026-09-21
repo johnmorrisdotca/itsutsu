@@ -6,6 +6,13 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **`pnpm release:take` takes the number.** A heading it writes reads `## <version> — <date>`, the UTC calendar day it was taken, immediately before the push that carries it out — so the date is the day the release actually shipped, not an estimate. Every heading above without one is a release that took its number by hand, before this tool existed; 151 of them, and they stay undated on purpose. A date cannot be worked out for them after the fact — nothing recorded when they went out — and a guessed one would be worse than the honest gap it would paper over. Whoever lands a commit still bumps `package.json`, but the version itself is now claimed by the tool refusing a number already taken, not by an announcement between sessions.
 
+## 0.221.0 — 2026-09-21
+- A new game: Honeycomb 蜂の巣, Reversi on a hexagon of hexagons — six directions to bracket a run along instead of eight, six corners that can never be turned, and four boards from 37 cells to 127.
+- Starting a game is one screen now. It states the whole game — the board, who you play, every rule and which colour you take — and one press begins it; it fits a phone, and the button is one you can hit with a thumb.
+- Place a stone and look at it before you send it, with a setting to turn that off — and when a move goes, straight on to the next game waiting on you.
+- The About page says what the site actually is, with a new section on the computer players: how they think, that they think in your own browser, and what happened when they were made to play each other.
+- A board is named for the shape it really is — a hexagon says how many cells it has rather than pretending to be a square.
+
 ## 0.220.0 — 2026-09-21
 - The computer players now say what they actually do at each game: a measured round robin against the rungs above and below, shown on each one's page and beside the opponent you are choosing — and where two grades are level, it says level rather than pretending one is stronger.
 
