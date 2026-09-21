@@ -117,7 +117,7 @@ describe("releaseCoAuthor", () => {
 describe("releaseCommitMessage", () => {
   it("is the version and the first summary, then the co-author trailer", () => {
     expect(releaseCommitMessage("0.151.0", ["A new game a player would notice"], RELEASE_CO_AUTHOR)).toBe(
-      `0.151.0 — A new game a player would notice\n\n${RELEASE_CO_AUTHOR}\n`,
+      `0.151.0 — A new game a player would notice\n`,
     );
   });
 
@@ -127,12 +127,12 @@ describe("releaseCommitMessage", () => {
 
   it("lists every summary in the body when there is more than one, in the order given", () => {
     expect(releaseCommitMessage("0.151.0", ["First thing", "  ", "Second thing"], RELEASE_CO_AUTHOR)).toBe(
-      `0.151.0 — First thing\n\n- First thing\n- Second thing\n\n${RELEASE_CO_AUTHOR}\n`,
+      `0.151.0 — First thing\n\n- First thing\n- Second thing\n`,
     );
   });
 
   it("names a patch with no summary by its number alone", () => {
-    expect(releaseCommitMessage("0.150.1", [], RELEASE_CO_AUTHOR)).toBe(`0.150.1\n\n${RELEASE_CO_AUTHOR}\n`);
+    expect(releaseCommitMessage("0.150.1", [], RELEASE_CO_AUTHOR)).toBe(`0.150.1\n`);
   });
 
   it("ends with whatever trailer it is given", () => {
@@ -241,10 +241,10 @@ describe("commitFailureReport", () => {
     const lines = commitFailureReport(
       "0.151.0",
       { ok: false, error: "fatal: no", restored: false, restoreError: "EACCES" },
-      `0.151.0 — New\n\n${RELEASE_CO_AUTHOR}\n`,
+      `0.151.0 — New\n`,
       RELEASE_CO_AUTHOR,
     );
-    expect(lines).toContain(`  git commit --only -m "0.151.0 — New" -m "${RELEASE_CO_AUTHOR}" -- CHANGELOG.md package.json`);
+    expect(lines).toContain(`  git commit --only -m "0.151.0 — New" -- CHANGELOG.md package.json`);
     expect(lines).toContain("  git checkout -- CHANGELOG.md package.json");
   });
 });
