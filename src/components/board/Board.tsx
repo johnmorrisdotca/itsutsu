@@ -19,6 +19,7 @@ import {
   LABEL_GUTTER,
   HEXAGON_TRANSFORM,
   LATTICE_TRANSFORM,
+  starTransform,
   RHOMBUS_CLIP,
   SQUARE_GUIDES,
   STONE_SETS,
@@ -28,7 +29,7 @@ import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { Intersection } from "./Intersection";
-import { labelTracks, latticeLabelTracks, playingAreaInset } from "./margin";
+import { labelTracks, latticeLabelTracks, playingAreaInset, type LatticeShape } from "./margin";
 import { squareLabel } from "./squareLabel";
 import { squareGuide, turnGuide } from "./turnGuide";
 import { TurnGuideNote } from "./TurnGuideNote";
@@ -49,16 +50,23 @@ type LabelStripProps = {
   inset: number;
   /** A board on the hexagon lattice, whose rows and columns do not span the box. */
   lattice: boolean;
-  /** And whether the shape on that lattice is a hexagon rather than the whole rhombus. */
-  hexagon: boolean;
+  /** And which shape is cut out of that lattice: the whole rhombus, a hexagon, or a star. */
+  shape: LatticeShape;
 };
 
-function ColumnLabels({ size, theme, flipped, inset, lattice, hexagon }: LabelStripProps) {
+function ColumnLabels({ size, theme, flipped, inset, lattice, shape }: LabelStripProps) {
+  /*
+   * A star is given no letters at all: no row of it holds the columns a strip
+   * would have to follow. See `starColumnsSayNothing` in margin.ts — an empty
+   * strip is the honest answer, and seventeen letters over sealed cells was
+   * what it printed before.
+   */
+  if (lattice && shape === "star") return <div />;
   return (
     <div
       className="grid text-center text-[0.65rem] font-medium select-none"
       style={{
-        gridTemplateColumns: lattice ? latticeLabelTracks(size, "columns", hexagon) : labelTracks(size, inset),
+        gridTemplateColumns: lattice ? latticeLabelTracks(size, "columns", shape) : labelTracks(size, inset),
         color: theme.coordinate,
       }}
       aria-hidden="true"
@@ -72,12 +80,12 @@ function ColumnLabels({ size, theme, flipped, inset, lattice, hexagon }: LabelSt
   );
 }
 
-function RowLabels({ size, theme, flipped, inset, lattice, hexagon }: LabelStripProps) {
+function RowLabels({ size, theme, flipped, inset, lattice, shape }: LabelStripProps) {
   return (
     <div
       className="grid text-right text-[0.65rem] font-medium select-none"
       style={{
-        gridTemplateRows: lattice ? latticeLabelTracks(size, "rows", hexagon) : labelTracks(size, inset),
+        gridTemplateRows: lattice ? latticeLabelTracks(size, "rows", shape) : labelTracks(size, inset),
         color: theme.coordinate,
       }}
       aria-hidden="true"
@@ -114,6 +122,32 @@ function markByIndex(
  * The playing surface: coordinate gutters, the board with its lines, and one
  * button per intersection laid over them.
  */
+/**
+ * WHICH FIT THIS BOARD'S LATTICE TAKES, and it is one of three.
+ *
+ * The rhombus is the whole array, so it takes the array's fit. The other two
+ * are shapes cut OUT of an array — a hexagon in a (2R+1) square, a hexagram in
+ * a (4R+1) one — and fitting the array would leave either of them floating in
+ * a frame of cells nobody draws. John, on the honeycomb: "Why is there such a
+ * border around 13x13? If that's the largest, it shoud fill the page."
+ *
+ * The star was the same fault twice as bad — 51% of its board's width and 58%
+ * of its height, which is under a third of the wood — and it is the shape that
+ * made the fit general, because it is TALLER than it is wide and every other
+ * shape here is not. See `latticeFit`.
+ */
+function latticeShape(spec: { hexagon: boolean; chineseCheckers: boolean }): LatticeShape {
+  if (spec.hexagon) return "hexagon";
+  if (spec.chineseCheckers) return "star";
+  return "rhombus";
+}
+
+function latticeTransform(size: number, shape: LatticeShape): string {
+  if (shape === "hexagon") return HEXAGON_TRANSFORM;
+  if (shape === "star") return starTransform(size);
+  return LATTICE_TRANSFORM;
+}
+
 export function Board({
   state,
   appearance,
@@ -194,6 +228,8 @@ export function Board({
    * only Hex is actually a rhombus.
    */
   const hexSkew = spec.connects || spec.chineseCheckers || spec.hexagon;
+  /* Which shape is cut out of the sheared array — the one word both the fit and the strips read. */
+  const shape = latticeShape(spec);
   /*
    * The rim of bare surface around the playing area — see margin.ts. A board
    * on the lines already leaves half a cell, so this is what a board in the
@@ -239,12 +275,12 @@ export function Board({
     >
       <div />
       {appearance.showCoordinates ? (
-        <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} hexagon={spec.hexagon} />
+        <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} shape={shape} />
       ) : (
         <div />
       )}
       {appearance.showCoordinates ? (
-        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} hexagon={spec.hexagon} />
+        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} shape={shape} />
       ) : (
         <div />
       )}
@@ -311,7 +347,7 @@ export function Board({
                 leave it floating in its own frame — see `latticeFit`.
               */
               ...(hexSkew
-                ? { transform: spec.hexagon ? HEXAGON_TRANSFORM : LATTICE_TRANSFORM, transformOrigin: "top left" }
+                ? { transform: latticeTransform(size, shape), transformOrigin: "top left" }
                 : {}),
             }}
           >
