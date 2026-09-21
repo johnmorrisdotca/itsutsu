@@ -17,15 +17,62 @@ test.describe("about", () => {
 
     for (const heading of [
       "Where this comes from",
+      "What is on the board here",
       "Five stones, and where they came from",
       "The Japanese thread",
       "Go, the board underneath",
       "Othello",
       "How a move is written down",
+      "The players that are not people",
       "Sites worth knowing",
     ]) {
       await expect(page.getByRole("heading", { name: heading })).toBeVisible();
     }
+  });
+
+  /*
+   * THE COUNTS ARE READ, NOT TYPED, and this is the browser half of
+   * `about.coverage.test.ts`. That test says the source does not contain a
+   * hand-written count; this one says the number a reader actually sees is the
+   * number of games the site actually has. The page said "about 35" for long
+   * enough to be ten games short, and neither a compiler nor a reviewer had
+   * any way to notice.
+   */
+  test("counts the games it really has, and lists every family", async ({ page }) => {
+    const { RULE_VARIANT_LIST } = await import("../src/lib/gomoku/gomoku.constants");
+    const { GAME_FAMILIES } = await import("../src/lib/gomoku/families");
+
+    await page.goto("/about");
+    const section = page
+      .getByTestId("about-section")
+      .filter({ has: page.getByRole("heading", { name: "What is on the board here" }) });
+    await expect(section).toContainText(`There are ${RULE_VARIANT_LIST.length} games here`);
+    await expect(section).toContainText(`in ${GAME_FAMILIES.length} families`);
+
+    // One row per family, each leading to that family's page. Looked for
+    // inside the table rather than in the section, because the prose above it
+    // names five in a row too and that link goes to the GAME, not the family.
+    const rows = section.getByTestId("about-table").first().locator("tbody tr");
+    await expect(rows).toHaveCount(GAME_FAMILIES.length);
+    for (const family of GAME_FAMILIES) {
+      const link = rows.getByRole("link", { name: family.title, exact: true });
+      await expect(link).toHaveAttribute("href", /\/games\/[a-z0-9-]+\/family$/);
+    }
+  });
+
+  test("says what the computer players do, and what the measurement showed", async ({ page }) => {
+    await page.goto("/about");
+    const section = page
+      .getByTestId("about-section")
+      .filter({ has: page.getByRole("heading", { name: "The players that are not people" }) });
+
+    // The five grades, gentlest first, read from the same rows the chooser draws.
+    for (const grade of ["Razryad", "Kyu", "Dan", "Meijin", "Guoshou"]) {
+      await expect(section.getByText(grade, { exact: false }).first()).toBeVisible();
+    }
+    // The finding, which is the reason the section exists.
+    await expect(section).toContainText("the top two grades are the same player");
+    await expect(section).toContainText("thinks in your browser");
   });
 
   test("a game named in the prose links to that game", async ({ page }) => {

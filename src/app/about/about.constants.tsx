@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 
 import { HOGETSU, ORIGINS, OTHELLO_START, PENTE_CAPTURE, SOLVED } from "@/components/about/figures";
+import { BOTS_SECTION } from "./about.bots";
+import { CATALOGUE_SECTION } from "./about.games";
 import { GO_SECTION } from "./about.go";
 import { Game, Inside, Out } from "./about.links";
 import { CONNECT_FOUR_SECTION, OPENINGS_SECTION, RATINGS_SECTION, SITES_SECTION } from "./about.more";
@@ -142,8 +144,11 @@ const BASE_SECTIONS: AboutSection[] = [
         vision: to see a position as a set of lines and as a set of edges and corners at the same time.
         It is on the board here now: <Game variant="reversi">Othello</Game> as the family played it, the
         older <Game variant="classicReversi">reversi</Game> with its free opening, an{" "}
-        <Game variant="antiReversi">anti</Game> game where fewer discs wins, and a{" "}
-        <Game variant="miniReversi">small board</Game> that can grow into the full one mid-game.
+        <Game variant="antiReversi">anti</Game> game where fewer discs wins, a{" "}
+        <Game variant="miniReversi">small board</Game> that can grow into the full one mid-game, a{" "}
+        <Game variant="grandReversi">bigger board</Game> where the edges are two squares further off, and{" "}
+        <Game variant="honeycomb">the same game on a hexagon</Game>, where a run may lie along six
+        directions instead of eight and there are six corners to take rather than four.
       </>,
       <>
         Othello also settles an old argument. Free gomoku was solved in 1993 and renju in 2001 — both wins
@@ -176,17 +181,19 @@ const BASE_SECTIONS: AboutSection[] = [
       <>
         On this site every finished game is filed in the <Inside href="/history">record</Inside>,
         and every named player has a rating and a tier on the{" "}
-        <Inside href="/players?view=ladder">players</Inside> page that move
-        with each result. Nobody is the top of a ladder yet. Somebody will be.
+        <Inside href="/players?view=ladder">players</Inside> page that move with each result — the
+        programs among them, on the same terms. There is a rating for each game as well as one across
+        all of them, because being good at one of these is not being good at the next.
       </>,
     ],
   },
 ];
 
 /**
- * The story in reading order: origins, the openings and the solved game, the
- * heritage, the go board everything here is furnished from, Othello, the
- * numbers, how a move is written down, and the elders.
+ * The story in reading order: origins, what is actually on the shelf, the
+ * openings and the solved game, the heritage, the go board everything here is
+ * furnished from, Othello, the numbers, how a move is written down, the
+ * players that are not people, and the elders.
  */
 export const ABOUT_SECTIONS: AboutSection[] = (() => {
   const after = (title: string, ...added: AboutSection[]) => {
@@ -196,10 +203,15 @@ export const ABOUT_SECTIONS: AboutSection[] = (() => {
   const out: AboutSection[] = [];
   for (const section of BASE_SECTIONS) {
     out.push(section);
+    // What is actually here, straight after why it exists: the reader has just
+    // been told what the site is for and the next question is what is in it.
+    if (section.title === "Where this comes from") out.push(...after(section.title, CATALOGUE_SECTION));
     if (section.title === "Five stones, and where they came from") out.push(...after(section.title, OPENINGS_SECTION, CONNECT_FOUR_SECTION));
     // Go follows the heritage: it is the board and the stones every game here is drawn on.
     if (section.title === "The Japanese thread") out.push(...after(section.title, GO_SECTION));
-    if (section.title === "Ladders, ratings and tournaments") out.push(...after(section.title, RATINGS_SECTION, NOTATION_SECTION));
+    // The computer players close the site's own half, after the numbers that
+    // rate them and the notation their games are written down in.
+    if (section.title === "Ladders, ratings and tournaments") out.push(...after(section.title, RATINGS_SECTION, NOTATION_SECTION, BOTS_SECTION));
   }
   out.push(SITES_SECTION);
   return out;

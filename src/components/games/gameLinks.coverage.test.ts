@@ -205,6 +205,28 @@ describe("a count of games is the way into those games", () => {
     // /games/all, which is now the plain-list VIEW of /games and lives here.
     "src/components/games/GameList.tsx": "counts rule sets, not matches",
     /*
+     * The About page's two counts of the catalogue, and they are the same
+     * fact as GameList's: how many rule sets this site has, read from the
+     * catalogue rather than typed, which is what `about.coverage.test.ts`
+     * exists to force. There is no set of played games behind either number,
+     * and both sentences link to /games, which is the whole catalogue —
+     * every game the number counted, which is the promise this rule is about.
+     */
+    "src/app/about/about.games.tsx": "counts rule sets, not matches",
+    "src/app/about/about.more.tsx": "counts rule sets, not matches",
+    /*
+     * The measured round robin on the About page, for exactly the reason
+     * `LadderStrength.tsx` below carries: those games were played in memory,
+     * on somebody's own CPU, and no row was written anywhere — deliberately,
+     * because driving them through the site would be thousands of paid
+     * function calls to learn what a laptop settles for nothing. "Twenty
+     * games a pairing" counts games that cannot be opened, so a link would
+     * be a promise this site is unable to keep. Both say where the figures
+     * came from instead.
+     */
+    "src/components/about/MeasuredGrades.tsx": "played in memory, kept nowhere",
+    "src/app/about/about.bots.tsx": "played in memory, kept nowhere",
+    /*
      * GameCatalogue.tsx USED TO BE HERE, for the family line's count of every
      * match played in a family — a set no page can show, since /history
      * filters by one game. That line moved into a phrase in `GameStats.tsx`,
