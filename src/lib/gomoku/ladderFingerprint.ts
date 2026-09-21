@@ -1,5 +1,3 @@
-import "server-only";
-
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -45,14 +43,26 @@ export function fingerprintOf(sources: readonly { path: string; text: string }[]
 
 /**
  * The current code's fingerprint, read from disk, or null when any of the files
- * cannot be read — a deployment that does not carry its source, say.
+ * cannot be read.
+ *
+ * READ AT BUILD TIME, NEVER IN A REQUEST. `next.config.ts` calls this once and
+ * writes the answer into the bundle as LADDER_FINGERPRINT; a page asks
+ * `builtLadderFingerprint()` for it. The alternative was naming these ten
+ * files in `outputFileTracingIncludes` and hashing them on every render —
+ * ten file reads and a SHA-256 per page view, repeated for an answer that
+ * cannot change between two requests of the same deployment. That is the
+ * shape AGENTS.md calls "no work repeated per request when nothing changed",
+ * and it is billed as Active CPU.
  *
  * Null rather than a fingerprint of whatever could be read: a partial hash is a
  * value in range that matches nothing and means "unknown", and `measuredLadder`
- * already treats null as exactly that. Showing these numbers on a page means
- * naming these files in `outputFileTracingIncludes`, as the release history does
- * for CHANGELOG.md; until then the answer in production is null, and the table
- * says nothing.
+ * already treats null as exactly that.
+ *
+ * NO `server-only` HERE, deliberately: `next.config.ts` imports this at build,
+ * and `server-only` throws outside a React server context. Nothing in
+ * `app/` or `components/` may import it — `ladderShown.coverage.test.ts`
+ * fails the build if anything does, and `ladderFingerprint.built.ts` is what
+ * a page asks instead.
  */
 export function readLadderFingerprint(root: string = process.cwd()): string | null {
   try {

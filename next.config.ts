@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { readLadderFingerprint } from "./src/lib/gomoku/ladderFingerprint";
+
 /**
  * Who may embed the board.
  *
@@ -23,8 +25,21 @@ const nextConfig: NextConfig = {
    * `pollEvery` refuses any relief when NODE_ENV is production before it reads
    * this, and its unit test fails if that refusal goes.
    */
+  /*
+   * THE LADDER'S FINGERPRINT, HASHED ONCE HERE RATHER THAN ON EVERY RENDER.
+   *
+   * `ladderStrength.data.ts` holds measured round robins between the computer
+   * grades, and each row carries a hash of the ten files that decide how a
+   * grade plays. A row whose hash is not the running code's says nothing,
+   * because a stale strength table is confidently wrong. Working that out
+   * means hashing those ten files — which is a fact about the DEPLOYMENT, not
+   * about the request, so it is settled here and written into the bundle.
+   * Doing it per render would be ten file reads and a SHA-256 for every page
+   * view, and Active CPU is billed.
+   */
   env: {
     LIVE_POLL_RELIEF: process.env.RATE_LIMIT_RELIEF ?? "",
+    LADDER_FINGERPRINT: readLadderFingerprint() ?? "",
   },
   /*
    * The backlog page and the Admin card read CHANGELOG.md at request time, so
