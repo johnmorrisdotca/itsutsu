@@ -666,7 +666,7 @@ not a release commit.
 
 **The tool commits the release; there is no commit step to remember.** It
 writes `package.json` and `CHANGELOG.md` and commits exactly those two, as
-`0.x.y — <first summary>` with the co-author trailer, so the commit the push
+`0.x.y — <first summary>` and no trailer of any kind (John: "No co-authoring or AI ever"), so the commit the push
 carries is the one that names the version. It used to stop at writing, and
 the step it printed went straight to the push. On 2026-09-14 that step was
 followed to the letter: the merge `4c96876` reached `main` at 0.173.3 with

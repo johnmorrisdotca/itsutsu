@@ -31,18 +31,17 @@
  */
 
 /**
- * The co-author trailer a release commit carries when `RELEASE_CO_AUTHOR` is
- * not set in the environment. It names the assistant that made the release,
- * not the person committing it, which is why it is never read from git
- * config.
+ * NO TRAILER. John, 2026-09-17: "No co-authoring or AI ever." — no
+ * `Co-Authored-By:` line on any commit, and he named scripted commits inside
+ * release chains in the same breath. This constant used to hold an assistant's
+ * name, so the one commit a session never writes by hand was the one that kept
+ * adding it, release after release, after every hand-written commit had stopped.
  *
- * Update this line whenever the attribution line the sessions are given
- * changes: copy the `Co-Authored-By:` line from the end of the newest
- * ordinary commit on main. Until it is updated, set `RELEASE_CO_AUTHOR` for
- * the run instead, because a stale trailer fails nothing and simply goes into
- * history under the wrong name.
+ * It stays a constant, empty, rather than being deleted: `RELEASE_CO_AUTHOR` in
+ * the environment can still name a PERSON who shares a release, which is what a
+ * co-author trailer is for.
  */
-export const RELEASE_CO_AUTHOR = "Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>";
+export const RELEASE_CO_AUTHOR = "";
 
 /**
  * The trailer for this run: `RELEASE_CO_AUTHOR` from the environment when it
@@ -112,7 +111,8 @@ export function releaseCommitMessage(version: string, summaries: readonly string
   // capitalised instead: see `changelogBullet` in release-take.ts.
   const subject = lines.length === 0 ? version : `${version} — ${lines[0]!.replace(/\.$/, "")}`;
   const body = lines.length > 1 ? `${lines.map((line) => `- ${line}`).join("\n")}\n\n` : "";
-  return `${subject}\n\n${body}${coAuthor}\n`;
+  // No trailer, no blank lines waiting for one: the message ends where its words do.
+  return `${subject}\n\n${body}${coAuthor}`.trimEnd() + "\n";
 }
 
 export type CommitOutcome =
@@ -177,7 +177,7 @@ export function commitFailureReport(
     ...head,
     `Putting the files back failed too (${outcome.restoreError}).`,
     `The tree may hold ${version} in package.json and CHANGELOG.md, uncommitted, and no row was closed. Either:`,
-    `  git commit --only -m "${subject.replace(/"/g, '\\"')}" -m "${coAuthor}" -- ${RELEASE_FILES.join(" ")}`,
+    `  git commit --only -m "${subject.replace(/"/g, '\\"')}" ${coAuthor === "" ? "" : `-m "${coAuthor}" `}-- ${RELEASE_FILES.join(" ")}`,
     `or take the release back off:`,
     `  git checkout -- ${RELEASE_FILES.join(" ")}`,
   ];
