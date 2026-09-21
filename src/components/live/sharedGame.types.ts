@@ -2,6 +2,7 @@ import type { ComponentProps } from "react";
 import type { KeyedMutator } from "swr";
 
 import type { Appearance } from "@/components/board/board.types";
+import type { AfterMove, MoveConfirm } from "@/lib/preferences/turnFlow";
 import type { ResignButton } from "@/components/mine/ResignButton";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -39,6 +40,14 @@ export type SharedGameProps = {
    * followed them into a local game and stopped at the door of a real one.
    */
   appearance?: Appearance;
+  /**
+   * How this reader likes a turn to work, from their account: whether a click
+   * sends the move or places it for confirming, and where submitting leaves
+   * them. Handed down like `appearance` rather than read here, because the
+   * board is a client component and an account's answer is the server's to
+   * read. Absent is the site's default, which is preview on and carry onward.
+   */
+  turnFlow?: TurnFlow;
   /** The match's address; the bar shows it with the move count appended, kept current as play goes on. */
   basePath?: string;
   /** Who sits across the board, and where they are, when the seat is an account with a country set. */
@@ -84,3 +93,6 @@ export type SharedGameFooterProps = {
   onAsking: NonNullable<ComponentProps<typeof ResignButton>["onAsking"]>;
   mutate: KeyedMutator<GameDetail>;
 };
+
+/** The two answers that decide how a turn feels; see `lib/preferences/turnFlow.ts`. */
+export type TurnFlow = { moveConfirm: MoveConfirm; afterMove: AfterMove };

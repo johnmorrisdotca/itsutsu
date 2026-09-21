@@ -24,6 +24,8 @@ import { phraseStatus } from "@/lib/phrase/phraseStore";
 import { safeDestination } from "@/lib/auth/redirect";
 import { activeTab, type Tab } from "@/lib/ui/tabs";
 import { allCountries } from "@/lib/social/countries";
+import { TurnFlowForm } from "@/components/mine/TurnFlowForm";
+import { preferencesFor } from "@/lib/preferences/memberPreferences";
 
 export const metadata = { title: "You" };
 export const dynamic = "force-dynamic";
@@ -109,6 +111,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
    * run all four for somebody who had come to change their time zone.
    */
   const member = await fetchProfile(row.id);
+  const preferences = await preferencesFor();
   const name = member?.name ?? row.name;
   const welcome = params.welcome === "1";
   const next = welcome ? safeDestination(typeof params.next === "string" ? params.next : null) : null;
@@ -241,6 +244,15 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                 What a new board is set out with, here and on every device you sign in on.
               </p>
               <GameDefaultsForm initial={gameDefaultsFrom(member?.gameDefaults)} />
+
+              {/*
+                How a turn works, beside what a board is set out with: both are
+                answers somebody gives once and finds on every device.
+              */}
+              <p className="text-sm text-muted">How a turn works, on every board you play.</p>
+              <TurnFlowForm
+                initial={{ moveConfirm: preferences.moveConfirm, afterMove: preferences.afterMove }}
+              />
             </div>
           ) : null}
 
