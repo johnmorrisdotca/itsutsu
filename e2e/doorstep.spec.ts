@@ -1,6 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 import { memberContext, memberIdFor, seedMember } from "./members";
+import { seatPostedBySomebodyElse } from "./postedSeat";
 import {
   aComputerOpponent,
   chooseBoard,
@@ -278,26 +279,25 @@ test.describe("stating a game before it is written", () => {
      * game here is gomoku on the thirteen board and friendly, which is a
      * combination nothing else sets up. Bring your own world.
      */
-    const asked = async (page: Page) => {
-      await page.goto("/games/gomoku/new");
-      await ready(page, "set-up-game");
-      await chooseBoard(page, 13);
-      await chooseRated(page, false);
-    };
-
     // One member posts a seat for anyone, which is what a plain Begin does.
-    const hosting = await memberContext(browser, baseURL!, host);
-    const hostPage = await hosting.newPage();
-    await asked(hostPage);
-    await expect(hostPage.getByTestId("set-up-start")).toHaveAttribute("data-press", "begin");
-    await hostPage.getByTestId("set-up-start").click();
-    await hostPage.waitForURL(/\/games\/gomoku\/match\//, { timeout: 30_000 });
-    noteGame(hostPage);
+    const closeHost = await seatPostedBySomebodyElse({
+      browser,
+      baseURL: baseURL!,
+      choose: async (on) => {
+        await chooseBoard(on, 13);
+        await chooseRated(on, false);
+      },
+      slug: "gomoku",
+      noteGame: tidyAway,
+    });
 
     // And another asks for the same game, which is their seat rather than a second one.
     const visiting = await memberContext(browser, baseURL!, guest);
     const page = await visiting.newPage();
-    await asked(page);
+    await page.goto("/games/gomoku/new");
+    await ready(page, "set-up-game");
+    await chooseBoard(page, 13);
+    await chooseRated(page, false);
     const screen = await stated(page);
     await expect(screen.begin, "somebody is already asking for exactly this").toHaveAttribute(
       "data-press",
@@ -318,6 +318,6 @@ test.describe("stating a game before it is written", () => {
     noteGame(page);
 
     await visiting.close();
-    await hosting.close();
+    await closeHost();
   });
 });

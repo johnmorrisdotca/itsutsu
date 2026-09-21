@@ -1,6 +1,6 @@
-import { expect, test, type Browser, type Locator, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
-import { memberContext, seedMember } from "./members";
+import { seatPostedBySomebodyElse } from "./postedSeat";
 import {
   chooseBoard,
   chooseGame,
@@ -8,7 +8,6 @@ import {
   openMoreSettings,
   openSetUpPage,
   ready,
-  startAndBegin,
 } from "./support";
 import { gamesMade } from "./tidy";
 
@@ -41,34 +40,6 @@ import { gamesMade } from "./tidy";
 
 /** The games these cases post, taken away when the file finishes. */
 const tidyAway = gamesMade();
-
-/**
- * Somebody else posts a seat at exactly these choices, so that the reader's
- * own press is an offer to sit at it.
- *
- * The same choices are made twice, through the same controls, because that is
- * what makes the two games match — `matchSeat` compares the RULES, and a seat
- * posted by any other means would be a seat this spec had reasoned its way to
- * rather than one the site produced.
- */
-async function seatPostedBySomebodyElse(
-  browser: Browser,
-  baseURL: string,
-  slug: string | undefined,
-  choose: (page: Page) => Promise<void>,
-): Promise<() => Promise<void>> {
-  const stamp = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
-  const host = { email: `pics-${stamp}@example.test`, name: `Pics ${stamp}` };
-  await seedMember(host);
-  const hosting = await memberContext(browser, baseURL, host);
-  const page = await hosting.newPage();
-  await openSetUpPage(page, slug);
-  await choose(page);
-  await startAndBegin(page);
-  await page.waitForURL(/\/match\//, { timeout: 30_000 });
-  tidyAway(/match\/([^/?#]+)/.exec(page.url())?.[1] ?? "");
-  return () => hosting.close();
-}
 
 /** Presses the set-up screen's button and waits for the doorstep to be listening. */
 async function start(page: Page) {
@@ -111,7 +82,7 @@ test.describe("the doorstep draws the chosen board", () => {
     const choose = async (on: Page) => {
       await chooseGame(on, "checkers");
     };
-    const close = await seatPostedBySomebodyElse(browser, baseURL!, undefined, choose);
+    const close = await seatPostedBySomebodyElse({ browser, baseURL: baseURL!, choose, noteGame: tidyAway });
 
     await openSetUpPage(page);
     await choose(page);
@@ -142,8 +113,8 @@ test.describe("the doorstep draws the chosen board", () => {
      * never been told about, and the case would fail for a reason that has
      * nothing to do with pictures.
      */
-    const closeThirteen = await seatPostedBySomebodyElse(browser, baseURL!, undefined, onThirteen);
-    const closeNineteen = await seatPostedBySomebodyElse(browser, baseURL!, undefined, onNineteen);
+    const closeThirteen = await seatPostedBySomebodyElse({ browser, baseURL: baseURL!, choose: onThirteen, noteGame: tidyAway });
+    const closeNineteen = await seatPostedBySomebodyElse({ browser, baseURL: baseURL!, choose: onNineteen, noteGame: tidyAway });
 
     await openSetUpPage(page);
     await onThirteen(page);
@@ -187,7 +158,7 @@ test.describe("the doorstep draws the chosen board", () => {
       await openMoreSettings(on);
       await chooseOpening(on, "pro");
     };
-    const close = await seatPostedBySomebodyElse(browser, baseURL!, undefined, choose);
+    const close = await seatPostedBySomebodyElse({ browser, baseURL: baseURL!, choose, noteGame: tidyAway });
 
     await openSetUpPage(page);
     await choose(page);

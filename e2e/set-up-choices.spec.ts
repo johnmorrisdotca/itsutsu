@@ -91,7 +91,14 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
     const name = (await page
       .locator(`[data-testid="set-up-opponent"][data-opponent="${first}"]`)
       .getAttribute("data-name")) as string;
-    await expect(summary).toContainText(`Against ${name}`);
+    /*
+     * The opponent is read from the SEATING sentence rather than the rules
+     * row. The recap line that held both was taken off the screen — it was
+     * saying what the controls above it already said — and its words moved to
+     * the rows they belong to: the rules on the rules row, who you are playing
+     * in the sentence over the button.
+     */
+    await expect(page.getByTestId("set-up-seating")).toContainText(`Against ${name}`);
     await expect(chosenOpponent(page)).toHaveCount(1);
 
     await startAndBegin(page);
@@ -226,6 +233,14 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
       await page.goto("/games/gomoku/new");
       await ready(page, "set-up-game");
       await openMoreSettings(page);
+      /*
+       * The lists open, because this case is about what is INSIDE one of them.
+       * A fresh game arrives with the seat posted for anyone, which is an
+       * answer, so every run arrives folded to a row saying how many it holds
+       * — and a fold keeps its children in the page, hidden, so reaching past
+       * one finds a tile nobody can see.
+       */
+      await openOpponentLists(page);
 
       const known = page.locator('[data-testid="set-up-opponent-group"][data-group="known"]');
       const tiles = known.getByTestId("set-up-opponent");
