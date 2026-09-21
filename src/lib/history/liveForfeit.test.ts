@@ -114,7 +114,7 @@ vi.mock("@/lib/bots/bots", () => ({
   botInSeat: () => null,
 }));
 vi.mock("@/lib/social/vacation", () => ({ fetchTimeOff: async () => [], timeOffGraceMs: () => 0 }));
-vi.mock("@/lib/notify/email", () => ({ sendEmail: async () => {} }));
+vi.mock("@/lib/mail/sendNotice", () => ({ sendNotice: async () => ({ sent: false, refusal: "notices-off" }) }));
 vi.mock("@/lib/xp/xpSocial", () => ({ awardAnsweredChallenge: async () => {}, awardCourtesy: async () => {} }));
 
 const { appendMove, replay } = await import("./liveGame");

@@ -66,6 +66,24 @@ export const RESEND_EMAILS_URL = "https://api.resend.com/emails";
 export const MAIL_TIMEOUT_MS = 10_000;
 
 /**
+ * GAME NOTICES ARE NOT SWITCHED ON, and this constant is the whole of that
+ * decision.
+ *
+ * A your-turn notice fires on every move somebody ELSE makes. Twenty people
+ * with a dozen games each is hundreds of emails a day against a site day of
+ * fifty (`MAIL_CAPS.siteDay`), so notices would spend the day before lunch
+ * and the invitations a person actually clicked for would be refused behind
+ * them. The answer is a digest and a per-member choice, which are their own
+ * tickets; until one of them exists, notices do not go.
+ *
+ * It is a constant rather than an environment variable on purpose. An
+ * environment variable is a switch somebody can flip at three in the morning
+ * without reading why it is off; this one cannot move without a commit, a
+ * review and this paragraph in the diff.
+ */
+export const NOTICES = { sending: false } as const;
+
+/**
  * What a person is told when an email they asked for was not sent. Each says
  * plainly that it did not go, and none pretends it did.
  */
@@ -77,4 +95,6 @@ export const MAIL_REFUSAL_TEXT: Record<MailRefusal, string> = {
   "site-month-cap": "The site has sent all the email it allows itself this month, so this one was not sent.",
   "count-unavailable": "The email could not be sent just now, so nothing was sent.",
   "transport-error": "The email could not be confirmed as sent. It may not arrive.",
+  "notices-off": "Notices about games are not switched on yet, so nothing was sent.",
+  "no-address": "There is no address to write to, so nothing was sent.",
 };
