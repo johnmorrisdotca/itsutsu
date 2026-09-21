@@ -17,6 +17,7 @@ import { OpeningPicker } from "./OpeningPicker";
 import { RatedPicker } from "./RatedPicker";
 import { penaltyName } from "./penalty";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
+import { SetUpFold } from "./SetUpFold";
 import { SetUpSection } from "./SetUpSection";
 
 /**
@@ -69,6 +70,7 @@ export function RulesForm({
   chooser = RULES_CHOOSERS.select,
   refused,
   sections,
+  folded,
   onSizeChosen,
 }: {
   value: RulesDraft;
@@ -151,15 +153,26 @@ export function RulesForm({
   sections?: {
     opponent: ReactNode | null;
     handicap: ReactNode | null;
-    /*
-     * THE HANDICAP GROUP IS NOT FOLDED, and that is a decision rather than an
-     * omission. It already folds its own detail — the nine restrictions open
-     * only once a colour is chosen (`HandicapChoice`) — and
-     * `set-up-handicap.spec.ts` pins that the group itself is "offered in plain
-     * sight", which is where it was put after John could not find it. A fold
-     * over a fold would hide it again to save two rows.
-     */
   };
+  /**
+   * The answer each group already holds, drawn on its closed row — and the
+   * thing that decides whether these groups are folded at all.
+   *
+   * WHY THE HANDICAP GROUP FOLDS NOW, HAVING DELIBERATELY NOT FOLDED BEFORE.
+   * It used to be open always, because John could not find it when everything
+   * sat behind one grey line, and the note here said a fold over a fold would
+   * hide it again. That reasoning was about a fold whose closed row said
+   * NOTHING. John, 2026-09-21, on the screen as a whole: "ideally, one
+   * viewport/screen should be all the info, when collapsed. i dont like the
+   * user scrolling to the bottom a lot to have to click next or play." A row
+   * reading "No head start · No handicap · CHANGE" is the group in plain
+   * sight, in one line instead of eleven; the two instructions only conflict
+   * for a fold that hides what it holds, and this one prints it.
+   *
+   * Undefined leaves both groups open, which is the rules panel beside a board
+   * — a narrow column where these are already behind one disclosure.
+   */
+  folded?: { rules: ReactNode; handicap: ReactNode };
   /**
    * Told when somebody chooses a board themselves, so a caller that was
    * following a default can stop. A chosen board is not a default.
@@ -335,6 +348,35 @@ export function RulesForm({
     );
   }
   const words = SET_UP_COPY.sections;
+  /*
+   * A group is a heading where it is a question and a folded row where it
+   * already has an answer. These two always have one — a game opens on the
+   * plain rules and no handicap — so on the screen that passes `folded` they
+   * arrive shut, with what they hold printed on the row.
+   */
+  const group = (
+    which: "rules" | "handicap",
+    testId: string,
+    body: ReactNode,
+  ) =>
+    folded === undefined ? (
+      <SetUpSection title={words[which].title} kanji={words[which].kanji} testId={testId}>
+        {body}
+      </SetUpSection>
+    ) : (
+      <div className="border-t border-rule pt-3">
+        <SetUpFold
+          title={words[which].title}
+          kanji={words[which].kanji}
+          testId={testId}
+          group={which}
+          summary={folded[which]}
+        >
+          {body}
+        </SetUpFold>
+      </div>
+    );
+
   return (
     <>
       {head}
@@ -343,14 +385,8 @@ export function RulesForm({
           {sections.opponent}
         </SetUpSection>
       ) : null}
-      <SetUpSection title={words.rules.title} kanji={words.rules.kanji} testId="set-up-rules">
-        {rest}
-      </SetUpSection>
-      {sections.handicap !== null ? (
-        <SetUpSection title={words.handicap.title} kanji={words.handicap.kanji} testId="set-up-handicap-group">
-          {sections.handicap}
-        </SetUpSection>
-      ) : null}
+      {group("rules", "set-up-rules", rest)}
+      {sections.handicap !== null ? group("handicap", "set-up-handicap-group", sections.handicap) : null}
     </>
   );
 }

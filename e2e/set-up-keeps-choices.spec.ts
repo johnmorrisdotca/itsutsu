@@ -5,7 +5,36 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { GAME_FAMILIES } from "../src/lib/gomoku/families";
 import { slugFor } from "../src/lib/gomoku/slugs";
 import { memberContext, removeMember } from "./members";
-import { chooseBoard, chooseGame, chooseRated, chosenBoard, chosenRated, openMoreSettings, ready } from "./support";
+import {
+  chooseBoard,
+  chooseGame,
+  chooseRated,
+  chosenBoard,
+  chosenRated,
+  matchIdIn,
+  openMoreSettings,
+  ready,
+  startAndBegin,
+} from "./support";
+import { gamesMade } from "./tidy";
+
+/**
+ * Walks back until the set-up screen is the page again, at most a few steps.
+ *
+ * Bounded and then asserted, so "I went back four times and never got there"
+ * fails as itself rather than as whatever the next line finds.
+ */
+async function backToSetUp(page: Page) {
+  for (let step = 0; step < 4; step += 1) {
+    await page.goBack();
+    if (/\/games\/(new|[^/]+\/new)/.test(page.url())) break;
+  }
+  await ready(page, "set-up-game");
+  await expect(page, "never got back to the set-up screen").toHaveURL(/\/games\/(new|[^/]+\/new)/);
+}
+
+/** The one game this file begins, taken away when it finishes. */
+const tidyAway = gamesMade();
 
 /**
  * THE SET-UP SCREEN REMEMBERS WHAT WAS CHOSEN, IN ITS ADDRESS.
@@ -139,7 +168,7 @@ test.describe("the set-up screen keeps its choices", () => {
     }
   });
 
-  test("Back from the doorstep and Forward again keep every choice", async ({ browser, baseURL }) => {
+  test("Back from the board and Forward again keep every choice", async ({ browser, baseURL }) => {
     const { context, page, email } = await freshMember(browser, baseURL!, "back");
     try {
       await page.goto("/games/new");
@@ -150,24 +179,40 @@ test.describe("the set-up screen keeps its choices", () => {
       await chooseRated(page, false);
       const setUpAt = page.url();
 
+      /*
+       * PRESSED, AND THEN WALKED BACK. The press used to lead to a second
+       * screen and this walked back from that; it leads to the BOARD now, and
+       * the walk is the same one — Back to the choices, Forward to the game,
+       * Back again — which is the harder version of the claim, because a board
+       * is a real game and the choices behind it are a page the router has to
+       * hand back intact.
+       */
       const asked = watchServer(page);
-      await page.getByTestId("set-up-start").click();
-      await ready(page, "doorstep");
-      const doorstepAt = page.url();
+      await startAndBegin(page);
+      await page.waitForURL(/\/games\/go\/match\//, { timeout: 30_000 });
+      const boardAt = page.url();
+      tidyAway(matchIdIn(boardAt));
       // A navigation IS an RSC request, and the watcher sees one — so its silence on a press means something.
       expect(asked.some((url) => url.includes("_rsc=")), "the watcher saw no RSC request for a navigation").toBe(true);
 
-      await page.goBack();
-      await ready(page, "set-up-game");
-      expect(page.url()).toBe(setUpAt);
+      /*
+       * BACK UNTIL THE CHOICES, rather than back exactly once.
+       *
+       * A live board writes the position into its own address as moves land
+       * (`useMatchAddress`), so a game opened at /match/<id> and read at
+       * /match/<id>/0 is one page wearing two addresses — and how many
+       * entries that leaves behind it is a fact about the board, not about
+       * this screen. What this case is about is that the choices come back
+       * intact however many steps that takes, so it takes them.
+       */
+      await backToSetUp(page);
+      await expect(page).toHaveURL(setUpAt);
       await expectGoThirteenFriendly(page);
 
       await page.goForward();
-      await ready(page, "doorstep");
-      expect(page.url()).toBe(doorstepAt);
+      await page.waitForURL(/\/games\/go\/match\//, { timeout: 30_000 });
 
-      await page.goBack();
-      await ready(page, "set-up-game");
+      await backToSetUp(page);
       await expectGoThirteenFriendly(page);
     } finally {
       await context.close();

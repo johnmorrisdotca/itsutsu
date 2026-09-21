@@ -170,15 +170,32 @@ export const SET_UP_COPY = {
    * and land on a board, and it now leads to the page that states what is about
    * to be played. Somebody who has used this screen before needs telling once.
    */
-  startLeads: "Next you will see the whole game stated. Nothing is started until you press Begin there.",
+  startLeads: "Next you will see the seat's own rules stated. Nothing is started until you press Begin there.",
+  /** What Begin does here: it writes the game, and the next thing you see is the board. */
+  beginHere: "Nothing is written until you press Begin. The next thing you see is the board.",
   /**
-   * THE BUTTON AT THE BOTTOM, named for what it does. John: "it's not Start the
-   * Game... button should be 'Continue the Game' or 'Continue' or 'Game Setup' -
-   * something smart." It leads to the page that states the game and begins it
-   * on a press of its own, so it continues; it starts nothing.
+   * THE BUTTON AT THE BOTTOM, named for what it does — and what it does has
+   * changed twice.
+   *
+   * It used to write a game and land on a board, and John: "it's not Start the
+   * Game... button should be 'Continue the Game' or 'Continue' or 'Game Setup'
+   * - something smart." So it became Continue, to a page that stated the game
+   * and began it on a press of its own.
+   *
+   * That page was saying what this one had just said. John, 2026-09-21: "our
+   * game signup and starting process seems to have one too many screens… too
+   * much repeat info on the multi-screens." This screen states the game now —
+   * every rule on its own folded row, the seating in a sentence over the
+   * button — so the press is Begin again, and it is honest: the whole game is
+   * on the screen above it.
+   *
+   * `continueToSeat` is still Continue, and still true: that press leads to
+   * the doorstep, because the rules being agreed to there are somebody else's.
    */
-  continue: "Continue 次へ",
-  continuing: "Continuing…",
+  begin: "Begin 開始",
+  beginning: "Beginning…",
+  /** The press after a game has already been begun from this address, in this tab. */
+  board: "Open the board 対局へ",
   /** The same press where somebody is already asking for exactly this game. */
   continueToSeat: (who: string) => `Continue to sit down with ${who} 次へ`,
   /** The headings over the screen's groups, in the order they are drawn. */
@@ -187,6 +204,15 @@ export const SET_UP_COPY = {
     rules: { title: "The rules", kanji: "規則" },
     handicap: { title: "Handicap", kanji: "ハンデ" },
   },
+  /**
+   * The handicap group's folded row when neither side has been given anything
+   * — which is every game until somebody asks for one.
+   *
+   * Said rather than left blank, because a fold with an empty summary is a
+   * fold that is hiding a question, which is the fault `SetUpFold` exists to
+   * not be. "None" is the answer, and it is the true one.
+   */
+  noHandicap: "No head start, no handicap — an even game",
   /**
    * The two words on a folded choice.
    *

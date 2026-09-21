@@ -113,7 +113,7 @@ test.describe("the games index", () => {
 });
 
 test.describe("the set-up page and the page before a game", () => {
-  test("draws the family tile, the game chip and the board tile at one size, and the doorstep's board at twice it", async ({
+  test("draws the family tile, the game chip and the board tile at one size", async ({
     page,
   }) => {
     await openSetUpPage(page);
@@ -163,17 +163,20 @@ test.describe("the set-up page and the page before a game", () => {
     await expect(board.getByTestId("set-up-size-name")).toHaveText("Eight");
     await isOneLineInside(board.getByTestId("set-up-size-name"), board);
 
-    await page.getByTestId("set-up-start").click();
-    await ready(page, "doorstep");
-    await expect(page).toHaveURL(/\/games\/checkers\/begin\?/);
-
-    const doorstep = page.getByTestId("doorstep-board");
-    expect(await sideOf(doorstep.getByTestId("board-size-mark")), "exactly twice the board tile it was chosen from").toBe(
-      sides.board * 2,
-    );
-    expect(sides.board * 2).toBe(LARGE_PX);
-    await expect(doorstep.getByTestId("doorstep-board-name")).toHaveText("Eight");
-    await isOneLineInside(doorstep.getByTestId("doorstep-board-name"), doorstep);
+    /*
+     * THE LARGE PICTURE IS THE DOORSTEP'S, AND IT IS ASSERTED WHERE THE
+     * DOORSTEP IS NOW REACHED. This case used to press Continue and read it on
+     * the next page; the set-up screen states and begins a game of your own,
+     * so that press lands on a board. The doorstep stands in front of somebody
+     * else's posted seat, and `doorstep-pictures.spec.ts` drives it there and
+     * asserts exactly this — the board at twice the tile it was chosen from,
+     * its name on one line, no size text beside it.
+     *
+     * What is left here is the claim this file is about: every picture on the
+     * set-up screen is the regular size, and the doubling is a real number
+     * rather than a coincidence of two measurements.
+     */
+    expect(sides.board * 2, "large is twice regular").toBe(LARGE_PX);
   });
 });
 

@@ -9,25 +9,43 @@ import { draftParams } from "./setUpAddress";
 import type { RulesDraft } from "./rulesDraft";
 
 /**
- * THE DOORSTEP IS THE ONLY PLACE A GAME IS CREATED FROM A SETUP, AND THE ONLY
- * PLACE ANYTHING IS ASKED BEFORE ONE.
+ * A GAME IS STATED IN FULL BEFORE IT IS WRITTEN, AND NOTHING ASKS ABOUT ONE
+ * AFTERWARDS.
  *
- * John asked for this page four times. Each earlier answer improved the screen
- * where a game is CHOSEN and left the press that starts it going straight to a
- * board, because "settle the rules before the game exists" reads as one screen
- * and is two. That is a mistake you can make again, and nothing in the type
- * system would notice: a new button that posts to the creation route, or a
- * select quietly put back beside a board, would compile, pass every existing
- * test, and undo the whole thing.
+ * ──────────────────────────────────────────────────────────────────────────
+ * THIS GATE USED TO SAY "ONLY THE DOORSTEP MAY WRITE A GAME". READ WHY IT NO
+ * LONGER DOES BEFORE CHANGING IT BACK.
+ * ──────────────────────────────────────────────────────────────────────────
  *
- * So the shape is a gate. Crude on purpose, in the manner of
- * `gameLinks.coverage.test.ts`: it reads the source and looks for the two moves
- * that would take this back. Anything cleverer would need the components
- * rendered, and this is a rule about what the source asks for.
+ * John asked for the doorstep four times. Each earlier answer improved the
+ * screen where a game is CHOSEN and left the press that starts it going
+ * straight to a board — "settle the rules before the game exists" reads as one
+ * screen and is two — so this gate pinned the press to `Doorstep.tsx`.
  *
- * The exceptions are named with their reasons, which is the point of them — a
- * rule with unexplained holes rots, and a rule whose holes say why they are
- * holes can be argued with.
+ * What it pinned was the LOCATION rather than the promise, and the location
+ * turned out to cost a screen. John, 2026-09-21: "our game signup and starting
+ * process seems to have one too many screens… too much repeat info on the
+ * multi-screens… ideally, one viewport/screen should be all the info, when
+ * collapsed." The two screens were stating the same rules a press apart: the
+ * set-up screen's folded rows say every rule and the board picture sits above
+ * them, and the doorstep then said all of it again and made the game.
+ *
+ * So the set-up screen states the game and writes it, and the promise is
+ * unchanged: nothing is written until a deliberate press, and what that press
+ * will make is on the screen above it in full. The doorstep did not go — it is
+ * the screen for taking a seat SOMEBODY ELSE posted, where the rules being
+ * agreed to are theirs and reading them first is the whole point.
+ *
+ * The mistake this still catches is the original one, and it is the one you can
+ * make again: a press that writes a game nobody has been shown, or a board that
+ * grows the settings back beside it. Nothing in the type system would notice
+ * either.
+ *
+ * Crude on purpose, in the manner of `gameLinks.coverage.test.ts`: it reads the
+ * source and looks for the moves that would take this back. The exceptions are
+ * named with their reasons, which is the point of them — a rule with
+ * unexplained holes rots, and a rule whose holes say why they are holes can be
+ * argued with.
  */
 
 const ROOTS = ["src/components/live", "src/components/mine", "src/app/games"];
@@ -52,9 +70,10 @@ const FILES = ROOTS.flatMap(filesUnder).map((path) => ({
 /**
  * The files allowed to ask the creation route for a game, and why each one is.
  *
- * `Doorstep.tsx` is the answer to the ticket: every way of asking for a game
- * reaches the setup screen, the setup screen reaches the doorstep, and the
- * doorstep is where the press that writes a row lives.
+ * `beginGame.ts` is the ONE request, shared: the set-up screen presses it for
+ * a game of your own and the doorstep presses it for a seat somebody posted,
+ * so the two cannot drift into sending different bodies. It was inside
+ * `Doorstep.tsx` while the doorstep was the only screen that could write.
  *
  * `StartSharedGame.tsx` is NOT a setup and that is why it is here. It sits beside
  * a scratch board at /games/<game>/play, where somebody is already playing: it
@@ -63,12 +82,12 @@ const FILES = ROOTS.flatMap(filesUnder).map((path) => ({
  * describing the board they are sitting at would be a step with no content.
  */
 const MAY_CREATE = new Map([
-  ["Doorstep.tsx", "the doorstep — the one press that starts a game from a setup"],
+  ["beginGame.ts", "the one request, pressed by the set-up screen and by the doorstep"],
   ["StartSharedGame.tsx", "sharing a board somebody is already playing at one screen"],
 ]);
 
-describe("only the doorstep starts a game from a setup", () => {
-  it("is the only component in this flow that posts to the creation route", () => {
+describe("a game is stated before it is written", () => {
+  it("goes through one request, and nothing else in this flow posts to the creation route", () => {
     const creators = FILES.filter(({ source }) => source.includes('"/api/games/live"')).map(
       ({ path }) => path,
     );
@@ -82,14 +101,55 @@ describe("only the doorstep starts a game from a setup", () => {
     }
   });
 
-  it("and the setup screen carries the draft there rather than writing anything", () => {
-    const setUp = FILES.find(({ path }) => path.endsWith("SetUpGame.tsx"));
+  it("and the setup screen says the whole game before its press writes one", () => {
+    /*
+     * THE PROMISE, NOW THAT THIS SCREEN IS THE ONE THAT WRITES. Three things
+     * have to be on it, and each was on the doorstep before:
+     *
+     *  - every rule, on the rows that hold them (`foldedWords`) — a folded
+     *    group that printed nothing would be the fold this site took out once
+     *    already;
+     *  - who sits where, in a sentence, which is the one fact the doorstep had
+     *    that this screen did not;
+     *  - a press that writes, and nothing that writes without one.
+     *
+     * A future edit that takes any of them off leaves a screen that makes a
+     * game nobody was shown, which is the fault this whole gate is about.
+     */
+    const setUp = FILES.find(({ path }) => path.endsWith("live/SetUpGame.tsx"));
+    const bar = FILES.find(({ path }) => path.endsWith("live/BeginBar.tsx"));
     expect(setUp, "SetUpGame.tsx has moved").toBeDefined();
+    expect(bar, "BeginBar.tsx has moved").toBeDefined();
+    /*
+     * Read over the SCREEN rather than over one file. The statement and the
+     * press sit in `BeginBar`, which `SetUpGame` renders — a split made when
+     * that file passed the File Size Gate — and a rule that named one file
+     * would have failed on the day the screen was tidied rather than on the
+     * day the promise was broken. That the two are still one screen is the
+     * first thing asserted.
+     */
+    expect(setUp!.source, "the set-up screen no longer renders its own press").toContain("<BeginBar");
+    const screen = `${setUp!.source}\n${bar!.source}`;
+    for (const said of ["foldedWords(", 'data-testid="set-up-seating"', "useSetUpPress("]) {
+      expect(
+        screen.includes(said),
+        `the set-up screen no longer has ${said}: it writes a game without stating it in full first.`,
+      ).toBe(true);
+    }
+    /*
+     * And it still knows the way to the doorstep, because a seat somebody else
+     * posted is read there before it is sat at.
+     */
     expect(setUp!.source).toContain("beginLink(");
+  });
+
+  it("and the doorstep is still where somebody else's posted seat is read", () => {
+    const waiting = FILES.find(({ path }) => path.endsWith("mine/waitingRoom.ts"));
+    expect(waiting, "waitingRoom.ts has moved").toBeDefined();
     expect(
-      setUp!.source.includes("/api/games/live"),
-      "the setup screen is writing a game again; the press belongs on the doorstep",
-    ).toBe(false);
+      waiting!.source.includes("beginLink("),
+      "the waiting room no longer sends a posted seat to the doorstep; its rules are somebody else's to read first",
+    ).toBe(true);
   });
 
   it("and the doorstep itself offers no control that changes the game", () => {

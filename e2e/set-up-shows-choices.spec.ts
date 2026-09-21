@@ -3,7 +3,16 @@ import { join } from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { memberContext, memberIdFor, removeMember, seedMember, seenDaysAgo } from "./members";
-import { chooseOpponent, chooseRated, chosenOpponent, chosenRated, openOpponentLists, ready } from "./support";
+import {
+  chooseOpponent,
+  chooseRated,
+  chosenOpponent,
+  chosenRated,
+  openMoreSettings,
+  openOpponentLists,
+  ready,
+  startAndBegin,
+} from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -20,11 +29,15 @@ const tidyAway = gamesMade();
  *
  * So: on Halma, with nothing opened, every kind of opponent is chosen by clicking
  * its tile — a person named by a link (a Challenge), a buddy, a computer player
- * and a random computer player — with a clock and Friendly chosen too. Each goes
- * through Continue to the doorstep, which must state exactly that; "Change
- * something" must come back with every choice still made; and no press on the
- * screen may ask the server for anything. The last one is begun, and the game it
- * makes is against one of the programs it was drawn from.
+ * and a random computer player — with a clock and Friendly chosen too. The
+ * screen must state exactly that as it is chosen, every choice must still be
+ * made afterwards, and no press on the screen may ask the server for anything.
+ * The last one is begun, and the game it makes is against one of the programs
+ * it was drawn from.
+ *
+ * It used to press Continue to a second page, read the statement there and
+ * press "Change something" to come back. That round trip existed only because
+ * the statement lived on another page; it is on this one now, over the button.
  */
 
 const SHOTS = process.env.SHOTS_DIR;
@@ -95,7 +108,7 @@ function watchServer(page: Page) {
 }
 
 test.describe("who you play and every rule are on the set-up screen", () => {
-  test("on Halma: a named person, a buddy, a computer player and a random one, through Continue and back", async ({
+  test("on Halma: a named person, a buddy, a computer player and a random one, each stated as it is chosen", async ({
     browser,
     baseURL,
   }) => {
@@ -122,25 +135,36 @@ test.describe("who you play and every rule are on the set-up screen", () => {
 
       /*
        * ALL OF IT ON THIS PAGE, and nothing behind a second screen — which is
-       * what this test has always been about: no `more-settings` drawer, the
-       * rules and the handicap in plain sight, and the whole game settled here.
+       * what this test has always been about: no `more-settings` drawer, and
+       * the whole game settled here.
        *
-       * WHAT CHANGED IS THE LISTS OF PEOPLE, and only when one of them is
-       * already answered. This screen arrives with a person named, so the runs
-       * fold to a row saying who is chosen and how many the others hold (John,
-       * 2026-09-18: "Keep it closed to Guoshou and only change if I click to
-       * expand it"). The chosen opponent is still on screen without opening
-       * anything — asserted below — and the rest are one press away, pressed
-       * here the way a reader presses them.
+       * WHAT "IN PLAIN SIGHT" MEANS HAS CHANGED, AND IT IS STILL A CHECK.
+       * Every group used to be open, and John, 2026-09-21: "ideally, one
+       * viewport/screen should be all the info, when collapsed. i dont like
+       * the user scrolling to the bottom a lot to have to click next or play."
+       * So a group that already has an answer arrives shut with the ANSWER ON
+       * ITS ROW — that is the difference from the fold this screen took out in
+       * 2026-09-18, which said nothing about what it was hiding.
+       *
+       * What is asserted is therefore the answer rather than the control: the
+       * rules in words, the handicap in words, the chosen opponent. The
+       * controls themselves are one press away and are pressed below, the way
+       * a reader presses them.
        */
       await expect(page.getByTestId("more-settings")).toHaveCount(0);
       await expect(page.getByTestId("set-up-who")).toBeVisible();
       await expect(page.getByTestId("set-up-rules")).toBeVisible();
-      await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
-      await expect(page.getByTestId("set-up-handicap-stone")).toBeVisible();
+      await expect(page.getByTestId("set-up-rules-words")).toBeVisible();
+      await expect(page.getByTestId("set-up-handicap-group")).toBeVisible();
+      await expect(page.getByTestId("set-up-handicap-words")).toBeVisible();
       await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", `m:${namedId}`);
       await expect(page.getByTestId("set-up-opponent-elsewhere")).toBeVisible();
-      await expect(page.getByTestId("set-up-start")).toHaveText(/^Continue/);
+      await expect(page.getByTestId("set-up-start")).toHaveText(/^Begin/);
+
+      // And one press each opens them, which is the whole cost of disagreeing.
+      await openMoreSettings(page);
+      await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
+      await expect(page.getByTestId("set-up-handicap-stone")).toBeVisible();
       // Who you play comes straight after the board, before the rules.
       const whoTop = (await page.getByTestId("set-up-who").boundingBox())!.y;
       const boardTop = (await page.getByTestId("shared-rules-size").boundingBox())!.y;
@@ -182,32 +206,36 @@ test.describe("who you play and every rule are on the set-up screen", () => {
         await chooseOpponent(page, value);
         expect(asked, `choosing ${value} asked the server`).toEqual([]);
 
-        await page.getByTestId("set-up-start").click();
-        await ready(page, "doorstep");
-        // The doorstep states exactly what was chosen: who, the clock, and that it will not count.
-        await expect(page.getByTestId("doorstep-colours")).toContainText(said);
+        /*
+         * THE SCREEN STATES EXACTLY WHAT WAS CHOSEN, and it no longer takes a
+         * press to read it: who, the clock, and that it will not count are all
+         * on the screen the choice was made on. This used to press Continue,
+         * read the doorstep, and press Change to come back — a round trip that
+         * existed only because the statement lived on another page.
+         */
+        await expect(page.getByTestId("set-up-seating")).toContainText(said);
         await expect(page).toHaveURL(new RegExp(`[?&]pace=${pace}(&|$)`));
         await expect(page).toHaveURL(/[?&]rated=friendly(&|$)/);
-        await expect(page.getByTestId("doorstep-facts")).toContainText(/friendly/i);
+        await expect(page.getByTestId("set-up-rules-words")).toContainText(/friendly/i);
         if (value === "random-computer") {
-          for (const program of programs) await expect(page.getByTestId("doorstep-colours")).toContainText(program);
+          for (const program of programs) await expect(page.getByTestId("set-up-seating")).toContainText(program);
         }
 
-        await page.getByTestId("doorstep-change").click();
-        await ready(page, "set-up-game");
+        // And every choice is still made, because nothing has moved off the screen.
         await expect(chosenOpponent(page)).toHaveAttribute("data-opponent", value);
         await expect(chosenRated(page)).toHaveAttribute("data-rated", "friendly");
         await expect(page.getByTestId("shared-rules-move-time")).toHaveValue(pace);
-        await expect(page.locator('[data-testid="set-up-variant"][data-chosen="true"]')).toHaveAttribute(
-          "data-variant",
-          "halma",
-        );
+        /*
+         * And it is still Halma. Read off the ADDRESS rather than off a chosen
+         * game tile, because this screen's address names the game and so it
+         * offers no game picker — the tile only existed on the round trip
+         * through /games/new that the second page used to make necessary.
+         */
+        await expect(page).toHaveURL(/\/games\/halma\/new/);
       }
 
       // And the random one, begun: the game is against one of the programs it was drawn from.
-      await page.getByTestId("set-up-start").click();
-      await ready(page, "doorstep");
-      await page.getByTestId("doorstep-begin").click();
+      await startAndBegin(page);
       await page.waitForURL(/\/games\/halma\/match\/[^/?]+/, { timeout: 30_000 });
       const id = tidyAway(page.url().split("/games/halma/match/")[1].split(/[/?]/)[0]);
       const made = await context.request.get(`/api/games/${id}`);

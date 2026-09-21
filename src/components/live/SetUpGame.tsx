@@ -1,37 +1,37 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { botsFor } from "@/lib/bots/bots.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { START_COPY } from "@/components/mine/mine.constants";
 import type { Opponent } from "@/lib/social/opponents";
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
-import { Button, SectionTitle } from "@/components/ui/Controls";
+import { SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { HandicapChoice } from "./HandicapChoice";
 import { HeadStartChoice } from "./HeadStartChoice";
 import { OpponentChoice } from "./OpponentChoice";
 import { ANYONE, RANDOM_COMPUTER, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
+import { BeginBar } from "./BeginBar";
 import { BoardPreview } from "./BoardPreview";
 import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
-import { SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
-import { describeRules, describeSettings } from "./rulesSummary";
+import { describeRules } from "./rulesSummary";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 import { matchSeat } from "./seatMatch";
 import { beginLink } from "./setUpAddress";
+import { useSetUpPress } from "./useSetUpPress";
 import { readSetUpAsked } from "./setUpAsked";
 import { keptBoardChosen, keptDraft, keptParams, queryRecord } from "./setUpKept";
 import { SetUpNotices } from "./SetUpNotices";
-import { SettingWords } from "./SettingWords";
 import { seatsFor, stillARematch } from "./setUpStart";
-import { recapWords } from "./setUpWords";
+import { setUpBegin } from "./setUpBegin";
+import { foldedWords } from "./setUpFolded";
 import type { KeptBase, KeptDefaults, SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
-import { forgetRematchHeading, publishRematchHeading } from "./setUpHeadingState";
+import { useRematchHeading } from "./useRematchHeading";
 import { useKeptAddress } from "./useKeptAddress";
 
 /**
@@ -79,6 +79,7 @@ export function SetUpGame({
   opponent = null,
   again = null,
   fork = null,
+  carry = {},
   problem = null,
 }: {
   /** The member's standing board and clock: what silence opens a game at. */
@@ -119,10 +120,16 @@ export function SetUpGame({
   again?: SetUpAgain | null;
   /** A position this carries forward, and how far in. */
   fork?: SetUpFork | null;
+  /**
+   * The parts of a carried game this screen has no control for — the line
+   * length, the seed, who opens, the draw limit. Carried into the request and
+   * never asked, which is what lets this screen write the game itself rather
+   * than hand a draft to a page that knows more than it does.
+   */
+  carry?: Record<string, unknown>;
   /** Why the address could not be honoured, when it could not. */
   problem?: string | null;
 }) {
-  const router = useRouter();
   /*
    * EVERY CHOICE STARTS FROM THE ADDRESS AND IS WRITTEN BACK TO IT. John: "We
    * need Memory when viewing Gaming pages... a refresh loses the Checkers
@@ -231,23 +238,8 @@ export function SetUpGame({
   const sameOpponent = again !== null && opponentNow !== null && opponentNow.id === again.opponent.id;
   const repeat = stillARematch({ rules: settled, source: asPlayed, opponent: opponentNow, again });
 
-  /*
-   * AND THE HEADING ABOVE SAYS THE SAME, without a reload. It is drawn by the page
-   * from the address the page opened with, so choosing somebody else left it
-   * reading "Play them again, you take White" over a notice saying it was a new
-   * game. The same decision is handed up to it as it changes — see
-   * `setUpHeadingState`.
-   */
-  const nowName = opponentNow?.name ?? null;
-  const againId = again?.id ?? null;
-  useEffect(() => {
-    if (againId === null) return;
-    publishRematchHeading(againId, { repeat, opponent: nowName === null ? null : { name: nowName } });
-  }, [againId, repeat, nowName]);
-  useEffect(() => {
-    if (againId === null) return;
-    return () => forgetRematchHeading(againId);
-  }, [againId]);
+  /* And the heading above says the same, without a reload — `useRematchHeading`. */
+  useRematchHeading({ again, repeat, opponent: opponentNow });
 
   /*
    * WHETHER THE GAME THIS BUTTON LEADS TO COULD EVER COUNT, read from `seatsFor`
@@ -262,36 +254,47 @@ export function SetUpGame({
   });
 
   /*
-   * THE WAY ON, WHICH CREATES NOTHING. Continue carries the draft to
-   * /games/<game>/begin, which states it and creates it on a press of its own; a
-   * seat somebody is already waiting at goes to the same doorstep, naming the
-   * seat. `router.push`, not `replace`: going back from the doorstep belongs here.
-   *
-   * On a rematch, nobody in particular is said out loud as `anyone`. Silence there
-   * means the player from last time, so a seat for anyone left unsaid arrived at
-   * the doorstep as the very rematch somebody had just chosen not to play.
+   * WHAT THE BUTTON WILL DO, and what it will seat — one module, because it is
+   * one question: what is this screen about to make? See `setUpBegin.ts`,
+   * which also holds why the doorstep no longer stands between this screen and
+   * the board.
    */
-  function start() {
-    setBusy(true);
-    router.push(
-      beginLink(settled, {
-        against: random ? RANDOM_COMPUTER : (chosen?.id ?? (again !== null ? ANYONE : null)),
-        rematch: again?.id ?? null,
-        from: fork === null ? null : { id: fork.id, move: fork.move },
-        sit: waiting?.id ?? null,
-      }),
-    );
-  }
+  const { begin, sitting } = setUpBegin({
+    settled,
+    asPlayed,
+    /*
+     * A FORK IS AGAINST WHOEVER WAS IN THE POSITION, and this screen offers no
+     * chooser for it — so the person to name in the seating sentence is the one
+     * the address arrived with, not the one nobody was asked for. `setUpBegin`
+     * still sends no opponent with a fork's request: the route reads them off
+     * the seats of the game being forked, which knows better than this screen.
+     */
+    opponent: fork !== null ? opponent : opponentNow,
+    again,
+    fork,
+    carry,
+    random,
+  });
 
   /*
-   * The whole game as a line, over the button that carries it: the rules' own
-   * words, then who it is against and any handicap. A reader at the bottom of a
-   * long form reads what Continue will carry without scrolling back up.
+   * PRESSING IT — the memory of a game this address has already made, what
+   * went wrong if anything did, and the press itself. `useSetUpPress`.
    */
-  const recap = [
-    ...describeSettings(settled, refused),
-    ...recapWords({ opponent: fork !== null ? opponent : chosen, fork, handicap: settled.handicap, game: settled, random }),
-  ];
+  const { made, trouble, press, forget } = useSetUpPress({
+    key: `set-up:${game ?? "any"}:${query.toString()}`,
+    begin,
+    variant: settled.variant,
+    toSeat:
+      waiting === undefined
+        ? null
+        : beginLink(settled, {
+            against: random ? RANDOM_COMPUTER : (chosen?.id ?? (again !== null ? ANYONE : null)),
+            rematch: again?.id ?? null,
+            from: fork === null ? null : { id: fork.id, move: fork.move },
+            sit: waiting.id,
+          }),
+    onBusy: setBusy,
+  });
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="set-up-game" {...readyMark(ready)}>
@@ -314,9 +317,6 @@ export function SetUpGame({
       */}
       <p className="text-sm font-semibold" data-testid="set-up-summary">
         {describeRules(settled)}
-      </p>
-      <p className="text-xs text-muted">
-        Nothing is started until you say so. Once it is, these are the rules it is played under.
       </p>
 
       {/*
@@ -387,48 +387,35 @@ export function SetUpGame({
                 </div>
               ) : null,
           }}
+          /*
+           * WHAT EACH FOLDED GROUP SAYS WHILE IT IS SHUT. These are the very
+           * words that used to sit over the Continue button as a recap — the
+           * same call, the same rendering — moved onto the rows they describe.
+           *
+           * That is the repetition John named on 2026-09-21: "don't repeat
+           * info too much". The screen was saying "Free opening · Resigning
+           * allowed · No clock · Rated" in a line at the bottom while every
+           * one of those controls stood open six inches above it, and then
+           * the doorstep said it a third time. Said once, on the row that
+           * holds the control, it is a summary rather than an echo.
+           */
+          folded={foldedWords({ settled, refused, opponent: fork !== null ? opponent : chosen, fork, random })}
           onSizeChosen={setBoardChosen}
         />
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-rule pt-3" data-testid="set-up-continue">
-        <SettingWords words={recap} testId="set-up-recap" />
-        <span>
-          {/*
-            The button says what it does: it continues, to the page that states
-            the game. John: "it's not Start the Game... button should be
-            'Continue'". Where somebody is already waiting at exactly this game it
-            says whose seat it continues to, because that is a different act.
-          */}
-          {/*
-            A session continues with a seat for anyone; naming somebody is a
-            challenge, which needs an account. An invite holder who arrives
-            with a person or a program already chosen — a link typed or sent —
-            is not carried on to a Begin the route would refuse.
-          */}
-          <Button
-            onClick={start}
-            disabled={busy || !signedIn || (!canAsk && against !== ANYONE)}
-            strong
-            data-testid="set-up-start"
-          >
-            {busy
-              ? SET_UP_COPY.continuing
-              : waiting !== undefined
-                ? SET_UP_COPY.continueToSeat(waiting.who)
-                : SET_UP_COPY.continue}
-          </Button>
-        </span>
-        <p className="text-xs text-muted" data-testid="set-up-leads">
-          {SET_UP_COPY.startLeads}
-        </p>
-        {waiting !== undefined ? (
-          <p className="text-xs text-muted" data-testid="set-up-match">
-            {START_COPY.matchHint(waiting.who)}
-          </p>
-        ) : null}
-        {!signedIn ? <p className="text-xs text-muted">{SIGN_IN_TO_PLAY}</p> : null}
-      </div>
+      <BeginBar
+        sitting={sitting}
+        made={made}
+        trouble={trouble}
+        press={press}
+        forget={forget}
+        busy={busy}
+        signedIn={signedIn}
+        canAsk={canAsk}
+        named={against !== ANYONE}
+        waiting={waiting}
+      />
     </section>
   );
 }

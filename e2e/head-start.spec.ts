@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { COLUMN_LETTERS } from "../src/lib/gomoku/gomoku.constants";
 import { memberContext, memberIdFor, removeMember, seatTokensFor, seedMember } from "./members";
-import { chosenOpponent, openAdvanced, openMoreSettings, openSetup, playAt, ready } from "./support";
+import { chosenOpponent, matchIdIn, openAdvanced, openMoreSettings, openSetup, playAt, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -59,13 +59,16 @@ test("free turns: chosen on the set-up screen, played on a live board as the oth
     // Kept in the address, as every choice on this screen is.
     await expect(page).toHaveURL(/head-start=white-2-turns/);
 
-    await page.getByTestId("set-up-start").click();
-    await ready(page, "doorstep");
-    await expect(page.getByTestId("rules-statement")).toContainText("Will not count — a head start");
-    await page.getByTestId("doorstep-begin").click();
-    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+    /*
+     * AND THE SCREEN SAYS SO WHERE THE PRESS IS. This used to be read on the
+     * doorstep, one press further on; the set-up screen states the whole game
+     * itself now, so the fact is on the folded rules row over the button.
+     */
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Will not count");
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+(\/\d+)?$/, { timeout: 30_000 });
 
-    const id = page.url().split("/").pop()!;
+    const id = matchIdIn(page.url());
     tidyAway(id);
     const made = await context.request.get(`/api/games/${id}`);
     expect(made.status()).toBe(200);

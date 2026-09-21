@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { openSetUpPage, ready } from "./support";
+import { openSetUpPage } from "./support";
 
 /**
  * A GAME ON TWO SHELVES IS ONE GAME.
@@ -12,14 +12,18 @@ import { openSetUpPage, ready } from "./support";
  * same game: the same address on the page before it.
  *
  * Driven by clicking, the way a reader browses the set-up page — a family, then
- * the game, then Start — and back again by the doorstep's own Change button.
- * Nothing reloads, and nobody presses Begin, so no game is written.
+ * the game. Nothing reloads and nobody presses Begin, so no game is written —
+ * which is the whole claim: one address, one game, whichever shelf it was
+ * found on. It used to press Start to a second page and come back by that
+ * page's own Change button; the game is stated on this screen now.
  */
 
 const GAME = "miniReversi";
+/** What the screen calls it, for the summary line that says which game it is about. */
+const NAME = "Mini Reversi";
 
-/** Opens a family, picks Mini Reversi from its shelf, presses Start, and says where that led. */
-async function pickFrom(page: Page, family: string, note: string | null): Promise<string> {
+/** Opens a family, picks Mini Reversi from its shelf, and says which game the screen is then about. */
+async function pickFrom(page: Page, family: string, note: string | null): Promise<string | null> {
   const tile = page.locator(`[data-testid="set-up-family"][data-family="${family}"]`);
   await tile.click();
   await expect(tile).toHaveAttribute("data-open", "true");
@@ -37,9 +41,14 @@ async function pickFrom(page: Page, family: string, note: string | null): Promis
     await expect(chip.getByTestId("set-up-variant-home")).toHaveText(note);
   }
 
-  await page.getByTestId("set-up-start").click();
-  await ready(page, "doorstep");
-  return new URL(page.url()).pathname;
+  /*
+   * WHICH GAME THE SCREEN IS NOW ABOUT. It used to be read off the doorstep's
+   * address, one press further on; the set-up screen states and begins the
+   * game itself, so the address to compare is this one's. Read after the chip
+   * is known to be chosen, so it is a fact about a screen that has answered.
+   */
+  await expect(page.getByTestId("set-up-summary")).toContainText(NAME);
+  return new URL(page.url()).searchParams.get("game");
 }
 
 test.describe("a game listed on two shelves", () => {
@@ -47,11 +56,9 @@ test.describe("a game listed on two shelves", () => {
     await openSetUpPage(page);
 
     const fromSmallBoards = await pickFrom(page, "Small boards", "also under Flips");
-    expect(fromSmallBoards).toBe("/games/mini-reversi/begin");
+    expect(fromSmallBoards).toBe("mini-reversi");
 
-    // The way back, by the doorstep's own button, and the same game from its home.
-    await page.getByTestId("doorstep-change").click();
-    await ready(page, "set-up-game");
+    // And the same game from its home shelf, on the same screen: one address, one game.
     const fromFlips = await pickFrom(page, "Flips", null);
     expect(fromFlips).toBe(fromSmallBoards);
   });

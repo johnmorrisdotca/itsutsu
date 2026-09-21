@@ -6,6 +6,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import {
   BUTTON_BASE,
+  BUTTON_LEAD,
   BUTTON_QUIET,
   BUTTON_STRONG,
   SECTION_TITLE,
@@ -17,6 +18,7 @@ export function Button({
   onClick,
   disabled = false,
   strong = false,
+  lead = false,
   title,
   ...rest
 }: {
@@ -24,6 +26,12 @@ export function Button({
   onClick: () => void;
   disabled?: boolean;
   strong?: boolean;
+  /**
+   * The press this screen exists for: a fingertip-sized control that fills the
+   * column on a phone — see `BUTTON_LEAD`. One per screen, or it is not the
+   * one.
+   */
+  lead?: boolean;
   title?: string;
   /*
    * The hydration mark, for a button a spec has to wait for. `readyMark`
@@ -37,7 +45,7 @@ export function Button({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`${BUTTON_BASE} ${strong ? BUTTON_STRONG : BUTTON_QUIET}`}
+      className={`${lead ? BUTTON_LEAD : BUTTON_BASE} ${strong ? BUTTON_STRONG : BUTTON_QUIET}`}
       {...rest}
     >
       {children}
