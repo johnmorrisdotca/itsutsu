@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BOT_MEMBER_LIST } from "@/lib/bots/bots.constants";
 import { MOVE_KINDS, STONES } from "@/lib/gomoku/gomoku.constants";
-import type { EmailEvent } from "@/lib/notify/email";
+import type { NoticeEvent } from "@/lib/mail/mail.types";
 
 /**
  * A NOTICE IS ASKED FOR ONLY WHERE A PERSON CAN READ IT.
@@ -10,12 +10,12 @@ import type { EmailEvent } from "@/lib/notify/email";
  * Every move and every ending asked for an email whenever the game was not at
  * one screen, so a program's seat was asked for too: a batch of programs'
  * games asked for about two thousand your-turn emails and a game-over each.
- * The placeholder sends nothing, so nothing was paid — until a provider.
+ * Notices are switched off, so nothing is paid — until they are not.
  *
  * These go through the real call sites — `appendMove`, `claimTimeout`,
  * `resignGame`, `cancelGame`, `declineOffer` — against a mocked database, with
  * the real `isBotId` deciding who is a program, and assert on what was ASKED
- * of `sendEmail`. The answer it gives is not the decision and is not checked.
+ * of `sendNotice`. The answer it gives is not the decision and is not checked.
  */
 
 type StoredMove = {
@@ -49,9 +49,9 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const sendEmail = vi.fn(async (event: EmailEvent) => ({ delivered: false as const, reason: "no-provider" as const, event }));
+const sendEmail = vi.fn(async (_event: NoticeEvent) => ({ sent: false as const, refusal: "notices-off" as const }));
 
-vi.mock("@/lib/notify/email", () => ({ sendEmail: (event: EmailEvent) => sendEmail(event) }));
+vi.mock("@/lib/mail/sendNotice", () => ({ sendNotice: (event: NoticeEvent) => sendEmail(event) }));
 vi.mock("./gameHistory", async (original) => ({
   ...(await original<typeof import("./gameHistory")>()),
   fetchGameDetail: async () => ({ id: "g1" }),
