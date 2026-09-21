@@ -35,6 +35,10 @@ import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { xpForBadge } from "@/lib/xp/xpScope";
 import Link from "next/link";
 import { XP_HISTORY_TAB_ENTRY, xpHistoryHref } from "@/lib/xp/xpHistoryDays";
+import { LadderStrength } from "@/components/players/LadderStrength";
+import { builtLadderFingerprint } from "@/lib/gomoku/ladderFingerprint.built";
+import { measuredLadderAll } from "@/lib/gomoku/ladderStrength";
+import type { BotTier } from "@/lib/gomoku/opponent.types";
 
 export const metadata = { title: "Player" };
 
@@ -269,6 +273,17 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           isYou={member?.id !== undefined && member.id === reader.memberId}
           canAsk={reader.hasAccount}
         />
+        {/*
+          WHAT THIS GRADE ACTUALLY DOES, game by game, where the grade is a
+          rung on the ladder and somebody has measured it against the rungs
+          beside it. A name like 名人 is one claim about forty-odd games and
+          cannot know how it plays any of them; this is the asking. Nothing is
+          drawn for a person, for a specialist, or for a measurement taken
+          against code that is no longer running — see `measuredLadder`.
+        */}
+        {member?.botTier ? (
+          <LadderStrength tier={member.botTier as BotTier} measured={measuredLadderAll(builtLadderFingerprint())} />
+        ) : null}
         {/*
           What somebody says about themselves. Written into the profile form
           since the form existed and shown on no page at all — including the
