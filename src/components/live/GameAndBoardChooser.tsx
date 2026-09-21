@@ -5,6 +5,7 @@ import { Field, Select } from "@/components/ui/Controls";
 import { BoardPicker } from "./BoardPicker";
 import { GamePicker } from "./GamePicker";
 import type { RulesDraft } from "./rulesDraft";
+import { boardWords } from "@/lib/gomoku/boardWords";
 
 /**
  * THE TWO QUESTIONS THE SET-UP SCREEN EXISTS TO ASK: which game, and what board.
@@ -109,7 +110,7 @@ export function GameAndBoardChooser({
           >
             {sizes.map((option) => (
               <option key={option} value={option}>
-                {option}×{option}
+                {boardWords(value.variant as RuleVariant, option)}
               </option>
             ))}
           </Select>

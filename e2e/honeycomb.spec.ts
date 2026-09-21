@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { openSetup } from "./support";
+import { openSetUpPage, openSetup } from "./support";
 
 /**
  * HONEYCOMB: Reversi on a hexagon of hexagons.
@@ -39,5 +39,32 @@ test.describe("honeycomb", () => {
     await legal.first().click();
     await expect.poll(() => stonesOf(page, "Black")).toBe(5);
     expect(await stonesOf(page, "White")).toBe(2);
+  });
+
+  /*
+   * FOUR HEXAGONS, and the one that is worth driving in a browser is the
+   * smallest: 37 cells is the board where a wrong radius would be most
+   * visible and least likely to be noticed in a unit test, because the game
+   * still plays perfectly on a hexagon of the wrong size.
+   */
+  test("comes in four hexagons, and the small one is drawn at its own size", async ({ page }) => {
+    await openSetUpPage(page, "honeycomb");
+
+    const boards = page.getByTestId("set-up-size");
+    await expect(boards).toHaveCount(4);
+    // The eleven-square — 91 cells, the board Hexversi is played on — is the one chosen.
+    await expect(page.locator('[data-testid="set-up-size"][data-chosen="true"]')).toHaveAttribute("data-size", "11");
+
+    await page.locator('[data-testid="set-up-size"][data-size="7"]').click();
+    await expect(page.locator('[data-testid="set-up-size"][data-chosen="true"]')).toHaveAttribute("data-size", "7");
+
+    /*
+     * AND THE BOARD IS NAMED FOR WHAT IT IS. A hexagon is not a square of
+     * anything, so the set-up used to announce the 91-cell board as "11×11"
+     * — 121 squares that do not exist. It says the hexagon's own size now,
+     * and the smallest board is where a wrong one would be plainest.
+     */
+    await expect(page.getByTestId("set-up-summary")).toContainText("37 cells");
+    await expect(page.getByTestId("set-up-summary")).not.toContainText("7×7");
   });
 });

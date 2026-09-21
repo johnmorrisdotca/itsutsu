@@ -55,6 +55,23 @@ function cubeOf(radius: number, point: Point): { x: number; y: number; z: number
  * union comes to 121 cells, ten to a point, which is the board this game is
  * always sold with.
  */
+/**
+ * How many cells the hexagram actually has: counted, not quoted. The figure
+ * everybody knows is 121, and it is written in the comment above — but a
+ * comment is not a board, and this is read by the copy that tells a player
+ * what they are looking at.
+ */
+export function starCells(size: number): number {
+  const radius = (size - 1) / 4;
+  let cells = 0;
+  for (let row = 0; row < size; row += 1) {
+    for (let col = 0; col < size; col += 1) {
+      if (inStar(radius, { row, col })) cells += 1;
+    }
+  }
+  return cells;
+}
+
 export function inStar(radius: number, point: Point): boolean {
   const { x, y, z } = cubeOf(radius, point);
   return Math.min(x, y, z) >= -radius || Math.max(x, y, z) <= radius;

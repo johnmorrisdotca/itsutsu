@@ -15,6 +15,7 @@ import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { boardWords } from "@/lib/gomoku/boardWords";
 /** One row per game. The whole row is the link into the replay. */
 export function HistoryTable({ items }: { items: GameSummary[] }) {
   if (items.length === 0) {
@@ -73,7 +74,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               </span>
 
               <span className="text-sm text-muted">
-                {game.size}×{game.size}
+                {boardWords(game.variant as RuleVariant, game.size)}
                 <span className="px-2">·</span>
                 <GameName variant={game.variant as RuleVariant} raised />
                 {hasHeadStart(game) ? (

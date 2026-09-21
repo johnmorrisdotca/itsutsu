@@ -2,7 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import { createGame, discCount, isLegalMove, legalPoints, playMove } from "../engine";
 import { BLOCKED, GAME_STATUS, STONES } from "../gomoku.constants";
-import { hexagonCorners, hexagonDistance, honeycombStartingDiscs, inHexagon } from "./hexagon";
+import {
+  hexagonCells,
+  hexagonCorners,
+  hexagonDistance,
+  hexagonSide,
+  honeycombPlayable,
+  honeycombStartingDiscs,
+  inHexagon,
+} from "./hexagon";
+import { boardSizesFor } from "../gomoku.constants";
 
 const p = (row: number, col: number) => ({ row, col });
 const key = (point: { row: number; col: number }) => `${point.row},${point.col}`;
@@ -16,17 +25,69 @@ const key = (point: { row: number; col: number }) => `${point.row},${point.col}`
  * along the two diagonals the lattice does not have.
  */
 describe("honeycomb", () => {
-  it("is a hexagon of 91 cells on the eleven-square, 61 on the nine, with the centre sealed", () => {
+  it("is a hexagon of 91 cells on the eleven-square, with the centre sealed", () => {
     const eleven = createGame({ variant: "honeycomb" });
     expect(eleven.settings.size).toBe(11);
     const open = eleven.board.filter((cell) => cell !== BLOCKED).length;
     expect(open).toBe(91 - 1);
     expect(eleven.board[5 * 11 + 5]).toBe(BLOCKED);
 
-    const nine = createGame({ variant: "honeycomb", size: 9 });
-    expect(nine.board.filter((cell) => cell !== BLOCKED)).toHaveLength(61 - 1);
     // A size it does not come in falls to the first it does.
     expect(createGame({ variant: "honeycomb", size: 15 }).settings.size).toBe(11);
+  });
+
+  /*
+   * FOUR BOARDS, and the one property that has to hold on every one of them:
+   * the count of cells left to fill is EVEN. That is the whole reason the
+   * centre is sealed rather than a matter of taste — an odd number of cells
+   * on a game decided by counting discs means the last cell decides it, and
+   * no board here should be won by arithmetic.
+   */
+  it("comes in four hexagons, each with an even number of cells to fill", () => {
+    expect(boardSizesFor("honeycomb")).toEqual([11, 7, 9, 13]);
+    const shapes = boardSizesFor("honeycomb").map((size) => ({
+      size,
+      side: hexagonSide(size),
+      cells: hexagonCells(size),
+    }));
+    expect(shapes).toEqual([
+      { size: 11, side: 6, cells: 91 },
+      { size: 7, side: 4, cells: 37 },
+      { size: 9, side: 5, cells: 61 },
+      { size: 13, side: 7, cells: 127 },
+    ]);
+
+    for (const { size, cells } of shapes) {
+      const game = createGame({ variant: "honeycomb", size });
+      expect(game.settings.size, `honeycomb is offered on ${size}`).toBe(size);
+      // The board it is actually played on: every cell but the sealed centre.
+      const open = game.board.filter((cell) => cell !== BLOCKED).length;
+      expect(open, `${size}: cells in play`).toBe(cells - 1);
+      expect(open, `${size}: honeycombPlayable agrees`).toBe(honeycombPlayable(size));
+      expect(open % 2, `${size}: an even number of cells to fill`).toBe(0);
+      // The ring of six is set, and the centre of the square is the sealed cell.
+      expect(discCount(game.board), `${size}: the ring of six`).toEqual({ black: 3, white: 3 });
+      const middle = (size - 1) / 2;
+      expect(game.board[middle * size + middle], `${size}: the centre is sealed`).toBe(BLOCKED);
+      // Six corners, all in the hexagon, none of them the same cell twice.
+      const corners = hexagonCorners(size);
+      expect(new Set(corners.map(key)).size, `${size}: six distinct corners`).toBe(6);
+      for (const corner of corners) expect(inHexagon(size, corner), `${size}: ${key(corner)} is on the board`).toBe(true);
+    }
+  });
+
+  it("plays out to a count on the smallest hexagon and the largest alike", () => {
+    for (const size of [7, 13]) {
+      let game = createGame({ variant: "honeycomb", size });
+      let guard = 0;
+      while (game.status === GAME_STATUS.playing && guard < 400) {
+        const moves = legalPoints(game);
+        expect(moves.length, `${size}: a playing game with no move for the colour to play`).toBeGreaterThan(0);
+        game = playMove(game, moves[guard % moves.length]);
+        guard += 1;
+      }
+      expect(game.status, `${size}: the game ended`).not.toBe(GAME_STATUS.playing);
+    }
   });
 
   it("keeps the square's corners out and the hexagon's in", () => {

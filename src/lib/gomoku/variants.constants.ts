@@ -553,7 +553,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
       "A colour with nowhere to go passes; the turn stays with the other colour until both are stuck.",
       "When neither can move, the discs are counted. More wins; equal is a draw.",
     ],
-    board: "A hexagon six cells a side, 91 cells with the centre sealed; the smaller five-a-side board has 61. The six corners cannot be turned once taken, which is most of the strategy, as on the square.",
+    board: "Four hexagons, all with the centre sealed: 91 cells at six a side, which is the board Hexversi is played on; 37 at four for a quick game; 61 at five; and 127 at seven, which runs about half as long again as the 91. The six corners cannot be turned once taken, which is most of the strategy, as on the square.",
   },
   halma: {
     label: "Halma",
