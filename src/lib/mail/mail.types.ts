@@ -23,7 +23,34 @@ export type MailRefusal =
   | "no-key"
   | CapRefusal
   | "count-unavailable"
-  | "transport-error";
+  | "transport-error"
+  /** Game notices are switched off at `NOTICES.sending`; see the reasoning there. */
+  | "notices-off"
+  /** Nobody to write to: no member row, no address on it, or the member asked not to hear. */
+  | "no-address";
+
+/**
+ * SOMETHING THAT HAPPENED IN A GAME, worth telling one member about.
+ *
+ * Every kind names the member it is FOR. It used to be otherwise: an `invite`
+ * kind carried a game and a seat and no member at all, so it could not address
+ * anybody — a shape that reads as a working notice and is not one. Nothing
+ * built it, and rather than leave it there to be filled in wrongly it is gone;
+ * a notice about an invitation will arrive here carrying a member, like these.
+ */
+export type NoticeEvent =
+  | { kind: "your-turn"; gameId: string; stone: "black" | "white"; memberId: string }
+  | { kind: "game-over"; gameId: string; winner: "black" | "white" | null; stone: "black" | "white"; memberId: string };
+
+/** What became of a notice. The same vocabulary as every other send, because it is the same sender. */
+export type NoticeOutcome = SendOutcome;
+
+/** Reads the address a notice would go to, so a test can answer without a database. */
+export type AddressBook = {
+  addressOf(memberId: string): Promise<string | null>;
+};
+
+export type NoticeDeps = SendDeps & { addresses?: AddressBook };
 
 /** One counter a send must fit under: the row it counts in, its cap, and what to say when full. */
 export type MailLimit = {
