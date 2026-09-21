@@ -47,6 +47,8 @@ import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { PendingMoveControls } from "./PendingMoveControls";
 import { postTurn } from "./postTurn";
 import { pendingMove, submitWords, type PendingMove } from "./pendingMove";
+import { nudgedMove, nudgesAvailable, OPPOSITE, type NudgeDirection } from "./nudgeMove";
+import { pointName } from "@/lib/gomoku/notation";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
 import { AFTER_MOVE, MOVE_CONFIRM } from "@/lib/preferences/turnFlow";
 import { MOVE_KINDS } from "@/lib/gomoku/gomoku.constants";
@@ -103,6 +105,7 @@ export function SharedGame({
   );
   const board: Appearance = { ...appearance, flipped: turned };
 
+
   const played = state.moves.length;
   // The address kept on the position, and the hand-back when the game ends
   // under the reader: one hook, because as two effects they fought.
@@ -144,6 +147,32 @@ export function SharedGame({
    * `pendingMove.ts`, and `moveConfirm` for why preview is the default.
    */
   const [pending, setPending] = useState<PendingMove | null>(null);
+  /*
+   * THE PLACED STONE'S POINT, AND THE FOUR WAYS TO MOVE IT. On a phone a go
+   * board's points are 17.6 pixels across and a finger is not, so the miss is
+   * made cheap rather than the target made big — see `nudgeMove.ts`.
+   *
+   * THE ARROWS ARE TURNED WITH THE BOARD. A reader playing white sees the
+   * board the other way up (`turned`), so the array's row+1 is UP the screen
+   * for them: an arrow that moved the stone down the array while pointing up
+   * would be a control lying about itself, on the one screen where a player
+   * cannot check by eye. The flip is applied here, where the screen is known,
+   * and `nudgeMove` stays a statement about the array.
+   */
+  const nudges = new Set(
+    // Four directions at most, worked out from the engine's own answers — not
+    // memoised, because asking is cheaper than the bookkeeping to avoid asking.
+    [...nudgesAvailable(state, pending)].map((direction) => (turned ? OPPOSITE[direction] : direction)),
+  );
+  const nudge = (direction: NudgeDirection) => {
+    if (pending === null) return;
+    const moved = nudgedMove(state, pending, turned ? OPPOSITE[direction] : direction);
+    if (moved !== null) setPending(moved);
+  };
+  const placedAt =
+    pending !== null && pending.turn.kind === "place"
+      ? pointName(state.settings.size, { row: pending.turn.row, col: pending.turn.col })
+      : null;
   const previewing = turnFlow.moveConfirm === MOVE_CONFIRM.preview;
 
   /** Sends one move, of any of the three shapes, and takes the server's answer as the truth. */
@@ -387,6 +416,9 @@ export function SharedGame({
         <PendingMoveControls
           onSubmit={() => void submit()}
           onStartOver={() => setPending(null)}
+          onNudge={nudge}
+          nudges={nudges}
+          placedAt={placedAt}
           sending={false}
           where={submitWords(turnFlow.afterMove, state.settings.variant)}
         />
