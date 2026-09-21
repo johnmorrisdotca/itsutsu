@@ -15,7 +15,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (118)
+## 1. Written by a machine — please check these (119)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Correction |
 | --- | --- | --- | --- | --- |
@@ -72,6 +72,7 @@ beside it, the Japanese is wrong whatever anybody thinks of its style.
 | The games index, /games — under every game and every family, in all three views | The rated games they lost on this ladder | **この順位表で負けたレーティング対局** | The rated games lost on this ladder. |  |
 | The games index, /games — under every game and every family, in all three views | Nobody has played this yet | **まだ誰も対局していません** | Nobody has played yet. |  |
 | The games index, /games — under every game and every family, in all three views | No rated games yet | **レーティング対局はまだありません** | No rated games yet. |  |
+| The games index, /games — under every game and every family, in all three views | Play → | **対局する →** | Play → |  |
 | The games index, /games — under every game and every family, in all three views | {count} games played | **対局数 {count}** | Games played: {count} |  |
 | The games index, /games — under every game and every family, in all three views | {count} game played | **対局数 {count}** | Games played: {count} |  |
 | The games index, /games — under every game and every family, in all three views | against the computer | **対コンピュータ** | Against the computer. |  |
