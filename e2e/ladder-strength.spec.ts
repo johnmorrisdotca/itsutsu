@@ -6,6 +6,7 @@ import { BOT_TIERS } from "../src/lib/gomoku/opponent.constants";
 import { ladderNeighbours } from "../src/lib/gomoku/ladderNeighbours";
 import { readLadderFingerprint } from "../src/lib/gomoku/ladderFingerprint";
 import { measuredLadder } from "../src/lib/gomoku/ladderStrength";
+import { openOpponentLists } from "./support";
 
 /**
  * WHAT A GRADE ACTUALLY DOES AT A GAME, SHOWN WHERE IT IS DECIDED.
@@ -62,6 +63,15 @@ test.describe("a grade's measured strength", () => {
 
   test("is beside the opponent you are about to choose, for the game you are setting up", async ({ page }) => {
     await page.goto(`/games/${REVERSI}/new`);
+    /*
+     * THE PROGRAMS OPENED, because that is where this line lives and a fresh
+     * game no longer arrives with the lists open: the seat posted for anyone is
+     * an answer, so every run folds to a row saying how many it holds. A fold
+     * keeps its children hidden rather than torn out, so the line is in the
+     * page either way — and a spec that read it while the list was shut would
+     * be reading something no reader can see.
+     */
+    await openOpponentLists(page);
     // The tiles are the presence to wait for; the measured line sits under one.
     await expect(page.locator('[data-testid="set-up-opponent"]').first()).toBeVisible();
 
