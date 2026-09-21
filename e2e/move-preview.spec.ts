@@ -34,7 +34,7 @@ test.describe("a move is shown before it is sent", () => {
     });
     const page = await context.newPage();
 
-    await openSetUpPage(page, "/games/gomoku/new");
+    await openSetUpPage(page, "gomoku");
     const computer = await aComputerOpponent(page, 0);
     await chooseOpponent(page, computer);
     await startAndBegin(page);
@@ -77,7 +77,7 @@ test.describe("a move is shown before it is sent", () => {
     });
     const page = await context.newPage();
 
-    await openSetUpPage(page, "/games/gomoku/new");
+    await openSetUpPage(page, "gomoku");
     const computer = await aComputerOpponent(page, 0);
     await chooseOpponent(page, computer);
     await startAndBegin(page);
