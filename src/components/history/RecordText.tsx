@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { TAP_HEIGHT } from "@/components/ui/ui.constants";
 
 /**
  * The whole record as plain text, to be selected, copied and kept.
@@ -45,7 +46,7 @@ export function RecordText({ text }: { text: string }) {
         <button
           type="button"
           onClick={copy}
-          className="self-start rounded-lg border border-rule px-3 py-1.5 text-xs transition-colors hover:bg-shade"
+          className={`self-start inline-flex items-center rounded-lg border border-rule px-3 py-1.5 text-xs transition-colors hover:bg-shade ${TAP_HEIGHT}`}
           data-testid="record-text-copy"
         >
           {copied ? "Copied" : "Copy it all"}
