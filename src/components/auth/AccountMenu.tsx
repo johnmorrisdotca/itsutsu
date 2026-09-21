@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { TAP_HEIGHT } from "@/components/ui/ui.constants";
 
 export type Who = { signedIn: boolean; admin: boolean; email: string | null; name: string | null; picture: string | null; member: boolean };
 
@@ -59,10 +60,16 @@ export function AccountMenu({ initial }: { initial: Who }) {
           {label}
         </Link>
       ) : null}
+      {/*
+        A quiet word, and still something a thumb can hit: 20 pixels of text
+        with 24 more of padding around it below `sm`. The padding is negative
+        at the sides so the word keeps its place in the row — the target grows,
+        the layout does not. See `TAP_HEIGHT`.
+      */}
       <button
         type="button"
         onClick={signOut}
-        className="text-muted underline-offset-4 hover:underline"
+        className={`-mx-2 inline-flex items-center px-2 text-muted underline-offset-4 hover:underline ${TAP_HEIGHT}`}
         data-testid="sign-out"
       >
         {say.say("account.signOut")}
