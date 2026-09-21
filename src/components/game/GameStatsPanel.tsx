@@ -5,6 +5,7 @@ import { SEAT_DISPLAY, SEATS } from "@/lib/gomoku/gomoku.constants";
 import { SectionTitle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";
 import type { GameSession } from "./game.types";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /** The rows shown for each player, in the order a post-game glance wants them. */
 const ROWS = [
@@ -46,35 +47,38 @@ export function GameStatsPanel({ session }: { session: GameSession }) {
         the board
       </p>
 
-      <table className="w-full text-sm" data-testid="game-stats">
-        <thead>
-          <tr className="text-left text-[0.7rem] tracking-wide text-muted uppercase">
-            <th className="pb-1 font-medium">&nbsp;</th>
-            {Object.values(SEATS).map((seat) => (
-              <th key={seat} className="pb-1 text-right font-medium">
-                {session.names[seat].trim() || SEAT_DISPLAY[seat].label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {ROWS.map((row) => (
-            <tr key={row.key} className="border-t border-rule">
-              <td className="py-1 text-muted">{row.label}</td>
-              {Object.values(SEATS).map((seat) => {
-                const value = stats.bySeat[seat][row.key];
-                return (
-                  <td key={seat} className="py-1 text-right font-mono tabular-nums">
-                    {"time" in row && row.time
-                      ? formatDuration(value)
-                      : value}
-                  </td>
-                );
-              })}
+      {/* Two player columns and a row of numbers: on a phone this is wider than the screen. */}
+      <div className={TABLE_SCROLL}>
+        <table className="w-full text-sm" data-testid="game-stats">
+          <thead>
+            <tr className="text-left text-[0.7rem] tracking-wide text-muted uppercase">
+              <th className="pb-1 font-medium">&nbsp;</th>
+              {Object.values(SEATS).map((seat) => (
+                <th key={seat} className="pb-1 text-right font-medium">
+                  {session.names[seat].trim() || SEAT_DISPLAY[seat].label}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {ROWS.map((row) => (
+              <tr key={row.key} className="border-t border-rule">
+                <td className="py-1 text-muted">{row.label}</td>
+                {Object.values(SEATS).map((seat) => {
+                  const value = stats.bySeat[seat][row.key];
+                  return (
+                    <td key={seat} className="py-1 text-right font-mono tabular-nums">
+                      {"time" in row && row.time
+                        ? formatDuration(value)
+                        : value}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

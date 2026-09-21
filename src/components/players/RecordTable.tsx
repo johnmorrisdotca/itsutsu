@@ -25,6 +25,7 @@ export type {
 } from "./recordTable.types";
 import type { ReactNode } from "react";
 import type { RecordColumns, RecordTableRow, ShownRating } from "./recordTable.types";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /**
  * ONE TABLE OF RECORDS, USED EVERYWHERE ONE IS SHOWN.
@@ -342,7 +343,7 @@ export function RecordTable({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="overflow-x-auto">
+      <div className={TABLE_SCROLL}>
         <table className={TABLE_CLASS} data-testid={testId}>
           <thead className={TABLE_HEAD_CLASS}>
             <tr>

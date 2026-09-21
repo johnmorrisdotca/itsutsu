@@ -10,7 +10,7 @@ import { PlayerLink, TierMark } from "@/components/players/Standings";
 import { XP_BLANK_BECAUSE } from "@/components/players/players.constants";
 import { XpCell } from "@/components/players/recordTrailing";
 import { LevelName } from "@/components/xp/LevelName";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { levelShown } from "@/lib/xp/levelShown";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { standingsPath } from "@/lib/gomoku/slugs";
@@ -120,34 +120,37 @@ export default async function ChampionsPage() {
           <Link href="/players?view=ladder" className="underline underline-offset-4">players</Link> page counts everything
           together. Only games between two named members count. A game at one screen is filed and never rated.
         </p>
-        <table className="w-full text-sm">
-          <thead className={HEAD_CLASS}>
-            <tr>
-              <th className="py-1 pr-3">Game</th>
-              <th className="py-1 pr-3">Champion</th>
-              <th className="py-1 pr-3">Rating</th>
-              {/* Directly after Rating, where John put it on every stats table. */}
-              <th className="py-1 pr-3" title="Experience 経験 — what this member has earned on Itsutsu">
-                XP
-              </th>
-              <th className="py-1 pr-3">Tier</th>
-              <th className="py-1 pr-3">Players</th>
-              <th className="py-1 pr-3">Games</th>
-            </tr>
-          </thead>
-          {GAME_FAMILIES.map((family) => (
-            <tbody key={family.title} data-testid="champions-family">
+        {/* Six columns of record. Unwrapped, this made /champions 570 pixels wide on a 390-pixel phone. */}
+        <div className={TABLE_SCROLL}>
+          <table className="w-full text-sm">
+            <thead className={HEAD_CLASS}>
               <tr>
-                <th colSpan={7} className="pt-5 pb-1 text-left text-base font-semibold">
-                  <Paired en={family.title} kanji={family.kanji} kanjiClassName="text-sm font-normal opacity-70" />
+                <th className="py-1 pr-3">Game</th>
+                <th className="py-1 pr-3">Champion</th>
+                <th className="py-1 pr-3">Rating</th>
+                {/* Directly after Rating, where John put it on every stats table. */}
+                <th className="py-1 pr-3" title="Experience 経験 — what this member has earned on Itsutsu">
+                  XP
                 </th>
+                <th className="py-1 pr-3">Tier</th>
+                <th className="py-1 pr-3">Players</th>
+                <th className="py-1 pr-3">Games</th>
               </tr>
-              {family.games.map((variant) => (
-                <ChampionRow key={variant} variant={variant} champion={champions.get(variant)} />
-              ))}
-            </tbody>
-          ))}
-        </table>
+            </thead>
+            {GAME_FAMILIES.map((family) => (
+              <tbody key={family.title} data-testid="champions-family">
+                <tr>
+                  <th colSpan={7} className="pt-5 pb-1 text-left text-base font-semibold">
+                    <Paired en={family.title} kanji={family.kanji} kanjiClassName="text-sm font-normal opacity-70" />
+                  </th>
+                </tr>
+                {family.games.map((variant) => (
+                  <ChampionRow key={variant} variant={variant} champion={champions.get(variant)} />
+                ))}
+              </tbody>
+            ))}
+          </table>
+        </div>
       </section>
     </Page>
   );

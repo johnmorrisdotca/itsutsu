@@ -18,7 +18,7 @@ import { importedNoteText } from "@/lib/xp/importedNote";
 import { xpScopeHref } from "@/lib/xp/xpScope";
 import { xpScopeFor } from "@/lib/xp/xpScopeServer";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
 import { ladderRung, levelXpRange } from "@/lib/xp/levelLadder";
 import { LEVEL_ROLL, membersAtLevel, type LevelRoll } from "@/lib/xp/levelMembers";
@@ -233,7 +233,7 @@ function WhoIsHere({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-x-auto">
+      <div className={TABLE_SCROLL}>
         <table className={TABLE_CLASS} data-testid="level-members">
           <thead className={TABLE_HEAD_CLASS}>
             <tr>

@@ -5,6 +5,7 @@ import { OPERATOR_ACTIONS_SHOWN, OPERATOR_ACTION_DISPLAY } from "@/lib/auth/oper
 import type { OperatorActionEntry, OperatorActionName } from "@/lib/auth/operatorLog.types";
 
 import { ADMIN_LOG_COPY } from "./admin.constants";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /**
  * The operator log: what has been done to members' accounts, newest first.
@@ -32,7 +33,7 @@ export async function AdminOperatorLog() {
         <Paired en={ADMIN_LOG_COPY.heading.label} kanji={ADMIN_LOG_COPY.heading.kanji} kanjiClassName="text-sm font-normal opacity-70" />
       </h2>
       <p className="max-w-prose text-sm text-muted">{ADMIN_LOG_COPY.lead}</p>
-      <div className="overflow-x-auto">
+      <div className={TABLE_SCROLL}>
         <table className="w-full text-left text-sm" data-testid="operator-log-table">
           <thead>
             <tr className="border-b border-rule text-[0.7rem] tracking-[0.14em] text-muted uppercase">
