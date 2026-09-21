@@ -382,3 +382,18 @@ export const OFFER_PANEL_COPY = {
 export const BOT_SEAT_COPY = {
   thinking: "Thinking…",
 } as const;
+
+/**
+ * The words on a move that has been placed and not yet sent.
+ *
+ * `submitTo` says where Submit is about to take you, because the destination
+ * is a setting rather than a question asked every turn — a button that moves
+ * you somewhere should say where before it is pressed, not after.
+ */
+export const LIVE_MOVE_COPY = {
+  submit: "Submit this move",
+  submitToNext: "Submit, then the next game",
+  submitToSame: (game: string) => `Submit, then the next ${game}`,
+  submitToMyGames: "Submit, then my games",
+  startOver: "Start this move over",
+} as const;

@@ -15,6 +15,7 @@
  */
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import type { GameStatus, Stone } from "@/lib/gomoku/gomoku.types";
+import { AFTER_MOVE, type AfterMove } from "@/lib/preferences/turnFlow";
 
 export type Waiting = { since: string };
 
@@ -31,12 +32,19 @@ export function waitingFirst<T extends Waiting>(a: T, b: T): number {
  * a moment — a game where a move takes a turn rather than ending it can come
  * straight back round to you.
  */
-export function nextWaiting<T extends Waiting & { game: { id: string } }>(
+export function nextWaiting<T extends Waiting & { game: { id: string; variant?: string } }>(
   yourMove: readonly T[],
   exclude?: string,
+  /**
+   * The same game only, Pente to Pente — John's "next SIMILAR game", which is
+   * what makes a session of twelve boards bearable: one set of rules in your
+   * head at a time. Undefined asks for the next waiting game of any kind.
+   */
+  sameAs?: string,
 ): T | null {
   const queue = [...yourMove]
     .filter((one) => one.game.id !== exclude)
+    .filter((one) => sameAs === undefined || one.game.variant === sameAs)
     .sort(waitingFirst);
   return queue[0] ?? null;
 }
@@ -83,13 +91,12 @@ export function carriesOnwardFrom(
  * should NEVER have to hunt for the game that is waiting for a move... unless
  * they choose an option in the settings."
  *
- * This is the seam for the second half of that, and it answers true for
- * everybody today. The opt-out belongs on the account's own preferences, which
- * are being built separately, so the choice has nowhere to be stored yet — and
- * a preference read from a column that does not exist is exactly the "plausible
- * value for a question nobody asked" AGENTS.md warns about. When the registry
- * lands, this function grows its argument and nothing else moves.
+ * THE SETTINGS NOW EXIST, and this reads them. It used to answer true for
+ * everybody, with a note saying the opt-out was waiting on a preferences
+ * registry that was being built elsewhere — refusing to invent a place to
+ * store the answer rather than reading one that was not there. The registry
+ * landed; `afterMove` is the row, and `stay` is the refusal.
  */
-export function advancesAfterMove(): boolean {
-  return true;
+export function advancesAfterMove(afterMove: AfterMove): boolean {
+  return afterMove !== AFTER_MOVE.stay;
 }
