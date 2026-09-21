@@ -31,3 +31,19 @@ export function measuredLadder(
   if (row === undefined) return null;
   return row.fingerprint === fingerprint ? row : null;
 }
+
+/**
+ * Every game whose measurement is about the code that is running — the whole
+ * table filtered through `measuredLadder`, in the order the table holds.
+ *
+ * For a page about a PLAYER rather than about a game: a computer player's page
+ * asks "what do you actually do, game by game", and the answer is however many
+ * rows happen to be current, which may be none.
+ */
+export function measuredLadderAll(
+  fingerprint: string | null,
+  table: LadderStrengthTable = LADDER_STRENGTH,
+): LadderMeasurement[] {
+  if (fingerprint === null) return [];
+  return Object.values(table).filter((row): row is LadderMeasurement => row.fingerprint === fingerprint);
+}

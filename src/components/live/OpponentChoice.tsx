@@ -24,6 +24,7 @@ import type { OpponentChoiceProps, OpponentGroup, OpponentTile } from "./picker.
 import { SetUpFold } from "./SetUpFold";
 import { SeatMark } from "./SeatMark";
 import { POST_FOR_ANYONE } from "./setUpWords";
+import { measuredLine } from "./measuredLine";
 
 /**
  * WHO THE GAME IS AGAINST, as tiles.
@@ -89,6 +90,8 @@ export function OpponentChoice({
           mark={<SeatMark kind="anyone" size="regular" />}
           title={POST_FOR_ANYONE}
           line={`${say("setup.anyoneMeans")} ${SET_UP_COPY.postedWhere}`}
+          // A posted seat is whoever takes it, so there is no grade to measure.
+          measured={null}
           computer={false}
           name=""
         />
@@ -97,6 +100,7 @@ export function OpponentChoice({
         <Run
           key={group.kind}
           group={group}
+          variant={variant}
           shown={shown}
           /*
            * Whether anybody at all has been chosen from these lists, which
@@ -140,12 +144,15 @@ export function OpponentChoice({
 /** One heading and the people or programs under it. */
 function Run({
   group,
+  variant,
   shown,
   answered,
   disabled,
   onChange,
 }: {
   group: OpponentGroup;
+  /** The game being set up: a measured strength is a claim about ONE game. */
+  variant: string;
   shown: string;
   /** Whether any of these lists holds the chosen opponent. See the call site. */
   answered: boolean;
@@ -191,7 +198,7 @@ function Run({
       </span>
       <div id={grid} className={PICK_PEOPLE}>
         {run.visible.map((tile) => (
-          <Tile key={tile.value} {...tileWords(tile)} shown={shown} disabled={disabled} onChange={onChange} />
+          <Tile key={tile.value} {...tileWords(tile, variant)} shown={shown} disabled={disabled} onChange={onChange} />
         ))}
       </div>
       {run.capped ? (
@@ -276,11 +283,11 @@ function Run({
               <SeatMark kind={mine.computer ? "computer" : "person"} size="small">
                 {markLetter(mine)}
               </SeatMark>
-              <span className="truncate">{tileWords(mine).title}</span>
+              <span className="truncate">{tileWords(mine, variant).title}</span>
             </span>
-            {tileWords(mine).line === null ? null : (
+            {tileWords(mine, variant).line === null ? null : (
               <span className="text-xs leading-snug font-normal text-muted" data-testid="set-up-opponent-strength">
-                {tileWords(mine).line}
+                {tileWords(mine, variant).line}
               </span>
             )}
           </span>
@@ -305,8 +312,8 @@ function markLetter(tile: OpponentTile): string {
   return Array.from(profile?.native ?? shownAs)[0] ?? "";
 }
 
-/** A tile's picture and words, from who it is. */
-function tileWords(tile: OpponentTile) {
+/** A tile's picture and words, from who it is and which game is being set up. */
+function tileWords(tile: OpponentTile, variant: string) {
   const shownAs = tile.computer ? tile.name : shownName(tile.name);
   const profile = tile.tier === null ? null : BOT_PROFILES[tile.tier];
   const random = tile.value === RANDOM_COMPUTER;
@@ -327,6 +334,14 @@ function tileWords(tile: OpponentTile) {
         <Paired en={tile.name} kanji={profile.native ?? ""} kanjiClassName="text-xs font-normal opacity-70" />
       ),
     line: profile?.strength ?? (random ? RANDOM_COMPUTER_WORDS.means : null),
+    /*
+     * What this grade MEASURED at this game, under what it says it tries to
+     * do. Two different claims, and the second is the one that has been
+     * checked: `strength` is a description, this is a round robin. Nothing is
+     * drawn where nothing has been measured for this game against the code
+     * that is running.
+     */
+    measured: measuredLine(tile.tier, variant),
   };
 }
 
@@ -338,6 +353,7 @@ function Tile({
   mark,
   title,
   line,
+  measured,
   computer,
   name,
 }: {
@@ -348,6 +364,7 @@ function Tile({
   mark: ReactNode;
   title: ReactNode;
   line: string | null;
+  measured: string | null;
   computer: boolean;
   name: string;
 }) {
@@ -374,6 +391,15 @@ function Tile({
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="truncate text-sm font-medium">{title}</span>
         {line !== null ? <span className="text-xs leading-snug text-muted">{line}</span> : null}
+        {/*
+          What it MEASURED here, under what it says it tries to do. Drawn only
+          where a round robin exists for this game at the running code.
+        */}
+        {measured !== null ? (
+          <span className="text-xs leading-snug text-ink-soft" data-testid="set-up-opponent-measured">
+            {measured}
+          </span>
+        ) : null}
       </span>
       <PickMark className="absolute top-1.5 right-1.5 size-5" />
     </label>

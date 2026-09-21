@@ -42,3 +42,17 @@ export type LadderMeasurement = {
 
 /** Every game measured so far. A game that has never been measured has no row. */
 export type LadderStrengthTable = Partial<Record<RuleVariant, LadderMeasurement>>;
+
+/** One grade's record against a neighbouring rung, from its own side of the board. */
+export type LadderNeighbour = {
+  tier: BotTier;
+  wins: number;
+  losses: number;
+  draws: number;
+};
+
+/** The rung above and the rung below; null where the ladder ends or the pairing was never played. */
+export type LadderNeighbours = {
+  above: LadderNeighbour | null;
+  below: LadderNeighbour | null;
+};
