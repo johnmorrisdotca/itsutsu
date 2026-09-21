@@ -44,6 +44,12 @@ import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
+import { PendingMoveControls } from "./PendingMoveControls";
+import { postTurn } from "./postTurn";
+import { pendingMove, submitWords, type PendingMove } from "./pendingMove";
+import type { BotTurn } from "@/lib/gomoku/opponent.types";
+import { AFTER_MOVE, MOVE_CONFIRM } from "@/lib/preferences/turnFlow";
+import { MOVE_KINDS } from "@/lib/gomoku/gomoku.constants";
 
 /**
  * A game played from two devices.
@@ -53,6 +59,9 @@ import { TONE_CLASS } from "@/components/ui/ui.constants";
  * times a minute at most, so a short poll costs less than the machinery a
  * socket would need, and it survives a phone locking and waking up.
  */
+/** The site's own answers, for a reader whose account has not been asked. */
+const DEFAULT_TURN_FLOW = { moveConfirm: MOVE_CONFIRM.preview, afterMove: AFTER_MOVE.nextWaiting } as const;
+
 export function SharedGame({
   initial,
   token,
@@ -62,6 +71,7 @@ export function SharedGame({
   ignoring = [],
   offer = null,
   appearance = DEFAULT_APPEARANCE,
+  turnFlow = DEFAULT_TURN_FLOW,
 }: SharedGameProps) {
   const [error, setError] = useState<string | null>(null);
   // Mute this opponent's messages for this game only; remembered in this browser.
@@ -124,7 +134,17 @@ export function SharedGame({
 
   // A move played is a board finished with, so long as the turn actually ended
   // — and so long as nothing is being asked over the top of it.
-  const { advance, notice, whileAsking } = useAdvanceToNextGame();
+  const { advance, notice, whileAsking } = useAdvanceToNextGame(turnFlow.afterMove);
+
+  /*
+   * THE MOVE PLACED BUT NOT SENT. A live game's record is final, so a misclick
+   * on a phone used to be a permanent move in a rated game days old. The stone
+   * is laid on the board — by the engine, so captures and endings show exactly
+   * as they will — and nothing leaves this browser until Submit. See
+   * `pendingMove.ts`, and `moveConfirm` for why preview is the default.
+   */
+  const [pending, setPending] = useState<PendingMove | null>(null);
+  const previewing = turnFlow.moveConfirm === MOVE_CONFIRM.preview;
 
   /** Sends one move, of any of the three shapes, and takes the server's answer as the truth. */
   async function send(body: Record<string, unknown>) {
@@ -157,12 +177,40 @@ export function SharedGame({
     await advance(after, seat);
   }
 
+  /**
+   * A turn the player has chosen with a click on the board.
+   *
+   * Previewed or sent, and that is the only difference between the two
+   * settings — the same turn, through the same `postTurn` mapping, either way.
+   * A turn the engine refuses is not taken at all rather than previewed as a
+   * board that did not change; see `pendingMove`.
+   */
+  async function chose(turn: BotTurn) {
+    if (!previewing) {
+      await postTurn(turn, send);
+      return;
+    }
+    setPending(pendingMove(state, turn));
+  }
+
+  /** Sends the move that has been sitting on the board, and clears it either way. */
+  async function submit() {
+    if (pending === null) return;
+    const turn = pending.turn;
+    setPending(null);
+    await postTurn(turn, send);
+  }
+
   async function play(point: Point) {
     if (!playable) return;
+    // A board with a move already on it is answered with Submit or Start over,
+    // not with another click: the second stone would be the misclick this
+    // whole thing exists to catch.
+    if (pending !== null) return;
     // The piece games: the click is the corner of the piece in hand.
     if (hand.piece !== null && !hand.layingSingle) {
       const footprint = hand.footprintFor(point);
-      if (footprint !== null) await send({ cells: footprint });
+      if (footprint !== null) await chose({ kind: MOVE_KINDS.piece, cells: footprint });
       return;
     }
     // The sliding games: pick a piece up, then put it down.
@@ -175,7 +223,7 @@ export function SharedGame({
       if (lands && selected !== null) {
         const from = selected;
         setSelected(null);
-        await send({ row: point.row, col: point.col, from });
+        await chose({ kind: MOVE_KINDS.move, row: point.row, col: point.col, from });
         return;
       }
       if (cellAt(state, point) === state.toPlay) {
@@ -189,10 +237,10 @@ export function SharedGame({
       }
       return;
     }
-    await send(
+    await chose(
       choosesColour
-        ? { row: point.row, col: point.col, stone: placing }
-        : { row: point.row, col: point.col },
+        ? { kind: MOVE_KINDS.place, row: point.row, col: point.col, stone: placing }
+        : { kind: MOVE_KINDS.place, row: point.row, col: point.col },
     );
   }
 
@@ -307,9 +355,9 @@ export function SharedGame({
       <TurnBoardButton gameId={detail.id} turned={turned} />
 
       <Board
-        state={state}
+        state={pending?.after ?? state}
         appearance={board}
-        readOnly={!playable}
+        readOnly={!playable || pending !== null}
         onPlay={play}
         onTwist={twist}
         selected={selected}
@@ -327,6 +375,20 @@ export function SharedGame({
           onFlip={flip}
           onToggleSingle={toggleSingle}
           onPass={pass}
+        />
+      ) : null}
+
+      {/*
+        The move placed and not yet sent, with the two things left to do about
+        it. Directly under the board, because the stone it is about is on the
+        board and a control for it belongs where the eye already is.
+      */}
+      {pending !== null ? (
+        <PendingMoveControls
+          onSubmit={() => void submit()}
+          onStartOver={() => setPending(null)}
+          sending={false}
+          where={submitWords(turnFlow.afterMove, state.settings.variant)}
         />
       ) : null}
 

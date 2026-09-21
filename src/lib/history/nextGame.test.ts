@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import { advancesAfterMove, carriesOnwardFrom, nextWaiting, waitingFirst } from "./nextGame";
+import { AFTER_MOVE } from "@/lib/preferences/turnFlow";
 
 /** Only the two fields the rule reads, so the cases say what they are about. */
 const at = (id: string, since: string) => ({ game: { id }, since });
@@ -69,7 +70,7 @@ describe("which game to play next", () => {
 
   it("carries everybody onward for now, and has somewhere for the choice to live", () => {
     // True for everybody until the account preferences it will read exist.
-    expect(advancesAfterMove()).toBe(true);
+    expect(advancesAfterMove(AFTER_MOVE.nextWaiting)).toBe(true);
   });
 
   it("leaves the list it was given alone", () => {
@@ -78,5 +79,40 @@ describe("which game to play next", () => {
     const queue = [at("b", "2026-09-05T00:00:00Z"), at("a", "2026-09-01T00:00:00Z")];
     nextWaiting(queue);
     expect(queue.map((one) => one.game.id)).toEqual(["b", "a"]);
+  });
+});
+
+describe("where a move leaves you", () => {
+  const waiting = [
+    { since: "2026-09-01", game: { id: "a", variant: "ninuki" } },
+    { since: "2026-09-02", game: { id: "b", variant: "freestyle" } },
+    { since: "2026-09-03", game: { id: "c", variant: "ninuki" } },
+  ];
+
+  it("carries on to the longest-waiting game of any kind by default", () => {
+    expect(nextWaiting(waiting, "z")?.game.id).toBe("a");
+  });
+
+  it("stays within one game when that is what was asked for", () => {
+    // Just moved on the Ninuki that had waited longest: the next Ninuki, not
+    // the Freestyle that has waited longer. One set of rules at a time.
+    expect(nextWaiting(waiting, "a", "ninuki")?.game.id).toBe("c");
+  });
+
+  it("says nothing is waiting rather than substituting a different game", () => {
+    /*
+     * The one that matters. Somebody who asked to stay within one game has
+     * asked for exactly that, and dropping them onto a Freestyle board because
+     * no Ninuki is waiting would be answering a question they did not ask.
+     */
+    expect(nextWaiting(waiting, "c", "ninuki")?.game.id).toBe("a");
+    expect(nextWaiting([waiting[1]], undefined, "ninuki")).toBeNull();
+  });
+
+  it("does not move anybody who asked to stay put", () => {
+    expect(advancesAfterMove(AFTER_MOVE.stay)).toBe(false);
+    for (const answer of [AFTER_MOVE.nextWaiting, AFTER_MOVE.sameGame, AFTER_MOVE.myGames]) {
+      expect(advancesAfterMove(answer), `${answer} should move somebody`).toBe(true);
+    }
   });
 });
