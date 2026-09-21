@@ -49,7 +49,7 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
     await page.goto("/games/gomoku/new");
     await ready(page, "set-up-game");
     await openMoreSettings(page);
-    const summary = page.getByTestId("set-up-recap");
+    const summary = page.getByTestId("set-up-rules-words");
 
     // What a new member opens on: a free opening, a game that counts, a seat for anyone.
     await expect(chosenOpening(page)).toHaveAttribute("data-opening", "free");
@@ -183,7 +183,7 @@ test.describe("the last three choices on the set-up screen are tiles", () => {
     const radios = page.getByTestId("shared-rules-opening").locator('input[type="radio"]');
     await expect(radios).toHaveCount(1);
     await expect(radios.first()).toBeChecked();
-    await expect(page.getByTestId("set-up-recap")).toContainText("Free opening");
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Free opening");
 
     await chooseGame(page, "freestyle");
     await expect(page.locator('[data-testid="set-up-opening"][data-only="false"]')).toHaveCount(3);

@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { BROWSER_REPLY_GRACE_MS } from "../src/lib/bots/bots.constants";
 import { isBotId } from "../src/lib/bots/bots";
 import { memberContext } from "./members";
-import { aComputerOpponent, chooseOpponent, openMoreSettings, openSetUpPage, ready } from "./support";
+import { aComputerOpponent, chooseOpponent, openMoreSettings, openSetUpPage, ready, startAndBegin } from "./support";
 
 /**
  * THE COMPUTER'S MOVE NOBODY STAYED FOR, MADE BY THE BROWSER THAT COMES BACK.
@@ -52,9 +52,7 @@ async function abandonedGame(context: BrowserContext): Promise<{ page: Page; id:
   await openSetUpPage(page, "gomoku");
   await openMoreSettings(page);
   await chooseOpponent(page, await aComputerOpponent(page));
-  await page.getByTestId("set-up-start").click();
-  await ready(page, "doorstep");
-  await page.getByTestId("doorstep-begin").click();
+  await startAndBegin(page);
   await page.waitForURL(/\/games\/gomoku\/match\//, { timeout: 30_000 });
   const id = /match\/([^/?#]+)/.exec(page.url())?.[1] ?? "";
   expect(id, "the match address carries the game's id").not.toBe("");

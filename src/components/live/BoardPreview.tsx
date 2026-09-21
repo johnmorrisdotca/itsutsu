@@ -99,7 +99,15 @@ export function BoardPreview({ rules }: { rules: PreviewRules }) {
 
   return (
     <figure className="flex flex-col items-center gap-2" data-testid="board-preview">
-      <div className="pointer-events-none w-full max-w-[22rem]" aria-hidden="true">
+      {/*
+        SMALLER ON A PHONE. At 22rem the preview is most of a 390-pixel screen
+        on its own, and this page has a board, an opponent, the rules, a
+        handicap and a press to fit above the fold. John, 2026-09-21: "ideally,
+        one viewport/screen should be all the info, when collapsed." It is
+        still the real board, drawn from the real settings — just at a size
+        that leaves room for the rest of the screen it is on.
+      */}
+      <div className="pointer-events-none w-full max-w-[15rem] sm:max-w-[22rem]" aria-hidden="true">
         <Board
           state={state}
           appearance={DEFAULT_APPEARANCE}

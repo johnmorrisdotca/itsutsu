@@ -89,7 +89,15 @@ export function OpponentChoice({
           onChange={onChange}
           mark={<SeatMark kind="anyone" size="regular" />}
           title={POST_FOR_ANYONE}
-          line={`${say("setup.anyoneMeans")} ${SET_UP_COPY.postedWhere}`}
+          /*
+           * WHAT IT MEANS, AND NOT WHERE IT WAITS. `postedWhere` — "It waits on
+           * the Games page until somebody takes it" — is said again, in full,
+           * in the seating sentence over the button, which now states the whole
+           * game. Two lines a screen apart saying one thing is the repetition
+           * John named on 2026-09-21, and this tile is the one that can afford
+           * to lose it: the sentence below is the statement, this is the choice.
+           */
+          line={say("setup.anyoneMeans")}
           // A posted seat is whoever takes it, so there is no grade to measure.
           measured={null}
           computer={false}
@@ -103,13 +111,29 @@ export function OpponentChoice({
           variant={variant}
           shown={shown}
           /*
-           * Whether anybody at all has been chosen from these lists, which
-           * decides whether a run is a question or a way to change your mind.
-           * Asked over EVERY group rather than inside one, because a run cannot
-           * see the others and "nobody is chosen" is a fact about all of them.
-           * The posted-seat tile above is not a run and is never folded away.
+           * Whether the OPPONENT QUESTION has an answer — which decides whether
+           * a run is a question in front of you or a way to change your mind.
+           * Asked over every group rather than inside one, because a run cannot
+           * see the others.
+           *
+           * A POSTED SEAT IS AN ANSWER, and reading it as one is what took the
+           * set-up screen from four phone-fulls to one. It used to ask only
+           * whether somebody had been chosen from these LISTS, so a fresh game
+           * — where "post the seat for anyone" is chosen and drawn, first,
+           * above the lists — counted as unanswered and every run opened:
+           * thirteen full-width tiles of people and programs on a screen whose
+           * question was already answered. John, 2026-09-21: "one viewport
+           * should be all the info, when collapsed… I don't like the user
+           * scrolling to the bottom a lot to have to click next or play."
+           *
+           * It does not weaken the rule the fold was built on. That rule is
+           * that a fold must not hide a question nobody has answered, and the
+           * answer here is not hidden: it is the tile above these runs, chosen,
+           * with its own mark and its own words. What the runs hold is the
+           * other ways to answer, and each one's closed row says how many are
+           * inside it.
            */
-          answered={groups.some((one) => one.tiles.some((tile) => tile.value === shown))}
+          answered={shown === ANYONE || groups.some((one) => one.tiles.some((tile) => tile.value === shown))}
           disabled={cannotName}
           onChange={onChange}
         />

@@ -7,6 +7,7 @@ import {
   chooseOpponent,
   chosenBoard,
   chosenOpponent,
+  matchIdIn,
   openChoice,
   openMoreSettings,
   ready,
@@ -157,19 +158,18 @@ test.describe("playing a finished game again", () => {
     await ready(page, "set-up-game");
 
     /*
-     * PRESSED IN TWO, BECAUSE WHAT STANDS BETWEEN THEM IS THE POINT. Start states
-     * the game; Begin makes it. And a rematch is the case that best earns the page
-     * in between: the colours swap, so "you are white this time" is worth reading
-     * BEFORE the board rather than being worked out from it three moves in.
+     * READ BACK BEFORE THE PRESS, WHICH IS THE POINT — and a rematch is the case
+     * that earns it best: the colours swap, so "you are white this time" is
+     * worth reading BEFORE the board rather than being worked out from it three
+     * moves in. It was read on a page of its own until the two screens were made
+     * one; it is over the button now.
      */
-    await page.getByTestId("set-up-start").click();
-    await ready(page, "doorstep");
-    await expect(page.getByTestId("doorstep-colours")).toContainText(them.name.split(" ")[0]);
-    await expect(page.getByTestId("doorstep-colours")).toContainText("you are white");
-    await page.getByTestId("doorstep-begin").click();
-    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+    await expect(page.getByTestId("set-up-seating")).toContainText(them.name.split(" ")[0]);
+    await expect(page.getByTestId("set-up-seating")).toContainText("you are white");
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+(\/\d+)?$/, { timeout: 30_000 });
 
-    const id = page.url().split("/").pop()!;
+    const id = matchIdIn(page.url());
     tidyAway(id);
     const started = await context.request.get(`/api/games/${id}`);
     expect(started.status()).toBe(200);
@@ -266,22 +266,17 @@ test.describe("playing a finished game again", () => {
     // The set-up screen says it has stopped being a repeat, and why.
     await expect(page.getByTestId("set-up-again")).toContainText("not a rematch");
 
-    await page.getByTestId("set-up-start").click();
-    await ready(page, "doorstep");
-    await expect(page.getByTestId("doorstep-lineage"), "the doorstep says this is not a rematch").toContainText(
-      "not a rematch",
-    );
-    await expect(page.getByTestId("doorstep-colours"), "and the colours are not swapped").toContainText(
+    await expect(page.getByTestId("set-up-seating"), "and the colours are not swapped").toContainText(
       "you are black",
     );
     // An absence, asserted after the sentence it would sit in has been seen.
-    await expect(page.getByTestId("doorstep-colours"), "the doorstep names the player chosen").not.toContainText(
+    await expect(page.getByTestId("set-up-seating"), "the screen names the player chosen").not.toContainText(
       them.name.split(" ")[0],
     );
 
-    await page.getByTestId("doorstep-begin").click();
-    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
-    const id = page.url().split("/").pop()!;
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+(\/\d+)?$/, { timeout: 30_000 });
+    const id = matchIdIn(page.url());
     tidyAway(id);
     const started = await context.request.get(`/api/games/${id}`);
     expect(started.status()).toBe(200);
@@ -402,7 +397,7 @@ test.describe("carrying a position into a new game", () => {
     // The screen names the program, and marks it as one — in the hint paragraph
     // and in the folded summary line, which used to read "the same opponent".
     await expect(page.getByTestId("set-up-fork")).toContainText(source.whiteName);
-    await expect(page.getByTestId("set-up-recap")).toContainText(machine);
+    await expect(page.getByTestId("set-up-seating")).toContainText(machine);
     await openMoreSettings(page);
     /*
      * AND THE RATING IS STILL OFFERED, which is the promise the route used to
@@ -425,19 +420,17 @@ test.describe("carrying a position into a new game", () => {
     await openChoice(page, "set-up-rated-fold");
     await expect(page.getByTestId("shared-rules-rated")).toBeVisible();
 
-    await page.getByTestId("set-up-start").click();
-    await ready(page, "doorstep");
-    // The doorstep says who is playing, and does not say both seats are yours.
-    await expect(page.getByTestId("doorstep-colours")).toContainText(machine);
-    await expect(page.getByTestId("doorstep-colours")).not.toContainText("Both seats are yours");
-    await expect(page.getByTestId("doorstep-colours"), "a program is never asked").not.toContainText(
+    // The screen says who is playing, and does not say both seats are yours.
+    await expect(page.getByTestId("set-up-seating")).toContainText(machine);
+    await expect(page.getByTestId("set-up-seating")).not.toContainText("Both seats are yours");
+    await expect(page.getByTestId("set-up-seating"), "a program is never asked").not.toContainText(
       "This is an offer",
     );
 
-    await page.getByTestId("doorstep-begin").click();
-    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+(\/\d+)?$/, { timeout: 30_000 });
 
-    const id = page.url().split("/").pop()!;
+    const id = matchIdIn(page.url());
     tidyAway(id);
     const next = await context.request.get(`/api/games/${id}`);
     expect(next.status()).toBe(200);
@@ -592,21 +585,16 @@ test.describe("carrying a position into a new game", () => {
     // And the drawer states the fact where the tiles would have been.
     await expect(page.getByTestId("set-up-rated-fact")).toContainText("will not count");
     // And the fact is stated in the control's place rather than left out.
-    await expect(page.getByTestId("set-up-recap")).toContainText("Will not count");
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Will not count");
 
     /*
-     * AND THE DOORSTEP AGREES WITH ITSELF. Its paragraph and its table of facts
-     * both read from the same answer, so neither can say "Rated" beside "both
-     * seats are yours". Driven by the Start button rather than by typing the
-     * address, because a reader presses Start.
+     * AND THE SCREEN AGREES WITH ITSELF. The rules on the folded row and the
+     * seating sentence under them read from the same answer, so neither can say
+     * "Rated" two lines from "both seats are yours".
      */
-    await page.getByTestId("set-up-start").click();
-    await ready(page, "doorstep");
-    await expect(page.getByTestId("doorstep-statement")).toContainText("Will not count");
-    await expect(page.getByTestId("doorstep-statement")).not.toContainText("Rated.");
-    await expect(page.getByTestId("doorstep-colours")).toContainText("two people at one screen");
-    // The table of facts has room for the reason as well as the verdict.
-    await expect(page.getByTestId("doorstep-facts")).toContainText("Will not count — one screen");
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Will not count");
+    await expect(page.getByTestId("set-up-rules-words")).not.toContainText("Rated");
+    await expect(page.getByTestId("set-up-seating")).toContainText("two people at one screen");
 
     await context.close();
   });

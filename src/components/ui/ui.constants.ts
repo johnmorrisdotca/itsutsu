@@ -29,6 +29,25 @@ export const BUTTON_BASE =
 export const BUTTON_TAP =
   "inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl border px-4 py-3 text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35";
 
+/*
+ * THE ONE ACTION A SCREEN EXISTS FOR, on a phone.
+ *
+ * John, 2026-09-21, walking the way into a game: "in mobile, the buttons are
+ * small, targets are hard to hit. probably full width buttons make more sense
+ * in many of the mobile situations." Begin and Continue are the press the
+ * whole screen is asking for, and on a 390-pixel phone they were a
+ * thirty-pixel pill against the left edge under a screenful of choices.
+ *
+ * `BUTTON_TAP`'s forty-eight pixels of height, and the full width of the
+ * column up to the small breakpoint — where a row of controls beside each
+ * other reads better than a stack and there is a pointer to aim with. It is
+ * the whole class, like `BUTTON_TAP`, for the same reason: two classes both
+ * setting padding are resolved by stylesheet order rather than by the order
+ * they are written in.
+ */
+export const BUTTON_LEAD =
+  "inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-xl border px-4 py-3 text-base font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35 sm:w-auto";
+
 export const BUTTON_QUIET =
   "border-rule-strong/80 bg-ivory/80 text-ink hover:bg-rule/60";
 

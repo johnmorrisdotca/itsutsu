@@ -94,16 +94,22 @@ test.describe("the twenty-game cap", () => {
     await chooseRated(page, false);
     const go = page.getByTestId("set-up-start");
     await expect(go, "a friendly seat already waiting at exactly this game would be sat at instead").not.toContainText(/sit/i);
+    await expect(go, "a game of your own is begun here, not one screen further on").toHaveAttribute(
+      "data-press",
+      "begin",
+    );
     await go.click();
 
-    await ready(page, "doorstep");
-    await page.getByTestId("doorstep-begin").click();
-
-    const refusal = page.getByTestId("doorstep-error");
+    /*
+     * THE REFUSAL IS SAID WHERE THE PRESS WAS. It used to be read on the
+     * doorstep, which was the screen that wrote; the set-up screen states the
+     * game and writes it now, so the answer comes back to the same screen.
+     */
+    const refusal = page.getByTestId("set-up-trouble");
     await expect(refusal).toContainText(`You have ${CAP} games on the go, and ${CAP} at once is the limit here`);
     await expect(refusal).toContainText(/finish or resign one/i);
-    // Still on the doorstep: nothing to land on, because nothing was made.
-    await expect(page).toHaveURL(/\/begin/);
+    // Still on the set-up screen: nothing to land on, because nothing was made.
+    await expect(page).toHaveURL(/\/games\/[^/]+\/new|\/games\/new/);
 
     const check = new PrismaClient();
     try {

@@ -59,19 +59,26 @@ test.describe("a posted seat keeps the opening somebody chose", () => {
     await expect(page.getByTestId("set-up-start")).toBeVisible();
     await expect(page.getByTestId("set-up-game"), "offered a Free seat for a Pro game").not.toContainText(waiting);
 
-    await page.getByTestId("set-up-start").click();
-    await ready(page, "doorstep");
-    // What the page states, first: the opening chosen.
-    await expect(page.getByTestId("rules-statement")).toContainText("Pro");
-    // Then what it must not: sitting down with the stranger at their Free game.
-    await expect(page.getByTestId("doorstep"), "the doorstep sits down at a Free seat").not.toContainText(waiting);
+    /*
+     * AND THE PRESS IS A NEW GAME RATHER THAN THEIR SEAT — asserted on the
+     * button itself, which says what it will do (`data-press`). This used to
+     * be read on the doorstep, one press further on; the set-up screen states
+     * and begins a game of its own now, and the doorstep is where somebody
+     * else's seat is read. "Begin" here IS the claim: nothing is being sat at.
+     */
+    await expect(page.getByTestId("set-up-start"), "offered a Free seat for a Pro game").toHaveAttribute(
+      "data-press",
+      "begin",
+    );
+    // What the screen states, first: the opening chosen.
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Pro");
+    await expect(page.getByTestId("set-up-seating"), "sitting down at a Free seat").not.toContainText(waiting);
 
-    // The way back: Free again, and the stranger's seat is offered again.
-    await page.getByTestId("doorstep-change").click();
-    await ready(page, "set-up-game");
+    // And back to Free, where the stranger's seat is offered again.
     await openMoreSettings(page);
     await chooseOpening(page, "free");
     await expect(page.getByTestId("set-up-match")).toContainText(waiting);
+    await expect(page.getByTestId("set-up-start")).toHaveAttribute("data-press", "seat");
   });
 });
 

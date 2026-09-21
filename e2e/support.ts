@@ -199,41 +199,68 @@ export async function chooseGame(page: Page, variant: string) {
  */
 export async function openMoreSettings(page: Page) {
   /*
-   * The set-up screen no longer folds anything — John: "so very hard to see..."
-   * — so there the rules are on the page and this only waits for them. It still
-   * opens a drawer where there is one, so a spec that calls it does not have to
-   * know which kind of screen it is on.
+   * TWO SHAPES, AND THIS OPENS EITHER. Beside a board the rules are behind a
+   * `<details>` drawer. On the set-up screen they are a folded group whose row
+   * prints what is chosen — "Free opening · Resigning allowed · No clock ·
+   * Rated" — which is how that screen fits a phone. A spec that wants the
+   * clock select taps the row, the way a reader does.
    */
   const drawer = page.getByTestId("more-settings");
   if ((await drawer.count()) > 0) {
     const shut = await drawer.evaluate((el) => (el as HTMLDetailsElement).open === false);
     if (shut) await page.getByTestId("more-settings-open").click();
   }
+  await openRulesGroup(page);
+  /*
+   * AND THE HANDICAP GROUP, which is folded on the set-up screen too. Twelve
+   * specs call this helper meaning "show me the set-up screen's settings", and
+   * half of them then reach for a handicap or a head start — so it opens both
+   * groups rather than making each of them remember which group a control is
+   * in. It is still idempotent and still silent where a group is not there.
+   */
+  await openHandicapGroup(page);
   await expect(page.getByTestId("shared-rules-move-time")).toBeVisible();
 }
 
 /**
- * Presses Start on the setup screen and then Begin on the doorstep, which is
- * what it now takes to reach a board.
+ * Presses Begin on the set-up screen, and Begin again on the doorstep where
+ * that press led to one.
  *
- * Start no longer creates anything: it carries the draft to /games/<game>/begin,
- * which states what is about to be played and creates it on a press of its own.
- * That is the whole of the doorstep ticket — "show the settings before the board,
- * as the board means we're playing" — so every spec whose subject is the GAME
- * rather than the confirmation goes through here.
+ * The set-up screen states the whole game — every rule on its own folded row,
+ * the seating in a sentence over the button — and writes it, so for an
+ * ordinary game this is one press and the next thing is a board. That is the
+ * doorstep ticket's promise kept on one screen: "show the settings before the
+ * board, as the board means we're playing."
  *
- * It waits on the doorstep's own marker between the two presses, and that is not
- * politeness: Begin is a server-rendered button before React attaches, so a click
- * in that window does nothing at all and the spec fails several lines later
- * complaining about a board.
+ * THE DOORSTEP IS STILL REACHED for a seat SOMEBODY ELSE posted, where the
+ * rules being agreed to are theirs. A spec is not usually asking for that and
+ * cannot easily tell in advance whether the database has a matching seat on
+ * it, so this waits briefly and presses again if it is there.
+ *
+ * It waits on the doorstep's own marker before that second press, and that is
+ * not politeness: Begin is a server-rendered button before React attaches, so
+ * a click in that window does nothing at all and the spec fails several lines
+ * later complaining about a board.
  *
  * A spec about the doorstep ITSELF should not use this — see e2e/doorstep.spec.ts,
- * which presses the two separately and asserts what stands between them.
+ * which reaches it by a posted seat and asserts what stands between.
  */
 export async function startAndBegin(page: Page) {
-  await page.getByTestId("set-up-start").click();
-  await ready(page, "doorstep");
-  await page.getByTestId("doorstep-begin").click();
+  /*
+   * ONE PRESS FOR YOUR OWN GAME, TWO FOR SOMEBODY ELSE'S SEAT — and which it
+   * is, ASKED BEFORE THE PRESS. The button says so (`data-press`), because
+   * deciding afterwards means waiting to see which page arrives, and that wait
+   * is a race the spec loses: a board rewrites its own address to name the
+   * position the moment it hydrates, so two seconds of deciding is two seconds
+   * after the address every caller here is waiting for has gone.
+   */
+  const button = page.getByTestId("set-up-start");
+  const press = await button.getAttribute("data-press");
+  await button.click();
+  if (press === "seat") {
+    await ready(page, "doorstep");
+    await page.getByTestId("doorstep-begin").click();
+  }
 }
 
 /**
@@ -310,12 +337,45 @@ export async function openChoice(page: Page, testId: string, group?: string) {
   }
 }
 
+/**
+ * THE GAME'S ID OUT OF A MATCH ADDRESS, however that address is spelled.
+ *
+ * /games/<game>/match/<id> and /games/<game>/match/<id>/<move> are the same
+ * game, and which one a spec is looking at depends on whether the board has
+ * hydrated and named the position yet — see `GameView`'s `replaceState`. So
+ * the last segment is not the id, and `url.split("/").pop()` reads "0" for
+ * every game that has just been made.
+ */
+export function matchIdIn(url: string): string {
+  const after = url.split("/match/")[1] ?? "";
+  return after.split("/")[0].split("?")[0];
+}
+
 /** Every opponent list opened, for a spec hunting a particular person or program. */
 export async function openOpponentLists(page: Page) {
   await openChoice(page, "set-up-opponent-fold");
 }
 
+/**
+ * The GROUP a choice lives in, opened first.
+ *
+ * The set-up screen folds twice over: the rules group and the handicap group
+ * are folded rows of their own, and the opening, the ratings and the
+ * restrictions are folds INSIDE them. A fold's children are `hidden` rather
+ * than unmounted, so reaching for an inner one while the outer is shut finds a
+ * control nobody can see and fails on visibility, several lines from the
+ * cause. A reader opens the group and then the choice; so does a spec.
+ */
+export async function openRulesGroup(page: Page) {
+  await openChoice(page, "set-up-rules");
+}
+
+export async function openHandicapGroup(page: Page) {
+  await openChoice(page, "set-up-handicap-group");
+}
+
 export async function chooseOpening(page: Page, opening: string) {
+  await openRulesGroup(page);
   await openChoice(page, "set-up-opening-fold");
   const tile = page.locator(`[data-testid="set-up-opening"][data-opening="${opening}"]`);
   await tile.click();
@@ -329,6 +389,7 @@ export function chosenOpening(page: Page) {
 
 /** Presses Rated or Friendly. */
 export async function chooseRated(page: Page, rated: boolean) {
+  await openRulesGroup(page);
   await openChoice(page, "set-up-rated-fold");
   const tile = page.locator(`[data-testid="set-up-rated"][data-rated="${rated ? "rated" : "friendly"}"]`);
   await tile.click();

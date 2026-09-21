@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { playerKey } from "../src/lib/rating/playerKey";
 import { memberContext, memberIdFor, removeMember, seatTokensFor, seedMember } from "./members";
-import { chosenOpponent, openMoreSettings, ready } from "./support";
+import { chosenOpponent, matchIdIn, openMoreSettings, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file makes, taken away when it finishes. */
@@ -61,7 +61,7 @@ test("a handicap chosen on the set-up screen makes a game that says it will not 
     await expect(fact).toContainText("This game will not count");
     await expect(fact).toContainText("handicap");
     // And the line over Continue, which says what the press will carry, says it too.
-    await expect(page.getByTestId("set-up-recap")).toContainText("Will not count");
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Will not count");
     // The tiles are gone — asserted after the fact that took their place was seen.
     await expect(page.getByTestId("set-up-rated")).toHaveCount(0);
 
@@ -74,14 +74,16 @@ test("a handicap chosen on the set-up screen makes a game that says it will not 
     await colour.selectOption("black");
     await page.getByRole("checkbox", { name: /No double three/i }).first().check();
     await expect(page.getByTestId("set-up-rated-fact")).toHaveAttribute("data-refused", "handicap");
-    await page.getByTestId("set-up-start").click();
-    await ready(page, "doorstep");
-    await expect(page.getByTestId("rules-statement")).toContainText("Will not count — a handicap");
-    await expect(page.getByTestId("doorstep-facts")).toContainText("Will not count");
-    await page.getByTestId("doorstep-begin").click();
-    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+    /*
+     * AND THE SCREEN STATES THE SAME FACT WHERE THE PRESS IS. It used to be
+     * read on the doorstep; the set-up screen states the whole game itself
+     * now, so it is on the folded rules row directly over the button.
+     */
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Will not count");
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+(\/\d+)?$/, { timeout: 30_000 });
 
-    const id = page.url().split("/").pop()!;
+    const id = matchIdIn(page.url());
     tidyAway(id);
     const made = await context.request.get(`/api/games/${id}`);
     expect(made.status()).toBe(200);

@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { isLocalDatabase } from "../src/lib/db/localDatabase";
 import { PLAYER_SESSION_DAYS, SESSION_COOKIE, expiryInDays, signSession } from "../src/lib/auth/session";
 import { memberContext, memberIdFor, seedMember } from "./members";
-import { ADMIN_STATE, ready } from "./support";
+import { ADMIN_STATE, ready, startAndBegin } from "./support";
 import { gamesMade } from "./tidy";
 
 /**
@@ -68,11 +68,8 @@ async function askFromTheirPage(page: Page, playerId: string, mine: (id: string)
   await expect(actions).toBeVisible();
   await actions.getByTestId("challenge").click();
   await ready(page, "set-up-game");
-  const go = page.getByTestId("set-up-start");
-  await expect(go).toBeEnabled();
-  await go.click();
-  await ready(page, "doorstep");
-  await page.getByTestId("doorstep-begin").click();
+  await expect(page.getByTestId("set-up-start")).toBeEnabled();
+  await startAndBegin(page);
   await expect(page).toHaveURL(/\/games\/[^/]+\/match\/[^/?#]+(?:\/\d+)?$/);
   mine(new URL(page.url()).pathname.split("/")[4]);
 }

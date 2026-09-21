@@ -11,6 +11,7 @@ import {
   chosenBoard,
   chosenOpening,
   chosenRated,
+  matchIdIn,
   openMoreSettings,
   ready,
 } from "./support";
@@ -20,7 +21,7 @@ import { gamesMade } from "./tidy";
 const tidyAway = gamesMade();
 
 /**
- * THE DOORSTEP: THE PAGE BETWEEN CHOOSING A GAME AND PLAYING ONE.
+ * A GAME IS STATED IN FULL BEFORE IT IS WRITTEN — AND NOW ON ONE SCREEN.
  *
  * John, having asked several times: "I still DO NOT, after asking many times,
  * see a secondary page, after pressing Start the game… we go straight to the
@@ -28,21 +29,27 @@ const tidyAway = gamesMade();
  * to see that Game board with all the settings on the side… show the settings
  * before the board, as the board means we're playing!!!!"
  *
- * Every previous answer read that as ONE page and built the setup screen — the
- * pickers at /games/<game>/new — better. It is two pages. One where you CHOOSE,
- * and one where you READ BACK what you chose and say yes. The board means
- * playing; nothing before it should look like a board, and nothing before Begin
- * should have written a row.
+ * That was answered with a second page, /games/<game>/begin, and this file was
+ * about the two of them. Then, 2026-09-21: "our game signup and starting
+ * process seems to have one too many screens… too much repeat info on the
+ * multi-screens." Both were true, and both are the same requirement read at
+ * different lengths: what is going to be played must be READ BACK before
+ * anything is written. It does not take two pages to read something back.
  *
- * THE CASE THAT MATTERS IS A FRESH GAME, and it is first in this file for that
- * reason. A rematch arrives at setup with every field already filled in, so it
- * ALREADY reads like a confirmation — which is exactly why three attempts at
- * this looked finished while the thing John keeps hitting was untouched. A
- * fresh setup reads like a form, because it is one.
+ * So the set-up screen states the whole game — every rule on its own folded
+ * row, who sits where in a sentence over the button — and Begin writes it. The
+ * promise this file exists to hold is unchanged and is asserted the same way:
+ * nothing is written until the press, the press makes exactly one game, and
+ * pressing twice does not buy two.
  *
- * Every case here CLICKS THE CONTROL A READER CLICKS. A spec that types the
- * doorstep's address has tested the address: the whole fault was that Start
- * went somewhere else, and an address cannot tell you where a button goes.
+ * THE DOORSTEP REMAINS FOR SOMEBODY ELSE'S POSTED SEAT, which is the one case
+ * where it was never a repeat: the rules being agreed to there are theirs, and
+ * reading them before sitting down is the whole point. The last case here is
+ * that one, and it is the only one that still presses twice.
+ *
+ * Every case CLICKS THE CONTROL A READER CLICKS. A spec that types an address
+ * has tested the address: the original fault was that Start went somewhere
+ * else, and an address cannot tell you where a button goes.
  */
 
 /** How many games this member has on the go, asked the way their own page asks. */
@@ -60,23 +67,23 @@ async function gamesOf(context: BrowserContext): Promise<number> {
 
 /** The game a match address names, remembered so this file clears up after itself. */
 function noteGame(page: Page): void {
-  const id = page.url().split("/match/")[1]?.split("/")[0];
-  if (id !== undefined && id !== "") tidyAway(id);
+  const id = matchIdIn(page.url());
+  if (id !== "") tidyAway(id);
 }
 
-/** The doorstep, once it is listening. A statement and two controls, and no board. */
-async function doorstep(page: Page) {
-  await ready(page, "doorstep");
+/** What the set-up screen says it is about to make, once it is listening. */
+async function stated(page: Page) {
+  await ready(page, "set-up-game");
   return {
-    statement: page.getByTestId("doorstep-statement"),
-    colours: page.getByTestId("doorstep-colours"),
-    facts: page.getByTestId("doorstep-facts"),
-    begin: page.getByTestId("doorstep-begin"),
-    change: page.getByTestId("doorstep-change"),
+    summary: page.getByTestId("set-up-summary"),
+    rules: page.getByTestId("set-up-rules-words"),
+    handicap: page.getByTestId("set-up-handicap-words"),
+    seating: page.getByTestId("set-up-seating"),
+    begin: page.getByTestId("set-up-start"),
   };
 }
 
-test.describe("the doorstep, between the setup screen and the board", () => {
+test.describe("stating a game before it is written", () => {
   test("a fresh game is stated, then made, and only on Begin", async ({ browser, baseURL }) => {
     const stamp = Date.now().toString(36);
     const me = { email: `door-${stamp}@example.test`, name: `Door ${stamp}` };
@@ -97,49 +104,47 @@ test.describe("the doorstep, between the setup screen and the board", () => {
 
     expect(await gamesOf(context), "a fresh member who has only chosen has no games").toBe(0);
 
-    /*
-     * The press. It used to POST a game and land on the board, which is the
-     * whole complaint — so this asserts where it lands BEFORE anything else.
-     */
-    await page.getByTestId("set-up-start").click();
-    await expect(page).toHaveURL(/\/games\/reversi\/begin(\?|$)/);
-
-    const screen = await doorstep(page);
+    const screen = await stated(page);
 
     /*
-     * IT IS NOT A BOARD AND IT IS NOT A SECOND FORM. Both absences are asserted
-     * after something present on the same page has been waited for, because
-     * `toHaveCount(0)` passes the instant it is asked and on an unrendered page
-     * would agree to anything.
+     * IT IS NOT A BOARD. Asserted after something present on the same page has
+     * been waited for, because `toHaveCount(0)` passes the instant it is asked
+     * and on an unrendered page would agree to anything.
      */
     await expect(screen.begin).toBeVisible();
     await expect(page.getByTestId("shared-game"), "the board means playing").toHaveCount(0);
-    await expect(page.getByTestId("set-up-game"), "a statement, not a second form").toHaveCount(0);
 
-    // What it says: the game, the board, and — the fact people most want — who is what colour.
-    await expect(screen.statement).toContainText("Reversi");
-    await expect(screen.statement).toContainText("8×8");
-    await expect(screen.facts).toContainText("No clock");
-    await expect(screen.colours).toContainText(/black/i);
-    await expect(screen.colours).toContainText(/white/i);
+    /*
+     * WHAT IT SAYS, and it is everything the doorstep used to say: the game and
+     * the board, the rules on the row that holds them, and — the fact people
+     * most want — who is what colour.
+     */
+    await expect(screen.summary).toContainText("Reversi");
+    await expect(screen.summary).toContainText("8×8");
+    await expect(screen.rules).toContainText("No clock");
+    await expect(screen.seating).toContainText(/black/i);
+    await expect(screen.seating).toContainText(/white/i);
 
-    // And still nothing written. This is the promise the whole page exists for.
-    expect(await gamesOf(context), "reaching the doorstep creates nothing").toBe(0);
+    // And still nothing written. This is the promise the whole screen exists for.
+    expect(await gamesOf(context), "reading a game back creates nothing").toBe(0);
 
+    // One press, and the next thing is a board.
+    await expect(screen.begin).toHaveAttribute("data-press", "begin");
     await screen.begin.click();
-    await page.waitForURL(/\/games\/reversi\/match\/[a-z0-9]{4}-[a-z0-9]{4}/, { timeout: 30_000 });
+    await page.waitForURL(/\/games\/reversi\/match\/[^/]+(\/\d+)?$/, { timeout: 30_000 });
     noteGame(page);
     expect(await gamesOf(context), "Begin makes exactly one game").toBe(1);
 
     await context.close();
   });
 
-  test("and Change something goes back with every choice still set", async ({ browser, baseURL }) => {
+  test("every choice survives a reload, and a reload creates nothing", async ({ browser, baseURL }) => {
     /*
-     * THE WAY BACK, which a one-directional test never finds. Not a browser
-     * back: a link carrying the draft, so it works from a reloaded or shared
-     * address — and so that the game itself is still a choice, since choosing
-     * it is the last thing this reader did.
+     * THE WAY BACK, which a one-directional test never finds. Every choice is
+     * in the address, so a reloaded, bookmarked or shared link opens on the
+     * same game — including the game itself, since choosing it is the last
+     * thing this reader did. Reloading is what a person does when a page looks
+     * slow, and doing it three times must not buy three games.
      */
     const stamp = Date.now().toString(36);
     const me = { email: `back-${stamp}@example.test`, name: `Back ${stamp}` };
@@ -155,16 +160,16 @@ test.describe("the doorstep, between the setup screen and the board", () => {
     await chooseRated(page, false);
     await page.getByTestId("shared-rules-move-time").selectOption("none");
 
-    await page.getByTestId("set-up-start").click();
-    const screen = await doorstep(page);
-    await expect(screen.statement).toContainText("19×19");
-    await expect(screen.facts).toContainText(/friendly/i);
+    const screen = await stated(page);
+    await expect(screen.summary).toContainText("19×19");
+    await expect(screen.rules).toContainText(/friendly/i);
 
-    await screen.change.click();
-    await ready(page, "set-up-game");
+    await page.reload();
+    await stated(page);
+    await page.reload();
+    const again = await stated(page);
 
-    // Every choice, still made — and the game among them, because it is the one
-    // this reader picked and "change something" that cannot change it is a wall.
+    // Every choice, still made — and the game among them.
     await expect(chosenBoard(page)).toHaveAttribute("data-size", "19");
     await expect(page.locator('[data-testid="set-up-variant"][data-chosen="true"]')).toHaveAttribute(
       "data-variant",
@@ -174,46 +179,19 @@ test.describe("the doorstep, between the setup screen and the board", () => {
     await expect(chosenOpening(page)).toHaveAttribute("data-opening", "pro");
     await expect(chosenRated(page)).toHaveAttribute("data-rated", "friendly");
     await expect(page.getByTestId("shared-rules-move-time")).toHaveValue("none");
+    await expect(again.summary).toContainText("19×19");
 
-    expect(await gamesOf(context), "walking there and back creates nothing").toBe(0);
-
-    await context.close();
-  });
-
-  test("a reload of the doorstep creates nothing", async ({ browser, baseURL }) => {
-    /*
-     * The page is a pure render of its own address, so this ought to be true by
-     * construction — which is exactly the kind of claim that stops being true
-     * the day somebody adds a convenience. Reloading is what a person does when
-     * a page looks slow, and doing it three times must not buy three games.
-     */
-    const stamp = Date.now().toString(36);
-    const me = { email: `load-${stamp}@example.test`, name: `Load ${stamp}` };
-    const context = await memberContext(browser, baseURL!, me);
-    const page = await context.newPage();
-
-    await page.goto("/games/new");
-    await ready(page, "set-up-game");
-    await chooseGame(page, "reversi");
-    await page.getByTestId("set-up-start").click();
-    await doorstep(page);
-
-    await page.reload();
-    await doorstep(page);
-    await page.reload();
-    await doorstep(page);
-
-    expect(await gamesOf(context), "three reloads of a doorstep are no games").toBe(0);
+    expect(await gamesOf(context), "three reloads of a stated game are no games").toBe(0);
 
     await context.close();
   });
 
-  test("a doorstep whose game has been made offers the board rather than a second game", async ({
+  test("a screen whose game has been made offers the board rather than a second game", async ({
     browser,
     baseURL,
   }) => {
     /*
-     * Pressing Begin twice — a double-tap, or a Back onto a page that has
+     * Pressing Begin twice — a double-tap, or a Back onto a screen that has
      * already been said yes to. The second press must not buy a second game:
      * it hands over the one that exists.
      */
@@ -225,19 +203,16 @@ test.describe("the doorstep, between the setup screen and the board", () => {
     await page.goto("/games/new");
     await ready(page, "set-up-game");
     await chooseGame(page, "reversi");
-    const screenBefore = page.getByTestId("set-up-start");
-    await screenBefore.click();
-    const screen = await doorstep(page);
-
+    const screen = await stated(page);
     await screen.begin.click();
     await page.waitForURL(/\/games\/reversi\/match\//, { timeout: 30_000 });
     noteGame(page);
     expect(await gamesOf(context)).toBe(1);
 
-    // Back onto the doorstep, and press again.
+    // Back onto the screen, and press again.
     await page.goBack();
-    const again = await doorstep(page);
-    await expect(again.begin).toBeVisible();
+    const again = await stated(page);
+    await expect(page.getByTestId("set-up-made"), "it says the game has been begun").toBeVisible();
     await again.begin.click();
     await page.waitForURL(/\/games\/reversi\/match\//, { timeout: 30_000 });
     noteGame(page);
@@ -249,18 +224,17 @@ test.describe("the doorstep, between the setup screen and the board", () => {
 
   test("a rematch reads back the colour it gives you", async ({ browser, baseURL }) => {
     /*
-     * The SECOND case, not the proof. A rematch already arrives at setup filled
-     * in, so it is the one entry point that looked confirmed before any of this
-     * existed. What it gains from the doorstep is the sentence a rematch is
-     * most about: the colours swap, and "you are black this time" is worth
-     * reading before the board rather than working out from the board.
+     * A rematch arrives already filled in, so it is the one entry point that
+     * looked confirmed before any of this existed. What it gains is the
+     * sentence a rematch is most about: the colours swap, and "you are black
+     * this time" is worth reading before the board rather than working out
+     * from the board.
      */
     const stamp = Date.now().toString(36);
     const me = { email: `again-${stamp}@example.test`, name: `Again ${stamp}` };
     const context = await memberContext(browser, baseURL!, me);
     const page = await context.newPage();
 
-    // A finished game to repeat: against a computer player, which answers at once.
     await page.goto("/games/new");
     await ready(page, "set-up-game");
     await chooseGame(page, "reversi");
@@ -271,13 +245,79 @@ test.describe("the doorstep, between the setup screen and the board", () => {
      * that hard-codes either is a spec about this week's ladder.
      */
     await chooseOpponent(page, await aComputerOpponent(page));
-    await page.getByTestId("set-up-start").click();
-    const first = await doorstep(page);
-    await expect(first.colours).toContainText(/black|white/i);
-    await first.begin.click();
+    const screen = await stated(page);
+    await expect(screen.seating).toContainText(/black|white/i);
+    await screen.begin.click();
     await page.waitForURL(/\/games\/reversi\/match\//, { timeout: 30_000 });
     noteGame(page);
 
     await context.close();
+  });
+
+  test("somebody else's posted seat is read on the doorstep before it is sat at", async ({
+    browser,
+    baseURL,
+  }) => {
+    /*
+     * THE ONE CASE THAT STILL HAS TWO SCREENS, and the reason it should: the
+     * rules being agreed to are not the ones this reader wrote. They are on
+     * somebody else's seat, and sitting down at a game you have not read is
+     * exactly what the doorstep was asked for.
+     */
+    const stamp = Date.now().toString(36);
+    const host = { email: `host-${stamp}@example.test`, name: `Host ${stamp}` };
+    const guest = { email: `guest-${stamp}@example.test`, name: `Guest ${stamp}` };
+    await seedMember(host);
+    await seedMember(guest);
+
+    /*
+     * A SEAT NOBODY ELSE'S LEAVINGS CAN STAND IN FOR. A posted seat is matched
+     * by its RULES, and this database holds hundreds left by other runs — a
+     * plain game of Reversi finds one of those instead, and then the host sits
+     * down at a stranger's seat rather than posting one for the guest. So the
+     * game here is gomoku on the thirteen board and friendly, which is a
+     * combination nothing else sets up. Bring your own world.
+     */
+    const asked = async (page: Page) => {
+      await page.goto("/games/gomoku/new");
+      await ready(page, "set-up-game");
+      await chooseBoard(page, 13);
+      await chooseRated(page, false);
+    };
+
+    // One member posts a seat for anyone, which is what a plain Begin does.
+    const hosting = await memberContext(browser, baseURL!, host);
+    const hostPage = await hosting.newPage();
+    await asked(hostPage);
+    await expect(hostPage.getByTestId("set-up-start")).toHaveAttribute("data-press", "begin");
+    await hostPage.getByTestId("set-up-start").click();
+    await hostPage.waitForURL(/\/games\/gomoku\/match\//, { timeout: 30_000 });
+    noteGame(hostPage);
+
+    // And another asks for the same game, which is their seat rather than a second one.
+    const visiting = await memberContext(browser, baseURL!, guest);
+    const page = await visiting.newPage();
+    await asked(page);
+    const screen = await stated(page);
+    await expect(screen.begin, "somebody is already asking for exactly this").toHaveAttribute(
+      "data-press",
+      "seat",
+    );
+
+    await screen.begin.click();
+    await expect(page).toHaveURL(/\/games\/gomoku\/begin(\?|$)/);
+    await ready(page, "doorstep");
+
+    // THEIR rules, stated, before anything is agreed to — and still no board.
+    await expect(page.getByTestId("doorstep-statement")).toContainText("Gomoku");
+    await expect(page.getByTestId("doorstep-facts")).toBeVisible();
+    await expect(page.getByTestId("shared-game"), "the board means playing").toHaveCount(0);
+
+    await page.getByTestId("doorstep-begin").click();
+    await page.waitForURL(/\/games\/gomoku\/match\//, { timeout: 30_000 });
+    noteGame(page);
+
+    await visiting.close();
+    await hosting.close();
   });
 });

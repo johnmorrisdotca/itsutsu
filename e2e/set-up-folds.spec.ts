@@ -73,7 +73,7 @@ test.describe("the set-up screen folds a choice it already has", () => {
      */
     await expect(opening).toContainText("Pro");
     await expect(opening).toHaveAttribute("data-open", "true");
-    await expect(page.getByTestId("set-up-recap")).toContainText("Pro opening");
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Pro opening");
 
     await context.close();
   });
@@ -115,7 +115,7 @@ test.describe("the set-up screen folds a choice it already has", () => {
     const other = await aComputerOpponent(page, 0);
     await expect(computers).toHaveAttribute("data-open", "true");
     await chooseOpponent(page, other);
-    await expect(page.getByTestId("set-up-recap")).toContainText("Against");
+    await expect(page.getByTestId("set-up-seating")).toContainText("Against");
 
     await context.close();
   });
