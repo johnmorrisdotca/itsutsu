@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { memberContext } from "./members";
-import { aComputerOpponent, chooseOpponent, openChoice, ready } from "./support";
+import { aComputerOpponent, chooseOpponent, openChoice, openRulesGroup, ready } from "./support";
 
 /**
  * A SETTLED CHOICE IS FOLDED DOWN TO WHAT IT IS, AND ONE TAP FROM BEING CHANGED.
@@ -34,6 +34,15 @@ async function setUpPage(browser: Parameters<typeof memberContext>[0], baseURL: 
   const page = await context.newPage();
   await page.goto(address);
   await ready(page, "set-up-game");
+  /*
+   * THE GROUP FIRST, THEN THE CHOICES INSIDE IT. This screen folds twice over
+   * now: the rules and the handicap are folded rows of their own, and the
+   * opening, the ratings and the restrictions are folds inside them. A fold
+   * keeps its children in the page and hidden, so a spec reaching for an inner
+   * row while the outer one is shut is looking at something nobody can see.
+   * A reader opens the group; so does this.
+   */
+  await openRulesGroup(page);
   return { context, page };
 }
 
@@ -120,23 +129,41 @@ test.describe("the set-up screen folds a choice it already has", () => {
     await context.close();
   });
 
-  test("folds nothing away while nobody is chosen to play", async ({ browser, baseURL }) => {
+  test("hides no answer, on a screen where every group is folded", async ({ browser, baseURL }) => {
     const { context, page } = await setUpPage(browser, baseURL!, "fold-fresh", "/games/gomoku/new");
 
     /*
-     * THE HALF THAT KEEPS THIS FROM BEING THE FOLD JOHN THREW OUT. A screen
-     * where nobody has been chosen is a screen full of questions, and a question
-     * is not folded behind a summary of nothing: every list of people and
-     * programs is open before anything else happens.
+     * THE HALF THAT KEEPS THIS FROM BEING THE FOLD JOHN THREW OUT, and it is
+     * no longer "nothing folds".
      *
-     * Asserted after a presence — the tiles of the first list — so this is a
-     * statement about a rendered page and not about how fast it was asked.
+     * It used to be: a screen where nobody had been chosen was a screen full of
+     * questions, so every list of people and programs opened. But a fresh game
+     * is NOT a screen with no answer — "post the seat for anyone" is chosen,
+     * and drawn, chosen, above those lists. Reading that as nobody meant
+     * thirteen full-width tiles under an answer nobody had to change, which is
+     * four phone-fulls of scrolling to reach Begin (John, 2026-09-21).
+     *
+     * So the rule this case holds is the real one: NO FOLD ON THIS SCREEN HAS
+     * AN EMPTY SUMMARY. A closed row that says nothing is the fold that was
+     * thrown out; a closed row that prints its answer is the one that stayed.
      */
-    await expect(page.locator('[data-testid="set-up-opponent"]').first()).toBeVisible();
-    const lists = page.getByTestId("set-up-opponent-fold");
-    for (let at = 0; at < (await lists.count()); at += 1) {
-      await expect(lists.nth(at), "a list nobody has answered is folded away").toHaveAttribute("data-open", "true");
+    const chosen = page.locator('[data-testid="set-up-opponent"][data-chosen="true"]');
+    await expect(chosen, "the answer is drawn, and not behind any of this").toBeVisible();
+    await expect(chosen).toHaveAttribute("data-opponent", "anyone");
+
+    const rows = page.getByTestId("set-up-opponent-fold");
+    const many = await rows.count();
+    expect(many, "no lists at all on this screen").toBeGreaterThan(0);
+    for (let at = 0; at < many; at += 1) {
+      const row = rows.nth(at);
+      await expect(row, "a list with the answer above it need not be open").toHaveAttribute("data-open", "false");
+      // And it says how many it holds, which is what a list nobody has answered can honestly say.
+      await expect(row.getByTestId("set-up-opponent-fold-change")).toContainText(/\d+ to choose from/);
     }
+
+    // The same of the two groups of rules: shut, and each printing what it holds.
+    await expect(page.getByTestId("set-up-rules-words")).toContainText("Free opening");
+    await expect(page.getByTestId("set-up-handicap-words")).not.toBeEmpty();
 
     await context.close();
   });
