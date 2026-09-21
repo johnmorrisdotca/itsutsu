@@ -9,6 +9,7 @@ import {
 import type { Cell, GameSettings, Point } from "./gomoku.types";
 import { drawDistinct, seededRandom } from "./rules/random";
 import { inStar, STAR_RADIUS } from "./rules/chineseCheckers";
+import { hexagonSealed, inHexagon } from "./rules/hexagon";
 
 /** The centre intersection — tengen (天元) — which never carries an obstacle. */
 export function tengen(size: number): Point {
@@ -88,6 +89,15 @@ export function emptyBoard(settings: GameSettings): Cell[] {
     for (let row = 0; row < settings.size; row += 1) {
       for (let col = 0; col < settings.size; col += 1) {
         if (!inStar(STAR_RADIUS, { row, col })) board[row * settings.size + col] = BLOCKED;
+      }
+    }
+  }
+  // The honeycomb: everything outside the hexagon is sealed, and so is its centre — see rules/hexagon.ts.
+  if (VARIANT_SPECS[settings.variant].hexagon) {
+    for (let row = 0; row < settings.size; row += 1) {
+      for (let col = 0; col < settings.size; col += 1) {
+        const point = { row, col };
+        if (!inHexagon(settings.size, point) || hexagonSealed(settings.size, point)) board[row * settings.size + col] = BLOCKED;
       }
     }
   }

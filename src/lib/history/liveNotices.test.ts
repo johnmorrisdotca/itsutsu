@@ -49,7 +49,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-const sendEmail = vi.fn(async (_event: NoticeEvent) => ({ sent: false as const, refusal: "notices-off" as const }));
+const sendEmail = vi.fn<(event: NoticeEvent) => Promise<{ sent: false; refusal: "notices-off" }>>(async () => ({ sent: false, refusal: "notices-off" }));
 
 vi.mock("@/lib/mail/sendNotice", () => ({ sendNotice: (event: NoticeEvent) => sendEmail(event) }));
 vi.mock("./gameHistory", async (original) => ({

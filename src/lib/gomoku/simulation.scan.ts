@@ -263,12 +263,23 @@ const EIGHT: readonly [number, number][] = [
   [-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1],
 ];
 
-export function flipsByHand(board: Cell[], size: number, stone: Stone, point: Point): Point[] {
+/** The honeycomb's six, by hand: the four orthogonal steps and the two along the lattice's slant. */
+const SIX: readonly [number, number][] = [
+  [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0],
+];
+
+export function flipsByHand(
+  board: Cell[],
+  size: number,
+  stone: Stone,
+  point: Point,
+  directions: readonly [number, number][] = EIGHT,
+): Point[] {
   const cell = (row: number, col: number): Cell | undefined =>
     row < 0 || col < 0 || row >= size || col >= size ? undefined : board[row * size + col];
   const enemy = stone === "black" ? "white" : "black";
   const turned: Point[] = [];
-  for (const [dr, dc] of EIGHT) {
+  for (const [dr, dc] of directions) {
     const run: Point[] = [];
     let row = point.row + dr;
     let col = point.col + dc;
@@ -291,11 +302,21 @@ export function countByHand(board: Cell[]): { black: number; white: number } {
 }
 
 /** Whether `stone` has any legal flip anywhere on the board, by the hand scan. */
-export function canFlipAnywhereByHand(board: Cell[], size: number, stone: Stone): boolean {
+export function canFlipAnywhereByHand(
+  board: Cell[],
+  size: number,
+  stone: Stone,
+  directions: readonly [number, number][] = EIGHT,
+): boolean {
   for (let index = 0; index < board.length; index += 1) {
     if (board[index] !== null) continue;
     const point = { row: Math.floor(index / size), col: index % size };
-    if (flipsByHand(board, size, stone, point).length > 0) return true;
+    if (flipsByHand(board, size, stone, point, directions).length > 0) return true;
   }
   return false;
+}
+
+/** Which directions a flipping game's runs lie along, by the game's name rather than its spec. */
+export function flipDirectionsByHand(variant: string): readonly [number, number][] {
+  return variant === "honeycomb" ? SIX : EIGHT;
 }

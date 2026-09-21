@@ -90,6 +90,7 @@ export const RULE_VARIANTS = {
   antiReversi: "antiReversi",
   miniReversi: "miniReversi",
   grandReversi: "grandReversi",
+  honeycomb: "honeycomb",
   halma: "halma",
   hex: "hex",
   checkers: "checkers",
@@ -155,6 +156,7 @@ export const RULE_VARIANT_LIST = [
   RULE_VARIANTS.antiReversi,
   RULE_VARIANTS.miniReversi,
   RULE_VARIANTS.grandReversi,
+  RULE_VARIANTS.honeycomb,
   RULE_VARIANTS.halma,
   RULE_VARIANTS.hex,
   RULE_VARIANTS.checkers,
@@ -318,6 +320,13 @@ const GRAND_REVERSI_SIZES = [10] as const;
 const HALMA_SIZES = [16, 10, 8] as const;
 /** Hex as it is played: eleven a side, with the bigger boards the federations also use. */
 const HEX_SIZES = [11, 13, 19] as const;
+/**
+ * The honeycomb's embedding squares: a hexagon of radius R sits in a
+ * (2R+1)-square, so 11 is the 91-cell board ItsYourTurn's Hexversi is played
+ * on and 9 the 61-cell one. The centre is sealed, which leaves an even count
+ * of cells either way — the right parity for a game decided by counting.
+ */
+const HONEYCOMB_SIZES = [11, 9] as const;
 /** Checkers: the 8×8 board draughts is played on everywhere. */
 const CHECKERS_SIZES = [8] as const;
 
@@ -613,6 +622,7 @@ function plain(overrides: SpecOverrides): VariantSpec {
     checkers: false,
     checkersRules: null,
     chineseCheckers: false,
+    hexagon: false,
     go: false,
     headStart: null,
     ...overrides,
@@ -837,6 +847,21 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     boardSizes: GRAND_REVERSI_SIZES,
     headStartTurns: 0, // 1 free turn takes the last disc.
     headStart: TRADITIONAL_HEAD_STARTS.corners,
+  }),
+  /*
+   * Honeycomb: the flipping game on a hexagon of hexagons. Stones on the
+   * points of the lattice, as Hex's are; six directions to bracket along; the
+   * centre cell sealed and the six around it set, three of each colour. See
+   * rules/hexagon.ts for the shape and where the six directions come from.
+   */
+  honeycomb: small({
+    grid: BOARD_GRIDS.lines,
+    flips: true,
+    hexagon: true,
+    startingDiscs: STARTING_DISCS.fixed,
+    analysis: false,
+    boardSizes: HONEYCOMB_SIZES,
+    headStartTurns: 0, // 1 free turn takes the last disc, as in every flipping game.
   }),
   halma: small({ grid: BOARD_GRIDS.cells, camps: true, analysis: false, boardSizes: HALMA_SIZES, headStartTurns: 3 }), // 3 never decides: a race needs every piece home.
   // On the crossings of a triangular lattice, as a wooden Hex board is ruled: see HEX_LATTICE.

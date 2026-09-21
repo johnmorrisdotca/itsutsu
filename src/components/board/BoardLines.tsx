@@ -1,5 +1,7 @@
-import { STAR_POINTS } from "@/lib/gomoku/gomoku.constants";
-import { EDGE_LINE_WIDTH, LATTICE_TRANSFORM, LINE_WIDTH, STAR_RADIUS } from "./Board.constants";
+import { BLOCKED, STAR_POINTS } from "@/lib/gomoku/gomoku.constants";
+import type { Cell } from "@/lib/gomoku/gomoku.types";
+import { hexagonSealed, inHexagon } from "@/lib/gomoku/rules/hexagon";
+import { EDGE_LINE_WIDTH, HEX_LATTICE, LATTICE_TRANSFORM, LINE_WIDTH, STAR_RADIUS } from "./Board.constants";
 import type { BoardThemeTokens } from "./board.types";
 
 /**
@@ -30,6 +32,38 @@ function shortDiagonals(size: number): { key: number; x1: number; y1: number; x2
   });
 }
 
+/**
+ * THE HONEYCOMB'S CELLS, as one hexagon each in grid space.
+ *
+ * The whole drawing is sheared onto the lattice by LATTICE_TRANSFORM, so a
+ * hexagon that is regular on screen is not regular here: it is a regular
+ * hexagon pulled back through the shear's inverse. Its six vertices sit at a
+ * third of the way to each of the three neighbouring-cell corners — 1/√3 of
+ * the lattice spacing, at 30°, 90°, 150° and so on, the pointy-top cell whose
+ * neighbours lie at 0°, 60° and 120° — and each is then unslanted:
+ * scaleY(1/cos30°) followed by skewX(-30°). Worked out once; a polygon per
+ * cell then reads as a honeycomb once the SVG takes the lattice transform.
+ *
+ * Drawn a touch under full size so the strokes of neighbouring cells do not
+ * fight: the gap between cells is what makes a honeycomb read as cells at all,
+ * and it is the one thing the grey-hexagon boards of the elder sites lack.
+ */
+const HEXAGON_VERTICES: readonly [number, number][] = (() => {
+  const reach = (1 / Math.sqrt(3)) * 0.94;
+  const tan30 = Math.tan(Math.PI / 6);
+  return Array.from({ length: 6 }, (_, k) => {
+    const angle = (Math.PI / 6) + (k * Math.PI) / 3;
+    const vx = reach * Math.cos(angle);
+    const vy = reach * Math.sin(angle);
+    const y = vy / HEX_LATTICE.height;
+    return [vx - y * tan30, y] as [number, number];
+  });
+})();
+
+function hexagonPoints(cx: number, cy: number): string {
+  return HEXAGON_VERTICES.map(([dx, dy]) => `${(cx + dx).toFixed(4)},${(cy + dy).toFixed(4)}`).join(" ");
+}
+
 export function BoardLines({
   size,
   theme,
@@ -38,6 +72,7 @@ export function BoardLines({
   rhombus = false,
   checkered = false,
   hidden = false,
+  honeycomb = null,
 }: {
   size: number;
   theme: BoardThemeTokens;
@@ -61,8 +96,42 @@ export function BoardLines({
    * points carry the board on their own.
    */
   hidden?: boolean;
+  /**
+   * Honeycomb: the board as it stands, so each cell of the hexagon can be
+   * drawn as a hexagon of its own and the sealed centre as a filled one. No
+   * grid lines at all: the cells are the board. Null everywhere else.
+   */
+  honeycomb?: readonly Cell[] | null;
 }) {
   if (hidden) return null;
+  if (honeycomb !== null) {
+    return (
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+        style={{ transform: LATTICE_TRANSFORM, transformOrigin: "top left" }}
+        data-honeycomb="true"
+      >
+        {honeycomb.map((cell, index) => {
+          const point = { row: Math.floor(index / size), col: index % size };
+          if (!inHexagon(size, point)) return null;
+          const sealed = hexagonSealed(size, point) && cell === BLOCKED;
+          return (
+            <polygon
+              key={index}
+              points={hexagonPoints(point.col + 0.5, point.row + 0.5)}
+              fill={sealed ? theme.frame : theme.playSquare}
+              stroke={theme.line}
+              strokeWidth={LINE_WIDTH}
+              strokeLinejoin="round"
+              data-cell={sealed ? "sealed" : "open"}
+            />
+          );
+        })}
+      </svg>
+    );
+  }
   const dividers =
     quadrantSize !== null && quadrantSize > 0 && size % quadrantSize === 0
       ? Array.from({ length: size / quadrantSize - 1 }, (_, i) => (i + 1) * quadrantSize)

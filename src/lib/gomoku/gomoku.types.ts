@@ -191,6 +191,7 @@ export type RuleVariant =
   | "antiReversi"
   | "miniReversi"
   | "grandReversi"
+  | "honeycomb"
   | "halma"
   | "hex"
   | "obstacleFive"

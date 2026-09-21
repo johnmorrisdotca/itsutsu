@@ -6,6 +6,7 @@ import { EVAL_WEIGHTS } from "./opponent.constants";
 import { scoreArea } from "./rules/go";
 import { komiFor } from "./rules/headStart";
 import type { GameState, Point, Stone, VariantSpec } from "./gomoku.types";
+import { hexagonCorners } from "./rules/hexagon";
 
 /**
  * THE FAMILIES OF GAME THAT ARE NOT READ BY THEIR LINES.
@@ -72,7 +73,8 @@ export function flipScore(state: GameState, stone: Stone, spec: VariantSpec): nu
   const sign = spec.misere ? -1 : 1;
 
   let held = 0;
-  for (const corner of corners(size)) {
+  // A corner never turns on either shape; the honeycomb has six of them.
+  for (const corner of spec.hexagon ? hexagonCorners(size) : corners(size)) {
     const cell = state.board[corner.row * size + corner.col];
     if (cell === stone) held += 1;
     else if (cell === foe) held -= 1;

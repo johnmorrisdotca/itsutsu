@@ -288,7 +288,10 @@ export function flipCandidates(state: GameState, limit: number): Point[] {
  * turn over, and the larger pile wins. Read from the spec, never from a name.
  */
 export function flipApplies(spec: VariantSpec): boolean {
-  return spec.flips && !spec.misere && spec.wrap === WRAP_MODES.none && spec.wormholes === 0;
+  // Not the honeycomb: every sentence of this reading — four corners, the
+  // squares beside them, the edges — is about a square, and a hexagon has
+  // six corners and no square beside any of them.
+  return spec.flips && !spec.misere && spec.wrap === WRAP_MODES.none && spec.wormholes === 0 && !spec.hexagon;
 }
 
 export const FLIP_EXPERT: Expert = {

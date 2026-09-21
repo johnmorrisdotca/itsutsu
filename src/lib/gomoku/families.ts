@@ -56,7 +56,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Flips",
     kanji: "反転",
     blurb: "Nothing is yours until the end. Bracket a run of the other colour and it turns.",
-    games: ["reversi", "classicReversi", "antiReversi", "miniReversi", "grandReversi"],
+    games: ["reversi", "classicReversi", "antiReversi", "miniReversi", "grandReversi", "honeycomb"],
   },
   {
     key: "strange-boards",

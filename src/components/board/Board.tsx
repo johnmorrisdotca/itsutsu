@@ -190,7 +190,7 @@ export function Board({
    * Hex's rhombus and Chinese Checkers' star both stand on it, even though
    * only Hex is actually a rhombus.
    */
-  const hexSkew = spec.connects || spec.chineseCheckers;
+  const hexSkew = spec.connects || spec.chineseCheckers || spec.hexagon;
   /*
    * The rim of bare surface around the playing area — see margin.ts. A board
    * on the lines already leaves half a cell, so this is what a board in the
@@ -285,6 +285,7 @@ export function Board({
             rhombus={rhombus}
             checkered={spec.checkers}
             hidden={spec.chineseCheckers}
+            honeycomb={spec.hexagon ? state.board : null}
           />
           <div
             className="absolute inset-0 grid"
@@ -328,7 +329,7 @@ export function Board({
                   unslant={hexSkew}
                   camp={spec.camps ? campOf(size, point) : spec.chineseCheckers ? starCampOf(STAR_RADIUS, point) : null}
                   isKing={spec.checkers ? kings.has(index) : false}
-                  hideBlocked={spec.chineseCheckers}
+                  hideBlocked={spec.chineseCheckers || spec.hexagon}
                   hole={spec.chineseCheckers && cell === null}
                   guide={guided}
                   guideColours={guideColours}

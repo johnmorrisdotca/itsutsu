@@ -42,6 +42,9 @@ describe("which games each specialist has studied", () => {
     ]) {
       expect(flipApplies(VARIANT_SPECS[variant]), variant).toBe(true);
     }
+    // And the honeycomb, whose six corners and no-square-beside-them are not
+    // the board this reading was written about.
+    expect(flipApplies(VARIANT_SPECS[RULE_VARIANTS.honeycomb])).toBe(false);
     /*
      * The giveaway board is excluded on purpose. Every sentence of the
      * reading — corners are permanent, mobility wins, a small pile is a strong
