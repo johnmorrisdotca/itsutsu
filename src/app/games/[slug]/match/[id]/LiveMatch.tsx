@@ -29,6 +29,7 @@ import { prisma } from "@/lib/prisma";
 import { forkOffered } from "@/lib/history/fork";
 import { RivalryPanel } from "@/components/history/RivalryPanel";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
+import { preferencesFor } from "@/lib/preferences/memberPreferences";
 
 /*
  * THE LIVE MATCH: the board being played, and the panel beside it — the offer,
@@ -171,6 +172,13 @@ export async function LiveMatch({
    * real one.
    */
   const appearance = appearanceFrom(await appearanceFor(await currentMemberId()));
+  /*
+   * How this reader likes a turn to work — whether a click sends the move and
+   * where submitting leaves them. Read here rather than on the board, which is
+   * a client component and cannot see an account.
+   */
+  const preferences = await preferencesFor();
+  const turnFlow = { moveConfirm: preferences.moveConfirm, afterMove: preferences.afterMove };
 
   /*
    * A seat holder opening the game is that seat's holder arriving, and until
@@ -258,6 +266,7 @@ export async function LiveMatch({
               ignoring={ignoring}
               offer={offer}
               appearance={appearance}
+              turnFlow={turnFlow}
             />
           </div>
         </div>

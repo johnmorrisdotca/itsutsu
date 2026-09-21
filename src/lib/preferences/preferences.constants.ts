@@ -3,6 +3,7 @@ import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, NO_FILTER } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, RECORD_SCOPE_LIST } from "@/lib/rating/recordScope";
+import { AFTER_MOVE, AFTER_MOVE_LIST, MOVE_CONFIRM, MOVE_CONFIRM_LIST } from "./turnFlow";
 
 import type { PreferenceName, PreferenceSpec, Preferences } from "./preferences.types";
 
@@ -108,6 +109,38 @@ export const PREFERENCE_SPECS = {
    * overwrite a member's choice, which is the bug this row exists to close.
    */
   timeZoneFrom: { options: ZONE_SOURCES, fallback: ZONE_SOURCE.chosen },
+
+  /*
+   * Whether a board click sends the move or places it and asks.
+   *
+   * PREVIEW IS THE DEFAULT, and that is a decision about the medium rather
+   * than a matter of taste. A live game's record is final — take-back only
+   * works in a hot-seat game — so before this a misclick on a phone was a
+   * permanent move in a rated game that might be days old. These games are
+   * played on trains and sofas, days apart, and every elder correspondence
+   * site shows the stone and asks. A confident player turns it off; nobody
+   * has to lose a game to a fat thumb first.
+   *
+   * It costs no extra request either way: the preview is local, and Submit is
+   * the one call that was always made.
+   */
+  moveConfirm: { options: MOVE_CONFIRM_LIST, fallback: MOVE_CONFIRM.preview },
+
+  /*
+   * Where a move that ended your turn leaves you.
+   *
+   * THE SEAM `advancesAfterMove` WAS WRITTEN FOR. It answered true for
+   * everybody and said so: "the opt-out belongs on the account's own
+   * preferences, which are being built separately, so the choice has nowhere
+   * to be stored yet". Here is the somewhere, and the row widens the question
+   * from whether to move on into where to — which is what John was pointing
+   * at with GoldToken's two extra destinations beside Save.
+   *
+   * Carrying on to the next waiting game stays the default, because it is the
+   * behaviour that has shipped and the one that makes a dozen games playable
+   * in one sitting.
+   */
+  afterMove: { options: AFTER_MOVE_LIST, fallback: AFTER_MOVE.nextWaiting },
 } as const satisfies Record<string, PreferenceSpec>;
 
 /** Every declared name, in registry order. */

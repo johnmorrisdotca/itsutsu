@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { GAME_COPY } from "../src/components/game/game.constants";
-import { PLAYER_STATE, ready } from "./support";
+import { PLAYER_STATE, ready, submitIfPending } from "./support";
 import { gamesMade, namesPlayedUnder } from "./tidy";
 
 /** The games the Play apart case makes, taken away when the file finishes. */
@@ -60,6 +60,7 @@ test.describe("a game played from two devices", () => {
     // fifteen seconds for a move that was never made.
     await ready(blackPage, "shared-game");
     await blackPage.getByRole("button", { name: /^E5, empty$/ }).click();
+    await submitIfPending(blackPage);
     await expect(blackPage, "the board wandered off to another game").toHaveURL(
       new RegExp(`/games/gomoku/match/${game.id}(/|$)`),
     );

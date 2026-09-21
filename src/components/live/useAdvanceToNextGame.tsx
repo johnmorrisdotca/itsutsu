@@ -13,6 +13,7 @@ import { matchPath } from "@/lib/gomoku/slugs";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import type { MyGame } from "@/lib/history/myGames";
 import { advancesAfterMove, carriesOnwardFrom, nextWaiting } from "@/lib/history/nextGame";
+import { AFTER_MOVE, type AfterMove } from "@/lib/preferences/turnFlow";
 import { advanceHold, NOTHING_HELD, type AdvanceHold } from "./advanceHold";
 
 /**
@@ -49,7 +50,7 @@ import { advanceHold, NOTHING_HELD, type AdvanceHold } from "./advanceHold";
  */
 type Onward = { after: GameDetail; seat: Stone };
 
-export function useAdvanceToNextGame() {
+export function useAdvanceToNextGame(afterMove: AfterMove = AFTER_MOVE.nextWaiting) {
   const router = useRouter();
   const [nowhereToGo, setNowhereToGo] = useState(false);
   /**
@@ -66,6 +67,17 @@ export function useAdvanceToNextGame() {
    */
   const carryOn = useCallback(
     async ({ after }: Onward) => {
+      /*
+       * Straight to your games, where that is the answer: the destination
+       * GoldToken calls "Save and return to my Gamesheet". Answered BEFORE the
+       * queue is read, because the page being asked for is the queue — reading
+       * it here would be a function call paid for to decide nothing.
+       */
+      if (afterMove === AFTER_MOVE.myGames) {
+        router.push("/play");
+        return;
+      }
+
       const response = await fetch("/api/games/mine");
       // A queue that cannot be read is not an empty queue: say nothing and
       // leave them where they are, rather than reporting "nothing is waiting"
@@ -73,14 +85,25 @@ export function useAdvanceToNextGame() {
       if (!response.ok) return;
       const { groups } = (await response.json()) as { groups?: { yourMove?: MyGame[] } };
 
-      const next = nextWaiting(groups?.yourMove ?? [], after.id);
+      /*
+       * The same game only, where that is the answer — Pente to Pente, not
+       * Pente to Halma. A session of a dozen boards is bearable with one set
+       * of rules in your head at a time.
+       *
+       * AND NOTHING IS SILENTLY SUBSTITUTED when no other game of it is
+       * waiting: the answer is "nothing is waiting", the same line as an empty
+       * queue, rather than being dropped onto a different game than the one
+       * asked for. Somebody who chose this asked to stay within one game.
+       */
+      const sameAs = afterMove === AFTER_MOVE.sameGame ? after.variant : undefined;
+      const next = nextWaiting(groups?.yourMove ?? [], after.id, sameAs);
       if (next === null) {
         setNowhereToGo(true);
         return;
       }
       router.push(matchPath(next.game.variant, next.game.id));
     },
-    [router],
+    [router, afterMove],
   );
 
   /**
@@ -91,7 +114,7 @@ export function useAdvanceToNextGame() {
   const advance = useCallback(
     async (after: GameDetail, seat: Stone | null) => {
       setNowhereToGo(false);
-      if (seat === null || !advancesAfterMove()) return;
+      if (seat === null || !advancesAfterMove(afterMove)) return;
 
       const state = replayGame(after);
       if (!carriesOnwardFrom(state.status, state.toPlay, seat, botInSeat(after, state.toPlay) !== null)) return;
@@ -100,7 +123,7 @@ export function useAdvanceToNextGame() {
       hold.current = step.hold;
       if (step.now !== null) await carryOn(step.now);
     },
-    [carryOn],
+    [carryOn, afterMove],
   );
 
   /**

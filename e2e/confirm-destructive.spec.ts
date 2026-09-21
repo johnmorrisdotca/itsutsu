@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { readyHere } from "./support";
+import { readyHere, submitIfPending } from "./support";
 import { namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
@@ -76,6 +76,7 @@ test.describe("asking before something cannot be undone", () => {
     });
     await page.goto("/games/gomoku/play");
     await page.getByRole("button", { name: /^H8, empty$/ }).click();
+    await submitIfPending(page);
     await page.waitForTimeout(200);
     expect(opened, "a native dialog was opened").toBe("");
   });

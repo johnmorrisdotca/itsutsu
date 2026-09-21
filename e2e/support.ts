@@ -38,6 +38,29 @@ const COLUMN_LETTERS = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
 export async function playAt(page: Page, size: number, row: number, col: number) {
   const name = `${COLUMN_LETTERS[col]}${size - row}`;
   await page.getByRole("button", { name: new RegExp(`^${name}, empty$`) }).click();
+  await submitIfPending(page);
+}
+
+/**
+ * PRESSES SUBMIT WHERE A MOVE IS WAITING TO BE SENT.
+ *
+ * A live board shows a move before it sends it (`pendingMove.ts`): the stone
+ * goes down, and nothing leaves the browser until Submit. Every spec that
+ * clicks a live board therefore has to press it, exactly as a reader does —
+ * and this is where that press lives, so the suite drives the real control
+ * rather than reaching round it. On a board with no preview (the practice
+ * board, or a member who turned it off) the button never appears, and this
+ * returns after a short look.
+ *
+ * The wait is short because the preview is local state, drawn in the same
+ * React commit as the click: it is either there within a frame or it is not
+ * this kind of board. `e2e/move-preview.spec.ts` is where the preview itself
+ * is tested; everywhere else it is simply pressed through.
+ */
+export async function submitIfPending(page: Page) {
+  const submit = page.getByTestId("pending-move-submit");
+  const shown = await submit.waitFor({ state: "visible", timeout: 800 }).then(() => true, () => false);
+  if (shown) await submit.click();
 }
 
 /** Plays a run of stones for one colour, interleaving the opponent elsewhere. */
