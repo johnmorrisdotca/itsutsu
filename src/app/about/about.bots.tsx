@@ -97,9 +97,9 @@ export const BOTS_SECTION: AboutSection = {
       what misleads. The figures below are the whole round robin added up.
     </>,
     <>
-      It found something worth publishing: <em>the top two grades are the same player</em>. 名人 and 国手
-      finished seven wins to thirteen at Othello and three to six with eleven draws at draughts, both of which
-      look like results and neither of which is — over that many games between equals, a coin does as well about
+      It found something worth publishing: <em>the top two grades are the same player</em>. Played against
+      each other, 名人 and 国手 finished seven wins to thirteen at Othello and three to six with eleven draws
+      at draughts — both of which look like results and neither of which is — over that many games between equals, a coin does as well about
       a quarter and about half of the time. So the table says level rather than pretending, and the difference
       between those two names only appears at roughly ten times the thinking, which no move on this site gets.
       What twenty games shows plainly is the other end: 段 did not win a single game against 名人. And the
