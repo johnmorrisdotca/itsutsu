@@ -122,6 +122,10 @@ export const SGF_TYPES: Record<RuleVariant, SgfTypeRow> = {
   reversi: { gm: SGF_GAME_TYPES.othello, rules: null },
   miniReversi: { gm: SGF_GAME_TYPES.othello, rules: null },
   grandReversi: { gm: SGF_GAME_TYPES.othello, rules: null },
+  honeycomb: {
+    gm: null,
+    why: "Othello's number is a square board with letter-pair coordinates; a hexagon of hexagons has no SGF coordinates to write a move in.",
+  },
   classicReversi: {
     gm: null,
     why: "The four centre discs are laid by the players, which is Reversi's older rule and not Othello's. SGF's number 2 is Othello, whose game starts with them already set.",

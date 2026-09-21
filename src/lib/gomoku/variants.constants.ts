@@ -540,6 +540,21 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "10×10, and only that. Ninety-six discs go down instead of sixty, and the edges are two squares farther from the centre, so the opening runs long before either side touches one.",
   },
+  honeycomb: {
+    label: "Honeycomb",
+    kanji: "蜂の巣",
+    tagline: "Reversi on a hexagon of hexagons: six ways to bracket a run, six corners that never turn.",
+    origin: "The flipping game moved onto the hexagon lattice, as the play-by-mail sites did under the name Hexversi. Every cell touches six others instead of eight, the centre is sealed, and the six discs round it are where the game begins. Our own board, drawn as a honeycomb rather than a grey grid.",
+    inspiredBy: "Hexversi",
+    country: "US",
+    rules: [
+      "The centre cell is sealed. The six cells round it start with three discs of each colour, alternating round the ring.",
+      "A disc goes only where it brackets one or more of the other colour in a straight run along one of the six lattice directions, with one of your own at the far end. Every bracketed run turns.",
+      "A colour with nowhere to go passes; the turn stays with the other colour until both are stuck.",
+      "When neither can move, the discs are counted. More wins; equal is a draw.",
+    ],
+    board: "A hexagon six cells a side, 91 cells with the centre sealed; the smaller five-a-side board has 61. The six corners cannot be turned once taken, which is most of the strategy, as on the square.",
+  },
   halma: {
     label: "Halma",
     kanji: "ハルマ",

@@ -139,6 +139,14 @@ export type VariantSpec = {
    */
   chineseCheckers: boolean;
   /**
+   * A hexagonal board on the hexagon lattice, embedded in a square Point grid
+   * the way Chinese Checkers' star is, with the cells outside the hexagon and
+   * the one at its centre sealed off as `BLOCKED`. The rules are the flipping
+   * game's, in six directions rather than eight: Reversi on a honeycomb. See
+   * rules/hexagon.ts for the shape and rules/flips.ts for the six directions.
+   */
+  hexagon: boolean;
+  /**
    * Go: stones never move once placed. A group of one colour with no
    * liberties left is captured whole; a move that would leave the mover's
    * own group with none, after any capture it makes, is suicide and illegal;

@@ -4,7 +4,7 @@ import { GAME_STATUS } from "./gomoku.constants";
 import { cellAt, indexOf, isStone, otherStone } from "./engine";
 import { undoMove } from "./rules/record";
 import type { GameState, Point } from "./gomoku.types";
-import { canFlipAnywhereByHand, countByHand, flipsByHand } from "./simulation.scan";
+import { canFlipAnywhereByHand, countByHand, flipDirectionsByHand, flipsByHand } from "./simulation.scan";
 import { ranOutOfLength } from "./simulation.checks";
 
 /**
@@ -24,7 +24,8 @@ function isFlipping(variant: string): boolean {
     variant === "classicReversi" ||
     variant === "antiReversi" ||
     variant === "miniReversi" ||
-    variant === "grandReversi"
+    variant === "grandReversi" ||
+    variant === "honeycomb"
   );
 }
 
@@ -57,7 +58,8 @@ function checkFlipMove(before: GameState, after: GameState, played: Point, where
   const laying =
     after.settings.variant === "classicReversi" &&
     centreByHand(size).some((index) => before.board[index] === null);
-  const expected = laying ? [] : flipsByHand(before.board, size, mover, played);
+  const directions = flipDirectionsByHand(after.settings.variant);
+  const expected = laying ? [] : flipsByHand(before.board, size, mover, played, directions);
   if (laying) {
     expect(centreByHand(size), `${where}: laid outside the centre`).toContain(playedIndex);
   } else {
@@ -80,8 +82,8 @@ function checkFlipMove(before: GameState, after: GameState, played: Point, where
   );
   expect(after.moves.length).toBe(before.moves.length + 1);
 
-  const opponentCan = canFlipAnywhereByHand(after.board, size, otherStone(mover));
-  const moverCan = canFlipAnywhereByHand(after.board, size, mover);
+  const opponentCan = canFlipAnywhereByHand(after.board, size, otherStone(mover), directions);
+  const moverCan = canFlipAnywhereByHand(after.board, size, mover, directions);
   const stillLaying =
     after.settings.variant === "classicReversi" &&
     centreByHand(size).some((index) => after.board[index] === null);

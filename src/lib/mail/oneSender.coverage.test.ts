@@ -24,7 +24,6 @@ import { NOTICES } from "./mail.constants";
  * anywhere may grow a way of its own to send.
  */
 
-const MAIL_DIR = join(process.cwd(), "src", "lib", "mail");
 const SRC = join(process.cwd(), "src");
 
 /** Every .ts/.tsx file under src/, with its path relative to src/. */

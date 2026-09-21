@@ -45,6 +45,7 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   antiReversi: "anti-reversi",
   miniReversi: "mini-reversi",
   grandReversi: "grand-reversi",
+  honeycomb: "honeycomb",
   halma: "halma",
   hex: "hex",
   checkers: "checkers",

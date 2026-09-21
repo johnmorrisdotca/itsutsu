@@ -41,6 +41,8 @@ export const GAME_ALIASES: Readonly<Record<string, RuleVariant>> = {
   "Flipversi 10x10": RULE_VARIANTS.grandReversi,
   "Anti-Flipversi": RULE_VARIANTS.antiReversi,
   "Anti-Flipversi 6x6": RULE_VARIANTS.antiReversi,
+  // The flipping game on a hexagon: ItsYourTurn's name for what Honeycomb is.
+  Hexversi: RULE_VARIANTS.honeycomb,
 
   // The race game, under the name every site gives it — and ItsYourTurn's
   // 10×10 table of it, which is the same step-or-jump race on a board our
@@ -86,8 +88,7 @@ export const NO_GAME_HERE: Readonly<Record<string, string>> = {
   "Anti-Checkers": "Giveaway checkers, where losing every piece wins; only standard checkers is played here.",
   "Crowded Checkers": "A checkers variant with its own crowded starting position; only standard checkers is played here.",
 
-  // Flipping games on boards ours do not have.
-  Hexversi: "Reversi on a hexagonal board; every Reversi here is played on squares.",
+  // A flipping game on a board ours do not have.
   "Flipversi Blackhole 10x10": "Reversi on 10×10 with a blocked hole in the board; Grand Reversi here has no hole.",
 
   // The backgammon family, from both sites.

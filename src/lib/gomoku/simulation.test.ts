@@ -64,7 +64,7 @@ describe("simulated games", () => {
   it("never gives a colour more stones in a turn than its variant allows", () => {
     for (const variant of Object.values(RULE_VARIANTS)) {
       // The flipping games pass a stuck colour by, so one colour may move twice; restated by hand.
-      if (["reversi", "classicReversi", "antiReversi", "miniReversi", "grandReversi"].includes(variant)) continue;
+      if (["reversi", "classicReversi", "antiReversi", "miniReversi", "grandReversi", "honeycomb"].includes(variant)) continue;
       // The checkers family plays a whole capture chain as several moves by the same colour before the
       // turn passes; checkCheckersMove restates that rule by hand, move by move, instead.
       if (isCheckers(variant)) continue;

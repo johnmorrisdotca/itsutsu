@@ -1,5 +1,6 @@
 import { GAME_STATUS, STARTING_DISCS, STONES, VARIANT_SPECS, WIN_REASONS } from "../gomoku.constants";
 import type { Cell, GameSettings, GameState, Move, Point, Stone, StartingDiscs } from "../gomoku.types";
+import { HEX_DIRECTIONS, honeycombStartingDiscs } from "./hexagon";
 import { won } from "./mechanics";
 import { leavesNoStone } from "./stoneless";
 
@@ -47,9 +48,19 @@ export function openingFor(settings: GameSettings): StartingDiscs {
   return settings.openingDiscs ?? spec.startingDiscs;
 }
 
-/** The fixed opening: white top-left and bottom-right, black the other diagonal. */
+/**
+ * The directions a run may lie along: the eight of a square board, or the six
+ * of the honeycomb's lattice. Read from the spec, so a flipping game on a new
+ * shape changes one row here and nothing in the flipping itself.
+ */
+export function flipDirections(settings: GameSettings): readonly Point[] {
+  return VARIANT_SPECS[settings.variant].hexagon ? HEX_DIRECTIONS : DIRECTIONS;
+}
+
+/** The fixed opening: white top-left and bottom-right, black the other diagonal — or the honeycomb's ring of six. */
 export function startingDiscs(settings: GameSettings): { point: Point; stone: Stone }[] {
   if (openingFor(settings) !== STARTING_DISCS.fixed) return [];
+  if (VARIANT_SPECS[settings.variant].hexagon) return honeycombStartingDiscs(settings.size);
   const [a, b, c, d] = centreSquares(settings.size);
   return [
     { point: a, stone: STONES.white },
@@ -67,12 +78,22 @@ export function inLayingPhase(state: GameState): boolean {
   );
 }
 
-/** The discs a stone of `stone` at `point` would turn. Empty means the move is illegal. */
-export function flipsAt(board: Cell[], size: number, stone: Stone, point: Point): Point[] {
+/**
+ * The discs a stone of `stone` at `point` would turn. Empty means the move is
+ * illegal. `directions` is the square board's eight unless a caller says
+ * otherwise; everything that has a state to hand reads `flipDirections`.
+ */
+export function flipsAt(
+  board: Cell[],
+  size: number,
+  stone: Stone,
+  point: Point,
+  directions: readonly Point[] = DIRECTIONS,
+): Point[] {
   if (at(board, size, point) !== null) return [];
   const enemy = other(stone);
   const flipped: Point[] = [];
-  for (const step of DIRECTIONS) {
+  for (const step of directions) {
     const run: Point[] = [];
     let cursor = { row: point.row + step.row, col: point.col + step.col };
     while (at(board, size, cursor) === enemy) {
@@ -93,16 +114,17 @@ export function flipLegal(state: GameState, point: Point): boolean {
   if (inLayingPhase(state)) {
     return centreSquares(size).some((centre) => centre.row === point.row && centre.col === point.col);
   }
-  return flipsAt(state.board, size, state.toPlay, point).length > 0;
+  return flipsAt(state.board, size, state.toPlay, point, flipDirections(state.settings)).length > 0;
 }
 
 export function hasFlipMove(state: GameState, stone: Stone): boolean {
   const { size } = state.settings;
   if (inLayingPhase(state)) return true;
+  const directions = flipDirections(state.settings);
   for (let index = 0; index < state.board.length; index += 1) {
     if (state.board[index] !== null) continue;
     const point = { row: Math.floor(index / size), col: index % size };
-    if (flipsAt(state.board, size, stone, point).length > 0) return true;
+    if (flipsAt(state.board, size, stone, point, directions).length > 0) return true;
   }
   return false;
 }
@@ -126,7 +148,7 @@ export function playFlip(state: GameState, point: Point): GameState {
   if (!flipLegal(state, point)) return state;
   const { settings, toPlay } = state;
   const size = settings.size;
-  const flipped = inLayingPhase(state) ? [] : flipsAt(state.board, size, toPlay, point);
+  const flipped = inLayingPhase(state) ? [] : flipsAt(state.board, size, toPlay, point, flipDirections(settings));
 
   const board = state.board.slice();
   board[point.row * size + point.col] = toPlay;

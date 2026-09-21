@@ -140,11 +140,14 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.anyColour && !spec.makerBreaker) object.push("A line of either colour wins for the player who completed it.");
   if (spec.squareWins) object.push("Four of your pieces in a 2×2 square also wins.");
 
-  const board: string[] = [
-    sizes.length === 1
-      ? `A ${sizes[0]}×${sizes[0]} board.`
-      : `A square board of ${sizes.join(", ")} lines; ${sizes[0]}×${sizes[0]} by default.`,
-  ];
+  // The honeycomb is not a square of anything, and says what it is below.
+  const board: string[] = spec.hexagon
+    ? []
+    : [
+        sizes.length === 1
+          ? `A ${sizes[0]}×${sizes[0]} board.`
+          : `A square board of ${sizes.join(", ")} lines; ${sizes[0]}×${sizes[0]} by default.`,
+      ];
   if (spec.quadrantSize !== null) {
     board.push(`It is divided into four ${spec.quadrantSize}×${spec.quadrantSize} quadrants, each of which can be turned.`);
   }
@@ -167,6 +170,11 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
   }
   if (spec.checkers) board.push(checkersBoardLine(variant, sizes[0]));
+  if (spec.hexagon) {
+    board.push(
+      `A hexagon of hexagons, ${sizes[0] === 11 ? "six" : "five"} cells a side and ${sizes[0] === 11 ? "91" : "61"} in all, with the centre cell sealed and the six round it set at the start, three of each colour, no two alike side by side. Every cell touches six others, so a run may lie along any of six directions rather than eight.`,
+    );
+  }
   if (spec.chineseCheckers) {
     board.push("A hexagram: a centre hexagon with six triangular points, 121 cells in all. Each side's ten pieces start filling one point, black at the top and white at the bottom, shaded on the board; the far point is the one to fill.");
   }
@@ -196,14 +204,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     play.push("Or it may jump: over an adjacent piece of either colour, into the empty cell straight beyond it. From there it may jump again, and again, turning corners as it likes, so long as each jump crosses a piece. A move may stop after any jump.");
     play.push("A piece jumped over is not taken; it stays where it is.");
     play.push("The game ends the moment a move fills the point directly opposite yours.");
-  } else if (spec.flips) {
-    play.push(
-      spec.startingDiscs === "laid"
-        ? "The board starts empty. The first four discs are laid in the centre four squares, one a turn, turning nothing."
-        : "The centre four squares start with two discs of each colour, on the diagonals.",
-    );
-    play.push("The set-up lets a game start the other way: centre discs placed, or laid by the players.");
-    play.push("A disc goes only where it brackets one or more of the other colour in a straight run — any direction — with one of your own at the far end. Every bracketed run turns to your colour.");
+  } else if (spec.flips && spec.hexagon) {
+    play.push("The six cells round the sealed centre start with three discs of each colour, alternating round the ring.");
+    play.push("A disc goes only where it brackets one or more of the other colour in a straight run along one of the six lattice directions, with one of your own at the far end. Every bracketed run turns to your colour. The sealed centre closes nothing: a run that reaches it turns nothing.");
     play.push("A colour with nowhere to go passes, and the other colour plays again. You may not pass while you have a move.");
     play.push("When neither colour can move, the discs are counted.");
   } else if (spec.queue !== null) {
