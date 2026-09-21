@@ -9,10 +9,12 @@ import { resendTransport } from "./resendTransport";
 /**
  * THE ONE WAY THE SITE SENDS AN EMAIL.
  *
- * Only on a person's own action: every call names the member whose click it
- * is, and there is no caller on a timer, a poll or a batch. The game notices
- * in `lib/notify/email.ts` deliberately do not come here — a your-turn email
- * on every move would spend the site's day before lunch.
+ * Every call names the member the email is counted against, and there is no
+ * caller on a timer, a poll or a batch. A route a person clicked asks here
+ * directly; anything the SITE decides to send goes through a door in this
+ * folder first — `sendNotice` is the one for game notices, and it is switched
+ * off, because a your-turn email on every move would spend the site's day
+ * before lunch. `oneSender.coverage.test.ts` holds both halves of that.
  *
  * In order, and each step fails closed:
  *
