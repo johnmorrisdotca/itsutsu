@@ -17,6 +17,7 @@ import {
   BOARD_THEMES,
   GUIDE_COLOURS,
   LABEL_GUTTER,
+  HEXAGON_TRANSFORM,
   LATTICE_TRANSFORM,
   RHOMBUS_CLIP,
   SQUARE_GUIDES,
@@ -48,14 +49,16 @@ type LabelStripProps = {
   inset: number;
   /** A board on the hexagon lattice, whose rows and columns do not span the box. */
   lattice: boolean;
+  /** And whether the shape on that lattice is a hexagon rather than the whole rhombus. */
+  hexagon: boolean;
 };
 
-function ColumnLabels({ size, theme, flipped, inset, lattice }: LabelStripProps) {
+function ColumnLabels({ size, theme, flipped, inset, lattice, hexagon }: LabelStripProps) {
   return (
     <div
       className="grid text-center text-[0.65rem] font-medium select-none"
       style={{
-        gridTemplateColumns: lattice ? latticeLabelTracks(size, "columns") : labelTracks(size, inset),
+        gridTemplateColumns: lattice ? latticeLabelTracks(size, "columns", hexagon) : labelTracks(size, inset),
         color: theme.coordinate,
       }}
       aria-hidden="true"
@@ -69,12 +72,12 @@ function ColumnLabels({ size, theme, flipped, inset, lattice }: LabelStripProps)
   );
 }
 
-function RowLabels({ size, theme, flipped, inset, lattice }: LabelStripProps) {
+function RowLabels({ size, theme, flipped, inset, lattice, hexagon }: LabelStripProps) {
   return (
     <div
       className="grid text-right text-[0.65rem] font-medium select-none"
       style={{
-        gridTemplateRows: lattice ? latticeLabelTracks(size, "rows") : labelTracks(size, inset),
+        gridTemplateRows: lattice ? latticeLabelTracks(size, "rows", hexagon) : labelTracks(size, inset),
         color: theme.coordinate,
       }}
       aria-hidden="true"
@@ -236,12 +239,12 @@ export function Board({
     >
       <div />
       {appearance.showCoordinates ? (
-        <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} />
+        <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} hexagon={spec.hexagon} />
       ) : (
         <div />
       )}
       {appearance.showCoordinates ? (
-        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} />
+        <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} hexagon={spec.hexagon} />
       ) : (
         <div />
       )}
@@ -291,7 +294,14 @@ export function Board({
             className="absolute inset-0 grid"
             style={{
               gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
-              ...(hexSkew ? { transform: LATTICE_TRANSFORM, transformOrigin: "top left" } : {}),
+              /*
+                THE SHAPE'S OWN FIT. A hexagon is the middle two thirds of the
+                rhombus the whole array shears into, so fitting the array would
+                leave it floating in its own frame — see `latticeFit`.
+              */
+              ...(hexSkew
+                ? { transform: spec.hexagon ? HEXAGON_TRANSFORM : LATTICE_TRANSFORM, transformOrigin: "top left" }
+                : {}),
             }}
           >
             {layoutOrder(state.board.length, flipped).map((index) => {

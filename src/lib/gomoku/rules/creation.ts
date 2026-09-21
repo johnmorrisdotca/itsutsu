@@ -11,6 +11,7 @@ import {
   SEED_RANGE,
   STONES,
   VARIANT_SPECS,
+  defaultBoardFor,
 } from "../gomoku.constants";
 import { emptyBoard } from "../obstacles";
 import type { Cell, GameSettings, GameState, HeadStart, OpeningRule, Point, Seat, Stone } from "../gomoku.types";
@@ -55,10 +56,17 @@ export function availableOpenings(settings: GameSettings): OpeningRule[] {
  */
 export function normaliseSettings(settings: GameSettings): GameSettings {
   const spec = VARIANT_SPECS[settings.variant];
-  // A game with a board of its own is played on it; the rest take any size they are given.
+  /*
+   * A game with a board of its own is played on it; the rest take any size
+   * they are given. A size it does not have falls to the board it OPENS on,
+   * asked for by name — `boardSizes` is in numerical order now, so the front
+   * of that list is the smallest and not the default: taking it would have
+   * built Halma on the eight and Honeycomb on the 37-cell hexagon, silently,
+   * for anything that asked for a board they do not come in.
+   */
   const size =
     spec.boardSizes !== null && !spec.boardSizes.includes(settings.size)
-      ? spec.boardSizes[0]
+      ? defaultBoardFor(settings.variant)
       : settings.size;
   // A head start the game and this board can give, or less: see `normaliseHeadStart`.
   const settled = { ...settings, size, headStart: normaliseHeadStart({ ...settings, size }) };
