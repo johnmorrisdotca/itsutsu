@@ -54,24 +54,30 @@ async function setUpScreen(page: Page) {
  *
  * THE SECOND HALF OF THIS FILE'S RULE, added when the doorstep was. Each case
  * below already proved that a press lands on the setup screen rather than on a
- * board. What none of them said was where the button at the BOTTOM of that
- * screen goes — and for a long time it went straight to a board, which is the
- * complaint John made four times: "we go straight to the game rather than the
- * Doorstep screen which confirms settings".
+ * board. What none of them said was what the screen SAYS before its button is
+ * pressed — and for a long time the press went straight to a board, which is
+ * the complaint John made four times: "we go straight to the game rather than
+ * the Doorstep screen which confirms settings".
  *
- * So every entry point is now followed one press further. It is cheap, because
- * the thing being asserted is that nothing happens: no row is written and no
- * board is loaded.
+ * That was answered with a second screen, and this followed every entry point
+ * one press onto it. The second screen was saying what the first had just
+ * said, so it is one screen again (John, 2026-09-21: "one too many screens…
+ * too much repeat info") — and the requirement is unchanged, so what this
+ * checks is unchanged: before anything is written, the whole game is stated.
+ *
+ * It is still cheap, because the thing being asserted is still that nothing
+ * happens: it reads the screen and never presses.
  */
-async function throughTheDoorstep(page: Page) {
-  await page.getByTestId("set-up-start").click();
-  await expect(page).toHaveURL(/\/games\/[^/]+\/begin(\?|$)/);
-  await ready(page, "doorstep");
-  await expect(page.getByTestId("doorstep-begin")).toBeVisible();
-  await expect(page.getByTestId("doorstep-change")).toBeVisible();
-  // A statement, not a board and not a second form.
+async function statesTheGame(page: Page) {
+  const begin = page.getByTestId("set-up-start");
+  await expect(begin).toBeVisible();
+  // What the press will do, said on the button itself — a game, not a board yet.
+  await expect(begin).toHaveAttribute("data-press", /begin|seat/);
+  // Every rule, on the rows that hold them, and who will be sitting where.
+  await expect(page.getByTestId("set-up-rules-words")).not.toBeEmpty();
+  await expect(page.getByTestId("set-up-seating")).not.toBeEmpty();
+  // A statement, not a board.
   await expect(page.getByTestId("shared-game")).toHaveCount(0);
-  await expect(page.getByTestId("set-up-game")).toHaveCount(0);
 }
 
 test.describe("every way into a game reaches the setup screen", () => {
@@ -110,7 +116,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(screen.game).toBeVisible();
     await expect(screen.start).toBeVisible();
 
-    await throughTheDoorstep(page);
+    await statesTheGame(page);
 
     await context.close();
   });
@@ -148,7 +154,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     await openMoreSettings(page);
     await expect(screen.opponent).toHaveAttribute("data-opponent", `m:${theirId}`);
 
-    await throughTheDoorstep(page);
+    await statesTheGame(page);
 
     await context.close();
   });
@@ -184,7 +190,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(screen.opponent).toHaveCount(1);
     await expect(screen.opponent).not.toHaveAttribute("data-opponent", "anyone");
 
-    await throughTheDoorstep(page);
+    await statesTheGame(page);
 
     await context.close();
   });
@@ -327,12 +333,13 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(screen.pace).toHaveValue(String(PACE));
 
     /*
-     * And the doorstep repeats the board the sentence settled, which is the point
-     * of carrying the whole draft in the address rather than a head start on one:
-     * a confirmation that quietly showed 9x9 would be worse than none.
+     * And the screen STATES the board the sentence settled, which is the point
+     * of carrying the whole draft in the address rather than a head start on
+     * one: a screen that quietly said 9×9 over a 19×19 board would be worse
+     * than saying nothing.
      */
-    await throughTheDoorstep(page);
-    await expect(page.getByTestId("doorstep-statement")).toContainText("19×19");
+    await statesTheGame(page);
+    await expect(page.getByTestId("set-up-summary")).toContainText("19×19");
 
     await context.close();
   });
@@ -360,11 +367,13 @@ test.describe("every way into a game reaches the setup screen", () => {
     await expect(screen.opponent).toHaveAttribute("data-opponent", `m:${theirId}`);
 
     /*
-     * The doorstep names them and says which colour each of them gets, which is
-     * the fact a person most wants before agreeing to a game.
+     * And the screen names them and says which colour each of them gets, which
+     * is the fact a person most wants before agreeing to a game. It was read
+     * one press further on until the two screens were made one.
      */
-    await throughTheDoorstep(page);
-    await expect(page.getByTestId("doorstep-colours")).toContainText(/black/i);
+    await statesTheGame(page);
+    await expect(page.getByTestId("set-up-seating")).toContainText(/black/i);
+    await expect(page.getByTestId("set-up-seating")).toContainText(them.name.split(" ")[0]);
 
     await context.close();
   });
@@ -424,7 +433,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     );
 
     await chooseGame(page, "reversi");
-    await throughTheDoorstep(page);
+    await statesTheGame(page);
 
     await context.close();
   });
@@ -452,7 +461,7 @@ test.describe("every way into a game reaches the setup screen", () => {
     await setUpScreen(page);
 
     await chooseGame(page, "reversi");
-    await throughTheDoorstep(page);
+    await statesTheGame(page);
 
     await context.close();
   });
@@ -481,7 +490,7 @@ test.describe("every way into a game reaches the setup screen", () => {
      * wrote a row. Standing on the doorstep, having read what is about to happen,
      * is still nothing written.
      */
-    await throughTheDoorstep(page);
+    await statesTheGame(page);
 
     const mine = await context.request.get("/api/games/mine");
     /*
