@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /**
  * A small table printed as a figure, with its caption under it.
@@ -27,7 +28,7 @@ export function FigureTable({
 }) {
   return (
     <figure className="flex flex-col gap-2" data-testid="about-table">
-      <div className="overflow-x-auto rounded-lg border border-rule">
+      <div className={`${TABLE_SCROLL} rounded-lg border border-rule`}>
         <table className="w-full text-sm">
           <thead>
             <tr>

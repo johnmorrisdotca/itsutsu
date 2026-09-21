@@ -11,7 +11,7 @@ import { LevelName } from "@/components/xp/LevelName";
 import type { SinceLastPlayed } from "@/lib/catalogue/catalogueFigures";
 import type { TopPlayerShown } from "@/lib/catalogue/catalogue.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { matchPath, playPath, standingsPath } from "@/lib/gomoku/slugs";
+import { matchPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { Speaker } from "@/lib/i18n/i18n";
 import { countText } from "@/lib/rating/figures";
@@ -70,8 +70,16 @@ export function GameStatsStrip({ stats, signedIn, compact = false, standings = t
         <span className={`${STAT_CHIP} text-muted`} data-testid="game-stats-nobody">
           {say.say("catalogue.nobodyYet")}
         </span>
+        {/*
+          TO THE SET-UP SCREEN, NOT TO THE PRACTICE BOARD. "Be the first to
+          play" promises a game — the first one on this site's record — and it
+          went to /games/<game>/play, which is a sandbox that keeps nothing and
+          makes nobody the first at anything. It also cost a click nobody had:
+          practice, then find your way to a real game. One press here, Begin
+          there, and the promise is kept in two.
+        */}
         <Link
-          href={signedIn ? playPath(variant) : "/join"}
+          href={signedIn ? setUpPath(variant) : "/join"}
           className={`${STAT_LINK} px-1 font-semibold`}
           data-testid="game-stats-be-first"
         >
@@ -109,6 +117,21 @@ export function GameStatsStrip({ stats, signedIn, compact = false, standings = t
             </Link>
           )}
         </span>
+      ) : null}
+      {/*
+        AND THE WAY INTO A GAME OF IT, on the card itself.
+        
+        A game that has been played showed its figures and its standings and no
+        way to play it: the only route was the game's own page and then Play
+        there, which is three presses to a board with Begin. John, 2026-09-21:
+        "no game or process should take 3 screens/clicks." An unplayed game has
+        carried this since it was written — "be the first to play" is the same
+        link — and there was never a reason the played ones should not.
+      */}
+      {signedIn ? (
+        <Link href={setUpPath(variant)} className={`${STAT_LINK} px-1 font-semibold`} data-testid="game-stats-play">
+          {say.say("catalogue.play")}
+        </Link>
       ) : null}
       {standings ? (
         <Link href={standingsPath(variant)} className={`${STAT_LINK} px-1`} data-testid="game-stats-standings">

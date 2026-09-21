@@ -67,6 +67,27 @@ export default function Home() {
             Play
           </Link>
           {/*
+            NEW GAME, BESIDE PLAY, BECAUSE THE TWO ARE DIFFERENT ERRANDS AND
+            THE FRONT DOOR OFFERED ONLY ONE.
+
+            Play is "show me my games", which is what a returning player wants
+            and is one press from a board. Starting a NEW one from here was
+            Play, then New game in the bar, then Begin — three, and John,
+            2026-09-21, having counted them: "no game or process should take 3
+            screens/clicks." It is two from here now.
+
+            Quiet rather than strong: there is one loud button on a screen, and
+            on the front door it is the one that leads to the games you already
+            have waiting.
+          */}
+          <Link
+            href="/games/new"
+            className={`${BUTTON_BASE} ${BUTTON_QUIET} px-5 py-2 text-base`}
+            data-testid="enter-new-game"
+          >
+            New game
+          </Link>
+          {/*
             The catalogue, which was reachable only from the navigation — and
             it is the page a first-time visitor actually wants: forty games,
             each with its rules.

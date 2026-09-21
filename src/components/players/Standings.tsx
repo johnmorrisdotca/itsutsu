@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { shownName } from "@/lib/rating/shownName";
 
 import { XP_BLANK_BECAUSE } from "./players.constants";
+import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 /** A player's name, leading to their page. */
 export function PlayerLink({ name, memberId }: { name: string; memberId?: string | null }) {
@@ -157,34 +158,37 @@ export function LadderSideView({
         side-view that grew the shared columns would be the full table in a
         narrow space, which is what John asked it not to be.
       */}
-      <table className={TABLE_CLASS} data-testid={testId}>
-        <thead className={TABLE_HEAD_CLASS}>
-          <tr>
-            <th className="py-1 pr-2">#</th>
-            <th className="py-1 pr-2">Player</th>
-            <th className="py-1 text-right">Rating</th>
-          </tr>
-        </thead>
-        <tbody>
-          {standings.length === 0 ? (
-            <tr className="border-t border-rule">
-              <td colSpan={3} className="py-2 text-sm text-muted" data-testid="ladder-side-view-empty">
-                {emptyNote}
-              </td>
+      {/* Three columns and still a table: a long player name is enough to push a phone sideways. */}
+      <div className={TABLE_SCROLL}>
+        <table className={TABLE_CLASS} data-testid={testId}>
+          <thead className={TABLE_HEAD_CLASS}>
+            <tr>
+              <th className="py-1 pr-2">#</th>
+              <th className="py-1 pr-2">Player</th>
+              <th className="py-1 text-right">Rating</th>
             </tr>
-          ) : (
-            standings.map((standing, index) => (
-              <tr key={standing.key} className="border-t border-rule">
-                <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
-                <td className="min-w-0 truncate py-1.5 pr-2">
-                  <PlayerLink name={standing.name} memberId={standing.memberId} />
+          </thead>
+          <tbody>
+            {standings.length === 0 ? (
+              <tr className="border-t border-rule">
+                <td colSpan={3} className="py-2 text-sm text-muted" data-testid="ladder-side-view-empty">
+                  {emptyNote}
                 </td>
-                <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              standings.map((standing, index) => (
+                <tr key={standing.key} className="border-t border-rule">
+                  <td className="py-1.5 pr-2 font-mono text-muted tabular-nums">{index + 1}</td>
+                  <td className="min-w-0 truncate py-1.5 pr-2">
+                    <PlayerLink name={standing.name} memberId={standing.memberId} />
+                  </td>
+                  <td className="py-1.5 text-right font-mono tabular-nums">{standing.rating}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
       {invitation}
     </div>
   );

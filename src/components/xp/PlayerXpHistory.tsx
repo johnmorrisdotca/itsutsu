@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Paired } from "@/components/i18n/Paired";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { countText } from "@/lib/rating/figures";
 import { playerXpHistory } from "@/lib/xp/playerXpHistory";
 import { xpParamsFrom } from "@/lib/xp/xpHistory";
@@ -54,7 +54,7 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
         counted, credit from other sites included.
       </p>
 
-      <div className="overflow-x-auto">
+      <div className={TABLE_SCROLL}>
         <table className={TABLE_CLASS} data-testid="xp-history-table">
           <thead className={TABLE_HEAD_CLASS}>
             <tr>

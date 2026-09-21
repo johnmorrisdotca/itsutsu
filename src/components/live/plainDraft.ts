@@ -1,4 +1,11 @@
-import { NO_HANDICAP, NO_HEAD_START, OPENING_RULES, boardSizesFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import {
+  NO_HANDICAP,
+  NO_HEAD_START,
+  OPENING_RULES,
+  boardSizesFor,
+  defaultBoardFor,
+  sizeForVariant,
+} from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 import type { RulesDraft } from "./rulesDraft";
@@ -59,7 +66,7 @@ export function silentDraft({ variant, defaults }: { variant: RuleVariant; defau
   const sizes = boardSizesFor(variant);
   return plainDraft({
     variant,
-    size: sizeForVariant(variant, sizes.includes(defaults.size) ? defaults.size : sizes[0]),
+    size: sizeForVariant(variant, sizes.includes(defaults.size) ? defaults.size : defaultBoardFor(variant)),
     moveTimeMs: defaults.moveTimeMs,
   });
 }

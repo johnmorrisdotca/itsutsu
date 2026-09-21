@@ -4,6 +4,7 @@ import {
   STONE_DISPLAY,
   VARIANT_SPECS,
   boardSizesFor,
+  defaultBoardFor,
 } from "@/lib/gomoku/gomoku.constants";
 import { checkersBoardLine, checkersDrawLines, checkersPlayLines } from "./rulesPage.checkers";
 import { hexagonCells, hexagonSide } from "@/lib/gomoku/rules/hexagon";
@@ -157,12 +158,15 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.squareWins) object.push("Four of your pieces in a 2×2 square also wins.");
 
   // The honeycomb is not a square of anything, and says what it is below.
+  // The board this game OPENS on, which is not the first of the list: the list
+  // is in numerical order and the default is a decision — see `defaultBoardFor`.
+  const opens = defaultBoardFor(variant);
   const board: string[] = spec.hexagon
     ? []
     : [
         sizes.length === 1
           ? `A ${sizes[0]}×${sizes[0]} board.`
-          : `A square board of ${sizes.join(", ")} lines; ${sizes[0]}×${sizes[0]} by default.`,
+          : `A square board of ${sizes.join(", ")} lines; ${opens}×${opens} by default.`,
       ];
   if (spec.quadrantSize !== null) {
     board.push(`It is divided into four ${spec.quadrantSize}×${spec.quadrantSize} quadrants, each of which can be turned.`);
@@ -185,7 +189,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
   if (spec.camps) {
     board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
   }
-  if (spec.checkers) board.push(checkersBoardLine(variant, sizes[0]));
+  if (spec.checkers) board.push(checkersBoardLine(variant, opens));
   if (spec.hexagon) {
     /*
      * COUNTED, NOT LOOKED UP. This line used to read the two boards off a
@@ -195,9 +199,9 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
      * the radius, so the sentence is right at any size the game is given.
      */
     board.push(
-      `A hexagon of hexagons, ${sideWord(hexagonSide(sizes[0]))} cells a side and ${hexagonCells(sizes[0])} in all, with the centre cell sealed and the six round it set at the start, three of each colour, no two alike side by side. Every cell touches six others, so a run may lie along any of six directions rather than eight.`,
+      `A hexagon of hexagons, ${sideWord(hexagonSide(opens))} cells a side and ${hexagonCells(opens)} in all, with the centre cell sealed and the six round it set at the start, three of each colour, no two alike side by side. Every cell touches six others, so a run may lie along any of six directions rather than eight.`,
     );
-    const others = sizes.slice(1).toSorted((a, b) => a - b);
+    const others = sizes.filter((size) => size !== opens);
     if (others.length > 0) {
       board.push(
         `It is played on ${others.length + 1} hexagons in all: this one, and ${listOf(others.map((size) => `${hexagonCells(size)} cells at ${sideWord(hexagonSide(size))} a side`))}. The centre is sealed on every one of them, which leaves an even number of cells to fill whichever board is chosen.`,

@@ -127,7 +127,9 @@ describe("the mixed plan: games nobody has played", () => {
         expect(match.variant === "go" && match.size === 19).toBe(false);
       }
     }
-    expect(drawableSizes("go", { sizeCaps }, { black: "kyu", white: "meijin" })).toEqual([13, 9]);
+    // Go's boards, smallest first, with the capped 19 gone: `boardSizesFor` is
+    // in numerical order now, and this reads it back in the order it is given.
+    expect(drawableSizes("go", { sizeCaps }, { black: "kyu", white: "meijin" })).toEqual([9, 13]);
   });
 
   it("leaves out a game it is told cannot be finished, and says why, rather than dropping it silently", () => {
@@ -154,10 +156,10 @@ describe("the mixed plan: a size capped for some players only", () => {
     tiers.includes(match.black) || tiers.includes(match.white);
 
   it("closes the size to a pairing with a named player in either seat, and leaves it open to everyone else", () => {
-    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "razryad" })).toEqual([19, 13, 9]);
-    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "dan" })).toEqual([19, 13, 9]);
-    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "meijin", white: "kyu" })).toEqual([13, 9]);
-    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "guoshou" })).toEqual([13, 9]);
+    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "razryad" })).toEqual([9, 13, 19]);
+    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "dan" })).toEqual([9, 13, 19]);
+    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "meijin", white: "kyu" })).toEqual([9, 13]);
+    expect(drawableSizes("go", { sizeCaps: perTier }, { black: "kyu", white: "guoshou" })).toEqual([9, 13]);
   });
 
   it("never plans the capped size with a named player seated, and does plan it without one", () => {

@@ -316,22 +316,26 @@ const REVERSI_SIZES = [8] as const;
 const MINI_REVERSI_SIZES = [4, 6, 8] as const;
 /** The big board the play-by-mail sites offered beside the usual one. */
 const GRAND_REVERSI_SIZES = [10] as const;
-/** Halma's own board first; the small boards carry the camps the game is played with on them. */
-const HALMA_SIZES = [16, 10, 8] as const;
+/** Halma's own board is the sixteen; the small ones carry the camps the game is played with on them. */
+const HALMA_SIZES = [8, 10, 16] as const;
 /** Hex as it is played: eleven a side, with the bigger boards the federations also use. */
 const HEX_SIZES = [11, 13, 19] as const;
 /**
  * The honeycomb's embedding squares: a hexagon of radius R sits in a
- * (2R+1)-square, so the four boards are hexagons of 91, 37, 61 and 127 cells
- * — six cells a side, four, five and seven. Eleven first, because 91 is the
- * board ItsYourTurn's Hexversi is played on and the one a reader arriving
- * from there expects; the rest in size order after it.
+ * (2R+1)-square, so the four boards are hexagons of 37, 61, 91 and 127 cells
+ * — four cells a side, five, six and seven.
+ *
+ * In numerical order, like every other list here, with the board the game
+ * OPENS on said separately (`defaultBoard`): 91 is the one ItsYourTurn's
+ * Hexversi is played on and the one a reader arriving from there expects, and
+ * it used to be first in this list for that reason — which made the picker
+ * read 11, 7, 9, 13.
  *
  * The centre is sealed on every one of them, which leaves an even count of
  * playable cells at every radius (`honeycombPlayable`) — the right parity for
  * a game decided by counting discs.
  */
-const HONEYCOMB_SIZES = [11, 7, 9, 13] as const;
+const HONEYCOMB_SIZES = [7, 9, 11, 13] as const;
 /** Checkers: the 8×8 board draughts is played on everywhere. */
 const CHECKERS_SIZES = [8] as const;
 
@@ -577,7 +581,7 @@ export const POOL_CHECKERS_RULES: CheckersRules = {
 /** Chinese Checkers: the standard 121-hole hexagram, embedded in its own 17×17 square. */
 const CHINESE_CHECKERS_SIZES = [17] as const;
 /** Go's own three sizes: 19×19 as it is played seriously, 13 and 9 for a shorter game. */
-const GO_SIZES = [19, 13, 9] as const;
+const GO_SIZES = [9, 13, 19] as const;
 
 /**
  * What a row may set, less the two things no builder supplies for it: where its
@@ -606,6 +610,7 @@ function plain(overrides: SpecOverrides): VariantSpec {
     pieces: null,
     squareWins: false,
     boardSizes: null,
+    defaultBoard: null,
     analysis: true,
     wrap: WRAP_MODES.none,
     deadSquares: 0,
@@ -866,9 +871,11 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     startingDiscs: STARTING_DISCS.fixed,
     analysis: false,
     boardSizes: HONEYCOMB_SIZES,
+    defaultBoard: 11, // 91 cells: the board Hexversi is played on.
     headStartTurns: 0, // 1 free turn takes the last disc, as in every flipping game.
   }),
-  halma: small({ grid: BOARD_GRIDS.cells, camps: true, analysis: false, boardSizes: HALMA_SIZES, headStartTurns: 3 }), // 3 never decides: a race needs every piece home.
+  // Halma opens on its own board, the sixteen, not on the smallest of the three.
+  halma: small({ grid: BOARD_GRIDS.cells, camps: true, analysis: false, boardSizes: HALMA_SIZES, defaultBoard: 16, headStartTurns: 3 }), // 3 never decides: a race needs every piece home.
   // On the crossings of a triangular lattice, as a wooden Hex board is ruled: see HEX_LATTICE.
   hex: small({ grid: BOARD_GRIDS.lines, connects: true, analysis: false, boardSizes: HEX_SIZES, openings: [OPENING_RULES.free, OPENING_RULES.swap], headStartTurns: 3 }), // 3 never decides: a chain needs a stone on every row.
   /*
@@ -929,14 +936,30 @@ export const VARIANT_SPECS: Record<RuleVariant, VariantSpec> = {
     // Handicap stones on the star points, White moving first: Go's own head start.
     headStart: TRADITIONAL_HEAD_STARTS.stones,
     boardSizes: GO_SIZES,
+    defaultBoard: 19, // Go opens on the full board; the nine and the thirteen are the teaching ones.
     allowFirstPlayerChoice: false,
     analysis: false,
   }),
 };
 
-/** The board sizes a variant plays on. */
+/** The board sizes a variant plays on, smallest first — the order they are drawn in. */
 export function boardSizesFor(variant: RuleVariant): readonly number[] {
   return VARIANT_SPECS[variant].boardSizes ?? BOARD_SIZES;
+}
+
+/**
+ * The board a game OPENS on, where nothing else has said: its own
+ * `defaultBoard` if it has one, else the first of its boards.
+ *
+ * Asked for by name rather than read off the front of the list, because the
+ * list is in numerical order and the two facts had been the same number by
+ * accident. Sorting the lists moved Halma's default from its own sixteen to
+ * the quick eight and Honeycomb's from the 91-cell board to the 37, and
+ * nothing would have said so.
+ */
+export function defaultBoardFor(variant: RuleVariant): number {
+  const spec = VARIANT_SPECS[variant];
+  return spec.defaultBoard ?? (spec.boardSizes ?? BOARD_SIZES)[0];
 }
 
 /**
@@ -952,7 +975,7 @@ export function boardSizesFor(variant: RuleVariant): readonly number[] {
  */
 export function sizeForVariant(variant: RuleVariant, size: number): number {
   const sizes = VARIANT_SPECS[variant].boardSizes;
-  return sizes === null || sizes.includes(size) ? size : sizes[0];
+  return sizes === null || sizes.includes(size) ? size : defaultBoardFor(variant);
 }
 
 export const GAME_STATUS = {

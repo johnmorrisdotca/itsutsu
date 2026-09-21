@@ -203,6 +203,43 @@ export function planRelease(input: PlanInput): PlanResult {
   }
 
   /*
+   * ONE FEATURE, ONE VERSION — so a minor takes exactly one `--summary`.
+   *
+   * John, 2026-09-21, reading 0.221.0: "Why does v0.221.0 have more than 1
+   * feature to it? Did you miss the basic rule where each feature is a version
+   * increase? Look at all the other releases." That release carried five: a
+   * new game, the set-up screen, the move flow, the About page and the way a
+   * board is named. One number for five things tells a reader nothing about
+   * any of them, and it cannot be pointed at — there is no version that means
+   * "the one where Honeycomb arrived".
+   *
+   * It was never written down, so the tool allowed it and a session used it.
+   * It is written here now, where a run that would break it is stopped rather
+   * than reviewed: the rule and its enforcement are the same three lines.
+   *
+   * A PATCH MAY STILL CARRY SEVERAL, because a patch is not a feature. A
+   * night of small fixes is one release by nature — nobody points at the
+   * version a typo was corrected in — and splitting those would be five
+   * numbers saying the same nothing.
+   *
+   * The cost is one extra run per feature, and that is all it is: the release
+   * chain takes a number, writes its heading and commits, so three features
+   * are three runs and then ONE push. Vercel counts the push, not the number
+   * (see the deploy cap in CLAUDE.md), so this costs no deployment at all.
+   */
+  if (input.step === "minor" && summaries.length > 1) {
+    return {
+      ok: false,
+      error:
+        `A minor release is ONE feature, and ${summaries.length} summaries were given. ` +
+        "Each feature takes its own version — that is what a reader points at, and 0.221.0 shipped five things under one number before this refused it. " +
+        "Run the release once per feature, in the order they should be read in (oldest first, since each run takes the next number), and push once at the end; " +
+        "the push is the deployment, not the number, so this costs nothing extra. " +
+        "If these lines really are one feature, say it in one line. If they are fixes rather than features, --patch takes as many as you like.",
+    };
+  }
+
+  /*
    * EVERY RELEASE WRITES ITS HEADING, WITH ITS DATE. A patch with no summary used
    * to write none, on the old rule that patch-only versions go unlisted — and
    * 0.186.1 went out exactly so: package.json said it, CHANGELOG.md never did,

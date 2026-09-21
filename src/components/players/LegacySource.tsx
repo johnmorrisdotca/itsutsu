@@ -4,7 +4,7 @@ import { Figures } from "@/components/ui/Figures";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { PlayedFigure, RecordFigure } from "./PlayerRecord";
-import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { figuresForSource } from "@/lib/legacy/keptFigures";
 import { figuresOf, winRateText } from "@/lib/rating/figures";
 import { findLegacyPlayer } from "@/lib/legacy/legacyPlayers.data";
@@ -104,7 +104,7 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
       <h3 className={SECTION_TITLE}>{row.class}</h3>
-      <div className="overflow-x-auto">
+      <div className={TABLE_SCROLL}>
         <table className="w-full text-sm" data-testid={detail.length > 0 ? "legacy-detail" : "legacy-class"}>
           <thead>
             <tr className="text-left">
@@ -216,7 +216,7 @@ function HeadToHead({ source }: { source: LegacySource }) {
                 · {winRateText(figures.winRate)}
               </span>
             </h3>
-            <div className="overflow-x-auto">
+            <div className={TABLE_SCROLL}>
               <table className="w-full text-sm" data-testid="legacy-head-to-head-log">
                 <tbody>
                   {entry.games.map((game, index) => (
