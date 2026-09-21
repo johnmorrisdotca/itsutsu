@@ -56,8 +56,26 @@ export type VariantSpec = {
   pieces: number | null;
   /** A 2×2 square of one colour also wins. */
   squareWins: boolean;
-  /** Board sizes this game is played on, or null for the standard list. */
+  /**
+   * Board sizes this game is played on, or null for the standard list.
+   *
+   * IN NUMERICAL ORDER, ALWAYS, because that is the order they are drawn in —
+   * John, 2026-09-21: "the order of the Boards, on all pages should be
+   * numerical." They used to be written default-first, which put Halma at 16,
+   * 10, 8 and Honeycomb at 11, 7, 9, 13 in every picker on the site.
+   */
   boardSizes: readonly number[] | null;
+  /**
+   * The board a game opens on where it is not the smallest — Halma's own
+   * sixteen, Honeycomb's ninety-one cells, Go's nineteen. Null means the first
+   * of `boardSizes`, which is now the smallest.
+   *
+   * A field rather than a position in the list, because those are two
+   * different facts and reading one off the other is what made the order a
+   * decision it should never have been: sorting the list silently opened
+   * Halma on the quick board and Honeycomb on the small hexagon.
+   */
+  defaultBoard: number | null;
   /** Where its stones sit when it is drawn its own way — see `BoardGrid`. Declared, never inferred. */
   grid: BoardGrid;
   /** Whether the threat reading means anything; off where stones move after placing. */

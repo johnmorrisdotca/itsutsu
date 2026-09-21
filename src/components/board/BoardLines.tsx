@@ -1,7 +1,7 @@
 import { BLOCKED, STAR_POINTS } from "@/lib/gomoku/gomoku.constants";
 import type { Cell } from "@/lib/gomoku/gomoku.types";
 import { hexagonSealed, inHexagon } from "@/lib/gomoku/rules/hexagon";
-import { EDGE_LINE_WIDTH, HEX_LATTICE, LATTICE_TRANSFORM, LINE_WIDTH, STAR_RADIUS } from "./Board.constants";
+import { EDGE_LINE_WIDTH, HEXAGON_TRANSFORM, HEX_LATTICE, LATTICE_TRANSFORM, LINE_WIDTH, STAR_RADIUS } from "./Board.constants";
 import type { BoardThemeTokens } from "./board.types";
 
 /**
@@ -110,7 +110,8 @@ export function BoardLines({
         viewBox={`0 0 ${size} ${size}`}
         className="absolute inset-0 h-full w-full"
         aria-hidden="true"
-        style={{ transform: LATTICE_TRANSFORM, transformOrigin: "top left" }}
+        // Fitted to the hexagon, not to the array it sits in — see `latticeFit`.
+        style={{ transform: HEXAGON_TRANSFORM, transformOrigin: "top left" }}
         data-honeycomb="true"
       >
         {honeycomb.map((cell, index) => {

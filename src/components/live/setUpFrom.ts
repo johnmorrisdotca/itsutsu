@@ -5,7 +5,7 @@ import type { GameDefaults } from "@/components/game/gameDefaults";
 import { isBotId } from "@/lib/bots/bots";
 import { listable } from "@/lib/social/listable";
 import { gamesPlayedBy } from "@/lib/bots/bots.constants";
-import { DEFAULT_SETTINGS, boardSizesFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import { DEFAULT_SETTINGS, boardSizesFor, defaultBoardFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { parseHandicap, parseHeadStart } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
@@ -408,7 +408,7 @@ function blankFrom(variant: RuleVariant | null): SetUpFrom {
   const chosen = variant ?? (DEFAULT_SETTINGS.variant as RuleVariant);
   const sizes = boardSizesFor(chosen);
   return {
-    initial: plainDraft({ variant: chosen, size: sizeForVariant(chosen, sizes[0]), moveTimeMs: null }),
+    initial: plainDraft({ variant: chosen, size: defaultBoardFor(chosen), moveTimeMs: null }),
     asPlayed: null,
     /* Nothing was filled in at all, so nothing about the board was settled. */
     boardChosen: null,

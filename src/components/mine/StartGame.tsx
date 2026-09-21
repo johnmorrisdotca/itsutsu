@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { Select } from "@/components/ui/Controls";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
-import { DEFAULT_BOARD_SIZE, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
+import { DEFAULT_BOARD_SIZE, boardSizesFor, defaultBoardFor } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { NO_PACE, gamePath, playPath, rulesPath, setUpLink } from "@/lib/gomoku/slugs";
@@ -92,7 +92,7 @@ export function StartGame({ families, seats, opponents, signedIn, canAsk }: Star
   const board =
     size !== null && sizes.includes(size)
       ? size
-      : (waiting?.size ?? (sizes.includes(DEFAULT_BOARD_SIZE) ? DEFAULT_BOARD_SIZE : sizes[0]));
+      : (waiting?.size ?? (sizes.includes(DEFAULT_BOARD_SIZE) ? DEFAULT_BOARD_SIZE : defaultBoardFor(variant as RuleVariant)));
 
   /*
    * A seat worth taking is one that matches the whole sentence, board
