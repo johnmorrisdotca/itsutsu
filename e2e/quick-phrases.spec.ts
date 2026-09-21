@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { gamesMade, namesPlayedUnder } from "./tidy";
-import { PLAYER_STATE, ready } from "./support";
+import { PLAYER_STATE, ready, submitIfPending } from "./support";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
@@ -111,6 +111,7 @@ test.describe("quick phrases", () => {
     // THE BOARD THIS CASE IS TALKING ABOUT, said out loud before the move.
     await expect(page).toHaveURL(thisBoard);
     await page.getByRole("button", { name: /^E5, empty$/ }).click();
+    await submitIfPending(page);
     await expect(page.getByRole("button", { name: "E5, Black stone" })).toBeVisible();
     /*
      * And again after it, because the move is what could have moved the page:

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { gamesMade, namesPlayedUnder } from "./tidy";
-import { PLAYER_STATE, ready } from "./support";
+import { PLAYER_STATE, ready, submitIfPending } from "./support";
 
 /** Every game this file makes, taken away when it finishes. */
 const tidyAway = gamesMade();
@@ -83,6 +83,7 @@ test.describe("turning the board round", () => {
     await ready(page, "shared-game");
     // A stone somewhere off-centre, so a half turn is visible rather than symmetric.
     await page.getByRole("button", { name: /^A9, empty$/ }).click();
+    await submitIfPending(page);
     await expect(page.getByRole("button", { name: "A9, Black stone" })).toBeVisible();
     /*
      * And this is still this game's board. The move ended the turn, so it is
@@ -132,6 +133,7 @@ test.describe("turning the board round", () => {
     await page.waitForURL(thisBoard);
     await ready(page, "shared-game");
     await page.getByRole("button", { name: /^A9, empty$/ }).click();
+    await submitIfPending(page);
     await expect(page.getByRole("button", { name: "A9, Black stone" })).toBeVisible();
     // Still this board, so the button turned below is this game's. See above.
     await expect(page, "the board wandered off to another game").toHaveURL(thisBoard);
