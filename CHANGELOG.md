@@ -10,6 +10,12 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.240.2 — 2026-09-22
+- The browser suite runs as four shards, so a whole run takes about thirteen minutes instead of fifty.
+- Five games that had shipped with no browser test have one, and the gate that asks for one now checks.
+- From somebody's own page, starting a game with them is two presses, and a case says so.
+- The specs that page the record and the ladder play the games they page through, rather than relying on rows other tests left behind.
+
 ## 0.240.1 — 2026-09-22
 - Three browser specs brought up to date: two that still asserted the site as it was two releases ago, and one that raced itself.
 
