@@ -66,23 +66,43 @@ function RhombusBorder({ size }: { size: number }) {
  * hexagon pulled back through the shear's inverse. Its six vertices sit at a
  * third of the way to each of the three neighbouring-cell corners — 1/√3 of
  * the lattice spacing, at 30°, 90°, 150° and so on, the pointy-top cell whose
- * neighbours lie at 0°, 60° and 120° — and each is then unslanted:
- * scaleY(1/cos30°) followed by skewX(-30°). Worked out once; a polygon per
- * cell then reads as a honeycomb once the SVG takes the lattice transform.
+ * neighbours lie at 0°, 60° and 120° — and each is then unslanted. Worked out
+ * once; a polygon per cell then reads as a honeycomb once the SVG takes the
+ * lattice transform.
+ *
+ * WHICH y THE SHEAR IS UNDONE WITH, and it is the whole of what was wrong
+ * here. `skewX(30deg) scaleY(cos30°)` is one matrix and the right-hand factor
+ * goes on FIRST, so what the skew slides sideways is the already-squashed y,
+ * not the grid's. Undoing it therefore subtracts tan30° of the SCREEN y, and
+ * this subtracted tan30° of the grid y — too much by 1/cos30°, which is
+ * fifteen per cent of the shear.
+ *
+ * What fifteen per cent of a shear looks like is not a wonky corner. Every
+ * cell on every hexagon board came out a regular hexagon put through a further
+ * skew of about five degrees: vertices at 31°, 95° and 151° rather than 30°,
+ * 90° and 150°, and three different edge lengths where a hexagon has one.
+ * John, 2026-09-22: "HEXAGONS are slightly tilted in all our hex using
+ * boards!" It shipped because nothing had ever looked at the SHAPE —
+ * `hexagonFit.test.ts` checks where the lattice sits in its frame and how much
+ * of it fills the wood, both of which were right. `latticeCells.test.ts` now
+ * pushes these vertices back through the very transform the browser is given
+ * and holds the result to six equal edges at six even angles, which is the
+ * only claim a reader of the board is making.
  *
  * Drawn a touch under full size so the strokes of neighbouring cells do not
  * fight: the gap between cells is what makes a honeycomb read as cells at all,
  * and it is the one thing the grey-hexagon boards of the elder sites lack.
  */
-const HEXAGON_VERTICES: readonly [number, number][] = (() => {
+export const HEXAGON_VERTICES: readonly [number, number][] = (() => {
   const reach = (1 / Math.sqrt(3)) * 0.94;
   const tan30 = Math.tan(Math.PI / 6);
   return Array.from({ length: 6 }, (_, k) => {
     const angle = (Math.PI / 6) + (k * Math.PI) / 3;
+    // Where this vertex has to LAND, on screen, for the cell to read as a hexagon.
     const vx = reach * Math.cos(angle);
     const vy = reach * Math.sin(angle);
-    const y = vy / HEX_LATTICE.height;
-    return [vx - y * tan30, y] as [number, number];
+    // And where it must be drawn for the lattice transform to put it there.
+    return [vx - vy * tan30, vy / HEX_LATTICE.height] as [number, number];
   });
 })();
 
