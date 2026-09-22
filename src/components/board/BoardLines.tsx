@@ -1,7 +1,9 @@
 import { BLOCKED, STAR_POINTS } from "@/lib/gomoku/gomoku.constants";
 import type { Cell } from "@/lib/gomoku/gomoku.types";
 import { hexagonSealed, inHexagon } from "@/lib/gomoku/rules/hexagon";
-import { EDGE_LINE_WIDTH, HEXAGON_TRANSFORM, HEX_LATTICE, LATTICE_TRANSFORM, LINE_WIDTH, STAR_RADIUS } from "./Board.constants";
+import { STAR_RADIUS as HEXAGRAM_RADIUS, inStar, starCampOf } from "@/lib/gomoku/rules/chineseCheckers";
+import type { LatticeShape } from "./margin";
+import { EDGE_LINE_WIDTH, HEX_LATTICE, LINE_WIDTH, STAR_RADIUS } from "./Board.constants";
 import type { BoardThemeTokens } from "./board.types";
 
 /**
@@ -10,26 +12,50 @@ import type { BoardThemeTokens } from "./board.types";
  * The button grid laid over it uses the same spacing, so they stay aligned at
  * any rendered size.
  */
-/** How wide a side's band is, in cells, on the connection board. */
-const BAND = 0.28;
+/** The two sides' colours on Hex's border tiles: black owns the top and bottom rows, white the left and right columns. */
+const EDGE = { black: "#22231f", white: "#fffef9" } as const;
 
 /**
- * The third family of lines on the connection board, as segments in grid
- * space, one per short diagonal of the rhombus: through the points with
- * `row + col` equal, corner to corner but not the two lone corners. The
- * rows and the slanted columns are the ordinary rules through the points;
- * once the whole drawing is sheared onto the lattice these run at 120° to
- * them, and the three together rule the board as a wooden one is ruled.
- * Each is the line of the engine's own `{ row: 1, col: -1 }` neighbour.
+ * HEX'S BORDER, AS A RING OF TILES ROUND THE RHOMBUS.
+ *
+ * John, 2026-09-22: "I have a better idea than drawing those lines. You would
+ * actually just fill out an entire row of hexagons, dark or light and that
+ * would simulate the same thing and actually eliminate those issues." The
+ * bands were rectangles along the rhombus's edges, painted over the tiles,
+ * and where black met white at a corner one lay on the other. So the border
+ * is one more row of tiles above and below, in black, and one more column
+ * either side, in white — the same tiles as the board, so nothing is painted
+ * over anything.
+ *
+ * NO CORNER TILES. A real board splits each corner between the two colours,
+ * because its two edges have to meet somewhere — but nothing here is in play
+ * on the border at all, and John, looking at the four split tiles: "They are
+ * never in play... those are really not needed." The rows are the board's
+ * width, the columns its height, and the corners stay faint ground.
  */
-function shortDiagonals(size: number): { key: number; x1: number; y1: number; x2: number; y2: number }[] {
-  const last = size - 1;
-  return Array.from({ length: 2 * last - 1 }, (_, i) => {
-    const sum = i + 1;
-    const top = Math.max(0, sum - last);
-    const bottom = Math.min(sum, last);
-    return { key: sum, x1: sum - top + 0.5, y1: top + 0.5, x2: sum - bottom + 0.5, y2: bottom + 0.5 };
-  });
+function RhombusBorder({ size }: { size: number }) {
+  /*
+   * One more row above and below in black, one more column either side in
+   * white. The coordinates that sit in them are HTML over the board
+   * (`LatticeCoordinates`), in the same type as every other board's, so
+   * nothing is drawn here but the tiles.
+   */
+  const tiles: { row: number; col: number; edge: "black" | "white" }[] = [];
+  for (let col = 0; col < size; col += 1) tiles.push({ row: -1, col, edge: "black" }, { row: size, col, edge: "black" });
+  for (let row = 0; row < size; row += 1) tiles.push({ row, col: -1, edge: "white" }, { row, col: size, edge: "white" });
+  return (
+    <g data-border="rhombus">
+      {tiles.map((tile) => (
+        <polygon
+          key={`${tile.row}:${tile.col}`}
+          points={hexagonPoints(tile.col + 0.5, tile.row + 0.5)}
+          fill={EDGE[tile.edge]}
+          opacity={0.88}
+          data-edge={tile.edge}
+        />
+      ))}
+    </g>
+  );
 }
 
 /**
@@ -60,19 +86,18 @@ const HEXAGON_VERTICES: readonly [number, number][] = (() => {
   });
 })();
 
-function hexagonPoints(cx: number, cy: number): string {
+export function hexagonPoints(cx: number, cy: number): string {
   return HEXAGON_VERTICES.map(([dx, dy]) => `${(cx + dx).toFixed(4)},${(cy + dy).toFixed(4)}`).join(" ");
 }
+
 
 export function BoardLines({
   size,
   theme,
   quadrantSize = null,
   cells = false,
-  rhombus = false,
   checkered = false,
-  hidden = false,
-  honeycomb = null,
+  lattice = null,
 }: {
   size: number;
   theme: BoardThemeTokens;
@@ -80,54 +105,81 @@ export function BoardLines({
   quadrantSize?: number | null;
   /** Rules the squares around the points instead of the lines through them: Othello, drop games. */
   cells?: boolean;
-  /**
-   * The connection game: the grid sheared onto the hexagon lattice, a colour
-   * on each pair of sides, and — drawn on the lines — the third family of
-   * rules that makes it a triangular lattice with the stones on its crossings.
-   */
-  rhombus?: boolean;
   /** Checkers: shades every other square, so the dark squares in play read at a glance. */
   checkered?: boolean;
   /**
-   * Chinese Checkers: most of the square this board is embedded in is not
-   * part of the hexagram at all, so a full grid of lines across it would
-   * mark space no piece can ever stand on. Rather than draw a grid trimmed
-   * to a star's true outline, none is drawn; the pieces and the shaded
-   * points carry the board on their own.
+   * A board on the hexagon lattice — Hex's rhombus, Chinese Checkers' star,
+   * the honeycomb — drawn as hexagon cells on its own fit. Null for a square
+   * board, which is ruled below.
    */
-  hidden?: boolean;
-  /**
-   * Honeycomb: the board as it stands, so each cell of the hexagon can be
-   * drawn as a hexagon of its own and the sealed centre as a filled one. No
-   * grid lines at all: the cells are the board. Null everywhere else.
-   */
-  honeycomb?: readonly Cell[] | null;
+  lattice?: { shape: LatticeShape; board: readonly Cell[]; transform: string } | null;
 }) {
-  if (hidden) return null;
-  if (honeycomb !== null) {
+  if (lattice !== null) {
+    const { shape, board, transform } = lattice;
+    /*
+     * ONE DRAWING FOR ALL THREE LATTICE BOARDS, since 2026-09-22. John, with
+     * the three side by side: "All three boards have ideally the same shape or
+     * movements yet they all look kind of different… can the rhombus look
+     * slightly different to look more like the centre image?" The centre
+     * image was the honeycomb, and its cells are what a board on this lattice
+     * IS: Hex's traditional board is a rhombus of hexagon cells (the triangle
+     * of lines it used to be drawn as is only the dual of that), and a star of
+     * hexagon cells is what a Chinese Checkers board looks like with tiles
+     * instead of holes. So every playable cell is a filled hexagon, the
+     * sealed centre of the honeycomb is a hexagon of frame colour, and the
+     * wood beyond the shape carries the same outline faintly (`LatticeGround`).
+     *
+     * Hex keeps the one thing that is its rules: a colour on each pair of
+     * sides. Drawn as bands under the cells along the rhombus's edges, they
+     * show as the board's two coloured borders, which is how a Hex board is
+     * made.
+     */
+    const inShape = (point: { row: number; col: number }): boolean =>
+      shape === "hexagon" ? inHexagon(size, point) : shape === "star"
+          ? // The hexagram's radius from its own rules, NOT `STAR_RADIUS` here, which is a go board's star-point dot.
+            inStar(HEXAGRAM_RADIUS, point)
+          : true;
     return (
       <svg
         viewBox={`0 0 ${size} ${size}`}
         className="absolute inset-0 h-full w-full"
         aria-hidden="true"
-        // Fitted to the hexagon, not to the array it sits in — see `latticeFit`.
-        style={{ transform: HEXAGON_TRANSFORM, transformOrigin: "top left" }}
-        data-honeycomb="true"
+        overflow="visible"
+        style={{ transform, transformOrigin: "top left" }}
+        data-lattice={shape}
       >
-        {honeycomb.map((cell, index) => {
+        {shape === "rhombus" ? <RhombusBorder size={size} /> : null}
+        {board.map((cell, index) => {
           const point = { row: Math.floor(index / size), col: index % size };
-          if (!inHexagon(size, point)) return null;
-          const sealed = hexagonSealed(size, point) && cell === BLOCKED;
+          if (!inShape(point)) return null;
+          const sealed = shape === "hexagon" && hexagonSealed(size, point) && cell === BLOCKED;
+          /*
+           * The star's two camps, tinted on the tile. It used to be a square
+           * painted over the cell by `Intersection`, which on a hexagon spills
+           * onto the six neighbours: pale parallelograms lying across the
+           * tiles, which John rightly called a painting issue.
+           */
+          const camp = shape === "star" ? starCampOf(HEXAGRAM_RADIUS, point) : null;
+          const points = hexagonPoints(point.col + 0.5, point.row + 0.5);
           return (
-            <polygon
-              key={index}
-              points={hexagonPoints(point.col + 0.5, point.row + 0.5)}
-              fill={sealed ? theme.frame : theme.playSquare}
-              stroke={theme.line}
-              strokeWidth={LINE_WIDTH}
-              strokeLinejoin="round"
-              data-cell={sealed ? "sealed" : "open"}
-            />
+            <g key={index}>
+              <polygon
+                points={points}
+                fill={sealed ? theme.frame : theme.playSquare}
+                stroke={theme.line}
+                strokeWidth={LINE_WIDTH}
+                strokeLinejoin="round"
+                data-cell={sealed ? "sealed" : "open"}
+              />
+              {camp !== null ? (
+                <polygon
+                  points={points}
+                  fill={camp === "black" ? "rgba(20, 20, 20, 0.16)" : "rgba(255, 255, 255, 0.34)"}
+                  stroke="none"
+                  data-camp={camp}
+                />
+              ) : null}
+            </g>
           );
         })}
       </svg>
@@ -152,7 +204,6 @@ export function BoardLines({
       viewBox={`0 0 ${size} ${size}`}
       className="absolute inset-0 h-full w-full"
       aria-hidden="true"
-      style={rhombus ? { transform: LATTICE_TRANSFORM, transformOrigin: "top left" } : undefined}
     >
       {/*
         * Checkers: the dark squares are the ones in play, shaded so they read
@@ -174,19 +225,6 @@ export function BoardLines({
               ) : null,
             ),
           )}
-        </g>
-      ) : null}
-      {/*
-        * Each colour owns two sides, and a player has to be able to see which
-        * at a glance, so they are bands rather than lines: black along the top
-        * and bottom, white down the left and right.
-        */}
-      {rhombus ? (
-        <g>
-          <rect x={0} y={0} width={size} height={BAND} fill="#22231f" opacity={0.85} />
-          <rect x={0} y={size - BAND} width={size} height={BAND} fill="#22231f" opacity={0.85} />
-          <rect x={0} y={0} width={BAND} height={size} fill="#fffef9" opacity={0.9} />
-          <rect x={size - BAND} y={0} width={BAND} height={size} fill="#fffef9" opacity={0.9} />
         </g>
       ) : null}
       {/* Each line says which it is, so a browser test can ask where two of them meet. */}
@@ -214,18 +252,7 @@ export function BoardLines({
           stroke={theme.line}
         />
       ))}
-      {rhombus && !cells
-        ? shortDiagonals(size).map((d) => (
-            <line key={`d${d.key}`} data-line={`d${d.key}`} x1={d.x1} y1={d.y1} x2={d.x2} y2={d.y2} strokeWidth={LINE_WIDTH} stroke={theme.line} />
-          ))
-        : null}
-      {dividers.map((at) => (
-        <g key={`q${at}`}>
-          <line x1={at} y1={first} x2={at} y2={last} strokeWidth={EDGE_LINE_WIDTH * 1.5} stroke={theme.frame} />
-          <line x1={first} y1={at} x2={last} y2={at} strokeWidth={EDGE_LINE_WIDTH * 1.5} stroke={theme.frame} />
-        </g>
-      ))}
-      {(cells || rhombus ? [] : (STAR_POINTS[size] ?? [])).map((point) => (
+      {(cells ? [] : (STAR_POINTS[size] ?? [])).map((point) => (
         <circle
           key={`s${point.row}-${point.col}`}
           cx={point.col + 0.5}

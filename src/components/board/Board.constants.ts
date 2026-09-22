@@ -228,41 +228,84 @@ export const GO_BOARD_RIM = (0.5 - EDGE_LINE_WIDTH / 2) / GO_SIDE;
  * both the lines and the stones fill — so one string moves both, and they
  * cannot come apart.
  */
-function latticeFit(from: number, to: number, rim = 0): string {
+/** Where a shape sits on the sheared grid: across it in units of the unsheared width, and down it in rows of the array. */
+export type LatticeSpan = {
+  from: number;
+  to: number;
+  /** The first and last row the shape occupies, as fractions of the array's rows: 0 and 1 for a shape using all of them. */
+  rowFrom: number;
+  rowTo: number;
+};
+
+/** A fit, in numbers: how much the lattice is scaled, and where its origin lands in the box. All fractions of the box. */
+export type LatticeFit = {
+  scale: number;
+  left: number;
+  top: number;
+  transform: string;
+};
+
+export function latticeFit(span: LatticeSpan, rim = 0): LatticeFit {
   const room = 1 - 2 * rim;
-  const wide = to - from;
+  const wide = span.to - span.from;
+  const tall = HEX_LATTICE.height * (span.rowTo - span.rowFrom);
   /*
-   * WHICHEVER WAY ROUND THE SHAPE IS. Every shape on this lattice is as tall
-   * as the lattice band — all of them start at the array's first row and end
-   * at its last — so its height is always `HEX_LATTICE.height`, and only its
-   * width tells one shape from another. Fitting the width alone is right only
-   * while the shape is the wider of the two.
-   *
-   * The rhombus (1.5) and the hexagon (1.0) both are. The hexagram is NOT:
-   * Chinese Checkers' star is 0.76 wide against 0.87 tall, so a width fit
-   * would scale it until it stood a tenth of a board proud of its own box,
-   * top and bottom — and, since the playing area clips, be cut off there.
-   * The binding side is the bigger share of the box, which is what `max` says.
+   * WHICHEVER WAY ROUND THE SHAPE IS. The rhombus and the hexagon are wider
+   * than they are tall; the hexagram is not — Chinese Checkers' star is 0.76
+   * wide against 0.87 tall, and a width fit would scale it until it stood a
+   * tenth of a board proud of its own box, top and bottom, and be clipped
+   * there. The binding side is the bigger share of the box, which is what
+   * `max` says.
    */
-  const scale = room / Math.max(wide, HEX_LATTICE.height);
+  const scale = room / Math.max(wide, tall);
   /*
-   * The shape centred in what the rim leaves, rather than pinned to its left
-   * edge. Identical for a shape the width fits — there is nothing left over to
-   * share — and it is what centres a shape the HEIGHT fits.
+   * The shape centred in what the rim leaves, on both axes. Identical to a
+   * width fit for a shape the width binds — there is nothing left over to
+   * share — and it is what centres a shape the height binds.
    */
-  const left = rim + (room - wide * scale) / 2 - from * scale;
-  const top = (1 - HEX_LATTICE.height * scale) / 2;
-  return `translate(${(left * 100).toFixed(4)}%, ${(top * 100).toFixed(4)}%) scale(${scale}) ${HEX_LATTICE.slant}`;
+  const left = rim + (room - wide * scale) / 2 - span.from * scale;
+  const top = rim + (room - tall * scale) / 2 - span.rowFrom * HEX_LATTICE.height * scale;
+  return {
+    scale,
+    left,
+    top,
+    transform: `translate(${(left * 100).toFixed(4)}%, ${(top * 100).toFixed(4)}%) scale(${scale}) ${HEX_LATTICE.slant}`,
+  };
 }
 
 /** Where the lattice's top edge lands, as a fraction of the square box it is drawn in, once fitted to that box's width and centred. */
 const LATTICE_TOP = (1 - HEX_LATTICE.height / HEX_LATTICE.width) / 2;
 
 /**
- * The whole sheared grid fitted to the box: the connection game's rhombus,
- * where every cell of the array is in play.
+ * WHERE HEX'S BOARD SITS: the rhombus AND the ring of border tiles round it.
+ *
+ * John, 2026-09-22, on the black and white edges that were drawn as bands
+ * along the rhombus: "I have a better idea than drawing those lines. You
+ * would actually just fill out an entire row of hexagons, dark or light and
+ * that would simulate the same thing and actually eliminate those issues."
+ * So the border is one more row of tiles above and below (dark) and one more
+ * column either side (light), in the same tiles as the board, and the fit
+ * has to make room for them: the span is the array plus one cell each way.
+ *
+ * Computed from the size rather than quoted, since the extra cell is a
+ * different fraction of every board. Across: a cell at column c of row r has
+ * its left edge at (c + 0.25 + 0.5r)/N — see `HEXAGON_SPAN` — so the ring's
+ * leftmost is column −1 of row −1 and its rightmost the far edge of column N
+ * of row N. Down: rows −1 to N+1.
  */
-export const LATTICE_TRANSFORM = latticeFit(0, HEX_LATTICE.width);
+export function rhombusSpan(size: number): LatticeSpan {
+  return {
+    from: (-1 + 0.25 - 0.5) / size,
+    to: (size + 1 + 0.25 + 0.5 * size) / size,
+    rowFrom: -1 / size,
+    rowTo: (size + 1) / size,
+  };
+}
+
+/** Hex's board fitted to its box, ring and all, with the same rim as every other board. */
+export function rhombusFit(size: number): LatticeFit {
+  return latticeFit(rhombusSpan(size), GO_BOARD_RIM);
+}
 
 /**
  * Where a hexagon sits across the sheared grid, in units of the unsheared
@@ -287,7 +330,22 @@ export const HEXAGON_SPAN = { from: 0.25, to: 1.25 } as const;
 const HEXAGON_RIM = GO_BOARD_RIM;
 
 /** The same lattice, fitted to the hexagon rather than to the array holding it. */
-export const HEXAGON_TRANSFORM = latticeFit(HEXAGON_SPAN.from, HEXAGON_SPAN.to, HEXAGON_RIM);
+/**
+ * The hexagon fitted with its ring of border tiles, which carry its
+ * coordinates (see `LatticeBorder`). The ring is one cell beyond the shape
+ * on every side, and one cell is a different share of every board, so this
+ * is a function of the size where `HEXAGON_SPAN` alone was two constants.
+ */
+export function hexagonFit(size: number): LatticeFit {
+  const ring = 1 / size;
+  return latticeFit(
+    { from: HEXAGON_SPAN.from - ring, to: HEXAGON_SPAN.to + ring, rowFrom: -ring, rowTo: 1 + ring },
+    HEXAGON_RIM,
+  );
+}
+
+/** The eleven board's, for the tests that pin the fit's numbers. */
+export const HEXAGON_TRANSFORM = hexagonFit(11).transform;
 
 /**
  * WHERE THE HEXAGRAM SITS ACROSS THE SHEARED GRID — Chinese Checkers' star,
@@ -319,29 +377,18 @@ export function starSpan(size: number): { from: number; to: number } {
  * are single cells, and a point touching the wood reads as a shape that has
  * been cut off rather than one that ends.
  */
-export function starTransform(size: number): string {
+export function starFit(size: number): LatticeFit {
   const { from, to } = starSpan(size);
-  return latticeFit(from, to, GO_BOARD_RIM);
+  // With its ring of border tiles, one cell beyond the star on every side, for the coordinates.
+  const ring = 1 / size;
+  return latticeFit({ from: from - ring, to: to + ring, rowFrom: -ring, rowTo: 1 + ring }, GO_BOARD_RIM);
 }
 
-/**
- * How much of the box's height the star's rows take up, for the coordinate
- * strip beside it — the same number `HEXAGON_ROWS` is for the hexagon, and
- * `latticeFit`'s own scale, restated for the one reader outside this file.
- *
- * It is the whole of what the rim leaves, because the star is the shape the
- * HEIGHT fits: there is nothing over.
- */
-export const STAR_ROWS = 1 - 2 * GO_BOARD_RIM;
+export function starTransform(size: number): string {
+  return starFit(size).transform;
+}
 
-/**
- * How much of the box's height the hexagon's rows take up — the one number the
- * coordinate strips need, since they have to land on the same rows the board
- * drew. It is the fit's own scale times the lattice's height, and nothing else:
- * getting this from the horizontal scale instead put the row numbers off the
- * board entirely, which is what a strip computed from the wrong axis looks like.
- */
-export const HEXAGON_ROWS = HEX_LATTICE.height * ((1 - 2 * HEXAGON_RIM) / (HEXAGON_SPAN.to - HEXAGON_SPAN.from));
+
 
 /**
  * The rhombus the lattice makes of a square box, cut a little wider than
@@ -359,6 +406,9 @@ export const RHOMBUS_CLIP = (() => {
 
 /** Width of the coordinate-label gutter along the top and left edges. */
 export const LABEL_GUTTER = "1.5rem";
+
+/** The wooden frame round a board: a box-shadow outside the box, so the grid reserves this much beside and below it. */
+export const BOARD_FRAME = "0.4rem";
 
 /** Obstacles are drawn as a sealed intersection rather than a stone. */
 export const OBSTACLE_RADIUS = 0.3;
@@ -462,3 +512,13 @@ export const BOARD_SIZE_NUMERAL_SCALE = 0.46;
 
 /** The size in words, for a mark with nothing beside it saying so. */
 export const boardSizeWords = (size: number) => `${size} by ${size} board`;
+
+/** Which shape is cut out of the sheared array — the one word the fit, the tiles and the strips all read. */
+export type LatticeShape = "rhombus" | "hexagon" | "star";
+
+/** The fit a board on the lattice takes, by its shape and size. */
+export function latticeFitFor(shape: LatticeShape, size: number): LatticeFit {
+  if (shape === "hexagon") return hexagonFit(size);
+  if (shape === "star") return starFit(size);
+  return rhombusFit(size);
+}
