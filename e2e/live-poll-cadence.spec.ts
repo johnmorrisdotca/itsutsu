@@ -208,6 +208,30 @@ test.describe("how often an open board asks the server", () => {
       const { page, game, white } = board;
       await spend(page, 3 * SECOND);
       const start = await asked(page);
+      /*
+       * WHILE IT ASKS, IT SAYS WHEN THE NEXT ASK IS DUE — so quiet and broken
+       * look different to somebody waiting on a move. Read as it ticks: two
+       * readings a few seconds apart, the second smaller, both within the
+       * cadence. It writes the DOM without React state, and the count of asks
+       * below is what proves it changes nothing about the asking.
+       */
+      const countdown = page.getByTestId("next-check");
+      await expect(countdown).toBeVisible();
+      const cadence = await pollEveryOn(page);
+      /*
+       * Sampled once a second for a cadence and a bit. Two readings could
+       * straddle an answer — the countdown starts over the moment one lands,
+       * which at the suite's 2.5-second cadence is most of the time — so what
+       * is asserted is that it never claims more than the cadence, and that
+       * somewhere in the run it ticked down by one.
+       */
+      const readings: number[] = [];
+      for (let sample = 0; sample < 5; sample += 1) {
+        readings.push(Number(await countdown.getAttribute("data-seconds")));
+        await spend(page, 1000);
+      }
+      for (const seconds of readings) expect(seconds, "longer than the cadence").toBeLessThanOrEqual(Math.ceil(cadence / 1000));
+      expect(readings.some((seconds, at) => at > 0 && seconds === readings[at - 1]! - 1), `never ticked down: ${readings.join(" ")}`).toBe(true);
 
       await spend(page, 60 * MINUTE);
       const hour = (await asked(page)) - start;
@@ -215,6 +239,8 @@ test.describe("how often an open board asks the server", () => {
 
       // Stopped, and saying so: the presence the absences below are read after.
       await expect(page.getByTestId("live-paused")).toBeVisible();
+      // And no countdown to a check that is not coming.
+      await expect(countdown).toHaveCount(0);
       const every = await pollEveryOn(page);
       expect(every, "the board did not say what cadence it is on").toBeGreaterThan(0);
       expect.soft(hour, `asked more than an idle window of ${IDLE_STOP_MS} ms at ${every} ms allows`).toBeLessThanOrEqual(

@@ -68,6 +68,9 @@ export function useLiveGame(initial: GameDetail): {
   paused: boolean;
   /** Wakes a paused board, which asks at once. */
   resume: () => void;
+  /** Whether the board is asking at all right now, and when its last answer came, for the countdown. */
+  asking: boolean;
+  answeredAt: () => number;
   /** The cadence this board asks at while awake and looked at, for the page to say. */
   pollEvery: number;
 } {
@@ -83,10 +86,24 @@ export function useLiveGame(initial: GameDetail): {
   const onWake = useCallback(() => refetch.current(), []);
   const { awake, stir } = useBoardAwake(onWake);
 
+  /*
+   * WHEN THE LAST ANSWER ARRIVED, so the page can say when the next ask is
+   * due. `useSWR`'s `refreshInterval` is a timer nothing outside can read, so
+   * the moment of each answer is written down in `onSuccess` and the countdown
+   * is arithmetic on it — client-side only, no request of its own, and no
+   * React state: a state update a second changed how often the board asked
+   * under the cadence spec's fake clock, which is the one thing a countdown
+   * to the next ask must not do.
+   */
+  const answeredAt = useRef<number>(0);
   const { data, mutate } = useSWR(`/api/games/${initial.id}`, fetcher, {
     fallbackData: initial,
     refreshInterval: pollInterval({ polling, awake, visible, every }),
-    onSuccess: (latest) => setPolling(latest.status === "active"),
+    onSuccess: (latest) => {
+      setPolling(latest.status === "active");
+      // The moment of this answer, for the countdown to the next ask. A ref, not state: nothing re-renders for it.
+      answeredAt.current = clockNow();
+    },
     refreshWhenHidden: false,
     revalidateOnFocus: true,
   });
@@ -105,6 +122,23 @@ export function useLiveGame(initial: GameDetail): {
     stir();
   }, [data, stir]);
 
+
+  // A stable getter, so the countdown can read the moment without anything re-rendering.
+  const readAnsweredAt = useCallback(() => answeredAt.current, []);
   const game = data ?? initial;
-  return { game, mutate, paused: polling && !awake, resume: stir, pollEvery: every };
+  return {
+    game,
+    mutate,
+    paused: polling && !awake,
+    resume: stir,
+    pollEvery: every,
+    // Asking at all: active, awake and looked at. Otherwise there is no next check to count down to.
+    asking: pollInterval({ polling, awake, visible, every }) > 0,
+    answeredAt: readAnsweredAt,
+  };
+}
+
+/** The clock, read from a callback — outside render, whatever the linter takes an inline callback for. */
+function clockNow(): number {
+  return Date.now();
 }
