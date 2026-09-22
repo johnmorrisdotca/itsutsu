@@ -229,8 +229,28 @@ export const GO_BOARD_RIM = (0.5 - EDGE_LINE_WIDTH / 2) / GO_SIDE;
  * cannot come apart.
  */
 function latticeFit(from: number, to: number, rim = 0): string {
-  const scale = (1 - 2 * rim) / (to - from);
-  const left = rim - from * scale;
+  const room = 1 - 2 * rim;
+  const wide = to - from;
+  /*
+   * WHICHEVER WAY ROUND THE SHAPE IS. Every shape on this lattice is as tall
+   * as the lattice band — all of them start at the array's first row and end
+   * at its last — so its height is always `HEX_LATTICE.height`, and only its
+   * width tells one shape from another. Fitting the width alone is right only
+   * while the shape is the wider of the two.
+   *
+   * The rhombus (1.5) and the hexagon (1.0) both are. The hexagram is NOT:
+   * Chinese Checkers' star is 0.76 wide against 0.87 tall, so a width fit
+   * would scale it until it stood a tenth of a board proud of its own box,
+   * top and bottom — and, since the playing area clips, be cut off there.
+   * The binding side is the bigger share of the box, which is what `max` says.
+   */
+  const scale = room / Math.max(wide, HEX_LATTICE.height);
+  /*
+   * The shape centred in what the rim leaves, rather than pinned to its left
+   * edge. Identical for a shape the width fits — there is nothing left over to
+   * share — and it is what centres a shape the HEIGHT fits.
+   */
+  const left = rim + (room - wide * scale) / 2 - from * scale;
   const top = (1 - HEX_LATTICE.height * scale) / 2;
   return `translate(${(left * 100).toFixed(4)}%, ${(top * 100).toFixed(4)}%) scale(${scale}) ${HEX_LATTICE.slant}`;
 }
@@ -268,6 +288,51 @@ const HEXAGON_RIM = GO_BOARD_RIM;
 
 /** The same lattice, fitted to the hexagon rather than to the array holding it. */
 export const HEXAGON_TRANSFORM = latticeFit(HEXAGON_SPAN.from, HEXAGON_SPAN.to, HEXAGON_RIM);
+
+/**
+ * WHERE THE HEXAGRAM SITS ACROSS THE SHEARED GRID — Chinese Checkers' star,
+ * computed from the radius rather than quoted, because unlike the hexagon's
+ * these two numbers MOVE with the board.
+ *
+ * A star of radius R fills a (4R+1) array, and its two extremes are in
+ * different rows — which is the whole difficulty of this shape. The leftmost
+ * cell is the left point's tip, column 0 of row 3R; the rightmost is the right
+ * point's tip, the last column of row R. Taken at each cell's own middle, as
+ * `HEXAGON_SPAN` explains, that is (1.5R + 0.25) cells in and (0.5R + 0.25)
+ * cells past the array's right edge.
+ *
+ * For the 121-hole board it comes to 0.368 and 1.132: a shape 0.76 wide in a
+ * grid 1.5 wide, which is why it was drawn at half size in an empty board
+ * before anything was fitted to it.
+ */
+export function starSpan(size: number): { from: number; to: number } {
+  const radius = (size - 1) / 4;
+  return { from: (1.5 * radius + 0.25) / size, to: 1 + (0.5 * radius + 0.25) / size };
+}
+
+/**
+ * The star fitted to its own span. It is a FUNCTION and not a constant, since
+ * the span depends on the board — and a board of another size is exactly what
+ * a constant here would quietly draw wrong.
+ *
+ * It keeps the same rim as the hexagon and the go board: the points of a star
+ * are single cells, and a point touching the wood reads as a shape that has
+ * been cut off rather than one that ends.
+ */
+export function starTransform(size: number): string {
+  const { from, to } = starSpan(size);
+  return latticeFit(from, to, GO_BOARD_RIM);
+}
+
+/**
+ * How much of the box's height the star's rows take up, for the coordinate
+ * strip beside it — the same number `HEXAGON_ROWS` is for the hexagon, and
+ * `latticeFit`'s own scale, restated for the one reader outside this file.
+ *
+ * It is the whole of what the rim leaves, because the star is the shape the
+ * HEIGHT fits: there is nothing over.
+ */
+export const STAR_ROWS = 1 - 2 * GO_BOARD_RIM;
 
 /**
  * How much of the box's height the hexagon's rows take up — the one number the

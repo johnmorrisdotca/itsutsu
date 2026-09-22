@@ -124,3 +124,48 @@ for (const path of PAGES) {
     expect(off, `${path} scrolls ${off}px sideways on a 390px phone`).toBe(0);
   });
 }
+
+/**
+ * AND EVERY CONTROL IS BIG ENOUGH TO PRESS.
+ *
+ * John, 2026-09-21: "in mobile, the buttons are small, targets are hard to
+ * hit." Measured before this: every button on the site stood 30 pixels, every
+ * select 30, every text box 34 — and the members table carried forty-nine of
+ * those buttons in its rows, which is where you challenge somebody.
+ *
+ * FORTY-FOUR is the number, from the platform guidelines both phones ship,
+ * and `TAP_HEIGHT` is how it is applied: below `sm` only, so a pointer is left
+ * with the controls it always had.
+ *
+ * WHAT IS DELIBERATELY NOT COUNTED, and the reasons are in `TAP_HEIGHT` too:
+ *
+ *  - a LINK inside a sentence or a table cell, which is text and not a
+ *    control. There are 276 in the members table alone and the row itself is
+ *    the target there;
+ *  - a cell of a BOARD, which cannot be forty-four pixels — nineteen of them
+ *    across a 390-pixel phone is 18. That is what the arrows on a placed stone
+ *    are for; see `nudgeMove.ts`;
+ *  - an INPUT a label hides on purpose — a radio behind a tile — where the
+ *    label is what gets pressed.
+ */
+const CONTROLS = ["/", "/games", "/games/new", "/play", "/players", "/champions", "/xp", "/history", "/me"] as const;
+
+for (const path of CONTROLS) {
+  test(`every control on ${path} is a fingertip tall`, async ({ page }) => {
+    await page.goto(path);
+    const small = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const el of document.querySelectorAll("button, select, input:not([type=hidden])")) {
+        const box = el.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0 || box.height >= 44) continue;
+        // A board's own cells, which cannot be a fingertip — see the note above.
+        if (el.closest("[data-testid=board], .aspect-square") !== null) continue;
+        // A control a label stands in front of: pressed through the label.
+        if (getComputedStyle(el).position === "absolute" && box.width <= 2) continue;
+        found.push(`${el.tagName.toLowerCase()} ${el.getAttribute("data-testid") ?? (el.textContent ?? "").trim().slice(0, 24)} at ${Math.round(box.height)}px`);
+      }
+      return found;
+    });
+    expect(small, "controls under 44px on a 390px phone").toEqual([]);
+  });
+}

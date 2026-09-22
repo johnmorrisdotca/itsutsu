@@ -5,6 +5,7 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 
 import { Game, Inside } from "./about.links";
 import type { AboutSection } from "./about.constants";
+import { ABOUT_CHAPTERS } from "./about.chapters";
 
 /**
  * HOW THE COMPUTER PLAYERS ACTUALLY WORK, told the way the rest of this page
@@ -50,6 +51,7 @@ const GRADES = (
 
 export const BOTS_SECTION: AboutSection = {
   title: "The players that are not people",
+  chapter: ABOUT_CHAPTERS.programs,
   kanji: "棋力",
   paragraphs: [
     <>
