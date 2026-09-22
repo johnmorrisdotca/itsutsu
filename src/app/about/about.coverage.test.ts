@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { ABOUT_TABS } from "./about.chapters";
+import { ABOUT_SECTIONS } from "./about.constants";
 
 /**
  * THE ABOUT PAGE MAY NOT COUNT THE GAMES BY HAND.
@@ -92,5 +94,34 @@ describe("the About page's figures", () => {
     expect(games).toContain("GAME_FAMILIES.map");
     expect(GAME_FAMILIES.length).toBeGreaterThan(0);
     expect(RULE_VARIANT_LIST.length).toBeGreaterThan(GAME_FAMILIES.length);
+  });
+});
+
+/**
+ * EVERY SECTION IS IN A CHAPTER, and every chapter has something in it.
+ *
+ * The page shows one chapter at a time now — it was 28,589 pixels tall on a
+ * phone, thirty-four screens, so the last sections were written for readers
+ * who would never reach them. A section with no chapter would be on the page
+ * and shown by nothing, which is the same silence with more code behind it,
+ * and a chapter with no sections would be a tab that opens nothing.
+ */
+describe("the page reads a chapter at a time", () => {
+  it("gives every section a chapter that is one of the tabs", () => {
+    const keys = new Set(ABOUT_TABS.map((tab) => tab.key));
+    const lost = ABOUT_SECTIONS.filter((section) => !keys.has(section.chapter)).map((s) => s.title);
+    expect(lost, "a section whose chapter is not a tab is on the page and shown by nothing").toEqual([]);
+  });
+
+  it("leaves no tab empty", () => {
+    const empty = ABOUT_TABS.filter(
+      (tab) => !ABOUT_SECTIONS.some((section) => section.chapter === tab.key),
+    ).map((tab) => tab.key);
+    expect(empty, "a tab with no sections opens an empty page").toEqual([]);
+  });
+
+  it("keeps every section somewhere, so tabbing the page lost nothing", () => {
+    const shown = ABOUT_TABS.flatMap((tab) => ABOUT_SECTIONS.filter((section) => section.chapter === tab.key));
+    expect(shown).toHaveLength(ABOUT_SECTIONS.length);
   });
 });

@@ -4,6 +4,9 @@ import { Fragment } from "react";
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { Tabs } from "@/components/ui/Tabs";
+import { activeTab } from "@/lib/ui/tabs";
+import { ABOUT_TABS } from "./about.chapters";
 import { ABOUT_SECTIONS } from "./about.constants";
 
 export const metadata = {
@@ -12,8 +15,22 @@ export const metadata = {
     "Where Itsutsu comes from: the turn-based sites a family played on for years, a thousand years of five in a row, and the Japanese thread through all of it.",
 };
 
-/** The story of the site. Open to anyone, like the rules. */
-export default function AboutPage() {
+/**
+ * The story of the site, a chapter at a time. Open to anyone, like the rules.
+ *
+ * IT USED TO BE ONE PAGE OF ELEVEN SECTIONS, 28,589 pixels tall on a phone —
+ * thirty-four screens — so the computer players and the elder sites were
+ * written for readers who would never scroll that far. John's standing rule is
+ * tabs rather than a long page, and this was the page that most needed it.
+ *
+ * The open chapter is in the address (`?view=`), so it can be linked to and
+ * survives a reload, and the first chapter is the bare /about — an ordinary
+ * link to the page is still an ordinary link to its opening.
+ */
+export default async function AboutPage({ searchParams }: PageProps<"/about">) {
+  const asked = await searchParams;
+  const open = activeTab(ABOUT_TABS, asked.view);
+  const shown = ABOUT_SECTIONS.filter((section) => section.chapter === open);
   return (
     <Page width="standard" gap="gap-10">
       <SiteHeader />
@@ -27,7 +44,9 @@ export default function AboutPage() {
         </p>
       </header>
 
-      {ABOUT_SECTIONS.map((section, index) => (
+      <Tabs tabs={ABOUT_TABS} active={open} base="/about" label="Which part of the story to read" />
+
+      {shown.map((section, index) => (
         <section key={section.title} className="flex flex-col gap-4" data-testid="about-section">
           {index > 0 ? <BrandStones className="mb-2 opacity-70" /> : null}
           <h2 className="flex items-baseline gap-2 text-lg font-semibold">

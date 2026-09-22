@@ -6,6 +6,7 @@ import { ACTIVE_GAME_LIMIT } from "@/lib/history/activeGames";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { Game, Inside, MailTo, Out } from "./about.links";
 import type { AboutSection } from "./about.constants";
+import { ABOUT_CHAPTERS } from "./about.chapters";
 
 /** 花月, the direct opening: white beside black, black's third stone on the diagonal. */
 const KAGETSU = (
@@ -152,6 +153,7 @@ const SITES = (
 /** The sections added after the founding story: the numbers, the openings, the drop game, and the elders. */
 export const RATINGS_SECTION: AboutSection = {
   title: "Ratings, in numbers",
+  chapter: ABOUT_CHAPTERS.numbers,
   kanji: "点数",
   paragraphs: [
     <>
@@ -201,6 +203,7 @@ export const RATINGS_SECTION: AboutSection = {
 
 export const OPENINGS_SECTION: AboutSection = {
   title: "Famous openings",
+  chapter: ABOUT_CHAPTERS.roots,
   kanji: "定石",
   paragraphs: [
     <>
@@ -240,6 +243,7 @@ export const OPENINGS_SECTION: AboutSection = {
 
 export const CONNECT_FOUR_SECTION: AboutSection = {
   title: "Connect Four, solved",
+  chapter: ABOUT_CHAPTERS.roots,
   kanji: "四目落とし",
   paragraphs: [
     <>
@@ -270,6 +274,7 @@ export const CONNECT_FOUR_SECTION: AboutSection = {
 
 export const SITES_SECTION: AboutSection = {
   title: "Sites worth knowing",
+  chapter: ABOUT_CHAPTERS.story,
   kanji: "先達",
   paragraphs: [
     <>

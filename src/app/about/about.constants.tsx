@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { ABOUT_CHAPTERS, type AboutChapter } from "./about.chapters";
+
 import { HOGETSU, ORIGINS, OTHELLO_START, PENTE_CAPTURE, SOLVED } from "@/components/about/figures";
 import { BOTS_SECTION } from "./about.bots";
 import { CATALOGUE_SECTION } from "./about.games";
@@ -11,6 +13,12 @@ import { NOTATION_SECTION } from "./about.notation";
 export type AboutSection = {
   title: string;
   kanji: string;
+  /**
+   * Which chapter of the page this belongs in. Declared, never inferred from
+   * the title — see `about.chapters.ts`, and the gate that holds every
+   * section to having one.
+   */
+  chapter: AboutChapter;
   paragraphs: ReactNode[];
   /** A picture to print after the paragraph with that index. */
   figures?: Record<number, ReactNode>;
@@ -24,6 +32,7 @@ export type AboutSection = {
 const BASE_SECTIONS: AboutSection[] = [
   {
     title: "Where this comes from",
+    chapter: ABOUT_CHAPTERS.story,
     kanji: "由来",
     paragraphs: [
       <>
@@ -60,6 +69,7 @@ const BASE_SECTIONS: AboutSection[] = [
   },
   {
     title: "Five stones, and where they came from",
+    chapter: ABOUT_CHAPTERS.roots,
     kanji: "五つの石",
     paragraphs: [
       <>
@@ -98,6 +108,7 @@ const BASE_SECTIONS: AboutSection[] = [
   },
   {
     title: "The Japanese thread",
+    chapter: ABOUT_CHAPTERS.japan,
     kanji: "和",
     paragraphs: [
       <>
@@ -124,6 +135,7 @@ const BASE_SECTIONS: AboutSection[] = [
   },
   {
     title: "Othello",
+    chapter: ABOUT_CHAPTERS.roots,
     kanji: "オセロ",
     paragraphs: [
       <>
@@ -162,6 +174,7 @@ const BASE_SECTIONS: AboutSection[] = [
   },
   {
     title: "Ladders, ratings and tournaments",
+    chapter: ABOUT_CHAPTERS.numbers,
     kanji: "番付",
     paragraphs: [
       <>
