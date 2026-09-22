@@ -2,7 +2,9 @@ import { botsFor } from "@/lib/bots/bots.constants";
 import { fixedOpener } from "@/lib/gomoku/rules/creation";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
+import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { BeginAction } from "./beginGame";
+import { COLOUR_CHOICES, colourIsChosen, type ColourChoice } from "./colourChoice";
 import { describeSeating } from "./doorstepSays";
 import { DOORSTEP_COPY } from "./live.constants";
 import type { RulesDraft } from "./rulesDraft";
@@ -27,11 +29,14 @@ export function setUpBegin({
   carry,
   random,
   waiting,
+  colour = COLOUR_CHOICES.black,
 }: {
   /** The form as it stands, with any posted seat's board already settled into it. */
   settled: RulesDraft;
   /** Somebody already waiting at exactly this game, or undefined. Begin sits down with them. */
   waiting?: { id: string; who: string };
+  /** The seat the asker chose: black unless they said white, or asked for a lot. */
+  colour?: ColourChoice;
   /** The form as it arrived, for a rematch to notice it has been changed. */
   asPlayed: RulesDraft | null;
   /** Who the game is against NOW — null for a seat posted for anyone, and for a draw. */
@@ -86,12 +91,25 @@ export function setUpBegin({
   const pool = random
     ? botsFor(settled.variant as RuleVariant).map((bot) => ({ id: bot.id, name: bot.name }))
     : [];
+  /*
+   * The seat the asker chose, where the choice was offered at all — see
+   * `colourIsChosen`. Carried on the action rather than settled here, so a
+   * lot is drawn as the game is written and never before.
+   */
+  const chosen = colourIsChosen({
+    named: random || opponent !== null,
+    opening: settled.opening,
+    again: again !== null,
+    forked: fork !== null,
+  })
+    ? colour
+    : undefined;
   const begin: BeginAction =
     waiting !== undefined
       ? { kind: "sit", id: waiting.id, who: waiting.who, instead: creation.body }
       : random && pool.length > 0
-        ? { kind: "draw", body: creation.body, pool }
-        : { kind: "create", body: creation.body };
+        ? { kind: "draw", body: creation.body, pool, colour: chosen }
+        : { kind: "create", body: creation.body, colour: chosen };
 
   /*
    * WHO SITS WHERE, said before the board rather than worked out from it. This
@@ -103,7 +121,19 @@ export function setUpBegin({
       ? DOORSTEP_COPY.drawnFrom(pool.map((program) => program.name))
       : (opponent?.name ?? null),
     computer: random || (opponent?.computer ?? false),
-    mine: seating.mine,
+    /*
+     * The colour the asker takes, or null for a lot — which `describeSeating`
+     * says in words rather than naming a colour that is wrong half the time.
+     */
+    mine:
+      chosen === undefined
+        ? seating.mine
+        : chosen === COLOUR_CHOICES.lot
+          ? null
+          : chosen === COLOUR_CHOICES.white
+            ? STONES.white
+            : STONES.black,
+    lot: chosen === COLOUR_CHOICES.lot,
     opener:
       fixedOpener(settled.variant, settled.opening, { headStart: settled.headStart, size: settled.size }) ??
       openerIn(carry),

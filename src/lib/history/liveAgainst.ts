@@ -379,8 +379,12 @@ export async function resolveAgainst(
   let hotSeat = asked.data.hotSeat;
   let rematchSeats: Seating | null = null;
   let offerTo: string | null = null;
-  /** The colour a carried position settles for the caller, where one does. */
-  let keep: Stone | null = null;
+  /**
+   * The colour the caller holds: what a carried position settled, or else what
+   * they asked for. A position wins, because a fork's colours belong to the
+   * position; an ask for white on an ordinary challenge is honoured.
+   */
+  let keep: Stone | null = asked.data.asColour ?? null;
 
   if (asked.data.rematch !== undefined) {
     const again = await playingAgain(asked.data.rematch);

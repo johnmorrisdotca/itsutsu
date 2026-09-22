@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/Controls";
+import { TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { COLOUR_CHOICES, type ColourChoice } from "./colourChoice";
 import { START_COPY } from "@/components/mine/mine.constants";
 
 import { DOORSTEP_COPY, SET_UP_COPY, SIGN_IN_TO_PLAY } from "./live.constants";
@@ -27,6 +29,7 @@ export function BeginBar({
   canAsk,
   named,
   waiting,
+  colour,
 }: {
   /** Who sits where, in a sentence: the fact people most want before a board. */
   sitting: string;
@@ -43,6 +46,12 @@ export function BeginBar({
   named: boolean;
   /** A seat somebody is already waiting at, where one matches what was asked for. */
   waiting: { who: string } | undefined;
+  /**
+   * The seat the asker takes, where it is theirs to choose — null where it is
+   * not (a rematch, a fork, a posted seat, an opening that decides colours),
+   * and then nothing is drawn. See `colourChoice.ts`.
+   */
+  colour: { value: ColourChoice; onChange: (choice: ColourChoice) => void } | null;
 }) {
   return (
     <div className="flex flex-col gap-2 border-t border-rule pt-3" data-testid="set-up-continue">
@@ -55,6 +64,33 @@ export function BeginBar({
       <p className="text-sm text-ink-soft" data-testid="set-up-seating">
         {sitting}
       </p>
+      {/*
+        WHICH SEAT, where it is yours to say. Whoever asked was always black —
+        the opener, who in most of these games has the better of it — so making
+        the game meant taking the better seat every time. Three answers, as
+        GoldToken's step 2 asks them; the sentence above says which it is, and
+        the lot is drawn as Begin is pressed rather than before.
+      */}
+      {colour !== null ? (
+        <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="set-up-colour" role="radiogroup" aria-label={SET_UP_COPY.colour.label}>
+          <span className="text-muted">{SET_UP_COPY.colour.label}</span>
+          {(Object.values(COLOUR_CHOICES) as ColourChoice[]).map((choice) => (
+            <button
+              key={choice}
+              type="button"
+              role="radio"
+              aria-checked={colour.value === choice}
+              onClick={() => colour.onChange(choice)}
+              className={`rounded-full border px-2.5 py-1 ${TAP_HEIGHT} ${
+                colour.value === choice ? "border-ink bg-ink text-paper" : "border-rule text-ink-soft hover:border-ink-soft"
+              }`}
+              data-testid={`set-up-colour-${choice}`}
+            >
+              {SET_UP_COPY.colour[choice]}
+            </button>
+          ))}
+        </div>
+      ) : null}
       {made !== null ? (
         <p className="text-xs text-moss" data-testid="set-up-made">
           {DOORSTEP_COPY.made}

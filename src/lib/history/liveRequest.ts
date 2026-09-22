@@ -93,6 +93,20 @@ export const liveGameSchema = z.object({
   challengeId: z.string().min(3).max(32).optional(),
   /** Start from a position in another game: its rules, and its first `move` moves. */
   from: z.object({ id: z.string().min(1).max(64), move: z.number().int().min(0).max(4096) }).optional(),
+  /**
+   * WHICH SEAT THE ASKER TAKES when they challenge somebody: the colour that
+   * opens is theirs unless they say otherwise. GoldToken's step 2 asks "Let me
+   * be: Player 1 / Player 2", and in most of these games the opener has a real
+   * advantage, so whoever makes the game choosing the better seat every time
+   * was a fairness gap. `white` gives it away; the lot is drawn in the browser
+   * as Begin is pressed (see `setUpBegin`), so a reload never shows one colour
+   * and makes the other, and the route only ever hears a colour.
+   *
+   * Ignored where a position has already settled the colours — a fork keeps
+   * the colour that played it — and where an opening protocol decides them in
+   * play: swap and swap2 make the choice a move, and the form hides this there.
+   */
+  asColour: z.enum([STONES.black, STONES.white]).optional(),
 });
 
 /** The request as the schema made it: every default filled in. */

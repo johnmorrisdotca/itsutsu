@@ -32,6 +32,9 @@ import { foldedWords } from "./setUpFolded";
 import type { KeptBase, KeptDefaults, SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
 import { useRematchHeading } from "./useRematchHeading";
 import { useKeptAddress } from "./useKeptAddress";
+import { COLOUR_CHOICES, colourFromAddress, colourIsChosen, type ColourChoice } from "./colourChoice";
+import { SET_UP_PARAMS } from "@/lib/gomoku/slugs";
+import type { SetUpParam } from "./setUp.types";
 
 /**
  * SETTLING A GAME BEFORE THERE IS A GAME — EVERY GAME, FROM EVERYWHERE.
@@ -170,6 +173,12 @@ export function SetUpGame({
   const [rules, setRules] = useState<RulesDraft>(arrived.draft);
   const [against, setAgainst] = useState<string>(arrived.against);
   /*
+   * The seat the asker takes. Black unless the address or a press says
+   * otherwise — see `colourChoice.ts` for the three answers and where the
+   * question is asked at all.
+   */
+  const [colour, setColour] = useState<ColourChoice>(colourFromAddress(query.get(SET_UP_PARAMS.colour)));
+  /*
    * Pressed, and on the way. There is nothing here that can fail — the request
    * that could lives on the doorstep — so this screen has no error to show, only
    * a button that stops being pressable while the next page arrives.
@@ -223,7 +232,11 @@ export function SetUpGame({
   });
 
   /* Every choice into the address as it is made, without asking the server — see `useKeptAddress`. */
-  useKeptAddress(keptParams(base, { rules, boardChosen, against: random ? RANDOM_COMPUTER : chosenId, chooseGame }));
+  useKeptAddress([
+    ...keptParams(base, { rules, boardChosen, against: random ? RANDOM_COMPUTER : chosenId, chooseGame }),
+    // The seat chosen, only when it is not the default — black says nothing, as the route's own rule.
+    ...(colour === COLOUR_CHOICES.black ? [] : [[SET_UP_PARAMS.colour, colour] as SetUpParam]),
+  ]);
 
   /*
    * WHETHER THIS IS STILL A REPEAT of the game it was filled in from. A rematch is
@@ -274,6 +287,14 @@ export function SetUpGame({
     carry,
     random,
     waiting: waiting === undefined ? undefined : { id: waiting.id, who: waiting.who },
+    colour,
+  });
+  /* Whether the colour is the asker's to choose in THIS game — the control shows only where it is. */
+  const colourChosen = colourIsChosen({
+    named: random || opponentNow !== null,
+    opening: settled.opening,
+    again: again !== null,
+    forked: fork !== null,
   });
 
   /*
@@ -397,6 +418,7 @@ export function SetUpGame({
 
       <BeginBar
         sitting={sitting}
+        colour={colourChosen ? { value: colour, onChange: setColour } : null}
         made={made}
         trouble={trouble}
         press={press}

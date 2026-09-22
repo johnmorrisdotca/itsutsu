@@ -75,6 +75,8 @@ export function settingsAsPlayed({
     challenge: _challenge,
     challengeId: _challengeId,
     rematch: _rematch,
+    // Which seat the asker took: `liveAgainst` read it into the seats already, and it is not a column.
+    asColour: _asColour,
     from,
     rated: ratedRequested,
     ...settings
@@ -82,6 +84,7 @@ export function settingsAsPlayed({
   void _rematch;
   void _challenge;
   void _challengeId;
+  void _asColour;
 
   const { source, seats, offer, hotSeat } = against;
   /*
