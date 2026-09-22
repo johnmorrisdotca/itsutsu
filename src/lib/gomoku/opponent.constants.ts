@@ -37,6 +37,7 @@ export const BOT_TIERS = {
   liWenjing: "liWenjing",
   tamenoki: "tamenoki",
   meritalu: "meritalu",
+  monkton: "monkton",
 } as const satisfies Record<BotTier, BotTier>;
 
 /**
@@ -99,6 +100,7 @@ export const BOT_TIER_LIST: readonly BotTier[] = [
 export const BOT_SPECIALIST_LIST: readonly BotTier[] = [
   BOT_TIERS.tamenoki,
   BOT_TIERS.meritalu,
+  BOT_TIERS.monkton,
 ];
 
 /**
@@ -298,6 +300,36 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
       "than shape: the four you have to answer, the open four nobody can, and " +
       "the two threats made by one stone that end the game. He will not be " +
       "drawn with, which is the difference between him and the grades.",
+  },
+  /*
+   * THE THIRD SPECIALIST IS NAMED AFTER AN INVENTOR RATHER THAN A CHAMPION,
+   * and that is the honest thing rather than a shortcut.
+   *
+   * The other two are homages to the finest player of their game. These games
+   * have no such person to point at: there is no tournament scene for Halma or
+   * Chinese Checkers anywhere, no published engine above hobby grade, and no
+   * record of a champion at either — which is the same fact that makes a
+   * specialist here worth building at all. Inventing a plausible-sounding
+   * champion to keep the pattern tidy would be putting a person on the site who
+   * never existed, so the homage goes to the man who made the game instead:
+   * George Howard Monks, a Boston surgeon, who devised Halma at Harvard in the
+   * 1880s. Chinese Checkers is his game on a star. The flag follows the name,
+   * as it does for the others.
+   */
+  monkton: {
+    tier: BOT_TIERS.monkton,
+    name: "Howard Monkton",
+    /* No other script: an American name written in English is the name. See `native`. */
+    native: null,
+    strength: "Strongest at Halma and Chinese Checkers",
+    blurb:
+      "The race games, and almost nothing else. Monkton counts what a race " +
+      "player counts \u2014 how many steps each piece has left, on the lattice the " +
+      "board is actually drawn on, with a square of the far camp set aside for " +
+      "every piece and the back of the camp filled first. What he is really " +
+      "playing for is the piece you leave behind: the game is not over until " +
+      "your last one is in, and he will let you build a pretty middlegame and " +
+      "finish first.",
   },
 };
 
@@ -569,6 +601,17 @@ export const TIER_SPECS: Record<BotTier, TierSpec> = {
     guardTop: 34,
     searchDepth: 8,
     expertise: [EXPERT_KINDS.line],
+  },
+  monkton: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 180,
+    guardTop: 34,
+    searchDepth: 8,
+    expertise: [EXPERT_KINDS.race],
   },
 };
 

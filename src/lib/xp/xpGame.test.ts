@@ -300,13 +300,14 @@ describe("the computer ladder", () => {
     expect(XP_GRADES_TO_BEAT).toBe(5);
   });
 
-  it("pays a specialist rather than a grade for the two off the ladder", () => {
+  it("pays a specialist rather than a grade for the ones off the ladder", () => {
     for (const tier of BOT_SPECIALIST_LIST) {
       const asked = types(beat({ tier }));
       expect(asked, tier).toContain("specialistBeaten");
       expect(asked, tier).not.toContain("gradeBeaten");
     }
-    expect(BOT_SPECIALIST_LIST.length).toBe(2);
+    // Said out loud, so a specialist added or retired is a decision rather than a drift.
+    expect(BOT_SPECIALIST_LIST.length).toBe(3);
   });
 
   it("pays nothing for a grade it does not know", () => {

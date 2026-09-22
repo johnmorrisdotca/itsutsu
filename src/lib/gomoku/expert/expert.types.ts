@@ -1,4 +1,5 @@
 import type { GameState, Point, Stone, VariantSpec } from "../gomoku.types";
+import type { BotTurn } from "../opponent.types";
 
 /**
  * The specialists: a player that knows one game rather than every game.
@@ -50,7 +51,7 @@ export type LineReading = {
 };
 
 /** Which family of board a specialist has actually studied. */
-export type ExpertKind = "flip" | "line";
+export type ExpertKind = "flip" | "line" | "race";
 
 /**
  * One specialist's knowledge of one family: which games it applies to, what a
@@ -74,6 +75,18 @@ export type Expert = {
   read(state: GameState, me: Stone): number;
   /** The moves worth searching here, best first, at most `limit` of them. */
   candidates(state: GameState, limit: number): Point[];
+  /**
+   * The same, for a game whose move is not a point.
+   *
+   * Every game the first two specialists studied lays a stone, so a move there
+   * IS a point and `candidates` says everything. A race game's move is a
+   * slide — this piece, to there — and a bare landing point cannot say which
+   * piece was meant, so an expert for one answers here instead and leaves
+   * `candidates` empty. `expertSearch.ts` prefers this where it is offered,
+   * which is what lets one search serve both without either specialist
+   * knowing the other exists.
+   */
+  turns?(state: GameState, limit: number): BotTurn[];
   /** How many candidates are weighed at a node below the root, and at it. */
   branch: number;
   rootBranch: number;

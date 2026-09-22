@@ -1,4 +1,4 @@
-import { BOT_ALL_TIERS, BOT_PROFILES, BOT_TIERS } from "@/lib/gomoku/opponent.constants";
+import { BOT_ALL_TIERS, BOT_PROFILES, BOT_SPECIALIST_LIST, BOT_TIERS } from "@/lib/gomoku/opponent.constants";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { tiersFor } from "@/lib/gomoku/expert/experts";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -241,6 +241,24 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
       "four times world champion at renju and the first European to hold the " +
       "title. Games against him are rated, and so is his own record.",
   },
+  monkton: {
+    tier: BOT_TIERS.monkton,
+    id: "monkton",
+    name: BOT_PROFILES.monkton.name,
+    country: "United States",
+    bio:
+      "A computer player, and the only one here that plays the race games. " +
+      "Monkton plays Halma and Chinese Checkers, and reads them the way a " +
+      "race player does: how many steps each piece has left, counted on the " +
+      "lattice the board is really drawn on, with a square of the far camp " +
+      "set aside for every piece and the back of the camp filled before the " +
+      "front. The piece you leave behind is the one he is playing for \u2014 the " +
+      "game is not over until your last one is in. The name is an homage to " +
+      "George Howard Monks, the Boston surgeon who devised Halma in the " +
+      "1880s; Chinese Checkers is his game on a star, and neither has ever " +
+      "had a champion to name a player after. " +
+      "Games against him are rated, and so is his own record.",
+  },
 };
 
 /**
@@ -355,16 +373,20 @@ export const MIX_SIZE_CAPS: readonly MixSizeCap[] = [
    * 2,400-move bound above that. At 13×13 the same players take under two
    * minutes, and the three grades that do not search finish 19×19 inside one.
    *
-   * So 19×19 is closed to a game with Meijin, Guoshou or either specialist in
-   * it, and left open to Razryad, Kyu and Dan, who finish it in under a minute.
-   * The specialists are named because at Go neither has studied anything — no
-   * expert applies to its spec — so each plays it with Guoshou's settings, and
-   * Guoshou's numbers are theirs. They still play Go at 13×13 and 9×9.
+   * So 19×19 is closed to a game with Meijin, Guoshou or any specialist in it,
+   * and left open to Razryad, Kyu and Dan, who finish it in under a minute.
+   * The specialists are named because at Go not one of them has studied
+   * anything — no expert applies to Go's spec — so each plays it with
+   * Guoshou's settings, and Guoshou's numbers are theirs. That is why a
+   * specialist added later belongs on this list the day it is added, whatever
+   * game it was built for: the cap is about what it costs AWAY from its own
+   * board, where it is 国手 under another name. They all still play Go at
+   * 13×13 and 9×9.
    */
   {
     variant: "go",
     size: 19,
-    tiers: [BOT_TIERS.meijin, BOT_TIERS.guoshou, BOT_TIERS.tamenoki, BOT_TIERS.meritalu],
+    tiers: [BOT_TIERS.meijin, BOT_TIERS.guoshou, ...BOT_SPECIALIST_LIST],
     reason:
       "a searching grade thinks about half a second a move here and a game runs 100–1,400 moves: measured 25 s to 9 min a game, against under a minute for Razryad, Kyu and Dan and under two minutes for the searching grades at 13×13.",
   },

@@ -105,11 +105,22 @@ describe("the ladder as members", () => {
     expect(atReversi).not.toContain(BOT_TIERS.meritalu);
     expect(atFive).toContain(BOT_TIERS.meritalu);
     expect(atFive).not.toContain(BOT_TIERS.tamenoki);
-    // Halma is a race: no shape is read, so a character whose whole difference
-    // is a shape preference would be the grade it is built on under another
-    // name. The ladder plays it and nobody else does.
-    expect(atHalma).toEqual([...BOT_TIER_LIST]);
-    // ...and a character IS offered where shape is the game.
+    /*
+     * Halma has a specialist of its own now, and neither of the other two is
+     * it. This line used to read "the ladder plays it and nobody else does",
+     * which was true and was also the gap the race player was built to fill.
+     */
+    expect(atHalma).toEqual([...BOT_TIER_LIST, BOT_TIERS.monkton]);
+    expect(atReversi).not.toContain(BOT_TIERS.monkton);
+    expect(atFive).not.toContain(BOT_TIERS.monkton);
+    // And the star, which is the same game on a different lattice.
+    expect(botsFor(RULE_VARIANTS.chineseCheckers).map((bot) => bot.tier)).toContain(BOT_TIERS.monkton);
+    /*
+     * A character is still not offered here. Its whole difference from the
+     * grade it is built on is a preference about SHAPE, and a race reads no
+     * shape — so it would be that grade under another name and a different
+     * flag. A specialist is a different reading, which is the distinction.
+     */
     expect(atFive).toContain(BOT_TIERS.rafaDuarte);
     expect(atHalma).not.toContain(BOT_TIERS.rafaDuarte);
   });

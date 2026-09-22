@@ -16,6 +16,7 @@
 export const EXPERT_KINDS = {
   flip: "flip",
   line: "line",
+  race: "race",
 } as const;
 
 /**
@@ -193,4 +194,84 @@ export const EXPERT_SEARCH = {
   forcedExtension: 8,
   /** A backstop under the clock, so a pathological position cannot spin. */
   nodes: 120_000,
+} as const;
+
+/**
+ * THE RACE GAMES, by the two things that decide one.
+ *
+ * Halma and Chinese Checkers are scored by distance and nothing else — no
+ * piece is ever taken, no line means anything, and the board's whole state is
+ * how far each army still has to walk. That makes the weights here a question
+ * of BALANCE between two readings of the same distance rather than a list of
+ * features, and there are only two.
+ *
+ * `step` is the army's total: the sum of what every piece has left to travel,
+ * each to a camp square of its own. It is what makes the player advance.
+ *
+ * `strand` is the piece with furthest to go, charged again on top. It is what
+ * stops the player advancing NICELY and losing anyway — the game is not over
+ * until the LAST piece is in, so nine pieces home and one still at the start
+ * is not nearly a win, it is a long way from one, and a sum cannot tell the
+ * difference between that and ten pieces a short way out.
+ *
+ * Five to one, because a step saved by the straggler is worth about five taken
+ * off the army: it is on the critical path and they are not. Higher, and the
+ * player walks its rearmost piece up the board on its own while the rest sit
+ * still, which is slower — a piece left behind is also a stepping stone for
+ * everyone else, and hurrying it wastes the ladder.
+ */
+export const RACE_WEIGHTS = {
+  /** Per step of the whole army's remaining distance. */
+  step: 10,
+  /** Per step of the distance left by the piece with furthest to go. */
+  strand: 50,
+} as const;
+
+/**
+ * How wide and how deep the race player reads.
+ *
+ * WIDER THAN THE OTHER TWO SPECIALISTS, at the root and under it, and the
+ * width was the most expensive number here to get right.
+ *
+ * A race offers far more moves than a placing game: every piece can step six
+ * or eight ways and land at the end of any chain of jumps, so a middlegame
+ * star offers over a hundred and Halma's own board nearer a hundred and
+ * twenty. The first guess was that almost all of them are obviously worse than
+ * the best few — the measure is one number that each move plainly raises or
+ * lowers — so eight below the root would be plenty.
+ *
+ * Measured, eight is not plenty, and the way it failed is worth keeping. On
+ * the star it still won every game and took THREE HUNDRED PLIES to do it,
+ * against a hundred at twenty: a narrow search over a shortlist that is nearly
+ * all ties does not lose, it wanders, and a game that takes three times as
+ * long to win is three times the CPU for the same result. On Halma's small
+ * board, where the whole race is six steps and nearly every move gains
+ * exactly one, it did lose — four games in eight against 名人 and 国手, which
+ * twenty turned into six wins and two losses.
+ *
+ * Six plies, which is three moves each. Enough to see a jump chain answered,
+ * the answer answered, and whether the ladder built on the way was worth
+ * building — which is what these games turn on. Deeper buys little, because
+ * past three moves the other side's army has usually moved out of whatever
+ * the plan assumed.
+ *
+ * WHAT IT COSTS, since a move here is a serverless invocation somebody pays
+ * for. Measured on the 250ms clock a live seat gives every player: this one
+ * SPENDS ALL OF IT, on both games, where 国手 finishes a Chinese Checkers move
+ * in 81ms and a Halma move in 148ms. That is within the clock rather than
+ * beyond it — a specialist is a better player inside a request, never a player
+ * given a longer one — and it is still three times 国手's compute a move, so
+ * it is written here rather than left to be discovered.
+ *
+ * Six plies is nonetheless the CHEAPER of the two depths tried, per GAME. At
+ * four the player still won every game and took 133 plies to do it against
+ * 116; a game is billed by the move, so the depth that ends it sooner is the
+ * one that costs less, and twelve seconds a game at four plies against
+ * fourteen at six is not where the money is. This is the same finding as the
+ * width above, in the other units.
+ */
+export const RACE = {
+  branch: 20,
+  rootBranch: 32,
+  depth: 6,
 } as const;
