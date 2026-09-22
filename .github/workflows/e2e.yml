@@ -26,23 +26,39 @@ jobs:
     # NOT free even on a public repo, and moving this to one is the single
     # way this acquires a bill.
     runs-on: ubuntu-latest
-    # MEASURED, now, rather than guessed. The first run on a runner was killed
-    # at exactly 30m18s having reached [539/517] with retries — essentially
-    # the whole suite, dying inside the last project. Ten minutes locally does
-    # not transfer: a cold runner compiles every page on demand and runs the
-    # suite on ONE worker (playwright.config.ts sets `workers: 1`, because the
-    # whole suite shares one database and parallel specs corrupt each other's
-    # fixtures).
+    # FOUR SHARDS, EACH ON ONE WORKER AGAINST ITS OWN DATABASE.
     #
-    # A job killed by this ceiling is reported as `cancelled`, NOT `failed` —
-    # indistinguishable in `gh run list` from somebody pressing cancel, which
-    # cost a while to work out. So the ceiling is set well clear of the real
-    # figure rather than just above it.
+    # The suite is 176 spec files, about eight hundred cases, and it ran on
+    # ONE worker for a reason that still holds: every spec shares one database
+    # and parallel workers corrupt each other's fixtures (playwright.config.ts
+    # sets `workers: 1`, and says why). On a cold runner that was about fifty
+    # minutes a run, and John, waiting on one: "can we not increase the speed
+    # of these tests?"
     #
-    # Raising the worker count is the real fix and is deliberately NOT done
-    # here: it needs its own run, and if parallel workers turn out to need a
-    # database each, that is a ticket rather than a flag.
-    timeout-minutes: 60
+    # Sharding is the answer that changes nothing about that rule. Each shard
+    # is a job of its own — its own runner, its OWN service container below,
+    # its own quarter of the spec files — and inside it the suite still runs
+    # on one worker against one database. Four databases, not one shared
+    # four ways. Playwright runs the `setup` project on every shard that has
+    # tests depending on it, so each shard signs in and sweeps its own fresh
+    # database exactly as the single job did.
+    #
+    # `fail-fast: false`, because a red shard must not cancel the other three:
+    # a superseded test run is evidence, and three quarters of the evidence is
+    # worth having when one quarter is red.
+    #
+    # THE CEILING IS PER SHARD. A job killed by it is reported as `cancelled`,
+    # NOT `failed` — indistinguishable in `gh run list` from somebody pressing
+    # cancel, which cost a while to work out — so it is set well clear of a
+    # quarter of the old fifty minutes, not just above it.
+    #
+    # Free, still: four standard runners on a public repository cost nothing,
+    # which the note above the runner is about. Four larger runners would.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    timeout-minutes: 30
 
     services:
       # Postgres runs ON the runner and is thrown away with it. No Neon usage,
@@ -164,8 +180,10 @@ jobs:
       # reads them; Next's `.env` loading never overrides a variable already
       # set. A pull request from a fork is given no secrets by GitHub, so
       # those ten specs fail there by design.
-      - name: Run the end-to-end suite
-        run: pnpm test:e2e
+      # This shard's quarter of the spec files. Playwright splits the FILES
+      # across shards evenly by count, and the `setup` project runs on each.
+      - name: Run this shard of the end-to-end suite
+        run: pnpm test:e2e -- --shard=${{ matrix.shard }}/4
         env:
           SUMILABU_BOARD_URL: ${{ secrets.SUMILABU_BOARD_URL }}
           SUMILABU_BOARD_DEV_TOKEN: ${{ secrets.SUMILABU_BOARD_DEV_TOKEN }}
@@ -173,11 +191,12 @@ jobs:
 
       # Only on failure, and only for a fortnight: the traces are what make a
       # red run diagnosable without reproducing it locally, and they are large.
+      # Named per shard, since two jobs cannot upload one artifact name.
       - name: Keep the report when it fails
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-shard-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/
