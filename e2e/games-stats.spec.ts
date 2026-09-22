@@ -266,7 +266,14 @@ test.describe("a member reading the games index", () => {
     strip = await stripOf(page, seeded);
     await showsTheSeededGame(strip, true);
     await expect(strip.getByTestId("game-stats-standings")).toHaveAttribute("href", `/games/${slugFor(seeded)}/standings`);
-    await invitesTheFirstGame(await stripOf(page, unplayed), `/games/${slugFor(unplayed)}/play`);
+    /*
+     * TO THE SET-UP SCREEN, NOT THE PRACTICE BOARD. "Be the first to play"
+     * promises the first game on this site's record, and the practice board
+     * records nothing and makes nobody the first at anything — so 0.228.0
+     * repointed it, and this line said the old address for two releases
+     * because the run that would have caught it was never waited for.
+     */
+    await invitesTheFirstGame(await stripOf(page, unplayed), `/games/${slugFor(unplayed)}/new`);
     await saysNobodyHasAStanding(await stripOf(page, unrated));
 
     // PLAIN LIST, by its chip.
@@ -282,7 +289,7 @@ test.describe("a member reading the games index", () => {
       `/games/${slugFor(seeded)}/standings`,
     );
     await expect(strip.getByTestId("game-stats-standings")).toHaveCount(0);
-    await invitesTheFirstGame(await stripOf(page, unplayed), `/games/${slugFor(unplayed)}/play`);
+    await invitesTheFirstGame(await stripOf(page, unplayed), `/games/${slugFor(unplayed)}/new`);
     await saysNobodyHasAStanding(await stripOf(page, unrated));
 
     // And the promise a number makes: three wins lead to three games.
