@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+import { aComputerOpponent, chooseOpponent, openSetUpPage, startAndBegin } from "./support";
+import { gamesMade } from "./tidy";
+
+/** Every game this file begins, taken away when it finishes. */
+const tidyAway = gamesMade();
+
 /**
  * The board is drawn from your side of it.
  *
@@ -13,13 +19,27 @@ import { expect, test } from "@playwright/test";
  * pieces of code and it is the drawing John was complaining about.
  */
 test.describe("a board that sets men out", () => {
+  /*
+   * IN A LIVE GAME. The practice board used to be turned for the opener too,
+   * which is where John's Halma complaint was made — and then, with three
+   * boards side by side, he found A1 top-right on one and bottom-left on the
+   * next and asked for one standard. A practice board has nobody sitting at
+   * it, so it is drawn the way a chess or go diagram is; a live game faces
+   * the player in the seat, which is what this case drives now.
+   */
   test("starts with your own men nearest you", async ({ page }) => {
-    await page.goto("/games/halma/play");
+    await openSetUpPage(page, "halma");
+    const computer = await aComputerOpponent(page, 0);
+    await chooseOpponent(page, computer);
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/halma\/match\//, { timeout: 30_000 });
+    tidyAway(/match\/([^/?#]+)/.exec(page.url())?.[1] ?? "");
     const board = page.locator("button[aria-label*='black' i]").first();
     await expect(board).toBeVisible();
 
     const seats = await page.evaluate(() => {
-      const cells = Array.from(document.querySelectorAll("button[aria-label]"));
+      // The board's own cells: a live match page has labelled buttons below the board too, which would drag the middle down.
+      const cells = Array.from(document.querySelectorAll(".aspect-square button[aria-label]"));
       const mine: number[] = [];
       const theirs: number[] = [];
       let top = Infinity;
@@ -42,6 +62,16 @@ test.describe("a board that sets men out", () => {
     // The opener's camp is the near one, and the opponent's is the far one.
     expect(seats.mine, "black's camp is drawn on the far side").toBeGreaterThan(seats.middle);
     expect(seats.theirs, "white's camp is drawn on the near side").toBeLessThan(seats.middle);
+  });
+
+  test("draws the practice board the standard way, A1 at the bottom left, whatever the game sets out", async ({ page }) => {
+    for (const slug of ["halma", "chinese-checkers", "checkers"]) {
+      await page.goto(`/games/${slug}/play`);
+      const first = page.locator("button[aria-label]").first();
+      await expect(first).toBeVisible();
+      // The first cell in the array is the top-left one, and it is named A<size>: A1 is at the bottom left.
+      await expect(first, `${slug} is drawn turned round on the practice board`).toHaveAttribute("aria-label", /^A\d+/);
+    }
   });
 
   test("leaves a board that starts empty exactly as it was", async ({ page }) => {

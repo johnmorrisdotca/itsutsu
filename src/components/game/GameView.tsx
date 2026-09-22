@@ -187,7 +187,19 @@ export function GameView({
               selected={session.selected}
               footprintFor={session.hand.piece !== null ? session.hand.footprintFor : undefined}
               placing={session.placing}
-              viewer={session.state.opener}
+              /*
+               * NOBODY SITS AT A PRACTICE BOARD, so it is drawn the standard
+               * way — A1 at the bottom left, as a chess or go diagram is —
+               * rather than turned for the opener. It used to be turned, from
+               * John's Halma complaint that his camp was the far corner; then,
+               * with three boards side by side, he found A1 top-right on one and
+               * bottom-left on the next and asked for one standard. A LIVE game
+               * still faces its player (`SharedGame`), which is the chess
+               * situation: Black sees a1 top-right because the board is turned,
+               * and the coordinates are the board's, not the viewer's. Here you
+               * play both sides, and "Turn the board round" is one press away.
+               */
+              viewer={null}
             />
           </div>
         </div>

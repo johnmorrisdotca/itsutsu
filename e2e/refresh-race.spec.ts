@@ -45,8 +45,20 @@ test.describe("refreshing straight after a move", () => {
      * server has no second move and answers 404 for that very address —
      * which is what a player met by refreshing.
      */
+    /*
+     * HELD BY A FLAG, NOT BY THE ROUTE. This used to `unroute` to let the
+     * record catch up, while a handler was still sleeping on the last POST —
+     * and when it woke, `route.continue` threw "Route is already handled",
+     * every time on a fast machine and on every other CI run. So the handler
+     * waits while `holding` is true and continues the moment it is not; the
+     * route stays installed and nothing is torn down underneath it.
+     */
+    let holding = true;
     await page.route("**/api/games/*/moves", async (route) => {
-      if (route.request().method() === "POST") await new Promise((r) => setTimeout(r, 2500));
+      if (route.request().method() === "POST") {
+        const until = Date.now() + 2500;
+        while (holding && Date.now() < until) await new Promise((r) => setTimeout(r, 50));
+      }
       await route.continue();
     });
 
@@ -75,7 +87,7 @@ test.describe("refreshing straight after a move", () => {
     expect(held, "the bar named a position rather than the board").toMatch(/\/games\/gomoku\/play$/);
 
     // And once the record catches up, the bar follows rather than sticking.
-    await page.unroute("**/api/games/*/moves");
+    holding = false;
     await page.waitForURL(/\/games\/gomoku\/match\/[a-z0-9-]+\/2$/, { timeout: 20_000 });
     const caught = await page.request.get(page.url());
     expect(caught.status(), "the bar caught up to an address the server refused").toBe(200);

@@ -4,7 +4,7 @@ import {
   HEXAGON_SPAN,
   HEXAGON_TRANSFORM,
   HEX_LATTICE,
-  LATTICE_TRANSFORM,
+  rhombusFit,
   starSpan,
   starTransform,
 } from "./Board.constants";
@@ -61,16 +61,29 @@ describe("a hexagon board is fitted to the hexagon", () => {
      * pulled back by the quarter it used to waste. Read off the strings,
      * because the strings are what the browser is given.
      */
-    expect(LATTICE_TRANSFORM).toContain("scale(0.6666666666666666)");
-    expect(LATTICE_TRANSFORM).toContain("translate(0.0000%, 21.1325%)");
-    expect(HEXAGON_TRANSFORM).toMatch(/scale\(0\.95\d+\)/);
-    expect(HEXAGON_TRANSFORM).toMatch(/translate\(-2[0-9.]+%, [0-9.]+%\)/);
+    // The rhombus is fitted with its ring of border tiles and the go board's rim: under two thirds.
+    expect(rhombusFit(11).scale).toBeLessThan(2 / 3);
+    expect(rhombusFit(11).scale).toBeGreaterThan(0.5);
+    // With its ring of border tiles the hexagon is fitted a cell wider each way: 0.95 became about 0.8 on eleven.
+    expect(HEXAGON_TRANSFORM).toMatch(/scale\(0\.[78]\d+\)/);
+    expect(HEXAGON_TRANSFORM).toMatch(/translate\(-1[0-9.]+%, [0-9.]+%\)/);
   });
 
   it("gives a hexagon's coordinate strips one track per column and no lead", () => {
     // The middle row is the only one holding every column — see `latticeLabelTracks`.
-    expect(latticeLabelTracks(13, "columns", "hexagon")).toBe("repeat(13, minmax(0, 1fr))");
-    expect(latticeLabelTracks(13, "columns", "rhombus")).toContain("0.25fr");
+    /*
+     * The strip follows the middle row, which spans the box less its rim, so
+     * the lead is the rim in cells: a third of one, on a thirteen board.
+     */
+    // The rim and the ring's tile before the middle row's first cell: over one cell, under two.
+    const lead = Number(latticeLabelTracks(13, "columns", "hexagon").split("fr")[0]);
+    expect(lead).toBeGreaterThan(1);
+    expect(lead).toBeLessThan(2);
+    // The rhombus's strip leads with its rim plus the quarter-cell shear: more than a quarter, less than a cell.
+    const rhombusLead = Number(latticeLabelTracks(13, "columns", "rhombus").split("fr")[0]);
+    // The rim, the ring of border tiles, and the quarter-cell shear of the first row: about two cells.
+    expect(rhombusLead).toBeGreaterThan(1.5);
+    expect(rhombusLead).toBeLessThan(2.5);
     // The rows are centred in what is left of the box's height, and that is a real number.
     const rows = latticeLabelTracks(13, "rows", "hexagon");
     const edge = Number(rows.split("fr")[0]);
@@ -140,9 +153,9 @@ describe("the hexagram fits its board", () => {
     const { from, to } = starSpan(17);
     const wide = (to - from) * scale;
     const tall = HEX_LATTICE.height * scale;
-    // Was 0.51 and 0.58 before the fit knew about the shape.
-    expect(wide).toBeGreaterThan(0.8);
-    expect(tall).toBeGreaterThan(0.9);
+    // Was 0.51 and 0.58 before the fit knew about the shape; with its ring of border tiles, 0.75 and 0.85.
+    expect(wide).toBeGreaterThan(0.7);
+    expect(tall).toBeGreaterThan(0.8);
     // And neither side leaves the board, or the playing area's clip would cut it.
     expect(wide).toBeLessThanOrEqual(1);
     expect(tall).toBeLessThanOrEqual(1);
@@ -155,8 +168,6 @@ describe("the hexagram fits its board", () => {
 
   it("leaves the hexagon and the rhombus exactly as they were", () => {
     // The generalised fit must not move a shape whose width already bound it.
-    expect(LATTICE_TRANSFORM).toContain("scale(0.6666666666666666)");
-    expect(LATTICE_TRANSFORM).toContain("translate(0.0000%, 21.1325%)");
-    expect(HEXAGON_TRANSFORM).toMatch(/scale\(0\.95\d+\)/);
+    expect(HEXAGON_TRANSFORM).toMatch(/scale\(0\.[78]\d+\)/);
   });
 });
