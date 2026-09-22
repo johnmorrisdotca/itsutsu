@@ -170,7 +170,8 @@ export const SET_UP_COPY = {
    * and land on a board, and it now leads to the page that states what is about
    * to be played. Somebody who has used this screen before needs telling once.
    */
-  startLeads: "Next you will see the seat's own rules stated. Nothing is started until you press Begin there.",
+  /* Sitting down at a matched seat IS the start: the rules are the ones just chosen, and the name is on the button. */
+  startLeads: "Their seat is at exactly this game. Press, and you are sitting opposite them on the board.",
   /** What Begin does here: it writes the game, and the next thing you see is the board. */
   beginHere: "Nothing is written until you press Begin. The next thing you see is the board.",
   /**

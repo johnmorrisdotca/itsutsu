@@ -31,6 +31,14 @@ import { openSetUpPage, startAndBegin } from "./support";
  * fewer to trip over. A spec that brings its own world, and tidies a little of
  * somebody else's on the way in.
  */
+/**
+ * Closes the host's browser when called; carries the host's name and the
+ * seat's game id. THE ID IS THE ONE TO FIND THE SEAT BY: the waiting room
+ * shortens a poster's name to an initial, so a row filtered by the full name
+ * finds nothing, while the Sit down link names the game exactly.
+ */
+export type PostedSeat = (() => Promise<void>) & { host: string; id: string };
+
 export async function seatPostedBySomebodyElse({
   browser,
   baseURL,
@@ -46,7 +54,7 @@ export async function seatPostedBySomebodyElse({
   choose: (page: Page) => Promise<void>;
   /** Told the id of every game this makes, so the caller can take them away. */
   noteGame: (id: string) => void;
-}): Promise<() => Promise<void>> {
+}): Promise<PostedSeat> {
   const stamp = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
   const host = { email: `seat-${stamp}@example.test`, name: `Seat ${stamp}` };
   await seedMember(host);
@@ -59,8 +67,12 @@ export async function seatPostedBySomebodyElse({
     const posting = (await page.getByTestId("set-up-start").getAttribute("data-press")) === "begin";
     await startAndBegin(page);
     await page.waitForURL(/\/match\//, { timeout: 30_000 });
-    noteGame(/match\/([^/?#]+)/.exec(page.url())?.[1] ?? "");
-    if (posting) return () => hosting.close();
+    const id = /match\/([^/?#]+)/.exec(page.url())?.[1] ?? "";
+    noteGame(id);
+    if (posting) {
+      const close = () => hosting.close();
+      return Object.assign(close, { host: host.name, id });
+    }
   }
 
   await hosting.close();
