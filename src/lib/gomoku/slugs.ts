@@ -208,6 +208,13 @@ export const SET_UP_PARAMS = {
    * opaque and already appears in this site's addresses.
    */
   against: "against",
+  /**
+   * The seat the asker takes against a named opponent: `white` to give the
+   * opening away, `lot` to have it drawn as Begin is pressed. Absent for black,
+   * which is what whoever asks has always been given. Ignored where a position
+   * or an opening decides the colours.
+   */
+  colour: "colour",
   /** A finished game to play again: its rules, its opponent, its colours swapped. */
   rematch: "rematch",
   /** A game to carry a position out of, with `move` saying how far. */

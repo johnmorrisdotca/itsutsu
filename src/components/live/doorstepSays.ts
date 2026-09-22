@@ -75,6 +75,8 @@ export type DoorstepWho = {
   opener: Stone;
   /** Two people at one screen, so both seats are the reader's. */
   screen: boolean;
+  /** The colour is to be drawn by lot as Begin is pressed, so nothing can name it yet. */
+  lot?: boolean;
 };
 
 /** A name as this site prints it, with a program marked as one. */
@@ -121,6 +123,11 @@ function describeSeats(rules: { opening: string }, who: DoorstepWho): string {
       : `Against ${against}. ${decides}`;
   }
 
+  if (who.lot === true) {
+    return against === null
+      ? "Who plays black is drawn by lot as the game is made."
+      : `Against ${against}. Who plays black is drawn by lot as you press Begin.`;
+  }
   if (who.mine === null) {
     /*
      * Nothing has said, and no opening is going to. Reached only by a shape this

@@ -199,6 +199,13 @@ export const SET_UP_COPY = {
   board: "Open the board 対局へ",
   /** The same press where somebody is already asking for exactly this game. */
   continueToSeat: (who: string) => `Continue to sit down with ${who} 次へ`,
+  /* Which seat the asker takes, where it is theirs to choose — see `colourChoice.ts`. */
+  colour: {
+    label: "You play",
+    black: "Black, and move first",
+    white: "White, and move second",
+    lot: "Drawn by lot",
+  },
   /** The headings over the screen's groups, in the order they are drawn. */
   sections: {
     opponent: { title: "Who you play", kanji: "対戦相手" },

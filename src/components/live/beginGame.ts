@@ -2,6 +2,7 @@
 
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
 
+import { colourToTake, type ColourChoice } from "./colourChoice";
 import { DOORSTEP_COPY } from "./live.constants";
 import { drawnCreation } from "./setUpStart";
 
@@ -28,13 +29,24 @@ import { drawnCreation } from "./setUpStart";
 
 /** What Begin will do. Three shapes, because they are three different acts. */
 export type BeginAction =
-  | { kind: "create"; body: Record<string, unknown> }
+  | {
+      kind: "create";
+      body: Record<string, unknown>;
+      /**
+       * Which seat the asker takes, where they were offered the choice
+       * (`colourIsChosen`). Settled into `body.asColour` as the game is
+       * written — a lot with the same roll a drawn opponent uses — so the
+       * route only ever hears a colour. Absent where the choice was not
+       * offered, and then the route's own rule stands: whoever asks is black.
+       */
+      colour?: ColourChoice;
+    }
   /*
    * A game against a computer player drawn at random from `pool`. The draw is made
    * as Begin is pressed and not before, so a reload of this page never shows one
    * program and makes another.
    */
-  | { kind: "draw"; body: Record<string, unknown>; pool: readonly { id: string; name: string }[] }
+  | { kind: "draw"; body: Record<string, unknown>; pool: readonly { id: string; name: string }[]; colour?: ColourChoice }
   | {
       kind: "sit";
       id: string;
@@ -127,6 +139,8 @@ export async function beginGame({
   if (begin.kind === "sit") {
     return taking ? takeSeat(begin) : create(begin.instead, variant);
   }
-  if (begin.kind === "draw") return create(drawnCreation(begin.body, begin.pool, roll), variant);
-  return create(begin.body, variant);
+  const seated = (body: Record<string, unknown>) =>
+    begin.colour === undefined ? body : { ...body, asColour: colourToTake(begin.colour, roll) };
+  if (begin.kind === "draw") return create(seated(drawnCreation(begin.body, begin.pool, roll)), variant);
+  return create(seated(begin.body), variant);
 }
