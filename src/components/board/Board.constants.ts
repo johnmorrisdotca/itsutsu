@@ -158,6 +158,20 @@ export const DEFAULT_APPEARANCE: Appearance = {
   flipped: null,
 };
 
+/**
+ * The size every board's coordinates are drawn at, and the ceiling the lattice
+ * boards cap it with.
+ *
+ * 0.65rem is the size the square boards' strips have always used, and John
+ * asked for the lattice boards to match it so the labels stay subtle. The
+ * ceiling is for the one board where that size does not fit: Hex at 19 puts
+ * its rows 8.8px apart on a phone-sized board, and a 0.65rem label is 10.4px
+ * tall. `COORDINATE_FIT` is the share of a row a label may take, under one so
+ * two rows have air between them rather than merely not overlapping.
+ */
+export const COORDINATE_REM = 0.65;
+export const COORDINATE_FIT = 0.88;
+
 /** SVG stroke widths in board units (one intersection spacing = 1). */
 export const LINE_WIDTH = 0.045;
 export const EDGE_LINE_WIDTH = 0.08;
@@ -409,6 +423,26 @@ export const LABEL_GUTTER = "1.5rem";
 
 /** The wooden frame round a board: a box-shadow outside the box, so the grid reserves this much beside and below it. */
 export const BOARD_FRAME = "0.4rem";
+
+/**
+ * How far a coordinate strip stands off the board.
+ *
+ * The frame is a box-shadow SPREAD, so it is drawn OUTSIDE the board's box and
+ * the strips sit in the space it spreads into. A strip padded by its own few
+ * pixels therefore had none of them left: the labels came right up against the
+ * wood, and on the thirteen board they touched it. John, 2026-09-22: "All
+ * boards with the A/1 numbers on the side need 1 or 2 pixels of
+ * margin/padding between the numbers as they can be touching."
+ *
+ * So the gap has to clear the frame FIRST and then leave the space. Written as
+ * the frame's own width plus the gap, rather than as one number somebody has
+ * added up, because the two move for different reasons.
+ *
+ * One pixel, not two: at two the letters along the top read as floating away
+ * from the board. John, 2026-09-22: "regarding the top labels, they are too
+ * far away and can come down a pixel or two."
+ */
+export const COORDINATE_GAP = `calc(${BOARD_FRAME} + 1px)`;
 
 /** Obstacles are drawn as a sealed intersection rather than a stone. */
 export const OBSTACLE_RADIUS = 0.3;
