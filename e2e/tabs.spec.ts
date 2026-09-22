@@ -69,14 +69,15 @@ test.describe("a page of many sections is tabs", () => {
     await expect(empty).not.toContainText("yet");
   });
 
-  test("the players page is four lists, one at a time", async ({ page }) => {
+  test("the players page is five lists, one at a time", async ({ page }) => {
     /*
      * A directory of two hundred, a ladder of fifty, the computer players and
      * the kept records, stacked down one page — the ladder was three screens
-     * below the fold on the day it was added.
+     * below the fold on the day it was added. The fifth is the buddy list,
+     * since 0.227.0.
      */
     await page.goto("/players");
-    await expect(page.getByTestId("tab")).toHaveCount(4);
+    await expect(page.getByTestId("tab")).toHaveCount(5);
     await expect(page.getByTestId("directory-section")).toBeVisible();
     // One at a time: the ladder is not also on screen below the directory.
     await expect(page.getByTestId("ladder-section")).toHaveCount(0);
