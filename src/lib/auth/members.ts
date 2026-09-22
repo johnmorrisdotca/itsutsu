@@ -4,6 +4,7 @@ import { isMemberId, makeMemberId } from "./memberId";
 
 import { prisma } from "@/lib/prisma";
 import { playerKey } from "@/lib/rating/playerKey";
+import { shownName } from "@/lib/rating/shownName";
 import { isReservedKey } from "@/lib/rating/reservedKeys";
 import { awardAdmission } from "@/lib/xp/admission";
 import { foldEmail } from "./foldEmail";
@@ -74,6 +75,17 @@ export type NamedMember = {
 };
 
 /** The member for an address, or null when the address has not been let in. */
+/**
+ * A member's id and shown name, by id, or null for an id that names nobody.
+ * For an address that narrows a page to one person — `/play?with=` — where
+ * the page has to print who, and a stale or invented id must narrow nothing.
+ */
+export async function memberNamed(id: string): Promise<{ id: string; name: string } | null> {
+  if (!isMemberId(id)) return null;
+  const row = await prisma.member.findUnique({ where: { id }, select: { id: true, name: true } });
+  return row === null ? null : { id: row.id, name: shownName(row.name) };
+}
+
 export async function findMember(email: string): Promise<Member | null> {
   const row = await prisma.member.findUnique({
     where: { email: foldEmail(email) },

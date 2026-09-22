@@ -108,4 +108,56 @@ test.describe("the buddy list", () => {
 
     await context.close();
   });
+
+  /*
+   * THE NUMBER IS A LINK, AND IT LANDS ON EXACTLY WHAT IT COUNTED. "2 going"
+   * could not link when the list shipped, because no page showed the games
+   * running between two people — /play showed all of yours, which is a longer
+   * list than the number, the fault the every-count-is-a-link rule names. Now
+   * /play?with=<them> lists that set from the same `where` the number counts.
+   *
+   * Driven the whole way: a game offered from the buddy row, accepted by them,
+   * then the figure pressed and the page it opens counted and read.
+   */
+  test("the games going with a buddy are a link to exactly those games", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const me = { email: `counter-${stamp}@example.test`, name: `Counter ${stamp}` };
+    const them = { email: `counted-${stamp}@example.test`, name: `Counted ${stamp}` };
+    await seedMember(them);
+    const theirId = await memberIdFor(them.email);
+
+    const context = await memberContext(browser, baseURL!, me);
+    const theirs = await memberContext(browser, baseURL!, them);
+    expect((await context.request.post("/api/buddies", { data: { memberId: theirId } })).status()).toBeLessThan(300);
+
+    const page = await context.newPage();
+    await page.goto("/players?view=buddies");
+    const row = page.locator(`[data-testid="buddy-row"][data-member="${theirId}"]`);
+    await row.getByTestId("challenge").click();
+    await ready(page, "set-up-game");
+    await page.getByTestId("set-up-start").click();
+    await page.waitForURL(/\/games\/[^/]+\/match\//, { timeout: 30_000 });
+    const id = /match\/([^/?#]+)/.exec(page.url())?.[1] ?? "";
+    tidyAway(id);
+
+    // An offer is not a game going. They accept, and now one is.
+    const accepted = await theirs.request.post(`/api/games/${id}/offer/accept`, {});
+    expect(accepted.status(), await accepted.text()).toBeLessThan(300);
+
+    await page.goto("/players?view=buddies");
+    const going = row.getByTestId("buddy-going-link");
+    await expect(going).toContainText("1 going");
+    await going.click();
+
+    // Narrowed, said, and exactly one game — the one just made — with the way off.
+    await expect(page).toHaveURL(new RegExp(`/play\\?with=${theirId}`));
+    await expect(page.getByTestId("play-narrowed")).toContainText(them.name.split(" ")[0]);
+    await expect(page.getByTestId("my-game")).toHaveCount(1);
+    await expect(page.getByTestId("my-game")).toHaveAttribute("data-id", id);
+    await page.getByTestId("play-narrowed-off").click();
+    await expect(page).toHaveURL(/\/play$/);
+
+    await theirs.close();
+    await context.close();
+  });
 });

@@ -5,6 +5,7 @@ import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { MyGamesList } from "@/components/mine/MyGamesList";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { memberNamed } from "@/lib/auth/members";
 
 export const metadata = { title: "My games 対局" };
 
@@ -45,6 +46,8 @@ export const dynamic = "force-dynamic";
  */
 export default async function MyGamesPage({ searchParams }: PageProps<"/play">) {
   const asked = await searchParams;
+  // The other member the address narrows to, by id, with a name to print — or null.
+  const withMember = typeof asked.with === "string" ? await memberNamed(asked.with) : null;
   return (
     <Page width="standard" gap="gap-6">
       <SiteHeader />
@@ -77,7 +80,25 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
         — linkable, reloadable, and the same page on the way back. See
         `MyGamesList`.
       */}
+      {/*
+        NARROWED TO ONE PERSON, SAID, WITH THE WAY OFF. A buddy's row says
+        "2 going" and this is the page those two are on: the games running
+        between the reader and them, exactly the set the number counted. A
+        link that narrows silently is the fault the every-count-is-a-link
+        rule exists to stop, so the chip says who, and taking it off is a
+        press.
+      */}
+      {withMember !== null ? (
+        <p className="flex flex-wrap items-center gap-2 text-xs" data-testid="play-narrowed">
+          <span className="text-muted">Games with</span>
+          <span className="rounded-full border border-rule px-2.5 py-1 font-medium">{withMember.name}</span>
+          <Link href="/play" className="text-muted underline underline-offset-4" data-testid="play-narrowed-off">
+            every game
+          </Link>
+        </p>
+      ) : null}
       <MyGamesList
+        withMember={withMember?.id ?? null}
         showAll={typeof asked.all === "string" ? asked.all : null}
         /*
           And where the last page of the finished group ended. In the query beside
