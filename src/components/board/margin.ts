@@ -1,4 +1,4 @@
-import { EDGE_LINE_WIDTH, GO_BOARD_RIM, HEXAGON_ROWS, HEX_LATTICE, STAR_ROWS } from "./Board.constants";
+import { EDGE_LINE_WIDTH, GO_BOARD_RIM, HEX_LATTICE, latticeFitFor, type LatticeShape } from "./Board.constants";
 
 export { GO_BOARD_RIM } from "./Board.constants";
 
@@ -98,34 +98,43 @@ export function labelTracks(size: number, inset: number): string {
  *
  * All in cells, as `fr`, for the reason `labelTracks` gives.
  */
-export type LatticeShape = "rhombus" | "hexagon" | "star";
-
-/**
- * How much of the box's height each shape's rows take up: the fit's own scale,
- * restated for the strip that has to land on the same rows the board drew.
- */
-const FITTED_ROWS: Record<LatticeShape, number> = {
-  rhombus: HEX_LATTICE.height / HEX_LATTICE.width,
-  hexagon: HEXAGON_ROWS,
-  star: STAR_ROWS,
-};
+export type { LatticeShape } from "./Board.constants";
 
 export function latticeLabelTracks(size: number, axis: "columns" | "rows", shape: LatticeShape = "rhombus"): string {
+  /*
+   * DERIVED FROM THE FIT, whichever shape it is. Each shape used to carry its
+   * own hand-worked "rows" constant and its own column lead, and every change
+   * to a fit — the star's, then the rhombus's rim, then the rhombus's ring of
+   * border tiles — meant a matching change here that was easy to get wrong
+   * and only visible in a picture. The fit already says where the lattice's
+   * origin lands and how big a cell is; a strip is that, in cells.
+   */
+  const fit = latticeFitFor(shape, size);
+  // One cell, as a fraction of the box: across, and down.
+  const cellW = fit.scale / size;
+  const cellH = (HEX_LATTICE.height * fit.scale) / size;
   if (axis === "columns") {
-    if (shape === "hexagon") return `repeat(${size}, minmax(0, 1fr))`;
     /*
      * A STAR HAS NO COLUMNS TO LABEL, so it is not given any — see
      * `starColumnsSayNothing` below for why an empty strip is the honest
      * answer here and a row of letters is not.
      */
     if (shape === "star") return "";
-    // The first row's points sit half a cell down, so the shear moves them a quarter along.
-    const lead = 0.25;
-    return `${lead}fr repeat(${size}, minmax(0, 1fr)) ${(HEX_LATTICE.width - 1) * size - lead}fr`;
+    /*
+     * The letters follow ONE row read across — the middle row on a hexagon,
+     * the only row holding every column; the first row on the rhombus. A cell
+     * at column c of row r starts at lattice x = (c + 0.25 + 0.5r)/N, so the
+     * strip's first track is everything before column 0 of that row.
+     */
+    const row = shape === "hexagon" ? (size - 1) / 2 : 0;
+    const lead = fit.left + (0.25 + 0.5 * row) * cellW;
+    const trail = 1 - lead - size * cellW;
+    return `${lead / cellW}fr repeat(${size}, minmax(0, 1fr)) ${trail / cellW}fr`;
   }
-  // What is left over above and below the rows, once they are fitted to the box.
-  const edge = ((1 / FITTED_ROWS[shape] - 1) / 2) * size;
-  return `${edge}fr repeat(${size}, minmax(0, 1fr)) ${edge}fr`;
+  // What is above the first row and below the last, in rows.
+  const lead = fit.top;
+  const trail = 1 - lead - size * cellH;
+  return `${lead / cellH}fr repeat(${size}, minmax(0, 1fr)) ${trail / cellH}fr`;
 }
 
 /**

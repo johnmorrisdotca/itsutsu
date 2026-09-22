@@ -24,15 +24,6 @@ function Wormhole() {
   );
 }
 
-/** An empty peg-hole: Chinese Checkers has no drawn grid, so this is what marks a playable cell at all. */
-function Hole() {
-  return (
-    <span
-      className="block h-[22%] w-[22%] rounded-full bg-black/20 shadow-inner"
-      aria-hidden="true"
-    />
-  );
-}
 
 /** An intersection the rules sealed off: drawn as a knot, never as a stone. */
 function Obstacle() {
@@ -107,7 +98,6 @@ export function Intersection({
   camp = null,
   isKing = false,
   hideBlocked = false,
-  hole = false,
   unslant = false,
   guide = null,
   guideColours,
@@ -177,8 +167,6 @@ export function Intersection({
         </span>
       ) : ghost !== null ? (
         <StoneMark stone={ghost} stones={stones} ghost />
-      ) : hole ? (
-        <Hole />
       ) : null}
       {mark !== null ? <Mark mark={mark} /> : null}
       {guide === "choice" && guideColours !== undefined ? <GuideOutline colour={guideColours.mark} /> : null}
