@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { ALSO_LISTED_IN, GAME_FAMILIES, familyOf, gamesShownIn, siblingsOf } from "./families";
 import { RULE_VARIANTS, VARIANT_SPECS } from "./gomoku.constants";
+import { GAME_SLUGS } from "./slugs";
 import { measureHeadStart } from "./simulation.headStartDecides";
 import type { RuleVariant } from "./gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "./variants.constants";
@@ -43,11 +44,36 @@ function engineTestSources(): string {
   return found.join("\n");
 }
 
+/** Every browser spec, as text: which games are driven is a fact about their source. */
+function browserSpecSources(): string[] {
+  return readdirSync("e2e")
+    .filter((name) => name.endsWith(".spec.ts") || name.endsWith(".ts"))
+    .map((name) => readFileSync(join("e2e", name), "utf8"));
+}
+
 describe("every game is finished, not just playable", () => {
   const tests = engineTestSources();
+  const browserSpecs = browserSpecSources();
 
   it.each(VARIANTS)("%s is named by at least one unit test", (variant) => {
     expect(tests).toContain(variant);
+  });
+
+  /*
+   * AND BY A BROWSER TEST. The New Game Gate above has asked for one since it
+   * was written — "one Playwright case that opens the game and plays the move
+   * that shows its rule" — and nothing checked, so Ring Drop, Hole Drop, Clear
+   * Drop and Wild Tic-tac-toe shipped with none. Found by grepping the specs
+   * for each game's name, which is what this does: a game is driven in a
+   * browser if some spec names it by its key (`selectOption("ringDrop")`) or
+   * by its address (`/games/ring-drop/…`). A file that only lists the game —
+   * the catalogue specs, the screenshot scene — counts too, because the
+   * screenshot scene DOES play it; the rule is that nothing ships unmet by a
+   * browser at all.
+   */
+  it.each(VARIANTS)("%s is driven by at least one browser spec", (variant) => {
+    const named = browserSpecs.some((source) => source.includes(`"${variant}"`) || source.includes(`/${GAME_SLUGS[variant]}/`) || source.includes(`"${GAME_SLUGS[variant]}"`));
+    expect(named, `no spec under e2e/ names ${variant} (${GAME_SLUGS[variant]}) — write the case that plays the move that shows its rule`).toBe(true);
   });
 
   it.each(VARIANTS)("%s has a screenshot in public/art/games", (variant) => {

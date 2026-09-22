@@ -212,7 +212,8 @@ that is missing any of them fails the build rather than shipping quietly.
   recorded name is in neither, when a record uses a name one of our games goes by
   without leading to it, or when a name is in both — Checkers shipped without one.
 - **It has an end-to-end test.** One Playwright case that opens the game and plays the
-  move that shows its rule working.
+  move that shows its rule working. Enforced since 2026-09-22: the gate greps `e2e/`
+  for each game's key or address, and five games had none when it first ran.
 
 TypeScript already forces the `VARIANT_SPECS` and `RULE_VARIANT_DISPLAY` rows, because
 both are `Record<RuleVariant, …>`. The gate covers what types cannot see.
