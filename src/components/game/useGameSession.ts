@@ -7,6 +7,7 @@ import { readAdvantage } from "@/lib/gomoku/advantage";
 import { canPass as engineCanPass, canGrowBoard, canShrinkBoard, canSwapSeats, seatToPlay, winOnTime } from "@/lib/gomoku/engine";
 import { canSkip as engineCanSkip } from "@/lib/gomoku/rules/record";
 import { passesOwed } from "@/lib/gomoku/rules/forcedPass";
+import { playPastedMoves } from "./playPastedMoves";
 import { GAME_STATUS, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { GameSettings, Point, Seat } from "@/lib/gomoku/gomoku.types";
 import type { Appearance } from "@/components/board/board.types";
@@ -116,6 +117,8 @@ export function useGameSession(
     if (lastMoveAt.current === 0) lastMoveAt.current = Date.now();
   }, []);
   const [helpRequest, setHelpRequest] = useState<Seat | null>(null);
+  /** Whether what is on the board was pasted in rather than played. See `playMoves`. */
+  const [pasted, setPasted] = useState(false);
   const [resizeProposal, setResizeProposal] = useState<ResizeProposal | null>(null);
   const [helpMark, setHelpMark] = useState<Point | null>(null);
 
@@ -204,6 +207,7 @@ export function useGameSession(
 
   const reset = useCallback((next: Partial<GameSettings> = {}) => {
     if (persist) clearSnapshot();
+    setPasted(false);
     clearInput();
 
     const gameSettings = nextGameSettings(timeline[0].settings, next);
@@ -217,6 +221,49 @@ export function useGameSession(
     lastMoveAt.current = Date.now();
     clock.reset(timeControlFor(settings.timeControl));
   }, [clearInput, clock, line, persist, resetHints, settings.hintsPerSeat, settings.timeControl, timeline]);
+
+  /**
+   * A GAME SOMEBODY PASTED IN, laid out on a fresh board.
+   *
+   * The reading is `readMoves` and the playing out is `playPastedMoves`, both
+   * pure and both tested; this is the one place that owns the session's other
+   * bookkeeping — the hints, the stats, the clock, the marks — so a pasted
+   * game starts as clean as a new one rather than carrying the last game's
+   * count of anything.
+   *
+   * It returns what happened rather than saying it: which move the rules
+   * refused, if any, is the panel's to put into words.
+   */
+  const playMoves = useCallback(
+    (points: readonly Point[]) => {
+      if (persist) clearSnapshot();
+      clearInput();
+      const run = playPastedMoves(timeline[0].settings, points, Math.random());
+      line.layOut(run.states);
+      /*
+       * AND IT IS MARKED AS PASTED, which is what keeps it off the server.
+       * A board played at one screen is mirrored as an unrated hot-seat match
+       * from its first stone (`useMatchMirror`) — that is right for a game
+       * somebody played and wrong for one they pasted in, which would file
+       * another site's game here under their own name. The ticket's words:
+       * "make sure nothing pasted can be mistaken for a filed game."
+       *
+       * Cleared by `reset` and by nothing else, so the next real game on this
+       * board is kept exactly as it was before.
+       */
+      setPasted(true);
+      setHelpMark(null);
+      setHelpRequest(null);
+      setResizeProposal(null);
+      resetHints(settings.hintsPerSeat);
+      setStats(emptyStats());
+      setLostOnTime(null);
+      lastMoveAt.current = Date.now();
+      clock.reset(timeControlFor(settings.timeControl));
+      return run;
+    },
+    [clearInput, clock, line, persist, resetHints, settings.hintsPerSeat, settings.timeControl, timeline],
+  );
 
   const seat = seatToPlay(state);
 
@@ -294,6 +341,7 @@ export function useGameSession(
     swapBlockedReason,
     moveIndex: index,
     moveTotal: timeline.length - 1,
+    pasted,
     record: timeline[timeline.length - 1].moves,
     reviewing,
     boardReadOnly:
@@ -331,6 +379,7 @@ export function useGameSession(
 
   const actions: GameActions = {
     play: input.play,
+    playMoves,
     playTurn,
     undo: line.undo,
     redo: line.redo,

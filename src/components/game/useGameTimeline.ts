@@ -85,6 +85,29 @@ export function useGameTimeline(
     }
   }, [index, timeline.length]);
 
+  /**
+   * A WHOLE RUN OF POSITIONS AT ONCE, replacing the timeline.
+   *
+   * For a game somebody pasted in: the reader hands over every position from
+   * the empty board to the last move it could play, and the board lands on the
+   * end of it with each step behind it — so the record lists them and the
+   * forward and back controls walk them, exactly as they would if the moves
+   * had been clicked.
+   *
+   * ONE CALL, NOT A LOOP OVER `advance`. `advance` reads `index` from the
+   * render it was made in, so calling it forty times in one handler would
+   * slice the timeline at the same place forty times and keep only the last
+   * move. That is the ordinary React trap, and it would look like a parser
+   * bug: the board would show one stone and the list would say forty.
+   */
+  const layOut = useCallback((states: readonly GameState[]) => {
+    if (states.length === 0) return;
+    setTimeline([...states]);
+    setFatalAt(states.map(() => null));
+    setIndex(states.length - 1);
+    setUndone(false);
+  }, []);
+
   const restart = useCallback((settings: GameSettings) => {
     setTimeline([createGame(settings, Math.random())]);
     setFatalAt([null]);
@@ -121,6 +144,7 @@ export function useGameTimeline(
     undo,
     redo,
     restart,
+    layOut,
     replaceLatest,
   };
 }

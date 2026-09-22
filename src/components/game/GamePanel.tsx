@@ -13,6 +13,8 @@ import { AdvantagePanel } from "./AdvantagePanel";
 import { GameSettingsPanel } from "./GameSettingsPanel";
 import { GameStatus } from "./GameStatus";
 import { MoveHistory } from "./MoveHistory";
+import { PasteMoves } from "./PasteMoves";
+import { PracticeMark } from "./PracticeMark";
 import { NotesPanel } from "./NotesPanel";
 import { PieceTray } from "./PieceTray";
 import { PlayerNames } from "./PlayerNames";
@@ -26,14 +28,41 @@ import { ComputerOpponentPanel } from "./ComputerOpponentPanel";
  */
 export function GameSidebar({
   postSeat = false,
+  practice = false,
   defaults,
   ...props
-}: GamePanelProps & { postSeat?: boolean; defaults: GameDefaults }) {
+}: GamePanelProps & { postSeat?: boolean; practice?: boolean; defaults: GameDefaults }) {
   return (
     <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-80">
+      {/*
+        WHAT THIS BOARD IS, before anything about what to do on it. A practice
+        board is the same board a match is played on — that is the point, and
+        the danger. See `PracticeMark`.
+      */}
+      {practice ? <PracticeMark variant={props.session.state.settings.variant} /> : null}
       <div className={PANEL_CLASS}>
         <GameStatus session={props.session} />
       </div>
+      {/*
+        THE MOVES, THIRD, AND NOT LAST.
+        John asked for a practice board where "you get to click around on any
+        board and you get the moves list". The list already existed — and sat
+        at the bottom of a sidebar under the opponent, the controls, the
+        shared-game panel and the settings, about 1,200 pixels down a desk
+        screen and several screens down a phone. A record nobody can find is
+        the same as no record, which is what the ticket was really about.
+
+        Above the opponent because it is about the game in front of you, and
+        the opponent is about the next one.
+      */}
+      <div className={PANEL_CLASS}>
+        <MoveHistory {...props} />
+      </div>
+      {practice ? (
+        <div className={PANEL_CLASS}>
+          <PasteMoves {...props} />
+        </div>
+      ) : null}
       <div className={PANEL_CLASS}>
         <ComputerOpponentPanel session={props.session} actions={props.actions} />
       </div>
@@ -64,9 +93,6 @@ export function GameSidebar({
       </div>
       <div className={PANEL_CLASS}>
         <StartSharedGame settings={props.session.state.settings} postSeat={postSeat} defaults={defaults} />
-      </div>
-      <div className={PANEL_CLASS}>
-        <MoveHistory {...props} />
       </div>
       <div className={PANEL_CLASS}>
         <NotesPanel gameKey={`local:${props.session.state.settings.seed}`} />

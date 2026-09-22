@@ -13,6 +13,7 @@ import type {
 import type { Appearance, BoardMark } from "@/components/board/board.types";
 import type { PieceHand } from "./usePieceHand";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
+import type { PastedGame } from "./playPastedMoves";
 
 /**
  * How much the board tells a player about the position.
@@ -125,6 +126,15 @@ export type GameSession = {
   record: Move[];
   /** True while an earlier position is being looked at. */
   reviewing: boolean;
+  /**
+   * Whether what is on the board was PASTED IN rather than played here.
+   *
+   * It keeps a pasted game off the server: a board played at one screen is
+   * mirrored as an unrated hot-seat match from its first stone, which is right
+   * for a game somebody played and wrong for one they pasted — that would file
+   * another site's game here under their name. Cleared by starting a new game.
+   */
+  pasted: boolean;
   /** True when the board cannot be played on at all right now. */
   boardReadOnly: boolean;
   /** The piece picked up to slide, in the games where pieces move. */
@@ -161,6 +171,11 @@ export type ResizeProposal = {
 
 export type GameActions = {
   play: (point: Point) => void;
+  /**
+   * A whole list of points, on a fresh board — a game somebody pasted in.
+   * Returns what the rules made of it: see `playPastedMoves`.
+   */
+  playMoves: (points: readonly Point[]) => PastedGame;
   /** A whole turn at once, as a computer opponent answers one. See `playTurn` in useGameSession. */
   playTurn: (turn: BotTurn) => void;
   undo: () => void;
