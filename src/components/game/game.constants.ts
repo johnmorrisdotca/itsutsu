@@ -336,3 +336,52 @@ function ordinal(n: number): string {
       return `${n}th`;
   }
 }
+
+/**
+ * THE WORDS A PRACTICE BOARD USES ABOUT ITSELF.
+ *
+ * John, 2026-09-21: "you need to know it's a practice, not a real match." The
+ * board at /games/<slug>/play is the same board a match is played on, which is
+ * the point and the danger — it has no opponent, no clock, no rating and no
+ * record, and somebody who has pasted another site's game into it is looking
+ * at something that never happened here.
+ */
+export const PRACTICE_COPY = {
+  mark: {
+    label: "Practice board",
+    kanji: "試し打ち",
+    /* What it is NOT, in the order somebody would worry about it. */
+    /*
+     * WHAT IS TRUE, and it is not "nothing is kept". A board played at one
+     * screen IS filed, as an unrated game at one screen, so it can be come
+     * back to — saying otherwise would be the comfortable lie rather than the
+     * accurate line. What it is not is a match against somebody, and what it
+     * never touches is a rating. A game PASTED in is not filed at all; see
+     * `session.pasted`, and the sentence below that says so.
+     */
+    line: "Play both sides, take moves back, or paste a game in and walk through it. Nobody is sitting opposite, there is no clock, and nothing played here is rated — a board at one screen is kept as its own game, and a game you paste in is not kept at all.",
+    /* The way out, since a practice board that cannot become a game is a dead end. */
+    real: "Start a real game",
+  },
+  paste: {
+    label: "Paste a game",
+    kanji: "棋譜貼付",
+    button: "Walk through it",
+    clear: "Clear",
+    placeholder: "Paste a list of moves",
+    hint: (example: string) => `A list of moves, in most of the ways they are published — like ${example}. Move numbers, line breaks and a result on the end are all fine.`,
+    nothing: "Could not read any moves in that.",
+    /* Said on success too: somebody who pasted forty moves and got twelve has to be told. */
+    read: (moves: number, format: string) =>
+      `Read ${moves} ${moves === 1 ? "move" : "moves"} as ${FORMAT_WORDS[format] ?? format}.`,
+    /* Where a list stopped being playable, which is the engine's answer and not the reader's. */
+    refused: (at: number) => `Move ${at} cannot be played in this game, so the board stops there.`,
+  },
+} as const;
+
+/** What each format is called in a sentence a player reads. */
+const FORMAT_WORDS: Record<string, string> = {
+  coordinates: "coordinates",
+  squares: "Othello squares",
+  sgf: "SGF",
+};

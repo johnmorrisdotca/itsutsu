@@ -76,7 +76,12 @@ export function GameView({
    */
   useSavedAppearance(session.appearance, savesToAccount);
   // From the first stone the game is a match on the server, and has an address.
-  const kept = useMatchMirror(session, trackPath, match?.game.id ?? null);
+  /*
+   * AND NEVER A PASTED GAME. `session.pasted` is what tells a game somebody
+   * played from one they pasted in from another site; the second must not be
+   * filed here under their name. See `playMoves`.
+   */
+  const kept = useMatchMirror(session, trackPath && !session.pasted, match?.game.id ?? null);
   const streaks = useGameRecording(session, { active: kept.matchId !== null, synced: kept.synced });
 
   /*
@@ -186,7 +191,7 @@ export function GameView({
             />
           </div>
         </div>
-        <GameSidebar session={session} actions={actions} postSeat={postSeat} defaults={defaults} />
+        <GameSidebar session={session} actions={actions} postSeat={postSeat} practice={match === null} defaults={defaults} />
       </div>
       <GameOptions session={session} actions={actions} streaks={streaks} />
       <IdleModal open={showIdle} onConfirm={confirm} />
