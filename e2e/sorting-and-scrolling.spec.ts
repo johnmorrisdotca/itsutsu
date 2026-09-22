@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
 import { ready, watchForCrashes } from "./support";
 
@@ -34,6 +34,26 @@ import { ready, watchForCrashes } from "./support";
  * quietest way for a suite to say nothing at all — ten specs here already do it
  * and AGENTS.md names them. So `enoughToPage` fails loudly, and says what it
  * needed. The `limit` is deliberately tiny so that the bar is three rows.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * AND THE ROWS ARE MADE HERE, WHICH THEY WERE NOT
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * The header above says a spec must not assert anything about a row it did not
+ * create, and then these four paged through rows four hundred OTHER specs had
+ * left behind. Nothing showed it while the suite was one job against one
+ * database: eight hundred cases leave plenty to page through. Splitting the
+ * suite into four shards gave each its own database and a quarter of the
+ * games — five finished games on the shard this file landed in — and all four
+ * went red at once, on a change that touched no page and no route.
+ *
+ * That is the rule being collected on rather than a new fault. A shard is just
+ * the first database lean enough to notice, and the same four would have failed
+ * on a fresh clone. So `enoughRows` plays the games these tests page through,
+ * through the API rather than the board: create, a couple of moves, resign. It
+ * runs once per worker, and it seeds ENOUGH rather than exactly — the assertions
+ * below are all relative, so more rows than asked for is not a problem, and
+ * fewer is the only thing that is.
  */
 
 /** A small page, so two pages exist wherever there are a handful of rows. */
@@ -89,8 +109,73 @@ function totalIn(line: string): number {
 }
 
 /**
+ * HOW MANY FINISHED GAMES THESE TESTS MAKE FOR THEMSELVES.
+ *
+ * A screenful, then two scrolls. The scroller fills itself to a screen before
+ * anybody touches it — about three requests at this `limit`, so roughly nine
+ * rows — and each of the two scrolls below asks for one more page. Twenty is
+ * that with room to spare, and room is the right side to err on: a floor set
+ * exactly at the requirement fails the day a row gets taller.
+ */
+const TO_SEED = 20;
+
+/**
+ * Where the seeded stones go. Spaced, never in a run, so that no game finishes
+ * itself: four black stones on one row would be four fifths of a win at
+ * freestyle, and a game that ends on its own move is a different row than the
+ * one this meant to write.
+ */
+const SPACED = 2;
+
+/** Once per worker. The games are finished, so a second run would only add more. */
+let sown = false;
+
+/**
+ * The rows these tests page through, played through the API.
+ *
+ * A resignation is what finishes them, because it is the one ending a shared
+ * game rates — so each game also puts two names on the ladder, which is the
+ * other list paged below. The move counts vary deliberately: a record where
+ * every game is the same length cannot show that a sort by length did anything.
+ */
+async function enoughRows(request: APIRequestContext): Promise<void> {
+  if (sown) return;
+  sown = true;
+
+  // Unique to this run, so nothing here takes a name another spec is asserting
+  // about — a Player row outlives the game that made it.
+  const run = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
+  for (let game = 0; game < TO_SEED; game += 1) {
+    const started = await request.post("/api/games/live", {
+      data: { blackName: `Sorter ${run}b${game}`, whiteName: `Sorter ${run}w${game}`, size: 9, variant: "freestyle" },
+    });
+    expect(started.status(), `seed game ${game + 1} of ${TO_SEED} was not created`).toBe(201);
+    const made = (await started.json()) as { id: string; blackToken: string; whiteToken: string };
+
+    // 0, 2 or 4 moves, so the record holds three different lengths.
+    for (let pair = 0; pair < game % 3; pair += 1) {
+      for (const [token, row] of [
+        [made.blackToken, 0],
+        [made.whiteToken, 2],
+      ] as const) {
+        const played = await request.post(`/api/games/${made.id}/moves`, {
+          data: { token, row, col: pair * SPACED },
+        });
+        expect(played.ok(), `seed game ${game + 1} would not take a move`).toBe(true);
+      }
+    }
+
+    const gaveUp = await request.post(`/api/games/${made.id}/resign`, { data: { token: made.whiteToken } });
+    expect(gaveUp.status(), `seed game ${game + 1} of ${TO_SEED} was not resigned`).toBe(200);
+  }
+}
+
+/**
  * Fails, rather than skipping, when the database cannot show what is being
- * tested. See the head of this file.
+ * tested. See the head of this file. With `enoughRows` above it this should now
+ * be unreachable — which is the point of leaving it in: if it ever fires again,
+ * the seeding stopped working, and that is worth being told loudly.
  */
 function enoughToPage(count: number, what: string) {
   expect(
@@ -130,7 +215,9 @@ test.describe("the record sorts and scrolls", () => {
 
   test("scrolling to the end appends the next page, with no row twice and none skipped", async ({
     page,
+    request,
   }) => {
+    await enoughRows(request);
     const crashes = watchForCrashes(page);
     await page.goto(`/history?limit=${SMALL}`);
     await ready(page, "live-record");
@@ -203,7 +290,8 @@ test.describe("the record without JavaScript", () => {
    * With no JavaScript nothing hydrates, so the scroller never starts and the
    * pager has to be the control — which is exactly what the server renders.
    */
-  test("the pager is what is there, and its Next keeps the sort", async ({ page }) => {
+  test("the pager is what is there, and its Next keeps the sort", async ({ page, request }) => {
+    await enoughRows(request);
     await page.goto(`/history?limit=${SMALL}&sort=moves:asc`);
 
     /*
@@ -306,7 +394,8 @@ test.describe("the ladder sorts and scrolls", () => {
     await expect(page.getByRole("columnheader", { name: "Joined" })).toHaveCount(0);
   });
 
-  test("scrolling the ladder appends the next page, with no row twice", async ({ page }) => {
+  test("scrolling the ladder appends the next page, with no row twice", async ({ page, request }) => {
+    await enoughRows(request);
     const crashes = watchForCrashes(page);
     await page.goto(`/players?view=ladder&limit=${SMALL}`);
     await ready(page, "ladder-live");
@@ -347,7 +436,8 @@ test.describe("the ladder sorts and scrolls", () => {
 test.describe("the ladder without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
-  test("a link carries the next page, and there is a way back to the top", async ({ page }) => {
+  test("a link carries the next page, and there is a way back to the top", async ({ page, request }) => {
+    await enoughRows(request);
     await page.goto(`/players?view=ladder&limit=${SMALL}`);
 
     const table = page.getByTestId("players-table");
