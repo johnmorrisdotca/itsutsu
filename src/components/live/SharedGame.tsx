@@ -44,6 +44,7 @@ import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
+import { NextCheck } from "./NextCheck";
 import { PendingMoveControls } from "./PendingMoveControls";
 import { postTurn } from "./postTurn";
 import { pendingMove, submitWords, type PendingMove } from "./pendingMove";
@@ -92,7 +93,7 @@ export function SharedGame({
     () => readTurned(initial.id),
     () => null,
   );
-  const { game: detail, mutate, paused, resume, pollEvery } = useLiveGame(initial);
+  const { game: detail, mutate, paused, resume, pollEvery, asking, answeredAt } = useLiveGame(initial);
   const state = settleFromRecord(replayGame(detail), detail);
   /*
    * Three answers to which way up, in order of how particular they are: what
@@ -340,6 +341,8 @@ export function SharedGame({
       />
       {notice}
 
+      {/* And while it IS asking, when the next check is due — so quiet and broken look different. */}
+      <NextCheck asking={asking} answeredAt={answeredAt} every={pollEvery} />
       {/* A board that has stopped asking says so, rather than showing an old position as the current one. */}
       {paused ? (
         <p className="flex flex-wrap items-center gap-2 text-sm text-muted" data-testid="live-paused">

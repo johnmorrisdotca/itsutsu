@@ -72,6 +72,9 @@ export const POLL_RELIEF_FLOOR_MS = 2_500;
 export const LIVE_PAUSED_COPY = {
   line: "Nothing has happened here for a while, so this board has stopped checking for moves.",
   check: "Check now",
+  /* The countdown while the board IS asking — see `NextCheck`. */
+  nextIn: (seconds: number) => `Checks for a move in ${seconds}s`,
+  checking: "Checking for a move…",
 } as const;
 
 /**
