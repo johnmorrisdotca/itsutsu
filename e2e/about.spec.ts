@@ -102,6 +102,38 @@ test.describe("about", () => {
     await expect(section).toContainText("thinks in your browser");
   });
 
+  /*
+   * THE GRAPH, and the thing about it that is easy to get wrong.
+   *
+   * John asked for graphs as well as paragraphs. Its first draft drew every
+   * pairing in one list, so "Kyu over Razryad" appeared twice with nothing to
+   * say which game each was — and its caption asserted the top two grades come
+   * out level, which is true of the live move budget and is NOT what these
+   * bars show. A figure that disagrees with its own caption is worse than none,
+   * so the sentence is computed from the bars and this is what says so.
+   */
+  test("draws each step of the computer ladder, and says nothing its own bars deny", async ({ page }) => {
+    await page.goto("/about?view=programs");
+    const graph = page.getByTestId("about-grade-ladder");
+    await expect(graph).toBeVisible();
+
+    // Every bar belongs to a named game, so two readings of one pairing can be told apart.
+    const games = await graph.locator("text").filter({ hasText: /^(Checkers|Reversi|Hex|Go|Halma)$/ }).count();
+    expect(games, "no game is named above its bars").toBeGreaterThan(0);
+
+    // A percentage on every bar, and the half line it is read against.
+    await expect(graph.getByText("50%", { exact: true })).toBeVisible();
+    await expect(graph).toContainText("%");
+
+    /*
+     * The caption names the CLOSEST step by its real number. Whatever the
+     * measurement says, the sentence has to be about these bars — so it is
+     * checked for a figure rather than for a phrase.
+     */
+    await expect(graph.locator("figcaption")).toContainText(/\d+%/);
+    await expect(graph.locator("figcaption")).toContainText("measured games");
+  });
+
   test("a game named in the prose links to that game", async ({ page }) => {
     // The histories chapter, which is where the games are named and compared.
     await page.goto("/about?view=roots");

@@ -226,6 +226,8 @@ describe("a count of games is the way into those games", () => {
      */
     "src/components/about/MeasuredGrades.tsx": "played in memory, kept nowhere",
     "src/app/about/about.bots.tsx": "played in memory, kept nowhere",
+    // The graph beside that table, drawn from the same round robin.
+    "src/components/about/GradeLadderGraph.tsx": "played in memory, kept nowhere",
     /*
      * GameCatalogue.tsx USED TO BE HERE, for the family line's count of every
      * match played in a family — a set no page can show, since /history

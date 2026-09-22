@@ -127,6 +127,20 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
   "src/app/games/[slug]/family/page.tsx": [
     { line: "<GameName variant={variant} />.", why: 'a sentence: "7 games in this family, including Gomoku."' },
   ],
+  "src/components/about/GradeLadderGraph.tsx": [
+    {
+      line: "{RULE_VARIANT_DISPLAY[game.variant].label}",
+      why: "the heading over a chart's rows, inside an SVG, where a picture cannot be drawn",
+    },
+    {
+      line: "<GameName variant={lowest.variant} /> ({Math.round(lowest.share * 100)}%).",
+      why: "a sentence in the chart's caption, naming the closest step",
+    },
+    {
+      line: "<GameName variant={lowest.variant} />, at {Math.round(lowest.share * 100)}%.",
+      why: "the same sentence, the other way the data can come out",
+    },
+  ],
   "src/app/champions/page.tsx": [
     { line: 'so being good at <GameName variant="notakto" />', why: "a sentence of explanation above the table" },
     { line: '<GameName variant="renju" />; the ladder', why: "the same sentence" },
