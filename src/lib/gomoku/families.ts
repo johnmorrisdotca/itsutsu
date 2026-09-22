@@ -62,7 +62,17 @@ export const GAME_FAMILIES: GameFamily[] = [
     key: "strange-boards",
     title: "Strange boards",
     kanji: "変盤",
-    blurb: "Five in a row, on a board that does not behave: edges that join, and squares you cannot use.",
+    /*
+     * The blurb says "a board that does not behave" rather than "five in a
+     * row on a board that does not behave", because the shelf stopped being
+     * about five in a row. John, 2026-09-22: "shouldn't Strange boards also
+     * include all Hex boards, Rhombus? even possibly chinese checkers." A
+     * reader opening this shelf wants the boards that do not look like a
+     * board, and the three on the hexagon lattice are the strangest here —
+     * they were reachable only through the family each one is scored by,
+     * which is not how anybody looks for them.
+     */
+    blurb: "Boards that do not behave: edges that join, squares you cannot use, and three drawn on hexagons rather than squares.",
     games: ["toroidalFive", "obstacleFive"],
   },
   {
@@ -137,6 +147,44 @@ export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>
     {
       family: "small-boards",
       why: "Four in a row on a 4×4 board whose quarters turn: as small and as quick as Tic-tac-toe, with a trick in it.",
+    },
+  ],
+  /*
+   * THE THREE BOARDS DRAWN ON HEXAGONS, on the shelf somebody would look for
+   * a strange board on. Each keeps its home, because a home is the family a
+   * game is SCORED by: Hex is a connection game, Hexversi is a flipping one,
+   * Chinese Checkers is a race. None of those shelves is where a reader goes
+   * when what caught their eye was the shape of the board.
+   */
+  hex: [
+    {
+      family: "strange-boards",
+      why: "A rhombus of hexagons, and the only board here you win by crossing rather than by lining up.",
+    },
+  ],
+  honeycomb: [
+    {
+      family: "strange-boards",
+      why: "Reversi on a hexagon of hexagons, where a stone has six neighbours instead of eight and the middle is sealed.",
+    },
+  ],
+  chineseCheckers: [
+    {
+      family: "strange-boards",
+      why: "A six-pointed star of holes: the one board here that is neither a square nor cut from one.",
+    },
+    /*
+     * BY THE NAME, not by the rules. Nothing is captured in Chinese Checkers
+     * and no piece is crowned, so it is not a game of draughts and its home
+     * is the races. But it is called Chinese Checkers, and the shelf marked
+     * Checkers is the first place anybody looking for it will open. John,
+     * 2026-09-22: "Checkers board should have Chinese checkers as well, since
+     * the name." A shelf is for finding a game, and the name is how people
+     * find this one.
+     */
+    {
+      family: "checkers",
+      why: "Checkers by name only: nothing is taken and nothing is crowned — you are racing your ten pieces to the far point of the star.",
     },
   ],
 };

@@ -18,6 +18,7 @@ import {
   GUIDE_COLOURS,
   LABEL_GUTTER,
   BOARD_FRAME,
+  COORDINATE_GAP,
   latticeFitFor,
   SQUARE_GUIDES,
   STONE_SETS,
@@ -72,7 +73,7 @@ function ColumnLabels({ size, theme, flipped, inset, lattice, shape }: LabelStri
       aria-hidden="true"
     >
       {layoutOrder(size, flipped).map((col, slot) => (
-        <span key={col} className="self-end pb-1 leading-none" style={{ gridColumnStart: slot + 2 }}>
+        <span key={col} className="self-end leading-none" style={{ gridColumnStart: slot + 2, paddingBottom: COORDINATE_GAP }}>
           {columnLetter(col)}
         </span>
       ))}
@@ -91,7 +92,7 @@ function RowLabels({ size, theme, flipped, inset, lattice, shape }: LabelStripPr
       aria-hidden="true"
     >
       {layoutOrder(size, flipped).map((row, slot) => (
-        <span key={row} className="flex items-center justify-end pr-1.5" style={{ gridRowStart: slot + 2 }}>
+        <span key={row} className="flex items-center justify-end" style={{ gridRowStart: slot + 2, paddingRight: COORDINATE_GAP }}>
           {rowNumber(size, row)}
         </span>
       ))}
