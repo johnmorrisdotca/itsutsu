@@ -22,9 +22,9 @@ test.describe("honeycomb", () => {
     await expect(page.getByTestId("rules")).toHaveValue("honeycomb");
 
     // Drawn as cells, not as a grid: one hexagon per open cell, the centre sealed.
-    const cells = page.locator('[data-honeycomb="true"] polygon');
+    const cells = page.locator('[data-lattice="hexagon"] polygon');
     await expect(cells.first()).toBeVisible();
-    await expect(page.locator('[data-honeycomb="true"] polygon[data-cell="sealed"]')).toHaveCount(1);
+    await expect(page.locator('[data-lattice="hexagon"] polygon[data-cell="sealed"]')).toHaveCount(1);
     expect(await cells.count()).toBe(91);
 
     // Three of each round the sealed centre, and the centre itself is not a move.

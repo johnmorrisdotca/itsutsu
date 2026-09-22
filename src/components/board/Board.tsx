@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { canTwist, forbiddenPoints, inMovePhase, indexOf, legalPoints, pieceMoves, pointOf, resolvePlacement, campOf, STAR_RADIUS, starCampOf } from "@/lib/gomoku/engine";
+import { canTwist, forbiddenPoints, inMovePhase, indexOf, legalPoints, pieceMoves, pointOf, resolvePlacement, campOf } from "@/lib/gomoku/engine";
 import { lastMove } from "@/lib/gomoku/rules/record";
 import { turnChoices } from "@/lib/gomoku/rules/choices";
 import {
@@ -17,10 +17,8 @@ import {
   BOARD_THEMES,
   GUIDE_COLOURS,
   LABEL_GUTTER,
-  HEXAGON_TRANSFORM,
-  LATTICE_TRANSFORM,
-  starTransform,
-  RHOMBUS_CLIP,
+  BOARD_FRAME,
+  latticeFitFor,
   SQUARE_GUIDES,
   STONE_SETS,
 } from "./Board.constants";
@@ -29,6 +27,8 @@ import { BoardLines } from "./BoardLines";
 import { layoutOrder } from "./flip";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { Intersection } from "./Intersection";
+import { LatticeCoordinates } from "./LatticeCoordinates";
+import { LatticeGround } from "./LatticeGround";
 import { labelTracks, latticeLabelTracks, playingAreaInset, type LatticeShape } from "./margin";
 import { squareLabel } from "./squareLabel";
 import { squareGuide, turnGuide } from "./turnGuide";
@@ -143,9 +143,7 @@ function latticeShape(spec: { hexagon: boolean; chineseCheckers: boolean }): Lat
 }
 
 function latticeTransform(size: number, shape: LatticeShape): string {
-  if (shape === "hexagon") return HEXAGON_TRANSFORM;
-  if (shape === "star") return starTransform(size);
-  return LATTICE_TRANSFORM;
+  return latticeFitFor(shape, size).transform;
 }
 
 export function Board({
@@ -219,8 +217,6 @@ export function Board({
   ]);
   const twisting = live && onTwist !== undefined && canTwist(state) && spec.quadrantSize !== null;
   const dropping = spec.placement === PLACEMENTS.drop;
-  // A rhombus, ruled as a triangular lattice: Hex's own board shape.
-  const rhombus = spec.connects;
   /*
    * Any board on the hexagon lattice takes the same shear — HEX_LATTICE in
    * Board.constants.ts — or its six neighbours do not sit at one distance.
@@ -239,7 +235,7 @@ export function Board({
    * a rectangular margin inside a shape the paper does not have would be a
    * border round nothing. It keeps its clip.
    */
-  const inset = playingAreaInset(size, cells && !rhombus);
+  const inset = playingAreaInset(size, cells && !spec.connects);
 
   /*
    * The piece games: the piece in hand hangs under the pointer with its
@@ -257,7 +253,13 @@ export function Board({
   }, [footprintFor, hovered, live, size]);
   const piecing = live && footprintFor !== undefined && spec.queue !== null;
 
-  const gutter = appearance.showCoordinates ? LABEL_GUTTER : "0px";
+  /*
+   * A LATTICE BOARD'S COORDINATES ARE ON ITS BORDER TILES (`LatticeCoordinates`),
+   * so it gets no strips and no gutter for them: the letters and numbers are
+   * on the board, where John asked for them. The square boards keep theirs.
+   */
+  const stripsOutside = appearance.showCoordinates && !hexSkew;
+  const gutter = stripsOutside ? LABEL_GUTTER : "0px";
   /*
    * The reader's own view of the board and nothing else: the same cells in the
    * opposite order, with the gutters turned to match. No move, coordinate or
@@ -267,19 +269,34 @@ export function Board({
 
   return (
     <div
+      /*
+       * ROOM FOR THE FRAME ON THE RIGHT AND BELOW. The frame is a box-shadow,
+       * drawn OUTSIDE the board's box, and the grid reserved nothing for it on
+       * those two sides — the labels' gutter sat on the left and above, and on
+       * a 390-pixel phone the frame's right edge ended two pixels from the
+       * glass while the left had twenty-six. John: "all these boards have
+       * proper padding on the left, but seemed to overflow and do not have the
+       * correct padding on the right". The padding is the frame's own width,
+       * so the board keeps every pixel the labels leave it and the frame stays
+       * on the page.
+       */
       className="grid w-full"
       style={{
         gridTemplateColumns: `${gutter} minmax(0, 1fr)`,
         gridTemplateRows: `${gutter} auto`,
+        paddingRight: BOARD_FRAME,
+        paddingBottom: BOARD_FRAME,
+        // And on the two sides the gutter would otherwise cover: with no strips there is no gutter.
+        ...(stripsOutside ? {} : { paddingLeft: BOARD_FRAME, paddingTop: BOARD_FRAME }),
       }}
     >
       <div />
-      {appearance.showCoordinates ? (
+      {stripsOutside ? (
         <ColumnLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} shape={shape} />
       ) : (
         <div />
       )}
-      {appearance.showCoordinates ? (
+      {stripsOutside ? (
         <RowLabels size={size} theme={theme} flipped={flipped} inset={inset} lattice={hexSkew} shape={shape} />
       ) : (
         <div />
@@ -288,11 +305,16 @@ export function Board({
         className="relative aspect-square rounded-md"
         style={{
           background: theme.surface,
-          // A rhombus is the board here, not a square with one drawn on it, so
-          // the paper is cut to the same shape the grid is slanted into.
-          ...(rhombus
-            ? { clipPath: RHOMBUS_CLIP }
-            : { boxShadow: `0 0 0 0.4rem ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)` }),
+          /*
+           * EVERY BOARD IS A SQUARE OF WOOD IN A FRAME, since 2026-09-22 — the
+           * rhombus included. Hex's paper used to be cut to the rhombus, so
+           * it was the one board on the site with no frame and no wood around
+           * its shape; John: "that other strange board that looks like a
+           * diamond shape that also is weird." It is a square board now with
+           * the rhombus drawn on it, the way the star and the honeycomb are,
+           * over the same faint lattice — see `LatticeGround`.
+           */
+          boxShadow: `0 0 0 ${BOARD_FRAME} ${theme.frame}, 0 18px 40px -18px rgba(0,0,0,0.65)`,
         }}
       >
         {/*
@@ -327,15 +349,22 @@ export function Board({
             * lines take the same transform in BoardLines, which is what keeps
             * a stone on its crossing.
             */}
+          {/*
+            * THE WOOD IS MARKED ALL THE WAY ACROSS on a lattice board, under
+            * whatever the game draws: the star's holes, the honeycomb's
+            * cells, Hex's lines. Two kinds of board on this site and no more —
+            * the go-style square and this — which is what John asked for.
+            */}
+          {hexSkew ? (
+            <LatticeGround size={size} theme={theme} fit={latticeFitFor(shape, size)} />
+          ) : null}
           <BoardLines
             size={size}
             theme={theme}
             quadrantSize={spec.quadrantSize}
             cells={cells}
-            rhombus={rhombus}
             checkered={spec.checkers}
-            hidden={spec.chineseCheckers}
-            honeycomb={spec.hexagon ? state.board : null}
+            lattice={hexSkew ? { shape, board: state.board, transform: latticeTransform(size, shape) } : null}
           />
           <div
             className="absolute inset-0 grid"
@@ -384,10 +413,15 @@ export function Board({
                   moveNumber={numbers.get(index) ?? null}
                   mark={overlays.get(index) ?? null}
                   unslant={hexSkew}
-                  camp={spec.camps ? campOf(size, point) : spec.chineseCheckers ? starCampOf(STAR_RADIUS, point) : null}
+                  /*
+                    A camp is tinted on the CELL: a square on a square board,
+                    and on the lattice the hexagon tile itself (`BoardLines`),
+                    because a square painted over a hexagon spills onto its
+                    neighbours — the "painting issue" John saw on the star.
+                  */
+                  camp={spec.camps ? campOf(size, point) : null}
                   isKing={spec.checkers ? kings.has(index) : false}
                   hideBlocked={spec.chineseCheckers || spec.hexagon}
-                  hole={spec.chineseCheckers && cell === null}
                   guide={guided}
                   guideColours={guideColours}
                   stones={stones}
@@ -398,6 +432,9 @@ export function Board({
               );
             })}
           </div>
+          {hexSkew && appearance.showCoordinates ? (
+            <LatticeCoordinates shape={shape} size={size} fit={latticeFitFor(shape, size)} theme={theme} flipped={flipped} />
+          ) : null}
           {twisting && spec.quadrantSize !== null ? (
             <TwistControls size={size} quadrantSize={spec.quadrantSize} onTwist={onTwist} flipped={flipped} />
           ) : null}

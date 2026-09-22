@@ -27,44 +27,49 @@ test.describe("hex", () => {
   });
 
   /*
-   * The board is a triangular lattice with the stones on the crossings —
-   * John's decision, from the wooden board he photographed: lines, not
-   * honeycomb cells. So a stone must land where three drawn lines meet, and
-   * this reads the lines the browser actually drew rather than the maths that
-   * placed them: the row's rule is level, the column's leans, the short
-   * diagonal leans the other way, and all three must pass through the middle
-   * of the stone. In both colour schemes, since the lattice is drawn on the
-   * board's own surface and the scheme must not move it.
+   * A RHOMBUS OF HEXAGON CELLS, since 2026-09-22 — and that reverses a
+   * decision of John's, which is why it is written here. The board was a
+   * triangular lattice of lines with the stones on the crossings, from a
+   * wooden board he photographed: "lines, not honeycomb cells". Then, with
+   * the three lattice boards side by side, he asked why boards with the same
+   * moves looked so different and whether the rhombus could "look more like
+   * the centre image" — the honeycomb. So all three are cells now, and Hex
+   * keeps its two coloured borders, which are its rules.
+   *
+   * What a stone must still do is sit in the middle of its cell: the drawn
+   * hexagon and the drawn stone are two boxes kept over each other by the
+   * same transform, and this reads both from the browser. A hexagon is
+   * centrally symmetric, so the centre of its box under the shear is still
+   * its centre. In both colour schemes, since the scheme must not move it.
    */
   for (const scheme of ["light", "dark"] as const) {
-    test(`a stone lands where three lines meet, in the ${scheme} scheme`, async ({ page }) => {
+    test(`a stone lands in the middle of its cell, in the ${scheme} scheme`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/games/hex/play");
       await page.evaluate(() => window.localStorage.clear());
       await page.goto("/games/hex/play");
-
       await page.getByRole("button", { name: new RegExp(`^${cell(5, 5)}, empty$`) }).click();
       const stone = page.getByRole("button", { name: new RegExp(`^${cell(5, 5)}, Black stone$`) });
       await expect(stone).toBeVisible();
       const at = await stone.boundingBox();
       if (at === null) throw new Error("the stone has no box");
       const centre = { x: at.x + at.width / 2, y: at.y + at.height / 2 };
-
-      // The lines through row 5, column 5, and the diagonal where row + col = 10.
-      const row = await page.locator('svg line[data-line="h5"]').boundingBox();
-      const column = await page.locator('svg line[data-line="v5"]').boundingBox();
-      const diagonal = await page.locator('svg line[data-line="d10"]').boundingBox();
-      if (row === null || column === null || diagonal === null) throw new Error("a line of the lattice is not drawn");
-
-      // The row is level: one height for its whole length.
-      expect(Math.abs(row.y + row.height / 2 - centre.y)).toBeLessThan(3);
-      // The column leans right going down, so at the stone's height it is this far along.
-      const columnX = column.x + ((centre.y - column.y) / column.height) * column.width;
-      expect(Math.abs(columnX - centre.x)).toBeLessThan(3);
-      // The short diagonal leans the other way.
-      const diagonalX = diagonal.x + diagonal.width - ((centre.y - diagonal.y) / diagonal.height) * diagonal.width;
-      expect(Math.abs(diagonalX - centre.x)).toBeLessThan(3);
-
+      // The cell at row 5, column 5 of an eleven board is the 61st playable tile; the border tiles come before them.
+      const hexagon = await page.locator('svg[data-lattice="rhombus"] polygon[data-cell]').nth(5 * 11 + 5).boundingBox();
+      if (hexagon === null) throw new Error("the cell is not drawn");
+      expect(Math.abs(hexagon.x + hexagon.width / 2 - centre.x)).toBeLessThan(3);
+      expect(Math.abs(hexagon.y + hexagon.height / 2 - centre.y)).toBeLessThan(3);
+      /*
+       * And the border is a ring of tiles: eleven black across the top and
+       * bottom, eleven white down each side, no corners — with the letters in
+       * the top row and the numbers in the left column, where John asked for
+       * them, and no strips outside the board saying them again.
+       */
+      await expect(page.locator('svg[data-lattice="rhombus"] [data-edge="black"]')).toHaveCount(22);
+      await expect(page.locator('svg[data-lattice="rhombus"] [data-edge="white"]')).toHaveCount(22);
+      // The coordinates are HTML over the tiles, in the same type as every board's strips: each name once per edge.
+      await expect(page.locator('[data-testid="lattice-coordinates"] [data-coordinate="F"]')).toHaveCount(2);
+      await expect(page.locator('[data-testid="lattice-coordinates"] [data-coordinate="6"]')).toHaveCount(2);
       // And the stone itself is round: the cell leans, the stone leans back.
       const disc = await stone.locator("span.rounded-full").first().boundingBox();
       if (disc === null) throw new Error("the stone has no disc");
