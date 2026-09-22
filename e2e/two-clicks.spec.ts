@@ -120,6 +120,21 @@ test.describe("every way into a game is two presses", () => {
     await pressesToABoard(page, "/players", ["challenge", "set-up-start"]);
   });
 
+  /*
+   * FROM A PERSON'S OWN PAGE: Play, then Begin. A row on the board counted
+   * this route as three — their name, then Play, then Begin — but the name is
+   * the press that reaches the page, and every list a person is on already
+   * carries its own Play beside them. On the page itself it was two all
+   * along; this pins it so it stays two.
+   */
+  test("from a person's own page", async () => {
+    await page.goto("/players?view=computers");
+    const first = page.getByTestId("computer-player-name").first();
+    const href = await first.getAttribute("href");
+    expect(href, "a computer player's name is not a link to their page").toMatch(/^\/players\//);
+    await pressesToABoard(page, href!, ["challenge", "set-up-start"]);
+  });
+
   test("and the people you know are open on the set-up screen, not behind a press", async () => {
     /*
      * The half of the rule that is about KNOWING somebody. Every run of
