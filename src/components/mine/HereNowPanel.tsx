@@ -44,31 +44,61 @@ export function HereNowPanel({
           {START_COPY.nobodyHere}
         </p>
       ) : (
-        <ul className="flex flex-col gap-1">
-          {others.map((entry) => (
-            <li key={entry.id} className="flex items-center gap-2 py-0.5 text-sm">
-              <RecencyMark recency={entry.recency} />
-              <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
-                {entry.name.trim() !== "" ? (
-                  <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline">
-                    {shownName(entry.name)}
-                  </Link>
-                ) : (
-                  entry.email
-                )}
-                {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
-              </span>
-              <RowActions>
-                {/* Everybody here is a member seen lately — a person, with or without an address. */}
-                {me !== null ? (
-                  <ChallengeButton memberId={entry.id} label="Challenge" />
-                ) : null}
-              </RowActions>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="flex flex-col gap-1">
+            {others.slice(0, HERE_SHOWN).map((entry) => (
+              <HereRow key={entry.id} entry={entry} me={me} />
+            ))}
+          </ul>
+          {/*
+            THE REST FOLD, AND THE FOLD SAYS HOW MANY. On a phone this panel
+            was 5,230 pixels of /games — six screens — because every member
+            seen lately got a full row with a 44-pixel button, and there were
+            ninety-nine of them. The first few answer "is anybody about"; a
+            fold that prints "91 more" answers "how many", which is the other
+            question, and nothing is hidden that the summary does not count.
+          */}
+          {others.length > HERE_SHOWN ? (
+            <details className="group" data-testid="here-more">
+              <summary className="cursor-pointer list-none text-xs text-muted underline-offset-4 hover:underline">
+                <span className="group-open:hidden">{START_COPY.hereNow.more(others.length - HERE_SHOWN)}</span>
+                <span className="hidden group-open:inline">{START_COPY.hereNow.fewer}</span>
+              </summary>
+              <ul className="mt-1 flex flex-col gap-1">
+                {others.slice(HERE_SHOWN).map((entry) => (
+                  <HereRow key={entry.id} entry={entry} me={me} />
+                ))}
+              </ul>
+            </details>
+          ) : null}
+        </>
       )}
       <RecencyLegend />
     </section>
+  );
+}
+
+/** How many are shown before the rest fold: enough to answer "is anybody about", on one phone screen. */
+const HERE_SHOWN = 6;
+
+function HereRow({ entry, me }: { entry: HereNow; me: string | null }) {
+  return (
+    <li className="flex items-center gap-2 py-0.5 text-sm">
+      <RecencyMark recency={entry.recency} />
+      <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
+        {entry.name.trim() !== "" ? (
+          <Link href={playerPath(entry.name, entry.id)} className="underline-offset-2 hover:underline">
+            {shownName(entry.name)}
+          </Link>
+        ) : (
+          entry.email
+        )}
+        {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
+      </span>
+      <RowActions>
+        {/* Everybody here is a member seen lately — a person, with or without an address. */}
+        {me !== null ? <ChallengeButton memberId={entry.id} label="Challenge" /> : null}
+      </RowActions>
+    </li>
   );
 }

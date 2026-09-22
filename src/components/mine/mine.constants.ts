@@ -195,7 +195,13 @@ export const START_COPY = {
   with: "with",
   anyone: "anyone",
   atThisScreen: "someone at this screen",
-  hereNow: { label: "Here now", kanji: "在室" },
+  hereNow: {
+    label: "Here now",
+    kanji: "在室",
+    /* The fold under the first few, printing what it holds — see HereNowPanel. */
+    more: (count: number) => `and ${count} more, seen lately`,
+    fewer: "fewer",
+  },
   buddies: { label: "Buddies", kanji: "仲間" },
   computer: { label: "The computer", kanji: "コンピュータ" },
   post: "Post the seat",
