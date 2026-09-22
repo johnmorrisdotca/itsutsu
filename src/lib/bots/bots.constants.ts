@@ -253,7 +253,11 @@ export const BOT_MEMBERS: Record<BotTier, BotMember> = {
       "lattice the board is really drawn on, with a square of the far camp " +
       "set aside for every piece and the back of the camp filled before the " +
       "front. The piece you leave behind is the one he is playing for \u2014 the " +
-      "game is not over until your last one is in. The name is an homage to " +
+      "game is not over until your last one is in. He is at his strongest on " +
+      "the star and on the crowded Halma boards, where getting in each " +
+      "other's way is the game; on the big sixteen-point board, which is open " +
+      "enough to be nearly a straight race, he is no better than the top " +
+      "grades. The name is an homage to " +
       "George Howard Monks, the Boston surgeon who devised Halma in the " +
       "1880s; Chinese Checkers is his game on a star, and neither has ever " +
       "had a champion to name a player after. " +

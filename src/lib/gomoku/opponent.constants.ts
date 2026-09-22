@@ -321,7 +321,17 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
     name: "Howard Monkton",
     /* No other script: an American name written in English is the name. See `native`. */
     native: null,
-    strength: "Strongest at Halma and Chinese Checkers",
+    /*
+     * "Chinese Checkers", not "the race games", and the difference is measured
+     * rather than modest. He takes eighteen games in eighteen off the graded
+     * ladder on the star, and six in eight on Halma's small board. On Halma's
+     * own sixteen-point board he is level with 名人 at best — that board is
+     * sparse enough to be nearly a pure race, where a reading that can see the
+     * camp has little to see, and it is the one place his ideas do not pay.
+     * Saying "strongest at Halma" would be a claim the series does not support,
+     * so it is not made. See `RACE` for the widths this was measured at.
+     */
+    strength: "Strongest at Chinese Checkers",
     blurb:
       "The race games, and almost nothing else. Monkton counts what a race " +
       "player counts \u2014 how many steps each piece has left, on the lattice the " +
@@ -329,7 +339,8 @@ export const BOT_PROFILES: Record<BotTier, BotProfile> = {
       "every piece and the back of the camp filled first. What he is really " +
       "playing for is the piece you leave behind: the game is not over until " +
       "your last one is in, and he will let you build a pretty middlegame and " +
-      "finish first.",
+      "finish first. He plays Halma too, and is at his best on the crowded " +
+      "boards where getting in each other's way is the game.",
   },
 };
 

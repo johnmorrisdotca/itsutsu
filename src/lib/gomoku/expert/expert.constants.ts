@@ -249,6 +249,30 @@ export const RACE_WEIGHTS = {
  * exactly one, it did lose — four games in eight against 名人 and 国手, which
  * twenty turned into six wins and two losses.
  *
+ * TWENTY WAS TRIED AGAINST THIRTY-SIX AND FIFTY-SIX AND KEPT, and the way
+ * that went is the more useful half of it.
+ *
+ * Halma's own sixteen-point board is the one this player does not win, and the
+ * obvious suspect was width: a middlegame there offers around a hundred and
+ * twenty moves, so twenty is a sixth of them against a third of the star's
+ * fifty-odd. A sweep at 1,500 nodes said thirty-six was better there — and the
+ * same thirty-six then lost five games in six ON THE STAR, where twenty wins
+ * every game.
+ *
+ * Both of those numbers are worthless, and it is worth saying why rather than
+ * picking the one that flatters. A node budget is spent on width FIRST: at
+ * 1,500 nodes a branch of thirty-six buys about two plies, so the sweep was
+ * measuring a search that had stopped searching. And the live player is not
+ * bounded by nodes at all — it is bounded by the 250ms clock, which is a
+ * different regime with a different answer. Six games either way is inside the
+ * noise this file's neighbour warns about in its own header.
+ *
+ * So the width kept is the one the wins were actually measured at: twenty, at
+ * 4,000 nodes and on the clock, where the star is 8-0 and Halma-8 is 6-2. A
+ * number is only worth as much as the conditions it was taken under, and
+ * re-tuning it under conditions the player never meets is how a measured
+ * setting gets replaced by a worse one that has a table beside it.
+ *
  * Six plies, which is three moves each. Enough to see a jump chain answered,
  * the answer answered, and whether the ladder built on the way was worth
  * building — which is what these games turn on. Deeper buys little, because
