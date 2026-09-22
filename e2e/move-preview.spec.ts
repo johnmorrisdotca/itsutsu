@@ -109,4 +109,102 @@ test.describe("a move is shown before it is sent", () => {
 
     await context.close();
   });
+
+  /**
+   * THE NEAR MISS, WHICH IS THE COMMON MISS. A 19×19 board on a phone gives
+   * points 17.6 pixels across, and no layout makes those bigger — so the stone
+   * is placed, the point is NAMED, and four arrows move it one point at a time
+   * before it is sent.
+   *
+   * Driven by pressing, and read off the board: the arrow is pressed and the
+   * point the row names must change, which is a statement about the move that
+   * would be sent rather than about a button having been clicked.
+   */
+  test("names the point it landed on, and the arrows move it before it is sent", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const context = await memberContext(browser, baseURL!, {
+      email: `nudge-${stamp}@example.test`,
+      name: `Nudge ${stamp}`,
+    });
+    const page = await context.newPage();
+
+    await openSetUpPage(page, "gomoku");
+    const computer = await aComputerOpponent(page, 0);
+    await chooseOpponent(page, computer);
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/gomoku\/match\/[^/]+$/, { timeout: 30_000 });
+    tidyAway(page.url().split("/").pop()!);
+
+    const empties = page.getByRole("button", { name: /, empty$/ });
+    await empties.first().waitFor({ state: "visible" });
+    // The middle of the board, so every arrow has somewhere to go.
+    await empties.nth(Math.floor((await empties.count()) / 2)).click();
+
+    const where = page.getByTestId("pending-move-where");
+    await expect(where).toContainText(/Placed at [A-Z]\d+/);
+    const first = await where.textContent();
+
+    await page.getByTestId("pending-move-right").click();
+    await expect(where).not.toHaveText(first!);
+    const moved = await where.textContent();
+
+    // And the opposite arrow puts it back, so a nudge is not a one-way trip.
+    await page.getByTestId("pending-move-left").click();
+    await expect(where).toHaveText(first!);
+    expect(moved).not.toBe(first);
+
+    // Still nothing sent: this is all before Submit, which is the whole point.
+    await expect(page.getByTestId("pending-move-submit")).toBeVisible();
+
+    await context.close();
+  });
+
+  /**
+   * AND SEND IS ON THE SCREEN, WITHOUT SCROLLING FOR IT.
+   *
+   * John: "i dont like the user scrolling to the bottom a lot to have to click
+   * next or play." On a 390×844 phone a 19×19 go board ends at 724 pixels and
+   * Submit used to begin at 816 — sixteen past the fold, which is near enough
+   * to look like it fits and far enough that it does not.
+   *
+   * Measured where the button actually IS, against the window, rather than by
+   * asking Playwright whether it is visible: a control below the fold is
+   * "visible" to a locator, since visibility is about display and opacity.
+   */
+  test("keeps Submit on the screen with the board, on a phone", async ({ browser, baseURL }) => {
+    const stamp = Date.now().toString(36);
+    const context = await memberContext(
+      browser,
+      baseURL!,
+      { email: `sticky-${stamp}@example.test`, name: `Sticky ${stamp}` },
+      // The narrowest phone that matters, and the one the fault was measured on.
+      { viewport: { width: 390, height: 844 } },
+    );
+    const page = await context.newPage();
+
+    // Go, because 19×19 is the longest board here and the worst case for this.
+    await openSetUpPage(page, "go");
+    // Against a program, so this seat is playable the moment the board opens —
+    // a posted seat leaves every point disabled until somebody takes the other.
+    const computer = await aComputerOpponent(page, 0);
+    await chooseOpponent(page, computer);
+    await startAndBegin(page);
+    await page.waitForURL(/\/games\/go\/match\/[^/]+/, { timeout: 30_000 });
+    tidyAway(/match\/([^/?#]+)/.exec(page.url())?.[1] ?? "");
+
+    const empties = page.getByRole("button", { name: /, empty$/ });
+    await empties.first().waitFor({ state: "visible" });
+    await empties.nth(Math.floor((await empties.count()) / 2)).click();
+
+    const room = await page.evaluate(() => {
+      const submit = document.querySelector('[data-testid="pending-move-submit"]')!.getBoundingClientRect();
+      const board = document.querySelector(".aspect-square")!.getBoundingClientRect();
+      return { submitBottom: Math.round(submit.bottom), boardTop: Math.round(board.top), window: window.innerHeight };
+    });
+    // Both in the first screenful: the board begins on it, and Submit ends on it.
+    expect(room.submitBottom, "Submit sits below the fold").toBeLessThanOrEqual(room.window);
+    expect(room.boardTop, "the board starts below the fold").toBeLessThan(room.window);
+
+    await context.close();
+  });
 });

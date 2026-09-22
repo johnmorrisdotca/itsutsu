@@ -1,5 +1,20 @@
 import { expect, test } from "@playwright/test";
 
+import { ready } from "./support";
+
+/**
+ * Which chapter holds what, as a reader reaches it. The first is the bare
+ * /about, so an ordinary link to the page still lands on its opening.
+ */
+const CHAPTERS: Record<string, readonly string[]> = {
+  story: ["Where this comes from", "Sites worth knowing"],
+  games: ["What is on the board here"],
+  roots: ["Five stones, and where they came from", "Othello", "Famous openings"],
+  japan: ["The Japanese thread", "Go, the board underneath"],
+  numbers: ["Ladders, ratings and tournaments", "Ratings, in numbers", "How a move is written down"],
+  programs: ["The players that are not people"],
+};
+
 /**
  * The About page.
  *
@@ -11,23 +26,35 @@ import { expect, test } from "@playwright/test";
  * one of them clicks through to prove a link is not merely present.
  */
 test.describe("about", () => {
-  test("renders every section, including go and the notation", async ({ page }) => {
-    await page.goto("/about");
-    await expect(page.getByRole("heading", { name: "About", exact: false }).first()).toBeVisible();
-
-    for (const heading of [
-      "Where this comes from",
-      "What is on the board here",
-      "Five stones, and where they came from",
-      "The Japanese thread",
-      "Go, the board underneath",
-      "Othello",
-      "How a move is written down",
-      "The players that are not people",
-      "Sites worth knowing",
-    ]) {
-      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+  /*
+   * THE PAGE READS A CHAPTER AT A TIME. It was one scroll of eleven sections,
+   * 28,589 pixels on a phone — thirty-four screens — so the last of them were
+   * written for readers who would never reach them. Each section still exists;
+   * this walks the chapters to prove none was lost in the tabbing, which is
+   * the failure the change could have.
+   */
+  test("renders every section across its chapters, including go and the notation", async ({ page }) => {
+    for (const [view, headings] of Object.entries(CHAPTERS)) {
+      await page.goto(view === "story" ? "/about" : `/about?view=${view}`);
+      await expect(page.getByRole("heading", { name: "About", exact: false }).first()).toBeVisible();
+      for (const heading of headings) {
+        await expect(page.getByRole("heading", { name: heading }), `${heading} is missing from ${view}`).toBeVisible();
+      }
     }
+  });
+
+  /*
+   * And reached by PRESSING a tab, not by typing its address — the rule the
+   * language picker earned: a feature reached by a route no reader takes
+   * proves nothing about the route they do take.
+   */
+  test("a tab is pressed, and the page changes under it", async ({ page }) => {
+    await page.goto("/about");
+    await expect(page.getByRole("heading", { name: "Where this comes from" })).toBeVisible();
+    await ready(page, "tabs");
+    await page.getByRole("link", { name: /The programs/ }).click();
+    await expect(page.getByRole("heading", { name: "The players that are not people" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Where this comes from" })).toHaveCount(0);
   });
 
   /*
@@ -42,7 +69,7 @@ test.describe("about", () => {
     const { RULE_VARIANT_LIST } = await import("../src/lib/gomoku/gomoku.constants");
     const { GAME_FAMILIES } = await import("../src/lib/gomoku/families");
 
-    await page.goto("/about");
+    await page.goto("/about?view=games");
     const section = page
       .getByTestId("about-section")
       .filter({ has: page.getByRole("heading", { name: "What is on the board here" }) });
@@ -61,7 +88,7 @@ test.describe("about", () => {
   });
 
   test("says what the computer players do, and what the measurement showed", async ({ page }) => {
-    await page.goto("/about");
+    await page.goto("/about?view=programs");
     const section = page
       .getByTestId("about-section")
       .filter({ has: page.getByRole("heading", { name: "The players that are not people" }) });
@@ -76,7 +103,8 @@ test.describe("about", () => {
   });
 
   test("a game named in the prose links to that game", async ({ page }) => {
-    await page.goto("/about");
+    // The histories chapter, which is where the games are named and compared.
+    await page.goto("/about?view=roots");
     // The names, and the page each one has to reach. Checked on the first
     // occurrence: a name that appears twice need only be a link once.
     const named: [string, string][] = [
@@ -94,13 +122,13 @@ test.describe("about", () => {
   });
 
   test("a linked game name really goes to the game", async ({ page }) => {
-    await page.goto("/about");
+    await page.goto("/about?view=roots");
     await page.getByRole("link", { name: "Pente", exact: true }).first().click();
     await expect(page).toHaveURL(/\/games\/ninuki$/);
   });
 
   test("go is explained, with its diagrams and its numbers", async ({ page }) => {
-    await page.goto("/about");
+    await page.goto("/about?view=japan");
     const go = page.getByTestId("about-section").filter({ hasText: "Go, the board underneath" });
     await expect(go).toHaveCount(1);
     // Liberties and a capture, then two eyes.
@@ -113,7 +141,7 @@ test.describe("about", () => {
   });
 
   test("the ratings section keeps our rules and another site's apart", async ({ page }) => {
-    await page.goto("/about");
+    await page.goto("/about?view=numbers");
     const ratings = page.getByTestId("about-section").filter({ hasText: "Ratings, in numbers" });
     await expect(ratings).toHaveCount(1);
     // The rule that is ours and was never written down: no farming beginners.
@@ -152,7 +180,7 @@ test.describe("about", () => {
   });
 
   test("the notation section says how a move is written, and names SGF", async ({ page }) => {
-    await page.goto("/about");
+    await page.goto("/about?view=numbers");
     const notation = page.getByTestId("about-section").filter({ hasText: "How a move is written down" });
     await expect(notation).toHaveCount(1);
     await expect(notation).toContainText("There is no column I");

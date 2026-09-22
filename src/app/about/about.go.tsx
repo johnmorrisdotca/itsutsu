@@ -2,6 +2,7 @@ import { Diagram } from "@/components/about/Diagram";
 import { FigureTable } from "@/components/about/FigureTable";
 import { Game, Inside } from "./about.links";
 import type { AboutSection } from "./about.constants";
+import { ABOUT_CHAPTERS } from "./about.chapters";
 
 /**
  * Go, which is not played here.
@@ -94,6 +95,7 @@ const SIZES = (
 
 export const GO_SECTION: AboutSection = {
   title: "Go, the board underneath",
+  chapter: ABOUT_CHAPTERS.japan,
   kanji: "囲碁",
   paragraphs: [
     <>

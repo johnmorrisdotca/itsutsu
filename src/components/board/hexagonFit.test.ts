@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { HEXAGON_SPAN, HEXAGON_TRANSFORM, HEX_LATTICE, LATTICE_TRANSFORM } from "./Board.constants";
+import {
+  HEXAGON_SPAN,
+  HEXAGON_TRANSFORM,
+  HEX_LATTICE,
+  LATTICE_TRANSFORM,
+  starSpan,
+  starTransform,
+} from "./Board.constants";
 import { latticeLabelTracks } from "./margin";
 import { boardSizesFor, defaultBoardFor, RULE_VARIANT_LIST, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { hexagonRadius, inHexagon } from "@/lib/gomoku/rules/hexagon";
@@ -62,10 +69,10 @@ describe("a hexagon board is fitted to the hexagon", () => {
 
   it("gives a hexagon's coordinate strips one track per column and no lead", () => {
     // The middle row is the only one holding every column — see `latticeLabelTracks`.
-    expect(latticeLabelTracks(13, "columns", true)).toBe("repeat(13, minmax(0, 1fr))");
-    expect(latticeLabelTracks(13, "columns", false)).toContain("0.25fr");
+    expect(latticeLabelTracks(13, "columns", "hexagon")).toBe("repeat(13, minmax(0, 1fr))");
+    expect(latticeLabelTracks(13, "columns", "rhombus")).toContain("0.25fr");
     // The rows are centred in what is left of the box's height, and that is a real number.
-    const rows = latticeLabelTracks(13, "rows", true);
+    const rows = latticeLabelTracks(13, "rows", "hexagon");
     const edge = Number(rows.split("fr")[0]);
     expect(edge).toBeGreaterThan(0);
     expect(edge).toBeLessThan(13);
@@ -98,5 +105,58 @@ describe("the boards a game is played on", () => {
       expect(spec.boardSizes, `${variant} names a default board but has no boards of its own`).not.toBeNull();
       expect(spec.boardSizes, `${variant} names a default board it does not have`).toContain(spec.defaultBoard);
     }
+  });
+});
+
+/**
+ * THE HEXAGRAM, AND THE ONE THING THAT MAKES IT DIFFERENT FROM EVERY OTHER
+ * SHAPE ON THIS LATTICE: it is taller than it is wide.
+ *
+ * Chinese Checkers' star was drawn at 51% of its board's width and 58% of its
+ * height — under a third of the wood — because the lattice was fitted to the
+ * ARRAY holding the star rather than to the star. Fitting its width instead
+ * would have been worse than the fault: the star would have stood a tenth of a
+ * board proud of its own box, top and bottom, and been clipped there.
+ */
+describe("the hexagram fits its board", () => {
+  it("spans a different pair of numbers at each radius, unlike the hexagon", () => {
+    const four = starSpan(17);
+    const three = starSpan(13);
+    expect(four.from).toBeCloseTo(6.25 / 17, 10);
+    expect(four.to).toBeCloseTo(1 + 2.25 / 17, 10);
+    // Not the same two numbers — which is why this is computed and not a constant.
+    expect(three.from).not.toBeCloseTo(four.from, 4);
+  });
+
+  it("is narrower than the lattice is tall, which is what makes the height bind", () => {
+    const { from, to } = starSpan(17);
+    expect(to - from).toBeLessThan(HEX_LATTICE.height);
+    // And well under the rhombus it is cut out of, which is the waste that was there.
+    expect(to - from).toBeLessThan(HEX_LATTICE.width * 0.55);
+  });
+
+  it("fills the board it is drawn in, rather than floating in it", () => {
+    const scale = Number(/scale\(([0-9.]+)\)/.exec(starTransform(17))?.[1]);
+    const { from, to } = starSpan(17);
+    const wide = (to - from) * scale;
+    const tall = HEX_LATTICE.height * scale;
+    // Was 0.51 and 0.58 before the fit knew about the shape.
+    expect(wide).toBeGreaterThan(0.8);
+    expect(tall).toBeGreaterThan(0.9);
+    // And neither side leaves the board, or the playing area's clip would cut it.
+    expect(wide).toBeLessThanOrEqual(1);
+    expect(tall).toBeLessThanOrEqual(1);
+  });
+
+  it("gives the star row numbers and no column letters", () => {
+    expect(latticeLabelTracks(17, "columns", "star")).toBe("");
+    expect(latticeLabelTracks(17, "rows", "star")).toContain("repeat(17,");
+  });
+
+  it("leaves the hexagon and the rhombus exactly as they were", () => {
+    // The generalised fit must not move a shape whose width already bound it.
+    expect(LATTICE_TRANSFORM).toContain("scale(0.6666666666666666)");
+    expect(LATTICE_TRANSFORM).toContain("translate(0.0000%, 21.1325%)");
+    expect(HEXAGON_TRANSFORM).toMatch(/scale\(0\.95\d+\)/);
   });
 });

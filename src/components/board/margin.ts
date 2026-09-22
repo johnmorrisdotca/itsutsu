@@ -1,4 +1,4 @@
-import { EDGE_LINE_WIDTH, GO_BOARD_RIM, HEXAGON_ROWS, HEX_LATTICE } from "./Board.constants";
+import { EDGE_LINE_WIDTH, GO_BOARD_RIM, HEXAGON_ROWS, HEX_LATTICE, STAR_ROWS } from "./Board.constants";
 
 export { GO_BOARD_RIM } from "./Board.constants";
 
@@ -98,16 +98,55 @@ export function labelTracks(size: number, inset: number): string {
  *
  * All in cells, as `fr`, for the reason `labelTracks` gives.
  */
-export function latticeLabelTracks(size: number, axis: "columns" | "rows", hexagon = false): string {
-  const { width, height } = HEX_LATTICE;
-  const fitted = hexagon ? HEXAGON_ROWS : height / width;
+export type LatticeShape = "rhombus" | "hexagon" | "star";
+
+/**
+ * How much of the box's height each shape's rows take up: the fit's own scale,
+ * restated for the strip that has to land on the same rows the board drew.
+ */
+const FITTED_ROWS: Record<LatticeShape, number> = {
+  rhombus: HEX_LATTICE.height / HEX_LATTICE.width,
+  hexagon: HEXAGON_ROWS,
+  star: STAR_ROWS,
+};
+
+export function latticeLabelTracks(size: number, axis: "columns" | "rows", shape: LatticeShape = "rhombus"): string {
   if (axis === "columns") {
-    if (hexagon) return `repeat(${size}, minmax(0, 1fr))`;
+    if (shape === "hexagon") return `repeat(${size}, minmax(0, 1fr))`;
+    /*
+     * A STAR HAS NO COLUMNS TO LABEL, so it is not given any — see
+     * `starColumnsSayNothing` below for why an empty strip is the honest
+     * answer here and a row of letters is not.
+     */
+    if (shape === "star") return "";
     // The first row's points sit half a cell down, so the shear moves them a quarter along.
     const lead = 0.25;
-    return `${lead}fr repeat(${size}, minmax(0, 1fr)) ${(width - 1) * size - lead}fr`;
+    return `${lead}fr repeat(${size}, minmax(0, 1fr)) ${(HEX_LATTICE.width - 1) * size - lead}fr`;
   }
   // What is left over above and below the rows, once they are fitted to the box.
-  const edge = ((1 / fitted - 1) / 2) * size;
+  const edge = ((1 / FITTED_ROWS[shape] - 1) / 2) * size;
   return `${edge}fr repeat(${size}, minmax(0, 1fr)) ${edge}fr`;
 }
+
+/**
+ * WHY THE HEXAGRAM IS DRAWN WITH ROW NUMBERS AND NO COLUMN LETTERS.
+ *
+ * On a sheared lattice a "column" is not a vertical line, so a column strip
+ * can only ever be the columns of ONE row, read across. The rhombus uses its
+ * first row and the hexagon its middle one — "the only row where every column
+ * of the array exists", as above.
+ *
+ * A star has no such row. Its leftmost cell is the left point's tip, three
+ * quarters of the way down the array; its rightmost is the right point's tip,
+ * a quarter of the way down. No row holds both, and the widest row through the
+ * centre holds nine of the seventeen columns. Whichever row the letters
+ * followed, most of them would sit over sealed cells or off the board — which
+ * is what they did: seventeen letters spread across the left two thirds of a
+ * board whose shape occupied the middle half, pointing at nothing.
+ *
+ * So it says nothing rather than something untrue, which is the rule in
+ * AGENTS.md under "Nothing Answers What It Cannot Answer". A cell still HAS a
+ * name — `squareLabel` reads it off the row and column, and a screen reader
+ * hears it — and that name is not what a strip of letters was ever proving.
+ */
+export const starColumnsSayNothing = true;

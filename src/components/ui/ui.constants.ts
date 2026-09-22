@@ -8,7 +8,8 @@
  */
 
 export const BUTTON_BASE =
-  "inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35";
+  // `TAP_HEIGHT` at the end: a fingertip below `sm`, exactly as it was above. See its note.
+  "inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-35 min-h-11 sm:min-h-0";
 
 /*
  * A CONTROL A CHILD TAPS ON AN IPAD, which the ordinary button is not.
@@ -60,11 +61,39 @@ export const BUTTON_STRONG =
  * option well is the real fix — see GAME_COPY's short penalty labels — but a
  * control should not be able to break a panel however badly it is named.
  */
+/*
+ * FORTY-FOUR PIXELS ON A PHONE, AND NOT A PIXEL MORE AT A DESK.
+ *
+ * John, 2026-09-21: "in mobile, the buttons are small, targets are hard to
+ * hit." Measured at 390×844 before this: every button on the site stood 30
+ * pixels, every select 30, every text box 34 — and /players carried
+ * forty-nine of those buttons in its table rows, which is where somebody
+ * challenges a player or adds a buddy.
+ *
+ * `min-h-11 sm:min-h-0` is the whole change, and the second half is as
+ * deliberate as the first: a pointer needs no forty-four pixels, and growing
+ * every control at every width would swell tables and toolbars on the screens
+ * that had no problem. Below `sm` a control is at least a fingertip; at or
+ * above it, exactly what it was.
+ *
+ * WHAT IS NOT INCLUDED, and why it is not an oversight. A LINK INSIDE A
+ * SENTENCE OR A TABLE CELL IS TEXT. There are 276 of them in the members
+ * table alone, and giving each a forty-four-pixel box would make every row
+ * three lines deep to no purpose — the row itself is the target there, and it
+ * is already a stretched link the height of its own content. The rule is
+ * about CONTROLS: the things that do something when pressed.
+ *
+ * `BUTTON_TAP` and `BUTTON_LEAD` stay what they are. Both are already at
+ * least forty-eight pixels at every width, because both mark a press a screen
+ * is asking for rather than one it merely offers.
+ */
+export const TAP_HEIGHT = "min-h-11 sm:min-h-0";
+
 export const SELECT_CLASS =
-  "min-w-0 max-w-full truncate rounded-lg border border-rule-strong/80 bg-ivory/80 px-2 py-1 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-55";
+  `min-w-0 max-w-full truncate rounded-lg border border-rule-strong/80 bg-ivory/80 px-2 py-1 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-moss disabled:cursor-not-allowed disabled:opacity-55 ${TAP_HEIGHT}`;
 
 export const INPUT_CLASS =
-  "w-full rounded-lg border border-rule-strong/80 bg-ivory/80 px-2.5 py-1.5 text-sm text-ink outline-none placeholder:text-muted/80 focus-visible:ring-2 focus-visible:ring-moss";
+  `w-full rounded-lg border border-rule-strong/80 bg-ivory/80 px-2.5 py-1.5 text-sm text-ink outline-none placeholder:text-muted/80 focus-visible:ring-2 focus-visible:ring-moss ${TAP_HEIGHT}`;
 
 export const PANEL_CLASS =
   "rounded-2xl border border-rule bg-ivory/60 p-4 backdrop-blur-sm";

@@ -54,7 +54,19 @@ export function Page({
   children: ReactNode;
 }) {
   return (
-    <div className="paper flex flex-1 flex-col items-center px-4 py-6 sm:px-8 sm:py-8">
+    /*
+      A BOARD PAGE KEEPS LESS MARGIN ON A PHONE, because on a board the margin
+      is competing with the cells. Sixteen pixels a side out of 390 is four per
+      cent of a 19×19 board's every point — and those points are 17.6 pixels
+      across, which is well under the forty-four a finger wants (see
+      `nudgeMove.ts` for the other half of that answer). Eight is still a
+      margin; nothing is flush against the glass.
+
+      Only below `sm`, and only where there IS a board: a page of prose at
+      eight pixels would read as an app that had lost its frame, and `board` is
+      already the answer to "is there a board here", so no new flag is needed.
+    */
+    <div className={`paper flex flex-1 flex-col items-center py-6 sm:px-8 sm:py-8 ${board ? "px-2" : "px-4"}`}>
       {/*
         Offered on the board pages and no others, and — THE SAME CONDITION, so
         the two cannot come apart — only those pages are stripped. `board` is
