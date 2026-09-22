@@ -182,8 +182,23 @@ jobs:
       # those ten specs fail there by design.
       # This shard's quarter of the spec files. Playwright splits the FILES
       # across shards evenly by count, and the `setup` project runs on each.
+      #
+      # `pnpm exec playwright test`, NOT `pnpm test:e2e -- --shard=…`. The
+      # first attempt used the script with a `--` before the flag, which is
+      # npm's way of separating them and is not pnpm's: pnpm forwards the
+      # `--` itself, so the runner read `playwright test -- --shard=1/4` and
+      # playwright took everything after `--` as a filename filter matching
+      # nothing in particular. Every shard then ran the WHOLE suite — the log
+      # says `Running 850 tests` on all four — and all four were killed by
+      # the ceiling below at exactly thirty minutes, which reads as four
+      # failures and was one typo.
+      #
+      # The flag going missing is the failure worth designing against, because
+      # a shard that ignores it does not error: it runs more tests and passes
+      # more slowly. Naming the binary leaves nothing between the flag and the
+      # thing that reads it.
       - name: Run this shard of the end-to-end suite
-        run: pnpm test:e2e -- --shard=${{ matrix.shard }}/4
+        run: pnpm exec playwright test --shard=${{ matrix.shard }}/4
         env:
           SUMILABU_BOARD_URL: ${{ secrets.SUMILABU_BOARD_URL }}
           SUMILABU_BOARD_DEV_TOKEN: ${{ secrets.SUMILABU_BOARD_DEV_TOKEN }}
