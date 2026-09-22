@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import { Game, Inside } from "./about.links";
 import type { AboutSection } from "./about.constants";
+import { ABOUT_CHAPTERS } from "./about.chapters";
 
 /**
  * WHAT IS ACTUALLY HERE, COUNTED RATHER THAN CLAIMED.
@@ -66,6 +67,7 @@ const FAMILIES = (
 
 export const CATALOGUE_SECTION: AboutSection = {
   title: "What is on the board here",
+  chapter: ABOUT_CHAPTERS.games,
   kanji: "目録",
   paragraphs: [
     <>

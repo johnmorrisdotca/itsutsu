@@ -2,6 +2,7 @@ import { Diagram } from "@/components/about/Diagram";
 import { FigureTable } from "@/components/about/FigureTable";
 import { Inside, Out } from "./about.links";
 import type { AboutSection } from "./about.constants";
+import { ABOUT_CHAPTERS } from "./about.chapters";
 
 /**
  * How a move is written down here, and the standard it belongs to.
@@ -52,6 +53,7 @@ const COORDINATES = (
 
 export const NOTATION_SECTION: AboutSection = {
   title: "How a move is written down",
+  chapter: ABOUT_CHAPTERS.numbers,
   kanji: "棋譜",
   paragraphs: [
     <>
