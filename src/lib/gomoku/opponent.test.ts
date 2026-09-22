@@ -118,11 +118,12 @@ describe("the graded players", () => {
 
   it("names the specialists as players rather than as rungs", () => {
     /*
-     * The two are not on the ladder and must not be: neither is stronger than
-     * 国手 at the other thirty-odd games, and neither is stronger or weaker
-     * than the other at anything, because they do not play the same game.
+     * None of them is on the ladder and none may be: not one is stronger than
+     * 国手 at the other thirty-odd games, and no two of them are stronger or
+     * weaker than each other at anything, because they do not play the same
+     * game.
      */
-    expect(BOT_SPECIALIST_LIST).toEqual([BOT_TIERS.tamenoki, BOT_TIERS.meritalu]);
+    expect(BOT_SPECIALIST_LIST).toEqual([BOT_TIERS.tamenoki, BOT_TIERS.meritalu, BOT_TIERS.monkton]);
     for (const tier of BOT_SPECIALIST_LIST) {
       expect(BOT_TIER_LIST).not.toContain(tier);
       const profile = BOT_PROFILES[tier];
@@ -140,6 +141,7 @@ describe("the graded players", () => {
      */
     expect(BOT_PROFILES.tamenoki.native).toBe("為乃木秀正");
     expect(BOT_PROFILES.meritalu.native).toBeNull();
+    expect(BOT_PROFILES.monkton.native).toBeNull();
     /*
      * Three kinds of computer player, and everybody is exactly one of them:
      * the ladder's five rungs, the specialists at their own game, and the

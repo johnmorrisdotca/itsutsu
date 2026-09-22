@@ -1,6 +1,6 @@
 import { GAME_STATUS, MOVE_KINDS } from "../gomoku.constants";
 import { DECIDED_SCORE, DRAW_SCORE, SEARCH } from "../opponent.constants";
-import { applyTurn } from "../opponentTurns";
+import { applyTurn, sameTurn } from "../opponentTurns";
 import { EXPERT_SEARCH } from "./expert.constants";
 import type { GameState, Point, Stone } from "../gomoku.types";
 import type { BotTurn, SearchBudget } from "../opponent.types";
@@ -39,9 +39,28 @@ function terminalScore(state: GameState, me: Stone, depthLeft: number): number {
   return state.winner === me ? DECIDED_SCORE + depthLeft : -(DECIDED_SCORE + depthLeft);
 }
 
-/** The turn a point becomes. Every game a specialist studies lays one stone. */
+/** The turn a point becomes, for a specialist whose game lays a stone. */
 function turnAt(point: Point): BotTurn {
   return { kind: MOVE_KINDS.place, row: point.row, col: point.col };
+}
+
+/**
+ * The moves this specialist wants weighed here, whatever shape a move takes in
+ * its game.
+ *
+ * ONE SEARCH FOR EVERY SPECIALIST, and this is the whole of what makes that
+ * possible. The two that lay stones answer in points and their points become
+ * placements; the one that slides answers in turns and they are already turns.
+ * Neither knows the other exists, and neither is asked which of the two it is.
+ *
+ * The alternative — a second alpha-beta for the games whose move is a slide —
+ * was written and thrown away. It would have been the same hundred lines with
+ * one type changed, and two copies of a search is two places for a deepening
+ * bug to live in only one of.
+ */
+function movesOf(expert: Expert, state: GameState, limit: number): BotTurn[] {
+  if (expert.turns !== undefined) return expert.turns(state, limit);
+  return expert.candidates(state, limit).map(turnAt);
 }
 
 /**
@@ -69,7 +88,7 @@ function look(
   // Out of budget: answer with what is known rather than with a guess.
   if (spent(budget)) return expert.read(state, me);
 
-  const candidates = expert.candidates(state, expert.branch);
+  const candidates = movesOf(expert, state, expert.branch);
   if (candidates.length === 0) return expert.read(state, me);
 
   /*
@@ -89,8 +108,8 @@ function look(
   let low = alpha;
   let high = beta;
 
-  for (const point of candidates) {
-    const after = applyTurn(state, turnAt(point));
+  for (const turn of candidates) {
+    const after = applyTurn(state, turn);
     if (after === state) continue;
     const value = look(after, me, expert, nextDepth, low, high, budget, nextExtension);
     if (maximising) {
@@ -135,11 +154,11 @@ export function expertTurn(
      */
     until: Date.now() + (limit.millis ?? SEARCH.millis),
   };
-  const rootPoints = expert.candidates(state, expert.rootBranch);
-  if (rootPoints.length === 0) return null;
-  if (rootPoints.length === 1) return turnAt(rootPoints[0]);
+  const rootTurns = movesOf(expert, state, expert.rootBranch);
+  if (rootTurns.length === 0) return null;
+  if (rootTurns.length === 1) return rootTurns[0];
 
-  let chosen: Point | null = null;
+  let chosen: BotTurn | null = null;
   const depth = expert.depth(state);
 
   for (let ply = 2; ply <= depth; ply += 2) {
@@ -148,19 +167,15 @@ export function expertTurn(
      * still the best move, and trying it first is most of what makes deepening
      * cheaper than the deep search it ends on rather than more expensive.
      */
+    const leading = chosen;
     const order =
-      chosen === null
-        ? rootPoints
-        : [
-            chosen,
-            ...rootPoints.filter((p) => p.row !== chosen!.row || p.col !== chosen!.col),
-          ];
+      leading === null ? rootTurns : [leading, ...rootTurns.filter((turn) => !sameTurn(turn, leading))];
 
     let best = -Infinity;
-    let equal: Point[] = [];
+    let equal: BotTurn[] = [];
     let finished = true;
-    for (const point of order) {
-      const after = applyTurn(state, turnAt(point));
+    for (const turn of order) {
+      const after = applyTurn(state, turn);
       if (after === state) continue;
       const value = look(
         after,
@@ -174,9 +189,9 @@ export function expertTurn(
       );
       if (value > best) {
         best = value;
-        equal = [point];
+        equal = [turn];
       } else if (value === best) {
-        equal.push(point);
+        equal.push(turn);
       }
       if (spent(budget)) {
         finished = false;
@@ -207,5 +222,5 @@ export function expertTurn(
     if (spent(budget)) break;
   }
 
-  return chosen === null ? null : turnAt(chosen);
+  return chosen;
 }

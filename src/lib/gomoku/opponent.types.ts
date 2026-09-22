@@ -25,8 +25,9 @@ import type { ExpertKind } from "./expert/expert.types";
  * learner's grade. 国手, "the nation's hand", is the historic Chinese title
  * for the finest player in the country, so it sits above the master's.
  *
- * The last two are not grades at all, and are not named like grades. They are
- * the specialists — one who plays Reversi and one who plays five in a row —
+ * The last three are not grades at all, and are not named like grades. They are
+ * the specialists — one who plays Reversi, one five in a row, and one the
+ * race games —
  * and a specialist is a person rather than a rung, so each is named after the
  * player who defined their game: an homage, close enough to say who is meant
  * and altered enough not to be them. Neither sits on the ladder; both stand
@@ -40,6 +41,7 @@ export type BotTier =
   | "guoshou"
   | "tamenoki"
   | "meritalu"
+  | "monkton"
   | "rafaDuarte"
   | "ingridSolheim"
   | "amaraOkafor"

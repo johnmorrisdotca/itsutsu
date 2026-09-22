@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { botsFor, gamesPlayedBy } from "@/lib/bots/bots.constants";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import { BOT_SPECIALIST_LIST } from "@/lib/gomoku/opponent.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { Opponent } from "@/lib/social/opponents";
 
@@ -98,7 +99,13 @@ describe("opponentGroups", () => {
      * The screen says the offer has lapsed and Start posts for anyone — both
      * decided in SetUpGame. This list only has to keep showing who was asked.
      */
-    const specialist = ["tamenoki", "meritalu"].find(
+    /*
+     * Whichever specialist happens not to play Halma, read off the real list
+     * rather than named here. It used to be a written-out pair, which was
+     * true until Halma got a specialist of its own and would have gone on
+     * passing while testing a case nobody meant.
+     */
+    const specialist = [...BOT_SPECIALIST_LIST].find(
       (id) => gamesPlayedBy(id).length > 0 && !gamesPlayedBy(id).includes("halma"),
     );
     expect(specialist, "a specialist that does not play Halma").toBeDefined();

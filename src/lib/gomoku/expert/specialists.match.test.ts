@@ -179,3 +179,52 @@ describe.runIf(LONG)("the five-in-a-row specialist against the ladder", () => {
     900_000,
   );
 });
+
+/*
+ * THE RACE SPECIALIST, at both of the games it studied.
+ *
+ * Asked for rather than run on every build, and for the same reason the
+ * five-in-a-row series is: cost, measured rather than assumed. A game of
+ * Chinese Checkers runs about a hundred plies and one of Halma on its own
+ * sixteen-point board rather more, against a Reversi game's sixty — and where
+ * Reversi's board empties as it fills, a race board stays as wide at move a
+ * hundred as at move one, because every piece can still step six or eight
+ * ways and land at the end of any chain. Fifty games of it is minutes, not the
+ * eighty seconds the Reversi row costs.
+ *
+ * What gates the build instead is `raceExpert.test.ts` and `raceBoard.test.ts`:
+ * the lattice is measured against the engine's own answer, the camp is filled
+ * from the back, the piece left behind outweighs a shorter total walk, and the
+ * player finishes a won position. Those are the mechanism this series
+ * measures, which is the division the other two specialists already make.
+ *
+ * Halma is played here on SIXTEEN, the board the game declares and the one a
+ * player is given by default. Eight is a different game — the whole race is
+ * six steps, so nearly every move gains exactly one and the ordering is mostly
+ * ties — and it is the board that found the width these numbers were taken at.
+ */
+describe.runIf(LONG)("the race specialist against the ladder", () => {
+  it.each([...BOT_TIER_LIST])(
+    "beats %s over a series of Chinese Checkers",
+    (against) => {
+      claim(
+        BOT_TIERS.monkton,
+        against,
+        series(RULE_VARIANTS.chineseCheckers, BOT_TIERS.monkton, against),
+      );
+    },
+    900_000,
+  );
+
+  it.each([...BOT_TIER_LIST])(
+    "beats %s over a series of Halma",
+    (against) => {
+      claim(
+        BOT_TIERS.monkton,
+        against,
+        series(RULE_VARIANTS.halma, BOT_TIERS.monkton, against, { size: 16 }),
+      );
+    },
+    900_000,
+  );
+});
