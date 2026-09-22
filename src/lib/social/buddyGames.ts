@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
+
 import { SETTLED_SELECT, settledPosition } from "@/lib/history/settledTurn";
 import { prisma } from "@/lib/prisma";
 
@@ -26,6 +28,27 @@ export type GamesWith = {
   /** Of those, the ones the record says are waiting on the reader. */
   yours: number;
 };
+
+/**
+ * THE GAMES RUNNING BETWEEN TWO PEOPLE, as a `where` — the one definition of
+ * the set a buddy row's "2 going" counts, and the set `/play?with=<them>`
+ * lists. Both read this, so the number and the list cannot disagree: that is
+ * the rule in AGENTS.md that a count must link to exactly what it counted,
+ * kept by construction rather than by care.
+ *
+ * Running: the row is active. Between the two: one holds black and the
+ * other white, either way round. An offer is not a game running, and a seat
+ * nobody has taken is not a game with anybody.
+ */
+export function gamesBetween(memberId: string, other: string): Prisma.GameWhereInput {
+  return {
+    status: "active",
+    OR: [
+      { blackMemberId: memberId, whiteMemberId: other },
+      { blackMemberId: other, whiteMemberId: memberId },
+    ],
+  };
+}
 
 export async function gamesWithEach(memberId: string): Promise<Map<string, GamesWith>> {
   const games = await prisma.game.findMany({

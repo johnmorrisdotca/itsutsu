@@ -6,6 +6,7 @@ import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { CountryMark } from "@/components/players/CountryMark";
 import { PlayerName } from "@/components/players/PlayerName";
 import { RowActions } from "@/components/ui/Controls";
+import { RAISED_LINK } from "@/components/ui/ui.constants";
 import { fetchBuddies } from "@/lib/social/buddies";
 import { gamesWithEach } from "@/lib/social/buddyGames";
 
@@ -78,22 +79,25 @@ export async function BuddyList({ memberId }: { memberId: string }) {
                 {buddy.localTime !== null ? `${buddy.city ? " · " : ""}${buddy.localTime} there` : ""}
               </span>
               {/*
-                WHAT IS ALREADY GOING — AND IT DOES NOT LINK YET, WHICH IS A
-                DEBT AND NOT A DESIGN.
-                
-                This site's rule is that a number about games leads to exactly
-                those games. There is no page that shows "my running games
-                against one person": `/play` shows all of yours and `/history`
-                shows finished ones, and a link to either would show a LONGER
-                list than the number beside it — which AGENTS.md names as the
-                same fault as no link at all, wearing a link. So it says the
-                figure plainly until `/play` can be narrowed to an opponent,
-                which is its own row on the board.
+                A NUMBER ABOUT GAMES LEADS TO EXACTLY THOSE GAMES. The figure
+                counts the games running between the two of you (`gamesBetween`),
+                and `/play?with=<them>` lists the same set from the same `where`
+                — so the promise is kept by construction. It said the figure
+                plainly with no link until that page existed; a link to all of
+                /play would have shown a longer list than the number.
               */}
               <span className="text-xs text-muted" data-testid="buddy-going">
-                {with_.going === 0
-                  ? "no games going"
-                  : `${with_.going} going${with_.yours > 0 ? `, ${with_.yours} on you` : ""}`}
+                {with_.going === 0 ? (
+                  "no games going"
+                ) : (
+                  <Link
+                    href={`/play?with=${encodeURIComponent(buddy.id)}`}
+                    className={`${RAISED_LINK} underline underline-offset-4`}
+                    data-testid="buddy-going-link"
+                  >
+                    {with_.going} going{with_.yours > 0 ? `, ${with_.yours} on you` : ""}
+                  </Link>
+                )}
               </span>
               <span className="ml-auto">
                 <RowActions>

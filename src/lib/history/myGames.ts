@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { currentNamesFor } from "./currentNames";
 import { toSummary } from "./gameHistory";
 import { DEBT_ONLY, SEATED_ONLY, myFinishedPage, myFinishedTotal, seatedLive } from "./myFinished";
+import { gamesBetween } from "@/lib/social/buddyGames";
 import { MY_FINISHED_PAGE } from "./myFinished.sort";
 import { MY_GAME_GROUPS, STALE_AFTER_DAYS } from "./myGames.constants";
 import type { MyGameGroup, MyGames, MyQueue } from "./myGames.types";
@@ -62,7 +63,15 @@ export async function fetchMyGames(
    * they look the same; the caller passes no cookie claims and a window that
    * keeps everything, so nothing the count counted is dropped on the way.
    */
-  narrowed: { only?: typeof SEATED_ONLY } = {},
+  narrowed: {
+    only?: typeof SEATED_ONLY;
+    /**
+     * The games running between the reader and ONE other member, by id — the
+     * set a buddy row's "2 going" counts (`gamesBetween`), and nothing else:
+     * no offers, no finished games, no seats nobody has taken. `/play?with=`.
+     */
+    with?: string;
+  } = {},
 ): Promise<MyQueue> {
   const groups: MyGames = {
     offered: [],
@@ -120,7 +129,11 @@ export async function fetchMyGames(
     ],
   };
   const seats: Prisma.GameWhereInput =
-    narrowed.only === SEATED_ONLY && memberId !== null ? seatedLive(memberId) : browserSeats;
+    narrowed.with !== undefined && memberId !== null
+      ? gamesBetween(memberId, narrowed.with)
+      : narrowed.only === SEATED_ONLY && memberId !== null
+        ? seatedLive(memberId)
+        : browserSeats;
 
   /*
    * ─────────────────────────────────────────────────────────────────────────

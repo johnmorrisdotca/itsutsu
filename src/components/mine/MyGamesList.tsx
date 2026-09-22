@@ -116,7 +116,14 @@ const SHOWN: Record<MyGameGroup, number> = {
 export async function MyGamesList({
   showAll = null,
   cursor = null,
+  withMember = null,
 }: {
+  /**
+   * One other member, by id: the list becomes the games running between the
+   * reader and them — the set a buddy row's "2 going" counts, no more and no
+   * less (`gamesBetween`), so that figure can be a link. `/play?with=`.
+   */
+  withMember?: string | null;
   /**
    * The group the address asks to see whole, or null for the ordinary caps.
    *
@@ -153,9 +160,12 @@ export async function MyGamesList({
   const opened = openedGroup(showAll);
   const paging = opened === "finished" ? { limit: MY_FINISHED_PAGE_OPEN, cursor } : {};
   const readQueue = async (at: Date) =>
-    seated
-      ? await fetchMyGames(new Map(), memberId, at, 0, {}, { only: SEATED_ONLY })
-      : await fetchMyGames(claims, memberId, at, await keepFinishedDaysFor(memberId), paging);
+    withMember !== null
+      ? // No cookie seats and no finished window: the set is the two of you, running, and that is all.
+        await fetchMyGames(new Map(), memberId, at, 0, {}, { with: withMember })
+      : seated
+        ? await fetchMyGames(new Map(), memberId, at, 0, {}, { only: SEATED_ONLY })
+        : await fetchMyGames(claims, memberId, at, await keepFinishedDaysFor(memberId), paging);
   const queue = await readQueue(now);
   const { groups } = queue;
   /*
