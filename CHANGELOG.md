@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.233.0 — 2026-09-22
+- The board and the Send button fit one phone screen: while a move waits, the row that sends it stays at the bottom of the screen.
+
 ## 0.232.0 — 2026-09-22
 - Every button, list and box on a phone is now big enough to hit with a thumb.
 
