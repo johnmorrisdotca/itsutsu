@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.238.0 — 2026-09-22
+- A graph of the computer ladder on the About page: how often each grade beat the grade below it, at every game that has been measured.
+
 ## 0.237.0 — 2026-09-22
 - Begin sits you down at a stranger's seat that matches exactly what you chose, instead of a page that says it all again.
 
