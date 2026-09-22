@@ -1058,6 +1058,17 @@ the derivation rather than reading the diff. Here that is `pnpm art:thumbs`,
 and it takes seconds. The general question to ask of any merge: **what in this
 tree was made out of a file this branch just changed?**
 
+**And now a gate asks it for you, because the rule above was written down and
+then broken.** On 2026-09-21 the Chinese Checkers star was refitted from half
+its board to the whole of it, and forty-five pictures of the old board stayed
+in the repository — on /games, the family cards and every rules page — with
+every test green. John found it on the games page.
+`src/lib/record/boardArt.coverage.test.ts` hashes the files that decide how a
+board is drawn and compares it with the stamp `pnpm screenshots:games` leaves
+behind, so a board change now FAILS the build until the pictures are re-taken.
+It fails rather than going quiet, unlike the bot ladder's fingerprint: a stale
+table can be left blank, and a stale picture is already being served.
+
 ### A Tolerant Assertion Enumerates What It TOLERATES
 
 A test that accepts more than one answer must list the answers it accepts,
