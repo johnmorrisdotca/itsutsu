@@ -22,7 +22,6 @@ import { RULES_CHOOSERS, RulesForm } from "./RulesForm";
 import { describeRules } from "./rulesSummary";
 import { applyRulesChange, type RulesDraft } from "./rulesDraft";
 import { matchSeat } from "./seatMatch";
-import { beginLink } from "./setUpAddress";
 import { useSetUpPress } from "./useSetUpPress";
 import { readSetUpAsked } from "./setUpAsked";
 import { keptBoardChosen, keptDraft, keptParams, queryRecord } from "./setUpKept";
@@ -274,6 +273,7 @@ export function SetUpGame({
     fork,
     carry,
     random,
+    waiting: waiting === undefined ? undefined : { id: waiting.id, who: waiting.who },
   });
 
   /*
@@ -284,15 +284,6 @@ export function SetUpGame({
     key: `set-up:${game ?? "any"}:${query.toString()}`,
     begin,
     variant: settled.variant,
-    toSeat:
-      waiting === undefined
-        ? null
-        : beginLink(settled, {
-            against: random ? RANDOM_COMPUTER : (chosen?.id ?? (again !== null ? ANYONE : null)),
-            rematch: again?.id ?? null,
-            from: fork === null ? null : { id: fork.id, move: fork.move },
-            sit: waiting.id,
-          }),
     onBusy: setBusy,
   });
 

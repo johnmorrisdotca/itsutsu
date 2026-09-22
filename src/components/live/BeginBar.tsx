@@ -92,13 +92,11 @@ export function BeginBar({
           /*
            * WHAT THIS PRESS WILL DO, on the button itself. Nearly always it
            * writes the game and lands on a board; where somebody has already
-           * posted exactly this game it goes to the doorstep to read THEIR
-           * rules first. A spec cannot tell those apart afterwards without
-           * waiting to see which page arrives, and a wait is a race — the
-           * board rewrites its own address to name the position as soon as it
-           * hydrates, so a spec that spent two seconds deciding missed the
-           * address it was waiting for. Said here, it is decided before the
-           * press rather than guessed after it.
+           * posted exactly this game it sits down at their seat and lands on
+           * the same board with them. Both end on a board now, but a spec that
+           * seeds a stranger's seat still wants to know which it pressed, and
+           * afterwards is too late — the board rewrites its own address as it
+           * hydrates. Said here, it is decided before the press.
            */
           data-press={waiting !== undefined ? "seat" : "begin"}
         >
@@ -113,9 +111,10 @@ export function BeginBar({
       </div>
       {/*
         What the press does, in one line — and it depends on which press it
-        is. Continuing to somebody's posted seat still has a screen after it,
-        where their rules are read before they are agreed to; beginning your
-        own game has not had one since the two were made one.
+        is. Sitting down at somebody's posted seat lands on the board with
+        them; beginning your own game lands on the board alone. Neither has a
+        screen after it any more: the seat's rules are the ones this screen
+        just settled, so a page restating them was a repeat.
       */}
       <p className="text-xs text-muted" data-testid="set-up-leads">
         {waiting !== undefined ? SET_UP_COPY.startLeads : SET_UP_COPY.beginHere}

@@ -41,13 +41,18 @@ import { gamesMade } from "./tidy";
 /** The games these cases post, taken away when the file finishes. */
 const tidyAway = gamesMade();
 
-/** Presses the set-up screen's button and waits for the doorstep to be listening. */
-async function start(page: Page) {
-  await expect(page.getByTestId("set-up-start"), "no seat to sit at: this press would make a game").toHaveAttribute(
-    "data-press",
-    "seat",
-  );
-  await page.getByTestId("set-up-start").click();
+/**
+ * Reaches the doorstep the way a reader does now: by pressing Sit down on the
+ * host's seat in the waiting room. Since 2026-09-22 a matched seat on the
+ * set-up screen is sat at on the press — the doorstep stands only in front of
+ * a seat reached COLD, which is this door.
+ */
+async function start(page: Page, seat: string) {
+  await page.goto("/games");
+  // By the seat's own id on its Sit down link: the room shortens names to an initial.
+  const sit = page.locator(`[data-testid="sit"][href*="sit=${seat}"]`);
+  await expect(sit, "the host's seat is not on the waiting room").toBeVisible();
+  await sit.click();
   await ready(page, "doorstep");
 }
 
@@ -87,7 +92,7 @@ test.describe("the doorstep draws the chosen board", () => {
     await openSetUpPage(page);
     await choose(page);
     const block = await blockMarkWidth(page, 8);
-    await start(page);
+    await start(page, close.id);
     await expect(page).toHaveURL(/\/games\/checkers\/begin\?/);
 
     await expectChosenBoard(page, 8, "Eight", block);
@@ -119,22 +124,22 @@ test.describe("the doorstep draws the chosen board", () => {
     await openSetUpPage(page);
     await onThirteen(page);
     const block = await blockMarkWidth(page, 13);
-    await start(page);
+    await start(page, closeThirteen.id);
     await expect(page).toHaveURL(/\/games\/go\/begin\?/);
     await expectChosenBoard(page, 13, "Medium", block);
     await expect(page.getByTestId("doorstep-board").getByRole("img", { name: "19 by 19 board" })).toHaveCount(0);
 
     /*
-     * THE WAY BACK, which a one-directional test never finds — and a different
-     * board on the return, so the picture is proved to follow the seat rather
-     * than to be the only one this page can draw.
+     * THE WAY BACK, which a one-directional test never finds: Change returns
+     * to the set-up screen with the seat's board chosen. Then a DIFFERENT
+     * seat, so the picture is proved to follow the seat rather than to be the
+     * only one this page can draw.
      */
     await page.getByTestId("doorstep-change").click();
     await ready(page, "set-up-game");
     await expect(page.locator('[data-testid="set-up-size"][data-chosen="true"]')).toHaveAttribute("data-size", "13");
 
-    await chooseBoard(page, 19);
-    await start(page);
+    await start(page, closeNineteen.id);
     await expectChosenBoard(page, 19, "Go board", block);
 
     await closeNineteen();
@@ -163,7 +168,7 @@ test.describe("the doorstep draws the chosen board", () => {
     await openSetUpPage(page);
     await choose(page);
     const block = await blockMarkWidth(page, 15);
-    await start(page);
+    await start(page, close.id);
 
     await expectChosenBoard(page, 15, "Standard", block);
     const opening = page.getByTestId("doorstep-opening");

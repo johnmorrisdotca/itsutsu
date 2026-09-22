@@ -19,10 +19,14 @@ import { useGameBegunHere } from "./doorstepMemory";
  *    one" has no honest answer on the server: two identical games against the
  *    same program are a thing somebody may legitimately want. See
  *    `doorstepMemory`, which the doorstep uses for exactly the same reason.
- *  - SOMEBODY ELSE'S POSTED SEAT, which is a link and not a request: the rules
- *    agreed to there are theirs, so it goes to the doorstep to be read. That is
- *    the one case the two screens were NOT a repeat of each other, and the one
- *    case that still has two.
+ *  - SOMEBODY ELSE'S POSTED SEAT, taken on the press. It went to the doorstep
+ *    until 2026-09-22, "to read their rules first" — but a seat this screen
+ *    matches has EXACTLY the rules the reader just chose, and the button
+ *    already names who is waiting, so that page printed both a third time and
+ *    made the two routes whose rules a reader never chooses three presses long.
+ *    `beginGame` takes the seat; when it has gone, the second press makes the
+ *    game it stood in for, which the screen says in words rather than doing in
+ *    silence — see `taking`.
  *  - OTHERWISE THE GAME ITSELF, through `beginGame` — the same request the
  *    doorstep sends, from the same function, so the two cannot drift.
  *
@@ -34,15 +38,12 @@ export function useSetUpPress({
   key,
   begin,
   variant,
-  toSeat,
   onBusy,
 }: {
   /** This screen's whole address: what a remembered game is remembered against. */
   key: string;
   begin: BeginAction;
   variant: string;
-  /** The doorstep for a seat somebody has already posted, or null where there is none. */
-  toSeat: string | null;
   onBusy: (busy: boolean) => void;
 }): {
   made: string | null;
@@ -59,22 +60,26 @@ export function useSetUpPress({
    * of a game that has been swept) and says nothing about a request.
    */
   const [trouble, setTrouble] = useState<string | null>(null);
+  /** Whether a posted seat has already been asked for once and refused. */
+  const [seatTried, setSeatTried] = useState(false);
 
   async function press() {
     if (made !== null) {
       router.push(made);
       return;
     }
-    if (toSeat !== null) {
-      onBusy(true);
-      router.push(toSeat);
-      return;
-    }
     onBusy(true);
     setTrouble(null);
     try {
-      const landed = await beginGame({ begin, variant, taking: false });
+      /*
+       * A seat is tried once. If it has gone, the refusal is shown and the
+       * NEXT press makes the game instead — stated rather than silently done,
+       * because a press that named a person must not do something else
+       * without saying so. `seatTried` is what remembers the first press.
+       */
+      const landed = await beginGame({ begin, variant, taking: begin.kind === "sit" && !seatTried });
       if (typeof landed !== "string") {
+        if (begin.kind === "sit") setSeatTried(true);
         setTrouble(landed.error);
         return;
       }
@@ -94,6 +99,7 @@ export function useSetUpPress({
     forget: () => {
       setMade(null);
       setTrouble(null);
+      setSeatTried(false);
     },
   };
 }

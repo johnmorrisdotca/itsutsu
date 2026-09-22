@@ -137,10 +137,22 @@ describe("a game is stated before it is written", () => {
       ).toBe(true);
     }
     /*
-     * And it still knows the way to the doorstep, because a seat somebody else
-     * posted is read there before it is sat at.
+     * AND IT NO LONGER SENDS A MATCHED SEAT TO THE DOORSTEP. Until 2026-09-22
+     * a seat somebody else posted at exactly this game went there "to be read
+     * first" — but `matchSeat` only matches a seat whose rules are the whole
+     * of what this screen just settled, and the button names who is waiting,
+     * so the doorstep printed both a third time. Three presses, on the routes
+     * whose rules a reader never chooses. Begin sits down now: `setUpBegin`
+     * hands `useSetUpPress` a `sit` action and the press takes the seat.
+     *
+     * Pinned both ways, so the decision cannot drift back one file at a time:
+     * the set-up screen builds no doorstep link, and its begin action knows
+     * how to sit.
      */
-    expect(setUp!.source).toContain("beginLink(");
+    expect(setUp!.source, "the set-up screen sends a matched seat to the doorstep again").not.toContain("beginLink(");
+    const begin = FILES.find(({ path }) => path.endsWith("live/setUpBegin.ts"));
+    expect(begin, "setUpBegin.ts has moved").toBeDefined();
+    expect(begin!.source, "a matched seat is no longer a sit action").toContain('kind: "sit"');
   });
 
   it("and the doorstep is still where somebody else's posted seat is read", () => {

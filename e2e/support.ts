@@ -270,20 +270,19 @@ export async function openMoreSettings(page: Page) {
  */
 export async function startAndBegin(page: Page) {
   /*
-   * ONE PRESS FOR YOUR OWN GAME, TWO FOR SOMEBODY ELSE'S SEAT — and which it
-   * is, ASKED BEFORE THE PRESS. The button says so (`data-press`), because
-   * deciding afterwards means waiting to see which page arrives, and that wait
-   * is a race the spec loses: a board rewrites its own address to name the
-   * position the moment it hydrates, so two seconds of deciding is two seconds
-   * after the address every caller here is waiting for has gone.
+   * ONE PRESS, EITHER WAY, since 2026-09-22. Begin makes your own game, or
+   * sits you down at a stranger's seat that matches exactly what you chose —
+   * both land on the board. The doorstep is only reached cold now, from the
+   * waiting room, which is what e2e/doorstep.spec.ts drives.
+   *
+   * `data-press` is still read and still worth it: a spec that seeded a seat
+   * on purpose can ask which of the two the press was, and the answer has to
+   * be read BEFORE the click, because the board rewrites its own address the
+   * moment it hydrates.
    */
   const button = page.getByTestId("set-up-start");
-  const press = await button.getAttribute("data-press");
+  await button.getAttribute("data-press");
   await button.click();
-  if (press === "seat") {
-    await ready(page, "doorstep");
-    await page.getByTestId("doorstep-begin").click();
-  }
 }
 
 /**

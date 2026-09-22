@@ -255,15 +255,20 @@ test.describe("stating a game before it is written", () => {
     await context.close();
   });
 
-  test("somebody else's posted seat is read on the doorstep before it is sat at", async ({
+  test("somebody else's posted seat at exactly this game is sat at on the press", async ({
     browser,
     baseURL,
   }) => {
     /*
-     * THE ONE CASE THAT STILL HAS TWO SCREENS, and the reason it should: the
-     * rules being agreed to are not the ones this reader wrote. They are on
-     * somebody else's seat, and sitting down at a game you have not read is
-     * exactly what the doorstep was asked for.
+     * IT USED TO GO THROUGH THE DOORSTEP, "to read their rules first". But a
+     * seat the set-up screen matches has EXACTLY the rules this reader just
+     * chose — `matchSeat` compares the whole game — and the button already
+     * names who is waiting. The page after it printed both a third time, and
+     * made the two routes whose rules a reader never chooses three presses
+     * long. John: "no game or process should take 3 screens/clicks."
+     *
+     * The doorstep is still where a seat is read COLD, from the waiting room:
+     * that is `open-seat-standing.spec.ts`, and it still has its screen.
      */
     const stamp = Date.now().toString(36);
     const host = { email: `host-${stamp}@example.test`, name: `Host ${stamp}` };
@@ -304,18 +309,14 @@ test.describe("stating a game before it is written", () => {
       "seat",
     );
 
+    // The button says whose seat it is about to take, which is the one new fact.
+    await expect(screen.begin).toContainText(/sit down with/);
+
     await screen.begin.click();
-    await expect(page).toHaveURL(/\/games\/gomoku\/begin(\?|$)/);
-    await ready(page, "doorstep");
-
-    // THEIR rules, stated, before anything is agreed to — and still no board.
-    await expect(page.getByTestId("doorstep-statement")).toContainText("Gomoku");
-    await expect(page.getByTestId("doorstep-facts")).toBeVisible();
-    await expect(page.getByTestId("shared-game"), "the board means playing").toHaveCount(0);
-
-    await page.getByTestId("doorstep-begin").click();
+    // Straight to the board, with them: no page between.
     await page.waitForURL(/\/games\/gomoku\/match\//, { timeout: 30_000 });
     noteGame(page);
+    await expect(page.getByTestId("shared-game")).toBeVisible();
 
     await visiting.close();
     await closeHost();

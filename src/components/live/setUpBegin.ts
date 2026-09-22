@@ -26,9 +26,12 @@ export function setUpBegin({
   fork,
   carry,
   random,
+  waiting,
 }: {
   /** The form as it stands, with any posted seat's board already settled into it. */
   settled: RulesDraft;
+  /** Somebody already waiting at exactly this game, or undefined. Begin sits down with them. */
+  waiting?: { id: string; who: string };
   /** The form as it arrived, for a rematch to notice it has been changed. */
   asPlayed: RulesDraft | null;
   /** Who the game is against NOW — null for a seat posted for anyone, and for a draw. */
@@ -50,10 +53,17 @@ export function setUpBegin({
    * game — the rules on their folded rows, the seating in a sentence below —
    * and makes it, and the press that used to be Continue is Begin.
    *
-   * THE DOORSTEP REMAINS, for the one case where it is not a repeat: taking a
-   * seat SOMEBODY ELSE posted. The rules being agreed to there are theirs, not
-   * yours, and reading them before sitting down is the whole purpose of the
-   * page. `waiting` is exactly that case, and it still goes there.
+   * THE DOORSTEP REMAINS for taking a seat SOMEBODY ELSE posted when you arrive
+   * at it cold — from the waiting room, where the rules being agreed to are
+   * theirs and unread. `waiting` is NOT that case, and it stopped going there on
+   * 2026-09-22. A seat this screen matches is one whose rules are exactly what
+   * the reader just chose (`matchSeat` compares the whole of the game), and the
+   * button already says who is sitting there; the doorstep after it printed
+   * the same rules and the same name a third time. Three presses, on the two
+   * routes whose rules a reader never gets to choose — John: "no game or
+   * process should take 3 screens/clicks". So Begin sits down, and if the seat
+   * has gone in the meantime it makes the game it would have made instead,
+   * and says so.
    *
    * `creationFor` is the same function the doorstep asked, with the same
    * arguments, so the request is byte for byte the one that was sent before —
@@ -77,9 +87,11 @@ export function setUpBegin({
     ? botsFor(settled.variant as RuleVariant).map((bot) => ({ id: bot.id, name: bot.name }))
     : [];
   const begin: BeginAction =
-    random && pool.length > 0
-      ? { kind: "draw", body: creation.body, pool }
-      : { kind: "create", body: creation.body };
+    waiting !== undefined
+      ? { kind: "sit", id: waiting.id, who: waiting.who, instead: creation.body }
+      : random && pool.length > 0
+        ? { kind: "draw", body: creation.body, pool }
+        : { kind: "create", body: creation.body };
 
   /*
    * WHO SITS WHERE, said before the board rather than worked out from it. This

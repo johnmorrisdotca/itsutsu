@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { memberContext } from "./members";
 import { ready } from "./support";
 import { gamesMade } from "./tidy";
 
@@ -40,12 +41,49 @@ async function pressesToABoard(page: Page, where: string, presses: readonly stri
   tidyAway(/match\/([^/?#]+)/.exec(page.url())?.[1] ?? "");
 }
 
+/*
+ * ITS OWN MEMBER, WITH RULES NOBODY ELSE POSTS.
+ *
+ * In CI this file ran as the operator with the operator's defaults — gomoku,
+ * nine, no clock — and "from the front door" and "from a game's card" both
+ * landed on the DOORSTEP with `sit=<seat>` and timed out. Another spec had
+ * posted a seat at exactly those rules, so Begin offered to sit with that
+ * stranger rather than start a game: a third screen, on the two routes whose
+ * rules the spec never gets to choose. Locally the leftover seats happened not
+ * to match, which is what "a green that does not travel" looks like.
+ *
+ * So the member here has a week-long clock and a nineteen board as defaults —
+ * a combination no other spec posts — and the two-press ceiling is measured
+ * against a board nobody is waiting at. THE THIRD PRESS IS STILL THERE for a
+ * reader whose rules a stranger has posted, and is a decision about the
+ * product rather than this spec: see the row filed the day this was found.
+ */
+let context: Awaited<ReturnType<typeof memberContext>>;
+let page: Page;
+
+test.beforeAll(async ({ browser, baseURL }) => {
+  const stamp = Date.now().toString(36);
+  context = await memberContext(browser, baseURL!, { email: `two-presses-${stamp}@example.test`, name: `Presses ${stamp}` });
+  const set = await context.request.patch("/api/me", {
+    data: { gameDefaults: { size: 19, moveTimeMs: 7 * 24 * 60 * 60_000, rated: false } },
+  });
+  expect(set.ok(), "could not give this member its own game defaults").toBe(true);
+  page = await context.newPage();
+});
+
+test.afterAll(async () => {
+  await context?.close();
+});
+
+// One page, one member, one board at a time: the cases share `page` above.
+test.describe.configure({ mode: "serial" });
+
 test.describe("every way into a game is two presses", () => {
-  test("from the front door", async ({ page }) => {
+  test("from the front door", async () => {
     await pressesToABoard(page, "/", ["enter-new-game", "set-up-start"]);
   });
 
-  test("from a game's card on the catalogue", async ({ page }) => {
+  test("from a game's card on the catalogue", async () => {
     /*
      * The card of a game somebody HAS played. It had figures, a top player and
      * its standings, and no way to play it — the one thing a card about a game
@@ -57,7 +95,7 @@ test.describe("every way into a game is two presses", () => {
     await pressesToABoard(page, "/games", ["game-stats-play", "set-up-start"]);
   });
 
-  test("from a game nobody has played yet", async ({ page }) => {
+  test("from a game nobody has played yet", async () => {
     /*
      * "Be the first to play" promises the first game on this site's record.
      * It went to /games/<game>/play, a practice board that records nothing —
@@ -70,19 +108,19 @@ test.describe("every way into a game is two presses", () => {
     await pressesToABoard(page, "/games", ["game-stats-be-first", "set-up-start"]);
   });
 
-  test("from the one-line sentence on the catalogue", async ({ page }) => {
+  test("from the one-line sentence on the catalogue", async () => {
     await pressesToABoard(page, "/games", ["start-game-go", "set-up-start"]);
   });
 
-  test("from a game's own page", async ({ page }) => {
+  test("from a game's own page", async () => {
     await pressesToABoard(page, "/games/reversi", ["game-set-up", "set-up-start"]);
   });
 
-  test("from a row of the members list", async ({ page }) => {
+  test("from a row of the members list", async () => {
     await pressesToABoard(page, "/players", ["challenge", "set-up-start"]);
   });
 
-  test("and the people you know are open on the set-up screen, not behind a press", async ({ page }) => {
+  test("and the people you know are open on the set-up screen, not behind a press", async () => {
     /*
      * The half of the rule that is about KNOWING somebody. Every run of
      * opponents folds once one of them is chosen, which is what fits the
