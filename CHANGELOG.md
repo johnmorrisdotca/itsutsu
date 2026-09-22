@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.240.1 — 2026-09-22
+- Three browser specs brought up to date: two that still asserted the site as it was two releases ago, and one that raced itself.
+
 ## 0.240.0 — 2026-09-22
 - The three hexagon boards — Chinese Checkers, Honeycomb and Hex — are drawn one way: a faint lattice across the whole board, the playable shape in tiles, Hex's edges as a ring of them, and the coordinates on the board in the ring.
 
