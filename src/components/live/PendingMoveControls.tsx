@@ -54,7 +54,31 @@ export function PendingMoveControls({
 }) {
   const arrows = onNudge !== undefined && nudges !== undefined && nudges.size > 0;
   return (
-    <div className="flex flex-col gap-2" data-testid="pending-move">
+    /*
+     * PINNED TO THE BOTTOM OF THE SCREEN ON A PHONE, while a move is waiting
+     * to be sent.
+     *
+     * John, 2026-09-21: "i dont like the user scrolling to the bottom a lot to
+     * have to click next or play." Measured on a 390×844 phone, a 19×19 go
+     * board ends at 724 pixels and Submit began at 816 — sixteen past the
+     * fold. Near enough to look like it fits, far enough that it does not, and
+     * on a longer board or with a notice above it, worse.
+     *
+     * Sticky rather than fixed: it takes its place in the flow, so nothing
+     * underneath is covered permanently and the page ends where it ends. It is
+     * only ever on screen while a move is placed and unsent — this component
+     * does not render otherwise — so it cannot become a bar that lives there.
+     *
+     * The negative margin matches the board page's own eight pixels, so the
+     * backdrop reaches the glass rather than leaving two strips of page either
+     * side of it. Above `sm` it is an ordinary row again: a pointer has the
+     * whole window and a bar pinned to the bottom of a laptop screen would be
+     * an answer to a question nobody asked.
+     */
+    <div
+      className="sticky bottom-0 z-20 -mx-2 flex flex-col gap-2 border-t border-rule bg-paper/95 px-2 py-2 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
+      data-testid="pending-move"
+    >
       {/*
         Where it went and how to move it, above the send — the order somebody
         reads them in, since checking comes before sending.
