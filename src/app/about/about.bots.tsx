@@ -1,3 +1,4 @@
+import { GradeLadderGraph } from "@/components/about/GradeLadderGraph";
 import { MeasuredGrades } from "@/components/about/MeasuredGrades";
 import { FigureTable as Table } from "@/components/about/FigureTable";
 import { BOT_PROFILES, BOT_TIER_LIST, SEARCH } from "@/lib/gomoku/opponent.constants";
@@ -111,5 +112,10 @@ export const BOTS_SECTION: AboutSection = {
       <Inside href="/players?view=computers">the players page</Inside>.
     </>,
   ],
-  figures: { 0: GRADES, 4: <MeasuredGrades /> },
+  /*
+    The table says how each grade did against the whole field; the graph asks
+    the narrower question the section is really about — whether the ORDER is
+    real — one bar per step of the ladder, with half drawn as the line it is.
+  */
+  figures: { 0: GRADES, 4: <MeasuredGrades />, 5: <GradeLadderGraph /> },
 };
