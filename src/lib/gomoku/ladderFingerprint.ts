@@ -31,6 +31,8 @@ export const LADDER_FINGERPRINT_FILES: readonly string[] = [
   "src/lib/gomoku/threats.ts",
   // The graded players' race reading counts its distances here.
   "src/lib/gomoku/expert/raceBoard.ts",
+  // The opening book decides a grade's second and third stones.
+  "src/lib/gomoku/opponentOpening.ts",
 ];
 
 /** A short, stable hash over the files' paths and text, in the order given. */
