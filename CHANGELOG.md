@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.249.3 — 2026-09-23
+- Releases reach the site faster: the checks run side by side and the browser tests are split eight ways instead of four.
+
 ## 0.249.2 — 2026-09-23
 - A release now reaches the site only after its browser tests pass.
 - What a visitor with no invite may see is written down: the games, not the people.
