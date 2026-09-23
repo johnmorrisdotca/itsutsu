@@ -56,6 +56,10 @@ jobs:
     # no minute limit, which the note above the runner is about. Larger runners
     # would cost.
     #
+    # TWELVE SHARDS, measured: four made the slowest fourteen minutes, eight
+    # made it 8.6, twelve 6.9, on runs of the same suite on the same day —
+    # past that, the minute of setup each shard pays starts to be most of it.
+    #
     # EIGHT SHARDS, FROM FOUR, once the suite GATED THE DEPLOY (2026-09-22). A
     # push was sixteen minutes from the site, and the slowest shard was
     # fourteen of them; everything else in a shard — the database container,
@@ -64,7 +68,8 @@ jobs:
     # more shards would cost: "I want the best performance and most smartest
     # way to do this." In money, nothing; the one limit is GitHub's twenty
     # concurrent jobs on a free account, which eight shards, the build job and
-    # an overlapping pull-request run stay under. Still one worker per shard,
+    # an overlapping pull-request run stay under (twelve and five checks and the
+    # deploy is eighteen, so an overlapping run queues briefly, for nothing). Still one worker per shard,
     # which is also what Playwright's own CI guidance recommends.
     #
     # The count is written ONCE, here. The step below reads it back as
@@ -74,7 +79,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     timeout-minutes: 30
 
     services:

@@ -648,8 +648,9 @@ below before trusting it — these numbers move):
 
 - The browser suite is the critical path. About 45 minutes of tests over 181
   spec files, no one file over two minutes, so the time is spread thin and the
-  lever is SHARDS. Four shards made the slowest fourteen minutes; there are
-  eight now (`e2e.yml`). Inside a shard, setup — the database container and the
+  lever is SHARDS. Four shards made the slowest fourteen minutes, eight 8.6
+  and twelve 6.9; there are twelve now (`e2e.yml`). Dividing by test instead
+  of by file (`fullyParallel`) was tried and measured no faster (PR #51). Inside a shard, setup — the database container and the
   browser download — is about a minute; everything else is tests.
 - The checks (`verify`) were one job running lint, sizes, types, unit tests,
   audit and build in a line: 5.3 minutes. They are five parallel jobs now, and
@@ -668,7 +669,7 @@ below before trusting it — these numbers move):
 2. **Keep the slowest shard short.** When it passes about eight minutes, add
    shards — they are free on this public repository — or rebalance the files.
    The one ceiling is GitHub's twenty concurrent jobs on a free account: five
-   checks, eight shards and the deploy is fourteen, so an overlapping
+   checks, twelve shards and the deploy is eighteen, so an overlapping
    pull-request run queues for a while and costs nothing.
 3. **Measure, don't guess.** Step timings of a run:
    `gh api repos/johnmorrisdotca/itsutsu/actions/runs/<run>/jobs` and read each

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { memberContext } from "./members";
-import { ready } from "./support";
+import { playRatedGames, ready } from "./support";
 import { gamesMade } from "./tidy";
 
 /** Every game this file begins, taken away when it finishes. */
@@ -89,6 +89,16 @@ test.describe("every way into a game is two presses", () => {
      * its standings, and no way to play it — the one thing a card about a game
      * is for.
      */
+    /*
+     * ONE PLAYED GAME OF ITS OWN FIRST. This case needs a card for a game
+     * somebody has finished, and it used to find one left behind by whichever
+     * spec ran before it on the same database. On eight shards one always had;
+     * split twelve ways, nothing before it in its shard finished a game, the
+     * catalogue had no played card, and it failed on a correct site. A spec
+     * brings its own world (AGENTS.md).
+     */
+    const tag = Date.now().toString(36);
+    await playRatedGames(context.request, { winner: `Card ${tag}`, loser: `Cardy ${tag}`, games: 1 });
     await page.goto("/games");
     const play = page.getByTestId("game-stats-play").first();
     await expect(play, "no card on the catalogue offers a game").toBeVisible();
