@@ -155,6 +155,17 @@ html[data-bare="true"] [data-strippable] aside {
 }
 
 /*
+ * And the board, centred and as big as the screen allows: the whole of it in
+ * view without scrolling, with room above for whose turn it is and below for
+ * the move being made. John: "just the board means the board should be
+ * centered and almost all you see."
+ */
+html[data-bare="true"] [data-strippable] [data-bare-board] {
+  width: min(100%, calc(100dvh - 9rem));
+  margin-inline: auto;
+}
+
+/*
  * THE RIVALRY BOARD — components/history/RivalryBoard. The VS badge lands and
  * the two scores rise to meet it, once, when the board is drawn. Nothing
  * loops: a scoreboard that kept moving would be asking to be looked at after
