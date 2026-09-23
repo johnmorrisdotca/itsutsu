@@ -87,18 +87,16 @@ export async function SiteHeader({
     <>
       <header data-chrome className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
         {/*
-          The Beta mark sits over the wordmark's right end, like a superscript,
-          out of the flow. Beside the wordmark would widen the one row the
-          masthead has — at 768 pixels the wordmark, the gap and the bar already
-          fill it (see `YourTurnBadge`) — and under it lands on the bar where a
-          phone wraps the bar below the wordmark. Above the stones, nothing is
-          ever there.
+          The Beta mark on the wordmark's own row, beside it — John: "should be
+          same row inline". It widens the masthead's first row by the pill, so
+          where the bar was already a tight fit it wraps a line sooner; the
+          header spec measures that it never lands on the bar.
         */}
-        <span className="relative block">
+        <span className="flex items-center gap-2">
           <Link href="/" aria-label="Itsutsu home" className="block">
             <BrandWordmark className="h-9 w-auto sm:h-10" />
           </Link>
-          <BetaMark className="absolute -top-3 right-0" />
+          <BetaMark />
         </span>
         <Nav />
       </header>
