@@ -2,8 +2,11 @@ import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { PlayerXpHistory } from "@/components/xp/PlayerXpHistory";
+import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { mosaicDraws } from "@/lib/record/mosaic";
 import { XP_HISTORY_TAB } from "@/lib/xp/xpHistoryDays";
 
+import { EndPositions } from "./EndPositions";
 import { ItsutsuRecord } from "./ItsutsuRecord";
 import { KEPT_RECORD_COPY } from "./LegacyRecord";
 import { LegacySourcePanel } from "./LegacySource";
@@ -75,6 +78,22 @@ export function PlayerChapters({
              */
             emptyNote={keptRecord === null ? undefined : KEPT_RECORD_COPY[keptRecord.kind]?.here}
           />
+          {/*
+            Their games of one kind, each as it ended, on one picture — made in
+            the reader's browser on a press; see `EndPositions`. The games are
+            the ones the breakdown above counts, most played first, less the
+            hexagon boards a square picture cannot draw.
+          */}
+          {member?.id !== undefined ? (
+            <EndPositions
+              memberId={member.id}
+              name={wholeName}
+              variants={[...record.byVariant]
+                .sort((a, b) => b.wins + b.losses + b.draws - (a.wins + a.losses + a.draws))
+                .map((row) => row.variant as RuleVariant)
+                .filter(mosaicDraws)}
+            />
+          ) : null}
           {/*
             The second way in, and the one somebody actually uses. A profile is
             read downwards — the figures, then the games, then how each went —
