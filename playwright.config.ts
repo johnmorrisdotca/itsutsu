@@ -11,7 +11,21 @@ const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: false,
+  /*
+   * TRUE FOR THE SHARDS' SAKE, NOT FOR PARALLEL WORKERS — there is still one
+   * worker, so nothing here ever runs at the same time as anything else.
+   *
+   * What it changes is how `--shard` divides the suite. With it off, Playwright
+   * hands out whole FILES, evened by count, and files differ in length: the
+   * first eight-shard run took 4.5 minutes on its shortest shard and 8.6 on its
+   * longest, and the longest is what a deploy waits for (AGENTS.md, "Deploys
+   * Are Fast By Design"). With it on, tests are handed out one by one, so the
+   * shards come out even. A file that must stay together says so with
+   * `test.describe.configure({ mode: "serial" })`, which Playwright honours
+   * whatever this says; a file with a `beforeAll` runs it on each shard its
+   * tests land on, against that shard's own fresh database.
+   */
+  fullyParallel: true,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
