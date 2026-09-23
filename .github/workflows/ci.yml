@@ -2,11 +2,29 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
 
-# Every commit pushed to main gets a CI run of its own, and nothing cancels it.
+# PULL REQUESTS ONLY, since 2026-09-22.
+#
+# This used to run on every push to main as well, and until the browser suite
+# gated the deploy that was the only test verdict a commit on main ever got.
+# Once `vercel-deploy.yml` ran the same suite to decide whether to deploy, a
+# push started TWO full copies of it — twelve shards here, twelve there, the
+# checks of each — thirty-one jobs against the account's cap of twenty running
+# at once. Half the deploy's shards sat queued for up to four and a half
+# minutes behind this workflow's copy, and push-to-live was 13.1 minutes with a
+# slowest shard of 6.5. John's goal is the fastest deploy there can be (AGENTS.md,
+# "Deploys Are Fast By Design"), and a second copy of the gate's own run bought
+# nothing the gate's run does not record.
+#
+# What it gives up, said plainly: the deploy workflow cancels a run that a newer
+# push overtakes, so a commit pushed and then overtaken mid-run loses its
+# verdict. Releases go out as one push per batch, so that is rare, and the
+# overtaking commit's run covers everything the older one held.
+#
+# The history below is why the concurrency group is what it is, and it still
+# holds for pull requests.
+#
+# Every commit pushed to main used to get a CI run of its own, and nothing cancelled it.
 #
 # A superseded TEST RUN is evidence: it is the only record of whether the
 # commit it was started for was sound, and on a bisect it is the thing you go
