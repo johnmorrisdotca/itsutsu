@@ -33,15 +33,16 @@ import type { ExpertKind } from "./expert/expert.types";
  * and altered enough not to be them. Neither sits on the ladder; both stand
  * beside the top of it, at one game each.
  */
+/** The specialists: one game each, off the ladder. See `opponentSpecialists.constants.ts`. */
+export type SpecialistTier = "tamenoki" | "meritalu" | "monkton" | "tinsdale";
+
 export type BotTier =
   | "razryad"
   | "kyu"
   | "dan"
   | "meijin"
   | "guoshou"
-  | "tamenoki"
-  | "meritalu"
-  | "monkton"
+  | SpecialistTier
   | "rafaDuarte"
   | "ingridSolheim"
   | "amaraOkafor"
