@@ -32,6 +32,8 @@ each with its reason beside it):
 | Whole site, per UTC day | **50** | 100 | Half. The plan is per Resend *account*, which may send for another of John's domains. And if Resend's day doesn't start at midnight UTC, fifty on each side of its boundary still comes to a hundred. |
 | Whole site, per UTC month | **1,000** | 3,000 | A third. Two of our months overlapping one of Resend's still stay under it, with room left for other domains. |
 | One member, per UTC day | **5** | — | Nobody inviting friends by hand needs more, and one person must not use up everybody's day. |
+| Invite requests, whole site, per UTC day | **5** | — | A form any visitor can reach is one a script can fill. Counted BEFORE the site's day, so a flood can take at most five of its fifty — and a hundred and fifty of its month. |
+| Invite requests, per visitor address / per email typed, per UTC day | **2** / **1** | — | A household shares an address; the same email asking twice is one request. Both are stored only as keyed hashes. |
 
 `sendMail.test.ts` fails the build if a cap goes over the plan, or if twice a
 cap goes over it.
@@ -61,10 +63,15 @@ cap goes over it.
 
 ### What sends, and what doesn't
 
-- **The one flow that sends:** a member's "Email an invitation" under
-  *Me → People → Invite a friend*. One click sends one email to one address
-  they typed, with a fresh one-use join link. The address isn't stored or
-  logged.
+- **Two flows send.** A member's "Email an invitation" under
+  *Me → People → Invite a friend*: one click sends one email to one address
+  they typed, with a fresh one-use join link; the address isn't stored or
+  logged. And a visitor's **"No invite? Ask for one"** on `/join` (0.249.0):
+  one email to `hello@itsutsu.com` with Reply-To set to the visitor, so John
+  answers by pressing Reply. It has its own caps (above), a hidden field and a
+  signed three-second stamp that tell a script from a person without asking
+  the person anything, and it is offered only while sign-up is invite-only.
+  Nothing about a request is stored (`lib/mail/inviteRequest.ts`).
 - **Nothing else sends.** No sign-up mail, no game notices (`lib/notify/email.ts`
   stays a placeholder on purpose, because a your-turn email on every move would
   spend the day), nothing on a timer, a poll or a batch.
