@@ -8,8 +8,9 @@ import { join } from "node:path";
  * it reads, the two searches, how a turn is enumerated, and the threat and
  * shape analysis the line search orders itself by.
  *
- * `expert/` is not here: every grade's `expertise` is empty, so a specialist's
- * reading never decides a graded move. The engine and the rules are not here
+ * `expert/` is not here, with one exception: every grade's `expertise` is
+ * empty, so a specialist's reading never decides a graded move — but the race
+ * reading counts its distances with `expert/raceBoard.ts`, so that file is. The engine and the rules are not here
  * either — they decide what a move IS, not which one a player picks.
  *
  * Deliberately the whole text of each file, comments included. A comment edit
@@ -28,6 +29,8 @@ export const LADDER_FINGERPRINT_FILES: readonly string[] = [
   "src/lib/gomoku/analysis.ts",
   "src/lib/gomoku/analysis.constants.ts",
   "src/lib/gomoku/threats.ts",
+  // The graded players' race reading counts its distances here.
+  "src/lib/gomoku/expert/raceBoard.ts",
 ];
 
 /** A short, stable hash over the files' paths and text, in the order given. */

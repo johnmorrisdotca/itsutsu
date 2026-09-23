@@ -10,8 +10,9 @@ import type { Cell, GameState, Point, RuleVariant, Stone } from "../gomoku.types
  * neighbouring cell, or chain jumps over anything into the cell beyond, and
  * get every piece into the camp opposite. What separates a player that races
  * from one that wanders is knowing HOW FAR a cell is from home, and the shared
- * reading has never known: `campDistance` in `opponentFamilies.ts` measures it
- * as |Δrow| + |Δcol|, which is the right answer on neither board. Halma's
+ * reading did not know until it came here for it: `campDistance` in
+ * `opponentFamilies.ts` measured it as |Δrow| + |Δcol|, which is the right
+ * answer on neither board. Halma's
  * pieces step diagonally, so a Manhattan count charges two for one step; the
  * star's cells are a hex lattice embedded in a square array, so the same count
  * charges two for some steps and one for others depending which way they lean.
