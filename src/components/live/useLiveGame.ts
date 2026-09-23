@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import useSWR, { type KeyedMutator } from "swr";
 
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -113,14 +113,22 @@ export function useLiveGame(initial: GameDetail): {
   }, [mutate]);
 
   /*
-   * ANY CHANGE ON THE BOARD KEEPS IT AWAKE. SWR hands back the same object when
-   * an answer is identical to the last, so a new `data` is a real change — a
-   * move from either side, a reaction, an offer, the clock, a name — however
-   * it arrived. A board that is changing is never put to sleep.
+   * ANY CHANGE ON THE BOARD KEEPS IT AWAKE — a move from either side, a
+   * reaction, an offer, the clock, a name — however it arrived. A board that is
+   * changing is never put to sleep.
+   *
+   * A change in CONTENT, not in the object. SWR usually hands back the same
+   * object for an identical answer, and this used to trust that; but a new
+   * object with the same game in it arrived at the very moment a board fell
+   * asleep once the picture of every position was drawn beside it by itself,
+   * and each one woke the board again — polling for the whole hour the idle
+   * rule exists to stop. So the game is compared by what it says. The string
+   * is a few kilobytes, made only when SWR hands over a new object.
    */
+  const content = useMemo(() => JSON.stringify(data ?? null), [data]);
   useEffect(() => {
     stir();
-  }, [data, stir]);
+  }, [content, stir]);
 
 
   // A stable getter, so the countdown can read the moment without anything re-rendering.

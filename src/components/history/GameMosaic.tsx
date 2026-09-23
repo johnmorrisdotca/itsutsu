@@ -78,6 +78,7 @@ export function GameMosaic({ game, timeline }: { game: GameDetail; timeline: rea
         details={() => detailsOf(game, variant)}
         fileName={`itsutsu-${slugFor(variant)}-${game.id}.png`}
         alt={`Every position of this game, ${frames.length} moves`}
+        auto
       />
     </section>
   );
