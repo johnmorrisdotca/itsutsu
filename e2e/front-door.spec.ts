@@ -30,6 +30,18 @@ test.describe("the front door", () => {
     await expect(page.getByTestId("invite-line")).toHaveCount(0);
   });
 
+  test("says how many players and games there are, as an early release, people only", async ({ page }) => {
+    await page.goto("/");
+    const line = page.getByTestId("site-numbers");
+    await expect(line).toContainText("early release");
+    await expect(line).toContainText(/\d[\d,]* players?/);
+    // The games number leads to exactly the games it counted: finished, with no program in either seat.
+    const games = line.getByTestId("site-numbers-games");
+    await expect(line).toContainText(/\d[\d,]* games? between people/);
+    const count = Number(((await games.textContent()) ?? "").replace(/[^\d]/g, ""));
+    if (count > 0) await expect(games).toHaveAttribute("href", /\/history\?pool=people$/);
+  });
+
   test("the navigation reads in one language", async ({ page }) => {
     /*
      * Only the bar. A kanji paired with a heading elsewhere — a game's name, a
