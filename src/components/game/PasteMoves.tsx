@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Controls";
 import { SectionTitle } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
-import { formatsFor, readMoves } from "@/lib/record/readMoves";
+import { MOVE_FORMATS, formatsFor, readMoves, siteOf, type MoveFormat } from "@/lib/record/readMoves";
 import { PRACTICE_COPY } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
@@ -34,11 +34,14 @@ import type { GamePanelProps } from "./game.types";
 export function PasteMoves({ session, actions }: GamePanelProps) {
   const [text, setText] = useState("");
   const [said, setSaid] = useState<string | null>(null);
+  // Which site the list came from, or null for anywhere — see `PRACTICE_COPY.paste.from`.
+  const [from, setFrom] = useState<MoveFormat | null>(null);
   const { variant, size } = session.state.settings;
   const spec = VARIANT_SPECS[variant];
 
   function walk() {
-    const read = readMoves(text, size, formatsFor(variant, { flips: spec.flips, go: spec.go }));
+    const site = from ?? siteOf(text);
+    const read = readMoves(text, size, site !== null ? [site] : formatsFor(variant, { flips: spec.flips, go: spec.go }));
     if (read.points.length === 0) {
       setSaid(read.problem ?? PRACTICE_COPY.paste.nothing);
       return;
@@ -79,6 +82,20 @@ export function PasteMoves({ session, actions }: GamePanelProps) {
         aria-label={PRACTICE_COPY.paste.label}
         data-testid="paste-moves-text"
       />
+      <label className="flex items-center gap-2 text-xs text-muted">
+        {PRACTICE_COPY.paste.fromLabel}
+        <select
+          value={from ?? ""}
+          onChange={(event) => setFrom(event.target.value === "" ? null : (event.target.value as MoveFormat))}
+          className={`${INPUT_CLASS} py-1 text-xs`}
+          data-testid="paste-moves-from"
+        >
+          <option value="">{PRACTICE_COPY.paste.from.anywhere}</option>
+          <option value={MOVE_FORMATS.itsYourTurn}>{PRACTICE_COPY.paste.from.itsYourTurn}</option>
+          <option value={MOVE_FORMATS.goldToken}>{PRACTICE_COPY.paste.from.goldToken}</option>
+        </select>
+      </label>
+      {from !== null ? <p className="text-xs text-muted">{PRACTICE_COPY.paste.fromHint}</p> : null}
       <div className="flex items-center gap-2">
         <Button onClick={walk} disabled={text.trim() === ""} data-testid="paste-moves-go">
           {PRACTICE_COPY.paste.button}
