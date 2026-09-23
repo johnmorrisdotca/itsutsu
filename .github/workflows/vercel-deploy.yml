@@ -11,8 +11,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # THE CHECKS, SIDE BY SIDE. They were one job running lint, file sizes, types,
+  # the unit tests, the audit and the build one after another — 5.3 minutes,
+  # five of them `quality:check` in a line. None of them needs another's output,
+  # so each is a job of its own on its own runner and the slowest sets the pace.
+  # John, 2026-09-22: "we should have goal to have the fastest deploy times
+  # possible with means shards and testing and making sure things happen in
+  # parallel." See AGENTS.md, "Deploys Are Fast By Design".
+  #
+  # One matrix rather than five copies of the setup, so the steps every check
+  # shares are written once. `needs: verify` below waits for every leg, and
+  # `needs.verify.result` is 'success' only when all of them are.
   verify:
+    name: verify (${{ matrix.check }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [lint, types, unit, audit, build]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,10 +47,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run quality checks
-        run: pnpm quality:check
+      - name: Lint, and the file size gate
+        if: matrix.check == 'lint'
+        run: pnpm lint && pnpm loc:check
+
+      - name: Typecheck
+        if: matrix.check == 'types'
+        run: pnpm typecheck
+
+      - name: Unit tests
+        if: matrix.check == 'unit'
+        run: pnpm test:unit
 
       - name: Audit production dependencies
+        if: matrix.check == 'audit'
         run: |
           for attempt in 1 2 3; do
             if pnpm security:check; then
@@ -50,6 +76,7 @@ jobs:
           exit 1
 
       - name: Build app
+        if: matrix.check == 'build'
         run: pnpm build
         env:
           DATABASE_URL: postgresql://build:build@localhost:5432/build
