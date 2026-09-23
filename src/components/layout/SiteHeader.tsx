@@ -6,6 +6,7 @@ import { currentSession } from "@/lib/auth/currentSession";
 import { memberKeyOf } from "@/lib/auth/memberKey";
 import { xpFlashFor, type XpToastHold } from "@/lib/xp/xpFlash";
 
+import { BetaMark } from "./BetaMark";
 import { BrandHero, BrandWordmark } from "./BrandMarks";
 import { LearnTimeZone } from "./LearnTimeZone";
 import { NavLinks } from "./NavLinks";
@@ -71,7 +72,10 @@ export async function SiteHeader({
           <Link href="/" aria-label="Itsutsu home" className="block w-full max-w-2xl">
             <BrandHero className="w-full" />
           </Link>
-          <p className="text-sm text-muted">Five in a row, and the games that grew from it.</p>
+          <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
+            Five in a row, and the games that grew from it.
+            <BetaMark />
+          </p>
           <Nav />
         </header>
         <XpFlashToasts heldBy={xpHeldBy} />
@@ -82,9 +86,20 @@ export async function SiteHeader({
   return (
     <>
       <header data-chrome className="flex flex-wrap items-end justify-between gap-4 border-b border-rule pb-5">
-        <Link href="/" aria-label="Itsutsu home" className="block">
-          <BrandWordmark className="h-9 w-auto sm:h-10" />
-        </Link>
+        {/*
+          The Beta mark sits over the wordmark's right end, like a superscript,
+          out of the flow. Beside the wordmark would widen the one row the
+          masthead has — at 768 pixels the wordmark, the gap and the bar already
+          fill it (see `YourTurnBadge`) — and under it lands on the bar where a
+          phone wraps the bar below the wordmark. Above the stones, nothing is
+          ever there.
+        */}
+        <span className="relative block">
+          <Link href="/" aria-label="Itsutsu home" className="block">
+            <BrandWordmark className="h-9 w-auto sm:h-10" />
+          </Link>
+          <BetaMark className="absolute -top-3 right-0" />
+        </span>
         <Nav />
       </header>
       <XpFlashToasts heldBy={xpHeldBy} />
