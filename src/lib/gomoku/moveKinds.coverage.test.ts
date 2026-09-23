@@ -68,6 +68,10 @@ const PASS_AND_ONLY_A_PASS = new Map([
     "src/components/live/goReading.ts",
     "tells a Go player the other side has just PASSED, so a pass now ends the game; a turn lost on time is not the first of two passes, so it is rightly not told that",
   ],
+  [
+    "src/lib/gomoku/expert/goExpert.ts",
+    "offers the Go player a pass when the other side has just PASSED, since two in a row end the game; a turn lost on time is not the first of two, so a forfeit is rightly not an invitation to pass",
+  ],
 ]);
 
 /**

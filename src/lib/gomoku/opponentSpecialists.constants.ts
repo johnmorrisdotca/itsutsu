@@ -24,6 +24,7 @@ export const SPECIALIST_TIERS = {
   meritalu: "meritalu",
   monkton: "monkton",
   tinsdale: "tinsdale",
+  hondo: "hondo",
 } as const satisfies Record<SpecialistTier, SpecialistTier>;
 
 /**
@@ -37,6 +38,7 @@ export const BOT_SPECIALIST_LIST: readonly SpecialistTier[] = [
   SPECIALIST_TIERS.meritalu,
   SPECIALIST_TIERS.monkton,
   SPECIALIST_TIERS.tinsdale,
+  SPECIALIST_TIERS.hondo,
 ];
 
 export const SPECIALIST_PROFILES: Record<SpecialistTier, BotProfile> = {
@@ -141,6 +143,23 @@ export const SPECIALIST_PROFILES: Record<SpecialistTier, BotProfile> = {
       "Ahead, he trades: five against four is a game, two against one is " +
       "not. Behind, he will not.",
   },
+  /*
+   * THE FIFTH SPECIALIST, and an homage to the Go player every Japanese
+   * student is taught to revere: Hon'inbō Shūsaku, unbeaten in nineteen years
+   * of castle games. Changed a little, as the others are, so it is a tribute
+   * rather than an impersonation. His reading is `expert/goExpert.ts`.
+   */
+  hondo: {
+    tier: SPECIALIST_TIERS.hondo,
+    name: "Shūsaku Hondō",
+    native: "本堂秀策",
+    strength: "Strongest at Go on the small boards",
+    blurb:
+      "Go, and nothing else. Hondō looks where a club player looks first: " +
+      "whose ground each empty point is, by whose stones are nearer, and which " +
+      "groups are short of breath. A group of yours in atari is one he means " +
+      "to take, and one of his is one he means to save.",
+  },
 };
 
 export const SPECIALIST_SPECS: Record<SpecialistTier, TierSpec> = {
@@ -195,5 +214,16 @@ export const SPECIALIST_SPECS: Record<SpecialistTier, TierSpec> = {
     guardTop: 34,
     searchDepth: 8,
     expertise: [EXPERT_KINDS.draughts],
+  },
+  hondo: {
+    depth: 2,
+    guard: 1,
+    blunder: 0,
+    noise: 0,
+    reads: true,
+    width: 180,
+    guardTop: 34,
+    searchDepth: 8,
+    expertise: [EXPERT_KINDS.go],
   },
 };
