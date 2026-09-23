@@ -14,6 +14,7 @@ import {
   moveTicket,
   patchTicket,
   shipTicket,
+  stampTicket,
   ticketByKey,
   ticketsPath,
 } from "./boardClient";
@@ -192,6 +193,20 @@ describe("writing to the board", () => {
     expect(shipped.ok && shipped.item.releasedIn).toBe("0.197.0");
     expect(calls[0]!.url).toBe(`${BASE}/tickets/cmf1/ship`);
     expect(sent(0)).toEqual({ version: "0.197.0", releasedAt: "2026-09-15T01:00:00.000Z" });
+  });
+
+  it("stamps a done row's release without moving it, and reports notDone / alreadyStamped as their own reasons", async () => {
+    answers({ status: 200, body: { ok: true, ticket: view({ status: "done", releasedIn: "0.150.0", releasedAt: "2026-06-01T00:00:00.000Z" }) } });
+    const stamped = await stampTicket(target, "cmf1", { version: "0.150.0", releasedAt: "2026-06-01T00:00:00.000Z" }, "john");
+    expect(stamped.ok && stamped.item.releasedIn).toBe("0.150.0");
+    expect(calls[0]!.url).toBe(`${BASE}/tickets/cmf1/stamp`);
+    expect(sent(0)).toEqual({ version: "0.150.0", releasedAt: "2026-06-01T00:00:00.000Z" });
+
+    answers({ status: 409, body: { ok: false, error: "notDone", ticket: view({ status: "open" }) } });
+    expect(await stampTicket(target, "cmf1", { version: "0.150.0", releasedAt: "2026-06-01T00:00:00.000Z" }, "john")).toMatchObject({ ok: false, reason: "notDone" });
+
+    answers({ status: 409, body: { ok: false, error: "alreadyStamped", ticket: view({ status: "done", releasedIn: "0.196.0" }) } });
+    expect(await stampTicket(target, "cmf1", { version: "0.150.0", releasedAt: "2026-06-01T00:00:00.000Z" }, "john")).toMatchObject({ ok: false, reason: "alreadyStamped" });
   });
 });
 
