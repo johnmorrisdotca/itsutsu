@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ALSO_LISTED_IN, GAME_FAMILIES, familyOf, gamesShownIn, siblingsOf } from "./families";
+import { ALSO_LISTED_IN, FAMILY_MOST_GAMES, GAME_FAMILIES, familyOf, gamesShownIn, siblingsOf } from "./families";
 import { RULE_VARIANTS, VARIANT_SPECS } from "./gomoku.constants";
 import { GAME_SLUGS } from "./slugs";
 import { measureHeadStart } from "./simulation.headStartDecides";
@@ -138,6 +138,16 @@ describe("every game is finished, not just playable", () => {
         seen.add(listing.family);
         expect(listing.why.length, `${variant} on "${listing.family}" gives no reason`).toBeGreaterThan(20);
       }
+    }
+  });
+
+  it("shows no more than eight games on any shelf", () => {
+    // John: "I want to have MAX 8 items per family". Guests count: they are on the shelf.
+    for (const family of GAME_FAMILIES) {
+      const shown = gamesShownIn(family).map((game) => game.variant);
+      expect(shown.length, `${family.title} shows ${shown.length}: ${shown.join(", ")}`).toBeLessThanOrEqual(
+        FAMILY_MOST_GAMES,
+      );
     }
   });
 

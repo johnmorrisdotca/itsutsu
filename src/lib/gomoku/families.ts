@@ -92,7 +92,7 @@ export const GAME_FAMILIES: GameFamily[] = [
      * the key — `pieces-and-twists` has no rows at all on the live XP ledger,
      * so nothing is paid twice either way and the busier key is the safer one.
      */
-    blurb: "Boards that do not behave: edges that join, squares you cannot use, pieces laid from a queue, quarters that turn, and three boards drawn on hexagons rather than squares.",
+    blurb: "Boards that do not behave: edges that join, squares you cannot use, pieces laid from a queue, quarters that turn, and two boards drawn on hexagons rather than squares.",
     games: ["toroidalFive", "obstacleFive", "dominoFive", "blockFive", "twistFive", "twistFour"],
   },
   {
@@ -136,6 +136,17 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker"],
   },
 ];
+
+/**
+ * THE MOST GAMES ONE SHELF SHOWS, its own and its guests together.
+ *
+ * John, 2026-09-22: "I want to have MAX 8 items per family". A shelf longer
+ * than that is a third line of games on the set-up screen, and a list rather
+ * than a choice. A game added to a full family, or a guest listed on one, fails
+ * `variants.coverage.test.ts` — so the question "what could be merged or taken
+ * out?" is asked the day the ninth arrives, not found on a screen later.
+ */
+export const FAMILY_MOST_GAMES = 8;
 
 /**
  * THE FAMILIES THAT WERE FOLDED INTO OTHERS, and the one they went to.
@@ -216,11 +227,12 @@ export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>
     },
   ],
   /*
-   * THE THREE BOARDS DRAWN ON HEXAGONS, on the shelf somebody would look for
-   * a strange board on. Each keeps its home, because a home is the family a
-   * game is SCORED by: Hex claims ground, Hexversi turns stones, Chinese
-   * Checkers is a race. None of those shelves is where a reader goes when what
-   * caught their eye was the shape of the board.
+   * THE BOARDS DRAWN ON HEXAGONS, on the shelf somebody would look for a
+   * strange board on. Each keeps its home, because a home is the family a game
+   * is SCORED by: Hex claims ground, Hexversi turns stones. Neither of those
+   * shelves is where a reader goes when what caught their eye was the shape of
+   * the board. (Chinese Checkers was here too, until the eight-game cap — see
+   * its own entry below.)
    */
   hex: [
     {
@@ -235,10 +247,14 @@ export const ALSO_LISTED_IN: Partial<Record<RuleVariant, readonly AlsoListing[]>
     },
   ],
   chineseCheckers: [
-    {
-      family: "strange-boards",
-      why: "A six-pointed star of holes: the one board here that is neither a square nor cut from one.",
-    },
+    /*
+     * NOT ON STRANGE BOARDS ANY MORE, though its star is the strangest board
+     * here. John, 2026-09-22: "I want to have MAX 8 items per family... so
+     * strange boards has 9 items. what could be merged or taken out? Chinese
+     * checkers?" It was the one game on three shelves — its home in Races,
+     * and shown under Checkers for its name and here for its board — so it
+     * is the one that could leave a shelf and still be found twice.
+     */
     /*
      * BY THE NAME, not by the rules. Nothing is captured in Chinese Checkers
      * and no piece is crowned, so it is not a game of draughts and its home
