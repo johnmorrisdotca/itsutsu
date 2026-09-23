@@ -37,27 +37,44 @@ jobs:
     #
     # Sharding is the answer that changes nothing about that rule. Each shard
     # is a job of its own — its own runner, its OWN service container below,
-    # its own quarter of the spec files — and inside it the suite still runs
-    # on one worker against one database. Four databases, not one shared
-    # four ways. Playwright runs the `setup` project on every shard that has
+    # its own share of the spec files — and inside it the suite still runs
+    # on one worker against one database. One database per shard, not one
+    # shared between them. Playwright runs the `setup` project on every shard that has
     # tests depending on it, so each shard signs in and sweeps its own fresh
     # database exactly as the single job did.
     #
-    # `fail-fast: false`, because a red shard must not cancel the other three:
-    # a superseded test run is evidence, and three quarters of the evidence is
-    # worth having when one quarter is red.
+    # `fail-fast: false`, because a red shard must not cancel the others: a
+    # superseded test run is evidence, and most of the evidence is worth having
+    # when one shard is red.
     #
     # THE CEILING IS PER SHARD. A job killed by it is reported as `cancelled`,
     # NOT `failed` — indistinguishable in `gh run list` from somebody pressing
     # cancel, which cost a while to work out — so it is set well clear of a
     # quarter of the old fifty minutes, not just above it.
     #
-    # Free, still: four standard runners on a public repository cost nothing,
-    # which the note above the runner is about. Four larger runners would.
+    # Free, still: standard runners on a public repository cost nothing, with
+    # no minute limit, which the note above the runner is about. Larger runners
+    # would cost.
+    #
+    # EIGHT SHARDS, FROM FOUR, once the suite GATED THE DEPLOY (2026-09-22). A
+    # push was sixteen minutes from the site, and the slowest shard was
+    # fourteen of them; everything else in a shard — the database container,
+    # the browser download — was about a minute. So the time was in the tests,
+    # and splitting the tests further is what shortens it. John, asking what
+    # more shards would cost: "I want the best performance and most smartest
+    # way to do this." In money, nothing; the one limit is GitHub's twenty
+    # concurrent jobs on a free account, which eight shards, the build job and
+    # an overlapping pull-request run stay under. Still one worker per shard,
+    # which is also what Playwright's own CI guidance recommends.
+    #
+    # The count is written ONCE, here. The step below reads it back as
+    # `strategy.job-total`, so the matrix and the `--shard=N/M` it is split by
+    # cannot disagree — a shard told the wrong total runs the wrong slice and
+    # passes, quietly, over tests it was never given.
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     timeout-minutes: 30
 
     services:
@@ -180,7 +197,7 @@ jobs:
       # reads them; Next's `.env` loading never overrides a variable already
       # set. A pull request from a fork is given no secrets by GitHub, so
       # those ten specs fail there by design.
-      # This shard's quarter of the spec files. Playwright splits the FILES
+      # This shard's share of the spec files. Playwright splits the FILES
       # across shards evenly by count, and the `setup` project runs on each.
       #
       # `pnpm exec playwright test`, NOT `pnpm test:e2e -- --shard=…`. The
@@ -198,7 +215,7 @@ jobs:
       # more slowly. Naming the binary leaves nothing between the flag and the
       # thing that reads it.
       - name: Run this shard of the end-to-end suite
-        run: pnpm exec playwright test --shard=${{ matrix.shard }}/4
+        run: pnpm exec playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
         env:
           SUMILABU_BOARD_URL: ${{ secrets.SUMILABU_BOARD_URL }}
           SUMILABU_BOARD_DEV_TOKEN: ${{ secrets.SUMILABU_BOARD_DEV_TOKEN }}
