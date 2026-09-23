@@ -211,6 +211,19 @@ export const RATE_LIMITS = {
    * than anybody taps.
    */
   phraseDraw: { windowMs: 60_000, maxRequests: 120 },
+  /**
+   * A visitor asking for an invitation from /join. Three an hour from one
+   * address: a person who mistyped their email twice still gets through, and a
+   * script gets nowhere.
+   *
+   * NOT `strict`, because it bounds a COST — email, and John's inbox — rather
+   * than a guess: nothing is learned by asking again. So it takes the suite's
+   * relief like the other cost limits, and in production, where relief is
+   * refused, it is three. The caps behind it in the mail counter
+   * (`inviteRequestLimits`) are what hold across server instances and cannot be
+   * relieved at all; this is the cheap first no.
+   */
+  inviteRequest: { windowMs: 60 * 60_000, maxRequests: 3 },
   /** Reads, including autocomplete on every keystroke. */
   read: { windowMs: 60_000, maxRequests: 240 },
   /**

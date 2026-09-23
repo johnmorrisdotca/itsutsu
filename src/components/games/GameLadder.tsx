@@ -1,6 +1,8 @@
 import { connection } from "next/server";
 import Link from "next/link";
 
+import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
+
 import { LadderSideView, PlayerLink } from "@/components/players/Standings";
 import { RecordLine } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
@@ -82,6 +84,10 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
         <p className="text-sm">
           <Link href="/join" className="font-semibold underline-offset-2 hover:underline" data-testid="ladder-join">
             I have an invite →
+          </Link>{" "}
+          <span className="text-muted">·</span>{" "}
+          <Link href={ASK_FOR_INVITE_PATH} className="underline-offset-2 hover:underline" data-testid="ladder-ask-for-invite">
+            No invite? Ask for one
           </Link>
         </p>
       </section>

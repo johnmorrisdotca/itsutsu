@@ -1,6 +1,8 @@
 import { Paired } from "@/components/i18n/Paired";
 import Link from "next/link";
 
+import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
+
 import { BrandStones } from "@/components/layout/BrandMarks";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -99,9 +101,18 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
           Every game here is free to read about — the rules, what it is, where it came from, and
           the family it belongs to. Playing one needs an invite.
         </span>
-        <Link href="/join" className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0 px-4 py-2`}>
-          I have an invite →
-        </Link>
+        {/*
+          And the way in for somebody with no invite at all, who until now had
+          only a door marked for people who already have one.
+        */}
+        <span className="flex shrink-0 flex-wrap items-baseline gap-x-4 gap-y-2">
+          <Link href={ASK_FOR_INVITE_PATH} className="text-sm underline-offset-2 hover:underline" data-testid="games-ask-for-invite">
+            No invite? Ask for one
+          </Link>
+          <Link href="/join" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-4 py-2`}>
+            I have an invite →
+          </Link>
+        </span>
       </section>
 
       <BrandStones className="py-1 opacity-80" />

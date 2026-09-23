@@ -2,7 +2,7 @@ import "server-only";
 
 import type { CapRefusal, MailRefusal, MailSender, OutgoingMail, SendDeps, SendOutcome, TransportResult } from "./mail.types";
 import { prismaMailCounter } from "./mailCounter";
-import { mailLimits } from "./mailLimits";
+import { limitsFor } from "./mailLimits";
 import { mailRefusalFor } from "./mailSwitch";
 import { resendTransport } from "./resendTransport";
 
@@ -43,7 +43,7 @@ export async function sendMail(mail: OutgoingMail, sender: MailSender, deps: Sen
 
   let full: CapRefusal | null;
   try {
-    full = await (deps.counter ?? prismaMailCounter).reserve(mailLimits(sender.memberId, deps.now ?? new Date()));
+    full = await (deps.counter ?? prismaMailCounter).reserve(limitsFor(sender, deps.now ?? new Date()));
   } catch (error) {
     console.error("[mail] the send counter could not be read", error);
     return notSent("count-unavailable");

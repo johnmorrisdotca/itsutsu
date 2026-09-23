@@ -22,7 +22,7 @@ export function resendTransport(apiKey: string, fetchImpl: typeof fetch = fetch)
           to: [mail.to],
           subject: mail.subject,
           text: mail.text,
-          reply_to: CONTACT_ADDRESS,
+          reply_to: mail.replyTo ?? CONTACT_ADDRESS,
         }),
         signal: AbortSignal.timeout(MAIL_TIMEOUT_MS),
       });
