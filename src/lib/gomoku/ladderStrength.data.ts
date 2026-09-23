@@ -20,7 +20,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -107,7 +107,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -194,7 +194,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -281,7 +281,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -368,7 +368,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -455,7 +455,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -474,8 +474,8 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
       {
         "first": "razryad",
         "second": "dan",
-        "wins": 0,
-        "losses": 20,
+        "wins": 1,
+        "losses": 19,
         "draws": 0
       },
       {
@@ -516,16 +516,16 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
       {
         "first": "dan",
         "second": "meijin",
-        "wins": 2,
-        "losses": 17,
-        "draws": 1
+        "wins": 0,
+        "losses": 20,
+        "draws": 0
       },
       {
         "first": "dan",
         "second": "guoshou",
-        "wins": 2,
+        "wins": 0,
         "losses": 18,
-        "draws": 0
+        "draws": 2
       },
       {
         "first": "meijin",
@@ -542,7 +542,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -554,15 +554,15 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
       {
         "first": "razryad",
         "second": "kyu",
-        "wins": 9,
-        "losses": 11,
+        "wins": 4,
+        "losses": 16,
         "draws": 0
       },
       {
         "first": "razryad",
         "second": "dan",
-        "wins": 2,
-        "losses": 18,
+        "wins": 6,
+        "losses": 14,
         "draws": 0
       },
       {
@@ -582,43 +582,43 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
       {
         "first": "kyu",
         "second": "dan",
-        "wins": 5,
-        "losses": 15,
+        "wins": 4,
+        "losses": 16,
         "draws": 0
       },
       {
         "first": "kyu",
         "second": "meijin",
-        "wins": 1,
-        "losses": 19,
+        "wins": 0,
+        "losses": 20,
         "draws": 0
       },
       {
         "first": "kyu",
         "second": "guoshou",
-        "wins": 1,
-        "losses": 19,
+        "wins": 0,
+        "losses": 20,
         "draws": 0
       },
       {
         "first": "dan",
         "second": "meijin",
-        "wins": 2,
-        "losses": 18,
+        "wins": 0,
+        "losses": 20,
         "draws": 0
       },
       {
         "first": "dan",
         "second": "guoshou",
-        "wins": 2,
-        "losses": 18,
+        "wins": 0,
+        "losses": 20,
         "draws": 0
       },
       {
         "first": "meijin",
         "second": "guoshou",
-        "wins": 7,
-        "losses": 13,
+        "wins": 9,
+        "losses": 11,
         "draws": 0
       }
     ]
@@ -629,7 +629,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -716,7 +716,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -803,7 +803,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -890,7 +890,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -977,7 +977,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -989,65 +989,65 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
       {
         "first": "razryad",
         "second": "kyu",
-        "wins": 4,
-        "losses": 11,
+        "wins": 6,
+        "losses": 9,
         "draws": 5
       },
       {
         "first": "razryad",
         "second": "dan",
         "wins": 3,
-        "losses": 11,
-        "draws": 6
+        "losses": 10,
+        "draws": 7
       },
       {
         "first": "razryad",
         "second": "meijin",
         "wins": 0,
-        "losses": 8,
-        "draws": 12
+        "losses": 9,
+        "draws": 11
       },
       {
         "first": "razryad",
         "second": "guoshou",
         "wins": 0,
-        "losses": 8,
-        "draws": 12
+        "losses": 9,
+        "draws": 11
       },
       {
         "first": "kyu",
         "second": "dan",
-        "wins": 4,
-        "losses": 10,
-        "draws": 6
+        "wins": 3,
+        "losses": 8,
+        "draws": 9
       },
       {
         "first": "kyu",
         "second": "meijin",
         "wins": 0,
-        "losses": 5,
-        "draws": 15
+        "losses": 9,
+        "draws": 11
       },
       {
         "first": "kyu",
         "second": "guoshou",
         "wins": 0,
-        "losses": 5,
-        "draws": 15
+        "losses": 9,
+        "draws": 11
       },
       {
         "first": "dan",
         "second": "meijin",
         "wins": 0,
-        "losses": 2,
-        "draws": 18
+        "losses": 7,
+        "draws": 13
       },
       {
         "first": "dan",
         "second": "guoshou",
         "wins": 0,
-        "losses": 2,
-        "draws": 18
+        "losses": 7,
+        "draws": 13
       },
       {
         "first": "meijin",
@@ -1064,7 +1064,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
@@ -1151,7 +1151,7 @@ export const LADDER_STRENGTH: LadderStrengthTable = {
     "gamesPerPairing": 20,
     "nodesPerMove": 4000,
     "measuredOn": "2026-09-23",
-    "fingerprint": "e5eb6c8dd423d7a2",
+    "fingerprint": "be8722767ed5dd80",
     "tiers": [
       "razryad",
       "kyu",
