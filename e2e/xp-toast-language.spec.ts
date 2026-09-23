@@ -80,6 +80,10 @@ test.describe("the XP toast speaks the reader's language", () => {
 
     const toast = page.getByTestId("xp-toast");
     await expect(toast).toBeVisible();
+    // Held, as a reader holds it by pointing at it: a level toast leaves by
+    // itself after eight seconds, and the reading below outlasted that on a
+    // busy runner — the toast had gone and "not in English" had nothing to read.
+    await toast.getByTestId("xp-toast-dismiss").hover();
     await expect(toast.getByTestId("xp-toast-points")).toHaveText(`+${VISIT}`);
     // 経験値, experience points: the unit, no longer two English letters.
     await expect(toast).toContainText("経験値");
@@ -129,6 +133,7 @@ test.describe("the XP toast speaks the reader's language", () => {
 
     const toast = page.getByTestId("xp-toast");
     await expect(toast).toBeVisible();
+    await toast.getByTestId("xp-toast-dismiss").hover();
     await expect(toast).toContainText("XP");
     // The heading keeps its kanji beside the English, as every heading on the site does.
     await expect(toast.getByTestId("xp-toast-level")).toContainText("Level up");
