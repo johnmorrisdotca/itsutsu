@@ -559,3 +559,11 @@ export const GO_HELP_COPY = {
   howToWin:
     "How Go is won: place stones to wall off more of the board than your opponent. A group with no empty point beside it is taken off. A group with two separate eyes can never be taken. When neither side has anything useful left, both pass, and each counts their stones plus the ground they walled in; White gets 6.5 for moving second.",
 } as const;
+
+/** The note that can go with a move, offered where the move is sent; see `MoveNoteField`. */
+export const MOVE_NOTE_COPY = {
+  open: "Add a note ✎",
+  label: "A note with this move",
+  placeholder: "Say something with the move (optional)",
+  close: "No note",
+} as const;

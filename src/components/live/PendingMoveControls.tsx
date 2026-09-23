@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
+
 import { Button } from "@/components/ui/Controls";
+import { MoveNoteField, type MoveNote } from "./MoveNoteField";
 import { LIVE_MOVE_COPY } from "./live.constants";
 import { NUDGE_DIRECTIONS, type NudgeDirection } from "./nudgeMove";
 
@@ -39,8 +42,10 @@ export function PendingMoveControls({
   placedAt,
   sending,
   where,
+  noteable = false,
 }: {
-  onSubmit: () => void;
+  /** Sends the move, with the note the player wrote for it, if any. */
+  onSubmit: (note: MoveNote | null) => void;
   onStartOver: () => void;
   /** Move the placed stone one point, on the boards that take arrows. */
   onNudge?: (direction: NudgeDirection) => void;
@@ -51,7 +56,10 @@ export function PendingMoveControls({
   sending: boolean;
   /** Where Submit will leave them, so the button says where rather than surprising them. */
   where: string;
+  /** Whether a note may go with this move: a person across the board, not a program. */
+  noteable?: boolean;
 }) {
+  const [note, setNote] = useState<MoveNote | null>(null);
   const arrows = onNudge !== undefined && nudges !== undefined && nudges.size > 0;
   return (
     /*
@@ -112,8 +120,9 @@ export function PendingMoveControls({
           ))}
         </div>
       ) : null}
+      {noteable ? <MoveNoteField onChange={setNote} disabled={sending} /> : null}
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={onSubmit} disabled={sending} data-testid="pending-move-submit">
+        <Button onClick={() => onSubmit(note)} disabled={sending} data-testid="pending-move-submit">
           {where}
         </Button>
         <button

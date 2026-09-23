@@ -50,6 +50,7 @@ import { pendingMove, submitWords, type PendingMove } from "./pendingMove";
 import { GoHelp } from "./GoHelp";
 import { goRisk } from "./goReading";
 import { LiveMoves } from "./LiveMoves";
+import type { MoveNote } from "./MoveNoteField";
 import { nudgedMove, nudgesAvailable, OPPOSITE, type NudgeDirection } from "./nudgeMove";
 import { pointName } from "@/lib/gomoku/notation";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
@@ -252,11 +253,14 @@ export function SharedGame({
   }
 
   /** Sends the move that has been sitting on the board, and clears it either way. */
-  async function submit() {
+  async function submit(note: MoveNote | null) {
     if (pending === null) return;
     const turn = pending.turn;
+    const number = state.moves.length + 1;
     setPending(null);
     await postTurn(turn, send);
+    // The note goes after the move, pinned to it — see `MoveNoteField`.
+    if (note !== null) await react(note.emoji, number, note.text);
   }
 
   async function play(point: Point) {
@@ -447,7 +451,8 @@ export function SharedGame({
       */}
       {pending !== null ? (
         <PendingMoveControls
-          onSubmit={() => void submit()}
+          onSubmit={(note) => void submit(note)}
+          noteable={!againstComputer && token !== null}
           onStartOver={() => setPending(null)}
           onNudge={nudge}
           nudges={nudges}
