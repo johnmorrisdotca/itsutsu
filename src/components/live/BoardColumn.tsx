@@ -129,7 +129,8 @@ export function BoardColumn({
        */
       {...readyMark(hydrated)}
     >
-      <fieldset className="hidden items-center justify-end gap-1 self-end lg:flex" data-testid="board-scale">
+      {/* Furniture in just-the-board mode, which sizes the board to the screen itself. */}
+      <fieldset data-chrome className="hidden items-center justify-end gap-1 self-end lg:flex" data-testid="board-scale">
         <legend className="sr-only">{BOARD_SIZE_LEGEND}</legend>
         <span className="mr-1 text-xs text-muted" aria-hidden="true">
           {BOARD_SIZE_LEGEND}

@@ -17,8 +17,6 @@ import {
 } from "@/lib/gomoku/engine";
 import { boardStartsFlipped } from "@/lib/gomoku/orientation";
 import { PieceTray } from "@/components/game/PieceTray";
-import { Button } from "@/components/ui/Controls";
-import { BOT_SEAT_COPY, LIVE_PAUSED_COPY } from "./live.constants";
 import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { MatchClock } from "./MatchClock";
@@ -42,14 +40,13 @@ import { useMatchAddress } from "./useMatchAddress";
 import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
-import { TONE_CLASS } from "@/components/ui/ui.constants";
-import { NextCheck } from "./NextCheck";
+import { LiveStatusLines } from "./LiveStatusLines";
 import { PendingMoveControls } from "./PendingMoveControls";
 import { postTurn } from "./postTurn";
 import { pendingMove, submitWords, type PendingMove } from "./pendingMove";
 import { GoHelp } from "./GoHelp";
 import { goRisk } from "./goReading";
-import { LiveMoves } from "./LiveMoves";
+import { VisualMoves } from "./VisualMoves";
 import type { MoveNote } from "./MoveNoteField";
 import { nudgedMove, nudgesAvailable, OPPOSITE, type NudgeDirection } from "./nudgeMove";
 import { pointName } from "@/lib/gomoku/notation";
@@ -373,35 +370,18 @@ export function SharedGame({
       />
       {notice}
 
-      {/* And while it IS asking, when the next check is due — so quiet and broken look different. */}
-      <NextCheck asking={asking} answeredAt={answeredAt} every={pollEvery} />
-      {/* A board that has stopped asking says so, rather than showing an old position as the current one. */}
-      {paused ? (
-        <p className="flex flex-wrap items-center gap-2 text-sm text-muted" data-testid="live-paused">
-          <span>{LIVE_PAUSED_COPY.line}</span>
-          <Button onClick={resume}>{LIVE_PAUSED_COPY.check}</Button>
-        </p>
-      ) : null}
+      {/* How the board is keeping up, and anything that went wrong — see `LiveStatusLines`. */}
+      <LiveStatusLines
+        asking={asking}
+        answeredAt={answeredAt}
+        every={pollEvery}
+        paused={paused}
+        onResume={resume}
+        error={error}
+        thinking={bot.thinking}
+      />
 
-      {error !== null ? (
-        <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.warn}`}>
-          {error}
-        </p>
-      ) : null}
-
-      {/*
-        Said out loud, because it is now this browser doing the thinking and a
-        move may take a couple of seconds. A board that simply sits there is
-        indistinguishable from one that has stopped working, and the player has
-        no other way to tell — the computer used to answer inside the request
-        that carried their own stone, so there was never a gap to explain.
-      */}
-      {bot.thinking ? (
-        <p className="text-sm text-muted" data-testid="bot-thinking" role="status">
-          {BOT_SEAT_COPY.thinking}
-        </p>
-      ) : null}
-
+      <div data-chrome className="contents">
       <MatchClock
         detail={detail}
         state={state}
@@ -411,13 +391,24 @@ export function SharedGame({
         onError={setError}
         mutate={mutate}
       />
+      </div>
 
-      <RuleNotes state={state} />
+      {/*
+        JUST THE BOARD hides everything marked [data-chrome]: the clock's
+        panel, the notes on the rules, the waves, the turn button, the help,
+        the picture, the conversation. What stays is what it takes to play —
+        whose turn it is, the board, and the controls for the move being made.
+        John: "just the board means the board should be centered and almost all
+        you see." The switch is remembered in this browser, so it stays on from
+        one game to the next.
+      */}
+      <div data-chrome className="contents">
+        <RuleNotes state={state} />
+        <ReactionBubbles reactions={shown} yourStone={seat} />
+        <TurnBoardButton gameId={detail.id} turned={turned} />
+      </div>
 
-      <ReactionBubbles reactions={shown} yourStone={seat} />
-
-      <TurnBoardButton gameId={detail.id} turned={turned} />
-
+      <div data-bare-board>
       <Board
         state={pending?.after ?? state}
         appearance={board}
@@ -428,6 +419,7 @@ export function SharedGame({
         footprintFor={hand.piece !== null ? hand.footprintFor : undefined}
         placing={choosesColour ? placing : null}
       />
+      </div>
 
       {choosesColour && playable ? <ColourChooser placing={placing} onChoose={setPlacing} /> : null}
 
@@ -442,7 +434,11 @@ export function SharedGame({
         />
       ) : null}
 
-      {againstComputer ? <ConfirmMovesSwitch value={computerConfirm} onChange={chooseComputerConfirm} /> : null}
+      {againstComputer ? (
+        <div data-chrome className="contents">
+          <ConfirmMovesSwitch value={computerConfirm} onChange={chooseComputerConfirm} />
+        </div>
+      ) : null}
 
       {/*
         The move placed and not yet sent, with the two things left to do about
@@ -466,11 +462,21 @@ export function SharedGame({
         <GoPassButton disabled={!playable} onPass={pass} />
       ) : null}
 
-      <GoHelp state={state} seat={seat} pending={pending} />
+      <div data-chrome className="contents">
+        <GoHelp state={state} seat={seat} pending={pending} />
+      </div>
 
-      <LiveMoves detail={detail} />
+      {/*
+        The game's positions as one picture, drawn by itself after every move —
+        see `VisualMoves`. The move list is in the panel beside the board now
+        (`LiveMovesPanel`), where there was room for it.
+      */}
+      <div data-chrome className="contents">
+        <VisualMoves detail={detail} />
+      </div>
 
       {/* Resigning, a wave across the board, muting, and who is opposite — see `SharedGameFooter`. */}
+      <div data-chrome className="contents">
       <SharedGameFooter
         detail={detail}
         state={state}
@@ -486,6 +492,7 @@ export function SharedGame({
         mutate={mutate}
       />
       <ReactionLog reactions={shown} />
+      </div>
     </div>
   );
 }

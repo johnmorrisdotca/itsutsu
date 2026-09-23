@@ -58,6 +58,39 @@ test.describe("just the board", () => {
     await expect(page.locator("html")).not.toHaveAttribute("data-bare", "true");
   });
 
+  /*
+   * A game being played: what stays is what it takes to play. John, on a live
+   * board: "we don't need Icons and Comments etc when it's just the board...
+   * the board should be centered and almost all you see."
+   */
+  test("on a live game, leaves the board, centred, whose turn it is, and nothing else", async ({ page, request }) => {
+    const made = await request.post("/api/games/live", { data: { size: 9 } });
+    expect(made.status(), await made.text()).toBe(201);
+    const game = (await made.json()) as { id: string; blackToken: string };
+    const played = await request.post(`/api/games/${game.id}/moves`, { data: { token: game.blackToken, row: 4, col: 4 } });
+    expect(played.status(), await played.text()).toBe(201);
+
+    await page.goto(`/games/gomoku/match/${game.id}/seat/${game.blackToken}`);
+    await ready(page, "shared-game");
+    await ready(page, "bare-board");
+    await page.getByTestId("bare-board-toggle").click();
+    await expect(page.locator("html")).toHaveAttribute("data-bare", "true");
+
+    // Gone: the moves, the picture, the waves and the resigning.
+    await expect(page.getByTestId("live-moves")).toBeHidden();
+    await expect(page.getByTestId("visual-moves")).toBeHidden();
+    await expect(page.getByTestId("resign")).toBeHidden();
+    // Still there: whose turn it is, and the board, in the middle of the screen and all of it in view.
+    await expect(page.getByTestId("turn-banner")).toBeVisible();
+    const board = await page.locator("[data-bare-board]").boundingBox();
+    const view = page.viewportSize()!;
+    expect(Math.abs(board!.x + board!.width / 2 - view.width / 2)).toBeLessThan(24);
+    expect(board!.y + board!.height).toBeLessThanOrEqual(view.height);
+
+    await page.getByTestId("bare-board-toggle").click();
+    await expect(page.getByTestId("live-moves")).toBeVisible();
+  });
+
   test("is not offered on a page with nothing to strip", async ({ page }) => {
     // The wide pages are the ones with a board or a table and a sidebar.
     // About is read top to bottom; there is no furniture to take off it.
