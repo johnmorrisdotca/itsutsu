@@ -132,7 +132,20 @@ export function GradeLadderGraph() {
               stroke={mark === 0.5 ? "var(--ink-soft)" : "var(--rule)"}
               strokeDasharray={mark === 0.5 ? undefined : "2 3"}
             />
-            <text x={x(mark)} y={PAD.top - 12} textAnchor="middle" fontSize={9} fill="var(--muted)">
+            <text
+              x={x(mark)}
+              y={PAD.top - 12}
+              textAnchor="middle"
+              fontSize={9}
+              fill="var(--muted)"
+              /*
+               * Which mark of the axis this is, so the half line can be found
+               * as the half line. Its label is "50%", and so is any bar that
+               * measured level — three did once the ladder covered twelve boards —
+               * so the text alone does not say which one is the axis.
+               */
+              data-axis-mark={mark}
+            >
               {Math.round(mark * 100)}%
             </text>
           </g>
