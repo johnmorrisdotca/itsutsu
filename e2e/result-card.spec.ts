@@ -90,7 +90,7 @@ test.describe("a result card over a finished board", () => {
     ];
     for (const [mover, otherBoard, row, col] of turns) {
       await playAt(mover, SIZE, row, col);
-      await expect(otherBoard.getByTestId("live-moves")).toContainText(named(row, col), { timeout: 20_000 });
+      await expect(otherBoard.page().getByTestId("live-moves")).toContainText(named(row, col), { timeout: 20_000 });
     }
     await playAt(black, SIZE, 0, 2);
   }

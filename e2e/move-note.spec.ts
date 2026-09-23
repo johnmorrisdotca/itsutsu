@@ -49,7 +49,7 @@ test.describe("a note with the move", () => {
       await white.goto(`/games/freestyle/match/${game.id}/seat/${game.whiteToken}`);
       await ready(white, "shared-game");
       const theirs = white.getByTestId("shared-game");
-      await expect(theirs.getByTestId("live-moves")).toContainText("E5");
+      await expect(theirs.page().getByTestId("live-moves")).toContainText("E5");
       await expect(theirs.getByTestId("reaction-theirs").first()).toContainText("Your move, friend");
     } finally {
       await blackContext.close();

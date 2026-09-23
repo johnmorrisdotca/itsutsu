@@ -110,11 +110,11 @@ test.describe("a game that settles in front of you", () => {
 
       // A stone from black lands on white's board; white's pass lands on black's.
       await playAt(black.page, 9, 4, 4);
-      await expect(whiteBoard.getByTestId("live-moves")).toContainText("E5");
+      await expect(whiteBoard.page().getByTestId("live-moves")).toContainText("E5");
       const whitePass = whiteBoard.getByRole("button", { name: "Pass", exact: true });
       await expect(whitePass).toBeEnabled();
       await whitePass.click();
-      await expect(blackBoard.getByTestId("live-moves")).toContainText("pass");
+      await expect(blackBoard.page().getByTestId("live-moves")).toContainText("pass");
 
       // Black passes back: two in a row end it, under black's hand and in front of white.
       const blackPass = blackBoard.getByRole("button", { name: "Pass", exact: true });
@@ -195,10 +195,10 @@ test.describe("a game that settles in front of you", () => {
       const whiteKept = await markDocument(white.page);
 
       await playAt(black.page, 9, 4, 4);
-      await expect(whiteBoard.getByTestId("live-moves")).toContainText("E5");
+      await expect(whiteBoard.page().getByTestId("live-moves")).toContainText("E5");
       await expect(whiteBoard.getByTestId("turn-banner")).toContainText("Your move");
       await playAt(white.page, 9, 0, 0);
-      await expect(blackBoard.getByTestId("live-moves")).toContainText("A9");
+      await expect(blackBoard.page().getByTestId("live-moves")).toContainText("A9");
 
       // Black gives it up from the board, and white is looking at theirs.
       await blackBoard.getByTestId("resign").click();
