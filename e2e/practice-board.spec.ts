@@ -79,6 +79,35 @@ test.describe("the practice board", () => {
     for (const move of ["H8", "K10", "J9", "L11"]) await expect(record).toContainText(move);
   });
 
+  /*
+   * ANOTHER SITE'S GAME, copied off the page as the player sees it. GoldToken
+   * letters its columns with I and counts rows from the top, so its I9 is this
+   * site's J7 — read with this site's own rules it would be a different game.
+   */
+  test("reads a GoldToken move list by GoldToken's own lettering, known by its table", async ({ page }) => {
+    await page.goto("/games/gomoku/play");
+    await ready(page, "game-view");
+    await page
+      .getByTestId("paste-moves-text")
+      .fill("Past Moves\nTurn\tdragonfire\n(Player 1)\tJohn Morris\n(Player 2)\n1\tH8\tI9\n2\tE8\tF8\n3\tG9");
+    await page.getByTestId("paste-moves-go").click();
+    await expect(page.getByTestId("paste-moves-said")).toContainText("Read 5 moves as a GoldToken move list");
+    await expect(page.getByRole("button", { name: /^H8, Black stone$/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^J7, White stone$/ })).toBeVisible();
+  });
+
+  test("reads an ItsYourTurn move list when it is said to be one", async ({ page }) => {
+    await page.goto("/games/gomoku/play");
+    await ready(page, "game-view");
+    await page.getByTestId("paste-moves-from").selectOption("itsYourTurn");
+    await page.getByTestId("paste-moves-text").fill("1. h8 i9\n2. j8");
+    await page.getByTestId("paste-moves-go").click();
+    await expect(page.getByTestId("paste-moves-said")).toContainText("Read 3 moves as an ItsYourTurn move list");
+    // ItsYourTurn's i is its own column: i9 is this site's J9, and its j8 this site's K8.
+    await expect(page.getByRole("button", { name: /^J9, White stone$/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^K8, Black stone$/ })).toBeVisible();
+  });
+
   test("says which move it could not read, and keeps the ones before it", async ({ page }) => {
     await page.goto("/games/gomoku/play");
     await ready(page, "game-view");

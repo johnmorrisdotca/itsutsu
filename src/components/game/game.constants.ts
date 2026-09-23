@@ -376,6 +376,20 @@ export const PRACTICE_COPY = {
       `Read ${moves} ${moves === 1 ? "move" : "moves"} as ${FORMAT_WORDS[format] ?? format}.`,
     /* Where a list stopped being playable, which is the engine's answer and not the reader's. */
     refused: (at: number) => `Move ${at} cannot be played in this game, so the board stops there.`,
+    /*
+     * Where the list came from. Two other sites letter their columns with I and
+     * one counts its rows from the top, so the same "I9" is a different point
+     * on each — see `readSite`. Anywhere tries this site's ways, and knows the
+     * other two sites' lists by their layout.
+     */
+    fromLabel: "From",
+    from: {
+      anywhere: "Anywhere",
+      itsYourTurn: "ItsYourTurn",
+      goldToken: "GoldToken",
+    },
+    fromHint:
+      "On ItsYourTurn press 'show move list'; on GoldToken the moves are under Past Moves. Copy them and paste here — with this board set to the same size as the game first, since ItsYourTurn counts its rows from the bottom edge.",
   },
 } as const;
 
@@ -384,4 +398,6 @@ const FORMAT_WORDS: Record<string, string> = {
   coordinates: "coordinates",
   squares: "Othello squares",
   sgf: "SGF",
+  itsYourTurn: "an ItsYourTurn move list",
+  goldToken: "a GoldToken move list",
 };

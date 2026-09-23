@@ -35,6 +35,17 @@ export const MOVE_FORMATS = {
   squares: "squares",
   /** `;B[pd];W[dp]` — SGF, which `sgf.ts` already writes. */
   sgf: "sgf",
+  /**
+   * ItsYourTurn's move list, `1. f6 g7  2. g6 h6`: lowercase squares whose
+   * columns run a, b, c… WITH i, and whose rows count from the BOTTOM.
+   */
+  itsYourTurn: "itsYourTurn",
+  /**
+   * GoldToken's Past Moves table, `1 H8 I9`: capital squares whose columns run
+   * A, B, C… WITH I, and whose rows count from the TOP — its board is numbered
+   * 1 along the top edge.
+   */
+  goldToken: "goldToken",
 } as const;
 
 export type MoveFormat = (typeof MOVE_FORMATS)[keyof typeof MOVE_FORMATS];
@@ -187,6 +198,55 @@ function readSgf(text: string, size: number): MovesRead {
   return { points, format: MOVE_FORMATS.sgf, problem: null };
 }
 
+/**
+ * ANOTHER SITE'S LIST, READ BY THAT SITE'S OWN RULES. John, 2026-09-23, with a
+ * game open on each: bring a game over from ItsYourTurn or GoldToken to look
+ * at here. The site cannot fetch them — ItsYourTurn's games need its login and
+ * GoldToken's robots.txt closes its game pages — so the player copies the move
+ * list from their own screen and pastes it.
+ *
+ * Each site letters its columns straight through the alphabet, I included,
+ * where this site skips I as a Go board does; and GoldToken counts its rows
+ * from the top. Reading either with this site's own rules puts every stone
+ * past H one column over, and every GoldToken stone upside down — a different
+ * game, and a legal-looking one. So each has a reader of its own.
+ *
+ * Only the squares are read: everything round them in a copied page — the
+ * move numbers, "Prev" and "Next", a table's heading and the players' names —
+ * is left alone, because the reader was told which site it is and the squares
+ * are the only thing in the paste written in that site's case.
+ */
+function readSite(text: string, size: number, format: MoveFormat, square: RegExp, fromTop: boolean): MovesRead {
+  const points: Point[] = [];
+  for (const [word, letter, digits] of text.matchAll(square)) {
+    const col = letter!.toLowerCase().charCodeAt(0) - "a".charCodeAt(0);
+    const row = Number(digits);
+    const arrayRow = fromTop ? row - 1 : size - row;
+    if (col >= size || row < 1 || row > size) return { points, format, problem: offBoard(word, size) };
+    points.push({ row: arrayRow, col });
+  }
+  return { points, format: points.length === 0 ? null : format, problem: null };
+}
+
+/**
+ * Which of the other sites a pasted list came from, when it says so plainly,
+ * or null.
+ *
+ * Only on a sign this site's own lists never carry, because a wrong guess here
+ * is a different game: "1. h8 k10" is this site's notation typed in lowercase
+ * as well as ItsYourTurn's, and read as ItsYourTurn every stone past H moves a
+ * column. So a list is taken for one of them only when it has that site's own
+ * heading, or a square in column I — a letter this site never writes. Anything
+ * else is read the usual ways, and the reader can say where it came from.
+ */
+export function siteOf(text: string): MoveFormat | null {
+  const numberedLower = /^\s*\d+\.\s*[a-z]\d{1,2}(\s+[a-z]\d{1,2})?\s*$/m.test(text);
+  if (numberedLower && (/Past Moves/i.test(text) || /\bi\d{1,2}\b/.test(text))) return MOVE_FORMATS.itsYourTurn;
+  const turnRows = /^\s*\d+\s+[A-Z]\d{1,2}(\s+[A-Z]\d{1,2})?\s*$/m.test(text);
+  if (turnRows && (/\(Player [12]\)/.test(text) || /\bI\d{1,2}\b/.test(text))) return MOVE_FORMATS.goldToken;
+  return null;
+}
+
 /** The same sentence wherever a move lands outside the board, so one wording is read twice. */
 function offBoard(word: string, size: number): string {
   return `"${word}" is not a point on a ${size}×${size} board.`;
@@ -196,6 +256,8 @@ const READERS: Record<MoveFormat, (text: string, size: number) => MovesRead> = {
   [MOVE_FORMATS.coordinates]: readCoordinates,
   [MOVE_FORMATS.squares]: readSquares,
   [MOVE_FORMATS.sgf]: readSgf,
+  [MOVE_FORMATS.itsYourTurn]: (text, size) => readSite(text, size, MOVE_FORMATS.itsYourTurn, /\b([a-z])(\d{1,2})\b/g, false),
+  [MOVE_FORMATS.goldToken]: (text, size) => readSite(text, size, MOVE_FORMATS.goldToken, /\b([A-Z])(\d{1,2})\b/g, true),
 };
 
 /**
@@ -210,7 +272,9 @@ export function readMoves(text: string, size: number, formats: readonly MoveForm
   const tidied = tidy(text);
   if (tidied === "") return { points: [], format: null, problem: null };
   for (const format of formats) {
-    const read = READERS[format](tidied, size);
+    // Another site's reader takes only its own squares, so it is given the paste as it came.
+    const site = format === MOVE_FORMATS.itsYourTurn || format === MOVE_FORMATS.goldToken;
+    const read = READERS[format](site ? text : tidied, size);
     if (read.format !== null) return read;
   }
   return {
